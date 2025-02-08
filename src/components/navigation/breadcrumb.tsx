@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -183,24 +184,26 @@ function Dropdown<T extends { id: string; title: string }>({
           className="size-4 -ml-1 text-muted-more-foreground data-[open]:rotate-180 transition"
         />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="p-1">
-        {items?.map((i) => (
-          <DropdownMenuItem
-            onSelect={() => {
-              setOpen(false);
-              onSelect(i.id);
-            }}
-            key={i.id}
-            className="py-2 flex items-center justify-between gap-3 group/item"
-          >
-            <p className="shrink min-w-0">{i.title}</p>
-            {selectedItem?.id === i.id ? (
-              <CheckIcon className="size-4 -mr-0.5" />
-            ) : (
-              <div className="size-4 -mr-0.5" />
-            )}
-          </DropdownMenuItem>
-        ))}
+      <DropdownMenuContent align="start">
+        <ScrollArea className="p-1">
+          {items?.map((i, index) => (
+            <DropdownMenuItem
+              onSelect={() => {
+                setOpen(false);
+                onSelect(i.id);
+              }}
+              key={i.id + index}
+              className="py-2 flex items-center justify-between gap-3 group/item"
+            >
+              <p className="shrink min-w-0">{i.title}</p>
+              {selectedItem?.id === i.id ? (
+                <CheckIcon className="size-4 -mr-0.5" strokeWidth={3} />
+              ) : (
+                <div className="size-4 -mr-0.5" />
+              )}
+            </DropdownMenuItem>
+          ))}
+        </ScrollArea>
       </DropdownMenuContent>
     </DropdownMenu>
   );
