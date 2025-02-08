@@ -5,6 +5,6 @@ export type TThemeWithoutSystem = Exclude<TTheme, "system">;
 export const defaultTheme: TThemeWithoutSystem = "dark";
 
 export const metaTheme: Record<TThemeWithoutSystem, string> = {
-  dark: "#09080d",
+  dark: "#0F120F",
   light: "#ffffff",
 };
