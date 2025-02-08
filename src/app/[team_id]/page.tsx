@@ -1,12 +1,18 @@
-import ProjectCard from "@/app/dashboard/_components/project-card";
+import ProjectCard from "@/app/[team_id]/_components/project-card";
 import { apiServer } from "@/server/trpc/setup/server";
 
-export default async function Page() {
-  const { projects } = await apiServer.main.getProjects({});
+type Props = {
+  params: Promise<{ team_id: string }>;
+};
+
+export default async function Page({ params }: Props) {
+  const { team_id: teamId } = await params;
+  const { projects } = await apiServer.main.getProjects({ teamId });
+
   return (
     <div className="w-full flex flex-col items-center px-3 md:px-8 pt-4 md:pt-8 pb-16">
       <div className="w-full flex flex-col max-w-5xl">
-        <h1 className="w-full px-3 font-bold text-xl">Dashboard</h1>
+        <h1 className="w-full px-3 font-bold text-xl">Projects</h1>
         <div className="w-full flex items-center justify-center pt-3">
           <div className="w-full flex flex-wrap">
             {projects.map((p) => (

@@ -13,7 +13,7 @@ const iconLenght = 4;
 
 export default function ProjectCard({ project, className }: Props) {
   const defaultEnvironment = project.environments[0];
-  const href = `/project/${project.id}/environment/${defaultEnvironment.id}`;
+  const href = `${project.teamId}/project/${project.id}/environment/${defaultEnvironment.id}`;
   return (
     <div className={cn("w-full flex flex-col p-1", className)}>
       <LinkButton

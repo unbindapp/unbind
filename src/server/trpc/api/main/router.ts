@@ -2,17 +2,42 @@ import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
 import { z } from "zod";
 
 export const mainRouter = createTRPCRouter({
-  getProjects: publicProcedure.input(z.object({})).query(async function ({}) {
+  getTeams: publicProcedure.input(z.object({})).query(async function () {
     return {
-      projects,
+      teams,
     };
   }),
+  getProjects: publicProcedure
+    .input(
+      z.object({
+        teamId: z.string(),
+      })
+    )
+    .query(async function ({ input: { teamId } }) {
+      const projects = await getProjects({ teamId });
+      return {
+        projects,
+      };
+    }),
 });
+
+async function getProjects({ teamId }: { teamId: string }) {
+  console.log("teamId", teamId);
+  return projects;
+}
+
+const teams: TTeam[] = [
+  {
+    id: "5048c703-10c9-4bd8-b311-cf02b527b400",
+    title: "Default",
+  },
+];
 
 const projects: TProject[] = [
   {
     title: "Acme",
     id: "f435d289-d8a7-4aa5-8998-106953dd6f65",
+    teamId: "5048c703-10c9-4bd8-b311-cf02b527b400",
     environments: [
       {
         id: "35c0a3c5-eeca-4db1-9b6c-df598fac51a0",
@@ -37,6 +62,7 @@ const projects: TProject[] = [
   {
     title: "Umbrella",
     id: "cce28aef-9c51-461f-8fc3-d777ea47c69d",
+    teamId: "5048c703-10c9-4bd8-b311-cf02b527b400",
     environments: [
       {
         id: "cbe57445-aab2-4cc7-a53d-b430de647398",
@@ -57,6 +83,7 @@ const projects: TProject[] = [
   {
     title: "Hamburger",
     id: "7d836bb0-8747-469e-9032-5f061cd2e696",
+    teamId: "5048c703-10c9-4bd8-b311-cf02b527b400",
     environments: [
       {
         id: "6e82623a-298e-447b-8ef1-f9868e4282ba",
@@ -77,6 +104,7 @@ const projects: TProject[] = [
   {
     title: "Cheese",
     id: "1aab14e4-50ff-47c2-b713-46dd4b3ce723",
+    teamId: "5048c703-10c9-4bd8-b311-cf02b527b400",
     environments: [
       {
         id: "577b6619-7c97-4f02-934d-82d1e80f4027",
@@ -100,6 +128,11 @@ export type TServiceType =
   | "minio"
   | "meili";
 
+type TTeam = {
+  id: string;
+  title: string;
+};
+
 type TEnvironment = {
   id: string;
   title: string;
@@ -114,5 +147,6 @@ type TService = {
 export type TProject = {
   id: string;
   title: string;
+  teamId: string;
   environments: TEnvironment[];
 };
