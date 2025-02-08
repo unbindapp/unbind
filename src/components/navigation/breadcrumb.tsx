@@ -13,10 +13,8 @@ import { SlashIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-type Props = {};
-
-export default function Breadcrumb({}: Props) {
-  const [asyncRouterPush, isAsyncRouterPushPending] = useAsyncRouterPush();
+export default function Breadcrumb() {
+  const [asyncRouterPush] = useAsyncRouterPush();
   const pathname = usePathname();
   const pathnameArr = pathname.split("/");
 
