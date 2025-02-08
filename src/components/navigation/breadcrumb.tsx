@@ -183,7 +183,7 @@ function Dropdown<T extends { id: string; title: string }>({
                 onSelect(i.id);
               }}
               key={i.id + index}
-              className="py-2 flex items-center justify-between gap-3 group/item"
+              className="py-2 flex items-center justify-between gap-2.5 group/item"
             >
               <p className="shrink min-w-0">{i.title}</p>
               {selectedItem?.id === i.id ? (
