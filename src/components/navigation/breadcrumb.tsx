@@ -11,7 +11,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { useAsyncRouterPush } from "@/lib/hooks/use-async-router-push";
 import { api } from "@/server/trpc/setup/react";
-import { CheckIcon, ChevronDownIcon, SlashIcon } from "lucide-react";
+import {
+  ArrowRightIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  SlashIcon,
+} from "lucide-react";
 import { usePathname } from "next/navigation";
 import { JSX, useEffect, useState } from "react";
 
@@ -109,6 +114,7 @@ export default function Breadcrumb() {
         items={teamData?.teams}
         onSelect={onTeamIdSelect}
         Icon={<div className="size-5 rounded-full bg-foreground/50" />}
+        showArrowOnSelectedAndHighlighted
       />
       {selectedProject && (
         <>
@@ -149,11 +155,13 @@ function Dropdown<T extends { id: string; title: string }>({
   items,
   onSelect,
   Icon,
+  showArrowOnSelectedAndHighlighted,
 }: {
   selectedItem: T | undefined;
   items: T[] | undefined;
   onSelect: (id: string) => void;
   Icon?: JSX.Element;
+  showArrowOnSelectedAndHighlighted?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -163,6 +171,7 @@ function Dropdown<T extends { id: string; title: string }>({
           buttonVariants({
             variant: "ghost",
             size: "sm",
+            forceMinSize: false,
           }),
           "px-2 py-1.75 rounded-lg border-none font-semibold flex items-center justify-start shrink min-w-0 gap-2 not-touch:hover:bg-border text-sm"
         )}
@@ -184,13 +193,26 @@ function Dropdown<T extends { id: string; title: string }>({
               }}
               key={i.id + index}
               className="py-2 flex items-center justify-between gap-2.5 group/item"
+              data-show-arrow={
+                showArrowOnSelectedAndHighlighted ? true : undefined
+              }
             >
               <p className="shrink min-w-0">{i.title}</p>
-              {selectedItem?.id === i.id ? (
-                <CheckIcon className="size-4 -mr-0.5" strokeWidth={3} />
-              ) : (
-                <div className="size-4 -mr-0.5" />
-              )}
+              <div className="size-4 -mr-0.5 relative">
+                {selectedItem?.id === i.id && (
+                  <>
+                    <CheckIcon
+                      className="size-full group-data-[highlighted]/item:group-data-[show-arrow]/item:opacity-0 group-data-[highlighted]/item:group-data-[show-arrow]/item:rotate-90 transition"
+                      strokeWidth={3}
+                    />
+                    <ArrowRightIcon
+                      className="absolute left-0 top-0 opacity-0 -rotate-90 size-full group-data-[highlighted]/item:group-data-[show-arrow]/item:opacity-100
+                      group-data-[highlighted]/item:group-data-[show-arrow]/item:rotate-0 transition"
+                      strokeWidth={2.5}
+                    />
+                  </>
+                )}
+              </div>
             </DropdownMenuItem>
           ))}
         </ScrollArea>
