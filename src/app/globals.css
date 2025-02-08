@@ -2,20 +2,191 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+body {
+  font-family: var(--font-sans);
 }
 
-@media (prefers-color-scheme: dark) {
+html,
+body {
+  scroll-padding-top: 5rem;
+}
+
+a:focus,
+button:focus {
+  outline: none;
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+.font-sans {
+  font-family: var(--font-sans);
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.rdp-vhidden {
+  visibility: hidden;
+  position: absolute;
+}
+
+/* Hide the clear "X" button for the input[type="search"] */
+input[type="search"]::-webkit-search-cancel-button {
+  display: none;
+}
+
+/* For Firefox */
+input[type="search"]::-moz-search-cancel-button {
+  display: none;
+}
+
+/* (Optional) For Edge and other modern browsers */
+input[type="search"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: 0 0% 100%;
+    --background-hover: 0 0% 95%;
+    --foreground: 250 25% 4%;
+    --card: 0 0% 100%;
+    --card-foreground: 250 25% 4%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 250 25% 4%;
+    --primary: 250 25% 4%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 250 20% 85%;
+    --secondary-foreground: 250 25% 4%;
+    --muted: 250 20% 85%;
+    --muted-foreground: 250 6% 35%;
+    --muted-more-foreground: 250 6% 50%;
+    --accent: 250 20% 85%;
+    --accent-foreground: 250 25% 4%;
+    --destructive: 0 84% 30%;
+    --destructive-foreground: 0 0% 100%;
+    --warning: 30 100% 25%;
+    --warning-foreground: 0 0% 100%;
+    --success: 130 85% 20%;
+    --success-foreground: 0 0% 100%;
+    --shadow: 0 0% 0%;
+    --border: 250 20% 85%;
+    --input: 0 0% 96%;
+    --ring: 250 25% 4%;
+    --radius: 0.5rem;
+    --chart-1: 210 90% 30%;
+    --chart-2: 160 100% 23%;
+    --chart-3: 300 60% 40%;
+    --chart-4: 35 90% 40%;
+    --chart-5: 0 70% 40%;
+    --chart-6: 190 80% 35%;
+    --chart-7: 120 70% 35%;
+    --chart-8: 330 75% 40%;
+    --chart-9: 270 60% 30%;
+    --chart-10: 20 90% 30%;
+
+    --link-chip: 210 100% 18%;
+
+    --top-loader: 165 100% 30%;
+
+    --index-fear: 0 100% 70%;
+    --index-neutral: 50 100% 60%;
+    --index-greed: 120 50% 55%;
+
+    --google: 250 25% 4%;
+    --google-foreground: 0 0% 100%;
+    --discord: 235 86% 65%;
+    --discord-foreground: 0 0% 100%;
+    --github: 250 25% 4%;
+    --github-foreground: 0 0% 100%;
+    --ethereum: 263 75% 51%;
+    --ethereum-foreground: 0 0% 100%;
+    --email: 160 100% 24%;
+    --email-foreground: 0 0% 100%;
+    --x: 250 25% 4%;
+    --x-foreground: 0 0% 100%;
+
+    --barrier: 0 0% 0%;
+    --opacity-barrier: 0.7;
+    --opacity-shadow: 0.06;
+  }
+  .dark {
+    --background: 250 25% 4%;
+    --background-hover: 250 20% 10%;
+    --foreground: 250 50% 92%;
+    --card: 250 25% 4%;
+    --card-foreground: 250 50% 92%;
+    --popover: 250 20% 10%;
+    --popover-foreground: 250 50% 92%;
+    --primary: 250 50% 92%;
+    --primary-foreground: 250 25% 4%;
+    --secondary: 250 25% 20%;
+    --secondary-foreground: 250 50% 92%;
+    --muted: 250 25% 20%;
+    --muted-foreground: 250 12% 60%;
+    --muted-more-foreground: 250 10% 40%;
+    --accent: 250 25% 20%;
+    --accent-foreground: 250 50% 92%;
+    --destructive: 0 88% 72%;
+    --destructive-foreground: 250 25% 4%;
+    --warning: 40 85% 60%;
+    --warning-foreground: 250 25% 4%;
+    --success: 130 55% 60%;
+    --success-foreground: 250 25% 4%;
+    --shadow: 0 0% 0%;
+    --border: 250 25% 20%;
+    --input: 250 20% 9%;
+    --ring: 250 50% 92%;
+
+    --chart-1: 200 90% 55%;
+    --chart-2: 130 80% 70%;
+    --chart-3: 275 90% 75%;
+    --chart-4: 25 75% 65%;
+    --chart-5: 0 90% 70%;
+    --chart-6: 200 80% 70%;
+    --chart-7: 80 85% 60%;
+    --chart-8: 320 60% 60%;
+    --chart-9: 250 100% 75%;
+    --chart-10: 40 80% 65%;
+
+    --link-chip: 210 100% 85%;
+
+    --top-loader: 160 90% 60%;
+
+    --index-fear: 0 60% 60%;
+    --index-neutral: 50 75% 60%;
+    --index-greed: 120 40% 60%;
+
+    --google: 250 50% 92%;
+    --google-foreground: 250 25% 4%;
+    --discord: 235 86% 65%;
+    --discord-foreground: 250 50% 92%;
+    --github: 250 50% 92%;
+    --github-foreground: 250 25% 4%;
+    --ethereum: 265 86% 83%;
+    --ethereum-foreground: 250 25% 4%;
+    --email: 160 68% 60%;
+    --email-foreground: 250 25% 4%;
+    --x: 250 50% 92%;
+    --x-foreground: 250 25% 4%;
+
+    --barrier: 250 25% 4%;
+    --opacity-barrier: 0.8;
+    --opacity-shadow: 0.75;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
