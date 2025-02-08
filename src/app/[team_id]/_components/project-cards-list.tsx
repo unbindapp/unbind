@@ -11,8 +11,6 @@ export default function ProjectCardsList({ teamId }: Props) {
   const { data } = api.main.getProjects.useQuery({ teamId });
   const projects = data?.projects;
 
-  console.log("DATA", data);
-
   return (
     <ol className="w-full flex flex-wrap">
       {projects && projects.length === 0 && (
