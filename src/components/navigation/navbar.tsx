@@ -10,11 +10,11 @@ export default function Navbar({ className }: Props) {
   return (
     <nav
       className={cn(
-        "w-full sticky top-0 left-0 flex flex-row items-center justify-between px-3 py-1.5",
+        "w-full sticky top-0 left-0 z-50 bg-background border-b flex flex-row items-center justify-between px-3 py-1.5",
         className
       )}
     >
-      <div className="shrink min-w-0 flex items-center justify-start">
+      <div className="shrink min-w-0 flex items-center justify-start -ml-0.5">
         <LinkButton
           size="icon"
           className="size-9 rounded-lg"
