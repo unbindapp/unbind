@@ -111,32 +111,32 @@ input[type="search"] {
     --opacity-shadow: 0.06;
   }
   .dark {
-    --background: 250 25% 4%;
-    --background-hover: 250 20% 10%;
-    --foreground: 250 50% 92%;
-    --card: 250 25% 4%;
-    --card-foreground: 250 50% 92%;
+    --background: 120 9% 6%;
+    --background-hover: 120 7% 8%;
+    --foreground: 120 100% 97%;
+    --card: 120 9% 6%;
+    --card-foreground: 120 100% 97%;
     --popover: 250 20% 10%;
-    --popover-foreground: 250 50% 92%;
-    --primary: 250 50% 92%;
-    --primary-foreground: 250 25% 4%;
-    --secondary: 250 25% 20%;
-    --secondary-foreground: 250 50% 92%;
-    --muted: 250 25% 20%;
-    --muted-foreground: 250 12% 60%;
+    --popover-foreground: 120 100% 97%;
+    --primary: 120 100% 97%;
+    --primary-foreground: 120 9% 6%;
+    --secondary: 120 5% 12%;
+    --secondary-foreground: 120 100% 97%;
+    --muted: 120 5% 12%;
+    --muted-foreground: 120 6% 65%;
     --muted-more-foreground: 250 10% 40%;
-    --accent: 250 25% 20%;
-    --accent-foreground: 250 50% 92%;
+    --accent: 120 5% 12%;
+    --accent-foreground: 120 100% 97%;
     --destructive: 0 88% 72%;
-    --destructive-foreground: 250 25% 4%;
+    --destructive-foreground: 120 9% 6%;
     --warning: 40 85% 60%;
-    --warning-foreground: 250 25% 4%;
+    --warning-foreground: 120 9% 6%;
     --success: 130 55% 60%;
-    --success-foreground: 250 25% 4%;
+    --success-foreground: 120 9% 6%;
     --shadow: 0 0% 0%;
-    --border: 250 25% 20%;
+    --border: 120 5% 12%;
     --input: 250 20% 9%;
-    --ring: 250 50% 92%;
+    --ring: 120 100% 97%;
 
     --chart-1: 200 90% 55%;
     --chart-2: 130 80% 70%;
@@ -153,18 +153,18 @@ input[type="search"] {
 
     --top-loader: 160 90% 60%;
 
-    --google: 250 50% 92%;
-    --google-foreground: 250 25% 4%;
+    --google: 120 100% 97%;
+    --google-foreground: 120 9% 6%;
     --discord: 235 86% 65%;
-    --discord-foreground: 250 50% 92%;
-    --github: 250 50% 92%;
-    --github-foreground: 250 25% 4%;
+    --discord-foreground: 120 100% 97%;
+    --github: 120 100% 97%;
+    --github-foreground: 120 9% 6%;
     --email: 160 68% 60%;
-    --email-foreground: 250 25% 4%;
-    --x: 250 50% 92%;
-    --x-foreground: 250 25% 4%;
+    --email-foreground: 120 9% 6%;
+    --x: 120 100% 97%;
+    --x-foreground: 120 9% 6%;
 
-    --barrier: 250 25% 4%;
+    --barrier: 120 9% 6%;
     --opacity-barrier: 0.8;
     --opacity-shadow: 0.75;
   }

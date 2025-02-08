@@ -9,7 +9,7 @@ export default async function Page({}: Props) {
     <div className="w-full flex flex-col items-center px-3 md:px-8">
       <div className="w-full flex flex-col max-w-5xl">
         <h1 className="w-full px-3 font-bold text-xl">Dashboard</h1>
-        <div className="w-full flex items-center justify-center pt-2">
+        <div className="w-full flex items-center justify-center pt-3">
           <div className="w-full flex flex-wrap">
             {projects.map((p) => (
               <ProjectCard

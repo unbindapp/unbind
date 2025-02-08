@@ -58,7 +58,7 @@ const projects: TProject[] = [
   },
 ];
 
-type TServiceType =
+export type TServiceType =
   | "nextjs"
   | "svelte"
   | "umami"
