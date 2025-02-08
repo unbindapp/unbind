@@ -173,17 +173,18 @@ function Dropdown<T extends { id: string; title: string }>({
             size: "sm",
             forceMinSize: false,
           }),
-          "px-2 py-1.75 rounded-lg border-none font-semibold flex items-center justify-start shrink min-w-0 gap-2 not-touch:hover:bg-border text-sm"
+          "px-2 py-1.75 rounded-lg border-none font-semibold flex items-center justify-start shrink min-w-0 gap-2 not-touch:hover:bg-border text-sm group/trigger"
         )}
       >
         {Icon}
         <p>{selectedItem?.title}</p>
-        <ChevronDownIcon
-          data-open={open ? true : undefined}
-          className="size-4 -ml-1 text-muted-more-foreground data-[open]:rotate-180 transition"
-        />
+        <ChevronDownIcon className="size-4 -ml-1 text-muted-more-foreground group-data-[state=open]/trigger:rotate-180 transition" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start">
+      <DropdownMenuContent
+        data-show-arrow={showArrowOnSelectedAndHighlighted ? true : undefined}
+        align="start"
+        className="group/content"
+      >
         <ScrollArea className="p-1">
           {items?.map((i, index) => (
             <DropdownMenuItem
@@ -193,21 +194,18 @@ function Dropdown<T extends { id: string; title: string }>({
               }}
               key={i.id + index}
               className="py-2 flex items-center justify-between gap-2.5 group/item"
-              data-show-arrow={
-                showArrowOnSelectedAndHighlighted ? true : undefined
-              }
             >
               <p className="shrink min-w-0">{i.title}</p>
               <div className="size-4 -mr-0.5 relative">
                 {selectedItem?.id === i.id && (
                   <>
                     <CheckIcon
-                      className="size-full group-data-[highlighted]/item:group-data-[show-arrow]/item:opacity-0 group-data-[highlighted]/item:group-data-[show-arrow]/item:rotate-90 transition"
+                      className="size-full group-data-[show-arrow]/content:group-data-[highlighted]/item:opacity-0 group-data-[show-arrow]/content:group-data-[highlighted]/item:rotate-90 transition"
                       strokeWidth={3}
                     />
                     <ArrowRightIcon
-                      className="absolute left-0 top-0 opacity-0 -rotate-90 size-full group-data-[highlighted]/item:group-data-[show-arrow]/item:opacity-100
-                      group-data-[highlighted]/item:group-data-[show-arrow]/item:rotate-0 transition"
+                      className="absolute left-0 top-0 opacity-0 -rotate-90 size-full group-data-[show-arrow]/content:group-data-[highlighted]/item:opacity-100
+                      group-data-[show-arrow]/content:group-data-[highlighted]/item:rotate-0 transition"
                       strokeWidth={2.5}
                     />
                   </>
