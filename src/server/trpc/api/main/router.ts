@@ -19,6 +19,28 @@ export const mainRouter = createTRPCRouter({
         projects,
       };
     }),
+  getServices: publicProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        environmentId: z.string(),
+      })
+    )
+    .query(async function ({ input: { projectId, environmentId } }) {
+      const project = projects.find((p) => p.id === projectId);
+      if (!project) {
+        throw new Error("Project not found");
+      }
+      const environment = project.environments.find(
+        (e) => e.id === environmentId
+      );
+      if (!environment) {
+        throw new Error("Environment not found");
+      }
+      return {
+        services: environment.services,
+      };
+    }),
 });
 
 async function getProjects({ teamId }: { teamId: string }) {

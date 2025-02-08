@@ -15,7 +15,7 @@ export default function ProjectCard({ project, className }: Props) {
   const defaultEnvironment = project.environments[0];
   const href = `${project.teamId}/project/${project.id}/environment/${defaultEnvironment.id}`;
   return (
-    <div className={cn("w-full flex flex-col p-1", className)}>
+    <li className={cn("w-full flex flex-col p-1", className)}>
       <LinkButton
         href={href}
         variant="ghost"
@@ -46,6 +46,6 @@ export default function ProjectCard({ project, className }: Props) {
           )}
         </div>
       </LinkButton>
-    </div>
+    </li>
   );
 }

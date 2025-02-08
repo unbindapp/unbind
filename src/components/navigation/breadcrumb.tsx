@@ -10,7 +10,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { useAsyncRouterPush } from "@/lib/hooks/use-async-router-push";
-import { api } from "@/server/trpc/setup/react";
+import { api } from "@/server/trpc/setup/client";
 import {
   ArrowRightIcon,
   CheckIcon,

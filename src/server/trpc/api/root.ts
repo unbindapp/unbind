@@ -1,8 +1,5 @@
 import { mainRouter } from "@/server/trpc/api/main/router";
-import {
-  createCallerFactory,
-  createTRPCRouter,
-} from "@/server/trpc/setup/trpc";
+import { createTRPCRouter } from "@/server/trpc/setup/trpc";
 import { inferRouterClient, TRPCClientErrorLike } from "@trpc/client";
 import { inferReactQueryProcedureOptions } from "@trpc/react-query";
 import { UseTRPCQueryResult } from "@trpc/react-query/shared";
@@ -29,12 +26,3 @@ export type AppRouterQueryResult<Output> = UseTRPCQueryResult<
   Output,
   TRPCClientErrorLike<AppRouter>
 >;
-
-/**
- * Create a server-side caller for the tRPC API.
- * @example
- * const trpc = createCaller(createContext);
- * const res = await trpc.post.all();
- *       ^? Post[]
- */
-export const createCaller = createCallerFactory(appRouter);
