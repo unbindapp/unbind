@@ -77,33 +77,47 @@ export default function Breadcrumb() {
 
   async function onTeamIdSelect(id: string) {
     setSelectedTeamId(id);
+    const href = getHrefForTeamId(id);
+    if (!href) return;
+    await asyncRouterPush(href);
+  }
+
+  function getHrefForTeamId(id: string) {
     const team = teamData?.teams.find((t) => t.id === id);
-    if (!team) return;
-    await asyncRouterPush(`/${team.id}`);
+    if (!team) return null;
+    return `/${team.id}`;
   }
 
   async function onProjectIdSelect(id: string) {
     setSelectedProjectId(id);
+    const href = getHrefForProjectId(id);
+    if (!href) return;
+    await asyncRouterPush(href);
+  }
+
+  function getHrefForProjectId(id: string) {
     const team = teamData?.teams.find((t) => t.id === selectedTeamId);
     const project = projectsData?.projects.find((p) => p.id === id);
     const environment = project?.environments[0];
-    if (!project || !environment || !team) return;
-    await asyncRouterPush(
-      `/${team.id}/project/${project.id}/environment/${environment.id}`
-    );
+    if (!project || !environment || !team) return null;
+    return `/${team.id}/project/${project.id}/environment/${environment.id}`;
   }
 
   async function onEnvironmentIdSelect(id: string) {
     setSelectedEnvironmentId(id);
+    const href = getHrefForEnvironmentId(id);
+    if (!href) return;
+    await asyncRouterPush(href);
+  }
+
+  function getHrefForEnvironmentId(id: string) {
     const team = teamData?.teams.find((t) => t.id === selectedTeamId);
     const project = projectsData?.projects.find(
       (p) => p.id === selectedProjectId
     );
     const environment = project?.environments.find((e) => e.id === id);
-    if (!project || !environment || !team) return;
-    await asyncRouterPush(
-      `/${team.id}/project/${project.id}/environment/${environment.id}`
-    );
+    if (!project || !environment || !team) return null;
+    return `/${team.id}/project/${project.id}/environment/${environment.id}`;
   }
 
   return (
@@ -114,7 +128,7 @@ export default function Breadcrumb() {
         items={teamData?.teams}
         onSelect={onTeamIdSelect}
         Icon={<div className="size-5 rounded-full bg-foreground/50" />}
-        showArrowOnSelectedAndHighlighted
+        getHrefForId={getHrefForTeamId}
       />
       {selectedProject && (
         <>
@@ -124,6 +138,7 @@ export default function Breadcrumb() {
             items={projectsData?.projects}
             onSelect={onProjectIdSelect}
             Icon={<div className="size-5 rounded-full bg-foreground/50" />}
+            getHrefForId={getHrefForProjectId}
           />
         </>
       )}
@@ -134,6 +149,7 @@ export default function Breadcrumb() {
             selectedItem={selectedEnvironment}
             items={environments}
             onSelect={onEnvironmentIdSelect}
+            getHrefForId={getHrefForEnvironmentId}
           />
         </>
       )}
@@ -155,64 +171,68 @@ function Dropdown<T extends { id: string; title: string }>({
   items,
   onSelect,
   Icon,
-  showArrowOnSelectedAndHighlighted,
+  getHrefForId,
 }: {
   selectedItem: T | undefined;
   items: T[] | undefined;
   onSelect: (id: string) => void;
   Icon?: JSX.Element;
-  showArrowOnSelectedAndHighlighted?: boolean;
+  getHrefForId: (id: string) => string | null;
 }) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger
+        data-no-icon={Icon === undefined ? true : undefined}
         className={cn(
           buttonVariants({
             variant: "ghost",
             size: "sm",
             forceMinSize: false,
           }),
-          "px-2 py-1.75 rounded-lg border-none font-semibold flex items-center justify-start shrink min-w-0 gap-2 not-touch:hover:bg-border text-sm group/trigger"
+          "px-2 py-1.75 data-[no-icon]:pl-2.5 rounded-lg border-none font-semibold flex items-center justify-start shrink min-w-0 gap-2 not-touch:hover:bg-border text-sm group/trigger"
         )}
       >
         {Icon}
         <p>{selectedItem?.title}</p>
         <ChevronDownIcon className="size-4 -ml-1 text-muted-more-foreground group-data-[state=open]/trigger:rotate-180 transition" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent
-        data-show-arrow={showArrowOnSelectedAndHighlighted ? true : undefined}
-        align="start"
-        className="group/content"
-      >
+      <DropdownMenuContent align="start" className="group/content">
         <ScrollArea className="p-1">
-          {items?.map((i, index) => (
-            <DropdownMenuItem
-              onSelect={() => {
-                setOpen(false);
-                onSelect(i.id);
-              }}
-              key={i.id + index}
-              className="py-2 flex items-center justify-between gap-2.5 group/item"
-            >
-              <p className="shrink min-w-0">{i.title}</p>
-              <div className="size-4 -mr-0.5 relative">
-                {selectedItem?.id === i.id && (
-                  <>
-                    <CheckIcon
-                      className="size-full group-data-[show-arrow]/content:group-data-[highlighted]/item:opacity-0 group-data-[show-arrow]/content:group-data-[highlighted]/item:rotate-90 transition"
-                      strokeWidth={3}
-                    />
-                    <ArrowRightIcon
-                      className="absolute left-0 top-0 opacity-0 -rotate-90 size-full group-data-[show-arrow]/content:group-data-[highlighted]/item:opacity-100
-                      group-data-[show-arrow]/content:group-data-[highlighted]/item:rotate-0 transition"
-                      strokeWidth={2.5}
-                    />
-                  </>
-                )}
-              </div>
-            </DropdownMenuItem>
-          ))}
+          {items?.map((i, index) => {
+            const href = getHrefForId(i.id);
+            const showArrow = href !== null && pathname !== href;
+            return (
+              <DropdownMenuItem
+                onSelect={() => {
+                  setOpen(false);
+                  onSelect(i.id);
+                }}
+                key={i.id + index}
+                data-show-arrow={showArrow ? true : undefined}
+                className="py-2 flex items-center justify-between gap-2.5 group/item"
+              >
+                <p className="shrink min-w-0">{i.title}</p>
+                <div className="size-4 -mr-0.5 relative">
+                  {selectedItem?.id === i.id && (
+                    <>
+                      <CheckIcon
+                        className="size-full group-data-[show-arrow]/item:group-data-[highlighted]/item:opacity-0 group-data-[show-arrow]/item:group-data-[highlighted]/item:rotate-90 transition"
+                        strokeWidth={3}
+                      />
+                      <ArrowRightIcon
+                        className="absolute left-0 top-0 opacity-0 -rotate-90 size-full group-data-[show-arrow]/item:group-data-[highlighted]/item:opacity-100
+                        group-data-[show-arrow]/item:group-data-[highlighted]/item:rotate-0 transition"
+                        strokeWidth={2.5}
+                      />
+                    </>
+                  )}
+                </div>
+              </DropdownMenuItem>
+            );
+          })}
         </ScrollArea>
       </DropdownMenuContent>
     </DropdownMenu>
