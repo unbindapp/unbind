@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  buttonVariants,
-  minButtonSizeEnforcerClassName,
-} from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,19 +8,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/components/ui/utils";
 import { useAsyncRouterPush } from "@/lib/hooks/use-async-router-push";
 import { api } from "@/server/trpc/setup/react";
 import { CheckIcon, ChevronDownIcon, SlashIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { ComponentType, FC, JSX, useEffect, useState } from "react";
+import { JSX, useEffect, useState } from "react";
 
 export default function Breadcrumb() {
   const [asyncRouterPush] = useAsyncRouterPush();
