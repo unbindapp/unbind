@@ -1,11 +1,19 @@
 import Logo from "@/components/icons/logo";
 import { Button, LinkButton } from "@/components/ui/button";
+import { cn } from "@/components/ui/utils";
 
-type Props = {};
+type Props = {
+  className?: string;
+};
 
-export default function Navbar({}: Props) {
+export default function Navbar({ className }: Props) {
   return (
-    <nav className="w-full sticky top-0 left-0 flex flex-row items-center justify-between px-3 py-1.5">
+    <nav
+      className={cn(
+        "w-full sticky top-0 left-0 flex flex-row items-center justify-between px-3 py-1.5",
+        className
+      )}
+    >
       <div className="shrink min-w-0 flex items-center justify-start">
         <LinkButton
           size="icon"

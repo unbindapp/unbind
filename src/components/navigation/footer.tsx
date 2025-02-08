@@ -1,5 +1,9 @@
-type Props = {};
+import { cn } from "@/components/ui/utils";
 
-export default function Footer({}: Props) {
-  return <footer></footer>;
+type Props = {
+  className?: string;
+};
+
+export default function Footer({ className }: Props) {
+  return <footer className={cn("", className)}></footer>;
 }

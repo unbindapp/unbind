@@ -1,9 +1,7 @@
 import ProjectCard from "@/app/dashboard/_components/project-card";
 import { apiServer } from "@/server/trpc/setup/server";
 
-type Props = {};
-
-export default async function Page({}: Props) {
+export default async function Page() {
   const { projects } = await apiServer.main.getProjects({});
   return (
     <div className="w-full flex flex-col items-center px-3 md:px-8">
