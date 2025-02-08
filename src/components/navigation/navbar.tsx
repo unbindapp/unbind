@@ -1,4 +1,5 @@
 import Logo from "@/components/icons/logo";
+import Breadcrumb from "@/components/navigation/breadcrumb";
 import { Button, LinkButton } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 
@@ -6,7 +7,7 @@ type Props = {
   className?: string;
 };
 
-export default function Navbar({ className }: Props) {
+export default async function Navbar({ className }: Props) {
   return (
     <nav
       className={cn(
@@ -23,6 +24,7 @@ export default function Navbar({ className }: Props) {
         >
           <Logo className="size-6" />
         </LinkButton>
+        <Breadcrumb />
       </div>
       {/* Avatar */}
       <div className="shrink min-w-0 flex items-center justify-end">

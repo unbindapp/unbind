@@ -116,7 +116,7 @@ input[type="search"] {
     --foreground: 120 100% 97%;
     --card: 120 9% 6%;
     --card-foreground: 120 100% 97%;
-    --popover: 250 20% 10%;
+    --popover: 120 7% 8%;
     --popover-foreground: 120 100% 97%;
     --primary: 120 100% 97%;
     --primary-foreground: 120 9% 6%;
@@ -124,7 +124,7 @@ input[type="search"] {
     --secondary-foreground: 120 100% 97%;
     --muted: 120 5% 12%;
     --muted-foreground: 120 6% 65%;
-    --muted-more-foreground: 250 10% 40%;
+    --muted-more-foreground: 120 6% 40%;
     --accent: 120 5% 12%;
     --accent-foreground: 120 100% 97%;
     --destructive: 0 88% 72%;

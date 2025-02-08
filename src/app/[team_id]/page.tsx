@@ -15,13 +15,22 @@ export default async function Page({ params }: Props) {
         <h1 className="w-full px-3 font-bold text-xl">Projects</h1>
         <div className="w-full flex items-center justify-center pt-3">
           <div className="w-full flex flex-wrap">
-            {projects.map((p) => (
-              <ProjectCard
-                key={p.id}
-                project={p}
-                className="w-full sm:w-1/2 lg:w-1/3"
-              />
-            ))}
+            {projects && projects.length === 0 && (
+              <div className="w-full flex items-center justify-center p-1">
+                <p className="w-full text-muted-foreground px-5 text-center rounded-xl border py-16">
+                  No projects yet
+                </p>
+              </div>
+            )}
+            {projects &&
+              projects.length > 0 &&
+              projects.map((p) => (
+                <ProjectCard
+                  key={p.id}
+                  project={p}
+                  className="w-full sm:w-1/2 lg:w-1/3"
+                />
+              ))}
           </div>
         </div>
       </div>

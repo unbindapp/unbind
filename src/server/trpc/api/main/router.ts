@@ -22,14 +22,21 @@ export const mainRouter = createTRPCRouter({
 });
 
 async function getProjects({ teamId }: { teamId: string }) {
-  console.log("teamId", teamId);
-  return projects;
+  return projects.filter((p) => p.teamId === teamId);
 }
 
 const teams: TTeam[] = [
   {
     id: "5048c703-10c9-4bd8-b311-cf02b527b400",
     title: "Default",
+  },
+  {
+    id: "e7bb6643-3f31-4b73-b71f-b3ab14b604d2",
+    title: "Stablecog",
+  },
+  {
+    id: "4f80fefe-2a65-4c13-bec1-84729b733eaf",
+    title: "Appditto",
   },
 ];
 
@@ -56,6 +63,11 @@ const projects: TProject[] = [
             serviceType: "redis",
           },
         ],
+      },
+      {
+        id: "9874e025-3d22-46e4-8e86-8de6eedc3952",
+        title: "development",
+        services: [],
       },
     ],
   },
