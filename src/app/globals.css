@@ -95,18 +95,12 @@ input[type="search"] {
 
     --top-loader: 165 100% 30%;
 
-    --index-fear: 0 100% 70%;
-    --index-neutral: 50 100% 60%;
-    --index-greed: 120 50% 55%;
-
     --google: 250 25% 4%;
     --google-foreground: 0 0% 100%;
     --discord: 235 86% 65%;
     --discord-foreground: 0 0% 100%;
     --github: 250 25% 4%;
     --github-foreground: 0 0% 100%;
-    --ethereum: 263 75% 51%;
-    --ethereum-foreground: 0 0% 100%;
     --email: 160 100% 24%;
     --email-foreground: 0 0% 100%;
     --x: 250 25% 4%;
@@ -159,18 +153,12 @@ input[type="search"] {
 
     --top-loader: 160 90% 60%;
 
-    --index-fear: 0 60% 60%;
-    --index-neutral: 50 75% 60%;
-    --index-greed: 120 40% 60%;
-
     --google: 250 50% 92%;
     --google-foreground: 250 25% 4%;
     --discord: 235 86% 65%;
     --discord-foreground: 250 50% 92%;
     --github: 250 50% 92%;
     --github-foreground: 250 25% 4%;
-    --ethereum: 265 86% 83%;
-    --ethereum-foreground: 250 25% 4%;
     --email: 160 68% 60%;
     --email-foreground: 250 25% 4%;
     --x: 250 50% 92%;
