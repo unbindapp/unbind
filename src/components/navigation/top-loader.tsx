@@ -11,7 +11,7 @@ export default function TopLoader() {
       showSpinner={false}
       color="hsl(var(--top-loader))"
       shadow={false}
-      height={resolvedTheme === "dark" ? 2 : 3}
+      height={resolvedTheme === "light" ? 3 : 2}
     />
   );
 }
