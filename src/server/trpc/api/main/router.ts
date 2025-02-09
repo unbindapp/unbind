@@ -74,15 +74,36 @@ const projects: TProject[] = [
         services: [
           {
             id: "04a595bb-57d5-4d39-850d-5400e0adb8c9",
-            serviceType: "nextjs",
+            type: "nextjs",
+            title: "Web App",
+            lastDeployment: {
+              id: "513628d7-7b2c-4174-b2b2-09ba8dbe6189",
+              source: "github",
+              status: "success",
+              timestamp: Date.now(),
+            },
           },
           {
             id: "ad393e8a-c5ea-46f6-a650-144fd99bdc55",
-            serviceType: "postgres",
+            type: "postgres",
+            title: "Database",
+            lastDeployment: {
+              id: "e3eacef2-5364-448e-a329-258dfe01ecfc",
+              source: "docker",
+              status: "success",
+              timestamp: Date.now() - 1000 * 60 * 60 * 24,
+            },
           },
           {
             id: "2c93a68c-4604-4754-99b8-ffd596abd14a",
-            serviceType: "redis",
+            type: "redis",
+            title: "Cache",
+            lastDeployment: {
+              id: "22c3852d-b4d2-498c-afe6-32b9e4f95ec7",
+              source: "docker",
+              status: "success",
+              timestamp: Date.now() - 1000 * 60 * 60 * 24 * 14,
+            },
           },
         ],
       },
@@ -104,11 +125,57 @@ const projects: TProject[] = [
         services: [
           {
             id: "db8353be-6ec6-4c9d-9a6d-79cedaf5bb9e",
-            serviceType: "svelte",
+            type: "svelte",
+            title: "Website",
+            lastDeployment: {
+              id: "7c8bffe9-18d3-4c38-8615-fb725992b766",
+              source: "github",
+              status: "success",
+              timestamp: Date.now() - 1000 * 60 * 60 * 1,
+            },
+          },
+          {
+            id: "d5e2ee62-f30a-4b4f-9070-4f658e17b7ed",
+            type: "astro",
+            title: "Docs",
+            lastDeployment: {
+              id: "c8f17ad4-1989-4fde-9b0f-3ec4384d1686",
+              source: "github",
+              status: "success",
+              timestamp: Date.now() - 1000 * 60 * 60 * 5,
+            },
           },
           {
             id: "09463e12-7e7a-45fa-913f-9200e090468a",
-            serviceType: "umami",
+            type: "nextjs",
+            title: "Umami Frontend",
+            serviceGroup: {
+              id: "10f5aeb7-59d1-495a-92fd-3a245566ee55",
+              title: "Umami",
+              type: "umami",
+            },
+            lastDeployment: {
+              id: "14cdeb8e-5bca-44e6-9385-c4e29a809f49",
+              source: "docker",
+              status: "success",
+              timestamp: Date.now() - 1000 * 60 * 60 * 24 * 2,
+            },
+          },
+          {
+            id: "5d6eed80-ed5e-4d67-944f-aa6d726f0ab3",
+            type: "postgres",
+            title: "Umami Database",
+            serviceGroup: {
+              id: "10f5aeb7-59d1-495a-92fd-3a245566ee55",
+              title: "Umami",
+              type: "umami",
+            },
+            lastDeployment: {
+              id: "5725486e-696a-4202-9f19-89dc17275352",
+              source: "docker",
+              status: "success",
+              timestamp: Date.now() - 1000 * 60 * 60 * 24 * 2,
+            },
           },
         ],
       },
@@ -125,11 +192,25 @@ const projects: TProject[] = [
         services: [
           {
             id: "f9d60dad-5184-43e3-a1bd-e1bfcd8575bb",
-            serviceType: "go",
+            type: "go",
+            title: "API",
+            lastDeployment: {
+              id: "1fd6f8ed-912f-4c52-8cd6-c09920d3265b",
+              source: "github",
+              status: "success",
+              timestamp: Date.now() - 1000 * 60 * 60 * 0.5,
+            },
           },
           {
             id: "bd251dca-18c0-4a8b-bae9-1dfc1b00d979",
-            serviceType: "mysql",
+            type: "mysql",
+            title: "DB",
+            lastDeployment: {
+              id: "c7977e1f-9641-4d21-9671-a7d5e4a1d506",
+              source: "docker",
+              status: "success",
+              timestamp: Date.now() - 1000 * 60 * 60 * 24 * 64,
+            },
           },
         ],
       },
@@ -160,22 +241,41 @@ export type TServiceType =
   | "rust"
   | "mysql"
   | "minio"
-  | "meili";
+  | "meili"
+  | "astro";
 
-type TTeam = {
+export type TTeam = {
   id: string;
   title: string;
 };
 
-type TEnvironment = {
+export type TEnvironment = {
   id: string;
   title: string;
   services: TService[];
 };
 
-type TService = {
+export type TService = {
   id: string;
-  serviceType: TServiceType;
+  title: string;
+  lastDeployment?: TDeployment;
+  type: TServiceType;
+  serviceGroup?: TServiceGroup;
+};
+
+export type TServiceGroup = {
+  id: string;
+  title: string;
+  type: TServiceType;
+};
+
+export type TDeploymentSource = "github" | "docker";
+
+export type TDeployment = {
+  id: string;
+  source: TDeploymentSource;
+  status: "pending" | "success" | "failure";
+  timestamp: number;
 };
 
 export type TProject = {

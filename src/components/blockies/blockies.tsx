@@ -14,8 +14,15 @@ export default function Blockies(
     caseSensitive?: boolean;
   } & React.SVGProps<SVGSVGElement>
 ) {
-  let { address, size = 8, scale = 10, caseSensitive = false, ...rest } = props;
+  const {
+    address: addr,
+    size = 8,
+    scale = 10,
+    caseSensitive = false,
+    ...rest
+  } = props;
   const width = size * scale;
+  let address = addr;
 
   if (!address)
     return (

@@ -1,3 +1,4 @@
+import Blockies from "@/components/blockies/blockies";
 import Logo from "@/components/icons/logo";
 import Breadcrumb from "@/components/navigation/breadcrumb";
 import { Button, LinkButton } from "@/components/ui/button";
@@ -28,8 +29,15 @@ export default async function Navbar({ className }: Props) {
       </div>
       {/* Avatar */}
       <div className="shrink min-w-0 flex items-center justify-end">
-        <Button size="icon" className="size-6 rounded-full" variant="ghost">
-          <div className="size-full rounded-full bg-foreground/50" />
+        <Button
+          size="icon"
+          className="size-6.5 rounded-full border border-foreground group/button"
+          variant="ghost"
+        >
+          <Blockies
+            address="yekta"
+            className="size-full rounded-full transition group-hover/button:rotate-30 group-active/button:rotate-30"
+          />
         </Button>
       </div>
     </nav>

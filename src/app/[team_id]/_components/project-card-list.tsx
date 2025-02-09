@@ -7,8 +7,9 @@ type Props = {
   teamId: string;
 };
 
-export default function ProjectCardsList({ teamId }: Props) {
+export default function ProjectCardList({ teamId }: Props) {
   const { data } = api.main.getProjects.useQuery({ teamId });
+
   const projects = data?.projects;
 
   return (
@@ -22,10 +23,10 @@ export default function ProjectCardsList({ teamId }: Props) {
       )}
       {projects &&
         projects.length > 0 &&
-        projects.map((p) => (
+        projects.map((i) => (
           <ProjectCard
-            key={p.id}
-            project={p}
+            key={i.id}
+            project={i}
             className="w-full sm:w-1/2 lg:w-1/3"
           />
         ))}

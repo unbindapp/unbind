@@ -1,6 +1,5 @@
 "use client";
 
-import Blockies from "@/components/blockies/blockies";
 import { buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
