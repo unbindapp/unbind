@@ -207,6 +207,12 @@ const config: Config = {
         166: "41.5rem",
         167: "41.75rem",
         168: "42rem",
+        172: "43rem",
+        176: "44rem",
+        180: "45rem",
+        184: "46rem",
+        188: "47rem",
+        192: "48rem",
       },
       ringWidth: {
         3: "3px",

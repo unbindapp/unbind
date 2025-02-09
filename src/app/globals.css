@@ -191,8 +191,8 @@ input[type="search"] {
     --clickhouse: 62 100% 71%;
     --astro: 120 100% 97%;
 
-    --barrier: 120 9% 6%;
-    --opacity-barrier: 0.8;
+    --barrier: 120 10% 4%;
+    --opacity-barrier: 0.75;
     --opacity-shadow: 0.75;
   }
 }
