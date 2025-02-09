@@ -228,6 +228,53 @@ const projects: TProject[] = [
       },
     ],
   },
+  // Different Project
+  {
+    title: "Web",
+    id: "358e56be-3522-4409-b9f2-9aaa07fc21a7",
+    teamId: "e7bb6643-3f31-4b73-b71f-b3ab14b604d2",
+    environments: [
+      {
+        id: "cd48b702-b8bc-473e-a14a-d66d7d4bd6ec",
+        title: "production",
+        services: [
+          {
+            id: "55db768e-5879-47ba-a94d-d4a1af2a8b4c",
+            title: "Website",
+            type: "svelte",
+            lastDeployment: {
+              id: "8b3deb22-0577-4ea4-9e84-88890b9fa5a8",
+              source: "github",
+              status: "success",
+              timestamp: Date.now() - 1000 * 60 * 15,
+            },
+          },
+          {
+            id: "d9f7b682-2652-49a0-8d1c-410401d661a5",
+            title: "Meili DB",
+            type: "meili",
+            lastDeployment: {
+              id: "a7505101-e2cd-4cc6-b152-99be97748733",
+              source: "docker",
+              status: "success",
+              timestamp: Date.now() - 1000 * 60 * 60 * 24 * 35,
+            },
+          },
+          {
+            id: "d1d6b770-5fe4-4441-a089-e08187280084",
+            title: "Analytics DB",
+            type: "clickhouse",
+            lastDeployment: {
+              id: "98b7edb0-9fdd-46df-9607-c2e44e31fa9c",
+              source: "docker",
+              status: "success",
+              timestamp: Date.now() - 1000 * 60 * 60 * 24 * 15,
+            },
+          },
+        ],
+      },
+    ],
+  },
 ];
 
 export type TServiceType =

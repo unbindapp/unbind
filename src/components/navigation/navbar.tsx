@@ -1,7 +1,7 @@
 import Blockies from "@/components/blockies/blockies";
-import Logo from "@/components/icons/logo";
 import Breadcrumb from "@/components/navigation/breadcrumb";
-import { Button, LinkButton } from "@/components/ui/button";
+import LogoLink from "@/components/navigation/logo-link";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 
 type Props = {
@@ -17,14 +17,7 @@ export default async function Navbar({ className }: Props) {
       )}
     >
       <div className="shrink min-w-0 flex items-center justify-start -ml-0.5">
-        <LinkButton
-          size="icon"
-          className="size-9 rounded-lg"
-          variant="ghost"
-          href="/"
-        >
-          <Logo className="size-6" />
-        </LinkButton>
+        <LogoLink />
         <Breadcrumb />
       </div>
       {/* Avatar */}

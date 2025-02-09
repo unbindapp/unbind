@@ -122,7 +122,7 @@ export default function Breadcrumb() {
 
   return (
     <div className="flex shrink min-w-0 items-center justify-start pl-1">
-      {selectedTeam && (
+      {!projectIdFromPathname && selectedTeam && (
         <>
           <Separator />
           <Dropdown
