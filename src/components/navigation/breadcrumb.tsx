@@ -199,7 +199,7 @@ function Dropdown<T extends { id: string; title: string }>({
             size: "sm",
             forceMinSize: false,
           }),
-          "px-1.5 py-1.75 data-[no-icon]:pl-2.75 rounded-lg border-none font-semibold flex items-center justify-start shrink min-w-0 gap-2 not-touch:hover:bg-border text-sm group/trigger"
+          "px-1.5 py-1.75 data-[no-icon]:pl-2.75 rounded-lg border-none font-medium flex items-center justify-start shrink min-w-0 gap-2 not-touch:hover:bg-border text-sm group/trigger"
         )}
       >
         {IconItem && selectedItem && <IconItem id={selectedItem.id} />}
