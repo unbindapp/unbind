@@ -10,10 +10,12 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { TDeploymentSource, TService } from "@/server/trpc/api/main/router";
 import { XIcon } from "lucide-react";
+import { useState } from "react";
 
 type Props = {
   service: TService;
@@ -25,14 +27,28 @@ const sourceToTitle: Record<TDeploymentSource, string> = {
   docker: "Docker",
 };
 
+type TTab = {
+  title: string;
+  value: string;
+};
+
+const tabs: TTab[] = [
+  { title: "Deployments", value: "deployments" },
+  { title: "Variables", value: "variables" },
+  { title: "Logs", value: "logs" },
+  { title: "Metrics", value: "metrics" },
+  { title: "Settings", value: "settings" },
+];
+
 export default function ServiceCard({ service, className }: Props) {
   const timeDiffStr = useTimeDifference({
     timestamp: service.lastDeployment?.timestamp,
   });
+  const [selectedTabValue, setSelectedTabValue] = useState(tabs[0].value);
 
   return (
     <li className={cn("w-full flex flex-col p-1", className)}>
-      <Drawer direction="right">
+      <Drawer direction="right" handleOnly>
         <DrawerTrigger asChild>
           <Button
             variant="ghost"
@@ -63,15 +79,15 @@ export default function ServiceCard({ service, className }: Props) {
         </DrawerTrigger>
         <DrawerContent
           hideHandle
-          className="ml-auto my-0 top-0 h-full right-0 w-192 max-w-[80%] rounded-none px-4 py-3 md:px-8 md:py-6"
+          className="ml-auto my-0 top-0 h-full right-0 w-192 max-w-[80%] rounded-none flex flex-col"
         >
-          <div className="w-full flex items-start justify-start gap-4">
+          <div className="w-full flex items-start justify-start gap-4 px-4 pt-3 md:px-8 md:pt-6">
             <DrawerHeader className="flex-1 min-w-0 flex items-center justify-start p-0">
               <DrawerTitle className="flex-1 min-w-0 flex items-center justify-start gap-2.5">
                 <ServiceIcon
                   variant={service.type}
                   color="color"
-                  className="size-8"
+                  className="size-8 -ml-1"
                 />
                 <p className="shrink min-w-0 leading-tight text-2xl text-left">
                   {service.title}
@@ -87,6 +103,41 @@ export default function ServiceCard({ service, className }: Props) {
                 <XIcon className="size-5" />
               </Button>
             </DrawerClose>
+          </div>
+          <nav className="w-full flex items-center justify-start px-4.5 pt-2">
+            {tabs.map((tab) => (
+              <Button
+                key={tab.value}
+                variant="ghost"
+                onClick={() => setSelectedTabValue(tab.value)}
+                data-active={selectedTabValue === tab.value ? true : undefined}
+                className="shrink border-b border-transparent data-[active]:border-b-foreground rounded-t-lg rounded-b-none min-w-0 font-medium 
+                px-3 py-3.5 text-muted-foreground 
+                data-[active]:text-foreground not-touch:hover:bg-transparent active:bg-transparent"
+              >
+                <p className="shrink min-w-0 relative">{tab.title}</p>
+              </Button>
+            ))}
+          </nav>
+          <div className="w-full bg-border h-px shrink-0 -mt-px" />
+          <div className="w-full flex flex-col min-h-0 flex-1">
+            <div className="flex flex-col flex-1 min-h-0">
+              <ScrollArea>
+                <div className="w-full flex flex-col gap-2 px-4 md:px-6 py-3 md:py-5">
+                  {Array.from({ length: 10 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="bg-border w-full h-32 rounded-xl flex items-center justify-center text-muted-more-foreground font-medium"
+                    >
+                      {
+                        tabs.find((tab) => tab.value === selectedTabValue)
+                          ?.title
+                      }
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
           </div>
         </DrawerContent>
       </Drawer>
