@@ -43,7 +43,7 @@ export default function ServiceCardList({ projectId, environmentId }: Props) {
                       transparent 6px
                     )`,
                   }}
-                  className="w-full flex flex-col rounded-2xl border p-1"
+                  className="w-full flex flex-col rounded-xl border p-1"
                 >
                   <div className="w-full px-3 pt-2 pb-2.5 leading-tight font-semibold flex items-center gap-2">
                     <ServiceIcon variant={g.group.type} className="size-6" />
@@ -57,6 +57,7 @@ export default function ServiceCardList({ projectId, environmentId }: Props) {
                         key={s.id}
                         service={s}
                         className="w-full sm:w-1/2 lg:w-1/3"
+                        classNameCard="rounded-lg"
                       />
                     ))}
                   </div>

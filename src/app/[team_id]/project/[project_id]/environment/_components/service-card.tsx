@@ -16,31 +16,19 @@ import { useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { TDeploymentSource, TService } from "@/server/trpc/api/main/router";
 import { XIcon } from "lucide-react";
 import { useState } from "react";
+import { motion } from "motion/react";
 
 type Props = {
   service: TService;
   className?: string;
+  classNameCard?: string;
 };
 
-const sourceToTitle: Record<TDeploymentSource, string> = {
-  github: "GitHub",
-  docker: "Docker",
-};
-
-type TTab = {
-  title: string;
-  value: string;
-};
-
-const tabs: TTab[] = [
-  { title: "Deployments", value: "deployments" },
-  { title: "Variables", value: "variables" },
-  { title: "Logs", value: "logs" },
-  { title: "Metrics", value: "metrics" },
-  { title: "Settings", value: "settings" },
-];
-
-export default function ServiceCard({ service, className }: Props) {
+export default function ServiceCard({
+  service,
+  className,
+  classNameCard,
+}: Props) {
   const timeDiffStr = useTimeDifference({
     timestamp: service.lastDeployment?.timestamp,
   });
@@ -52,7 +40,10 @@ export default function ServiceCard({ service, className }: Props) {
         <DrawerTrigger asChild>
           <Button
             variant="ghost"
-            className="w-full flex flex-col items-start text-left min-h-36 gap-12 border bg-background-hover rounded-xl px-5 py-3.5"
+            className={cn(
+              "w-full flex flex-col items-start text-left min-h-36 gap-12 border bg-background-hover rounded-xl px-5 py-3.5",
+              classNameCard
+            )}
           >
             <div className="w-full flex items-center justify-start gap-2">
               <ServiceIcon
@@ -104,21 +95,27 @@ export default function ServiceCard({ service, className }: Props) {
               </Button>
             </DrawerClose>
           </div>
-          <nav className="w-full flex items-center justify-start px-4.5 pt-2">
+          <nav className="w-full flex items-center justify-start px-4.5 pt-3.5 border-b">
             {tabs.map((tab) => (
               <Button
                 key={tab.value}
                 variant="ghost"
                 onClick={() => setSelectedTabValue(tab.value)}
                 data-active={selectedTabValue === tab.value ? true : undefined}
-                className="shrink border-b border-transparent data-[active]:border-b-foreground rounded-t-md rounded-b-none min-w-0 font-medium 
-                px-3 py-3.5 text-muted-foreground data-[active]:text-foreground not-touch:hover:bg-transparent active:bg-transparent"
+                className="shrink rounded-t-md rounded-b-none min-w-0 font-medium 
+                px-3 pt-2 pb-4 text-muted-foreground data-[active]:text-foreground not-touch:hover:bg-transparent active:bg-transparent"
               >
+                {selectedTabValue === tab.value && (
+                  <motion.div
+                    transition={{ duration: 0.15 }}
+                    layoutId="indicator"
+                    className="w-full h-2px absolute left-0 bottom-0 bg-foreground rounded-full"
+                  />
+                )}
                 <p className="shrink min-w-0 relative">{tab.title}</p>
               </Button>
             ))}
           </nav>
-          <div className="w-full bg-border h-px shrink-0 -mt-px" />
           <div className="w-full flex flex-col min-h-0 flex-1">
             <div className="flex flex-col flex-1 min-h-0">
               <ScrollArea>
@@ -126,7 +123,7 @@ export default function ServiceCard({ service, className }: Props) {
                   {Array.from({ length: 10 }).map((_, i) => (
                     <div
                       key={i}
-                      className="bg-border w-full h-32 rounded-xl flex items-center justify-center text-muted-more-foreground font-medium"
+                      className="border w-full h-32 rounded-xl flex items-center justify-center text-muted-more-foreground font-medium"
                     >
                       {
                         tabs.find((tab) => tab.value === selectedTabValue)
@@ -143,3 +140,21 @@ export default function ServiceCard({ service, className }: Props) {
     </li>
   );
 }
+
+const sourceToTitle: Record<TDeploymentSource, string> = {
+  github: "GitHub",
+  docker: "Docker",
+};
+
+type TTab = {
+  title: string;
+  value: string;
+};
+
+const tabs: TTab[] = [
+  { title: "Deployments", value: "deployments" },
+  { title: "Variables", value: "variables" },
+  { title: "Logs", value: "logs" },
+  { title: "Metrics", value: "metrics" },
+  { title: "Settings", value: "settings" },
+];
