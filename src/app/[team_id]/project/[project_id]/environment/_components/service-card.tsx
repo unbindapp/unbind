@@ -109,9 +109,15 @@ export default function ServiceCard({
                 variant="ghost"
                 onClick={() => setSelectedTabValue(tab.value)}
                 data-active={selectedTabValue === tab.value ? true : undefined}
-                className="shrink rounded-t-md rounded-b-none min-w-0 font-medium 
-                px-3 pt-2 pb-4 text-muted-foreground data-[active]:text-foreground not-touch:hover:bg-transparent active:bg-transparent"
+                className="shrink rounded-t-md rounded-b-none min-w-0 font-medium group/button
+                px-3 pt-2.5 pb-4.5 text-muted-foreground data-[active]:text-foreground not-touch:hover:bg-transparent active:bg-transparent"
               >
+                <div className="absolute w-full h-full pointer-events-none py-1">
+                  <div
+                    className="w-full h-full rounded-md bg-border/0 
+                    not-touch:group-hover/button:bg-border group-active/button:bg-border"
+                  />
+                </div>
                 {selectedTabValue === tab.value && (
                   <motion.div
                     transition={{ duration: 0.15 }}
@@ -119,7 +125,9 @@ export default function ServiceCard({
                     className="w-full h-2px absolute left-0 bottom-0 bg-foreground rounded-full"
                   />
                 )}
-                <p className="shrink min-w-0 relative">{tab.title}</p>
+                <p className="shrink min-w-0 relative leading-none">
+                  {tab.title}
+                </p>
               </Button>
             ))}
           </nav>
