@@ -33,10 +33,17 @@ export default function ServiceCard({
     timestamp: service.lastDeployment?.timestamp,
   });
   const [selectedTabValue, setSelectedTabValue] = useState(tabs[0].value);
+  const [open, setOpen] = useState(false);
 
   return (
     <li className={cn("w-full flex flex-col p-1", className)}>
-      <Drawer direction="right" handleOnly>
+      <Drawer
+        open={open}
+        onOpenChange={setOpen}
+        autoFocus={open}
+        direction="right"
+        handleOnly
+      >
         <DrawerTrigger asChild>
           <Button
             variant="ghost"
@@ -108,7 +115,7 @@ export default function ServiceCard({
                 {selectedTabValue === tab.value && (
                   <motion.div
                     transition={{ duration: 0.15 }}
-                    layoutId="indicator"
+                    layoutId="indicator-service-drawer-tabs"
                     className="w-full h-2px absolute left-0 bottom-0 bg-foreground rounded-full"
                   />
                 )}
