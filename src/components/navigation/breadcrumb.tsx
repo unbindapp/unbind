@@ -1,5 +1,6 @@
 "use client";
 
+import Blockies from "@/components/blockies/blockies";
 import { buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -18,7 +19,7 @@ import {
   SlashIcon,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { JSX, useEffect, useState } from "react";
+import { FC, JSX, useEffect, useState } from "react";
 
 export default function Breadcrumb() {
   const [asyncRouterPush] = useAsyncRouterPush();
@@ -122,14 +123,20 @@ export default function Breadcrumb() {
 
   return (
     <div className="flex shrink min-w-0 items-center justify-start pl-1">
-      <Separator />
-      <Dropdown
-        selectedItem={selectedTeam}
-        items={teamData?.teams}
-        onSelect={onTeamIdSelect}
-        Icon={<div className="size-5 rounded-full bg-foreground/50" />}
-        getHrefForId={getHrefForTeamId}
-      />
+      {selectedTeam && (
+        <>
+          <Separator />
+          <Dropdown
+            selectedItem={selectedTeam}
+            items={teamData?.teams}
+            onSelect={onTeamIdSelect}
+            /* IconItem={({ id }) => (
+              <Blockies address={id} className="size-4 rounded-full" />
+            )} */
+            getHrefForId={getHrefForTeamId}
+          />
+        </>
+      )}
       {selectedProject && (
         <>
           <Separator />
@@ -137,7 +144,6 @@ export default function Breadcrumb() {
             selectedItem={selectedProject}
             items={projectsData?.projects}
             onSelect={onProjectIdSelect}
-            Icon={<div className="size-5 rounded-full bg-foreground/50" />}
             getHrefForId={getHrefForProjectId}
           />
         </>
@@ -172,12 +178,14 @@ function Dropdown<T extends { id: string; title: string }>({
   onSelect,
   Icon,
   getHrefForId,
+  IconItem,
 }: {
   selectedItem: T | undefined;
   items: T[] | undefined;
   onSelect: (id: string) => void;
   Icon?: JSX.Element;
   getHrefForId: (id: string) => string | null;
+  IconItem?: FC<{ id: string }>;
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -192,10 +200,10 @@ function Dropdown<T extends { id: string; title: string }>({
             size: "sm",
             forceMinSize: false,
           }),
-          "px-2 py-1.75 data-[no-icon]:pl-2.5 rounded-lg border-none font-semibold flex items-center justify-start shrink min-w-0 gap-2 not-touch:hover:bg-border text-sm group/trigger"
+          "px-1.5 py-1.75 data-[no-icon]:pl-2.75 rounded-lg border-none font-semibold flex items-center justify-start shrink min-w-0 gap-2 not-touch:hover:bg-border text-sm group/trigger"
         )}
       >
-        {Icon}
+        {IconItem && selectedItem && <IconItem id={selectedItem.id} />}
         <p>{selectedItem?.title}</p>
         <ChevronDownIcon className="size-4 -ml-1 text-muted-more-foreground group-data-[state=open]/trigger:rotate-180 transition" />
       </DropdownMenuTrigger>
@@ -214,7 +222,10 @@ function Dropdown<T extends { id: string; title: string }>({
                 data-show-arrow={showArrow ? true : undefined}
                 className="py-2 flex items-center justify-between gap-2.5 group/item"
               >
-                <p className="shrink min-w-0">{i.title}</p>
+                <div className="flex-1 min-w-0 flex items-center gap-2.5">
+                  {IconItem && <IconItem id={i.id} />}
+                  <p className="shrink min-w-0">{i.title}</p>
+                </div>
                 <div className="size-4 -mr-0.5 relative">
                   {selectedItem?.id === i.id && (
                     <>

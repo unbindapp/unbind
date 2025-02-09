@@ -1,9 +1,5 @@
 import ProjectCardsList from "@/app/[team_id]/_components/project-cards-list";
-import {
-  apiServer,
-  getQueryClientServer,
-  HydrateClient,
-} from "@/server/trpc/setup/server";
+import { apiServer, HydrateClient } from "@/server/trpc/setup/server";
 
 type Props = {
   params: Promise<{ team_id: string }>;
@@ -11,6 +7,8 @@ type Props = {
 
 export default async function Page({ params }: Props) {
   const { team_id: teamId } = await params;
+
+  // TODO: Fix this since that data isn't available to useQuery in the client
   await apiServer.main.getProjects.prefetch({ teamId });
 
   return (
