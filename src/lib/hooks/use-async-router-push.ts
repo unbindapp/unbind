@@ -1,7 +1,7 @@
 // Taken from https://github.com/vercel/next.js/issues/61737#issuecomment-2248830960
 
 "use client";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { useEffect, useTransition } from "react";
 
 // Define the type for the observer callback function

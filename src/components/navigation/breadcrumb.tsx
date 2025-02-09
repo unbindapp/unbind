@@ -1,5 +1,6 @@
 "use client";
 
+import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,7 +10,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
-import { useAsyncRouterPush } from "@/lib/hooks/use-async-router-push";
 import { api } from "@/server/trpc/setup/client";
 import {
   ArrowRightIcon,
@@ -21,7 +21,7 @@ import { usePathname } from "next/navigation";
 import { FC, JSX, useEffect, useState } from "react";
 
 export default function Breadcrumb() {
-  const [asyncRouterPush] = useAsyncRouterPush();
+  const { asyncPush } = useAsyncPush();
   const pathname = usePathname();
   const pathnameArr = pathname.split("/");
 
@@ -79,7 +79,7 @@ export default function Breadcrumb() {
     setSelectedTeamId(id);
     const href = getHrefForTeamId(id);
     if (!href) return;
-    await asyncRouterPush(href);
+    await asyncPush(href);
   }
 
   function getHrefForTeamId(id: string) {
@@ -92,7 +92,7 @@ export default function Breadcrumb() {
     setSelectedProjectId(id);
     const href = getHrefForProjectId(id);
     if (!href) return;
-    await asyncRouterPush(href);
+    await asyncPush(href);
   }
 
   function getHrefForProjectId(id: string) {
@@ -107,7 +107,7 @@ export default function Breadcrumb() {
     setSelectedEnvironmentId(id);
     const href = getHrefForEnvironmentId(id);
     if (!href) return;
-    await asyncRouterPush(href);
+    await asyncPush(href);
   }
 
   function getHrefForEnvironmentId(id: string) {

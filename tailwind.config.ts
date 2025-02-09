@@ -102,7 +102,7 @@ const config: Config = {
         minio: "hsl(var(--minio))",
         mysql: "hsl(var(--mysql))",
         nextjs: "hsl(var(--nextjs))",
-        postgres: "hsl(var(--postgres))",
+        postgresql: "hsl(var(--postgresql))",
         redis: "hsl(var(--redis))",
         rust: "hsl(var(--rust))",
         svelte: "hsl(var(--svelte))",

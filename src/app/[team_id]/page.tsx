@@ -7,11 +7,7 @@ type Props = {
 
 export default async function Page({ params }: Props) {
   const { team_id: teamId } = await params;
-
-  // TODO: Fix this since that data isn't available to useQuery in the client
   await apiServer.main.getProjects.prefetch({ teamId });
-
-  console.log("teamId", teamId);
 
   return (
     <HydrateClient>

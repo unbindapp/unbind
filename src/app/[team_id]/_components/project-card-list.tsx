@@ -8,8 +8,9 @@ type Props = {
 };
 
 export default function ProjectCardList({ teamId }: Props) {
-  const { data } = api.main.getProjects.useQuery({ teamId });
-
+  const [, { data }] = api.main.getProjects.useSuspenseQuery({
+    teamId,
+  });
   const projects = data?.projects;
 
   return (

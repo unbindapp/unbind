@@ -1,3 +1,4 @@
+import AsyncPushProvider from "@/components/providers/async-push-provider";
 import { IsTouchscreenProvider } from "@/components/providers/is-touchscreen-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { TRPCReactProvider } from "@/server/trpc/setup/client";
@@ -10,13 +11,15 @@ export default async function Providers({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <TRPCReactProvider>
-      <JotaiProvider>
-        <NuqsAdapter>
-          <ThemeProvider>
-            <IsTouchscreenProvider>{children}</IsTouchscreenProvider>
-          </ThemeProvider>
-        </NuqsAdapter>
-      </JotaiProvider>
+      <AsyncPushProvider>
+        <JotaiProvider>
+          <NuqsAdapter>
+            <ThemeProvider>
+              <IsTouchscreenProvider>{children}</IsTouchscreenProvider>
+            </ThemeProvider>
+          </NuqsAdapter>
+        </JotaiProvider>
+      </AsyncPushProvider>
     </TRPCReactProvider>
   );
 }

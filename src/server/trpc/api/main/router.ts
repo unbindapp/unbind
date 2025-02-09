@@ -85,7 +85,7 @@ const projects: TProject[] = [
           },
           {
             id: "ad393e8a-c5ea-46f6-a650-144fd99bdc55",
-            type: "postgres",
+            type: "postgresql",
             title: "Database",
             lastDeployment: {
               id: "e3eacef2-5364-448e-a329-258dfe01ecfc",
@@ -163,7 +163,7 @@ const projects: TProject[] = [
           },
           {
             id: "5d6eed80-ed5e-4d67-944f-aa6d726f0ab3",
-            type: "postgres",
+            type: "postgresql",
             title: "Umami Database",
             serviceGroup: {
               id: "10f5aeb7-59d1-495a-92fd-3a245566ee55",
@@ -234,7 +234,7 @@ export type TServiceType =
   | "nextjs"
   | "svelte"
   | "umami"
-  | "postgres"
+  | "postgresql"
   | "redis"
   | "clickhouse"
   | "go"

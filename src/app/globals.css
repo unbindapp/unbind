@@ -111,7 +111,7 @@ input[type="search"] {
     --minio: 349 60% 49%;
     --mysql: 206 38% 47%;
     --nextjs: 250 25% 4%;
-    --postgres: 210 46% 40%;
+    --postgresql: 210 46% 40%;
     --redis: 4 70% 50%;
     --rust: 10 79% 51%;
     --svelte: 10 100% 52%;
@@ -183,7 +183,7 @@ input[type="search"] {
     --minio: 349 60% 49%;
     --mysql: 206 55% 65%;
     --nextjs: 120 100% 97%;
-    --postgres: 210 46% 60%;
+    --postgresql: 210 46% 60%;
     --redis: 4 75% 60%;
     --rust: 10 79% 51%;
     --svelte: 10 100% 65%;

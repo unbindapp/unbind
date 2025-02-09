@@ -11,7 +11,10 @@ type Props = {
 };
 
 export default function ServiceCardList({ projectId, environmentId }: Props) {
-  const { data } = api.main.getServices.useQuery({ projectId, environmentId });
+  const [, { data }] = api.main.getServices.useSuspenseQuery({
+    projectId,
+    environmentId,
+  });
   const services = data?.services;
   const groupedServices = groupByServiceGroup(services);
 
@@ -29,7 +32,7 @@ export default function ServiceCardList({ projectId, environmentId }: Props) {
         groupedServices.map((g) => {
           if (g.group) {
             return (
-              <div key={g.group.id} className="w-full px-1 pb-1 pt-4">
+              <div key={g.group.id} className="w-full px-1 pb-1 pt-1">
                 <div
                   style={{
                     backgroundImage: `repeating-linear-gradient(
