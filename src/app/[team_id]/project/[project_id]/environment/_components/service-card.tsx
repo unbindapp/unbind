@@ -111,9 +111,8 @@ export default function ServiceCard({ service, className }: Props) {
                 variant="ghost"
                 onClick={() => setSelectedTabValue(tab.value)}
                 data-active={selectedTabValue === tab.value ? true : undefined}
-                className="shrink border-b border-transparent data-[active]:border-b-foreground rounded-t-lg rounded-b-none min-w-0 font-medium 
-                px-3 py-3.5 text-muted-foreground 
-                data-[active]:text-foreground not-touch:hover:bg-transparent active:bg-transparent"
+                className="shrink border-b border-transparent data-[active]:border-b-foreground rounded-t-md rounded-b-none min-w-0 font-medium 
+                px-3 py-3.5 text-muted-foreground data-[active]:text-foreground not-touch:hover:bg-transparent active:bg-transparent"
               >
                 <p className="shrink min-w-0 relative">{tab.title}</p>
               </Button>
