@@ -97,6 +97,18 @@ const config: Config = {
         "top-loader": {
           DEFAULT: "hsl(var(--top-loader))",
         },
+        go: "hsl(var(--go))",
+        meili: "hsl(var(--meili))",
+        minio: "hsl(var(--minio))",
+        mysql: "hsl(var(--mysql))",
+        nextjs: "hsl(var(--nextjs))",
+        postgres: "hsl(var(--postgres))",
+        redis: "hsl(var(--redis))",
+        rust: "hsl(var(--rust))",
+        svelte: "hsl(var(--svelte))",
+        umami: "hsl(var(--umami))",
+        clickhouse: "hsl(var(--clickhouse))",
+        astro: "hsl(var(--astro))",
         barrier: "hsl(var(--barrier))",
       },
       opacity: {

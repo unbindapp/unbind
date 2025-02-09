@@ -28,7 +28,11 @@ export default function ServiceCard({ service, className }: Props) {
         className="w-full flex flex-col items-start text-left min-h-36 gap-12 border bg-background-hover rounded-xl px-5 py-3.5"
       >
         <div className="w-full flex items-center justify-start gap-2">
-          <ServiceIcon variant={service.type} className="size-5 -ml-1" />
+          <ServiceIcon
+            color="color"
+            variant={service.type}
+            className="size-6 -ml-1"
+          />
           <h3 className="shrink min-w-0 font-bold leading-tight whitespace-nowrap overflow-hidden overflow-ellipsis">
             {service.title}
           </h3>

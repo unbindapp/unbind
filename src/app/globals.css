@@ -106,10 +106,24 @@ input[type="search"] {
     --x: 250 25% 4%;
     --x-foreground: 0 0% 100%;
 
+    --go: 192 93% 44%;
+    --meili: 346 100% 67%;
+    --minio: 349 60% 49%;
+    --mysql: 206 38% 47%;
+    --nextjs: 250 25% 4%;
+    --postgres: 210 46% 40%;
+    --redis: 4 70% 50%;
+    --rust: 10 79% 51%;
+    --svelte: 10 100% 52%;
+    --umami: 250 25% 4%;
+    --clickhouse: 62 100% 71%;
+    --astro: 250 25% 4%;
+
     --barrier: 0 0% 0%;
     --opacity-barrier: 0.7;
     --opacity-shadow: 0.06;
   }
+
   .dark {
     --background: 120 9% 6%;
     --background-hover: 120 7% 8%;
@@ -163,6 +177,19 @@ input[type="search"] {
     --email-foreground: 120 9% 6%;
     --x: 120 100% 97%;
     --x-foreground: 120 9% 6%;
+
+    --go: 192 93% 55%;
+    --meili: 346 100% 67%;
+    --minio: 349 60% 49%;
+    --mysql: 206 55% 65%;
+    --nextjs: 120 100% 97%;
+    --postgres: 210 46% 60%;
+    --redis: 4 75% 60%;
+    --rust: 10 79% 51%;
+    --svelte: 10 100% 65%;
+    --umami: 120 100% 97%;
+    --clickhouse: 62 100% 71%;
+    --astro: 120 100% 97%;
 
     --barrier: 120 9% 6%;
     --opacity-barrier: 0.8;

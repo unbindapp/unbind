@@ -33,17 +33,17 @@ export default function ServiceCardList({ projectId, environmentId }: Props) {
                 <div
                   style={{
                     backgroundImage: `repeating-linear-gradient(
-                    135deg,
-                    hsl(var(--border)/0.3),
-                    hsl(var(--border)/0.3) 2px,
-                    transparent 2px,
-                    transparent 6px
-                  )`,
+                      135deg,
+                      hsl(var(--border)/0.3),
+                      hsl(var(--border)/0.3) 2px,
+                      transparent 2px,
+                      transparent 6px
+                    )`,
                   }}
                   className="w-full flex flex-col rounded-2xl border p-1"
                 >
                   <div className="w-full px-3 pt-2 pb-2.5 leading-tight font-semibold flex items-center gap-2">
-                    <ServiceIcon variant={g.group.type} />
+                    <ServiceIcon variant={g.group.type} className="size-6" />
                     <p className="shrink min-w-0 overflow-hidden overflow-ellipsis whitespace-nowrap">
                       {g.group.title}
                     </p>
