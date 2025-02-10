@@ -7,5 +7,9 @@ type Props = {
 
 export default function DeploymentTime({ deployment }: Props) {
   const { str } = useTimeDifference({ timestamp: deployment.timestamp });
-  return <p className="text-muted-foreground text-sm leading-tight">{str}</p>;
+  return (
+    <p className="text-muted-foreground text-sm leading-tight shrink min-w-0">
+      {str}
+    </p>
+  );
 }

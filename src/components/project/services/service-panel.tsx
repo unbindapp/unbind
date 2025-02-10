@@ -19,6 +19,7 @@ import { XIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { parseAsString, useQueryState } from "nuqs";
 import { FC, ReactNode } from "react";
+import { useWindowSize } from "usehooks-ts";
 
 type TTab = {
   title: string;
@@ -50,21 +51,24 @@ export default function ServicePanel({ service, children }: Props) {
   const setOpen = (open: boolean) => {
     setServiceId(open ? service.id : null);
   };
+  const { width } = useWindowSize();
+  const isSmall = width < 640;
 
   return (
     <Drawer
       open={open}
       onOpenChange={setOpen}
       autoFocus={open}
-      direction="right"
+      direction={isSmall ? "bottom" : "right"}
       handleOnly
     >
       <DrawerTrigger asChild>{children}</DrawerTrigger>
       <DrawerContent
         hideHandle
-        className="ml-auto my-0 top-0 h-full right-0 w-232 max-w-[85%] rounded-none flex flex-col"
+        className="h-[calc(100%-5rem)] w-full rounded-t-2xl flex flex-col
+        sm:ml-auto sm:my-0 sm:top-0 sm:h-full sm:right-0 sm:w-232 sm:max-w-[calc(100%-5rem)] sm:rounded-none"
       >
-        <div className="w-full flex items-start justify-start gap-4 px-4 pt-3 md:px-8 md:pt-6">
+        <div className="w-full flex items-start justify-start gap-4 px-4 pt-3 sm:px-8 sm:pt-6">
           <DrawerHeader className="flex-1 min-w-0 flex items-center justify-start p-0">
             <DrawerTitle className="flex-1 min-w-0 flex items-center justify-start gap-2.5">
               <ServiceIcon
@@ -81,14 +85,14 @@ export default function ServicePanel({ service, children }: Props) {
             <Button
               size="icon"
               variant="ghost"
-              className="text-muted-more-foreground rounded-lg shrink-0 -mr-2 -mt-1 md:-mr-5 md:-mt-3"
+              className="text-muted-more-foreground rounded-lg shrink-0 -mr-2.5 -mt-1.75 sm:-mr-5 sm:-mt-3"
             >
               <XIcon className="size-5" />
             </Button>
           </DrawerClose>
         </div>
         <nav className="w-full flex overflow-auto justify-start border-b">
-          <div className="flex justify-start px-3 md:px-4.5 pt-3.5">
+          <div className="flex justify-start px-2 sm:px-4.5 pt-3.5">
             {tabs.map((tab) => (
               <Button
                 key={tab.value}

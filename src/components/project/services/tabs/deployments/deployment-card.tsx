@@ -24,7 +24,7 @@ export default function DeploymentCard({ deployment, active }: Props) {
           ? "destructive"
           : "default"
       }
-      className="w-full flex flex-row items-stretch p-2 rounded-xl border group/card
+      className="w-full flex flex-row items-stretch p-2 rounded-xl border group/card relative
       data-[status=destructive]/card:bg-destructive/4 data-[status=success]/card:bg-success/4
       data-[status=destructive]/card:border-destructive/20 data-[status=success]/card:border-success/20"
     >
@@ -32,11 +32,11 @@ export default function DeploymentCard({ deployment, active }: Props) {
         className="self-stretch w-1 rounded-full bg-foreground/8 group-data-[status=destructive]/card:bg-destructive
         group-data-[status=success]/card:bg-success"
       />
-      <div className="flex-1 min-w-0 px-3 py-2 flex items-center">
-        <div className="shrink-0 w-32 flex items-center justify-start pr-3">
+      <div className="flex-1 min-w-0 pl-3 pr-6 sm:px-3 sm:py-2 flex-col flex sm:flex-row sm:items-center">
+        <div className="shrink-0 sm:w-32 flex items-center justify-start pr-3">
           <div
             className="shrink min-w-0 flex gap-1.5 items-center justify-start bg-foreground/8 text-muted-foreground 
-            font-medium text-sm rounded-md px-2 py-1.5 
+            font-medium text-sm rounded-md px-2 py-1.25 
             group-data-[status=destructive]/card:bg-destructive/12 group-data-[status=destructive]/card:text-destructive
             group-data-[status=success]/card:bg-success/12 group-data-[status=success]/card:text-success"
           >
@@ -47,7 +47,7 @@ export default function DeploymentCard({ deployment, active }: Props) {
             ) : (
               <BroomIcon className="size-3.5 -ml-0.25 shrink-0" />
             )}
-            <p className="leading-none shrink min-w-0">
+            <p className="leading-tight shrink min-w-0">
               {deployment.status === "succeeded" && active
                 ? "ACTIVE"
                 : deployment.status === "failed"
@@ -59,9 +59,9 @@ export default function DeploymentCard({ deployment, active }: Props) {
         <ServiceIcon
           color="color"
           variant={deployment.source}
-          className="size-6"
+          className="size-6 mt-2 sm:mt-0"
         />
-        <div className="flex flex-1 flex-col pl-3 gap-1 shrink min-w-0">
+        <div className="py-2 sm:mt-0 flex flex-1 flex-col sm:pl-3 pr-2 gap-1.5 shrink min-w-0">
           <p className="leading-tight">
             {deployment.source === "github"
               ? deployment.commitMessage
@@ -72,7 +72,7 @@ export default function DeploymentCard({ deployment, active }: Props) {
         <Button
           size="icon"
           variant="foreground-ghost"
-          className="shrink-0 text-muted-more-foreground rounded-lg -mr-3.5"
+          className="shrink-0 text-muted-more-foreground rounded-lg absolute right-1 top-1 sm:relative sm:-mr-3.5 sm:right-0 sm:top-0"
         >
           <EllipsisVerticalIcon className="size-6" />
         </Button>
