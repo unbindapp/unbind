@@ -25,7 +25,7 @@ export default function DeploymentCard({ deployment, active }: Props) {
       data-[status=destructive]/card:border-destructive/20 data-[status=success]/card:border-success/20"
     >
       <div
-        className="self-stretch w-1 rounded-full bg-border group-data-[status=destructive]/card:bg-destructive
+        className="self-stretch w-1 rounded-full bg-foreground/8 group-data-[status=destructive]/card:bg-destructive
         group-data-[status=success]/card:bg-success"
       />
       <div className="flex-1 min-w-0 px-3 py-2 flex items-center">
