@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useQueryState } from "nuqs";
 
-export function useAppPathnames() {
+export function useIdsFromPathname() {
   const pathname = usePathname();
   const pathnameArr = pathname.split("/");
 

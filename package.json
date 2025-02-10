@@ -28,6 +28,7 @@
     "@trpc/client": "^11.0.0-rc.747",
     "@trpc/react-query": "^11.0.0-rc.747",
     "@trpc/server": "^11.0.0-rc.747",
+    "@uidotdev/usehooks": "^2.4.1",
     "class-variance-authority": "^0.7.1",
     "cmdk": "^1.0.4",
     "jotai": "^2.11.3",

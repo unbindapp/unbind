@@ -1,12 +1,10 @@
-"use client";
-
-import DeploymentCard from "@/components/project/services/tabs/deployments/deployment-card";
+import VariableLine from "@/components/project/services/tabs/variables/variable-line";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { api } from "@/server/trpc/setup/client";
 
-export default function Deployments() {
+export default function Variables() {
   const { teamId, projectId, environmentId, serviceId } = useIdsFromPathname();
-  const { data } = api.main.getDeployments.useQuery(
+  const { data } = api.main.getVariables.useQuery(
     {
       teamId: teamId!,
       projectId: projectId!,
@@ -22,13 +20,9 @@ export default function Deployments() {
     }
   );
   return (
-    <div className="w-full flex flex-col p-4 sm:p-6 gap-2">
-      {data?.deployments?.map((deployment, i) => (
-        <DeploymentCard
-          key={deployment.id}
-          deployment={deployment}
-          active={i === 0}
-        />
+    <div className="w-full flex flex-col p-4 sm:p-6 gap-1">
+      {data?.variables?.map((variable) => (
+        <VariableLine key={variable.key} variable={variable} />
       ))}
     </div>
   );

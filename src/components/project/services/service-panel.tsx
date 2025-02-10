@@ -3,7 +3,7 @@ import Deployments from "@/components/project/services/tabs/deployments/deployme
 import Logs from "@/components/project/services/tabs/logs";
 import Metrics from "@/components/project/services/tabs/metrics";
 import Settings from "@/components/project/services/tabs/settings";
-import Variables from "@/components/project/services/tabs/variables";
+import Variables from "@/components/project/services/tabs/variables/variables";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -17,8 +17,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { TService } from "@/server/trpc/api/main/router";
 import { XIcon } from "lucide-react";
 import { motion } from "motion/react";
-import { useQueryState } from "nuqs";
-import { FC, ReactNode, useState } from "react";
+import { parseAsString, useQueryState } from "nuqs";
+import { FC, ReactNode } from "react";
 
 type TTab = {
   title: string;
@@ -40,8 +40,11 @@ type Props = {
 };
 
 export default function ServicePanel({ service, children }: Props) {
-  const [selectedTabValue, setSelectedTabValue] = useState(tabs[0].value);
-  const CurrentPage = tabs.find((tab) => tab.value === selectedTabValue)?.Page;
+  const [currentTab, setCurrentTab] = useQueryState(
+    "tab",
+    parseAsString.withDefault(tabs[0].value)
+  );
+  const CurrentPage = tabs.find((tab) => tab.value === currentTab)?.Page;
   const [serviceId, setServiceId] = useQueryState("service_id");
   const open = serviceId === service.id;
   const setOpen = (open: boolean) => {
@@ -90,8 +93,8 @@ export default function ServicePanel({ service, children }: Props) {
               <Button
                 key={tab.value}
                 variant="ghost"
-                onClick={() => setSelectedTabValue(tab.value)}
-                data-active={selectedTabValue === tab.value ? true : undefined}
+                onClick={() => setCurrentTab(tab.value)}
+                data-active={currentTab === tab.value ? true : undefined}
                 className="shrink rounded-t-md rounded-b-none min-w-0 font-medium group/button
                 px-3 pt-2.5 pb-4.5 text-muted-foreground data-[active]:text-foreground not-touch:hover:bg-transparent active:bg-transparent"
               >
@@ -101,7 +104,7 @@ export default function ServicePanel({ service, children }: Props) {
                     not-touch:group-hover/button:bg-border group-active/button:bg-border"
                   />
                 </div>
-                {selectedTabValue === tab.value && (
+                {currentTab === tab.value && (
                   <motion.div
                     transition={{ duration: 0.15 }}
                     layoutId="indicator-service-drawer-tabs"

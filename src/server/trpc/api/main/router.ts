@@ -63,10 +63,56 @@ export const mainRouter = createTRPCRouter({
         deployments,
       };
     }),
+  getVariables: publicProcedure
+    .input(
+      z.object({
+        teamId: z.string(),
+        projectId: z.string(),
+        environmentId: z.string(),
+        serviceId: z.string(),
+      })
+    )
+    .query(async function ({
+      input: { teamId, projectId, environmentId, serviceId },
+    }) {
+      const variables = await getVariables({
+        teamId,
+        projectId,
+        environmentId,
+        serviceId,
+      });
+      return {
+        variables,
+      };
+    }),
 });
 
 async function getProjects({ teamId }: { teamId: string }) {
   return projects.filter((p) => p.teamId === teamId);
+}
+
+async function getVariables({
+  teamId,
+  projectId,
+  environmentId,
+  serviceId,
+}: {
+  teamId: string;
+  projectId: string;
+  environmentId: string;
+  serviceId: string;
+}) {
+  console.log(
+    "teamId:",
+    teamId,
+    "projectId:",
+    projectId,
+    "environmentId:",
+    environmentId,
+    "serviceId:",
+    serviceId
+  );
+  return variables;
 }
 
 async function getDeployments({
@@ -434,6 +480,66 @@ export type TProject = {
   teamId: string;
   environments: TEnvironment[];
 };
+
+export type TVariable = {
+  key: string;
+  value: string;
+};
+
+const variables: TVariable[] = [
+  {
+    key: "DATABASE_URL",
+    value: "postgres://user:password@localhost:5432/db",
+  },
+  {
+    key: "SITE_URL",
+    value: "https://example.com",
+  },
+  {
+    key: "CLOUDFLARE_API_KEY",
+    value: "1234567890",
+  },
+  {
+    key: "AWS_ACCESS_KEY_ID",
+    value: "AKIA1234567890EXAMPLE",
+  },
+  {
+    key: "AWS_SECRET_ACCESS_KEY",
+    value: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+  },
+  {
+    key: "REDIS_URL",
+    value: "redis://localhost:6379",
+  },
+  {
+    key: "JWT_SECRET",
+    value: "your-256-bit-secret-key-here",
+  },
+  {
+    key: "SMTP_HOST",
+    value: "smtp.gmail.com",
+  },
+  {
+    key: "SMTP_PORT",
+    value: "587",
+  },
+  {
+    key: "SMTP_USER",
+    value: "notifications@example.com",
+  },
+  {
+    key: "SMTP_PASSWORD",
+    value: "app-specific-password",
+  },
+  {
+    key: "STRIPE_PUBLIC_KEY",
+    value: "pk_test_1234567890",
+  },
+  {
+    key: "STRIPE_SECRET_KEY",
+    value: "sk_test_1234567890",
+  },
+];
 
 const deployments: TDeployment[] = [
   {
