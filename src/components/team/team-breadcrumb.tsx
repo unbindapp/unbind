@@ -3,8 +3,8 @@
 import { BreadcrumbItem } from "@/components/navigation/breadcrumb-item";
 import { BreadcrumbWrapper } from "@/components/navigation/breadcrumb-wrapper";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
+import { useAppPathnames } from "@/lib/hooks/use-app-pathnames";
 import { api } from "@/server/trpc/setup/client";
-import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type Props = {
@@ -13,11 +13,7 @@ type Props = {
 
 export default function TeamBreadcrumb({ className }: Props) {
   const { asyncPush } = useAsyncPush();
-  const pathname = usePathname();
-  const pathnameArr = pathname.split("/");
-
-  const teamIdFromPathname =
-    pathnameArr.length > 1 ? pathnameArr[1] : undefined;
+  const { teamId: teamIdFromPathname } = useAppPathnames();
 
   const { data: teamData } = api.main.getTeams.useQuery({});
 

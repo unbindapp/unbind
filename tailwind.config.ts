@@ -109,6 +109,7 @@ const config: Config = {
         umami: "hsl(var(--umami))",
         clickhouse: "hsl(var(--clickhouse))",
         astro: "hsl(var(--astro))",
+        docker: "hsl(var(--docker))",
         barrier: "hsl(var(--barrier))",
       },
       opacity: {

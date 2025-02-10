@@ -1,4 +1,9 @@
 import ServiceIcon from "@/components/icons/service";
+import Deployments from "@/components/project/services/tabs/deployments/deployments";
+import Logs from "@/components/project/services/tabs/logs";
+import Metrics from "@/components/project/services/tabs/metrics";
+import Settings from "@/components/project/services/tabs/settings";
+import Variables from "@/components/project/services/tabs/variables";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -11,20 +16,22 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TService } from "@/server/trpc/api/main/router";
 import { XIcon } from "lucide-react";
-import { ReactNode, useState } from "react";
 import { motion } from "motion/react";
+import { useQueryState } from "nuqs";
+import { FC, ReactNode, useState } from "react";
 
 type TTab = {
   title: string;
   value: string;
+  Page: FC;
 };
 
 const tabs: TTab[] = [
-  { title: "Deployments", value: "deployments" },
-  { title: "Variables", value: "variables" },
-  { title: "Logs", value: "logs" },
-  { title: "Metrics", value: "metrics" },
-  { title: "Settings", value: "settings" },
+  { title: "Deployments", value: "deployments", Page: Deployments },
+  { title: "Variables", value: "variables", Page: Variables },
+  { title: "Logs", value: "logs", Page: Logs },
+  { title: "Metrics", value: "metrics", Page: Metrics },
+  { title: "Settings", value: "settings", Page: Settings },
 ];
 
 type Props = {
@@ -34,7 +41,12 @@ type Props = {
 
 export default function ServicePanel({ service, children }: Props) {
   const [selectedTabValue, setSelectedTabValue] = useState(tabs[0].value);
-  const [open, setOpen] = useState(false);
+  const CurrentPage = tabs.find((tab) => tab.value === selectedTabValue)?.Page;
+  const [serviceId, setServiceId] = useQueryState("service_id");
+  const open = serviceId === service.id;
+  const setOpen = (open: boolean) => {
+    setServiceId(open ? service.id : null);
+  };
 
   return (
     <Drawer
@@ -105,18 +117,7 @@ export default function ServicePanel({ service, children }: Props) {
         </nav>
         <div className="w-full flex flex-col min-h-0 flex-1">
           <div className="flex flex-col flex-1 min-h-0">
-            <ScrollArea>
-              <div className="w-full flex flex-col gap-2 px-4 md:px-6 py-3 md:py-5">
-                {Array.from({ length: 10 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="border w-full h-32 rounded-xl flex items-center justify-center text-muted-more-foreground font-medium"
-                  >
-                    {tabs.find((tab) => tab.value === selectedTabValue)?.title}
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
+            <ScrollArea>{CurrentPage && <CurrentPage />}</ScrollArea>
           </div>
         </div>
       </DrawerContent>

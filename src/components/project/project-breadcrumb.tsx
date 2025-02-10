@@ -6,8 +6,8 @@ import {
   BreadcrumbWrapper,
 } from "@/components/navigation/breadcrumb-wrapper";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
+import { useAppPathnames } from "@/lib/hooks/use-app-pathnames";
 import { api } from "@/server/trpc/setup/client";
-import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type Props = {
@@ -16,15 +16,11 @@ type Props = {
 
 export default function ProjectBreadcrumb({ className }: Props) {
   const { asyncPush } = useAsyncPush();
-  const pathname = usePathname();
-  const pathnameArr = pathname.split("/");
-
-  const teamIdFromPathname =
-    pathnameArr.length > 1 ? pathnameArr[1] : undefined;
-  const projectIdFromPathname =
-    pathnameArr.length > 3 ? pathnameArr[3] : undefined;
-  const environmentIdFromPathname =
-    pathnameArr.length > 5 ? pathnameArr[5] : undefined;
+  const {
+    teamId: teamIdFromPathname,
+    projectId: projectIdFromPathname,
+    environmentId: environmentIdFromPathname,
+  } = useAppPathnames();
 
   const { data: teamData } = api.main.getTeams.useQuery({});
   const { data: projectsData } = api.main.getProjects.useQuery(

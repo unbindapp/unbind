@@ -41,10 +41,69 @@ export const mainRouter = createTRPCRouter({
         services: environment.services,
       };
     }),
+  getDeployments: publicProcedure
+    .input(
+      z.object({
+        teamId: z.string(),
+        projectId: z.string(),
+        environmentId: z.string(),
+        serviceId: z.string(),
+      })
+    )
+    .query(async function ({
+      input: { teamId, projectId, environmentId, serviceId },
+    }) {
+      const deployments = await getDeployments({
+        teamId,
+        projectId,
+        environmentId,
+        serviceId,
+      });
+      return {
+        deployments,
+      };
+    }),
 });
 
 async function getProjects({ teamId }: { teamId: string }) {
   return projects.filter((p) => p.teamId === teamId);
+}
+
+async function getDeployments({
+  teamId,
+  projectId,
+  environmentId,
+  serviceId,
+}: {
+  teamId: string;
+  projectId: string;
+  environmentId: string;
+  serviceId: string;
+}) {
+  const projects = await getProjects({ teamId });
+  const project = projects.find((p) => p.id === projectId);
+  if (!project) {
+    return null;
+  }
+  const environment = project.environments.find((e) => e.id === environmentId);
+  if (!environment) {
+    return null;
+  }
+  const service = environment.services.find((s) => s.id === serviceId);
+  if (!service) {
+    return null;
+  }
+
+  const filteredDeployments = deployments
+    .filter((d) => d.source === service.source)
+    .filter(
+      (d) =>
+        service.lastDeployment?.source === "github" ||
+        (service.lastDeployment?.dockerImage &&
+          d.source === "docker" &&
+          d.dockerImage === service.lastDeployment.dockerImage)
+    );
+  return filteredDeployments;
 }
 
 const teams: TTeam[] = [
@@ -75,34 +134,41 @@ const projects: TProject[] = [
           {
             id: "04a595bb-57d5-4d39-850d-5400e0adb8c9",
             type: "nextjs",
+            source: "github",
             title: "Web App",
             lastDeployment: {
               id: "513628d7-7b2c-4174-b2b2-09ba8dbe6189",
               source: "github",
-              status: "success",
+              status: "succeeded",
               timestamp: Date.now(),
+              commitHash: "b2b2c3d4",
+              commitMessage: "Update homepage",
             },
           },
           {
             id: "ad393e8a-c5ea-46f6-a650-144fd99bdc55",
             type: "postgresql",
+            source: "docker",
             title: "Database",
             lastDeployment: {
               id: "e3eacef2-5364-448e-a329-258dfe01ecfc",
               source: "docker",
-              status: "success",
+              status: "succeeded",
               timestamp: Date.now() - 1000 * 60 * 60 * 24,
+              dockerImage: "postgres:15-alpine",
             },
           },
           {
             id: "2c93a68c-4604-4754-99b8-ffd596abd14a",
             type: "redis",
+            source: "docker",
             title: "Cache",
             lastDeployment: {
               id: "22c3852d-b4d2-498c-afe6-32b9e4f95ec7",
               source: "docker",
-              status: "success",
+              status: "succeeded",
               timestamp: Date.now() - 1000 * 60 * 60 * 24 * 14,
+              dockerImage: "redis:8-alpine",
             },
           },
         ],
@@ -126,28 +192,35 @@ const projects: TProject[] = [
           {
             id: "db8353be-6ec6-4c9d-9a6d-79cedaf5bb9e",
             type: "svelte",
+            source: "github",
             title: "Website",
             lastDeployment: {
               id: "7c8bffe9-18d3-4c38-8615-fb725992b766",
               source: "github",
-              status: "success",
+              status: "succeeded",
               timestamp: Date.now() - 1000 * 60 * 60 * 1,
+              commitHash: "a1b2c3d4",
+              commitMessage: "Style tweaks",
             },
           },
           {
             id: "d5e2ee62-f30a-4b4f-9070-4f658e17b7ed",
             type: "astro",
+            source: "github",
             title: "Docs",
             lastDeployment: {
               id: "c8f17ad4-1989-4fde-9b0f-3ec4384d1686",
               source: "github",
-              status: "success",
+              status: "succeeded",
               timestamp: Date.now() - 1000 * 60 * 60 * 5,
+              commitHash: "e5f6a7b8",
+              commitMessage: "Update README",
             },
           },
           {
             id: "09463e12-7e7a-45fa-913f-9200e090468a",
             type: "nextjs",
+            source: "github",
             title: "Umami Frontend",
             serviceGroup: {
               id: "10f5aeb7-59d1-495a-92fd-3a245566ee55",
@@ -157,13 +230,15 @@ const projects: TProject[] = [
             lastDeployment: {
               id: "14cdeb8e-5bca-44e6-9385-c4e29a809f49",
               source: "docker",
-              status: "success",
+              status: "succeeded",
               timestamp: Date.now() - 1000 * 60 * 60 * 24 * 2,
+              dockerImage: "ghcr.io/umami-software/umami:postgresql-latest",
             },
           },
           {
             id: "5d6eed80-ed5e-4d67-944f-aa6d726f0ab3",
             type: "postgresql",
+            source: "docker",
             title: "Umami Database",
             serviceGroup: {
               id: "10f5aeb7-59d1-495a-92fd-3a245566ee55",
@@ -173,8 +248,9 @@ const projects: TProject[] = [
             lastDeployment: {
               id: "5725486e-696a-4202-9f19-89dc17275352",
               source: "docker",
-              status: "success",
+              status: "succeeded",
               timestamp: Date.now() - 1000 * 60 * 60 * 24 * 2,
+              dockerImage: "postgres:16-alpine",
             },
           },
         ],
@@ -193,23 +269,28 @@ const projects: TProject[] = [
           {
             id: "f9d60dad-5184-43e3-a1bd-e1bfcd8575bb",
             type: "go",
+            source: "github",
             title: "API",
             lastDeployment: {
               id: "1fd6f8ed-912f-4c52-8cd6-c09920d3265b",
               source: "github",
-              status: "success",
+              status: "succeeded",
               timestamp: Date.now() - 1000 * 60 * 60 * 0.5,
+              commitHash: "a1b2c3d4",
+              commitMessage: "Add new endpoint",
             },
           },
           {
             id: "bd251dca-18c0-4a8b-bae9-1dfc1b00d979",
             type: "mysql",
+            source: "docker",
             title: "DB",
             lastDeployment: {
               id: "c7977e1f-9641-4d21-9671-a7d5e4a1d506",
               source: "docker",
-              status: "success",
+              status: "succeeded",
               timestamp: Date.now() - 1000 * 60 * 60 * 24 * 64,
+              dockerImage: "mysql:9.2.0",
             },
           },
         ],
@@ -242,33 +323,40 @@ const projects: TProject[] = [
             id: "55db768e-5879-47ba-a94d-d4a1af2a8b4c",
             title: "Website",
             type: "svelte",
+            source: "github",
             lastDeployment: {
               id: "8b3deb22-0577-4ea4-9e84-88890b9fa5a8",
               source: "github",
-              status: "success",
+              status: "succeeded",
               timestamp: Date.now() - 1000 * 60 * 15,
+              commitHash: "a1b2c3d4",
+              commitMessage: "Fix bug",
             },
           },
           {
             id: "d9f7b682-2652-49a0-8d1c-410401d661a5",
             title: "Meili DB",
             type: "meili",
+            source: "docker",
             lastDeployment: {
               id: "a7505101-e2cd-4cc6-b152-99be97748733",
               source: "docker",
-              status: "success",
+              status: "succeeded",
               timestamp: Date.now() - 1000 * 60 * 60 * 24 * 35,
+              dockerImage: "getmeili/meilisearch:latest",
             },
           },
           {
             id: "d1d6b770-5fe4-4441-a089-e08187280084",
             title: "Analytics DB",
             type: "clickhouse",
+            source: "docker",
             lastDeployment: {
               id: "98b7edb0-9fdd-46df-9607-c2e44e31fa9c",
               source: "docker",
-              status: "success",
+              status: "succeeded",
               timestamp: Date.now() - 1000 * 60 * 60 * 24 * 15,
+              dockerImage: "bitnami/clickhouse",
             },
           },
         ],
@@ -308,6 +396,7 @@ export type TService = {
   lastDeployment?: TDeployment;
   type: TServiceType;
   serviceGroup?: TServiceGroup;
+  source: TDeploymentSource;
 };
 
 export type TServiceGroup = {
@@ -318,12 +407,26 @@ export type TServiceGroup = {
 
 export type TDeploymentSource = "github" | "docker";
 
-export type TDeployment = {
+export type TDeploymentStatus = "pending" | "succeeded" | "failed";
+
+type TDeploymentShared = {
   id: string;
-  source: TDeploymentSource;
-  status: "pending" | "success" | "failure";
+  status: TDeploymentStatus;
   timestamp: number;
 };
+
+export type TDeployment = TDeploymentShared &
+  (
+    | {
+        source: "github";
+        commitHash: string;
+        commitMessage: string;
+      }
+    | {
+        source: "docker";
+        dockerImage: string;
+      }
+  );
 
 export type TProject = {
   id: string;
@@ -331,3 +434,67 @@ export type TProject = {
   teamId: string;
   environments: TEnvironment[];
 };
+
+const deployments: TDeployment[] = [
+  {
+    id: "513628d7-7b2c-4174-b2b2-09ba8dbe6189",
+    source: "github",
+    status: "succeeded",
+    timestamp: Date.now() - 1000 * 60 * 30, // 30 minutes ago
+    commitHash: "b2b2c3d4",
+    commitMessage: "Update homepage hero section",
+  },
+  {
+    id: "a9b8c7d6-e5f4-4321-9876-543210fedcba",
+    source: "github",
+    status: "failed",
+    timestamp: Date.now() - 1000 * 60 * 45, // 45 minutes ago
+    commitHash: "d4e5f6a7",
+    commitMessage: "Fix auth middleware",
+  },
+  {
+    id: "e3eacef2-5364-448e-a329-258dfe01ecfc",
+    source: "docker",
+    status: "succeeded",
+    timestamp: Date.now() - 1000 * 60 * 60 * 2, // 2 hours ago
+    dockerImage: "postgres:15-alpine",
+  },
+  {
+    id: "7c8bffe9-18d3-4c38-8615-fb725992b766",
+    source: "github",
+    status: "succeeded",
+    timestamp: Date.now() - 1000 * 60 * 5, // 5 minutes ago
+    commitHash: "98765432",
+    commitMessage: "Deploy dark mode updates",
+  },
+  {
+    id: "1fd6f8ed-912f-4c52-8cd6-c09920d3265b",
+    source: "github",
+    status: "succeeded",
+    timestamp: Date.now() - 1000 * 60 * 15, // 15 minutes ago
+    commitHash: "abcd1234",
+    commitMessage: "Add metrics endpoint",
+  },
+  {
+    id: "c7977e1f-9641-4d21-9671-a7d5e4a1d506",
+    source: "docker",
+    status: "failed",
+    timestamp: Date.now() - 1000 * 60 * 60, // 1 hour ago
+    dockerImage: "mysql:9.2.0",
+  },
+  {
+    id: "8b3deb22-0577-4ea4-9e84-88890b9fa5a8",
+    source: "github",
+    status: "succeeded",
+    timestamp: Date.now() - 1000 * 60 * 10, // 10 minutes ago
+    commitHash: "ef012345",
+    commitMessage: "Update API integration",
+  },
+  {
+    id: "98b7edb0-9fdd-46df-9607-c2e44e31fa9c",
+    source: "docker",
+    status: "succeeded",
+    timestamp: Date.now() - 1000 * 60 * 20, // 20 minutes ago
+    dockerImage: "bitnami/clickhouse:latest",
+  },
+];
