@@ -22,7 +22,7 @@ export default function Deployments() {
     }
   );
   return (
-    <div className="w-full flex flex-col p-6 gap-2">
+    <div className="w-full flex flex-col p-4 sm:p-6 gap-2">
       {data?.deployments?.map((deployment, i) => (
         <DeploymentCard
           key={deployment.id}

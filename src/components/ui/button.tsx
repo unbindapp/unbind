@@ -33,6 +33,8 @@ const buttonVariants = cva(
           "text-destructive not-touch:hover:bg-destructive/20 not-touch:hover:text-destructive active:bg-destructive/20 active:text-destructive",
         "warning-ghost":
           "text-warning not-touch:hover:bg-warning/20 not-touch:hover:text-warning active:bg-warning/20 active:text-warning",
+        "foreground-ghost":
+          "text-foreground not-touch:hover:bg-foreground/6 not-touch:hover:text-foreground active:bg-foreground/6 active:text-foreground",
         link: "text-primary underline-offset-4 not-touch:hover:underline active:underline",
         google:
           "bg-google text-google-foreground not-touch:hover:bg-google/85 active:bg-google/85",

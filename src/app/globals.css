@@ -142,11 +142,11 @@ input[type="search"] {
     --muted-more-foreground: 120 6% 40%;
     --accent: 120 5% 12%;
     --accent-foreground: 120 100% 97%;
-    --destructive: 0 88% 72%;
+    --destructive: 0 80% 69%;
     --destructive-foreground: 120 9% 6%;
     --warning: 40 85% 60%;
     --warning-foreground: 120 9% 6%;
-    --success: 130 55% 60%;
+    --success: 120 40% 60%;
     --success-foreground: 120 9% 6%;
     --shadow: 120 8% 5%;
     --border: 120 5% 12%;
