@@ -68,15 +68,15 @@ export default function ServicePanel({ service, children }: Props) {
         className="h-[calc(100%-5rem)] w-full rounded-t-2xl flex flex-col
         sm:ml-auto sm:my-0 sm:top-0 sm:h-full sm:right-0 sm:w-232 sm:max-w-[calc(100%-5rem)] sm:rounded-none"
       >
-        <div className="w-full flex items-start justify-start gap-4 px-4 pt-3 sm:px-8 sm:pt-6">
+        <div className="w-full flex items-start justify-start gap-4 px-5 pt-4 sm:px-8 sm:pt-6">
           <DrawerHeader className="flex-1 min-w-0 flex items-center justify-start p-0">
             <DrawerTitle className="flex-1 min-w-0 flex items-center justify-start gap-2.5">
               <ServiceIcon
                 variant={service.type}
                 color="color"
-                className="size-8 -ml-1"
+                className="size-7 sm:size-8 -ml-1"
               />
-              <p className="shrink min-w-0 leading-tight text-2xl text-left">
+              <p className="shrink min-w-0 leading-tight text-xl sm:text-2xl text-left">
                 {service.title}
               </p>
             </DrawerTitle>

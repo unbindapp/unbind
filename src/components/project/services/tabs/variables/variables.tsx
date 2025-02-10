@@ -1,3 +1,4 @@
+import TabWrapper from "@/components/project/services/tabs/tab-wrapper";
 import VariableLine from "@/components/project/services/tabs/variables/variable-line";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { api } from "@/server/trpc/setup/client";
@@ -20,10 +21,10 @@ export default function Variables() {
     }
   );
   return (
-    <div className="w-full flex flex-col p-4 sm:p-6 gap-1">
+    <TabWrapper>
       {data?.variables?.map((variable) => (
         <VariableLine key={variable.key} variable={variable} />
       ))}
-    </div>
+    </TabWrapper>
   );
 }

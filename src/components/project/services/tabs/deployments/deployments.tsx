@@ -1,6 +1,7 @@
 "use client";
 
 import DeploymentCard from "@/components/project/services/tabs/deployments/deployment-card";
+import TabWrapper from "@/components/project/services/tabs/tab-wrapper";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { api } from "@/server/trpc/setup/client";
 
@@ -22,7 +23,7 @@ export default function Deployments() {
     }
   );
   return (
-    <div className="w-full flex flex-col p-4 sm:p-6 gap-2">
+    <TabWrapper>
       {data?.deployments?.map((deployment, i) => (
         <DeploymentCard
           key={deployment.id}
@@ -30,6 +31,6 @@ export default function Deployments() {
           active={i === 0}
         />
       ))}
-    </div>
+    </TabWrapper>
   );
 }

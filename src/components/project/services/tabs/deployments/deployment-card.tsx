@@ -32,7 +32,7 @@ export default function DeploymentCard({ deployment, active }: Props) {
         className="self-stretch w-1 rounded-full bg-foreground/8 group-data-[status=destructive]/card:bg-destructive
         group-data-[status=success]/card:bg-success"
       />
-      <div className="flex-1 min-w-0 pl-3 pr-6 sm:px-3 sm:py-2 flex-col flex sm:flex-row sm:items-center">
+      <div className="flex-1 min-w-0 pl-3 pr-6 py-0.5 sm:px-3 sm:py-2 flex-col flex sm:flex-row sm:items-center">
         <div className="shrink-0 sm:w-32 flex items-center justify-start pr-3">
           <div
             className="shrink min-w-0 flex gap-1.5 items-center justify-start bg-foreground/8 text-muted-foreground 
@@ -61,7 +61,7 @@ export default function DeploymentCard({ deployment, active }: Props) {
           variant={deployment.source}
           className="size-6 mt-2 sm:mt-0"
         />
-        <div className="py-2 sm:mt-0 flex flex-1 flex-col sm:pl-3 pr-2 gap-1.5 shrink min-w-0">
+        <div className="mt-2 pb-1 sm:mt-0 flex flex-1 flex-col sm:pl-3 pr-2 gap-1.5 shrink min-w-0">
           <p className="leading-tight">
             {deployment.source === "github"
               ? deployment.commitMessage
