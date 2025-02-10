@@ -47,7 +47,7 @@ export default function ProjectTabs() {
         <LinkButton
           data-active={tab.relativeHref === activeTabPath ? true : undefined}
           key={tab.relativeHref}
-          className="font-medium text-sm px-3 pt-3.5 pb-4 leading-none rounded-none text-muted-foreground 
+          className="font-medium text-sm px-3 pt-3.5 pb-4 rounded leading-none text-muted-foreground 
           not-touch:hover:bg-transparent active:bg-transparent group/button data-[active]:text-foreground"
           variant="ghost"
           href={base + tab.relativeHref}
