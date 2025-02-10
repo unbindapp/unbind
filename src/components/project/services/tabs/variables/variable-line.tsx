@@ -23,7 +23,7 @@ export default function VariableLine({ variable }: Props) {
   return (
     <div
       data-value-visible={isValueVisible ? true : undefined}
-      className="w-full select-text flex flex-col sm:flex-row sm:items-center font-mono px-3 py-0.75 hover:bg-background-hover 
+      className="w-full select-text flex flex-col sm:flex-row sm:items-center font-mono px-3 py-0.75 not-touch:hover:bg-background-hover 
       border rounded-xl sm:rounded-lg group/line relative"
     >
       <p className="w-full leading-none text-sm shrink-0 py-2 pr-8 sm:pr-4 sm:w-56 whitespace-nowrap overflow-hidden overflow-ellipsis">
