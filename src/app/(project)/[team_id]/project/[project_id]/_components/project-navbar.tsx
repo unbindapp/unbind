@@ -14,16 +14,22 @@ export default async function ProjectNavbar({ className }: Props) {
         className
       )}
     >
-      <div className="w-full flex justify-between items-center px-3 py-1.5 border-b">
+      <div className="w-full flex justify-between items-stretch px-3 border-b gap-3">
         <div className="shrink min-w-0 flex items-center justify-start -ml-0.5 gap-1">
-          <LogoLink />
-          <ProjectBreadcrumb />
+          <div className="py-1">
+            <LogoLink />
+          </div>
+          <div className="shrink min-h-full flex items-center min-w-0 overflow-auto">
+            <ProjectBreadcrumb />
+          </div>
         </div>
-        <div className="shrink min-w-0 flex items-center justify-end">
+        <div className="shrink-0 flex items-center justify-end">
           <Avatar />
         </div>
       </div>
-      <ProjectTabs />
+      <div className="w-full flex border-b">
+        <ProjectTabs layoutId="project-tabs" />
+      </div>
     </nav>
   );
 }

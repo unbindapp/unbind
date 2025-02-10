@@ -1,3 +1,5 @@
+"use client";
+
 import { buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -24,12 +26,7 @@ export function BreadcrumbWrapper({
   children: ReactNode;
 }) {
   return (
-    <div
-      className={cn(
-        "flex shrink min-w-0 items-center justify-start",
-        className
-      )}
-    >
+    <div className={cn("flex items-center justify-start", className)}>
       {children}
     </div>
   );
@@ -38,7 +35,10 @@ export function BreadcrumbWrapper({
 export function BreadcrumbSeparator({ className }: { className?: string }) {
   return (
     <SlashIcon
-      className={`text-foreground/16 -rotate-30 size-4 ${className}`}
+      className={cn(
+        "text-foreground/16 -mx-0.5 sm:mx-0 -rotate-30 size-4 shrink-0",
+        className
+      )}
       strokeWidth={3}
     />
   );
@@ -72,7 +72,7 @@ export function BreadcrumbItem<T extends { id: string; title: string }>({
             size: "sm",
             forceMinSize: false,
           }),
-          "px-1.5 py-1.75 data-[no-icon]:pl-2.75 rounded-lg border-none font-medium flex items-center justify-start shrink min-w-0 gap-2 not-touch:hover:bg-border text-sm group/trigger"
+          "px-1.5 py-1.75 data-[no-icon]:pl-2.75 rounded-lg border-none font-medium flex items-center justify-start gap-2 not-touch:hover:bg-border text-sm group/trigger"
         )}
       >
         {IconItem && selectedItem && <IconItem id={selectedItem.id} />}
