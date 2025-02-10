@@ -1,11 +1,11 @@
 "use client";
 
-import ServicePanel from "@/components/project/services/service-panel";
 import ServiceIcon from "@/components/icons/service";
+import LastDeploymentTime from "@/components/project/services/last-deployment-time";
+import ServicePanel from "@/components/project/services/service-panel";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import { useTimeDifference } from "@/lib/hooks/use-time-difference";
-import { TDeploymentSource, TService } from "@/server/trpc/api/main/router";
+import { TService } from "@/server/trpc/api/main/router";
 
 type Props = {
   service: TService;
@@ -18,10 +18,6 @@ export default function ServiceCard({
   className,
   classNameCard,
 }: Props) {
-  const timeDiffStr = useTimeDifference({
-    timestamp: service.lastDeployment?.timestamp,
-  });
-
   return (
     <li className={cn("w-full flex flex-col p-1", className)}>
       <ServicePanel service={service}>
@@ -44,13 +40,7 @@ export default function ServiceCard({
           </div>
           <div className="w-full flex flex-col flex-1 justify-end">
             <div className="w-full flex items-center justify-between text-muted-foreground">
-              <p className="shrink min-w-0 font-medium overflow-hidden overflow-ellipsis whitespace-nowrap text-sm">
-                {!service.lastDeployment || !timeDiffStr
-                  ? "No deployments yet"
-                  : `${timeDiffStr} via ${
-                      sourceToTitle[service.lastDeployment.source]
-                    }`}
-              </p>
+              <LastDeploymentTime service={service} />
             </div>
           </div>
         </Button>
@@ -58,8 +48,3 @@ export default function ServiceCard({
     </li>
   );
 }
-
-const sourceToTitle: Record<TDeploymentSource, string> = {
-  github: "GitHub",
-  docker: "Docker",
-};

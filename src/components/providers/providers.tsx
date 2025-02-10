@@ -1,6 +1,7 @@
 import AsyncPushProvider from "@/components/providers/async-push-provider";
 import { IsTouchscreenProvider } from "@/components/providers/is-touchscreen-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import TimestampProvider from "@/components/providers/timestamp-provider";
 import { TRPCReactProvider } from "@/server/trpc/setup/client";
 import { Provider as JotaiProvider } from "jotai";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
@@ -15,7 +16,9 @@ export default async function Providers({
         <JotaiProvider>
           <NuqsAdapter>
             <ThemeProvider>
-              <IsTouchscreenProvider>{children}</IsTouchscreenProvider>
+              <IsTouchscreenProvider>
+                <TimestampProvider>{children}</TimestampProvider>
+              </IsTouchscreenProvider>
             </ThemeProvider>
           </NuqsAdapter>
         </JotaiProvider>

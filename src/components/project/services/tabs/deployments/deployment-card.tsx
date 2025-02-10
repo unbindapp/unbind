@@ -1,8 +1,13 @@
+import BroomIcon from "@/components/icons/broom";
 import ServiceIcon from "@/components/icons/service";
+import DeploymentTime from "@/components/project/services/tabs/deployments/deployment-time";
 import { Button } from "@/components/ui/button";
-import { useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { TDeployment } from "@/server/trpc/api/main/router";
-import { EllipsisVerticalIcon } from "lucide-react";
+import {
+  CircleCheckIcon,
+  EllipsisVerticalIcon,
+  TriangleAlertIcon,
+} from "lucide-react";
 
 type Props = {
   deployment: TDeployment;
@@ -10,7 +15,6 @@ type Props = {
 };
 
 export default function DeploymentCard({ deployment, active }: Props) {
-  const timeAgo = useTimeDifference({ timestamp: deployment.timestamp });
   return (
     <div
       data-status={
@@ -29,18 +33,28 @@ export default function DeploymentCard({ deployment, active }: Props) {
         group-data-[status=success]/card:bg-success"
       />
       <div className="flex-1 min-w-0 px-3 py-2 flex items-center">
-        <div className="shrink-0 min-w-28 flex items-center justify-start">
-          <p
-            className="bg-foreground/8 text-muted-foreground font-medium text-sm rounded-md px-2 py-1 
+        <div className="shrink-0 w-32 flex items-center justify-start pr-3">
+          <div
+            className="shrink min-w-0 flex gap-1.5 items-center justify-start bg-foreground/8 text-muted-foreground 
+            font-medium text-sm rounded-md px-2 py-1.5 
             group-data-[status=destructive]/card:bg-destructive/12 group-data-[status=destructive]/card:text-destructive
             group-data-[status=success]/card:bg-success/12 group-data-[status=success]/card:text-success"
           >
-            {deployment.status === "succeeded" && active
-              ? "ACTIVE"
-              : deployment.status === "failed"
-              ? "FAILED"
-              : "REMOVED"}
-          </p>
+            {deployment.status === "succeeded" && active ? (
+              <CircleCheckIcon className="size-3.5 -ml-0.25 shrink-0" />
+            ) : deployment.status === "failed" ? (
+              <TriangleAlertIcon className="size-3.5 -ml-0.25 shrink-0" />
+            ) : (
+              <BroomIcon className="size-3.5 -ml-0.25 shrink-0" />
+            )}
+            <p className="leading-none shrink min-w-0">
+              {deployment.status === "succeeded" && active
+                ? "ACTIVE"
+                : deployment.status === "failed"
+                ? "FAILED"
+                : "REMOVED"}
+            </p>
+          </div>
         </div>
         <ServiceIcon
           color="color"
@@ -53,9 +67,7 @@ export default function DeploymentCard({ deployment, active }: Props) {
               ? deployment.commitMessage
               : deployment.dockerImage}
           </p>
-          <p className="text-muted-foreground text-sm leading-tight">
-            {timeAgo}
-          </p>
+          <DeploymentTime deployment={deployment} />
         </div>
         <Button
           size="icon"

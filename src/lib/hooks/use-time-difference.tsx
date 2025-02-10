@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { useInterval } from "usehooks-ts";
+import { useTimestamp } from "@/components/providers/timestamp-provider";
 
 const defaultRtf = new Intl.RelativeTimeFormat("en-US", {
   numeric: "auto",
@@ -13,9 +12,9 @@ export function useTimeDifference({
   timestamp?: number;
   rtf?: Intl.RelativeTimeFormat;
 }) {
-  const [differenceMs, setDifferenceMs] = useState(
-    (timestamp || 0) - Date.now()
-  );
+  const { timestamp: now } = useTimestamp();
+
+  const differenceMs = timestamp ? timestamp - now : 0;
 
   const differenceDays = Math.ceil(differenceMs / 1000 / 60 / 60 / 24);
   const differenceHours = Math.ceil(differenceMs / 1000 / 60 / 60);
@@ -36,10 +35,7 @@ export function useTimeDifference({
       ? diffMinutesStr
       : diffSecondsStr;
 
-  useInterval(() => {
-    const diff = (timestamp || 0) - Date.now();
-    setDifferenceMs(diff);
-  }, 1000);
-
-  return timestamp ? differenceStr : null;
+  return {
+    str: timestamp ? differenceStr : null,
+  };
 }
