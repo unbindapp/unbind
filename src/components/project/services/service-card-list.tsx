@@ -1,6 +1,6 @@
 "use client";
 
-import ServiceCard from "@/app/(project)/[team_id]/project/[project_id]/environment/_components/service-card";
+import ServiceCard from "@/components/project/services/service-card";
 import ServiceIcon from "@/components/icons/service";
 import { groupByServiceGroup } from "@/lib/helpers";
 import { api } from "@/server/trpc/setup/client";

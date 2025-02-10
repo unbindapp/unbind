@@ -1,4 +1,4 @@
-import ProjectNavbar from "@/app/(project)/[team_id]/project/[project_id]/_components/project-navbar";
+import ProjectNavbar from "@/components/project/project-navbar";
 import { ReactNode } from "react";
 
 type Props = {

@@ -1,8 +1,8 @@
-import ProjectBreadcrumb from "@/app/(project)/[team_id]/project/[project_id]/_components/project-breadcrumb";
-import ProjectTabs from "@/app/(project)/[team_id]/project/[project_id]/_components/project-tabs";
 import Avatar from "@/components/navigation/avatar";
 import { BreadcrumbSeparator } from "@/components/navigation/breadcrumb-wrapper";
 import LogoLink from "@/components/navigation/logo-link";
+import ProjectBreadcrumb from "@/components/project/project-breadcrumb";
+import ProjectTabs from "@/components/project/project-tabs";
 import { cn } from "@/components/ui/utils";
 
 type Props = { className?: string };

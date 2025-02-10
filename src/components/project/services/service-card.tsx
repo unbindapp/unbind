@@ -1,6 +1,6 @@
 "use client";
 
-import ServicePanel from "@/app/(project)/[team_id]/project/[project_id]/environment/_components/service-panel";
+import ServicePanel from "@/components/project/services/service-panel";
 import ServiceIcon from "@/components/icons/service";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";

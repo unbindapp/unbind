@@ -1,4 +1,4 @@
-import TeamNavbar from "@/app/(team)/[team_id]/_components/team-navbar";
+import TeamNavbar from "@/components/team/team-navbar";
 import { ReactNode } from "react";
 
 type Props = {

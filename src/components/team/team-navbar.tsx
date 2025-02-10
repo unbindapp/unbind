@@ -1,4 +1,4 @@
-import TeamBreadcrumb from "@/app/(team)/[team_id]/_components/team-breadcrumb";
+import TeamBreadcrumb from "@/components/team/team-breadcrumb";
 import Avatar from "@/components/navigation/avatar";
 import { BreadcrumbSeparator } from "@/components/navigation/breadcrumb-wrapper";
 import LogoLink from "@/components/navigation/logo-link";

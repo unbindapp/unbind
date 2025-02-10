@@ -1,4 +1,4 @@
-import ProjectCardList from "@/app/(team)/[team_id]/_components/project-card-list";
+import ProjectCardList from "@/components/team/project-card-list";
 import { apiServer, HydrateClient } from "@/server/trpc/setup/server";
 import { Metadata } from "next";
 
