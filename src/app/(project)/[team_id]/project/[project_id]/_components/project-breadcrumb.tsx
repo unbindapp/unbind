@@ -1,10 +1,10 @@
 "use client";
 
+import { BreadcrumbItem } from "@/components/navigation/breadcrumb-item";
 import {
-  BreadcrumbItem,
   BreadcrumbSeparator,
   BreadcrumbWrapper,
-} from "@/components/navigation/breadcrumb-item";
+} from "@/components/navigation/breadcrumb-wrapper";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { api } from "@/server/trpc/setup/client";
 import { usePathname } from "next/navigation";
@@ -94,28 +94,19 @@ export default function ProjectBreadcrumb({ className }: Props) {
 
   return (
     <BreadcrumbWrapper className={className}>
-      {selectedProject && (
-        <>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem
-            selectedItem={selectedProject}
-            items={projectsData?.projects}
-            onSelect={onProjectIdSelect}
-            getHrefForId={getHrefForProjectId}
-          />
-        </>
-      )}
-      {selectedEnvironment && (
-        <>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem
-            selectedItem={selectedEnvironment}
-            items={environments}
-            onSelect={onEnvironmentIdSelect}
-            getHrefForId={getHrefForEnvironmentId}
-          />
-        </>
-      )}
+      <BreadcrumbItem
+        selectedItem={selectedProject}
+        items={projectsData?.projects}
+        onSelect={onProjectIdSelect}
+        getHrefForId={getHrefForProjectId}
+      />
+      <BreadcrumbSeparator />
+      <BreadcrumbItem
+        selectedItem={selectedEnvironment}
+        items={environments}
+        onSelect={onEnvironmentIdSelect}
+        getHrefForId={getHrefForEnvironmentId}
+      />
     </BreadcrumbWrapper>
   );
 }

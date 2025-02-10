@@ -32,9 +32,13 @@ const tabs: TTab[] = [
 
 export default function ProjectTabs({
   className,
+  classNameInner,
+  classNameButton,
   layoutId,
 }: {
   className?: string;
+  classNameInner?: string;
+  classNameButton?: string;
   layoutId: string;
 }) {
   const pathname = usePathname();
@@ -49,17 +53,30 @@ export default function ProjectTabs({
   }, [relativePath]);
 
   return (
-    <div className={cn("flex-1 min-w-0 overflow-hidden", className)}>
-      <div className="flex-1 min-w-0 overflow-auto">
-        <div className="px-1 sm:px-3 flex justify-start items-center">
+    <div
+      className={cn(
+        "flex-1 flex items-stretch min-w-0 overflow-hidden",
+        className
+      )}
+    >
+      <div className="flex-1 flex items-stretch min-w-0 overflow-auto">
+        <div
+          className={cn(
+            "px-1 sm:px-3 flex justify-start items-stretch",
+            classNameInner
+          )}
+        >
           {tabs.map((tab) => (
             <LinkButton
               data-active={
                 tab.relativeHref === activeTabPath ? true : undefined
               }
               key={tab.relativeHref}
-              className="font-medium text-sm px-3 pt-3.5 pb-4 rounded leading-none text-muted-foreground 
-              not-touch:hover:bg-transparent active:bg-transparent group/button data-[active]:text-foreground"
+              className={cn(
+                `font-medium text-sm px-3 py-3.5 rounded leading-none text-muted-foreground 
+                not-touch:hover:bg-transparent active:bg-transparent group/button data-[active]:text-foreground`,
+                classNameButton
+              )}
               variant="ghost"
               href={base + tab.relativeHref}
               onClick={() => setActiveTabPath(tab.relativeHref)}

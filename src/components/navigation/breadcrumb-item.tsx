@@ -1,5 +1,3 @@
-"use client";
-
 import { buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,40 +7,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
-import {
-  ArrowRightIcon,
-  CheckIcon,
-  ChevronDownIcon,
-  SlashIcon,
-} from "lucide-react";
+import { ArrowRightIcon, CheckIcon, ChevronDownIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { FC, JSX, ReactNode, useState } from "react";
-
-export function BreadcrumbWrapper({
-  className,
-  children,
-}: {
-  className?: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className={cn("flex items-center justify-start", className)}>
-      {children}
-    </div>
-  );
-}
-
-export function BreadcrumbSeparator({ className }: { className?: string }) {
-  return (
-    <SlashIcon
-      className={cn(
-        "text-foreground/16 -mx-0.5 sm:mx-0 -rotate-30 size-4 shrink-0",
-        className
-      )}
-      strokeWidth={3}
-    />
-  );
-}
+import { FC, JSX, useState } from "react";
 
 export function BreadcrumbItem<T extends { id: string; title: string }>({
   selectedItem,
@@ -66,6 +33,7 @@ export function BreadcrumbItem<T extends { id: string; title: string }>({
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger
         data-no-icon={Icon === undefined ? true : undefined}
+        data-pending={selectedItem == undefined ? true : undefined}
         className={cn(
           buttonVariants({
             variant: "ghost",
@@ -76,7 +44,13 @@ export function BreadcrumbItem<T extends { id: string; title: string }>({
         )}
       >
         {IconItem && selectedItem && <IconItem id={selectedItem.id} />}
-        <p>{selectedItem?.title}</p>
+        <p
+          className="group-data-[pending]/trigger:text-transparent group-data-[pending]/trigger:bg-foreground 
+          group-data-[pending]/trigger:rounded-sm group-data-[pending]/trigger:animate-skeleton max-w-32 whitespace-nowrap 
+          leading-none overflow-hidden overflow-ellipsis"
+        >
+          {selectedItem == undefined ? "Loading" : selectedItem?.title}
+        </p>
         <ChevronDownIcon className="size-4 -ml-1 text-muted-more-foreground group-data-[state=open]/trigger:rotate-180 transition" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="group/content">

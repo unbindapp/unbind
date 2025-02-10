@@ -1,6 +1,7 @@
 import ProjectBreadcrumb from "@/app/(project)/[team_id]/project/[project_id]/_components/project-breadcrumb";
 import ProjectTabs from "@/app/(project)/[team_id]/project/[project_id]/_components/project-tabs";
 import Avatar from "@/components/navigation/avatar";
+import { BreadcrumbSeparator } from "@/components/navigation/breadcrumb-wrapper";
 import LogoLink from "@/components/navigation/logo-link";
 import { cn } from "@/components/ui/utils";
 
@@ -14,21 +15,29 @@ export default async function ProjectNavbar({ className }: Props) {
         className
       )}
     >
-      <div className="w-full flex justify-between items-stretch px-3 border-b gap-3">
-        <div className="shrink min-w-0 flex items-center justify-start -ml-0.5 gap-1">
-          <div className="py-1">
+      <div className="w-full flex justify-between items-stretch px-3 border-b gap-5">
+        <div className="shrink min-w-0 flex items-center justify-start -ml-0.5">
+          <div className="py-1 pr-1">
             <LogoLink />
           </div>
-          <div className="shrink min-h-full flex items-center min-w-0 overflow-auto">
+          <BreadcrumbSeparator />
+          <div className="shrink min-h-full flex items-center justify-start min-w-0 overflow-auto">
             <ProjectBreadcrumb />
+            <BreadcrumbSeparator className="hidden lg:block" />
+          </div>
+          <div className="shrink min-h-full items-stretch justify-start min-w-0 overflow-auto hidden lg:flex">
+            <ProjectTabs
+              classNameInner="px-0 sm:px-0"
+              layoutId="project-tabs-lg"
+            />
           </div>
         </div>
         <div className="shrink-0 flex items-center justify-end">
           <Avatar />
         </div>
       </div>
-      <div className="w-full flex border-b">
-        <ProjectTabs layoutId="project-tabs" />
+      <div className="w-full flex border-b lg:hidden">
+        <ProjectTabs layoutId="project-tabs-sm" />
       </div>
     </nav>
   );

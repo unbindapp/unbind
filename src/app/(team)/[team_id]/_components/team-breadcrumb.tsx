@@ -1,10 +1,7 @@
 "use client";
 
-import {
-  BreadcrumbItem,
-  BreadcrumbSeparator,
-  BreadcrumbWrapper,
-} from "@/components/navigation/breadcrumb-item";
+import { BreadcrumbItem } from "@/components/navigation/breadcrumb-item";
+import { BreadcrumbWrapper } from "@/components/navigation/breadcrumb-wrapper";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { api } from "@/server/trpc/setup/client";
 import { usePathname } from "next/navigation";
@@ -21,8 +18,6 @@ export default function TeamBreadcrumb({ className }: Props) {
 
   const teamIdFromPathname =
     pathnameArr.length > 1 ? pathnameArr[1] : undefined;
-  const projectIdFromPathname =
-    pathnameArr.length > 3 ? pathnameArr[3] : undefined;
 
   const { data: teamData } = api.main.getTeams.useQuery({});
 
@@ -51,20 +46,12 @@ export default function TeamBreadcrumb({ className }: Props) {
 
   return (
     <BreadcrumbWrapper className={className}>
-      {!projectIdFromPathname && selectedTeam && (
-        <>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem
-            selectedItem={selectedTeam}
-            items={teamData?.teams}
-            onSelect={onTeamIdSelect}
-            /* IconItem={({ id }) => (
-              <Blockies address={id} className="size-4 rounded-full" />
-            )} */
-            getHrefForId={getHrefForTeamId}
-          />
-        </>
-      )}
+      <BreadcrumbItem
+        selectedItem={selectedTeam}
+        items={teamData?.teams}
+        onSelect={onTeamIdSelect}
+        getHrefForId={getHrefForTeamId}
+      />
     </BreadcrumbWrapper>
   );
 }
