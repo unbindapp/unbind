@@ -3,7 +3,13 @@
 import { Button } from "@/components/ui/button";
 import { useCopyToClipboard } from "@/lib/hooks/use-copy";
 import { TVariable } from "@/server/trpc/api/main/router";
-import { CheckIcon, CopyIcon, EyeIcon, EyeOffIcon } from "lucide-react";
+import {
+  CheckIcon,
+  CopyIcon,
+  EllipsisVerticalIcon,
+  EyeIcon,
+  EyeOffIcon,
+} from "lucide-react";
 import { useState } from "react";
 
 type Props = {
@@ -24,10 +30,24 @@ export default function VariableLine({ variable }: Props) {
         {variable.key}
       </p>
       <Button
+        data-copied={isRecentlyCopied ? true : undefined}
+        onClick={() => copyToClipboard(variable.value)}
+        variant="foreground-ghost"
+        forceMinSize="medium"
+        size="icon"
+        className="rounded-md text-muted-more-foreground group/button"
+      >
+        <div className="size-4 relative group-data-[copied]/button:rotate-45 transition-transform">
+          <CopyIcon className="size-4 group-data-[copied]/button:opacity-0" />
+          <CheckIcon className="size-4 absolute left-0 top-0 text-success -rotate-45 opacity-0 group-data-[copied]/button:opacity-100" />
+        </div>
+      </Button>
+      <Button
         onClick={() => setIsValueVisible((prev) => !prev)}
         variant="foreground-ghost"
+        forceMinSize="medium"
         size="icon"
-        className="rounded-lg text-muted-more-foreground"
+        className="rounded-md text-muted-more-foreground"
       >
         {isValueVisible ? (
           <EyeOffIcon className="size-4" />
@@ -35,23 +55,18 @@ export default function VariableLine({ variable }: Props) {
           <EyeIcon className="size-4" />
         )}
       </Button>
-      <Button
-        data-copied={isRecentlyCopied ? true : undefined}
-        disabled={isRecentlyCopied}
-        fadeOnDisabled={false}
-        onClick={() => copyToClipboard(variable.value)}
-        variant="foreground-ghost"
-        size="icon"
-        className="rounded-lg text-muted-more-foreground group/button"
-      >
-        <div className="size-4 relative group-data-[copied]/button:rotate-30 transition-transform">
-          <CopyIcon className="size-4 group-data-[copied]/button:opacity-0" />
-          <CheckIcon className="size-4 absolute left-0 top-0 text-success -rotate-30 opacity-0 group-data-[copied]/button:opacity-100" />
-        </div>
-      </Button>
       <p className="leading-none shrink min-w-0 whitespace-nowrap overflow-hidden overflow-ellipsis py-1 pl-2 text-xs">
         {isValueVisible ? variable.value : "••••••••"}
       </p>
+      <div className="ml-auto pl-2 -mr-2.25">
+        <Button
+          variant="foreground-ghost"
+          size="icon"
+          className="rounded-md text-muted-more-foreground"
+        >
+          <EllipsisVerticalIcon className="size-5" />
+        </Button>
+      </div>
     </div>
   );
 }

@@ -8,7 +8,7 @@ type Props = {
 };
 
 export function useCopyToClipboard(props?: Props) {
-  const recentMs = props?.recentMs ?? 2000;
+  const recentMs = props?.recentMs ?? 1500;
   const [copiedText, copyToClipboard] = useCopyToClipboardPrimitive();
   const [isRecentlyCopied, setIsRecentlyCopied] = useState(false);
   const [currentTimeout, setCurrentTimeout] = useState<NodeJS.Timeout | null>(
