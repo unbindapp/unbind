@@ -29,7 +29,7 @@ const tabs: TTab[] = [
   },
 ];
 
-export default function TabBar() {
+export default function ProjectTabs() {
   const pathname = usePathname();
   const segments = pathname.split("environment/");
   const subSegment = segments[1].split("/")[0];
@@ -42,7 +42,7 @@ export default function TabBar() {
   }, [relativePath]);
 
   return (
-    <div className="w-full border-b px-3 sticky top-[calc(3rem+1px)] bg-background z-50">
+    <div className="w-full border-b px-3">
       {tabs.map((tab) => (
         <LinkButton
           data-active={tab.relativeHref === activeTabPath ? true : undefined}

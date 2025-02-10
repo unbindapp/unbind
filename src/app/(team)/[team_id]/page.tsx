@@ -1,9 +1,12 @@
-import ProjectCardList from "@/app/[team_id]/_components/project-card-list";
+import ProjectCardList from "@/app/(team)/[team_id]/_components/project-card-list";
 import { apiServer, HydrateClient } from "@/server/trpc/setup/server";
+import { Metadata } from "next";
 
 type Props = {
   params: Promise<{ team_id: string }>;
 };
+
+export const metadata: Metadata = {};
 
 export default async function Page({ params }: Props) {
   const { team_id: teamId } = await params;

@@ -1,6 +1,6 @@
 "use client";
 
-import ProjectCard from "@/app/[team_id]/_components/project-card";
+import ProjectCard from "@/app/(team)/[team_id]/_components/project-card";
 import { api } from "@/server/trpc/setup/client";
 
 type Props = {

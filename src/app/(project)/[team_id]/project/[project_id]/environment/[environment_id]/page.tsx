@@ -1,4 +1,4 @@
-import ServiceCardList from "@/app/[team_id]/project/[project_id]/environment/_components/service-card-list";
+import ServiceCardList from "@/app/(project)/[team_id]/project/[project_id]/environment/_components/service-card-list";
 import { apiServer, HydrateClient } from "@/server/trpc/setup/server";
 
 type Props = {

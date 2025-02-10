@@ -1,4 +1,4 @@
-import TabBar from "@/app/[team_id]/project/[project_id]/environment/[environment_id]/_components/tab-bar";
+import ProjectNavbar from "@/app/(project)/[team_id]/project/[project_id]/_components/project-navbar";
 import { ReactNode } from "react";
 
 type Props = {
@@ -8,7 +8,7 @@ type Props = {
 export default function Layout({ children }: Props) {
   return (
     <>
-      <TabBar />
+      <ProjectNavbar />
       {children}
     </>
   );

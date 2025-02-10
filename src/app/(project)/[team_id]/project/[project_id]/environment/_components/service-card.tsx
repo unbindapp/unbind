@@ -114,7 +114,7 @@ export default function ServiceCard({
               >
                 <div className="absolute w-full h-full pointer-events-none py-1">
                   <div
-                    className="w-full h-full rounded-md bg-border/0 
+                    className="w-full h-full rounded-lg bg-border/0 
                     not-touch:group-hover/button:bg-border group-active/button:bg-border"
                   />
                 </div>

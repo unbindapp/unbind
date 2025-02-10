@@ -1,5 +1,3 @@
-import Footer from "@/components/navigation/footer";
-import Navbar from "@/components/navigation/navbar";
 import TopLoader from "@/components/navigation/top-loader";
 import Providers from "@/components/providers/providers";
 import { Toaster } from "@/components/ui/sonner";
@@ -55,9 +53,7 @@ export default async function RootLayout({
       >
         <Providers>
           <TopLoader />
-          <Navbar />
           {children}
-          <Footer />
           <Toaster
             position="top-right"
             icons={{
