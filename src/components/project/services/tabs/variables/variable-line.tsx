@@ -57,7 +57,7 @@ export default function VariableLine({ variable }: Props) {
           )}
         </Button>
         <p className="leading-none shrink min-w-0 whitespace-nowrap overflow-hidden overflow-ellipsis py-1 pl-2 text-xs">
-          {isValueVisible ? variable.value : "••••••••"}
+          {isValueVisible ? variable.value : "••••••••••"}
         </p>
         <div className="ml-auto pl-1 sm:-mr-2.25 absolute right-1 top-1 sm:relative sm:top-auto sm:right-auto">
           <Button
