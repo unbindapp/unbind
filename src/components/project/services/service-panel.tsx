@@ -85,7 +85,7 @@ export default function ServicePanel({ service, children }: Props) {
             <Button
               size="icon"
               variant="ghost"
-              className="text-muted-more-foreground rounded-lg shrink-0 -mr-2.5 -mt-1.75 sm:-mr-5 sm:-mt-3"
+              className="text-muted-more-foreground rounded-lg shrink-0 -mr-3 -mt-2.25 sm:-mr-5 sm:-mt-3"
             >
               <XIcon className="size-5" />
             </Button>
