@@ -13,7 +13,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { useCommandState } from "cmdk";
 import { ChevronRightIcon, DatabaseIcon } from "lucide-react";
-import { FC, useCallback, useRef, useState } from "react";
+import { FC, useCallback, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 type Props = {
@@ -103,11 +103,16 @@ const defaultPage: TPage = {
 };
 
 export default function ProjectCommandPanel({ className }: Props) {
-  const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const scrollId = useRef<NodeJS.Timeout>(null);
 
   const [currentPage, setCurrentPage] = useState(defaultPage);
+  const allOtherItems = useMemo(
+    () =>
+      getAllItemsFromPage(defaultPage).filter(
+        (i) => !currentPage.items.map((c) => c.title).includes(i.title)
+      ),
+    [currentPage]
+  );
 
   useHotkeys(
     "arrowleft",
@@ -131,29 +136,26 @@ export default function ProjectCommandPanel({ className }: Props) {
     <Command
       variant="modal"
       className={cn(
-        "w-full rounded-xl min-h-96 border shadow-xl shadow-shadow/[var(--opacity-shadow)]",
+        "w-full rounded-xl h-96 border shadow-xl shadow-shadow/[var(--opacity-shadow)]",
         className
       )}
     >
-      <CommandInput
-        ref={inputRef}
-        onValueChange={() => {
-          if (scrollId.current) clearTimeout(scrollId.current);
-          scrollId.current = setTimeout(() => {
-            const div = listRef.current;
-            div?.scrollTo({ top: 0 });
-          });
-        }}
-        placeholder="Deploy something..."
-      />
+      <CommandInput ref={inputRef} placeholder="Deploy something..." />
       <CommandEmpty className="text-muted-foreground w-full text-center text-base py-6">
         Nothing found.
       </CommandEmpty>
-      <ScrollArea viewportRef={listRef}>
+      <ScrollArea>
         <CommandList>
           <CommandGroup>
             {currentPage.items.map((item) => (
               <Item
+                key={item.title}
+                item={item}
+                setCurrentPage={setCurrentPage}
+              />
+            ))}
+            {allOtherItems.map((item) => (
+              <ConditionalItem
                 key={item.title}
                 item={item}
                 setCurrentPage={setCurrentPage}
@@ -164,6 +166,18 @@ export default function ProjectCommandPanel({ className }: Props) {
       </ScrollArea>
     </Command>
   );
+}
+
+function ConditionalItem({
+  item,
+  setCurrentPage,
+}: {
+  item: TItem;
+  setCurrentPage: (page: TPage) => void;
+}) {
+  const search = useCommandState((state) => state.search);
+  if (!search) return null;
+  return <Item item={item} setCurrentPage={setCurrentPage} />;
 }
 
 function Item({
@@ -197,17 +211,25 @@ function Item({
       className="px-3.5 font-medium py-3 text-muted-foreground flex flex-row w-full items-center justify-between text-left gap-6"
       onSelect={onSelect}
     >
-      <div className="flex-1 gap-2.5 flex items-center justify-start">
+      <div className="flex-1 min-w-0 gap-2.5 flex items-center justify-start">
         <item.Icon className="size-5 -ml-0.5" />
-        {item.title}
+        <p className="shrink min-w-0 leading-tight">{item.title}</p>
       </div>
-      {item.subpage && <ChevronRightIcon className="size-5 -mr-1.5" />}
+      {item.subpage && <ChevronRightIcon className="size-5 -mr-1.5 shrink-0" />}
     </CommandItem>
   );
 }
 
+function getAllItemsFromPage(page: TPage): TItem[] {
+  return page.items.flatMap((item) => {
+    if (item.subpage) {
+      return [...getAllItemsFromPage(item.subpage)];
+    }
+    return item;
+  });
+}
+
 function findParentPage(id: string, page: TPage): TPage | null {
-  // recursively find the parent page
   if (page.id === id) return page;
   if (page.items) {
     for (const item of page.items) {
