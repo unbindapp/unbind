@@ -39,8 +39,11 @@ export default function VariableLine({ variable }: Props) {
           className="rounded-md text-muted-more-foreground group/button -ml-2"
         >
           <div className="size-4 relative group-data-[copied]/button:rotate-45 transition-transform">
-            <CopyIcon className="size-4 group-data-[copied]/button:opacity-0" />
-            <CheckIcon className="size-4 absolute left-0 top-0 text-success -rotate-45 opacity-0 group-data-[copied]/button:opacity-100" />
+            <CopyIcon className="size-full group-data-[copied]/button:opacity-0" />
+            <CheckIcon
+              strokeWidth={3}
+              className="size-full absolute left-0 top-0 text-success -rotate-45 opacity-0 group-data-[copied]/button:opacity-100"
+            />
           </div>
         </Button>
         <Button
