@@ -208,6 +208,7 @@ function Item({
 
   return (
     <CommandItem
+      value={item.title}
       className="px-3.5 font-medium py-3 text-muted-foreground flex flex-row w-full items-center justify-between text-left gap-6"
       onSelect={onSelect}
     >
