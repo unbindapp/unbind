@@ -63,12 +63,12 @@ const CommandInput = React.forwardRef<
   }
 >(({ className, classNameWrapper, showSpinner = false, ...props }, ref) => (
   <div
-    className={cn("flex items-center border-b px-3 gap-1.5", classNameWrapper)}
+    className={cn("flex items-center border-b", classNameWrapper)}
     cmdk-input-wrapper=""
   >
     <div
       data-show-spinner={showSpinner ? true : undefined}
-      className="size-4 -ml-0.5 shrink-0 text-muted-foreground group relative"
+      className="size-4 left-3.5 pointer-events-none absolute shrink-0 text-muted-foreground group"
     >
       {!showSpinner && (
         <SearchIcon className="size-full text-muted-foreground" />
@@ -80,7 +80,7 @@ const CommandInput = React.forwardRef<
     <CommandPrimitive.Input
       ref={ref}
       className={cn(
-        "flex w-full py-2 leading-none rounded-md bg-transparent outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50",
+        "flex w-full pl-9.5 pr-4 py-3 leading-none rounded-md bg-transparent outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50",
         className
       )}
       {...props}

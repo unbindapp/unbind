@@ -71,7 +71,7 @@ export default function DeploymentCard({ deployment, active }: Props) {
         </div>
         <Button
           size="icon"
-          variant="foreground-ghost"
+          variant="ghost-foreground"
           className="shrink-0 text-muted-more-foreground rounded-lg absolute right-1 top-1 sm:relative sm:-mr-3.5 sm:right-0 sm:top-0"
         >
           <EllipsisVerticalIcon className="size-6" />

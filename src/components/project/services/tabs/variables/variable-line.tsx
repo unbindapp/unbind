@@ -33,7 +33,7 @@ export default function VariableLine({ variable }: Props) {
         <Button
           data-copied={isRecentlyCopied ? true : undefined}
           onClick={() => copyToClipboard(variable.value)}
-          variant="foreground-ghost"
+          variant="ghost-foreground"
           forceMinSize="medium"
           size="icon"
           className="rounded-md text-muted-more-foreground group/button -ml-2"
@@ -48,7 +48,7 @@ export default function VariableLine({ variable }: Props) {
         </Button>
         <Button
           onClick={() => setIsValueVisible((prev) => !prev)}
-          variant="foreground-ghost"
+          variant="ghost-foreground"
           forceMinSize="medium"
           size="icon"
           className="rounded-md text-muted-more-foreground"
@@ -64,7 +64,7 @@ export default function VariableLine({ variable }: Props) {
         </p>
         <div className="ml-auto pl-1 sm:-mr-2.25 absolute right-1 top-1 sm:relative sm:top-auto sm:right-auto">
           <Button
-            variant="foreground-ghost"
+            variant="ghost-foreground"
             size="icon"
             className="rounded-md text-muted-more-foreground"
           >

@@ -152,7 +152,7 @@ input[type="search"] {
     --warning-foreground: 120 9% 6%;
     --success: 120 40% 60%;
     --success-foreground: 120 9% 6%;
-    --shadow: 120 8% 5%;
+    --shadow: 120 11% 3%;
     --border: 120 5% 12%;
     --input: 250 20% 9%;
     --ring: 120 100% 97%;
@@ -199,7 +199,7 @@ input[type="search"] {
 
     --barrier: 120 10% 4%;
     --opacity-barrier: 0.75;
-    --opacity-shadow: 0.75;
+    --opacity-shadow: 0.6;
   }
 }
 

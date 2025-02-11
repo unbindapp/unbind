@@ -23,17 +23,19 @@ const buttonVariants = cva(
           "bg-success text-success-foreground not-touch:hover:bg-success/85 active:bg-success/85",
         outline:
           "border border-border bg-background not-touch:hover:bg-border active:bg-border not-touch:hover:text-foreground active:text-foreground",
+        "outline-foreground":
+          "border border-foreground bg-background not-touch:hover:bg-foreground/8 active:bg-foreground/8 not-touch:hover:text-foreground active:text-foreground",
         "warning-outline":
           "border border-warning/25 bg-background not-touch:hover:bg-warning/20 active:bg-warning/20 not-touch:hover:border-warning/0 active:border-warning/0 text-warning not-touch:hover:text-warning active:text-warning",
         secondary:
           "bg-secondary text-secondary-foreground not-touch:hover:bg-secondary/85 active:bg-secondary/85",
         ghost:
           "not-touch:hover:bg-border not-touch:hover:text-foreground active:bg-border active:text-foreground",
-        "destructive-ghost":
+        "ghost-destructive":
           "text-destructive not-touch:hover:bg-destructive/20 not-touch:hover:text-destructive active:bg-destructive/20 active:text-destructive",
-        "warning-ghost":
+        "ghost-warning":
           "text-warning not-touch:hover:bg-warning/20 not-touch:hover:text-warning active:bg-warning/20 active:text-warning",
-        "foreground-ghost":
+        "ghost-foreground":
           "text-foreground not-touch:hover:bg-foreground/6 not-touch:hover:text-foreground active:bg-foreground/6 active:text-foreground",
         link: "text-primary underline-offset-4 not-touch:hover:underline active:underline",
         google:
