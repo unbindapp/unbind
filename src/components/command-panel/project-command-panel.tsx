@@ -11,8 +11,9 @@ import {
 } from "@/components/ui/command";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
+import { useCommandState } from "cmdk";
 import { ChevronRightIcon, DatabaseIcon } from "lucide-react";
-import { FC, useRef, useState } from "react";
+import { FC, useCallback, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 type Props = {
@@ -152,29 +153,56 @@ export default function ProjectCommandPanel({ className }: Props) {
         <CommandList>
           <CommandGroup>
             {currentPage.items.map((item) => (
-              <CommandItem
+              <Item
                 key={item.title}
-                className="px-3.5 font-medium py-3 text-muted-foreground flex flex-row w-full items-center justify-between text-left gap-6"
-                onSelect={() => {
-                  if (item.subpage) {
-                    setCurrentPage(item.subpage);
-                    return;
-                  }
-                }}
-              >
-                <div className="flex-1 gap-2.5 flex items-center justify-start">
-                  <item.Icon className="size-5 -ml-0.5" />
-                  {item.title}
-                </div>
-                {item.subpage && (
-                  <ChevronRightIcon className="size-5 -mr-1.5" />
-                )}
-              </CommandItem>
+                item={item}
+                setCurrentPage={setCurrentPage}
+              />
             ))}
           </CommandGroup>
         </CommandList>
       </ScrollArea>
     </Command>
+  );
+}
+
+function Item({
+  item,
+  setCurrentPage,
+}: {
+  item: TItem;
+  setCurrentPage: (page: TPage) => void;
+}) {
+  const search = useCommandState((state) => state.search);
+  const value = useCommandState((state) => state.value);
+
+  const onSelect = useCallback(() => {
+    if (item.subpage) {
+      setCurrentPage(item.subpage);
+      return;
+    }
+  }, [item, setCurrentPage]);
+
+  useHotkeys("arrowright", () => onSelect(), {
+    enabled:
+      value === item.title &&
+      item.subpage !== undefined &&
+      (search === undefined || search === null || search === ""),
+    enableOnContentEditable: true,
+    enableOnFormTags: true,
+  });
+
+  return (
+    <CommandItem
+      className="px-3.5 font-medium py-3 text-muted-foreground flex flex-row w-full items-center justify-between text-left gap-6"
+      onSelect={onSelect}
+    >
+      <div className="flex-1 gap-2.5 flex items-center justify-start">
+        <item.Icon className="size-5 -ml-0.5" />
+        {item.title}
+      </div>
+      {item.subpage && <ChevronRightIcon className="size-5 -mr-1.5" />}
+    </CommandItem>
   );
 }
 
