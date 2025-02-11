@@ -60,7 +60,7 @@ export default function ServicePanel({ service, children }: Props) {
       onOpenChange={setOpen}
       autoFocus={open}
       direction={isSmall ? "bottom" : "right"}
-      handleOnly
+      handleOnly={!isSmall}
     >
       <DrawerTrigger asChild>{children}</DrawerTrigger>
       <DrawerContent
