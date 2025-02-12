@@ -426,7 +426,9 @@ export type TServiceType =
   | "astro"
   | "strapi"
   | "mongodb"
-  | "pocketbase";
+  | "pocketbase"
+  | "ghost"
+  | "n8n";
 
 export type TTeam = {
   id: string;

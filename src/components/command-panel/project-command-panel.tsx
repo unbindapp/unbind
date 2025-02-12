@@ -1,5 +1,10 @@
 "use client";
 
+import {
+  panelIdKey,
+  panelPageKey,
+  rootPanelPageIdForProject,
+} from "@/components/command-panel/constants";
 import ServiceIcon from "@/components/icons/service";
 import {
   Command,
@@ -18,8 +23,10 @@ import {
   ChevronRightIcon,
   DatabaseIcon,
 } from "lucide-react";
-import { FC, useCallback, useMemo, useRef, useState } from "react";
+import { useQueryState } from "nuqs";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { toast } from "sonner";
 
 type Props = {
   className?: string;
@@ -39,17 +46,28 @@ type TItem = {
   keywords: string[];
 };
 
-const defaultPageId = "new_service";
-
 export default function ProjectCommandPanel({ className }: Props) {
+  const [, setPanelId] = useQueryState(panelIdKey);
+  const [, setPanelPageId] = useQueryState(panelPageKey);
+
+  const onSelectPlaceholder = useCallback(() => {
+    toast.success("Successful (Fake)", {
+      description: "Imagine this working...",
+      duration: 3000,
+      closeButton: false,
+    });
+    setPanelId(null);
+  }, [setPanelId]);
+
   const defaultPage: TPage = useMemo(
     () => ({
-      id: defaultPageId,
+      id: rootPanelPageIdForProject,
       parentPageId: null,
       items: [
         {
           title: "GitHub Repo",
           keywords: ["deploy", "gitlab", "bitbucket"],
+          onSelect: () => onSelectPlaceholder(),
           Icon: ({ className }) => (
             <ServiceIcon variant="github" className={className} />
           ),
@@ -60,11 +78,12 @@ export default function ProjectCommandPanel({ className }: Props) {
           Icon: DatabaseIcon,
           subpage: {
             id: "databases",
-            parentPageId: defaultPageId,
+            parentPageId: rootPanelPageIdForProject,
             items: [
               {
                 title: "PostgreSQL",
                 keywords: ["database", "sql", "mysql"],
+                onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
                   <ServiceIcon
                     color="brand"
@@ -76,6 +95,7 @@ export default function ProjectCommandPanel({ className }: Props) {
               {
                 title: "Redis",
                 keywords: ["database", "cache", "key value"],
+                onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
                   <ServiceIcon
                     color="brand"
@@ -87,6 +107,7 @@ export default function ProjectCommandPanel({ className }: Props) {
               {
                 title: "MongoDB",
                 keywords: ["database", "object"],
+                onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
                   <ServiceIcon
                     color="brand"
@@ -98,6 +119,7 @@ export default function ProjectCommandPanel({ className }: Props) {
               {
                 title: "MySQL",
                 keywords: ["database", "sql", "postgresql"],
+                onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
                   <ServiceIcon
                     color="brand"
@@ -109,6 +131,7 @@ export default function ProjectCommandPanel({ className }: Props) {
               {
                 title: "ClickHouse",
                 keywords: ["database", "analytics", "sql"],
+                onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
                   <ServiceIcon
                     color="brand"
@@ -123,6 +146,7 @@ export default function ProjectCommandPanel({ className }: Props) {
         {
           title: "Docker Image",
           keywords: ["deploy"],
+          onSelect: () => onSelectPlaceholder(),
           Icon: ({ className }) => (
             <ServiceIcon variant="docker" className={className} />
           ),
@@ -133,11 +157,12 @@ export default function ProjectCommandPanel({ className }: Props) {
           Icon: BlocksIcon,
           subpage: {
             id: "templates",
-            parentPageId: defaultPageId,
+            parentPageId: rootPanelPageIdForProject,
             items: [
               {
                 title: "Strapi",
                 keywords: ["cms", "content"],
+                onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
                   <ServiceIcon
                     color="brand"
@@ -149,6 +174,7 @@ export default function ProjectCommandPanel({ className }: Props) {
               {
                 title: "Umami",
                 keywords: ["analytics", "privacy", "tracking"],
+                onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
                   <ServiceIcon
                     color="brand"
@@ -160,6 +186,7 @@ export default function ProjectCommandPanel({ className }: Props) {
               {
                 title: "Meilisearch",
                 keywords: ["full text search", "elasticsearch", "ram"],
+                onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
                   <ServiceIcon
                     color="brand"
@@ -171,6 +198,7 @@ export default function ProjectCommandPanel({ className }: Props) {
               {
                 title: "MinIO",
                 keywords: ["s3", "file storage"],
+                onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
                   <ServiceIcon
                     color="brand"
@@ -188,10 +216,35 @@ export default function ProjectCommandPanel({ className }: Props) {
                   "realtime database",
                   "file storage",
                 ],
+                onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
                   <ServiceIcon
                     color="brand"
                     variant="pocketbase"
+                    className={className}
+                  />
+                ),
+              },
+              {
+                title: "N8N",
+                keywords: ["workflow automation", "ai", "devops", "itops"],
+                onSelect: () => onSelectPlaceholder(),
+                Icon: ({ className }) => (
+                  <ServiceIcon
+                    color="brand"
+                    variant="n8n"
+                    className={className}
+                  />
+                ),
+              },
+              {
+                title: "Ghost",
+                keywords: ["blogging"],
+                onSelect: () => onSelectPlaceholder(),
+                Icon: ({ className }) => (
+                  <ServiceIcon
+                    color="brand"
+                    variant="ghost"
                     className={className}
                   />
                 ),
@@ -201,7 +254,7 @@ export default function ProjectCommandPanel({ className }: Props) {
         },
       ],
     }),
-    []
+    [onSelectPlaceholder]
   );
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -215,24 +268,48 @@ export default function ProjectCommandPanel({ className }: Props) {
     [currentPage, defaultPage]
   );
 
+  useEffect(() => {
+    setPanelPageId(currentPage.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage]);
+
+  const goToParent = useCallback(() => {
+    if (currentPage.id === rootPanelPageIdForProject) {
+      return;
+    }
+    if (currentPage.parentPageId === null) return;
+    const parentPage = findParentPage(currentPage.parentPageId, defaultPage);
+    if (parentPage) {
+      setCurrentPage(parentPage);
+    }
+  }, [currentPage, defaultPage]);
+
   const goBackItem = useMemo(
     () => ({
       title: "Go Back",
       Icon: ArrowLeftIcon,
       keywords: ["return"],
-      onSelect: () => setCurrentPage(defaultPage),
+      onSelect: () => goToParent(),
     }),
-    [setCurrentPage, defaultPage]
+    [goToParent]
   );
 
   useHotkeys(
     "arrowleft",
     () => {
       if (inputRef.current?.value) return;
-      if (currentPage.id === defaultPage.id) return;
-      if (currentPage.parentPageId === null) return;
-      const parentPage = findParentPage(currentPage.parentPageId, defaultPage);
-      if (parentPage) setCurrentPage(parentPage);
+      goToParent();
+    },
+    {
+      enableOnContentEditable: true,
+      enableOnFormTags: true,
+    }
+  );
+
+  useHotkeys(
+    "esc",
+    () => {
+      goToParent();
     },
     {
       enableOnContentEditable: true,
@@ -269,7 +346,7 @@ export default function ProjectCommandPanel({ className }: Props) {
                 setCurrentPage={setCurrentPage}
               />
             ))}
-            {currentPage.id !== defaultPageId && (
+            {currentPage.id !== rootPanelPageIdForProject && (
               <Item item={goBackItem} setCurrentPage={setCurrentPage} />
             )}
           </CommandGroup>
@@ -304,7 +381,6 @@ function Item({
   const onSelect = useCallback(() => {
     if (item.subpage) {
       setCurrentPage(item.subpage);
-      return;
     }
     item.onSelect?.();
   }, [item, setCurrentPage]);

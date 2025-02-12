@@ -113,6 +113,8 @@ const config: Config = {
         strapi: "hsl(var(--strapi))",
         mongodb: "hsl(var(--mongodb))",
         pocketbase: "hsl(var(--pocketbase))",
+        ghost: "hsl(var(--ghost))",
+        n8n: "hsl(var(--n8n))",
 
         barrier: "hsl(var(--barrier))",
       },

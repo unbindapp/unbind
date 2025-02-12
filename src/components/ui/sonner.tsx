@@ -17,6 +17,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="font-sans"
+      {...props}
       toastOptions={{
         unstyled: true,
         classNames: {
@@ -30,14 +31,13 @@ const Toaster = ({ ...props }: ToasterProps) => {
           content: "shrink min-w-0 flex flex-col gap-1",
           description: "text-muted-foreground text-sm leading-snug",
           closeButton:
-            "size-6 p-1 has-hover:hover:group-data-[sonner-toast]/toast:data-[close-button=true]:text-foreground active:group-data-[sonner-toast]/toast:data-[close-button=true]:text-foreground shadow-md shadow-shadow/[var(--opacity-shadow)] border border-border before:w-full before:h-full before:min-w-[48px] before:min-h-[48px] before:z-[-1] z-10 before:bg-transparent before:absolute group-data-[sonner-toast]/toast:data-[close-button=true]:hover:text-muted-foreground group-data-[sonner-toast]/toast:data-[close-button=true]:hover:border-border group-data-[sonner-toast]/toast:data-[close-button=true]:hover:bg-border group-data-[sonner-toast]/toast:data-[close-button=true]:bg-background group-data-[sonner-toast]/toast:data-[close-button=true]:text-muted-foreground left-1 top-1",
+            "size-6 p-1 has-hover:hover:!text-foreground active:!text-foreground !text-muted-foreground shadow-md shadow-shadow/[var(--opacity-shadow)] border border-border before:w-full before:h-full before:min-w-[48px] before:min-h-[48px] before:z-[-1] z-10 before:bg-transparent before:absolute !border-border active:!bg-border has-hover:hover:!bg-border !bg-background left-1 top-1",
           actionButton:
             "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
           cancelButton:
             "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
         },
       }}
-      {...props}
     />
   );
 };

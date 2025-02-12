@@ -126,6 +126,8 @@ input[type="search"] {
     --strapi: 241 100% 64%;
     --mongodb: 145 100% 47%;
     --pocketbase: 250 25% 4%;
+    --ghost: 250 25% 4%;
+    --n8n: 346 79% 61%;
 
     --barrier: 0 0% 0%;
     --opacity-barrier: 0.7;
@@ -202,6 +204,8 @@ input[type="search"] {
     --strapi: 241 100% 75%;
     --mongodb: 145 100% 47%;
     --pocketbase: 120 100% 97%;
+    --ghost: 120 100% 97%;
+    --n8n: 346 79% 61%;
 
     --barrier: 120 10% 4%;
     --opacity-barrier: 0.75;
