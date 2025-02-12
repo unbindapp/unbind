@@ -112,16 +112,15 @@ export function BreadcrumbItem<T>({
                   {IconItem && <IconItem id={i.id} />}
                   <p className="shrink min-w-0">{i.title}</p>
                 </div>
-                <div className="size-4 -mr-0.5 relative">
+                <div className="size-4 -mr-0.5 relative group-data-[show-arrow]/item:group-data-[highlighted]/item:rotate-90 transition-transform">
                   {selectedItem?.id === i.id && (
                     <>
                       <CheckIcon
-                        className="size-full group-data-[show-arrow]/item:group-data-[highlighted]/item:opacity-0 group-data-[show-arrow]/item:group-data-[highlighted]/item:rotate-90 transition"
+                        className="size-full group-data-[show-arrow]/item:group-data-[highlighted]/item:opacity-0 transition-opacity"
                         strokeWidth={3}
                       />
                       <ArrowRightIcon
-                        className="absolute left-0 top-0 opacity-0 -rotate-90 size-full group-data-[show-arrow]/item:group-data-[highlighted]/item:opacity-100
-                        group-data-[show-arrow]/item:group-data-[highlighted]/item:rotate-0 transition"
+                        className="absolute left-0 top-0 opacity-0 -rotate-90 size-full group-data-[show-arrow]/item:group-data-[highlighted]/item:opacity-100 transition-opacity"
                         strokeWidth={2.5}
                       />
                     </>

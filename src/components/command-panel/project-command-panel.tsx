@@ -273,6 +273,15 @@ export default function ProjectCommandPanel({ className }: Props) {
     () => getAllItemsFromPage(currentPage),
     [currentPage]
   );
+
+  const allOtherItems = useMemo(
+    () =>
+      allItems.filter(
+        (i) => !currentPage.items.map((c) => c.title).includes(i.title)
+      ),
+    [allItems, currentPage]
+  );
+
   const allPageIds = useMemo(() => {
     const ids = new Set<string>();
     const addIds = (page: TPage) => {
@@ -286,14 +295,6 @@ export default function ProjectCommandPanel({ className }: Props) {
     addIds(defaultPage);
     return [...ids];
   }, [defaultPage]);
-
-  const allOtherItems = useMemo(
-    () =>
-      allItems.filter(
-        (i) => !currentPage.items.map((c) => c.title).includes(i.title)
-      ),
-    [allItems]
-  );
 
   useEffect(() => {
     setPanelPageId(currentPage.id);

@@ -38,26 +38,26 @@ export default function VariableLine({ variable }: Props) {
           size="icon"
           className="rounded-md text-muted-more-foreground group/button -ml-2"
         >
-          <div className="size-4 relative group-data-[copied]/button:rotate-45 transition-transform">
-            <CopyIcon className="size-full group-data-[copied]/button:opacity-0" />
+          <div className="size-4 relative group-data-[copied]/button:rotate-90 transition-transform">
+            <CopyIcon className="size-full group-data-[copied]/button:opacity-0 text-muted-more-foreground group-data-[copied]/button:text-success transition" />
             <CheckIcon
               strokeWidth={3}
-              className="size-full absolute left-0 top-0 text-success -rotate-45 opacity-0 group-data-[copied]/button:opacity-100"
+              className="size-full absolute left-0 top-0 text-muted-more-foreground group-data-[copied]/button:text-success -rotate-90 opacity-0 group-data-[copied]/button:opacity-100 transition"
             />
           </div>
         </Button>
         <Button
+          data-visible={isValueVisible ? true : undefined}
           onClick={() => setIsValueVisible((prev) => !prev)}
           variant="ghost-foreground"
           forceMinSize="medium"
           size="icon"
-          className="rounded-md text-muted-more-foreground"
+          className="rounded-md text-muted-more-foreground group/button"
         >
-          {isValueVisible ? (
-            <EyeOffIcon className="size-4" />
-          ) : (
-            <EyeIcon className="size-4" />
-          )}
+          <div className="size-4 relative">
+            <EyeIcon className="size-4 group-data-[visible]/button:opacity-0" />
+            <EyeOffIcon className="size-4 absolute left-0 top-0 opacity-0 group-data-[visible]/button:opacity-100" />
+          </div>
         </Button>
         <p className="leading-none shrink min-w-0 whitespace-nowrap overflow-hidden overflow-ellipsis py-1 pl-2 text-xs">
           {isValueVisible ? variable.value : "••••••••••"}
