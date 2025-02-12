@@ -1,5 +1,5 @@
+import SlashIcon from "@/components/icons/slash";
 import { cn } from "@/components/ui/utils";
-import { SlashIcon } from "lucide-react";
 import { ReactNode } from "react";
 
 export function BreadcrumbWrapper({
@@ -18,12 +18,13 @@ export function BreadcrumbWrapper({
 
 export function BreadcrumbSeparator({ className }: { className?: string }) {
   return (
-    <SlashIcon
+    <div
       className={cn(
-        "text-foreground/16 -mx-0.5 sm:mx-0 -rotate-30 size-4 shrink-0",
+        "text-foreground/16 w-3 sm:w-4 h-5.5 flex items-center justify-center shrink-0 overflow-hidden",
         className
       )}
-      strokeWidth={3}
-    />
+    >
+      <SlashIcon className="size-5.5" />
+    </div>
   );
 }

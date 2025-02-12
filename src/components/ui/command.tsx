@@ -63,7 +63,7 @@ const CommandInput = React.forwardRef<
   }
 >(({ className, classNameWrapper, showSpinner = false, ...props }, ref) => (
   <div
-    className={cn("flex items-center border-b", classNameWrapper)}
+    className={cn("flex items-center border-b relative", classNameWrapper)}
     cmdk-input-wrapper=""
   >
     <div

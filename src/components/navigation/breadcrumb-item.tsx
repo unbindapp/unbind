@@ -11,7 +11,7 @@ import { cn } from "@/components/ui/utils";
 import { ArrowRightIcon, CheckIcon, ChevronDownIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { ComponentProps, FC, useState } from "react";
-import { useWindowSize } from "usehooks-ts";
+import { useIsMounted, useWindowSize } from "usehooks-ts";
 
 type Item<T> = T & { id: string; title: string };
 
@@ -34,8 +34,9 @@ export function BreadcrumbItem<T>({
   const pathname = usePathname();
   const { width } = useWindowSize();
   const isSmall = width < 640;
+  const mounted = useIsMounted();
 
-  if (isSmall) {
+  if (isSmall && mounted()) {
     return (
       <BottomDrawer
         title={title}
@@ -152,7 +153,7 @@ function Trigger<T>({
       data-no-icon={Icon === undefined ? true : undefined}
       data-pending={item == undefined ? true : undefined}
       className={cn(
-        "px-1.5 py-1.75 data-[no-icon]:pl-2.75 rounded-lg border-none font-medium flex items-center justify-start gap-2 has-hover:hover:bg-border text-sm group/trigger",
+        "px-1.5 py-2 data-[no-icon]:pl-2.75 rounded-md border-none font-medium flex items-center justify-start gap-2 has-hover:hover:bg-border text-sm group/trigger",
         className
       )}
       {...rest}
