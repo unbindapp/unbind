@@ -117,16 +117,13 @@ export default function ProjectCommandPanel({ className }: Props) {
   useHotkeys(
     "arrowleft",
     () => {
+      if (inputRef.current?.value) return;
       if (currentPage.id === defaultPage.id) return;
       if (currentPage.parentPageId === null) return;
       const parentPage = findParentPage(currentPage.parentPageId, defaultPage);
       if (parentPage) setCurrentPage(parentPage);
     },
     {
-      enabled:
-        inputRef.current === undefined ||
-        inputRef.current?.value === undefined ||
-        inputRef.current.value === "",
       enableOnContentEditable: true,
       enableOnFormTags: true,
     }
