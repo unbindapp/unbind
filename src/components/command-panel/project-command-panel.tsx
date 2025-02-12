@@ -24,7 +24,15 @@ import {
   DatabaseIcon,
 } from "lucide-react";
 import { useQueryState } from "nuqs";
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  FC,
+  RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { toast } from "sonner";
 
@@ -260,12 +268,31 @@ export default function ProjectCommandPanel({ className }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [currentPage, setCurrentPage] = useState(defaultPage);
+
+  const allItems = useMemo(
+    () => getAllItemsFromPage(currentPage),
+    [currentPage]
+  );
+  const allPageIds = useMemo(() => {
+    const ids = new Set<string>();
+    const addIds = (page: TPage) => {
+      ids.add(page.id);
+      page.items.forEach((item) => {
+        if (item.subpage) {
+          addIds(item.subpage);
+        }
+      });
+    };
+    addIds(defaultPage);
+    return [...ids];
+  }, [defaultPage]);
+
   const allOtherItems = useMemo(
     () =>
-      getAllItemsFromPage(defaultPage).filter(
+      allItems.filter(
         (i) => !currentPage.items.map((c) => c.title).includes(i.title)
       ),
-    [currentPage, defaultPage]
+    [allItems]
   );
 
   useEffect(() => {
@@ -325,9 +352,9 @@ export default function ProjectCommandPanel({ className }: Props) {
         className
       )}
     >
-      <CommandInput ref={inputRef} placeholder="Deploy something..." />
+      <Input currentPage={currentPage} allPageIds={allPageIds} ref={inputRef} />
       <CommandEmpty className="text-muted-foreground w-full text-center text-base py-6">
-        Nothing found.
+        No matching results
       </CommandEmpty>
       <ScrollArea>
         <CommandList>
@@ -366,6 +393,31 @@ function ConditionalItem({
   const search = useCommandState((state) => state.search);
   if (!search) return null;
   return <Item item={item} setCurrentPage={setCurrentPage} />;
+}
+
+function Input({
+  currentPage,
+  allPageIds,
+  ref,
+}: {
+  currentPage: TPage;
+  allPageIds: string[];
+  ref: RefObject<HTMLInputElement | null>;
+}) {
+  const [values, setValues] = useState(
+    Object.fromEntries(allPageIds.map((id) => [id, ""]))
+  );
+
+  return (
+    <CommandInput
+      value={values[currentPage.id]}
+      onValueChange={(value) => {
+        setValues((prev) => ({ ...prev, [currentPage.id]: value }));
+      }}
+      ref={ref}
+      placeholder="Deploy something..."
+    />
+  );
 }
 
 function Item({
