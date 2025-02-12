@@ -44,7 +44,7 @@ export default function NewServiceButton({
   return (
     <CommandPanelTrigger open={open} setOpen={setOpen}>
       <Button
-        className={cn("bg-background-hover", className)}
+        className={cn("bg-background-hover -my-2", className)}
         size="sm"
         variant="outline"
       >

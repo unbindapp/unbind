@@ -55,7 +55,7 @@ const DrawerContent = React.forwardRef<
     >
       {!hideHandle && (
         <div className="w-[calc(min(33.3%,6rem))] h-12 pb-2 -translate-y-full flex items-end justify-center absolute left-1/2 -translate-x-1/2 top-0">
-          <div className="w-full h-2 rounded-full bg-foreground/20" />
+          <div className="w-full h-1.5 rounded-full bg-foreground/20" />
         </div>
       )}
       {children}
