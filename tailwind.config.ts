@@ -285,7 +285,7 @@ const config: Config = {
   },
   plugins: [
     plugin(function ({ addVariant }) {
-      addVariant("not-touch", ".not-touch &"); // here
+      addVariant("has-hover", "@media (hover: hover)");
     }),
     require("tailwindcss-animate"),
   ],

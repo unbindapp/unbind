@@ -124,7 +124,7 @@ const DialogContent = React.forwardRef<
               {children}
               {variant !== "styleless" && (
                 <DialogPrimitive.Close
-                  className="absolute right-0 top-0 rounded-xl p-2.5 opacity-50 not-touch:hover:opacity-100 active:opacity-100 ring-1 ring-transparent 
+                  className="absolute right-0 top-0 rounded-xl p-2.5 opacity-50 has-hover:hover:opacity-100 active:opacity-100 ring-1 ring-transparent 
                   focus-visible:outline-none focus-visible:ring-foreground disabled:pointer-events-none text-muted-foreground"
                 >
                   <XIcon className="h-5 w-5" />

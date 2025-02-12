@@ -74,7 +74,7 @@ export default function ProjectTabs({
               key={tab.relativeHref}
               className={cn(
                 `font-medium text-sm px-3 py-3.5 rounded leading-none text-muted-foreground 
-                not-touch:hover:bg-transparent active:bg-transparent group/button data-[active]:text-foreground`,
+                has-hover:hover:bg-transparent active:bg-transparent group/button data-[active]:text-foreground`,
                 classNameButton
               )}
               variant="ghost"
@@ -84,7 +84,7 @@ export default function ProjectTabs({
               <div className="absolute w-full h-full pointer-events-none py-1.5">
                 <div
                   className="w-full h-full rounded-md bg-border/0 
-                  not-touch:group-hover/button:bg-border group-active/button:bg-border"
+                  has-hover:group-hover/button:bg-border group-active/button:bg-border"
                 />
               </div>
               {tab.relativeHref === activeTabPath && (

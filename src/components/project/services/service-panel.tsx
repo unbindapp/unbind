@@ -100,12 +100,12 @@ export default function ServicePanel({ service, children }: Props) {
                 onClick={() => setCurrentTab(tab.value)}
                 data-active={currentTab === tab.value ? true : undefined}
                 className="shrink rounded-t-md rounded-b-none min-w-0 font-medium group/button
-                px-3 pt-2.5 pb-4.5 text-muted-foreground data-[active]:text-foreground not-touch:hover:bg-transparent active:bg-transparent"
+                px-3 pt-2.5 pb-4.5 text-muted-foreground data-[active]:text-foreground has-hover:hover:bg-transparent active:bg-transparent"
               >
                 <div className="absolute w-full h-full pointer-events-none py-1">
                   <div
                     className="w-full h-full rounded-lg bg-border/0 
-                    not-touch:group-hover/button:bg-border group-active/button:bg-border"
+                    has-hover:group-hover/button:bg-border group-active/button:bg-border"
                   />
                 </div>
                 {currentTab === tab.value && (

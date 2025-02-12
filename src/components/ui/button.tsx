@@ -16,39 +16,39 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground not-touch:hover:bg-primary/85 active:bg-primary/85",
+          "bg-primary text-primary-foreground has-hover:hover:bg-primary/85 active:bg-primary/85",
         destructive:
-          "bg-destructive text-destructive-foreground not-touch:hover:bg-destructive/85 active:bg-destructive/85",
+          "bg-destructive text-destructive-foreground has-hover:hover:bg-destructive/85 active:bg-destructive/85",
         success:
-          "bg-success text-success-foreground not-touch:hover:bg-success/85 active:bg-success/85",
+          "bg-success text-success-foreground has-hover:hover:bg-success/85 active:bg-success/85",
         outline:
-          "border border-border bg-background not-touch:hover:bg-border active:bg-border not-touch:hover:text-foreground active:text-foreground",
+          "border border-border bg-background has-hover:hover:bg-border active:bg-border has-hover:hover:text-foreground active:text-foreground",
         "outline-foreground":
-          "border border-foreground bg-background not-touch:hover:bg-foreground/8 active:bg-foreground/8 not-touch:hover:text-foreground active:text-foreground",
+          "border border-foreground bg-background has-hover:hover:bg-foreground/8 active:bg-foreground/8 has-hover:hover:text-foreground active:text-foreground",
         "warning-outline":
-          "border border-warning/25 bg-background not-touch:hover:bg-warning/20 active:bg-warning/20 not-touch:hover:border-warning/0 active:border-warning/0 text-warning not-touch:hover:text-warning active:text-warning",
+          "border border-warning/25 bg-background has-hover:hover:bg-warning/20 active:bg-warning/20 has-hover:hover:border-warning/0 active:border-warning/0 text-warning has-hover:hover:text-warning active:text-warning",
         secondary:
-          "bg-secondary text-secondary-foreground not-touch:hover:bg-secondary/85 active:bg-secondary/85",
+          "bg-secondary text-secondary-foreground has-hover:hover:bg-secondary/85 active:bg-secondary/85",
         ghost:
-          "not-touch:hover:bg-border not-touch:hover:text-foreground active:bg-border active:text-foreground",
+          "has-hover:hover:bg-border has-hover:hover:text-foreground active:bg-border active:text-foreground",
         "ghost-destructive":
-          "text-destructive not-touch:hover:bg-destructive/20 not-touch:hover:text-destructive active:bg-destructive/20 active:text-destructive",
+          "text-destructive has-hover:hover:bg-destructive/20 has-hover:hover:text-destructive active:bg-destructive/20 active:text-destructive",
         "ghost-warning":
-          "text-warning not-touch:hover:bg-warning/20 not-touch:hover:text-warning active:bg-warning/20 active:text-warning",
+          "text-warning has-hover:hover:bg-warning/20 has-hover:hover:text-warning active:bg-warning/20 active:text-warning",
         "ghost-foreground":
-          "text-foreground not-touch:hover:bg-foreground/6 not-touch:hover:text-foreground active:bg-foreground/6 active:text-foreground",
-        link: "text-primary underline-offset-4 not-touch:hover:underline active:underline",
+          "text-foreground has-hover:hover:bg-foreground/6 has-hover:hover:text-foreground active:bg-foreground/6 active:text-foreground",
+        link: "text-primary underline-offset-4 has-hover:hover:underline active:underline",
         google:
-          "bg-google text-google-foreground not-touch:hover:bg-google/85 active:bg-google/85",
+          "bg-google text-google-foreground has-hover:hover:bg-google/85 active:bg-google/85",
         discord:
-          "bg-discord text-discord-foreground not-touch:hover:bg-discord/85 active:bg-discord/85",
+          "bg-discord text-discord-foreground has-hover:hover:bg-discord/85 active:bg-discord/85",
         github:
-          "bg-github text-github-foreground not-touch:hover:bg-github/85 active:bg-github/85",
+          "bg-github text-github-foreground has-hover:hover:bg-github/85 active:bg-github/85",
         ethereum:
-          "bg-ethereum text-ethereum-foreground not-touch:hover:bg-ethereum/85 active:bg-ethereum/85",
-        x: "bg-x text-x-foreground not-touch:hover:bg-x/85 active:bg-x/85",
+          "bg-ethereum text-ethereum-foreground has-hover:hover:bg-ethereum/85 active:bg-ethereum/85",
+        x: "bg-x text-x-foreground has-hover:hover:bg-x/85 active:bg-x/85",
         email:
-          "bg-email text-email-foreground not-touch:hover:bg-email/85 active:bg-email/85",
+          "bg-email text-email-foreground has-hover:hover:bg-email/85 active:bg-email/85",
       },
       size: {
         default: "px-5 py-2.75",

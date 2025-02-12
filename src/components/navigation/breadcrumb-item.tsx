@@ -64,7 +64,7 @@ export function BreadcrumbItem<T>({
                 key={i.id + index}
                 data-show-arrow={showArrow ? true : undefined}
                 variant="ghost"
-                className="w-full data-[selected]:bg-border/50 data-[selected]:not-touch:hover:bg-border data-[selected]:active:bg-border 
+                className="w-full data-[selected]:bg-border/50 data-[selected]:has-hover:hover:bg-border data-[selected]:active:bg-border 
                 text-left px-3 py-3.5 rounded-lg font-medium flex items-center justify-between gap-3 group/item"
               >
                 <div className="flex-1 min-w-0 flex items-center gap-2.5">
@@ -159,7 +159,7 @@ function Trigger<T>({
       data-no-icon={Icon === undefined ? true : undefined}
       data-pending={item == undefined ? true : undefined}
       className={cn(
-        "px-1.5 py-1.75 data-[no-icon]:pl-2.75 rounded-lg border-none font-medium flex items-center justify-start gap-2 not-touch:hover:bg-border text-sm group/trigger",
+        "px-1.5 py-1.75 data-[no-icon]:pl-2.75 rounded-lg border-none font-medium flex items-center justify-start gap-2 has-hover:hover:bg-border text-sm group/trigger",
         className
       )}
       {...rest}

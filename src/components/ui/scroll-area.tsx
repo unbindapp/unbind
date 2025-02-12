@@ -45,18 +45,18 @@ const ScrollBar = React.forwardRef<
     ref={ref}
     orientation={orientation}
     className={cn(
-      "flex touch-none select-none transition-[padding,background-color] group/scrollbar active:before:bg-muted-foreground/25 not-touch:hover:before:bg-muted-foreground/25 before:transition-colors",
+      "flex touch-none select-none transition-[padding,background-color] group/scrollbar active:before:bg-muted-foreground/25 has-hover:hover:before:bg-muted-foreground/25 before:transition-colors",
       orientation === "vertical" &&
-        "w-4 h-full before:w-[11px] before:h-full before:absolute before:right-0 before:top-0 border-l border-l-transparent p-px pl-[calc(1rem-2px-5px)] not-touch:hover:pl-[calc(1rem-2px-9px)] active:pl-[calc(1rem-2px-9px)]",
+        "w-4 h-full before:w-[11px] before:h-full before:absolute before:right-0 before:top-0 border-l border-l-transparent p-px pl-[calc(1rem-2px-5px)] has-hover:hover:pl-[calc(1rem-2px-9px)] active:pl-[calc(1rem-2px-9px)]",
       orientation === "horizontal" &&
-        "h-4 before:h-[11px] before:w-full before:absolute before:bottom-0 before:left-0 flex-col border-t border-t-transparent p-px pt-[calc(1rem-2px-5px)] not-touch:hover:pt-[calc(1rem-2px-9px)] active:pt-[calc(1rem-2px-9px)]",
+        "h-4 before:h-[11px] before:w-full before:absolute before:bottom-0 before:left-0 flex-col border-t border-t-transparent p-px pt-[calc(1rem-2px-5px)] has-hover:hover:pt-[calc(1rem-2px-9px)] active:pt-[calc(1rem-2px-9px)]",
       className
     )}
     {...props}
   >
     <ScrollAreaPrimitive.ScrollAreaThumb
       className="relative flex-1 rounded-full bg-muted-more-foreground transition-colors
-      not-touch:group-hover/scrollbar:bg-muted-foreground group-active/scrollbar:bg-muted-foreground"
+      has-hover:group-hover/scrollbar:bg-muted-foreground group-active/scrollbar:bg-muted-foreground"
     />
   </ScrollAreaPrimitive.ScrollAreaScrollbar>
 ));
