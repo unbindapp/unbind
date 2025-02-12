@@ -98,7 +98,7 @@ const config: Config = {
           DEFAULT: "hsl(var(--top-loader))",
         },
         go: "hsl(var(--go))",
-        meili: "hsl(var(--meili))",
+        meilisearch: "hsl(var(--meilisearch))",
         minio: "hsl(var(--minio))",
         mysql: "hsl(var(--mysql))",
         nextjs: "hsl(var(--nextjs))",
@@ -110,6 +110,10 @@ const config: Config = {
         clickhouse: "hsl(var(--clickhouse))",
         astro: "hsl(var(--astro))",
         docker: "hsl(var(--docker))",
+        strapi: "hsl(var(--strapi))",
+        mongodb: "hsl(var(--mongodb))",
+        pocketbase: "hsl(var(--pocketbase))",
+
         barrier: "hsl(var(--barrier))",
       },
       opacity: {

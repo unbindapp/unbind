@@ -30,7 +30,7 @@ export default function ServiceCard({
         >
           <div className="w-full flex items-center justify-start gap-2">
             <ServiceIcon
-              color="color"
+              color="brand"
               variant={service.type}
               className="size-6 -ml-1"
             />

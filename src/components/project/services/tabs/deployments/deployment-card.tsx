@@ -57,7 +57,7 @@ export default function DeploymentCard({ deployment, active }: Props) {
           </div>
         </div>
         <ServiceIcon
-          color="color"
+          color="brand"
           variant={deployment.source}
           className="size-6 mt-2 sm:mt-0"
         />

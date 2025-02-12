@@ -382,7 +382,7 @@ const projects: TProject[] = [
           {
             id: "d9f7b682-2652-49a0-8d1c-410401d661a5",
             title: "Meili DB",
-            type: "meili",
+            type: "meilisearch",
             source: "docker",
             lastDeployment: {
               id: "a7505101-e2cd-4cc6-b152-99be97748733",
@@ -422,8 +422,11 @@ export type TServiceType =
   | "rust"
   | "mysql"
   | "minio"
-  | "meili"
-  | "astro";
+  | "meilisearch"
+  | "astro"
+  | "strapi"
+  | "mongodb"
+  | "pocketbase";
 
 export type TTeam = {
   id: string;

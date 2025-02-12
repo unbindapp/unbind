@@ -6,20 +6,20 @@ import { ComponentProps } from "react";
 type Props = ComponentProps<"svg"> & {
   variant: TServiceType | TDeploymentSource;
   className?: string;
-  color?: "mono" | "color";
+  color?: "monochrome" | "brand";
 };
 
 const defaultClass = "size-5 shrink-0";
 
 export default function ServiceIcon({
-  color = "mono",
+  color = "monochrome",
   variant,
   className,
 }: Props) {
   if (variant === "go") {
     return (
       <svg
-        className={cn(defaultClass, color === "color" && "text-go", className)}
+        className={cn(defaultClass, color === "brand" && "text-go", className)}
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
@@ -35,12 +35,12 @@ export default function ServiceIcon({
       </svg>
     );
   }
-  if (variant === "meili") {
+  if (variant === "meilisearch") {
     return (
       <svg
         className={cn(
           defaultClass,
-          color === "color" && "text-meili",
+          color === "brand" && "text-meilisearch",
           className
         )}
         xmlns="http://www.w3.org/2000/svg"
@@ -61,7 +61,7 @@ export default function ServiceIcon({
       <svg
         className={cn(
           defaultClass,
-          color === "color" && "text-minio",
+          color === "brand" && "text-minio",
           className
         )}
         xmlns="http://www.w3.org/2000/svg"
@@ -82,7 +82,7 @@ export default function ServiceIcon({
       <svg
         className={cn(
           defaultClass,
-          color === "color" && "text-mysql",
+          color === "brand" && "text-mysql",
           className
         )}
         xmlns="http://www.w3.org/2000/svg"
@@ -105,7 +105,7 @@ export default function ServiceIcon({
       <svg
         className={cn(
           defaultClass,
-          color === "color" && "text-nextjs",
+          color === "brand" && "text-nextjs",
           className
         )}
         xmlns="http://www.w3.org/2000/svg"
@@ -126,7 +126,7 @@ export default function ServiceIcon({
       <svg
         className={cn(
           defaultClass,
-          color === "color" && "text-postgresql",
+          color === "brand" && "text-postgresql",
           className
         )}
         xmlns="http://www.w3.org/2000/svg"
@@ -149,7 +149,7 @@ export default function ServiceIcon({
       <svg
         className={cn(
           defaultClass,
-          color === "color" && "text-redis",
+          color === "brand" && "text-redis",
           className
         )}
         xmlns="http://www.w3.org/2000/svg"
@@ -170,7 +170,7 @@ export default function ServiceIcon({
       <svg
         className={cn(
           defaultClass,
-          color === "color" && "text-rust",
+          color === "brand" && "text-rust",
           className
         )}
         xmlns="http://www.w3.org/2000/svg"
@@ -191,7 +191,7 @@ export default function ServiceIcon({
       <svg
         className={cn(
           defaultClass,
-          color === "color" && "text-svelte",
+          color === "brand" && "text-svelte",
           className
         )}
         xmlns="http://www.w3.org/2000/svg"
@@ -212,7 +212,7 @@ export default function ServiceIcon({
       <svg
         className={cn(
           defaultClass,
-          color === "color" && "text-umami",
+          color === "brand" && "text-umami",
           className
         )}
         xmlns="http://www.w3.org/2000/svg"
@@ -233,7 +233,7 @@ export default function ServiceIcon({
       <svg
         className={cn(
           defaultClass,
-          color === "color" && "text-clickhouse",
+          color === "brand" && "text-clickhouse",
           className
         )}
         xmlns="http://www.w3.org/2000/svg"
@@ -254,7 +254,7 @@ export default function ServiceIcon({
       <svg
         className={cn(
           defaultClass,
-          color === "color" && "text-astro",
+          color === "brand" && "text-astro",
           className
         )}
         xmlns="http://www.w3.org/2000/svg"
@@ -275,7 +275,7 @@ export default function ServiceIcon({
       <svg
         className={cn(
           defaultClass,
-          color === "color" && "text-github",
+          color === "brand" && "text-github",
           className
         )}
         xmlns="http://www.w3.org/2000/svg"
@@ -296,7 +296,7 @@ export default function ServiceIcon({
       <svg
         className={cn(
           defaultClass,
-          color === "color" && "text-docker",
+          color === "brand" && "text-docker",
           className
         )}
         xmlns="http://www.w3.org/2000/svg"
@@ -312,11 +312,88 @@ export default function ServiceIcon({
       </svg>
     );
   }
+  if (variant === "strapi") {
+    return (
+      <svg
+        className={cn(
+          defaultClass,
+          color === "brand" && "text-strapi",
+          className
+        )}
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          fill="currentColor"
+          d="M7.89 10.055h5.82c.13 0 .235.106.235.236v5.82h-5.82a.235.235 0 0 1-.236-.236z"
+          opacity=".5"
+        />
+        <path
+          fill="currentColor"
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M19.765 4H7.889v6.055h5.82c.13 0 .234.104.236.233v-.233 6.056H20V4.235A.235.235 0 0 0 19.765 4"
+        />
+        <path
+          fill="currentColor"
+          d="M13.945 16.11H20l-5.855 5.855a.118.118 0 0 1-.2-.083zM7.89 10.055H2.117a.118.118 0 0 1-.083-.2L7.889 4z"
+          opacity=".5"
+        />
+      </svg>
+    );
+  }
+  if (variant === "mongodb") {
+    return (
+      <svg
+        className={cn(
+          defaultClass,
+          color === "brand" && "text-mongodb",
+          className
+        )}
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          fill="currentColor"
+          d="M13.86 3.387a38 38 0 0 1-1.83-2.374.04.04 0 0 0-.059 0 38 38 0 0 1-1.831 2.374c-7.715 9.84 1.215 16.48 1.215 16.48l.075.05c.067 1.025.233 2.5.233 2.5h.666s.166-1.467.233-2.5l.075-.058c.008.008 8.938-6.632 1.223-16.472m-1.864 16.33s-.4-.341-.508-.516v-.017l.483-10.715c0-.033.05-.033.05 0l.483 10.715v.017c-.109.175-.508.516-.508.516"
+        />
+      </svg>
+    );
+  }
+  if (variant === "pocketbase") {
+    return (
+      <svg
+        className={cn(
+          defaultClass,
+          color === "brand" && "text-pocketbase",
+          className
+        )}
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M3.15792 2C2.51844 2 2.00003 2.51841 2.00003 3.1579V14.5263C2.00003 15.1658 2.51846 15.6842 3.15792 15.6842H8.31581V20.8421C8.31581 21.4816 8.83426 22 9.4737 22H20.8421C21.4816 22 22 21.4816 22 20.8421V9.47368C22 8.83425 21.4817 8.31579 20.8421 8.31579H15.6842V3.1579C15.6842 2.51843 15.1659 2 14.5263 2H3.15792ZM15.1586 9.36842L15.1579 9.36842L15.1579 9.36842C14.9762 9.36842 14.8161 9.27637 14.7215 9.13637C14.6647 9.05237 14.6316 8.95111 14.6316 8.84211L14.6316 8.83907V3.1579C14.6316 3.09975 14.5845 3.05263 14.5263 3.05263H3.15792C3.09979 3.05263 3.05266 3.09976 3.05266 3.1579V14.5263C3.05266 14.5845 3.09977 14.6316 3.15792 14.6316H8.84111L8.84212 14.6316L8.84213 14.6316C8.98747 14.6316 9.11905 14.6905 9.21429 14.7857C9.30954 14.881 9.36845 15.0126 9.36845 15.1579L9.36844 15.1611V20.8421C9.36844 20.9002 9.41556 20.9474 9.4737 20.9474H20.8421C20.9003 20.9474 20.9474 20.9003 20.9474 20.8421V9.47368C20.9474 9.41554 20.9003 9.36842 20.8421 9.36842H15.1586ZM6.73687 12C6.44619 12 6.21055 11.7644 6.21055 11.4737V5.68421C6.21055 5.39354 6.44619 5.1579 6.73687 5.1579H8.71218C9.09481 5.1579 9.45218 5.19638 9.78429 5.27333C10.1236 5.34329 10.416 5.46572 10.6615 5.64062C10.9142 5.80853 11.1127 6.0359 11.2571 6.32273C11.4015 6.60258 11.4737 6.9489 11.4737 7.36163C11.4737 7.76042 11.3979 8.10674 11.2463 8.40053C11.1019 8.69437 10.9033 8.93574 10.6507 9.12463C10.398 9.31353 10.1056 9.45348 9.77345 9.54442C9.44134 9.63537 9.0876 9.68084 8.71218 9.68084H8.32881C8.03813 9.68084 7.8025 9.91647 7.8025 10.2072V11.4737C7.8025 11.7644 7.56687 12 7.27618 12H6.73687ZM7.8025 7.92669C7.8025 8.21737 8.03813 8.453 8.32881 8.453H8.61471C9.48108 8.453 9.91424 8.08921 9.91424 7.36163C9.91424 7.00485 9.80234 6.753 9.57855 6.60607C9.36197 6.45916 9.04066 6.3857 8.61471 6.3857H8.32881C8.03813 6.3857 7.8025 6.62134 7.8025 6.912V7.92669ZM12.5263 18.3158C12.5263 18.6065 12.762 18.8421 13.0526 18.8421H15.0932C15.4743 18.8421 15.8266 18.8036 16.1501 18.7267C16.4809 18.6427 16.7685 18.5203 17.013 18.3594C17.2574 18.1915 17.448 17.9816 17.5846 17.7297C17.7212 17.4779 17.7895 17.1771 17.7895 16.8273C17.7895 16.3655 17.6601 16.0052 17.4012 15.7464C17.146 15.4912 16.7721 15.3176 16.2793 15.2256C16.267 15.2233 16.258 15.2126 16.258 15.2001C16.258 15.1882 16.2662 15.1778 16.2779 15.1749C16.478 15.1258 16.6511 15.0504 16.7973 14.9488C16.9482 14.8439 17.0741 14.7249 17.1747 14.592C17.2754 14.4591 17.3473 14.3157 17.3904 14.1618C17.4407 14.0078 17.4659 13.8539 17.4659 13.7001C17.4659 13.3712 17.3976 13.0984 17.261 12.8815C17.1316 12.6646 16.9519 12.4897 16.7217 12.3568C16.4917 12.2239 16.2184 12.1329 15.9021 12.0839C15.5929 12.028 15.255 12 14.8883 12H13.0526C12.762 12 12.5263 12.2356 12.5263 12.5263V18.3158ZM14.6381 14.7494C14.3474 14.7494 14.1118 14.5138 14.1118 14.2231V13.7331C14.1118 13.4425 14.3474 13.2068 14.6381 13.2068H14.8236C15.1974 13.2068 15.4707 13.2628 15.6432 13.3747C15.823 13.4796 15.9129 13.6581 15.9129 13.9099C15.9129 14.1757 15.8266 14.3822 15.654 14.5291C15.4815 14.676 15.2011 14.7494 14.8128 14.7494H14.6381ZM14.6381 17.6353C14.3474 17.6353 14.1118 17.3996 14.1118 17.109V16.3881C14.1118 16.0974 14.3474 15.8618 14.6381 15.8618H14.9637C15.4024 15.8618 15.7223 15.9283 15.9236 16.0612C16.1322 16.1941 16.2364 16.411 16.2364 16.7118C16.2364 17.3275 15.8122 17.6353 14.9637 17.6353H14.6381Z"
+          fill="currentColor"
+        />
+      </svg>
+    );
+  }
   return (
     <BanIcon
       className={cn(
         defaultClass,
-        color === "color" && "text-foreground",
+        color === "brand" && "text-foreground",
         className
       )}
     />

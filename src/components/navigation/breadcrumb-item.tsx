@@ -10,7 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { ArrowRightIcon, CheckIcon, ChevronDownIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { ComponentProps, FC, useEffect, useState } from "react";
+import { ComponentProps, FC, useState } from "react";
 import { useWindowSize } from "usehooks-ts";
 
 type Item<T> = T & { id: string; title: string };
@@ -34,13 +34,6 @@ export function BreadcrumbItem<T>({
   const pathname = usePathname();
   const { width } = useWindowSize();
   const isSmall = width < 640;
-  const [show, setShow] = useState(false);
-
-  useEffect(() => {
-    setShow(true);
-  }, []);
-
-  if (!show) return null;
 
   if (isSmall) {
     return (

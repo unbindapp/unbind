@@ -73,7 +73,7 @@ export default function ServicePanel({ service, children }: Props) {
             <DrawerTitle className="flex-1 min-w-0 flex items-center justify-start gap-2.5">
               <ServiceIcon
                 variant={service.type}
-                color="color"
+                color="brand"
                 className="size-7 sm:size-8 -ml-1"
               />
               <p className="shrink min-w-0 leading-tight text-xl sm:text-2xl text-left">

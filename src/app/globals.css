@@ -111,7 +111,7 @@ input[type="search"] {
     --x-foreground: 0 0% 100%;
 
     --go: 192 93% 44%;
-    --meili: 346 100% 67%;
+    --meilisearch: 346 100% 67%;
     --minio: 349 60% 49%;
     --mysql: 206 38% 47%;
     --nextjs: 250 25% 4%;
@@ -123,6 +123,9 @@ input[type="search"] {
     --clickhouse: 62 100% 71%;
     --astro: 250 25% 4%;
     --docker: 220 81% 46%;
+    --strapi: 241 100% 64%;
+    --mongodb: 145 100% 47%;
+    --pocketbase: 250 25% 4%;
 
     --barrier: 0 0% 0%;
     --opacity-barrier: 0.7;
@@ -184,7 +187,7 @@ input[type="search"] {
     --x-foreground: 120 9% 6%;
 
     --go: 192 93% 55%;
-    --meili: 346 100% 67%;
+    --meilisearch: 346 100% 67%;
     --minio: 349 60% 49%;
     --mysql: 206 55% 65%;
     --nextjs: 120 100% 97%;
@@ -196,6 +199,9 @@ input[type="search"] {
     --clickhouse: 62 100% 71%;
     --astro: 120 100% 97%;
     --docker: 220 81% 60%;
+    --strapi: 241 100% 75%;
+    --mongodb: 145 100% 47%;
+    --pocketbase: 120 100% 97%;
 
     --barrier: 120 10% 4%;
     --opacity-barrier: 0.75;

@@ -12,7 +12,12 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { useCommandState } from "cmdk";
-import { ChevronRightIcon, DatabaseIcon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  BlocksIcon,
+  ChevronRightIcon,
+  DatabaseIcon,
+} from "lucide-react";
 import { FC, useCallback, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
@@ -31,78 +36,174 @@ type TItem = {
   Icon: FC<{ className?: string }>;
   subpage?: TPage;
   onSelect?: () => void;
+  keywords: string[];
 };
 
-const defaultPage: TPage = {
-  id: "new_service",
-  parentPageId: null,
-  items: [
-    {
-      title: "GitHub Repo",
-      Icon: ({ className }) => (
-        <ServiceIcon variant="github" className={className} />
-      ),
-    },
-    {
-      title: "Database",
-      Icon: DatabaseIcon,
-      subpage: {
-        id: "databases",
-        parentPageId: "new_service",
-        items: [
-          {
-            title: "PostgreSQL",
-            Icon: ({ className }) => (
-              <ServiceIcon
-                color="color"
-                variant="postgresql"
-                className={className}
-              />
-            ),
-          },
-          {
-            title: "Redis",
-            Icon: ({ className }) => (
-              <ServiceIcon
-                color="color"
-                variant="redis"
-                className={className}
-              />
-            ),
-          },
-          {
-            title: "MySQL",
-            Icon: ({ className }) => (
-              <ServiceIcon
-                color="color"
-                variant="mysql"
-                className={className}
-              />
-            ),
-          },
-          {
-            title: "ClickHouse",
-            Icon: ({ className }) => (
-              <ServiceIcon
-                color="color"
-                variant="clickhouse"
-                className={className}
-              />
-            ),
-          },
-        ],
-      },
-    },
-    {
-      title: "Docker Image",
-      Icon: ({ className }) => (
-        <ServiceIcon variant="docker" className={className} />
-      ),
-    },
-  ],
-};
+const defaultPageId = "new_service";
 
 export default function ProjectCommandPanel({ className }: Props) {
+  const defaultPage: TPage = useMemo(
+    () => ({
+      id: defaultPageId,
+      parentPageId: null,
+      items: [
+        {
+          title: "GitHub Repo",
+          keywords: ["deploy", "gitlab", "bitbucket"],
+          Icon: ({ className }) => (
+            <ServiceIcon variant="github" className={className} />
+          ),
+        },
+        {
+          title: "Database",
+          keywords: ["persistent", "persistence"],
+          Icon: DatabaseIcon,
+          subpage: {
+            id: "databases",
+            parentPageId: defaultPageId,
+            items: [
+              {
+                title: "PostgreSQL",
+                keywords: ["database", "sql", "mysql"],
+                Icon: ({ className }) => (
+                  <ServiceIcon
+                    color="brand"
+                    variant="postgresql"
+                    className={className}
+                  />
+                ),
+              },
+              {
+                title: "Redis",
+                keywords: ["database", "cache", "key value"],
+                Icon: ({ className }) => (
+                  <ServiceIcon
+                    color="brand"
+                    variant="redis"
+                    className={className}
+                  />
+                ),
+              },
+              {
+                title: "MongoDB",
+                keywords: ["database", "object"],
+                Icon: ({ className }) => (
+                  <ServiceIcon
+                    color="brand"
+                    variant="mongodb"
+                    className={className}
+                  />
+                ),
+              },
+              {
+                title: "MySQL",
+                keywords: ["database", "sql", "postgresql"],
+                Icon: ({ className }) => (
+                  <ServiceIcon
+                    color="brand"
+                    variant="mysql"
+                    className={className}
+                  />
+                ),
+              },
+              {
+                title: "ClickHouse",
+                keywords: ["database", "analytics", "sql"],
+                Icon: ({ className }) => (
+                  <ServiceIcon
+                    color="brand"
+                    variant="clickhouse"
+                    className={className}
+                  />
+                ),
+              },
+            ],
+          },
+        },
+        {
+          title: "Docker Image",
+          keywords: ["deploy"],
+          Icon: ({ className }) => (
+            <ServiceIcon variant="docker" className={className} />
+          ),
+        },
+        {
+          title: "Template",
+          keywords: ["blueprint", "stack", "group"],
+          Icon: BlocksIcon,
+          subpage: {
+            id: "templates",
+            parentPageId: defaultPageId,
+            items: [
+              {
+                title: "Strapi",
+                keywords: ["cms", "content"],
+                Icon: ({ className }) => (
+                  <ServiceIcon
+                    color="brand"
+                    variant="strapi"
+                    className={className}
+                  />
+                ),
+              },
+              {
+                title: "Umami",
+                keywords: ["analytics", "privacy", "tracking"],
+                Icon: ({ className }) => (
+                  <ServiceIcon
+                    color="brand"
+                    variant="umami"
+                    className={className}
+                  />
+                ),
+              },
+              {
+                title: "Meilisearch",
+                keywords: ["full text search", "elasticsearch", "ram"],
+                Icon: ({ className }) => (
+                  <ServiceIcon
+                    color="brand"
+                    variant="meilisearch"
+                    className={className}
+                  />
+                ),
+              },
+              {
+                title: "MinIO",
+                keywords: ["s3", "file storage"],
+                Icon: ({ className }) => (
+                  <ServiceIcon
+                    color="brand"
+                    variant="minio"
+                    className={className}
+                  />
+                ),
+              },
+              {
+                title: "PocketBase",
+                keywords: [
+                  "paas",
+                  "backend",
+                  "authentication",
+                  "realtime database",
+                  "file storage",
+                ],
+                Icon: ({ className }) => (
+                  <ServiceIcon
+                    color="brand"
+                    variant="pocketbase"
+                    className={className}
+                  />
+                ),
+              },
+            ],
+          },
+        },
+      ],
+    }),
+    []
+  );
+
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [currentPage, setCurrentPage] = useState(defaultPage);
@@ -111,7 +212,17 @@ export default function ProjectCommandPanel({ className }: Props) {
       getAllItemsFromPage(defaultPage).filter(
         (i) => !currentPage.items.map((c) => c.title).includes(i.title)
       ),
-    [currentPage]
+    [currentPage, defaultPage]
+  );
+
+  const goBackItem = useMemo(
+    () => ({
+      title: "Go Back",
+      Icon: ArrowLeftIcon,
+      keywords: ["return"],
+      onSelect: () => setCurrentPage(defaultPage),
+    }),
+    [setCurrentPage, defaultPage]
   );
 
   useHotkeys(
@@ -158,6 +269,9 @@ export default function ProjectCommandPanel({ className }: Props) {
                 setCurrentPage={setCurrentPage}
               />
             ))}
+            {currentPage.id !== defaultPageId && (
+              <Item item={goBackItem} setCurrentPage={setCurrentPage} />
+            )}
           </CommandGroup>
         </CommandList>
       </ScrollArea>
@@ -192,6 +306,7 @@ function Item({
       setCurrentPage(item.subpage);
       return;
     }
+    item.onSelect?.();
   }, [item, setCurrentPage]);
 
   useHotkeys("arrowright", () => onSelect(), {
@@ -206,6 +321,7 @@ function Item({
   return (
     <CommandItem
       value={item.title}
+      keywords={item.keywords}
       className="px-3.5 font-medium py-3 text-muted-foreground flex flex-row w-full items-center justify-between text-left gap-6"
       onSelect={onSelect}
     >
