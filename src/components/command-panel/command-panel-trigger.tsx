@@ -1,5 +1,5 @@
 import {
-  panelPageKey,
+  panelPageIdKey,
   rootPanelPageIdForProject,
 } from "@/components/command-panel/constants";
 import ProjectCommandPanel from "@/components/command-panel/project-command-panel";
@@ -27,7 +27,7 @@ export default function CommandPanelTrigger({
   setOpen,
   children,
 }: Props) {
-  const [panelPageId] = useQueryState(panelPageKey);
+  const [panelPageId] = useQueryState(panelPageIdKey);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

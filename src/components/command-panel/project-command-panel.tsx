@@ -2,9 +2,17 @@
 
 import {
   panelIdKey,
-  panelPageKey,
+  panelPageIdKey,
   rootPanelPageIdForProject,
 } from "@/components/command-panel/constants";
+import {
+  findCommandPanelPage,
+  getAllItemsFromCommandPanelPage,
+} from "@/components/command-panel/helpers";
+import {
+  TCommandPanelItem,
+  TCommandPanelPage,
+} from "@/components/command-panel/types";
 import ServiceIcon from "@/components/icons/service";
 import {
   Command,
@@ -25,7 +33,6 @@ import {
 } from "lucide-react";
 import { useQueryState } from "nuqs";
 import {
-  FC,
   RefObject,
   useCallback,
   useEffect,
@@ -40,23 +47,9 @@ type Props = {
   className?: string;
 };
 
-type TPage = {
-  id: string;
-  items: TItem[];
-  parentPageId: string | null;
-};
-
-type TItem = {
-  title: string;
-  Icon: FC<{ className?: string }>;
-  subpage?: TPage;
-  onSelect?: () => void;
-  keywords: string[];
-};
-
 export default function ProjectCommandPanel({ className }: Props) {
   const [, setPanelId] = useQueryState(panelIdKey);
-  const [, setPanelPageId] = useQueryState(panelPageKey);
+  const [panelPageId, setPanelPageId] = useQueryState(panelPageIdKey);
 
   const onSelectPlaceholder = useCallback(() => {
     toast.success("Successful (Fake)", {
@@ -67,7 +60,7 @@ export default function ProjectCommandPanel({ className }: Props) {
     setPanelId(null);
   }, [setPanelId]);
 
-  const defaultPage: TPage = useMemo(
+  const defaultPage: TCommandPanelPage = useMemo(
     () => ({
       id: rootPanelPageIdForProject,
       parentPageId: null,
@@ -267,10 +260,17 @@ export default function ProjectCommandPanel({ className }: Props) {
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const [currentPage, setCurrentPage] = useState(defaultPage);
+  const [currentPage, setCurrentPage] = useState(
+    panelPageId
+      ? findCommandPanelPage({
+          id: panelPageId,
+          page: defaultPage,
+        }) || defaultPage
+      : defaultPage
+  );
 
   const allItems = useMemo(
-    () => getAllItemsFromPage(currentPage),
+    () => getAllItemsFromCommandPanelPage(currentPage),
     [currentPage]
   );
 
@@ -284,7 +284,7 @@ export default function ProjectCommandPanel({ className }: Props) {
 
   const allPageIds = useMemo(() => {
     const ids = new Set<string>();
-    const addIds = (page: TPage) => {
+    const addIds = (page: TCommandPanelPage) => {
       ids.add(page.id);
       page.items.forEach((item) => {
         if (item.subpage) {
@@ -306,7 +306,10 @@ export default function ProjectCommandPanel({ className }: Props) {
       return;
     }
     if (currentPage.parentPageId === null) return;
-    const parentPage = findParentPage(currentPage.parentPageId, defaultPage);
+    const parentPage = findCommandPanelPage({
+      id: currentPage.parentPageId,
+      page: defaultPage,
+    });
     if (parentPage) {
       setCurrentPage(parentPage);
     }
@@ -388,8 +391,8 @@ function ConditionalItem({
   item,
   setCurrentPage,
 }: {
-  item: TItem;
-  setCurrentPage: (page: TPage) => void;
+  item: TCommandPanelItem;
+  setCurrentPage: (page: TCommandPanelPage) => void;
 }) {
   const search = useCommandState((state) => state.search);
   if (!search) return null;
@@ -401,7 +404,7 @@ function Input({
   allPageIds,
   ref,
 }: {
-  currentPage: TPage;
+  currentPage: TCommandPanelPage;
   allPageIds: string[];
   ref: RefObject<HTMLInputElement | null>;
 }) {
@@ -425,8 +428,8 @@ function Item({
   item,
   setCurrentPage,
 }: {
-  item: TItem;
-  setCurrentPage: (page: TPage) => void;
+  item: TCommandPanelItem;
+  setCurrentPage: (page: TCommandPanelPage) => void;
 }) {
   const search = useCommandState((state) => state.search);
   const value = useCommandState((state) => state.value);
@@ -461,26 +464,4 @@ function Item({
       {item.subpage && <ChevronRightIcon className="size-5 -mr-1.5 shrink-0" />}
     </CommandItem>
   );
-}
-
-function getAllItemsFromPage(page: TPage): TItem[] {
-  return page.items.flatMap((item) => {
-    if (item.subpage) {
-      return [...getAllItemsFromPage(item.subpage)];
-    }
-    return item;
-  });
-}
-
-function findParentPage(id: string, page: TPage): TPage | null {
-  if (page.id === id) return page;
-  if (page.items) {
-    for (const item of page.items) {
-      if (item.subpage) {
-        const found = findParentPage(id, item.subpage);
-        if (found) return found;
-      }
-    }
-  }
-  return null;
 }
