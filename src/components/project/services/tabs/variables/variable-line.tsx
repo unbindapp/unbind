@@ -33,23 +33,23 @@ export default function VariableLine({ variable }: Props) {
         <Button
           data-copied={isRecentlyCopied ? true : undefined}
           onClick={() => copyToClipboard(variable.value)}
-          variant="ghost-foreground"
+          variant="ghost"
           forceMinSize="medium"
           size="icon"
           className="rounded-md text-muted-more-foreground group/button -ml-2"
         >
           <div className="size-4 relative group-data-[copied]/button:rotate-90 transition-transform">
-            <CopyIcon className="size-full group-data-[copied]/button:opacity-0 text-muted-more-foreground group-data-[copied]/button:text-success transition" />
+            <CopyIcon className="size-full group-data-[copied]/button:opacity-0 group-data-[copied]/button:text-success transition-opacity" />
             <CheckIcon
               strokeWidth={3}
-              className="size-full absolute left-0 top-0 text-muted-more-foreground group-data-[copied]/button:text-success -rotate-90 opacity-0 group-data-[copied]/button:opacity-100 transition"
+              className="size-full absolute left-0 top-0 group-data-[copied]/button:text-success -rotate-90 opacity-0 group-data-[copied]/button:opacity-100 transition-opacity"
             />
           </div>
         </Button>
         <Button
           data-visible={isValueVisible ? true : undefined}
           onClick={() => setIsValueVisible((prev) => !prev)}
-          variant="ghost-foreground"
+          variant="ghost"
           forceMinSize="medium"
           size="icon"
           className="rounded-md text-muted-more-foreground group/button"
@@ -64,7 +64,7 @@ export default function VariableLine({ variable }: Props) {
         </p>
         <div className="ml-auto pl-1 sm:-mr-2.25 absolute right-1 top-1 sm:relative sm:top-auto sm:right-auto">
           <Button
-            variant="ghost-foreground"
+            variant="ghost"
             size="icon"
             className="rounded-md text-muted-more-foreground"
           >

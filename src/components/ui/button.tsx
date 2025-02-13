@@ -36,7 +36,7 @@ const buttonVariants = cva(
         "ghost-warning":
           "text-warning has-hover:hover:bg-warning/20 has-hover:hover:text-warning active:bg-warning/20 active:text-warning",
         "ghost-foreground":
-          "text-foreground has-hover:hover:bg-foreground/6 has-hover:hover:text-foreground active:bg-foreground/6 active:text-foreground",
+          "text-foreground has-hover:hover:bg-foreground/8 has-hover:hover:text-foreground active:bg-foreground/8 active:text-foreground",
         link: "text-primary underline-offset-4 has-hover:hover:underline active:underline",
         google:
           "bg-google text-google-foreground has-hover:hover:bg-google/85 active:bg-google/85",

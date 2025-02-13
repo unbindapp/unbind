@@ -57,32 +57,32 @@ input[type="search"] {
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --background-hover: 0 0% 95%;
-    --foreground: 250 25% 4%;
-    --card: 0 0% 100%;
-    --card-foreground: 250 25% 4%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 250 25% 4%;
-    --primary: 250 25% 4%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 250 20% 85%;
-    --secondary-foreground: 250 25% 4%;
-    --muted: 250 20% 85%;
-    --muted-foreground: 250 6% 35%;
-    --muted-more-foreground: 250 6% 50%;
-    --accent: 250 20% 85%;
-    --accent-foreground: 250 25% 4%;
+    --background: 120 35% 95%;
+    --background-hover: 120 35% 95%;
+    --foreground: 120 90% 5%;
+    --card: 120 35% 95%;
+    --card-foreground: 120 90% 5%;
+    --popover: 120 35% 95%;
+    --popover-foreground: 120 90% 5%;
+    --primary: 120 90% 5%;
+    --primary-foreground: 120 35% 95%;
+    --secondary: 120 20% 85%;
+    --secondary-foreground: 120 90% 5%;
+    --muted: 120 20% 85%;
+    --muted-foreground: 120 10% 35%;
+    --muted-more-foreground: 120 10% 50%;
+    --accent: 120 20% 85%;
+    --accent-foreground: 120 90% 5%;
     --destructive: 0 84% 30%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive-foreground: 120 35% 95%;
     --warning: 30 100% 25%;
-    --warning-foreground: 0 0% 100%;
-    --success: 130 85% 20%;
-    --success-foreground: 0 0% 100%;
-    --shadow: 0 0% 0%;
-    --border: 250 20% 85%;
+    --warning-foreground: 120 35% 95%;
+    --success: 120 85% 20%;
+    --success-foreground: 120 35% 95%;
+    --shadow: 120 30% 4%;
+    --border: 120 20% 85%;
     --input: 0 0% 96%;
-    --ring: 250 25% 4%;
+    --ring: 120 90% 5%;
     --radius: 0.5rem;
     --chart-1: 210 90% 30%;
     --chart-2: 160 100% 23%;
@@ -97,39 +97,40 @@ input[type="search"] {
 
     --link-chip: 210 100% 18%;
 
-    --top-loader: 165 100% 30%;
+    --top-loader: 120 100% 30%;
 
-    --google: 250 25% 4%;
+    --google: 120 90% 5%;
     --google-foreground: 0 0% 100%;
     --discord: 235 86% 65%;
     --discord-foreground: 0 0% 100%;
-    --github: 250 25% 4%;
+    --github: 120 90% 5%;
     --github-foreground: 0 0% 100%;
     --email: 160 100% 24%;
     --email-foreground: 0 0% 100%;
-    --x: 250 25% 4%;
+    --x: 120 90% 5%;
     --x-foreground: 0 0% 100%;
 
-    --go: 192 93% 44%;
-    --meilisearch: 346 100% 67%;
+    --nextjs: 120 90% 5%;
+    --umami: 120 90% 5%;
+    --astro: 120 90% 5%;
+    --ghost: 120 90% 5%;
+    --pocketbase: 120 90% 5%;
+
+    --go: 192 93% 35%;
+    --meilisearch: 346 90% 60%;
     --minio: 349 60% 49%;
-    --mysql: 206 38% 47%;
-    --nextjs: 250 25% 4%;
-    --postgresql: 210 46% 40%;
-    --redis: 4 70% 50%;
+    --mysql: 206 45% 40%;
+    --postgresql: 210 50% 40%;
+    --redis: 5 70% 47%;
     --rust: 10 79% 51%;
-    --svelte: 10 100% 52%;
-    --umami: 250 25% 4%;
-    --clickhouse: 62 100% 71%;
-    --astro: 250 25% 4%;
+    --svelte: 10 100% 45%;
+    --clickhouse: 60 100% 25%;
     --docker: 220 81% 46%;
     --strapi: 241 100% 64%;
-    --mongodb: 145 100% 47%;
-    --pocketbase: 250 25% 4%;
-    --ghost: 250 25% 4%;
-    --n8n: 346 79% 61%;
+    --mongodb: 145 100% 35%;
+    --n8n: 346 80% 45%;
 
-    --barrier: 0 0% 0%;
+    --barrier: 120 30% 4%;
     --opacity-barrier: 0.7;
     --opacity-shadow: 0.06;
   }
@@ -188,23 +189,24 @@ input[type="search"] {
     --x: 120 100% 97%;
     --x-foreground: 120 9% 6%;
 
+    --nextjs: 120 100% 97%;
+    --umami: 120 100% 97%;
+    --astro: 120 100% 97%;
+    --pocketbase: 120 100% 97%;
+    --ghost: 120 100% 97%;
+
     --go: 192 93% 55%;
     --meilisearch: 346 100% 67%;
     --minio: 349 60% 49%;
     --mysql: 206 55% 65%;
-    --nextjs: 120 100% 97%;
     --postgresql: 210 46% 60%;
     --redis: 4 75% 60%;
     --rust: 10 79% 51%;
     --svelte: 10 100% 65%;
-    --umami: 120 100% 97%;
     --clickhouse: 62 100% 71%;
-    --astro: 120 100% 97%;
     --docker: 220 81% 60%;
     --strapi: 241 100% 75%;
     --mongodb: 145 100% 47%;
-    --pocketbase: 120 100% 97%;
-    --ghost: 120 100% 97%;
     --n8n: 346 79% 61%;
 
     --barrier: 120 10% 4%;
