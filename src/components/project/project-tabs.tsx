@@ -73,18 +73,19 @@ export default function ProjectTabs({
               }
               key={tab.relativeHref}
               className={cn(
-                `font-medium text-sm px-3 py-3.5 rounded leading-none text-muted-foreground 
-                has-hover:hover:bg-transparent active:bg-transparent group/button data-[active]:text-foreground`,
+                `font-medium text-sm px-3 py-4 rounded leading-none text-muted-foreground 
+                has-hover:hover:bg-transparent active:bg-transparent group/button data-[active]:text-foreground
+                focus-visible:ring-0 focus-visible:ring-offset-0`,
                 classNameButton
               )}
               variant="ghost"
               href={base + tab.relativeHref}
               onClick={() => setActiveTabPath(tab.relativeHref)}
             >
-              <div className="absolute w-full h-full pointer-events-none py-1.5">
+              <div className="absolute left-0 top-0 w-full h-full pointer-events-none py-1.5">
                 <div
-                  className="w-full h-full rounded-md bg-border/0 
-                  has-hover:group-hover/button:bg-border group-active/button:bg-border"
+                  className="w-full h-full rounded-lg bg-border/0 has-hover:group-hover/button:bg-border group-active/button:bg-border
+                  group-focus-visible/button:ring-1 group-focus-visible/button:ring-primary/50"
                 />
               </div>
               {tab.relativeHref === activeTabPath && (

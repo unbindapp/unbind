@@ -93,7 +93,11 @@ export function BreadcrumbItem<T>({
       <DropdownMenuTrigger asChild>
         <Trigger item={selectedItem} Icon={IconItem} />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="group/content">
+      <DropdownMenuContent
+        sideOffset={-1}
+        align="start"
+        className="group/content"
+      >
         <ScrollArea className="p-1">
           {items?.map((i, index) => {
             const href = getHrefForId(i.id);
@@ -142,7 +146,7 @@ function Trigger<T>({
   ...rest
 }: ComponentProps<"button"> & {
   item?: Item<T>;
-  Icon?: FC<{ id: string }>;
+  Icon?: FC<{ id: string; className?: string }>;
 }) {
   return (
     <Button
@@ -152,20 +156,28 @@ function Trigger<T>({
       data-no-icon={Icon === undefined ? true : undefined}
       data-pending={item == undefined ? true : undefined}
       className={cn(
-        "px-1.5 py-2 data-[no-icon]:pl-2.75 rounded-md border-none font-medium flex items-center justify-start gap-2 has-hover:hover:bg-border text-sm group/trigger",
+        `px-1.5 py-4 data-[no-icon]:pl-2.75 rounded border-none font-medium flex items-center justify-start gap-2 
+        has-hover:hover:bg-transparent active:bg-transparent text-sm group/button relative
+        focus-visible:ring-0 focus-visible:ring-offset-0`,
         className
       )}
       {...rest}
     >
-      {Icon && item && <Icon id={item.id} />}
+      <div className="absolute left-0 top-0 w-full h-full pointer-events-none py-1.5">
+        <div
+          className="w-full h-full rounded-lg bg-border/0 has-hover:group-hover/button:bg-border group-active/button:bg-border
+          group-focus-visible/button:ring-1 group-focus-visible/button:ring-primary/50"
+        />
+      </div>
+      {Icon && item && <Icon id={item.id} className="relative size-4.5" />}
       <p
-        className="group-data-[pending]/trigger:text-transparent group-data-[pending]/trigger:bg-foreground 
-          group-data-[pending]/trigger:rounded-sm group-data-[pending]/trigger:animate-skeleton max-w-32 whitespace-nowrap 
-          leading-none overflow-hidden overflow-ellipsis"
+        className="group-data-[pending]/button:text-transparent group-data-[pending]/button:bg-foreground 
+          group-data-[pending]/button:rounded-sm group-data-[pending]/button:animate-skeleton max-w-32 whitespace-nowrap 
+          leading-none overflow-hidden overflow-ellipsis relative"
       >
         {item == undefined ? "Loading" : item?.title}
       </p>
-      <ChevronDownIcon className="size-4 -ml-1 text-muted-more-foreground group-data-[state=open]/trigger:rotate-180 transition" />
+      <ChevronDownIcon className="size-4 -my-1 relative -ml-1 text-muted-more-foreground group-data-[state=open]/button:rotate-180 transition" />
     </Button>
   );
 }

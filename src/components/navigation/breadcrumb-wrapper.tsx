@@ -10,7 +10,7 @@ export function BreadcrumbWrapper({
   children: ReactNode;
 }) {
   return (
-    <div className={cn("flex items-center justify-start", className)}>
+    <div className={cn("flex items-stretch justify-start", className)}>
       {children}
     </div>
   );
@@ -20,7 +20,7 @@ export function BreadcrumbSeparator({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "text-foreground/16 w-3 sm:w-4 h-5.5 flex items-center justify-center shrink-0 overflow-hidden",
+        "text-foreground/16 w-3 sm:w-4 min-h-5.5 self-stretch flex items-center justify-center shrink-0 overflow-hidden",
         className
       )}
     >
