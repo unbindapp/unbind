@@ -3,7 +3,6 @@ import { FC } from "react";
 export type TCommandPanelPage = {
   id: string;
   parentPageId: string | null;
-  isAsync?: boolean;
 } & (
   | { items: TCommandPanelItems; itemsQuery?: never }
   | {

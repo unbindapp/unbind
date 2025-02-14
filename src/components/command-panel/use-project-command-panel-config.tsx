@@ -260,7 +260,6 @@ export default function useProjectCommandPanelConfig() {
     const ids = new Set<string>();
     const addIds = (page: TCommandPanelPage) => {
       ids.add(page.id);
-      if (page.isAsync) return;
       if (!page.items) return;
       page.items.forEach((item) => {
         if (item.subpage) {
