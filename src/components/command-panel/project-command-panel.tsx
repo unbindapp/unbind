@@ -1,19 +1,15 @@
 "use client";
 
+import { rootPanelPageIdForProject } from "@/components/command-panel/constants";
 import {
-  panelIdKey,
-  panelPageIdKey,
-  rootPanelPageIdForProject,
-} from "@/components/command-panel/constants";
-import {
-  findCommandPanelPage,
   getAllItemsFromCommandPanelPage,
+  getFirstCommandListItem,
 } from "@/components/command-panel/helpers";
 import {
   TCommandPanelItem,
   TCommandPanelPage,
 } from "@/components/command-panel/types";
-import ServiceIcon from "@/components/icons/service";
+import useProjectCommandPanelData from "@/components/command-panel/use-project-command-panel-data";
 import {
   Command,
   CommandEmpty,
@@ -25,13 +21,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { useCommandState } from "cmdk";
-import {
-  ArrowLeftIcon,
-  BlocksIcon,
-  ChevronRightIcon,
-  DatabaseIcon,
-} from "lucide-react";
-import { useQueryState } from "nuqs";
+import { ArrowLeftIcon, ChevronRightIcon } from "lucide-react";
 import {
   RefObject,
   useCallback,
@@ -41,234 +31,94 @@ import {
   useState,
 } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { toast } from "sonner";
 
 type Props = {
   className?: string;
 };
 
 export default function ProjectCommandPanel({ className }: Props) {
-  const [, setPanelId] = useQueryState(panelIdKey);
-  const [panelPageId, setPanelPageId] = useQueryState(panelPageIdKey);
-
-  const onSelectPlaceholder = useCallback(() => {
-    toast.success("Successful (Fake)", {
-      description: "Imagine this working...",
-      duration: 3000,
-      closeButton: false,
-    });
-    setPanelId(null);
-  }, [setPanelId]);
-
-  const defaultPage: TCommandPanelPage = useMemo(
-    () => ({
-      id: rootPanelPageIdForProject,
-      parentPageId: null,
-      items: [
-        {
-          title: "GitHub Repo",
-          keywords: ["deploy", "gitlab", "bitbucket"],
-          onSelect: () => onSelectPlaceholder(),
-          Icon: ({ className }) => (
-            <ServiceIcon variant="github" className={className} />
-          ),
-        },
-        {
-          title: "Database",
-          keywords: ["persistent", "persistence"],
-          Icon: DatabaseIcon,
-          subpage: {
-            id: "databases",
-            parentPageId: rootPanelPageIdForProject,
-            items: [
-              {
-                title: "PostgreSQL",
-                keywords: ["database", "sql", "mysql"],
-                onSelect: () => onSelectPlaceholder(),
-                Icon: ({ className }) => (
-                  <ServiceIcon
-                    color="brand"
-                    variant="postgresql"
-                    className={className}
-                  />
-                ),
-              },
-              {
-                title: "Redis",
-                keywords: ["database", "cache", "key value"],
-                onSelect: () => onSelectPlaceholder(),
-                Icon: ({ className }) => (
-                  <ServiceIcon
-                    color="brand"
-                    variant="redis"
-                    className={className}
-                  />
-                ),
-              },
-              {
-                title: "MongoDB",
-                keywords: ["database", "object"],
-                onSelect: () => onSelectPlaceholder(),
-                Icon: ({ className }) => (
-                  <ServiceIcon
-                    color="brand"
-                    variant="mongodb"
-                    className={className}
-                  />
-                ),
-              },
-              {
-                title: "MySQL",
-                keywords: ["database", "sql", "postgresql"],
-                onSelect: () => onSelectPlaceholder(),
-                Icon: ({ className }) => (
-                  <ServiceIcon
-                    color="brand"
-                    variant="mysql"
-                    className={className}
-                  />
-                ),
-              },
-              {
-                title: "ClickHouse",
-                keywords: ["database", "analytics", "sql"],
-                onSelect: () => onSelectPlaceholder(),
-                Icon: ({ className }) => (
-                  <ServiceIcon
-                    color="brand"
-                    variant="clickhouse"
-                    className={className}
-                  />
-                ),
-              },
-            ],
-          },
-        },
-        {
-          title: "Docker Image",
-          keywords: ["deploy"],
-          onSelect: () => onSelectPlaceholder(),
-          Icon: ({ className }) => (
-            <ServiceIcon variant="docker" className={className} />
-          ),
-        },
-        {
-          title: "Template",
-          keywords: ["blueprint", "stack", "group"],
-          Icon: BlocksIcon,
-          subpage: {
-            id: "templates",
-            parentPageId: rootPanelPageIdForProject,
-            items: [
-              {
-                title: "Strapi",
-                keywords: ["cms", "content"],
-                onSelect: () => onSelectPlaceholder(),
-                Icon: ({ className }) => (
-                  <ServiceIcon
-                    color="brand"
-                    variant="strapi"
-                    className={className}
-                  />
-                ),
-              },
-              {
-                title: "Umami",
-                keywords: ["analytics", "privacy", "tracking"],
-                onSelect: () => onSelectPlaceholder(),
-                Icon: ({ className }) => (
-                  <ServiceIcon
-                    color="brand"
-                    variant="umami"
-                    className={className}
-                  />
-                ),
-              },
-              {
-                title: "Meilisearch",
-                keywords: ["full text search", "elasticsearch", "ram"],
-                onSelect: () => onSelectPlaceholder(),
-                Icon: ({ className }) => (
-                  <ServiceIcon
-                    color="brand"
-                    variant="meilisearch"
-                    className={className}
-                  />
-                ),
-              },
-              {
-                title: "MinIO",
-                keywords: ["s3", "file storage"],
-                onSelect: () => onSelectPlaceholder(),
-                Icon: ({ className }) => (
-                  <ServiceIcon
-                    color="brand"
-                    variant="minio"
-                    className={className}
-                  />
-                ),
-              },
-              {
-                title: "PocketBase",
-                keywords: [
-                  "paas",
-                  "backend",
-                  "authentication",
-                  "realtime database",
-                  "file storage",
-                ],
-                onSelect: () => onSelectPlaceholder(),
-                Icon: ({ className }) => (
-                  <ServiceIcon
-                    color="brand"
-                    variant="pocketbase"
-                    className={className}
-                  />
-                ),
-              },
-              {
-                title: "N8N",
-                keywords: ["workflow automation", "ai", "devops", "itops"],
-                onSelect: () => onSelectPlaceholder(),
-                Icon: ({ className }) => (
-                  <ServiceIcon
-                    color="brand"
-                    variant="n8n"
-                    className={className}
-                  />
-                ),
-              },
-              {
-                title: "Ghost",
-                keywords: ["blogging"],
-                onSelect: () => onSelectPlaceholder(),
-                Icon: ({ className }) => (
-                  <ServiceIcon
-                    color="brand"
-                    variant="ghost"
-                    className={className}
-                  />
-                ),
-              },
-            ],
-          },
-        },
-      ],
-    }),
-    [onSelectPlaceholder]
-  );
+  const {
+    currentPage,
+    setCurrentPage,
+    setPanelPageId,
+    allPageIds,
+    goToParentPage,
+  } = useProjectCommandPanelData();
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const [value, setValue] = useState("");
 
-  const [currentPage, setCurrentPage] = useState(
-    panelPageId
-      ? findCommandPanelPage({
-          id: panelPageId,
-          page: defaultPage,
-        }) || defaultPage
-      : defaultPage
+  useEffect(() => {
+    setPanelPageId(currentPage.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage]);
+
+  useEffect(() => {
+    const value = getFirstCommandListItem(listRef);
+    if (value) setValue(value);
+  }, [currentPage]);
+
+  useHotkeys(
+    "arrowleft",
+    (e) => {
+      if (inputRef.current?.value) return;
+      goToParentPage(e);
+    },
+    {
+      enableOnContentEditable: true,
+      enableOnFormTags: true,
+    }
   );
 
+  useHotkeys(
+    "esc",
+    () => {
+      goToParentPage();
+    },
+    {
+      enableOnContentEditable: true,
+      enableOnFormTags: true,
+    }
+  );
+
+  return (
+    <Command
+      value={value}
+      onValueChange={setValue}
+      variant="modal"
+      className={cn(
+        "w-full rounded-xl h-96 border shadow-xl shadow-shadow/[var(--opacity-shadow)]",
+        className
+      )}
+    >
+      <Input currentPage={currentPage} allPageIds={allPageIds} ref={inputRef} />
+      <CommandEmpty className="text-muted-foreground w-full text-center text-base py-6">
+        No matching results
+      </CommandEmpty>
+      <ScrollArea>
+        <List
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          goToParentPage={goToParentPage}
+          listRef={listRef}
+        />
+      </ScrollArea>
+    </Command>
+  );
+}
+
+function List({
+  currentPage,
+  setCurrentPage,
+  goToParentPage,
+  listRef,
+}: {
+  currentPage: TCommandPanelPage;
+  setCurrentPage: (page: TCommandPanelPage) => void;
+  goToParentPage: () => void;
+  listRef: RefObject<HTMLDivElement | null>;
+}) {
   const allItems = useMemo(
     () => getAllItemsFromCommandPanelPage(currentPage),
     [currentPage]
@@ -282,108 +132,34 @@ export default function ProjectCommandPanel({ className }: Props) {
     [allItems, currentPage]
   );
 
-  const allPageIds = useMemo(() => {
-    const ids = new Set<string>();
-    const addIds = (page: TCommandPanelPage) => {
-      ids.add(page.id);
-      page.items.forEach((item) => {
-        if (item.subpage) {
-          addIds(item.subpage);
-        }
-      });
-    };
-    addIds(defaultPage);
-    return [...ids];
-  }, [defaultPage]);
-
-  useEffect(() => {
-    setPanelPageId(currentPage.id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage]);
-
-  const goToParent = useCallback(() => {
-    if (currentPage.id === rootPanelPageIdForProject) {
-      return;
-    }
-    if (currentPage.parentPageId === null) return;
-    const parentPage = findCommandPanelPage({
-      id: currentPage.parentPageId,
-      page: defaultPage,
-    });
-    if (parentPage) {
-      setCurrentPage(parentPage);
-    }
-  }, [currentPage, defaultPage]);
-
   const goBackItem = useMemo(
     () => ({
       title: "Go Back",
       Icon: ArrowLeftIcon,
       keywords: ["return"],
-      onSelect: () => goToParent(),
+      onSelect: () => goToParentPage(),
     }),
-    [goToParent]
-  );
-
-  useHotkeys(
-    "arrowleft",
-    () => {
-      if (inputRef.current?.value) return;
-      goToParent();
-    },
-    {
-      enableOnContentEditable: true,
-      enableOnFormTags: true,
-    }
-  );
-
-  useHotkeys(
-    "esc",
-    () => {
-      goToParent();
-    },
-    {
-      enableOnContentEditable: true,
-      enableOnFormTags: true,
-    }
+    [goToParentPage]
   );
 
   return (
-    <Command
-      variant="modal"
-      className={cn(
-        "w-full rounded-xl h-96 border shadow-xl shadow-shadow/[var(--opacity-shadow)]",
-        className
-      )}
-    >
-      <Input currentPage={currentPage} allPageIds={allPageIds} ref={inputRef} />
-      <CommandEmpty className="text-muted-foreground w-full text-center text-base py-6">
-        No matching results
-      </CommandEmpty>
-      <ScrollArea>
-        <CommandList>
-          <CommandGroup>
-            {currentPage.items.map((item) => (
-              <Item
-                key={item.title}
-                item={item}
-                setCurrentPage={setCurrentPage}
-              />
-            ))}
-            {allOtherItems.map((item) => (
-              <ConditionalItem
-                key={item.title}
-                item={item}
-                setCurrentPage={setCurrentPage}
-              />
-            ))}
-            {currentPage.id !== rootPanelPageIdForProject && (
-              <Item item={goBackItem} setCurrentPage={setCurrentPage} />
-            )}
-          </CommandGroup>
-        </CommandList>
-      </ScrollArea>
-    </Command>
+    <CommandList ref={listRef}>
+      <CommandGroup>
+        {currentPage.items.map((item) => (
+          <Item key={item.title} item={item} setCurrentPage={setCurrentPage} />
+        ))}
+        {allOtherItems.map((item) => (
+          <ConditionalItem
+            key={item.title}
+            item={item}
+            setCurrentPage={setCurrentPage}
+          />
+        ))}
+        {currentPage.id !== rootPanelPageIdForProject && (
+          <Item item={goBackItem} setCurrentPage={setCurrentPage} />
+        )}
+      </CommandGroup>
+    </CommandList>
   );
 }
 
