@@ -6,12 +6,13 @@ import {
 import { findCommandPanelPage } from "@/components/command-panel/helpers";
 import { TCommandPanelPage } from "@/components/command-panel/types";
 import ServiceIcon from "@/components/icons/service";
+import { api } from "@/server/trpc/setup/client";
 import { BlocksIcon, DatabaseIcon } from "lucide-react";
 import { useQueryState } from "nuqs";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-export default function useProjectCommandPanelData() {
+export default function useProjectCommandPanelConfig() {
   const [, setPanelId] = useQueryState(panelIdKey);
   const [panelPageId, setPanelPageId] = useQueryState(panelPageIdKey);
 
@@ -22,20 +23,44 @@ export default function useProjectCommandPanelData() {
       closeButton: false,
     });
     setPanelId(null);
-  }, [setPanelId]);
+    setPanelPageId(null);
+  }, [setPanelId, setPanelPageId]);
 
   const defaultPage: TCommandPanelPage = useMemo(
     () => ({
       id: rootPanelPageIdForProject,
       parentPageId: null,
+      itemsQuery: () => null,
       items: [
         {
           title: "GitHub Repo",
           keywords: ["deploy", "gitlab", "bitbucket"],
-          onSelect: () => onSelectPlaceholder(),
           Icon: ({ className }) => (
             <ServiceIcon variant="github" className={className} />
           ),
+          subpage: {
+            id: "github_repos",
+            parentPageId: rootPanelPageIdForProject,
+            isAsync: true,
+            itemsQuery: () => {
+              const { data, isError, isPending } =
+                api.main.getGitHubRepos.useQuery({});
+              return {
+                isPending,
+                isError,
+                data: data
+                  ? data.repos.map((repo) => ({
+                      title: repo.owner + "/" + repo.name,
+                      keywords: [],
+                      onSelect: () => onSelectPlaceholder(),
+                      Icon: ({ className }: { className?: string }) => (
+                        <ServiceIcon variant="github" className={className} />
+                      ),
+                    }))
+                  : undefined,
+              };
+            },
+          },
         },
         {
           title: "Database",
@@ -44,6 +69,7 @@ export default function useProjectCommandPanelData() {
           subpage: {
             id: "databases",
             parentPageId: rootPanelPageIdForProject,
+            itemsQuery: () => null,
             items: [
               {
                 title: "PostgreSQL",
@@ -123,6 +149,7 @@ export default function useProjectCommandPanelData() {
           subpage: {
             id: "templates",
             parentPageId: rootPanelPageIdForProject,
+            itemsQuery: () => null,
             items: [
               {
                 title: "Strapi",
@@ -235,6 +262,8 @@ export default function useProjectCommandPanelData() {
     const ids = new Set<string>();
     const addIds = (page: TCommandPanelPage) => {
       ids.add(page.id);
+      if (page.isAsync) return;
+      if (!page.items) return;
       page.items.forEach((item) => {
         if (item.subpage) {
           addIds(item.subpage);

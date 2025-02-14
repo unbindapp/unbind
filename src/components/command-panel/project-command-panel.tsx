@@ -5,11 +5,14 @@ import {
   getAllItemsFromCommandPanelPage,
   getFirstCommandListItem,
 } from "@/components/command-panel/helpers";
+import ProjectCommandPanelDataProvider, {
+  useProjectCommandPanelPageData,
+} from "@/components/command-panel/project-command-panel-data-provider";
 import {
   TCommandPanelItem,
   TCommandPanelPage,
 } from "@/components/command-panel/types";
-import useProjectCommandPanelData from "@/components/command-panel/use-project-command-panel-data";
+import useProjectCommandPanelConfig from "@/components/command-panel/use-project-command-panel-config";
 import {
   Command,
   CommandEmpty,
@@ -21,7 +24,12 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { useCommandState } from "cmdk";
-import { ArrowLeftIcon, ChevronRightIcon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  ChevronRightIcon,
+  LoaderIcon,
+  TriangleAlertIcon,
+} from "lucide-react";
 import {
   RefObject,
   useCallback,
@@ -43,20 +51,13 @@ export default function ProjectCommandPanel({ className }: Props) {
     setPanelPageId,
     allPageIds,
     goToParentPage,
-  } = useProjectCommandPanelData();
+  } = useProjectCommandPanelConfig();
 
   const inputRef = useRef<HTMLInputElement>(null);
-  const listRef = useRef<HTMLDivElement>(null);
-  const [value, setValue] = useState("");
 
   useEffect(() => {
     setPanelPageId(currentPage.id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage]);
-
-  useEffect(() => {
-    const value = getFirstCommandListItem(listRef);
-    if (value) setValue(value);
   }, [currentPage]);
 
   useHotkeys(
@@ -83,7 +84,46 @@ export default function ProjectCommandPanel({ className }: Props) {
   );
 
   return (
+    <ProjectCommandPanelDataProvider page={currentPage}>
+      <Panel
+        className={className}
+        allPageIds={allPageIds}
+        currentPage={currentPage}
+        goToParentPage={goToParentPage}
+        inputRef={inputRef}
+        setCurrentPage={setCurrentPage}
+      />
+    </ProjectCommandPanelDataProvider>
+  );
+}
+
+function Panel({
+  currentPage,
+  allPageIds,
+  setCurrentPage,
+  goToParentPage,
+  inputRef,
+  className,
+}: {
+  allPageIds: string[];
+  currentPage: TCommandPanelPage;
+  setCurrentPage: (page: TCommandPanelPage) => void;
+  goToParentPage: () => void;
+  inputRef: RefObject<HTMLInputElement | null>;
+  className?: string;
+}) {
+  const { isPending } = useProjectCommandPanelPageData();
+  const listRef = useRef<HTMLDivElement>(null);
+  const [value, setValue] = useState("");
+
+  useEffect(() => {
+    const value = getFirstCommandListItem(listRef);
+    if (value) setValue(value);
+  }, [currentPage]);
+
+  return (
     <Command
+      filter={isPending ? () => 1 : undefined}
       value={value}
       onValueChange={setValue}
       variant="modal"
@@ -93,22 +133,17 @@ export default function ProjectCommandPanel({ className }: Props) {
       )}
     >
       <Input currentPage={currentPage} allPageIds={allPageIds} ref={inputRef} />
-      <CommandEmpty className="text-muted-foreground w-full text-center text-base py-6">
-        No matching results
-      </CommandEmpty>
-      <ScrollArea>
-        <List
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
-          goToParentPage={goToParentPage}
-          listRef={listRef}
-        />
-      </ScrollArea>
+      <Content
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        goToParentPage={goToParentPage}
+        listRef={listRef}
+      />
     </Command>
   );
 }
 
-function List({
+function Content({
   currentPage,
   setCurrentPage,
   goToParentPage,
@@ -119,18 +154,17 @@ function List({
   goToParentPage: () => void;
   listRef: RefObject<HTMLDivElement | null>;
 }) {
+  const { items, isError, isPending } = useProjectCommandPanelPageData();
+
   const allItems = useMemo(
     () => getAllItemsFromCommandPanelPage(currentPage),
     [currentPage]
   );
 
-  const allOtherItems = useMemo(
-    () =>
-      allItems.filter(
-        (i) => !currentPage.items.map((c) => c.title).includes(i.title)
-      ),
-    [allItems, currentPage]
-  );
+  const allOtherItems = useMemo(() => {
+    if (!items) return [];
+    return allItems.filter((i) => !items.map((c) => c.title).includes(i.title));
+  }, [allItems, items]);
 
   const goBackItem = useMemo(
     () => ({
@@ -143,23 +177,60 @@ function List({
   );
 
   return (
-    <CommandList ref={listRef}>
-      <CommandGroup>
-        {currentPage.items.map((item) => (
-          <Item key={item.title} item={item} setCurrentPage={setCurrentPage} />
-        ))}
-        {allOtherItems.map((item) => (
-          <ConditionalItem
-            key={item.title}
-            item={item}
-            setCurrentPage={setCurrentPage}
-          />
-        ))}
-        {currentPage.id !== rootPanelPageIdForProject && (
-          <Item item={goBackItem} setCurrentPage={setCurrentPage} />
-        )}
-      </CommandGroup>
-    </CommandList>
+    <>
+      {!isError && (
+        <CommandEmpty className="text-muted-foreground w-full text-center text-base py-6">
+          No matching results
+        </CommandEmpty>
+      )}
+      <ScrollArea>
+        <CommandList ref={listRef}>
+          <CommandGroup>
+            {!isPending &&
+              items &&
+              items.map((item) => (
+                <Item
+                  key={item.title}
+                  item={item}
+                  setCurrentPage={setCurrentPage}
+                />
+              ))}
+            {!isPending &&
+              !isError &&
+              allOtherItems.map((item) => (
+                <ConditionalItem
+                  key={item.title}
+                  item={item}
+                  setCurrentPage={setCurrentPage}
+                />
+              ))}
+            {isPending &&
+              !items &&
+              Array.from({ length: 10 }).map((_, i) => (
+                <Item
+                  key={i}
+                  item={{
+                    title: `Loading ${i}`,
+                    keywords: [],
+                    Icon: LoaderIcon,
+                  }}
+                  setCurrentPage={() => null}
+                  isPlaceholder={true}
+                />
+              ))}
+            {currentPage.id !== rootPanelPageIdForProject && (
+              <Item item={goBackItem} setCurrentPage={setCurrentPage} />
+            )}
+          </CommandGroup>
+          {!isPending && !items && isError && (
+            <div className="w-full flex flex-col items-center px-4 py-6 gap-1 text-center text-destructive">
+              <TriangleAlertIcon className="size-5" />
+              <p className="w-full">Something went wrong</p>
+            </div>
+          )}
+        </CommandList>
+      </ScrollArea>
+    </>
   );
 }
 
@@ -187,9 +258,11 @@ function Input({
   const [values, setValues] = useState(
     Object.fromEntries(allPageIds.map((id) => [id, ""]))
   );
+  const { isPending } = useProjectCommandPanelPageData();
 
   return (
     <CommandInput
+      showSpinner={isPending}
       value={values[currentPage.id]}
       onValueChange={(value) => {
         setValues((prev) => ({ ...prev, [currentPage.id]: value }));
@@ -203,9 +276,11 @@ function Input({
 function Item({
   item,
   setCurrentPage,
+  isPlaceholder,
 }: {
   item: TCommandPanelItem;
   setCurrentPage: (page: TCommandPanelPage) => void;
+  isPlaceholder?: boolean;
 }) {
   const search = useCommandState((state) => state.search);
   const value = useCommandState((state) => state.value);
@@ -228,14 +303,17 @@ function Item({
 
   return (
     <CommandItem
+      data-placeholder={isPlaceholder ? true : undefined}
       value={item.title}
       keywords={item.keywords}
-      className="px-3.5 font-medium py-3 flex flex-row w-full items-center justify-between text-left gap-6"
+      className="px-3.5 font-medium group/item data-[placeholder]:text-transparent py-3 flex flex-row w-full items-center justify-between text-left gap-6"
       onSelect={onSelect}
     >
       <div className="flex-1 min-w-0 gap-2.5 flex items-center justify-start">
-        <item.Icon className="size-5 -ml-0.5" />
-        <p className="shrink min-w-0 leading-tight">{item.title}</p>
+        <item.Icon className="size-5 -ml-0.5 group-data-[placeholder]/item:rounded-full group-data-[placeholder]/item:bg-foreground group-data-[placeholder]/item:animate-skeleton" />
+        <p className="shrink min-w-0 leading-tight group-data-[placeholder]/item:rounded-md group-data-[placeholder]/item:bg-foreground group-data-[placeholder]/item:animate-skeleton">
+          {item.title}
+        </p>
       </div>
       {item.subpage && <ChevronRightIcon className="size-5 -mr-1.5 shrink-0" />}
     </CommandItem>

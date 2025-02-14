@@ -74,7 +74,7 @@ const CommandInput = React.forwardRef<
         <SearchIcon className="size-full text-muted-foreground" />
       )}
       {showSpinner && (
-        <LoaderIcon className="absolute size-full  animate-spin" />
+        <LoaderIcon className="absolute size-full animate-spin" />
       )}
     </div>
     <CommandPrimitive.Input

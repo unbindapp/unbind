@@ -85,6 +85,17 @@ export const mainRouter = createTRPCRouter({
         variables,
       };
     }),
+  getGitHubRepos: publicProcedure
+    .input(z.object({}))
+    .query(async function ({}) {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const repos = await getGitHubRepos({
+        teamId: "test",
+      });
+      return {
+        repos,
+      };
+    }),
 });
 
 async function getProjects({ teamId }: { teamId: string }) {
@@ -150,6 +161,11 @@ async function getDeployments({
           d.dockerImage === service.lastDeployment.dockerImage)
     );
   return filteredDeployments;
+}
+
+async function getGitHubRepos({ teamId }: { teamId: string }) {
+  console.log("teamId:", teamId);
+  return repos;
 }
 
 const teams: TTeam[] = [
@@ -430,6 +446,12 @@ export type TServiceType =
   | "ghost"
   | "n8n";
 
+export type TGitHubRepo = {
+  owner: string;
+  name: string;
+  isPublic: boolean;
+};
+
 export type TTeam = {
   id: string;
   title: string;
@@ -543,6 +565,49 @@ const variables: TVariable[] = [
   {
     key: "STRIPE_SECRET_KEY",
     value: "sk_test_1234567890",
+  },
+];
+
+const repos: TGitHubRepo[] = [
+  {
+    owner: "yekta",
+    name: "tezara",
+    isPublic: true,
+  },
+  {
+    owner: "yekta",
+    name: "augend",
+    isPublic: true,
+  },
+  {
+    owner: "yekta",
+    name: "banano-website",
+    isPublic: true,
+  },
+  {
+    owner: "stablecog",
+    name: "stablecog",
+    isPublic: true,
+  },
+  {
+    owner: "stablecog",
+    name: "sc-go",
+    isPublic: true,
+  },
+  {
+    owner: "stablecog",
+    name: "sc-worker",
+    isPublic: true,
+  },
+  {
+    owner: "stablecog",
+    name: "nllb-cog",
+    isPublic: true,
+  },
+  {
+    owner: "stablecog",
+    name: "sc-imgproxy",
+    isPublic: true,
   },
 ];
 
