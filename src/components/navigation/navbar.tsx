@@ -35,11 +35,11 @@ export async function Navbar({
   return (
     <nav
       className={cn(
-        "w-full sticky top-0 left-0 z-50 bg-background flex flex-col items-stretch justify-between",
+        "w-full sticky top-0 left-0 z-50 bg-background flex flex-col items-stretch justify-between border-b",
         className
       )}
     >
-      <div className="w-full flex justify-between items-stretch px-3 border-b gap-5">
+      <div className="w-full flex justify-between items-stretch px-3 gap-5">
         <div className="shrink min-w-0 flex items-stretch justify-start -ml-0.5">
           <LogoLink />
           {breadcrumb && <BreadcrumbSeparator />}
@@ -62,7 +62,7 @@ export async function Navbar({
         </div>
       </div>
       {mobileTabs && (
-        <div className="w-full flex border-b lg:hidden">{mobileTabs}</div>
+        <div className="w-full flex border-t lg:hidden">{mobileTabs}</div>
       )}
     </nav>
   );
