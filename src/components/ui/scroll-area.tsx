@@ -10,10 +10,18 @@ const ScrollArea = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root> & {
     viewportRef?: React.Ref<HTMLDivElement>;
     orientation?: "vertical" | "horizontal";
+    noFocusOnViewport?: boolean;
   }
 >(
   (
-    { className, viewportRef, orientation = "vertical", children, ...props },
+    {
+      className,
+      viewportRef,
+      noFocusOnViewport,
+      orientation = "vertical",
+      children,
+      ...props
+    },
     ref
   ) => (
     <ScrollAreaPrimitive.Root
@@ -26,7 +34,8 @@ const ScrollArea = React.forwardRef<
     >
       <ScrollAreaPrimitive.Viewport
         ref={viewportRef}
-        className="flex-1 [&>div]:!block w-full rounded-[inherit]"
+        className="flex-1 [&>div]:!block w-full rounded-[inherit] focus:outline-1 focus:outline-primary/50"
+        tabIndex={noFocusOnViewport ? -1 : undefined}
       >
         {children}
       </ScrollAreaPrimitive.Viewport>

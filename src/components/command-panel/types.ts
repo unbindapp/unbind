@@ -1,6 +1,7 @@
 import { FC } from "react";
 
 export type TCommandPanelPage = {
+  title: string;
   id: string;
   parentPageId: string | null;
 } & (

@@ -35,6 +35,7 @@ export default function useProjectCommandPanelConfig({
   const defaultPage: TCommandPanelPage = useMemo(
     () => ({
       id: rootPanelPageIdForProject,
+      title: "New Service",
       parentPageId: null,
       items: [
         {
@@ -45,6 +46,7 @@ export default function useProjectCommandPanelConfig({
           ),
           subpage: {
             id: "github_repos",
+            title: "GitHub Repos",
             parentPageId: rootPanelPageIdForProject,
             getItems: () =>
               utils.main.getGitHubRepos.fetch({ teamId }).then((r) =>
@@ -69,6 +71,7 @@ export default function useProjectCommandPanelConfig({
           Icon: DatabaseIcon,
           subpage: {
             id: "databases",
+            title: "Databases",
             parentPageId: rootPanelPageIdForProject,
             items: [
               {
@@ -148,6 +151,7 @@ export default function useProjectCommandPanelConfig({
           Icon: BlocksIcon,
           subpage: {
             id: "templates",
+            title: "Templates",
             parentPageId: rootPanelPageIdForProject,
             items: [
               {

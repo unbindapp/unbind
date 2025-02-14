@@ -13,6 +13,7 @@ import {
   TCommandPanelPage,
 } from "@/components/command-panel/types";
 import useProjectCommandPanelConfig from "@/components/command-panel/use-project-command-panel-config";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -63,6 +64,13 @@ export default function ProjectCommandPanel({
 
   useEffect(() => {
     setPanelPageId(currentPage.id);
+    const isTouchScreen =
+      typeof window !== "undefined"
+        ? window.matchMedia("(pointer: coarse)").matches
+        : false;
+    if (!isTouchScreen) {
+      inputRef.current?.focus();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
 
@@ -139,7 +147,7 @@ function Panel({
       onValueChange={setValue}
       variant="modal"
       className={cn(
-        "w-full rounded-xl h-96 border shadow-xl shadow-shadow/[var(--opacity-shadow)]",
+        "w-full rounded-xl h-108 max-h-[75vh] border shadow-xl shadow-shadow/[var(--opacity-shadow)]",
         className
       )}
     >
@@ -147,9 +155,9 @@ function Panel({
       <Content
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
-        goToParentPage={goToParentPage}
         listRef={listRef}
       />
+      <Footer currentPage={currentPage} goToParentPage={goToParentPage} />
     </Command>
   );
 }
@@ -157,12 +165,10 @@ function Panel({
 function Content({
   currentPage,
   setCurrentPage,
-  goToParentPage,
   listRef,
 }: {
   currentPage: TCommandPanelPage;
   setCurrentPage: (page: TCommandPanelPage) => void;
-  goToParentPage: () => void;
   listRef: RefObject<HTMLDivElement | null>;
 }) {
   const { items, isPending, isError } = useProjectCommandPanelItems();
@@ -176,16 +182,6 @@ function Content({
     return allItems.filter((i) => !items.map((c) => c.title).includes(i.title));
   }, [allItems, items]);
 
-  const goBackItem = useMemo(
-    () => ({
-      title: "Go Back",
-      Icon: ArrowLeftIcon,
-      keywords: ["return"],
-      onSelect: () => goToParentPage(),
-    }),
-    [goToParentPage]
-  );
-
   return (
     <>
       {!isError && (
@@ -193,7 +189,7 @@ function Content({
           No matching results
         </CommandEmpty>
       )}
-      <ScrollArea>
+      <ScrollArea noFocusOnViewport>
         <CommandList ref={listRef}>
           <CommandGroup>
             {!isPending &&
@@ -228,9 +224,6 @@ function Content({
                   isPlaceholder={true}
                 />
               ))}
-            {currentPage.id !== rootPanelPageIdForProject && (
-              <Item item={goBackItem} setCurrentPage={setCurrentPage} />
-            )}
           </CommandGroup>
           {!isPending && !items && isError && (
             <div className="w-full flex flex-col items-center px-4 py-6 gap-1 text-center text-destructive">
@@ -244,16 +237,46 @@ function Content({
   );
 }
 
-function ConditionalItem({
-  item,
-  setCurrentPage,
+function Footer({
+  currentPage,
+  goToParentPage,
 }: {
-  item: TCommandPanelItem;
-  setCurrentPage: (page: TCommandPanelPage) => void;
+  currentPage: TCommandPanelPage;
+  goToParentPage: () => void;
 }) {
-  const search = useCommandState((state) => state.search);
-  if (!search) return null;
-  return <Item item={item} setCurrentPage={setCurrentPage} />;
+  const goBackButtonRef = useRef<HTMLButtonElement>(null);
+
+  return (
+    <div className="w-full z-10 sticky bottom-0 left-0 p-1 flex items-center justify-between border-t text-muted-foreground">
+      <p className="shrink text-sm font-medium px-3 py-2 min-w-0 overflow-hidden overflow-ellipsis whitespace-nowrap">
+        {currentPage.title}
+      </p>
+      {currentPage.id !== rootPanelPageIdForProject && (
+        <Button
+          onKeyDown={(e) => e.stopPropagation()}
+          onClick={goToParentPage}
+          ref={goBackButtonRef}
+          type="submit"
+          size="sm"
+          variant="ghost"
+          className="rounded-lg px-2 py-2 font-semibold"
+        >
+          <ArrowLeftIcon className="size-4.5 -my-2" />
+          <p className="shrink min-w-0 overflow-hidden overflow-ellipsis whitespace-nowrap">
+            Go Back
+          </p>
+          <div className="pl-0.75 -my-1">
+            <div
+              className="text-xxs ring-1 ring-border rounded px-1.5 py-1.25 
+              leading-none bg-background-hover"
+            >
+              esc
+            </div>
+          </div>
+        </Button>
+      )}
+    </div>
+  );
 }
 
 function Input({
@@ -282,6 +305,18 @@ function Input({
       placeholder="Deploy something..."
     />
   );
+}
+
+function ConditionalItem({
+  item,
+  setCurrentPage,
+}: {
+  item: TCommandPanelItem;
+  setCurrentPage: (page: TCommandPanelPage) => void;
+}) {
+  const search = useCommandState((state) => state.search);
+  if (!search) return null;
+  return <Item item={item} setCurrentPage={setCurrentPage} />;
 }
 
 function Item({
