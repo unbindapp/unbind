@@ -110,7 +110,7 @@ export function BreadcrumbItem<T>({
                 }}
                 key={i.id + index}
                 data-show-arrow={showArrow ? true : undefined}
-                className="py-2 flex items-center justify-between gap-2.5 group/item"
+                className="justify-between group/item"
               >
                 <div className="flex-1 min-w-0 flex items-center gap-2.5">
                   {IconItem && <IconItem id={i.id} />}

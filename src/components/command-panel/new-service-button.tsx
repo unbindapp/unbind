@@ -1,7 +1,10 @@
 "use client";
 
 import CommandPanelTrigger from "@/components/command-panel/command-panel-trigger";
-import { panelIdKey } from "@/components/command-panel/constants";
+import {
+  panelIdKey,
+  panelPageIdKey,
+} from "@/components/command-panel/constants";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { PlusIcon } from "lucide-react";
@@ -20,6 +23,7 @@ export default function NewServiceButton({
   className,
 }: Props) {
   const [commandPanelId, setCommandPanelId] = useQueryState(panelIdKey);
+  const [, setCommandPanelPageId] = useQueryState(panelPageIdKey);
   const open = commandPanelId === newServiceId;
   const setOpen = (open: boolean) => {
     if (open) {
@@ -27,6 +31,7 @@ export default function NewServiceButton({
       return;
     }
     setCommandPanelId(null);
+    setCommandPanelPageId(null);
   };
 
   useHotkeys(

@@ -1,4 +1,8 @@
 import ServiceIcon from "@/components/icons/service";
+import {
+  servicePanelServiceIdKey,
+  servicePanelTabKey,
+} from "@/components/project/services/constants";
 import Deployments from "@/components/project/services/tabs/deployments/deployments";
 import Logs from "@/components/project/services/tabs/logs";
 import Metrics from "@/components/project/services/tabs/metrics";
@@ -42,14 +46,19 @@ type Props = {
 
 export default function ServicePanel({ service, children }: Props) {
   const [currentTab, setCurrentTab] = useQueryState(
-    "tab",
+    servicePanelTabKey,
     parseAsString.withDefault(tabs[0].value)
   );
   const CurrentPage = tabs.find((tab) => tab.value === currentTab)?.Page;
-  const [serviceId, setServiceId] = useQueryState("service_id");
+  const [serviceId, setServiceId] = useQueryState(servicePanelServiceIdKey);
   const open = serviceId === service.id;
   const setOpen = (open: boolean) => {
-    setServiceId(open ? service.id : null);
+    if (open) {
+      setServiceId(service.id);
+      return;
+    }
+    setServiceId(null);
+    setCurrentTab(null);
   };
   const { width } = useWindowSize();
   const isSmall = width < 640;

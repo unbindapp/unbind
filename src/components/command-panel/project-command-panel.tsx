@@ -454,7 +454,7 @@ function Item({
     <CommandItem
       value={item.title}
       keywords={item.keywords}
-      className="px-3.5 font-medium py-3 text-muted-foreground flex flex-row w-full items-center justify-between text-left gap-6"
+      className="px-3.5 font-medium py-3 flex flex-row w-full items-center justify-between text-left gap-6"
       onSelect={onSelect}
     >
       <div className="flex-1 min-w-0 gap-2.5 flex items-center justify-start">
