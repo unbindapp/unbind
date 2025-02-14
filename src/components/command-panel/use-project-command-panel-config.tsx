@@ -12,7 +12,11 @@ import { useQueryState } from "nuqs";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-export default function useProjectCommandPanelConfig() {
+export default function useProjectCommandPanelConfig({
+  teamId,
+}: {
+  teamId: string;
+}) {
   const [, setPanelId] = useQueryState(panelIdKey);
   const [panelPageId, setPanelPageId] = useQueryState(panelPageIdKey);
 
@@ -43,7 +47,7 @@ export default function useProjectCommandPanelConfig() {
             id: "github_repos",
             parentPageId: rootPanelPageIdForProject,
             getItems: () =>
-              utils.main.getGitHubRepos.fetch({}).then((r) =>
+              utils.main.getGitHubRepos.fetch({ teamId }).then((r) =>
                 r.repos.map((r) => ({
                   title: `${r.owner}/${r.name}`,
                   keywords: [],
@@ -241,7 +245,7 @@ export default function useProjectCommandPanelConfig() {
         },
       ],
     }),
-    [onSelectPlaceholder, utils]
+    [onSelectPlaceholder, utils, teamId]
   );
 
   const [currentPage, setCurrentPage] = useState(

@@ -12,6 +12,8 @@ import { useQueryState } from "nuqs";
 import { useHotkeys } from "react-hotkeys-hook";
 
 type Props = {
+  teamId: string;
+  projectId: string;
   className?: string;
   shortcutEnabled?: boolean;
 };
@@ -19,6 +21,8 @@ type Props = {
 const newServiceId = "new_service";
 
 export default function NewServiceButton({
+  teamId,
+  projectId,
   shortcutEnabled = true,
   className,
 }: Props) {
@@ -47,7 +51,12 @@ export default function NewServiceButton({
   );
 
   return (
-    <CommandPanelTrigger open={open} setOpen={setOpen}>
+    <CommandPanelTrigger
+      teamId={teamId}
+      projectId={projectId}
+      open={open}
+      setOpen={setOpen}
+    >
       <Button
         className={cn("bg-background-hover -my-2", className)}
         size="sm"

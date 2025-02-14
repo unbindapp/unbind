@@ -3,11 +3,19 @@ import ServiceCardList from "@/components/project/services/service-card-list";
 import { apiServer, HydrateClient } from "@/server/trpc/setup/server";
 
 type Props = {
-  params: Promise<{ environment_id: string; project_id: string }>;
+  params: Promise<{
+    team_id: string;
+    project_id: string;
+    environment_id: string;
+  }>;
 };
 
 export default async function Page({ params }: Props) {
-  const { environment_id: environmentId, project_id: projectId } = await params;
+  const {
+    team_id: teamId,
+    project_id: projectId,
+    environment_id: environmentId,
+  } = await params;
   await apiServer.main.getServices.prefetch({ environmentId, projectId });
 
   return (
@@ -18,7 +26,7 @@ export default async function Page({ params }: Props) {
             <h1 className="flex-1 min-w-0 font-bold leading-tight text-2xl">
               Services
             </h1>
-            <NewServiceButton />
+            <NewServiceButton teamId={teamId} projectId={projectId} />
           </div>
           <div className="w-full flex items-center justify-center pt-3">
             <ServiceCardList

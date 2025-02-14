@@ -41,17 +41,23 @@ import {
 import { useHotkeys } from "react-hotkeys-hook";
 
 type Props = {
+  teamId: string;
+  projectId: string;
   className?: string;
 };
 
-export default function ProjectCommandPanel({ className }: Props) {
+export default function ProjectCommandPanel({
+  teamId,
+  projectId,
+  className,
+}: Props) {
   const {
     currentPage,
     setCurrentPage,
     setPanelPageId,
     allPageIds,
     goToParentPage,
-  } = useProjectCommandPanelConfig();
+  } = useProjectCommandPanelConfig({ teamId });
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -84,7 +90,11 @@ export default function ProjectCommandPanel({ className }: Props) {
   );
 
   return (
-    <ProjectCommandPanelItemsProvider page={currentPage}>
+    <ProjectCommandPanelItemsProvider
+      teamId={teamId}
+      projectId={projectId}
+      page={currentPage}
+    >
       <Panel
         className={className}
         allPageIds={allPageIds}

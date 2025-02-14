@@ -86,11 +86,15 @@ export const mainRouter = createTRPCRouter({
       };
     }),
   getGitHubRepos: publicProcedure
-    .input(z.object({}))
-    .query(async function ({}) {
+    .input(
+      z.object({
+        teamId: z.string(),
+      })
+    )
+    .query(async function ({ input: { teamId } }) {
       await new Promise((resolve) => setTimeout(resolve, 1500));
       const repos = await getGitHubRepos({
-        teamId: "test",
+        teamId,
       });
       return {
         repos,

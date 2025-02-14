@@ -6,7 +6,13 @@ export type TCommandPanelPage = {
 } & (
   | { items: TCommandPanelItems; getItems?: never }
   | {
-      getItems: () => Promise<TCommandPanelItem[]>;
+      getItems: ({
+        teamId,
+        projectId,
+      }: {
+        teamId: string;
+        projectId: string;
+      }) => Promise<TCommandPanelItem[]>;
       items?: never;
     }
 );

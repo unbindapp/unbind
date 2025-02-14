@@ -15,14 +15,18 @@ import { useQueryState } from "nuqs";
 import { ReactNode } from "react";
 
 type Props = {
-  children: ReactNode;
+  teamId: string;
+  projectId: string;
   open: boolean;
   setOpen: (open: boolean) => void;
+  children: ReactNode;
 };
 
 const rootPages = [rootPanelPageIdForProject];
 
 export default function CommandPanelTrigger({
+  teamId,
+  projectId,
   open,
   setOpen,
   children,
@@ -60,7 +64,7 @@ export default function CommandPanelTrigger({
             Deploy something...
           </DialogDescription>
         </DialogHeader>
-        <ProjectCommandPanel />
+        <ProjectCommandPanel teamId={teamId} projectId={projectId} />
       </DialogContent>
     </Dialog>
   );
