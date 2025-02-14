@@ -5,13 +5,9 @@ export type TCommandPanelPage = {
   parentPageId: string | null;
   isAsync?: boolean;
 } & (
-  | { items: TCommandPanelItems; itemsQuery: () => null }
+  | { items: TCommandPanelItems; itemsQuery?: never }
   | {
-      itemsQuery: () => {
-        data: TCommandPanelItem[] | undefined;
-        isPending?: boolean;
-        isError?: boolean;
-      };
+      getItems: () => Promise<TCommandPanelItem[]>;
       items?: never;
     }
 );

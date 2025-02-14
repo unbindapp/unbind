@@ -26,11 +26,13 @@ export default function useProjectCommandPanelConfig() {
     setPanelPageId(null);
   }, [setPanelId, setPanelPageId]);
 
+  const utils = api.useUtils();
+
   const defaultPage: TCommandPanelPage = useMemo(
     () => ({
       id: rootPanelPageIdForProject,
       parentPageId: null,
-      itemsQuery: () => null,
+      getItems: () => null,
       items: [
         {
           title: "GitHub Repo",
@@ -41,25 +43,21 @@ export default function useProjectCommandPanelConfig() {
           subpage: {
             id: "github_repos",
             parentPageId: rootPanelPageIdForProject,
-            isAsync: true,
-            itemsQuery: () => {
-              const { data, isError, isPending } =
-                api.main.getGitHubRepos.useQuery({});
-              return {
-                isPending,
-                isError,
-                data: data
-                  ? data.repos.map((repo) => ({
-                      title: repo.owner + "/" + repo.name,
-                      keywords: [],
-                      onSelect: () => onSelectPlaceholder(),
-                      Icon: ({ className }: { className?: string }) => (
-                        <ServiceIcon variant="github" className={className} />
-                      ),
-                    }))
-                  : undefined,
-              };
-            },
+            getItems: () =>
+              utils.main.getGitHubRepos.fetch({}).then((r) =>
+                r.repos.map((r) => ({
+                  title: `${r.owner}/${r.name}`,
+                  keywords: [],
+                  onSelect: () => onSelectPlaceholder(),
+                  Icon: ({ className }: { className?: string }) => (
+                    <ServiceIcon
+                      color="brand"
+                      variant="github"
+                      className={className}
+                    />
+                  ),
+                }))
+              ),
           },
         },
         {
@@ -69,7 +67,7 @@ export default function useProjectCommandPanelConfig() {
           subpage: {
             id: "databases",
             parentPageId: rootPanelPageIdForProject,
-            itemsQuery: () => null,
+            getItems: () => null,
             items: [
               {
                 title: "PostgreSQL",
@@ -149,7 +147,7 @@ export default function useProjectCommandPanelConfig() {
           subpage: {
             id: "templates",
             parentPageId: rootPanelPageIdForProject,
-            itemsQuery: () => null,
+            getItems: () => null,
             items: [
               {
                 title: "Strapi",
@@ -246,7 +244,7 @@ export default function useProjectCommandPanelConfig() {
         },
       ],
     }),
-    [onSelectPlaceholder]
+    [onSelectPlaceholder, utils]
   );
 
   const [currentPage, setCurrentPage] = useState(

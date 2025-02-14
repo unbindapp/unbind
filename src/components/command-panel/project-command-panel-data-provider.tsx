@@ -4,43 +4,49 @@ import {
   TCommandPanelItem,
   TCommandPanelPage,
 } from "@/components/command-panel/types";
+import { useQuery } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext } from "react";
 
-type TProjectCommandPanelPageDataContext = {
-  items: TCommandPanelItem[] | undefined;
-  isPending?: boolean;
-  isError?: boolean;
+type TProjectCommandPanelDataContext = {
+  data: TCommandPanelItem[] | undefined;
+  isPending: boolean;
+  isError: boolean;
 };
 
-const ProjectCommandPanelPageDataContext =
-  createContext<TProjectCommandPanelPageDataContext | null>(null);
+const ProjectCommandPanelDataContext =
+  createContext<TProjectCommandPanelDataContext | null>(null);
 
-export const ProjectCommandPanelPageDataProvider: React.FC<{
-  children: ReactNode;
+export const ProjectCommandPanelDataProvider: React.FC<{
   page: TCommandPanelPage;
+  children: ReactNode;
 }> = ({ page, children }) => {
-  const query = page.itemsQuery();
+  const { data, isError, isPending } = useQuery({
+    queryKey: ["project-command-panel", page.id],
+    queryFn: page.items ? () => page.items : page.getItems,
+    enabled: page.items ? false : true,
+  });
+
   return (
-    <ProjectCommandPanelPageDataContext.Provider
+    <ProjectCommandPanelDataContext.Provider
       value={{
-        items: page.items || query?.data,
-        isPending: page.items ? false : query?.isPending,
-        isError: page.items ? false : query?.isError,
+        data: page.items ? page.items : data,
+        isError: page.items ? false : isError,
+        isPending: page.items ? false : isPending,
       }}
     >
       {children}
-    </ProjectCommandPanelPageDataContext.Provider>
+    </ProjectCommandPanelDataContext.Provider>
   );
 };
 
-export const useProjectCommandPanelPageData = () => {
-  const context = useContext(ProjectCommandPanelPageDataContext);
+export const useProjectCommandPanelData = () => {
+  const context = useContext(ProjectCommandPanelDataContext);
   if (!context) {
     throw new Error(
-      "useProjectCommandPanelPageData must be used within an ProjectCommandPanelPageDataProvider"
+      "useProjectCommandPanelData must be used within an ProjectCommandPanelDataProvider"
     );
   }
   return context;
 };
 
-export default ProjectCommandPanelPageDataProvider;
+export default ProjectCommandPanelDataProvider;
