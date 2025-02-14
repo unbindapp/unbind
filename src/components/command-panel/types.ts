@@ -4,7 +4,7 @@ export type TCommandPanelPage = {
   id: string;
   parentPageId: string | null;
 } & (
-  | { items: TCommandPanelItems; itemsQuery?: never }
+  | { items: TCommandPanelItems; getItems?: never }
   | {
       getItems: () => Promise<TCommandPanelItem[]>;
       items?: never;

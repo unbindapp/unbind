@@ -32,7 +32,6 @@ export default function useProjectCommandPanelConfig() {
     () => ({
       id: rootPanelPageIdForProject,
       parentPageId: null,
-      getItems: () => null,
       items: [
         {
           title: "GitHub Repo",
@@ -67,7 +66,6 @@ export default function useProjectCommandPanelConfig() {
           subpage: {
             id: "databases",
             parentPageId: rootPanelPageIdForProject,
-            getItems: () => null,
             items: [
               {
                 title: "PostgreSQL",
@@ -147,7 +145,6 @@ export default function useProjectCommandPanelConfig() {
           subpage: {
             id: "templates",
             parentPageId: rootPanelPageIdForProject,
-            getItems: () => null,
             items: [
               {
                 title: "Strapi",

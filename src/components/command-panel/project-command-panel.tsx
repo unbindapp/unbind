@@ -5,8 +5,8 @@ import {
   getAllItemsFromCommandPanelPage,
   getFirstCommandListItem,
 } from "@/components/command-panel/helpers";
-import ProjectCommandPanelDataProvider, {
-  useProjectCommandPanelData,
+import ProjectCommandPanelItemsProvider, {
+  useProjectCommandPanelItems,
 } from "@/components/command-panel/project-command-panel-data-provider";
 import {
   TCommandPanelItem,
@@ -84,7 +84,7 @@ export default function ProjectCommandPanel({ className }: Props) {
   );
 
   return (
-    <ProjectCommandPanelDataProvider page={currentPage}>
+    <ProjectCommandPanelItemsProvider page={currentPage}>
       <Panel
         className={className}
         allPageIds={allPageIds}
@@ -93,7 +93,7 @@ export default function ProjectCommandPanel({ className }: Props) {
         inputRef={inputRef}
         setCurrentPage={setCurrentPage}
       />
-    </ProjectCommandPanelDataProvider>
+    </ProjectCommandPanelItemsProvider>
   );
 }
 
@@ -115,7 +115,7 @@ function Panel({
   const listRef = useRef<HTMLDivElement>(null);
   const [value, setValue] = useState("");
 
-  const { isPending, isError } = useProjectCommandPanelData();
+  const { isPending, isError } = useProjectCommandPanelItems();
 
   useEffect(() => {
     const value = getFirstCommandListItem(listRef);
@@ -155,7 +155,7 @@ function Content({
   goToParentPage: () => void;
   listRef: RefObject<HTMLDivElement | null>;
 }) {
-  const { data: items, isPending, isError } = useProjectCommandPanelData();
+  const { items, isPending, isError } = useProjectCommandPanelItems();
   const allItems = useMemo(
     () => getAllItemsFromCommandPanelPage(currentPage),
     [currentPage]
@@ -259,7 +259,7 @@ function Input({
     Object.fromEntries(allPageIds.map((id) => [id, ""]))
   );
 
-  const { isPending } = useProjectCommandPanelData();
+  const { isPending } = useProjectCommandPanelItems();
 
   return (
     <CommandInput

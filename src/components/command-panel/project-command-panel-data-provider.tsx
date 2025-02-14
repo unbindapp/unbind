@@ -7,16 +7,16 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext } from "react";
 
-type TProjectCommandPanelDataContext = {
-  data: TCommandPanelItem[] | undefined;
+type TProjectCommandPanelItemsContext = {
+  items: TCommandPanelItem[] | undefined;
   isPending: boolean;
   isError: boolean;
 };
 
-const ProjectCommandPanelDataContext =
-  createContext<TProjectCommandPanelDataContext | null>(null);
+const ProjectCommandPanelItemsContext =
+  createContext<TProjectCommandPanelItemsContext | null>(null);
 
-export const ProjectCommandPanelDataProvider: React.FC<{
+export const ProjectCommandPanelItemsProvider: React.FC<{
   page: TCommandPanelPage;
   children: ReactNode;
 }> = ({ page, children }) => {
@@ -27,26 +27,26 @@ export const ProjectCommandPanelDataProvider: React.FC<{
   });
 
   return (
-    <ProjectCommandPanelDataContext.Provider
+    <ProjectCommandPanelItemsContext.Provider
       value={{
-        data: page.items ? page.items : data,
+        items: page.items ? page.items : data,
         isError: page.items ? false : isError,
         isPending: page.items ? false : isPending,
       }}
     >
       {children}
-    </ProjectCommandPanelDataContext.Provider>
+    </ProjectCommandPanelItemsContext.Provider>
   );
 };
 
-export const useProjectCommandPanelData = () => {
-  const context = useContext(ProjectCommandPanelDataContext);
+export const useProjectCommandPanelItems = () => {
+  const context = useContext(ProjectCommandPanelItemsContext);
   if (!context) {
     throw new Error(
-      "useProjectCommandPanelData must be used within an ProjectCommandPanelDataProvider"
+      "useProjectCommandPanelItems must be used within an ProjectCommandPanelItemsProvider"
     );
   }
   return context;
 };
 
-export default ProjectCommandPanelDataProvider;
+export default ProjectCommandPanelItemsProvider;
