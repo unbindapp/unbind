@@ -23,9 +23,16 @@ export default function Variables() {
   );
   return (
     <TabWrapper>
-      {data?.variables?.map((variable) => (
-        <VariableCard key={variable.key} variable={variable} />
-      ))}
+      {data?.variables &&
+        data.variables.length > 0 &&
+        data.variables.map((variable) => (
+          <VariableCard key={variable.key} variable={variable} />
+        ))}
+      {data?.variables && data.variables.length === 0 && (
+        <div className="px-2 py-3 leading-tight text-muted-foreground text-center">
+          No deployments yet
+        </div>
+      )}
       {!data &&
         isPending &&
         Array.from({ length: 10 }).map((_, i) => (

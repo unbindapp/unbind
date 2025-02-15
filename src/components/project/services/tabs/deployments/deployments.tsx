@@ -25,13 +25,20 @@ export default function Deployments() {
   );
   return (
     <TabWrapper>
-      {data?.deployments?.map((deployment, i) => (
-        <DeploymentCard
-          key={deployment.id}
-          deployment={deployment}
-          active={i === 0}
-        />
-      ))}
+      {data?.deployments &&
+        data.deployments.length > 0 &&
+        data.deployments.map((deployment, i) => (
+          <DeploymentCard
+            key={deployment.id}
+            deployment={deployment}
+            active={i === 0}
+          />
+        ))}
+      {data?.deployments && data.deployments.length === 0 && (
+        <div className="px-2 py-3 leading-tight text-muted-foreground text-center">
+          No deployments yet
+        </div>
+      )}
       {!data &&
         isPending &&
         Array.from({ length: 10 }).map((_, i) => (
