@@ -37,9 +37,10 @@ export default function useProjectCommandPanelConfig({
       id: rootPanelPageIdForProject,
       title: "New Service",
       parentPageId: null,
+      inputPlaceholder: "Deploy something...",
       items: [
         {
-          title: "GitHub Repo",
+          title: "GitHub Repos",
           keywords: ["deploy", "gitlab", "bitbucket"],
           Icon: ({ className }) => (
             <ServiceIcon variant="github" className={className} />
@@ -48,6 +49,7 @@ export default function useProjectCommandPanelConfig({
             id: "github_repos",
             title: "GitHub Repos",
             parentPageId: rootPanelPageIdForProject,
+            inputPlaceholder: "Deploy from GitHub...",
             getItems: () =>
               utils.main.getGitHubRepos.fetch({ teamId }).then((r) =>
                 r.repos.map((r) => ({
@@ -66,13 +68,14 @@ export default function useProjectCommandPanelConfig({
           },
         },
         {
-          title: "Database",
+          title: "Databases",
           keywords: ["persistent", "persistence"],
           Icon: DatabaseIcon,
           subpage: {
             id: "databases",
             title: "Databases",
             parentPageId: rootPanelPageIdForProject,
+            inputPlaceholder: "Deploy a database...",
             items: [
               {
                 title: "PostgreSQL",
@@ -146,13 +149,14 @@ export default function useProjectCommandPanelConfig({
           ),
         },
         {
-          title: "Template",
+          title: "Templates",
           keywords: ["blueprint", "stack", "group"],
           Icon: BlocksIcon,
           subpage: {
             id: "templates",
             title: "Templates",
             parentPageId: rootPanelPageIdForProject,
+            inputPlaceholder: "Deploy a template...",
             items: [
               {
                 title: "Strapi",

@@ -4,6 +4,7 @@ export type TCommandPanelPage = {
   title: string;
   id: string;
   parentPageId: string | null;
+  inputPlaceholder: string;
 } & (
   | { items: TCommandPanelItems; getItems?: never }
   | {

@@ -25,12 +25,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { useCommandState } from "cmdk";
-import {
-  ArrowLeftIcon,
-  ChevronRightIcon,
-  LoaderIcon,
-  TriangleAlertIcon,
-} from "lucide-react";
+import { ChevronRightIcon, LoaderIcon, TriangleAlertIcon } from "lucide-react";
 import {
   RefObject,
   useCallback,
@@ -147,11 +142,16 @@ function Panel({
       onValueChange={setValue}
       variant="modal"
       className={cn(
-        "w-full rounded-xl h-108 max-h-[75vh] border shadow-xl shadow-shadow/[var(--opacity-shadow)]",
+        "w-full rounded-xl h-108 max-h-[calc(100vh-(100vh-3rem)*0.1-7rem)] border shadow-xl shadow-shadow/[var(--opacity-shadow)]",
         className
       )}
     >
-      <Input currentPage={currentPage} allPageIds={allPageIds} ref={inputRef} />
+      <Input
+        placeholder={currentPage.inputPlaceholder}
+        currentPage={currentPage}
+        allPageIds={allPageIds}
+        ref={inputRef}
+      />
       <Content
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
@@ -247,8 +247,8 @@ function Footer({
   const goBackButtonRef = useRef<HTMLButtonElement>(null);
 
   return (
-    <div className="w-full z-10 sticky bottom-0 left-0 p-1 flex items-center justify-between border-t text-muted-foreground">
-      <p className="shrink text-sm font-medium px-3 py-2 min-w-0 overflow-hidden overflow-ellipsis whitespace-nowrap">
+    <div className="w-full z-10 p-1 flex items-center justify-between border-t text-muted-foreground gap-2">
+      <p className="shrink-[2] text-sm font-medium px-3 py-2 min-w-0 overflow-hidden overflow-ellipsis whitespace-nowrap">
         {currentPage.title}
       </p>
       {currentPage.id !== rootPanelPageIdForProject && (
@@ -259,19 +259,16 @@ function Footer({
           type="submit"
           size="sm"
           variant="ghost"
-          className="rounded-lg px-2 py-2 font-semibold"
+          className="rounded-lg shrink min-w-0 px-3 py-2 font-semibold gap-2.5"
         >
-          <ArrowLeftIcon className="size-4.5 -my-2" />
           <p className="shrink min-w-0 overflow-hidden overflow-ellipsis whitespace-nowrap">
-            Go Back
+            Back
           </p>
-          <div className="pl-0.75 -my-1">
-            <div
-              className="text-xxs ring-1 ring-border rounded px-1.5 py-1.25 
+          <div
+            className="-my-1 shrink-0 -mr-1 text-xxs ring-1 ring-border rounded px-1.5 py-1.25 
               leading-none bg-background-hover"
-            >
-              esc
-            </div>
+          >
+            esc
           </div>
         </Button>
       )}
@@ -282,10 +279,12 @@ function Footer({
 function Input({
   currentPage,
   allPageIds,
+  placeholder,
   ref,
 }: {
   currentPage: TCommandPanelPage;
   allPageIds: string[];
+  placeholder: string;
   ref: RefObject<HTMLInputElement | null>;
 }) {
   const [values, setValues] = useState(
@@ -302,7 +301,7 @@ function Input({
         setValues((prev) => ({ ...prev, [currentPage.id]: value }));
       }}
       ref={ref}
-      placeholder="Deploy something..."
+      placeholder={placeholder}
     />
   );
 }
