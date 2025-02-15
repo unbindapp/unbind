@@ -26,7 +26,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { useCommandState } from "cmdk";
-import { ChevronRightIcon, LoaderIcon } from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon, LoaderIcon } from "lucide-react";
 import {
   RefObject,
   useCallback,
@@ -259,16 +259,19 @@ function Footer({
           type="submit"
           size="sm"
           variant="ghost"
-          className="rounded-lg shrink min-w-0 px-3 py-2 font-semibold gap-2.5"
+          className="rounded-lg shrink min-w-0 px-3 py-2 font-semibold gap-1"
         >
+          <ChevronLeftIcon className="size-4.5 shrink-0 -ml-1.75" />
           <p className="shrink min-w-0 overflow-hidden overflow-ellipsis whitespace-nowrap">
             Back
           </p>
-          <div
-            className="-my-1 shrink-0 -mr-1 text-xxs ring-1 ring-border rounded px-1.5 py-1.25 
+          <div className="-my-1 shrink-0 -mr-1 pl-1.25">
+            <div
+              className="text-xxs ring-1 ring-border rounded px-1.5 py-1.25 
               leading-none bg-background-hover"
-          >
-            esc
+            >
+              esc
+            </div>
           </div>
         </Button>
       )}
