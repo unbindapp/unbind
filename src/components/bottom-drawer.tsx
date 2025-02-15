@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
-import { FC, ReactNode, useState } from "react";
+import { FC, ReactNode } from "react";
 
 type Props = {
   title: string;
@@ -28,18 +28,10 @@ export default function BottomDrawer({
   classNameContent,
   children,
 }: Props) {
-  const [hideHandle, setHideHandle] = useState(false);
   return (
     <Drawer
       open={open}
-      onOpenChange={(open) => {
-        if (!open) {
-          setHideHandle(true);
-        } else {
-          setHideHandle(false);
-        }
-        setOpen(open);
-      }}
+      onOpenChange={setOpen}
       autoFocus={open}
       direction="bottom"
     >
@@ -50,7 +42,6 @@ export default function BottomDrawer({
           classNameContent
         )}
         hasHandle
-        hideHandle={hideHandle}
       >
         <div className="w-full flex items-center justify-start gap-1 border-b">
           <DrawerHeader className="flex-1 min-w-0 flex items-center justify-start p-0">

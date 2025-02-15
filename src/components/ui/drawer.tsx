@@ -5,15 +5,43 @@ import { Drawer as DrawerPrimitive } from "vaul";
 
 import { cn } from "@/components/ui/utils";
 
+type DrawerContext = {
+  hideHandle: boolean;
+};
+
+const DrawerContext = React.createContext<DrawerContext | null>(null);
+const useDrawerContext = () => {
+  const context = React.useContext(DrawerContext);
+  if (!context) {
+    throw new Error("useDrawerContext must be used within a Drawer");
+  }
+  return context;
+};
+
 const Drawer = ({
   shouldScaleBackground = false,
+  onOpenChange,
   ...props
-}: React.ComponentProps<typeof DrawerPrimitive.Root>) => (
-  <DrawerPrimitive.Root
-    shouldScaleBackground={shouldScaleBackground}
-    {...props}
-  />
-);
+}: React.ComponentProps<typeof DrawerPrimitive.Root>) => {
+  const [hideHandle, setHideHandle] = React.useState(false);
+
+  return (
+    <DrawerContext.Provider value={{ hideHandle }}>
+      <DrawerPrimitive.Root
+        shouldScaleBackground={shouldScaleBackground}
+        {...props}
+        onOpenChange={(open) => {
+          if (!open) {
+            setHideHandle(true);
+          } else {
+            setHideHandle(false);
+          }
+          onOpenChange?.(open);
+        }}
+      />
+    </DrawerContext.Provider>
+  );
+};
 Drawer.displayName = "Drawer";
 
 const DrawerTrigger = DrawerPrimitive.Trigger;
@@ -41,13 +69,10 @@ const DrawerContent = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content> & {
     hasHandle?: boolean;
-    hideHandle?: boolean;
   }
->(
-  (
-    { className, children, hasHandle = false, hideHandle = false, ...props },
-    ref
-  ) => (
+>(({ className, children, hasHandle = false, ...props }, ref) => {
+  const { hideHandle } = useDrawerContext();
+  return (
     <DrawerPortal>
       <DrawerOverlay />
       <DrawerPrimitive.Content
@@ -62,7 +87,7 @@ const DrawerContent = React.forwardRef<
           <div
             data-hide-handle={hideHandle ? true : undefined}
             className="w-[calc(min(33.3%,5rem))] data-[hide-handle]:-translate-y-6 transition duration-100 h-12 pb-2.5 
-            -translate-y-full flex items-end justify-center absolute left-1/2 -translate-x-1/2 top-0"
+          -translate-y-full flex items-end justify-center absolute left-1/2 -translate-x-1/2 top-0"
           >
             <div className="w-full h-1.5 rounded-full bg-foreground/20" />
           </div>
@@ -70,8 +95,8 @@ const DrawerContent = React.forwardRef<
         {children}
       </DrawerPrimitive.Content>
     </DrawerPortal>
-  )
-);
+  );
+});
 DrawerContent.displayName = "DrawerContent";
 
 const DrawerHeader = ({

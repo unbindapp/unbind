@@ -22,7 +22,7 @@ import { TService } from "@/server/trpc/api/main/router";
 import { XIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { parseAsString, useQueryState } from "nuqs";
-import { FC, ReactNode, useState } from "react";
+import { FC, ReactNode } from "react";
 import { useWindowSize } from "usehooks-ts";
 
 type TTab = {
@@ -62,19 +62,11 @@ export default function ServicePanel({ service, children }: Props) {
   };
   const { width } = useWindowSize();
   const isSmall = width < 640;
-  const [hideHandle, setHideHandle] = useState(false);
 
   return (
     <Drawer
       open={open}
-      onOpenChange={(open) => {
-        if (!open) {
-          setHideHandle(true);
-        } else {
-          setHideHandle(false);
-        }
-        setOpen(open);
-      }}
+      onOpenChange={setOpen}
       autoFocus={open}
       direction={isSmall ? "bottom" : "right"}
       handleOnly={!isSmall}
@@ -82,7 +74,6 @@ export default function ServicePanel({ service, children }: Props) {
       <DrawerTrigger asChild>{children}</DrawerTrigger>
       <DrawerContent
         hasHandle={isSmall}
-        hideHandle={hideHandle}
         className="h-[calc(100%-4rem)] w-full flex flex-col
         sm:ml-auto sm:my-0 sm:top-0 sm:h-full sm:right-0 sm:w-232 sm:max-w-[calc(100%-5rem)] sm:rounded-r-none sm:rounded-l-2xl"
       >
