@@ -30,7 +30,7 @@ export default function Variables() {
         ))}
       {data?.variables && data.variables.length === 0 && (
         <div className="px-2 py-3 leading-tight text-muted-foreground text-center">
-          No deployments yet
+          No variables yet
         </div>
       )}
       {!data &&
