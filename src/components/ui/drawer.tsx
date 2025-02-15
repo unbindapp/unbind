@@ -29,7 +29,6 @@ const Drawer = ({
     <DrawerContext.Provider value={{ hideHandle }}>
       <DrawerPrimitive.Root
         shouldScaleBackground={shouldScaleBackground}
-        {...props}
         onOpenChange={(open) => {
           if (!open) {
             setHideHandle(true);
@@ -38,6 +37,7 @@ const Drawer = ({
           }
           onOpenChange?.(open);
         }}
+        {...props}
       />
     </DrawerContext.Provider>
   );
