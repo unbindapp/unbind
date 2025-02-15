@@ -22,7 +22,7 @@ import { TService } from "@/server/trpc/api/main/router";
 import { XIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { parseAsString, useQueryState } from "nuqs";
-import { FC, ReactNode } from "react";
+import { FC, ReactNode, useState } from "react";
 import { useWindowSize } from "usehooks-ts";
 
 type TTab = {
@@ -62,17 +62,27 @@ export default function ServicePanel({ service, children }: Props) {
   };
   const { width } = useWindowSize();
   const isSmall = width < 640;
+  const [hideHandle, setHideHandle] = useState(false);
 
   return (
     <Drawer
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          setHideHandle(true);
+        } else {
+          setHideHandle(false);
+        }
+        setOpen(open);
+      }}
       autoFocus={open}
       direction={isSmall ? "bottom" : "right"}
       handleOnly={!isSmall}
     >
       <DrawerTrigger asChild>{children}</DrawerTrigger>
       <DrawerContent
+        hasHandle={isSmall}
+        hideHandle={hideHandle}
         className="h-[calc(100%-4rem)] w-full flex flex-col
         sm:ml-auto sm:my-0 sm:top-0 sm:h-full sm:right-0 sm:w-232 sm:max-w-[calc(100%-5rem)] sm:rounded-r-none sm:rounded-l-2xl"
       >
@@ -89,15 +99,17 @@ export default function ServicePanel({ service, children }: Props) {
               </p>
             </DrawerTitle>
           </DrawerHeader>
-          <DrawerClose asChild>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="text-muted-more-foreground rounded-lg shrink-0 -mr-3 -mt-2.25 sm:-mr-5 sm:-mt-3"
-            >
-              <XIcon className="size-5" />
-            </Button>
-          </DrawerClose>
+          {!isSmall && (
+            <DrawerClose asChild>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="text-muted-more-foreground rounded-lg shrink-0 -mr-3 -mt-2.25 sm:-mr-5 sm:-mt-3"
+              >
+                <XIcon className="size-5" />
+              </Button>
+            </DrawerClose>
+          )}
         </div>
         <nav className="w-full flex overflow-auto justify-start border-b">
           <div className="flex justify-start px-2 sm:px-4.5 pt-3.5">

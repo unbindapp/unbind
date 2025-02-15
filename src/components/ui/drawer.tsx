@@ -40,28 +40,38 @@ DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName;
 const DrawerContent = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content> & {
-    showHandle?: boolean;
+    hasHandle?: boolean;
+    hideHandle?: boolean;
   }
->(({ className, children, showHandle = false, ...props }, ref) => (
-  <DrawerPortal>
-    <DrawerOverlay />
-    <DrawerPrimitive.Content
-      ref={ref}
-      className={cn(
-        `fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-2xl bg-background ring-1 ring-border`,
-        className
-      )}
-      {...props}
-    >
-      {showHandle && (
-        <div className="w-[calc(min(33.3%,6rem))] h-12 pb-2 -translate-y-full flex items-end justify-center absolute left-1/2 -translate-x-1/2 top-0">
-          <div className="w-full h-1.5 rounded-full bg-foreground/20" />
-        </div>
-      )}
-      {children}
-    </DrawerPrimitive.Content>
-  </DrawerPortal>
-));
+>(
+  (
+    { className, children, hasHandle = false, hideHandle = false, ...props },
+    ref
+  ) => (
+    <DrawerPortal>
+      <DrawerOverlay />
+      <DrawerPrimitive.Content
+        ref={ref}
+        className={cn(
+          `fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-2xl bg-background ring-1 ring-border`,
+          className
+        )}
+        {...props}
+      >
+        {hasHandle && (
+          <div
+            data-hide-handle={hideHandle ? true : undefined}
+            className="w-[calc(min(33.3%,5rem))] data-[hide-handle]:-translate-y-6 transition duration-100 h-12 pb-2.5 
+            -translate-y-full flex items-end justify-center absolute left-1/2 -translate-x-1/2 top-0"
+          >
+            <div className="w-full h-1.5 rounded-full bg-foreground/20" />
+          </div>
+        )}
+        {children}
+      </DrawerPrimitive.Content>
+    </DrawerPortal>
+  )
+);
 DrawerContent.displayName = "DrawerContent";
 
 const DrawerHeader = ({
