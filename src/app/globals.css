@@ -53,6 +53,7 @@ input[type="search"] {
 
 ::selection {
   background: hsl(var(--top-loader) / 0.5);
+  color: hsl(var(--foreground) / 1);
 }
 
 @layer base {

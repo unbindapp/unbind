@@ -11,6 +11,7 @@ type TProjectCommandPanelItemsContext = {
   items: TCommandPanelItem[] | undefined;
   isPending: boolean;
   isError: boolean;
+  error: Error | null;
 };
 
 const ProjectCommandPanelItemsContext =
@@ -22,7 +23,7 @@ export const ProjectCommandPanelItemsProvider: React.FC<{
   page: TCommandPanelPage;
   children: ReactNode;
 }> = ({ teamId, projectId, page, children }) => {
-  const { data, isError, isPending } = useQuery({
+  const { data, isError, isPending, error } = useQuery({
     queryKey: ["project-command-panel", teamId, page.id],
     queryFn: page.items
       ? () => page.items
@@ -36,6 +37,7 @@ export const ProjectCommandPanelItemsProvider: React.FC<{
         items: page.items ? page.items : data,
         isError: page.items ? false : isError,
         isPending: page.items ? false : isPending,
+        error: page.items ? null : error,
       }}
     >
       {children}

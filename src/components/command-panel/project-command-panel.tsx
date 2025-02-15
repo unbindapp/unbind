@@ -13,6 +13,7 @@ import {
   TCommandPanelPage,
 } from "@/components/command-panel/types";
 import useProjectCommandPanelConfig from "@/components/command-panel/use-project-command-panel-config";
+import ErrorCard from "@/components/error-card";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -25,7 +26,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { useCommandState } from "cmdk";
-import { ChevronRightIcon, LoaderIcon, TriangleAlertIcon } from "lucide-react";
+import { ChevronRightIcon, LoaderIcon } from "lucide-react";
 import {
   RefObject,
   useCallback,
@@ -171,7 +172,7 @@ function Content({
   setCurrentPage: (page: TCommandPanelPage) => void;
   listRef: RefObject<HTMLDivElement | null>;
 }) {
-  const { items, isPending, isError } = useProjectCommandPanelItems();
+  const { items, isPending, isError, error } = useProjectCommandPanelItems();
   const allItems = useMemo(
     () => getAllItemsFromCommandPanelPage(currentPage),
     [currentPage]
@@ -225,10 +226,9 @@ function Content({
                 />
               ))}
           </CommandGroup>
-          {!isPending && !items && isError && (
-            <div className="w-full flex flex-col items-center px-4 py-6 gap-1 text-center text-destructive">
-              <TriangleAlertIcon className="size-5" />
-              <p className="w-full">Something went wrong</p>
+          {!items && !isPending && isError && (
+            <div className="w-full p-1">
+              <ErrorCard message={error?.message} />
             </div>
           )}
         </CommandList>
