@@ -40,7 +40,7 @@ export default function useProjectCommandPanelConfig({
       inputPlaceholder: "Deploy something...",
       items: [
         {
-          title: "GitHub Repos",
+          title: "GitHub Repo",
           keywords: ["deploy", "gitlab", "bitbucket"],
           Icon: ({ className }) => (
             <ServiceIcon variant="github" className={className} />
@@ -68,7 +68,7 @@ export default function useProjectCommandPanelConfig({
           },
         },
         {
-          title: "Databases",
+          title: "Database",
           keywords: ["persistent", "persistence"],
           Icon: DatabaseIcon,
           subpage: {
@@ -149,7 +149,7 @@ export default function useProjectCommandPanelConfig({
           ),
         },
         {
-          title: "Templates",
+          title: "Template",
           keywords: ["blueprint", "stack", "group"],
           Icon: BlocksIcon,
           subpage: {
