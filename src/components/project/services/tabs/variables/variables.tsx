@@ -1,6 +1,6 @@
 import ErrorCard from "@/components/error-card";
 import TabWrapper from "@/components/project/services/tabs/tab-wrapper";
-import VariableLine from "@/components/project/services/tabs/variables/variable-line";
+import VariableCard from "@/components/project/services/tabs/variables/variable-card";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { api } from "@/server/trpc/setup/client";
 
@@ -24,8 +24,13 @@ export default function Variables() {
   return (
     <TabWrapper>
       {data?.variables?.map((variable) => (
-        <VariableLine key={variable.key} variable={variable} />
+        <VariableCard key={variable.key} variable={variable} />
       ))}
+      {!data &&
+        isPending &&
+        Array.from({ length: 10 }).map((_, i) => (
+          <VariableCard key={i} isPlaceholder />
+        ))}
       {!data && !isPending && isError && <ErrorCard message={error.message} />}
     </TabWrapper>
   );

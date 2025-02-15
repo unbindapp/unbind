@@ -95,15 +95,17 @@ export default function DeploymentCard({
             <DeploymentTime deployment={deployment} />
           )}
         </div>
-        {!isPlaceholder && (
-          <Button
-            size="icon"
-            variant="ghost"
-            className="shrink-0 text-muted-more-foreground rounded-lg absolute right-1 top-1 sm:relative sm:-mr-3.5 sm:right-0 sm:top-0"
-          >
+        <Button
+          size="icon"
+          variant="ghost"
+          className="shrink-0 text-muted-more-foreground rounded-lg absolute right-1 top-1 sm:relative sm:-mr-3.5 sm:right-0 sm:top-0 group-data-[placeholder]/line:text-transparent"
+        >
+          {isPlaceholder ? (
+            <div className="size-5 group-data-[placeholder]/card:rounded-md group-data-[placeholder]/card:bg-muted-foreground group-data-[placeholder]/card:animate-skeleton" />
+          ) : (
             <EllipsisVerticalIcon className="size-6" />
-          </Button>
-        )}
+          )}
+        </Button>
       </div>
     </div>
   );

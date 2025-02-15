@@ -53,7 +53,6 @@ export const mainRouter = createTRPCRouter({
     .query(async function ({
       input: { teamId, projectId, environmentId, serviceId },
     }) {
-      await new Promise((resolve) => setTimeout(resolve, 5000));
       const deployments = await getDeployments({
         teamId,
         projectId,
@@ -93,7 +92,6 @@ export const mainRouter = createTRPCRouter({
       })
     )
     .query(async function ({ input: { teamId } }) {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
       const repos = await getGitHubRepos({
         teamId,
       });
