@@ -28,7 +28,7 @@ const mono = localFont({
 const title = `${siteTitle} | ${siteTagline}`;
 
 export const viewport: Viewport = {
-  themeColor: "#0F120F",
+  themeColor: "#0E110E",
 };
 export const metadata: Metadata = {
   title,
