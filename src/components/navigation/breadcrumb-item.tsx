@@ -46,7 +46,13 @@ export function BreadcrumbItem<T>({
         title={title}
         open={open}
         setOpen={setOpen}
-        Trigger={<Trigger item={selectedItem} Icon={IconItem} />}
+        Trigger={
+          <Trigger
+            item={selectedItem}
+            Icon={IconItem}
+            flipChevronOnSm={flipChevronOnSm}
+          />
+        }
       >
         <div className="w-full flex flex-col px-2 pt-2 pb-8">
           {items?.map((i, index) => {

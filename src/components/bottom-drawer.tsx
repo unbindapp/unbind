@@ -32,7 +32,7 @@ export default function BottomDrawer({
     <Drawer
       open={open}
       onOpenChange={setOpen}
-      autoFocus={open}
+      autoFocus={false}
       direction="bottom"
     >
       <DrawerTrigger asChild>{Trigger}</DrawerTrigger>
