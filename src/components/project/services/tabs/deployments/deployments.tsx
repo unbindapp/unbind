@@ -35,7 +35,7 @@ export default function Deployments() {
           />
         ))}
       {data?.deployments && data.deployments.length === 0 && (
-        <div className="px-2 py-3 leading-tight text-muted-foreground text-center">
+        <div className="px-2 py-5 leading-tight text-muted-foreground text-center">
           No deployments yet
         </div>
       )}
