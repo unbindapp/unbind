@@ -73,7 +73,7 @@ export default function ProjectTabs({
               }
               key={tab.relativeHref}
               className={cn(
-                `font-medium text-sm px-3 py-4 rounded leading-none text-muted-foreground 
+                `font-medium text-sm px-3 py-4.25 sm:py-4 rounded leading-none text-muted-foreground 
                 has-hover:hover:bg-transparent active:bg-transparent group/button data-[active]:text-foreground
                 focus-visible:ring-0 focus-visible:ring-offset-0`,
                 classNameButton
