@@ -253,7 +253,11 @@ function Footer({
       </p>
       {currentPage.id !== rootPanelPageIdForProject && (
         <Button
-          onKeyDown={(e) => e.stopPropagation()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.stopPropagation();
+            }
+          }}
           onClick={goToParentPage}
           ref={goBackButtonRef}
           type="submit"
