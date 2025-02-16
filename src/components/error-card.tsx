@@ -9,11 +9,11 @@ type Props = {
 export type TCardVariants = VariantProps<typeof cardVariants>;
 
 const cardVariants = cva(
-  "w-full select-text group/card rounded-xl flex flex-col items-center p-2 gap-1 text-center text-destructive",
+  "w-full select-text group/card rounded-xl flex flex-col items-center p-1.5 gap-1 text-center text-destructive",
   {
     variants: {
       variant: {
-        default: "border border-destructive/20 bg-destructive/4",
+        default: "border border-destructive/16 bg-destructive/4",
         "no-bg": "",
       },
     },
@@ -34,10 +34,12 @@ export default function ErrorCard({ className, message, variant }: Props) {
     >
       <div className="w-full flex items-center justify-center gap-1.5 px-3 py-4 group-data-[has-message]/card:py-2">
         <TriangleAlertIcon className="size-4 -ml-0.5 shrink-0" />
-        <p className="shrink min-w-0">Something went wrong</p>
+        <p className="shrink min-w-0 font-medium leading-tight text-left">
+          Something went wrong
+        </p>
       </div>
       {message && (
-        <p className="w-full font-mono text-left rounded-lg text-muted-foreground bg-background text-sm px-3.5 py-2 mt-1">
+        <p className="w-full font-mono text-left rounded-lg text-muted-foreground bg-destructive/4 text-xs px-3 py-2 mt-1">
           {message}
         </p>
       )}

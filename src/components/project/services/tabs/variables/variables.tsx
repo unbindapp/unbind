@@ -29,7 +29,7 @@ export default function Variables() {
           <VariableCard key={variable.key} variable={variable} />
         ))}
       {data?.variables && data.variables.length === 0 && (
-        <div className="px-2 py-5 leading-tight text-muted-foreground text-center">
+        <div className="px-2 py-5 font-medium leading-tight text-muted-foreground text-center">
           No variables yet
         </div>
       )}
