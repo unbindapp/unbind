@@ -61,13 +61,12 @@ export default function ServicePanel({ service, children }: Props) {
     setCurrentTab(null);
   };
   const { width } = useWindowSize();
-  const isSmall = width < 640;
+  const isSmall = width === undefined ? false : width < 640;
 
   return (
     <Drawer
       open={open}
       onOpenChange={setOpen}
-      autoFocus={false}
       direction={isSmall ? "bottom" : "right"}
       handleOnly={!isSmall}
     >
