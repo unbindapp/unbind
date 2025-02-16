@@ -43,6 +43,7 @@ export default function TeamBreadcrumb({ className }: Props) {
   return (
     <BreadcrumbWrapper className={className}>
       <BreadcrumbItem
+        flipChevronOnSm
         title="Teams"
         selectedItem={selectedTeam}
         items={teamData?.teams}

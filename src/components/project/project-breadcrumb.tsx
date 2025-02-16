@@ -91,6 +91,7 @@ export default function ProjectBreadcrumb({ className }: Props) {
   return (
     <BreadcrumbWrapper className={className}>
       <BreadcrumbItem
+        flipChevronOnSm
         title="Projects"
         selectedItem={selectedProject}
         items={projectsData?.projects}
@@ -99,6 +100,7 @@ export default function ProjectBreadcrumb({ className }: Props) {
       />
       <BreadcrumbSeparator />
       <BreadcrumbItem
+        flipChevronOnSm
         title="Environments"
         selectedItem={selectedEnvironment}
         items={environments}

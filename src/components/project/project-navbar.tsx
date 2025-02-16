@@ -1,21 +1,29 @@
 import {
   Navbar,
   NavbarBreadcrumb,
-  NavbarTabs,
+  NavbarTabsLg,
   NavbarTabsSm,
+  NavbarTabsMd,
 } from "@/components/navigation/navbar";
 import ProjectBreadcrumb from "@/components/project/project-breadcrumb";
 import ProjectTabs from "@/components/project/project-tabs";
 
-export default async function ProjectNavbar() {
+type Props = {
+  className?: string;
+};
+
+export default async function ProjectNavbar({ className }: Props) {
   return (
-    <Navbar>
+    <Navbar className={className}>
       <NavbarBreadcrumb>
         <ProjectBreadcrumb />
       </NavbarBreadcrumb>
-      <NavbarTabs>
-        <ProjectTabs classNameInner="px-0 sm:px-0" layoutId="project-tabs-lg" />
-      </NavbarTabs>
+      <NavbarTabsLg>
+        <ProjectTabs classNameInner="lg:px-0" layoutId="project-tabs-lg" />
+      </NavbarTabsLg>
+      <NavbarTabsMd>
+        <ProjectTabs layoutId="project-tabs-md" />
+      </NavbarTabsMd>
       <NavbarTabsSm>
         <ProjectTabs layoutId="project-tabs-sm" />
       </NavbarTabsSm>

@@ -19,13 +19,19 @@ export async function Navbar({
       hasDisplayName(child.type) &&
       child.type.displayName === "NavbarBreadcrumb"
   );
-  const desktopTabs = childrenArray.find(
+  const tabsLg = childrenArray.find(
     (child) =>
       isValidElement(child) &&
       hasDisplayName(child.type) &&
-      child.type.displayName === "NavbarTabs"
+      child.type.displayName === "NavbarTabsLg"
   );
-  const mobileTabs = childrenArray.find(
+  const tabsMd = childrenArray.find(
+    (child) =>
+      isValidElement(child) &&
+      hasDisplayName(child.type) &&
+      child.type.displayName === "NavbarTabsMd"
+  );
+  const tabsSm = childrenArray.find(
     (child) =>
       isValidElement(child) &&
       hasDisplayName(child.type) &&
@@ -35,25 +41,25 @@ export async function Navbar({
   return (
     <nav
       className={cn(
-        "w-full sticky top-0 left-0 z-50 bg-background flex flex-col items-stretch justify-between border-b",
+        `w-full fixed bottom-0 left-0 sm:sticky sm:top-0 z-50 bg-background flex flex-col items-stretch justify-between border-t sm:border-t-0 sm:border-b
+        pb-[var(--safe-area-inset-bottom)] sm:pb-0`,
         className
       )}
     >
+      {tabsSm && <div className="w-full flex border-b sm:hidden">{tabsSm}</div>}
       <div className="w-full flex justify-between items-stretch px-3 gap-5">
-        <div className="shrink min-w-0 flex items-stretch justify-start -ml-0.5">
+        <div className="shrink min-w-0 flex items-stretch justify-start -ml-2 sm:-ml-1.5">
           <LogoLink />
           {breadcrumb && <BreadcrumbSeparator />}
-          {(breadcrumb || desktopTabs) && (
+          {(breadcrumb || tabsLg) && (
             <div className="shrink min-h-full flex items-stretch justify-start min-w-0 overflow-auto">
               {breadcrumb}
-              {desktopTabs && (
-                <BreadcrumbSeparator className="hidden lg:flex" />
-              )}
+              {tabsLg && <BreadcrumbSeparator className="hidden lg:flex" />}
             </div>
           )}
-          {desktopTabs && (
+          {tabsLg && (
             <div className="shrink min-h-full items-stretch justify-start min-w-0 overflow-auto hidden lg:flex">
-              {desktopTabs}
+              {tabsLg}
             </div>
           )}
         </div>
@@ -61,8 +67,8 @@ export async function Navbar({
           <Avatar />
         </div>
       </div>
-      {mobileTabs && (
-        <div className="w-full flex border-t lg:hidden">{mobileTabs}</div>
+      {tabsMd && (
+        <div className="w-full border-t hidden sm:flex lg:hidden">{tabsMd}</div>
       )}
     </nav>
   );
@@ -73,10 +79,15 @@ function NavbarBreadcrumb({ children }: { children: ReactNode }) {
 }
 NavbarBreadcrumb.displayName = "NavbarBreadcrumb";
 
-function NavbarTabs({ children }: { children: ReactNode }) {
+function NavbarTabsLg({ children }: { children: ReactNode }) {
   return children;
 }
-NavbarTabs.displayName = "NavbarTabs";
+NavbarTabsLg.displayName = "NavbarTabsLg";
+
+function NavbarTabsMd({ children }: { children: ReactNode }) {
+  return children;
+}
+NavbarTabsMd.displayName = "NavbarTabsMd";
 
 function NavbarTabsSm({ children }: { children: ReactNode }) {
   return children;
@@ -87,4 +98,4 @@ function hasDisplayName(type: unknown): type is { displayName: string } {
   return typeof (type as { displayName: string })?.displayName === "string";
 }
 
-export { NavbarBreadcrumb, NavbarTabs, NavbarTabsSm };
+export { NavbarBreadcrumb, NavbarTabsLg, NavbarTabsSm, NavbarTabsMd };

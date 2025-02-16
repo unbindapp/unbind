@@ -62,7 +62,7 @@ export default function ProjectTabs({
       <div className="flex-1 flex items-stretch min-w-0 overflow-auto">
         <div
           className={cn(
-            "px-1 sm:px-3 flex justify-start items-stretch",
+            "px-0 sm:px-3 flex justify-start items-stretch",
             classNameInner
           )}
         >
@@ -92,7 +92,7 @@ export default function ProjectTabs({
                 <motion.div
                   transition={{ duration: 0.15 }}
                   layoutId={layoutId}
-                  className="w-full h-2px absolute left-0 bottom-0 bg-foreground rounded-full"
+                  className="w-full h-2px absolute left-0 top-0 sm:top-auto sm:bottom-0 bg-foreground rounded-full"
                 />
               )}
               <p className="relative">{tab.title}</p>

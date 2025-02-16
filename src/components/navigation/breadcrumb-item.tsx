@@ -15,6 +15,16 @@ import { useIsMounted, useWindowSize } from "usehooks-ts";
 
 type Item<T> = T & { id: string; title: string };
 
+type Props<T> = {
+  title: string;
+  selectedItem: Item<T> | undefined;
+  items: Item<T>[] | undefined;
+  onSelect: (id: string) => void;
+  getHrefForId: (id: string) => string | null;
+  IconItem?: FC<{ id: string }>;
+  flipChevronOnSm?: boolean;
+};
+
 export function BreadcrumbItem<T>({
   title,
   selectedItem,
@@ -22,14 +32,8 @@ export function BreadcrumbItem<T>({
   onSelect,
   getHrefForId,
   IconItem,
-}: {
-  title: string;
-  selectedItem: Item<T> | undefined;
-  items: Item<T>[] | undefined;
-  onSelect: (id: string) => void;
-  getHrefForId: (id: string) => string | null;
-  IconItem?: FC<{ id: string }>;
-}) {
+  flipChevronOnSm,
+}: Props<T>) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const { width } = useWindowSize();
@@ -69,11 +73,13 @@ export function BreadcrumbItem<T>({
                   {selectedItem?.id === i.id && (
                     <>
                       <CheckIcon
-                        className="size-full group-data-[show-arrow]/item:group-data-[highlighted]/item:opacity-0 group-data-[show-arrow]/item:group-data-[highlighted]/item:rotate-90 transition"
+                        className="size-full group-data-[show-arrow]/item:group-data-[highlighted]/item:opacity-0 
+                        group-data-[show-arrow]/item:group-data-[highlighted]/item:rotate-90 transition"
                         strokeWidth={2.5}
                       />
                       <ArrowRightIcon
-                        className="absolute left-0 top-0 opacity-0 -rotate-90 size-full group-data-[show-arrow]/item:group-data-[highlighted]/item:opacity-100
+                        className="absolute left-0 top-0 opacity-0 -rotate-90 size-full 
+                        group-data-[show-arrow]/item:group-data-[highlighted]/item:opacity-100
                         group-data-[show-arrow]/item:group-data-[highlighted]/item:rotate-0 transition"
                         strokeWidth={2.5}
                       />
@@ -91,7 +97,11 @@ export function BreadcrumbItem<T>({
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Trigger item={selectedItem} Icon={IconItem} />
+        <Trigger
+          item={selectedItem}
+          Icon={IconItem}
+          flipChevronOnSm={flipChevronOnSm}
+        />
       </DropdownMenuTrigger>
       <DropdownMenuContent
         sideOffset={-1}
@@ -143,10 +153,12 @@ function Trigger<T>({
   item,
   Icon,
   className,
+  flipChevronOnSm,
   ...rest
 }: ComponentProps<"button"> & {
   item?: Item<T>;
   Icon?: FC<{ id: string; className?: string }>;
+  flipChevronOnSm?: boolean;
 }) {
   return (
     <Button
@@ -177,7 +189,12 @@ function Trigger<T>({
       >
         {item == undefined ? "Loading" : item?.title}
       </p>
-      <ChevronDownIcon className="size-4 -my-1 relative -ml-1 text-muted-more-foreground group-data-[state=open]/button:rotate-180 transition" />
+      <ChevronDownIcon
+        data-flip-chevron-sm={flipChevronOnSm ? true : undefined}
+        className="size-4 -my-1 relative -ml-1 text-muted-more-foreground group-data-[state=open]/button:rotate-180 
+        data-[flip-chevron-sm]:rotate-180 data-[flip-chevron-sm]:group-data-[state=open]/button:rotate-360 
+        sm:data-[flip-chevron-sm]:rotate-0 sm:data-[flip-chevron-sm]:group-data-[state=open]/button:rotate-180 transition"
+      />
     </Button>
   );
 }

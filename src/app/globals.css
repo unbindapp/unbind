@@ -58,6 +58,8 @@ input[type="search"] {
 
 @layer base {
   :root {
+    /* This is for dev only to test safe area */
+    /* --safe-area-inset-bottom: 34px; */
     --background: 120 35% 95%;
     --background-hover: 120 35% 95%;
     --foreground: 120 90% 5%;
