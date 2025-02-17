@@ -4,6 +4,7 @@ import CommandPanelTrigger from "@/components/command-panel/command-panel-trigge
 import {
   commandPanelIdKey,
   commandPanelPageIdKey,
+  rootCommandPanelPageIdForProject,
 } from "@/components/command-panel/constants";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
@@ -18,8 +19,6 @@ type Props = {
   shortcutEnabled?: boolean;
 };
 
-const newServiceId = "new_service";
-
 export default function NewServiceButton({
   teamId,
   projectId,
@@ -28,10 +27,10 @@ export default function NewServiceButton({
 }: Props) {
   const [commandPanelId, setCommandPanelId] = useQueryState(commandPanelIdKey);
   const [, setCommandPanelPageId] = useQueryState(commandPanelPageIdKey);
-  const open = commandPanelId === newServiceId;
+  const open = commandPanelId === rootCommandPanelPageIdForProject;
   const setOpen = (open: boolean) => {
     if (open) {
-      setCommandPanelId(newServiceId);
+      setCommandPanelId(rootCommandPanelPageIdForProject);
       return;
     }
     setCommandPanelId(null);
@@ -41,7 +40,7 @@ export default function NewServiceButton({
   useHotkeys(
     "mod+k",
     () => {
-      setCommandPanelId(newServiceId);
+      setCommandPanelId(rootCommandPanelPageIdForProject);
     },
     {
       enabled: shortcutEnabled,

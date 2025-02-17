@@ -22,14 +22,15 @@ export default async function Page({ params }: Props) {
     <HydrateClient>
       <div className="w-full flex flex-col items-center px-3 md:px-8 pt-5 md:pt-7 pb-16">
         <div className="w-full flex flex-col max-w-5xl">
-          <div className="w-full flex items-center justify-between pl-3 pr-1 gap-4">
-            <h1 className="flex-1 min-w-0 font-bold leading-tight text-2xl">
+          <div className="w-full flex flex-wrap items-center justify-between gap-4 px-1">
+            <h1 className="min-w-0 font-bold leading-tight text-2xl px-2">
               Services
             </h1>
             <NewServiceButton teamId={teamId} projectId={projectId} />
           </div>
           <div className="w-full flex items-center justify-center pt-3">
             <ServiceCardList
+              teamId={teamId}
               projectId={projectId}
               environmentId={environmentId}
             />
