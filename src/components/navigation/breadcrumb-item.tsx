@@ -68,7 +68,7 @@ export function BreadcrumbItem<T>({
                 key={i.id + index}
                 data-show-arrow={showArrow ? true : undefined}
                 variant="ghost"
-                className="w-full data-[selected]:bg-border/50 data-[selected]:has-hover:hover:bg-border data-[selected]:active:bg-border 
+                className="w-full data-[selected]:bg-border/75 data-[selected]:has-hover:hover:bg-border data-[selected]:active:bg-border 
                 text-left px-3 py-3.5 rounded-lg font-medium flex items-center justify-between gap-3 group/item"
               >
                 <div className="flex-1 min-w-0 flex items-center gap-2.5">
