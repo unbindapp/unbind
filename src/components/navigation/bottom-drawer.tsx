@@ -53,7 +53,9 @@ export default function BottomDrawer({
         </div>
         <div className="w-full flex flex-col min-h-0 flex-1">
           <div className="flex flex-col flex-1 min-h-0">
-            <ScrollArea>{children}</ScrollArea>
+            <ScrollArea className="pb-[var(--safe-area-inset-bottom)]">
+              {children}
+            </ScrollArea>
           </div>
         </div>
       </DrawerContent>

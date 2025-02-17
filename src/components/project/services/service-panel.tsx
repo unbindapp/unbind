@@ -134,7 +134,9 @@ export default function ServicePanel({ service, children }: Props) {
         </nav>
         <div className="w-full flex flex-col min-h-0 flex-1">
           <div className="flex flex-col flex-1 min-h-0">
-            <ScrollArea>{CurrentPage && <CurrentPage />}</ScrollArea>
+            <ScrollArea className="pb-[var(--safe-area-inset-bottom)]">
+              {CurrentPage && <CurrentPage />}
+            </ScrollArea>
           </div>
         </div>
       </DrawerContent>
