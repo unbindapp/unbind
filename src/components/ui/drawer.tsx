@@ -86,7 +86,7 @@ const DrawerContent = React.forwardRef<
         {hasHandle && (
           <div
             data-hide-handle={hideHandle ? true : undefined}
-            className="w-[calc(min(33.3%,5rem))] data-[hide-handle]:-translate-y-6 transition duration-100 h-12 pb-2.5 
+            className="w-[calc(min(33.3%,5rem))] data-[hide-handle]:-translate-y-6 transition duration-100 h-12 pb-2 
             -translate-y-full flex items-end justify-center absolute left-1/2 -translate-x-1/2 top-0"
           >
             <div className="w-full h-1.5 rounded-full bg-foreground/20" />
