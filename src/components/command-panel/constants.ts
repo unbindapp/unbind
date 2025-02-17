@@ -1,3 +1,3 @@
-export const panelIdKey = "panel_id";
-export const panelPageIdKey = "panel_page";
-export const rootPanelPageIdForProject = "new_service";
+export const commandPanelIdKey = "panel_id";
+export const commandPanelPageIdKey = "panel_page";
+export const rootCommandPanelPageIdForProject = "new_service";

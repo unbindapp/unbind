@@ -1,6 +1,6 @@
 "use client";
 
-import { rootPanelPageIdForProject } from "@/components/command-panel/constants";
+import { rootCommandPanelPageIdForProject } from "@/components/command-panel/constants";
 import {
   getAllItemsFromCommandPanelPage,
   getFirstCommandListItem,
@@ -251,7 +251,7 @@ function Footer({
       <p className="shrink-[2] text-sm font-medium px-3 py-2 min-w-0 overflow-hidden overflow-ellipsis whitespace-nowrap">
         {currentPage.title}
       </p>
-      {currentPage.id !== rootPanelPageIdForProject && (
+      {currentPage.id !== rootCommandPanelPageIdForProject && (
         <Button
           onKeyDown={(e) => {
             if (e.key === "Enter") {

@@ -2,8 +2,8 @@
 
 import CommandPanelTrigger from "@/components/command-panel/command-panel-trigger";
 import {
-  panelIdKey,
-  panelPageIdKey,
+  commandPanelIdKey,
+  commandPanelPageIdKey,
 } from "@/components/command-panel/constants";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
@@ -26,8 +26,8 @@ export default function NewServiceButton({
   shortcutEnabled = true,
   className,
 }: Props) {
-  const [commandPanelId, setCommandPanelId] = useQueryState(panelIdKey);
-  const [, setCommandPanelPageId] = useQueryState(panelPageIdKey);
+  const [commandPanelId, setCommandPanelId] = useQueryState(commandPanelIdKey);
+  const [, setCommandPanelPageId] = useQueryState(commandPanelPageIdKey);
   const open = commandPanelId === newServiceId;
   const setOpen = (open: boolean) => {
     if (open) {

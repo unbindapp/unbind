@@ -1,6 +1,6 @@
 import {
-  panelPageIdKey,
-  rootPanelPageIdForProject,
+  commandPanelPageIdKey,
+  rootCommandPanelPageIdForProject,
 } from "@/components/command-panel/constants";
 import ProjectCommandPanel from "@/components/command-panel/project-command-panel";
 import {
@@ -22,7 +22,7 @@ type Props = {
   children: ReactNode;
 };
 
-const rootPages = [rootPanelPageIdForProject];
+const rootPages = [rootCommandPanelPageIdForProject];
 
 export default function CommandPanelTrigger({
   teamId,
@@ -31,7 +31,7 @@ export default function CommandPanelTrigger({
   setOpen,
   children,
 }: Props) {
-  const [panelPageId] = useQueryState(panelPageIdKey);
+  const [panelPageId] = useQueryState(commandPanelPageIdKey);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

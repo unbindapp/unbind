@@ -1,7 +1,7 @@
 import {
-  panelIdKey,
-  panelPageIdKey,
-  rootPanelPageIdForProject,
+  commandPanelIdKey,
+  commandPanelPageIdKey,
+  rootCommandPanelPageIdForProject,
 } from "@/components/command-panel/constants";
 import { findCommandPanelPage } from "@/components/command-panel/helpers";
 import { TCommandPanelPage } from "@/components/command-panel/types";
@@ -17,8 +17,8 @@ export default function useProjectCommandPanelConfig({
 }: {
   teamId: string;
 }) {
-  const [, setPanelId] = useQueryState(panelIdKey);
-  const [panelPageId, setPanelPageId] = useQueryState(panelPageIdKey);
+  const [, setPanelId] = useQueryState(commandPanelIdKey);
+  const [panelPageId, setPanelPageId] = useQueryState(commandPanelPageIdKey);
 
   const onSelectPlaceholder = useCallback(() => {
     toast.success("Successful (Fake)", {
@@ -34,7 +34,7 @@ export default function useProjectCommandPanelConfig({
 
   const defaultPage: TCommandPanelPage = useMemo(
     () => ({
-      id: rootPanelPageIdForProject,
+      id: rootCommandPanelPageIdForProject,
       title: "New Service",
       parentPageId: null,
       inputPlaceholder: "Deploy something...",
@@ -48,7 +48,7 @@ export default function useProjectCommandPanelConfig({
           subpage: {
             id: "github_repos",
             title: "GitHub Repos",
-            parentPageId: rootPanelPageIdForProject,
+            parentPageId: rootCommandPanelPageIdForProject,
             inputPlaceholder: "Deploy from GitHub...",
             getItems: () =>
               utils.main.getGitHubRepos.fetch({ teamId }).then((r) =>
@@ -74,7 +74,7 @@ export default function useProjectCommandPanelConfig({
           subpage: {
             id: "databases",
             title: "Databases",
-            parentPageId: rootPanelPageIdForProject,
+            parentPageId: rootCommandPanelPageIdForProject,
             inputPlaceholder: "Deploy a database...",
             items: [
               {
@@ -155,7 +155,7 @@ export default function useProjectCommandPanelConfig({
           subpage: {
             id: "templates",
             title: "Templates",
-            parentPageId: rootPanelPageIdForProject,
+            parentPageId: rootCommandPanelPageIdForProject,
             inputPlaceholder: "Deploy a template...",
             items: [
               {
@@ -282,7 +282,7 @@ export default function useProjectCommandPanelConfig({
 
   const goToParentPage = useCallback(
     (e?: KeyboardEvent) => {
-      if (currentPage.id === rootPanelPageIdForProject) {
+      if (currentPage.id === rootCommandPanelPageIdForProject) {
         return;
       }
       if (currentPage.parentPageId === null) return;
