@@ -29,7 +29,12 @@ export default function BottomDrawer({
   children,
 }: Props) {
   return (
-    <Drawer open={open} onOpenChange={setOpen} direction="bottom">
+    <Drawer
+      autoFocus={open}
+      open={open}
+      onOpenChange={setOpen}
+      direction="bottom"
+    >
       <DrawerTrigger asChild>{Trigger}</DrawerTrigger>
       <DrawerContent
         className={cn(

@@ -1,4 +1,4 @@
-import BottomDrawer from "@/components/bottom-drawer";
+import BottomDrawer from "@/components/navigation/bottom-drawer";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,7 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { ArrowRightIcon, CheckIcon, ChevronDownIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { ComponentProps, FC, useState } from "react";
+import { ComponentProps, FC, useEffect, useState } from "react";
 import { useIsMounted, useWindowSize } from "usehooks-ts";
 
 type Item<T> = T & { id: string; title: string };
@@ -39,6 +39,12 @@ export function BreadcrumbItem<T>({
   const { width } = useWindowSize();
   const isSmall = width < 640;
   const mounted = useIsMounted();
+  const [lastHoveredItem, setLastHoveredItem] = useState(selectedItem);
+
+  useEffect(() => {
+    setLastHoveredItem(selectedItem);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   if (isSmall && mounted()) {
     return (
@@ -54,7 +60,7 @@ export function BreadcrumbItem<T>({
           />
         }
       >
-        <div className="w-full flex flex-col px-2 pt-2 pb-8">
+        <div className="w-full flex flex-col px-2 pt-2 pb-8 group/list">
           {items?.map((i, index) => {
             const href = getHrefForId(i.id);
             const showArrow = href !== null && pathname !== href;
@@ -64,12 +70,16 @@ export function BreadcrumbItem<T>({
                   setOpen(false);
                   onSelect(i.id);
                 }}
-                data-selected={selectedItem?.id === i.id ? true : undefined}
+                data-last-hovered={
+                  lastHoveredItem?.id === i.id ? true : undefined
+                }
+                onMouseEnter={() => setLastHoveredItem(i)}
+                onTouchStart={() => setLastHoveredItem(i)}
                 key={i.id + index}
                 data-show-arrow={showArrow ? true : undefined}
                 variant="ghost"
-                className="w-full data-[selected]:bg-border/75 data-[selected]:has-hover:hover:bg-border data-[selected]:active:bg-border 
-                text-left px-3 py-3.5 rounded-lg font-medium flex items-center justify-between gap-3 group/item"
+                className="w-full data-[last-hovered]:bg-border group-has-[*[data-highlighted]]/list:bg-transparent group-has-[*[data-highlighted]]/list:data-[highlighted]:bg-border 
+                text-left px-3 py-3.5 rounded-lg font-medium flex items-center justify-between gap-3 group/item cursor-default"
               >
                 <div className="flex-1 min-w-0 flex items-center gap-2.5">
                   {IconItem && <IconItem id={i.id} />}
@@ -113,8 +123,9 @@ export function BreadcrumbItem<T>({
         sideOffset={-1}
         align="start"
         className="group/content"
+        autoFocus={open}
       >
-        <ScrollArea className="p-1">
+        <ScrollArea className="p-1 group/list" noFocusOnViewport>
           {items?.map((i, index) => {
             const href = getHrefForId(i.id);
             const showArrow = href !== null && pathname !== href;
@@ -126,7 +137,12 @@ export function BreadcrumbItem<T>({
                 }}
                 key={i.id + index}
                 data-show-arrow={showArrow ? true : undefined}
-                className="justify-between group/item"
+                data-last-hovered={
+                  lastHoveredItem?.id === i.id ? true : undefined
+                }
+                className="justify-between group/item data-[last-hovered]:bg-border group-has-[*[data-highlighted]]/list:bg-transparent group-has-[*[data-highlighted]]/list:data-[highlighted]:bg-border"
+                onMouseEnter={() => setLastHoveredItem(i)}
+                onTouchStart={() => setLastHoveredItem(i)}
               >
                 <div className="flex-1 min-w-0 flex items-center gap-2.5">
                   {IconItem && <IconItem id={i.id} />}

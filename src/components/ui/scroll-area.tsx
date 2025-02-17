@@ -31,6 +31,7 @@ const ScrollArea = React.forwardRef<
         className
       )}
       {...props}
+      tabIndex={noFocusOnViewport ? -1 : undefined}
     >
       <ScrollAreaPrimitive.Viewport
         ref={viewportRef}
