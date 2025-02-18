@@ -14,7 +14,7 @@ type Props = {
   Trigger: ReactNode;
   Icon?: FC<{ className: string }>;
   open: boolean;
-  setOpen: (open: boolean) => void;
+  onOpenChange: (open: boolean) => void;
   classNameContent?: string;
   children: ReactNode;
 };
@@ -24,7 +24,7 @@ export default function BottomDrawer({
   Trigger,
   Icon,
   open,
-  setOpen,
+  onOpenChange,
   classNameContent,
   children,
 }: Props) {
@@ -32,7 +32,7 @@ export default function BottomDrawer({
     <Drawer
       autoFocus={open}
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={onOpenChange}
       direction="bottom"
     >
       <DrawerTrigger asChild>{Trigger}</DrawerTrigger>

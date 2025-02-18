@@ -20,23 +20,22 @@ const useDrawerContext = () => {
 
 const Drawer = ({
   shouldScaleBackground = false,
-  onOpenChange,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Root>) => {
   const [hideHandle, setHideHandle] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!props.open) {
+      setHideHandle(true);
+    } else {
+      setHideHandle(false);
+    }
+  }, [props.open]);
 
   return (
     <DrawerContext.Provider value={{ hideHandle }}>
       <DrawerPrimitive.Root
         shouldScaleBackground={shouldScaleBackground}
-        onOpenChange={(open) => {
-          if (!open) {
-            setHideHandle(true);
-          } else {
-            setHideHandle(false);
-          }
-          onOpenChange?.(open);
-        }}
         {...props}
       />
     </DrawerContext.Provider>

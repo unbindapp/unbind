@@ -69,7 +69,7 @@ export function BreadcrumbItem<T>({
       <BottomDrawer
         title={title}
         open={open}
-        setOpen={setOpen}
+        onOpenChange={setOpen}
         Trigger={
           <Trigger
             item={selectedItem}
