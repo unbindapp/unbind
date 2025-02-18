@@ -4,6 +4,7 @@ import {
   commandPanelKey,
   commandPanelPageKey,
   commandPanelProjectFromList,
+  commandPanelProjectRootPage,
 } from "@/components/command-panel/constants";
 import { ProjectCommandPanelTrigger } from "@/components/command-panel/project/project-command-panel";
 import ServiceIcon from "@/components/icons/service";
@@ -12,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { groupByServiceGroup } from "@/lib/helpers";
 import { api } from "@/server/trpc/setup/client";
 import { PlusIcon } from "lucide-react";
-import { useQueryState } from "nuqs";
+import { parseAsString, useQueryState } from "nuqs";
 import { useRef } from "react";
 
 type Props = {
@@ -34,7 +35,10 @@ export default function ServiceCardList({
   const groupedServices = groupByServiceGroup(services);
 
   const [commandPanelId, setCommandPanelId] = useQueryState(commandPanelKey);
-  const [, setCommandPanelPageId] = useQueryState(commandPanelPageKey);
+  const [, setCommandPanelPageId] = useQueryState(
+    commandPanelPageKey,
+    parseAsString.withDefault(commandPanelProjectRootPage)
+  );
 
   const open = commandPanelId === commandPanelProjectFromList;
   const timeout = useRef<NodeJS.Timeout | null>(null);

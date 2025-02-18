@@ -8,8 +8,8 @@ import { TCommandPanelPage } from "@/components/command-panel/types";
 import ServiceIcon from "@/components/icons/service";
 import { api } from "@/server/trpc/setup/client";
 import { BlocksIcon, DatabaseIcon } from "lucide-react";
-import { useQueryState } from "nuqs";
-import { useCallback, useMemo } from "react";
+import { parseAsString, useQueryState } from "nuqs";
+import { useCallback, useMemo, useRef } from "react";
 import { toast } from "sonner";
 
 export default function useProjectCommandPanelConfig({
@@ -18,7 +18,11 @@ export default function useProjectCommandPanelConfig({
   teamId: string;
 }) {
   const [, setPanelId] = useQueryState(commandPanelKey);
-  const [panelPageId, setPanelPageId] = useQueryState(commandPanelPageKey);
+  const [panelPageId, setPanelPageId] = useQueryState(
+    commandPanelPageKey,
+    parseAsString.withDefault(commandPanelProjectRootPage)
+  );
+  const timeout = useRef<NodeJS.Timeout | null>(null);
 
   const onSelectPlaceholder = useCallback(() => {
     toast.success("Successful (Fake)", {
@@ -27,7 +31,12 @@ export default function useProjectCommandPanelConfig({
       closeButton: false,
     });
     setPanelId(null);
-    setPanelPageId(null);
+    if (timeout.current) {
+      clearTimeout(timeout.current);
+    }
+    timeout.current = setTimeout(() => {
+      setPanelPageId(null);
+    }, 150);
   }, [setPanelId, setPanelPageId]);
 
   const utils = api.useUtils();

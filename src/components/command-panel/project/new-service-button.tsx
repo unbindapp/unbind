@@ -4,12 +4,13 @@ import {
   commandPanelKey,
   commandPanelPageKey,
   commandPanelProject,
+  commandPanelProjectRootPage,
 } from "@/components/command-panel/constants";
 import { ProjectCommandPanelTrigger } from "@/components/command-panel/project/project-command-panel";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { PlusIcon } from "lucide-react";
-import { useQueryState } from "nuqs";
+import { parseAsString, useQueryState } from "nuqs";
 import { useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
@@ -27,7 +28,10 @@ export default function NewServiceButton({
   className,
 }: Props) {
   const [commandPanelId, setCommandPanelId] = useQueryState(commandPanelKey);
-  const [, setCommandPanelPageId] = useQueryState(commandPanelPageKey);
+  const [, setCommandPanelPageId] = useQueryState(
+    commandPanelPageKey,
+    parseAsString.withDefault(commandPanelProjectRootPage)
+  );
 
   const open = commandPanelId === commandPanelProject;
   const timeout = useRef<NodeJS.Timeout | null>(null);
