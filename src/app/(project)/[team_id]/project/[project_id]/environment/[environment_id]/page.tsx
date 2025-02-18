@@ -1,4 +1,4 @@
-import NewServiceButton from "@/components/command-panel/new-service-button";
+import NewServiceButton from "@/components/command-panel/project/new-service-button";
 import ServiceCardList from "@/components/project/services/service-card-list";
 import { apiServer, HydrateClient } from "@/server/trpc/setup/server";
 

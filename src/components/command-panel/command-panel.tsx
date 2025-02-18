@@ -1,18 +1,11 @@
-"use client";
-
-import { rootCommandPanelPageIdForProject } from "@/components/command-panel/constants";
 import {
   getAllItemsFromCommandPanelPage,
   getFirstCommandListItem,
 } from "@/components/command-panel/helpers";
-import ProjectCommandPanelItemsProvider, {
-  useProjectCommandPanelItems,
-} from "@/components/command-panel/project-command-panel-data-provider";
 import {
   TCommandPanelItem,
   TCommandPanelPage,
 } from "@/components/command-panel/types";
-import useProjectCommandPanelConfig from "@/components/command-panel/use-project-command-panel-config";
 import ErrorCard from "@/components/error-card";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,11 +16,19 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/components/ui/utils";
+import { DialogDescription } from "@radix-ui/react-dialog";
 import { useCommandState } from "cmdk";
 import { ChevronLeftIcon, ChevronRightIcon, LoaderIcon } from "lucide-react";
 import {
+  ReactNode,
   RefObject,
   useCallback,
   useEffect,
@@ -38,28 +39,102 @@ import {
 import { useHotkeys } from "react-hotkeys-hook";
 
 type Props = {
-  teamId: string;
-  projectId: string;
-  className?: string;
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  children: ReactNode;
+  title: string;
+  description: string;
 };
 
-export default function ProjectCommandPanel({
-  teamId,
-  projectId,
-  className,
-}: Props) {
-  const {
-    currentPage,
-    setCurrentPage,
-    setPanelPageId,
-    allPageIds,
-    goToParentPage,
-  } = useProjectCommandPanelConfig({ teamId });
+export function CommandPanelTrigger({
+  rootPage,
+  open,
+  setOpen,
+  children,
+  currentPage,
+  goToParentPage,
+  useCommandPanelItems,
+  allPageIds,
+  setCurrentPageId,
+  title,
+  description,
+}: Props & CommandPanelProps) {
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent
+        onOpenAutoFocus={(e) => {
+          if (typeof window === "undefined") return;
+          const isTouchScreen = window.matchMedia("(pointer: coarse)").matches;
+          if (!isTouchScreen) return;
+          const element = e.target as HTMLElement | null;
+          if (element === null) return;
+          const focusable = element.querySelector("[tabindex]");
+          if (!focusable) return;
+          e.preventDefault();
+          // @ts-expect-error this is a valid call
+          focusable.focus?.();
+        }}
+        onEscapeKeyDown={(e) => {
+          if (currentPage.id === null) return;
+          if (rootPage.id !== currentPage.id) {
+            e.preventDefault();
+          }
+        }}
+        variant="styleless"
+        className="w-112"
+      >
+        <DialogHeader>
+          <DialogTitle className="sr-only">{title}</DialogTitle>
+          <DialogDescription className="sr-only">
+            {description}
+          </DialogDescription>
+        </DialogHeader>
+        <CommandPanel
+          rootPage={rootPage}
+          allPageIds={allPageIds}
+          setCurrentPageId={setCurrentPageId}
+          currentPage={currentPage}
+          goToParentPage={goToParentPage}
+          useCommandPanelItems={useCommandPanelItems}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+}
 
+type TUseCommandPanelItems = () => {
+  items: TCommandPanelItem[] | undefined;
+  isPending: boolean;
+  isError: boolean;
+  error: Error | null;
+};
+
+type TSetCurrentPageId = (id: string) => void;
+
+type CommandPanelProps = {
+  currentPage: TCommandPanelPage;
+  goToParentPage: (e?: KeyboardEvent) => void;
+  useCommandPanelItems: TUseCommandPanelItems;
+  rootPage: TCommandPanelPage;
+  allPageIds: string[];
+  setCurrentPageId: TSetCurrentPageId;
+};
+
+function CommandPanel({
+  currentPage,
+  goToParentPage,
+  useCommandPanelItems,
+  rootPage,
+  allPageIds,
+  setCurrentPageId,
+}: CommandPanelProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const [value, setValue] = useState("");
+  const { isPending, isError } = useCommandPanelItems();
 
   useEffect(() => {
-    setPanelPageId(currentPage.id);
     const isTouchScreen =
       typeof window !== "undefined"
         ? window.matchMedia("(pointer: coarse)").matches
@@ -67,7 +142,6 @@ export default function ProjectCommandPanel({
     if (!isTouchScreen) {
       inputRef.current?.focus();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
 
   useHotkeys(
@@ -93,44 +167,6 @@ export default function ProjectCommandPanel({
     }
   );
 
-  return (
-    <ProjectCommandPanelItemsProvider
-      teamId={teamId}
-      projectId={projectId}
-      page={currentPage}
-    >
-      <Panel
-        className={className}
-        allPageIds={allPageIds}
-        currentPage={currentPage}
-        goToParentPage={goToParentPage}
-        inputRef={inputRef}
-        setCurrentPage={setCurrentPage}
-      />
-    </ProjectCommandPanelItemsProvider>
-  );
-}
-
-function Panel({
-  currentPage,
-  allPageIds,
-  setCurrentPage,
-  goToParentPage,
-  inputRef,
-  className,
-}: {
-  allPageIds: string[];
-  currentPage: TCommandPanelPage;
-  setCurrentPage: (page: TCommandPanelPage) => void;
-  goToParentPage: () => void;
-  inputRef: RefObject<HTMLInputElement | null>;
-  className?: string;
-}) {
-  const listRef = useRef<HTMLDivElement>(null);
-  const [value, setValue] = useState("");
-
-  const { isPending, isError } = useProjectCommandPanelItems();
-
   useEffect(() => {
     const value = getFirstCommandListItem(listRef);
     if (value) setValue(value);
@@ -142,37 +178,42 @@ function Panel({
       value={value}
       onValueChange={setValue}
       variant="modal"
-      className={cn(
-        "w-full rounded-xl h-108 max-h-[calc(100vh-(100vh-3rem)*0.1-7rem)] border shadow-xl shadow-shadow/[var(--opacity-shadow)]",
-        className
-      )}
+      className="w-full rounded-xl h-108 max-h-[calc(100vh-(100vh-3rem)*0.1-7rem)] border shadow-xl shadow-shadow/[var(--opacity-shadow)]"
     >
       <Input
+        useCommandPanelItems={useCommandPanelItems}
         placeholder={currentPage.inputPlaceholder}
         currentPage={currentPage}
         allPageIds={allPageIds}
         ref={inputRef}
       />
       <Content
+        useCommandPanelItems={useCommandPanelItems}
         currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
+        setCurrentPageId={setCurrentPageId}
         listRef={listRef}
       />
-      <Footer currentPage={currentPage} goToParentPage={goToParentPage} />
+      <Footer
+        rootPage={rootPage}
+        currentPage={currentPage}
+        goToParentPage={goToParentPage}
+      />
     </Command>
   );
 }
 
 function Content({
+  useCommandPanelItems,
   currentPage,
-  setCurrentPage,
+  setCurrentPageId,
   listRef,
 }: {
+  useCommandPanelItems: TUseCommandPanelItems;
   currentPage: TCommandPanelPage;
-  setCurrentPage: (page: TCommandPanelPage) => void;
+  setCurrentPageId: TSetCurrentPageId;
   listRef: RefObject<HTMLDivElement | null>;
 }) {
-  const { items, isPending, isError, error } = useProjectCommandPanelItems();
+  const { items, isPending, isError, error } = useCommandPanelItems();
   const allItems = useMemo(
     () => getAllItemsFromCommandPanelPage(currentPage),
     [currentPage]
@@ -199,7 +240,7 @@ function Content({
                 <Item
                   key={item.title}
                   item={item}
-                  setCurrentPage={setCurrentPage}
+                  setCurrentPageId={setCurrentPageId}
                 />
               ))}
             {!isPending &&
@@ -208,7 +249,7 @@ function Content({
                 <ConditionalItem
                   key={item.title}
                   item={item}
-                  setCurrentPage={setCurrentPage}
+                  setCurrentPageId={setCurrentPageId}
                 />
               ))}
             {isPending &&
@@ -221,7 +262,7 @@ function Content({
                     keywords: [],
                     Icon: LoaderIcon,
                   }}
-                  setCurrentPage={() => null}
+                  setCurrentPageId={() => null}
                   isPlaceholder={true}
                 />
               ))}
@@ -238,9 +279,11 @@ function Content({
 }
 
 function Footer({
+  rootPage,
   currentPage,
   goToParentPage,
 }: {
+  rootPage: TCommandPanelPage;
   currentPage: TCommandPanelPage;
   goToParentPage: () => void;
 }) {
@@ -251,7 +294,7 @@ function Footer({
       <p className="shrink-[2] text-sm font-medium px-3 py-2 min-w-0 overflow-hidden overflow-ellipsis whitespace-nowrap">
         {currentPage.title}
       </p>
-      {currentPage.id !== rootCommandPanelPageIdForProject && (
+      {currentPage.id !== rootPage.id && (
         <Button
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -284,11 +327,13 @@ function Footer({
 }
 
 function Input({
+  useCommandPanelItems,
   currentPage,
   allPageIds,
   placeholder,
   ref,
 }: {
+  useCommandPanelItems: TUseCommandPanelItems;
   currentPage: TCommandPanelPage;
   allPageIds: string[];
   placeholder: string;
@@ -298,7 +343,7 @@ function Input({
     Object.fromEntries(allPageIds.map((id) => [id, ""]))
   );
 
-  const { isPending } = useProjectCommandPanelItems();
+  const { isPending } = useCommandPanelItems();
 
   return (
     <CommandInput
@@ -315,23 +360,23 @@ function Input({
 
 function ConditionalItem({
   item,
-  setCurrentPage,
+  setCurrentPageId,
 }: {
   item: TCommandPanelItem;
-  setCurrentPage: (page: TCommandPanelPage) => void;
+  setCurrentPageId: (id: string) => void;
 }) {
   const search = useCommandState((state) => state.search);
   if (!search) return null;
-  return <Item item={item} setCurrentPage={setCurrentPage} />;
+  return <Item item={item} setCurrentPageId={setCurrentPageId} />;
 }
 
 function Item({
   item,
-  setCurrentPage,
+  setCurrentPageId,
   isPlaceholder,
 }: {
   item: TCommandPanelItem;
-  setCurrentPage: (page: TCommandPanelPage) => void;
+  setCurrentPageId: (id: string) => void;
   isPlaceholder?: boolean;
 }) {
   const search = useCommandState((state) => state.search);
@@ -339,10 +384,10 @@ function Item({
 
   const onSelect = useCallback(() => {
     if (item.subpage) {
-      setCurrentPage(item.subpage);
+      setCurrentPageId(item.subpage.id);
     }
     item.onSelect?.();
-  }, [item, setCurrentPage]);
+  }, [item, setCurrentPageId]);
 
   useHotkeys("arrowright", () => onSelect(), {
     enabled:

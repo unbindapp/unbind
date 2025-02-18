@@ -1,18 +1,19 @@
 "use client";
 
-import ServiceCard from "@/components/project/services/service-card";
+import {
+  commandPanelKey,
+  commandPanelPageKey,
+  commandPanelProjectFromList,
+} from "@/components/command-panel/constants";
+import { ProjectCommandPanelTrigger } from "@/components/command-panel/project/project-command-panel";
 import ServiceIcon from "@/components/icons/service";
+import ServiceCard from "@/components/project/services/service-card";
+import { Button } from "@/components/ui/button";
 import { groupByServiceGroup } from "@/lib/helpers";
 import { api } from "@/server/trpc/setup/client";
-import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
-import CommandPanelTrigger from "@/components/command-panel/command-panel-trigger";
 import { useQueryState } from "nuqs";
-import {
-  commandPanelIdKey,
-  commandPanelPageIdKey,
-  rootCommandPanelPageIdForProject,
-} from "@/components/command-panel/constants";
+import { useRef } from "react";
 
 type Props = {
   teamId: string;
@@ -32,36 +33,43 @@ export default function ServiceCardList({
   const services = data?.services;
   const groupedServices = groupByServiceGroup(services);
 
-  const [commandPanelId, setCommandPanelId] = useQueryState(commandPanelIdKey);
-  const [, setCommandPanelPageId] = useQueryState(commandPanelPageIdKey);
-  const open = commandPanelId === rootCommandPanelPageIdForProject;
+  const [commandPanelId, setCommandPanelId] = useQueryState(commandPanelKey);
+  const [, setCommandPanelPageId] = useQueryState(commandPanelPageKey);
+
+  const open = commandPanelId === commandPanelProjectFromList;
+  const timeout = useRef<NodeJS.Timeout | null>(null);
   const setOpen = (open: boolean) => {
     if (open) {
-      setCommandPanelId(rootCommandPanelPageIdForProject);
-      return;
+      setCommandPanelId(commandPanelProjectFromList);
+    } else {
+      setCommandPanelId(null);
+      if (timeout.current) {
+        clearTimeout(timeout.current);
+      }
+      timeout.current = setTimeout(() => {
+        setCommandPanelPageId(null);
+      }, 150);
     }
-    setCommandPanelId(null);
-    setCommandPanelPageId(null);
   };
 
   return (
     <ol className="w-full flex flex-wrap">
       {groupedServices && groupedServices.length === 0 && (
         <li className="w-full flex flex-col p-1 sm:w-1/2 lg:w-1/3">
-          <CommandPanelTrigger
+          <ProjectCommandPanelTrigger
             open={open}
             setOpen={setOpen}
-            projectId={projectId}
             teamId={teamId}
+            projectId={projectId}
           >
             <Button
               variant="ghost"
-              className="w-full text-center flex justify-center items-center min-h-36 border rounded-xl px-5 py-3.5"
+              className="w-full text-muted-foreground font-medium text-center flex justify-center items-center min-h-36 border rounded-xl px-5 py-3.5"
             >
               <PlusIcon className="size-5 -ml-1.5 shrink-0" />
               <p className="shrink min-w-0 leading-tight">New Service</p>
             </Button>
-          </CommandPanelTrigger>
+          </ProjectCommandPanelTrigger>
         </li>
       )}
       {groupedServices &&

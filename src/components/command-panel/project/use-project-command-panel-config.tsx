@@ -1,7 +1,7 @@
 import {
-  commandPanelIdKey,
-  commandPanelPageIdKey,
-  rootCommandPanelPageIdForProject,
+  commandPanelKey,
+  commandPanelPageKey,
+  commandPanelProjectRootPage,
 } from "@/components/command-panel/constants";
 import { findCommandPanelPage } from "@/components/command-panel/helpers";
 import { TCommandPanelPage } from "@/components/command-panel/types";
@@ -9,7 +9,7 @@ import ServiceIcon from "@/components/icons/service";
 import { api } from "@/server/trpc/setup/client";
 import { BlocksIcon, DatabaseIcon } from "lucide-react";
 import { useQueryState } from "nuqs";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 
 export default function useProjectCommandPanelConfig({
@@ -17,8 +17,8 @@ export default function useProjectCommandPanelConfig({
 }: {
   teamId: string;
 }) {
-  const [, setPanelId] = useQueryState(commandPanelIdKey);
-  const [panelPageId, setPanelPageId] = useQueryState(commandPanelPageIdKey);
+  const [, setPanelId] = useQueryState(commandPanelKey);
+  const [panelPageId, setPanelPageId] = useQueryState(commandPanelPageKey);
 
   const onSelectPlaceholder = useCallback(() => {
     toast.success("Successful (Fake)", {
@@ -32,23 +32,27 @@ export default function useProjectCommandPanelConfig({
 
   const utils = api.useUtils();
 
-  const defaultPage: TCommandPanelPage = useMemo(
+  const rootPage: TCommandPanelPage = useMemo(
     () => ({
-      id: rootCommandPanelPageIdForProject,
+      id: commandPanelProjectRootPage,
       title: "New Service",
       parentPageId: null,
       inputPlaceholder: "Deploy something...",
       items: [
         {
           title: "GitHub Repo",
-          keywords: ["deploy", "gitlab", "bitbucket"],
+          keywords: [
+            "deploy from github",
+            "deploy from gitlab",
+            "deploy from bitbucket",
+          ],
           Icon: ({ className }) => (
             <ServiceIcon variant="github" className={className} />
           ),
           subpage: {
             id: "github_repos",
             title: "GitHub Repos",
-            parentPageId: rootCommandPanelPageIdForProject,
+            parentPageId: commandPanelProjectRootPage,
             inputPlaceholder: "Deploy from GitHub...",
             getItems: () =>
               utils.main.getGitHubRepos.fetch({ teamId }).then((r) =>
@@ -74,7 +78,7 @@ export default function useProjectCommandPanelConfig({
           subpage: {
             id: "databases",
             title: "Databases",
-            parentPageId: rootCommandPanelPageIdForProject,
+            parentPageId: commandPanelProjectRootPage,
             inputPlaceholder: "Deploy a database...",
             items: [
               {
@@ -155,7 +159,7 @@ export default function useProjectCommandPanelConfig({
           subpage: {
             id: "templates",
             title: "Templates",
-            parentPageId: rootCommandPanelPageIdForProject,
+            parentPageId: commandPanelProjectRootPage,
             inputPlaceholder: "Deploy a template...",
             items: [
               {
@@ -256,14 +260,19 @@ export default function useProjectCommandPanelConfig({
     [onSelectPlaceholder, utils, teamId]
   );
 
-  const [currentPage, setCurrentPage] = useState(
-    panelPageId
-      ? findCommandPanelPage({
-          id: panelPageId,
-          page: defaultPage,
-        }) || defaultPage
-      : defaultPage
+  const setCurrentPageId = useCallback(
+    (id: string) => {
+      setPanelPageId(id);
+    },
+    [setPanelPageId]
   );
+
+  const currentPage = panelPageId
+    ? findCommandPanelPage({
+        id: panelPageId,
+        page: rootPage,
+      }) || rootPage
+    : rootPage;
 
   const allPageIds = useMemo(() => {
     const ids = new Set<string>();
@@ -276,33 +285,32 @@ export default function useProjectCommandPanelConfig({
         }
       });
     };
-    addIds(defaultPage);
+    addIds(rootPage);
     return [...ids];
-  }, [defaultPage]);
+  }, [rootPage]);
 
   const goToParentPage = useCallback(
     (e?: KeyboardEvent) => {
-      if (currentPage.id === rootCommandPanelPageIdForProject) {
+      if (currentPage.id === commandPanelProjectRootPage) {
         return;
       }
       if (currentPage.parentPageId === null) return;
       const parentPage = findCommandPanelPage({
         id: currentPage.parentPageId,
-        page: defaultPage,
+        page: rootPage,
       });
       if (parentPage) {
         e?.preventDefault();
-        setCurrentPage(parentPage);
+        setCurrentPageId(parentPage.id);
       }
     },
-    [currentPage, defaultPage]
+    [currentPage, rootPage, setCurrentPageId]
   );
 
   return {
-    defaultPage,
+    rootPage,
     currentPage,
-    setCurrentPage,
-    setPanelPageId,
+    setCurrentPageId,
     allPageIds,
     goToParentPage,
   };

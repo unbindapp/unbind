@@ -1,15 +1,16 @@
 "use client";
 
-import CommandPanelTrigger from "@/components/command-panel/command-panel-trigger";
 import {
-  commandPanelIdKey,
-  commandPanelPageIdKey,
-  rootCommandPanelPageIdForProject,
+  commandPanelKey,
+  commandPanelPageKey,
+  commandPanelProject,
 } from "@/components/command-panel/constants";
+import { ProjectCommandPanelTrigger } from "@/components/command-panel/project/project-command-panel";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { PlusIcon } from "lucide-react";
 import { useQueryState } from "nuqs";
+import { useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 type Props = {
@@ -25,22 +26,29 @@ export default function NewServiceButton({
   shortcutEnabled = true,
   className,
 }: Props) {
-  const [commandPanelId, setCommandPanelId] = useQueryState(commandPanelIdKey);
-  const [, setCommandPanelPageId] = useQueryState(commandPanelPageIdKey);
-  const open = commandPanelId === rootCommandPanelPageIdForProject;
+  const [commandPanelId, setCommandPanelId] = useQueryState(commandPanelKey);
+  const [, setCommandPanelPageId] = useQueryState(commandPanelPageKey);
+
+  const open = commandPanelId === commandPanelProject;
+  const timeout = useRef<NodeJS.Timeout | null>(null);
   const setOpen = (open: boolean) => {
     if (open) {
-      setCommandPanelId(rootCommandPanelPageIdForProject);
-      return;
+      setCommandPanelId(commandPanelProject);
+    } else {
+      setCommandPanelId(null);
+      if (timeout.current) {
+        clearTimeout(timeout.current);
+      }
+      timeout.current = setTimeout(() => {
+        setCommandPanelPageId(null);
+      }, 150);
     }
-    setCommandPanelId(null);
-    setCommandPanelPageId(null);
   };
 
   useHotkeys(
     "mod+k",
     () => {
-      setCommandPanelId(rootCommandPanelPageIdForProject);
+      setCommandPanelId(commandPanelProject);
     },
     {
       enabled: shortcutEnabled,
@@ -50,11 +58,11 @@ export default function NewServiceButton({
   );
 
   return (
-    <CommandPanelTrigger
-      teamId={teamId}
-      projectId={projectId}
+    <ProjectCommandPanelTrigger
       open={open}
       setOpen={setOpen}
+      teamId={teamId}
+      projectId={projectId}
     >
       <Button
         className={cn("bg-background-hover -my-2", className)}
@@ -64,6 +72,6 @@ export default function NewServiceButton({
         <PlusIcon className="-ml-1.5 size-5" />
         <p className="shrink min-w-0">New Service</p>
       </Button>
-    </CommandPanelTrigger>
+    </ProjectCommandPanelTrigger>
   );
 }
