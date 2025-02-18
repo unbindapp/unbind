@@ -38,7 +38,7 @@ export default function BottomDrawer({
       <DrawerTrigger asChild>{Trigger}</DrawerTrigger>
       <DrawerContent
         className={cn(
-          "h-[calc(min(24rem,calc(100vh-3rem)))]",
+          "h-[calc(min(26.5rem,calc(100vh-4rem)))]",
           classNameContent
         )}
         hasHandle

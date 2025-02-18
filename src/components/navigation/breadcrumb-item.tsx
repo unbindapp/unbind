@@ -98,7 +98,7 @@ export function BreadcrumbItem<T>({
           })}
           {newItemTitle && (
             <>
-              <div className="w-full bg-border h-px rounded-full my-1 shrink-0 pointer-events-none" />
+              <div className="w-full bg-border h-px rounded-full my-2 shrink-0 pointer-events-none" />
               <SheetItem
                 item={{ id: "new", title: newItemTitle } as Item<T>}
                 onSelect={onSelectNewItem}

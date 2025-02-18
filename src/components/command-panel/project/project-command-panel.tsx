@@ -1,8 +1,8 @@
 import { CommandPanelTrigger } from "@/components/command-panel/command-panel";
 import ProjectCommandPanelItemsProvider, {
   useProjectCommandPanelItems,
-} from "@/components/command-panel/project/project-command-panel-data-provider";
-import useProjectCommandPanelConfig from "@/components/command-panel/project/use-project-command-panel-config";
+} from "@/components/command-panel/project/project-command-panel-items-provider";
+import useProjectCommandPanelData from "@/components/command-panel/project/use-project-command-panel-data";
 import { ReactNode } from "react";
 
 type Props = {
@@ -27,7 +27,7 @@ export function ProjectCommandPanelTrigger({
     setCurrentPageId,
     allPageIds,
     goToParentPage,
-  } = useProjectCommandPanelConfig({ teamId });
+  } = useProjectCommandPanelData({ teamId });
 
   return (
     <ProjectCommandPanelItemsProvider

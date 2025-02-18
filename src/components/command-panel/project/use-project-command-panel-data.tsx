@@ -1,18 +1,21 @@
 import {
   commandPanelKey,
   commandPanelPageKey,
-  commandPanelTeamRootPage,
+  commandPanelProjectRootPage,
 } from "@/components/command-panel/constants";
 import { findCommandPanelPage } from "@/components/command-panel/helpers";
-import { TCommandPanelPage } from "@/components/command-panel/types";
+import {
+  TCommandPanelItem,
+  TCommandPanelPage,
+} from "@/components/command-panel/types";
 import ServiceIcon from "@/components/icons/service";
 import { api } from "@/server/trpc/setup/client";
-import { BlocksIcon, DatabaseIcon, FolderPlusIcon } from "lucide-react";
+import { BlocksIcon, DatabaseIcon } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
 import { useCallback, useMemo, useRef } from "react";
 import { toast } from "sonner";
 
-export default function useTeamCommandPanelConfig({
+export default function useProjectCommandPanelData({
   teamId,
 }: {
   teamId: string;
@@ -20,7 +23,7 @@ export default function useTeamCommandPanelConfig({
   const [, setPanelId] = useQueryState(commandPanelKey);
   const [panelPageId, setPanelPageId] = useQueryState(
     commandPanelPageKey,
-    parseAsString.withDefault(commandPanelTeamRootPage)
+    parseAsString.withDefault(commandPanelProjectRootPage)
   );
   const timeout = useRef<NodeJS.Timeout | null>(null);
 
@@ -43,17 +46,11 @@ export default function useTeamCommandPanelConfig({
 
   const rootPage: TCommandPanelPage = useMemo(
     () => ({
-      id: commandPanelTeamRootPage,
-      title: "New Project",
+      id: commandPanelProjectRootPage,
+      title: "New Service",
       parentPageId: null,
       inputPlaceholder: "Deploy something...",
       items: [
-        {
-          title: "Empty Project",
-          keywords: [],
-          onSelect: () => onSelectPlaceholder(),
-          Icon: FolderPlusIcon,
-        },
         {
           title: "GitHub Repo",
           keywords: [
@@ -67,23 +64,24 @@ export default function useTeamCommandPanelConfig({
           subpage: {
             id: "github_repos",
             title: "GitHub Repos",
-            parentPageId: commandPanelTeamRootPage,
+            parentPageId: commandPanelProjectRootPage,
             inputPlaceholder: "Deploy from GitHub...",
-            getItems: () =>
-              utils.main.getGitHubRepos.fetch({ teamId }).then((r) =>
-                r.repos.map((r) => ({
-                  title: `${r.owner}/${r.name}`,
-                  keywords: [],
-                  onSelect: () => onSelectPlaceholder(),
-                  Icon: ({ className }: { className?: string }) => (
-                    <ServiceIcon
-                      color="brand"
-                      variant="github"
-                      className={className}
-                    />
-                  ),
-                }))
-              ),
+            getItems: async () => {
+              const res = await utils.main.getGitHubRepos.fetch({ teamId });
+              const items: TCommandPanelItem[] = res.repos.map((r) => ({
+                title: `${r.owner}/${r.name}`,
+                keywords: [],
+                onSelect: () => onSelectPlaceholder(),
+                Icon: ({ className }: { className?: string }) => (
+                  <ServiceIcon
+                    color="brand"
+                    variant="github"
+                    className={className}
+                  />
+                ),
+              }));
+              return items;
+            },
           },
         },
         {
@@ -93,7 +91,7 @@ export default function useTeamCommandPanelConfig({
           subpage: {
             id: "databases",
             title: "Databases",
-            parentPageId: commandPanelTeamRootPage,
+            parentPageId: commandPanelProjectRootPage,
             inputPlaceholder: "Deploy a database...",
             items: [
               {
@@ -166,7 +164,7 @@ export default function useTeamCommandPanelConfig({
           subpage: {
             id: "templates",
             title: "Templates",
-            parentPageId: commandPanelTeamRootPage,
+            parentPageId: commandPanelProjectRootPage,
             inputPlaceholder: "Deploy a template...",
             items: [
               {
@@ -306,7 +304,7 @@ export default function useTeamCommandPanelConfig({
 
   const goToParentPage = useCallback(
     (e?: KeyboardEvent) => {
-      if (currentPage.id === commandPanelTeamRootPage) {
+      if (currentPage.id === commandPanelProjectRootPage) {
         return;
       }
       if (currentPage.parentPageId === null) return;

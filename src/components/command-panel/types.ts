@@ -6,7 +6,7 @@ export type TCommandPanelPage = {
   parentPageId: string | null;
   inputPlaceholder: string;
 } & (
-  | { items: TCommandPanelItems; getItems?: never }
+  | { items: TCommandPanelItem[]; getItems?: never }
   | {
       getItems: ({
         teamId,
@@ -18,8 +18,6 @@ export type TCommandPanelPage = {
       items?: never;
     }
 );
-
-export type TCommandPanelItems = TCommandPanelItem[];
 
 export type TCommandPanelItem = {
   title: string;
