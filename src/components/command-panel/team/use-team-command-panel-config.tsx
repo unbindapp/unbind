@@ -7,12 +7,7 @@ import { findCommandPanelPage } from "@/components/command-panel/helpers";
 import { TCommandPanelPage } from "@/components/command-panel/types";
 import ServiceIcon from "@/components/icons/service";
 import { api } from "@/server/trpc/setup/client";
-import {
-  BlocksIcon,
-  DatabaseIcon,
-  FolderClosedIcon,
-  FolderPlusIcon,
-} from "lucide-react";
+import { BlocksIcon, DatabaseIcon, FolderPlusIcon } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
 import { useCallback, useMemo, useRef } from "react";
 import { toast } from "sonner";
@@ -30,8 +25,8 @@ export default function useTeamCommandPanelConfig({
   const timeout = useRef<NodeJS.Timeout | null>(null);
 
   const onSelectPlaceholder = useCallback(() => {
-    toast.success("Successful (Fake)", {
-      description: "Imagine this working...",
+    toast.success("Successful", {
+      description: "This is fake.",
       duration: 3000,
       closeButton: false,
     });

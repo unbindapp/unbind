@@ -4,13 +4,26 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
-import { ArrowRightIcon, CheckIcon, ChevronDownIcon } from "lucide-react";
+import {
+  ArrowRightIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  PlusIcon,
+} from "lucide-react";
 import { usePathname } from "next/navigation";
-import { ComponentProps, FC, useEffect, useState } from "react";
+import {
+  ComponentProps,
+  Dispatch,
+  FC,
+  SetStateAction,
+  useEffect,
+  useState,
+} from "react";
 import { useIsMounted, useWindowSize } from "usehooks-ts";
 
 type Item<T> = T & { id: string; title: string };
@@ -21,9 +34,12 @@ type Props<T> = {
   items: Item<T>[] | undefined;
   onSelect: (id: string) => void;
   getHrefForId: (id: string) => string | null;
-  IconItem?: FC<{ id: string }>;
+  IconItem?: FC<{ id: string; className?: string }>;
   flipChevronOnSm?: boolean;
-};
+} & (
+  | { newItemTitle: string; onSelectNewItem: () => void }
+  | { newItemTitle?: undefined; onSelectNewItem?: undefined }
+);
 
 export function BreadcrumbItem<T>({
   title,
@@ -33,6 +49,8 @@ export function BreadcrumbItem<T>({
   getHrefForId,
   IconItem,
   flipChevronOnSm,
+  newItemTitle,
+  onSelectNewItem,
 }: Props<T>) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -65,46 +83,33 @@ export function BreadcrumbItem<T>({
             const href = getHrefForId(i.id);
             const showArrow = href !== null && pathname !== href;
             return (
-              <Button
-                onClick={() => {
-                  setOpen(false);
-                  onSelect(i.id);
-                }}
-                data-last-hovered={
-                  lastHoveredItem?.id === i.id ? true : undefined
-                }
-                onMouseEnter={() => setLastHoveredItem(i)}
-                onTouchStart={() => setLastHoveredItem(i)}
+              <SheetItem
+                item={i}
                 key={i.id + index}
-                data-show-arrow={showArrow ? true : undefined}
-                variant="ghost"
-                className="w-full data-[last-hovered]:bg-border group-has-[*[data-highlighted]]/list:bg-transparent group-has-[*[data-highlighted]]/list:data-[highlighted]:bg-border 
-                text-left px-3 py-3.5 rounded-lg font-medium flex items-center justify-between gap-3 group/item cursor-default"
-              >
-                <div className="flex-1 min-w-0 flex items-center gap-2.5">
-                  {IconItem && <IconItem id={i.id} />}
-                  <p className="shrink min-w-0">{i.title}</p>
-                </div>
-                <div className="size-5 -mr-0.5 relative">
-                  {selectedItem?.id === i.id && (
-                    <>
-                      <CheckIcon
-                        className="size-full group-data-[show-arrow]/item:group-data-[highlighted]/item:opacity-0 
-                        group-data-[show-arrow]/item:group-data-[highlighted]/item:rotate-90 transition"
-                        strokeWidth={2.5}
-                      />
-                      <ArrowRightIcon
-                        className="absolute left-0 top-0 opacity-0 -rotate-90 size-full 
-                        group-data-[show-arrow]/item:group-data-[highlighted]/item:opacity-100
-                        group-data-[show-arrow]/item:group-data-[highlighted]/item:rotate-0 transition"
-                        strokeWidth={2.5}
-                      />
-                    </>
-                  )}
-                </div>
-              </Button>
+                onSelect={onSelect}
+                setOpen={setOpen}
+                selectedItem={selectedItem}
+                lastHoveredItem={lastHoveredItem}
+                setLastHoveredItem={setLastHoveredItem}
+                IconItem={IconItem}
+                showArrow={showArrow}
+              />
             );
           })}
+          {newItemTitle && (
+            <>
+              <div className="w-full bg-border h-px rounded-full my-1 shrink-0 pointer-events-none" />
+              <SheetItem
+                item={{ id: "new", title: newItemTitle } as Item<T>}
+                onSelect={onSelectNewItem}
+                setOpen={setOpen}
+                selectedItem={selectedItem}
+                lastHoveredItem={lastHoveredItem}
+                setLastHoveredItem={setLastHoveredItem}
+                IconItem={PlusIcon}
+              />
+            </>
+          )}
         </div>
       </BottomDrawer>
     );
@@ -130,44 +135,147 @@ export function BreadcrumbItem<T>({
             const href = getHrefForId(i.id);
             const showArrow = href !== null && pathname !== href;
             return (
-              <DropdownMenuItem
-                onSelect={() => {
-                  setOpen(false);
-                  onSelect(i.id);
-                }}
+              <DropdownItem
+                item={i}
                 key={i.id + index}
-                data-show-arrow={showArrow ? true : undefined}
-                data-last-hovered={
-                  lastHoveredItem?.id === i.id ? true : undefined
-                }
-                className="justify-between group/item data-[last-hovered]:bg-border group-has-[*[data-highlighted]]/list:bg-transparent group-has-[*[data-highlighted]]/list:data-[highlighted]:bg-border"
-                onMouseEnter={() => setLastHoveredItem(i)}
-                onTouchStart={() => setLastHoveredItem(i)}
-              >
-                <div className="flex-1 min-w-0 flex items-center gap-2.5">
-                  {IconItem && <IconItem id={i.id} />}
-                  <p className="shrink min-w-0">{i.title}</p>
-                </div>
-                <div className="size-4 -mr-0.5 relative group-data-[show-arrow]/item:group-data-[highlighted]/item:rotate-90 transition-transform">
-                  {selectedItem?.id === i.id && (
-                    <>
-                      <CheckIcon
-                        className="size-full group-data-[show-arrow]/item:group-data-[highlighted]/item:opacity-0 transition-opacity"
-                        strokeWidth={3}
-                      />
-                      <ArrowRightIcon
-                        className="absolute left-0 top-0 opacity-0 -rotate-90 size-full group-data-[show-arrow]/item:group-data-[highlighted]/item:opacity-100 transition-opacity"
-                        strokeWidth={2.5}
-                      />
-                    </>
-                  )}
-                </div>
-              </DropdownMenuItem>
+                onSelect={onSelect}
+                setOpen={setOpen}
+                selectedItem={selectedItem}
+                lastHoveredItem={lastHoveredItem}
+                setLastHoveredItem={setLastHoveredItem}
+                IconItem={IconItem}
+                showArrow={showArrow}
+              />
             );
           })}
+          {newItemTitle && (
+            <>
+              <DropdownMenuSeparator className="my-1" />
+              <DropdownItem
+                item={{ id: "new", title: newItemTitle } as Item<T>}
+                onSelect={onSelectNewItem}
+                setOpen={setOpen}
+                selectedItem={selectedItem}
+                lastHoveredItem={lastHoveredItem}
+                setLastHoveredItem={setLastHoveredItem}
+                IconItem={PlusIcon}
+              />
+            </>
+          )}
         </ScrollArea>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+function SheetItem<T>({
+  item,
+  selectedItem,
+  setOpen,
+  onSelect,
+  lastHoveredItem,
+  setLastHoveredItem,
+  showArrow,
+  IconItem,
+}: {
+  item: Item<T>;
+  selectedItem: Item<T> | undefined;
+  setOpen: (open: boolean) => void;
+  onSelect: (id: string) => void;
+  lastHoveredItem: Item<T> | undefined;
+  setLastHoveredItem: Dispatch<SetStateAction<Item<T> | undefined>>;
+  showArrow?: boolean;
+  IconItem?: FC<{ id: string; className?: string }>;
+}) {
+  return (
+    <Button
+      onClick={() => {
+        setOpen(false);
+        onSelect(item.id);
+      }}
+      data-last-hovered={lastHoveredItem?.id === item.id ? true : undefined}
+      onMouseEnter={() => setLastHoveredItem(item)}
+      onTouchStart={() => setLastHoveredItem(item)}
+      data-show-arrow={showArrow ? true : undefined}
+      variant="ghost"
+      className="w-full data-[last-hovered]:bg-border group-has-[*[data-highlighted]]/list:bg-transparent group-has-[*[data-highlighted]]/list:data-[highlighted]:bg-border 
+      text-left px-3 py-3.5 rounded-lg font-medium flex items-center justify-between gap-3 group/item cursor-default"
+    >
+      <div className="flex-1 min-w-0 flex items-center gap-1.5">
+        {IconItem && <IconItem id={item.id} className="-my-1 size-5 -ml-1" />}
+        <p className="shrink min-w-0">{item.title}</p>
+      </div>
+      <div className="size-5 -mr-0.5 relative">
+        {selectedItem?.id === item.id && (
+          <>
+            <CheckIcon
+              className="size-full group-data-[show-arrow]/item:group-data-[highlighted]/item:opacity-0 
+              group-data-[show-arrow]/item:group-data-[highlighted]/item:rotate-90 transition"
+              strokeWidth={2.5}
+            />
+            <ArrowRightIcon
+              className="absolute left-0 top-0 opacity-0 -rotate-90 size-full 
+              group-data-[show-arrow]/item:group-data-[highlighted]/item:opacity-100
+              group-data-[show-arrow]/item:group-data-[highlighted]/item:rotate-0 transition"
+              strokeWidth={2.5}
+            />
+          </>
+        )}
+      </div>
+    </Button>
+  );
+}
+
+function DropdownItem<T>({
+  item,
+  selectedItem,
+  setOpen,
+  onSelect,
+  lastHoveredItem,
+  setLastHoveredItem,
+  showArrow,
+  IconItem,
+}: {
+  item: Item<T>;
+  selectedItem: Item<T> | undefined;
+  setOpen: (open: boolean) => void;
+  onSelect: (id: string) => void;
+  lastHoveredItem: Item<T> | undefined;
+  setLastHoveredItem: Dispatch<SetStateAction<Item<T> | undefined>>;
+  showArrow?: boolean;
+  IconItem?: FC<{ id: string; className?: string }>;
+}) {
+  return (
+    <DropdownMenuItem
+      onSelect={() => {
+        setOpen(false);
+        onSelect(item.id);
+      }}
+      data-show-arrow={showArrow ? true : undefined}
+      data-last-hovered={lastHoveredItem?.id === item.id ? true : undefined}
+      className="justify-between group/item data-[last-hovered]:bg-border group-has-[*[data-highlighted]]/list:bg-transparent group-has-[*[data-highlighted]]/list:data-[highlighted]:bg-border"
+      onMouseEnter={() => setLastHoveredItem(item)}
+      onTouchStart={() => setLastHoveredItem(item)}
+    >
+      <div className="flex-1 min-w-0 flex items-center gap-1.5">
+        {IconItem && <IconItem id={item.id} className="-my-1 size-4 -ml-0.5" />}
+        <p className="shrink min-w-0">{item.title}</p>
+      </div>
+      <div className="size-4 -mr-0.5 relative group-data-[show-arrow]/item:group-data-[highlighted]/item:rotate-90 transition-transform">
+        {selectedItem?.id === item.id && (
+          <>
+            <CheckIcon
+              className="size-full group-data-[show-arrow]/item:group-data-[highlighted]/item:opacity-0 transition-opacity"
+              strokeWidth={3}
+            />
+            <ArrowRightIcon
+              className="absolute left-0 top-0 opacity-0 -rotate-90 size-full group-data-[show-arrow]/item:group-data-[highlighted]/item:opacity-100 transition-opacity"
+              strokeWidth={2.5}
+            />
+          </>
+        )}
+      </div>
+    </DropdownMenuItem>
   );
 }
 
@@ -179,7 +287,7 @@ function Trigger<T>({
   ...rest
 }: ComponentProps<"button"> & {
   item?: Item<T>;
-  Icon?: FC<{ id: string; className?: string }>;
+  Icon?: FC<{ id: string; className: string }>;
   flipChevronOnSm?: boolean;
 }) {
   return (

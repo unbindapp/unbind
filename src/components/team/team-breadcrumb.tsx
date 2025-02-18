@@ -6,6 +6,7 @@ import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { api } from "@/server/trpc/setup/client";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 type Props = {
   className?: string;
@@ -49,6 +50,13 @@ export default function TeamBreadcrumb({ className }: Props) {
         items={teamData?.teams}
         onSelect={onTeamIdSelect}
         getHrefForId={getHrefForTeamId}
+        newItemTitle="New Team"
+        onSelectNewItem={() =>
+          toast.success("New team created", {
+            description: "This is fake.",
+            duration: 3000,
+          })
+        }
       />
     </BreadcrumbWrapper>
   );

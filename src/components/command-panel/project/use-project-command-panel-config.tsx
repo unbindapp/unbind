@@ -25,8 +25,8 @@ export default function useProjectCommandPanelConfig({
   const timeout = useRef<NodeJS.Timeout | null>(null);
 
   const onSelectPlaceholder = useCallback(() => {
-    toast.success("Successful (Fake)", {
-      description: "Imagine this working...",
+    toast.success("Successful", {
+      description: "This is fake.",
       duration: 3000,
       closeButton: false,
     });
