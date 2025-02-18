@@ -35,20 +35,20 @@ export default function ProjectCard({ project, className }: Props) {
                 : "No services"}
             </p>
             {groupedServices.length > 0 && (
-              <div className="flex items-center gap-1 -mr-1">
+              <div className="flex items-center gap-1 -mr-1 -my-2">
                 {groupedServices
                   .slice(0, iconLenght)
                   .map((g) =>
                     g.group ? (
                       <ServiceIcon
-                        className="size-6"
+                        className="size-5"
                         key={g.group.id}
                         variant={g.group.type}
                       />
                     ) : (
                       g.services.map((s) => (
                         <ServiceIcon
-                          className="size-6"
+                          className="size-5"
                           key={s.id}
                           variant={s.type}
                         />
@@ -56,7 +56,7 @@ export default function ProjectCard({ project, className }: Props) {
                     )
                   )}
                 {groupedServices.length > iconLenght && (
-                  <EllipsisIcon className="size-6" />
+                  <EllipsisIcon className="size-5" />
                 )}
               </div>
             )}

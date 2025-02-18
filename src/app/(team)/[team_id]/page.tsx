@@ -1,3 +1,4 @@
+import NewProjectButton from "@/components/command-panel/team/new-project-button";
 import ProjectCardList from "@/components/team/project-card-list";
 import { apiServer, HydrateClient } from "@/server/trpc/setup/server";
 import { Metadata } from "next";
@@ -16,10 +17,11 @@ export default async function Page({ params }: Props) {
     <HydrateClient>
       <div className="w-full flex flex-col items-center px-3 md:px-8 pt-5 md:pt-7 pb-16">
         <div className="w-full flex flex-col max-w-5xl">
-          <div className="w-full flex items-center justify-between pl-3 pr-1 gap-4">
-            <h1 className="flex-1 min-w-0 font-bold leading-tight text-2xl">
+          <div className="w-full flex flex-wrap items-center justify-between gap-4 px-1">
+            <h1 className="min-w-0 font-bold leading-tight text-2xl px-2">
               Projects
             </h1>
+            <NewProjectButton teamId={teamId} />
           </div>
           <div className="w-full flex items-center justify-center pt-3">
             <ProjectCardList teamId={teamId} />

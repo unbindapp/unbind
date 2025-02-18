@@ -6,4 +6,5 @@ export const commandPanelProjectFromList = "project_from_list";
 export const commandPanelProjectRootPage = "new_service";
 
 export const commandPanelTeam = "team";
+export const commandPanelTeamFromList = "team_from_list";
 export const commandPanelTeamRootPage = "new_project";
