@@ -55,6 +55,7 @@ export default function TeamBreadcrumb({ className }: Props) {
           toast.success("New team created", {
             description: "This is fake.",
             duration: 3000,
+            closeButton: false,
           })
         }
       />

@@ -103,6 +103,7 @@ export default function ProjectBreadcrumb({ className }: Props) {
           toast.success("New project created", {
             description: "This is fake.",
             duration: 3000,
+            closeButton: false,
           })
         }
       />
@@ -119,6 +120,7 @@ export default function ProjectBreadcrumb({ className }: Props) {
           toast.success("New environment created", {
             description: "This is fake.",
             duration: 3000,
+            closeButton: false,
           })
         }
       />
