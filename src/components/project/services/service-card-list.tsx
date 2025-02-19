@@ -83,16 +83,8 @@ export default function ServiceCardList({
             return (
               <div key={g.group.id} className="w-full px-1 pb-1 pt-1">
                 <div
-                  style={{
-                    backgroundImage: `repeating-linear-gradient(
-                      135deg,
-                      hsl(var(--border)/0.3),
-                      hsl(var(--border)/0.3) 2px,
-                      transparent 2px,
-                      transparent 6px
-                    )`,
-                  }}
-                  className="w-full flex flex-col rounded-xl border p-1"
+                  className="w-full flex flex-col rounded-xl border p-1 
+                  bg-[repeating-linear-gradient(135deg,hsl(var(--border)/0.3)_0px,hsl(var(--border)/0.3)_2px,transparent_2px,transparent_6px)]"
                 >
                   <div className="w-full px-3 pt-2 pb-2.5 leading-tight font-semibold flex items-center gap-2">
                     <ServiceIcon variant={g.group.type} className="size-6" />

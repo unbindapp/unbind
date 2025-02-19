@@ -178,7 +178,7 @@ function CommandPanel({
       value={value}
       onValueChange={setValue}
       variant="modal"
-      className="w-full rounded-xl h-108 max-h-[calc(100vh-(100vh-3rem)*0.1-7rem)] border shadow-xl shadow-shadow/[var(--opacity-shadow)]"
+      className="w-full rounded-xl h-108 max-h-[min(calc(100vh-(100vh-3rem)*0.1-7rem),50vh)] sm:max-h-[calc(100vh-(100vh-3rem)*0.1-7rem)] border shadow-xl shadow-shadow/[var(--opacity-shadow)]"
     >
       <Input
         useCommandPanelItems={useCommandPanelItems}

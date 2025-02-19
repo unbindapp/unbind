@@ -16,7 +16,10 @@ export default function LastDeploymentTime({ service }: Props) {
   });
 
   return (
-    <p className="shrink min-w-0 font-medium overflow-hidden overflow-ellipsis whitespace-nowrap text-sm">
+    <p
+      suppressHydrationWarning
+      className="shrink min-w-0 font-medium overflow-hidden overflow-ellipsis whitespace-nowrap text-sm"
+    >
       {!service.lastDeployment || !timeDiffStr
         ? "No deployments yet"
         : `${timeDiffStr} via ${sourceToTitle[service.lastDeployment.source]}`}

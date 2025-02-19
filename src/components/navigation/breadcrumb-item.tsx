@@ -107,6 +107,7 @@ export function BreadcrumbItem<T>({
                 lastHoveredItem={lastHoveredItem}
                 setLastHoveredItem={setLastHoveredItem}
                 IconItem={PlusIcon}
+                className="text-muted-foreground data-[highlighted]:text-foreground data-[last-hovered]:text-foreground"
               />
             </>
           )}
@@ -159,6 +160,7 @@ export function BreadcrumbItem<T>({
                 lastHoveredItem={lastHoveredItem}
                 setLastHoveredItem={setLastHoveredItem}
                 IconItem={PlusIcon}
+                className="text-muted-foreground data-[highlighted]:text-foreground data-[last-hovered]:text-foreground"
               />
             </>
           )}
@@ -177,6 +179,7 @@ function SheetItem<T>({
   setLastHoveredItem,
   showArrow,
   IconItem,
+  className,
 }: {
   item: Item<T>;
   selectedItem: Item<T> | undefined;
@@ -186,6 +189,7 @@ function SheetItem<T>({
   setLastHoveredItem: Dispatch<SetStateAction<Item<T> | undefined>>;
   showArrow?: boolean;
   IconItem?: FC<{ id: string; className?: string }>;
+  className?: string;
 }) {
   return (
     <Button
@@ -198,8 +202,10 @@ function SheetItem<T>({
       onTouchStart={() => setLastHoveredItem(item)}
       data-show-arrow={showArrow ? true : undefined}
       variant="ghost"
-      className="w-full data-[last-hovered]:bg-border group-has-[*[data-highlighted]]/list:bg-transparent group-has-[*[data-highlighted]]/list:data-[highlighted]:bg-border 
-      text-left px-3 py-3.5 rounded-lg font-medium flex items-center justify-between gap-3 group/item cursor-default"
+      className={cn(
+        "w-full data-[last-hovered]:bg-border group-has-[*[data-highlighted]]/list:bg-transparent group-has-[*[data-highlighted]]/list:data-[highlighted]:bg-border text-left px-3 py-3.5 rounded-lg font-medium flex items-center justify-between gap-3 group/item cursor-default data-[highlighted]:text-foreground",
+        className
+      )}
     >
       <div className="flex-1 min-w-0 flex items-center gap-1.5">
         {IconItem && <IconItem id={item.id} className="-my-1 size-5 -ml-1" />}
@@ -235,6 +241,7 @@ function DropdownItem<T>({
   setLastHoveredItem,
   showArrow,
   IconItem,
+  className,
 }: {
   item: Item<T>;
   selectedItem: Item<T> | undefined;
@@ -244,6 +251,7 @@ function DropdownItem<T>({
   setLastHoveredItem: Dispatch<SetStateAction<Item<T> | undefined>>;
   showArrow?: boolean;
   IconItem?: FC<{ id: string; className?: string }>;
+  className?: string;
 }) {
   return (
     <DropdownMenuItem
@@ -253,15 +261,20 @@ function DropdownItem<T>({
       }}
       data-show-arrow={showArrow ? true : undefined}
       data-last-hovered={lastHoveredItem?.id === item.id ? true : undefined}
-      className="justify-between group/item data-[last-hovered]:bg-border group-has-[*[data-highlighted]]/list:bg-transparent group-has-[*[data-highlighted]]/list:data-[highlighted]:bg-border"
+      className={cn(
+        "justify-between group/item data-[last-hovered]:bg-border group-has-[*[data-highlighted]]/list:bg-transparent group-has-[*[data-highlighted]]/list:data-[highlighted]:bg-border",
+        className
+      )}
       onMouseEnter={() => setLastHoveredItem(item)}
       onTouchStart={() => setLastHoveredItem(item)}
     >
       <div className="flex-1 min-w-0 flex items-center gap-1.5">
-        {IconItem && <IconItem id={item.id} className="-my-1 size-4 -ml-0.5" />}
+        {IconItem && (
+          <IconItem id={item.id} className="-my-1 size-4.5 -ml-0.5" />
+        )}
         <p className="shrink min-w-0">{item.title}</p>
       </div>
-      <div className="size-4 -mr-0.5 relative group-data-[show-arrow]/item:group-data-[highlighted]/item:rotate-90 transition-transform">
+      <div className="size-4.5 -mr-0.5 relative group-data-[show-arrow]/item:group-data-[highlighted]/item:rotate-90 transition-transform">
         {selectedItem?.id === item.id && (
           <>
             <CheckIcon
