@@ -96,9 +96,8 @@ function LogLine({
       data-level={logLine.level}
       className="w-full flex items-stretch text-xs group/line py-px 
       data-[first]:pt-2 data-[last]:pb-[calc(1rem)]
-      sm:data-[first]:pt-3 sm:data-[last]:pb-[calc(1.5rem+var(--safe-area-inset-bottom))]
-      md:data-[first]:pt-4
-      data-[last]:animate-in data-[last]:fade-in data-[last]:transition-opacity data-[last]:duration-300"
+      sm:data-[first]:pt-3 sm:data-[last]:pb-[calc(1.5rem+var(--safe-area-inset-bottom))] md:data-[first]:pt-4
+      data-[last]:animate-in data-[last]:fade-in data-[last]:transition-opacity data-[last]:duration-150"
     >
       <div className="px-3 sm:px-4 md:px-5.5 py-1 w-full flex items-stretch bg-transparent group-data-[level=warn]/line:bg-warning/10 group-data-[level=error]/line:bg-destructive/10">
         <div className="self-stretch flex pr-1.5 shrink-0">
