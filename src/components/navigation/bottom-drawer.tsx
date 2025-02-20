@@ -17,6 +17,10 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   classNameContent?: string;
   children: ReactNode;
+  hideHeader?: boolean;
+  noScrollArea?: boolean;
+  dontAutoFocus?: boolean;
+  onEscapeKeyDown?: (e: KeyboardEvent) => void;
 };
 
 export default function BottomDrawer({
@@ -27,23 +31,31 @@ export default function BottomDrawer({
   onOpenChange,
   classNameContent,
   children,
+  hideHeader,
+  noScrollArea,
+  dontAutoFocus,
+  onEscapeKeyDown,
 }: Props) {
   return (
     <Drawer
-      autoFocus={open}
+      autoFocus={dontAutoFocus ? false : open}
       open={open}
       onOpenChange={onOpenChange}
       direction="bottom"
     >
       <DrawerTrigger asChild>{Trigger}</DrawerTrigger>
       <DrawerContent
+        onEscapeKeyDown={onEscapeKeyDown}
         className={cn(
-          "h-[calc(min(26.5rem,calc(100vh-4rem)))]",
+          "h-[calc(min(26.5rem,calc(100svh-4rem)))]",
           classNameContent
         )}
         hasHandle
       >
-        <div className="w-full flex items-center justify-start gap-1 border-b">
+        <div
+          data-hide-header={hideHeader ? true : undefined}
+          className="w-full flex items-center justify-start gap-1 border-b data-[hide-header]:sr-only"
+        >
           <DrawerHeader className="flex-1 px-0 py-3 min-w-0 flex items-center justify-start">
             {Icon && <Icon className="size-7 sm:size-8 -ml-1 -my-2" />}
             <DrawerTitle className="pl-5 min-w-0 gap-2.5 whitespace-nowrap overflow-hidden overflow-ellipsis shrink leading-tight text-xl sm:text-2xl text-left">
@@ -51,14 +63,32 @@ export default function BottomDrawer({
             </DrawerTitle>
           </DrawerHeader>
         </div>
-        <div className="w-full flex flex-col min-h-0 flex-1">
-          <div className="flex flex-col flex-1 min-h-0">
-            <ScrollArea className="pb-[var(--safe-area-inset-bottom)]">
-              {children}
-            </ScrollArea>
-          </div>
-        </div>
+        <ConditionalScrollWrapper noScrollArea={noScrollArea}>
+          {children}
+        </ConditionalScrollWrapper>
       </DrawerContent>
     </Drawer>
+  );
+}
+
+function ConditionalScrollWrapper({
+  noScrollArea,
+  children,
+}: {
+  noScrollArea?: boolean;
+  children: ReactNode;
+}) {
+  if (noScrollArea) {
+    return children;
+  }
+
+  return (
+    <div className="w-full flex flex-col min-h-0 flex-1">
+      <div className="flex flex-col flex-1 min-h-0">
+        <ScrollArea className="pb-[var(--safe-area-inset-bottom)]">
+          {children}
+        </ScrollArea>
+      </div>
+    </div>
   );
 }

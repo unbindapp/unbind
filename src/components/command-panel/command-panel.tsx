@@ -7,6 +7,8 @@ import {
   TCommandPanelPage,
 } from "@/components/command-panel/types";
 import ErrorCard from "@/components/error-card";
+import KeyboardShortcut from "@/components/keyboard-shortcut";
+import BottomDrawer from "@/components/navigation/bottom-drawer";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -25,6 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DialogDescription } from "@radix-ui/react-dialog";
+import { cva, VariantProps } from "class-variance-authority";
 import { useCommandState } from "cmdk";
 import { ChevronLeftIcon, ChevronRightIcon, LoaderIcon } from "lucide-react";
 import {
@@ -37,6 +40,7 @@ import {
   useState,
 } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useWindowSize } from "usehooks-ts";
 
 type Props = {
   open: boolean;
@@ -59,6 +63,48 @@ export function CommandPanelTrigger({
   title,
   description,
 }: Props & CommandPanelProps) {
+  const { width } = useWindowSize();
+  const isSmall = width !== undefined ? width < 640 : false;
+
+  const onEscapeKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (currentPage.id === null) return;
+      if (rootPage.id !== currentPage.id) {
+        e.preventDefault();
+      }
+    },
+    [currentPage, rootPage]
+  );
+
+  if (isSmall) {
+    return (
+      <BottomDrawer
+        title="Command Panel"
+        hideHeader
+        Trigger={children}
+        open={open}
+        onOpenChange={setOpen}
+        classNameContent="h-[calc(100svh-4rem)]"
+        noScrollArea
+        dontAutoFocus
+        onEscapeKeyDown={onEscapeKeyDown}
+      >
+        <div className="w-full flex flex-col flex-1 min-h-0 overflow-hidden pb-[var(--safe-area-inset-bottom)]">
+          <CommandPanel
+            rootPage={rootPage}
+            allPageIds={allPageIds}
+            setCurrentPageId={setCurrentPageId}
+            currentPage={currentPage}
+            goToParentPage={goToParentPage}
+            useCommandPanelItems={useCommandPanelItems}
+            variant="no-wrapper"
+            className="rounded-2xl"
+          />
+        </div>
+      </BottomDrawer>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
@@ -75,12 +121,7 @@ export function CommandPanelTrigger({
           // @ts-expect-error this is a valid call
           focusable.focus?.();
         }}
-        onEscapeKeyDown={(e) => {
-          if (currentPage.id === null) return;
-          if (rootPage.id !== currentPage.id) {
-            e.preventDefault();
-          }
-        }}
+        onEscapeKeyDown={onEscapeKeyDown}
         variant="styleless"
         className="w-112"
       >
@@ -112,6 +153,19 @@ type TUseCommandPanelItems = () => {
 
 type TSetCurrentPageId = (id: string) => void;
 
+const commandPanelVariants = cva("w-full", {
+  variants: {
+    variant: {
+      default:
+        "rounded-xl h-108 max-h-[min(calc(100vh-(100vh-3rem)*0.1-7rem),50vh)] sm:max-h-[calc(100vh-(100vh-3rem)*0.1-7rem)] border shadow-xl shadow-shadow/[var(--opacity-shadow)]",
+      "no-wrapper": "",
+    },
+  },
+  defaultVariants: {
+    variant: "default",
+  },
+});
+
 type CommandPanelProps = {
   currentPage: TCommandPanelPage;
   goToParentPage: (e?: KeyboardEvent) => void;
@@ -119,7 +173,10 @@ type CommandPanelProps = {
   rootPage: TCommandPanelPage;
   allPageIds: string[];
   setCurrentPageId: TSetCurrentPageId;
-};
+  className?: string;
+} & TCommandPanelVariants;
+
+type TCommandPanelVariants = VariantProps<typeof commandPanelVariants>;
 
 function CommandPanel({
   currentPage,
@@ -128,6 +185,8 @@ function CommandPanel({
   rootPage,
   allPageIds,
   setCurrentPageId,
+  variant,
+  className,
 }: CommandPanelProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -178,7 +237,10 @@ function CommandPanel({
       value={value}
       onValueChange={setValue}
       variant="modal"
-      className="w-full rounded-xl h-108 max-h-[min(calc(100vh-(100vh-3rem)*0.1-7rem),50vh)] sm:max-h-[calc(100vh-(100vh-3rem)*0.1-7rem)] border shadow-xl shadow-shadow/[var(--opacity-shadow)]"
+      className={commandPanelVariants({
+        variant,
+        className,
+      })}
     >
       <Input
         useCommandPanelItems={useCommandPanelItems}
@@ -291,7 +353,7 @@ function Footer({
 
   return (
     <div className="w-full z-10 p-1 flex items-center justify-between border-t text-muted-foreground gap-2">
-      <p className="shrink-[2] text-sm font-medium px-3 py-2 min-w-0 overflow-hidden overflow-ellipsis whitespace-nowrap">
+      <p className="shrink-[2] text-base sm:text-sm font-medium px-3 py-2 min-w-0 overflow-hidden overflow-ellipsis whitespace-nowrap">
         {currentPage.title}
       </p>
       {currentPage.id !== rootPage.id && (
@@ -306,20 +368,15 @@ function Footer({
           type="submit"
           size="sm"
           variant="ghost"
-          className="rounded-lg shrink min-w-0 px-3 py-2 font-semibold gap-1"
+          className="rounded-lg shrink min-w-0 px-3 py-2 font-semibold gap-1 text-base sm:text-sm"
         >
-          <ChevronLeftIcon className="size-4.5 shrink-0 -ml-1.75" />
+          <ChevronLeftIcon className="size-5 sm:size-4.5 shrink-0 -ml-1.75" />
           <p className="shrink min-w-0 overflow-hidden overflow-ellipsis whitespace-nowrap">
             Back
           </p>
-          <div className="-my-1 shrink-0 -mr-1 pl-1.25">
-            <div
-              className="text-xxs ring-1 ring-border rounded px-1.5 py-1.25 
-              leading-none bg-background-hover"
-            >
-              esc
-            </div>
-          </div>
+          <KeyboardShortcut className="-my-1 -mr-1 pl-1.25">
+            esc
+          </KeyboardShortcut>
         </Button>
       )}
     </div>
@@ -403,7 +460,7 @@ function Item({
       data-placeholder={isPlaceholder ? true : undefined}
       value={item.title}
       keywords={item.keywords}
-      className="px-3.5 font-medium group/item data-[placeholder]:text-transparent py-3 flex flex-row w-full items-center justify-between text-left gap-6"
+      className="px-3.5 font-medium group/item active:bg-border data-[placeholder]:text-transparent py-3 flex flex-row w-full items-center justify-between text-left gap-6"
       onSelect={onSelect}
     >
       <div className="flex-1 min-w-0 gap-2.5 flex items-center justify-start">

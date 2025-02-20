@@ -1,4 +1,5 @@
 import AsyncPushProvider from "@/components/providers/async-push-provider";
+import DeviceTypeProvider from "@/components/providers/device-type-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import TimestampProvider from "@/components/providers/timestamp-provider";
 import { TRPCReactProvider } from "@/server/trpc/setup/client";
@@ -15,7 +16,9 @@ export default async function Providers({
         <JotaiProvider>
           <NuqsAdapter>
             <ThemeProvider>
-              <TimestampProvider>{children}</TimestampProvider>
+              <DeviceTypeProvider>
+                <TimestampProvider>{children}</TimestampProvider>
+              </DeviceTypeProvider>
             </ThemeProvider>
           </NuqsAdapter>
         </JotaiProvider>
