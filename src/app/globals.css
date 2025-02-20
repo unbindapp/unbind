@@ -58,6 +58,7 @@ input[type="search"] {
 
 @layer base {
   :root {
+    --safe-area-inset-bottom: env(safe-area-inset-bottom);
     /* This is for dev only to test safe area */
     /* --safe-area-inset-bottom: 34px; */
     --background: 120 35% 95%;
