@@ -7,19 +7,20 @@ import { useInterval } from "usehooks-ts";
 const getRandomLevel = () =>
   Math.random() > 0.06 ? "info" : Math.random() > 0.03 ? "error" : "warn";
 
+const initialData: TLogLine[] = Array.from({ length: 200 }).map((_, i) => {
+  const level = getRandomLevel();
+  return {
+    level,
+    timestamp: Date.now() - i * 1000,
+    message: `This is a fake log message for testing ${level} ${i}`,
+    deploymentId: "deployment-id",
+    serviceId: "service-id",
+  };
+});
+
 export default function TemporaryLogs() {
-  const [logs, setLogs] = useState<TLogLine[]>(
-    Array.from({ length: 200 }).map((_, i) => {
-      const level = getRandomLevel();
-      return {
-        level,
-        timestamp: Date.now(),
-        message: `This is a fake log message for testing ${level} ${i}`,
-        deploymentId: "deployment-id",
-        serviceId: "service-id",
-      };
-    })
-  );
+  const [logs, setLogs] = useState<TLogLine[]>(initialData);
+
   useInterval(() => {
     setLogs((prevLogs) => {
       const level = getRandomLevel();

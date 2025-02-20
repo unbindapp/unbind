@@ -1,14 +1,10 @@
-import { useWindowVirtualizer } from "@tanstack/react-virtual";
-import {
-  ComponentProps,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+"use client";
+
+import { format as fnsFormat } from "date-fns";
+import { ComponentProps, useCallback, useEffect, useState } from "react";
 import { useThrottledCallback } from "use-debounce";
 import { useEventListener } from "usehooks-ts";
-import { format as fnsFormat } from "date-fns";
+import { WindowVirtualizer } from "virtua";
 
 export type TLogLine = {
   level: "info" | "warn" | "error";
@@ -26,79 +22,54 @@ type Props = {
 const FOLLOW_THRESHOLD = 50;
 
 export default function Logs({ logs }: Props) {
-  const documentRef = useRef(document);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const parentRef = useRef<HTMLDivElement>(null);
-  const virtualizer = useWindowVirtualizer({
-    count: logs.length,
-    estimateSize: () => 45,
-  });
-  const virtualItems = virtualizer.getVirtualItems();
   const [follow, setFollow] = useState(true);
+  const [followLocked, setFollowLocked] = useState(false);
 
   useEffect(() => {
     if (!follow) return;
-    virtualizer.scrollToOffset(virtualizer.getTotalSize());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (followLocked) return;
+    const timeout = setTimeout(() =>
+      window.scrollTo(0, document.body.scrollHeight - window.innerHeight)
+    );
+    return () => clearTimeout(timeout);
   }, [logs]);
 
-  const onWheel = useCallback(() => {
+  const onScroll = useCallback(() => {
+    setFollowLocked(true);
     setFollow(false);
 
-    const fullSize = document.body.scrollHeight;
-    const maxScroll = fullSize - window.innerHeight;
-    const scrollOffset = virtualizer.scrollOffset || 0;
-    const distanceToBottom = maxScroll - scrollOffset;
+    const maxScroll = document.body.scrollHeight - window.innerHeight;
+    const distanceToBottom = maxScroll - window.scrollY;
     const isAtBottom = distanceToBottom < FOLLOW_THRESHOLD;
 
     if (!isAtBottom) {
       setFollow(false);
+      setFollowLocked(false);
       return;
     }
     if (isAtBottom) {
       setFollow(true);
-      virtualizer.scrollToOffset(fullSize);
+      setFollowLocked(false);
       return;
     }
-  }, [virtualizer]);
+  }, []);
 
-  const throttledOnWheel = useThrottledCallback(onWheel, 50);
+  const throttledOnScroll = useThrottledCallback(onScroll, 50);
 
-  useEventListener("scroll", throttledOnWheel, documentRef, {
-    passive: true,
-  });
+  useEventListener("scroll", throttledOnScroll);
 
   return (
-    <div ref={containerRef} className="w-full flex flex-col font-mono">
-      <div ref={parentRef} className="w-full overflow-auto">
-        <div
-          style={{
-            height: virtualizer.getTotalSize(),
-          }}
-          className="w-full relative"
-        >
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              transform: `translateY(${virtualItems[0]?.start ?? 0}px)`,
-            }}
-          >
-            {virtualItems.map((virtualItem) => (
-              <LogLine
-                isFirst={virtualItem.index === 0}
-                isLast={virtualItem.index === logs.length - 1}
-                key={virtualItem.key}
-                data-index={virtualItem.index}
-                ref={virtualizer.measureElement}
-                logLine={logs[virtualItem.index]}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
+    <div className="w-full flex flex-col font-mono">
+      <WindowVirtualizer>
+        {logs.map((logLine, index) => (
+          <LogLine
+            isFirst={index === 0}
+            isLast={index === logs.length - 1}
+            key={index}
+            logLine={logLine}
+          />
+        ))}
+      </WindowVirtualizer>
     </div>
   );
 }
@@ -115,6 +86,7 @@ function LogLine({
 } & ComponentProps<"div">) {
   return (
     <div
+      suppressHydrationWarning
       {...rest}
       data-is-first={isFirst ? true : undefined}
       data-is-last={isLast ? true : undefined}
@@ -132,10 +104,15 @@ function LogLine({
           />
         </div>
         <div className="flex-1 flex flex-col sm:flex-row gap-0.5">
-          <p className="font-mono text-muted-foreground px-1 min-w-38 leading-tight">
+          <p
+            suppressHydrationWarning
+            className="font-mono text-muted-foreground px-1 min-w-38 leading-tight"
+          >
             {fnsFormat(logLine.timestamp, "MMM dd, HH:mm:ss")}
           </p>
-          <p className="leading-tight px-1">{logLine.message}</p>
+          <p suppressHydrationWarning className="leading-tight px-1">
+            {logLine.message}
+          </p>
         </div>
       </div>
     </div>
