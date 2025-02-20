@@ -131,7 +131,11 @@ export function BreadcrumbItem<T>({
         className="group/content"
         autoFocus={open}
       >
-        <ScrollArea className="p-1 group/list" noFocusOnViewport>
+        <ScrollArea className="p-1 group/list max-w-64" noFocusOnViewport>
+          <div className="w-full leading-tight text-sm text-muted-foreground gap-1.5 font-medium px-2.5 py-1.25 flex items-center justify-start">
+            <p className="shrink min-w-0">{title}</p>
+          </div>
+          <DropdownMenuSeparator className="my-1" />
           {items?.map((i, index) => {
             const href = getHrefForId(i.id);
             const showArrow = href !== null && pathname !== href;
@@ -208,7 +212,9 @@ function SheetItem<T>({
       )}
     >
       <div className="flex-1 min-w-0 flex items-center gap-1.5">
-        {IconItem && <IconItem id={item.id} className="-my-1 size-5 -ml-1" />}
+        {IconItem && (
+          <IconItem id={item.id} className="-my-1 size-5 -ml-1 shrink-0" />
+        )}
         <p className="shrink min-w-0">{item.title}</p>
       </div>
       <div className="size-5 -mr-0.5 relative">
@@ -270,11 +276,11 @@ function DropdownItem<T>({
     >
       <div className="flex-1 min-w-0 flex items-center gap-1.5">
         {IconItem && (
-          <IconItem id={item.id} className="-my-1 size-4.5 -ml-0.5" />
+          <IconItem id={item.id} className="-my-1 size-4.5 -ml-0.5 shrink-0" />
         )}
         <p className="shrink min-w-0">{item.title}</p>
       </div>
-      <div className="size-4.5 -mr-0.5 relative group-data-[show-arrow]/item:group-data-[highlighted]/item:rotate-90 transition-transform">
+      <div className="size-4.5 shrink-0 -mr-0.5 relative group-data-[show-arrow]/item:group-data-[highlighted]/item:rotate-90 transition-transform">
         {selectedItem?.id === item.id && (
           <>
             <CheckIcon
