@@ -91,14 +91,14 @@ function LogLine({
     <div
       {...rest}
       suppressHydrationWarning
-      data-is-first={isFirst ? true : undefined}
-      data-is-last={isLast ? true : undefined}
+      data-first={isFirst ? true : undefined}
+      data-last={isLast ? true : undefined}
       data-level={logLine.level}
       className="w-full flex items-stretch text-xs group/line py-px 
-      data-[is-first]:pt-2 data-[is-last]:pb-[calc(1rem)]
-      sm:data-[is-first]:pt-3 sm:data-[is-last]:pb-[calc(1.5rem+var(--safe-area-inset-bottom))]
-      md:data-[is-first]:pt-4
-      data-[is-last]:animate-in data-[is-last]:fade-in data-[is-last]:transition-opacity data-[is-last]:duration-300"
+      data-[first]:pt-2 data-[last]:pb-[calc(1rem)]
+      sm:data-[first]:pt-3 sm:data-[last]:pb-[calc(1.5rem+var(--safe-area-inset-bottom))]
+      md:data-[first]:pt-4
+      data-[last]:animate-in data-[last]:fade-in data-[last]:transition-opacity data-[last]:duration-300"
     >
       <div className="px-3 sm:px-4 md:px-5.5 py-1 w-full flex items-stretch bg-transparent group-data-[level=warn]/line:bg-warning/10 group-data-[level=error]/line:bg-destructive/10">
         <div className="self-stretch flex pr-1.5 shrink-0">
