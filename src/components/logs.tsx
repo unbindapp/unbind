@@ -289,12 +289,12 @@ function LogLine({
       data-level={logLine.level}
       className={cn(
         `w-full flex items-stretch text-xs group/line py-px 
-        data-[first]:pt-2 sm:data-[first]:pt-2.5 md:data-[first]:pt-3.5
+        data-[first]:pt-3
         data-[last]:pb-[calc(1rem+var(--safe-area-inset-bottom))] sm:data-[last]:pb-[calc(1.5rem+var(--safe-area-inset-bottom))]`,
         className
       )}
     >
-      <div className="px-3 sm:px-4 md:px-5.5 py-1 w-full flex items-stretch bg-transparent group-data-[level=warn]/line:bg-warning/10 group-data-[level=error]/line:bg-destructive/10">
+      <div className="px-3 sm:px-4 py-1 w-full flex items-stretch bg-transparent group-data-[level=warn]/line:bg-warning/10 group-data-[level=error]/line:bg-destructive/10">
         <div className="self-stretch flex pr-1.5 shrink-0">
           <div
             className="self-stretch w-0.75 rounded-full bg-muted-more-foreground/50 group-data-[level=warn]/line:bg-warning 
