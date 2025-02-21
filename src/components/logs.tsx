@@ -1,6 +1,9 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { cn } from "@/components/ui/utils";
 import { format as fnsFormat } from "date-fns";
+import { ArrowDownIcon, ArrowUpIcon } from "lucide-react";
 import {
   ComponentProps,
   ReactNode,
@@ -28,7 +31,7 @@ type Props = {
   className?: string;
 };
 
-const FOLLOW_THRESHOLD = 50;
+const SCROLL_THRESHOLD = 50;
 
 export default function Logs({ virtualizerType, logs }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -36,22 +39,43 @@ export default function Logs({ virtualizerType, logs }: Props) {
   const [follow, setFollow] = useState(true);
   const prevScrollY = useRef<number | null>(null);
   const [scrolledOnce, setScrolledOnce] = useState(false);
+  const [isAtBottom, setIsAtBottom] = useState(true);
+  const [isAtTop, setIsAtTop] = useState(false);
+
+  const scrollToTop = useCallback(() => {
+    setFollow(false);
+
+    if (virtualizerType === "div") {
+      const listElement = listRef.current;
+      if (!listElement) return;
+      listElement.scrollTo(0);
+      return;
+    }
+
+    window.scrollTo(0, 0);
+  }, [virtualizerType]);
+
+  const scrollToBottom = useCallback(() => {
+    setFollow(true);
+
+    if (virtualizerType === "div") {
+      const listElement = listRef.current;
+      const containerElement = containerRef.current;
+      if (!listElement || !containerElement) return;
+      listElement.scrollTo(
+        listElement.scrollSize - containerElement.clientHeight
+      );
+      return;
+    }
+
+    window.scrollTo(0, document.body.scrollHeight - window.innerHeight);
+  }, [virtualizerType]);
 
   useEffect(() => {
     if (!follow) return;
 
     const timeout = setTimeout(() => {
-      if (virtualizerType === "div") {
-        const listElement = listRef.current;
-        const containerElement = containerRef.current;
-        if (!listElement || !containerElement) return;
-        listElement.scrollTo(
-          listElement.scrollSize - containerElement.clientHeight
-        );
-        return;
-      }
-
-      window.scrollTo(0, document.body.scrollHeight - window.innerHeight);
+      scrollToBottom();
     });
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -70,15 +94,6 @@ export default function Logs({ virtualizerType, logs }: Props) {
         : window.scrollY;
     if (scrollY === undefined) return;
 
-    // If the user scrolls up, stop following and early return
-    if (prevScrollY.current !== null && scrollY < prevScrollY.current) {
-      setFollow(false);
-      prevScrollY.current = scrollY;
-      return;
-    }
-
-    prevScrollY.current = scrollY;
-
     const elementHeight =
       virtualizerType === "div"
         ? containerRef.current?.clientHeight
@@ -93,7 +108,27 @@ export default function Logs({ virtualizerType, logs }: Props) {
 
     const maxScroll = scrollHeight - elementHeight;
     const distanceToBottom = maxScroll - scrollY;
-    const isAtBottom = distanceToBottom < FOLLOW_THRESHOLD;
+    const isAtBottom = distanceToBottom < SCROLL_THRESHOLD;
+    const isAtTop = scrollY < SCROLL_THRESHOLD;
+
+    // If the user scrolls up, stop following and early return
+    if (prevScrollY.current !== null && scrollY < prevScrollY.current) {
+      setFollow(false);
+    }
+
+    prevScrollY.current = scrollY;
+
+    if (isAtBottom) {
+      setIsAtBottom(true);
+    } else {
+      setIsAtBottom(false);
+    }
+
+    if (isAtTop) {
+      setIsAtTop(true);
+    } else {
+      setIsAtTop(false);
+    }
 
     if (!isAtBottom) return false;
     setFollow(true);
@@ -105,6 +140,10 @@ export default function Logs({ virtualizerType, logs }: Props) {
     return (
       <VirtualListDiv
         onScroll={throttledOnScroll}
+        isAtBottom={isAtBottom}
+        isAtTop={isAtTop}
+        scrollToBottom={scrollToBottom}
+        scrollToTop={scrollToTop}
         containerRef={containerRef}
         listRef={listRef}
       >
@@ -121,7 +160,13 @@ export default function Logs({ virtualizerType, logs }: Props) {
   }
 
   return (
-    <VirtualListWindow onScroll={throttledOnScroll}>
+    <VirtualListWindow
+      onScroll={throttledOnScroll}
+      isAtBottom={isAtBottom}
+      isAtTop={isAtTop}
+      scrollToBottom={scrollToBottom}
+      scrollToTop={scrollToTop}
+    >
       {logs.map((logLine, index) => (
         <LogLine
           isFirst={index === 0}
@@ -138,13 +183,17 @@ function VirtualListDiv({
   onScroll,
   containerRef,
   listRef,
+  isAtBottom,
+  isAtTop,
+  scrollToBottom,
+  scrollToTop,
   children,
 }: {
   onScroll: () => void;
   containerRef: Ref<HTMLDivElement>;
   listRef: Ref<VListHandle> | undefined;
   children: ReactNode;
-}) {
+} & ButtonsSectionProps) {
   return (
     <div
       ref={containerRef}
@@ -153,21 +202,87 @@ function VirtualListDiv({
       <VList ref={listRef} onScroll={onScroll}>
         {children}
       </VList>
+      <ButtonsSection
+        className="hidden sm:flex sm:absolute right-3 sm:right-4"
+        isAtBottom={isAtBottom}
+        isAtTop={isAtTop}
+        scrollToBottom={scrollToBottom}
+        scrollToTop={scrollToTop}
+      />
     </div>
   );
 }
 
 function VirtualListWindow({
   onScroll,
+  isAtBottom,
+  isAtTop,
+  scrollToBottom,
+  scrollToTop,
   children,
 }: {
   onScroll: () => void;
   children: ReactNode;
-}) {
+} & ButtonsSectionProps) {
   useEventListener("scroll", onScroll);
   return (
     <div className="w-full flex flex-col font-mono">
       <WindowVirtualizer>{children}</WindowVirtualizer>
+      <ButtonsSection
+        isAtBottom={isAtBottom}
+        isAtTop={isAtTop}
+        scrollToBottom={scrollToBottom}
+        scrollToTop={scrollToTop}
+        className="hidden sm:flex right-3 sm:right-4 bottom-[calc(7rem+var(--safe-area-inset-bottom))] sm:bottom-[calc(1rem+var(--safe-area-inset-bottom))]"
+      />
+    </div>
+  );
+}
+
+type ButtonsSectionProps = {
+  isAtBottom: boolean;
+  isAtTop: boolean;
+  scrollToBottom: () => void;
+  scrollToTop: () => void;
+};
+
+function ButtonsSection({
+  isAtBottom,
+  isAtTop,
+  scrollToBottom,
+  scrollToTop,
+  className,
+}: { className?: string } & ButtonsSectionProps) {
+  return (
+    <div
+      className={cn(
+        "fixed flex flex-col right-4 bottom-[calc(1rem+var(--safe-area-inset-bottom))]",
+        className
+      )}
+    >
+      <Button
+        disabled={isAtTop}
+        data-disabled={isAtTop ? true : undefined}
+        fadeOnDisabled={false}
+        variant="ghost"
+        size="icon"
+        onClick={scrollToTop}
+        className="rounded-lg rounded-b-none bg-background-hover border-t border-l border-r data-[disabled]:text-muted-more-foreground"
+      >
+        <ArrowUpIcon className="size-5" />
+      </Button>
+      <div className="w-full h-px bg-border pointer-events-none" />
+      <Button
+        disabled={isAtBottom}
+        data-disabled={isAtBottom ? true : undefined}
+        fadeOnDisabled={false}
+        variant="ghost"
+        size="icon"
+        onClick={scrollToBottom}
+        className="rounded-lg rounded-t-none bg-background-hover border-b border-l border-r data-[disabled]:text-muted-more-foreground"
+      >
+        <ArrowDownIcon className="size-5" />
+      </Button>
     </div>
   );
 }
