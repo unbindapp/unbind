@@ -3,7 +3,7 @@ import TemporaryLogs from "@/app/(project)/[team_id]/project/[project_id]/enviro
 export default async function Page() {
   return (
     <div className="w-full flex-1 flex flex-col items-center">
-      <TemporaryLogs />
+      <TemporaryLogs containerType="page" />
     </div>
   );
 }

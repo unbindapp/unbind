@@ -6,16 +6,14 @@ import { format as fnsFormat } from "date-fns";
 import { ArrowDownIcon, ArrowUpIcon } from "lucide-react";
 import {
   ComponentProps,
-  ReactNode,
-  Ref,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
 import { useThrottledCallback } from "use-debounce";
-import { useEventListener } from "usehooks-ts";
-import { VList, VListHandle, WindowVirtualizer } from "virtua";
+import { VList, VListHandle } from "virtua";
 
 export type TLogLine = {
   level: "info" | "warn" | "error";
@@ -27,13 +25,13 @@ export type TLogLine = {
 
 type Props = {
   logs: TLogLine[];
-  virtualizerType?: "div" | "window";
+  containerType: "page" | "sheet";
   className?: string;
 };
 
 const SCROLL_THRESHOLD = 50;
 
-export default function Logs({ virtualizerType, logs }: Props) {
+export default function Logs({ logs, containerType }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<VListHandle>(null);
   const follow = useRef(true);
@@ -45,31 +43,22 @@ export default function Logs({ virtualizerType, logs }: Props) {
   const scrollToTop = useCallback(() => {
     follow.current = false;
 
-    if (virtualizerType === "div") {
-      const listElement = listRef.current;
-      if (!listElement) return;
-      listElement.scrollTo(0);
-      return;
-    }
-
-    window.scrollTo(0, 0);
-  }, [virtualizerType]);
+    const listElement = listRef.current;
+    if (!listElement) return;
+    listElement.scrollTo(0);
+    return;
+  }, []);
 
   const scrollToBottom = useCallback(() => {
     follow.current = true;
 
-    if (virtualizerType === "div") {
-      const listElement = listRef.current;
-      const containerElement = containerRef.current;
-      if (!listElement || !containerElement) return;
-      listElement.scrollTo(
-        listElement.scrollSize - containerElement.clientHeight
-      );
-      return;
-    }
-
-    window.scrollTo(0, document.body.scrollHeight - window.innerHeight);
-  }, [virtualizerType]);
+    const listElement = listRef.current;
+    const containerElement = containerRef.current;
+    if (!listElement || !containerElement) return;
+    listElement.scrollTo(
+      listElement.scrollSize - containerElement.clientHeight
+    );
+  }, []);
 
   useEffect(() => {
     if (!follow.current) return;
@@ -88,22 +77,13 @@ export default function Logs({ virtualizerType, logs }: Props) {
       return;
     }
 
-    const scrollY =
-      virtualizerType === "div"
-        ? listRef.current?.scrollOffset
-        : window.scrollY;
+    const scrollY = listRef.current?.scrollOffset;
     if (scrollY === undefined) return;
 
-    const elementHeight =
-      virtualizerType === "div"
-        ? containerRef.current?.clientHeight
-        : window.innerHeight;
+    const elementHeight = containerRef.current?.clientHeight;
     if (elementHeight === undefined) return;
 
-    const scrollHeight =
-      virtualizerType === "div"
-        ? listRef.current?.scrollSize
-        : document.body.scrollHeight;
+    const scrollHeight = listRef.current?.scrollSize;
     if (scrollHeight === undefined) return;
 
     const maxScroll = scrollHeight - elementHeight;
@@ -130,108 +110,48 @@ export default function Logs({ virtualizerType, logs }: Props) {
     } else {
       setIsAtTop(false);
     }
-  }, [virtualizerType, scrolledOnce]);
+  }, []);
 
   const throttledOnScroll = useThrottledCallback(onScroll, 50);
 
-  if (virtualizerType === "div") {
-    return (
-      <VirtualListDiv
-        onScroll={throttledOnScroll}
-        isAtBottom={isAtBottom}
-        isAtTop={isAtTop}
-        scrollToBottom={scrollToBottom}
-        scrollToTop={scrollToTop}
-        containerRef={containerRef}
-        listRef={listRef}
-      >
-        {logs.map((logLine, index) => (
-          <LogLine
-            isFirst={index === 0}
-            isLast={index === logs.length - 1}
-            key={index}
-            logLine={logLine}
-          />
-        ))}
-      </VirtualListDiv>
-    );
-  }
-
-  return (
-    <VirtualListWindow
-      onScroll={throttledOnScroll}
-      isAtBottom={isAtBottom}
-      isAtTop={isAtTop}
-      scrollToBottom={scrollToBottom}
-      scrollToTop={scrollToTop}
-    >
-      {logs.map((logLine, index) => (
+  const elements = useMemo(
+    () =>
+      logs.map((logLine, index) => (
         <LogLine
-          isFirst={index === 0}
-          isLast={index === logs.length - 1}
+          data-container={containerType}
+          data-first={index === 0 ? true : undefined}
+          data-last={index === logs.length - 1 ? true : undefined}
           key={index}
           logLine={logLine}
+          className="data-[container=page]:data-[last]:pb-4 sm:data-[container=page]:data-[last]:pb-[calc(1.5rem+var(--safe-area-inset-bottom))]
+          data-[container=sheet]:data-[last]:pb-[calc(1rem+var(--safe-area-inset-bottom))] sm:data-[container=sheet]:data-[last]:pb-[calc(1.5rem+var(--safe-area-inset-bottom))]"
         />
-      ))}
-    </VirtualListWindow>
+      )),
+    [logs, containerType]
   );
-}
 
-function VirtualListDiv({
-  onScroll,
-  containerRef,
-  listRef,
-  isAtBottom,
-  isAtTop,
-  scrollToBottom,
-  scrollToTop,
-  children,
-}: {
-  onScroll: () => void;
-  containerRef: Ref<HTMLDivElement>;
-  listRef: Ref<VListHandle> | undefined;
-  children: ReactNode;
-} & ButtonsSectionProps) {
   return (
     <div
       ref={containerRef}
-      className="w-full flex flex-col flex-1 min-h-0 font-mono overflow-auto"
+      className="w-full flex flex-col flex-1 min-h-0 font-mono overflow-auto relative"
     >
-      <VList ref={listRef} onScroll={onScroll}>
-        {children}
+      <VList
+        style={{ height: undefined }}
+        className="w-full flex-1 min-h-0"
+        ref={listRef}
+        onScroll={throttledOnScroll}
+      >
+        {elements}
       </VList>
       <ButtonsSection
-        className="hidden sm:flex sm:absolute right-3 sm:right-4"
+        data-container={containerType}
+        className="right-2.5 sm:right-4 
+        data-[container=page]:bottom-3 sm:data-[container=page]:bottom-[calc(1rem+var(--safe-area-inset-bottom))]
+        data-[container=sheet]:bottom-[calc(0.75rem+var(--safe-area-inset-bottom))] sm:data-[container=sheet]:bottom-[calc(1rem+var(--safe-area-inset-bottom))]"
         isAtBottom={isAtBottom}
         isAtTop={isAtTop}
         scrollToBottom={scrollToBottom}
         scrollToTop={scrollToTop}
-      />
-    </div>
-  );
-}
-
-function VirtualListWindow({
-  onScroll,
-  isAtBottom,
-  isAtTop,
-  scrollToBottom,
-  scrollToTop,
-  children,
-}: {
-  onScroll: () => void;
-  children: ReactNode;
-} & ButtonsSectionProps) {
-  useEventListener("scroll", onScroll);
-  return (
-    <div className="w-full flex flex-col font-mono">
-      <WindowVirtualizer>{children}</WindowVirtualizer>
-      <ButtonsSection
-        isAtBottom={isAtBottom}
-        isAtTop={isAtTop}
-        scrollToBottom={scrollToBottom}
-        scrollToTop={scrollToTop}
-        className="hidden sm:flex right-3 sm:right-4 bottom-[calc(7rem+var(--safe-area-inset-bottom))] sm:bottom-[calc(1rem+var(--safe-area-inset-bottom))]"
       />
     </div>
   );
@@ -250,11 +170,13 @@ function ButtonsSection({
   scrollToBottom,
   scrollToTop,
   className,
+  ...rest
 }: { className?: string } & ButtonsSectionProps) {
   return (
     <div
+      {...rest}
       className={cn(
-        "fixed flex flex-col right-4 bottom-[calc(1rem+var(--safe-area-inset-bottom))]",
+        "absolute flex flex-col right-4 bottom-[calc(1rem+var(--safe-area-inset-bottom))]",
         className
       )}
     >
@@ -287,25 +209,22 @@ function ButtonsSection({
 
 function LogLine({
   logLine,
-  isFirst,
-  isLast,
+  className,
   ...rest
 }: {
   logLine: TLogLine;
-  isFirst?: boolean;
-  isLast?: boolean;
 } & ComponentProps<"div">) {
   return (
     <div
       {...rest}
       suppressHydrationWarning
-      data-first={isFirst ? true : undefined}
-      data-last={isLast ? true : undefined}
       data-level={logLine.level}
-      className="w-full flex items-stretch text-xs group/line py-px 
-      data-[first]:pt-2 data-[last]:pb-[calc(1rem)]
-      sm:data-[first]:pt-3 sm:data-[last]:pb-[calc(1.5rem+var(--safe-area-inset-bottom))] md:data-[first]:pt-4
-      data-[last]:animate-in data-[last]:fade-in data-[last]:transition-opacity data-[last]:duration-150"
+      className={cn(
+        `w-full flex items-stretch text-xs group/line py-px 
+        data-[first]:pt-2 sm:data-[first]:pt-3 md:data-[first]:pt-4
+        data-[last]:pb-[calc(1rem+var(--safe-area-inset-bottom))] sm:data-[last]:pb-[calc(1.5rem+var(--safe-area-inset-bottom))]`,
+        className
+      )}
     >
       <div className="px-3 sm:px-4 md:px-5.5 py-1 w-full flex items-stretch bg-transparent group-data-[level=warn]/line:bg-warning/10 group-data-[level=error]/line:bg-destructive/10">
         <div className="self-stretch flex pr-1.5 shrink-0">
@@ -314,7 +233,7 @@ function LogLine({
             group-data-[level=error]/line:bg-destructive"
           />
         </div>
-        <div className="flex-1 min-w-0 flex flex-col sm:flex-row gap-0.5 py-0.5 sm:py-0.25">
+        <div className="flex-1 min-w-0 flex flex-col sm:flex-row gap-0.5 py-0.5 sm:py-0.5">
           <p
             suppressHydrationWarning
             className="shrink font-mono text-muted-foreground px-1 min-w-[calc(min(50%,9rem))] leading-tight"
