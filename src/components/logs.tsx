@@ -34,11 +34,11 @@ export default function Logs({ virtualizerType, logs }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<VListHandle>(null);
   const [follow, setFollow] = useState(true);
-  const [followLocked, setFollowLocked] = useState(false);
+  const prevScrollY = useRef<number | null>(null);
+  const [scrolledOnce, setScrolledOnce] = useState(false);
 
   useEffect(() => {
     if (!follow) return;
-    if (followLocked) return;
 
     const timeout = setTimeout(() => {
       if (virtualizerType === "div") {
@@ -58,14 +58,26 @@ export default function Logs({ virtualizerType, logs }: Props) {
   }, [logs]);
 
   const onScroll = useCallback(() => {
-    setFollowLocked(true);
-    setFollow(false);
+    // This is to prevent follow from being broken on initial load
+    if (!scrolledOnce) {
+      setScrolledOnce(true);
+      return;
+    }
 
     const scrollY =
       virtualizerType === "div"
         ? listRef.current?.scrollOffset
         : window.scrollY;
     if (scrollY === undefined) return;
+
+    // If the user scrolls up, stop following and early return
+    if (prevScrollY.current !== null && scrollY < prevScrollY.current) {
+      setFollow(false);
+      prevScrollY.current = scrollY;
+      return;
+    }
+
+    prevScrollY.current = scrollY;
 
     const elementHeight =
       virtualizerType === "div"
@@ -83,18 +95,9 @@ export default function Logs({ virtualizerType, logs }: Props) {
     const distanceToBottom = maxScroll - scrollY;
     const isAtBottom = distanceToBottom < FOLLOW_THRESHOLD;
 
-    if (!isAtBottom) {
-      setFollow(false);
-      setFollowLocked(false);
-      return;
-    }
-
-    if (isAtBottom) {
-      setFollow(true);
-      setFollowLocked(false);
-      return;
-    }
-  }, [virtualizerType]);
+    if (!isAtBottom) return false;
+    setFollow(true);
+  }, [virtualizerType, scrolledOnce]);
 
   const throttledOnScroll = useThrottledCallback(onScroll, 50);
 
