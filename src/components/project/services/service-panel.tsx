@@ -22,7 +22,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { TService } from "@/server/trpc/api/main/router";
 import { XIcon } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
-import { createRef, FC, ReactNode, useMemo } from "react";
+import { FC, ReactNode } from "react";
 import { useWindowSize } from "usehooks-ts";
 
 type TTab = {
@@ -50,12 +50,7 @@ export default function ServicePanel({ service, children }: Props) {
     servicePanelTabKey,
     parseAsString.withDefault(tabs[0].value)
   );
-  const currentTabIndex = tabs.findIndex((tab) => tab.value === currentTab);
   const currentPage = tabs.find((tab) => tab.value === currentTab);
-  const refs = useMemo(
-    () => tabs.map(() => createRef<HTMLButtonElement>()),
-    [tabs]
-  );
 
   const [serviceId, setServiceId] = useQueryState(servicePanelServiceIdKey);
 
@@ -111,30 +106,29 @@ export default function ServicePanel({ service, children }: Props) {
         </div>
         <nav className="w-full flex overflow-auto justify-start border-b">
           <div className="flex justify-start px-2 sm:px-4.5 pt-3.5">
-            <div className="flex justify-start relative">
-              {tabs.map((tab, index) => (
-                <Button
-                  ref={refs[index]}
-                  key={tab.value}
-                  variant="ghost"
-                  onClick={() => setCurrentTab(tab.value)}
-                  data-active={currentTab === tab.value ? true : undefined}
-                  className="shrink rounded-t-md rounded-b-none min-w-0 font-medium group/button
+            {tabs.map((tab) => (
+              <Button
+                key={tab.value}
+                variant="ghost"
+                onClick={() => setCurrentTab(tab.value)}
+                data-active={currentTab === tab.value ? true : undefined}
+                className="shrink rounded-t-md rounded-b-none min-w-0 font-medium group/button
                   px-3 pt-2.5 pb-4.5 text-muted-foreground data-[active]:text-foreground has-hover:hover:bg-transparent active:bg-transparent"
-                >
-                  <div className="absolute w-full h-full pointer-events-none py-1">
-                    <div
-                      className="w-full h-full rounded-lg bg-border/0 
+              >
+                {tab.value === currentTab && (
+                  <TabIndicator layoutId="service-panel-tab" />
+                )}
+                <div className="absolute w-full h-full pointer-events-none py-1">
+                  <div
+                    className="w-full h-full rounded-lg bg-border/0 
                       has-hover:group-hover/button:bg-border group-active/button:bg-border"
-                    />
-                  </div>
-                  <p className="shrink min-w-0 relative leading-none">
-                    {tab.title}
-                  </p>
-                </Button>
-              ))}
-              <TabIndicator activeTabIndex={currentTabIndex} refs={refs} />
-            </div>
+                  />
+                </div>
+                <p className="shrink min-w-0 relative leading-none">
+                  {tab.title}
+                </p>
+              </Button>
+            ))}
           </div>
         </nav>
         <div className="w-full flex flex-col min-h-0 flex-1">

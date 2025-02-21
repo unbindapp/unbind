@@ -19,13 +19,13 @@ export default async function ProjectNavbar({ className }: Props) {
         <ProjectBreadcrumb />
       </NavbarBreadcrumb>
       <NavbarTabsLg>
-        <ProjectTabs classNameInner="lg:px-0" />
+        <ProjectTabs classNameInner="lg:px-0" layoutId="project-tabs-lg" />
       </NavbarTabsLg>
       <NavbarTabsMd>
-        <ProjectTabs />
+        <ProjectTabs layoutId="project-tabs-md" />
       </NavbarTabsMd>
       <NavbarTabsSm>
-        <ProjectTabs />
+        <ProjectTabs layoutId="project-tabs-sm" />
       </NavbarTabsSm>
     </Navbar>
   );
