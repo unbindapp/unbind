@@ -140,58 +140,63 @@ export default function Logs({ logs, containerType }: Props) {
 
   return (
     <div className="w-full flex flex-col flex-1 min-h-0 overflow-hidden relative">
-      <div className="w-full flex items-stretch gap-2 px-2 pt-2 sm:px-2.5 sm:pt-2.5">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            toast.success("Search", {
-              description: "This is fake",
-              duration: 2000,
-              closeButton: false,
-            });
-          }}
-          className="flex-1 flex items-stretch relative"
-        >
-          <SearchIcon className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-          <Input
-            className="flex-1 py-2.25 pl-8.5 pr-22"
-            placeholder="Search logs..."
-          />
-          <div className="absolute flex justify-end right-0 top-0 h-full">
-            <Button
-              aria-label="Filter Logs"
-              onClick={() => {
-                toast.success("Filter", {
-                  description: "This is fake",
-                  duration: 2000,
-                  closeButton: false,
-                });
-              }}
-              type="button"
-              size="icon"
-              variant="ghost"
-              className="h-auto border-l rounded-none w-10"
-            >
-              <FilterIcon className="size-5" />
-            </Button>
-            <Button
-              aria-label="Log Settings"
-              onClick={() => {
-                toast.success("Settings", {
-                  description: "This is fake",
-                  duration: 2000,
-                  closeButton: false,
-                });
-              }}
-              type="button"
-              size="icon"
-              variant="ghost"
-              className="h-auto text-foreground w-10 rounded-l-none rounded-r-lg border-l"
-            >
-              <SettingsIcon className="size-5" />
-            </Button>
-          </div>
-        </form>
+      <div
+        data-container={containerType}
+        className="w-full flex items-stretch data-[container=page]:px-[max(0px,calc((100%-1280px-1.25rem)/2))]"
+      >
+        <div className="w-full flex items-stretch gap-2 px-2 pt-2 sm:px-2.5 sm:pt-2.5">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              toast.success("Search", {
+                description: "This is fake",
+                duration: 2000,
+                closeButton: false,
+              });
+            }}
+            className="flex-1 flex items-stretch relative"
+          >
+            <SearchIcon className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            <Input
+              className="flex-1 py-2.25 pl-8.5 pr-22"
+              placeholder="Search logs..."
+            />
+            <div className="absolute flex justify-end right-0 top-0 h-full">
+              <Button
+                aria-label="Filter Logs"
+                onClick={() => {
+                  toast.success("Filter", {
+                    description: "This is fake",
+                    duration: 2000,
+                    closeButton: false,
+                  });
+                }}
+                type="button"
+                size="icon"
+                variant="ghost"
+                className="h-auto border-l rounded-none w-10"
+              >
+                <FilterIcon className="size-5" />
+              </Button>
+              <Button
+                aria-label="Log Settings"
+                onClick={() => {
+                  toast.success("Settings", {
+                    description: "This is fake",
+                    duration: 2000,
+                    closeButton: false,
+                  });
+                }}
+                type="button"
+                size="icon"
+                variant="ghost"
+                className="h-auto text-foreground w-10 rounded-l-none rounded-r-lg border-l"
+              >
+                <SettingsIcon className="size-5" />
+              </Button>
+            </div>
+          </form>
+        </div>
       </div>
       <div
         ref={containerRef}
@@ -203,8 +208,9 @@ export default function Logs({ logs, containerType }: Props) {
         }}
       >
         <VList
+          data-container={containerType}
           style={{ height: undefined }}
-          className="w-full flex-1 min-h-0 font-mono"
+          className="w-full flex-1 min-h-0 font-mono data-[container=page]:px-[max(0px,calc((100%-1280px)/2))]"
           ref={listRef}
           onScroll={throttledOnScroll}
         >
