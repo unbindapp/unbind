@@ -119,8 +119,8 @@ export default function Logs({ virtualizerType, logs }: Props) {
     prevScrollY.current = scrollY;
 
     if (newIsAtBottom) {
-      setIsAtBottom(true);
       follow.current = true;
+      setIsAtBottom(true);
     } else {
       setIsAtBottom(false);
     }
