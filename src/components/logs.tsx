@@ -140,7 +140,7 @@ export default function Logs({ logs, containerType }: Props) {
 
   return (
     <div className="w-full flex flex-col flex-1 min-h-0 overflow-hidden relative">
-      <div className="w-full flex items-stretch gap-2 px-2.5 py-2 sm:px-2.5 sm:py-2.5 border-b">
+      <div className="w-full flex items-stretch gap-2 px-2 pt-2 sm:px-2.5 sm:pt-2.5">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -195,7 +195,12 @@ export default function Logs({ logs, containerType }: Props) {
       </div>
       <div
         ref={containerRef}
-        className="w-full flex flex-col flex-1 min-h-0 overflow-hidden"
+        className="w-full flex flex-col flex-1 min-h-0 overflow-hidden relative"
+        style={{
+          maskImage: "linear-gradient(to bottom, transparent, black 0.75rem)",
+          WebkitMaskImage:
+            "linear-gradient(to bottom, transparent, black 1rem)",
+        }}
       >
         <VList
           style={{ height: undefined }}
@@ -284,7 +289,7 @@ function LogLine({
       data-level={logLine.level}
       className={cn(
         `w-full flex items-stretch text-xs group/line py-px 
-        data-[first]:pt-2 sm:data-[first]:pt-3 md:data-[first]:pt-4
+        data-[first]:pt-2 sm:data-[first]:pt-2.5 md:data-[first]:pt-3.5
         data-[last]:pb-[calc(1rem+var(--safe-area-inset-bottom))] sm:data-[last]:pb-[calc(1.5rem+var(--safe-area-inset-bottom))]`,
         className
       )}
