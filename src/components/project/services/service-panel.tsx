@@ -29,12 +29,13 @@ type TTab = {
   title: string;
   value: string;
   Page: FC;
+  noScrollArea?: boolean;
 };
 
 const tabs: TTab[] = [
   { title: "Deployments", value: "deployments", Page: Deployments },
   { title: "Variables", value: "variables", Page: Variables },
-  { title: "Logs", value: "logs", Page: Logs },
+  { title: "Logs", value: "logs", Page: Logs, noScrollArea: true },
   { title: "Metrics", value: "metrics", Page: Metrics },
   { title: "Settings", value: "settings", Page: Settings },
 ];
@@ -49,7 +50,7 @@ export default function ServicePanel({ service, children }: Props) {
     servicePanelTabKey,
     parseAsString.withDefault(tabs[0].value)
   );
-  const CurrentPage = tabs.find((tab) => tab.value === currentTab)?.Page;
+  const currentPage = tabs.find((tab) => tab.value === currentTab);
   const [serviceId, setServiceId] = useQueryState(servicePanelServiceIdKey);
   const open = serviceId === service.id;
   const setOpen = (open: boolean) => {
@@ -133,13 +134,28 @@ export default function ServicePanel({ service, children }: Props) {
           </div>
         </nav>
         <div className="w-full flex flex-col min-h-0 flex-1">
-          <div className="flex flex-col flex-1 min-h-0">
-            <ScrollArea className="pb-[var(--safe-area-inset-bottom)]">
-              {CurrentPage && <CurrentPage />}
-            </ScrollArea>
+          <div className="w-full flex flex-col flex-1 min-h-0">
+            <ConditionalScrollArea noArea={currentPage?.noScrollArea}>
+              {currentPage && <currentPage.Page />}
+            </ConditionalScrollArea>
           </div>
         </div>
       </DrawerContent>
     </Drawer>
+  );
+}
+
+function ConditionalScrollArea({
+  noArea,
+  children,
+}: {
+  noArea?: boolean;
+  children?: ReactNode;
+}) {
+  if (noArea) return children;
+  return (
+    <ScrollArea className="pb-[var(--safe-area-inset-bottom)]">
+      {children}
+    </ScrollArea>
   );
 }

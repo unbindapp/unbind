@@ -18,7 +18,11 @@ const initialData: TLogLine[] = Array.from({ length: 200 }).map((_, i) => {
   };
 });
 
-export default function TemporaryLogs() {
+type Props = {
+  virtualizerType?: "div" | "window";
+};
+
+export default function TemporaryLogs({ virtualizerType = "window" }: Props) {
   const [logs, setLogs] = useState<TLogLine[]>(initialData);
 
   useInterval(() => {
@@ -35,5 +39,5 @@ export default function TemporaryLogs() {
     });
   }, 1000);
 
-  return <Logs logs={logs} />;
+  return <Logs logs={logs} virtualizerType={virtualizerType} />;
 }

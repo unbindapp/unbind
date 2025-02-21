@@ -1,10 +1,18 @@
 "use client";
 
 import { format as fnsFormat } from "date-fns";
-import { ComponentProps, useCallback, useEffect, useState } from "react";
+import {
+  ComponentProps,
+  ReactNode,
+  Ref,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useThrottledCallback } from "use-debounce";
 import { useEventListener } from "usehooks-ts";
-import { WindowVirtualizer } from "virtua";
+import { VList, VListHandle, WindowVirtualizer } from "virtua";
 
 export type TLogLine = {
   level: "info" | "warn" | "error";
@@ -16,12 +24,15 @@ export type TLogLine = {
 
 type Props = {
   logs: TLogLine[];
+  virtualizerType?: "div" | "window";
   className?: string;
 };
 
 const FOLLOW_THRESHOLD = 50;
 
-export default function Logs({ logs }: Props) {
+export default function Logs({ virtualizerType, logs }: Props) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<VListHandle>(null);
   const [follow, setFollow] = useState(true);
   const [followLocked, setFollowLocked] = useState(false);
 
@@ -29,9 +40,19 @@ export default function Logs({ logs }: Props) {
     if (!follow) return;
     if (followLocked) return;
 
-    const timeout = setTimeout(() =>
-      window.scrollTo(0, document.body.scrollHeight - window.innerHeight)
-    );
+    const timeout = setTimeout(() => {
+      if (virtualizerType === "div") {
+        const listElement = listRef.current;
+        const containerElement = containerRef.current;
+        if (!listElement || !containerElement) return;
+        listElement.scrollTo(
+          listElement.scrollSize - containerElement.clientHeight
+        );
+        return;
+      }
+
+      window.scrollTo(0, document.body.scrollHeight - window.innerHeight);
+    });
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [logs]);
@@ -40,8 +61,26 @@ export default function Logs({ logs }: Props) {
     setFollowLocked(true);
     setFollow(false);
 
-    const maxScroll = document.body.scrollHeight - window.innerHeight;
-    const distanceToBottom = maxScroll - window.scrollY;
+    const scrollY =
+      virtualizerType === "div"
+        ? listRef.current?.scrollOffset
+        : window.scrollY;
+    if (scrollY === undefined) return;
+
+    const elementHeight =
+      virtualizerType === "div"
+        ? containerRef.current?.clientHeight
+        : window.innerHeight;
+    if (elementHeight === undefined) return;
+
+    const scrollHeight =
+      virtualizerType === "div"
+        ? listRef.current?.scrollSize
+        : document.body.scrollHeight;
+    if (scrollHeight === undefined) return;
+
+    const maxScroll = scrollHeight - elementHeight;
+    const distanceToBottom = maxScroll - scrollY;
     const isAtBottom = distanceToBottom < FOLLOW_THRESHOLD;
 
     if (!isAtBottom) {
@@ -55,15 +94,17 @@ export default function Logs({ logs }: Props) {
       setFollowLocked(false);
       return;
     }
-  }, []);
+  }, [virtualizerType]);
 
   const throttledOnScroll = useThrottledCallback(onScroll, 50);
 
-  useEventListener("scroll", throttledOnScroll);
-
-  return (
-    <div className="w-full flex flex-col font-mono">
-      <WindowVirtualizer>
+  if (virtualizerType === "div") {
+    return (
+      <VirtualListDiv
+        onScroll={throttledOnScroll}
+        containerRef={containerRef}
+        listRef={listRef}
+      >
         {logs.map((logLine, index) => (
           <LogLine
             isFirst={index === 0}
@@ -72,7 +113,58 @@ export default function Logs({ logs }: Props) {
             logLine={logLine}
           />
         ))}
-      </WindowVirtualizer>
+      </VirtualListDiv>
+    );
+  }
+
+  return (
+    <VirtualListWindow onScroll={throttledOnScroll}>
+      {logs.map((logLine, index) => (
+        <LogLine
+          isFirst={index === 0}
+          isLast={index === logs.length - 1}
+          key={index}
+          logLine={logLine}
+        />
+      ))}
+    </VirtualListWindow>
+  );
+}
+
+function VirtualListDiv({
+  onScroll,
+  containerRef,
+  listRef,
+  children,
+}: {
+  onScroll: () => void;
+  containerRef: Ref<HTMLDivElement>;
+  listRef: Ref<VListHandle> | undefined;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      ref={containerRef}
+      className="w-full flex flex-col flex-1 min-h-0 font-mono overflow-auto"
+    >
+      <VList ref={listRef} onScroll={onScroll}>
+        {children}
+      </VList>
+    </div>
+  );
+}
+
+function VirtualListWindow({
+  onScroll,
+  children,
+}: {
+  onScroll: () => void;
+  children: ReactNode;
+}) {
+  useEventListener("scroll", onScroll);
+  return (
+    <div className="w-full flex flex-col font-mono">
+      <WindowVirtualizer>{children}</WindowVirtualizer>
     </div>
   );
 }
@@ -102,7 +194,7 @@ function LogLine({
       <div className="px-3 sm:px-4 md:px-5.5 py-1 w-full flex items-stretch bg-transparent group-data-[level=warn]/line:bg-warning/10 group-data-[level=error]/line:bg-destructive/10">
         <div className="self-stretch flex pr-1.5 shrink-0">
           <div
-            className="self-stretch w-1 rounded-full bg-foreground/50 group-data-[level=warn]/line:bg-warning 
+            className="self-stretch w-1 rounded-full bg-muted-more-foreground group-data-[level=warn]/line:bg-warning 
             group-data-[level=error]/line:bg-destructive"
           />
         </div>
