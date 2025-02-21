@@ -85,7 +85,7 @@ input[type="search"] {
     --success-foreground: 120 35% 95%;
     --shadow: 120 30% 4%;
     --border: 120 20% 85%;
-    --input: 0 0% 96%;
+    --input: 120 35% 95%;
     --ring: 120 90% 5%;
     --radius: 0.5rem;
     --chart-1: 210 90% 30%;
@@ -164,7 +164,7 @@ input[type="search"] {
     --success-foreground: 120 9% 6%;
     --shadow: 120 11% 3%;
     --border: 120 5% 12%;
-    --input: 250 20% 9%;
+    --input: 120 7% 8%;
     --ring: 120 100% 97%;
 
     --chart-1: 200 90% 55%;

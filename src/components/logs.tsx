@@ -1,9 +1,16 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/components/ui/utils";
 import { format as fnsFormat } from "date-fns";
-import { ArrowDownIcon, ArrowUpIcon } from "lucide-react";
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  FilterIcon,
+  SearchIcon,
+  SettingsIcon,
+} from "lucide-react";
 import {
   ComponentProps,
   useCallback,
@@ -12,6 +19,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { toast } from "sonner";
 import { useThrottledCallback } from "use-debounce";
 import { VList, VListHandle } from "virtua";
 
@@ -131,28 +139,83 @@ export default function Logs({ logs, containerType }: Props) {
   );
 
   return (
-    <div
-      ref={containerRef}
-      className="w-full flex flex-col flex-1 min-h-0 font-mono overflow-auto relative"
-    >
-      <VList
-        style={{ height: undefined }}
-        className="w-full flex-1 min-h-0"
-        ref={listRef}
-        onScroll={throttledOnScroll}
+    <div className="w-full flex flex-col flex-1 min-h-0 overflow-hidden relative">
+      <div className="w-full flex items-stretch gap-2 px-2.5 py-2 sm:px-2.5 sm:py-2.5 border-b">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            toast.success("Search", {
+              description: "This is fake",
+              duration: 2000,
+              closeButton: false,
+            });
+          }}
+          className="flex-1 flex items-stretch relative"
+        >
+          <SearchIcon className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+          <Input
+            className="flex-1 py-2.25 pl-8.5 pr-22"
+            placeholder="Search logs..."
+          />
+          <div className="absolute flex justify-end right-0 top-0 h-full">
+            <Button
+              aria-label="Filter Logs"
+              onClick={() => {
+                toast.success("Filter", {
+                  description: "This is fake",
+                  duration: 2000,
+                  closeButton: false,
+                });
+              }}
+              type="button"
+              size="icon"
+              variant="ghost"
+              className="h-auto border-l rounded-none w-10"
+            >
+              <FilterIcon className="size-5" />
+            </Button>
+            <Button
+              aria-label="Log Settings"
+              onClick={() => {
+                toast.success("Settings", {
+                  description: "This is fake",
+                  duration: 2000,
+                  closeButton: false,
+                });
+              }}
+              type="button"
+              size="icon"
+              variant="ghost"
+              className="h-auto text-foreground w-10 rounded-l-none rounded-r-lg border-l"
+            >
+              <SettingsIcon className="size-5" />
+            </Button>
+          </div>
+        </form>
+      </div>
+      <div
+        ref={containerRef}
+        className="w-full flex flex-col flex-1 min-h-0 overflow-hidden"
       >
-        {elements}
-      </VList>
-      <ButtonsSection
-        data-container={containerType}
-        className="right-2.5 sm:right-4 
-        data-[container=page]:bottom-3 sm:data-[container=page]:bottom-[calc(1rem+var(--safe-area-inset-bottom))]
-        data-[container=sheet]:bottom-[calc(0.75rem+var(--safe-area-inset-bottom))] sm:data-[container=sheet]:bottom-[calc(1rem+var(--safe-area-inset-bottom))]"
-        isAtBottom={isAtBottom}
-        isAtTop={isAtTop}
-        scrollToBottom={scrollToBottom}
-        scrollToTop={scrollToTop}
-      />
+        <VList
+          style={{ height: undefined }}
+          className="w-full flex-1 min-h-0 font-mono"
+          ref={listRef}
+          onScroll={throttledOnScroll}
+        >
+          {elements}
+        </VList>
+        <ButtonsSection
+          data-container={containerType}
+          className="right-2.5 sm:right-4 
+          data-[container=page]:bottom-3 sm:data-[container=page]:bottom-[calc(1rem+var(--safe-area-inset-bottom))]
+          data-[container=sheet]:bottom-[calc(0.75rem+var(--safe-area-inset-bottom))] sm:data-[container=sheet]:bottom-[calc(1rem+var(--safe-area-inset-bottom))]"
+          isAtBottom={isAtBottom}
+          isAtTop={isAtTop}
+          scrollToBottom={scrollToBottom}
+          scrollToTop={scrollToTop}
+        />
+      </div>
     </div>
   );
 }
@@ -229,7 +292,7 @@ function LogLine({
       <div className="px-3 sm:px-4 md:px-5.5 py-1 w-full flex items-stretch bg-transparent group-data-[level=warn]/line:bg-warning/10 group-data-[level=error]/line:bg-destructive/10">
         <div className="self-stretch flex pr-1.5 shrink-0">
           <div
-            className="self-stretch w-1 rounded-full bg-muted-more-foreground group-data-[level=warn]/line:bg-warning 
+            className="self-stretch w-0.75 rounded-full bg-muted-more-foreground/50 group-data-[level=warn]/line:bg-warning 
             group-data-[level=error]/line:bg-destructive"
           />
         </div>
