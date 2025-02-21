@@ -79,7 +79,7 @@ input[type="search"] {
     --accent-foreground: 120 90% 5%;
     --destructive: 0 84% 30%;
     --destructive-foreground: 120 35% 95%;
-    --warning: 30 100% 25%;
+    --warning: 40 100% 25%;
     --warning-foreground: 120 35% 95%;
     --success: 120 85% 20%;
     --success-foreground: 120 35% 95%;
