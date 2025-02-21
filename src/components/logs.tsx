@@ -212,7 +212,7 @@ export default function Logs({ logs, containerType }: Props) {
         </VList>
         <ButtonsSection
           data-container={containerType}
-          className="right-2.5 sm:right-4 
+          className="hidden sm:flex right-2.5 sm:right-4 
           data-[container=page]:bottom-3 sm:data-[container=page]:bottom-[calc(1rem+var(--safe-area-inset-bottom))]
           data-[container=sheet]:bottom-[calc(0.75rem+var(--safe-area-inset-bottom))] sm:data-[container=sheet]:bottom-[calc(1rem+var(--safe-area-inset-bottom))]"
           isAtBottom={isAtBottom}
