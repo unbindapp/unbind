@@ -76,6 +76,10 @@ export function BreadcrumbItem<T>({
     [selectedItem, IconItem, flipChevronOnSm]
   );
 
+  const newItem = newItemTitle
+    ? ({ id: "new", title: newItemTitle } as Item<T>)
+    : undefined;
+
   if (isSmall && mounted()) {
     return (
       <BottomDrawer
@@ -102,11 +106,11 @@ export function BreadcrumbItem<T>({
               />
             );
           })}
-          {newItemTitle && (
+          {newItemTitle && newItem && (
             <>
               <div className="w-full bg-border h-px rounded-full my-2 shrink-0 pointer-events-none" />
               <SheetItem
-                item={{ id: "new", title: newItemTitle } as Item<T>}
+                item={newItem}
                 onSelect={onSelectNewItem}
                 setOpen={setOpen}
                 selectedItem={selectedItem}
@@ -159,11 +163,11 @@ export function BreadcrumbItem<T>({
               />
             );
           })}
-          {newItemTitle && (
+          {newItemTitle && newItem && (
             <>
               <DropdownMenuSeparator className="my-1" />
               <DropdownItem
-                item={{ id: "new", title: newItemTitle } as Item<T>}
+                item={newItem}
                 onSelect={onSelectNewItem}
                 setOpen={setOpen}
                 selectedItem={selectedItem}
