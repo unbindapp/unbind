@@ -199,7 +199,7 @@ export default function Logs({ logs, containerType }: Props) {
         style={{
           maskImage: "linear-gradient(to bottom, transparent, black 0.75rem)",
           WebkitMaskImage:
-            "linear-gradient(to bottom, transparent, black 1rem)",
+            "linear-gradient(to bottom, transparent, black 0.75rem)",
         }}
       >
         <VList
