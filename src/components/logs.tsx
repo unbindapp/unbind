@@ -36,14 +36,14 @@ const SCROLL_THRESHOLD = 50;
 export default function Logs({ virtualizerType, logs }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<VListHandle>(null);
-  const [follow, setFollow] = useState(true);
+  const follow = useRef(true);
   const prevScrollY = useRef<number | null>(null);
-  const [scrolledOnce, setScrolledOnce] = useState(false);
+  const scrolledOnce = useRef(false);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [isAtTop, setIsAtTop] = useState(false);
 
   const scrollToTop = useCallback(() => {
-    setFollow(false);
+    follow.current = false;
 
     if (virtualizerType === "div") {
       const listElement = listRef.current;
@@ -56,7 +56,7 @@ export default function Logs({ virtualizerType, logs }: Props) {
   }, [virtualizerType]);
 
   const scrollToBottom = useCallback(() => {
-    setFollow(true);
+    follow.current = true;
 
     if (virtualizerType === "div") {
       const listElement = listRef.current;
@@ -72,7 +72,7 @@ export default function Logs({ virtualizerType, logs }: Props) {
   }, [virtualizerType]);
 
   useEffect(() => {
-    if (!follow) return;
+    if (!follow.current) return;
 
     const timeout = setTimeout(() => {
       scrollToBottom();
@@ -83,8 +83,8 @@ export default function Logs({ virtualizerType, logs }: Props) {
 
   const onScroll = useCallback(() => {
     // This is to prevent follow from being broken on initial load
-    if (!scrolledOnce) {
-      setScrolledOnce(true);
+    if (!scrolledOnce.current) {
+      scrolledOnce.current = true;
       return;
     }
 
@@ -108,30 +108,28 @@ export default function Logs({ virtualizerType, logs }: Props) {
 
     const maxScroll = scrollHeight - elementHeight;
     const distanceToBottom = maxScroll - scrollY;
-    const isAtBottom = distanceToBottom < SCROLL_THRESHOLD;
-    const isAtTop = scrollY < SCROLL_THRESHOLD;
+    const newIsAtBottom = distanceToBottom < SCROLL_THRESHOLD;
+    const newIsAtTop = scrollY < SCROLL_THRESHOLD;
 
-    // If the user scrolls up, stop following and early return
+    // If the user scrolls up, stop following
     if (prevScrollY.current !== null && scrollY < prevScrollY.current) {
-      setFollow(false);
+      follow.current = false;
     }
 
     prevScrollY.current = scrollY;
 
-    if (isAtBottom) {
+    if (newIsAtBottom) {
       setIsAtBottom(true);
+      follow.current = true;
     } else {
       setIsAtBottom(false);
     }
 
-    if (isAtTop) {
+    if (newIsAtTop) {
       setIsAtTop(true);
     } else {
       setIsAtTop(false);
     }
-
-    if (!isAtBottom) return false;
-    setFollow(true);
   }, [virtualizerType, scrolledOnce]);
 
   const throttledOnScroll = useThrottledCallback(onScroll, 50);
