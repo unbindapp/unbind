@@ -22,6 +22,7 @@ import {
   FC,
   SetStateAction,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import { useIsMounted, useWindowSize } from "usehooks-ts";
@@ -64,19 +65,24 @@ export function BreadcrumbItem<T>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
+  const TriggerM = useMemo(
+    () => (
+      <Trigger
+        item={selectedItem}
+        Icon={IconItem}
+        flipChevronOnSm={flipChevronOnSm}
+      />
+    ),
+    [selectedItem, IconItem, flipChevronOnSm]
+  );
+
   if (isSmall && mounted()) {
     return (
       <BottomDrawer
         title={title}
         open={open}
         onOpenChange={setOpen}
-        Trigger={
-          <Trigger
-            item={selectedItem}
-            Icon={IconItem}
-            flipChevronOnSm={flipChevronOnSm}
-          />
-        }
+        Trigger={TriggerM}
       >
         <div className="w-full flex flex-col px-2 pt-2 pb-8 group/list">
           {items?.map((i, index) => {
