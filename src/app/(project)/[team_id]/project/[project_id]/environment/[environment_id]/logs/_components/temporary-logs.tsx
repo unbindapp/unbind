@@ -1,6 +1,7 @@
 "use client";
 
-import Logs, { TLogLine } from "@/components/logs";
+import { TLogLine } from "@/components/logs/log-line";
+import Logs from "@/components/logs/logs";
 import { useState } from "react";
 import { useInterval } from "usehooks-ts";
 
