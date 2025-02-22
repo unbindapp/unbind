@@ -1,6 +1,10 @@
 "use client";
 
 import LogLine, { TLogLine } from "@/components/logs/log-line";
+import LogViewPreferenceProvider, {
+  logViewPreferenceKeys,
+  useLogViewPreferences,
+} from "@/components/logs/log-view-preference-provider";
 import NavigationBar from "@/components/logs/navigation-bar";
 import TopBar from "@/components/logs/top-bar";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -15,7 +19,15 @@ type Props = {
   className?: string;
 };
 
-export default function Logs({ logs, containerType }: Props) {
+export default function LogViewer({ logs, containerType }: Props) {
+  return (
+    <LogViewPreferenceProvider>
+      <Logs_ logs={logs} containerType={containerType} />
+    </LogViewPreferenceProvider>
+  );
+}
+
+function Logs_({ logs, containerType }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<VListHandle>(null);
   const follow = useRef(true);
@@ -23,6 +35,9 @@ export default function Logs({ logs, containerType }: Props) {
   const scrolledOnce = useRef(false);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [isAtTop, setIsAtTop] = useState(false);
+
+  const { preferences: viewPreferences } = useLogViewPreferences();
+  const autoFollow = viewPreferences.includes(logViewPreferenceKeys.autoFollow);
 
   const scrollToTop = useCallback(() => {
     follow.current = false;
@@ -45,7 +60,21 @@ export default function Logs({ logs, containerType }: Props) {
   }, []);
 
   useEffect(() => {
+    let timeout: NodeJS.Timeout;
+
+    if (autoFollow) {
+      timeout = setTimeout(() => {
+        scrollToBottom();
+      });
+    }
+
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoFollow]);
+
+  useEffect(() => {
     if (!follow.current) return;
+    if (!autoFollow) return;
 
     const timeout = setTimeout(() => {
       scrollToBottom();
@@ -125,29 +154,27 @@ export default function Logs({ logs, containerType }: Props) {
         <TopBar className="px-2 pt-2 sm:px-2.5 sm:pt-2.5" />
       </div>
       {/* List */}
-      <div
-        ref={containerRef}
-        className="w-full flex flex-col flex-1 min-h-0 overflow-hidden relative"
-        style={{
-          maskImage: "linear-gradient(to bottom, transparent, black 0.75rem)",
-          WebkitMaskImage:
-            "linear-gradient(to bottom, transparent, black 0.75rem)",
-        }}
-      >
-        <VList
-          data-container={containerType}
-          style={{ height: undefined }}
-          className="w-full flex-1 min-h-0 font-mono data-[container=page]:px-[max(0px,calc((100%-1280px)/2))]"
-          ref={listRef}
-          onScroll={throttledOnScroll}
+      <div className="w-full flex flex-col flex-1 min-h-0 overflow-hidden relative">
+        <div
+          ref={containerRef}
+          className="w-full flex flex-col flex-1 min-h-0 overflow-hidden relative
+          [mask-image:linear-gradient(to_bottom,transparent,black_0.75rem,black_calc(100%-0.75rem),transparent)]"
         >
-          {elements}
-        </VList>
+          <VList
+            data-container={containerType}
+            style={{ height: undefined }}
+            className="w-full flex-1 min-h-0 font-mono data-[container=page]:px-[max(0px,calc((100%-1280px)/2))]"
+            ref={listRef}
+            onScroll={throttledOnScroll}
+          >
+            {elements}
+          </VList>
+        </div>
         <NavigationBar
           data-container={containerType}
           className="hidden sm:flex right-2.5 sm:right-4 
-          data-[container=page]:bottom-3 sm:data-[container=page]:bottom-[calc(1rem+var(--safe-area-inset-bottom))]
-          data-[container=sheet]:bottom-[calc(0.75rem+var(--safe-area-inset-bottom))] sm:data-[container=sheet]:bottom-[calc(1rem+var(--safe-area-inset-bottom))]"
+            data-[container=page]:bottom-3 sm:data-[container=page]:bottom-[calc(1rem+var(--safe-area-inset-bottom))]
+            data-[container=sheet]:bottom-[calc(0.75rem+var(--safe-area-inset-bottom))] sm:data-[container=sheet]:bottom-[calc(1rem+var(--safe-area-inset-bottom))]"
           isAtBottom={isAtBottom}
           isAtTop={isAtTop}
           scrollToBottom={scrollToBottom}

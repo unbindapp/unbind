@@ -1,6 +1,7 @@
-import useLogViewPreferences, {
-  logViewPreferenceKeys,
-} from "@/components/logs/use-log-view-preferences";
+import {
+  logViewPreferences,
+  useLogViewPreferences,
+} from "@/components/logs/log-view-preference-provider";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -26,7 +27,8 @@ type Props = {
 const viewPreferencesDropdownId = "view_preferences";
 
 export default function TopBar({ className }: Props) {
-  const [viewPreferences, setViewPreferences] = useLogViewPreferences();
+  const { preferences: viewPreferences, setPreferences: setViewPreferences } =
+    useLogViewPreferences();
   const [dropdown, setDropdown] = useQueryState("dropdown");
 
   const isViewPreferencesDropdownOpen = dropdown === viewPreferencesDropdownId;
@@ -148,42 +150,3 @@ export default function TopBar({ className }: Props) {
     </div>
   );
 }
-
-type TLogViewPreference = {
-  value: string;
-  label: string;
-  type: "checkbox" | "default";
-};
-
-type TLogViewPreferenceGroup = {
-  label: string;
-  items: TLogViewPreference[];
-};
-
-const logViewPreferences: TLogViewPreferenceGroup[] = [
-  {
-    label: "Columns",
-    items: [
-      {
-        value: logViewPreferenceKeys.timestamp,
-        label: "Timestamp",
-        type: "checkbox",
-      },
-      {
-        value: logViewPreferenceKeys.serviceId,
-        label: "Service Name",
-        type: "checkbox",
-      },
-    ],
-  },
-  {
-    label: "Preferences",
-    items: [
-      {
-        value: logViewPreferenceKeys.lineWrapping,
-        label: "Line Wrapping",
-        type: "checkbox",
-      },
-    ],
-  },
-];

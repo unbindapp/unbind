@@ -27,15 +27,16 @@ const ScrollArea = React.forwardRef<
     <ScrollAreaPrimitive.Root
       ref={ref}
       className={cn(
-        "relative overflow-hidden flex-1 w-full flex flex-col",
+        "relative overflow-hidden flex-1 w-full flex flex-col group/root",
         className
       )}
-      {...props}
+      data-orientation={orientation}
       tabIndex={noFocusOnViewport ? -1 : undefined}
+      {...props}
     >
       <ScrollAreaPrimitive.Viewport
         ref={viewportRef}
-        className="flex-1 [&>div]:!block w-full rounded-[inherit] focus:outline-1 focus:outline-primary/50"
+        className="flex-1 group-data-[orientation=horizontal]/root:[&>div]:!flex group-data-[orientation=vertical]:[&>div]:!flex group-data-[orientation=vertical]:[&>div]:!flex-col w-full rounded-[inherit] focus:outline-1 focus:outline-primary/50"
         tabIndex={noFocusOnViewport ? -1 : undefined}
       >
         {children}

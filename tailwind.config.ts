@@ -48,10 +48,14 @@ const config: Config = {
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
+          highlight: "hsl(var(--destructive-highlight))",
+          "highlight-hover": "hsl(var(--destructive-highlight-hover))",
         },
         warning: {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
+          highlight: "hsl(var(--warning-highlight))",
+          "highlight-hover": "hsl(var(--warning-highlight-hover))",
         },
         success: {
           DEFAULT: "hsl(var(--success))",
