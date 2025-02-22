@@ -3,11 +3,8 @@
 import * as React from "react";
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import { cn } from "@/components/ui/utils";
-import {
-  CheckIcon,
-  ChevronRightIcon,
-  DotFilledIcon,
-} from "@radix-ui/react-icons";
+import { ChevronRightIcon, DotFilledIcon } from "@radix-ui/react-icons";
+import { CheckIcon } from "lucide-react";
 
 const DropdownMenu: React.FC<DropdownMenuPrimitive.DropdownMenuProps> = ({
   modal = true,
@@ -190,19 +187,31 @@ DropdownMenuItem.displayName = DropdownMenuPrimitive.Item.displayName;
 const DropdownMenuCheckboxItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.CheckboxItem>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.CheckboxItem>
->(({ className, children, checked, ...props }, ref) => (
+>(({ className, children, checked, onSelect, ...props }, ref) => (
   <DropdownMenuPrimitive.CheckboxItem
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm py-2.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative group/checkbox flex leading-tight font-medium cursor-default select-none justify-start items-center rounded-md py-2.25 pl-9.5 pr-3 outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
     checked={checked}
+    data-checked={checked ? true : undefined}
+    onSelect={
+      onSelect
+        ? onSelect
+        : (e) => {
+            e.preventDefault();
+          }
+    }
     {...props}
   >
-    <span className="absolute left-2 flex items-center justify-center shrink-0">
-      <DropdownMenuPrimitive.ItemIndicator className="size-5">
-        <CheckIcon className="size-full" />
+    <span
+      className="absolute left-2.5 flex items-center justify-center shrink-0 size-4.5 border 
+      border-muted-more-foreground rounded-sm p-0.25 group-data-[checked]/checkbox:bg-foreground group-data-[checked]/checkbox:text-background
+      group-data-[checked]/checkbox:border-foreground"
+    >
+      <DropdownMenuPrimitive.ItemIndicator className="size-full">
+        <CheckIcon strokeWidth={3} className="size-full" />
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
     {children}
@@ -242,7 +251,7 @@ const DropdownMenuLabel = React.forwardRef<
   <DropdownMenuPrimitive.Label
     ref={ref}
     className={cn(
-      "px-2 py-1.5 text-sm font-semibold",
+      "px-3.5 py-1.75 text-sm font-medium text-muted-foreground",
       inset && "pl-8",
       className
     )}

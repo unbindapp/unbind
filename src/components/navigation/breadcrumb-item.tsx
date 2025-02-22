@@ -3,7 +3,9 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -141,41 +143,43 @@ export function BreadcrumbItem<T>({
         className="group/content"
         autoFocus={open}
       >
-        <ScrollArea className="p-1 group/list max-w-64" noFocusOnViewport>
-          <div className="w-full leading-tight text-sm text-muted-foreground gap-1.5 font-medium px-2.5 py-1.25 flex items-center justify-start">
-            <p className="shrink min-w-0">{title}</p>
-          </div>
-          <DropdownMenuSeparator className="my-1" />
-          {items?.map((i, index) => {
-            const href = getHrefForId(i.id);
-            const showArrow = href !== null && pathname !== href;
-            return (
-              <DropdownItem
-                item={i}
-                key={i.id + index}
-                onSelect={onSelect}
-                setOpen={setOpen}
-                selectedItem={selectedItem}
-                lastHoveredItem={lastHoveredItem}
-                setLastHoveredItem={setLastHoveredItem}
-                IconItem={IconItem}
-                showArrow={showArrow}
-              />
-            );
-          })}
+        <ScrollArea className="group/list sm:max-w-64" noFocusOnViewport>
+          <DropdownMenuLabel>{title}</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            {items?.map((i, index) => {
+              const href = getHrefForId(i.id);
+              const showArrow = href !== null && pathname !== href;
+              return (
+                <DropdownItem
+                  item={i}
+                  key={i.id + index}
+                  onSelect={onSelect}
+                  setOpen={setOpen}
+                  selectedItem={selectedItem}
+                  lastHoveredItem={lastHoveredItem}
+                  setLastHoveredItem={setLastHoveredItem}
+                  IconItem={IconItem}
+                  showArrow={showArrow}
+                />
+              );
+            })}
+          </DropdownMenuGroup>
           {newItemTitle && newItem && (
             <>
-              <DropdownMenuSeparator className="my-1" />
-              <DropdownItem
-                item={newItem}
-                onSelect={onSelectNewItem}
-                setOpen={setOpen}
-                selectedItem={selectedItem}
-                lastHoveredItem={lastHoveredItem}
-                setLastHoveredItem={setLastHoveredItem}
-                IconItem={PlusIcon}
-                className="text-muted-foreground data-[highlighted]:text-foreground data-[last-hovered]:text-foreground"
-              />
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownItem
+                  item={newItem}
+                  onSelect={onSelectNewItem}
+                  setOpen={setOpen}
+                  selectedItem={selectedItem}
+                  lastHoveredItem={lastHoveredItem}
+                  setLastHoveredItem={setLastHoveredItem}
+                  IconItem={PlusIcon}
+                  className="text-muted-foreground data-[highlighted]:text-foreground data-[last-hovered]:text-foreground"
+                />
+              </DropdownMenuGroup>
             </>
           )}
         </ScrollArea>
