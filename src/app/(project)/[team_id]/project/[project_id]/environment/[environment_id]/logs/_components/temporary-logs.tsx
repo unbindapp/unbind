@@ -8,6 +8,8 @@ import { useInterval } from "usehooks-ts";
 const getRandomLevel = () =>
   Math.random() > 0.06 ? "info" : Math.random() > 0.03 ? "error" : "warn";
 
+const getRandomServiceId = () => `service-${Math.floor(Math.random() * 6)}`;
+
 const initialData: TLogLine[] = Array.from({ length: 200 }).map((_, i) => {
   const level = getRandomLevel();
   return {
@@ -15,7 +17,7 @@ const initialData: TLogLine[] = Array.from({ length: 200 }).map((_, i) => {
     timestamp: Date.now() - i * 1000,
     message: `This is a fake log message for testing ${level} ${i}`,
     deploymentId: "deployment-id",
-    serviceId: "service-id",
+    serviceId: getRandomServiceId(),
   };
 });
 
@@ -34,7 +36,7 @@ export default function TemporaryLogs({ containerType }: Props) {
         timestamp: Date.now(),
         message: `This is a fake log message for testing ${level} ${prevLogs.length}`,
         deploymentId: "deployment-id",
-        serviceId: "service-id",
+        serviceId: getRandomServiceId(),
       };
       return [...prevLogs, newLog];
     });

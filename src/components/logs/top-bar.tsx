@@ -71,7 +71,10 @@ export default function TopBar({ className }: Props) {
                 <SettingsIcon className="size-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="sm:max-w-64">
+            <DropdownMenuContent
+              align="end"
+              className="w-[768px] sm:w-auto sm:max-w-64"
+            >
               <ScrollArea>
                 {logViewPreferences.map((group, index) => (
                   <div key={group.label} className="w-full flex flex-col">
