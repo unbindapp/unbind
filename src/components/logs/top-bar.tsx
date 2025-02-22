@@ -20,13 +20,13 @@ type Props = {
   className?: string;
 };
 
-const settingsSort = (a: string, b: string) => a.localeCompare(b);
+const viewPreferencesSort = (a: string, b: string) => a.localeCompare(b);
 
 export default function TopBar({ className }: Props) {
-  const [settings, setSettings] = useQueryState(
-    "settings",
+  const [viewPreferences, setViewPreferences] = useQueryState(
+    "preferences",
     parseAsArrayOf(parseAsString).withDefault(
-      ["timestamp", "service_id", "line_wrapping"].sort(settingsSort)
+      ["timestamp", "service_id", "line_wrapping"].sort(viewPreferencesSort)
     )
   );
   return (
@@ -67,7 +67,7 @@ export default function TopBar({ className }: Props) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
-                aria-label="Log Settings"
+                aria-label="Log View Preferences"
                 type="button"
                 size="icon"
                 variant="ghost"
@@ -78,41 +78,40 @@ export default function TopBar({ className }: Props) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="sm:max-w-64">
               <ScrollArea>
-                {logSetting.map((group, index) => (
+                {logViewPreferences.map((group, index) => (
                   <div key={group.label} className="w-full flex flex-col">
                     {index > 0 && <DropdownMenuSeparator />}
                     <DropdownMenuLabel className="pb-0">
                       {group.label}
                     </DropdownMenuLabel>
                     <DropdownMenuGroup title={group.label}>
-                      {group.settings.map((setting) =>
-                        setting.type === "checkbox" ? (
+                      {group.items.map((item) =>
+                        item.type === "checkbox" ? (
                           <DropdownMenuCheckboxItem
-                            checked={settings.includes(setting.value)}
+                            checked={viewPreferences.includes(item.value)}
                             onCheckedChange={(checked) => {
-                              setSettings((prevSettings) => {
+                              setViewPreferences((prevSettings) => {
                                 if (checked) {
-                                  if (!prevSettings.includes(setting.value)) {
-                                    return [
-                                      ...prevSettings,
-                                      setting.value,
-                                    ].sort(settingsSort);
+                                  if (!prevSettings.includes(item.value)) {
+                                    return [...prevSettings, item.value].sort(
+                                      viewPreferencesSort
+                                    );
                                   }
-                                  return prevSettings.sort(settingsSort);
+                                  return prevSettings.sort(viewPreferencesSort);
                                 } else {
                                   return prevSettings
-                                    .filter((s) => s !== setting.value)
-                                    .sort(settingsSort);
+                                    .filter((s) => s !== item.value)
+                                    .sort(viewPreferencesSort);
                                 }
                               });
                             }}
-                            key={setting.value}
+                            key={item.value}
                           >
-                            <p className="shrink min-w-0">{setting.label}</p>
+                            <p className="shrink min-w-0">{item.label}</p>
                           </DropdownMenuCheckboxItem>
                         ) : (
-                          <DropdownMenuItem key={setting.value}>
-                            <p className="shrink min-w-0">{setting.label}</p>
+                          <DropdownMenuItem key={item.value}>
+                            <p className="shrink min-w-0">{item.label}</p>
                           </DropdownMenuItem>
                         )
                       )}
@@ -128,21 +127,21 @@ export default function TopBar({ className }: Props) {
   );
 }
 
-type TLogSetting = {
+type TLogViewPreference = {
   value: string;
   label: string;
   type: "checkbox" | "default";
 };
 
-type TLogSettingGroup = {
+type TLogViewPreferenceGroup = {
   label: string;
-  settings: TLogSetting[];
+  items: TLogViewPreference[];
 };
 
-const logSetting: TLogSettingGroup[] = [
+const logViewPreferences: TLogViewPreferenceGroup[] = [
   {
     label: "Columns",
-    settings: [
+    items: [
       {
         value: "timestamp",
         label: "Timestamp",
@@ -157,7 +156,7 @@ const logSetting: TLogSettingGroup[] = [
   },
   {
     label: "Settings",
-    settings: [
+    items: [
       {
         value: "line_wrapping",
         label: "Line Wrapping",
