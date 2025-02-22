@@ -1,3 +1,6 @@
+import useLogViewPreferences, {
+  logViewPreferenceKeys,
+} from "@/components/logs/use-log-view-preferences";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,22 +16,14 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { FilterIcon, SearchIcon, SettingsIcon } from "lucide-react";
-import { parseAsArrayOf, parseAsString, useQueryState } from "nuqs";
 import { toast } from "sonner";
 
 type Props = {
   className?: string;
 };
 
-const viewPreferencesSort = (a: string, b: string) => a.localeCompare(b);
-
 export default function TopBar({ className }: Props) {
-  const [viewPreferences, setViewPreferences] = useQueryState(
-    "preferences",
-    parseAsArrayOf(parseAsString).withDefault(
-      ["timestamp", "service_id", "line_wrapping"].sort(viewPreferencesSort)
-    )
-  );
+  const [viewPreferences, setViewPreferences] = useLogViewPreferences();
   return (
     <div className={cn("w-full items-stretch flex gap-2", className)}>
       <form
@@ -91,18 +86,18 @@ export default function TopBar({ className }: Props) {
                             checked={viewPreferences.includes(item.value)}
                             onCheckedChange={(checked) => {
                               setViewPreferences((prevSettings) => {
-                                if (checked) {
-                                  if (!prevSettings.includes(item.value)) {
-                                    return [...prevSettings, item.value].sort(
-                                      viewPreferencesSort
-                                    );
-                                  }
-                                  return prevSettings.sort(viewPreferencesSort);
-                                } else {
-                                  return prevSettings
-                                    .filter((s) => s !== item.value)
-                                    .sort(viewPreferencesSort);
+                                if (
+                                  checked &&
+                                  prevSettings.includes(item.value)
+                                ) {
+                                  return prevSettings;
                                 }
+                                if (checked) {
+                                  return [...prevSettings, item.value];
+                                }
+                                return prevSettings.filter(
+                                  (setting) => setting !== item.value
+                                );
                               });
                             }}
                             key={item.value}
@@ -143,12 +138,12 @@ const logViewPreferences: TLogViewPreferenceGroup[] = [
     label: "Columns",
     items: [
       {
-        value: "timestamp",
+        value: logViewPreferenceKeys.timestamp,
         label: "Timestamp",
         type: "checkbox",
       },
       {
-        value: "service_id",
+        value: logViewPreferenceKeys.serviceId,
         label: "Service Name",
         type: "checkbox",
       },
@@ -158,7 +153,7 @@ const logViewPreferences: TLogViewPreferenceGroup[] = [
     label: "Preferences",
     items: [
       {
-        value: "line_wrapping",
+        value: logViewPreferenceKeys.lineWrapping,
         label: "Line Wrapping",
         type: "checkbox",
       },

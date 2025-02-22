@@ -1,3 +1,6 @@
+import useLogViewPreferences, {
+  logViewPreferenceKeys,
+} from "@/components/logs/use-log-view-preferences";
 import { cn } from "@/components/ui/utils";
 import { format } from "date-fns";
 import { ComponentProps } from "react";
@@ -15,6 +18,7 @@ type Props = {
 } & ComponentProps<"div">;
 
 export default function LogLine({ logLine, className, ...rest }: Props) {
+  const [viewPreferences] = useLogViewPreferences();
   return (
     <div
       {...rest}
@@ -38,15 +42,27 @@ export default function LogLine({ logLine, className, ...rest }: Props) {
           />
         </div>
         <div className="flex-1 min-w-0 flex flex-col sm:flex-row gap-0.5 py-0.5 sm:py-0.5">
+          <div className="flex items-center justify-start">
+            {viewPreferences.includes(logViewPreferenceKeys.timestamp) && (
+              <p
+                suppressHydrationWarning
+                className="pr-4 shrink min-w-0 font-mono text-muted-foreground px-1 w-36 overflow-hidden overflow-ellipsis whitespace-nowrap leading-tight"
+              >
+                {format(logLine.timestamp, "MMM dd, HH:mm:ss")}
+              </p>
+            )}
+            {viewPreferences.includes(logViewPreferenceKeys.serviceId) && (
+              <p
+                suppressHydrationWarning
+                className="pr-4 shrink min-w-0 font-mono text-muted-foreground px-1 w-24 overflow-hidden overflow-ellipsis whitespace-nowrap leading-tight"
+              >
+                {logLine.serviceId}
+              </p>
+            )}
+          </div>
           <p
             suppressHydrationWarning
-            className="shrink font-mono text-muted-foreground px-1 min-w-[calc(min(50%,9rem))] leading-tight"
-          >
-            {format(logLine.timestamp, "MMM dd, HH:mm:ss")}
-          </p>
-          <p
-            suppressHydrationWarning
-            className="leading-tight px-1 shrink-[2] min-w-0"
+            className="leading-tight px-1 shrink min-w-0"
           >
             {logLine.message}
           </p>
