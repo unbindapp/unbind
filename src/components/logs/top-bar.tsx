@@ -15,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
-import { FilterIcon, SearchIcon, SettingsIcon } from "lucide-react";
+import { FilterIcon, SearchIcon, SettingsIcon, XIcon } from "lucide-react";
 import { useQueryState } from "nuqs";
 import { toast } from "sonner";
 
@@ -75,13 +75,20 @@ export default function TopBar({ className }: Props) {
           >
             <DropdownMenuTrigger asChild>
               <Button
+                data-open={isViewPreferencesDropdownOpen ? true : undefined}
                 aria-label="Log View Preferences"
                 type="button"
                 size="icon"
                 variant="ghost"
-                className="h-auto text-foreground w-10 rounded-l-none rounded-r-lg border-l"
+                className="h-auto text-foreground w-10 rounded-l-none rounded-r-lg border-l group/button"
               >
-                <SettingsIcon className="size-5" />
+                <div className="size-5 relative group-data-[open]/button:rotate-90 transition-transform">
+                  <SettingsIcon className="size-full opacity-100 group-data-[open]/button:opacity-0 transition-opacity" />
+                  <XIcon
+                    className="size-full absolute left-0 top-0 -rotate-90 opacity-0 
+                    transition-opacity group-data-[open]/button:opacity-100"
+                  />
+                </div>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -99,6 +106,7 @@ export default function TopBar({ className }: Props) {
                       {group.items.map((item) =>
                         item.type === "checkbox" ? (
                           <DropdownMenuCheckboxItem
+                            className="py-3.5 sm:py-2.25"
                             checked={viewPreferences.includes(item.value)}
                             onCheckedChange={(checked) => {
                               setViewPreferences((prevSettings) => {
@@ -121,7 +129,10 @@ export default function TopBar({ className }: Props) {
                             <p className="shrink min-w-0">{item.label}</p>
                           </DropdownMenuCheckboxItem>
                         ) : (
-                          <DropdownMenuItem key={item.value}>
+                          <DropdownMenuItem
+                            className="py-3.5 sm:py-2.25"
+                            key={item.value}
+                          >
                             <p className="shrink min-w-0">{item.label}</p>
                           </DropdownMenuItem>
                         )

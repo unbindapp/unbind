@@ -191,7 +191,7 @@ const DropdownMenuCheckboxItem = React.forwardRef<
   <DropdownMenuPrimitive.CheckboxItem
     ref={ref}
     className={cn(
-      "relative group/checkbox flex leading-tight font-medium cursor-default select-none justify-start items-center rounded-md py-2.25 pl-9.5 pr-3 outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative group/checkbox flex leading-tight font-medium cursor-default select-none justify-start items-center rounded-md py-2.25 pl-9.5 pr-3.5 outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
     checked={checked}
