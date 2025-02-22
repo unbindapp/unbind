@@ -16,14 +16,24 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { FilterIcon, SearchIcon, SettingsIcon } from "lucide-react";
+import { useQueryState } from "nuqs";
 import { toast } from "sonner";
 
 type Props = {
   className?: string;
 };
 
+const viewPreferencesDropdownId = "view_preferences";
+
 export default function TopBar({ className }: Props) {
   const [viewPreferences, setViewPreferences] = useLogViewPreferences();
+  const [dropdown, setDropdown] = useQueryState("dropdown");
+
+  const isViewPreferencesDropdownOpen = dropdown === viewPreferencesDropdownId;
+  const setIsViewPreferencesDropdownOpen = (open: boolean) => {
+    setDropdown(open ? viewPreferencesDropdownId : null);
+  };
+
   return (
     <div className={cn("w-full items-stretch flex gap-2", className)}>
       <form
@@ -59,7 +69,10 @@ export default function TopBar({ className }: Props) {
           >
             <FilterIcon className="size-5" />
           </Button>
-          <DropdownMenu>
+          <DropdownMenu
+            open={isViewPreferencesDropdownOpen}
+            onOpenChange={setIsViewPreferencesDropdownOpen}
+          >
             <DropdownMenuTrigger asChild>
               <Button
                 aria-label="Log View Preferences"
