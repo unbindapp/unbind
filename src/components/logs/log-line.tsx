@@ -102,7 +102,7 @@ export default function LogLine({
               )}
               <ConditionallyWrappedLine
                 data-extra-columns={hasExtraColumns ? true : undefined}
-                className="py-1 data-[extra-columns]:-mt-1 sm:data-[extra-columns]:mt-0 px-1 leading-tight pr-4"
+                className="py-1 data-[extra-columns]:-mt-2 sm:data-[extra-columns]:mt-0 px-1 leading-tight pr-4"
               >
                 {logLine.message}
               </ConditionallyWrappedLine>
