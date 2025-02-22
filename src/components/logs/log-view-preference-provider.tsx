@@ -8,6 +8,8 @@ type TLogViewPreferencesContext = {
   setPreferences: (
     preferences: ((old: string[]) => string[] | null) | string[] | null
   ) => void;
+  isDefaultState: boolean;
+  resetPreferences: () => void;
 };
 
 const LogViewPreferencesContext =
@@ -16,7 +18,7 @@ const LogViewPreferencesContext =
 export const logViewPreferenceKeys = {
   timestamp: "timestamp",
   serviceId: "service_id",
-  lineWrapping: "line_wrapping",
+  lineWrap: "line_wrap",
   autoFollow: "auto_follow",
 };
 
@@ -56,8 +58,8 @@ export const logViewPreferences: TLogViewPreferenceGroup[] = [
         type: "checkbox",
       },
       {
-        value: logViewPreferenceKeys.lineWrapping,
-        label: "Line Wrapping",
+        value: logViewPreferenceKeys.lineWrap,
+        label: "Line Wrap",
         type: "checkbox",
       },
     ],
@@ -69,16 +71,20 @@ const logViewPreferenceSort = (a: string, b: string) => a.localeCompare(b);
 export const LogViewPreferencesProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
+  const defaultState = [
+    logViewPreferenceKeys.timestamp,
+    logViewPreferenceKeys.serviceId,
+    logViewPreferenceKeys.autoFollow,
+  ].sort(logViewPreferenceSort);
+
   const [preferences, setPreferences] = useQueryState(
     "preferences",
-    parseAsArrayOf(parseAsString).withDefault(
-      [
-        logViewPreferenceKeys.timestamp,
-        logViewPreferenceKeys.serviceId,
-        logViewPreferenceKeys.autoFollow,
-      ].sort(logViewPreferenceSort)
-    )
+    parseAsArrayOf(parseAsString).withDefault(defaultState)
   );
+
+  const isDefaultState =
+    preferences.sort(logViewPreferenceSort).join(",") ===
+    defaultState.join(",");
 
   const _setPreferences: (
     preferences: ((old: string[]) => string[] | null) | string[] | null
@@ -103,6 +109,8 @@ export const LogViewPreferencesProvider: React.FC<{
       value={{
         preferences,
         setPreferences: _setPreferences,
+        isDefaultState,
+        resetPreferences: () => _setPreferences(defaultState),
       }}
     >
       {children}

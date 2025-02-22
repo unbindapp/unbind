@@ -16,7 +16,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
-import { FilterIcon, SearchIcon, SettingsIcon, XIcon } from "lucide-react";
+import {
+  FilterIcon,
+  RotateCcwIcon,
+  SearchIcon,
+  SettingsIcon,
+  XIcon,
+} from "lucide-react";
 import { useQueryState } from "nuqs";
 import { toast } from "sonner";
 
@@ -27,8 +33,12 @@ type Props = {
 const viewPreferencesDropdownId = "view_preferences";
 
 export default function TopBar({ className }: Props) {
-  const { preferences: viewPreferences, setPreferences: setViewPreferences } =
-    useLogViewPreferences();
+  const {
+    preferences: viewPreferences,
+    setPreferences: setViewPreferences,
+    isDefaultState: isViewPreferencesDefault,
+    resetPreferences: resetViewPreferences,
+  } = useLogViewPreferences();
   const [dropdown, setDropdown] = useQueryState("dropdown");
 
   const isViewPreferencesDropdownOpen = dropdown === viewPreferencesDropdownId;
@@ -82,8 +92,12 @@ export default function TopBar({ className }: Props) {
                 type="button"
                 size="icon"
                 variant="ghost"
-                className="h-auto text-foreground w-10 rounded-l-none rounded-r-lg border-l group/button"
+                className="h-auto text-foreground w-10 rounded-l-none rounded-r-lg border-l group/button relative"
               >
+                <div
+                  data-show={!isViewPreferencesDefault ? true : undefined}
+                  className="absolute pointer-events-none opacity-0 scale-75 data-[show]:scale-100 data-[show]:opacity-100 transition top-1 right-1 bg-warning size-1.5 rounded-full"
+                />
                 <div className="size-5 relative group-data-[open]/button:rotate-90 transition-transform">
                   <SettingsIcon className="size-full opacity-100 group-data-[open]/button:opacity-0 transition-opacity" />
                   <XIcon
@@ -93,10 +107,7 @@ export default function TopBar({ className }: Props) {
                 </div>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="w-[768px] sm:w-auto sm:max-w-64"
-            >
+            <DropdownMenuContent align="end" className="w-[768px] sm:w-56">
               <ScrollArea>
                 {logViewPreferences.map((group, index) => (
                   <div key={group.label} className="w-full flex flex-col">
@@ -142,6 +153,23 @@ export default function TopBar({ className }: Props) {
                     </DropdownMenuGroup>
                   </div>
                 ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem
+                    disabled={isViewPreferencesDefault}
+                    onSelect={(e) => {
+                      e.preventDefault();
+                      resetViewPreferences();
+                    }}
+                    className="py-3.5 sm:py-2.25"
+                  >
+                    <RotateCcwIcon
+                      data-default={isViewPreferencesDefault ? true : undefined}
+                      className="size-4.5 shrink-0 -my-1 transform rotate-90 data-[default]:rotate-0 transition"
+                    />
+                    <p className="shrink min-w-0">Reset</p>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
               </ScrollArea>
             </DropdownMenuContent>
           </DropdownMenu>

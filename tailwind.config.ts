@@ -150,6 +150,7 @@ const config: Config = {
       },
       rotate: {
         30: "30deg",
+        135: "135deg",
         360: "360deg",
       },
       borderRadius: {

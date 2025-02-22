@@ -37,7 +37,7 @@ export default function LogLine({
       suppressHydrationWarning
       data-level={logLine.level}
       data-wrap={
-        viewPreferences.includes(logViewPreferenceKeys.lineWrapping)
+        viewPreferences.includes(logViewPreferenceKeys.lineWrap)
           ? true
           : undefined
       }
@@ -74,7 +74,8 @@ export default function LogLine({
                   <div
                     className="flex-1 min-w-0 md:min-w-auto flex items-center justify-start bg-background group-hover/line:bg-border
                     group-data-[level=warn]/line:bg-warning-highlight group-data-[level=error]/line:bg-destructive-highlight
-                    group-hover/line:group-data-[level=warn]/line:bg-warning-highlight-hover group-hover/line:group-data-[level=error]/line:bg-destructive-highlight-hover"
+                    group-hover/line:group-data-[level=warn]/line:bg-warning-highlight-hover group-hover/line:group-data-[level=error]/line:bg-destructive-highlight-hover
+                    [mask-image:linear-gradient(to_left,transparent,black_1rem)]"
                   >
                     {viewPreferences.includes(
                       logViewPreferenceKeys.timestamp
@@ -123,7 +124,7 @@ function ConditionallyWrappedLine({
 } & ComponentProps<"div">) {
   const { preferences } = useLogViewPreferences();
 
-  if (preferences.includes(logViewPreferenceKeys.lineWrapping)) {
+  if (preferences.includes(logViewPreferenceKeys.lineWrap)) {
     return (
       <p
         {...rest}
@@ -144,7 +145,7 @@ function ConditionallyWrappedLine({
 function ConditionalScrollArea({ children }: { children: ReactNode }) {
   const { preferences } = useLogViewPreferences();
 
-  if (preferences.includes(logViewPreferenceKeys.lineWrapping)) {
+  if (preferences.includes(logViewPreferenceKeys.lineWrap)) {
     return children;
   }
 
