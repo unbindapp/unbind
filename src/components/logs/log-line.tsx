@@ -27,6 +27,10 @@ export default function LogLine({
   ...rest
 }: Props) {
   const { preferences: viewPreferences } = useLogViewPreferences();
+
+  const hasExtraColumns =
+    viewPreferences.includes(logViewPreferenceKeys.timestamp) ||
+    viewPreferences.includes(logViewPreferenceKeys.serviceId);
   return (
     <div
       {...rest}
@@ -61,39 +65,44 @@ export default function LogLine({
           <ConditionalScrollArea>
             <div className="group-data-[wrap]/line:w-full flex flex-col items-start md:flex-row gap-0.5 py-0.5 md:py-0.25">
               {/* Timestamp and service name */}
-              <div
-                className="group-data-[wrap]/line:w-full md:group-data-[wrap]/line:w-auto
-                flex items-center justify-start py-1 z-10
-                sticky left-0 group-data-[wrap]/line:relative group-data-[wrap]/line:left-auto"
-              >
+              {hasExtraColumns && (
                 <div
-                  className="flex-1 min-w-0 md:min-w-auto flex items-center justify-start bg-background group-hover/line:bg-border
-                  group-data-[level=warn]/line:bg-warning-highlight group-data-[level=error]/line:bg-destructive-highlight
-                  group-hover/line:group-data-[level=warn]/line:bg-warning-highlight-hover group-hover/line:group-data-[level=error]/line:bg-destructive-highlight-hover"
+                  className="group-data-[wrap]/line:w-full md:group-data-[wrap]/line:w-auto
+                  flex items-center justify-start py-1 z-10
+                  sticky left-0 group-data-[wrap]/line:relative group-data-[wrap]/line:left-auto"
                 >
-                  {viewPreferences.includes(
-                    logViewPreferenceKeys.timestamp
-                  ) && (
-                    <p
-                      suppressHydrationWarning
-                      className="pr-4 shrink min-w-0 text-muted-foreground px-1 w-36 overflow-hidden overflow-ellipsis whitespace-nowrap leading-tight"
-                    >
-                      {format(logLine.timestamp, "MMM dd, HH:mm:ss")}
-                    </p>
-                  )}
-                  {viewPreferences.includes(
-                    logViewPreferenceKeys.serviceId
-                  ) && (
-                    <p
-                      suppressHydrationWarning
-                      className="pr-4 shrink min-w-0 text-muted-foreground px-1 w-24 overflow-hidden overflow-ellipsis whitespace-nowrap leading-tight"
-                    >
-                      {logLine.serviceId}
-                    </p>
-                  )}
+                  <div
+                    className="flex-1 min-w-0 md:min-w-auto flex items-center justify-start bg-background group-hover/line:bg-border
+                    group-data-[level=warn]/line:bg-warning-highlight group-data-[level=error]/line:bg-destructive-highlight
+                    group-hover/line:group-data-[level=warn]/line:bg-warning-highlight-hover group-hover/line:group-data-[level=error]/line:bg-destructive-highlight-hover"
+                  >
+                    {viewPreferences.includes(
+                      logViewPreferenceKeys.timestamp
+                    ) && (
+                      <p
+                        suppressHydrationWarning
+                        className="pr-4 shrink min-w-0 text-muted-foreground px-1 w-36 overflow-hidden overflow-ellipsis whitespace-nowrap leading-tight"
+                      >
+                        {format(logLine.timestamp, "MMM dd, HH:mm:ss")}
+                      </p>
+                    )}
+                    {viewPreferences.includes(
+                      logViewPreferenceKeys.serviceId
+                    ) && (
+                      <p
+                        suppressHydrationWarning
+                        className="pr-4 shrink min-w-0 text-muted-foreground px-1 w-24 overflow-hidden overflow-ellipsis whitespace-nowrap leading-tight"
+                      >
+                        {logLine.serviceId}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <ConditionallyWrappedLine className="py-1 -mt-1 sm:mt-0 px-1 leading-tight pr-4">
+              )}
+              <ConditionallyWrappedLine
+                data-extra-columns={hasExtraColumns ? true : undefined}
+                className="py-1 data-[extra-columns]:-mt-1 sm:mt-0 px-1 leading-tight pr-4"
+              >
                 {logLine.message}
               </ConditionallyWrappedLine>
             </div>
@@ -107,21 +116,26 @@ export default function LogLine({
 function ConditionallyWrappedLine({
   children,
   className,
+  ...rest
 }: {
   children: string;
   className?: string;
-}) {
+} & ComponentProps<"div">) {
   const { preferences } = useLogViewPreferences();
 
   if (preferences.includes(logViewPreferenceKeys.lineWrapping)) {
     return (
-      <p suppressHydrationWarning className={cn("shrink min-w-0", className)}>
+      <p
+        {...rest}
+        suppressHydrationWarning
+        className={cn("shrink min-w-0", className)}
+      >
         {children}
       </p>
     );
   }
   return (
-    <div className={cn("flex", className)}>
+    <div {...rest} className={cn("flex", className)}>
       <pre suppressHydrationWarning>{children}</pre>
     </div>
   );
