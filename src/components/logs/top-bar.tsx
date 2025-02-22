@@ -155,7 +155,7 @@ const logViewPreferences: TLogViewPreferenceGroup[] = [
     ],
   },
   {
-    label: "Settings",
+    label: "Preferences",
     items: [
       {
         value: "line_wrapping",
