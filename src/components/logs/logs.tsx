@@ -109,6 +109,7 @@ export default function Logs({ logs, containerType }: Props) {
           logLine={logLine}
           className="data-[container=page]:data-[last]:pb-4 sm:data-[container=page]:data-[last]:pb-[calc(1.5rem+var(--safe-area-inset-bottom))]
           data-[container=sheet]:data-[last]:pb-[calc(1rem+var(--safe-area-inset-bottom))] sm:data-[container=sheet]:data-[last]:pb-[calc(1.5rem+var(--safe-area-inset-bottom))]"
+          classNameInner="min-[1288px]:group-data-[container=page]/line:rounded-sm"
         />
       )),
     [logs, containerType]

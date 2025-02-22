@@ -47,7 +47,7 @@ export default function BottomDrawer({
       <DrawerContent
         onEscapeKeyDown={onEscapeKeyDown}
         className={cn(
-          "h-[calc(min(26.5rem,calc(100svh-4rem)))]",
+          "h-[calc(min(26.5rem,calc(100svh-3rem)))]",
           classNameContent
         )}
         hasHandle

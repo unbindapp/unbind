@@ -76,8 +76,8 @@ export default function ServicePanel({ service, children }: Props) {
       <DrawerTrigger asChild>{children}</DrawerTrigger>
       <DrawerContent
         hasHandle={isSmall}
-        className="h-[calc(100%-4rem)] w-full flex flex-col
-        sm:ml-auto sm:my-0 sm:top-0 sm:h-full sm:right-0 sm:w-232 sm:max-w-[calc(100%-5rem)] sm:rounded-r-none sm:rounded-l-2xl"
+        className="h-[calc(100%-3rem)] w-full flex flex-col
+        sm:ml-auto sm:my-0 sm:top-0 sm:h-full sm:right-0 sm:w-232 sm:max-w-[calc(100%-4rem)] sm:rounded-r-none sm:rounded-l-2xl"
       >
         <div className="w-full flex items-start justify-start gap-4 px-5 pt-4 sm:px-8 sm:pt-6">
           <DrawerHeader className="flex-1 min-w-0 flex items-center justify-start p-0">

@@ -15,9 +15,15 @@ export type TLogLine = {
 
 type Props = {
   logLine: TLogLine;
+  classNameInner?: string;
 } & ComponentProps<"div">;
 
-export default function LogLine({ logLine, className, ...rest }: Props) {
+export default function LogLine({
+  logLine,
+  className,
+  classNameInner,
+  ...rest
+}: Props) {
   const [viewPreferences] = useLogViewPreferences();
   return (
     <div
@@ -32,8 +38,11 @@ export default function LogLine({ logLine, className, ...rest }: Props) {
       )}
     >
       <div
-        className="px-3 sm:px-4 py-1 w-full flex items-stretch bg-transparent group-data-[level=warn]/line:bg-warning/10 group-data-[level=error]/line:bg-destructive/10
-        group-hover/line:bg-border group-hover/line:group-data-[level=warn]/line:bg-warning/20 group-hover/line:group-data-[level=error]/line:bg-destructive/20"
+        className={cn(
+          `px-3 sm:px-4 py-1 w-full flex items-center bg-transparent group-data-[level=warn]/line:bg-warning/10 group-data-[level=error]/line:bg-destructive/10
+          group-hover/line:bg-border group-hover/line:group-data-[level=warn]/line:bg-warning/20 group-hover/line:group-data-[level=error]/line:bg-destructive/20`,
+          classNameInner
+        )}
       >
         <div className="self-stretch flex pr-1.5 shrink-0">
           <div
@@ -41,7 +50,7 @@ export default function LogLine({ logLine, className, ...rest }: Props) {
             group-data-[level=error]/line:bg-destructive"
           />
         </div>
-        <div className="flex-1 min-w-0 flex flex-col sm:flex-row gap-0.5 py-0.5 sm:py-0.5">
+        <div className="flex-1 min-w-0 flex flex-col items-start md:flex-row gap-0.5 py-0.5">
           <div className="flex items-center justify-start">
             {viewPreferences.includes(logViewPreferenceKeys.timestamp) && (
               <p

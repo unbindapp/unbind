@@ -84,7 +84,7 @@ export function CommandPanelTrigger({
         Trigger={children}
         open={open}
         onOpenChange={setOpen}
-        classNameContent="h-[calc(100svh-4rem)]"
+        classNameContent="h-[calc(100svh-3rem)]"
         noScrollArea
         dontAutoFocus
         onEscapeKeyDown={onEscapeKeyDown}
