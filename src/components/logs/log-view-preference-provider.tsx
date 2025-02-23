@@ -24,7 +24,7 @@ const LogViewPreferencesContext =
 export const logViewPreferenceKeys = {
   timestamp: "timestamp",
   serviceId: "service_id",
-  lineWrap: "line_wrap",
+  lineWrapping: "line_wrapping",
   autoFollow: "auto_follow",
 };
 
@@ -59,13 +59,13 @@ export const logViewPreferences: TLogViewPreferenceGroup[] = [
     label: "Preferences",
     items: [
       {
-        value: logViewPreferenceKeys.autoFollow,
-        label: "Auto Follow",
+        value: logViewPreferenceKeys.lineWrapping,
+        label: "Line Wrapping",
         type: "checkbox",
       },
       {
-        value: logViewPreferenceKeys.lineWrap,
-        label: "Line Wrap",
+        value: logViewPreferenceKeys.autoFollow,
+        label: "Auto Follow",
         type: "checkbox",
       },
     ],
@@ -80,11 +80,13 @@ const defaultState = [
   logViewPreferenceKeys.autoFollow,
 ].sort(logViewPreferenceSort);
 
+export const logViewPreferencesKey = "log_view";
+
 export const LogViewPreferencesProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
   const [preferences, setPreferences] = useQueryState(
-    "preferences",
+    logViewPreferencesKey,
     parseAsArrayOf(parseAsString).withDefault(defaultState)
   );
 

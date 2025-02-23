@@ -37,7 +37,7 @@ export default function LogLine({
       suppressHydrationWarning
       data-level={logLine.level}
       data-wrap={
-        viewPreferences.includes(logViewPreferenceKeys.lineWrap)
+        viewPreferences.includes(logViewPreferenceKeys.lineWrapping)
           ? true
           : undefined
       }
@@ -124,7 +124,7 @@ function ConditionallyWrappedLine({
 } & ComponentProps<"div">) {
   const { preferences } = useLogViewPreferences();
 
-  if (preferences.includes(logViewPreferenceKeys.lineWrap)) {
+  if (preferences.includes(logViewPreferenceKeys.lineWrapping)) {
     return (
       <p
         {...rest}
@@ -145,7 +145,7 @@ function ConditionallyWrappedLine({
 function ConditionalScrollArea({ children }: { children: ReactNode }) {
   const { preferences } = useLogViewPreferences();
 
-  if (preferences.includes(logViewPreferenceKeys.lineWrap)) {
+  if (preferences.includes(logViewPreferenceKeys.lineWrapping)) {
     return children;
   }
 

@@ -18,24 +18,24 @@ const LogViewDropdownContext = createContext<TLogViewDropdownContext | null>(
   null
 );
 
-export const viewPreferencesDropdownId = "view_preferences";
+export const logViewPreferencesDropdownId = "log_view_preferences";
 
 export const LogViewDropdownProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
   const [dropdown, setDropdown] = useQueryState("dropdown");
 
-  const open = dropdown === viewPreferencesDropdownId;
+  const open = dropdown === logViewPreferencesDropdownId;
 
   const setOpen = useCallback(
     (prop: boolean | ((prop: boolean) => boolean)) => {
       if (typeof prop === "function") {
         const isOpen = prop(open);
-        setDropdown(isOpen ? viewPreferencesDropdownId : null);
+        setDropdown(isOpen ? logViewPreferencesDropdownId : null);
         return;
       }
 
-      setDropdown(prop ? viewPreferencesDropdownId : null);
+      setDropdown(prop ? logViewPreferencesDropdownId : null);
     },
     [setDropdown, open]
   );

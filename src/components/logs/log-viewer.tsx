@@ -164,6 +164,7 @@ function Logs_({ logs, containerType }: Props) {
           [mask-image:linear-gradient(to_bottom,transparent,black_0.75rem,black_calc(100%-0.75rem),transparent)]"
         >
           <VList
+            overscan={10}
             data-container={containerType}
             style={{ height: undefined }}
             className="w-full flex-1 min-h-0 font-mono data-[container=page]:px-[max(0px,calc((100%-1280px)/2))]"

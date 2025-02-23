@@ -31,15 +31,6 @@ type Props = {
 };
 
 export default function TopBar({ className }: Props) {
-  const {
-    preferences: viewPreferences,
-    setPreferences: setViewPreferences,
-    isDefaultState: isViewPreferencesDefault,
-    resetPreferences: resetViewPreferences,
-  } = useLogViewPreferences();
-  const [isViewPreferencesDropdownOpen, setIsViewPreferencesDropdownOpen] =
-    useLogViewDropdown();
-
   return (
     <div className={cn("w-full items-stretch flex gap-2", className)}>
       <form
@@ -75,100 +66,104 @@ export default function TopBar({ className }: Props) {
           >
             <FilterIcon className="size-5" />
           </Button>
-          <DropdownMenu
-            open={isViewPreferencesDropdownOpen}
-            onOpenChange={setIsViewPreferencesDropdownOpen}
-          >
-            <DropdownMenuTrigger asChild>
-              <Button
-                data-open={isViewPreferencesDropdownOpen ? true : undefined}
-                aria-label="Log View Preferences"
-                type="button"
-                size="icon"
-                variant="ghost"
-                className="h-auto touch-manipulation text-foreground w-10 rounded-l-none rounded-r-lg border-l group/button relative"
-              >
-                <div
-                  data-show={!isViewPreferencesDefault ? true : undefined}
-                  className="absolute pointer-events-none opacity-0 scale-75 data-[show]:scale-100 data-[show]:opacity-100 transition top-1 right-1 bg-warning size-1.5 rounded-full"
-                />
-                <div className="size-5 relative group-data-[open]/button:rotate-90 transition-transform">
-                  <SettingsIcon className="size-full opacity-100 group-data-[open]/button:opacity-0 transition-opacity" />
-                  <XIcon
-                    className="size-full absolute left-0 top-0 -rotate-90 opacity-0 
-                    transition-opacity group-data-[open]/button:opacity-100"
-                  />
-                </div>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[768px] sm:w-56">
-              <ScrollArea>
-                {logViewPreferences.map((group, index) => (
-                  <div key={group.label} className="w-full flex flex-col">
-                    {index > 0 && <DropdownMenuSeparator />}
-                    <DropdownMenuLabel className="pb-0">
-                      {group.label}
-                    </DropdownMenuLabel>
-                    <DropdownMenuGroup title={group.label}>
-                      {group.items.map((item) =>
-                        item.type === "checkbox" ? (
-                          <DropdownMenuCheckboxItem
-                            className="py-3.5 sm:py-2.25"
-                            checked={viewPreferences.includes(item.value)}
-                            onCheckedChange={(checked) => {
-                              setViewPreferences((prevSettings) => {
-                                if (
-                                  checked &&
-                                  prevSettings.includes(item.value)
-                                ) {
-                                  return prevSettings;
-                                }
-                                if (checked) {
-                                  return [...prevSettings, item.value];
-                                }
-                                return prevSettings.filter(
-                                  (setting) => setting !== item.value
-                                );
-                              });
-                            }}
-                            key={item.value}
-                          >
-                            <p className="shrink min-w-0">{item.label}</p>
-                          </DropdownMenuCheckboxItem>
-                        ) : (
-                          <DropdownMenuItem
-                            className="py-3.5 sm:py-2.25"
-                            key={item.value}
-                          >
-                            <p className="shrink min-w-0">{item.label}</p>
-                          </DropdownMenuItem>
-                        )
-                      )}
-                    </DropdownMenuGroup>
-                  </div>
-                ))}
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <DropdownMenuItem
-                    disabled={isViewPreferencesDefault}
-                    onSelect={(e) => {
-                      e.preventDefault();
-                      resetViewPreferences();
-                    }}
-                    className="py-3.5 sm:py-2.25"
-                  >
-                    <RotateCcwIcon
-                      data-default={isViewPreferencesDefault ? true : undefined}
-                      className="size-4.5 shrink-0 -my-1 transform rotate-90 data-[default]:rotate-0 transition"
-                    />
-                    <p className="shrink min-w-0">Reset</p>
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-              </ScrollArea>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <SettingsButton className="h-auto w-10 rounded-l-none rounded-r-lg border-l group/button relative" />
         </div>
       </form>
     </div>
+  );
+}
+
+function SettingsButton({ className }: { className?: string }) {
+  const { preferences, setPreferences, isDefaultState, resetPreferences } =
+    useLogViewPreferences();
+  const [isDropdownOpen, setIsDropdownOpen] = useLogViewDropdown();
+
+  return (
+    <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          data-open={isDropdownOpen ? true : undefined}
+          aria-label="Log View Preferences"
+          type="button"
+          size="icon"
+          variant="ghost"
+          className={cn("touch-manipulation", className)}
+        >
+          <div
+            data-show={!isDefaultState ? true : undefined}
+            className="absolute pointer-events-none opacity-0 scale-75 data-[show]:scale-100 data-[show]:opacity-100 transition top-1.25 right-1.25 bg-warning size-1.25 rounded-full"
+          />
+          <div className="size-5 relative group-data-[open]/button:rotate-90 transition-transform">
+            <SettingsIcon className="size-full opacity-100 group-data-[open]/button:opacity-0 transition-opacity" />
+            <XIcon
+              className="size-full absolute left-0 top-0 -rotate-90 opacity-0 
+              transition-opacity group-data-[open]/button:opacity-100"
+            />
+          </div>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-[768px] sm:w-56">
+        <ScrollArea>
+          {logViewPreferences.map((group, index) => (
+            <div key={group.label} className="w-full flex flex-col">
+              {index > 0 && <DropdownMenuSeparator />}
+              <DropdownMenuLabel className="pb-0">
+                {group.label}
+              </DropdownMenuLabel>
+              <DropdownMenuGroup title={group.label}>
+                {group.items.map((item) =>
+                  item.type === "checkbox" ? (
+                    <DropdownMenuCheckboxItem
+                      className="py-3.5 sm:py-2.25"
+                      checked={preferences.includes(item.value)}
+                      onCheckedChange={(checked) => {
+                        setPreferences((prevSettings) => {
+                          if (checked && prevSettings.includes(item.value)) {
+                            return prevSettings;
+                          }
+                          if (checked) {
+                            return [...prevSettings, item.value];
+                          }
+                          return prevSettings.filter(
+                            (setting) => setting !== item.value
+                          );
+                        });
+                      }}
+                      key={item.value}
+                    >
+                      <p className="shrink min-w-0">{item.label}</p>
+                    </DropdownMenuCheckboxItem>
+                  ) : (
+                    <DropdownMenuItem
+                      className="py-3.5 sm:py-2.25"
+                      key={item.value}
+                    >
+                      <p className="shrink min-w-0">{item.label}</p>
+                    </DropdownMenuItem>
+                  )
+                )}
+              </DropdownMenuGroup>
+            </div>
+          ))}
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DropdownMenuItem
+              disabled={isDefaultState}
+              onSelect={(e) => {
+                e.preventDefault();
+                resetPreferences();
+              }}
+              className="py-3.5 sm:py-2.25"
+            >
+              <RotateCcwIcon
+                data-default={isDefaultState ? true : undefined}
+                className="size-4.5 shrink-0 -my-1 transform rotate-90 data-[default]:rotate-0 transition"
+              />
+              <p className="shrink min-w-0">Reset</p>
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+        </ScrollArea>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
