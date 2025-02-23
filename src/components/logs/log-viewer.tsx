@@ -2,10 +2,10 @@
 
 import LogLine, { TLogLine } from "@/components/logs/log-line";
 import LogViewDropdownProvider from "@/components/logs/log-view-dropdown-provider";
-import LogViewPreferenceProvider, {
+import LogViewPreferencesProvider, {
   logViewPreferenceKeys,
   useLogViewPreferences,
-} from "@/components/logs/log-view-preference-provider";
+} from "@/components/logs/log-view-preferences-provider";
 import NavigationBar from "@/components/logs/navigation-bar";
 import TopBar from "@/components/logs/top-bar";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -22,11 +22,11 @@ type Props = {
 
 export default function LogViewer({ logs, containerType }: Props) {
   return (
-    <LogViewPreferenceProvider>
+    <LogViewPreferencesProvider>
       <LogViewDropdownProvider>
         <Logs_ logs={logs} containerType={containerType} />
       </LogViewDropdownProvider>
-    </LogViewPreferenceProvider>
+    </LogViewPreferencesProvider>
   );
 }
 

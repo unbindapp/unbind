@@ -72,13 +72,13 @@ export const logViewPreferences: TLogViewPreferenceGroup[] = [
   },
 ];
 
-const logViewPreferenceSort = (a: string, b: string) => a.localeCompare(b);
+const logViewPreferencesSort = (a: string, b: string) => a.localeCompare(b);
 
 const defaultState = [
   logViewPreferenceKeys.timestamp,
   logViewPreferenceKeys.serviceId,
   logViewPreferenceKeys.autoFollow,
-].sort(logViewPreferenceSort);
+].sort(logViewPreferencesSort);
 
 export const logViewPreferencesKey = "log_view";
 
@@ -91,7 +91,7 @@ export const LogViewPreferencesProvider: React.FC<{
   );
 
   const isDefaultState =
-    preferences.sort(logViewPreferenceSort).join(",") ===
+    preferences.sort(logViewPreferencesSort).join(",") ===
     defaultState.join(",");
 
   const _setPreferences: (
@@ -107,10 +107,10 @@ export const LogViewPreferencesProvider: React.FC<{
           if (pref === null) {
             return null;
           }
-          return pref.sort(logViewPreferenceSort);
+          return pref.sort(logViewPreferencesSort);
         });
       }
-      return setPreferences(preferences.sort(logViewPreferenceSort));
+      return setPreferences(preferences.sort(logViewPreferencesSort));
     },
     [setPreferences]
   );

@@ -2,7 +2,7 @@ import { useLogViewDropdown } from "@/components/logs/log-view-dropdown-provider
 import {
   logViewPreferences,
   useLogViewPreferences,
-} from "@/components/logs/log-view-preference-provider";
+} from "@/components/logs/log-view-preferences-provider";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

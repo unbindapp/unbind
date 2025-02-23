@@ -1,7 +1,7 @@
 import {
   logViewPreferenceKeys,
   useLogViewPreferences,
-} from "@/components/logs/log-view-preference-provider";
+} from "@/components/logs/log-view-preferences-provider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { format } from "date-fns";
