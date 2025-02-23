@@ -250,12 +250,18 @@ const config: Config = {
         underline: "inset 0rem -3px 0rem 0rem",
       },
     },
+    transitionDelay: {
+      5: "0.005s",
+      10: "0.01s",
+      25: "0.025s",
+      50: "0.05s",
+    },
     animation: {
       skeleton: "skeleton 1.25s ease-in-out infinite",
       "pulse-scale": "pulse-scale 1s ease-in-out infinite",
       spin: "spin 1s linear infinite",
       "loading-bar": "loading-bar 45s linear infinite",
-      "line-in": "line-in 0.15s ease-in forwards",
+      "line-in": "line-in 0.01s step-end forwards",
     },
     keyframes: {
       skeleton: {

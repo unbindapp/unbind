@@ -141,9 +141,6 @@ function Logs_({ logs, containerType }: Props) {
           data-first={index === 0 ? true : undefined}
           data-last={index === logs.length - 1 ? true : undefined}
           logLine={logLine}
-          className="data-[container=page]:data-[last]:pb-4 sm:data-[container=page]:data-[last]:pb-[calc(1.5rem+var(--safe-area-inset-bottom))]
-          data-[container=sheet]:data-[last]:pb-[calc(1rem+var(--safe-area-inset-bottom))] sm:data-[container=sheet]:data-[last]:pb-[calc(1.5rem+var(--safe-area-inset-bottom))]
-          data-[last]:opacity-0 data-[last]:delay-100 data-[last]:animate-line-in"
           classNameInner="min-[1288px]:group-data-[container=page]/line:rounded-sm"
         />
       )),
