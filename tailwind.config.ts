@@ -255,6 +255,7 @@ const config: Config = {
       "pulse-scale": "pulse-scale 1s ease-in-out infinite",
       spin: "spin 1s linear infinite",
       "loading-bar": "loading-bar 45s linear infinite",
+      "line-in": "line-in 0.15s ease-in forwards",
     },
     keyframes: {
       skeleton: {
@@ -293,6 +294,14 @@ const config: Config = {
         },
         "100%": {
           transform: "rotate(360deg)",
+        },
+      },
+      "line-in": {
+        "0%": {
+          opacity: "0",
+        },
+        "100%": {
+          opacity: "1",
         },
       },
     },

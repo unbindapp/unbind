@@ -14,13 +14,26 @@ const getRandomServiceId = () => `service-${Math.floor(Math.random() * 6)}`;
 
 const getRandomLogMessage = (index: number, level: TLogLine["level"]) => {
   const random = Math.random();
-  if (random < 0.8) {
+  if (random > 0.4) {
     return `This is a fake log message for testing ${level} ${index}`;
+  }
+  if (random > 0.2) {
+    return `${level} ${index}. This is a fake log message for testing. This is a fake log message for testing. This is a fake log message for testing. This is a fake log message for testing`;
+  }
+  if (random > 0.1) {
+    return `object: {
+    message: "${level} ${index} Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
+    timestamp: ${Date.now()},
+    level: "${level}",
+}`;
   }
   return `object: {
     message: "${level} ${index} Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
     timestamp: ${Date.now()},
-    level: "${level}"
+    level: "${level}",
+    random: "${Math.random()}",
+    test: true,
+    link: "https://example.com",
 }`;
 };
 
@@ -54,7 +67,7 @@ export default function TemporaryLogs({ containerType }: Props) {
       };
       return [...prevLogs, newLog];
     });
-  }, 1_000);
+  }, 1000);
 
   return <LogViewer logs={logs} containerType={containerType} />;
 }

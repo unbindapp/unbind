@@ -51,27 +51,32 @@ function Logs_({ logs, containerType }: Props) {
     return;
   }, []);
 
-  const scrollToBottom = useCallback(() => {
-    follow.current = true;
+  const scrollToBottomTimeout = useRef<NodeJS.Timeout | null>(null);
 
-    const listElement = listRef.current;
-    const containerElement = containerRef.current;
-    if (!listElement || !containerElement) return;
-    listElement.scrollTo(
-      listElement.scrollSize - containerElement.clientHeight
-    );
+  const scrollToBottom = useCallback(() => {
+    const scroll = () => {
+      follow.current = true;
+      const listElement = listRef.current;
+      const containerElement = containerRef.current;
+      if (!listElement || !containerElement) return;
+      listElement.scrollTo(
+        listElement.scrollSize - containerElement.clientHeight
+      );
+    };
+
+    scroll();
+
+    if (scrollToBottomTimeout.current) {
+      clearTimeout(scrollToBottomTimeout.current);
+    }
+    scrollToBottomTimeout.current = setTimeout(() => {
+      scroll();
+    });
   }, []);
 
   useEffect(() => {
-    let timeout: NodeJS.Timeout;
-
-    if (autoFollow) {
-      timeout = setTimeout(() => {
-        scrollToBottom();
-      });
-    }
-
-    return () => clearTimeout(timeout);
+    if (!autoFollow) return;
+    scrollToBottom();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoFollow]);
 
@@ -79,10 +84,7 @@ function Logs_({ logs, containerType }: Props) {
     if (!follow.current) return;
     if (!autoFollow) return;
 
-    const timeout = setTimeout(() => {
-      scrollToBottom();
-    });
-    return () => clearTimeout(timeout);
+    scrollToBottom();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [logs]);
 
@@ -134,13 +136,14 @@ function Logs_({ logs, containerType }: Props) {
     () =>
       logs.map((logLine, index) => (
         <LogLine
+          key={index}
           data-container={containerType}
           data-first={index === 0 ? true : undefined}
           data-last={index === logs.length - 1 ? true : undefined}
-          key={index}
           logLine={logLine}
           className="data-[container=page]:data-[last]:pb-4 sm:data-[container=page]:data-[last]:pb-[calc(1.5rem+var(--safe-area-inset-bottom))]
-          data-[container=sheet]:data-[last]:pb-[calc(1rem+var(--safe-area-inset-bottom))] sm:data-[container=sheet]:data-[last]:pb-[calc(1.5rem+var(--safe-area-inset-bottom))]"
+          data-[container=sheet]:data-[last]:pb-[calc(1rem+var(--safe-area-inset-bottom))] sm:data-[container=sheet]:data-[last]:pb-[calc(1.5rem+var(--safe-area-inset-bottom))]
+          data-[last]:opacity-0 data-[last]:delay-100 data-[last]:animate-line-in"
           classNameInner="min-[1288px]:group-data-[container=page]/line:rounded-sm"
         />
       )),
