@@ -1,6 +1,7 @@
 "use client";
 
 import LogLine, { TLogLine } from "@/components/logs/log-line";
+import LogViewDropdownProvider from "@/components/logs/log-view-dropdown-provider";
 import LogViewPreferenceProvider, {
   logViewPreferenceKeys,
   useLogViewPreferences,
@@ -22,7 +23,9 @@ type Props = {
 export default function LogViewer({ logs, containerType }: Props) {
   return (
     <LogViewPreferenceProvider>
-      <Logs_ logs={logs} containerType={containerType} />
+      <LogViewDropdownProvider>
+        <Logs_ logs={logs} containerType={containerType} />
+      </LogViewDropdownProvider>
     </LogViewPreferenceProvider>
   );
 }

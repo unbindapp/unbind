@@ -1,7 +1,13 @@
 "use client";
 
 import { parseAsArrayOf, parseAsString, useQueryState } from "nuqs";
-import { createContext, ReactNode, useContext } from "react";
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useMemo,
+} from "react";
 
 type TLogViewPreferencesContext = {
   preferences: string[];
@@ -68,15 +74,15 @@ export const logViewPreferences: TLogViewPreferenceGroup[] = [
 
 const logViewPreferenceSort = (a: string, b: string) => a.localeCompare(b);
 
+const defaultState = [
+  logViewPreferenceKeys.timestamp,
+  logViewPreferenceKeys.serviceId,
+  logViewPreferenceKeys.autoFollow,
+].sort(logViewPreferenceSort);
+
 export const LogViewPreferencesProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
-  const defaultState = [
-    logViewPreferenceKeys.timestamp,
-    logViewPreferenceKeys.serviceId,
-    logViewPreferenceKeys.autoFollow,
-  ].sort(logViewPreferenceSort);
-
   const [preferences, setPreferences] = useQueryState(
     "preferences",
     parseAsArrayOf(parseAsString).withDefault(defaultState)
@@ -88,31 +94,41 @@ export const LogViewPreferencesProvider: React.FC<{
 
   const _setPreferences: (
     preferences: ((old: string[]) => string[] | null) | string[] | null
-  ) => void = (preferences) => {
-    if (preferences === null) {
-      return setPreferences(null);
-    }
-    if (typeof preferences === "function") {
-      return setPreferences((old) => {
-        const pref = preferences(old);
-        if (pref === null) {
-          return null;
-        }
-        return pref.sort(logViewPreferenceSort);
-      });
-    }
-    return setPreferences(preferences.sort(logViewPreferenceSort));
-  };
+  ) => void = useCallback(
+    (preferences) => {
+      if (preferences === null) {
+        return setPreferences(null);
+      }
+      if (typeof preferences === "function") {
+        return setPreferences((old) => {
+          const pref = preferences(old);
+          if (pref === null) {
+            return null;
+          }
+          return pref.sort(logViewPreferenceSort);
+        });
+      }
+      return setPreferences(preferences.sort(logViewPreferenceSort));
+    },
+    [setPreferences]
+  );
+
+  const resetPreferences = useCallback(() => {
+    _setPreferences(defaultState);
+  }, [_setPreferences]);
+
+  const value = useMemo(
+    () => ({
+      preferences,
+      setPreferences: _setPreferences,
+      isDefaultState,
+      resetPreferences,
+    }),
+    [preferences, _setPreferences, isDefaultState, resetPreferences]
+  );
 
   return (
-    <LogViewPreferencesContext.Provider
-      value={{
-        preferences,
-        setPreferences: _setPreferences,
-        isDefaultState,
-        resetPreferences: () => _setPreferences(defaultState),
-      }}
-    >
+    <LogViewPreferencesContext.Provider value={value}>
       {children}
     </LogViewPreferencesContext.Provider>
   );

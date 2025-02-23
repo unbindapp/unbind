@@ -54,7 +54,7 @@ export default function TemporaryLogs({ containerType }: Props) {
       };
       return [...prevLogs, newLog];
     });
-  }, 1000);
+  }, 1_000);
 
   return <LogViewer logs={logs} containerType={containerType} />;
 }

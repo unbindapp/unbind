@@ -1,3 +1,4 @@
+import { useLogViewDropdown } from "@/components/logs/log-view-dropdown-provider";
 import {
   logViewPreferences,
   useLogViewPreferences,
@@ -23,14 +24,11 @@ import {
   SettingsIcon,
   XIcon,
 } from "lucide-react";
-import { useQueryState } from "nuqs";
 import { toast } from "sonner";
 
 type Props = {
   className?: string;
 };
-
-const viewPreferencesDropdownId = "view_preferences";
 
 export default function TopBar({ className }: Props) {
   const {
@@ -39,12 +37,8 @@ export default function TopBar({ className }: Props) {
     isDefaultState: isViewPreferencesDefault,
     resetPreferences: resetViewPreferences,
   } = useLogViewPreferences();
-  const [dropdown, setDropdown] = useQueryState("dropdown");
-
-  const isViewPreferencesDropdownOpen = dropdown === viewPreferencesDropdownId;
-  const setIsViewPreferencesDropdownOpen = (open: boolean) => {
-    setDropdown(open ? viewPreferencesDropdownId : null);
-  };
+  const [isViewPreferencesDropdownOpen, setIsViewPreferencesDropdownOpen] =
+    useLogViewDropdown();
 
   return (
     <div className={cn("w-full items-stretch flex gap-2", className)}>
@@ -92,7 +86,7 @@ export default function TopBar({ className }: Props) {
                 type="button"
                 size="icon"
                 variant="ghost"
-                className="h-auto text-foreground w-10 rounded-l-none rounded-r-lg border-l group/button relative"
+                className="h-auto touch-manipulation text-foreground w-10 rounded-l-none rounded-r-lg border-l group/button relative"
               >
                 <div
                   data-show={!isViewPreferencesDefault ? true : undefined}
