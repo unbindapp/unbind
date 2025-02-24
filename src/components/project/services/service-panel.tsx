@@ -6,7 +6,7 @@ import {
 } from "@/components/project/services/constants";
 import Deployments from "@/components/project/services/tabs/deployments/deployments";
 import Logs from "@/components/project/services/tabs/logs";
-import Metrics from "@/components/project/services/tabs/metrics";
+import Metrics from "@/components/project/services/tabs/metrics/metrics";
 import Settings from "@/components/project/services/tabs/settings";
 import Variables from "@/components/project/services/tabs/variables/variables";
 import { Button } from "@/components/ui/button";

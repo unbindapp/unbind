@@ -23,12 +23,12 @@ export default function ChartWrapper({
 }: Props) {
   return (
     <div className={cn("w-full p-1", className)}>
-      <Card className="w-full border rounded-2xl">
+      <Card className="w-full border rounded-2xl shadow-none">
         <CardHeader className="py-4 px-6">
           <CardTitle className="text-lg">{title}</CardTitle>
           <CardDescription>{description}</CardDescription>
         </CardHeader>
-        <CardContent className="h-64 pt-2">{children}</CardContent>
+        <CardContent className="h-56 pt-2 pb-2">{children}</CardContent>
       </Card>
     </div>
   );

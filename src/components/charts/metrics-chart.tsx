@@ -1,33 +1,41 @@
-"use client";
-
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { format } from "date-fns";
+import { useMemo } from "react";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
-const chartData = [
-  { timestamp: "January", desktop: 186, mobile: 80 },
-  { timestamp: "February", desktop: 305, mobile: 200 },
-  { timestamp: "March", desktop: 237, mobile: 120 },
-  { timestamp: "April", desktop: 73, mobile: 190 },
-  { timestamp: "May", desktop: 209, mobile: 130 },
-  { timestamp: "June", desktop: 214, mobile: 140 },
-];
-const chartConfig = {
-  desktop: {
-    label: "Desktop",
-    color: "hsl(var(--chart-1))",
-  },
-  mobile: {
-    label: "Mobile",
-    color: "hsl(var(--chart-2))",
-  },
-} satisfies ChartConfig;
+type Props = {
+  yFormatter: ((value: any, index: number) => string) | undefined;
+  chartData: (Record<string, number> & { timestamp: number })[];
+};
 
-export default function MetricsChart() {
+export default function MetricsChart({ yFormatter, chartData }: Props) {
+  const dataKeys = useMemo(() => {
+    let keys = new Set<string>();
+    chartData.forEach((row) => {
+      Object.keys(row)
+        .filter((k) => k !== "timestamp")
+        .forEach((k) => {
+          keys.add(k);
+        });
+    });
+    return [...keys];
+  }, [chartData]);
+
+  const chartConfig = useMemo(() => {
+    let config: ChartConfig = {};
+    dataKeys.forEach((key, i) => {
+      config[key] = {
+        label: key,
+      };
+    });
+    return config satisfies ChartConfig;
+  }, [dataKeys]);
+
   return (
     <ChartContainer className="w-full" config={chartConfig}>
       <LineChart
@@ -36,6 +44,8 @@ export default function MetricsChart() {
         margin={{
           left: 12,
           right: 12,
+          top: 12,
+          bottom: 12,
         }}
       >
         <CartesianGrid vertical={false} />
@@ -44,24 +54,25 @@ export default function MetricsChart() {
           tickLine={false}
           axisLine={false}
           tickMargin={8}
-          tickFormatter={(value) => value.slice(0, 3)}
+          tickFormatter={(value) => format(value, "MMM d")}
         />
-        <YAxis tickLine={false} axisLine={false} tickMargin={8} />
+        <YAxis
+          tickLine={false}
+          axisLine={false}
+          tickMargin={8}
+          tickFormatter={yFormatter}
+        />
         <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-        <Line
-          dataKey="desktop"
-          type="monotone"
-          stroke="var(--color-desktop)"
-          strokeWidth={2}
-          dot={false}
-        />
-        <Line
-          dataKey="mobile"
-          type="monotone"
-          stroke="var(--color-mobile)"
-          strokeWidth={2}
-          dot={false}
-        />
+        {dataKeys.map((dataKey, i) => (
+          <Line
+            key={dataKey}
+            dataKey={dataKey}
+            type="monotone"
+            stroke={`hsl(var(--chart-${(i % 10) + 1}))`}
+            strokeWidth={2}
+            dot={false}
+          />
+        ))}
       </LineChart>
     </ChartContainer>
   );
