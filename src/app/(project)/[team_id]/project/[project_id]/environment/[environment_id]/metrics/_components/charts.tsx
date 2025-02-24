@@ -18,7 +18,7 @@ const timestamps = Array.from({ length }).map((_, i) => ({
 }));
 
 function random(seed: number) {
-  var x = Math.sin(seed++) * 10000;
+  const x = Math.sin(seed++) * 10000;
   return x - Math.floor(x);
 }
 
