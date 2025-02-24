@@ -41,6 +41,7 @@ export default function LogLine({
           ? true
           : undefined
       }
+      data-extra-columns={hasExtraColumns ? true : undefined}
       className={cn(
         `w-full flex items-stretch text-xs group/line py-px 
         data-[first]:pt-3 data-[container=page]:data-[last]:pb-4 sm:data-[container=page]:data-[last]:pb-[calc(1.5rem+var(--safe-area-inset-bottom))]
@@ -103,44 +104,16 @@ export default function LogLine({
                   </div>
                 </div>
               )}
-              <ConditionallyWrappedLine
-                data-extra-columns={hasExtraColumns ? true : undefined}
-                className="py-1 data-[extra-columns]:-mt-2 sm:data-[extra-columns]:mt-0 px-1 leading-tight pr-4"
+              <p
+                className="py-1 group-data-[extra-columns]/line:-mt-2 sm:group-data-[extra-columns]/line:mt-0 px-1 leading-tight pr-4
+                group-data-[wrap]/line:shrink group-data-[wrap]/line:min-0 whitespace-pre group-data-[wrap]/line:whitespace-normal"
               >
                 {logLine.message}
-              </ConditionallyWrappedLine>
+              </p>
             </div>
           </ConditionalScrollArea>
         </div>
       </div>
-    </div>
-  );
-}
-
-function ConditionallyWrappedLine({
-  children,
-  className,
-  ...rest
-}: {
-  children: string;
-  className?: string;
-} & ComponentProps<"div">) {
-  const { preferences } = useLogViewPreferences();
-
-  if (preferences.includes(logViewPreferenceKeys.lineWrapping)) {
-    return (
-      <p
-        {...rest}
-        suppressHydrationWarning
-        className={cn("shrink min-w-0", className)}
-      >
-        {children}
-      </p>
-    );
-  }
-  return (
-    <div {...rest} className={cn("flex", className)}>
-      <pre suppressHydrationWarning>{children}</pre>
     </div>
   );
 }
