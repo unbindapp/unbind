@@ -9,9 +9,18 @@ type Props = {
   environmentId: string;
 };
 
-const timestamps = Array.from({ length: 30 }).map(
-  (_, i) => Date.now() - i * 1000 * 60 * 60 * 24
-);
+const now = Date.now();
+
+const length = 30;
+const timestamps = Array.from({ length }).map((_, i) => ({
+  timestamp: now - (length - i) * 1000 * 60 * 60 * 24,
+  seed: Math.round(Math.random() * 100_000),
+}));
+
+function random(seed: number) {
+  var x = Math.sin(seed++) * 10000;
+  return x - Math.floor(x);
+}
 
 type TChartRow = Record<string, number> & { timestamp: number };
 
@@ -21,12 +30,11 @@ export default function Charts({ projectId, environmentId }: Props) {
   const cpuChartData: TChartRow[] | undefined = data
     ? timestamps.map((t) => {
         const obj: TChartRow = {
-          timestamp: t,
+          timestamp: t.timestamp,
         };
         data.services.forEach((service, i) => {
-          obj[service.title] = Math.random() + i;
+          obj[service.title] = random(t.seed + i) + i;
         });
-        obj.timestamp = t;
         return obj;
       })
     : undefined;
@@ -34,12 +42,11 @@ export default function Charts({ projectId, environmentId }: Props) {
   const ramChartData: TChartRow[] | undefined = data
     ? timestamps.map((t) => {
         const obj: TChartRow = {
-          timestamp: t,
+          timestamp: t.timestamp,
         };
         data.services.forEach((service, i) => {
-          obj[service.title] = i * 50 + Math.random() * 10 + 20;
+          obj[service.title] = i * 50 + random(t.seed + i) * 10 + 20;
         });
-        obj.timestamp = t;
         return obj;
       })
     : undefined;
@@ -47,12 +54,11 @@ export default function Charts({ projectId, environmentId }: Props) {
   const diskChartData: TChartRow[] | undefined = data
     ? timestamps.map((t, tI) => {
         const obj: TChartRow = {
-          timestamp: t,
+          timestamp: t.timestamp,
         };
         data.services.forEach((service, i) => {
           obj[service.title] = 50 + tI + i * 20;
         });
-        obj.timestamp = t;
         return obj;
       })
     : undefined;
@@ -60,12 +66,11 @@ export default function Charts({ projectId, environmentId }: Props) {
   const networkChartData: TChartRow[] | undefined = data
     ? timestamps.map((t) => {
         const obj: TChartRow = {
-          timestamp: t,
+          timestamp: t.timestamp,
         };
-        data.services.forEach((service) => {
-          obj[service.title] = Math.random() * 100;
+        data.services.forEach((service, i) => {
+          obj[service.title] = random(t.seed + i) * 100;
         });
-        obj.timestamp = t;
         return obj;
       })
     : undefined;

@@ -38,38 +38,33 @@ export default function MetricsChart({ yFormatter, chartData }: Props) {
 
   return (
     <ChartContainer className="w-full" config={chartConfig}>
-      <LineChart
-        accessibilityLayer
-        data={chartData}
-        margin={{
-          left: 12,
-          right: 12,
-          top: 12,
-          bottom: 12,
-        }}
-      >
+      <LineChart accessibilityLayer data={chartData}>
         <CartesianGrid vertical={false} />
         <XAxis
           dataKey="timestamp"
           tickLine={false}
           axisLine={false}
           tickMargin={8}
-          tickFormatter={(value) => format(value, "MMM d")}
+          tickFormatter={(value) => format(value, "MMM dd")}
         />
-        <YAxis
-          tickLine={false}
-          axisLine={false}
-          tickMargin={8}
-          tickFormatter={yFormatter}
+        <YAxis tickLine={false} axisLine={false} tickFormatter={yFormatter} />
+        <ChartTooltip
+          content={
+            <ChartTooltipContent
+              label="Test"
+              labelFormatter={(_, p) => {
+                return format(p[0].payload.timestamp, "MMM dd, HH:mm");
+              }}
+            />
+          }
         />
-        <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
         {dataKeys.map((dataKey, i) => (
           <Line
             key={dataKey}
             dataKey={dataKey}
-            type="monotone"
+            type="linear"
             stroke={`hsl(var(--chart-${(i % 10) + 1}))`}
-            strokeWidth={2}
+            strokeWidth={1.5}
             dot={false}
           />
         ))}

@@ -5,9 +5,18 @@ import MetricsChart from "@/components/charts/metrics-chart";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { api } from "@/server/trpc/setup/client";
 
-const timestamps = Array.from({ length: 30 }).map(
-  (_, i) => Date.now() - i * 1000 * 60 * 60 * 24
-);
+const now = Date.now();
+
+const length = 30;
+const timestamps = Array.from({ length }).map((_, i) => ({
+  timestamp: now - (length - i) * 1000 * 60 * 60 * 24,
+  seed: Math.round(Math.random() * 100_000),
+}));
+
+function random(seed: number) {
+  var x = Math.sin(seed++) * 10000;
+  return x - Math.floor(x);
+}
 
 type TChartRow = Record<string, number> & { timestamp: number };
 
@@ -31,10 +40,9 @@ export default function Charts() {
   const cpuChartData: TChartRow[] | undefined = service
     ? timestamps.map((t) => {
         const obj: TChartRow = {
-          timestamp: t,
+          timestamp: t.timestamp,
         };
-        obj[service.title] = Math.random();
-        obj.timestamp = t;
+        obj[service.title] = random(t.seed);
         return obj;
       })
     : undefined;
@@ -42,10 +50,9 @@ export default function Charts() {
   const ramChartData: TChartRow[] | undefined = service
     ? timestamps.map((t) => {
         const obj: TChartRow = {
-          timestamp: t,
+          timestamp: t.timestamp,
         };
-        obj[service.title] = Math.random() * 10 + 20;
-        obj.timestamp = t;
+        obj[service.title] = random(t.seed) * 10 + 20;
         return obj;
       })
     : undefined;
@@ -53,10 +60,9 @@ export default function Charts() {
   const diskChartData: TChartRow[] | undefined = service
     ? timestamps.map((t, tI) => {
         const obj: TChartRow = {
-          timestamp: t,
+          timestamp: t.timestamp,
         };
         obj[service.title] = 50 + tI;
-        obj.timestamp = t;
         return obj;
       })
     : undefined;
@@ -64,10 +70,9 @@ export default function Charts() {
   const networkChartData: TChartRow[] | undefined = service
     ? timestamps.map((t) => {
         const obj: TChartRow = {
-          timestamp: t,
+          timestamp: t.timestamp,
         };
-        obj[service.title] = Math.random() * 100;
-        obj.timestamp = t;
+        obj[service.title] = random(t.seed) * 100;
         return obj;
       })
     : undefined;

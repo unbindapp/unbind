@@ -24,11 +24,13 @@ export default function ChartWrapper({
   return (
     <div className={cn("w-full p-1", className)}>
       <Card className="w-full border rounded-2xl shadow-none">
-        <CardHeader className="py-4 px-6">
+        <CardHeader className="px-4 py-2 sm:px-5 sm:py-3">
           <CardTitle className="text-lg">{title}</CardTitle>
           <CardDescription>{description}</CardDescription>
         </CardHeader>
-        <CardContent className="h-56 pt-2 pb-2">{children}</CardContent>
+        <CardContent className="h-56 py-2 px-4 sm:px-5 sm:pb-3">
+          {children}
+        </CardContent>
       </Card>
     </div>
   );
