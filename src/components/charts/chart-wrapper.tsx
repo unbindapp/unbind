@@ -28,7 +28,7 @@ export default function ChartWrapper({
           <CardTitle className="text-lg">{title}</CardTitle>
           <CardDescription>{description}</CardDescription>
         </CardHeader>
-        <CardContent className="h-56 py-2 px-4 sm:px-5 sm:pb-3">
+        <CardContent className="h-56 pb-3 px-4 pt-2 sm:pb-4 sm:px-6">
           {children}
         </CardContent>
       </Card>

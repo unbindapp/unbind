@@ -1,6 +1,10 @@
 "use client";
 
 import ChartWrapper from "@/components/charts/chart-wrapper";
+import {
+  bytesToHumanReadable,
+  cpuToHumanReadable,
+} from "@/components/charts/formatters";
 import MetricsChart from "@/components/charts/metrics-chart";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { api } from "@/server/trpc/setup/client";
@@ -52,7 +56,7 @@ export default function Charts() {
         const obj: TChartRow = {
           timestamp: t.timestamp,
         };
-        obj[service.title] = random(t.seed) * 10 + 20;
+        obj[service.title] = (random(t.seed) * 10 + 20) * 1024 * 1024;
         return obj;
       })
     : undefined;
@@ -62,7 +66,7 @@ export default function Charts() {
         const obj: TChartRow = {
           timestamp: t.timestamp,
         };
-        obj[service.title] = 50 + tI;
+        obj[service.title] = (50 + tI) * 1024 * 1024;
         return obj;
       })
     : undefined;
@@ -72,7 +76,7 @@ export default function Charts() {
         const obj: TChartRow = {
           timestamp: t.timestamp,
         };
-        obj[service.title] = random(t.seed) * 100;
+        obj[service.title] = random(t.seed) * 100 * 1024;
         return obj;
       })
     : undefined;
@@ -87,7 +91,8 @@ export default function Charts() {
         {cpuChartData && (
           <MetricsChart
             chartData={cpuChartData}
-            yFormatter={(v) => `${v} CPU`}
+            yFormatter={cpuToHumanReadable}
+            tooltipValueFormatter={cpuToHumanReadable}
           />
         )}
       </ChartWrapper>
@@ -99,7 +104,8 @@ export default function Charts() {
         {ramChartData && (
           <MetricsChart
             chartData={ramChartData}
-            yFormatter={(v) => `${v} MB`}
+            yFormatter={bytesToHumanReadable}
+            tooltipValueFormatter={bytesToHumanReadable}
           />
         )}
       </ChartWrapper>
@@ -111,7 +117,8 @@ export default function Charts() {
         {diskChartData && (
           <MetricsChart
             chartData={diskChartData}
-            yFormatter={(v) => `${v} MB`}
+            yFormatter={bytesToHumanReadable}
+            tooltipValueFormatter={bytesToHumanReadable}
           />
         )}
       </ChartWrapper>
@@ -123,7 +130,8 @@ export default function Charts() {
         {networkChartData && (
           <MetricsChart
             chartData={networkChartData}
-            yFormatter={(v) => `${v} KB`}
+            yFormatter={bytesToHumanReadable}
+            tooltipValueFormatter={bytesToHumanReadable}
           />
         )}
       </ChartWrapper>

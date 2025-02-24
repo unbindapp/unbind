@@ -10,10 +10,15 @@ import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
 type Props = {
   yFormatter: ((value: number, index: number) => string) | undefined;
+  tooltipValueFormatter: (value: number) => string;
   chartData: (Record<string, number> & { timestamp: number })[];
 };
 
-export default function MetricsChart({ yFormatter, chartData }: Props) {
+export default function MetricsChart({
+  yFormatter,
+  tooltipValueFormatter,
+  chartData,
+}: Props) {
   const dataKeys = useMemo(() => {
     const keys = new Set<string>();
     chartData.forEach((row) => {
@@ -38,7 +43,11 @@ export default function MetricsChart({ yFormatter, chartData }: Props) {
 
   return (
     <ChartContainer className="w-full" config={chartConfig}>
-      <LineChart accessibilityLayer data={chartData}>
+      <LineChart
+        accessibilityLayer
+        data={chartData}
+        margin={{ left: 0, right: 0, top: 0, bottom: 0 }}
+      >
         <CartesianGrid vertical={false} />
         <XAxis
           dataKey="timestamp"
@@ -55,6 +64,8 @@ export default function MetricsChart({ yFormatter, chartData }: Props) {
               labelFormatter={(_, p) => {
                 return format(p[0].payload.timestamp, "MMM dd, HH:mm");
               }}
+              // @ts-expect-error - This is fine, it'll always be a number
+              valueFormatter={tooltipValueFormatter}
             />
           }
         />

@@ -1,6 +1,10 @@
 "use client";
 
 import ChartWrapper from "@/components/charts/chart-wrapper";
+import {
+  bytesToHumanReadable,
+  cpuToHumanReadable,
+} from "@/components/charts/formatters";
 import MetricsChart from "@/components/charts/metrics-chart";
 import { api } from "@/server/trpc/setup/client";
 
@@ -45,7 +49,8 @@ export default function Charts({ projectId, environmentId }: Props) {
           timestamp: t.timestamp,
         };
         data.services.forEach((service, i) => {
-          obj[service.title] = i * 50 + random(t.seed + i) * 10 + 20;
+          obj[service.title] =
+            1024 * 1024 * Math.round(i * 50 + random(t.seed + i) * 10 + 20);
         });
         return obj;
       })
@@ -57,7 +62,7 @@ export default function Charts({ projectId, environmentId }: Props) {
           timestamp: t.timestamp,
         };
         data.services.forEach((service, i) => {
-          obj[service.title] = 50 + tI + i * 20;
+          obj[service.title] = (50 + tI + i * 20) * (1024 * 1024);
         });
         return obj;
       })
@@ -69,7 +74,7 @@ export default function Charts({ projectId, environmentId }: Props) {
           timestamp: t.timestamp,
         };
         data.services.forEach((service, i) => {
-          obj[service.title] = random(t.seed + i) * 100;
+          obj[service.title] = random(t.seed + i) * 100 * 1024;
         });
         return obj;
       })
@@ -85,7 +90,8 @@ export default function Charts({ projectId, environmentId }: Props) {
         {cpuChartData && (
           <MetricsChart
             chartData={cpuChartData}
-            yFormatter={(v) => `${v} CPU`}
+            yFormatter={cpuToHumanReadable}
+            tooltipValueFormatter={cpuToHumanReadable}
           />
         )}
       </ChartWrapper>
@@ -97,7 +103,8 @@ export default function Charts({ projectId, environmentId }: Props) {
         {ramChartData && (
           <MetricsChart
             chartData={ramChartData}
-            yFormatter={(v) => `${v} MB`}
+            yFormatter={bytesToHumanReadable}
+            tooltipValueFormatter={bytesToHumanReadable}
           />
         )}
       </ChartWrapper>
@@ -109,7 +116,8 @@ export default function Charts({ projectId, environmentId }: Props) {
         {diskChartData && (
           <MetricsChart
             chartData={diskChartData}
-            yFormatter={(v) => `${v} MB`}
+            yFormatter={bytesToHumanReadable}
+            tooltipValueFormatter={bytesToHumanReadable}
           />
         )}
       </ChartWrapper>
@@ -121,7 +129,8 @@ export default function Charts({ projectId, environmentId }: Props) {
         {networkChartData && (
           <MetricsChart
             chartData={networkChartData}
-            yFormatter={(v) => `${v} KB`}
+            yFormatter={bytesToHumanReadable}
+            tooltipValueFormatter={bytesToHumanReadable}
           />
         )}
       </ChartWrapper>
