@@ -82,12 +82,8 @@ input[type="search"] {
     --accent: 120 20% 85%;
     --accent-foreground: 120 90% 5%;
     --destructive: 0 84% 30%;
-    --destructive-highlight: 0 40% 92%;
-    --destructive-highlight-hover: 0 45% 86%;
     --destructive-foreground: 120 35% 95%;
     --warning: 40 100% 25%;
-    --warning-highlight: 40 60% 90%;
-    --warning-highlight-hover: 40 65% 82%;
     --warning-foreground: 120 35% 95%;
     --success: 120 85% 20%;
     --success-foreground: 120 35% 95%;
@@ -165,12 +161,8 @@ input[type="search"] {
     --accent: 120 5% 12%;
     --accent-foreground: 120 100% 97%;
     --destructive: 0 80% 69%;
-    --destructive-highlight: 0 20% 12%;
-    --destructive-highlight-hover: 0 28% 16%;
     --destructive-foreground: 120 9% 6%;
-    --warning: 40 85% 60%;
-    --warning-highlight: 40 20% 12%;
-    --warning-highlight-hover: 40 28% 16%;
+    --warning: 40 60% 55%;
     --warning-foreground: 120 9% 6%;
     --success: 120 40% 60%;
     --success-foreground: 120 9% 6%;
