@@ -5,11 +5,6 @@ import MetricsChart from "@/components/charts/metrics-chart";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { api } from "@/server/trpc/setup/client";
 
-type Props = {
-  projectId: string;
-  environmentId: string;
-};
-
 const timestamps = Array.from({ length: 30 }).map(
   (_, i) => Date.now() - i * 1000 * 60 * 60 * 24
 );
@@ -35,7 +30,7 @@ export default function Charts() {
 
   const cpuChartData: TChartRow[] | undefined = service
     ? timestamps.map((t) => {
-        let obj: TChartRow = {
+        const obj: TChartRow = {
           timestamp: t,
         };
         obj[service.title] = Math.random();
@@ -46,7 +41,7 @@ export default function Charts() {
 
   const ramChartData: TChartRow[] | undefined = service
     ? timestamps.map((t) => {
-        let obj: TChartRow = {
+        const obj: TChartRow = {
           timestamp: t,
         };
         obj[service.title] = Math.random() * 10 + 20;
@@ -57,7 +52,7 @@ export default function Charts() {
 
   const diskChartData: TChartRow[] | undefined = service
     ? timestamps.map((t, tI) => {
-        let obj: TChartRow = {
+        const obj: TChartRow = {
           timestamp: t,
         };
         obj[service.title] = 50 + tI;
@@ -68,7 +63,7 @@ export default function Charts() {
 
   const networkChartData: TChartRow[] | undefined = service
     ? timestamps.map((t) => {
-        let obj: TChartRow = {
+        const obj: TChartRow = {
           timestamp: t,
         };
         obj[service.title] = Math.random() * 100;

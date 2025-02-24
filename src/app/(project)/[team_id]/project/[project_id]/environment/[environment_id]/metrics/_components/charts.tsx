@@ -20,7 +20,7 @@ export default function Charts({ projectId, environmentId }: Props) {
 
   const cpuChartData: TChartRow[] | undefined = data
     ? timestamps.map((t) => {
-        let obj: TChartRow = {
+        const obj: TChartRow = {
           timestamp: t,
         };
         data.services.forEach((service, i) => {
@@ -33,7 +33,7 @@ export default function Charts({ projectId, environmentId }: Props) {
 
   const ramChartData: TChartRow[] | undefined = data
     ? timestamps.map((t) => {
-        let obj: TChartRow = {
+        const obj: TChartRow = {
           timestamp: t,
         };
         data.services.forEach((service, i) => {
@@ -46,7 +46,7 @@ export default function Charts({ projectId, environmentId }: Props) {
 
   const diskChartData: TChartRow[] | undefined = data
     ? timestamps.map((t, tI) => {
-        let obj: TChartRow = {
+        const obj: TChartRow = {
           timestamp: t,
         };
         data.services.forEach((service, i) => {
@@ -59,10 +59,10 @@ export default function Charts({ projectId, environmentId }: Props) {
 
   const networkChartData: TChartRow[] | undefined = data
     ? timestamps.map((t) => {
-        let obj: TChartRow = {
+        const obj: TChartRow = {
           timestamp: t,
         };
-        data.services.forEach((service, i) => {
+        data.services.forEach((service) => {
           obj[service.title] = Math.random() * 100;
         });
         obj.timestamp = t;

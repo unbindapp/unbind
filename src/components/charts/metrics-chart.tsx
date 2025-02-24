@@ -9,13 +9,13 @@ import { useMemo } from "react";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
 type Props = {
-  yFormatter: ((value: any, index: number) => string) | undefined;
+  yFormatter: ((value: number, index: number) => string) | undefined;
   chartData: (Record<string, number> & { timestamp: number })[];
 };
 
 export default function MetricsChart({ yFormatter, chartData }: Props) {
   const dataKeys = useMemo(() => {
-    let keys = new Set<string>();
+    const keys = new Set<string>();
     chartData.forEach((row) => {
       Object.keys(row)
         .filter((k) => k !== "timestamp")
@@ -27,8 +27,8 @@ export default function MetricsChart({ yFormatter, chartData }: Props) {
   }, [chartData]);
 
   const chartConfig = useMemo(() => {
-    let config: ChartConfig = {};
-    dataKeys.forEach((key, i) => {
+    const config: ChartConfig = {};
+    dataKeys.forEach((key) => {
       config[key] = {
         label: key,
       };
