@@ -8,10 +8,8 @@ type Props = {
 
 export default function Metrics({ service }: Props) {
   return (
-    <TabWrapper>
-      <div className="w-full flex flex-wrap">
-        <Charts service={service} />
-      </div>
+    <TabWrapper className="flex flex-row flex-wrap">
+      <Charts service={service} />
     </TabWrapper>
   );
 }

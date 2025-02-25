@@ -3,24 +3,17 @@
 import TabIndicator from "@/components/navigation/tab-indicator";
 import { LinkButton } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
+import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type TTab = {
   title: string;
-  relativeHref: string;
+  href?: string;
 };
 
-const tabs: TTab[] = [
-  {
-    title: "Projects",
-    relativeHref: "",
-  },
-  {
-    title: "Settings",
-    relativeHref: "/settings",
-  },
-];
+const getBaseTabUrl = ({ teamId }: { teamId?: string }) =>
+  teamId ? `/${teamId}` : undefined;
 
 export default function TeamTabs({
   className,
@@ -33,15 +26,28 @@ export default function TeamTabs({
   classNameButton?: string;
   layoutId: string;
 }) {
+  const { teamId } = useIdsFromPathname();
+  const tabs: TTab[] = useMemo(() => {
+    return [
+      {
+        title: "Projects",
+        href: getBaseTabUrl({ teamId }),
+      },
+      {
+        title: "Settings",
+        href: `${getBaseTabUrl({ teamId })}/settings`,
+      },
+    ];
+  }, [teamId]);
+
   const pathname = usePathname();
-  const segments = pathname.split("/");
-  const base = `/${segments[1]}`;
-  const relativePath = pathname.replace(base, "");
-  const [activeTabPath, setActiveTabPath] = useState(relativePath);
+  const [activeTabPath, setActiveTabPath] = useState<string | undefined>(
+    pathname
+  );
 
   useEffect(() => {
-    setActiveTabPath(relativePath);
-  }, [relativePath]);
+    setActiveTabPath(pathname);
+  }, [pathname]);
 
   return (
     <div
@@ -59,10 +65,8 @@ export default function TeamTabs({
         >
           {tabs.map((tab) => (
             <LinkButton
-              data-active={
-                tab.relativeHref === activeTabPath ? true : undefined
-              }
-              key={tab.relativeHref}
+              data-active={tab.href === activeTabPath ? true : undefined}
+              key={tab.href}
               className={cn(
                 `font-medium text-sm px-3 py-4.25 sm:py-4 rounded leading-none text-muted-foreground 
                   has-hover:hover:bg-transparent active:bg-transparent group/button data-[active]:text-foreground
@@ -70,10 +74,10 @@ export default function TeamTabs({
                 classNameButton
               )}
               variant="ghost"
-              href={base + tab.relativeHref}
-              onClick={() => setActiveTabPath(tab.relativeHref)}
+              href={tab.href || ""}
+              onClick={() => setActiveTabPath(tab.href)}
             >
-              {activeTabPath === tab.relativeHref && (
+              {activeTabPath === tab.href && (
                 <TabIndicator
                   layoutId={layoutId}
                   className="top-0 bottom-auto sm:bottom-0 sm:top-auto"

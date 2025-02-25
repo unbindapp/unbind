@@ -117,7 +117,7 @@ export default function Charts({ service }: Props) {
       ram={ram}
       disk={disk}
       network={network}
-      chartClassName="w-full lg:w-full"
+      chartClassName="w-full lg:w-full p-0"
     />
   );
 }
