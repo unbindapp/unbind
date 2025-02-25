@@ -16,7 +16,7 @@ export default function NavbarSafeAreaInset({
         className
       )}
     >
-      <div className={cn("h-12", classNameInner)} />
+      <div className={cn("h-24", classNameInner)} />
     </div>
   );
 }

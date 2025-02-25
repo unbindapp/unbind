@@ -11,7 +11,7 @@ export default function Layout({ children }: Props) {
     <>
       <ProjectNavbar />
       {children}
-      <NavbarSafeAreaInset className="sm:hidden" classNameInner="h-24" />
+      <NavbarSafeAreaInset className="sm:hidden" />
     </>
   );
 }
