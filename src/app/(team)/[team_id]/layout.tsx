@@ -1,4 +1,4 @@
-import NavbarSafeAreaInset from "@/components/navigation/navbar-safe-area-inset";
+import NavbarSafeAreaInsetBottom from "@/components/navigation/navbar-safe-area-inset-bottom";
 import TeamNavbar from "@/components/team/team-navbar";
 import { ReactNode } from "react";
 
@@ -11,7 +11,7 @@ export default function Layout({ children }: Props) {
     <>
       <TeamNavbar />
       {children}
-      <NavbarSafeAreaInset className="sm:hidden" />
+      <NavbarSafeAreaInsetBottom className="sm:hidden" />
     </>
   );
 }

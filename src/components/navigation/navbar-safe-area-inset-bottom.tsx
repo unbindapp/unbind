@@ -5,7 +5,7 @@ type Props = {
   classNameInner?: string;
 };
 
-export default function NavbarSafeAreaInset({
+export default function NavbarSafeAreaInsetBottom({
   className,
   classNameInner,
 }: Props) {
