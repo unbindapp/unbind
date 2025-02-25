@@ -115,7 +115,7 @@ function Logs_({ logs, containerType }: Props) {
 
   const throttledOnScroll = useThrottledCallback(onScroll, 50);
 
-  const elements = useMemo(
+  const listItems = useMemo(
     () =>
       logs.map((logLine, index) => (
         <LogLine
@@ -147,14 +147,14 @@ function Logs_({ logs, containerType }: Props) {
         >
           <VList
             reverse
-            overscan={10}
+            overscan={20}
             data-container={containerType}
             style={{ height: undefined }}
             className="w-full flex-1 min-h-0 font-mono data-[container=page]:px-[max(0px,calc((100%-1280px)/2))]"
             ref={virtualListRef}
             onScroll={throttledOnScroll}
           >
-            {elements}
+            {listItems}
           </VList>
         </div>
         <NavigationBar

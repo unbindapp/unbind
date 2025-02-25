@@ -37,7 +37,7 @@ const getRandomLogMessage = (index: number, level: TLogLine["level"]) => {
 }`;
 };
 
-const length = 200;
+const length = 1000;
 
 const initialData: TLogLine[] = Array.from({ length }).map((_, i) => {
   const level = getRandomLevel();
