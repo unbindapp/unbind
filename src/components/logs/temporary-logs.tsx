@@ -37,11 +37,13 @@ const getRandomLogMessage = (index: number, level: TLogLine["level"]) => {
 }`;
 };
 
-const initialData: TLogLine[] = Array.from({ length: 200 }).map((_, i) => {
+const length = 200;
+
+const initialData: TLogLine[] = Array.from({ length }).map((_, i) => {
   const level = getRandomLevel();
   return {
     level,
-    timestamp: Date.now() - i * 1000,
+    timestamp: Date.now() - (length - i) * 1000,
     message: getRandomLogMessage(i, level),
     deploymentId: "deployment-id",
     serviceId: getRandomServiceId(),

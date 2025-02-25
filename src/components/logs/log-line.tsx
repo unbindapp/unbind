@@ -46,7 +46,6 @@ export default function LogLine({
         `w-full flex items-stretch text-xs group/line py-px 
         data-[first]:pt-3 data-[container=page]:data-[last]:pb-4 sm:data-[container=page]:data-[last]:pb-[calc(1.5rem+var(--safe-area-inset-bottom))]
         data-[container=sheet]:data-[last]:pb-[calc(1rem+var(--safe-area-inset-bottom))] sm:data-[container=sheet]:data-[last]:pb-[calc(1.5rem+var(--safe-area-inset-bottom))]
-        data-[last]:opacity-0 data-[last]:animate-line-in
         data-[last]:pb-[calc(1rem+var(--safe-area-inset-bottom))] sm:data-[last]:pb-[calc(1.5rem+var(--safe-area-inset-bottom))] font-mono`,
         className
       )}

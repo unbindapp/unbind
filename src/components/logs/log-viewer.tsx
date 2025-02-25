@@ -12,8 +12,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useThrottledCallback } from "use-debounce";
 import { VList, VListHandle } from "virtua";
 
-const SCROLL_THRESHOLD = 50;
-
 type Props = {
   logs: TLogLine[];
   containerType: "page" | "sheet";
@@ -35,9 +33,10 @@ export default function LogViewer({
   );
 }
 
+const SCROLL_THRESHOLD = 50;
+
 function Logs_({ logs, containerType }: Props) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const listRef = useRef<VListHandle>(null);
+  const virtualListRef = useRef<VListHandle>(null);
   const follow = useRef(true);
   const prevScrollY = useRef<number | null>(null);
   const scrolledOnce = useRef(false);
@@ -49,35 +48,18 @@ function Logs_({ logs, containerType }: Props) {
 
   const scrollToTop = useCallback(() => {
     follow.current = false;
-
-    const listElement = listRef.current;
-    if (!listElement) return;
-    listElement.scrollTo(0);
+    const virtualList = virtualListRef.current;
+    if (!virtualList) return;
+    virtualList.scrollToIndex(0);
     return;
   }, []);
 
-  const scrollToBottomTimeout = useRef<NodeJS.Timeout | null>(null);
-
   const scrollToBottom = useCallback(() => {
-    const scroll = () => {
-      follow.current = true;
-      const listElement = listRef.current;
-      const containerElement = containerRef.current;
-      if (!listElement || !containerElement) return;
-      listElement.scrollTo(
-        listElement.scrollSize - containerElement.clientHeight
-      );
-    };
-
-    scroll();
-
-    if (scrollToBottomTimeout.current) {
-      clearTimeout(scrollToBottomTimeout.current);
-    }
-    scrollToBottomTimeout.current = setTimeout(() => {
-      scroll();
-    });
-  }, []);
+    follow.current = true;
+    const virtualList = virtualListRef.current;
+    if (!virtualList) return;
+    virtualList.scrollToIndex(logs.length - 1);
+  }, [logs]);
 
   useEffect(() => {
     if (!autoFollow) return;
@@ -100,16 +82,12 @@ function Logs_({ logs, containerType }: Props) {
       return;
     }
 
-    const scrollY = listRef.current?.scrollOffset;
-    if (scrollY === undefined) return;
+    const virtualList = virtualListRef.current;
+    if (!virtualList) return;
 
-    const elementHeight = containerRef.current?.clientHeight;
-    if (elementHeight === undefined) return;
+    const scrollY = virtualList.scrollOffset;
+    const maxScroll = virtualList.scrollSize - virtualList.viewportSize;
 
-    const scrollHeight = listRef.current?.scrollSize;
-    if (scrollHeight === undefined) return;
-
-    const maxScroll = scrollHeight - elementHeight;
     const distanceToBottom = maxScroll - scrollY;
     const newIsAtBottom = distanceToBottom < SCROLL_THRESHOLD;
     const newIsAtTop = scrollY < SCROLL_THRESHOLD;
@@ -164,16 +142,16 @@ function Logs_({ logs, containerType }: Props) {
       {/* List */}
       <div className="w-full flex flex-col flex-1 min-h-0 overflow-hidden relative">
         <div
-          ref={containerRef}
           className="w-full flex flex-col flex-1 min-h-0 overflow-hidden relative
           [mask-image:linear-gradient(to_bottom,transparent,black_0.75rem,black_calc(100%-0.75rem),transparent)]"
         >
           <VList
+            reverse
             overscan={10}
             data-container={containerType}
             style={{ height: undefined }}
             className="w-full flex-1 min-h-0 font-mono data-[container=page]:px-[max(0px,calc((100%-1280px)/2))]"
-            ref={listRef}
+            ref={virtualListRef}
             onScroll={throttledOnScroll}
           >
             {elements}
