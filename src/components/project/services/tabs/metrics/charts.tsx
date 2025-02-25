@@ -1,13 +1,12 @@
 "use client";
 
-import ChartWrapper from "@/components/charts/chart-wrapper";
-import {
-  bytesToHumanReadable,
-  cpuToHumanReadable,
-} from "@/components/charts/formatters";
-import MetricsChart from "@/components/charts/metrics-chart";
+import MetricsChartList, {
+  TChartObject,
+  TChartRow,
+} from "@/components/charts/metrics-chart-list";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { api } from "@/server/trpc/setup/client";
+import { useMemo } from "react";
 
 const now = Date.now();
 
@@ -22,11 +21,9 @@ function random(seed: number) {
   return x - Math.floor(x);
 }
 
-type TChartRow = Record<string, number> & { timestamp: number };
-
 export default function Charts() {
   const { projectId, environmentId, serviceId } = useIdsFromPathname();
-  const { data } = api.main.getServices.useQuery(
+  const { data, isPending, isError, error } = api.main.getServices.useQuery(
     {
       projectId: projectId!,
       environmentId: environmentId!,
@@ -41,100 +38,92 @@ export default function Charts() {
 
   const service = data?.services.find((s) => s.id === serviceId);
 
-  const cpuChartData: TChartRow[] | undefined = service
-    ? timestamps.map((t) => {
-        const obj: TChartRow = {
-          timestamp: t.timestamp,
-        };
-        obj[service.title] = random(t.seed);
-        return obj;
-      })
-    : undefined;
+  const cpu: TChartObject = useMemo(() => {
+    return {
+      data: service
+        ? timestamps.map((t) => {
+            const obj: TChartRow = {
+              timestamp: t.timestamp,
+            };
+            obj[service.title] = random(t.seed);
+            return obj;
+          })
+        : undefined,
+      isPending,
+      isError,
+      error: error?.message,
+    };
+  }, [service, isPending, isError, error]);
 
-  const ramChartData: TChartRow[] | undefined = service
-    ? timestamps.map((t) => {
-        const obj: TChartRow = {
-          timestamp: t.timestamp,
-        };
-        obj[service.title] = (random(t.seed) * 10 + 20) * 1024 * 1024;
-        return obj;
-      })
-    : undefined;
+  const ram: TChartObject = useMemo(() => {
+    return {
+      data: service
+        ? timestamps.map((t) => {
+            const obj: TChartRow = {
+              timestamp: t.timestamp,
+            };
+            obj[service.title] =
+              1024 * 1024 * Math.round(random(t.seed) * 10 + 50);
+            return obj;
+          })
+        : undefined,
+      isPending,
+      isError,
+      error: error?.message,
+    };
+  }, [service, isPending, isError, error]);
 
-  const diskChartData: TChartRow[] | undefined = service
-    ? timestamps.map((t, tI) => {
-        const obj: TChartRow = {
-          timestamp: t.timestamp,
-        };
-        obj[service.title] = (50 + tI) * 1024 * 1024;
-        return obj;
-      })
-    : undefined;
+  const disk: TChartObject = useMemo(() => {
+    return {
+      data: service
+        ? timestamps.map((t, tI) => {
+            const obj: TChartRow = {
+              timestamp: t.timestamp,
+            };
+            obj[service.title] = (50 + tI) * (1024 * 1024);
+            return obj;
+          })
+        : undefined,
+      isPending,
+      isError,
+      error: error?.message,
+    };
+  }, [service, isPending, isError, error]);
 
-  const networkChartData: TChartRow[] | undefined = service
-    ? timestamps.map((t) => {
-        const obj: TChartRow = {
-          timestamp: t.timestamp,
-        };
-        obj[service.title] = random(t.seed) * 100 * 1024;
-        return obj;
-      })
-    : undefined;
+  const network: TChartObject = useMemo(() => {
+    return {
+      data: service
+        ? timestamps.map((t) => {
+            const obj: TChartRow = {
+              timestamp: t.timestamp,
+            };
+            obj[service.title] = random(t.seed) * 100 * 1024;
+            return obj;
+          })
+        : undefined,
+      isPending,
+      isError,
+      error: error?.message,
+    };
+  }, [service, isPending, isError, error]);
+
+  if (data && data.services.length === 0) {
+    return (
+      <div className="w-full p-1">
+        <div className="w-full flex items-center text-muted-foreground justify-center border rounded-xl text-center px-4 py-2.5 min-h-36">
+          <p className="w-full leading-tight">There are no metrics yet</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <ChartWrapper
-        title="CPU"
-        description="CPU usage over time"
-        className="w-full"
-      >
-        {cpuChartData && (
-          <MetricsChart
-            chartData={cpuChartData}
-            yFormatter={cpuToHumanReadable}
-            tooltipValueFormatter={cpuToHumanReadable}
-          />
-        )}
-      </ChartWrapper>
-      <ChartWrapper
-        title="RAM"
-        description="RAM usage over time"
-        className="w-full"
-      >
-        {ramChartData && (
-          <MetricsChart
-            chartData={ramChartData}
-            yFormatter={bytesToHumanReadable}
-            tooltipValueFormatter={bytesToHumanReadable}
-          />
-        )}
-      </ChartWrapper>
-      <ChartWrapper
-        title="Disk"
-        description="Disk usage over time"
-        className="w-full"
-      >
-        {diskChartData && (
-          <MetricsChart
-            chartData={diskChartData}
-            yFormatter={bytesToHumanReadable}
-            tooltipValueFormatter={bytesToHumanReadable}
-          />
-        )}
-      </ChartWrapper>
-      <ChartWrapper
-        title="Network"
-        description="Network usage over time"
-        className="w-full"
-      >
-        {networkChartData && (
-          <MetricsChart
-            chartData={networkChartData}
-            yFormatter={bytesToHumanReadable}
-            tooltipValueFormatter={bytesToHumanReadable}
-          />
-        )}
-      </ChartWrapper>
-    </>
+    <MetricsChartList
+      cpu={cpu}
+      ram={ram}
+      disk={disk}
+      network={network}
+      chartClassName="w-full lg:w-full"
+    />
   );
 }
