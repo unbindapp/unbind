@@ -74,9 +74,14 @@ export const logViewPreferences: TLogViewPreferenceGroup[] = [
 
 const logViewPreferencesSort = (a: string, b: string) => a.localeCompare(b);
 
-const defaultState = [
+const defaultStateNormal = [
   logViewPreferenceKeys.timestamp,
   logViewPreferenceKeys.serviceId,
+  logViewPreferenceKeys.autoFollow,
+].sort(logViewPreferencesSort);
+
+const defaultStateWithoutService = [
+  logViewPreferenceKeys.timestamp,
   logViewPreferenceKeys.autoFollow,
 ].sort(logViewPreferencesSort);
 
@@ -84,7 +89,12 @@ export const logViewPreferencesKey = "log_view";
 
 export const LogViewPreferencesProvider: React.FC<{
   children: ReactNode;
-}> = ({ children }) => {
+  hideServiceByDefault?: boolean;
+}> = ({ hideServiceByDefault, children }) => {
+  const defaultState = hideServiceByDefault
+    ? defaultStateWithoutService
+    : defaultStateNormal;
+
   const [preferences, setPreferences] = useQueryState(
     logViewPreferencesKey,
     parseAsArrayOf(parseAsString).withDefault(defaultState)
@@ -117,7 +127,7 @@ export const LogViewPreferencesProvider: React.FC<{
 
   const resetPreferences = useCallback(() => {
     _setPreferences(defaultState);
-  }, [_setPreferences]);
+  }, [_setPreferences, defaultState]);
 
   const value = useMemo(
     () => ({

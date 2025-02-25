@@ -5,9 +5,9 @@ import {
   servicePanelTabKey,
 } from "@/components/project/services/constants";
 import Deployments from "@/components/project/services/tabs/deployments/deployments";
-import Logs from "@/components/project/services/tabs/logs";
+import Logs from "@/components/project/services/tabs/logs/logs";
 import Metrics from "@/components/project/services/tabs/metrics/metrics";
-import Settings from "@/components/project/services/tabs/settings";
+import Settings from "@/components/project/services/tabs/settings/settings";
 import Variables from "@/components/project/services/tabs/variables/variables";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,7 +28,7 @@ import { useWindowSize } from "usehooks-ts";
 type TTab = {
   title: string;
   value: string;
-  Page: FC;
+  Page: FC<{ service: TService }>;
   noScrollArea?: boolean;
 };
 
@@ -134,7 +134,7 @@ export default function ServicePanel({ service, children }: Props) {
         <div className="w-full flex flex-col min-h-0 flex-1">
           <div className="w-full flex flex-col flex-1 min-h-0">
             <ConditionalScrollArea noArea={currentPage?.noScrollArea}>
-              {currentPage && <currentPage.Page />}
+              {currentPage && <currentPage.Page service={service} />}
             </ConditionalScrollArea>
           </div>
         </div>

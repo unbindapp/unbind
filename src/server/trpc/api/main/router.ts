@@ -22,12 +22,15 @@ export const mainRouter = createTRPCRouter({
   getServices: publicProcedure
     .input(
       z.object({
+        teamId: z.string(),
         projectId: z.string(),
         environmentId: z.string(),
       })
     )
-    .query(async function ({ input: { projectId, environmentId } }) {
-      const project = projects.find((p) => p.id === projectId);
+    .query(async function ({ input: { teamId, projectId, environmentId } }) {
+      const project = projects.find(
+        (p) => p.id === projectId && p.teamId === teamId
+      );
       if (!project) {
         throw new Error("Project not found");
       }
@@ -198,6 +201,9 @@ const projects: TProject[] = [
         services: [
           {
             id: "04a595bb-57d5-4d39-850d-5400e0adb8c9",
+            teamId: "5048c703-10c9-4bd8-b311-cf02b527b400",
+            projectId: "f435d289-d8a7-4aa5-8998-106953dd6f65",
+            environmentId: "35c0a3c5-eeca-4db1-9b6c-df598fac51a0",
             type: "nextjs",
             source: "github",
             title: "Web App",
@@ -212,6 +218,9 @@ const projects: TProject[] = [
           },
           {
             id: "ad393e8a-c5ea-46f6-a650-144fd99bdc55",
+            teamId: "5048c703-10c9-4bd8-b311-cf02b527b400",
+            projectId: "f435d289-d8a7-4aa5-8998-106953dd6f65",
+            environmentId: "35c0a3c5-eeca-4db1-9b6c-df598fac51a0",
             type: "postgresql",
             source: "docker",
             title: "Database",
@@ -225,6 +234,9 @@ const projects: TProject[] = [
           },
           {
             id: "2c93a68c-4604-4754-99b8-ffd596abd14a",
+            teamId: "5048c703-10c9-4bd8-b311-cf02b527b400",
+            projectId: "f435d289-d8a7-4aa5-8998-106953dd6f65",
+            environmentId: "35c0a3c5-eeca-4db1-9b6c-df598fac51a0",
             type: "redis",
             source: "docker",
             title: "Cache",
@@ -256,6 +268,9 @@ const projects: TProject[] = [
         services: [
           {
             id: "db8353be-6ec6-4c9d-9a6d-79cedaf5bb9e",
+            teamId: "5048c703-10c9-4bd8-b311-cf02b527b400",
+            projectId: "cce28aef-9c51-461f-8fc3-d777ea47c69d",
+            environmentId: "cbe57445-aab2-4cc7-a53d-b430de647398",
             type: "svelte",
             source: "github",
             title: "Website",
@@ -270,6 +285,9 @@ const projects: TProject[] = [
           },
           {
             id: "d5e2ee62-f30a-4b4f-9070-4f658e17b7ed",
+            teamId: "5048c703-10c9-4bd8-b311-cf02b527b400",
+            projectId: "cce28aef-9c51-461f-8fc3-d777ea47c69d",
+            environmentId: "cbe57445-aab2-4cc7-a53d-b430de647398",
             type: "astro",
             source: "github",
             title: "Docs",
@@ -284,6 +302,9 @@ const projects: TProject[] = [
           },
           {
             id: "09463e12-7e7a-45fa-913f-9200e090468a",
+            teamId: "5048c703-10c9-4bd8-b311-cf02b527b400",
+            projectId: "cce28aef-9c51-461f-8fc3-d777ea47c69d",
+            environmentId: "cbe57445-aab2-4cc7-a53d-b430de647398",
             type: "nextjs",
             source: "github",
             title: "Umami Frontend",
@@ -302,6 +323,9 @@ const projects: TProject[] = [
           },
           {
             id: "5d6eed80-ed5e-4d67-944f-aa6d726f0ab3",
+            teamId: "5048c703-10c9-4bd8-b311-cf02b527b400",
+            projectId: "cce28aef-9c51-461f-8fc3-d777ea47c69d",
+            environmentId: "cbe57445-aab2-4cc7-a53d-b430de647398",
             type: "postgresql",
             source: "docker",
             title: "Umami Database",
@@ -333,6 +357,9 @@ const projects: TProject[] = [
         services: [
           {
             id: "f9d60dad-5184-43e3-a1bd-e1bfcd8575bb",
+            teamId: "5048c703-10c9-4bd8-b311-cf02b527b400",
+            projectId: "7d836bb0-8747-469e-9032-5f061cd2e696",
+            environmentId: "6e82623a-298e-447b-8ef1-f9868e4282ba",
             type: "go",
             source: "github",
             title: "API",
@@ -347,6 +374,9 @@ const projects: TProject[] = [
           },
           {
             id: "bd251dca-18c0-4a8b-bae9-1dfc1b00d979",
+            teamId: "5048c703-10c9-4bd8-b311-cf02b527b400",
+            projectId: "7d836bb0-8747-469e-9032-5f061cd2e696",
+            environmentId: "6e82623a-298e-447b-8ef1-f9868e4282ba",
             type: "mysql",
             source: "docker",
             title: "DB",
@@ -386,6 +416,9 @@ const projects: TProject[] = [
         services: [
           {
             id: "55db768e-5879-47ba-a94d-d4a1af2a8b4c",
+            teamId: "e7bb6643-3f31-4b73-b71f-b3ab14b604d2",
+            projectId: "358e56be-3522-4409-b9f2-9aaa07fc21a7",
+            environmentId: "cd48b702-b8bc-473e-a14a-d66d7d4bd6ec",
             title: "Website",
             type: "svelte",
             source: "github",
@@ -400,6 +433,9 @@ const projects: TProject[] = [
           },
           {
             id: "d9f7b682-2652-49a0-8d1c-410401d661a5",
+            teamId: "e7bb6643-3f31-4b73-b71f-b3ab14b604d2",
+            projectId: "358e56be-3522-4409-b9f2-9aaa07fc21a7",
+            environmentId: "cd48b702-b8bc-473e-a14a-d66d7d4bd6ec",
             title: "Meili DB",
             type: "meilisearch",
             source: "docker",
@@ -413,6 +449,9 @@ const projects: TProject[] = [
           },
           {
             id: "d1d6b770-5fe4-4441-a089-e08187280084",
+            teamId: "e7bb6643-3f31-4b73-b71f-b3ab14b604d2",
+            projectId: "358e56be-3522-4409-b9f2-9aaa07fc21a7",
+            environmentId: "cd48b702-b8bc-473e-a14a-d66d7d4bd6ec",
             title: "Analytics DB",
             type: "clickhouse",
             source: "docker",
@@ -468,6 +507,9 @@ export type TEnvironment = {
 
 export type TService = {
   id: string;
+  teamId: string;
+  projectId: string;
+  environmentId: string;
   title: string;
   lastDeployment?: TDeployment;
   type: TServiceType;

@@ -14,6 +14,8 @@ type Props = {
   chartData: (Record<string, number> & { timestamp: number })[];
 };
 
+const margin = { left: 4, right: 4, top: 4, bottom: 4 };
+
 export default function MetricsChart({
   yFormatter,
   tooltipValueFormatter,
@@ -43,11 +45,7 @@ export default function MetricsChart({
 
   return (
     <ChartContainer className="w-full" config={chartConfig}>
-      <LineChart
-        accessibilityLayer
-        data={chartData}
-        margin={{ left: 0, right: 0, top: 0, bottom: 0 }}
-      >
+      <LineChart accessibilityLayer data={chartData} margin={margin}>
         <CartesianGrid vertical={false} />
         <XAxis
           dataKey="timestamp"

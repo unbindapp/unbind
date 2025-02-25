@@ -66,7 +66,7 @@ export default function LogLine({
         </div>
         <div className="flex-1 min-w-0 flex [mask-image:linear-gradient(to_left,transparent,black_1rem)]">
           <ConditionalScrollArea>
-            <div className="group-data-[wrap]/line:w-full flex flex-col items-start md:flex-row gap-0.5 py-0.5 md:py-0.25">
+            <div className="group-data-[wrap]/line:w-full flex flex-col items-start lg:flex-row gap-0.5 py-0.5 lg:py-0.25">
               {/* Timestamp and service name */}
               {hasExtraColumns && (
                 <div
@@ -105,7 +105,7 @@ export default function LogLine({
                 </div>
               )}
               <p
-                className="py-1 group-data-[extra-columns]/line:-mt-2 sm:group-data-[extra-columns]/line:mt-0 px-1 leading-tight pr-4
+                className="py-1 group-data-[extra-columns]/line:-mt-2 lg:group-data-[extra-columns]/line:mt-0 px-1 leading-tight pr-4
                 group-data-[wrap]/line:shrink group-data-[wrap]/line:min-0 whitespace-pre group-data-[wrap]/line:whitespace-normal"
               >
                 {logLine.message}

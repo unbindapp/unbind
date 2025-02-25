@@ -8,6 +8,7 @@ import { api } from "@/server/trpc/setup/client";
 import { useMemo } from "react";
 
 type Props = {
+  teamId: string;
   projectId: string;
   environmentId: string;
 };
@@ -25,8 +26,9 @@ function random(seed: number) {
   return x - Math.floor(x);
 }
 
-export default function Charts({ projectId, environmentId }: Props) {
+export default function Charts({ teamId, projectId, environmentId }: Props) {
   const { data, isPending, isError, error } = api.main.getServices.useQuery({
+    teamId,
     projectId,
     environmentId,
   });

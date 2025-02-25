@@ -3,26 +3,21 @@
 import ErrorCard from "@/components/error-card";
 import DeploymentCard from "@/components/project/services/tabs/deployments/deployment-card";
 import TabWrapper from "@/components/project/services/tabs/tab-wrapper";
-import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
+import { TService } from "@/server/trpc/api/main/router";
 import { api } from "@/server/trpc/setup/client";
 
-export default function Deployments() {
-  const { teamId, projectId, environmentId, serviceId } = useIdsFromPathname();
-  const { data, isPending, isError, error } = api.main.getDeployments.useQuery(
-    {
-      teamId: teamId!,
-      projectId: projectId!,
-      environmentId: environmentId!,
-      serviceId: serviceId!,
-    },
-    {
-      enabled:
-        teamId !== undefined &&
-        projectId !== undefined &&
-        environmentId !== undefined &&
-        serviceId !== undefined,
-    }
-  );
+type Props = {
+  service: TService;
+};
+
+export default function Deployments({ service }: Props) {
+  const { data, isPending, isError, error } = api.main.getDeployments.useQuery({
+    teamId: service.teamId,
+    projectId: service.projectId,
+    environmentId: service.environmentId,
+    serviceId: service.id,
+  });
+
   return (
     <TabWrapper>
       {data?.deployments &&

@@ -28,6 +28,7 @@ export default function ServiceCardList({
   environmentId,
 }: Props) {
   const [, { data }] = api.main.getServices.useSuspenseQuery({
+    teamId,
     projectId,
     environmentId,
   });

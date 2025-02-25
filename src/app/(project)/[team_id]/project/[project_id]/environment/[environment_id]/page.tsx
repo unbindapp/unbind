@@ -16,7 +16,12 @@ export default async function Page({ params }: Props) {
     project_id: projectId,
     environment_id: environmentId,
   } = await params;
-  await apiServer.main.getServices.prefetch({ environmentId, projectId });
+
+  await apiServer.main.getServices.prefetch({
+    teamId,
+    environmentId,
+    projectId,
+  });
 
   return (
     <HydrateClient>

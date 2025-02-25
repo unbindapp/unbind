@@ -50,9 +50,13 @@ const initialData: TLogLine[] = Array.from({ length: 200 }).map((_, i) => {
 
 type Props = {
   containerType: "page" | "sheet";
+  hideServiceByDefault?: boolean;
 };
 
-export default function TemporaryLogs({ containerType }: Props) {
+export default function TemporaryLogs({
+  containerType,
+  hideServiceByDefault,
+}: Props) {
   const [logs, setLogs] = useState<TLogLine[]>(initialData);
 
   useInterval(() => {
@@ -69,5 +73,11 @@ export default function TemporaryLogs({ containerType }: Props) {
     });
   }, 1000);
 
-  return <LogViewer logs={logs} containerType={containerType} />;
+  return (
+    <LogViewer
+      logs={logs}
+      containerType={containerType}
+      hideServiceByDefault={hideServiceByDefault}
+    />
+  );
 }

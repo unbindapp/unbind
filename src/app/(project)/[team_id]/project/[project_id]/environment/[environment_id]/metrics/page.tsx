@@ -9,7 +9,7 @@ type Props = {
 };
 
 export default async function Page({ params }: Props) {
-  const { project_id, environment_id } = await params;
+  const { team_id, project_id, environment_id } = await params;
   return (
     <div className="w-full flex flex-col items-center px-3 md:px-8 pt-5 md:pt-7 pb-16">
       <div className="w-full flex flex-col max-w-7xl">
@@ -19,7 +19,11 @@ export default async function Page({ params }: Props) {
           </h1>
         </div>
         <div className="w-full flex flex-row flex-wrap pt-3">
-          <Charts projectId={project_id} environmentId={environment_id} />
+          <Charts
+            teamId={team_id}
+            projectId={project_id}
+            environmentId={environment_id}
+          />
         </div>
       </div>
     </div>

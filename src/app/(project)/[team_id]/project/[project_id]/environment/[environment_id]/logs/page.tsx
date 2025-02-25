@@ -1,4 +1,4 @@
-import TemporaryLogs from "@/app/(project)/[team_id]/project/[project_id]/environment/[environment_id]/logs/_components/temporary-logs";
+import TemporaryLogs from "@/components/logs/temporary-logs";
 
 export default async function Page() {
   return (

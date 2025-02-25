@@ -4,7 +4,7 @@ import MetricsChartList, {
   TChartObject,
   TChartRow,
 } from "@/components/charts/metrics-chart-list";
-import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
+import { TService } from "@/server/trpc/api/main/router";
 import { api } from "@/server/trpc/setup/client";
 import { useMemo } from "react";
 
@@ -21,22 +21,16 @@ function random(seed: number) {
   return x - Math.floor(x);
 }
 
-export default function Charts() {
-  const { projectId, environmentId, serviceId } = useIdsFromPathname();
-  const { data, isPending, isError, error } = api.main.getServices.useQuery(
-    {
-      projectId: projectId!,
-      environmentId: environmentId!,
-    },
-    {
-      enabled:
-        projectId !== undefined &&
-        environmentId !== undefined &&
-        serviceId !== undefined,
-    }
-  );
+type Props = {
+  service: TService;
+};
 
-  const service = data?.services.find((s) => s.id === serviceId);
+export default function Charts({ service }: Props) {
+  const { data, isPending, isError, error } = api.main.getServices.useQuery({
+    teamId: service.teamId,
+    projectId: service.projectId,
+    environmentId: service.environmentId,
+  });
 
   const cpu: TChartObject = useMemo(() => {
     return {

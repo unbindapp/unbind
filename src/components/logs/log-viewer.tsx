@@ -17,12 +17,17 @@ const SCROLL_THRESHOLD = 50;
 type Props = {
   logs: TLogLine[];
   containerType: "page" | "sheet";
+  hideServiceByDefault?: boolean;
   className?: string;
 };
 
-export default function LogViewer({ logs, containerType }: Props) {
+export default function LogViewer({
+  logs,
+  hideServiceByDefault,
+  containerType,
+}: Props) {
   return (
-    <LogViewPreferencesProvider>
+    <LogViewPreferencesProvider hideServiceByDefault={hideServiceByDefault}>
       <LogViewDropdownProvider>
         <Logs_ logs={logs} containerType={containerType} />
       </LogViewDropdownProvider>
