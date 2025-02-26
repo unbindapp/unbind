@@ -2,19 +2,21 @@
 
 import { signOutAction } from "@/components/auth/actions";
 import Blockies from "@/components/blockies/blockies";
+import {
+  DropdownOrBottomDrawer,
+  DropdownOrBottomDrawerContentDrawer,
+  DropdownOrBottomDrawerContentDropdown,
+  DropdownOrBottomDrawerTrigger,
+} from "@/components/navigation/dropdown-or-bottom-drawer";
 import ThemeButton from "@/components/theme-button";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { LoaderIcon, LogOutIcon } from "lucide-react";
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 
 type Props = { email: string; className?: string };
 
@@ -24,18 +26,26 @@ export default function UserAvatar({ email, className }: Props) {
     null
   );
   const [open, setOpen] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger disabled={isPendingSignOut} asChild>
+    <DropdownOrBottomDrawer
+      title="User Menu"
+      open={open}
+      onOpenChange={setOpen}
+      classNameDropdown="w-48"
+      sideOffset={8}
+    >
+      <DropdownOrBottomDrawerTrigger
+        className={cn(
+          "size-7 rounded-full border border-foreground shrink-0 group/button data-[pending]:border-border",
+          className
+        )}
+      >
         <Button
           data-open={open ? true : undefined}
           data-pending={isPendingSignOut ? true : undefined}
           size="icon"
-          className={cn(
-            "size-7 rounded-full border border-foreground shrink-0 group/button data-[pending]:border-border",
-            className
-          )}
           variant="ghost"
           fadeOnDisabled={false}
         >
@@ -49,32 +59,55 @@ export default function UserAvatar({ email, className }: Props) {
             </div>
           )}
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        sideOffset={8}
-        align="end"
-        className="w-[768px] sm:w-56"
-      >
-        <ScrollArea>
-          <DropdownMenuGroup>
-            <ThemeButton variant="dropdown-menu-item" />
-            <DropdownMenuItem className="p-0">
-              <form
-                action={actionSignOut}
-                className="w-full flex items-center justify-start"
+      </DropdownOrBottomDrawerTrigger>
+      <DropdownOrBottomDrawerContentDrawer>
+        <div className="w-full flex flex-col px-2 pt-2 pb-8 group/list">
+          <ThemeButton variant="drawer-item" />
+          <form
+            action={actionSignOut}
+            onSubmit={() => setOpen(false)}
+            className="w-full flex items-center justify-start"
+          >
+            <Button
+              type="submit"
+              className="w-full text-left font-medium justify-start items-center rounded-lg gap-2.5 px-3 py-3.5 cursor-default"
+              variant="ghost"
+            >
+              <div className="size-5 shrink-0 -ml-0.5 -my-1">
+                {isPendingSignOut ? (
+                  <LoaderIcon className="size-full animate-spin" />
+                ) : (
+                  <LogOutIcon className="size-full" />
+                )}
+              </div>
+              <p className="shrink min-w-0 leading-tight">Sign Out</p>
+            </Button>
+          </form>
+        </div>
+      </DropdownOrBottomDrawerContentDrawer>
+      <DropdownOrBottomDrawerContentDropdown>
+        <DropdownMenuGroup>
+          <ThemeButton variant="dropdown-menu-item" />
+          <DropdownMenuItem
+            className="p-0"
+            onSelect={() => formRef.current?.requestSubmit()}
+          >
+            <form
+              ref={formRef}
+              action={actionSignOut}
+              className="w-full flex items-center justify-start"
+            >
+              <button
+                className="w-full flex items-center px-2.5 gap-2.5 text-left leading-tight py-2.25 cursor-default"
+                type="submit"
               >
-                <button
-                  className="w-full flex items-center px-2.5 gap-2.5 text-left leading-tight py-2.25 cursor-default"
-                  type="submit"
-                >
-                  <LogOutIcon className="size-5 shrink-0 -ml-0.5 -my-1" />
-                  <p className="shrink min-w-0 leading-tight">Sign Out</p>
-                </button>
-              </form>
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-        </ScrollArea>
-      </DropdownMenuContent>
-    </DropdownMenu>
+                <LogOutIcon className="size-5 shrink-0 -ml-0.5 -my-1" />
+                <p className="shrink min-w-0 leading-tight">Sign Out</p>
+              </button>
+            </form>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+      </DropdownOrBottomDrawerContentDropdown>
+    </DropdownOrBottomDrawer>
   );
 }

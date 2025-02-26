@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 export default function ThemeButton({
   variant = "default",
 }: {
-  variant?: "default" | "dropdown-menu-item";
+  variant?: "default" | "dropdown-menu-item" | "drawer-item";
 }) {
   const { theme, setTheme } = useTheme();
   const toggleTheme = () => {
@@ -39,6 +39,32 @@ export default function ThemeButton({
     : theme === "light"
     ? SunIcon
     : MoonIcon;
+
+  if (variant === "drawer-item") {
+    return (
+      <Button
+        onClick={(e) => {
+          e.preventDefault();
+          toggleTheme();
+        }}
+        variant="ghost"
+        className="w-full flex items-center font-medium justify-start gap-2.5 px-3 py-2.5 text-left leading-tight rounded-lg cursor-default"
+      >
+        <Icon
+          suppressHydrationWarning
+          className="size-5 shrink-0 -ml-0.5 -my-1"
+        />
+        <div className="shrink min-w-0 flex flex-col -mt-0.25">
+          <p className="text-xs text-muted-foreground font-medium leading-tight">
+            Theme
+          </p>
+          <p suppressHydrationWarning className="shrink min-w-0 leading-tight">
+            {themeText}
+          </p>
+        </div>
+      </Button>
+    );
+  }
 
   if (variant === "dropdown-menu-item") {
     return (

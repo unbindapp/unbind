@@ -7,11 +7,10 @@ import {
 } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
-import { FC, ReactNode } from "react";
+import { Children, cloneElement, FC, isValidElement, ReactNode } from "react";
 
 type Props = {
   title: string;
-  Trigger: ReactNode;
   Icon?: FC<{ className: string }>;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -25,7 +24,6 @@ type Props = {
 
 export default function BottomDrawer({
   title,
-  Trigger,
   Icon,
   open,
   onOpenChange,
@@ -36,6 +34,20 @@ export default function BottomDrawer({
   dontAutoFocus,
   onEscapeKeyDown,
 }: Props) {
+  const childrenArray = Children.toArray(children);
+  const Trigger = childrenArray.find(
+    (child) =>
+      isValidElement(child) &&
+      hasDisplayName(child.type) &&
+      child.type.displayName === BottomDrawerTriggerName
+  );
+  const Content = childrenArray.find(
+    (child) =>
+      isValidElement(child) &&
+      hasDisplayName(child.type) &&
+      child.type.displayName === BottomDrawerContentName
+  );
+
   return (
     <Drawer
       autoFocus={dontAutoFocus ? false : open}
@@ -64,7 +76,7 @@ export default function BottomDrawer({
           </DrawerHeader>
         </div>
         <ConditionalScrollWrapper noScrollArea={noScrollArea}>
-          {children}
+          {Content}
         </ConditionalScrollWrapper>
       </DrawerContent>
     </Drawer>
@@ -92,3 +104,41 @@ function ConditionalScrollWrapper({
     </div>
   );
 }
+
+function BottomDrawerTrigger({
+  children,
+  ...rest
+}: {
+  children: ReactNode;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}) {
+  if (isValidElement(children)) {
+    return cloneElement(children, rest);
+  }
+  return children;
+}
+const BottomDrawerTriggerName = "BottomDrawerTrigger";
+BottomDrawerTrigger.displayName = BottomDrawerTriggerName;
+
+function BottomDrawerContent({
+  children,
+  ...rest
+}: {
+  children: ReactNode;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}) {
+  if (isValidElement(children)) {
+    return cloneElement(children, rest);
+  }
+  return children;
+}
+const BottomDrawerContentName = "BottomDrawerContent";
+BottomDrawerContent.displayName = BottomDrawerContentName;
+
+function hasDisplayName(type: unknown): type is { displayName: string } {
+  return typeof (type as { displayName: string })?.displayName === "string";
+}
+
+export { BottomDrawerTrigger, BottomDrawerContent };

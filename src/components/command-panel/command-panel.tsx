@@ -8,7 +8,11 @@ import {
 } from "@/components/command-panel/types";
 import ErrorCard from "@/components/error-card";
 import KeyboardShortcut from "@/components/keyboard-shortcut";
-import BottomDrawer from "@/components/navigation/bottom-drawer";
+import BottomDrawer, {
+  BottomDrawerContent,
+  BottomDrawerTrigger,
+} from "@/components/navigation/bottom-drawer";
+import { useDeviceSize } from "@/components/providers/device-size-provider";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -40,7 +44,6 @@ import {
   useState,
 } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useWindowSize } from "usehooks-ts";
 
 type Props = {
   open: boolean;
@@ -63,8 +66,7 @@ export function CommandPanelTrigger({
   title,
   description,
 }: Props & CommandPanelProps) {
-  const { width } = useWindowSize();
-  const isSmall = width !== undefined ? width < 640 : false;
+  const { isExtraSmall } = useDeviceSize();
 
   const onEscapeKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -76,12 +78,11 @@ export function CommandPanelTrigger({
     [currentPage, rootPage]
   );
 
-  if (isSmall) {
+  if (isExtraSmall) {
     return (
       <BottomDrawer
         title="Command Panel"
         hideHeader
-        Trigger={children}
         open={open}
         onOpenChange={setOpen}
         classNameContent="h-[calc(100svh-3rem)]"
@@ -89,18 +90,21 @@ export function CommandPanelTrigger({
         dontAutoFocus
         onEscapeKeyDown={onEscapeKeyDown}
       >
-        <div className="w-full flex flex-col flex-1 min-h-0 overflow-hidden pb-[var(--safe-area-inset-bottom)]">
-          <CommandPanel
-            rootPage={rootPage}
-            allPageIds={allPageIds}
-            setCurrentPageId={setCurrentPageId}
-            currentPage={currentPage}
-            goToParentPage={goToParentPage}
-            useCommandPanelItems={useCommandPanelItems}
-            variant="no-wrapper"
-            className="rounded-2xl"
-          />
-        </div>
+        <BottomDrawerTrigger>{children}</BottomDrawerTrigger>
+        <BottomDrawerContent>
+          <div className="w-full flex flex-col flex-1 min-h-0 overflow-hidden pb-[var(--safe-area-inset-bottom)]">
+            <CommandPanel
+              rootPage={rootPage}
+              allPageIds={allPageIds}
+              setCurrentPageId={setCurrentPageId}
+              currentPage={currentPage}
+              goToParentPage={goToParentPage}
+              useCommandPanelItems={useCommandPanelItems}
+              variant="no-wrapper"
+              className="rounded-2xl"
+            />
+          </div>
+        </BottomDrawerContent>
       </BottomDrawer>
     );
   }

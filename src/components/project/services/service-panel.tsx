@@ -9,6 +9,7 @@ import Logs from "@/components/project/services/tabs/logs/logs";
 import Metrics from "@/components/project/services/tabs/metrics/metrics";
 import Settings from "@/components/project/services/tabs/settings/settings";
 import Variables from "@/components/project/services/tabs/variables/variables";
+import { useDeviceSize } from "@/components/providers/device-size-provider";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -23,7 +24,6 @@ import { TService } from "@/server/trpc/api/main/router";
 import { XIcon } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
 import { FC, ReactNode } from "react";
-import { useWindowSize } from "usehooks-ts";
 
 type TTab = {
   title: string;
@@ -63,19 +63,18 @@ export default function ServicePanel({ service, children }: Props) {
     setServiceId(null);
     setCurrentTab(null);
   };
-  const { width } = useWindowSize();
-  const isSmall = width === undefined ? false : width < 640;
+  const { isExtraSmall } = useDeviceSize();
 
   return (
     <Drawer
       open={open}
       onOpenChange={setOpen}
-      direction={isSmall ? "bottom" : "right"}
-      handleOnly={!isSmall}
+      direction={isExtraSmall ? "bottom" : "right"}
+      handleOnly={!isExtraSmall}
     >
       <DrawerTrigger asChild>{children}</DrawerTrigger>
       <DrawerContent
-        hasHandle={isSmall}
+        hasHandle={isExtraSmall}
         className="h-[calc(100%-3rem)] w-full flex flex-col
         sm:ml-auto sm:my-0 sm:top-0 sm:h-full sm:right-0 sm:w-232 sm:max-w-[calc(100%-4rem)] sm:rounded-r-none sm:rounded-l-2xl"
       >
@@ -92,7 +91,7 @@ export default function ServicePanel({ service, children }: Props) {
               </p>
             </DrawerTitle>
           </DrawerHeader>
-          {!isSmall && (
+          {!isExtraSmall && (
             <DrawerClose asChild>
               <Button
                 size="icon"

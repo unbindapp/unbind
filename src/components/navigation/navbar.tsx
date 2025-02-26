@@ -20,25 +20,25 @@ export async function Navbar({
     (child) =>
       isValidElement(child) &&
       hasDisplayName(child.type) &&
-      child.type.displayName === "NavbarBreadcrumb"
+      child.type.displayName === NavbarBreadcrumbName
   );
   const tabsLg = childrenArray.find(
     (child) =>
       isValidElement(child) &&
       hasDisplayName(child.type) &&
-      child.type.displayName === "NavbarTabsLg"
+      child.type.displayName === NavbarTabsLgName
   );
   const tabsMd = childrenArray.find(
     (child) =>
       isValidElement(child) &&
       hasDisplayName(child.type) &&
-      child.type.displayName === "NavbarTabsMd"
+      child.type.displayName === NavbarTabsMdName
   );
   const tabsSm = childrenArray.find(
     (child) =>
       isValidElement(child) &&
       hasDisplayName(child.type) &&
-      child.type.displayName === "NavbarTabsSm"
+      child.type.displayName === NavbarTabsSmName
   );
 
   return (
@@ -80,22 +80,26 @@ export async function Navbar({
 function NavbarBreadcrumb({ children }: { children: ReactNode }) {
   return children;
 }
-NavbarBreadcrumb.displayName = "NavbarBreadcrumb";
+const NavbarBreadcrumbName = "NavbarBreadcrumb";
+NavbarBreadcrumb.displayName = NavbarBreadcrumbName;
 
 function NavbarTabsLg({ children }: { children: ReactNode }) {
   return children;
 }
-NavbarTabsLg.displayName = "NavbarTabsLg";
+const NavbarTabsLgName = "NavbarTabsLg";
+NavbarTabsLg.displayName = NavbarTabsLgName;
 
 function NavbarTabsMd({ children }: { children: ReactNode }) {
   return children;
 }
-NavbarTabsMd.displayName = "NavbarTabsMd";
+const NavbarTabsMdName = "NavbarTabsMd";
+NavbarTabsMd.displayName = NavbarTabsMdName;
 
 function NavbarTabsSm({ children }: { children: ReactNode }) {
   return children;
 }
-NavbarTabsSm.displayName = "NavbarTabsSm";
+const NavbarTabsSmName = "NavbarTabsSm";
+NavbarTabsSm.displayName = NavbarTabsSmName;
 
 function hasDisplayName(type: unknown): type is { displayName: string } {
   return typeof (type as { displayName: string })?.displayName === "string";

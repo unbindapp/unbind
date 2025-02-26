@@ -1,4 +1,5 @@
 import AsyncPushProvider from "@/components/providers/async-push-provider";
+import DeviceSizeProvider from "@/components/providers/device-size-provider";
 import DeviceTypeProvider from "@/components/providers/device-type-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import TimestampProvider from "@/components/providers/timestamp-provider";
@@ -17,7 +18,9 @@ export default async function Providers({
           <NuqsAdapter>
             <ThemeProvider>
               <DeviceTypeProvider>
-                <TimestampProvider>{children}</TimestampProvider>
+                <DeviceSizeProvider>
+                  <TimestampProvider>{children}</TimestampProvider>
+                </DeviceSizeProvider>
               </DeviceTypeProvider>
             </ThemeProvider>
           </NuqsAdapter>

@@ -1,15 +1,16 @@
-import BottomDrawer from "@/components/navigation/bottom-drawer";
+import {
+  DropdownOrBottomDrawer,
+  DropdownOrBottomDrawerContentDrawer,
+  DropdownOrBottomDrawerContentDropdown,
+  DropdownOrBottomDrawerTrigger,
+} from "@/components/navigation/dropdown-or-bottom-drawer";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import {
   ArrowRightIcon,
@@ -24,10 +25,8 @@ import {
   FC,
   SetStateAction,
   useEffect,
-  useMemo,
   useState,
 } from "react";
-import { useIsMounted, useWindowSize } from "usehooks-ts";
 
 type Item<T> = T & { id: string; title: string };
 
@@ -57,9 +56,6 @@ export function BreadcrumbItem<T>({
 }: Props<T>) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  const { width } = useWindowSize();
-  const isSmall = width < 640;
-  const mounted = useIsMounted();
   const [lastHoveredItem, setLastHoveredItem] = useState(selectedItem);
 
   useEffect(() => {
@@ -67,29 +63,20 @@ export function BreadcrumbItem<T>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  const TriggerM = useMemo(
-    () => (
-      <Trigger
-        item={selectedItem}
-        Icon={IconItem}
-        flipChevronOnSm={flipChevronOnSm}
-      />
-    ),
-    [selectedItem, IconItem, flipChevronOnSm]
-  );
-
   const newItem = newItemTitle
     ? ({ id: "new", title: newItemTitle } as Item<T>)
     : undefined;
 
-  if (isSmall && mounted()) {
-    return (
-      <BottomDrawer
-        title={title}
-        open={open}
-        onOpenChange={setOpen}
-        Trigger={TriggerM}
-      >
+  return (
+    <DropdownOrBottomDrawer title={title} open={open} onOpenChange={setOpen}>
+      <DropdownOrBottomDrawerTrigger>
+        <Trigger
+          item={selectedItem}
+          Icon={IconItem}
+          flipChevronOnSm={flipChevronOnSm}
+        />
+      </DropdownOrBottomDrawerTrigger>
+      <DropdownOrBottomDrawerContentDrawer>
         <div className="w-full flex flex-col px-2 pt-2 pb-8 group/list">
           {items?.map((i, index) => {
             const href = getHrefForId(i.id);
@@ -124,67 +111,48 @@ export function BreadcrumbItem<T>({
             </>
           )}
         </div>
-      </BottomDrawer>
-    );
-  }
-
-  return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild>
-        <Trigger
-          item={selectedItem}
-          Icon={IconItem}
-          flipChevronOnSm={flipChevronOnSm}
-        />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        sideOffset={-1}
-        align="start"
-        className="group/content"
-        autoFocus={open}
-      >
-        <ScrollArea className="group/list sm:max-w-64" noFocusOnViewport>
-          <DropdownMenuLabel>{title}</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            {items?.map((i, index) => {
-              const href = getHrefForId(i.id);
-              const showArrow = href !== null && pathname !== href;
-              return (
-                <DropdownItem
-                  item={i}
-                  key={i.id + index}
-                  onSelect={onSelect}
-                  setOpen={setOpen}
-                  selectedItem={selectedItem}
-                  lastHoveredItem={lastHoveredItem}
-                  setLastHoveredItem={setLastHoveredItem}
-                  IconItem={IconItem}
-                  showArrow={showArrow}
-                />
-              );
-            })}
-          </DropdownMenuGroup>
-          {newItemTitle && newItem && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownItem
-                  item={newItem}
-                  onSelect={onSelectNewItem}
-                  setOpen={setOpen}
-                  selectedItem={selectedItem}
-                  lastHoveredItem={lastHoveredItem}
-                  setLastHoveredItem={setLastHoveredItem}
-                  IconItem={PlusIcon}
-                  className="text-muted-foreground data-[highlighted]:text-foreground data-[last-hovered]:text-foreground"
-                />
-              </DropdownMenuGroup>
-            </>
-          )}
-        </ScrollArea>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </DropdownOrBottomDrawerContentDrawer>
+      <DropdownOrBottomDrawerContentDropdown>
+        <DropdownMenuLabel>{title}</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          {items?.map((i, index) => {
+            const href = getHrefForId(i.id);
+            const showArrow = href !== null && pathname !== href;
+            return (
+              <DropdownItem
+                item={i}
+                key={i.id + index}
+                onSelect={onSelect}
+                setOpen={setOpen}
+                selectedItem={selectedItem}
+                lastHoveredItem={lastHoveredItem}
+                setLastHoveredItem={setLastHoveredItem}
+                IconItem={IconItem}
+                showArrow={showArrow}
+              />
+            );
+          })}
+        </DropdownMenuGroup>
+        {newItemTitle && newItem && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownItem
+                item={newItem}
+                onSelect={onSelectNewItem}
+                setOpen={setOpen}
+                selectedItem={selectedItem}
+                lastHoveredItem={lastHoveredItem}
+                setLastHoveredItem={setLastHoveredItem}
+                IconItem={PlusIcon}
+                className="text-muted-foreground data-[highlighted]:text-foreground data-[last-hovered]:text-foreground"
+              />
+            </DropdownMenuGroup>
+          </>
+        )}
+      </DropdownOrBottomDrawerContentDropdown>
+    </DropdownOrBottomDrawer>
   );
 }
 
