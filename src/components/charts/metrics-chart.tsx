@@ -78,7 +78,7 @@ export default function MetricsChart({
             animationDuration={1000}
             key={dataKey}
             dataKey={dataKey}
-            type="linear"
+            type="monotone"
             stroke={`hsl(var(--chart-${(i % colorCount) + 1}))`}
             strokeWidth={1.5}
             stackId={dataKey}
