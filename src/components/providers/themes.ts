@@ -6,5 +6,5 @@ export const defaultTheme: TThemeWithoutSystem = "dark";
 
 export const metaTheme: Record<TThemeWithoutSystem, string> = {
   dark: "#0F120F",
-  light: "#ffffff",
+  light: "#EEF7EE",
 };

@@ -13,6 +13,7 @@ import {
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { metaTheme } from "@/components/providers/themes";
 
 const sans = localFont({
   src: "./fonts/DMSansVF.woff2",
@@ -28,7 +29,7 @@ const mono = localFont({
 const title = `${siteTitle} | ${siteTagline}`;
 
 export const viewport: Viewport = {
-  themeColor: "#0E110E",
+  themeColor: metaTheme.dark,
 };
 export const metadata: Metadata = {
   title,
