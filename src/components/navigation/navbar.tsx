@@ -66,7 +66,7 @@ export async function Navbar({
             </div>
           )}
         </div>
-        <div className="shrink-0 flex items-center justify-end">
+        <div className="shrink-0 flex items-center justify-end -mr-0.5">
           <UserAvatarOrSignIn session={session} />
         </div>
       </div>

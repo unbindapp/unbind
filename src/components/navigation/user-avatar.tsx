@@ -33,7 +33,7 @@ export default function UserAvatar({ email, className }: Props) {
           data-pending={isPendingSignOut ? true : undefined}
           size="icon"
           className={cn(
-            "size-6.5 rounded-full border border-foreground shrink-0 group/button data-[pending]:border-border",
+            "size-7 rounded-full border border-foreground shrink-0 group/button data-[pending]:border-border",
             className
           )}
           variant="ghost"
