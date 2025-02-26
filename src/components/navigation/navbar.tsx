@@ -1,7 +1,6 @@
 import { BreadcrumbSeparator } from "@/components/navigation/breadcrumb-wrapper";
 import LogoLink from "@/components/navigation/logo-link";
-import UserAvatar from "@/components/navigation/user-avatar";
-import { LinkButton } from "@/components/ui/button";
+import UserAvatarOrSignIn from "@/components/navigation/user-avatar-or-sign-in";
 import { cn } from "@/components/ui/utils";
 import { auth } from "@/server/auth/auth";
 import { Children, isValidElement, ReactNode } from "react";
@@ -68,14 +67,7 @@ export async function Navbar({
           )}
         </div>
         <div className="shrink-0 flex items-center justify-end">
-          {session && <UserAvatar email={session.user.email || ""} />}
-          {!session && (
-            <div className="flex items-center justify-end">
-              <LinkButton size="sm" className="py-1.25" href="/sign-in">
-                Sign In
-              </LinkButton>
-            </div>
-          )}
+          <UserAvatarOrSignIn session={session} />
         </div>
       </div>
       {tabsMd && (

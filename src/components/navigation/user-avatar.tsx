@@ -14,7 +14,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { LoaderIcon, LogOutIcon } from "lucide-react";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 type Props = { email: string; className?: string };
 
@@ -23,11 +23,13 @@ export default function UserAvatar({ email, className }: Props) {
     () => signOutAction({ callbackUrl: "/" }),
     null
   );
+  const [open, setOpen] = useState(false);
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger disabled={isPendingSignOut} asChild>
         <Button
+          data-open={open ? true : undefined}
           data-pending={isPendingSignOut ? true : undefined}
           size="icon"
           className={cn(
@@ -39,7 +41,7 @@ export default function UserAvatar({ email, className }: Props) {
         >
           <Blockies
             address={email}
-            className="size-full shrink-0 rounded-full transition group-hover/button:rotate-30 group-active/button:rotate-30"
+            className="size-full shrink-0 rounded-full transition group-hover/button:rotate-45 group-active/button:rotate-45 group-data-[open]/button:rotate-360"
           />
           {isPendingSignOut && (
             <div className="absolute rounded-full size-full left-0 top-0 bg-background p-1">
