@@ -1,4 +1,5 @@
 import Charts from "@/app/(project)/[team_id]/project/[project_id]/environment/[environment_id]/metrics/_components/charts";
+import PageWrapper from "@/components/page-wrapper";
 
 type Props = {
   params: Promise<{
@@ -11,7 +12,7 @@ type Props = {
 export default async function Page({ params }: Props) {
   const { team_id, project_id, environment_id } = await params;
   return (
-    <div className="w-full flex flex-col items-center px-2 sm:px-3 md:px-8 pt-4 md:pt-7 pb-16">
+    <PageWrapper>
       <div className="w-full flex flex-col max-w-7xl">
         <div className="w-full flex flex-wrap items-center justify-between gap-4 px-1">
           <h1 className="w-full font-bold text-2xl leading-tight px-2">
@@ -26,6 +27,6 @@ export default async function Page({ params }: Props) {
           />
         </div>
       </div>
-    </div>
+    </PageWrapper>
   );
 }

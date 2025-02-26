@@ -14,7 +14,7 @@ import { Children, cloneElement, FC, isValidElement, ReactNode } from "react";
 
 type Props = {
   title: string;
-  TitleIcon: FC<{ className: string }>;
+  TitleIcon?: FC<{ className: string }>;
   titleSize?: "sm" | "md";
   children: ReactNode;
   open: boolean;
