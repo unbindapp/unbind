@@ -24,7 +24,7 @@ type Props = {
   sideOffset?: Parameters<typeof DropdownMenuContent>[0]["sideOffset"];
 };
 
-export function DropdownOrBottomDrawer({
+export function DropdownOrDrawer({
   title,
   TitleIcon,
   titleSize,
@@ -42,19 +42,19 @@ export function DropdownOrBottomDrawer({
     (child) =>
       isValidElement(child) &&
       hasDisplayName(child.type) &&
-      child.type.displayName === DropdownOrBottomDrawerTriggerName
+      child.type.displayName === DropdownOrDrawerTriggerName
   );
-  const ContentDrawer = childrenArray.find(
+  const ContentForDrawer = childrenArray.find(
     (child) =>
       isValidElement(child) &&
       hasDisplayName(child.type) &&
-      child.type.displayName === DropdownOrBottomDrawerContentDrawerName
+      child.type.displayName === DropdownOrDrawerContentForDrawerName
   );
-  const ContentDropdown = childrenArray.find(
+  const ContentForDropdown = childrenArray.find(
     (child) =>
       isValidElement(child) &&
       hasDisplayName(child.type) &&
-      child.type.displayName === DropdownOrBottomDrawerContentDropdownName
+      child.type.displayName === DropdownOrDrawerContentForDropdownName
   );
 
   if (isExtraSmall) {
@@ -67,28 +67,30 @@ export function DropdownOrBottomDrawer({
         onOpenChange={onOpenChange}
       >
         <BottomDrawerTrigger>{Trigger}</BottomDrawerTrigger>
-        <BottomDrawerContent>{ContentDrawer}</BottomDrawerContent>
+        <BottomDrawerContent>{ContentForDrawer}</BottomDrawerContent>
       </BottomDrawer>
     );
   }
 
   return (
     <DropdownMenu open={open} onOpenChange={onOpenChange}>
-      <DropdownMenuTrigger asChild>{Trigger}</DropdownMenuTrigger>
+      <DropdownMenuTrigger asChild className="">
+        {Trigger}
+      </DropdownMenuTrigger>
       <DropdownMenuContent
         className={cn("sm:max-w-64", classNameDropdown)}
         align={align}
         sideOffset={sideOffset}
       >
         <ScrollArea className="group/list w-full" noFocusOnViewport>
-          {ContentDropdown}
+          {ContentForDropdown}
         </ScrollArea>
       </DropdownMenuContent>
     </DropdownMenu>
   );
 }
 
-function DropdownOrBottomDrawerTrigger({
+function DropdownOrDrawerTrigger({
   children,
   ...rest
 }: {
@@ -97,14 +99,23 @@ function DropdownOrBottomDrawerTrigger({
   [key: string]: any;
 }) {
   if (isValidElement(children)) {
-    return cloneElement(children, rest);
+    const childrenProps = (children.props || {}) as { className?: string };
+    const { className: restClassName, ...restWithoutClassName } = rest;
+    const mergedProps = {
+      ...childrenProps,
+      ...restWithoutClassName,
+    };
+    if (childrenProps.className || restClassName) {
+      mergedProps.className = cn(childrenProps.className, restClassName);
+    }
+    return cloneElement(children, mergedProps);
   }
   return children;
 }
-const DropdownOrBottomDrawerTriggerName = "DropdownOrBottomDrawerTrigger";
-DropdownOrBottomDrawerTrigger.displayName = DropdownOrBottomDrawerTriggerName;
+const DropdownOrDrawerTriggerName = "DropdownOrDrawerTrigger";
+DropdownOrDrawerTrigger.displayName = DropdownOrDrawerTriggerName;
 
-function DropdownOrBottomDrawerContentDropdown({
+function DropdownOrDrawerContentForDropdown({
   children,
   ...rest
 }: {
@@ -117,12 +128,12 @@ function DropdownOrBottomDrawerContentDropdown({
   }
   return children;
 }
-const DropdownOrBottomDrawerContentDropdownName =
-  "DropdownOrBottomDrawerContentDropdown";
-DropdownOrBottomDrawerContentDropdown.displayName =
-  DropdownOrBottomDrawerContentDropdownName;
+const DropdownOrDrawerContentForDropdownName =
+  "DropdownOrDrawerContentForDropdown";
+DropdownOrDrawerContentForDropdown.displayName =
+  DropdownOrDrawerContentForDropdownName;
 
-function DropdownOrBottomDrawerContentDrawer({
+function DropdownOrDrawerContentForDrawer({
   children,
   ...rest
 }: {
@@ -135,17 +146,16 @@ function DropdownOrBottomDrawerContentDrawer({
   }
   return children;
 }
-const DropdownOrBottomDrawerContentDrawerName =
-  "DropdownOrBottomDrawerContentDrawer";
-DropdownOrBottomDrawerContentDrawer.displayName =
-  DropdownOrBottomDrawerContentDrawerName;
+const DropdownOrDrawerContentForDrawerName = "DropdownOrDrawerContentForDrawer";
+DropdownOrDrawerContentForDrawer.displayName =
+  DropdownOrDrawerContentForDrawerName;
 
 function hasDisplayName(type: unknown): type is { displayName: string } {
   return typeof (type as { displayName: string })?.displayName === "string";
 }
 
 export {
-  DropdownOrBottomDrawerContentDrawer,
-  DropdownOrBottomDrawerContentDropdown,
-  DropdownOrBottomDrawerTrigger,
+  DropdownOrDrawerContentForDrawer,
+  DropdownOrDrawerContentForDropdown,
+  DropdownOrDrawerTrigger,
 };

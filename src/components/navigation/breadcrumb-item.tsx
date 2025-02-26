@@ -1,9 +1,9 @@
 import {
-  DropdownOrBottomDrawer,
-  DropdownOrBottomDrawerContentDrawer,
-  DropdownOrBottomDrawerContentDropdown,
-  DropdownOrBottomDrawerTrigger,
-} from "@/components/navigation/dropdown-or-bottom-drawer";
+  DropdownOrDrawer,
+  DropdownOrDrawerContentForDrawer,
+  DropdownOrDrawerContentForDropdown,
+  DropdownOrDrawerTrigger,
+} from "@/components/navigation/dropdown-or-drawer";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenuGroup,
@@ -68,15 +68,15 @@ export function BreadcrumbItem<T>({
     : undefined;
 
   return (
-    <DropdownOrBottomDrawer title={title} open={open} onOpenChange={setOpen}>
-      <DropdownOrBottomDrawerTrigger>
+    <DropdownOrDrawer title={title} open={open} onOpenChange={setOpen}>
+      <DropdownOrDrawerTrigger>
         <Trigger
           item={selectedItem}
           Icon={IconItem}
           flipChevronOnSm={flipChevronOnSm}
         />
-      </DropdownOrBottomDrawerTrigger>
-      <DropdownOrBottomDrawerContentDrawer>
+      </DropdownOrDrawerTrigger>
+      <DropdownOrDrawerContentForDrawer>
         <div className="w-full flex flex-col px-2 pt-2 pb-8 group/list">
           {items?.map((i, index) => {
             const href = getHrefForId(i.id);
@@ -111,8 +111,8 @@ export function BreadcrumbItem<T>({
             </>
           )}
         </div>
-      </DropdownOrBottomDrawerContentDrawer>
-      <DropdownOrBottomDrawerContentDropdown>
+      </DropdownOrDrawerContentForDrawer>
+      <DropdownOrDrawerContentForDropdown>
         <DropdownMenuLabel>{title}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
@@ -151,8 +151,8 @@ export function BreadcrumbItem<T>({
             </DropdownMenuGroup>
           </>
         )}
-      </DropdownOrBottomDrawerContentDropdown>
-    </DropdownOrBottomDrawer>
+      </DropdownOrDrawerContentForDropdown>
+    </DropdownOrDrawer>
   );
 }
 

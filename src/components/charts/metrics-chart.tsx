@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/chart";
 import { format } from "date-fns";
 import { useMemo } from "react";
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 type Props = {
   yFormatter: ((value: number, index: number) => string) | undefined;
@@ -15,6 +15,8 @@ type Props = {
 };
 
 const margin = { left: 4, right: 4, top: 4, bottom: 4 };
+
+const colorCount = 10;
 
 export default function MetricsChart({
   yFormatter,
@@ -45,8 +47,8 @@ export default function MetricsChart({
 
   return (
     <ChartContainer className="w-full" config={chartConfig}>
-      <LineChart accessibilityLayer data={chartData} margin={margin}>
-        <CartesianGrid vertical={false} />
+      <AreaChart accessibilityLayer data={chartData} margin={margin}>
+        <CartesianGrid vertical={false} stroke="transparent" />
         <XAxis
           dataKey="timestamp"
           tickLine={false}
@@ -54,11 +56,15 @@ export default function MetricsChart({
           tickMargin={8}
           tickFormatter={(value) => format(value, "MMM dd")}
         />
-        <YAxis tickLine={false} axisLine={false} tickFormatter={yFormatter} />
+        <YAxis
+          tickMargin={8}
+          tickLine={false}
+          axisLine={false}
+          tickFormatter={yFormatter}
+        />
         <ChartTooltip
           content={
             <ChartTooltipContent
-              label="Test"
               labelFormatter={(_, p) => {
                 return format(p[0].payload.timestamp, "MMM dd, HH:mm");
               }}
@@ -68,16 +74,18 @@ export default function MetricsChart({
           }
         />
         {dataKeys.map((dataKey, i) => (
-          <Line
+          <Area
+            animationDuration={1000}
             key={dataKey}
             dataKey={dataKey}
             type="linear"
-            stroke={`hsl(var(--chart-${(i % 10) + 1}))`}
+            stroke={`hsl(var(--chart-${(i % colorCount) + 1}))`}
             strokeWidth={1.5}
-            dot={false}
+            stackId={dataKey}
+            fill="transparent"
           />
         ))}
-      </LineChart>
+      </AreaChart>
     </ChartContainer>
   );
 }

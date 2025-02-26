@@ -3,11 +3,11 @@
 import { signOutAction } from "@/components/auth/actions";
 import Blockies from "@/components/blockies/blockies";
 import {
-  DropdownOrBottomDrawer,
-  DropdownOrBottomDrawerContentDrawer,
-  DropdownOrBottomDrawerContentDropdown,
-  DropdownOrBottomDrawerTrigger,
-} from "@/components/navigation/dropdown-or-bottom-drawer";
+  DropdownOrDrawer,
+  DropdownOrDrawerContentForDrawer,
+  DropdownOrDrawerContentForDropdown,
+  DropdownOrDrawerTrigger,
+} from "@/components/navigation/dropdown-or-drawer";
 import ThemeButton from "@/components/theme-button";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,7 +30,7 @@ export default function UserAvatar({ email, className }: Props) {
   const formRef = useRef<HTMLFormElement>(null);
 
   return (
-    <DropdownOrBottomDrawer
+    <DropdownOrDrawer
       title={email}
       titleSize="sm"
       TitleIcon={({ className }: { className: string }) => (
@@ -44,18 +44,17 @@ export default function UserAvatar({ email, className }: Props) {
       classNameDropdown="w-64"
       sideOffset={8}
     >
-      <DropdownOrBottomDrawerTrigger
-        className={cn(
-          "size-7 rounded-full border border-foreground shrink-0 group/button data-[pending]:border-border",
-          className
-        )}
-      >
+      <DropdownOrDrawerTrigger>
         <Button
           data-open={open ? true : undefined}
           data-pending={isPendingSignOut ? true : undefined}
           size="icon"
           variant="ghost"
           fadeOnDisabled={false}
+          className={cn(
+            "size-6.5 rounded-full border border-foreground shrink-0 group/button data-[pending]:border-border",
+            className
+          )}
         >
           <Blockies
             address={email}
@@ -67,8 +66,8 @@ export default function UserAvatar({ email, className }: Props) {
             </div>
           )}
         </Button>
-      </DropdownOrBottomDrawerTrigger>
-      <DropdownOrBottomDrawerContentDrawer>
+      </DropdownOrDrawerTrigger>
+      <DropdownOrDrawerContentForDrawer>
         <div className="w-full flex flex-col px-2 pt-2 pb-8 group/list">
           <ThemeButton variant="drawer-item" />
           <form
@@ -92,8 +91,8 @@ export default function UserAvatar({ email, className }: Props) {
             </Button>
           </form>
         </div>
-      </DropdownOrBottomDrawerContentDrawer>
-      <DropdownOrBottomDrawerContentDropdown>
+      </DropdownOrDrawerContentForDrawer>
+      <DropdownOrDrawerContentForDropdown>
         <div className="w-full flex justify-start items-center px-3 gap-2.5 py-3">
           <div className="size-5 rounded-full border border-foreground shrink-0">
             <Blockies
@@ -127,7 +126,7 @@ export default function UserAvatar({ email, className }: Props) {
             </form>
           </DropdownMenuItem>
         </DropdownMenuGroup>
-      </DropdownOrBottomDrawerContentDropdown>
-    </DropdownOrBottomDrawer>
+      </DropdownOrDrawerContentForDropdown>
+    </DropdownOrDrawer>
   );
 }

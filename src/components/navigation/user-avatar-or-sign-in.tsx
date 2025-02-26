@@ -17,9 +17,11 @@ export default function UserAvatarOrSignIn({ session }: Props) {
     <>
       {session && <UserAvatar email={session.user.email} />}
       {!session && !isSignInPage && (
-        <LinkButton size="sm" className="py-1.25" href="/sign-in">
-          Sign In
-        </LinkButton>
+        <div className="flex items-center justify-end -mr-0.5">
+          <LinkButton size="sm" className="py-1.25" href="/sign-in">
+            Sign In
+          </LinkButton>
+        </div>
       )}
     </>
   );
