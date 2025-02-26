@@ -10,6 +10,9 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
+    DEX_CLIENT_ID: z.string(),
+    DEX_CLIENT_SECRET: z.string(),
+    DEX_ISSUER: z.string().url(),
   },
 
   /**
@@ -28,6 +31,9 @@ export const env = createEnv({
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+    DEX_CLIENT_ID: process.env.DEX_CLIENT_ID,
+    DEX_CLIENT_SECRET: process.env.DEX_CLIENT_SECRET,
+    DEX_ISSUER: process.env.DEX_ISSUER,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

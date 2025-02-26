@@ -46,7 +46,7 @@ export default function TopBar({ className }: Props) {
       >
         <SearchIcon className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
         <Input
-          className="flex-1 py-2.25 pl-8.5 pr-22"
+          className="flex-1 py-2.25 pl-8.5 pr-22 rounded-lg"
           placeholder="Search logs..."
         />
         <div className="absolute flex justify-end right-0 top-0 h-full">

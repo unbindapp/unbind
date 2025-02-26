@@ -1,16 +1,20 @@
-import Avatar from "@/components/navigation/avatar";
 import { BreadcrumbSeparator } from "@/components/navigation/breadcrumb-wrapper";
 import LogoLink from "@/components/navigation/logo-link";
+import UserAvatar from "@/components/navigation/user-avatar";
+import { LinkButton } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import { ReactNode, Children, isValidElement } from "react";
+import { auth } from "@/server/auth/auth";
+import { Children, isValidElement, ReactNode } from "react";
 
 export async function Navbar({
   children,
   className,
 }: {
   className?: string;
-  children: ReactNode;
+  children?: ReactNode;
 }) {
+  const session = await auth();
+
   // Filter children by component type
   const childrenArray = Children.toArray(children);
   const breadcrumb = childrenArray.find(
@@ -64,7 +68,14 @@ export async function Navbar({
           )}
         </div>
         <div className="shrink-0 flex items-center justify-end">
-          <Avatar />
+          {session && <UserAvatar email={session.user.email || ""} />}
+          {!session && (
+            <div className="flex items-center justify-end">
+              <LinkButton size="sm" className="py-1.25" href="/sign-in">
+                Sign In
+              </LinkButton>
+            </div>
+          )}
         </div>
       </div>
       {tabsMd && (
@@ -98,4 +109,4 @@ function hasDisplayName(type: unknown): type is { displayName: string } {
   return typeof (type as { displayName: string })?.displayName === "string";
 }
 
-export { NavbarBreadcrumb, NavbarTabsLg, NavbarTabsSm, NavbarTabsMd };
+export { NavbarBreadcrumb, NavbarTabsLg, NavbarTabsMd, NavbarTabsSm };
