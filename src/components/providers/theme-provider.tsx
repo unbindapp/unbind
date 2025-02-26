@@ -39,5 +39,6 @@ function ThemeProviderInner({ children }: { children: React.ReactNode }) {
       metaThemeColor.setAttribute("content", metaTheme[finalTheme]);
     }
   }, [finalTheme]);
+
   return children;
 }

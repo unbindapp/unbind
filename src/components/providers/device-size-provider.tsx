@@ -27,12 +27,13 @@ export const DeviceSizeProvider: React.FC<{
       : "xl"
     : "xl";
 
-  const value: TDeviceSizeContext = useMemo(() => {
-    return {
+  const value: TDeviceSizeContext = useMemo(
+    () => ({
       size,
       isExtraSmall: size === "xs",
-    };
-  }, [size]);
+    }),
+    [size]
+  );
 
   return (
     <DeviceSizeContext.Provider value={value}>

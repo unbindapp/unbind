@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, ReactNode, useContext, useState } from "react";
+import { createContext, ReactNode, useContext, useMemo, useState } from "react";
 import { useInterval } from "usehooks-ts";
 
 type TTimestampContext = {
@@ -18,12 +18,15 @@ export const TimestampProvider: React.FC<{
     setTimestamp(Date.now());
   }, 1000);
 
+  const value: TTimestampContext = useMemo(
+    () => ({
+      timestamp,
+    }),
+    [timestamp]
+  );
+
   return (
-    <TimestampContext.Provider
-      value={{
-        timestamp,
-      }}
-    >
+    <TimestampContext.Provider value={value}>
       {children}
     </TimestampContext.Provider>
   );

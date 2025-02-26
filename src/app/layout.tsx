@@ -12,8 +12,9 @@ import {
 } from "lucide-react";
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import "./globals.css";
+import "@/app/globals.css";
 import { metaTheme } from "@/components/providers/themes";
+/* import { ReactScan } from "@/components/providers/react-scan"; */
 
 const sans = localFont({
   src: "./fonts/DMSansVF.woff2",
@@ -52,6 +53,7 @@ export default async function RootLayout({
       <body
         className={`${sans.variable} ${mono.variable} w-full flex flex-col min-h-[100svh] relative items-center bg-background text-foreground antialiased break-words`}
       >
+        {/* <ReactScan /> */}
         <Providers>
           <TopLoader />
           {children}

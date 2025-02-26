@@ -47,6 +47,7 @@
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.2",
     "react-hotkeys-hook": "^4.6.1",
+    "react-scan": "^0.2.4",
     "recharts": "^2.15.1",
     "server-only": "^0.0.1",
     "sonner": "^1.7.4",

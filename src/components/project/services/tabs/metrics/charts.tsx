@@ -4,6 +4,7 @@ import MetricsChartList, {
   TChartObject,
   TChartRow,
 } from "@/components/charts/metrics-chart-list";
+import { cn } from "@/components/ui/utils";
 import { TService } from "@/server/trpc/api/main/router";
 import { api } from "@/server/trpc/setup/client";
 import { useMemo } from "react";
@@ -23,9 +24,10 @@ function random(seed: number) {
 
 type Props = {
   service: TService;
+  className?: string;
 };
 
-export default function Charts({ service }: Props) {
+export default function Charts({ service, className }: Props) {
   const { data, isPending, isError, error } = api.main.getServices.useQuery({
     teamId: service.teamId,
     projectId: service.projectId,
@@ -103,7 +105,7 @@ export default function Charts({ service }: Props) {
 
   if (data && data.services.length === 0) {
     return (
-      <div className="w-full p-1">
+      <div className={cn("w-full p-0", className)}>
         <div className="w-full flex items-center text-muted-foreground justify-center border rounded-xl text-center px-4 py-2.5 min-h-36">
           <p className="w-full leading-tight">There are no metrics yet</p>
         </div>
@@ -117,7 +119,9 @@ export default function Charts({ service }: Props) {
       ram={ram}
       disk={disk}
       network={network}
-      chartClassName="w-full lg:w-full p-0"
+      className={className}
+      classNameChart="w-full lg:w-full p-0"
+      noLegends
     />
   );
 }

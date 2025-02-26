@@ -153,6 +153,7 @@ const config: Config = {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        xs: "calc(var(--radius) - 6px)",
       },
       spacing: {
         "2px": "2px",
@@ -194,6 +195,9 @@ const config: Config = {
         "35.5": "8.875rem",
         37: "9.25rem",
         38: "9.5rem",
+        64.5: "16.125rem",
+        65: "16.25rem",
+        66: "16.5rem",
         88: "22rem",
         90: "22.5rem",
         92: "23rem",

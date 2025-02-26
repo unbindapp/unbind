@@ -1,7 +1,7 @@
 "use client";
 
 import { useAsyncRouterPush } from "@/lib/hooks/use-async-router-push";
-import { createContext, ReactNode, useContext } from "react";
+import { createContext, ReactNode, useContext, useMemo } from "react";
 
 type TAsyncPushContext = {
   isPending: boolean;
@@ -14,13 +14,17 @@ export const AsyncPushProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
   const [asyncPush, isPending] = useAsyncRouterPush();
+
+  const value: TAsyncPushContext = useMemo(
+    () => ({
+      asyncPush,
+      isPending,
+    }),
+    [asyncPush, isPending]
+  );
+
   return (
-    <AsyncPushContext.Provider
-      value={{
-        asyncPush,
-        isPending,
-      }}
-    >
+    <AsyncPushContext.Provider value={value}>
       {children}
     </AsyncPushContext.Provider>
   );
