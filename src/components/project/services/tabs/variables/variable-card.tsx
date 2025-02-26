@@ -30,7 +30,7 @@ export default function VariableCard({ variable, isPlaceholder }: Props) {
     <div
       data-placeholder={isPlaceholder ? true : undefined}
       data-value-visible={isValueVisible ? true : undefined}
-      className="w-full select-text flex flex-col sm:flex-row sm:items-center font-mono px-3 py-0.75 not-touch:hover:bg-background-hover 
+      className="w-full select-text flex flex-col sm:flex-row sm:items-center font-mono px-3 py-0.75 has-hover:hover:bg-background-hover 
       border rounded-xl sm:rounded-lg group/card relative data-[placeholder]:text-transparent"
     >
       <div className="w-full py-2 pr-8 sm:pr-4 sm:w-56 flex shrink-0">
