@@ -73,7 +73,7 @@ export default function ThemeButton({
           e.preventDefault();
           toggleTheme();
         }}
-        className="w-full flex items-center justify-start gap-2.5 text-left leading-tight"
+        className="w-full px-2.5 flex items-center justify-start gap-2.5 text-left leading-tight"
       >
         <Icon
           suppressHydrationWarning

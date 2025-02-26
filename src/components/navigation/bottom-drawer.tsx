@@ -11,7 +11,8 @@ import { Children, cloneElement, FC, isValidElement, ReactNode } from "react";
 
 type Props = {
   title: string;
-  Icon?: FC<{ className: string }>;
+  TitleIcon?: FC<{ className: string }>;
+  titleSize?: "sm" | "md";
   open: boolean;
   onOpenChange: (open: boolean) => void;
   classNameContent?: string;
@@ -24,7 +25,8 @@ type Props = {
 
 export default function BottomDrawer({
   title,
-  Icon,
+  TitleIcon,
+  titleSize = "md",
   open,
   onOpenChange,
   classNameContent,
@@ -68,9 +70,18 @@ export default function BottomDrawer({
           data-hide-header={hideHeader ? true : undefined}
           className="w-full flex items-center justify-start gap-1 border-b data-[hide-header]:sr-only"
         >
-          <DrawerHeader className="flex-1 px-0 py-3 min-w-0 flex items-center justify-start">
-            {Icon && <Icon className="size-7 sm:size-8 -ml-1 -my-2" />}
-            <DrawerTitle className="pl-5 min-w-0 gap-2.5 whitespace-nowrap overflow-hidden overflow-ellipsis shrink leading-tight text-xl sm:text-2xl text-left">
+          <DrawerHeader
+            data-size={titleSize}
+            className="flex-1 py-3 data-[size=sm]:py-3.5 px-5 min-w-0 flex items-center justify-start gap-2.5 group/header"
+          >
+            {TitleIcon && (
+              <TitleIcon className="size-6 group-data-[size=sm]/header:size-5 group-data-[size=sm]/header:-ml-0.5 -ml-1 -my-2 shrink-0" />
+            )}
+            <DrawerTitle
+              className="min-w-0 whitespace-nowrap overflow-hidden overflow-ellipsis shrink leading-tight text-xl sm:text-2xl sm:leading-tight text-left
+              group-data-[size=sm]/header:text-lg group-data-[size=sm]/header:leading-tight 
+              sm:group-data-[size=sm]/header:text-xl sm:group-data-[size=sm]/header:leading-tight"
+            >
               {title}
             </DrawerTitle>
           </DrawerHeader>

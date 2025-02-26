@@ -10,10 +10,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
-import { Children, cloneElement, isValidElement, ReactNode } from "react";
+import { Children, cloneElement, FC, isValidElement, ReactNode } from "react";
 
 type Props = {
   title: string;
+  TitleIcon: FC<{ className: string }>;
+  titleSize?: "sm" | "md";
   children: ReactNode;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -24,6 +26,8 @@ type Props = {
 
 export function DropdownOrBottomDrawer({
   title,
+  TitleIcon,
+  titleSize,
   open,
   onOpenChange,
   classNameDropdown,
@@ -55,7 +59,13 @@ export function DropdownOrBottomDrawer({
 
   if (isExtraSmall) {
     return (
-      <BottomDrawer title={title} open={open} onOpenChange={onOpenChange}>
+      <BottomDrawer
+        title={title}
+        TitleIcon={TitleIcon}
+        titleSize={titleSize}
+        open={open}
+        onOpenChange={onOpenChange}
+      >
         <BottomDrawerTrigger>{Trigger}</BottomDrawerTrigger>
         <BottomDrawerContent>{ContentDrawer}</BottomDrawerContent>
       </BottomDrawer>

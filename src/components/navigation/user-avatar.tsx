@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/components/ui/utils";
 import { LoaderIcon, LogOutIcon } from "lucide-react";
@@ -30,10 +31,17 @@ export default function UserAvatar({ email, className }: Props) {
 
   return (
     <DropdownOrBottomDrawer
-      title="User Menu"
+      title={email}
+      titleSize="sm"
+      TitleIcon={({ className }: { className: string }) => (
+        <Blockies
+          address={email}
+          className={cn("rounded-full border border-foreground", className)}
+        />
+      )}
       open={open}
       onOpenChange={setOpen}
-      classNameDropdown="w-48"
+      classNameDropdown="w-64"
       sideOffset={8}
     >
       <DropdownOrBottomDrawerTrigger
@@ -86,6 +94,18 @@ export default function UserAvatar({ email, className }: Props) {
         </div>
       </DropdownOrBottomDrawerContentDrawer>
       <DropdownOrBottomDrawerContentDropdown>
+        <div className="w-full flex justify-start items-center px-3 gap-2.5 py-3">
+          <div className="size-5 rounded-full border border-foreground shrink-0">
+            <Blockies
+              address={email}
+              className="size-full shrink-0 rounded-full transition group-hover/button:rotate-45 group-active/button:rotate-45 group-data-[open]/button:rotate-360"
+            />
+          </div>
+          <p className="shrink min-w-0 leading-tight font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">
+            {email}
+          </p>
+        </div>
+        <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <ThemeButton variant="dropdown-menu-item" />
           <DropdownMenuItem

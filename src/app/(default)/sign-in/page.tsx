@@ -10,7 +10,7 @@ export default async function Page() {
   }
 
   return (
-    <div className="w-full flex-1 flex flex-col items-center justify-center pt-6 pb-[calc(3rem+8svh)] px-4">
+    <div className="w-full flex-1 flex flex-col items-center justify-center pt-6 pb-[calc(3rem+6svh)] px-4">
       <div className="w-full max-w-sm flex flex-col items-center justify-center">
         <div className="w-full flex flex-col items-center justify-center gap-6">
           <div className="w-full flex flex-col items-center justify-center gap-1">
