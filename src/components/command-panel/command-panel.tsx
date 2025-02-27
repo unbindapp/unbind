@@ -374,7 +374,7 @@ function Footer({
           variant="ghost"
           className="rounded-lg shrink min-w-0 px-3 py-2 font-semibold gap-1 text-base sm:text-sm"
         >
-          <ChevronLeftIcon className="size-5 sm:size-4.5 shrink-0 -ml-1.75" />
+          <ChevronLeftIcon className="size-5 sm:size-4.5 shrink-0 -ml-1.75 -mr-0.5" />
           <p className="shrink min-w-0 overflow-hidden overflow-ellipsis whitespace-nowrap">
             Back
           </p>
