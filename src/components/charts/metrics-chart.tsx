@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/chart";
 import { cn } from "@/components/ui/utils";
 import { format } from "date-fns";
-import { CheckIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
@@ -88,6 +87,7 @@ export default function MetricsChart({
           <ChartTooltip
             content={
               <ChartTooltipContent
+                indicator={activeDataKey ? "dot-circular" : "dot"}
                 labelFormatter={(_, p) => {
                   return format(p[0].payload.timestamp, "MMM dd, HH:mm");
                 }}
@@ -99,7 +99,7 @@ export default function MetricsChart({
           {filteredDataKeys.map((dataKey) => {
             return (
               <Area
-                animationDuration={1000}
+                animationDuration={500}
                 key={dataKey}
                 dataKey={dataKey}
                 type="monotone"
@@ -133,14 +133,8 @@ export default function MetricsChart({
                         ? `hsl(var(--muted-more-foreground))`
                         : chartConfig[dataKey].color,
                   }}
-                  className="size-2.5 rounded-xs shrink-0 p-0.375"
-                >
-                  <CheckIcon
-                    strokeWidth={6}
-                    className="size-full text-background opacity-0 group-data-[active]/button:opacity-100 transition
-                    scale-50 group-data-[active]/button:scale-100"
-                  />
-                </div>
+                  className="size-2.5 rounded-xs shrink-0 p-0.375 -ml-0.25 group-data-[active]/button:rounded-[0.625rem] transition-[border-radius,_background-color]"
+                />
                 <p className="shrink min-w-0 leading-tight max-w-28 whitespace-nowrap overflow-hidden overflow-ellipsis">
                   {dataKey}
                 </p>
