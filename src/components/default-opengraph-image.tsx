@@ -75,7 +75,7 @@ export default function DefaultOpenGraphImage({ logoSize = 544 }: Props) {
 export async function getOpengraphFonts() {
   const getFontFile = async (path: string) => {
     const data = await readFile(
-      join(process.cwd(), `public/static/fonts/${path}`)
+      join(process.cwd(), `public/static/font/${path}`)
     );
     const buffer = Uint8Array.from(data).buffer;
     return buffer;

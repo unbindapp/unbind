@@ -17,12 +17,12 @@ import { metaTheme } from "@/components/providers/themes";
 /* import { ReactScan } from "@/components/providers/react-scan"; */
 
 const sans = localFont({
-  src: "./fonts/DMSansVF.woff2",
+  src: "./font/DMSansVF.woff2",
   variable: "--font-sans",
   weight: "100 1000",
 });
 const mono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
+  src: "./font/GeistMonoVF.woff",
   variable: "--font-mono",
   weight: "100 900",
 });
