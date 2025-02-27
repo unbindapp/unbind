@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/chart";
 import { cn } from "@/components/ui/utils";
 import { format } from "date-fns";
+import { CheckIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
@@ -114,7 +115,7 @@ export default function MetricsChart({
       {dataKeys.length > 1 && (
         <ol
           data-has-active={activeDataKey ? true : undefined}
-          className="w-full flex flex-wrap pt-1.5 -ml-1.5 sm:-ml-2 group/list"
+          className="w-[calc(100%+0.75rem)] sm:w-[calc(100%+1rem)] flex flex-wrap pt-1.5 -ml-1.5 sm:-ml-2 group/list"
         >
           {dataKeys.map((dataKey) => (
             <li key={dataKey} className="max-w-full">
@@ -123,7 +124,7 @@ export default function MetricsChart({
                 onClick={() => toggleDataKey(dataKey)}
                 variant="ghost"
                 key={dataKey}
-                className="max-w-full text-muted-foreground data-[active]:text-foreground text-xs px-2.5 py-1.5 rounded-md font-medium gap-1.5 text-left"
+                className="max-w-full group/button text-muted-foreground data-[active]:text-foreground text-xs px-2.5 py-1.5 rounded-md font-medium gap-1.5 text-left"
               >
                 <div
                   style={{
@@ -132,8 +133,14 @@ export default function MetricsChart({
                         ? `hsl(var(--muted-more-foreground))`
                         : chartConfig[dataKey].color,
                   }}
-                  className="size-2.5 rounded-xs shrink-0"
-                />
+                  className="size-2.5 rounded-xs shrink-0 p-0.375"
+                >
+                  <CheckIcon
+                    strokeWidth={6}
+                    className="size-full text-background opacity-0 group-data-[active]/button:opacity-100 transition
+                    scale-50 group-data-[active]/button:scale-100"
+                  />
+                </div>
                 <p className="shrink min-w-0 leading-tight max-w-28 whitespace-nowrap overflow-hidden overflow-ellipsis">
                   {dataKey}
                 </p>
