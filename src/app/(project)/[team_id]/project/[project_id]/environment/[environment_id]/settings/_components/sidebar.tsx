@@ -58,28 +58,39 @@ export default function Sidebar({ className }: Props) {
   return (
     <div
       className={cn(
-        "w-full md:w-52 flex flex-row overflow-auto md:flex-col sticky top-0 left-0 border-b md:border-none",
+        "w-full md:w-52 flex bg-background border-b md:border-none flex-row items-center md:items-start md:flex-col md:justify-start",
+        "overflow-auto sticky top-0 left-0 sm:px-3 md:p-1 z-50",
         className
       )}
     >
       {tabs.map((tab) => (
         <LinkButton
+          forceMinSize={false}
           key={tab.href}
           data-active={isActive(tab, activeTabPath) ? true : undefined}
           onClick={() => setActiveTabPath(tab.href)}
           href={tab.href}
           variant="ghost"
-          className="md:w-full text-muted-foreground data-[active]:text-foreground text-left justify-start font-medium 
-          px-4 text-sm md:text-base rounded-lg gap-2.5 group/button"
+          className="md:w-full shrink-0 text-muted-foreground data-[active]:text-foreground text-left justify-start font-medium 
+          px-3.5 py-3.5 md:px-4 md:py-2.75 text-sm md:text-base rounded-lg gap-1.5 md:gap-2.5 group/button
+          has-hover:hover:bg-transparent active:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
         >
+          <div className="w-full h-full absolute left-0 top-0 py-1.5 md:py-0">
+            <div
+              className="w-full h-full rounded-lg has-hover:group-hover/button:bg-border group-active/button:bg-border
+              group-focus-visible/button:ring-1 group-focus-visible/button:ring-offset-2 group-focus-visible/button:ring-offset-background group-focus-visible/button:ring-primary/50"
+            />
+          </div>
           {isActive(tab, activeTabPath) && (
             <TabIndicator
               layoutId={"sidebar-tab-indicator"}
-              className=" md:top-2.5 md:left-0.5 md:h-[calc(100%-1.25rem)] md:w-0.5"
+              className="md:top-2.5 md:h-[calc(100%-1.25rem)] md:w-0.5"
             />
           )}
-          <tab.Icon className="size-4 md:size-5 shrink-0 -ml-1" />
-          <p className="md:shrink md:min-w-0 leading-tight">{tab.label}</p>
+          <tab.Icon className="size-4 md:size-5 shrink-0 -ml-0.5 md:-ml-1 -my-1 relative" />
+          <p className="whitespace-nowrap md:shrink md:min-w-0 leading-tight relative">
+            {tab.label}
+          </p>
         </LinkButton>
       ))}
     </div>
