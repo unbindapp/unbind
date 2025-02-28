@@ -58,7 +58,7 @@ export default function Sidebar({ className }: Props) {
   return (
     <div
       className={cn(
-        "w-full md:w-56 flex flex-row overflow-auto md:flex-col sticky top-0 left-0 border-b md:border-none",
+        "w-full md:w-52 flex flex-row overflow-auto md:flex-col sticky top-0 left-0 border-b md:border-none",
         className
       )}
     >
