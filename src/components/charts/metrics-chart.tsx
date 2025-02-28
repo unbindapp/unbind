@@ -133,7 +133,7 @@ export default function MetricsChart({
                         ? `hsl(var(--muted-more-foreground))`
                         : chartConfig[dataKey].color,
                   }}
-                  className="size-2.5 rounded-xs shrink-0 p-0.375 -ml-0.25 group-data-[active]/button:rounded-[0.625rem] transition-[border-radius,_background-color]"
+                  className="size-2.5 group-data-[active]/button:rounded-[0.3125rem] rounded-xs shrink-0 -ml-0.25 transition-[border-radius,_background-color]"
                 />
                 <p className="shrink min-w-0 leading-tight max-w-28 whitespace-nowrap overflow-hidden overflow-ellipsis">
                   {dataKey}
