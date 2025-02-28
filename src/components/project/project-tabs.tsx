@@ -9,21 +9,9 @@ import { useEffect, useMemo, useState } from "react";
 
 type TTab = {
   title: string;
-  href: string | undefined;
+  href: string;
+  looseMatch?: boolean;
 };
-
-const getBaseTabUrl = ({
-  teamId,
-  projectId,
-  environmentId,
-}: {
-  teamId?: string;
-  projectId?: string;
-  environmentId?: string;
-}) =>
-  teamId && projectId && environmentId
-    ? `/${teamId}/project/${projectId}/environment/${environmentId}`
-    : undefined;
 
 export default function ProjectTabs({
   className,
@@ -38,7 +26,7 @@ export default function ProjectTabs({
 }) {
   const { teamId, projectId, environmentId } = useIdsFromPathname();
   const tabs: TTab[] = useMemo(() => {
-    const baseTabUrl = getBaseTabUrl({ teamId, projectId, environmentId });
+    const baseTabUrl = `/${teamId}/project/${projectId}/environment/${environmentId}`;
     return [
       {
         title: "Services",
@@ -55,6 +43,7 @@ export default function ProjectTabs({
       {
         title: "Settings",
         href: `${baseTabUrl}/settings`,
+        looseMatch: true,
       },
     ];
   }, [teamId, projectId, environmentId]);
@@ -84,7 +73,7 @@ export default function ProjectTabs({
         >
           {tabs.map((tab) => (
             <LinkButton
-              data-active={tab.href === activeTabPath ? true : undefined}
+              data-active={isActive(tab, activeTabPath) ? true : undefined}
               key={tab.href}
               className={cn(
                 `font-medium text-sm px-3 py-4.25 sm:py-4 rounded leading-none text-muted-foreground 
@@ -96,7 +85,7 @@ export default function ProjectTabs({
               href={tab.href || ""}
               onClick={() => setActiveTabPath(tab.href)}
             >
-              {activeTabPath === tab.href && (
+              {isActive(tab, activeTabPath) && (
                 <TabIndicator
                   layoutId={layoutId}
                   className="top-0 bottom-auto sm:bottom-0 sm:top-auto"
@@ -115,4 +104,11 @@ export default function ProjectTabs({
       </div>
     </div>
   );
+}
+
+function isActive(tab: TTab, activePath: string | undefined) {
+  return activePath
+    ? tab.href === activePath ||
+        (tab.looseMatch && activePath.startsWith(tab.href))
+    : false;
 }
