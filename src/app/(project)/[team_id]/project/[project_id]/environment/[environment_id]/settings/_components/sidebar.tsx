@@ -72,7 +72,7 @@ export default function Sidebar({ className }: Props) {
           href={tab.href}
           variant="ghost"
           className="md:w-full shrink-0 text-muted-foreground data-[active]:text-foreground text-left justify-start font-medium 
-          px-3.5 py-3.5 md:px-4 md:py-2.75 text-sm md:text-base rounded-lg gap-1.5 md:gap-2.5 group/button
+          px-3.5 py-4.25 sm:py-4 md:px-4 md:py-2.75 text-sm md:text-base rounded-lg gap-1.5 md:gap-2.5 group/button
           has-hover:hover:bg-transparent active:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
         >
           <div className="w-full h-full absolute left-0 top-0 py-1.5 md:py-0">
@@ -88,7 +88,7 @@ export default function Sidebar({ className }: Props) {
             />
           )}
           <tab.Icon className="size-4 md:size-5 shrink-0 -ml-0.5 md:-ml-1 -my-1 relative" />
-          <p className="whitespace-nowrap md:shrink md:min-w-0 leading-tight relative">
+          <p className="whitespace-nowrap md:shrink md:min-w-0 relative leading-none">
             {tab.label}
           </p>
         </LinkButton>
