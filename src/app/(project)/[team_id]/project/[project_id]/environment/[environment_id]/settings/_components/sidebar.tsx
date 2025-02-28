@@ -58,8 +58,8 @@ export default function Sidebar({ className }: Props) {
   return (
     <div
       className={cn(
-        "w-full md:w-52 flex bg-background border-b md:border-none flex-row items-center md:items-start md:flex-col md:justify-start",
-        "overflow-auto sticky top-0 left-0 sm:px-3 md:p-1 z-50",
+        `w-full md:w-52 flex max-h-full bg-background border-b md:border-0 flex-row items-center md:items-start md:flex-col md:justify-start
+        overflow-auto sticky top-0 left-0 sm:top-[calc(5.75rem+2px)] lg:top-[calc(3rem-1px)] sm:px-3 md:p-1 z-50`,
         className
       )}
     >
