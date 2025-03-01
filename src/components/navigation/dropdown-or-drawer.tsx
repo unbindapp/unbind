@@ -41,20 +41,20 @@ export function DropdownOrDrawer({
   const Trigger = childrenArray.find(
     (child) =>
       isValidElement(child) &&
-      hasDisplayName(child.type) &&
-      child.type.displayName === DropdownOrDrawerTriggerName
+      typeof child.type === "function" &&
+      child.type.name === "DropdownOrDrawerTrigger"
   );
   const ContentForDrawer = childrenArray.find(
     (child) =>
       isValidElement(child) &&
-      hasDisplayName(child.type) &&
-      child.type.displayName === DropdownOrDrawerContentForDrawerName
+      typeof child.type === "function" &&
+      child.type.name === "DropdownOrDrawerContentForDrawer"
   );
   const ContentForDropdown = childrenArray.find(
     (child) =>
       isValidElement(child) &&
-      hasDisplayName(child.type) &&
-      child.type.displayName === DropdownOrDrawerContentForDropdownName
+      typeof child.type === "function" &&
+      child.type.name === "DropdownOrDrawerContentForDropdown"
   );
 
   if (isExtraSmall) {
@@ -112,8 +112,6 @@ function DropdownOrDrawerTrigger({
   }
   return children;
 }
-const DropdownOrDrawerTriggerName = "DropdownOrDrawerTrigger";
-DropdownOrDrawerTrigger.displayName = DropdownOrDrawerTriggerName;
 
 function DropdownOrDrawerContentForDropdown({
   children,
@@ -128,10 +126,6 @@ function DropdownOrDrawerContentForDropdown({
   }
   return children;
 }
-const DropdownOrDrawerContentForDropdownName =
-  "DropdownOrDrawerContentForDropdown";
-DropdownOrDrawerContentForDropdown.displayName =
-  DropdownOrDrawerContentForDropdownName;
 
 function DropdownOrDrawerContentForDrawer({
   children,
@@ -145,13 +139,6 @@ function DropdownOrDrawerContentForDrawer({
     return cloneElement(children, rest);
   }
   return children;
-}
-const DropdownOrDrawerContentForDrawerName = "DropdownOrDrawerContentForDrawer";
-DropdownOrDrawerContentForDrawer.displayName =
-  DropdownOrDrawerContentForDrawerName;
-
-function hasDisplayName(type: unknown): type is { displayName: string } {
-  return typeof (type as { displayName: string })?.displayName === "string";
 }
 
 export {

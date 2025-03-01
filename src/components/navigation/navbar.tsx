@@ -19,26 +19,26 @@ export async function Navbar({
   const breadcrumb = childrenArray.find(
     (child) =>
       isValidElement(child) &&
-      hasDisplayName(child.type) &&
-      child.type.displayName === NavbarBreadcrumbName
+      typeof child.type === "function" &&
+      child.type.name === "NavbarBreadcrumb"
   );
   const tabsLg = childrenArray.find(
     (child) =>
       isValidElement(child) &&
-      hasDisplayName(child.type) &&
-      child.type.displayName === NavbarTabsLgName
+      typeof child.type === "function" &&
+      child.type.name === "NavbarTabsLg"
   );
   const tabsMd = childrenArray.find(
     (child) =>
       isValidElement(child) &&
-      hasDisplayName(child.type) &&
-      child.type.displayName === NavbarTabsMdName
+      typeof child.type === "function" &&
+      child.type.name === "NavbarTabsMd"
   );
   const tabsSm = childrenArray.find(
     (child) =>
       isValidElement(child) &&
-      hasDisplayName(child.type) &&
-      child.type.displayName === NavbarTabsSmName
+      typeof child.type === "function" &&
+      child.type.name === "NavbarTabsSm"
   );
 
   return (
@@ -80,29 +80,17 @@ export async function Navbar({
 function NavbarBreadcrumb({ children }: { children: ReactNode }) {
   return children;
 }
-const NavbarBreadcrumbName = "NavbarBreadcrumb";
-NavbarBreadcrumb.displayName = NavbarBreadcrumbName;
 
 function NavbarTabsLg({ children }: { children: ReactNode }) {
   return children;
 }
-const NavbarTabsLgName = "NavbarTabsLg";
-NavbarTabsLg.displayName = NavbarTabsLgName;
 
 function NavbarTabsMd({ children }: { children: ReactNode }) {
   return children;
 }
-const NavbarTabsMdName = "NavbarTabsMd";
-NavbarTabsMd.displayName = NavbarTabsMdName;
 
 function NavbarTabsSm({ children }: { children: ReactNode }) {
   return children;
-}
-const NavbarTabsSmName = "NavbarTabsSm";
-NavbarTabsSm.displayName = NavbarTabsSmName;
-
-function hasDisplayName(type: unknown): type is { displayName: string } {
-  return typeof (type as { displayName: string })?.displayName === "string";
 }
 
 export { NavbarBreadcrumb, NavbarTabsLg, NavbarTabsMd, NavbarTabsSm };

@@ -40,14 +40,14 @@ export default function BottomDrawer({
   const Trigger = childrenArray.find(
     (child) =>
       isValidElement(child) &&
-      hasDisplayName(child.type) &&
-      child.type.displayName === BottomDrawerTriggerName
+      typeof child.type === "function" &&
+      child.type.name === "BottomDrawerTrigger"
   );
   const Content = childrenArray.find(
     (child) =>
       isValidElement(child) &&
-      hasDisplayName(child.type) &&
-      child.type.displayName === BottomDrawerContentName
+      typeof child.type === "function" &&
+      child.type.name === "BottomDrawerContent"
   );
 
   return (
@@ -129,8 +129,6 @@ function BottomDrawerTrigger({
   }
   return children;
 }
-const BottomDrawerTriggerName = "BottomDrawerTrigger";
-BottomDrawerTrigger.displayName = BottomDrawerTriggerName;
 
 function BottomDrawerContent({
   children,
@@ -144,12 +142,6 @@ function BottomDrawerContent({
     return cloneElement(children, rest);
   }
   return children;
-}
-const BottomDrawerContentName = "BottomDrawerContent";
-BottomDrawerContent.displayName = BottomDrawerContentName;
-
-function hasDisplayName(type: unknown): type is { displayName: string } {
-  return typeof (type as { displayName: string })?.displayName === "string";
 }
 
 export { BottomDrawerTrigger, BottomDrawerContent };

@@ -88,7 +88,7 @@ const buttonVariants = cva(
 );
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends React.ComponentProps<"button">,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
 }
@@ -96,83 +96,69 @@ export interface ButtonProps
 export type TButtonVariants = VariantProps<typeof buttonVariants>;
 
 export interface LinkButtonProps
-  extends React.ComponentPropsWithRef<typeof Link>,
+  extends React.ComponentProps<typeof Link>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  (
-    {
-      className,
-      variant,
-      size,
-      disabled,
-      fadeOnDisabled,
-      focusVariant,
-      forceMinSize,
-      state,
-      asChild = false,
-      ...props
-    },
-    ref
-  ) => {
-    const Comp = asChild ? Slot : "button";
-    return (
-      <Comp
-        className={cn(
-          buttonVariants({
-            variant,
-            size,
-            state,
-            fadeOnDisabled,
-            focusVariant,
-            forceMinSize,
-            className,
-          })
-        )}
-        ref={ref}
-        disabled={state === "loading" ? true : disabled}
-        {...props}
-      />
-    );
-  }
-);
-Button.displayName = "Button";
+function Button({
+  className,
+  variant,
+  size,
+  disabled,
+  fadeOnDisabled,
+  focusVariant,
+  forceMinSize,
+  state,
+  asChild = false,
+  ...props
+}: ButtonProps) {
+  const Comp = asChild ? Slot : "button";
+  return (
+    <Comp
+      className={cn(
+        buttonVariants({
+          variant,
+          size,
+          state,
+          fadeOnDisabled,
+          focusVariant,
+          forceMinSize,
+          className,
+        })
+      )}
+      disabled={state === "loading" ? true : disabled}
+      {...props}
+    />
+  );
+}
 
-const LinkButton = React.forwardRef<HTMLAnchorElement, LinkButtonProps>(
-  (
-    {
-      className,
-      variant,
-      size,
-      state,
-      fadeOnDisabled,
-      focusVariant,
-      forceMinSize,
-      ...props
-    },
-    ref
-  ) => {
-    return (
-      <Link
-        className={cn(
-          buttonVariants({
-            variant,
-            size,
-            className,
-            state,
-            fadeOnDisabled,
-            focusVariant,
-            forceMinSize,
-          })
-        )}
-        ref={ref}
-        {...props}
-      />
-    );
-  }
-);
-LinkButton.displayName = "LinkButton";
+function LinkButton({
+  className,
+  variant,
+  size,
+  state,
+  fadeOnDisabled,
+  focusVariant,
+  forceMinSize,
+  ...props
+}: LinkButtonProps) {
+  return (
+    <Link
+      className={cn(
+        buttonVariants({
+          variant,
+          size,
+          className,
+          state,
+          fadeOnDisabled,
+          focusVariant,
+          forceMinSize,
+        })
+      )}
+      {...props}
+    />
+  );
+}
 
 export { Button, buttonVariants, LinkButton };
