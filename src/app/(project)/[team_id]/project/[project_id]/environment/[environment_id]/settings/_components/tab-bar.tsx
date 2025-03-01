@@ -14,11 +14,13 @@ import { FC, useEffect, useMemo, useState } from "react";
 type TTab = {
   label: string;
   href: string;
-  Icon: FC<{ className?: string }>;
+  Icon: FC<{ className?: string; style?: { transform?: string } }>;
   looseMatch?: boolean;
 };
 
-export default function Sidebar() {
+const tabIconStyle = { transform: "translateZ(0)" };
+
+export default function TabBar() {
   const { teamId, projectId, environmentId } = useIdsFromPathname();
   const pathname = usePathname();
   const [activeTabPath, setActiveTabPath] = useState<string | undefined>(
@@ -76,11 +78,14 @@ export default function Sidebar() {
           </div>
           {isActive(tab, activeTabPath) && (
             <TabIndicator
-              layoutId={"sidebar-tab-indicator"}
+              layoutId="sidebar-tab-indicator"
               className="md:top-2 md:h-[calc(100%-1rem)] md:w-0.5"
             />
           )}
-          <tab.Icon className="size-4 md:size-5 shrink-0 -ml-0.25 md:-ml-1 -my-1 relative" />
+          <tab.Icon
+            style={tabIconStyle}
+            className="size-4 md:size-5 shrink-0 -ml-0.25 md:-ml-1 -my-1 relative translate-z-0"
+          />
           <p className="whitespace-nowrap md:shrink md:min-w-0 md:whitespace-normal relative leading-none">
             {tab.label}
           </p>

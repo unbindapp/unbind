@@ -1,4 +1,4 @@
-import Sidebar from "@/app/(project)/[team_id]/project/[project_id]/environment/[environment_id]/settings/_components/sidebar";
+import TabBar from "@/app/(project)/[team_id]/project/[project_id]/environment/[environment_id]/settings/_components/tab-bar";
 import { ReactNode } from "react";
 
 type Props = {
@@ -13,7 +13,7 @@ export default function Layout({ children }: Props) {
           Settings
         </h1>
         <div className="w-full flex-1 flex flex-col md:flex-row md:items-stretch md:gap-4 relative pt-2 md:pt-3">
-          <Sidebar />
+          <TabBar />
           <div className="flex-1 min-w-0 flex flex-col pt-4 sm:pt-5 md:pt-2 px-4 sm:px-6 md:pl-0 md:pr-2 pb-12">
             {children}
           </div>
