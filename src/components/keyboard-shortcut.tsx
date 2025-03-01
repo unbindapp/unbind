@@ -21,10 +21,7 @@ export default function KeyboardShortcut({
 
   return (
     <div className={cn("shrink-0", className)}>
-      <div
-        className="text-xxs ring-1 ring-border rounded px-1.5 py-1.25 
-        leading-none bg-background-hover"
-      >
+      <div className="text-xs leading-none ring-1 ring-border rounded px-1.5 py-1.25 bg-background-hover">
         {children}
       </div>
     </div>

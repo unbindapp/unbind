@@ -272,7 +272,6 @@ function Content({
   useCommandPanelItems,
   currentPage,
   setCurrentPageId,
-  listRef,
 }: {
   useCommandPanelItems: TUseCommandPanelItems;
   currentPage: TCommandPanelPage;
@@ -298,7 +297,7 @@ function Content({
         </CommandEmpty>
       )}
       <ScrollArea noFocusOnViewport>
-        <CommandList ref={listRef}>
+        <CommandList>
           <CommandGroup>
             {!isPending &&
               items &&
@@ -408,12 +407,12 @@ function Input({
 
   return (
     <CommandInput
+      ref={ref}
       showSpinner={isPending}
       value={values[currentPage.id]}
       onValueChange={(value) => {
         setValues((prev) => ({ ...prev, [currentPage.id]: value }));
       }}
-      ref={ref}
       placeholder={placeholder}
     />
   );
