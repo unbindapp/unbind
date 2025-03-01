@@ -41,13 +41,13 @@ export default function BottomDrawer({
     (child) =>
       isValidElement(child) &&
       typeof child.type === "function" &&
-      child.type.name === "BottomDrawerTrigger"
+      child.type === BottomDrawerTrigger
   );
   const Content = childrenArray.find(
     (child) =>
       isValidElement(child) &&
       typeof child.type === "function" &&
-      child.type.name === "BottomDrawerContent"
+      child.type === BottomDrawerContent
   );
 
   return (

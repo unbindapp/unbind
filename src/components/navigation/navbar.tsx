@@ -20,25 +20,25 @@ export async function Navbar({
     (child) =>
       isValidElement(child) &&
       typeof child.type === "function" &&
-      child.type.name === "NavbarBreadcrumb"
+      child.type === NavbarBreadcrumb
   );
   const tabsLg = childrenArray.find(
     (child) =>
       isValidElement(child) &&
       typeof child.type === "function" &&
-      child.type.name === "NavbarTabsLg"
+      child.type === NavbarTabsLg
   );
   const tabsMd = childrenArray.find(
     (child) =>
       isValidElement(child) &&
       typeof child.type === "function" &&
-      child.type.name === "NavbarTabsMd"
+      child.type === NavbarTabsMd
   );
   const tabsSm = childrenArray.find(
     (child) =>
       isValidElement(child) &&
       typeof child.type === "function" &&
-      child.type.name === "NavbarTabsSm"
+      child.type === NavbarTabsSm
   );
 
   return (

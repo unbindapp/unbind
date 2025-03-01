@@ -42,19 +42,19 @@ export function DropdownOrDrawer({
     (child) =>
       isValidElement(child) &&
       typeof child.type === "function" &&
-      child.type.name === "DropdownOrDrawerTrigger"
+      child.type === DropdownOrDrawerTrigger
   );
   const ContentForDrawer = childrenArray.find(
     (child) =>
       isValidElement(child) &&
       typeof child.type === "function" &&
-      child.type.name === "DropdownOrDrawerContentForDrawer"
+      child.type === DropdownOrDrawerContentForDrawer
   );
   const ContentForDropdown = childrenArray.find(
     (child) =>
       isValidElement(child) &&
       typeof child.type === "function" &&
-      child.type.name === "DropdownOrDrawerContentForDropdown"
+      child.type === DropdownOrDrawerContentForDropdown
   );
 
   if (isExtraSmall) {
