@@ -26,24 +26,26 @@ export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement>,
     VariantProps<typeof inputVariants> {}
 
-const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, variant, fadeOnDisabled, type, ...props }, ref) => {
-    return (
-      <input
-        type={type}
-        className={cn(
-          inputVariants({
-            variant,
-            fadeOnDisabled,
-            className,
-          })
-        )}
-        ref={ref}
-        {...props}
-      />
-    );
-  }
-);
-Input.displayName = "Input";
+function Input({
+  className,
+  variant,
+  fadeOnDisabled,
+  type,
+  ...props
+}: InputProps) {
+  return (
+    <input
+      type={type}
+      className={cn(
+        inputVariants({
+          variant,
+          fadeOnDisabled,
+          className,
+        })
+      )}
+      {...props}
+    />
+  );
+}
 
 export { Input };
