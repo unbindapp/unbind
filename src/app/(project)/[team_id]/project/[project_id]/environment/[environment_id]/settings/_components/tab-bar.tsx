@@ -18,8 +18,6 @@ type TTab = {
   looseMatch?: boolean;
 };
 
-const tabIconStyle = { transform: "translateZ(0)" };
-
 export default function TabBar() {
   const { teamId, projectId, environmentId } = useIdsFromPathname();
   const pathname = usePathname();
@@ -82,10 +80,7 @@ export default function TabBar() {
               className="md:top-2 md:h-[calc(100%-1rem)] md:w-0.5"
             />
           )}
-          <tab.Icon
-            style={tabIconStyle}
-            className="size-4 md:size-5 shrink-0 -ml-0.25 md:-ml-1 -my-1 relative translate-z-0"
-          />
+          <tab.Icon className="size-4 md:size-5 shrink-0 -ml-0.25 md:-ml-1 -my-1 relative translate-z-0" />
           <p className="whitespace-nowrap md:shrink md:min-w-0 md:whitespace-normal relative leading-none">
             {tab.label}
           </p>
