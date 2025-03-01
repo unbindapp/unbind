@@ -52,13 +52,13 @@ export default function UserAvatar({ email, className }: Props) {
           variant="ghost"
           fadeOnDisabled={false}
           className={cn(
-            "size-6.5 rounded-full border border-foreground shrink-0 group/button data-[pending]:border-border",
+            "size-6.5 rounded-full border border-foreground shrink-0 group/button data-pending:border-border",
             className
           )}
         >
           <Blockies
             address={email}
-            className="size-full shrink-0 rounded-full transition has-hover:group-hover/button:rotate-45 group-active/button:rotate-45 group-data-[open]/button:rotate-360"
+            className="size-full shrink-0 rounded-full transition has-hover:group-hover/button:rotate-45 group-active/button:rotate-45 group-data-open/button:rotate-360"
           />
           {isPendingSignOut && (
             <div className="absolute rounded-full size-full left-0 top-0 bg-background p-1">
@@ -97,7 +97,7 @@ export default function UserAvatar({ email, className }: Props) {
           <div className="size-5 rounded-full border border-foreground shrink-0">
             <Blockies address={email} className="size-full rounded-full" />
           </div>
-          <p className="shrink min-w-0 leading-tight font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">
+          <p className="shrink min-w-0 leading-tight font-medium whitespace-nowrap overflow-hidden text-ellipsis">
             {email}
           </p>
         </div>

@@ -18,7 +18,7 @@ export default function LastDeploymentTime({ service }: Props) {
   return (
     <p
       suppressHydrationWarning
-      className="shrink min-w-0 font-medium overflow-hidden overflow-ellipsis whitespace-nowrap text-sm"
+      className="shrink min-w-0 font-medium overflow-hidden text-ellipsis whitespace-nowrap text-sm"
     >
       {!service.lastDeployment || !timeDiffStr
         ? "No deployments yet"

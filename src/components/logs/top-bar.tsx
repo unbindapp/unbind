@@ -91,13 +91,13 @@ function SettingsButton({ className }: { className?: string }) {
         >
           <div
             data-show={!isDefaultState ? true : undefined}
-            className="absolute pointer-events-none opacity-0 scale-75 data-[show]:scale-100 data-[show]:opacity-100 transition top-1.25 right-1.25 bg-warning size-1.25 rounded-full"
+            className="absolute pointer-events-none opacity-0 scale-75 data-show:scale-100 data-show:opacity-100 transition top-1.25 right-1.25 bg-warning size-1.25 rounded-full"
           />
-          <div className="size-5 relative group-data-[open]/button:rotate-90 transition-transform">
-            <SettingsIcon className="size-full opacity-100 group-data-[open]/button:opacity-0 transition-opacity" />
+          <div className="size-5 relative group-data-open/button:rotate-90 transition-transform">
+            <SettingsIcon className="size-full opacity-100 group-data-open/button:opacity-0 transition-opacity" />
             <XIcon
               className="size-full absolute left-0 top-0 -rotate-90 opacity-0 
-              transition-opacity group-data-[open]/button:opacity-100"
+              transition-opacity group-data-open/button:opacity-100"
             />
           </div>
         </Button>
@@ -157,7 +157,7 @@ function SettingsButton({ className }: { className?: string }) {
             >
               <RotateCcwIcon
                 data-default={isDefaultState ? true : undefined}
-                className="size-4.5 shrink-0 -my-1 transform rotate-90 data-[default]:rotate-0 transition"
+                className="size-4.5 shrink-0 -my-1 transform rotate-90 data-default:rotate-0 transition"
               />
               <p className="shrink min-w-0">Reset</p>
             </DropdownMenuItem>

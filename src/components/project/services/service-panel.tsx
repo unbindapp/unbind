@@ -112,7 +112,7 @@ export default function ServicePanel({ service, children }: Props) {
                 onClick={() => setCurrentTab(tab.value)}
                 data-active={currentTab === tab.value ? true : undefined}
                 className="shrink rounded-t-md rounded-b-none min-w-0 font-medium group/button
-                  px-3 pt-2.5 pb-4.5 text-muted-foreground data-[active]:text-foreground has-hover:hover:bg-transparent active:bg-transparent"
+                  px-3 pt-2.5 pb-4.5 text-muted-foreground data-active:text-foreground has-hover:hover:bg-transparent active:bg-transparent"
               >
                 {tab.value === currentTab && (
                   <TabIndicator layoutId="service-panel-tab" />

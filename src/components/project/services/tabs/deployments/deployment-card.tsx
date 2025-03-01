@@ -45,7 +45,7 @@ export default function DeploymentCard({
     >
       <div
         className="self-stretch w-1 rounded-full bg-foreground/8 group-data-[status=destructive]/card:bg-destructive
-        group-data-[status=success]/card:bg-success group-data-[placeholder]/card:bg-muted-more-foreground group-data-[placeholder]/card:animate-skeleton"
+        group-data-[status=success]/card:bg-success group-data-placeholder/card:bg-muted-more-foreground group-data-placeholder/card:animate-skeleton"
       />
       <div className="flex-1 min-w-0 pl-3 pr-6 py-0.5 sm:px-3 sm:py-2 flex-col flex sm:flex-row sm:items-center">
         <div className="shrink-0 sm:w-32 flex items-center justify-start pr-3">
@@ -54,7 +54,7 @@ export default function DeploymentCard({
             font-medium text-sm rounded-md px-2 py-1.25 
             group-data-[status=destructive]/card:bg-destructive/12 group-data-[status=destructive]/card:text-destructive
             group-data-[status=success]/card:bg-success/12 group-data-[status=success]/card:text-success
-            group-data-[placeholder]/card:text-transparent group-data-[placeholder]/card:bg-muted-more-foreground group-data-[placeholder]/card:animate-skeleton"
+            group-data-placeholder/card:text-transparent group-data-placeholder/card:bg-muted-more-foreground group-data-placeholder/card:animate-skeleton"
           >
             {isPlaceholder ? (
               <LoaderIcon className="size-3.5 -ml-0.25 shrink-0" />
@@ -79,10 +79,10 @@ export default function DeploymentCard({
         <ServiceIcon
           color="brand"
           variant={isPlaceholder ? "github" : deployment.source}
-          className="size-6 mt-2 sm:mt-0 group-data-[placeholder]/card:text-transparent group-data-[placeholder]/card:rounded-full group-data-[placeholder]/card:bg-foreground group-data-[placeholder]/card:animate-skeleton"
+          className="size-6 mt-2 sm:mt-0 group-data-placeholder/card:text-transparent group-data-placeholder/card:rounded-full group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton"
         />
         <div className="mt-2 pb-1 sm:mt-0 flex flex-1 flex-col items-start sm:pl-3 pr-2 gap-1.5 shrink min-w-0">
-          <p className="min-w-0 shrink leading-tight group-data-[placeholder]/card:text-transparent group-data-[placeholder]/card:rounded-md group-data-[placeholder]/card:bg-foreground group-data-[placeholder]/card:animate-skeleton">
+          <p className="min-w-0 shrink leading-tight group-data-placeholder/card:text-transparent group-data-placeholder/card:rounded-md group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton">
             {isPlaceholder
               ? "Loading message..."
               : deployment.source === "github"
@@ -98,10 +98,10 @@ export default function DeploymentCard({
         <Button
           size="icon"
           variant="ghost"
-          className="shrink-0 text-muted-more-foreground rounded-lg absolute right-1 top-1 sm:relative sm:-mr-3.5 sm:right-0 sm:top-0 group-data-[placeholder]/line:text-transparent"
+          className="shrink-0 text-muted-more-foreground rounded-lg absolute right-1 top-1 sm:relative sm:-mr-3.5 sm:right-0 sm:top-0 group-data-placeholder/line:text-transparent"
         >
           {isPlaceholder ? (
-            <div className="size-5 group-data-[placeholder]/card:rounded-md group-data-[placeholder]/card:bg-muted-foreground group-data-[placeholder]/card:animate-skeleton" />
+            <div className="size-5 group-data-placeholder/card:rounded-md group-data-placeholder/card:bg-muted-foreground group-data-placeholder/card:animate-skeleton" />
           ) : (
             <EllipsisVerticalIcon className="size-6" />
           )}

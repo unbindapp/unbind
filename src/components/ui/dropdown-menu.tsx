@@ -54,7 +54,7 @@ const DropdownMenuSubTrigger = React.forwardRef<
   <DropdownMenuPrimitive.SubTrigger
     ref={ref}
     className={cn(
-      "flex cursor-default gap-2 select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent [&_svg]:pointer-events-none [&_svg]:shrink-0",
+      "flex cursor-default gap-2 select-none items-center rounded-sm px-2 py-1.5 text-sm outline-hidden focus:bg-accent data-[state=open]:bg-accent [&_svg]:pointer-events-none [&_svg]:shrink-0",
       inset && "pl-8",
       className
     )}
@@ -152,7 +152,7 @@ const DropdownMenuContent = React.forwardRef<
           onCloseAutoFocus={handleCloseAutoFocus}
           collisionPadding={collisionPadding}
           className={cn(
-            "z-[999] max-w-[var(--radix-popper-available-width)] max-h-[min(30rem,var(--radix-popper-available-height))] flex flex-col overflow-hidden rounded-lg border bg-popover p-0 text-popover-foreground shadow-lg shadow-shadow/[var(--opacity-shadow)]",
+            "z-999 max-w-[var(--radix-popper-available-width)] max-h-[min(30rem,var(--radix-popper-available-height))] flex flex-col overflow-hidden rounded-lg border bg-popover p-0 text-popover-foreground shadow-lg shadow-shadow/shadow",
             "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
             className
           )}
@@ -174,8 +174,8 @@ const DropdownMenuItem = React.forwardRef<
   <DropdownMenuPrimitive.Item
     ref={ref}
     className={cn(
-      "relative leading-tight flex font-medium cursor-default select-none justify-start items-center gap-2.5 rounded-md px-2.5 py-2.25 outline-none active:bg-accent focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none [&>svg]:shrink-0",
-      fadeOnDisabled && "data-[disabled]:opacity-50",
+      "relative leading-tight flex font-medium cursor-default select-none justify-start items-center gap-2.5 rounded-md px-2.5 py-2.25 outline-hidden active:bg-accent focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none [&>svg]:shrink-0",
+      fadeOnDisabled && "data-disabled:opacity-50",
       inset && "pl-8",
       className
     )}
@@ -191,7 +191,7 @@ const DropdownMenuCheckboxItem = React.forwardRef<
   <DropdownMenuPrimitive.CheckboxItem
     ref={ref}
     className={cn(
-      "relative group/checkbox flex leading-tight font-medium cursor-default select-none justify-start items-center rounded-md py-2.25 pl-9.5 pr-3.5 outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative group/checkbox flex leading-tight font-medium cursor-default select-none justify-start items-center rounded-md py-2.25 pl-9.5 pr-3.5 outline-hidden focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50",
       className
     )}
     checked={checked}
@@ -207,8 +207,8 @@ const DropdownMenuCheckboxItem = React.forwardRef<
   >
     <span
       className="absolute left-2.5 flex items-center justify-center shrink-0 size-4.5 border 
-      border-muted-more-foreground rounded-sm p-0.25 group-data-[checked]/checkbox:bg-foreground group-data-[checked]/checkbox:text-background
-      group-data-[checked]/checkbox:border-foreground"
+      border-muted-more-foreground rounded-sm p-0.25 group-data-checked/checkbox:bg-foreground group-data-checked/checkbox:text-background
+      group-data-checked/checkbox:border-foreground"
     >
       <DropdownMenuPrimitive.ItemIndicator className="size-full">
         <CheckIcon strokeWidth={3} className="size-full" />
@@ -227,7 +227,7 @@ const DropdownMenuRadioItem = React.forwardRef<
   <DropdownMenuPrimitive.RadioItem
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-hidden focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50",
       className
     )}
     {...props}

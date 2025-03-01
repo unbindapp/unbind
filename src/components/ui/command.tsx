@@ -9,7 +9,7 @@ import { cva, VariantProps } from "class-variance-authority";
 import { LoaderIcon, SearchIcon } from "lucide-react";
 
 const commandVariants = cva(
-  "flex h-full w-full flex-col overflow-hidden rounded-lg focus:outline-none",
+  "flex h-full w-full flex-col overflow-hidden rounded-lg focus:outline-hidden",
   {
     variants: {
       variant: {
@@ -80,7 +80,7 @@ const CommandInput = React.forwardRef<
     <CommandPrimitive.Input
       ref={ref}
       className={cn(
-        "flex w-full pl-9.5 pr-4 py-3 leading-none rounded-md bg-transparent outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50",
+        "flex w-full pl-9.5 pr-4 py-3 leading-none rounded-md bg-transparent outline-hidden placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50",
         className
       )}
       {...props}
@@ -145,7 +145,7 @@ const CommandSeparator = React.forwardRef<
 CommandSeparator.displayName = CommandPrimitive.Separator.displayName;
 
 const commandItemVariants = cva(
-  "relative flex cursor-default gap-2 select-none items-center rounded-lg px-2 py-1.5 outline-none data-[disabled=true]:pointer-events-none data-[selected=true]:bg-border data-[selected=true]:text-foreground data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+  "relative flex cursor-default gap-2 select-none items-center rounded-lg px-2 py-1.5 outline-hidden data-[disabled=true]:pointer-events-none data-[selected=true]:bg-border data-[selected=true]:text-foreground data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
   {
     variants: {
       variant: {

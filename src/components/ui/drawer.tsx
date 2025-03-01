@@ -55,10 +55,7 @@ const DrawerOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DrawerPrimitive.Overlay
     ref={ref}
-    className={cn(
-      "fixed inset-0 z-50 bg-barrier/[var(--opacity-barrier)]",
-      className
-    )}
+    className={cn("fixed inset-0 z-50 bg-barrier/barrier", className)}
     {...props}
   />
 ));
@@ -77,7 +74,7 @@ const DrawerContent = React.forwardRef<
       <DrawerPrimitive.Content
         ref={ref}
         className={cn(
-          `fixed inset-x-0 focus:outline-none focus-visible:outline-none bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-2xl bg-background ring-1 ring-border`,
+          `fixed inset-x-0 focus:outline-hidden focus-visible:outline-hidden bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-2xl bg-background ring-1 ring-border`,
           className
         )}
         {...props}
@@ -85,7 +82,7 @@ const DrawerContent = React.forwardRef<
         {hasHandle && (
           <div
             data-hide-handle={hideHandle ? true : undefined}
-            className="w-[calc(min(33.3%,5rem))] data-[hide-handle]:-translate-y-6 transition duration-100 h-12 pb-2 
+            className="w-[calc(min(33.3%,5rem))] data-hide-handle:-translate-y-6 transition duration-100 h-12 pb-2 
             -translate-y-full flex items-end justify-center absolute left-1/2 -translate-x-1/2 top-0"
           >
             <div className="w-full h-1.5 rounded-full bg-muted-more-foreground" />

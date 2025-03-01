@@ -24,12 +24,12 @@ export default function ProjectCard({ project, className }: Props) {
         variant="ghost"
         className="w-full flex flex-col items-start text-left min-h-36 gap-12 border bg-background-hover rounded-xl px-5 py-3.5"
       >
-        <h3 className="w-full font-bold leading-tight whitespace-nowrap overflow-hidden overflow-ellipsis">
+        <h3 className="w-full font-bold leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
           {project.title}
         </h3>
         <div className="w-full flex flex-col flex-1 justify-end">
           <div className="w-full flex items-center justify-between text-muted-foreground gap-3">
-            <p className="shrink min-w-0 font-medium overflow-hidden overflow-ellipsis whitespace-nowrap text-sm">
+            <p className="shrink min-w-0 font-medium overflow-hidden text-ellipsis whitespace-nowrap text-sm">
               {defaultEnvironment.services.length > 0
                 ? `${defaultEnvironment.services.length} services`
                 : "No services"}

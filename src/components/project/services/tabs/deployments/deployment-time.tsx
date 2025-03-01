@@ -18,7 +18,7 @@ export default function DeploymentTime({ deployment, isPlaceholder }: Props) {
   return (
     <p
       className="text-muted-foreground text-sm leading-tight shrink min-w-0 
-      group-data-[placeholder]/card:text-transparent group-data-[placeholder]/card:rounded-md group-data-[placeholder]/card:bg-muted-foreground group-data-[placeholder]/card:animate-skeleton"
+      group-data-placeholder/card:text-transparent group-data-placeholder/card:rounded-md group-data-placeholder/card:bg-muted-foreground group-data-placeholder/card:animate-skeleton"
     >
       {isPlaceholder ? "1 hr. ago" : str}
     </p>

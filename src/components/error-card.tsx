@@ -32,7 +32,7 @@ export default function ErrorCard({ className, message, variant }: Props) {
         className,
       })}
     >
-      <div className="w-full flex items-center justify-center gap-1.5 px-3 py-4 group-data-[has-message]/card:py-2">
+      <div className="w-full flex items-center justify-center gap-1.5 px-3 py-4 group-data-has-message/card:py-2">
         <TriangleAlertIcon className="size-4 -ml-0.5 shrink-0" />
         <p className="shrink min-w-0 font-medium leading-tight text-left">
           Something went wrong

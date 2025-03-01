@@ -106,7 +106,7 @@ export function BreadcrumbItem<T>({
                 lastHoveredItem={lastHoveredItem}
                 setLastHoveredItem={setLastHoveredItem}
                 IconItem={PlusIcon}
-                className="text-muted-foreground data-[highlighted]:text-foreground data-[last-hovered]:text-foreground"
+                className="text-muted-foreground data-highlighted:text-foreground data-last-hovered:text-foreground"
               />
             </>
           )}
@@ -146,7 +146,7 @@ export function BreadcrumbItem<T>({
                 lastHoveredItem={lastHoveredItem}
                 setLastHoveredItem={setLastHoveredItem}
                 IconItem={PlusIcon}
-                className="text-muted-foreground data-[highlighted]:text-foreground data-[last-hovered]:text-foreground"
+                className="text-muted-foreground data-highlighted:text-foreground data-last-hovered:text-foreground"
               />
             </DropdownMenuGroup>
           </>
@@ -189,7 +189,7 @@ function SheetItem<T>({
       data-show-arrow={showArrow ? true : undefined}
       variant="ghost"
       className={cn(
-        "w-full data-[last-hovered]:bg-border group-has-[*[data-highlighted]]/list:bg-transparent group-has-[*[data-highlighted]]/list:data-[highlighted]:bg-border text-left px-3 py-3.5 rounded-lg font-medium flex items-center justify-between gap-3 group/item cursor-default data-[highlighted]:text-foreground",
+        "w-full data-last-hovered:bg-border group-has-[*[data-highlighted]]/list:bg-transparent data-highlighted:group-has-[*[data-highlighted]]/list:bg-border text-left px-3 py-3.5 rounded-lg font-medium flex items-center justify-between gap-3 group/item cursor-default data-highlighted:text-foreground",
         className
       )}
     >
@@ -203,14 +203,14 @@ function SheetItem<T>({
         {selectedItem?.id === item.id && (
           <>
             <CheckIcon
-              className="size-full group-data-[show-arrow]/item:group-data-[highlighted]/item:opacity-0 
-              group-data-[show-arrow]/item:group-data-[highlighted]/item:rotate-90 transition"
+              className="size-full group-data-highlighted/item:group-data-show-arrow/item:opacity-0 
+              group-data-highlighted/item:group-data-show-arrow/item:rotate-90 transition"
               strokeWidth={2.5}
             />
             <ArrowRightIcon
               className="absolute left-0 top-0 opacity-0 -rotate-90 size-full 
-              group-data-[show-arrow]/item:group-data-[highlighted]/item:opacity-100
-              group-data-[show-arrow]/item:group-data-[highlighted]/item:rotate-0 transition"
+              group-data-highlighted/item:group-data-show-arrow/item:opacity-100
+              group-data-highlighted/item:group-data-show-arrow/item:rotate-0 transition"
               strokeWidth={2.5}
             />
           </>
@@ -250,7 +250,7 @@ function DropdownItem<T>({
       data-show-arrow={showArrow ? true : undefined}
       data-last-hovered={lastHoveredItem?.id === item.id ? true : undefined}
       className={cn(
-        "justify-between group/item data-[last-hovered]:bg-border group-has-[*[data-highlighted]]/list:bg-transparent group-has-[*[data-highlighted]]/list:data-[highlighted]:bg-border",
+        "justify-between group/item data-last-hovered:bg-border group-has-[*[data-highlighted]]/list:bg-transparent data-highlighted:group-has-[*[data-highlighted]]/list:bg-border",
         className
       )}
       onMouseEnter={() => setLastHoveredItem(item)}
@@ -262,15 +262,15 @@ function DropdownItem<T>({
         )}
         <p className="shrink min-w-0">{item.title}</p>
       </div>
-      <div className="size-4.5 shrink-0 -mr-0.5 relative group-data-[show-arrow]/item:group-data-[highlighted]/item:rotate-90 transition-transform">
+      <div className="size-4.5 shrink-0 -mr-0.5 relative group-data-highlighted/item:group-data-show-arrow/item:rotate-90 transition-transform">
         {selectedItem?.id === item.id && (
           <>
             <CheckIcon
-              className="size-full group-data-[show-arrow]/item:group-data-[highlighted]/item:opacity-0 transition-opacity"
+              className="size-full group-data-highlighted/item:group-data-show-arrow/item:opacity-0 transition-opacity"
               strokeWidth={3}
             />
             <ArrowRightIcon
-              className="absolute left-0 top-0 opacity-0 -rotate-90 size-full group-data-[show-arrow]/item:group-data-[highlighted]/item:opacity-100 transition-opacity"
+              className="absolute left-0 top-0 opacity-0 -rotate-90 size-full group-data-highlighted/item:group-data-show-arrow/item:opacity-100 transition-opacity"
               strokeWidth={2.5}
             />
           </>
@@ -299,7 +299,7 @@ function Trigger<T>({
       data-no-icon={Icon === undefined ? true : undefined}
       data-pending={item == undefined ? true : undefined}
       className={cn(
-        `px-1.5 py-4 data-[no-icon]:pl-2.75 rounded border-none font-medium flex items-center justify-start gap-2 
+        `px-1.5 py-4 data-no-icon:pl-2.75 rounded border-none font-medium flex items-center justify-start gap-2 
         has-hover:hover:bg-transparent active:bg-transparent text-sm group/button relative
         focus-visible:ring-0 focus-visible:ring-offset-0`,
         className
@@ -314,17 +314,17 @@ function Trigger<T>({
       </div>
       {Icon && item && <Icon id={item.id} className="relative size-4.5" />}
       <p
-        className="group-data-[pending]/button:text-transparent group-data-[pending]/button:bg-foreground 
-          group-data-[pending]/button:rounded-sm group-data-[pending]/button:animate-skeleton max-w-32 whitespace-nowrap 
-          leading-none overflow-hidden overflow-ellipsis relative"
+        className="group-data-pending/button:text-transparent group-data-pending/button:bg-foreground 
+          group-data-pending/button:rounded-sm group-data-pending/button:animate-skeleton max-w-32 whitespace-nowrap 
+          leading-none overflow-hidden text-ellipsis relative"
       >
         {item == undefined ? "Loading" : item?.title}
       </p>
       <ChevronDownIcon
         data-flip-chevron-sm={flipChevronOnSm ? true : undefined}
         className="size-4 -my-1 relative -ml-1 text-muted-more-foreground group-data-[state=open]/button:rotate-180 
-        data-[flip-chevron-sm]:rotate-180 data-[flip-chevron-sm]:group-data-[state=open]/button:rotate-360 
-        sm:data-[flip-chevron-sm]:rotate-0 sm:data-[flip-chevron-sm]:group-data-[state=open]/button:rotate-180 transition"
+        data-flip-chevron-sm:rotate-180 group-data-[state=open]/button:data-flip-chevron-sm:rotate-360 
+        sm:data-flip-chevron-sm:rotate-0 sm:group-data-[state=open]/button:data-flip-chevron-sm:rotate-180 transition"
       />
     </Button>
   );

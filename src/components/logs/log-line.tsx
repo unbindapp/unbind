@@ -44,16 +44,16 @@ export default function LogLine({
       data-extra-columns={hasExtraColumns ? true : undefined}
       className={cn(
         `w-full flex items-stretch text-xs group/line py-px 
-        data-[first]:pt-3 data-[container=page]:data-[last]:pb-4 sm:data-[container=page]:data-[last]:pb-[calc(1.5rem+var(--safe-area-inset-bottom))]
-        data-[container=sheet]:data-[last]:pb-[calc(1rem+var(--safe-area-inset-bottom))] sm:data-[container=sheet]:data-[last]:pb-[calc(1.5rem+var(--safe-area-inset-bottom))]
-        data-[last]:pb-[calc(1rem+var(--safe-area-inset-bottom))] sm:data-[last]:pb-[calc(1.5rem+var(--safe-area-inset-bottom))] font-mono`,
+        data-first:pt-3 data-[container=page]:data-last:pb-4 sm:data-[container=page]:data-last:pb-[calc(1.5rem+var(--safe-area-inset-bottom))]
+        data-[container=sheet]:data-last:pb-[calc(1rem+var(--safe-area-inset-bottom))] sm:data-[container=sheet]:data-last:pb-[calc(1.5rem+var(--safe-area-inset-bottom))]
+        data-last:pb-[calc(1rem+var(--safe-area-inset-bottom))] sm:data-last:pb-[calc(1.5rem+var(--safe-area-inset-bottom))] font-mono`,
         className
       )}
     >
       <div
         className={cn(
           `pl-3 sm:pl-4 w-full flex items-center group-data-[level=warn]/line:bg-warning/10 group-data-[level=error]/line:bg-destructive/10
-          group-hover/line:bg-border group-hover/line:group-data-[level=warn]/line:bg-warning/20 group-hover/line:group-data-[level=error]/line:bg-destructive/20`,
+          group-hover/line:bg-border group-data-[level=warn]/line:group-hover/line:bg-warning/20 group-data-[level=error]/line:group-hover/line:bg-destructive/20`,
           classNameInner
         )}
       >
@@ -65,26 +65,26 @@ export default function LogLine({
         </div>
         <div className="flex-1 min-w-0 flex [mask-image:linear-gradient(to_left,transparent,black_1rem)]">
           <ConditionalScrollArea>
-            <div className="group-data-[wrap]/line:w-full flex flex-col items-start lg:flex-row gap-0.5 py-0.5 lg:py-0.25">
+            <div className="group-data-wrap/line:w-full flex flex-col items-start lg:flex-row gap-0.5 py-0.5 lg:py-0.25">
               {/* Timestamp and service name */}
               {hasExtraColumns && (
                 <div
-                  className="group-data-[wrap]/line:w-full md:group-data-[wrap]/line:w-auto
+                  className="group-data-wrap/line:w-full md:group-data-wrap/line:w-auto
                   flex items-center justify-start py-1 z-10
-                  sticky left-0 group-data-[wrap]/line:relative group-data-[wrap]/line:left-auto"
+                  sticky left-0 group-data-wrap/line:relative group-data-wrap/line:left-auto"
                 >
                   <div className="flex-1 min-w-0 md:min-w-auto flex bg-background [mask-image:linear-gradient(to_left,transparent,black_1rem)]">
                     <div
                       className="flex-1 min-w-0 md:min-w-auto flex items-center justify-start bg-background group-hover/line:bg-border
                       group-data-[level=warn]/line:bg-warning/10 group-data-[level=error]/line:bg-destructive/10
-                      group-hover/line:group-data-[level=warn]/line:bg-warning/20 group-hover/line:group-data-[level=error]/line:bg-destructive/20"
+                      group-data-[level=warn]/line:group-hover/line:bg-warning/20 group-data-[level=error]/line:group-hover/line:bg-destructive/20"
                     >
                       {viewPreferences.includes(
                         logViewPreferenceKeys.timestamp
                       ) && (
                         <p
                           suppressHydrationWarning
-                          className="pr-4 shrink min-w-0 text-muted-foreground px-1 w-36 overflow-hidden overflow-ellipsis whitespace-nowrap leading-tight"
+                          className="pr-4 shrink min-w-0 text-muted-foreground px-1 w-36 overflow-hidden text-ellipsis whitespace-nowrap leading-tight"
                         >
                           {format(logLine.timestamp, "MMM dd, HH:mm:ss")}
                         </p>
@@ -94,7 +94,7 @@ export default function LogLine({
                       ) && (
                         <p
                           suppressHydrationWarning
-                          className="pr-4 shrink min-w-0 text-muted-foreground px-1 w-24 overflow-hidden overflow-ellipsis whitespace-nowrap leading-tight"
+                          className="pr-4 shrink min-w-0 text-muted-foreground px-1 w-24 overflow-hidden text-ellipsis whitespace-nowrap leading-tight"
                         >
                           {logLine.serviceId}
                         </p>
@@ -104,8 +104,8 @@ export default function LogLine({
                 </div>
               )}
               <p
-                className="py-1 group-data-[extra-columns]/line:-mt-2 lg:group-data-[extra-columns]/line:mt-0 px-1 leading-tight pr-4
-                group-data-[wrap]/line:shrink group-data-[wrap]/line:min-0 whitespace-pre group-data-[wrap]/line:whitespace-normal"
+                className="py-1 group-data-extra-columns/line:-mt-2 lg:group-data-extra-columns/line:mt-0 px-1 leading-tight pr-4
+                group-data-wrap/line:shrink group-data-[wrap]/line:min-0 whitespace-pre group-data-wrap/line:whitespace-normal"
               >
                 {logLine.message}
               </p>

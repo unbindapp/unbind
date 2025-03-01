@@ -1,230 +1,425 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-body {
-  font-family: var(--font-sans);
-}
+@plugin "tailwindcss-animate";
 
-html,
-body {
-  scroll-padding-top: 5rem;
-}
+@custom-variant dark (&:is(.dark *));
 
-a:focus,
-button:focus {
-  outline: none;
-}
-
-.font-mono {
-  font-family: var(--font-mono);
-}
-
-.font-sans {
-  font-family: var(--font-sans);
-}
-
-pre {
-  font-family: var(--font-mono);
-}
-
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.rdp-vhidden {
-  visibility: hidden;
-  position: absolute;
-}
-
-/* Hide the clear "X" button for the input[type="search"] */
-input[type="search"]::-webkit-search-cancel-button {
-  display: none;
-}
-
-/* For Firefox */
-input[type="search"]::-moz-search-cancel-button {
-  display: none;
-}
-
-/* (Optional) For Edge and other modern browsers */
-input[type="search"] {
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-::selection {
-  background: hsl(var(--top-loader) / 0.5);
-  color: hsl(var(--foreground) / 1);
-}
-
-@layer base {
-  :root {
-    --safe-area-inset-bottom: env(safe-area-inset-bottom);
-    /* This is for dev only to test safe area */
-    /* --safe-area-inset-bottom: 34px; */
-    --background: 120 35% 95%;
-    --background-hover: 120 35% 95%;
-    --foreground: 120 90% 5%;
-    --card: 120 35% 95%;
-    --card-foreground: 120 90% 5%;
-    --popover: 120 35% 95%;
-    --popover-foreground: 120 90% 5%;
-    --primary: 120 90% 5%;
-    --primary-foreground: 120 35% 95%;
-    --secondary: 120 20% 85%;
-    --secondary-foreground: 120 90% 5%;
-    --muted: 120 20% 85%;
-    --muted-foreground: 120 10% 35%;
-    --muted-more-foreground: 120 10% 50%;
-    --accent: 120 20% 85%;
-    --accent-foreground: 120 90% 5%;
-    --destructive: 0 84% 30%;
-    --destructive-foreground: 120 35% 95%;
-    --warning: 40 100% 25%;
-    --warning-foreground: 120 35% 95%;
-    --success: 120 85% 20%;
-    --success-foreground: 120 35% 95%;
-    --shadow: 120 30% 4%;
-    --border: 120 20% 85%;
-    --input: 120 35% 95%;
-    --ring: 120 90% 5%;
-    --radius: 0.5rem;
-
-    --chart-1: 120 100% 23%;
-    --chart-2: 210 90% 30%;
-    --chart-3: 300 60% 40%;
-    --chart-4: 35 90% 40%;
-    --chart-5: 0 70% 40%;
-    --chart-6: 190 80% 35%;
-    --chart-7: 120 70% 35%;
-    --chart-8: 330 75% 40%;
-    --chart-9: 270 60% 30%;
-    --chart-10: 20 90% 30%;
-
-    --link-chip: 210 100% 18%;
-
-    --top-loader: 120 100% 30%;
-
-    --google: 120 90% 5%;
-    --google-foreground: 0 0% 100%;
-    --discord: 235 86% 65%;
-    --discord-foreground: 0 0% 100%;
-    --github: 120 90% 5%;
-    --github-foreground: 0 0% 100%;
-    --email: 160 100% 24%;
-    --email-foreground: 0 0% 100%;
-    --x: 120 90% 5%;
-    --x-foreground: 0 0% 100%;
-
-    --nextjs: 120 90% 5%;
-    --umami: 120 90% 5%;
-    --astro: 120 90% 5%;
-    --ghost: 120 90% 5%;
-    --pocketbase: 120 90% 5%;
-
-    --go: 192 93% 35%;
-    --meilisearch: 346 90% 60%;
-    --minio: 349 60% 49%;
-    --mysql: 206 45% 40%;
-    --postgresql: 210 50% 40%;
-    --redis: 5 70% 47%;
-    --rust: 10 79% 51%;
-    --svelte: 10 100% 45%;
-    --clickhouse: 60 100% 25%;
-    --docker: 220 81% 46%;
-    --strapi: 241 100% 64%;
-    --mongodb: 145 100% 35%;
-    --n8n: 346 80% 45%;
-
-    --barrier: 120 30% 4%;
-    --opacity-barrier: 0.7;
-    --opacity-shadow: 0.06;
-  }
-
-  .dark {
-    --background: 120 9% 6%;
-    --background-hover: 120 7% 8%;
-    --foreground: 120 100% 97%;
-    --card: 120 9% 6%;
-    --card-foreground: 120 100% 97%;
-    --popover: 120 7% 8%;
-    --popover-foreground: 120 100% 97%;
-    --primary: 120 100% 97%;
-    --primary-foreground: 120 9% 6%;
-    --secondary: 120 5% 12%;
-    --secondary-foreground: 120 100% 97%;
-    --muted: 120 5% 12%;
-    --muted-foreground: 120 6% 65%;
-    --muted-more-foreground: 120 6% 40%;
-    --accent: 120 5% 12%;
-    --accent-foreground: 120 100% 97%;
-    --destructive: 0 80% 69%;
-    --destructive-foreground: 120 9% 6%;
-    --warning: 40 60% 55%;
-    --warning-foreground: 120 9% 6%;
-    --success: 120 40% 60%;
-    --success-foreground: 120 9% 6%;
-    --shadow: 120 11% 3%;
-    --border: 120 5% 12%;
-    --input: 120 7% 8%;
-    --ring: 120 100% 97%;
-
-    --chart-1: 120 70% 70%;
-    --chart-2: 200 90% 55%;
-    --chart-3: 275 90% 75%;
-    --chart-4: 25 75% 65%;
-    --chart-5: 0 90% 70%;
-    --chart-6: 200 80% 70%;
-    --chart-7: 80 85% 60%;
-    --chart-8: 320 60% 60%;
-    --chart-9: 250 100% 75%;
-    --chart-10: 40 80% 65%;
-
-    --link-chip: 210 100% 85%;
-
-    --top-loader: 120 70% 70%;
-
-    --google: 120 100% 97%;
-    --google-foreground: 120 9% 6%;
-    --discord: 235 86% 65%;
-    --discord-foreground: 120 100% 97%;
-    --github: 120 100% 97%;
-    --github-foreground: 120 9% 6%;
-    --email: 160 68% 60%;
-    --email-foreground: 120 9% 6%;
-    --x: 120 100% 97%;
-    --x-foreground: 120 9% 6%;
-
-    --nextjs: 120 100% 97%;
-    --umami: 120 100% 97%;
-    --astro: 120 100% 97%;
-    --pocketbase: 120 100% 97%;
-    --ghost: 120 100% 97%;
-
-    --go: 192 93% 55%;
-    --meilisearch: 346 100% 67%;
-    --minio: 349 60% 49%;
-    --mysql: 206 55% 65%;
-    --postgresql: 210 46% 60%;
-    --redis: 4 75% 60%;
-    --rust: 10 79% 51%;
-    --svelte: 10 100% 65%;
-    --clickhouse: 62 100% 71%;
-    --docker: 220 81% 60%;
-    --strapi: 241 100% 75%;
-    --mongodb: 145 100% 47%;
-    --n8n: 346 79% 61%;
-
-    --barrier: 120 10% 4%;
-    --opacity-barrier: 0.75;
-    --opacity-shadow: 0.6;
+@custom-variant has-hover {
+  @media (hover: hover) {
+    @slot;
   }
 }
 
+:root {
+  --safe-area-inset-bottom: env(safe-area-inset-bottom);
+  --radius: 0.5rem;
+  /* This is for dev only to test safe area */
+  /* --safe-area-inset-bottom: 34px; */
+  --background: hsl(120 35% 95%);
+  --background-hover: hsl(120 35% 95%);
+  --foreground: hsl(120 90% 5%);
+  --card: hsl(120 35% 95%);
+  --card-foreground: hsl(120 90% 5%);
+  --popover: hsl(120 35% 95%);
+  --popover-foreground: hsl(120 90% 5%);
+  --primary: hsl(120 90% 5%);
+  --primary-foreground: hsl(120 35% 95%);
+  --secondary: hsl(120 20% 85%);
+  --secondary-foreground: hsl(120 90% 5%);
+  --muted: hsl(120 20% 85%);
+  --muted-foreground: hsl(120 10% 35%);
+  --muted-more-foreground: hsl(120 10% 50%);
+  --accent: hsl(120 20% 85%);
+  --accent-foreground: hsl(120 90% 5%);
+  --destructive: hsl(0 84% 30%);
+  --destructive-foreground: hsl(120 35% 95%);
+  --warning: hsl(40 100% 25%);
+  --warning-foreground: hsl(120 35% 95%);
+  --success: hsl(120 85% 20%);
+  --success-foreground: hsl(120 35% 95%);
+  --shadow: hsl(120 30% 4%);
+  --border: hsl(120 20% 85%);
+  --input: hsl(120 35% 95%);
+  --ring: hsl(120 90% 5%);
+
+  --chart-1: hsl(120 100% 23%);
+  --chart-2: hsl(210 90% 30%);
+  --chart-3: hsl(300 60% 40%);
+  --chart-4: hsl(35 90% 40%);
+  --chart-5: hsl(0 70% 40%);
+  --chart-6: hsl(190 80% 35%);
+  --chart-7: hsl(120 70% 35%);
+  --chart-8: hsl(330 75% 40%);
+  --chart-9: hsl(270 60% 30%);
+  --chart-10: hsl(20 90% 30%);
+
+  --link-chip: hsl(210 100% 18%);
+
+  --top-loader: hsl(120 100% 30%);
+
+  --google: hsl(120 90% 5%);
+  --google-foreground: hsl(0 0% 100%);
+  --discord: hsl(235 86% 65%);
+  --discord-foreground: hsl(0 0% 100%);
+  --github: hsl(120 90% 5%);
+  --github-foreground: hsl(0 0% 100%);
+  --email: hsl(160 100% 24%);
+  --email-foreground: hsl(0 0% 100%);
+  --x: hsl(120 90% 5%);
+  --x-foreground: hsl(0 0% 100%);
+
+  --nextjs: hsl(120 90% 5%);
+  --umami: hsl(120 90% 5%);
+  --astro: hsl(120 90% 5%);
+  --ghost: hsl(120 90% 5%);
+  --pocketbase: hsl(120 90% 5%);
+
+  --go: hsl(192 93% 35%);
+  --meilisearch: hsl(346 90% 60%);
+  --minio: hsl(349 60% 49%);
+  --mysql: hsl(206 45% 40%);
+  --postgresql: hsl(210 50% 40%);
+  --redis: hsl(5 70% 47%);
+  --rust: hsl(10 79% 51%);
+  --svelte: hsl(10 100% 45%);
+  --clickhouse: hsl(60 100% 25%);
+  --docker: hsl(220 81% 46%);
+  --strapi: hsl(241 100% 64%);
+  --mongodb: hsl(145 100% 35%);
+  --n8n: hsl(346 80% 45%);
+
+  --barrier: hsl(120 30% 4%);
+
+  --opacity-barrier: 70%;
+  --opacity-shadow: 6%;
+}
+
+.dark {
+  --background: hsl(120 9% 6%);
+  --background-hover: hsl(120 7% 8%);
+  --foreground: hsl(120 100% 97%);
+  --card: hsl(120 9% 6%);
+  --card-foreground: hsl(120 100% 97%);
+  --popover: hsl(120 7% 8%);
+  --popover-foreground: hsl(120 100% 97%);
+  --primary: hsl(120 100% 97%);
+  --primary-foreground: hsl(120 9% 6%);
+  --secondary: hsl(120 5% 12%);
+  --secondary-foreground: hsl(120 100% 97%);
+  --muted: hsl(120 5% 12%);
+  --muted-foreground: hsl(120 6% 65%);
+  --muted-more-foreground: hsl(120 6% 40%);
+  --accent: hsl(120 5% 12%);
+  --accent-foreground: hsl(120 100% 97%);
+  --destructive: hsl(0 80% 69%);
+  --destructive-foreground: hsl(120 9% 6%);
+  --warning: hsl(40 60% 55%);
+  --warning-foreground: hsl(120 9% 6%);
+  --success: hsl(120 40% 60%);
+  --success-foreground: hsl(120 9% 6%);
+  --shadow: hsl(120 11% 3%);
+  --border: hsl(120 5% 12%);
+  --input: hsl(120 7% 8%);
+  --ring: hsl(120 100% 97%);
+
+  --chart-1: hsl(120 70% 70%);
+  --chart-2: hsl(200 90% 55%);
+  --chart-3: hsl(275 90% 75%);
+  --chart-4: hsl(25 75% 65%);
+  --chart-5: hsl(0 90% 70%);
+  --chart-6: hsl(200 80% 70%);
+  --chart-7: hsl(80 85% 60%);
+  --chart-8: hsl(320 60% 60%);
+  --chart-9: hsl(250 100% 75%);
+  --chart-10: hsl(40 80% 65%);
+
+  --link-chip: hsl(210 100% 85%);
+
+  --top-loader: hsl(120 70% 70%);
+
+  --google: hsl(120 100% 97%);
+  --google-foreground: hsl(120 9% 6%);
+  --discord: hsl(235 86% 65%);
+  --discord-foreground: hsl(120 100% 97%);
+  --github: hsl(120 100% 97%);
+  --github-foreground: hsl(120 9% 6%);
+  --email: hsl(160 68% 60%);
+  --email-foreground: hsl(120 9% 6%);
+  --x: hsl(120 100% 97%);
+  --x-foreground: hsl(120 9% 6%);
+
+  --nextjs: hsl(120 100% 97%);
+  --umami: hsl(120 100% 97%);
+  --astro: hsl(120 100% 97%);
+  --pocketbase: hsl(120 100% 97%);
+  --ghost: hsl(120 100% 97%);
+
+  --go: hsl(192 93% 55%);
+  --meilisearch: hsl(346 100% 67%);
+  --minio: hsl(349 60% 49%);
+  --mysql: hsl(206 55% 65%);
+  --postgresql: hsl(210 46% 60%);
+  --redis: hsl(4 75% 60%);
+  --rust: hsl(10 79% 51%);
+  --svelte: hsl(10 100% 65%);
+  --clickhouse: hsl(62 100% 71%);
+  --docker: hsl(220 81% 60%);
+  --strapi: hsl(241 100% 75%);
+  --mongodb: hsl(145 100% 47%);
+  --n8n: hsl(346 79% 61%);
+
+  --barrier: hsl(120 10% 4%);
+
+  --opacity-barrier: 75%;
+  --opacity-shadow: 60%;
+}
+
+@theme {
+  --transition-delay-*: initial;
+  --transition-delay-5: 0.005s;
+  --transition-delay-10: 0.01s;
+  --transition-delay-25: 0.025s;
+  --transition-delay-50: 0.05s;
+
+  --animate-*: initial;
+  --animate-skeleton: skeleton 1.25s ease-in-out infinite;
+  --animate-pulse-scale: pulse-scale 1s ease-in-out infinite;
+  --animate-spin: spin 1s linear infinite;
+  --animate-loading-bar: loading-bar 45s linear infinite;
+  --animate-line-in: line-in 0.01s step-end forwards;
+
+  --transition-duration-250: 250ms;
+  --transition-duration-2000: 2000ms;
+  --transition-duration-5000: 5000ms;
+  --transition-duration-30000: 30000ms;
+  --transition-duration-45000: 45000ms;
+  --transition-duration-60000: 60000ms;
+
+  --text-xxs: 0.625rem, 1rem;
+
+  --radius-px: 1px;
+  --radius-2px: 2px;
+
+  --spacing-2px: 2px;
+
+  --shadow-navbar: 0rem 0rem 0.5rem 0rem, 0rem 0rem 0.75rem 0rem;
+  --shadow-dialog: 0rem 0.5rem 1rem 0rem;
+  --shadow-card-highlight: inset 0rem 0rem 0rem 4px;
+  --shadow-underline: inset 0rem -3px 0rem 0rem;
+
+  --opacity-barrier: var(--opacity-barrier);
+  --opacity-shadow: var(--opacity-shadow);
+
+  @keyframes skeleton {
+    0% {
+      opacity: 20%;
+    }
+    50% {
+      opacity: 40%;
+    }
+    100% {
+      opacity: 20%;
+    }
+  }
+  @keyframes loading-bar {
+    0% {
+      transform: scaleX(0%);
+    }
+    100% {
+      transform: scaleX(100%);
+    }
+  }
+  @keyframes pulse-scale {
+    0% {
+      transform: scale(0.7);
+    }
+    50% {
+      transform: scale(1.4);
+    }
+    100% {
+      transform: scale(0.7);
+    }
+  }
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes line-in {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-background-hover: var(--background-hover);
+
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-muted-more: var(--muted-more);
+  --color-muted-more-foreground: var(--muted-more-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+
+  --color-link-chip: var(--link-chip);
+  --color-shadow: var(--shadow);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-chart-7: var(--chart-7);
+  --color-chart-8: var(--chart-8);
+  --color-chart-9: var(--chart-9);
+  --color-chart-10: var(--chart-10);
+
+  --color-google: var(--google);
+  --color-google-foreground: var(--google-foreground);
+
+  --color-discord: var(--discord);
+  --color-discord-foreground: var(--discord-foreground);
+
+  --color-github: var(--github);
+  --color-github-foreground: var(--github-foreground);
+
+  --color-email: var(--email);
+  --color-email-foreground: var(--email-foreground);
+
+  --color-x: var(--x);
+  --color-x-foreground: var(--x-foreground);
+
+  --color-top-loader: var(--top-loader);
+
+  --color-go: var(--go);
+  --color-meilisearch: var(--meilisearch);
+  --color-minio: var(--minio);
+  --color-mysql: var(--mysql);
+  --color-nextjs: var(--nextjs);
+  --color-postgresql: var(--postgresql);
+  --color-redis: var(--redis);
+  --color-rust: var(--rust);
+  --color-svelte: var(--svelte);
+  --color-umami: var(--umami);
+  --color-clickhouse: var(--clickhouse);
+  --color-astro: var(--astro);
+  --color-docker: var(--docker);
+  --color-strapi: var(--strapi);
+  --color-mongodb: var(--mongodb);
+  --color-pocketbase: var(--pocketbase);
+  --color-ghost: var(--ghost);
+  --color-n8n: var(--n8n);
+
+  --color-barrier: var(--barrier);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-xs: calc(var(--radius) - 6px);
+  --radius-xxs: calc(var(--radius) - 8px);
+
+  --font-mono: var(--font-mono);
+  --font-sans: var(--font-sans);
+}
+
+@layer utilities {
+  body {
+    font-family: var(--font-sans);
+  }
+
+  html,
+  body {
+    scroll-padding-top: 5rem;
+  }
+
+  a:focus,
+  button:focus {
+    outline: none;
+  }
+
+  pre {
+    font-family: var(--font-mono);
+  }
+
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .rdp-vhidden {
+    visibility: hidden;
+    position: absolute;
+  }
+
+  /* Hide the clear "X" button for the input[type="search"] */
+  input[type="search"]::-webkit-search-cancel-button {
+    display: none;
+  }
+
+  /* For Firefox */
+  input[type="search"]::-moz-search-cancel-button {
+    display: none;
+  }
+
+  /* (Optional) For Edge and other modern browsers */
+  input[type="search"] {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--top-loader) 50%, transparent);
+    color: color-mix(in oklab, var(--foreground) 100%, transparent);
+  }
+}
+
 @layer base {
+  button,
+  [role="button"] {
+    cursor: pointer;
+  }
+  button:disabled,
+  [role="button"]:disabled {
+    cursor: default;
+  }
   * {
     @apply border-border;
   }

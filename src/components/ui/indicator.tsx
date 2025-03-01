@@ -37,31 +37,31 @@ export default function Indicator({
     >
       <div
         className={cn(
-          "size-1.5 group-data-[refetching]/indicator:animate-pulse-scale",
+          "size-1.5 group-data-refetching/indicator:animate-pulse-scale",
           showOnIsPending &&
-            "group-data-[pending]/indicator:animate-pulse-scale"
+            "group-data-pending/indicator:animate-pulse-scale"
         )}
       >
         <div
           className={cn(
             "size-full rounded-full scale-0 bg-border transition",
             showOnHasData &&
-              "group-data-[has-data]/indicator:scale-100 group-data-[has-data]/indicator:bg-success",
+              "group-data-has-data/indicator:scale-100 group-data-has-data/indicator:bg-success",
             showOnIsRefetching &&
-              "group-data-[refetching]/indicator:scale-100 group-data-[refetching]/indicator:bg-border",
+              "group-data-refetching/indicator:scale-100 group-data-refetching/indicator:bg-border",
             showOnIsPending &&
-              "group-data-[pending]/indicator:scale-100 group-data-[pending]/indicator:bg-border",
+              "group-data-pending/indicator:scale-100 group-data-pending/indicator:bg-border",
             showOnError === "refetch-only" &&
               hasData &&
               isError &&
               !isRefetching &&
               !isPending &&
-              "group-data-[error]/indicator:scale-100 group-data-[error]/indicator:bg-destructive",
+              "group-data-error/indicator:scale-100 group-data-error/indicator:bg-destructive",
             showOnError === "all" &&
               isError &&
               !isRefetching &&
               !isPending &&
-              "group-data-[error]/indicator:scale-100 group-data-[error]/indicator:bg-destructive",
+              "group-data-error/indicator:scale-100 group-data-error/indicator:bg-destructive",
             dotClasses
           )}
         />

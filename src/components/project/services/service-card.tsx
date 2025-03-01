@@ -34,7 +34,7 @@ export default function ServiceCard({
               variant={service.type}
               className="size-6 -ml-1"
             />
-            <h3 className="shrink min-w-0 font-bold leading-tight whitespace-nowrap overflow-hidden overflow-ellipsis">
+            <h3 className="shrink min-w-0 font-bold leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
               {service.title}
             </h3>
           </div>

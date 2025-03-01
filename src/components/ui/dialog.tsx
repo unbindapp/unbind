@@ -26,7 +26,7 @@ const DialogOverlay = React.forwardRef<
     data-no-x-padding={noXPadding}
     data-no-y-padding={noYPadding}
     className={cn(
-      "fixed flex w-full justify-center px-2 pt-12 data-[no-x-padding]:px-0 data-[no-y-padding]:py-0 pb-[calc((100vh-3rem)*0.08+2rem)] md:pb-[calc((100vh-3rem)*0.1+3rem)] overflow-auto inset-0 z-50 duration-200 data-[state=open]:duration-200 data-[state=closed]:duration-200 bg-barrier/[var(--opacity-barrier)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed flex w-full justify-center px-2 pt-12 data-no-x-padding:px-0 data-no-y-padding:py-0 pb-[calc((100vh-3rem)*0.08+2rem)] md:pb-[calc((100vh-3rem)*0.1+3rem)] overflow-auto inset-0 z-50 duration-200 data-[state=open]:duration-200 data-[state=closed]:duration-200 bg-barrier/barrier data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
     {...props}
@@ -40,7 +40,7 @@ const dialogContentVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-background border rounded-xl p-5 pt-4 shadow-dialog shadow-shadow/[var(--opacity-shadow)]",
+          "bg-background border rounded-xl p-5 pt-4 shadow-dialog shadow-shadow/shadow",
         styleless: "",
       },
     },
@@ -109,7 +109,7 @@ const DialogContent = React.forwardRef<
             onEscapeKeyDown={handleEscapeKeyDown}
             ref={ref}
             className={cn(
-              "my-auto w-auto outline-none focus:outline-none",
+              "my-auto w-auto outline-hidden focus:outline-hidden",
               dialogContentVariants({ variant }),
               className
             )}
@@ -125,7 +125,7 @@ const DialogContent = React.forwardRef<
               {variant !== "styleless" && (
                 <DialogPrimitive.Close
                   className="absolute right-0 top-0 rounded-xl p-2.5 opacity-50 has-hover:hover:opacity-100 active:opacity-100 ring-1 ring-transparent 
-                  focus-visible:outline-none focus-visible:ring-foreground disabled:pointer-events-none text-muted-foreground"
+                  focus-visible:outline-hidden focus-visible:ring-foreground disabled:pointer-events-none text-muted-foreground"
                 >
                   <XIcon className="h-5 w-5" />
                   <span className="sr-only">Close</span>

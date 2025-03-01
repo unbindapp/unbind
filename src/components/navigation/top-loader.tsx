@@ -11,7 +11,7 @@ export default function TopLoader() {
     <NextTopLoader
       zIndex={9999}
       showSpinner={false}
-      color="hsl(var(--top-loader))"
+      color="var(--top-loader)"
       shadow={false}
       height={isMounted() && resolvedTheme === "light" ? 3 : 2}
     />

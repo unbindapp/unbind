@@ -68,7 +68,7 @@ export default function BottomDrawer({
       >
         <div
           data-hide-header={hideHeader ? true : undefined}
-          className="w-full flex items-center justify-start gap-1 border-b data-[hide-header]:sr-only"
+          className="w-full flex items-center justify-start gap-1 border-b data-hide-header:sr-only"
         >
           <DrawerHeader
             data-size={titleSize}
@@ -78,7 +78,7 @@ export default function BottomDrawer({
               <TitleIcon className="size-6 group-data-[size=sm]/header:size-5 group-data-[size=sm]/header:-ml-0.5 -ml-1 -my-2 shrink-0" />
             )}
             <DrawerTitle
-              className="min-w-0 whitespace-nowrap overflow-hidden overflow-ellipsis shrink leading-tight text-xl sm:text-2xl sm:leading-tight text-left
+              className="min-w-0 whitespace-nowrap overflow-hidden text-ellipsis shrink leading-tight text-xl sm:text-2xl sm:leading-tight text-left
               group-data-[size=sm]/header:text-lg group-data-[size=sm]/header:leading-tight 
               sm:group-data-[size=sm]/header:text-xl sm:group-data-[size=sm]/header:leading-tight"
             >

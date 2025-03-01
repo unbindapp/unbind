@@ -132,7 +132,7 @@ function LoadingPlaceholder({ noLegends }: { noLegends?: boolean }) {
       {!noLegends && (
         <div className="w-full bg-border rounded-lg animate-skeleton flex flex-wrap mt-1.5 pointer-events-none">
           <div className="max-w-full text-muted-foreground text-xs px-2.5 py-1.5 rounded-md font-medium gap-1.5 text-left">
-            <p className="shrink select-none text-transparent min-w-0 leading-tight max-w-28 whitespace-nowrap overflow-hidden overflow-ellipsis">
+            <p className="shrink select-none text-transparent min-w-0 leading-tight max-w-28 whitespace-nowrap overflow-hidden text-ellipsis">
               Loading
             </p>
           </div>
@@ -164,7 +164,7 @@ function Error({
       {!noLegends && (
         <div className="w-full pointer-events-none opacity-0 flex flex-wrap mt-1.5">
           <div className="max-w-full text-muted-foreground text-xs px-2.5 py-1.5 rounded-md font-medium gap-1.5 text-left">
-            <p className="shrink select-none text-transparent min-w-0 leading-tight max-w-28 whitespace-nowrap overflow-hidden overflow-ellipsis">
+            <p className="shrink select-none text-transparent min-w-0 leading-tight max-w-28 whitespace-nowrap overflow-hidden text-ellipsis">
               Error
             </p>
           </div>

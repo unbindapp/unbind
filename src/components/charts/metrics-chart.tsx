@@ -57,7 +57,7 @@ export default function MetricsChart({
     dataKeys.forEach((key, index) => {
       config[key] = {
         label: key,
-        color: `hsl(var(--chart-${(index % colorCount) + 1}))`,
+        color: `var(--chart-${(index % colorCount) + 1})`,
       };
     });
     return config satisfies ChartConfig;
@@ -124,18 +124,18 @@ export default function MetricsChart({
                 onClick={() => toggleDataKey(dataKey)}
                 variant="ghost"
                 key={dataKey}
-                className="max-w-full group/button text-muted-foreground data-[active]:text-foreground text-xs px-2.5 py-1.5 rounded-md font-medium gap-1.5 text-left"
+                className="max-w-full group/button text-muted-foreground data-active:text-foreground text-xs px-2.5 py-1.5 rounded-md font-medium gap-1.5 text-left"
               >
                 <div
                   style={{
                     backgroundColor:
                       activeDataKey && activeDataKey !== dataKey
-                        ? `hsl(var(--muted-more-foreground))`
+                        ? `var(--muted-more-foreground)`
                         : chartConfig[dataKey].color,
                   }}
-                  className="size-2.5 group-data-[active]/button:rounded-[0.3125rem] rounded-xs shrink-0 -ml-0.25 transition-[border-radius,_background-color]"
+                  className="size-2.5 group-data-active/button:rounded-[0.3125rem] rounded-xs shrink-0 -ml-0.25 transition-[border-radius,_background-color]"
                 />
-                <p className="shrink min-w-0 leading-tight max-w-28 whitespace-nowrap overflow-hidden overflow-ellipsis">
+                <p className="shrink min-w-0 leading-tight max-w-28 whitespace-nowrap overflow-hidden text-ellipsis">
                   {dataKey}
                 </p>
               </Button>

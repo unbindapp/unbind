@@ -85,11 +85,11 @@ export default function ServiceCardList({
               <div key={g.group.id} className="w-full px-1 pb-1 pt-1">
                 <div
                   className="w-full flex flex-col rounded-xl border p-1 
-                  bg-[repeating-linear-gradient(135deg,hsl(var(--border)/0.3)_0px,hsl(var(--border)/0.3)_2px,transparent_2px,transparent_6px)]"
+                  bg-[repeating-linear-gradient(135deg,color-mix(in_oklab,_var(--border)_30%,_transparent)_0px,color-mix(in_oklab,_var(--border)_30%,_transparent)_2px,transparent_2px,transparent_6px)]"
                 >
                   <div className="w-full px-3 pt-2 pb-2.5 leading-tight font-semibold flex items-center gap-2">
                     <ServiceIcon variant={g.group.type} className="size-6" />
-                    <p className="shrink min-w-0 overflow-hidden overflow-ellipsis whitespace-nowrap">
+                    <p className="shrink min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
                       {g.group.title}
                     </p>
                   </div>

@@ -161,7 +161,7 @@ const commandPanelVariants = cva("w-full", {
   variants: {
     variant: {
       default:
-        "rounded-xl h-108 max-h-[min(calc(100vh-(100vh-3rem)*0.1-7rem),50vh)] sm:max-h-[calc(100vh-(100vh-3rem)*0.1-7rem)] border shadow-xl shadow-shadow/[var(--opacity-shadow)]",
+        "rounded-xl h-108 max-h-[min(calc(100vh-(100vh-3rem)*0.1-7rem),50vh)] sm:max-h-[calc(100vh-(100vh-3rem)*0.1-7rem)] border shadow-xl shadow-shadow/shadow",
       "no-wrapper": "",
     },
   },
@@ -357,7 +357,7 @@ function Footer({
 
   return (
     <div className="w-full z-10 p-1 flex items-center justify-between border-t text-muted-foreground gap-2">
-      <p className="shrink-[2] text-base sm:text-sm font-medium px-3 py-2 min-w-0 overflow-hidden overflow-ellipsis whitespace-nowrap">
+      <p className="shrink-2 text-base sm:text-sm font-medium px-3 py-2 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
         {currentPage.title}
       </p>
       {currentPage.id !== rootPage.id && (
@@ -375,7 +375,7 @@ function Footer({
           className="rounded-lg shrink min-w-0 px-3 py-2 font-semibold gap-1 text-base sm:text-sm"
         >
           <ChevronLeftIcon className="size-5 sm:size-4.5 shrink-0 -ml-1.75 -mr-0.5" />
-          <p className="shrink min-w-0 overflow-hidden overflow-ellipsis whitespace-nowrap">
+          <p className="shrink min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
             Back
           </p>
           <KeyboardShortcut className="-my-1 -mr-1 pl-1.25">
@@ -464,12 +464,12 @@ function Item({
       data-placeholder={isPlaceholder ? true : undefined}
       value={item.title}
       keywords={item.keywords}
-      className="px-3.5 font-medium group/item active:bg-border data-[placeholder]:text-transparent py-3 flex flex-row w-full items-center justify-between text-left gap-6"
+      className="px-3.5 font-medium group/item active:bg-border data-placeholder:text-transparent py-3 flex flex-row w-full items-center justify-between text-left gap-6"
       onSelect={onSelect}
     >
       <div className="flex-1 min-w-0 gap-2.5 flex items-center justify-start">
-        <item.Icon className="size-5 -ml-0.5 group-data-[placeholder]/item:rounded-full group-data-[placeholder]/item:bg-foreground group-data-[placeholder]/item:animate-skeleton" />
-        <p className="shrink min-w-0 leading-tight group-data-[placeholder]/item:rounded-md group-data-[placeholder]/item:bg-foreground group-data-[placeholder]/item:animate-skeleton">
+        <item.Icon className="size-5 -ml-0.5 group-data-placeholder/item:rounded-full group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton" />
+        <p className="shrink min-w-0 leading-tight group-data-placeholder/item:rounded-md group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton">
           {item.title}
         </p>
       </div>
