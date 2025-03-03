@@ -176,10 +176,6 @@
 
 @theme {
   --transition-delay-*: initial;
-  --transition-delay-5: 0.005s;
-  --transition-delay-10: 0.01s;
-  --transition-delay-25: 0.025s;
-  --transition-delay-50: 0.05s;
 
   --animate-*: initial;
   --animate-skeleton: skeleton 1.25s ease-in-out infinite;
@@ -187,13 +183,6 @@
   --animate-spin: spin 1s linear infinite;
   --animate-loading-bar: loading-bar 45s linear infinite;
   --animate-line-in: line-in 0.01s step-end forwards;
-
-  --transition-duration-250: 250ms;
-  --transition-duration-2000: 2000ms;
-  --transition-duration-5000: 5000ms;
-  --transition-duration-30000: 30000ms;
-  --transition-duration-45000: 45000ms;
-  --transition-duration-60000: 60000ms;
 
   --radius-px: 1px;
   --radius-2px: 2px;
