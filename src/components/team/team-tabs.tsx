@@ -9,10 +9,9 @@ import { useEffect, useMemo, useState } from "react";
 
 type TTab = {
   title: string;
-  href?: string;
+  href: string;
+  looseMatch?: boolean;
 };
-
-const getBaseTabUrl = ({ teamId }: { teamId?: string }) => (teamId ? `/${teamId}` : undefined);
 
 export default function TeamTabs({
   className,
@@ -26,20 +25,23 @@ export default function TeamTabs({
   layoutId: string;
 }) {
   const { teamId } = useIdsFromPathname();
+  const pathname = usePathname();
+
   const tabs: TTab[] = useMemo(() => {
+    const baseTabUrl = `/${teamId}`;
     return [
       {
         title: "Projects",
-        href: getBaseTabUrl({ teamId }),
+        href: `${baseTabUrl}`,
       },
       {
         title: "Settings",
-        href: `${getBaseTabUrl({ teamId })}/settings`,
+        href: `${baseTabUrl}/settings`,
+        looseMatch: true,
       },
     ];
   }, [teamId]);
 
-  const pathname = usePathname();
   const [activeTabPath, setActiveTabPath] = useState<string | undefined>(pathname);
 
   useEffect(() => {
@@ -52,7 +54,7 @@ export default function TeamTabs({
         <div className={cn("flex items-stretch justify-start px-0 sm:px-3", classNameInner)}>
           {tabs.map((tab) => (
             <LinkButton
-              data-active={tab.href === activeTabPath ? true : undefined}
+              data-active={isActive(tab, activeTabPath) ? true : undefined}
               key={tab.href}
               className={cn(
                 `text-muted-foreground group/button data-active:text-foreground rounded px-3 py-4.25 text-sm leading-none font-medium focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent sm:py-4`,
@@ -62,7 +64,7 @@ export default function TeamTabs({
               href={tab.href || ""}
               onClick={() => setActiveTabPath(tab.href)}
             >
-              {activeTabPath === tab.href && (
+              {isActive(tab, activeTabPath) && (
                 <TabIndicator
                   layoutId={layoutId}
                   className="top-0 bottom-auto sm:top-auto sm:bottom-0"
@@ -79,4 +81,10 @@ export default function TeamTabs({
       </div>
     </div>
   );
+}
+
+function isActive(tab: TTab, activePath: string | undefined) {
+  return activePath
+    ? tab.href === activePath || (tab.looseMatch && activePath.startsWith(tab.href))
+    : false;
 }

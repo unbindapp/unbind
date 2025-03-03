@@ -36,7 +36,7 @@ export async function Navbar({
   return (
     <nav
       className={cn(
-        `bg-background fixed bottom-0 left-0 z-50 flex w-full flex-col items-stretch justify-between border-t pb-[var(--safe-area-inset-bottom)] sm:sticky sm:top-0 sm:border-t-0 sm:border-b sm:pb-0`,
+        `bg-background fixed bottom-0 left-0 z-100 flex w-full flex-col items-stretch justify-between border-t pb-[var(--safe-area-inset-bottom)] sm:sticky sm:top-0 sm:border-t-0 sm:border-b sm:pb-0`,
         className,
       )}
     >

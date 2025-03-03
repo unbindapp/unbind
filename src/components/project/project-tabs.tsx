@@ -25,6 +25,8 @@ export default function ProjectTabs({
   layoutId: string;
 }) {
   const { teamId, projectId, environmentId } = useIdsFromPathname();
+  const pathname = usePathname();
+
   const tabs: TTab[] = useMemo(() => {
     const baseTabUrl = `/${teamId}/project/${projectId}/environment/${environmentId}`;
     return [
@@ -48,7 +50,6 @@ export default function ProjectTabs({
     ];
   }, [teamId, projectId, environmentId]);
 
-  const pathname = usePathname();
   const [activeTabPath, setActiveTabPath] = useState<string | undefined>(pathname);
 
   useEffect(() => {

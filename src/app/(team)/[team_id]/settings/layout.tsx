@@ -14,10 +14,10 @@ import {
 import { ReactNode, useMemo } from "react";
 
 export default function Layout({ children }: { children: ReactNode }) {
-  const { teamId, projectId, environmentId } = useIdsFromPathname();
+  const { teamId } = useIdsFromPathname();
 
   const tabs = useMemo<TSettingsTab[]>(() => {
-    const basePath = `/${teamId}/project/${projectId}/environment/${environmentId}/settings`;
+    const basePath = `/${teamId}/settings`;
     return [
       {
         label: "General",
@@ -50,7 +50,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         Icon: TriangleAlertIcon,
       },
     ];
-  }, [teamId, projectId, environmentId]);
+  }, [teamId]);
 
   return <SettingsLayout tabs={tabs}>{children}</SettingsLayout>;
 }
