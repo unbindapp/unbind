@@ -10,7 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 type TTab = {
   title: string;
   href: string;
-  matchSubdirectory?: boolean;
+  strictMatch?: boolean;
 };
 
 export default function ProjectTabs({
@@ -45,7 +45,6 @@ export default function ProjectTabs({
       {
         title: "Settings",
         href: `${baseTabUrl}/settings`,
-        matchSubdirectory: true,
       },
     ];
   }, [teamId, projectId, environmentId]);
@@ -92,6 +91,6 @@ export default function ProjectTabs({
 
 function isActive(tab: TTab, activePath: string | undefined) {
   return activePath
-    ? tab.href === activePath || (tab.matchSubdirectory && activePath.startsWith(tab.href + "/"))
+    ? tab.href === activePath || (!tab.strictMatch && activePath.startsWith(tab.href + "/"))
     : false;
 }

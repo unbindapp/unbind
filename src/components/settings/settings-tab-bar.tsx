@@ -9,7 +9,7 @@ export type TSettingsTab = {
   label: string;
   href: string;
   Icon: FC<{ className?: string; style?: { transform?: string } }>;
-  matchSubdirectory?: boolean;
+  strictMatch?: boolean;
 };
 
 type Props = {
@@ -59,6 +59,6 @@ export default function SettingsTabBar({ tabs }: Props) {
 
 function isActive(tab: TSettingsTab, activePath: string | undefined) {
   return activePath
-    ? tab.href === activePath || (tab.matchSubdirectory && activePath.startsWith(tab.href + "/"))
+    ? tab.href === activePath || (!tab.strictMatch && activePath.startsWith(tab.href + "/"))
     : false;
 }
