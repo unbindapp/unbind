@@ -9,7 +9,7 @@ type Props = {
 export default function Metrics({ service }: Props) {
   return (
     <TabWrapper className="flex flex-row flex-wrap">
-      <Charts service={service} className="gap-2" />
+      <Charts service={service} />
     </TabWrapper>
   );
 }

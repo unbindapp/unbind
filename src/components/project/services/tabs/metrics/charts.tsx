@@ -115,8 +115,7 @@ export default function Charts({ service, className }: Props) {
       ram={ram}
       disk={disk}
       network={network}
-      className={className}
-      classNameChart="w-full lg:w-full p-0"
+      className={cn("-mx-1 -my-1 w-[calc(100%+0.5rem)]", className)}
       noLegends
     />
   );
