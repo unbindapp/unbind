@@ -30,39 +30,35 @@ export default function Indicator({
       data-error={isError && !isPending && !isRefetching ? true : undefined}
       data-refetching={isRefetching ? true : undefined}
       data-pending={isPending ? true : undefined}
-      className={cn(
-        "p-1.75 absolute z-10 group/indicator left-0 top-0",
-        className
-      )}
+      className={cn("group/indicator absolute top-0 left-0 z-10 p-1.75", className)}
     >
       <div
         className={cn(
-          "size-1.5 group-data-refetching/indicator:animate-pulse-scale",
-          showOnIsPending &&
-            "group-data-pending/indicator:animate-pulse-scale"
+          "group-data-refetching/indicator:animate-pulse-scale size-1.5",
+          showOnIsPending && "group-data-pending/indicator:animate-pulse-scale",
         )}
       >
         <div
           className={cn(
-            "size-full rounded-full scale-0 bg-border transition",
+            "bg-border size-full scale-0 rounded-full transition",
             showOnHasData &&
-              "group-data-has-data/indicator:scale-100 group-data-has-data/indicator:bg-success",
+              "group-data-has-data/indicator:bg-success group-data-has-data/indicator:scale-100",
             showOnIsRefetching &&
-              "group-data-refetching/indicator:scale-100 group-data-refetching/indicator:bg-border",
+              "group-data-refetching/indicator:bg-border group-data-refetching/indicator:scale-100",
             showOnIsPending &&
-              "group-data-pending/indicator:scale-100 group-data-pending/indicator:bg-border",
+              "group-data-pending/indicator:bg-border group-data-pending/indicator:scale-100",
             showOnError === "refetch-only" &&
               hasData &&
               isError &&
               !isRefetching &&
               !isPending &&
-              "group-data-error/indicator:scale-100 group-data-error/indicator:bg-destructive",
+              "group-data-error/indicator:bg-destructive group-data-error/indicator:scale-100",
             showOnError === "all" &&
               isError &&
               !isRefetching &&
               !isPending &&
-              "group-data-error/indicator:scale-100 group-data-error/indicator:bg-destructive",
-            dotClasses
+              "group-data-error/indicator:bg-destructive group-data-error/indicator:scale-100",
+            dotClasses,
           )}
         />
       </div>

@@ -19,20 +19,14 @@ const inputVariants = cva(
       variant: "default",
       fadeOnDisabled: "default",
     },
-  }
+  },
 );
 
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement>,
     VariantProps<typeof inputVariants> {}
 
-function Input({
-  className,
-  variant,
-  fadeOnDisabled,
-  type,
-  ...props
-}: InputProps) {
+function Input({ className, variant, fadeOnDisabled, type, ...props }: InputProps) {
   return (
     <input
       type={type}
@@ -41,7 +35,7 @@ function Input({
           variant,
           fadeOnDisabled,
           className,
-        })
+        }),
       )}
       {...props}
     />

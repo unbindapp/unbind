@@ -5,22 +5,19 @@ import * as SwitchPrimitives from "@radix-ui/react-switch";
 
 import { cn } from "@/components/ui/utils";
 
-function Switch({
-  className,
-  ...props
-}: React.ComponentProps<typeof SwitchPrimitives.Root>) {
+function Switch({ className, ...props }: React.ComponentProps<typeof SwitchPrimitives.Root>) {
   return (
     <SwitchPrimitives.Root
       className={cn(
-        "peer inline-flex touch-manipulation relative h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-foreground data-[state=unchecked]:bg-muted-more-foreground",
-        "before:w-full before:h-full before:min-w-[48px] before:min-h-[48px] before:z-[-1] z-0 before:bg-transparent before:absolute",
-        className
+        "peer focus-visible:ring-primary/50 focus-visible:ring-offset-background data-[state=checked]:bg-foreground data-[state=unchecked]:bg-muted-more-foreground relative inline-flex h-6 w-11 shrink-0 cursor-pointer touch-manipulation items-center rounded-full border-2 border-transparent transition-colors focus-visible:ring-1 focus-visible:ring-offset-2 focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-50",
+        "z-0 before:absolute before:z-[-1] before:h-full before:min-h-[48px] before:w-full before:min-w-[48px] before:bg-transparent",
+        className,
       )}
       {...props}
     >
       <SwitchPrimitives.Thumb
         className={cn(
-          "pointer-events-none block size-5 rounded-full bg-background ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0"
+          "bg-background pointer-events-none block size-5 rounded-full ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0",
         )}
       />
     </SwitchPrimitives.Root>

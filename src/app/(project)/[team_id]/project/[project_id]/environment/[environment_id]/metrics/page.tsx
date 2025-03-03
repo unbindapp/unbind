@@ -13,18 +13,12 @@ export default async function Page({ params }: Props) {
   const { team_id, project_id, environment_id } = await params;
   return (
     <PageWrapper>
-      <div className="w-full flex flex-col max-w-7xl">
-        <div className="w-full flex flex-wrap items-center justify-between gap-4 px-1">
-          <h1 className="w-full font-bold text-2xl leading-tight px-2">
-            Metrics
-          </h1>
+      <div className="flex w-full max-w-7xl flex-col">
+        <div className="flex w-full flex-wrap items-center justify-between gap-4 px-1">
+          <h1 className="w-full px-2 text-2xl leading-tight font-bold">Metrics</h1>
         </div>
-        <div className="w-full flex flex-row flex-wrap pt-3">
-          <Charts
-            teamId={team_id}
-            projectId={project_id}
-            environmentId={environment_id}
-          />
+        <div className="flex w-full flex-row flex-wrap pt-3">
+          <Charts teamId={team_id} projectId={project_id} environmentId={environment_id} />
         </div>
       </div>
     </PageWrapper>

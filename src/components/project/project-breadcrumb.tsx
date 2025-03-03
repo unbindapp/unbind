@@ -1,10 +1,7 @@
 "use client";
 
 import { BreadcrumbItem } from "@/components/navigation/breadcrumb-item";
-import {
-  BreadcrumbSeparator,
-  BreadcrumbWrapper,
-} from "@/components/navigation/breadcrumb-wrapper";
+import { BreadcrumbSeparator, BreadcrumbWrapper } from "@/components/navigation/breadcrumb-wrapper";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { api } from "@/server/trpc/setup/client";
@@ -28,18 +25,12 @@ export default function ProjectBreadcrumb({ className }: Props) {
     { teamId: teamIdFromPathname! },
     {
       enabled: teamIdFromPathname !== undefined,
-    }
+    },
   );
 
-  const [selectedProjectId, setSelectedProjectId] = useState(
-    projectIdFromPathname
-  );
-  const [selectedEnvironmentId, setSelectedEnvironmentId] = useState(
-    environmentIdFromPathname
-  );
-  const environments = projectsData?.projects.find(
-    (p) => p.id === selectedProjectId
-  )?.environments;
+  const [selectedProjectId, setSelectedProjectId] = useState(projectIdFromPathname);
+  const [selectedEnvironmentId, setSelectedEnvironmentId] = useState(environmentIdFromPathname);
+  const environments = projectsData?.projects.find((p) => p.id === selectedProjectId)?.environments;
 
   useEffect(() => {
     setSelectedProjectId(projectIdFromPathname);
@@ -81,9 +72,7 @@ export default function ProjectBreadcrumb({ className }: Props) {
 
   function getHrefForEnvironmentId(id: string) {
     const team = teamData?.teams.find((t) => t.id === teamIdFromPathname);
-    const project = projectsData?.projects.find(
-      (p) => p.id === selectedProjectId
-    );
+    const project = projectsData?.projects.find((p) => p.id === selectedProjectId);
     const environment = project?.environments.find((e) => e.id === id);
     if (!project || !environment || !team) return null;
     return `/${team.id}/project/${project.id}/environment/${environment.id}`;

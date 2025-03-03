@@ -8,11 +8,7 @@ type Props = {
   showOnTouchscreen?: boolean;
 };
 
-export default function KeyboardShortcut({
-  className,
-  showOnTouchscreen,
-  children,
-}: Props) {
+export default function KeyboardShortcut({ className, showOnTouchscreen, children }: Props) {
   const { isTouchscreen } = useDeviceType();
 
   if (isTouchscreen && !showOnTouchscreen) {
@@ -21,7 +17,7 @@ export default function KeyboardShortcut({
 
   return (
     <div className={cn("shrink-0", className)}>
-      <div className="text-xs leading-none ring-1 ring-border rounded px-1.5 py-1.25 bg-background-hover">
+      <div className="ring-border bg-background-hover rounded px-1.5 py-1.25 text-xs leading-none ring-1">
         {children}
       </div>
     </div>

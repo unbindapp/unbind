@@ -24,7 +24,7 @@ type Props = { email: string; className?: string };
 export default function UserAvatar({ email, className }: Props) {
   const [, actionSignOut, isPendingSignOut] = useActionState(
     () => signOutAction({ callbackUrl: "/" }),
-    null
+    null,
   );
   const [open, setOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
@@ -36,7 +36,7 @@ export default function UserAvatar({ email, className }: Props) {
       TitleIcon={({ className }: { className: string }) => (
         <Blockies
           address={email}
-          className={cn("rounded-full border border-foreground", className)}
+          className={cn("border-foreground rounded-full border", className)}
         />
       )}
       open={open}
@@ -52,73 +52,70 @@ export default function UserAvatar({ email, className }: Props) {
           variant="ghost"
           fadeOnDisabled={false}
           className={cn(
-            "size-6.5 rounded-full border border-foreground shrink-0 group/button data-pending:border-border",
-            className
+            "border-foreground group/button data-pending:border-border size-6.5 shrink-0 rounded-full border",
+            className,
           )}
         >
           <Blockies
             address={email}
-            className="size-full shrink-0 rounded-full transition has-hover:group-hover/button:rotate-45 group-active/button:rotate-45 group-data-open/button:rotate-360"
+            className="size-full shrink-0 rounded-full transition group-active/button:rotate-45 group-data-open/button:rotate-360 has-hover:group-hover/button:rotate-45"
           />
           {isPendingSignOut && (
-            <div className="absolute rounded-full size-full left-0 top-0 bg-background p-1">
-              <LoaderIcon className="size-full text-muted-foreground animate-spin" />
+            <div className="bg-background absolute top-0 left-0 size-full rounded-full p-1">
+              <LoaderIcon className="text-muted-foreground size-full animate-spin" />
             </div>
           )}
         </Button>
       </DropdownOrDrawerTrigger>
       <DropdownOrDrawerContentForDrawer>
-        <div className="w-full flex flex-col px-2 pt-2 pb-8 group/list">
+        <div className="group/list flex w-full flex-col px-2 pt-2 pb-8">
           <ThemeButton variant="drawer-item" />
           <form
             action={actionSignOut}
             onSubmit={() => setOpen(false)}
-            className="w-full flex items-center justify-start"
+            className="flex w-full items-center justify-start"
           >
             <Button
               type="submit"
-              className="w-full text-left font-medium justify-start items-center rounded-lg gap-2.5 px-3 py-3.5 cursor-default"
+              className="w-full cursor-default items-center justify-start gap-2.5 rounded-lg px-3 py-3.5 text-left font-medium"
               variant="ghost"
             >
-              <div className="size-5 shrink-0 -ml-0.5 -my-1">
+              <div className="-my-1 -ml-0.5 size-5 shrink-0">
                 {isPendingSignOut ? (
                   <LoaderIcon className="size-full animate-spin" />
                 ) : (
                   <LogOutIcon className="size-full" />
                 )}
               </div>
-              <p className="shrink min-w-0 leading-tight">Sign Out</p>
+              <p className="min-w-0 shrink leading-tight">Sign Out</p>
             </Button>
           </form>
         </div>
       </DropdownOrDrawerContentForDrawer>
       <DropdownOrDrawerContentForDropdown>
-        <div className="w-full flex justify-start items-center px-3 gap-2.5 py-3">
-          <div className="size-5 rounded-full border border-foreground shrink-0">
+        <div className="flex w-full items-center justify-start gap-2.5 px-3 py-3">
+          <div className="border-foreground size-5 shrink-0 rounded-full border">
             <Blockies address={email} className="size-full rounded-full" />
           </div>
-          <p className="shrink min-w-0 leading-tight font-medium whitespace-nowrap overflow-hidden text-ellipsis">
+          <p className="min-w-0 shrink overflow-hidden leading-tight font-medium text-ellipsis whitespace-nowrap">
             {email}
           </p>
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <ThemeButton variant="dropdown-menu-item" />
-          <DropdownMenuItem
-            className="p-0"
-            onSelect={() => formRef.current?.requestSubmit()}
-          >
+          <DropdownMenuItem className="p-0" onSelect={() => formRef.current?.requestSubmit()}>
             <form
               ref={formRef}
               action={actionSignOut}
-              className="w-full flex items-center justify-start"
+              className="flex w-full items-center justify-start"
             >
               <button
-                className="w-full flex items-center px-2.5 gap-2.5 text-left leading-tight py-2.25 cursor-default"
+                className="flex w-full cursor-default items-center gap-2.5 px-2.5 py-2.25 text-left leading-tight"
                 type="submit"
               >
-                <LogOutIcon className="size-5 shrink-0 -ml-0.5 -my-1" />
-                <p className="shrink min-w-0 leading-tight">Sign Out</p>
+                <LogOutIcon className="-my-1 -ml-0.5 size-5 shrink-0" />
+                <p className="min-w-0 shrink leading-tight">Sign Out</p>
               </button>
             </form>
           </DropdownMenuItem>

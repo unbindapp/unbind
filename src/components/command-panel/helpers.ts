@@ -1,12 +1,7 @@
-import {
-  TCommandPanelItem,
-  TCommandPanelPage,
-} from "@/components/command-panel/types";
+import { TCommandPanelItem, TCommandPanelPage } from "@/components/command-panel/types";
 import { RefObject } from "react";
 
-export function getAllItemsFromCommandPanelPage(
-  page: TCommandPanelPage
-): TCommandPanelItem[] {
+export function getAllItemsFromCommandPanelPage(page: TCommandPanelPage): TCommandPanelItem[] {
   if (!page.items) return [];
   return page.items.flatMap((item) => {
     if (item.subpage) {

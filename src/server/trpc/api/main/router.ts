@@ -11,7 +11,7 @@ export const mainRouter = createTRPCRouter({
     .input(
       z.object({
         teamId: z.string(),
-      })
+      }),
     )
     .query(async function ({ input: { teamId } }) {
       const projects = await getProjects({ teamId });
@@ -25,18 +25,14 @@ export const mainRouter = createTRPCRouter({
         teamId: z.string(),
         projectId: z.string(),
         environmentId: z.string(),
-      })
+      }),
     )
     .query(async function ({ input: { teamId, projectId, environmentId } }) {
-      const project = projects.find(
-        (p) => p.id === projectId && p.teamId === teamId
-      );
+      const project = projects.find((p) => p.id === projectId && p.teamId === teamId);
       if (!project) {
         throw new Error("Project not found");
       }
-      const environment = project.environments.find(
-        (e) => e.id === environmentId
-      );
+      const environment = project.environments.find((e) => e.id === environmentId);
       if (!environment) {
         throw new Error("Environment not found");
       }
@@ -51,11 +47,9 @@ export const mainRouter = createTRPCRouter({
         projectId: z.string(),
         environmentId: z.string(),
         serviceId: z.string(),
-      })
+      }),
     )
-    .query(async function ({
-      input: { teamId, projectId, environmentId, serviceId },
-    }) {
+    .query(async function ({ input: { teamId, projectId, environmentId, serviceId } }) {
       const deployments = await getDeployments({
         teamId,
         projectId,
@@ -73,11 +67,9 @@ export const mainRouter = createTRPCRouter({
         projectId: z.string(),
         environmentId: z.string(),
         serviceId: z.string(),
-      })
+      }),
     )
-    .query(async function ({
-      input: { teamId, projectId, environmentId, serviceId },
-    }) {
+    .query(async function ({ input: { teamId, projectId, environmentId, serviceId } }) {
       const variables = await getVariables({
         teamId,
         projectId,
@@ -92,7 +84,7 @@ export const mainRouter = createTRPCRouter({
     .input(
       z.object({
         teamId: z.string(),
-      })
+      }),
     )
     .query(async function ({ input: { teamId } }) {
       const repos = await getGitHubRepos({
@@ -127,7 +119,7 @@ async function getVariables({
     "environmentId:",
     environmentId,
     "serviceId:",
-    serviceId
+    serviceId,
   );
   return variables;
 }
@@ -164,7 +156,7 @@ async function getDeployments({
         service.lastDeployment?.source === "github" ||
         (service.lastDeployment?.dockerImage &&
           d.source === "docker" &&
-          d.dockerImage === service.lastDeployment.dockerImage)
+          d.dockerImage === service.lastDeployment.dockerImage),
     );
   return filteredDeployments;
 }

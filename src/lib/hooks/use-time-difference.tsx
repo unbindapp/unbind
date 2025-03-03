@@ -30,10 +30,10 @@ export function useTimeDifference({
     Math.abs(differenceDays) >= 1
       ? diffDaysStr
       : Math.abs(differenceHours) >= 1
-      ? diffHoursStr
-      : Math.abs(differenceMinutes) >= 1
-      ? diffMinutesStr
-      : diffSecondsStr;
+        ? diffHoursStr
+        : Math.abs(differenceMinutes) >= 1
+          ? diffMinutesStr
+          : diffSecondsStr;
 
   return {
     str: timestamp ? differenceStr : null,

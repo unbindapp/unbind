@@ -19,12 +19,12 @@ export const DeviceSizeProvider: React.FC<{
     ? width < 640
       ? "xs"
       : width < 768
-      ? "sm"
-      : width < 1024
-      ? "md"
-      : width < 1280
-      ? "lg"
-      : "xl"
+        ? "sm"
+        : width < 1024
+          ? "md"
+          : width < 1280
+            ? "lg"
+            : "xl"
     : "xl";
 
   const value: TDeviceSizeContext = useMemo(
@@ -32,14 +32,10 @@ export const DeviceSizeProvider: React.FC<{
       size,
       isExtraSmall: size === "xs",
     }),
-    [size]
+    [size],
   );
 
-  return (
-    <DeviceSizeContext.Provider value={value}>
-      {children}
-    </DeviceSizeContext.Provider>
-  );
+  return <DeviceSizeContext.Provider value={value}>{children}</DeviceSizeContext.Provider>;
 };
 
 export const useDeviceSize = () => {

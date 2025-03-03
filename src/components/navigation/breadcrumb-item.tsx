@@ -12,21 +12,9 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/components/ui/utils";
-import {
-  ArrowRightIcon,
-  CheckIcon,
-  ChevronDownIcon,
-  PlusIcon,
-} from "lucide-react";
+import { ArrowRightIcon, CheckIcon, ChevronDownIcon, PlusIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
-import {
-  ComponentProps,
-  Dispatch,
-  FC,
-  SetStateAction,
-  useEffect,
-  useState,
-} from "react";
+import { ComponentProps, Dispatch, FC, SetStateAction, useEffect, useState } from "react";
 
 type Item<T> = T & { id: string; title: string };
 
@@ -63,21 +51,15 @@ export function BreadcrumbItem<T>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  const newItem = newItemTitle
-    ? ({ id: "new", title: newItemTitle } as Item<T>)
-    : undefined;
+  const newItem = newItemTitle ? ({ id: "new", title: newItemTitle } as Item<T>) : undefined;
 
   return (
     <DropdownOrDrawer title={title} open={open} onOpenChange={setOpen}>
       <DropdownOrDrawerTrigger>
-        <Trigger
-          item={selectedItem}
-          Icon={IconItem}
-          flipChevronOnSm={flipChevronOnSm}
-        />
+        <Trigger item={selectedItem} Icon={IconItem} flipChevronOnSm={flipChevronOnSm} />
       </DropdownOrDrawerTrigger>
       <DropdownOrDrawerContentForDrawer>
-        <div className="w-full flex flex-col px-2 pt-2 pb-8 group/list">
+        <div className="group/list flex w-full flex-col px-2 pt-2 pb-8">
           {items?.map((i, index) => {
             const href = getHrefForId(i.id);
             const showArrow = href !== null && pathname !== href;
@@ -97,7 +79,7 @@ export function BreadcrumbItem<T>({
           })}
           {newItemTitle && newItem && (
             <>
-              <div className="w-full bg-border h-px rounded-full my-2 shrink-0 pointer-events-none" />
+              <div className="bg-border pointer-events-none my-2 h-px w-full shrink-0 rounded-full" />
               <SheetItem
                 item={newItem}
                 onSelect={onSelectNewItem}
@@ -106,7 +88,7 @@ export function BreadcrumbItem<T>({
                 lastHoveredItem={lastHoveredItem}
                 setLastHoveredItem={setLastHoveredItem}
                 IconItem={PlusIcon}
-                className="text-muted-foreground data-highlighted:text-foreground data-last-hovered:text-foreground"
+                className="text-muted-foreground data-highlighted:text-foreground data-last-hovered:text-foreground mr-4"
               />
             </>
           )}
@@ -189,28 +171,23 @@ function SheetItem<T>({
       data-show-arrow={showArrow ? true : undefined}
       variant="ghost"
       className={cn(
-        "w-full data-last-hovered:bg-border group-has-[*[data-highlighted]]/list:bg-transparent data-highlighted:group-has-[*[data-highlighted]]/list:bg-border text-left px-3 py-3.5 rounded-lg font-medium flex items-center justify-between gap-3 group/item cursor-default data-highlighted:text-foreground",
-        className
+        `data-last-hovered:bg-border data-highlighted:group-has-[*[data-highlighted]]/list:bg-border group/item data-highlighted:text-foreground flex w-full cursor-default items-center justify-between gap-3 rounded-lg px-3 py-3.5 text-left font-medium group-has-[*[data-highlighted]]/list:bg-transparent`,
+        className,
       )}
     >
-      <div className="flex-1 min-w-0 flex items-center gap-1.5">
-        {IconItem && (
-          <IconItem id={item.id} className="-my-1 size-5 -ml-1 shrink-0" />
-        )}
-        <p className="shrink min-w-0">{item.title}</p>
+      <div className="flex min-w-0 flex-1 items-center gap-1.5">
+        {IconItem && <IconItem id={item.id} className="-my-1 -ml-1 size-5 shrink-0" />}
+        <p className="min-w-0 shrink">{item.title}</p>
       </div>
-      <div className="size-5 -mr-0.5 relative">
+      <div className="relative -mr-0.5 size-5">
         {selectedItem?.id === item.id && (
           <>
             <CheckIcon
-              className="size-full group-data-highlighted/item:group-data-show-arrow/item:opacity-0 
-              group-data-highlighted/item:group-data-show-arrow/item:rotate-90 transition"
+              className="size-full transition group-data-highlighted/item:group-data-show-arrow/item:rotate-90 group-data-highlighted/item:group-data-show-arrow/item:opacity-0"
               strokeWidth={2.5}
             />
             <ArrowRightIcon
-              className="absolute left-0 top-0 opacity-0 -rotate-90 size-full 
-              group-data-highlighted/item:group-data-show-arrow/item:opacity-100
-              group-data-highlighted/item:group-data-show-arrow/item:rotate-0 transition"
+              className="absolute top-0 left-0 size-full -rotate-90 opacity-0 transition group-data-highlighted/item:group-data-show-arrow/item:rotate-0 group-data-highlighted/item:group-data-show-arrow/item:opacity-100"
               strokeWidth={2.5}
             />
           </>
@@ -250,27 +227,25 @@ function DropdownItem<T>({
       data-show-arrow={showArrow ? true : undefined}
       data-last-hovered={lastHoveredItem?.id === item.id ? true : undefined}
       className={cn(
-        "justify-between group/item data-last-hovered:bg-border group-has-[*[data-highlighted]]/list:bg-transparent data-highlighted:group-has-[*[data-highlighted]]/list:bg-border",
-        className
+        `group/item data-last-hovered:bg-border data-highlighted:group-has-[*[data-highlighted]]/list:bg-border justify-between group-has-[*[data-highlighted]]/list:bg-transparent`,
+        className,
       )}
       onMouseEnter={() => setLastHoveredItem(item)}
       onTouchStart={() => setLastHoveredItem(item)}
     >
-      <div className="flex-1 min-w-0 flex items-center gap-1.5">
-        {IconItem && (
-          <IconItem id={item.id} className="-my-1 size-4.5 -ml-0.5 shrink-0" />
-        )}
-        <p className="shrink min-w-0">{item.title}</p>
+      <div className="flex min-w-0 flex-1 items-center gap-1.5">
+        {IconItem && <IconItem id={item.id} className="-my-1 -ml-0.5 size-4.5 shrink-0" />}
+        <p className="min-w-0 shrink">{item.title}</p>
       </div>
-      <div className="size-4.5 shrink-0 -mr-0.5 relative group-data-highlighted/item:group-data-show-arrow/item:rotate-90 transition-transform">
+      <div className="relative -mr-0.5 size-4.5 shrink-0 transition-transform group-data-highlighted/item:group-data-show-arrow/item:rotate-90">
         {selectedItem?.id === item.id && (
           <>
             <CheckIcon
-              className="size-full group-data-highlighted/item:group-data-show-arrow/item:opacity-0 transition-opacity"
+              className="size-full transition-opacity group-data-highlighted/item:group-data-show-arrow/item:opacity-0"
               strokeWidth={3}
             />
             <ArrowRightIcon
-              className="absolute left-0 top-0 opacity-0 -rotate-90 size-full group-data-highlighted/item:group-data-show-arrow/item:opacity-100 transition-opacity"
+              className="absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-opacity group-data-highlighted/item:group-data-show-arrow/item:opacity-100"
               strokeWidth={2.5}
             />
           </>
@@ -299,32 +274,21 @@ function Trigger<T>({
       data-no-icon={Icon === undefined ? true : undefined}
       data-pending={item == undefined ? true : undefined}
       className={cn(
-        `px-1.5 py-4 data-no-icon:pl-2.75 rounded border-none font-medium flex items-center justify-start gap-2 
-        has-hover:hover:bg-transparent active:bg-transparent text-sm group/button relative
-        focus-visible:ring-0 focus-visible:ring-offset-0`,
-        className
+        `group/button relative flex items-center justify-start gap-2 rounded border-none px-1.5 py-4 text-sm font-medium focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent data-no-icon:pl-2.75`,
+        className,
       )}
       {...rest}
     >
-      <div className="absolute left-0 top-0 w-full h-full pointer-events-none py-1.5">
-        <div
-          className="w-full h-full rounded-lg bg-border/0 has-hover:group-hover/button:bg-border group-active/button:bg-border
-          group-focus-visible/button:ring-1 group-focus-visible/button:ring-primary/50"
-        />
+      <div className="pointer-events-none absolute top-0 left-0 h-full w-full py-1.5">
+        <div className="bg-border/0 has-hover:group-hover/button:bg-border group-active/button:bg-border group-focus-visible/button:ring-primary/50 h-full w-full rounded-lg group-focus-visible/button:ring-1" />
       </div>
       {Icon && item && <Icon id={item.id} className="relative size-4.5" />}
-      <p
-        className="group-data-pending/button:text-transparent group-data-pending/button:bg-foreground 
-          group-data-pending/button:rounded-sm group-data-pending/button:animate-skeleton max-w-32 whitespace-nowrap 
-          leading-none overflow-hidden text-ellipsis relative"
-      >
+      <p className="group-data-pending/button:bg-foreground group-data-pending/button:animate-skeleton relative max-w-32 overflow-hidden leading-none text-ellipsis whitespace-nowrap group-data-pending/button:rounded-sm group-data-pending/button:text-transparent">
         {item == undefined ? "Loading" : item?.title}
       </p>
       <ChevronDownIcon
         data-flip-chevron-sm={flipChevronOnSm ? true : undefined}
-        className="size-4 -my-1 relative -ml-1 text-muted-more-foreground group-data-[state=open]/button:rotate-180 
-        data-flip-chevron-sm:rotate-180 group-data-[state=open]/button:data-flip-chevron-sm:rotate-360 
-        sm:data-flip-chevron-sm:rotate-0 sm:group-data-[state=open]/button:data-flip-chevron-sm:rotate-180 transition"
+        className="text-muted-more-foreground relative -my-1 -ml-1 size-4 transition group-data-[state=open]/button:rotate-180 data-flip-chevron-sm:rotate-180 group-data-[state=open]/button:data-flip-chevron-sm:rotate-360 sm:data-flip-chevron-sm:rotate-0 sm:group-data-[state=open]/button:data-flip-chevron-sm:rotate-180"
       />
     </Button>
   );

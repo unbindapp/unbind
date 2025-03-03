@@ -18,46 +18,36 @@ export default function ProjectCard({ project, className }: Props) {
   const groupedServices = groupByServiceGroup(defaultEnvironment.services);
 
   return (
-    <li className={cn("w-full flex flex-col p-1", className)}>
+    <li className={cn("flex w-full flex-col p-1", className)}>
       <LinkButton
         href={href}
         variant="ghost"
-        className="w-full flex flex-col items-start text-left min-h-36 gap-12 border bg-background-hover rounded-xl px-5 py-3.5"
+        className="bg-background-hover flex min-h-36 w-full flex-col items-start gap-12 rounded-xl border px-5 py-3.5 text-left"
       >
-        <h3 className="w-full font-bold leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
+        <h3 className="w-full overflow-hidden leading-tight font-bold text-ellipsis whitespace-nowrap">
           {project.title}
         </h3>
-        <div className="w-full flex flex-col flex-1 justify-end">
-          <div className="w-full flex items-center justify-between text-muted-foreground gap-3">
-            <p className="shrink min-w-0 font-medium overflow-hidden text-ellipsis whitespace-nowrap text-sm">
+        <div className="flex w-full flex-1 flex-col justify-end">
+          <div className="text-muted-foreground flex w-full items-center justify-between gap-3">
+            <p className="min-w-0 shrink overflow-hidden text-sm font-medium text-ellipsis whitespace-nowrap">
               {defaultEnvironment.services.length > 0
                 ? `${defaultEnvironment.services.length} services`
                 : "No services"}
             </p>
             {groupedServices.length > 0 && (
-              <div className="flex items-center gap-1 -mr-1 -my-2">
+              <div className="-my-2 -mr-1 flex items-center gap-1">
                 {groupedServices
                   .slice(0, iconLenght)
                   .map((g) =>
                     g.group ? (
-                      <ServiceIcon
-                        className="size-5"
-                        key={g.group.id}
-                        variant={g.group.type}
-                      />
+                      <ServiceIcon className="size-5" key={g.group.id} variant={g.group.type} />
                     ) : (
                       g.services.map((s) => (
-                        <ServiceIcon
-                          className="size-5"
-                          key={s.id}
-                          variant={s.type}
-                        />
+                        <ServiceIcon className="size-5" key={s.id} variant={s.type} />
                       ))
-                    )
+                    ),
                   )}
-                {groupedServices.length > iconLenght && (
-                  <EllipsisIcon className="size-5" />
-                )}
+                {groupedServices.length > iconLenght && <EllipsisIcon className="size-5" />}
               </div>
             )}
           </div>

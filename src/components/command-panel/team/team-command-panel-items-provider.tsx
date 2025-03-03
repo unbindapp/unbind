@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  TCommandPanelItem,
-  TCommandPanelPage,
-} from "@/components/command-panel/types";
+import { TCommandPanelItem, TCommandPanelPage } from "@/components/command-panel/types";
 import { useQuery } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext } from "react";
 
@@ -14,8 +11,7 @@ type TTeamCommandPanelItemsContext = {
   error: Error | null;
 };
 
-const TeamCommandPanelItemsContext =
-  createContext<TTeamCommandPanelItemsContext | null>(null);
+const TeamCommandPanelItemsContext = createContext<TTeamCommandPanelItemsContext | null>(null);
 
 export const TeamCommandPanelItemsProvider: React.FC<{
   teamId: string;
@@ -24,9 +20,7 @@ export const TeamCommandPanelItemsProvider: React.FC<{
 }> = ({ teamId, page, children }) => {
   const { data, isError, isPending, error } = useQuery({
     queryKey: ["team-command-panel", teamId, page.id],
-    queryFn: page.items
-      ? () => page.items
-      : () => page.getItems({ teamId, projectId: "" }),
+    queryFn: page.items ? () => page.items : () => page.getItems({ teamId, projectId: "" }),
     enabled: page.items ? false : true,
   });
 
@@ -48,7 +42,7 @@ export const useTeamCommandPanelItems = () => {
   const context = useContext(TeamCommandPanelItemsContext);
   if (!context) {
     throw new Error(
-      "useTeamCommandPanelItems must be used within an TeamCommandPanelItemsProvider"
+      "useTeamCommandPanelItems must be used within an TeamCommandPanelItemsProvider",
     );
   }
   return context;

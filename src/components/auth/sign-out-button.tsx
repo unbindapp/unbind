@@ -12,19 +12,13 @@ type Props = {
 };
 
 export default function SignOutButton({ callbackUrl, className }: Props) {
-  const [, action, isPending] = useActionState(
-    () => signOutAction({ callbackUrl }),
-    null
-  );
+  const [, action, isPending] = useActionState(() => signOutAction({ callbackUrl }), null);
 
   return (
     <form className={cn("w-full", className)} action={action}>
-      <Button
-        className="w-full px-10"
-        state={isPending ? "loading" : undefined}
-      >
-        <div className="absolute left-2.25 top-1/2 -translate-y-1/2 size-6 flex items-center justify-center">
-          {isPending && <LoaderIcon className="size-full p-0.5 animate-spin" />}
+      <Button className="w-full px-10" state={isPending ? "loading" : undefined}>
+        <div className="absolute top-1/2 left-2.25 flex size-6 -translate-y-1/2 items-center justify-center">
+          {isPending && <LoaderIcon className="size-full animate-spin p-0.5" />}
         </div>
         Sign Out
       </Button>

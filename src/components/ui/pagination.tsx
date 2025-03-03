@@ -12,22 +12,12 @@ import * as React from "react";
 
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   return (
-    <nav
-      role="navigation"
-      aria-label="pagination"
-      className={cn("flex", className)}
-      {...props}
-    />
+    <nav role="navigation" aria-label="pagination" className={cn("flex", className)} {...props} />
   );
 }
 
-function PaginationContent({
-  className,
-  ...props
-}: React.ComponentProps<"ul">) {
-  return (
-    <ul className={cn("flex flex-row items-center", className)} {...props} />
-  );
+function PaginationContent({ className, ...props }: React.ComponentProps<"ul">) {
+  return <ul className={cn("flex flex-row items-center", className)} {...props} />;
 }
 
 function PaginationItem({ className, ...props }: React.ComponentProps<"li">) {
@@ -60,7 +50,7 @@ function PaginationLink({
           size,
         }),
         "rounded-[0.55rem]",
-        className
+        className,
       )}
       {...props}
     />
@@ -76,9 +66,7 @@ function PaginationPrevious({
 }) {
   return (
     <PaginationLink
-      aria-label={
-        variant === "first" ? "İlk Sayfaya Git" : "Önceki Sayfaya Git"
-      }
+      aria-label={variant === "first" ? "İlk Sayfaya Git" : "Önceki Sayfaya Git"}
       size="icon"
       className={className}
       {...props}
@@ -102,16 +90,12 @@ function PaginationNext({
 }) {
   return (
     <PaginationLink
-      aria-label={
-        variant === "last" ? "Son Sayfaya Git" : "Sonraki Sayfaya Git"
-      }
+      aria-label={variant === "last" ? "Son Sayfaya Git" : "Sonraki Sayfaya Git"}
       size="icon"
       className={className}
       {...props}
     >
-      <span className="sr-only">
-        {variant === "last" ? "Sonuncu" : "Sonraki"}
-      </span>
+      <span className="sr-only">{variant === "last" ? "Sonuncu" : "Sonraki"}</span>
       {variant === "last" ? (
         <ChevronsRightIcon className="size-5" />
       ) : (
@@ -121,10 +105,7 @@ function PaginationNext({
   );
 }
 
-function PaginationEllipsis({
-  className,
-  ...props
-}: React.ComponentProps<"span">) {
+function PaginationEllipsis({ className, ...props }: React.ComponentProps<"span">) {
   return (
     <span
       aria-hidden

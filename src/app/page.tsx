@@ -6,8 +6,8 @@ export default async function Home() {
   const firstTeam = teams.teams[0];
   redirect(`${firstTeam.id}`);
   return (
-    <div className="w-full flex-1 flex flex-col">
-      <main className="w-full flex-1 flex flex-col items-center justify-center pt-12 pb-16 px-5">
+    <div className="flex w-full flex-1 flex-col">
+      <main className="flex w-full flex-1 flex-col items-center justify-center px-5 pt-12 pb-16">
         Home
       </main>
     </div>

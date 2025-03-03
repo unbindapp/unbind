@@ -3,13 +3,7 @@ import Providers from "@/components/providers/providers";
 import { Toaster } from "@/components/ui/sonner";
 import { siteDescription, siteTagline, siteTitle } from "@/lib/constants";
 import { env } from "@/lib/env";
-import {
-  AlertCircleIcon,
-  CheckCircleIcon,
-  InfoIcon,
-  TriangleAlertIcon,
-  XIcon,
-} from "lucide-react";
+import { AlertCircleIcon, CheckCircleIcon, InfoIcon, TriangleAlertIcon, XIcon } from "lucide-react";
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "@/app/globals.css";
@@ -51,7 +45,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${sans.variable} ${mono.variable} w-full flex flex-col min-h-[100svh] relative items-center bg-background text-foreground antialiased break-words`}
+        className={`${sans.variable} ${mono.variable} bg-background text-foreground relative flex min-h-[100svh] w-full flex-col items-center break-words antialiased`}
       >
         {/* <ReactScan /> */}
         <Providers>

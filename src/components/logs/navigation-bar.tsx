@@ -23,8 +23,8 @@ export default function NavigationBar({
     <div
       {...rest}
       className={cn(
-        "absolute flex flex-col right-4 bottom-[calc(1rem+var(--safe-area-inset-bottom))]",
-        className
+        "absolute right-4 bottom-[calc(1rem+var(--safe-area-inset-bottom))] flex flex-col",
+        className,
       )}
     >
       <Button
@@ -34,11 +34,11 @@ export default function NavigationBar({
         variant="ghost"
         size="icon"
         onClick={scrollToTop}
-        className="rounded-lg rounded-b-none bg-background-hover border-t border-l border-r data-disabled:text-muted-more-foreground"
+        className="bg-background-hover data-disabled:text-muted-more-foreground rounded-lg rounded-b-none border-t border-r border-l"
       >
         <ArrowUpIcon className="size-5" />
       </Button>
-      <div className="w-full h-px bg-border pointer-events-none" />
+      <div className="bg-border pointer-events-none h-px w-full" />
       <Button
         disabled={isAtBottom}
         data-disabled={isAtBottom ? true : undefined}
@@ -46,7 +46,7 @@ export default function NavigationBar({
         variant="ghost"
         size="icon"
         onClick={scrollToBottom}
-        className="rounded-lg rounded-t-none bg-background-hover border-b border-l border-r data-disabled:text-muted-more-foreground"
+        className="bg-background-hover data-disabled:text-muted-more-foreground rounded-lg rounded-t-none border-r border-b border-l"
       >
         <ArrowDownIcon className="size-5" />
       </Button>

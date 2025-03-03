@@ -20,19 +20,15 @@ export default function Variables({ service }: Props) {
     <TabWrapper>
       {data?.variables &&
         data.variables.length > 0 &&
-        data.variables.map((variable) => (
-          <VariableCard key={variable.key} variable={variable} />
-        ))}
+        data.variables.map((variable) => <VariableCard key={variable.key} variable={variable} />)}
       {data?.variables && data.variables.length === 0 && (
-        <div className="px-2 py-5 font-medium leading-tight text-muted-foreground text-center">
+        <div className="text-muted-foreground px-2 py-5 text-center leading-tight font-medium">
           No variables yet
         </div>
       )}
       {!data &&
         isPending &&
-        Array.from({ length: 10 }).map((_, i) => (
-          <VariableCard key={i} isPlaceholder />
-        ))}
+        Array.from({ length: 10 }).map((_, i) => <VariableCard key={i} isPlaceholder />)}
       {!data && !isPending && isError && <ErrorCard message={error.message} />}
     </TabWrapper>
   );

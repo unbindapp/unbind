@@ -22,14 +22,10 @@ export const TimestampProvider: React.FC<{
     () => ({
       timestamp,
     }),
-    [timestamp]
+    [timestamp],
   );
 
-  return (
-    <TimestampContext.Provider value={value}>
-      {children}
-    </TimestampContext.Provider>
-  );
+  return <TimestampContext.Provider value={value}>{children}</TimestampContext.Provider>;
 };
 
 export const useTimestamp = () => {

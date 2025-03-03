@@ -12,8 +12,8 @@ export default function TabIndicator({ layoutId, className }: Props) {
       layoutId={layoutId}
       transition={{ duration: 0.15 }}
       className={cn(
-        "w-full h-2px absolute left-0 bottom-0 bg-foreground rounded-full pointer-events-none",
-        className
+        "h-2px bg-foreground pointer-events-none absolute bottom-0 left-0 w-full rounded-full",
+        className,
       )}
     />
   );

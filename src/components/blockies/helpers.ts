@@ -7,8 +7,7 @@ function seedrand(seed: string) {
   randseed.fill(0);
 
   for (let i = 0; i < seed.length; i++) {
-    randseed[i % 4] =
-      (randseed[i % 4] << 5) - randseed[i % 4] + seed.charCodeAt(i);
+    randseed[i % 4] = (randseed[i % 4] << 5) - randseed[i % 4] + seed.charCodeAt(i);
   }
 }
 
@@ -62,11 +61,7 @@ export function createImageData(size: number) {
   return data;
 }
 
-export function buildOpts(opts: {
-  seed: string;
-  size?: number;
-  scale?: number;
-}) {
+export function buildOpts(opts: { seed: string; size?: number; scale?: number }) {
   seedrand(opts.seed);
 
   const newOpts: BlockiesOptions = {

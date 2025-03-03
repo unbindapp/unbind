@@ -22,11 +22,7 @@ type Props = {
   environmentId: string;
 };
 
-export default function ServiceCardList({
-  teamId,
-  projectId,
-  environmentId,
-}: Props) {
+export default function ServiceCardList({ teamId, projectId, environmentId }: Props) {
   const [, { data }] = api.main.getServices.useSuspenseQuery({
     teamId,
     projectId,
@@ -38,7 +34,7 @@ export default function ServiceCardList({
   const [commandPanelId, setCommandPanelId] = useQueryState(commandPanelKey);
   const [, setCommandPanelPageId] = useQueryState(
     commandPanelPageKey,
-    parseAsString.withDefault(commandPanelProjectRootPage)
+    parseAsString.withDefault(commandPanelProjectRootPage),
   );
 
   const open = commandPanelId === commandPanelProjectFromList;
@@ -58,9 +54,9 @@ export default function ServiceCardList({
   };
 
   return (
-    <ol className="w-full flex flex-wrap">
+    <ol className="flex w-full flex-wrap">
       {groupedServices && groupedServices.length === 0 && (
-        <li className="w-full flex flex-col p-1 sm:w-1/2 lg:w-1/3">
+        <li className="flex w-full flex-col p-1 sm:w-1/2 lg:w-1/3">
           <ProjectCommandPanelTrigger
             open={open}
             setOpen={setOpen}
@@ -69,10 +65,10 @@ export default function ServiceCardList({
           >
             <Button
               variant="ghost"
-              className="w-full text-muted-foreground font-medium text-center flex justify-center items-center min-h-36 border rounded-xl px-5 py-3.5"
+              className="text-muted-foreground flex min-h-36 w-full items-center justify-center rounded-xl border px-5 py-3.5 text-center font-medium"
             >
-              <PlusIcon className="size-5 -ml-1.5 shrink-0" />
-              <p className="shrink min-w-0 leading-tight">New Service</p>
+              <PlusIcon className="-ml-1.5 size-5 shrink-0" />
+              <p className="min-w-0 shrink leading-tight">New Service</p>
             </Button>
           </ProjectCommandPanelTrigger>
         </li>
@@ -82,18 +78,15 @@ export default function ServiceCardList({
         groupedServices.map((g) => {
           if (g.group) {
             return (
-              <div key={g.group.id} className="w-full px-1 pb-1 pt-1">
-                <div
-                  className="w-full flex flex-col rounded-xl border p-1 
-                  bg-[repeating-linear-gradient(135deg,color-mix(in_oklab,_var(--border)_30%,_transparent)_0px,color-mix(in_oklab,_var(--border)_30%,_transparent)_2px,transparent_2px,transparent_6px)]"
-                >
-                  <div className="w-full px-3 pt-2 pb-2.5 leading-tight font-semibold flex items-center gap-2">
+              <div key={g.group.id} className="w-full px-1 pt-1 pb-1">
+                <div className="flex w-full flex-col rounded-xl border bg-[repeating-linear-gradient(135deg,color-mix(in_oklab,_var(--border)_30%,_transparent)_0px,color-mix(in_oklab,_var(--border)_30%,_transparent)_2px,transparent_2px,transparent_6px)] p-1">
+                  <div className="flex w-full items-center gap-2 px-3 pt-2 pb-2.5 leading-tight font-semibold">
                     <ServiceIcon variant={g.group.type} className="size-6" />
-                    <p className="shrink min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
+                    <p className="min-w-0 shrink overflow-hidden text-ellipsis whitespace-nowrap">
                       {g.group.title}
                     </p>
                   </div>
-                  <div className="w-full flex justify-start items-center flex-wrap">
+                  <div className="flex w-full flex-wrap items-center justify-start">
                     {g.services.map((s) => (
                       <ServiceCard
                         key={s.id}
@@ -108,11 +101,7 @@ export default function ServiceCardList({
             );
           }
           return g.services.map((s) => (
-            <ServiceCard
-              key={s.id}
-              service={s}
-              className="w-full sm:w-1/2 lg:w-1/3"
-            />
+            <ServiceCard key={s.id} service={s} className="w-full sm:w-1/2 lg:w-1/3" />
           ));
         })}
     </ol>

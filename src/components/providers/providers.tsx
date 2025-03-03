@@ -8,9 +8,7 @@ import { Provider as JotaiProvider } from "jotai";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import React from "react";
 
-export default async function Providers({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default async function Providers({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <TRPCReactProvider>
       <AsyncPushProvider>

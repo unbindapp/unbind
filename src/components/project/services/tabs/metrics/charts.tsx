@@ -1,9 +1,6 @@
 "use client";
 
-import MetricsChartList, {
-  TChartObject,
-  TChartRow,
-} from "@/components/charts/metrics-chart-list";
+import MetricsChartList, { TChartObject, TChartRow } from "@/components/charts/metrics-chart-list";
 import { cn } from "@/components/ui/utils";
 import { TService } from "@/server/trpc/api/main/router";
 import { api } from "@/server/trpc/setup/client";
@@ -58,8 +55,7 @@ export default function Charts({ service, className }: Props) {
             const obj: TChartRow = {
               timestamp: t.timestamp,
             };
-            obj[service.title] =
-              1024 * 1024 * Math.round(random(t.seed) * 10 + 50);
+            obj[service.title] = 1024 * 1024 * Math.round(random(t.seed) * 10 + 50);
             return obj;
           })
         : undefined,
@@ -106,7 +102,7 @@ export default function Charts({ service, className }: Props) {
   if (data && data.services.length === 0) {
     return (
       <div className={cn("w-full p-0", className)}>
-        <div className="w-full flex items-center text-muted-foreground justify-center border rounded-xl text-center px-4 py-2.5 min-h-36">
+        <div className="text-muted-foreground flex min-h-36 w-full items-center justify-center rounded-xl border px-4 py-2.5 text-center">
           <p className="w-full leading-tight">There are no metrics yet</p>
         </div>
       </div>

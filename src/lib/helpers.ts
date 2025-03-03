@@ -7,9 +7,7 @@ export function groupByServiceGroup(services: TService[] | undefined) {
   }[] = [];
   services?.forEach((service) => {
     const group = service.serviceGroup;
-    const existingGroup = groupedServices.find(
-      (g) => g.group?.id === group?.id
-    );
+    const existingGroup = groupedServices.find((g) => g.group?.id === group?.id);
     if (existingGroup) {
       existingGroup.services.push(service);
     } else if (group) {

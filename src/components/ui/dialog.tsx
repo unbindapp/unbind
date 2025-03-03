@@ -28,8 +28,8 @@ function DialogOverlay({
       data-no-x-padding={noXPadding}
       data-no-y-padding={noYPadding}
       className={cn(
-        "fixed flex w-full justify-center px-2 pt-12 data-no-x-padding:px-0 data-no-y-padding:py-0 pb-[calc((100vh-3rem)*0.08+2rem)] md:pb-[calc((100vh-3rem)*0.1+3rem)] overflow-auto inset-0 z-50 duration-200 data-[state=open]:duration-200 data-[state=closed]:duration-200 bg-barrier/barrier data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-        className
+        "bg-barrier/barrier data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 flex w-full justify-center overflow-auto px-2 pt-12 pb-[calc((100vh-3rem)*0.08+2rem)] duration-200 data-no-x-padding:px-0 data-no-y-padding:py-0 data-[state=closed]:duration-200 data-[state=open]:duration-200 md:pb-[calc((100vh-3rem)*0.1+3rem)]",
+        className,
       )}
       {...props}
     />
@@ -41,15 +41,14 @@ const dialogContentVariants = cva(
   {
     variants: {
       variant: {
-        default:
-          "bg-background border rounded-xl p-5 pt-4 shadow-dialog shadow-shadow/shadow",
+        default: "bg-background border rounded-xl p-5 pt-4 shadow-dialog shadow-shadow/shadow",
         styleless: "",
       },
     },
     defaultVariants: {
       variant: "default",
     },
-  }
+  },
 );
 
 function DialogContent({
@@ -83,7 +82,7 @@ function DialogContent({
 
       e.preventDefault();
     },
-    [onCloseAutoFocus]
+    [onCloseAutoFocus],
   );
 
   const handleEscapeKeyDown = React.useCallback(
@@ -93,7 +92,7 @@ function DialogContent({
         onEscapeKeyDown(e);
       }
     },
-    [onEscapeKeyDown]
+    [onEscapeKeyDown],
   );
 
   return (
@@ -105,19 +104,14 @@ function DialogContent({
           className={cn(
             "my-auto w-auto outline-hidden focus:outline-hidden",
             dialogContentVariants({ variant }),
-            className
+            className,
           )}
           {...props}
         >
-          <div
-            className={cn("w-full flex flex-col gap-4", classNameInnerWrapper)}
-          >
+          <div className={cn("flex w-full flex-col gap-4", classNameInnerWrapper)}>
             {children}
             {variant !== "styleless" && (
-              <DialogPrimitive.Close
-                className="absolute right-0 top-0 rounded-xl p-2.5 opacity-50 has-hover:hover:opacity-100 active:opacity-100 ring-1 ring-transparent 
-                  focus-visible:outline-hidden focus-visible:ring-foreground disabled:pointer-events-none text-muted-foreground"
-              >
+              <DialogPrimitive.Close className="focus-visible:ring-foreground text-muted-foreground absolute top-0 right-0 rounded-xl p-2.5 opacity-50 ring-1 ring-transparent focus-visible:outline-hidden active:opacity-100 disabled:pointer-events-none has-hover:hover:opacity-100">
                 <XIcon className="h-5 w-5" />
                 <span className="sr-only">Close</span>
               </DialogPrimitive.Close>
@@ -129,37 +123,23 @@ function DialogContent({
   );
 }
 
-function DialogHeader({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div className={cn("w-full flex flex-col gap-1", className)} {...props} />
-  );
+function DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return <div className={cn("flex w-full flex-col gap-1", className)} {...props} />;
 }
 
-function DialogFooter({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
+function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn(
-        "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
-        className
-      )}
+      className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className)}
       {...props}
     />
   );
 }
 
-function DialogTitle({
-  className,
-  ...props
-}: React.ComponentProps<typeof DialogPrimitive.Title>) {
+function DialogTitle({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>) {
   return (
     <DialogPrimitive.Title
-      className={cn("text-xl font-bold leading-tight pr-6", className)}
+      className={cn("pr-6 text-xl leading-tight font-bold", className)}
       {...props}
     />
   );

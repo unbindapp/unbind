@@ -1,10 +1,7 @@
 import { cn } from "@/components/ui/utils";
 import { ComponentProps } from "react";
 
-export default function SlashIcon({
-  className,
-  ...rest
-}: ComponentProps<"svg">) {
+export default function SlashIcon({ className, ...rest }: ComponentProps<"svg">) {
   return (
     <svg
       className={cn("size-5 shrink-0", className)}

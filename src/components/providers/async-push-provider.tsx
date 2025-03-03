@@ -20,14 +20,10 @@ export const AsyncPushProvider: React.FC<{
       asyncPush,
       isPending,
     }),
-    [asyncPush, isPending]
+    [asyncPush, isPending],
   );
 
-  return (
-    <AsyncPushContext.Provider value={value}>
-      {children}
-    </AsyncPushContext.Provider>
-  );
+  return <AsyncPushContext.Provider value={value}>{children}</AsyncPushContext.Provider>;
 };
 
 export const useAsyncPush = () => {

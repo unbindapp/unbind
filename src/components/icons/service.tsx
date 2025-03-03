@@ -11,11 +11,7 @@ type Props = ComponentProps<"svg"> & {
 
 const defaultClass = "size-5 shrink-0";
 
-export default function ServiceIcon({
-  color = "monochrome",
-  variant,
-  className,
-}: Props) {
+export default function ServiceIcon({ color = "monochrome", variant, className }: Props) {
   if (variant === "go") {
     return (
       <svg
@@ -38,11 +34,7 @@ export default function ServiceIcon({
   if (variant === "meilisearch") {
     return (
       <svg
-        className={cn(
-          defaultClass,
-          color === "brand" && "text-meilisearch",
-          className
-        )}
+        className={cn(defaultClass, color === "brand" && "text-meilisearch", className)}
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
@@ -59,11 +51,7 @@ export default function ServiceIcon({
   if (variant === "minio") {
     return (
       <svg
-        className={cn(
-          defaultClass,
-          color === "brand" && "text-minio",
-          className
-        )}
+        className={cn(defaultClass, color === "brand" && "text-minio", className)}
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
@@ -80,11 +68,7 @@ export default function ServiceIcon({
   if (variant === "mysql") {
     return (
       <svg
-        className={cn(
-          defaultClass,
-          color === "brand" && "text-mysql",
-          className
-        )}
+        className={cn(defaultClass, color === "brand" && "text-mysql", className)}
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
@@ -103,11 +87,7 @@ export default function ServiceIcon({
   if (variant === "nextjs") {
     return (
       <svg
-        className={cn(
-          defaultClass,
-          color === "brand" && "text-nextjs",
-          className
-        )}
+        className={cn(defaultClass, color === "brand" && "text-nextjs", className)}
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
@@ -124,11 +104,7 @@ export default function ServiceIcon({
   if (variant === "postgresql") {
     return (
       <svg
-        className={cn(
-          defaultClass,
-          color === "brand" && "text-postgresql",
-          className
-        )}
+        className={cn(defaultClass, color === "brand" && "text-postgresql", className)}
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
@@ -147,11 +123,7 @@ export default function ServiceIcon({
   if (variant === "redis") {
     return (
       <svg
-        className={cn(
-          defaultClass,
-          color === "brand" && "text-redis",
-          className
-        )}
+        className={cn(defaultClass, color === "brand" && "text-redis", className)}
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
@@ -168,11 +140,7 @@ export default function ServiceIcon({
   if (variant === "rust") {
     return (
       <svg
-        className={cn(
-          defaultClass,
-          color === "brand" && "text-rust",
-          className
-        )}
+        className={cn(defaultClass, color === "brand" && "text-rust", className)}
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
@@ -189,11 +157,7 @@ export default function ServiceIcon({
   if (variant === "svelte") {
     return (
       <svg
-        className={cn(
-          defaultClass,
-          color === "brand" && "text-svelte",
-          className
-        )}
+        className={cn(defaultClass, color === "brand" && "text-svelte", className)}
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
@@ -210,11 +174,7 @@ export default function ServiceIcon({
   if (variant === "umami") {
     return (
       <svg
-        className={cn(
-          defaultClass,
-          color === "brand" && "text-umami",
-          className
-        )}
+        className={cn(defaultClass, color === "brand" && "text-umami", className)}
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
@@ -231,11 +191,7 @@ export default function ServiceIcon({
   if (variant === "clickhouse") {
     return (
       <svg
-        className={cn(
-          defaultClass,
-          color === "brand" && "text-clickhouse",
-          className
-        )}
+        className={cn(defaultClass, color === "brand" && "text-clickhouse", className)}
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
@@ -252,11 +208,7 @@ export default function ServiceIcon({
   if (variant === "astro") {
     return (
       <svg
-        className={cn(
-          defaultClass,
-          color === "brand" && "text-astro",
-          className
-        )}
+        className={cn(defaultClass, color === "brand" && "text-astro", className)}
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
@@ -273,11 +225,7 @@ export default function ServiceIcon({
   if (variant === "github") {
     return (
       <svg
-        className={cn(
-          defaultClass,
-          color === "brand" && "text-github",
-          className
-        )}
+        className={cn(defaultClass, color === "brand" && "text-github", className)}
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
@@ -294,11 +242,7 @@ export default function ServiceIcon({
   if (variant === "docker") {
     return (
       <svg
-        className={cn(
-          defaultClass,
-          color === "brand" && "text-docker",
-          className
-        )}
+        className={cn(defaultClass, color === "brand" && "text-docker", className)}
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
@@ -315,11 +259,7 @@ export default function ServiceIcon({
   if (variant === "strapi") {
     return (
       <svg
-        className={cn(
-          defaultClass,
-          color === "brand" && "text-strapi",
-          className
-        )}
+        className={cn(defaultClass, color === "brand" && "text-strapi", className)}
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
@@ -348,11 +288,7 @@ export default function ServiceIcon({
   if (variant === "mongodb") {
     return (
       <svg
-        className={cn(
-          defaultClass,
-          color === "brand" && "text-mongodb",
-          className
-        )}
+        className={cn(defaultClass, color === "brand" && "text-mongodb", className)}
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
@@ -369,11 +305,7 @@ export default function ServiceIcon({
   if (variant === "pocketbase") {
     return (
       <svg
-        className={cn(
-          defaultClass,
-          color === "brand" && "text-pocketbase",
-          className
-        )}
+        className={cn(defaultClass, color === "brand" && "text-pocketbase", className)}
         width="24"
         height="24"
         viewBox="0 0 24 24"
@@ -392,11 +324,7 @@ export default function ServiceIcon({
   if (variant === "ghost") {
     return (
       <svg
-        className={cn(
-          defaultClass,
-          color === "brand" && "text-ghost",
-          className
-        )}
+        className={cn(defaultClass, color === "brand" && "text-ghost", className)}
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
@@ -432,12 +360,6 @@ export default function ServiceIcon({
     );
   }
   return (
-    <BanIcon
-      className={cn(
-        defaultClass,
-        color === "brand" && "text-foreground",
-        className
-      )}
-    />
+    <BanIcon className={cn(defaultClass, color === "brand" && "text-foreground", className)} />
   );
 }

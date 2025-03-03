@@ -38,17 +38,14 @@ const buttonVariants = cva(
         "ghost-foreground":
           "text-foreground has-hover:hover:bg-foreground/8 has-hover:hover:text-foreground active:bg-foreground/8 active:text-foreground",
         link: "text-primary underline-offset-4 has-hover:hover:underline active:underline",
-        google:
-          "bg-google text-google-foreground has-hover:hover:bg-google/85 active:bg-google/85",
+        google: "bg-google text-google-foreground has-hover:hover:bg-google/85 active:bg-google/85",
         discord:
           "bg-discord text-discord-foreground has-hover:hover:bg-discord/85 active:bg-discord/85",
-        github:
-          "bg-github text-github-foreground has-hover:hover:bg-github/85 active:bg-github/85",
+        github: "bg-github text-github-foreground has-hover:hover:bg-github/85 active:bg-github/85",
         ethereum:
           "bg-ethereum text-ethereum-foreground has-hover:hover:bg-ethereum/85 active:bg-ethereum/85",
         x: "bg-x text-x-foreground has-hover:hover:bg-x/85 active:bg-x/85",
-        email:
-          "bg-email text-email-foreground has-hover:hover:bg-email/85 active:bg-email/85",
+        email: "bg-email text-email-foreground has-hover:hover:bg-email/85 active:bg-email/85",
       },
       size: {
         default: "px-5 py-2.75",
@@ -71,8 +68,7 @@ const buttonVariants = cva(
         false: "",
       },
       focusVariant: {
-        default:
-          "focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        default: "focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         "input-like": "",
       },
     },
@@ -84,7 +80,7 @@ const buttonVariants = cva(
       focusVariant: "default",
       forceMinSize: "default",
     },
-  }
+  },
 );
 
 export interface ButtonProps
@@ -125,7 +121,7 @@ function Button({
           focusVariant,
           forceMinSize,
           className,
-        })
+        }),
       )}
       disabled={state === "loading" ? true : disabled}
       {...props}
@@ -154,7 +150,7 @@ function LinkButton({
           fadeOnDisabled,
           focusVariant,
           forceMinSize,
-        })
+        }),
       )}
       {...props}
     />

@@ -41,13 +41,13 @@ export default function BottomDrawer({
     (child) =>
       isValidElement(child) &&
       typeof child.type === "function" &&
-      child.type === BottomDrawerTrigger
+      child.type === BottomDrawerTrigger,
   );
   const Content = childrenArray.find(
     (child) =>
       isValidElement(child) &&
       typeof child.type === "function" &&
-      child.type === BottomDrawerContent
+      child.type === BottomDrawerContent,
   );
 
   return (
@@ -60,35 +60,26 @@ export default function BottomDrawer({
       <DrawerTrigger asChild>{Trigger}</DrawerTrigger>
       <DrawerContent
         onEscapeKeyDown={onEscapeKeyDown}
-        className={cn(
-          "h-[calc(min(26.5rem,calc(100svh-3rem)))]",
-          classNameContent
-        )}
+        className={cn("h-[calc(min(26.5rem,calc(100svh-3rem)))]", classNameContent)}
         hasHandle
       >
         <div
           data-hide-header={hideHeader ? true : undefined}
-          className="w-full flex items-center justify-start gap-1 border-b data-hide-header:sr-only"
+          className="flex w-full items-center justify-start gap-1 border-b data-hide-header:sr-only"
         >
           <DrawerHeader
             data-size={titleSize}
-            className="flex-1 py-3 data-[size=sm]:py-3.5 px-5 min-w-0 flex items-center justify-start gap-2.5 group/header"
+            className="group/header flex min-w-0 flex-1 items-center justify-start gap-2.5 px-5 py-3 data-[size=sm]:py-3.5"
           >
             {TitleIcon && (
-              <TitleIcon className="size-6 group-data-[size=sm]/header:size-5 group-data-[size=sm]/header:-ml-0.5 -ml-1 -my-2 shrink-0" />
+              <TitleIcon className="-my-2 -ml-1 size-6 shrink-0 group-data-[size=sm]/header:-ml-0.5 group-data-[size=sm]/header:size-5" />
             )}
-            <DrawerTitle
-              className="min-w-0 whitespace-nowrap overflow-hidden text-ellipsis shrink leading-tight text-xl sm:text-2xl sm:leading-tight text-left
-              group-data-[size=sm]/header:text-lg group-data-[size=sm]/header:leading-tight 
-              sm:group-data-[size=sm]/header:text-xl sm:group-data-[size=sm]/header:leading-tight"
-            >
+            <DrawerTitle className="min-w-0 shrink overflow-hidden text-left text-xl leading-tight text-ellipsis whitespace-nowrap group-data-[size=sm]/header:text-lg group-data-[size=sm]/header:leading-tight sm:text-2xl sm:leading-tight sm:group-data-[size=sm]/header:text-xl sm:group-data-[size=sm]/header:leading-tight">
               {title}
             </DrawerTitle>
           </DrawerHeader>
         </div>
-        <ConditionalScrollWrapper noScrollArea={noScrollArea}>
-          {Content}
-        </ConditionalScrollWrapper>
+        <ConditionalScrollWrapper noScrollArea={noScrollArea}>{Content}</ConditionalScrollWrapper>
       </DrawerContent>
     </Drawer>
   );
@@ -106,11 +97,9 @@ function ConditionalScrollWrapper({
   }
 
   return (
-    <div className="w-full flex flex-col min-h-0 flex-1">
-      <div className="flex flex-col flex-1 min-h-0">
-        <ScrollArea className="pb-[var(--safe-area-inset-bottom)]">
-          {children}
-        </ScrollArea>
+    <div className="flex min-h-0 w-full flex-1 flex-col">
+      <div className="flex min-h-0 flex-1 flex-col">
+        <ScrollArea className="pb-[var(--safe-area-inset-bottom)]">{children}</ScrollArea>
       </div>
     </div>
   );

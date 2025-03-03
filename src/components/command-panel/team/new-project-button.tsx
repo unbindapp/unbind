@@ -20,15 +20,11 @@ type Props = {
   shortcutEnabled?: boolean;
 };
 
-export default function NewTeamButton({
-  teamId,
-  shortcutEnabled = true,
-  className,
-}: Props) {
+export default function NewTeamButton({ teamId, shortcutEnabled = true, className }: Props) {
   const [commandPanelId, setCommandPanelId] = useQueryState(commandPanelKey);
   const [, setCommandPanelPageId] = useQueryState(
     commandPanelPageKey,
-    parseAsString.withDefault(commandPanelTeamRootPage)
+    parseAsString.withDefault(commandPanelTeamRootPage),
   );
 
   const open = commandPanelId === commandPanelTeam;
@@ -56,18 +52,14 @@ export default function NewTeamButton({
       enabled: shortcutEnabled,
       enableOnContentEditable: true,
       enableOnFormTags: true,
-    }
+    },
   );
 
   return (
     <TeamCommandPanelTrigger open={open} setOpen={setOpen} teamId={teamId}>
-      <Button
-        className={cn("bg-background-hover -my-2", className)}
-        size="sm"
-        variant="outline"
-      >
+      <Button className={cn("bg-background-hover -my-2", className)} size="sm" variant="outline">
         <PlusIcon className="-ml-1.5 size-5" />
-        <p className="shrink min-w-0">New Project</p>
+        <p className="min-w-0 shrink">New Project</p>
       </Button>
     </TeamCommandPanelTrigger>
   );

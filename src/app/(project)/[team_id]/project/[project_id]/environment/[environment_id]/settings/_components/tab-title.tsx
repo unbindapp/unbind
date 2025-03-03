@@ -3,7 +3,5 @@ type Props = {
 };
 
 export default function TabTitle({ children }: Props) {
-  return (
-    <h2 className="w-full font-bold text-xl leading-tight px-1">{children}</h2>
-  );
+  return <h2 className="w-full px-1 text-xl leading-tight font-bold">{children}</h2>;
 }

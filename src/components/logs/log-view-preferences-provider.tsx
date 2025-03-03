@@ -1,25 +1,16 @@
 "use client";
 
 import { parseAsArrayOf, parseAsString, useQueryState } from "nuqs";
-import {
-  createContext,
-  ReactNode,
-  useCallback,
-  useContext,
-  useMemo,
-} from "react";
+import { createContext, ReactNode, useCallback, useContext, useMemo } from "react";
 
 type TLogViewPreferencesContext = {
   preferences: string[];
-  setPreferences: (
-    preferences: ((old: string[]) => string[] | null) | string[] | null
-  ) => void;
+  setPreferences: (preferences: ((old: string[]) => string[] | null) | string[] | null) => void;
   isDefaultState: boolean;
   resetPreferences: () => void;
 };
 
-const LogViewPreferencesContext =
-  createContext<TLogViewPreferencesContext | null>(null);
+const LogViewPreferencesContext = createContext<TLogViewPreferencesContext | null>(null);
 
 export const logViewPreferenceKeys = {
   timestamp: "timestamp",
@@ -91,21 +82,18 @@ export const LogViewPreferencesProvider: React.FC<{
   children: ReactNode;
   hideServiceByDefault?: boolean;
 }> = ({ hideServiceByDefault, children }) => {
-  const defaultState = hideServiceByDefault
-    ? defaultStateWithoutService
-    : defaultStateNormal;
+  const defaultState = hideServiceByDefault ? defaultStateWithoutService : defaultStateNormal;
 
   const [preferences, setPreferences] = useQueryState(
     logViewPreferencesKey,
-    parseAsArrayOf(parseAsString).withDefault(defaultState)
+    parseAsArrayOf(parseAsString).withDefault(defaultState),
   );
 
   const isDefaultState =
-    preferences.sort(logViewPreferencesSort).join(",") ===
-    defaultState.join(",");
+    preferences.sort(logViewPreferencesSort).join(",") === defaultState.join(",");
 
   const _setPreferences: (
-    preferences: ((old: string[]) => string[] | null) | string[] | null
+    preferences: ((old: string[]) => string[] | null) | string[] | null,
   ) => void = useCallback(
     (preferences) => {
       if (preferences === null) {
@@ -122,7 +110,7 @@ export const LogViewPreferencesProvider: React.FC<{
       }
       return setPreferences(preferences.sort(logViewPreferencesSort));
     },
-    [setPreferences]
+    [setPreferences],
   );
 
   const resetPreferences = useCallback(() => {
@@ -136,7 +124,7 @@ export const LogViewPreferencesProvider: React.FC<{
       isDefaultState,
       resetPreferences,
     }),
-    [preferences, _setPreferences, isDefaultState, resetPreferences]
+    [preferences, _setPreferences, isDefaultState, resetPreferences],
   );
 
   return (
@@ -149,9 +137,7 @@ export const LogViewPreferencesProvider: React.FC<{
 export const useLogViewPreferences = () => {
   const context = useContext(LogViewPreferencesContext);
   if (!context) {
-    throw new Error(
-      "useLogViewPreferences must be used within an LogViewPreferencesProvider"
-    );
+    throw new Error("useLogViewPreferences must be used within an LogViewPreferencesProvider");
   }
   return context;
 };

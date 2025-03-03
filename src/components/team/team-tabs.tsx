@@ -12,8 +12,7 @@ type TTab = {
   href?: string;
 };
 
-const getBaseTabUrl = ({ teamId }: { teamId?: string }) =>
-  teamId ? `/${teamId}` : undefined;
+const getBaseTabUrl = ({ teamId }: { teamId?: string }) => (teamId ? `/${teamId}` : undefined);
 
 export default function TeamTabs({
   className,
@@ -41,37 +40,23 @@ export default function TeamTabs({
   }, [teamId]);
 
   const pathname = usePathname();
-  const [activeTabPath, setActiveTabPath] = useState<string | undefined>(
-    pathname
-  );
+  const [activeTabPath, setActiveTabPath] = useState<string | undefined>(pathname);
 
   useEffect(() => {
     setActiveTabPath(pathname);
   }, [pathname]);
 
   return (
-    <div
-      className={cn(
-        "flex-1 flex items-stretch min-w-0 overflow-hidden",
-        className
-      )}
-    >
-      <div className="flex-1 flex items-stretch min-w-0 overflow-auto">
-        <div
-          className={cn(
-            "px-0 sm:px-3 flex justify-start items-stretch",
-            classNameInner
-          )}
-        >
+    <div className={cn("flex min-w-0 flex-1 items-stretch overflow-hidden", className)}>
+      <div className="flex min-w-0 flex-1 items-stretch overflow-auto">
+        <div className={cn("flex items-stretch justify-start px-0 sm:px-3", classNameInner)}>
           {tabs.map((tab) => (
             <LinkButton
               data-active={tab.href === activeTabPath ? true : undefined}
               key={tab.href}
               className={cn(
-                `font-medium text-sm px-3 py-4.25 sm:py-4 rounded leading-none text-muted-foreground 
-                  has-hover:hover:bg-transparent active:bg-transparent group/button data-active:text-foreground
-                  focus-visible:ring-0 focus-visible:ring-offset-0`,
-                classNameButton
+                `text-muted-foreground group/button data-active:text-foreground rounded px-3 py-4.25 text-sm leading-none font-medium focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent sm:py-4`,
+                classNameButton,
               )}
               variant="ghost"
               href={tab.href || ""}
@@ -80,14 +65,11 @@ export default function TeamTabs({
               {activeTabPath === tab.href && (
                 <TabIndicator
                   layoutId={layoutId}
-                  className="top-0 bottom-auto sm:bottom-0 sm:top-auto"
+                  className="top-0 bottom-auto sm:top-auto sm:bottom-0"
                 />
               )}
-              <div className="absolute left-0 top-0 w-full h-full pointer-events-none py-1.5">
-                <div
-                  className="w-full h-full rounded-lg bg-border/0 has-hover:group-hover/button:bg-border group-active/button:bg-border
-                  group-focus-visible/button:ring-1 group-focus-visible/button:ring-primary/50"
-                />
+              <div className="pointer-events-none absolute top-0 left-0 h-full w-full py-1.5">
+                <div className="bg-border/0 has-hover:group-hover/button:bg-border group-active/button:bg-border group-focus-visible/button:ring-primary/50 h-full w-full rounded-lg group-focus-visible/button:ring-1" />
               </div>
 
               <p className="relative">{tab.title}</p>

@@ -20,7 +20,7 @@ const cardVariants = cva(
     defaultVariants: {
       variant: "default",
     },
-  }
+  },
 );
 
 export default function ErrorCard({ className, message, variant }: Props) {
@@ -32,14 +32,12 @@ export default function ErrorCard({ className, message, variant }: Props) {
         className,
       })}
     >
-      <div className="w-full flex items-center justify-center gap-1.5 px-3 py-4 group-data-has-message/card:py-2">
-        <TriangleAlertIcon className="size-4 -ml-0.5 shrink-0" />
-        <p className="shrink min-w-0 font-medium leading-tight text-left">
-          Something went wrong
-        </p>
+      <div className="flex w-full items-center justify-center gap-1.5 px-3 py-4 group-data-has-message/card:py-2">
+        <TriangleAlertIcon className="-ml-0.5 size-4 shrink-0" />
+        <p className="min-w-0 shrink text-left leading-tight font-medium">Something went wrong</p>
       </div>
       {message && (
-        <p className="w-full font-mono text-left rounded-lg text-muted-foreground bg-destructive/4 text-xs px-3 py-2 mt-1">
+        <p className="text-muted-foreground bg-destructive/4 mt-1 w-full rounded-lg px-3 py-2 text-left font-mono text-xs">
           {message}
         </p>
       )}

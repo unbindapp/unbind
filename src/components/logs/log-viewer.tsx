@@ -19,11 +19,7 @@ type Props = {
   className?: string;
 };
 
-export default function LogViewer({
-  logs,
-  hideServiceByDefault,
-  containerType,
-}: Props) {
+export default function LogViewer({ logs, hideServiceByDefault, containerType }: Props) {
   return (
     <LogViewPreferencesProvider hideServiceByDefault={hideServiceByDefault}>
       <LogViewDropdownProvider>
@@ -127,30 +123,27 @@ function Logs_({ logs, containerType }: Props) {
           classNameInner="min-[1288px]:group-data-[container=page]/line:rounded-sm"
         />
       )),
-    [logs, containerType]
+    [logs, containerType],
   );
 
   return (
-    <div className="w-full flex flex-col flex-1 min-h-0 overflow-hidden relative">
+    <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden">
       {/* Top bar that has the input */}
       <div
         data-container={containerType}
-        className="w-full flex items-stretch data-[container=page]:px-[max(0px,calc((100%-1280px-1.25rem)/2))]"
+        className="flex w-full items-stretch data-[container=page]:px-[max(0px,calc((100%-1280px-1.25rem)/2))]"
       >
         <TopBar className="px-2 pt-2 sm:px-2.5 sm:pt-2.5" />
       </div>
       {/* List */}
-      <div className="w-full flex flex-col flex-1 min-h-0 overflow-hidden relative">
-        <div
-          className="w-full flex flex-col flex-1 min-h-0 overflow-hidden relative
-          [mask-image:linear-gradient(to_bottom,transparent,black_0.75rem,black_calc(100%-0.75rem),transparent)]"
-        >
+      <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+        <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_0.75rem,black_calc(100%-0.75rem),transparent)]">
           <VList
             reverse
             overscan={20}
             data-container={containerType}
             style={{ height: undefined }}
-            className="w-full flex-1 min-h-0 font-mono data-[container=page]:px-[max(0px,calc((100%-1280px)/2))]"
+            className="min-h-0 w-full flex-1 font-mono data-[container=page]:px-[max(0px,calc((100%-1280px)/2))]"
             ref={virtualListRef}
             onScroll={throttledOnScroll}
           >
@@ -159,9 +152,7 @@ function Logs_({ logs, containerType }: Props) {
         </div>
         <NavigationBar
           data-container={containerType}
-          className="hidden sm:flex right-2.5 sm:right-4 
-            data-[container=page]:bottom-3 sm:data-[container=page]:bottom-[calc(1rem+var(--safe-area-inset-bottom))]
-            data-[container=sheet]:bottom-[calc(0.75rem+var(--safe-area-inset-bottom))] sm:data-[container=sheet]:bottom-[calc(1rem+var(--safe-area-inset-bottom))]"
+          className="right-2.5 hidden data-[container=page]:bottom-3 data-[container=sheet]:bottom-[calc(0.75rem+var(--safe-area-inset-bottom))] sm:right-4 sm:flex sm:data-[container=page]:bottom-[calc(1rem+var(--safe-area-inset-bottom))] sm:data-[container=sheet]:bottom-[calc(1rem+var(--safe-area-inset-bottom))]"
           isAtBottom={isAtBottom}
           isAtTop={isAtTop}
           scrollToBottom={scrollToBottom}

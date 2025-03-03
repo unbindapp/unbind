@@ -43,9 +43,8 @@ export default function MetricsChart({
 
   const [activeDataKey, setActiveDataKey] = useState<string | null>(null);
   const filteredDataKeys = useMemo(
-    () =>
-      dataKeys.filter((key) => (activeDataKey ? key === activeDataKey : true)),
-    [dataKeys, activeDataKey]
+    () => dataKeys.filter((key) => (activeDataKey ? key === activeDataKey : true)),
+    [dataKeys, activeDataKey],
   );
 
   const toggleDataKey = useCallback((key: string) => {
@@ -64,11 +63,8 @@ export default function MetricsChart({
   }, [dataKeys]);
 
   return (
-    <div className={cn("w-full flex flex-col", className)}>
-      <ChartContainer
-        className={cn("w-full h-56", classNameChart)}
-        config={chartConfig}
-      >
+    <div className={cn("flex w-full flex-col", className)}>
+      <ChartContainer className={cn("h-56 w-full", classNameChart)} config={chartConfig}>
         <AreaChart accessibilityLayer data={chartData} margin={margin}>
           <CartesianGrid vertical={false} stroke="transparent" />
           <XAxis
@@ -78,12 +74,7 @@ export default function MetricsChart({
             tickMargin={8}
             tickFormatter={(value) => format(value, "MMM dd")}
           />
-          <YAxis
-            tickMargin={8}
-            tickLine={false}
-            axisLine={false}
-            tickFormatter={yFormatter}
-          />
+          <YAxis tickMargin={8} tickLine={false} axisLine={false} tickFormatter={yFormatter} />
           <ChartTooltip
             content={
               <ChartTooltipContent
@@ -115,7 +106,7 @@ export default function MetricsChart({
       {dataKeys.length > 1 && (
         <ol
           data-has-active={activeDataKey ? true : undefined}
-          className="w-[calc(100%+0.75rem)] sm:w-[calc(100%+1rem)] flex flex-wrap pt-1.5 -ml-1.5 sm:-ml-2 group/list"
+          className="group/list -ml-1.5 flex w-[calc(100%+0.75rem)] flex-wrap pt-1.5 sm:-ml-2 sm:w-[calc(100%+1rem)]"
         >
           {dataKeys.map((dataKey) => (
             <li key={dataKey} className="max-w-full">
@@ -124,7 +115,7 @@ export default function MetricsChart({
                 onClick={() => toggleDataKey(dataKey)}
                 variant="ghost"
                 key={dataKey}
-                className="max-w-full group/button text-muted-foreground data-active:text-foreground text-xs px-2.5 py-1.5 rounded-md font-medium gap-1.5 text-left"
+                className="group/button text-muted-foreground data-active:text-foreground max-w-full gap-1.5 rounded-md px-2.5 py-1.5 text-left text-xs font-medium"
               >
                 <div
                   style={{
@@ -133,9 +124,9 @@ export default function MetricsChart({
                         ? `var(--muted-more-foreground)`
                         : chartConfig[dataKey].color,
                   }}
-                  className="size-2.5 group-data-active/button:rounded-[0.3125rem] rounded-xs shrink-0 -ml-0.25 transition-[border-radius,_background-color]"
+                  className="-ml-0.25 size-2.5 shrink-0 rounded-xs transition-[border-radius,_background-color] group-data-active/button:rounded-[0.3125rem]"
                 />
-                <p className="shrink min-w-0 leading-tight max-w-28 whitespace-nowrap overflow-hidden text-ellipsis">
+                <p className="max-w-28 min-w-0 shrink overflow-hidden leading-tight text-ellipsis whitespace-nowrap">
                   {dataKey}
                 </p>
               </Button>

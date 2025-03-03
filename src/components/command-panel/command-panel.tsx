@@ -2,10 +2,7 @@ import {
   getAllItemsFromCommandPanelPage,
   getFirstCommandListItem,
 } from "@/components/command-panel/helpers";
-import {
-  TCommandPanelItem,
-  TCommandPanelPage,
-} from "@/components/command-panel/types";
+import { TCommandPanelItem, TCommandPanelPage } from "@/components/command-panel/types";
 import ErrorCard from "@/components/error-card";
 import KeyboardShortcut from "@/components/keyboard-shortcut";
 import BottomDrawer, {
@@ -34,15 +31,7 @@ import { DialogDescription } from "@radix-ui/react-dialog";
 import { cva, VariantProps } from "class-variance-authority";
 import { useCommandState } from "cmdk";
 import { ChevronLeftIcon, ChevronRightIcon, LoaderIcon } from "lucide-react";
-import {
-  ReactNode,
-  RefObject,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { ReactNode, RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 type Props = {
@@ -75,7 +64,7 @@ export function CommandPanelTrigger({
         e.preventDefault();
       }
     },
-    [currentPage, rootPage]
+    [currentPage, rootPage],
   );
 
   if (isExtraSmall) {
@@ -92,7 +81,7 @@ export function CommandPanelTrigger({
       >
         <BottomDrawerTrigger>{children}</BottomDrawerTrigger>
         <BottomDrawerContent>
-          <div className="w-full flex flex-col flex-1 min-h-0 overflow-hidden pb-[var(--safe-area-inset-bottom)]">
+          <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden pb-[var(--safe-area-inset-bottom)]">
             <CommandPanel
               rootPage={rootPage}
               allPageIds={allPageIds}
@@ -131,9 +120,7 @@ export function CommandPanelTrigger({
       >
         <DialogHeader>
           <DialogTitle className="sr-only">{title}</DialogTitle>
-          <DialogDescription className="sr-only">
-            {description}
-          </DialogDescription>
+          <DialogDescription className="sr-only">{description}</DialogDescription>
         </DialogHeader>
         <CommandPanel
           rootPage={rootPage}
@@ -199,9 +186,7 @@ function CommandPanel({
 
   useEffect(() => {
     const isTouchScreen =
-      typeof window !== "undefined"
-        ? window.matchMedia("(pointer: coarse)").matches
-        : false;
+      typeof window !== "undefined" ? window.matchMedia("(pointer: coarse)").matches : false;
     if (!isTouchScreen) {
       inputRef.current?.focus();
     }
@@ -216,7 +201,7 @@ function CommandPanel({
     {
       enableOnContentEditable: true,
       enableOnFormTags: true,
-    }
+    },
   );
 
   useHotkeys(
@@ -227,7 +212,7 @@ function CommandPanel({
     {
       enableOnContentEditable: true,
       enableOnFormTags: true,
-    }
+    },
   );
 
   useEffect(() => {
@@ -259,11 +244,7 @@ function CommandPanel({
         setCurrentPageId={setCurrentPageId}
         listRef={listRef}
       />
-      <Footer
-        rootPage={rootPage}
-        currentPage={currentPage}
-        goToParentPage={goToParentPage}
-      />
+      <Footer rootPage={rootPage} currentPage={currentPage} goToParentPage={goToParentPage} />
     </Command>
   );
 }
@@ -279,10 +260,7 @@ function Content({
   listRef: RefObject<HTMLDivElement | null>;
 }) {
   const { items, isPending, isError, error } = useCommandPanelItems();
-  const allItems = useMemo(
-    () => getAllItemsFromCommandPanelPage(currentPage),
-    [currentPage]
-  );
+  const allItems = useMemo(() => getAllItemsFromCommandPanelPage(currentPage), [currentPage]);
 
   const allOtherItems = useMemo(() => {
     if (!items) return [];
@@ -292,7 +270,7 @@ function Content({
   return (
     <>
       {!isError && (
-        <CommandEmpty className="text-muted-foreground w-full text-center text-base py-6">
+        <CommandEmpty className="text-muted-foreground w-full py-6 text-center text-base">
           No matching results
         </CommandEmpty>
       )}
@@ -302,20 +280,12 @@ function Content({
             {!isPending &&
               items &&
               items.map((item) => (
-                <Item
-                  key={item.title}
-                  item={item}
-                  setCurrentPageId={setCurrentPageId}
-                />
+                <Item key={item.title} item={item} setCurrentPageId={setCurrentPageId} />
               ))}
             {!isPending &&
               !isError &&
               allOtherItems.map((item) => (
-                <ConditionalItem
-                  key={item.title}
-                  item={item}
-                  setCurrentPageId={setCurrentPageId}
-                />
+                <ConditionalItem key={item.title} item={item} setCurrentPageId={setCurrentPageId} />
               ))}
             {isPending &&
               !items &&
@@ -355,8 +325,8 @@ function Footer({
   const goBackButtonRef = useRef<HTMLButtonElement>(null);
 
   return (
-    <div className="w-full z-10 p-1 flex items-center justify-between border-t text-muted-foreground gap-2">
-      <p className="shrink-2 text-base sm:text-sm font-medium px-3 py-2 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
+    <div className="text-muted-foreground z-10 flex w-full items-center justify-between gap-2 border-t p-1">
+      <p className="min-w-0 shrink-2 overflow-hidden px-3 py-2 text-base font-medium text-ellipsis whitespace-nowrap sm:text-sm">
         {currentPage.title}
       </p>
       {currentPage.id !== rootPage.id && (
@@ -371,15 +341,11 @@ function Footer({
           type="submit"
           size="sm"
           variant="ghost"
-          className="rounded-lg shrink min-w-0 px-3 py-2 font-semibold gap-1 text-base sm:text-sm"
+          className="min-w-0 shrink gap-1 rounded-lg px-3 py-2 text-base font-semibold sm:text-sm"
         >
-          <ChevronLeftIcon className="size-5 sm:size-4.5 shrink-0 -ml-1.75 -mr-0.5" />
-          <p className="shrink min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
-            Back
-          </p>
-          <KeyboardShortcut className="-my-1 -mr-1 pl-1.25">
-            esc
-          </KeyboardShortcut>
+          <ChevronLeftIcon className="-mr-0.5 -ml-1.75 size-5 shrink-0 sm:size-4.5" />
+          <p className="min-w-0 shrink overflow-hidden text-ellipsis whitespace-nowrap">Back</p>
+          <KeyboardShortcut className="-my-1 -mr-1 pl-1.25">esc</KeyboardShortcut>
         </Button>
       )}
     </div>
@@ -399,9 +365,7 @@ function Input({
   placeholder: string;
   ref: RefObject<HTMLInputElement | null>;
 }) {
-  const [values, setValues] = useState(
-    Object.fromEntries(allPageIds.map((id) => [id, ""]))
-  );
+  const [values, setValues] = useState(Object.fromEntries(allPageIds.map((id) => [id, ""])));
 
   const { isPending } = useCommandPanelItems();
 
@@ -463,16 +427,16 @@ function Item({
       data-placeholder={isPlaceholder ? true : undefined}
       value={item.title}
       keywords={item.keywords}
-      className="px-3.5 font-medium group/item active:bg-border data-placeholder:text-transparent py-3 flex flex-row w-full items-center justify-between text-left gap-6"
+      className="group/item active:bg-border flex w-full flex-row items-center justify-between gap-6 px-3.5 py-3 text-left font-medium data-placeholder:text-transparent"
       onSelect={onSelect}
     >
-      <div className="flex-1 min-w-0 gap-2.5 flex items-center justify-start">
-        <item.Icon className="size-5 -ml-0.5 group-data-placeholder/item:rounded-full group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton" />
-        <p className="shrink min-w-0 leading-tight group-data-placeholder/item:rounded-md group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton">
+      <div className="flex min-w-0 flex-1 items-center justify-start gap-2.5">
+        <item.Icon className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton -ml-0.5 size-5 group-data-placeholder/item:rounded-full" />
+        <p className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink leading-tight group-data-placeholder/item:rounded-md">
           {item.title}
         </p>
       </div>
-      {item.subpage && <ChevronRightIcon className="size-5 -mr-1.5 shrink-0" />}
+      {item.subpage && <ChevronRightIcon className="-mr-1.5 size-5 shrink-0" />}
     </CommandItem>
   );
 }

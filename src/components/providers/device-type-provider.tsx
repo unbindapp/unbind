@@ -18,14 +18,10 @@ export const DeviceTypeProvider: React.FC<{
     () => ({
       isTouchscreen,
     }),
-    [isTouchscreen]
+    [isTouchscreen],
   );
 
-  return (
-    <DeviceTypeContext.Provider value={value}>
-      {children}
-    </DeviceTypeContext.Provider>
-  );
+  return <DeviceTypeContext.Provider value={value}>{children}</DeviceTypeContext.Provider>;
 };
 
 export const useDeviceType = () => {

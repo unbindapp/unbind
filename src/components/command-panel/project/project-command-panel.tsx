@@ -14,27 +14,12 @@ type Props = {
   children: ReactNode;
 };
 
-export function ProjectCommandPanelTrigger({
-  teamId,
-  projectId,
-  open,
-  setOpen,
-  children,
-}: Props) {
-  const {
-    rootPage,
-    currentPage,
-    setCurrentPageId,
-    allPageIds,
-    goToParentPage,
-  } = useProjectCommandPanelData({ teamId });
+export function ProjectCommandPanelTrigger({ teamId, projectId, open, setOpen, children }: Props) {
+  const { rootPage, currentPage, setCurrentPageId, allPageIds, goToParentPage } =
+    useProjectCommandPanelData({ teamId });
 
   return (
-    <ProjectCommandPanelItemsProvider
-      teamId={teamId}
-      projectId={projectId}
-      page={currentPage}
-    >
+    <ProjectCommandPanelItemsProvider teamId={teamId} projectId={projectId} page={currentPage}>
       <CommandPanelTrigger
         allPageIds={allPageIds}
         currentPage={currentPage}

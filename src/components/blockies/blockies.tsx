@@ -3,8 +3,7 @@
 import React from "react";
 import { BlockiesOptions, buildOpts, createImageData } from "./helpers";
 
-const store: Record<string, { opts: BlockiesOptions; imageData: number[] }> =
-  Object.create(null);
+const store: Record<string, { opts: BlockiesOptions; imageData: number[] }> = Object.create(null);
 
 export default function Blockies(
   props: {
@@ -12,15 +11,9 @@ export default function Blockies(
     size?: number;
     scale?: number;
     caseSensitive?: boolean;
-  } & React.SVGProps<SVGSVGElement>
+  } & React.SVGProps<SVGSVGElement>,
 ) {
-  const {
-    address: addr,
-    size = 8,
-    scale = 10,
-    caseSensitive = false,
-    ...rest
-  } = props;
+  const { address: addr, size = 8, scale = 10, caseSensitive = false, ...rest } = props;
   const width = size * scale;
   let address = addr;
 
@@ -68,15 +61,7 @@ export default function Blockies(
             const row = (i % size) * scale;
             const col = Math.floor(i / size) * scale;
 
-            return (
-              <rect
-                key={`${address}-${i}`}
-                width={scale}
-                height={scale}
-                x={row}
-                y={col}
-              />
-            );
+            return <rect key={`${address}-${i}`} width={scale} height={scale} x={row} y={col} />;
           }
         })}
       </g>
@@ -86,15 +71,7 @@ export default function Blockies(
             const row = (i % size) * scale;
             const col = Math.floor(i / size) * scale;
 
-            return (
-              <rect
-                key={`${address}-${i}`}
-                width={scale}
-                height={scale}
-                x={row}
-                y={col}
-              />
-            );
+            return <rect key={`${address}-${i}`} width={scale} height={scale} x={row} y={col} />;
           }
         })}
       </g>

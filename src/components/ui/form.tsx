@@ -19,18 +19,16 @@ const Form = FormProvider;
 
 type FormFieldContextValue<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > = {
   name: TName;
 };
 
-const FormFieldContext = React.createContext<FormFieldContextValue>(
-  {} as FormFieldContextValue
-);
+const FormFieldContext = React.createContext<FormFieldContextValue>({} as FormFieldContextValue);
 
 function FormField<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({ ...props }: ControllerProps<TFieldValues, TName>) {
   return (
     <FormFieldContext.Provider value={{ name: props.name }}>
@@ -66,9 +64,7 @@ type FormItemContextValue = {
   id: string;
 };
 
-const FormItemContext = React.createContext<FormItemContextValue>(
-  {} as FormItemContextValue
-);
+const FormItemContext = React.createContext<FormItemContextValue>({} as FormItemContextValue);
 
 function FormItem({ className, ...props }: React.ComponentProps<"div">) {
   const id = React.useId();
@@ -76,29 +72,19 @@ function FormItem({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <FormItemContext.Provider value={{ id }}>
       <div
-        className={cn(
-          "w-full min-w-0 flex flex-col gap-2.5 group/form-item",
-          className
-        )}
+        className={cn("group/form-item flex w-full min-w-0 flex-col gap-2.5", className)}
         {...props}
       />
     </FormItemContext.Provider>
   );
 }
 
-function FormLabel({
-  className,
-  ...props
-}: React.ComponentProps<typeof LabelPrimitive.Root>) {
+function FormLabel({ className, ...props }: React.ComponentProps<typeof LabelPrimitive.Root>) {
   const { error, formItemId } = useFormField();
 
   return (
     <Label
-      className={cn(
-        error && "text-destructive",
-        "max-w-full px-1 font-semibold",
-        className
-      )}
+      className={cn(error && "text-destructive", "max-w-full px-1 font-semibold", className)}
       htmlFor={formItemId}
       {...props}
     />
@@ -106,36 +92,25 @@ function FormLabel({
 }
 
 function FormControl({ ...props }: React.ComponentProps<typeof Slot>) {
-  const { error, formItemId, formDescriptionId, formMessageId } =
-    useFormField();
+  const { error, formItemId, formDescriptionId, formMessageId } = useFormField();
 
   return (
     <Slot
       id={formItemId}
-      aria-describedby={
-        !error
-          ? `${formDescriptionId}`
-          : `${formDescriptionId} ${formMessageId}`
-      }
+      aria-describedby={!error ? `${formDescriptionId}` : `${formDescriptionId} ${formMessageId}`}
       aria-invalid={!!error}
       {...props}
     />
   );
 }
 
-function FormDescription({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLParagraphElement>) {
+function FormDescription({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
   const { formDescriptionId } = useFormField();
 
   return (
     <p
       id={formDescriptionId}
-      className={cn(
-        "w-full text-sm px-1 leading-tight text-muted-foreground",
-        className
-      )}
+      className={cn("text-muted-foreground w-full px-1 text-sm leading-tight", className)}
       {...props}
     />
   );
@@ -157,8 +132,8 @@ function FormMessage({
     <p
       id={formMessageId}
       className={cn(
-        "w-full -mt-1 text-destructive text-sm font-medium leading-tight px-1",
-        className
+        "text-destructive -mt-1 w-full px-1 text-sm leading-tight font-medium",
+        className,
       )}
       {...props}
     >
@@ -167,16 +142,10 @@ function FormMessage({
   );
 }
 
-function FormHeader({
-  className,
-  children,
-}: React.HTMLAttributes<HTMLDivElement>) {
+function FormHeader({ className, children }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn(
-        "shrink min-w-0 overflow-hidden flex flex-col items-start gap-0.5",
-        className
-      )}
+      className={cn("flex min-w-0 shrink flex-col items-start gap-0.5 overflow-hidden", className)}
     >
       {children}
     </div>

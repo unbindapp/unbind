@@ -20,22 +20,21 @@ const commandVariants = cva(
     defaultVariants: {
       variant: "default",
     },
-  }
+  },
 );
 
 function Command({
   className,
   variant,
   ...props
-}: React.ComponentProps<typeof CommandPrimitive> &
-  VariantProps<typeof commandVariants>) {
+}: React.ComponentProps<typeof CommandPrimitive> & VariantProps<typeof commandVariants>) {
   return (
     <CommandPrimitive
       className={cn(
         commandVariants({
           variant,
           className,
-        })
+        }),
       )}
       {...props}
     />
@@ -48,7 +47,7 @@ function CommandDialog({ children, ...props }: CommandDialogProps) {
   return (
     <Dialog {...props}>
       <DialogContent className="overflow-hidden p-0">
-        <Command className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3">
+        <Command className="[&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group]]:px-2 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3">
           {children}
         </Command>
       </DialogContent>
@@ -67,24 +66,20 @@ function CommandInput({
 }) {
   return (
     <div
-      className={cn("flex items-center border-b relative", classNameWrapper)}
+      className={cn("relative flex items-center border-b", classNameWrapper)}
       cmdk-input-wrapper=""
     >
       <div
         data-show-spinner={showSpinner ? true : undefined}
-        className="size-4 left-3.5 pointer-events-none absolute shrink-0 text-muted-foreground group"
+        className="text-muted-foreground group pointer-events-none absolute left-3.5 size-4 shrink-0"
       >
-        {!showSpinner && (
-          <SearchIcon className="size-full text-muted-foreground" />
-        )}
-        {showSpinner && (
-          <LoaderIcon className="absolute size-full animate-spin" />
-        )}
+        {!showSpinner && <SearchIcon className="text-muted-foreground size-full" />}
+        {showSpinner && <LoaderIcon className="absolute size-full animate-spin" />}
       </div>
       <CommandPrimitive.Input
         className={cn(
-          "flex w-full pl-9.5 pr-4 py-3 leading-none rounded-md bg-transparent outline-hidden placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50",
-          className
+          "placeholder:text-muted-foreground flex w-full rounded-md bg-transparent py-3 pr-4 pl-9.5 leading-none outline-hidden disabled:cursor-not-allowed disabled:opacity-50",
+          className,
         )}
         {...props}
       />
@@ -92,21 +87,13 @@ function CommandInput({
   );
 }
 
-function CommandList({
-  className,
-  ...props
-}: React.ComponentProps<typeof CommandPrimitive.List>) {
+function CommandList({ className, ...props }: React.ComponentProps<typeof CommandPrimitive.List>) {
   return <CommandPrimitive.List className={cn("p-1", className)} {...props} />;
 }
 
-function CommandEmpty(
-  props: React.ComponentProps<typeof CommandPrimitive.Empty>
-) {
+function CommandEmpty(props: React.ComponentProps<typeof CommandPrimitive.Empty>) {
   return (
-    <CommandPrimitive.Empty
-      className="px-4 py-6 text-center text-muted-foreground"
-      {...props}
-    />
+    <CommandPrimitive.Empty className="text-muted-foreground px-4 py-6 text-center" {...props} />
   );
 }
 
@@ -117,8 +104,8 @@ function CommandGroup({
   return (
     <CommandPrimitive.Group
       className={cn(
-        "overflow-hidden group/command text-foreground [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground",
-        className
+        "group/command text-foreground [&_[cmdk-group-heading]]:text-muted-foreground overflow-hidden [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium",
+        className,
       )}
       {...props}
     />
@@ -130,10 +117,7 @@ function CommandSeparator({
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.Separator>) {
   return (
-    <CommandPrimitive.Separator
-      className={cn("-mx-1 h-px bg-border", className)}
-      {...props}
-    />
+    <CommandPrimitive.Separator className={cn("bg-border -mx-1 h-px", className)} {...props} />
   );
 }
 
@@ -152,7 +136,7 @@ const commandItemVariants = cva(
     defaultVariants: {
       variant: "default",
     },
-  }
+  },
 );
 
 function CommandItem({
@@ -161,8 +145,7 @@ function CommandItem({
   disabled,
   variant,
   ...props
-}: React.ComponentProps<typeof CommandPrimitive.Item> &
-  VariantProps<typeof commandItemVariants>) {
+}: React.ComponentProps<typeof CommandPrimitive.Item> & VariantProps<typeof commandItemVariants>) {
   return (
     <CommandPrimitive.Item
       className={cn(commandItemVariants({ state, variant }), className)}
@@ -172,16 +155,10 @@ function CommandItem({
   );
 }
 
-function CommandShortcut({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLSpanElement>) {
+function CommandShortcut({ className, ...props }: React.HTMLAttributes<HTMLSpanElement>) {
   return (
     <span
-      className={cn(
-        "ml-auto text-xs tracking-widest text-muted-foreground",
-        className
-      )}
+      className={cn("text-muted-foreground ml-auto text-xs tracking-widest", className)}
       {...props}
     />
   );

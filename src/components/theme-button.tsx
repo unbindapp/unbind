@@ -14,8 +14,7 @@ export default function ThemeButton({
 }) {
   const { theme, setTheme } = useTheme();
   const toggleTheme = () => {
-    const newThemeIndex =
-      (availableThemes.indexOf(theme as TTheme) + 1) % availableThemes.length;
+    const newThemeIndex = (availableThemes.indexOf(theme as TTheme) + 1) % availableThemes.length;
     setTheme(availableThemes[newThemeIndex]);
   };
   const [mounted, setMounted] = useState(false);
@@ -27,18 +26,18 @@ export default function ThemeButton({
   const themeText = !mounted
     ? "Dark"
     : theme === "system"
-    ? "System"
-    : theme === "light"
-    ? "Light"
-    : "Dark";
+      ? "System"
+      : theme === "light"
+        ? "Light"
+        : "Dark";
 
   const Icon = !mounted
     ? MoonIcon
     : theme === "system"
-    ? MonitorSmartphoneIcon
-    : theme === "light"
-    ? SunIcon
-    : MoonIcon;
+      ? MonitorSmartphoneIcon
+      : theme === "light"
+        ? SunIcon
+        : MoonIcon;
 
   if (variant === "drawer-item") {
     return (
@@ -48,17 +47,12 @@ export default function ThemeButton({
           toggleTheme();
         }}
         variant="ghost"
-        className="w-full flex items-center font-medium justify-start gap-2.5 px-3 py-2.5 text-left leading-tight rounded-lg cursor-default"
+        className="flex w-full cursor-default items-center justify-start gap-2.5 rounded-lg px-3 py-2.5 text-left leading-tight font-medium"
       >
-        <Icon
-          suppressHydrationWarning
-          className="size-5 shrink-0 -ml-0.5 -my-1"
-        />
-        <div className="shrink min-w-0 flex flex-col -mt-0.25">
-          <p className="text-xs text-muted-foreground font-medium leading-tight">
-            Theme
-          </p>
-          <p suppressHydrationWarning className="shrink min-w-0 leading-tight">
+        <Icon suppressHydrationWarning className="-my-1 -ml-0.5 size-5 shrink-0" />
+        <div className="-mt-0.25 flex min-w-0 shrink flex-col">
+          <p className="text-muted-foreground text-xs leading-tight font-medium">Theme</p>
+          <p suppressHydrationWarning className="min-w-0 shrink leading-tight">
             {themeText}
           </p>
         </div>
@@ -73,17 +67,12 @@ export default function ThemeButton({
           e.preventDefault();
           toggleTheme();
         }}
-        className="w-full px-2.5 flex items-center justify-start gap-2.5 text-left leading-tight"
+        className="flex w-full items-center justify-start gap-2.5 px-2.5 text-left leading-tight"
       >
-        <Icon
-          suppressHydrationWarning
-          className="size-5 shrink-0 -ml-0.5 -my-1"
-        />
-        <div className="shrink min-w-0 flex flex-col -mt-0.25">
-          <p className="text-xs text-muted-foreground font-medium leading-tight">
-            Theme
-          </p>
-          <p suppressHydrationWarning className="shrink min-w-0 leading-tight">
+        <Icon suppressHydrationWarning className="-my-1 -ml-0.5 size-5 shrink-0" />
+        <div className="-mt-0.25 flex min-w-0 shrink flex-col">
+          <p className="text-muted-foreground text-xs leading-tight font-medium">Theme</p>
+          <p suppressHydrationWarning className="min-w-0 shrink leading-tight">
             {themeText}
           </p>
         </div>
@@ -94,7 +83,7 @@ export default function ThemeButton({
   return (
     <Button
       aria-label="Toggle Theme"
-      className="p-1.5 rounded-lg"
+      className="rounded-lg p-1.5"
       variant="outline"
       onClick={toggleTheme}
     >

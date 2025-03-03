@@ -17,14 +17,12 @@ export default async function Page({ params }: Props) {
   return (
     <HydrateClient>
       <PageWrapper>
-        <div className="w-full flex flex-col max-w-7xl">
-          <div className="w-full flex flex-wrap items-center justify-between gap-4 px-1">
-            <h1 className="min-w-0 font-bold leading-tight text-2xl px-2">
-              Projects
-            </h1>
+        <div className="flex w-full max-w-7xl flex-col">
+          <div className="flex w-full flex-wrap items-center justify-between gap-4 px-1">
+            <h1 className="min-w-0 px-2 text-2xl leading-tight font-bold">Projects</h1>
             <NewProjectButton teamId={teamId} />
           </div>
-          <div className="w-full flex items-center justify-center pt-3">
+          <div className="flex w-full items-center justify-center pt-3">
             <ProjectCardList teamId={teamId} />
           </div>
         </div>

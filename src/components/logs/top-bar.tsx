@@ -17,13 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
-import {
-  FilterIcon,
-  RotateCcwIcon,
-  SearchIcon,
-  SettingsIcon,
-  XIcon,
-} from "lucide-react";
+import { FilterIcon, RotateCcwIcon, SearchIcon, SettingsIcon, XIcon } from "lucide-react";
 import { toast } from "sonner";
 
 type Props = {
@@ -32,7 +26,7 @@ type Props = {
 
 export default function TopBar({ className }: Props) {
   return (
-    <div className={cn("w-full items-stretch flex gap-2", className)}>
+    <div className={cn("flex w-full items-stretch gap-2", className)}>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -42,14 +36,11 @@ export default function TopBar({ className }: Props) {
             closeButton: false,
           });
         }}
-        className="flex-1 flex items-stretch relative"
+        className="relative flex flex-1 items-stretch"
       >
-        <SearchIcon className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-        <Input
-          className="flex-1 py-2.25 pl-8.5 pr-22 rounded-lg"
-          placeholder="Search logs..."
-        />
-        <div className="absolute flex justify-end right-0 top-0 h-full">
+        <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+        <Input className="flex-1 rounded-lg py-2.25 pr-22 pl-8.5" placeholder="Search logs..." />
+        <div className="absolute top-0 right-0 flex h-full justify-end">
           <Button
             aria-label="Filter Logs"
             onClick={() => {
@@ -62,11 +53,11 @@ export default function TopBar({ className }: Props) {
             type="button"
             size="icon"
             variant="ghost"
-            className="h-auto border-l rounded-none w-10"
+            className="h-auto w-10 rounded-none border-l"
           >
             <FilterIcon className="size-5" />
           </Button>
-          <SettingsButton className="h-auto w-10 rounded-l-none rounded-r-lg border-l group/button relative" />
+          <SettingsButton className="group/button relative h-auto w-10 rounded-l-none rounded-r-lg border-l" />
         </div>
       </form>
     </div>
@@ -74,8 +65,7 @@ export default function TopBar({ className }: Props) {
 }
 
 function SettingsButton({ className }: { className?: string }) {
-  const { preferences, setPreferences, isDefaultState, resetPreferences } =
-    useLogViewPreferences();
+  const { preferences, setPreferences, isDefaultState, resetPreferences } = useLogViewPreferences();
   const [isDropdownOpen, setIsDropdownOpen] = useLogViewDropdown();
 
   return (
@@ -91,25 +81,20 @@ function SettingsButton({ className }: { className?: string }) {
         >
           <div
             data-show={!isDefaultState ? true : undefined}
-            className="absolute pointer-events-none opacity-0 scale-75 data-show:scale-100 data-show:opacity-100 transition top-1.25 right-1.25 bg-warning size-1.25 rounded-full"
+            className="bg-warning pointer-events-none absolute top-1.25 right-1.25 size-1.25 scale-75 rounded-full opacity-0 transition data-show:scale-100 data-show:opacity-100"
           />
-          <div className="size-5 relative group-data-open/button:rotate-90 transition-transform">
-            <SettingsIcon className="size-full opacity-100 group-data-open/button:opacity-0 transition-opacity" />
-            <XIcon
-              className="size-full absolute left-0 top-0 -rotate-90 opacity-0 
-              transition-opacity group-data-open/button:opacity-100"
-            />
+          <div className="relative size-5 transition-transform group-data-open/button:rotate-90">
+            <SettingsIcon className="size-full opacity-100 transition-opacity group-data-open/button:opacity-0" />
+            <XIcon className="absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-opacity group-data-open/button:opacity-100" />
           </div>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[768px] sm:w-56">
         <ScrollArea>
           {logViewPreferences.map((group, index) => (
-            <div key={group.label} className="w-full flex flex-col">
+            <div key={group.label} className="flex w-full flex-col">
               {index > 0 && <DropdownMenuSeparator />}
-              <DropdownMenuLabel className="pb-0">
-                {group.label}
-              </DropdownMenuLabel>
+              <DropdownMenuLabel className="pb-0">{group.label}</DropdownMenuLabel>
               <DropdownMenuGroup title={group.label}>
                 {group.items.map((item) =>
                   item.type === "checkbox" ? (
@@ -124,23 +109,18 @@ function SettingsButton({ className }: { className?: string }) {
                           if (checked) {
                             return [...prevSettings, item.value];
                           }
-                          return prevSettings.filter(
-                            (setting) => setting !== item.value
-                          );
+                          return prevSettings.filter((setting) => setting !== item.value);
                         });
                       }}
                       key={item.value}
                     >
-                      <p className="shrink min-w-0">{item.label}</p>
+                      <p className="min-w-0 shrink">{item.label}</p>
                     </DropdownMenuCheckboxItem>
                   ) : (
-                    <DropdownMenuItem
-                      className="py-3.5 sm:py-2.25"
-                      key={item.value}
-                    >
-                      <p className="shrink min-w-0">{item.label}</p>
+                    <DropdownMenuItem className="py-3.5 sm:py-2.25" key={item.value}>
+                      <p className="min-w-0 shrink">{item.label}</p>
                     </DropdownMenuItem>
-                  )
+                  ),
                 )}
               </DropdownMenuGroup>
             </div>
@@ -157,9 +137,9 @@ function SettingsButton({ className }: { className?: string }) {
             >
               <RotateCcwIcon
                 data-default={isDefaultState ? true : undefined}
-                className="size-4.5 shrink-0 -my-1 transform rotate-90 data-default:rotate-0 transition"
+                className="-my-1 size-4.5 shrink-0 rotate-90 transform transition data-default:rotate-0"
               />
-              <p className="shrink min-w-0">Reset</p>
+              <p className="min-w-0 shrink">Reset</p>
             </DropdownMenuItem>
           </DropdownMenuGroup>
         </ScrollArea>

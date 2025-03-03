@@ -3,11 +3,7 @@
 import TabIndicator from "@/components/navigation/tab-indicator";
 import { LinkButton } from "@/components/ui/button";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import {
-  KeyRoundIcon,
-  SlidersHorizontalIcon,
-  TriangleAlertIcon,
-} from "lucide-react";
+import { KeyRoundIcon, SlidersHorizontalIcon, TriangleAlertIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { FC, useEffect, useMemo, useState } from "react";
 
@@ -21,9 +17,7 @@ type TTab = {
 export default function TabBar() {
   const { teamId, projectId, environmentId } = useIdsFromPathname();
   const pathname = usePathname();
-  const [activeTabPath, setActiveTabPath] = useState<string | undefined>(
-    pathname
-  );
+  const [activeTabPath, setActiveTabPath] = useState<string | undefined>(pathname);
 
   const tabs = useMemo<TTab[]>(() => {
     const basePath = `/${teamId}/project/${projectId}/environment/${environmentId}/settings`;
@@ -51,11 +45,7 @@ export default function TabBar() {
   }, [pathname]);
 
   return (
-    <div
-      className="md:max-h-[calc(100svh-6rem)] lg:max-h-[calc(100svh-3rem-1px)] w-full md:w-52 flex max-h-full bg-background 
-      border-b md:border-0 flex-row items-center md:items-start md:flex-col md:justify-start overflow-auto 
-      sticky top-0 left-0 sm:top-[calc(5.75rem+2px)] lg:top-[calc(3rem-1px)] sm:px-3 md:p-1 z-50"
-    >
+    <div className="bg-background sticky top-0 left-0 z-50 flex max-h-full w-full flex-row items-center overflow-auto border-b sm:top-[calc(5.75rem+2px)] sm:px-3 md:max-h-[calc(100svh-6rem)] md:w-52 md:flex-col md:items-start md:justify-start md:border-0 md:p-1 lg:top-[calc(3rem-1px)] lg:max-h-[calc(100svh-3rem-1px)]">
       {tabs.map((tab) => (
         <LinkButton
           forceMinSize={false}
@@ -64,15 +54,10 @@ export default function TabBar() {
           onClick={() => setActiveTabPath(tab.href)}
           href={tab.href}
           variant="ghost"
-          className="md:w-full shrink-0 text-muted-foreground data-active:text-foreground text-left justify-start font-medium 
-          px-3 py-4.25 sm:py-4 md:px-4 md:py-3.25 text-sm md:text-base rounded-lg gap-1.5 md:gap-2.5 group/button
-          has-hover:hover:bg-transparent active:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+          className="text-muted-foreground data-active:text-foreground group/button shrink-0 justify-start gap-1.5 rounded-lg px-3 py-4.25 text-left text-sm font-medium focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent sm:py-4 md:w-full md:gap-2.5 md:px-4 md:py-3.25 md:text-base"
         >
-          <div className="w-full h-full absolute left-0 top-0 py-1.5 md:py-0">
-            <div
-              className="w-full h-full rounded-lg has-hover:group-hover/button:bg-border group-active/button:bg-border
-              group-focus-visible/button:ring-1 group-focus-visible/button:ring-offset-2 group-focus-visible/button:ring-offset-background group-focus-visible/button:ring-primary/50"
-            />
+          <div className="absolute top-0 left-0 h-full w-full py-1.5 md:py-0">
+            <div className="has-hover:group-hover/button:bg-border group-active/button:bg-border group-focus-visible/button:ring-offset-background group-focus-visible/button:ring-primary/50 h-full w-full rounded-lg group-focus-visible/button:ring-1 group-focus-visible/button:ring-offset-2" />
           </div>
           {isActive(tab, activeTabPath) && (
             <TabIndicator
@@ -80,8 +65,8 @@ export default function TabBar() {
               className="md:top-2 md:h-[calc(100%-1rem)] md:w-0.5"
             />
           )}
-          <tab.Icon className="size-4 md:size-5 shrink-0 -ml-0.25 md:-ml-1 -my-1 relative translate-z-0" />
-          <p className="whitespace-nowrap md:shrink md:min-w-0 md:whitespace-normal relative leading-none">
+          <tab.Icon className="relative -my-1 -ml-0.25 size-4 shrink-0 translate-z-0 md:-ml-1 md:size-5" />
+          <p className="relative leading-none whitespace-nowrap md:min-w-0 md:shrink md:whitespace-normal">
             {tab.label}
           </p>
         </LinkButton>
@@ -92,7 +77,6 @@ export default function TabBar() {
 
 function isActive(tab: TTab, activePath: string | undefined) {
   return activePath
-    ? tab.href === activePath ||
-        (tab.looseMatch && activePath.startsWith(tab.href))
+    ? tab.href === activePath || (tab.looseMatch && activePath.startsWith(tab.href))
     : false;
 }

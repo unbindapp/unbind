@@ -5,10 +5,7 @@ import { headers } from "next/headers";
 import { cache } from "react";
 
 import { appRouter, type AppRouter } from "@/server/trpc/api/root";
-import {
-  createCallerFactory,
-  createTRPCContext,
-} from "@/server/trpc/setup/trpc";
+import { createCallerFactory, createTRPCContext } from "@/server/trpc/setup/trpc";
 import { createQueryClient } from "./query-client";
 
 /**
@@ -38,8 +35,10 @@ const createContextStatic = cache(async () => {
 });
 const callerStatic = createCaller(createContextStatic);
 
-export const { trpc: apiServer, HydrateClient } =
-  createHydrationHelpers<AppRouter>(caller, getQueryClientServer);
+export const { trpc: apiServer, HydrateClient } = createHydrationHelpers<AppRouter>(
+  caller,
+  getQueryClientServer,
+);
 
 export const { trpc: apiServerStatic, HydrateClient: HydrateClientStatic } =
   createHydrationHelpers<AppRouter>(callerStatic, getQueryClientServer);

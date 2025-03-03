@@ -23,22 +23,16 @@ export default function Deployments({ service }: Props) {
       {data?.deployments &&
         data.deployments.length > 0 &&
         data.deployments.map((deployment, i) => (
-          <DeploymentCard
-            key={deployment.id}
-            deployment={deployment}
-            active={i === 0}
-          />
+          <DeploymentCard key={deployment.id} deployment={deployment} active={i === 0} />
         ))}
       {data?.deployments && data.deployments.length === 0 && (
-        <div className="px-2 py-5 font-medium leading-tight text-muted-foreground text-center">
+        <div className="text-muted-foreground px-2 py-5 text-center leading-tight font-medium">
           No deployments yet
         </div>
       )}
       {!data &&
         isPending &&
-        Array.from({ length: 10 }).map((_, i) => (
-          <DeploymentCard key={i} isPlaceholder />
-        ))}
+        Array.from({ length: 10 }).map((_, i) => <DeploymentCard key={i} isPlaceholder />)}
       {!data && !isPending && isError && <ErrorCard message={error.message} />}
     </TabWrapper>
   );

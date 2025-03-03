@@ -13,33 +13,25 @@ type Props = {
   classNameCard?: string;
 };
 
-export default function ServiceCard({
-  service,
-  className,
-  classNameCard,
-}: Props) {
+export default function ServiceCard({ service, className, classNameCard }: Props) {
   return (
-    <li className={cn("w-full flex flex-col p-1", className)}>
+    <li className={cn("flex w-full flex-col p-1", className)}>
       <ServicePanel service={service}>
         <Button
           variant="ghost"
           className={cn(
-            "w-full flex flex-col items-start text-left min-h-36 gap-12 border bg-background-hover rounded-xl px-5 py-3.5",
-            classNameCard
+            "bg-background-hover flex min-h-36 w-full flex-col items-start gap-12 rounded-xl border px-5 py-3.5 text-left",
+            classNameCard,
           )}
         >
-          <div className="w-full flex items-center justify-start gap-2">
-            <ServiceIcon
-              color="brand"
-              variant={service.type}
-              className="size-6 -ml-1"
-            />
-            <h3 className="shrink min-w-0 font-bold leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
+          <div className="flex w-full items-center justify-start gap-2">
+            <ServiceIcon color="brand" variant={service.type} className="-ml-1 size-6" />
+            <h3 className="min-w-0 shrink overflow-hidden leading-tight font-bold text-ellipsis whitespace-nowrap">
               {service.title}
             </h3>
           </div>
-          <div className="w-full flex flex-col flex-1 justify-end">
-            <div className="w-full flex items-center justify-between text-muted-foreground">
+          <div className="flex w-full flex-1 flex-col justify-end">
+            <div className="text-muted-foreground flex w-full items-center justify-between">
               <LastDeploymentTime service={service} />
             </div>
           </div>

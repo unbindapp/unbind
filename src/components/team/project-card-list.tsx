@@ -27,7 +27,7 @@ export default function ProjectCardList({ teamId }: Props) {
   const [commandPanelId, setCommandPanelId] = useQueryState(commandPanelKey);
   const [, setCommandPanelPageId] = useQueryState(
     commandPanelPageKey,
-    parseAsString.withDefault(commandPanelTeamRootPage)
+    parseAsString.withDefault(commandPanelTeamRootPage),
   );
 
   const open = commandPanelId === commandPanelTeamFromList;
@@ -47,20 +47,16 @@ export default function ProjectCardList({ teamId }: Props) {
   };
 
   return (
-    <ol className="w-full flex flex-wrap">
+    <ol className="flex w-full flex-wrap">
       {projects && projects.length === 0 && (
-        <li className="w-full flex flex-col p-1 sm:w-1/2 lg:w-1/3">
-          <TeamCommandPanelTrigger
-            open={open}
-            setOpen={setOpen}
-            teamId={teamId}
-          >
+        <li className="flex w-full flex-col p-1 sm:w-1/2 lg:w-1/3">
+          <TeamCommandPanelTrigger open={open} setOpen={setOpen} teamId={teamId}>
             <Button
               variant="ghost"
-              className="w-full text-muted-foreground font-medium text-center flex justify-center items-center min-h-36 border rounded-xl px-5 py-3.5"
+              className="text-muted-foreground flex min-h-36 w-full items-center justify-center rounded-xl border px-5 py-3.5 text-center font-medium"
             >
-              <PlusIcon className="size-5 -ml-1.5 shrink-0" />
-              <p className="shrink min-w-0 leading-tight">New Project</p>
+              <PlusIcon className="-ml-1.5 size-5 shrink-0" />
+              <p className="min-w-0 shrink leading-tight">New Project</p>
             </Button>
           </TeamCommandPanelTrigger>
         </li>
@@ -68,11 +64,7 @@ export default function ProjectCardList({ teamId }: Props) {
       {projects &&
         projects.length > 0 &&
         projects.map((i) => (
-          <ProjectCard
-            key={i.id}
-            project={i}
-            className="w-full sm:w-1/2 lg:w-1/3"
-          />
+          <ProjectCard key={i.id} project={i} className="w-full sm:w-1/2 lg:w-1/3" />
         ))}
     </ol>
   );

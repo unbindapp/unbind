@@ -30,7 +30,7 @@ export default function NewServiceButton({
   const [commandPanelId, setCommandPanelId] = useQueryState(commandPanelKey);
   const [, setCommandPanelPageId] = useQueryState(
     commandPanelPageKey,
-    parseAsString.withDefault(commandPanelProjectRootPage)
+    parseAsString.withDefault(commandPanelProjectRootPage),
   );
 
   const open = commandPanelId === commandPanelProject;
@@ -58,23 +58,14 @@ export default function NewServiceButton({
       enabled: shortcutEnabled,
       enableOnContentEditable: true,
       enableOnFormTags: true,
-    }
+    },
   );
 
   return (
-    <ProjectCommandPanelTrigger
-      open={open}
-      setOpen={setOpen}
-      teamId={teamId}
-      projectId={projectId}
-    >
-      <Button
-        className={cn("bg-background-hover -my-2", className)}
-        size="sm"
-        variant="outline"
-      >
+    <ProjectCommandPanelTrigger open={open} setOpen={setOpen} teamId={teamId} projectId={projectId}>
+      <Button className={cn("bg-background-hover -my-2", className)} size="sm" variant="outline">
         <PlusIcon className="-ml-1.5 size-5" />
-        <p className="shrink min-w-0">New Service</p>
+        <p className="min-w-0 shrink">New Service</p>
       </Button>
     </ProjectCommandPanelTrigger>
   );

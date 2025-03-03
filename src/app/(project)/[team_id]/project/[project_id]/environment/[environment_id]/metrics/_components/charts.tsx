@@ -1,9 +1,6 @@
 "use client";
 
-import MetricsChartList, {
-  TChartObject,
-  TChartRow,
-} from "@/components/charts/metrics-chart-list";
+import MetricsChartList, { TChartObject, TChartRow } from "@/components/charts/metrics-chart-list";
 import { api } from "@/server/trpc/setup/client";
 import { useMemo } from "react";
 
@@ -60,8 +57,7 @@ export default function Charts({ teamId, projectId, environmentId }: Props) {
               timestamp: t.timestamp,
             };
             data.services.forEach((service, i) => {
-              obj[service.title] =
-                1024 * 1024 * Math.round(i * 50 + random(t.seed + i) * 10 + 20);
+              obj[service.title] = 1024 * 1024 * Math.round(i * 50 + random(t.seed + i) * 10 + 20);
             });
             return obj;
           })
@@ -113,7 +109,7 @@ export default function Charts({ teamId, projectId, environmentId }: Props) {
   if (data && data.services.length === 0) {
     return (
       <div className="w-full p-1">
-        <div className="w-full flex items-center text-muted-foreground justify-center border rounded-xl text-center px-4 py-2.5 min-h-36">
+        <div className="text-muted-foreground flex min-h-36 w-full items-center justify-center rounded-xl border px-4 py-2.5 text-center">
           <p className="w-full leading-tight">There are no metrics yet</p>
         </div>
       </div>

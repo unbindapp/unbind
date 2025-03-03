@@ -13,19 +13,9 @@ type Props = {
   children: ReactNode;
 };
 
-export function TeamCommandPanelTrigger({
-  teamId,
-  open,
-  setOpen,
-  children,
-}: Props) {
-  const {
-    rootPage,
-    currentPage,
-    setCurrentPageId,
-    allPageIds,
-    goToParentPage,
-  } = useTeamCommandPanelData({ teamId });
+export function TeamCommandPanelTrigger({ teamId, open, setOpen, children }: Props) {
+  const { rootPage, currentPage, setCurrentPageId, allPageIds, goToParentPage } =
+    useTeamCommandPanelData({ teamId });
 
   return (
     <TeamCommandPanelItemsProvider teamId={teamId} page={currentPage}>

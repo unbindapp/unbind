@@ -9,27 +9,17 @@ interface TimePickerProps {
   className?: string;
 }
 
-export function TimePicker({
-  date,
-  setDate,
-  hasSeconds = false,
-  className,
-}: TimePickerProps) {
+export function TimePicker({ date, setDate, hasSeconds = false, className }: TimePickerProps) {
   const minuteRef = React.useRef<HTMLInputElement>(null);
   const hourRef = React.useRef<HTMLInputElement>(null);
   const secondRef = React.useRef<HTMLInputElement>(null);
 
   return (
-    <div
-      className={cn(
-        "w-full min-w-0 flex flex-col font-mono gap-1.5",
-        className
-      )}
-    >
-      <p className="shrink min-w-0 text-sm font-semibold leading-tight">
+    <div className={cn("flex w-full min-w-0 flex-col gap-1.5 font-mono", className)}>
+      <p className="min-w-0 shrink text-sm leading-tight font-semibold">
         Time
         <br />
-        <span className="text-xs text-muted-foreground">(24H)</span>
+        <span className="text-muted-foreground text-xs">(24H)</span>
       </p>
       <div className="flex items-end gap-1">
         <TimePickerInput
@@ -113,8 +103,7 @@ function TimePickerInput({
      * The second entered digit will break the condition and the value will be set to 10-12.
      */
     if (picker === "12hours") {
-      if (flag && calculatedValue.slice(1, 2) === "1" && prevIntKey === "0")
-        return "0" + key;
+      if (flag && calculatedValue.slice(1, 2) === "1" && prevIntKey === "0") return "0" + key;
     }
 
     return !flag ? "0" + key : calculatedValue.slice(1, 2) + key;
@@ -148,8 +137,8 @@ function TimePickerInput({
       id={id || picker}
       name={name || picker}
       className={cn(
-        "w-11 h-9 p-1 text-center font-mono text-base tabular-nums caret-transparent [&::-webkit-inner-spin-button]:appearance-none",
-        className
+        "h-9 w-11 p-1 text-center font-mono text-base tabular-nums caret-transparent [&::-webkit-inner-spin-button]:appearance-none",
+        className,
       )}
       value={value || calculatedValue}
       onChange={(e) => {
@@ -192,7 +181,7 @@ type GetValidNumberConfig = { max: number; min?: number; loop?: boolean };
 
 export function getValidNumber(
   value: string,
-  { max, min = 0, loop = false }: GetValidNumberConfig
+  { max, min = 0, loop = false }: GetValidNumberConfig,
 ) {
   let numericValue = parseInt(value, 10);
 
@@ -231,10 +220,7 @@ type GetValidArrowNumberConfig = {
   step: number;
 };
 
-export function getValidArrowNumber(
-  value: string,
-  { min, max, step }: GetValidArrowNumberConfig
-) {
+export function getValidArrowNumber(value: string, { min, max, step }: GetValidArrowNumberConfig) {
   let numericValue = parseInt(value, 10);
   if (!isNaN(numericValue)) {
     numericValue += step;
@@ -283,12 +269,7 @@ export function set12Hours(date: Date, value: string, period: Period) {
 export type TimePickerType = "minutes" | "seconds" | "hours" | "12hours";
 export type Period = "AM" | "PM";
 
-export function setDateByType(
-  date: Date,
-  value: string,
-  type: TimePickerType,
-  period?: Period
-) {
+export function setDateByType(date: Date, value: string, type: TimePickerType, period?: Period) {
   switch (type) {
     case "minutes":
       return setMinutes(date, value);
@@ -321,11 +302,7 @@ export function getDateByType(date: Date, type: TimePickerType) {
   }
 }
 
-export function getArrowByType(
-  value: string,
-  step: number,
-  type: TimePickerType
-) {
+export function getArrowByType(value: string, step: number, type: TimePickerType) {
   switch (type) {
     case "minutes":
       return getValidArrowMinuteOrSecond(value, step);

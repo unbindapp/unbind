@@ -55,10 +55,7 @@ type Props = {
   hideServiceByDefault?: boolean;
 };
 
-export default function TemporaryLogs({
-  containerType,
-  hideServiceByDefault,
-}: Props) {
+export default function TemporaryLogs({ containerType, hideServiceByDefault }: Props) {
   const [logs, setLogs] = useState<TLogLine[]>(initialData);
 
   useInterval(() => {
