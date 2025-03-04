@@ -63,6 +63,8 @@
   --discord-foreground: hsl(0 0% 100%);
   --github: hsl(120 90% 5%);
   --github-foreground: hsl(0 0% 100%);
+  --gitlab: hsl(9 60% 48%);
+  --gitlab-foreground: hsl(0 0% 100%);
   --email: hsl(160 100% 24%);
   --email-foreground: hsl(0 0% 100%);
   --x: hsl(120 90% 5%);
@@ -143,6 +145,8 @@
   --discord-foreground: hsl(120 100% 97%);
   --github: hsl(120 100% 97%);
   --github-foreground: hsl(120 9% 6%);
+  --gitlab: hsl(9 60% 48%);
+  --gitlab-foreground: hsl(0 0% 100%);
   --email: hsl(160 68% 60%);
   --email-foreground: hsl(120 9% 6%);
   --x: hsl(120 100% 97%);
@@ -306,6 +310,9 @@
 
   --color-github: var(--github);
   --color-github-foreground: var(--github-foreground);
+
+  --color-gitlab: var(--gitlab);
+  --color-gitlab-foreground: var(--gitlab-foreground);
 
   --color-email: var(--email);
   --color-email-foreground: var(--email-foreground);

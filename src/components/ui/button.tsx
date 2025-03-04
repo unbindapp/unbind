@@ -42,6 +42,7 @@ const buttonVariants = cva(
         discord:
           "bg-discord text-discord-foreground has-hover:hover:bg-discord/85 active:bg-discord/85",
         github: "bg-github text-github-foreground has-hover:hover:bg-github/85 active:bg-github/85",
+        gitlab: "bg-gitlab text-gitlab-foreground has-hover:hover:bg-gitlab/85 active:bg-gitlab/85",
         ethereum:
           "bg-ethereum text-ethereum-foreground has-hover:hover:bg-ethereum/85 active:bg-ethereum/85",
         x: "bg-x text-x-foreground has-hover:hover:bg-x/85 active:bg-x/85",

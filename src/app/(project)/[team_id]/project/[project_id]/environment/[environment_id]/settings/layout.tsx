@@ -18,11 +18,12 @@ export default function Layout({ children }: { children: ReactNode }) {
 
   const tabs = useMemo<TSettingsTab[]>(() => {
     const basePath = `/${teamId}/project/${projectId}/environment/${environmentId}/settings`;
-    return [
+    const t: TSettingsTab[] = [
       {
         label: "General",
         href: `${basePath}`,
         Icon: SlidersHorizontalIcon,
+        strictMatch: true,
       },
       {
         label: "Shared Variables",
@@ -50,6 +51,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         Icon: TriangleAlertIcon,
       },
     ];
+    return t;
   }, [teamId, projectId, environmentId]);
 
   return <SettingsLayout tabs={tabs}>{children}</SettingsLayout>;

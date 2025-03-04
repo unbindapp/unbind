@@ -24,6 +24,10 @@ const {
       issuer: env.DEX_ISSUER,
       clientId: env.DEX_CLIENT_ID,
       clientSecret: env.DEX_CLIENT_SECRET,
+      authorization: { params: { scope: "openid email profile groups offline_access" } },
+      idToken: true,
+      checks: ["pkce", "state"],
+      wellKnown: env.DEX_WELL_KNOWN_URL,
     },
   ],
   pages: {
@@ -34,4 +38,4 @@ const {
 
 const auth = cache(uncachedAuth);
 
-export { handlers, signIn, signOut, auth };
+export { auth, handlers, signIn, signOut };

@@ -29,10 +29,11 @@ export default function ProjectTabs({
 
   const tabs: TTab[] = useMemo(() => {
     const baseTabUrl = `/${teamId}/project/${projectId}/environment/${environmentId}`;
-    return [
+    const t: TTab[] = [
       {
         title: "Services",
         href: baseTabUrl,
+        strictMatch: true,
       },
       {
         title: "Logs",
@@ -47,6 +48,7 @@ export default function ProjectTabs({
         href: `${baseTabUrl}/settings`,
       },
     ];
+    return t;
   }, [teamId, projectId, environmentId]);
 
   const [activeTabPath, setActiveTabPath] = useState<string | undefined>(pathname);
