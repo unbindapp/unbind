@@ -1,14 +1,13 @@
 import GitProviderIcon from "@/components/icons/git-provider";
-import PageWrapper from "@/components/page-wrapper";
 import { Button } from "@/components/ui/button";
 
 export default async function Page() {
   return (
-    <PageWrapper className="pt-12 pb-[calc(3rem+4vh)] sm:pb-[calc(3rem+8vh)]">
-      <div className="flex w-full max-w-5xl flex-1 flex-col items-center justify-center">
+    <div className="flex w-full flex-1 flex-col items-center justify-center px-4 pt-6 pb-[calc(2rem+5svh)] sm:pt-8 sm:pb-[calc(2rem+12svh)]">
+      <div className="flex w-full max-w-sm flex-1 flex-col items-center justify-center">
         <div className="flex w-full flex-col items-center justify-center px-2 text-center">
           <h1 className="min-w-0 px-2 text-2xl leading-tight font-bold">Connect Git</h1>
-          <p className="text-muted-foreground mt-1 w-full leading-relaxed">
+          <p className="text-muted-foreground mt-1 w-full">
             Select a Git provider to import your repos.
           </p>
         </div>
@@ -29,6 +28,6 @@ export default async function Page() {
           </Button>
         </div>
       </div>
-    </PageWrapper>
+    </div>
   );
 }

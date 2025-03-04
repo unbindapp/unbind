@@ -6,7 +6,7 @@ declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       email: string;
-    } & DefaultSession["user"];
+    } & { accessToken: string } & DefaultSession["user"];
   }
 }
 
@@ -16,6 +16,21 @@ const {
   signOut,
   auth: uncachedAuth,
 } = NextAuth({
+  callbacks: {
+    jwt: async ({ token, account }) => {
+      if (account) {
+        token.accessToken = account?.access_token;
+      }
+      return token;
+    },
+    session: async ({ session, token }) => {
+      return {
+        ...session,
+        accessToken: token.accessToken,
+        user: session.user,
+      };
+    },
+  },
   providers: [
     {
       id: "dex",
@@ -24,10 +39,6 @@ const {
       issuer: env.DEX_ISSUER,
       clientId: env.DEX_CLIENT_ID,
       clientSecret: env.DEX_CLIENT_SECRET,
-      authorization: { params: { scope: "openid email profile groups offline_access" } },
-      idToken: true,
-      checks: ["pkce", "state"],
-      wellKnown: env.DEX_WELL_KNOWN_URL,
     },
   ],
   pages: {
