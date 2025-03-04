@@ -8,11 +8,11 @@ import { api } from "@/server/trpc/setup/client";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-type Props = {
+type TProps = {
   className?: string;
 };
 
-export default function ProjectBreadcrumb({ className }: Props) {
+export default function ProjectBreadcrumb({ className }: TProps) {
   const { asyncPush } = useAsyncPush();
   const {
     teamId: teamIdFromPathname,

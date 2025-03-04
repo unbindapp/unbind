@@ -1,12 +1,12 @@
 import { cn } from "@/components/ui/utils";
 import { motion } from "motion/react";
 
-type Props = {
+type TProps = {
   layoutId: string;
   className?: string;
 };
 
-export default function TabIndicator({ layoutId, className }: Props) {
+export default function TabIndicator({ layoutId, className }: TProps) {
   return (
     <motion.div
       layoutId={layoutId}

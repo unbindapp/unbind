@@ -10,7 +10,7 @@ import { format } from "date-fns";
 import { useCallback, useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
-type Props = {
+type TProps = {
   yFormatter: ((value: number, index: number) => string) | undefined;
   tooltipValueFormatter: (value: number) => string;
   chartData: (Record<string, number> & { timestamp: number })[];
@@ -28,7 +28,7 @@ export default function MetricsChart({
   chartData,
   className,
   classNameChart,
-}: Props) {
+}: TProps) {
   const dataKeys = useMemo(() => {
     const keys = new Set<string>();
     chartData.forEach((row) => {

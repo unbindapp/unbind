@@ -3,11 +3,11 @@
 import { useRef, useState } from "react";
 import { useCopyToClipboard as useCopyToClipboardPrimitive } from "usehooks-ts";
 
-type Props = {
+type TProps = {
   recentMs: number;
 };
 
-export function useCopyToClipboard(props?: Props) {
+export function useCopyToClipboard(props?: TProps) {
   const recentMs = props?.recentMs ?? 1500;
   const [copiedText, copyToClipboard] = useCopyToClipboardPrimitive();
   const [isRecentlyCopied, setIsRecentlyCopied] = useState(false);

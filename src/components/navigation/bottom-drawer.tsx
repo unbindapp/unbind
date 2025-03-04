@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { Children, cloneElement, FC, isValidElement, ReactNode } from "react";
 
-type Props = {
+type TProps = {
   title: string;
   TitleIcon?: FC<{ className: string }>;
   titleSize?: "sm" | "md";
@@ -35,7 +35,7 @@ export default function BottomDrawer({
   noScrollArea,
   dontAutoFocus,
   onEscapeKeyDown,
-}: Props) {
+}: TProps) {
   const childrenArray = Children.toArray(children);
   const Trigger = childrenArray.find(
     (child) =>

@@ -6,12 +6,12 @@ import { cn } from "@/components/ui/utils";
 import { LoaderIcon } from "lucide-react";
 import { useActionState } from "react";
 
-type Props = {
+type TProps = {
   callbackUrl?: string;
   className?: string;
 };
 
-export default function SignOutButton({ callbackUrl, className }: Props) {
+export default function SignOutButton({ callbackUrl, className }: TProps) {
   const [, action, isPending] = useActionState(() => signOutAction({ callbackUrl }), null);
 
   return (

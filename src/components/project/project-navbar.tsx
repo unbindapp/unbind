@@ -8,11 +8,11 @@ import {
 import ProjectBreadcrumb from "@/components/project/project-breadcrumb";
 import ProjectTabs from "@/components/project/project-tabs";
 
-type Props = {
+type TProps = {
   className?: string;
 };
 
-export default async function ProjectNavbar({ className }: Props) {
+export default async function ProjectNavbar({ className }: TProps) {
   return (
     <Navbar className={className}>
       <NavbarBreadcrumb>

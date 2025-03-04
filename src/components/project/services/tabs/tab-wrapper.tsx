@@ -1,12 +1,12 @@
 import { cn } from "@/components/ui/utils";
 import { ReactNode } from "react";
 
-type Props = {
+type TProps = {
   children: ReactNode;
   className?: string;
 };
 
-export default function TabWrapper({ children, className }: Props) {
+export default function TabWrapper({ children, className }: TProps) {
   return (
     <div
       className={cn(

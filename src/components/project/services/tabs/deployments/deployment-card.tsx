@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { TDeployment } from "@/server/trpc/api/main/router";
 import { CircleCheckIcon, EllipsisVerticalIcon, LoaderIcon, TriangleAlertIcon } from "lucide-react";
 
-type Props =
+type TProps =
   | {
       deployment: TDeployment;
       active: boolean;
@@ -17,7 +17,7 @@ type Props =
       active?: never;
     };
 
-export default function DeploymentCard({ deployment, active, isPlaceholder }: Props) {
+export default function DeploymentCard({ deployment, active, isPlaceholder }: TProps) {
   return (
     <div
       data-status={

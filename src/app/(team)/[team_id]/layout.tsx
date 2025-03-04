@@ -2,11 +2,11 @@ import NavbarSafeAreaInsetBottom from "@/components/navigation/navbar-safe-area-
 import TeamNavbar from "@/components/team/team-navbar";
 import { ReactNode } from "react";
 
-type Props = {
+type TProps = {
   children: ReactNode;
 };
 
-export default function Layout({ children }: Props) {
+export default function Layout({ children }: TProps) {
   return (
     <>
       <TeamNavbar />

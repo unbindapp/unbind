@@ -34,7 +34,7 @@ import { ChevronLeftIcon, ChevronRightIcon, LoaderIcon } from "lucide-react";
 import { ReactNode, RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
-type Props = {
+type TProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
   children: ReactNode;
@@ -54,7 +54,7 @@ export function CommandPanelTrigger({
   setCurrentPageId,
   title,
   description,
-}: Props & CommandPanelProps) {
+}: TProps & CommandPanelProps) {
   const { isExtraSmall } = useDeviceSize();
 
   const onEscapeKeyDown = useCallback(

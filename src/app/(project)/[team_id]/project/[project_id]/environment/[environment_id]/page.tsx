@@ -3,7 +3,7 @@ import PageWrapper from "@/components/page-wrapper";
 import ServiceCardList from "@/components/project/services/service-card-list";
 import { apiServer, HydrateClient } from "@/server/trpc/setup/server";
 
-type Props = {
+type TProps = {
   params: Promise<{
     team_id: string;
     project_id: string;
@@ -11,7 +11,7 @@ type Props = {
   }>;
 };
 
-export default async function Page({ params }: Props) {
+export default async function Page({ params }: TProps) {
   const { team_id: teamId, project_id: projectId, environment_id: environmentId } = await params;
 
   await apiServer.main.getServices.prefetch({

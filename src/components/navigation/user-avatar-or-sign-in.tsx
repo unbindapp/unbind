@@ -5,11 +5,11 @@ import { LinkButton } from "@/components/ui/button";
 import { Session } from "next-auth";
 import { usePathname } from "next/navigation";
 
-type Props = {
+type TProps = {
   session: Session | null;
 };
 
-export default function UserAvatarOrSignIn({ session }: Props) {
+export default function UserAvatarOrSignIn({ session }: TProps) {
   const pathname = usePathname();
   const isSignInPage = pathname === "/sign-in";
 

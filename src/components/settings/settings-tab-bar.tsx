@@ -12,11 +12,11 @@ export type TSettingsTab = {
   strictMatch?: boolean;
 };
 
-type Props = {
+type TProps = {
   tabs: TSettingsTab[];
 };
 
-export default function SettingsTabBar({ tabs }: Props) {
+export default function SettingsTabBar({ tabs }: TProps) {
   const pathname = usePathname();
   const [activeTabPath, setActiveTabPath] = useState<string | undefined>(pathname);
 

@@ -4,11 +4,11 @@ import VariableCard from "@/components/project/services/tabs/variables/variable-
 import { TService } from "@/server/trpc/api/main/router";
 import { api } from "@/server/trpc/setup/client";
 
-type Props = {
+type TProps = {
   service: TService;
 };
 
-export default function Variables({ service }: Props) {
+export default function Variables({ service }: TProps) {
   const { data, isPending, isError, error } = api.main.getVariables.useQuery({
     teamId: service.teamId,
     projectId: service.projectId,

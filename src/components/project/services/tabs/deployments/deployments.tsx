@@ -6,11 +6,11 @@ import TabWrapper from "@/components/project/services/tabs/tab-wrapper";
 import { TService } from "@/server/trpc/api/main/router";
 import { api } from "@/server/trpc/setup/client";
 
-type Props = {
+type TProps = {
   service: TService;
 };
 
-export default function Deployments({ service }: Props) {
+export default function Deployments({ service }: TProps) {
   const { data, isPending, isError, error } = api.main.getDeployments.useQuery({
     teamId: service.teamId,
     projectId: service.projectId,

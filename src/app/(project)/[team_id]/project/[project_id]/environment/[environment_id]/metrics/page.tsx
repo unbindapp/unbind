@@ -1,7 +1,7 @@
 import Charts from "@/app/(project)/[team_id]/project/[project_id]/environment/[environment_id]/metrics/_components/charts";
 import PageWrapper from "@/components/page-wrapper";
 
-type Props = {
+type TProps = {
   params: Promise<{
     team_id: string;
     project_id: string;
@@ -9,7 +9,7 @@ type Props = {
   }>;
 };
 
-export default async function Page({ params }: Props) {
+export default async function Page({ params }: TProps) {
   const { team_id, project_id, environment_id } = await params;
   return (
     <PageWrapper>

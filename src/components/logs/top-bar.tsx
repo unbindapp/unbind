@@ -20,11 +20,11 @@ import { cn } from "@/components/ui/utils";
 import { FilterIcon, RotateCcwIcon, SearchIcon, SettingsIcon, XIcon } from "lucide-react";
 import { toast } from "sonner";
 
-type Props = {
+type TProps = {
   className?: string;
 };
 
-export default function TopBar({ className }: Props) {
+export default function TopBar({ className }: TProps) {
   return (
     <div className={cn("flex w-full items-stretch gap-2", className)}>
       <form

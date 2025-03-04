@@ -19,9 +19,9 @@ import { cn } from "@/components/ui/utils";
 import { LoaderIcon, LogOutIcon } from "lucide-react";
 import { useActionState, useRef, useState } from "react";
 
-type Props = { email: string; className?: string };
+type TProps = { email: string; className?: string };
 
-export default function UserAvatar({ email, className }: Props) {
+export default function UserAvatar({ email, className }: TProps) {
   const [, actionSignOut, isPendingSignOut] = useActionState(
     () => signOutAction({ callbackUrl: "/" }),
     null,

@@ -1,7 +1,12 @@
-import GitProviderIcon from "@/components/icons/git-provider";
-import { Button } from "@/components/ui/button";
+import GitProviderButtons from "@/app/(team)/[team_id]/connect-git/_components/git-provider-buttons";
 
-export default async function Page() {
+type TProps = {
+  params: Promise<{ team_id: string }>;
+};
+
+export default async function Page({ params }: TProps) {
+  const { team_id: teamId } = await params;
+
   return (
     <div className="flex w-full flex-1 flex-col items-center justify-center px-4 pt-6 pb-[calc(2rem+5svh)] sm:pt-8 sm:pb-[calc(2rem+12svh)]">
       <div className="flex w-full max-w-sm flex-1 flex-col items-center justify-center">
@@ -12,20 +17,7 @@ export default async function Page() {
           </p>
         </div>
         <div className="mt-5 flex w-full max-w-xs flex-col gap-2">
-          <Button variant="github" className="px-11">
-            <GitProviderIcon
-              className="absolute top-1/2 left-5.75 size-6 -translate-1/2"
-              variant="github"
-            />
-            <p className="min-w-0 shrink">Continue with GitHub</p>
-          </Button>
-          <Button variant="gitlab" className="px-11">
-            <GitProviderIcon
-              className="absolute top-1/2 left-5.75 size-6 -translate-1/2"
-              variant="gitlab"
-            />
-            <p className="min-w-0 shrink">Continue with GitLab</p>
-          </Button>
+          <GitProviderButtons teamId={teamId} />
         </div>
       </div>
     </div>

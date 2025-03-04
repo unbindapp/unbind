@@ -5,7 +5,7 @@ import ProjectCommandPanelItemsProvider, {
 import useProjectCommandPanelData from "@/components/command-panel/project/use-project-command-panel-data";
 import { ReactNode } from "react";
 
-type Props = {
+type TProps = {
   teamId: string;
   projectId: string;
   className?: string;
@@ -14,7 +14,7 @@ type Props = {
   children: ReactNode;
 };
 
-export function ProjectCommandPanelTrigger({ teamId, projectId, open, setOpen, children }: Props) {
+export function ProjectCommandPanelTrigger({ teamId, projectId, open, setOpen, children }: TProps) {
   const { rootPage, currentPage, setCurrentPageId, allPageIds, goToParentPage } =
     useProjectCommandPanelData({ teamId });
 

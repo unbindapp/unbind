@@ -2,14 +2,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { cn } from "@/components/ui/utils";
 import { ReactNode } from "react";
 
-type Props = {
+type TProps = {
   title: string;
   description: string;
   children: ReactNode;
   className?: string;
 };
 
-export default function ChartWrapper({ title, description, className, children }: Props) {
+export default function ChartWrapper({ title, description, className, children }: TProps) {
   return (
     <div className={cn("flex w-full p-1", className)}>
       <Card className="flex w-full flex-col justify-start rounded-xl border shadow-none">

@@ -12,7 +12,7 @@ export type TChartObject = {
   error: string | undefined;
 };
 
-type Props = {
+type TProps = {
   cpu: TChartObject;
   ram: TChartObject;
   disk: TChartObject;
@@ -30,7 +30,7 @@ export default function MetricsChartList({
   className,
   classNameChart,
   noLegends,
-}: Props) {
+}: TProps) {
   const defaultErrorMessage = "Something went wrong";
   return (
     <div className={cn("flex w-full flex-wrap items-stretch", className)}>

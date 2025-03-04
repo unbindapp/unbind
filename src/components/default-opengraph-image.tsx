@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { CSSProperties } from "react";
 
-type Props = {
+type TProps = {
   logoSize?: number;
 };
 
@@ -24,7 +24,7 @@ export const defaultParagraphClassName: CSSProperties = {
   textWrap: "balance",
 };
 
-export default function DefaultOpenGraphImage({ logoSize = 544 }: Props) {
+export default function DefaultOpenGraphImage({ logoSize = 544 }: TProps) {
   return (
     <div
       style={{

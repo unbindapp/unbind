@@ -3,7 +3,7 @@ import { TDeploymentSource, TServiceType } from "@/server/trpc/api/main/router";
 import { BanIcon } from "lucide-react";
 import { ComponentProps } from "react";
 
-type Props = ComponentProps<"svg"> & {
+type TProps = ComponentProps<"svg"> & {
   variant: TServiceType | TDeploymentSource;
   className?: string;
   color?: "monochrome" | "brand";
@@ -11,7 +11,7 @@ type Props = ComponentProps<"svg"> & {
 
 const defaultClass = "size-5 shrink-0";
 
-export default function ServiceIcon({ color = "monochrome", variant, className }: Props) {
+export default function ServiceIcon({ color = "monochrome", variant, className }: TProps) {
   if (variant === "go") {
     return (
       <svg

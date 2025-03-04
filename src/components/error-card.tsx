@@ -1,7 +1,7 @@
 import { cva, VariantProps } from "class-variance-authority";
 import { TriangleAlertIcon } from "lucide-react";
 
-type Props = {
+type TProps = {
   message?: string;
   className?: string;
 } & TCardVariants;
@@ -23,7 +23,7 @@ const cardVariants = cva(
   },
 );
 
-export default function ErrorCard({ className, message, variant }: Props) {
+export default function ErrorCard({ className, message, variant }: TProps) {
   return (
     <div
       data-has-message={message ? true : undefined}

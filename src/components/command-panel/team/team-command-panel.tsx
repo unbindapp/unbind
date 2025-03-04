@@ -5,7 +5,7 @@ import TeamCommandPanelItemsProvider, {
 import useTeamCommandPanelData from "@/components/command-panel/team/use-team-command-panel-data";
 import { ReactNode } from "react";
 
-type Props = {
+type TProps = {
   teamId: string;
   className?: string;
   open: boolean;
@@ -13,7 +13,7 @@ type Props = {
   children: ReactNode;
 };
 
-export function TeamCommandPanelTrigger({ teamId, open, setOpen, children }: Props) {
+export function TeamCommandPanelTrigger({ teamId, open, setOpen, children }: TProps) {
   const { rootPage, currentPage, setCurrentPageId, allPageIds, goToParentPage } =
     useTeamCommandPanelData({ teamId });
 

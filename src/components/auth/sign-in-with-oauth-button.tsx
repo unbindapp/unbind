@@ -7,7 +7,7 @@ import { LoaderIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useActionState } from "react";
 
-type Props = {
+type TProps = {
   providerId: string;
   providerName?: string;
   callbackUrl?: string;
@@ -19,7 +19,7 @@ export default function SignInWithOAuthButton({
   providerName,
   callbackUrl,
   className,
-}: Props) {
+}: TProps) {
   const pathname = usePathname();
   const [, action, isPending] = useActionState(
     () => oAuthSignInAction({ providerId, callbackUrl: callbackUrl || pathname }),

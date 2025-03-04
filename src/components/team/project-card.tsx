@@ -5,14 +5,14 @@ import { groupByServiceGroup } from "@/lib/helpers";
 import { TProject } from "@/server/trpc/api/main/router";
 import { EllipsisIcon } from "lucide-react";
 
-type Props = {
+type TProps = {
   project: TProject;
   className?: string;
 };
 
 const iconLenght = 4;
 
-export default function ProjectCard({ project, className }: Props) {
+export default function ProjectCard({ project, className }: TProps) {
   const defaultEnvironment = project.environments[0];
   const href = `${project.teamId}/project/${project.id}/environment/${defaultEnvironment.id}`;
   const groupedServices = groupByServiceGroup(defaultEnvironment.services);

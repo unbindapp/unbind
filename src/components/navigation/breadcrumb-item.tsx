@@ -18,7 +18,7 @@ import { ComponentProps, Dispatch, FC, SetStateAction, useEffect, useState } fro
 
 type Item<T> = T & { id: string; title: string };
 
-type Props<T> = {
+type TProps<T> = {
   title: string;
   selectedItem: Item<T> | undefined;
   items: Item<T>[] | undefined;
@@ -41,7 +41,7 @@ export function BreadcrumbItem<T>({
   flipChevronOnSm,
   newItemTitle,
   onSelectNewItem,
-}: Props<T>) {
+}: TProps<T>) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const [lastHoveredItem, setLastHoveredItem] = useState(selectedItem);

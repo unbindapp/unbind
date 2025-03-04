@@ -40,12 +40,12 @@ const tabs: TTab[] = [
   { title: "Settings", value: "settings", Page: Settings },
 ];
 
-type Props = {
+type TProps = {
   service: TService;
   children: ReactNode;
 };
 
-export default function ServicePanel({ service, children }: Props) {
+export default function ServicePanel({ service, children }: TProps) {
   const [currentTab, setCurrentTab] = useQueryState(
     servicePanelTabKey,
     parseAsString.withDefault(tabs[0].value),

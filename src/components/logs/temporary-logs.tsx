@@ -50,12 +50,12 @@ const initialData: TLogLine[] = Array.from({ length }).map((_, i) => {
   };
 });
 
-type Props = {
+type TProps = {
   containerType: "page" | "sheet";
   hideServiceByDefault?: boolean;
 };
 
-export default function TemporaryLogs({ containerType, hideServiceByDefault }: Props) {
+export default function TemporaryLogs({ containerType, hideServiceByDefault }: TProps) {
   const [logs, setLogs] = useState<TLogLine[]>(initialData);
 
   useInterval(() => {

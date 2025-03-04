@@ -15,12 +15,12 @@ export type TLogLine = {
   serviceId: string;
 };
 
-type Props = {
+type TProps = {
   logLine: TLogLine;
   classNameInner?: string;
 } & ComponentProps<"div">;
 
-export default function LogLine({ logLine, className, classNameInner, ...rest }: Props) {
+export default function LogLine({ logLine, className, classNameInner, ...rest }: TProps) {
   const { preferences: viewPreferences } = useLogViewPreferences();
 
   const hasExtraColumns =

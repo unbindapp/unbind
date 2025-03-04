@@ -19,12 +19,12 @@ function random(seed: number) {
   return x - Math.floor(x);
 }
 
-type Props = {
+type TProps = {
   service: TService;
   className?: string;
 };
 
-export default function Charts({ service, className }: Props) {
+export default function Charts({ service, className }: TProps) {
   const { data, isPending, isError, error } = api.main.getServices.useQuery({
     teamId: service.teamId,
     projectId: service.projectId,

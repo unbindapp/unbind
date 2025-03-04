@@ -6,7 +6,7 @@ import { TVariable } from "@/server/trpc/api/main/router";
 import { CheckIcon, CopyIcon, EllipsisVerticalIcon, EyeIcon, EyeOffIcon } from "lucide-react";
 import { useState } from "react";
 
-type Props =
+type TProps =
   | {
       variable: TVariable;
       isPlaceholder?: never;
@@ -16,7 +16,7 @@ type Props =
       variable?: never;
     };
 
-export default function VariableCard({ variable, isPlaceholder }: Props) {
+export default function VariableCard({ variable, isPlaceholder }: TProps) {
   const [isValueVisible, setIsValueVisible] = useState(false);
   const { copyToClipboard, isRecentlyCopied } = useCopyToClipboard();
 

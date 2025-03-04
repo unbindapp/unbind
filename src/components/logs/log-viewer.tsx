@@ -12,14 +12,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useThrottledCallback } from "use-debounce";
 import { VList, VListHandle } from "virtua";
 
-type Props = {
+type TProps = {
   logs: TLogLine[];
   containerType: "page" | "sheet";
   hideServiceByDefault?: boolean;
   className?: string;
 };
 
-export default function LogViewer({ logs, hideServiceByDefault, containerType }: Props) {
+export default function LogViewer({ logs, hideServiceByDefault, containerType }: TProps) {
   return (
     <LogViewPreferencesProvider hideServiceByDefault={hideServiceByDefault}>
       <LogViewDropdownProvider>
@@ -31,7 +31,7 @@ export default function LogViewer({ logs, hideServiceByDefault, containerType }:
 
 const SCROLL_THRESHOLD = 50;
 
-function Logs_({ logs, containerType }: Props) {
+function Logs_({ logs, containerType }: TProps) {
   const virtualListRef = useRef<VListHandle>(null);
   const follow = useRef(true);
   const prevScrollY = useRef<number | null>(null);

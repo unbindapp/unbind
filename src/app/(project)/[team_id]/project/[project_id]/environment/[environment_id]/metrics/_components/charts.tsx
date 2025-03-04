@@ -4,7 +4,7 @@ import MetricsChartList, { TChartObject, TChartRow } from "@/components/charts/m
 import { api } from "@/server/trpc/setup/client";
 import { useMemo } from "react";
 
-type Props = {
+type TProps = {
   teamId: string;
   projectId: string;
   environmentId: string;
@@ -23,7 +23,7 @@ function random(seed: number) {
   return x - Math.floor(x);
 }
 
-export default function Charts({ teamId, projectId, environmentId }: Props) {
+export default function Charts({ teamId, projectId, environmentId }: TProps) {
   const { data, isPending, isError, error } = api.main.getServices.useQuery({
     teamId,
     projectId,

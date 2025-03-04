@@ -9,7 +9,7 @@ export type NavigationBarProps = {
   scrollToTop: () => void;
 };
 
-type Props = { className?: string } & NavigationBarProps;
+type TProps = { className?: string } & NavigationBarProps;
 
 export default function NavigationBar({
   isAtBottom,
@@ -18,7 +18,7 @@ export default function NavigationBar({
   scrollToTop,
   className,
   ...rest
-}: Props) {
+}: TProps) {
   return (
     <div
       {...rest}

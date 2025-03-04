@@ -1,12 +1,12 @@
 import { cn } from "@/components/ui/utils";
 import { ReactNode } from "react";
 
-type Props = {
+type TProps = {
   children: ReactNode;
   className?: string;
 };
 
-export default function PageWrapper({ className, children }: Props) {
+export default function PageWrapper({ className, children }: TProps) {
   return (
     <div
       className={cn(

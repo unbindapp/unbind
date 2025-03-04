@@ -14,13 +14,13 @@ import { parseAsString, useQueryState } from "nuqs";
 import { useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
-type Props = {
+type TProps = {
   teamId: string;
   className?: string;
   shortcutEnabled?: boolean;
 };
 
-export default function NewTeamButton({ teamId, shortcutEnabled = true, className }: Props) {
+export default function NewTeamButton({ teamId, shortcutEnabled = true, className }: TProps) {
   const [commandPanelId, setCommandPanelId] = useQueryState(commandPanelKey);
   const [, setCommandPanelPageId] = useQueryState(
     commandPanelPageKey,

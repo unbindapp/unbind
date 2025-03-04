@@ -14,11 +14,11 @@ import { PlusIcon } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
 import { useRef } from "react";
 
-type Props = {
+type TProps = {
   teamId: string;
 };
 
-export default function ProjectCardList({ teamId }: Props) {
+export default function ProjectCardList({ teamId }: TProps) {
   const [, { data }] = api.main.getProjects.useSuspenseQuery({
     teamId,
   });

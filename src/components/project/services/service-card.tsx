@@ -7,13 +7,13 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { TService } from "@/server/trpc/api/main/router";
 
-type Props = {
+type TProps = {
   service: TService;
   className?: string;
   classNameCard?: string;
 };
 
-export default function ServiceCard({ service, className, classNameCard }: Props) {
+export default function ServiceCard({ service, className, classNameCard }: TProps) {
   return (
     <li className={cn("flex w-full flex-col p-1", className)}>
       <ServicePanel service={service}>

@@ -16,13 +16,13 @@ import { PlusIcon } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
 import { useRef } from "react";
 
-type Props = {
+type TProps = {
   teamId: string;
   projectId: string;
   environmentId: string;
 };
 
-export default function ServiceCardList({ teamId, projectId, environmentId }: Props) {
+export default function ServiceCardList({ teamId, projectId, environmentId }: TProps) {
   const [, { data }] = api.main.getServices.useSuspenseQuery({
     teamId,
     projectId,

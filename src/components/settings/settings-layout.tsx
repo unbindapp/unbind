@@ -1,13 +1,13 @@
 import SettingsTabBar, { TSettingsTab } from "@/components/settings/settings-tab-bar";
 import { ReactNode } from "react";
 
-type Props = {
+type TProps = {
   children: ReactNode;
   tabs: TSettingsTab[];
   title?: string;
 };
 
-export default function SettingsLayout({ title, tabs, children }: Props) {
+export default function SettingsLayout({ title, tabs, children }: TProps) {
   return (
     <div className="flex w-full flex-1 justify-center pt-4 md:px-6 md:pt-5 lg:px-8 lg:pt-7">
       <div className="flex w-full max-w-7xl flex-1 flex-col">

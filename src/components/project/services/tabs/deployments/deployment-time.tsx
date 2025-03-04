@@ -1,7 +1,7 @@
 import { useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { TDeployment } from "@/server/trpc/api/main/router";
 
-type Props =
+type TProps =
   | {
       deployment: TDeployment;
       isPlaceholder?: never;
@@ -11,7 +11,7 @@ type Props =
       isPlaceholder: true;
     };
 
-export default function DeploymentTime({ deployment, isPlaceholder }: Props) {
+export default function DeploymentTime({ deployment, isPlaceholder }: TProps) {
   const { str } = useTimeDifference({
     timestamp: isPlaceholder ? Date.now() : deployment.timestamp,
   });

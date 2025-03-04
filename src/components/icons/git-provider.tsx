@@ -1,13 +1,13 @@
 import { cn } from "@/components/ui/utils";
 import { ComponentProps } from "react";
 
-type Props = {
+type TProps = {
   variant: "github" | "gitlab";
 } & ComponentProps<"svg">;
 
 const defaultClassName = "size-6";
 
-export default function GitProviderIcon({ variant, className, ...rest }: Props) {
+export default function GitProviderIcon({ variant, className, ...rest }: TProps) {
   if (variant === "gitlab") {
     return (
       <svg

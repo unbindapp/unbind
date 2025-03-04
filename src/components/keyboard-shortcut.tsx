@@ -2,13 +2,13 @@ import { useDeviceType } from "@/components/providers/device-type-provider";
 import { cn } from "@/components/ui/utils";
 import { ReactNode } from "react";
 
-type Props = {
+type TProps = {
   children: ReactNode;
   className?: string;
   showOnTouchscreen?: boolean;
 };
 
-export default function KeyboardShortcut({ className, showOnTouchscreen, children }: Props) {
+export default function KeyboardShortcut({ className, showOnTouchscreen, children }: TProps) {
   const { isTouchscreen } = useDeviceType();
 
   if (isTouchscreen && !showOnTouchscreen) {

@@ -14,7 +14,7 @@ import { parseAsString, useQueryState } from "nuqs";
 import { useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
-type Props = {
+type TProps = {
   teamId: string;
   projectId: string;
   className?: string;
@@ -26,7 +26,7 @@ export default function NewServiceButton({
   projectId,
   shortcutEnabled = true,
   className,
-}: Props) {
+}: TProps) {
   const [commandPanelId, setCommandPanelId] = useQueryState(commandPanelKey);
   const [, setCommandPanelPageId] = useQueryState(
     commandPanelPageKey,
