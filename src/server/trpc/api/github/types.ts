@@ -11,7 +11,6 @@ export const GithubCreateManifestResponseSchema = z.object({
     }),
     description: z.string(),
     hook_attributes: z.object({
-      secret: z.string(),
       url: z.string(),
     }),
     name: z.string(),

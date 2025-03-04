@@ -29,7 +29,7 @@ export const githubRouter = createTRPCRouter({
       const res = await fetch(`${apiUrl}/github/app/manifest`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${session.accessToken}`,
+          Authorization: `Bearer ${session.access_token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -65,7 +65,7 @@ export const githubRouter = createTRPCRouter({
       const res = await fetch(`${apiUrl}/github/app/connect`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${session.accessToken}`,
+          Authorization: `Bearer ${session.access_token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({

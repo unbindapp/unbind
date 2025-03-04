@@ -29,9 +29,9 @@ export default function GitProviderButtons({ teamId }: TProps) {
         variant="github"
         className="px-11"
       >
-        <div className="absolute top-1/2 left-5.75 size-6 -translate-1/2">
+        <div className="absolute top-1/2 left-2.5 flex size-6 -translate-y-1/2 items-center justify-center">
           {isGitHubPending ? (
-            <LoaderIcon className="size-full animate-spin" />
+            <LoaderIcon className="size-full animate-spin p-0.5" />
           ) : (
             <GitProviderIcon className="size-full" variant="github" />
           )}
@@ -40,7 +40,7 @@ export default function GitProviderButtons({ teamId }: TProps) {
       </Button>
       <Button variant="gitlab" className="px-11">
         <GitProviderIcon
-          className="absolute top-1/2 left-5.75 size-6 -translate-1/2"
+          className="absolute top-1/2 left-2.5 size-6 -translate-y-1/2"
           variant="gitlab"
         />
         <p className="min-w-0 shrink">Continue with GitLab</p>
@@ -67,22 +67,6 @@ async function createGitHubApp({
     redirectUrl: window.location.href + "/connecting/github",
   });
 
-  // TO-DO fix this after API is fixed
-  const manifest: (typeof data)["manifest"] = {
-    default_events: data.manifest.default_events.filter((event) => event !== "pull_request"),
-    default_permissions: data.manifest.default_permissions,
-    description: data.manifest.description,
-    // @ts-expect-error this is fine
-    hook_attributes: {
-      url: data.manifest.hook_attributes.url,
-    },
-    name: data.manifest.name,
-    public: data.manifest.public,
-    redirect_url: data.manifest.redirect_url,
-    url: data.manifest.url,
-  };
-  //////////////////////////////////////////
-
   const width = 800;
   const height = 600;
   const left = (window.screen.width - width) / 2;
@@ -107,12 +91,12 @@ async function createGitHubApp({
   const input = popup.document.createElement("input");
   input.name = "manifest";
   input.type = "text";
-  input.value = JSON.stringify(manifest);
+  input.value = JSON.stringify(data.manifest);
 
   form.appendChild(input);
   popup.document.body.appendChild(form);
 
-  console.log("Submitting form to GitHub with manifest:", manifest);
+  console.log("Submitting form to GitHub with manifest:", data.manifest);
 
   form.submit();
 
