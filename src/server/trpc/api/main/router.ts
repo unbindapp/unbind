@@ -1,9 +1,5 @@
-import { SGithubCreateManifestResponseBody } from "@/server/trpc/api/main/types";
 import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-
-const apiUrl = "https://api.unbind.app";
 
 export const mainRouter = createTRPCRouter({
   getTeams: publicProcedure.input(z.object({})).query(async function () {
@@ -96,42 +92,6 @@ export const mainRouter = createTRPCRouter({
       });
       return {
         repos,
-      };
-    }),
-  createGitHubManifest: publicProcedure
-    .input(
-      z.object({
-        teamId: z.string(),
-        redirectUrl: z.string(),
-      }),
-    )
-    .mutation(async function ({ input: { teamId, redirectUrl }, ctx }) {
-      console.log("Create GitHub manifest for team:", teamId);
-      const { session } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "Unauthorized",
-        });
-      }
-
-      const res = await fetch(`${apiUrl}/github/app/manifest`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${session.accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          redirect_url: redirectUrl,
-        }),
-      });
-
-      const resJson = await res.json();
-
-      const data = SGithubCreateManifestResponseBody.parse(resJson);
-
-      return {
-        data,
       };
     }),
 });

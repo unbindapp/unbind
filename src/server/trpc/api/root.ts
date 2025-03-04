@@ -1,3 +1,4 @@
+import { githubRouter } from "@/server/trpc/api/github/router";
 import { mainRouter } from "@/server/trpc/api/main/router";
 import { createTRPCRouter } from "@/server/trpc/setup/trpc";
 import { inferRouterClient, TRPCClientErrorLike } from "@trpc/client";
@@ -12,6 +13,7 @@ import { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
  */
 export const appRouter = createTRPCRouter({
   main: mainRouter,
+  github: githubRouter,
 });
 
 // export type definition of API
