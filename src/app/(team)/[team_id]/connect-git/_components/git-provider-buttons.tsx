@@ -116,7 +116,7 @@ async function createGitHubApp({
 
   form.submit();
 
-  const githubCode = await new Promise<string>((resolve, reject) => {
+  const githubCode = await new Promise<string>((resolve) => {
     function handleMessage(event: MessageEvent) {
       if (event.origin !== window.location.origin) return;
       if (event.data.code) {
