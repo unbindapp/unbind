@@ -127,7 +127,6 @@ async function createGitHubApp({
     window.addEventListener("message", handleMessage);
   });
 
-  // Close the popup if it hasn't been closed already.
   popup.close();
 
   // Use the received code to connect the GitHub app.

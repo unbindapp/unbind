@@ -11,12 +11,7 @@ export default function Page() {
     const code = params.get("code");
 
     if (code && window.opener) {
-      // Send the code back to the main window.
       window.opener.postMessage({ code }, window.location.origin);
-      // Optionally, add a small delay if needed, then close the popup.
-      setTimeout(() => {
-        window.close();
-      }, 100);
     }
   }, []);
 
