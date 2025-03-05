@@ -2,7 +2,6 @@ import { env } from "@/lib/env";
 import NextAuth, { DefaultSession } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import { cache } from "react";
-import { z } from "zod";
 
 declare module "next-auth" {
   interface Session extends DefaultSession {
