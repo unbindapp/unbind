@@ -58,11 +58,11 @@ export const middleware: NextMiddleware = async (request: NextRequest) => {
     return NextResponse.redirect(signInUrl);
   }
 
-  if (token && request.nextUrl.pathname === signInPathname) {
+  const shouldUpdate = shouldUpdateToken(token);
+  if (!shouldUpdate && request.nextUrl.pathname === signInPathname) {
     return NextResponse.redirect(homeUrl);
   }
 
-  const shouldUpdate = shouldUpdateToken(token);
   if (shouldUpdate) {
     try {
       const newTokensObject = await refreshAccessToken(token);
