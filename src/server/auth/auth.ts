@@ -24,7 +24,7 @@ const {
         const newToken: JWT = {
           ...token,
           access_token: account.access_token,
-          expires_at: account.expires_at,
+          access_token_expires_at: account.expires_at,
           refresh_token: account.refresh_token,
         };
         return newToken;

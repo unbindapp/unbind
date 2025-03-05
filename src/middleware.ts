@@ -12,7 +12,6 @@ const sessionCookieMaxAge = 60 * 60 * 24 * 14;
 const secureCookie = process.env.NODE_ENV === "production";
 const sameSiteCookie = process.env.NODE_ENV === "production" ? "strict" : "lax";
 
-const tokenExpiry = 60;
 const tokenRefreshBuffer = 30;
 
 const authSecret = process.env.AUTH_SECRET!;
@@ -63,67 +62,60 @@ export const middleware: NextMiddleware = async (request: NextRequest) => {
     return NextResponse.redirect(homeUrl);
   }
 
-  if (shouldUpdateToken(token)) {
+  const shouldUpdate = shouldUpdateToken(token);
+  if (shouldUpdate) {
     try {
       const newTokensObject = await refreshAccessToken(token);
       const sessionCookieValue = await encode({
+        maxAge: sessionCookieMaxAge,
         secret: authSecret,
         token: newTokensObject,
-        maxAge: tokenExpiry,
         salt: sessionCookieName,
       });
-      response = updateCookie(sessionCookieValue, request, response, signInUrl);
+      response = getResponseWithSessionCookie(sessionCookieValue, request, response);
     } catch (error) {
       console.log("Error refreshing token: ", error);
-      return updateCookie(null, request, response, signInUrl);
+      response = NextResponse.redirect(signInUrl);
+      response.cookies.delete(sessionCookieName);
     }
   }
 
   return response;
 };
 
-export function updateCookie(
-  sessionCookieValue: string | null,
+export function getResponseWithSessionCookie(
+  sessionCookieValue: string,
   request: NextRequest,
   response: NextResponse,
-  signInUrl: URL,
 ): NextResponse<unknown> {
-  if (sessionCookieValue) {
-    request.cookies.set(sessionCookieName, sessionCookieValue);
-    response = NextResponse.next({
-      request: {
-        headers: request.headers,
-      },
-    });
-    response.cookies.set(sessionCookieName, sessionCookieValue, {
-      httpOnly: true,
-      maxAge: sessionCookieMaxAge,
-      secure: secureCookie,
-      sameSite: sameSiteCookie,
-    });
-  } else {
-    request.cookies.delete(sessionCookieName);
-    return NextResponse.redirect(signInUrl);
-  }
+  request.cookies.set(sessionCookieName, sessionCookieValue);
+  response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
+  response.cookies.set(sessionCookieName, sessionCookieValue, {
+    httpOnly: true,
+    maxAge: sessionCookieMaxAge,
+    secure: secureCookie,
+    sameSite: sameSiteCookie,
+  });
 
   return response;
 }
 
 export function shouldUpdateToken(token: JWT): boolean {
-  const expiresAt = token?.expires_at;
-  if (!expiresAt) {
-    return true;
-  }
+  const accessTokenExpiresAt = token?.access_token_expires_at;
+  if (!accessTokenExpiresAt) return true;
+
   const timeInSeconds = Math.ceil(Date.now() / 1000);
-  const shouldUpdate = timeInSeconds >= expiresAt - tokenRefreshBuffer;
+  const shouldUpdate = timeInSeconds >= accessTokenExpiresAt - tokenRefreshBuffer;
   return shouldUpdate;
 }
 
 export async function refreshAccessToken(token: JWT): Promise<JWT> {
   const refreshToken = token?.refresh_token;
-  if (!refreshToken) {
-    throw new Error("No refresh token found in token");
-  }
+  if (!refreshToken) throw new Error("No refresh token found in token");
 
   console.log("Refreshing token");
   if (isRefreshing.get(refreshToken)) {
@@ -159,10 +151,8 @@ export async function refreshAccessToken(token: JWT): Promise<JWT> {
     const decodedToken = jwtDecode(newTokensObj.access_token);
     const newJwt: JWT = {
       ...token,
-      exp: decodedToken.exp,
-      iat: decodedToken.iat,
       access_token: newTokensObj.access_token ?? token?.access_token,
-      expires_at: decodedToken.exp,
+      access_token_expires_at: decodedToken.exp,
       refresh_token: newTokensObj.refresh_token ?? token?.refresh_token,
     };
     return newJwt;
@@ -186,6 +176,7 @@ const TokenRefreshResponseSchema = z.object({
 declare module "next-auth/jwt" {
   interface JWT {
     access_token?: string;
+    access_token_expires_at?: number;
     expires_at?: number;
     refresh_token?: string;
     error?: "RefreshTokenError";
