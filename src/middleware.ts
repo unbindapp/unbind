@@ -75,8 +75,8 @@ export const middleware: NextMiddleware = async (request: NextRequest) => {
       response = getResponseWithSessionCookie(sessionCookieValue, request, response);
     } catch (error) {
       console.log("Error refreshing token: ", error);
-      response = NextResponse.redirect(signInUrl);
-      response.cookies.delete(sessionCookieName);
+      request.cookies.delete(sessionCookieName);
+      response = NextResponse.redirect(signInUrl, { headers: request.headers });
     }
   }
 
