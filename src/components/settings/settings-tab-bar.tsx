@@ -35,15 +35,15 @@ export default function SettingsTabBar({ tabs }: TProps) {
             onClick={() => setActiveTabPath(tab.href)}
             href={tab.href}
             variant="ghost"
-            className="text-muted-foreground data-active:text-foreground group/button shrink-0 justify-start gap-1.5 rounded-lg px-3 py-4.25 text-left text-sm font-medium focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent sm:py-4 md:w-full md:gap-2.5 md:px-4 md:py-3.25 md:text-base"
+            className="text-muted-foreground data-active:text-foreground group/button shrink-0 justify-start gap-1.5 rounded-lg px-3 py-4.25 text-left text-sm font-medium focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent sm:py-4 md:w-full md:gap-2.5 md:px-4 md:py-4 md:text-base"
           >
-            <div className="absolute top-0 left-0 h-full w-full py-1.5 md:py-0">
+            <div className="absolute top-0 left-0 h-full w-full py-1.5 md:py-0.5">
               <div className="has-hover:group-hover/button:bg-border group-active/button:bg-border group-focus-visible/button:ring-offset-background group-focus-visible/button:ring-primary/50 h-full w-full rounded-lg group-focus-visible/button:ring-1 group-focus-visible/button:ring-offset-2" />
             </div>
             {isActive(tab, activeTabPath) && (
               <TabIndicator
                 layoutId="sidebar-tab-indicator"
-                className="md:w-2px md:top-2 md:h-[calc(100%-1rem)]"
+                className="md:w-2px md:top-2.75 md:h-[calc(100%-1.375rem)]"
               />
             )}
             <tab.Icon className="relative -my-1 -ml-0.25 size-4 shrink-0 translate-z-0 md:-ml-1 md:size-5" />

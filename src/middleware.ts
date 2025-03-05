@@ -160,14 +160,13 @@ export async function refreshAccessToken(token: JWT): Promise<JWT> {
       access_token_expires_at: decodedToken.exp,
       refresh_token: newTokensObj.refresh_token ?? token?.refresh_token,
     };
+    isRefreshing.delete(refreshToken);
     return newJwt;
   } catch (e) {
-    console.error("refreshAccessToken error:", e);
-  } finally {
     isRefreshing.delete(refreshToken);
+    console.error("refreshAccessToken error:", e);
+    throw new Error("RefreshTokenError");
   }
-
-  return token;
 }
 
 const TokenRefreshResponseSchema = z.object({
