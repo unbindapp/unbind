@@ -67,7 +67,7 @@ export const middleware: NextMiddleware = async (request: NextRequest) => {
     try {
       const newTokensObject = await refreshAccessToken(token);
       const sessionCookieValue = await encode({
-        maxAge: sessionCookieMaxAge,
+        maxAge: sessionCookieMaxAge + 60 * 60 * 24,
         secret: authSecret,
         token: newTokensObject,
         salt: sessionCookieName,
