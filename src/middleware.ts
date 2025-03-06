@@ -6,11 +6,11 @@ import { z } from "zod";
 const isRefreshing = new Map<string, Promise<JWT>>();
 const signInPathname = "/sign-in";
 
-const sessionCookieName =
-  process.env.NODE_ENV === "production" ? "__Secure-authjs.session-token" : "authjs.session-token";
+const isProd = process.env.NODE_ENV === "production";
+const sessionCookieName = isProd ? "__Secure-authjs.session-token" : "authjs.session-token";
 const sessionCookieMaxAge = 60 * 60 * 24 * 14;
-const secureCookie = process.env.NODE_ENV === "production";
-const sameSiteCookie = process.env.NODE_ENV === "production" ? "strict" : "lax";
+const secureCookie = isProd;
+const sameSiteCookie = isProd ? "strict" : "lax";
 
 const tokenRefreshBuffer = 30;
 
