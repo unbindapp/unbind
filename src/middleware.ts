@@ -1,9 +1,9 @@
+import { jwtDecode } from "jwt-decode";
 import { encode, getToken, JWT } from "next-auth/jwt";
 import { NextMiddleware, NextRequest, NextResponse } from "next/server";
-import { jwtDecode } from "jwt-decode";
 import { z } from "zod";
 
-const isRefreshing = new Map<string, boolean>();
+const isRefreshing = new Map<string, Promise<JWT>>();
 const signInPathname = "/sign-in";
 
 const sessionCookieName =
@@ -123,50 +123,61 @@ export async function refreshAccessToken(token: JWT): Promise<JWT> {
   if (!refreshToken) throw new Error("No refresh token found in token");
 
   console.log("Refreshing token");
-  if (isRefreshing.get(refreshToken)) {
-    console.log("Token is already being refreshed");
-    return token;
+  const promise = isRefreshing.get(refreshToken);
+  if (promise) {
+    console.log("Token is already being refreshed, awaiting existing refresh operation");
+    return await promise;
   }
 
-  isRefreshing.set(refreshToken, true);
+  const refresh = async () => {
+    try {
+      const url = `${dexIssuer}/token`;
+      const res = await fetch(url, {
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          client_id: dexClientId,
+          client_secret: dexClientSecret,
+          grant_type: "refresh_token",
+          refresh_token: refreshToken,
+        }),
 
-  try {
-    const url = `${dexIssuer}/token`;
-    const res = await fetch(url, {
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        client_id: dexClientId,
-        client_secret: dexClientSecret,
-        grant_type: "refresh_token",
-        refresh_token: refreshToken,
-      }),
+        credentials: "include",
+        method: "POST",
+      });
 
-      credentials: "include",
-      method: "POST",
-    });
+      const resJson = await res.json();
 
-    const resJson = await res.json();
+      if (!res.ok) {
+        console.log(
+          `refreshAccessToken res is not ok for refresh token: ${refreshToken} |`,
+          resJson,
+        );
+        throw new Error(`Token refresh failed with status: ${res.status}`);
+      }
 
-    if (!res.ok) {
-      console.log("Res is not ok:", resJson);
-      throw new Error(`Token refresh failed with status: ${res.status}`);
+      const newTokensObj = TokenRefreshResponseSchema.parse(resJson);
+      const decodedToken = jwtDecode(newTokensObj.access_token);
+      const newJwt: JWT = {
+        ...token,
+        access_token: newTokensObj.access_token ?? token?.access_token,
+        access_token_expires_at: decodedToken.exp,
+        refresh_token: newTokensObj.refresh_token ?? token?.refresh_token,
+      };
+      console.log("OLD REFRESH TOKEN: ", token?.refresh_token);
+      console.log("NEW REFRESH TOKEN: ", newJwt.refresh_token);
+      return newJwt;
+    } catch (e) {
+      console.error("refreshAccessToken error:", e);
+      throw new Error("RefreshTokenError");
     }
+  };
 
-    const newTokensObj = TokenRefreshResponseSchema.parse(resJson);
-    const decodedToken = jwtDecode(newTokensObj.access_token);
-    const newJwt: JWT = {
-      ...token,
-      access_token: newTokensObj.access_token ?? token?.access_token,
-      access_token_expires_at: decodedToken.exp,
-      refresh_token: newTokensObj.refresh_token ?? token?.refresh_token,
-    };
+  const refreshTokenPromise = refresh().then((newTokens) => {
     isRefreshing.delete(refreshToken);
-    return newJwt;
-  } catch (e) {
-    isRefreshing.delete(refreshToken);
-    console.error("refreshAccessToken error:", e);
-    throw new Error("RefreshTokenError");
-  }
+    return newTokens;
+  });
+  isRefreshing.set(refreshToken, refreshTokenPromise);
+  return await refreshTokenPromise;
 }
 
 const TokenRefreshResponseSchema = z.object({
