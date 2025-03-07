@@ -151,10 +151,7 @@ export async function refreshAccessToken(token: JWT): Promise<JWT> {
       const resJson = await res.json();
 
       if (!res.ok) {
-        console.log(
-          `refreshAccessToken res is not ok for refresh token: ${refreshToken} |`,
-          resJson,
-        );
+        console.log(`refreshAccessToken res is not ok`, resJson);
         throw new Error(`Token refresh failed with status: ${res.status}`);
       }
 
@@ -166,8 +163,13 @@ export async function refreshAccessToken(token: JWT): Promise<JWT> {
         access_token_expires_at: decodedToken.exp,
         refresh_token: newTokensObj.refresh_token ?? token?.refresh_token,
       };
-      console.log("OLD REFRESH TOKEN: ", token?.refresh_token);
-      console.log("NEW REFRESH TOKEN: ", newJwt.refresh_token);
+      if (
+        token?.refresh_token &&
+        newJwt.refresh_token &&
+        token.refresh_token !== newJwt.refresh_token
+      ) {
+        console.log("Refresh token renewed");
+      }
       return newJwt;
     } catch (e) {
       console.error("refreshAccessToken error:", e);

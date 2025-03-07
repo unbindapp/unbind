@@ -2,21 +2,18 @@
 
 import GitProviderIcon from "@/components/icons/git-provider";
 import { Button } from "@/components/ui/button";
-import { AppRouterInputs, AppRouterOutputs } from "@/server/trpc/api/root";
-import { api } from "@/server/trpc/setup/client";
 import { useMutation } from "@tanstack/react-query";
 import { LoaderIcon } from "lucide-react";
+import { Session } from "next-auth";
 
 type TProps = {
   teamId: string;
+  session: Session;
 };
 
-export default function GitProviderButtons({ teamId }: TProps) {
-  const { mutateAsync: createGitHubManifest } = api.github.createManifest.useMutation();
-  const { mutateAsync: connectGitHubApp } = api.github.connectApp.useMutation();
-
+export default function GitProviderButtons({ teamId, session }: TProps) {
   const { mutate: onGitHubClick, isPending: isGitHubPending } = useMutation({
-    mutationFn: async () => createGitHubApp({ teamId, createGitHubManifest, connectGitHubApp }),
+    mutationFn: async () => createGitHubApp({ teamId, accessToken: session.access_token }),
     mutationKey: ["create-github-app", { teamId }],
   });
 
@@ -49,24 +46,7 @@ export default function GitProviderButtons({ teamId }: TProps) {
   );
 }
 
-async function createGitHubApp({
-  teamId,
-  createGitHubManifest,
-  connectGitHubApp,
-}: {
-  teamId: string;
-  createGitHubManifest: (
-    props: AppRouterInputs["github"]["createManifest"],
-  ) => Promise<AppRouterOutputs["github"]["createManifest"]>;
-  connectGitHubApp: (
-    props: AppRouterInputs["github"]["connectApp"],
-  ) => Promise<AppRouterOutputs["github"]["connectApp"]>;
-}) {
-  const { data } = await createGitHubManifest({
-    teamId,
-    redirectUrl: window.location.href + "/connecting/github",
-  });
-
+async function createGitHubApp({ teamId, accessToken }: { teamId: string; accessToken: string }) {
   const width = 800;
   const height = 600;
   const left = (window.screen.width - width) / 2;
@@ -82,39 +62,14 @@ async function createGitHubApp({
     return;
   }
 
-  // Create a form in the popup window
-  const form = popup.document.createElement("form");
-  form.method = "post";
-  form.action = data.post_url;
-  form.style.display = "none";
-
-  const input = popup.document.createElement("input");
-  input.name = "manifest";
-  input.type = "text";
-  input.value = JSON.stringify(data.manifest);
-
-  form.appendChild(input);
-  popup.document.body.appendChild(form);
-
-  console.log("Submitting form to GitHub with manifest:", data.manifest);
-
-  form.submit();
-
-  const githubCode = await new Promise<string>((resolve) => {
-    function handleMessage(event: MessageEvent) {
-      if (event.origin !== window.location.origin) return;
-      if (event.data.code) {
-        resolve(event.data.code);
-        window.removeEventListener("message", handleMessage);
-      }
-    }
-    window.addEventListener("message", handleMessage);
+  const res = await fetch("https://api.unbind.app/github/app/create", {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
   });
 
-  popup.close();
-
-  // Use the received code to connect the GitHub app.
-  const connectResult = await connectGitHubApp({ teamId, code: githubCode });
-  console.log("Connected GitHub app:", connectResult);
-  return connectResult;
+  const resText = await res.text();
+  console.log(resText);
+  popup.document.write(resText);
 }
