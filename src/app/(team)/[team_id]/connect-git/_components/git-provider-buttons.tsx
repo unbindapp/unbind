@@ -26,6 +26,7 @@ export default function GitProviderButtons({ teamId, session }: TProps) {
       }),
     mutationKey: ["create-github-app", { teamId }],
   });
+  console.log("gitHubPopupState", gitHubPopupState);
 
   return (
     <>
