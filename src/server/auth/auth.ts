@@ -27,6 +27,9 @@ const {
           access_token_expires_at: account.expires_at,
           refresh_token: account.refresh_token,
         };
+        if (account.expires_at) {
+          console.log("EXPIRES AT: ", new Date(account.expires_at * 1000).toISOString());
+        }
         return newToken;
       }
 

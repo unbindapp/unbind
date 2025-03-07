@@ -82,6 +82,10 @@ export const middleware: NextMiddleware = async (request: NextRequest) => {
         secure: secureCookie,
         sameSite: sameSiteCookie,
       });
+    } finally {
+      if (token.refresh_token) {
+        isRefreshing.delete(token.refresh_token);
+      }
     }
   }
 
@@ -113,8 +117,7 @@ export function shouldUpdateToken(token: JWT): boolean {
   const accessTokenExpiresAt = token?.access_token_expires_at;
   if (!accessTokenExpiresAt) return true;
 
-  const timeInSeconds = Math.ceil(Date.now() / 1000);
-  const shouldUpdate = timeInSeconds >= accessTokenExpiresAt - tokenRefreshBuffer;
+  const shouldUpdate = Date.now() >= accessTokenExpiresAt * 1000 - tokenRefreshBuffer * 1000;
   return shouldUpdate;
 }
 
@@ -172,12 +175,10 @@ export async function refreshAccessToken(token: JWT): Promise<JWT> {
     }
   };
 
-  const refreshTokenPromise = refresh().then((newTokens) => {
-    isRefreshing.delete(refreshToken);
-    return newTokens;
-  });
+  const refreshTokenPromise = refresh();
   isRefreshing.set(refreshToken, refreshTokenPromise);
-  return await refreshTokenPromise;
+  const newTokenObj = await refreshTokenPromise;
+  return newTokenObj;
 }
 
 const TokenRefreshResponseSchema = z.object({
