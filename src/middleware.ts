@@ -3,7 +3,7 @@ import { encode, getToken, JWT } from "next-auth/jwt";
 import { NextMiddleware, NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-const isRefreshing = new Map<string, Promise<JWT>>();
+const isRefreshingToken = new Map<string, Promise<JWT>>();
 const signInPathname = "/sign-in";
 
 const isProd = process.env.NODE_ENV === "production";
@@ -84,7 +84,7 @@ export const middleware: NextMiddleware = async (request: NextRequest) => {
       });
     } finally {
       if (token.refresh_token) {
-        isRefreshing.delete(token.refresh_token);
+        isRefreshingToken.delete(token.refresh_token);
       }
     }
   }
@@ -126,10 +126,11 @@ export async function refreshAccessToken(token: JWT): Promise<JWT> {
   if (!refreshToken) throw new Error("No refresh token found in token");
 
   console.log("Refreshing token");
-  const promise = isRefreshing.get(refreshToken);
-  if (promise) {
+  const existingRefreshPromise = isRefreshingToken.get(refreshToken);
+  if (existingRefreshPromise) {
     console.log("Token is already being refreshed, awaiting existing refresh operation");
-    return await promise;
+    const newTokensObj = await existingRefreshPromise;
+    return newTokensObj;
   }
 
   const refresh = async () => {
@@ -177,9 +178,9 @@ export async function refreshAccessToken(token: JWT): Promise<JWT> {
     }
   };
 
-  const refreshTokenPromise = refresh();
-  isRefreshing.set(refreshToken, refreshTokenPromise);
-  const newTokenObj = await refreshTokenPromise;
+  const refreshPromise = refresh();
+  isRefreshingToken.set(refreshToken, refreshPromise);
+  const newTokenObj = await refreshPromise;
   return newTokenObj;
 }
 
