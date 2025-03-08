@@ -2,25 +2,37 @@
 
 import GitProviderIcon from "@/components/icons/git-provider";
 import PageWrapper from "@/components/page-wrapper";
-import { LoaderIcon } from "lucide-react";
-import { useEffect } from "react";
+import { LoaderIcon, TriangleAlertIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function Page() {
+  const [currentState, setCurrentState] = useState<"loading" | "has-opener" | "no-opener">(
+    "loading",
+  );
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get("code");
-
-    if (code && window.opener) {
-      window.opener.postMessage({ code }, window.location.origin);
+    if (window.opener) {
+      setCurrentState("has-opener");
+    } else {
+      setCurrentState("no-opener");
     }
   }, []);
+
+  useEffect(() => {
+    if (currentState === "has-opener") {
+      window.opener.postMessage({ success: true }, window.location.origin);
+    }
+  }, [currentState]);
 
   return (
     <PageWrapper className="items-center justify-center">
       <div className="flex w-full flex-col items-center justify-center pb-[5vh] text-center">
-        <LoaderIcon className="text-muted-foreground size-8 animate-spin" />
+        {currentState === "no-opener" ? (
+          <TriangleAlertIcon className="text-muted-foreground size-8" />
+        ) : (
+          <LoaderIcon className="text-muted-foreground size-8 animate-spin" />
+        )}
         <p className="text-muted-foreground mt-3 w-full text-base leading-tight font-medium">
-          Connected to:
+          {currentState === "no-opener" ? "Connection failed" : "Connecting to:"}
         </p>
         <div className="mt-2 flex w-full items-center justify-center gap-2">
           <GitProviderIcon variant="github" className="size-8 shrink-0" />

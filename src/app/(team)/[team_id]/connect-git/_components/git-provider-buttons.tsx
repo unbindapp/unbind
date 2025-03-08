@@ -1,10 +1,14 @@
 "use client";
 
+import {
+  gitProviders,
+  TGitProvider,
+} from "@/app/(team)/[team_id]/connect-git/_components/constants";
 import GitProviderIcon from "@/components/icons/git-provider";
 import { Button } from "@/components/ui/button";
 import { env } from "@/lib/env";
 import { useMutation } from "@tanstack/react-query";
-import { LoaderIcon } from "lucide-react";
+import { CheckIcon, LoaderIcon } from "lucide-react";
 import { Session } from "next-auth";
 import { useState } from "react";
 
@@ -13,14 +17,17 @@ type TProps = {
   session: Session;
 };
 
-type TPopupState = "closed" | "open" | "success";
+type TPopupState = "closed" | "open" | "connected";
 
 export default function GitProviderButtons({ teamId, session }: TProps) {
+  const gitHubRedirectUrl = env.NEXT_PUBLIC_SITE_URL + `/${teamId}/connect-git/connected/github`;
+  const createGitHubAppUrl = `${env.NEXT_PUBLIC_UNBIND_API_URL}/github/app/create?redirect_url=${gitHubRedirectUrl}`;
   const [gitHubPopupState, setGitHubPopupState] = useState<TPopupState>("closed");
+
   const { mutate: onGitHubClick, isPending: isGitHubPending } = useMutation({
     mutationFn: async () =>
       createGitHubApp({
-        teamId,
+        createGitHubAppUrl,
         accessToken: session.access_token,
         setPopupState: setGitHubPopupState,
       }),
@@ -28,41 +35,64 @@ export default function GitProviderButtons({ teamId, session }: TProps) {
   });
   console.log("gitHubPopupState", gitHubPopupState);
 
+  return gitProviders.map((provider) => (
+    <GitProviderButton
+      key={provider.slug}
+      provider={provider}
+      isPending={provider.slug === "github" ? isGitHubPending : false}
+      onClick={provider.slug === "github" ? onGitHubClick : () => {}}
+      popupState={provider.slug === "github" ? gitHubPopupState : "closed"}
+    />
+  ));
+}
+
+function GitProviderButton({
+  provider,
+  popupState,
+  isPending,
+  onClick,
+}: {
+  provider: TGitProvider;
+  popupState: TPopupState;
+  isPending: boolean;
+  onClick: () => void;
+}) {
   return (
-    <>
-      <Button
-        disabled={isGitHubPending}
-        fadeOnDisabled={false}
-        onClick={() => onGitHubClick()}
-        variant="github"
-        className="px-11"
-      >
-        <div className="absolute top-1/2 left-2.5 flex size-6 -translate-y-1/2 items-center justify-center">
-          {isGitHubPending ? (
-            <LoaderIcon className="size-full animate-spin p-0.5" />
-          ) : (
-            <GitProviderIcon className="size-full" variant="github" />
-          )}
+    <Button
+      disabled={isPending || popupState === "connected"}
+      fadeOnDisabled={false}
+      onClick={onClick}
+      variant={popupState === "connected" ? "success" : (provider.slug as "github" | "gitlab")}
+      className="px-11"
+    >
+      <div className="absolute top-1/2 left-2.5 flex size-6 -translate-y-1/2 items-center justify-center">
+        {isPending ? (
+          <LoaderIcon className="size-full animate-spin p-0.25" />
+        ) : (
+          <GitProviderIcon className="size-full" variant={provider.slug} />
+        )}
+        <div
+          data-show={popupState === "connected" ? true : undefined}
+          className="bg-background text-success ring-success absolute -top-0.5 -right-0.5 size-3.5 scale-50 rounded-full p-0.75 opacity-0 ring-2 transition data-show:scale-100 data-show:opacity-100"
+        >
+          <CheckIcon strokeWidth={4} className="size-full" />
         </div>
-        <p className="min-w-0 shrink">Continue with GitHub</p>
-      </Button>
-      <Button variant="gitlab" className="px-11">
-        <GitProviderIcon
-          className="absolute top-1/2 left-2.5 size-6 -translate-y-1/2"
-          variant="gitlab"
-        />
-        <p className="min-w-0 shrink">Continue with GitLab</p>
-      </Button>
-    </>
+      </div>
+      <p className="min-w-0 shrink">
+        {popupState === "connected"
+          ? `Connected to ${provider.name}`
+          : `Continue with ${provider.name}`}
+      </p>
+    </Button>
   );
 }
 
 async function createGitHubApp({
-  teamId,
+  createGitHubAppUrl,
   accessToken,
   setPopupState,
 }: {
-  teamId: string;
+  createGitHubAppUrl: string;
   accessToken: string;
   setPopupState: (state: TPopupState) => void;
 }) {
@@ -78,13 +108,23 @@ async function createGitHubApp({
   );
   setPopupState("open");
 
-  const redirectUrl = env.NEXT_PUBLIC_SITE_URL + `/${teamId}/connect-git/connected/github`;
-
   if (!popup) {
     setPopupState("closed");
     alert("Popup was blocked. Please allow popups for this site.");
     return;
   }
+
+  const messageHandler = (event: MessageEvent) => {
+    if (event.origin !== window.location.origin) return;
+    if (event.data && event.data.success === true) {
+      setPopupState("connected");
+      clearInterval(interval);
+      window.removeEventListener("message", messageHandler);
+      popup.close();
+    }
+  };
+
+  window.addEventListener("message", messageHandler);
 
   popup.document.write(`
     <html>
@@ -137,23 +177,15 @@ async function createGitHubApp({
       abortController.abort();
       setPopupState("closed");
     }
-    /* if () {
-      clearInterval(interval);
-      setPopupState("success");
-      popup.close();
-    } */
   }, 250);
 
-  const res = await fetch(
-    `${env.NEXT_PUBLIC_UNBIND_API_URL}/github/app/create?redirect_url=${redirectUrl}`,
-    {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-      signal: abortController.signal,
+  const res = await fetch(createGitHubAppUrl, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
     },
-  );
+    signal: abortController.signal,
+  });
 
   const resText = await res.text();
   popup.document.write(resText);
