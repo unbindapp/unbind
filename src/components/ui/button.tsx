@@ -11,7 +11,7 @@ export const minButtonSizeEnforcerClassName =
   "before:w-full before:h-full before:min-w-[44px] before:min-h-[44px] before:z-[-1] before:bg-transparent before:absolute before:-translate-y-1/2 before:top-1/2 before:-translate-x-1/2 before:left-1/2";
 
 const buttonVariants = cva(
-  "relative text-center leading-tight max-w-full inline-flex items-center select-none z-0 touch-manipulation justify-center gap-1.5 rounded-full font-bold focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-primary/50 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0",
+  "relative text-center leading-tight max-w-full inline-flex items-center select-none z-0 touch-manipulation justify-center gap-1.5 rounded-lg font-bold focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-primary/50 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -50,7 +50,7 @@ const buttonVariants = cva(
       },
       size: {
         default: "px-5 py-2.75",
-        sm: "px-4 py-2 text-sm",
+        sm: "px-4 py-2 text-sm rounded-md",
         lg: "px-9 py-2.5",
         icon: "size-9 shrink-0 flex items-center justify-center",
       },

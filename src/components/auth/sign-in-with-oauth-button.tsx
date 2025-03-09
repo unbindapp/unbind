@@ -30,7 +30,7 @@ export default function SignInWithOAuthButton({
     <form className={cn("w-full", className)} action={action}>
       <Button type="submit" className="w-full px-10" state={isPending ? "loading" : undefined}>
         <div className="absolute top-1/2 left-2.5 flex size-6 -translate-y-1/2 items-center justify-center">
-          {isPending && <LoaderIcon className="size-full animate-spin p-0.5" />}
+          {isPending && <LoaderIcon className="size-full animate-spin p-0.25" />}
         </div>
         {providerName ? `Continue with ${providerName}` : "Sign in"}
       </Button>
