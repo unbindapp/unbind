@@ -50,7 +50,7 @@ const buttonVariants = cva(
       },
       size: {
         default: "px-5 py-2.75",
-        sm: "px-4 py-2 text-sm rounded-md",
+        sm: "px-3.5 py-1.25 text-sm rounded-md",
         lg: "px-9 py-2.5",
         icon: "size-9 shrink-0 flex items-center justify-center",
       },

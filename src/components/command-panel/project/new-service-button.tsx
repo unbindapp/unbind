@@ -63,7 +63,11 @@ export default function NewServiceButton({
 
   return (
     <ProjectCommandPanelTrigger open={open} setOpen={setOpen} teamId={teamId} projectId={projectId}>
-      <Button className={cn("bg-background-hover -my-2", className)} size="sm" variant="outline">
+      <Button
+        className={cn("bg-background-hover -my-2 rounded-lg py-2", className)}
+        size="sm"
+        variant="outline"
+      >
         <PlusIcon className="-ml-1.5 size-5" />
         <p className="min-w-0 shrink">New Service</p>
       </Button>

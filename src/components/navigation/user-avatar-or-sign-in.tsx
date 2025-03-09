@@ -18,7 +18,7 @@ export default function UserAvatarOrSignIn({ session }: TProps) {
       {session && <UserAvatar email={session.user.email} />}
       {!session && !isSignInPage && (
         <div className="-mr-0.5 flex items-center justify-end">
-          <LinkButton size="sm" className="py-1.25" href="/sign-in">
+          <LinkButton size="sm" href="/sign-in">
             Sign In
           </LinkButton>
         </div>
