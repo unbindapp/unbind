@@ -1,6 +1,6 @@
 import BroomIcon from "@/components/icons/broom";
 import ServiceIcon from "@/components/icons/service";
-import DeploymentTime from "@/components/project/services/tabs/deployments/deployment-time";
+import DeploymentTime from "@/components/service/tabs/deployments/deployment-time";
 import { Button } from "@/components/ui/button";
 import { TDeployment } from "@/server/trpc/api/main/router";
 import { CircleCheckIcon, EllipsisVerticalIcon, LoaderIcon, TriangleAlertIcon } from "lucide-react";

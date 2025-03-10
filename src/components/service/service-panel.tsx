@@ -1,14 +1,11 @@
 import ServiceIcon from "@/components/icons/service";
 import TabIndicator from "@/components/navigation/tab-indicator";
-import {
-  servicePanelServiceIdKey,
-  servicePanelTabKey,
-} from "@/components/project/services/constants";
-import Deployments from "@/components/project/services/tabs/deployments/deployments";
-import Logs from "@/components/project/services/tabs/logs/logs";
-import Metrics from "@/components/project/services/tabs/metrics/metrics";
-import Settings from "@/components/project/services/tabs/settings/settings";
-import Variables from "@/components/project/services/tabs/variables/variables";
+import { servicePanelServiceIdKey, servicePanelTabKey } from "@/components/service/constants";
+import Deployments from "@/components/service/tabs/deployments/deployments";
+import Logs from "@/components/service/tabs/logs/logs";
+import Metrics from "@/components/service/tabs/metrics/metrics";
+import Settings from "@/components/service/tabs/settings/settings";
+import Variables from "@/components/service/tabs/variables/variables";
 import { useDeviceSize } from "@/components/providers/device-size-provider";
 import { Button } from "@/components/ui/button";
 import {
@@ -102,7 +99,7 @@ export default function ServicePanel({ service, children }: TProps) {
             </DrawerClose>
           )}
         </div>
-        <nav className="flex w-full justify-start overflow-auto border-b">
+        <nav className="touch:scrollbar-hidden flex w-full justify-start overflow-auto border-b">
           <div className="flex justify-start px-2 pt-3.5 sm:px-4.5">
             {tabs.map((tab) => (
               <Button

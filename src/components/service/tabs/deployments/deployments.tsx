@@ -1,8 +1,8 @@
 "use client";
 
 import ErrorCard from "@/components/error-card";
-import DeploymentCard from "@/components/project/services/tabs/deployments/deployment-card";
-import TabWrapper from "@/components/project/services/tabs/tab-wrapper";
+import DeploymentCard from "@/components/service/tabs/deployments/deployment-card";
+import TabWrapper from "@/components/service/tabs/tab-wrapper";
 import { TService } from "@/server/trpc/api/main/router";
 import { api } from "@/server/trpc/setup/client";
 

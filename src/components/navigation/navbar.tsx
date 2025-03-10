@@ -46,7 +46,7 @@ export async function Navbar({
           <LogoLink />
           {breadcrumb && <BreadcrumbSeparator />}
           {(breadcrumb || tabsLg) && (
-            <div className="flex min-h-full min-w-0 shrink items-stretch justify-start overflow-auto">
+            <div className="touch:scrollbar-hidden flex min-h-full min-w-0 shrink items-stretch justify-start overflow-auto">
               {breadcrumb}
               {tabsLg && <BreadcrumbSeparator className="hidden lg:flex" />}
             </div>

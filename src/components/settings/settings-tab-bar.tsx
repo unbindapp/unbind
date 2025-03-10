@@ -25,7 +25,7 @@ export default function SettingsTabBar({ tabs }: TProps) {
   }, [pathname]);
 
   return (
-    <div className="bg-background sticky top-0 left-0 z-10 flex max-h-full w-full flex-row items-center overflow-auto border-b sm:top-[calc(5.75rem+2px)] md:max-h-[calc(100svh-6rem)] md:w-52 md:flex-col md:items-start md:justify-start md:border-0 lg:top-[calc(3rem-1px)] lg:max-h-[calc(100svh-3rem-1px)]">
+    <div className="bg-background max-md:touch:scrollbar-hidden sticky top-0 left-0 z-10 flex max-h-full w-full flex-row items-center overflow-auto border-b sm:top-[calc(5.75rem+2px)] md:max-h-[calc(100svh-6rem)] md:w-52 md:flex-col md:items-start md:justify-start md:border-0 lg:top-[calc(3rem-1px)] lg:max-h-[calc(100svh-3rem-1px)]">
       <div className="flex w-full flex-row sm:px-3 md:flex-col md:p-1 md:pb-12">
         {tabs.map((tab) => (
           <LinkButton

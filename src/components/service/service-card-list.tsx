@@ -6,9 +6,9 @@ import {
   commandPanelProjectFromList,
   commandPanelProjectRootPage,
 } from "@/components/command-panel/constants";
-import { ProjectCommandPanelTrigger } from "@/components/command-panel/project/project-command-panel";
+import { ProjectCommandPanelTrigger } from "@/components/project/command-panel/project-command-panel";
 import ServiceIcon from "@/components/icons/service";
-import ServiceCard from "@/components/project/services/service-card";
+import ServiceCard from "@/components/service/service-card";
 import { Button } from "@/components/ui/button";
 import { groupByServiceGroup } from "@/lib/helpers";
 import { api } from "@/server/trpc/setup/client";

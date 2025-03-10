@@ -1,8 +1,8 @@
 import { CommandPanelTrigger } from "@/components/command-panel/command-panel";
 import ProjectCommandPanelItemsProvider, {
   useProjectCommandPanelItems,
-} from "@/components/command-panel/project/project-command-panel-items-provider";
-import useProjectCommandPanelData from "@/components/command-panel/project/use-project-command-panel-data";
+} from "@/components/project/command-panel/project-command-panel-items-provider";
+import useProjectCommandPanelData from "@/components/project/command-panel/use-project-command-panel-data";
 import { ReactNode } from "react";
 
 type TProps = {

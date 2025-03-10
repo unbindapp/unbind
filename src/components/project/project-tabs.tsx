@@ -59,7 +59,7 @@ export default function ProjectTabs({
 
   return (
     <div className={cn("flex min-w-0 flex-1 items-stretch overflow-hidden", className)}>
-      <div className="flex min-w-0 flex-1 items-stretch overflow-auto">
+      <div className="touch:scrollbar-hidden flex min-w-0 flex-1 items-stretch overflow-auto">
         <div className={cn("flex items-stretch justify-start px-0 sm:px-3", classNameInner)}>
           {tabs.map((tab) => (
             <LinkButton

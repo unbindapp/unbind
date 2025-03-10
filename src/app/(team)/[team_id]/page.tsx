@@ -1,4 +1,4 @@
-import NewProjectButton from "@/components/command-panel/team/new-project-button";
+import NewProjectButton from "@/components/team/command-panel/new-project-button";
 import PageWrapper from "@/components/page-wrapper";
 import ProjectCardList from "@/components/team/project-card-list";
 import { apiServer, HydrateClient } from "@/server/trpc/setup/server";

@@ -1,8 +1,8 @@
 "use client";
 
 import ServiceIcon from "@/components/icons/service";
-import LastDeploymentTime from "@/components/project/services/last-deployment-time";
-import ServicePanel from "@/components/project/services/service-panel";
+import LastDeploymentTime from "@/components/service/last-deployment-time";
+import ServicePanel from "@/components/service/service-panel";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { TService } from "@/server/trpc/api/main/router";

@@ -1,6 +1,6 @@
 import ErrorCard from "@/components/error-card";
-import TabWrapper from "@/components/project/services/tabs/tab-wrapper";
-import VariableCard from "@/components/project/services/tabs/variables/variable-card";
+import TabWrapper from "@/components/service/tabs/tab-wrapper";
+import VariableCard from "@/components/service/tabs/variables/variable-card";
 import { TService } from "@/server/trpc/api/main/router";
 import { api } from "@/server/trpc/setup/client";
 

@@ -1,8 +1,8 @@
 import { CommandPanelTrigger } from "@/components/command-panel/command-panel";
 import TeamCommandPanelItemsProvider, {
   useTeamCommandPanelItems,
-} from "@/components/command-panel/team/team-command-panel-items-provider";
-import useTeamCommandPanelData from "@/components/command-panel/team/use-team-command-panel-data";
+} from "@/components/team/command-panel/team-command-panel-items-provider";
+import useTeamCommandPanelData from "@/components/team/command-panel/use-team-command-panel-data";
 import { ReactNode } from "react";
 
 type TProps = {

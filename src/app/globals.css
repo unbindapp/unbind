@@ -10,6 +10,20 @@
   }
 }
 
+@custom-variant touch {
+  @media (pointer: coarse) {
+    @slot;
+  }
+}
+
+@utility scrollbar-hidden {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
 :root {
   --safe-area-inset-bottom: env(safe-area-inset-bottom);
   --radius: 0.5rem;

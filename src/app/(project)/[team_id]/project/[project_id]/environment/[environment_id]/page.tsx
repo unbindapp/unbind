@@ -1,6 +1,6 @@
-import NewServiceButton from "@/components/command-panel/project/new-service-button";
+import NewServiceButton from "@/components/project/command-panel/new-service-button";
 import PageWrapper from "@/components/page-wrapper";
-import ServiceCardList from "@/components/project/services/service-card-list";
+import ServiceCardList from "@/components/service/service-card-list";
 import { apiServer, HydrateClient } from "@/server/trpc/setup/server";
 
 type TProps = {
