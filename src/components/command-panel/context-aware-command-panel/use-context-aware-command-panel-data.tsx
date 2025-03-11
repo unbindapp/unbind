@@ -18,6 +18,7 @@ import {
   BlocksIcon,
   ChevronsRightIcon,
   DatabaseIcon,
+  FolderPlusIcon,
   KeyRoundIcon,
   LoaderIcon,
   SettingsIcon,
@@ -94,6 +95,16 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
       parentPageId: null,
       inputPlaceholder: "Search commands...",
       items: [
+        ...(context.contextType === "team"
+          ? [
+              {
+                title: "New Project",
+                keywords: [],
+                onSelect: () => onSelectPlaceholder(),
+                Icon: FolderPlusIcon,
+              },
+            ]
+          : []),
         {
           title: "GitHub Repo",
           keywords: ["deploy from github", "deploy from gitlab", "deploy from bitbucket"],
@@ -271,7 +282,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
               },
               {
                 title: "Shared Variables",
-                titleSuffix: ` < ${settingsTitle}`,
+                titleSuffix: ` | ${settingsTitle}`,
                 onSelect: () => {
                   navigateToSettings({ context, pathname: "/shared-variables" });
                 },
@@ -286,7 +297,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
               },
               {
                 title: "Members",
-                titleSuffix: ` < ${settingsTitle}`,
+                titleSuffix: ` | ${settingsTitle}`,
                 onSelect: () => {
                   navigateToSettings({ context, pathname: "/members" });
                 },
@@ -297,7 +308,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
               },
               {
                 title: "Notifications",
-                titleSuffix: ` < ${settingsTitle}`,
+                titleSuffix: ` | ${settingsTitle}`,
                 onSelect: () => {
                   navigateToSettings({ context, pathname: "/notifications" });
                 },
@@ -312,7 +323,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
               },
               {
                 title: "Webhooks",
-                titleSuffix: ` < ${settingsTitle}`,
+                titleSuffix: ` | ${settingsTitle}`,
                 onSelect: () => {
                   navigateToSettings({ context, pathname: "/webhooks" });
                 },
@@ -323,7 +334,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
               },
               {
                 title: "Danger Zone",
-                titleSuffix: ` < ${settingsTitle}`,
+                titleSuffix: ` | ${settingsTitle}`,
                 onSelect: () => {
                   navigateToSettings({ context, pathname: "/danger-zone" });
                 },

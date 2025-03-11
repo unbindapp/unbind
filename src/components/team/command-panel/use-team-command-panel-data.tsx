@@ -42,7 +42,7 @@ export default function useTeamCommandPanelData({ teamId }: { teamId: string }) 
       inputPlaceholder: "Deploy something...",
       items: [
         {
-          title: "Empty Project",
+          title: "New Project",
           keywords: [],
           onSelect: () => onSelectPlaceholder(),
           Icon: FolderPlusIcon,
