@@ -21,6 +21,7 @@ export type TCommandPanelPage = {
 
 export type TCommandPanelItem = {
   title: string;
+  titleSuffix?: string;
   Icon: FC<{ className?: string }>;
   subpage?: TCommandPanelPage;
   onSelect?: () => void;

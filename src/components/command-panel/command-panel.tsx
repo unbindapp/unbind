@@ -434,6 +434,7 @@ function Item({
         <item.Icon className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton -ml-0.5 size-5 group-data-placeholder/item:rounded-full" />
         <p className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink leading-tight group-data-placeholder/item:rounded-md">
           {item.title}
+          {item.titleSuffix && <span className="text-muted-foreground">{item.titleSuffix}</span>}
         </p>
       </div>
       {item.subpage && <ChevronRightIcon className="-mr-1.5 size-5 shrink-0" />}

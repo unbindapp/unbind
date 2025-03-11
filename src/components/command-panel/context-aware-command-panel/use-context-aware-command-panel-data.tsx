@@ -80,8 +80,12 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
       setLastSelectedId(`/settings${pathname}`);
       asyncPush(getSettingsPageHref({ context, pathname }));
     },
-    [lastSelectedId, asyncPush],
+    [asyncPush],
   );
+
+  const settingsTitle = useMemo(() => {
+    return context.contextType === "project" ? "Project Settings" : "Team Settings";
+  }, [context]);
 
   const rootPage: TCommandPanelPage = useMemo(
     () => ({
@@ -258,7 +262,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
             parentPageId: commandPanelContextAwareRootPage,
             items: [
               {
-                title: "Settings",
+                title: settingsTitle,
                 onSelect: () => navigateToSettings({ context, pathname: "" }),
                 Icon: ({ className }) => (
                   <PendingOrIcon id="/settings" Icon={SettingsIcon} className={className} />
@@ -266,7 +270,8 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                 keywords: ["settings", "general", "change", "tweak", "adjust"],
               },
               {
-                title: "Settings > Shared Variables",
+                title: "Shared Variables",
+                titleSuffix: ` < ${settingsTitle}`,
                 onSelect: () => {
                   navigateToSettings({ context, pathname: "/shared-variables" });
                 },
@@ -280,7 +285,8 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                 keywords: ["secrets", "keys", "values"],
               },
               {
-                title: "Settings > Members",
+                title: "Members",
+                titleSuffix: ` < ${settingsTitle}`,
                 onSelect: () => {
                   navigateToSettings({ context, pathname: "/members" });
                 },
@@ -290,7 +296,8 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                 keywords: ["person", "people", "group"],
               },
               {
-                title: "Settings > Notifications",
+                title: "Notifications",
+                titleSuffix: ` < ${settingsTitle}`,
                 onSelect: () => {
                   navigateToSettings({ context, pathname: "/notifications" });
                 },
@@ -304,7 +311,8 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                 keywords: ["notify", "alert"],
               },
               {
-                title: "Settings > Webhooks",
+                title: "Webhooks",
+                titleSuffix: ` < ${settingsTitle}`,
                 onSelect: () => {
                   navigateToSettings({ context, pathname: "/webhooks" });
                 },
@@ -314,7 +322,8 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                 keywords: ["hook", "integration", "alert", "connection"],
               },
               {
-                title: "Settings > Danger Zone",
+                title: "Danger Zone",
+                titleSuffix: ` < ${settingsTitle}`,
                 onSelect: () => {
                   navigateToSettings({ context, pathname: "/danger-zone" });
                 },
@@ -332,7 +341,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
         },
       ],
     }),
-    [onSelectPlaceholder, utils, context, isAsyncPushPending],
+    [onSelectPlaceholder, utils, context, settingsTitle, PendingOrIcon, navigateToSettings],
   );
 
   const setCurrentPageId = useCallback(
