@@ -53,7 +53,7 @@ export default function useProjectCommandPanelData({ teamId }: { teamId: string 
             getItems: async () => {
               const res = await utils.main.getRepos.fetch({ teamId });
               const items: TCommandPanelItem[] = res.repos.map((r) => ({
-                title: `${r.owner}/${r.name}`,
+                title: `${r.full_name}`,
                 keywords: [],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }: { className?: string }) => (
