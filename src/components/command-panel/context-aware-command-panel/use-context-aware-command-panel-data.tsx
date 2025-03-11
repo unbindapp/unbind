@@ -10,25 +10,34 @@ import {
   TContextAwareCommandPanelContext,
 } from "@/components/command-panel/types";
 import ServiceIcon from "@/components/icons/service";
+import { useAsyncPush } from "@/components/providers/async-push-provider";
+import { cn } from "@/components/ui/utils";
 import { api } from "@/server/trpc/setup/client";
-import { BlocksIcon, DatabaseIcon } from "lucide-react";
+import {
+  BellIcon,
+  BlocksIcon,
+  ChevronsRightIcon,
+  DatabaseIcon,
+  KeyRoundIcon,
+  LoaderIcon,
+  SettingsIcon,
+  TriangleAlertIcon,
+  UsersIcon,
+  WebhookIcon,
+} from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
-import { useCallback, useMemo, useRef } from "react";
+import { FC, useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
-export default function useContextAwareCommandPanelData({
-  teamId,
-  projectId,
-  contextType,
-}: TContextAwareCommandPanelContext) {
-  console.log("Command Panel Context: ", teamId, projectId, contextType);
-
+export default function useContextAwareCommandPanelData(context: TContextAwareCommandPanelContext) {
   const [, setPanelId] = useQueryState(commandPanelKey);
   const [panelPageId, setPanelPageId] = useQueryState(
     commandPanelPageKey,
     parseAsString.withDefault(commandPanelContextAwareRootPage),
   );
   const timeout = useRef<NodeJS.Timeout | null>(null);
+
+  const { asyncPush, isPending: isAsyncPushPending } = useAsyncPush();
 
   const onSelectPlaceholder = useCallback(() => {
     toast.success("Successful", {
@@ -47,6 +56,33 @@ export default function useContextAwareCommandPanelData({
 
   const utils = api.useUtils();
 
+  const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
+  const PendingOrIcon = useCallback(
+    ({
+      id,
+      Icon,
+      className,
+    }: {
+      id: string;
+      Icon: FC<{ className?: string }>;
+      className?: string;
+    }) => {
+      if (isAsyncPushPending && lastSelectedId === id) {
+        return <LoaderIcon className={cn("animate-spin", className)} />;
+      }
+      return <Icon className={className} />;
+    },
+    [isAsyncPushPending, lastSelectedId],
+  );
+
+  const navigateToSettings = useCallback(
+    ({ pathname, context }: { pathname: string; context: TContextAwareCommandPanelContext }) => {
+      setLastSelectedId(`/settings${pathname}`);
+      asyncPush(getSettingsPageHref({ context, pathname }));
+    },
+    [lastSelectedId, asyncPush],
+  );
+
   const rootPage: TCommandPanelPage = useMemo(
     () => ({
       id: commandPanelContextAwareRootPage,
@@ -64,7 +100,7 @@ export default function useContextAwareCommandPanelData({
             parentPageId: commandPanelContextAwareRootPage,
             inputPlaceholder: "Deploy from GitHub...",
             getItems: async () => {
-              const res = await utils.main.getGitHubRepos.fetch({ teamId });
+              const res = await utils.main.getGitHubRepos.fetch({ teamId: context.teamId });
               const items: TCommandPanelItem[] = res.repos.map((r) => ({
                 title: `${r.owner}/${r.name}`,
                 keywords: [],
@@ -211,9 +247,92 @@ export default function useContextAwareCommandPanelData({
           onSelect: () => onSelectPlaceholder(),
           Icon: ({ className }) => <ServiceIcon variant="docker" className={className} />,
         },
+        {
+          title: "Go to",
+          keywords: ["navigate", "jump"],
+          Icon: ChevronsRightIcon,
+          subpage: {
+            title: "Go to",
+            id: "go_to",
+            inputPlaceholder: "Go to...",
+            parentPageId: commandPanelContextAwareRootPage,
+            items: [
+              {
+                title: "Settings",
+                onSelect: () => navigateToSettings({ context, pathname: "" }),
+                Icon: ({ className }) => (
+                  <PendingOrIcon id="/settings" Icon={SettingsIcon} className={className} />
+                ),
+                keywords: ["settings", "general", "change", "tweak", "adjust"],
+              },
+              {
+                title: "Settings > Shared Variables",
+                onSelect: () => {
+                  navigateToSettings({ context, pathname: "/shared-variables" });
+                },
+                Icon: ({ className }) => (
+                  <PendingOrIcon
+                    id="/settings/shared-variables"
+                    Icon={KeyRoundIcon}
+                    className={className}
+                  />
+                ),
+                keywords: ["secrets", "keys", "values"],
+              },
+              {
+                title: "Settings > Members",
+                onSelect: () => {
+                  navigateToSettings({ context, pathname: "/members" });
+                },
+                Icon: ({ className }) => (
+                  <PendingOrIcon id="/settings/members" Icon={UsersIcon} className={className} />
+                ),
+                keywords: ["person", "people", "group"],
+              },
+              {
+                title: "Settings > Notifications",
+                onSelect: () => {
+                  navigateToSettings({ context, pathname: "/notifications" });
+                },
+                Icon: ({ className }) => (
+                  <PendingOrIcon
+                    id="/settings/notifications"
+                    Icon={BellIcon}
+                    className={className}
+                  />
+                ),
+                keywords: ["notify", "alert"],
+              },
+              {
+                title: "Settings > Webhooks",
+                onSelect: () => {
+                  navigateToSettings({ context, pathname: "/webhooks" });
+                },
+                Icon: ({ className }) => (
+                  <PendingOrIcon id="/settings/webhooks" Icon={WebhookIcon} className={className} />
+                ),
+                keywords: ["hook", "integration", "alert", "connection"],
+              },
+              {
+                title: "Settings > Danger Zone",
+                onSelect: () => {
+                  navigateToSettings({ context, pathname: "/danger-zone" });
+                },
+                Icon: ({ className }) => (
+                  <PendingOrIcon
+                    id="/settings/danger-zone"
+                    Icon={TriangleAlertIcon}
+                    className={className}
+                  />
+                ),
+                keywords: ["delete", "danger"],
+              },
+            ],
+          },
+        },
       ],
     }),
-    [onSelectPlaceholder, utils, teamId],
+    [onSelectPlaceholder, utils, context, isAsyncPushPending],
   );
 
   const setCurrentPageId = useCallback(
@@ -270,4 +389,16 @@ export default function useContextAwareCommandPanelData({
     allPageIds,
     goToParentPage,
   };
+}
+
+function getSettingsPageHref({
+  pathname,
+  context,
+}: {
+  pathname: string;
+  context: TContextAwareCommandPanelContext;
+}) {
+  return context.contextType === "project"
+    ? `/${context.teamId}/project/${context.projectId}/environment/${context.environmentId}/settings${pathname}`
+    : `/${context.teamId}/settings${pathname}`;
 }
