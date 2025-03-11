@@ -26,3 +26,15 @@ export type TCommandPanelItem = {
   onSelect?: () => void;
   keywords: string[];
 };
+
+export type TContextAwareCommandPanelContext =
+  | {
+      teamId: string;
+      projectId?: never;
+      contextType: "team";
+    }
+  | {
+      teamId: string;
+      projectId: string;
+      contextType: "project";
+    };

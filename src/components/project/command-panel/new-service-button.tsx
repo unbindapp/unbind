@@ -1,11 +1,10 @@
 "use client";
 
+import { commandPanelKey, commandPanelPageKey } from "@/components/command-panel/constants";
 import {
-  commandPanelKey,
-  commandPanelPageKey,
   commandPanelProject,
   commandPanelProjectRootPage,
-} from "@/components/command-panel/constants";
+} from "@/components/project/command-panel/constants";
 import { ProjectCommandPanelTrigger } from "@/components/project/command-panel/project-command-panel";
 
 import { Button } from "@/components/ui/button";
@@ -13,21 +12,14 @@ import { cn } from "@/components/ui/utils";
 import { PlusIcon } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
 import { useRef } from "react";
-import { useHotkeys } from "react-hotkeys-hook";
 
 type TProps = {
   teamId: string;
   projectId: string;
   className?: string;
-  shortcutEnabled?: boolean;
 };
 
-export default function NewServiceButton({
-  teamId,
-  projectId,
-  shortcutEnabled = true,
-  className,
-}: TProps) {
+export default function NewServiceButton({ teamId, projectId, className }: TProps) {
   const [commandPanelId, setCommandPanelId] = useQueryState(commandPanelKey);
   const [, setCommandPanelPageId] = useQueryState(
     commandPanelPageKey,
@@ -49,18 +41,6 @@ export default function NewServiceButton({
       }, 150);
     }
   };
-
-  useHotkeys(
-    "mod+k",
-    () => {
-      setCommandPanelId(commandPanelProject);
-    },
-    {
-      enabled: shortcutEnabled,
-      enableOnContentEditable: true,
-      enableOnFormTags: true,
-    },
-  );
 
   return (
     <ProjectCommandPanelTrigger open={open} setOpen={setOpen} teamId={teamId} projectId={projectId}>

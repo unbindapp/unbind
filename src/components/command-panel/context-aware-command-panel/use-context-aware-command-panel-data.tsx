@@ -1,19 +1,32 @@
-import { commandPanelKey, commandPanelPageKey } from "@/components/command-panel/constants";
+import {
+  commandPanelContextAwareRootPage,
+  commandPanelKey,
+  commandPanelPageKey,
+} from "@/components/command-panel/constants";
 import { findCommandPanelPage } from "@/components/command-panel/helpers";
-import { TCommandPanelItem, TCommandPanelPage } from "@/components/command-panel/types";
+import {
+  TCommandPanelItem,
+  TCommandPanelPage,
+  TContextAwareCommandPanelContext,
+} from "@/components/command-panel/types";
 import ServiceIcon from "@/components/icons/service";
-import { commandPanelProjectRootPage } from "@/components/project/command-panel/constants";
 import { api } from "@/server/trpc/setup/client";
 import { BlocksIcon, DatabaseIcon } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
 import { useCallback, useMemo, useRef } from "react";
 import { toast } from "sonner";
 
-export default function useProjectCommandPanelData({ teamId }: { teamId: string }) {
+export default function useContextAwareCommandPanelData({
+  teamId,
+  projectId,
+  contextType,
+}: TContextAwareCommandPanelContext) {
+  console.log("Command Panel Context: ", teamId, projectId, contextType);
+
   const [, setPanelId] = useQueryState(commandPanelKey);
   const [panelPageId, setPanelPageId] = useQueryState(
     commandPanelPageKey,
-    parseAsString.withDefault(commandPanelProjectRootPage),
+    parseAsString.withDefault(commandPanelContextAwareRootPage),
   );
   const timeout = useRef<NodeJS.Timeout | null>(null);
 
@@ -36,10 +49,10 @@ export default function useProjectCommandPanelData({ teamId }: { teamId: string 
 
   const rootPage: TCommandPanelPage = useMemo(
     () => ({
-      id: commandPanelProjectRootPage,
-      title: "New Service",
+      id: commandPanelContextAwareRootPage,
+      title: "Commands",
       parentPageId: null,
-      inputPlaceholder: "Deploy something...",
+      inputPlaceholder: "Search commands...",
       items: [
         {
           title: "GitHub Repo",
@@ -48,7 +61,7 @@ export default function useProjectCommandPanelData({ teamId }: { teamId: string 
           subpage: {
             id: "github_repos",
             title: "GitHub Repos",
-            parentPageId: commandPanelProjectRootPage,
+            parentPageId: commandPanelContextAwareRootPage,
             inputPlaceholder: "Deploy from GitHub...",
             getItems: async () => {
               const res = await utils.main.getGitHubRepos.fetch({ teamId });
@@ -71,7 +84,7 @@ export default function useProjectCommandPanelData({ teamId }: { teamId: string 
           subpage: {
             id: "databases",
             title: "Databases",
-            parentPageId: commandPanelProjectRootPage,
+            parentPageId: commandPanelContextAwareRootPage,
             inputPlaceholder: "Deploy a database...",
             items: [
               {
@@ -124,7 +137,7 @@ export default function useProjectCommandPanelData({ teamId }: { teamId: string 
           subpage: {
             id: "templates",
             title: "Templates",
-            parentPageId: commandPanelProjectRootPage,
+            parentPageId: commandPanelContextAwareRootPage,
             inputPlaceholder: "Deploy a template...",
             items: [
               {
@@ -234,7 +247,7 @@ export default function useProjectCommandPanelData({ teamId }: { teamId: string 
 
   const goToParentPage = useCallback(
     (e?: KeyboardEvent) => {
-      if (currentPage.id === commandPanelProjectRootPage) {
+      if (currentPage.id === commandPanelContextAwareRootPage) {
         return;
       }
       if (currentPage.parentPageId === null) return;

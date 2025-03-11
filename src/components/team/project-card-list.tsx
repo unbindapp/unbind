@@ -1,11 +1,10 @@
 "use client";
 
+import { commandPanelKey, commandPanelPageKey } from "@/components/command-panel/constants";
 import {
-  commandPanelKey,
-  commandPanelPageKey,
   commandPanelTeamFromList,
   commandPanelTeamRootPage,
-} from "@/components/command-panel/constants";
+} from "@/components/team/command-panel/constants";
 import { TeamCommandPanelTrigger } from "@/components/team/command-panel/team-command-panel";
 import ProjectCard from "@/components/team/project-card";
 import { Button } from "@/components/ui/button";

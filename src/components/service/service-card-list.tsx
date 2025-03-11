@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  commandPanelKey,
-  commandPanelPageKey,
-  commandPanelProjectFromList,
-  commandPanelProjectRootPage,
-} from "@/components/command-panel/constants";
+import { commandPanelKey, commandPanelPageKey } from "@/components/command-panel/constants";
 import { ProjectCommandPanelTrigger } from "@/components/project/command-panel/project-command-panel";
 import ServiceIcon from "@/components/icons/service";
 import ServiceCard from "@/components/service/service-card";
@@ -15,6 +10,10 @@ import { api } from "@/server/trpc/setup/client";
 import { PlusIcon } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
 import { useRef } from "react";
+import {
+  commandPanelProjectFromList,
+  commandPanelProjectRootPage,
+} from "@/components/project/command-panel/constants";
 
 type TProps = {
   teamId: string;

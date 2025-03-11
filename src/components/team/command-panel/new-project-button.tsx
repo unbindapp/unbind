@@ -1,26 +1,23 @@
 "use client";
 
+import { commandPanelKey, commandPanelPageKey } from "@/components/command-panel/constants";
 import {
-  commandPanelKey,
-  commandPanelPageKey,
   commandPanelTeam,
   commandPanelTeamRootPage,
-} from "@/components/command-panel/constants";
+} from "@/components/team/command-panel/constants";
 import { TeamCommandPanelTrigger } from "@/components/team/command-panel/team-command-panel";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { PlusIcon } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
 import { useRef } from "react";
-import { useHotkeys } from "react-hotkeys-hook";
 
 type TProps = {
   teamId: string;
   className?: string;
-  shortcutEnabled?: boolean;
 };
 
-export default function NewTeamButton({ teamId, shortcutEnabled = true, className }: TProps) {
+export default function NewTeamButton({ teamId, className }: TProps) {
   const [commandPanelId, setCommandPanelId] = useQueryState(commandPanelKey);
   const [, setCommandPanelPageId] = useQueryState(
     commandPanelPageKey,
@@ -42,18 +39,6 @@ export default function NewTeamButton({ teamId, shortcutEnabled = true, classNam
       }, 150);
     }
   };
-
-  useHotkeys(
-    "mod+k",
-    () => {
-      setCommandPanelId(commandPanelTeam);
-    },
-    {
-      enabled: shortcutEnabled,
-      enableOnContentEditable: true,
-      enableOnFormTags: true,
-    },
-  );
 
   return (
     <TeamCommandPanelTrigger open={open} setOpen={setOpen} teamId={teamId}>

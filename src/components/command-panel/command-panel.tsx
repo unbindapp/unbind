@@ -37,7 +37,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 type TProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
-  children: ReactNode;
+  children?: ReactNode;
   title: string;
   description: string;
 };
@@ -79,7 +79,7 @@ export function CommandPanelTrigger({
         dontAutoFocus
         onEscapeKeyDown={onEscapeKeyDown}
       >
-        <BottomDrawerTrigger>{children}</BottomDrawerTrigger>
+        {children && <BottomDrawerTrigger>{children}</BottomDrawerTrigger>}
         <BottomDrawerContent>
           <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden pb-[var(--safe-area-inset-bottom)]">
             <CommandPanel
@@ -100,7 +100,7 @@ export function CommandPanelTrigger({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent
         onOpenAutoFocus={(e) => {
           if (typeof window === "undefined") return;

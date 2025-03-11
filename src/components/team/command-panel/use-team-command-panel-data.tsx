@@ -1,11 +1,8 @@
-import {
-  commandPanelKey,
-  commandPanelPageKey,
-  commandPanelTeamRootPage,
-} from "@/components/command-panel/constants";
+import { commandPanelKey, commandPanelPageKey } from "@/components/command-panel/constants";
 import { findCommandPanelPage } from "@/components/command-panel/helpers";
 import { TCommandPanelItem, TCommandPanelPage } from "@/components/command-panel/types";
 import ServiceIcon from "@/components/icons/service";
+import { commandPanelTeamRootPage } from "@/components/team/command-panel/constants";
 import { api } from "@/server/trpc/setup/client";
 import { BlocksIcon, DatabaseIcon, FolderPlusIcon } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
