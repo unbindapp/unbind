@@ -1,6 +1,6 @@
 import {
-  GithubConnectAppResponseSchema,
-  GithubCreateManifestResponseSchema,
+  GitHubConnectAppResponseSchema,
+  GitHubCreateManifestResponseSchema,
 } from "@/server/trpc/api/github/types";
 import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
 import { TRPCError } from "@trpc/server";
@@ -39,7 +39,7 @@ export const githubRouter = createTRPCRouter({
 
       const resJson = await res.json();
 
-      const data = GithubCreateManifestResponseSchema.parse(resJson);
+      const data = GitHubCreateManifestResponseSchema.parse(resJson);
 
       return {
         data,
@@ -75,7 +75,7 @@ export const githubRouter = createTRPCRouter({
 
       const resJson = await res.json();
 
-      const data = GithubConnectAppResponseSchema.parse(resJson);
+      const data = GitHubConnectAppResponseSchema.parse(resJson);
 
       return {
         data,

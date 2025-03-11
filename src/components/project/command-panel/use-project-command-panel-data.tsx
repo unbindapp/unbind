@@ -51,7 +51,7 @@ export default function useProjectCommandPanelData({ teamId }: { teamId: string 
             parentPageId: commandPanelProjectRootPage,
             inputPlaceholder: "Deploy from GitHub...",
             getItems: async () => {
-              const res = await utils.main.getGitHubRepos.fetch({ teamId });
+              const res = await utils.main.getRepos.fetch({ teamId });
               const items: TCommandPanelItem[] = res.repos.map((r) => ({
                 title: `${r.owner}/${r.name}`,
                 keywords: [],

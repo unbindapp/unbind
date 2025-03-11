@@ -1,4 +1,7 @@
+import { env } from "@/lib/env";
+import { RepositoriesResultSchema } from "@/server/trpc/api/main/types";
 import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 export const mainRouter = createTRPCRouter({
@@ -80,18 +83,26 @@ export const mainRouter = createTRPCRouter({
         variables,
       };
     }),
-  getGitHubRepos: publicProcedure
+  getRepos: publicProcedure
     .input(
       z.object({
         teamId: z.string(),
       }),
     )
-    .query(async function ({ input: { teamId } }) {
-      const repos = await getGitHubRepos({
+    .query(async function ({ input: { teamId }, ctx }) {
+      const { session } = ctx;
+      if (!session) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Unauthorized",
+        });
+      }
+      const { data } = await getRepos({
         teamId,
+        accessToken: session.access_token,
       });
       return {
-        repos,
+        repos: data,
       };
     }),
 });
@@ -161,9 +172,23 @@ async function getDeployments({
   return filteredDeployments;
 }
 
-async function getGitHubRepos({ teamId }: { teamId: string }) {
+async function getRepos({ teamId, accessToken }: { teamId: string; accessToken: string }) {
   console.log("teamId:", teamId);
-  return repos;
+  const res = await fetch(`${env.NEXT_PUBLIC_UNBIND_API_URL}/github/repositories`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  const resJson = await res.json();
+  const parsed = RepositoriesResultSchema.safeParse(resJson);
+  if (!parsed.success) {
+    console.log("Failed to parse response", resJson);
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Failed to parse response",
+    });
+  }
+  return parsed.data;
 }
 
 const teams: TTeam[] = [
@@ -602,49 +627,6 @@ const variables: TVariable[] = [
   {
     key: "STRIPE_SECRET_KEY",
     value: "sk_test_1234567890",
-  },
-];
-
-const repos: TGitHubRepo[] = [
-  {
-    owner: "yekta",
-    name: "tezara",
-    isPublic: true,
-  },
-  {
-    owner: "yekta",
-    name: "augend",
-    isPublic: true,
-  },
-  {
-    owner: "yekta",
-    name: "banano-website",
-    isPublic: true,
-  },
-  {
-    owner: "stablecog",
-    name: "stablecog",
-    isPublic: true,
-  },
-  {
-    owner: "stablecog",
-    name: "sc-go",
-    isPublic: true,
-  },
-  {
-    owner: "stablecog",
-    name: "sc-worker",
-    isPublic: true,
-  },
-  {
-    owner: "stablecog",
-    name: "nllb-cog",
-    isPublic: true,
-  },
-  {
-    owner: "stablecog",
-    name: "sc-imgproxy",
-    isPublic: true,
   },
 ];
 

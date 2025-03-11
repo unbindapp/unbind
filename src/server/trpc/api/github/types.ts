@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const GithubCreateManifestResponseSchema = z.object({
+export const GitHubCreateManifestResponseSchema = z.object({
   $schema: z.string(),
   manifest: z.object({
     default_events: z.array(z.string()),
@@ -21,11 +21,11 @@ export const GithubCreateManifestResponseSchema = z.object({
   post_url: z.string(),
 });
 
-export type TGithubCreateManifestResponse = z.infer<typeof GithubCreateManifestResponseSchema>;
+export type TGitHubCreateManifestResponse = z.infer<typeof GitHubCreateManifestResponseSchema>;
 
-export const GithubConnectAppResponseSchema = z.object({
+export const GitHubConnectAppResponseSchema = z.object({
   $schema: z.string(),
   name: z.string(),
 });
 
-export type TGithubConnectAppResponse = z.infer<typeof GithubConnectAppResponseSchema>;
+export type TGitHubConnectAppResponse = z.infer<typeof GitHubConnectAppResponseSchema>;

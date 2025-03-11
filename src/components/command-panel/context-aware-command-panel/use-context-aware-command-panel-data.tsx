@@ -16,7 +16,7 @@ import { api } from "@/server/trpc/setup/client";
 import {
   BellIcon,
   BlocksIcon,
-  ChevronsRightIcon,
+  CornerDownRightIcon,
   DatabaseIcon,
   FolderPlusIcon,
   KeyRoundIcon,
@@ -115,9 +115,9 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
             parentPageId: commandPanelContextAwareRootPage,
             inputPlaceholder: "Deploy from GitHub...",
             getItems: async () => {
-              const res = await utils.main.getGitHubRepos.fetch({ teamId: context.teamId });
+              const res = await utils.main.getRepos.fetch({ teamId: context.teamId });
               const items: TCommandPanelItem[] = res.repos.map((r) => ({
-                title: `${r.owner}/${r.name}`,
+                title: `${r.full_name}`,
                 keywords: [],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }: { className?: string }) => (
@@ -265,7 +265,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
         {
           title: "Go to",
           keywords: ["navigate", "jump"],
-          Icon: ChevronsRightIcon,
+          Icon: CornerDownRightIcon,
           subpage: {
             title: "Go to",
             id: "go_to",
