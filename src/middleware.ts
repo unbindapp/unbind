@@ -10,7 +10,7 @@ const isProd = process.env.NODE_ENV === "production";
 const sessionCookieName = isProd ? "__Secure-authjs.session-token" : "authjs.session-token";
 const sessionCookieMaxAge = 60 * 60 * 24 * 14;
 const secureCookie = isProd;
-const sameSiteCookie = isProd ? "strict" : "lax";
+const sameSiteCookie = "lax";
 
 const tokenRefreshBuffer = 30;
 
