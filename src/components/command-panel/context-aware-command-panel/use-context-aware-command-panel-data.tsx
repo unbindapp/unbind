@@ -84,6 +84,8 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
     [asyncPush],
   );
 
+  const goToKeywords = useMemo(() => ["go to", "navigate to", "jump to"], []);
+
   const settingsTitle = useMemo(() => {
     return context.contextType === "project" ? "Project Settings" : "Team Settings";
   }, [context]);
@@ -278,7 +280,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                 Icon: ({ className }) => (
                   <PendingOrIcon id="/settings" Icon={SettingsIcon} className={className} />
                 ),
-                keywords: ["settings", "general", "change", "tweak", "adjust"],
+                keywords: ["settings", "general", "change", "tweak", "adjust", ...goToKeywords],
               },
               {
                 title: "Shared Variables",
@@ -293,7 +295,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                     className={className}
                   />
                 ),
-                keywords: ["secrets", "keys", "values"],
+                keywords: ["secrets", "keys", "values", ...goToKeywords],
               },
               {
                 title: "Members",
@@ -304,7 +306,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                 Icon: ({ className }) => (
                   <PendingOrIcon id="/settings/members" Icon={UsersIcon} className={className} />
                 ),
-                keywords: ["person", "people", "group"],
+                keywords: ["person", "people", "group", ...goToKeywords],
               },
               {
                 title: "Notifications",
@@ -319,7 +321,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                     className={className}
                   />
                 ),
-                keywords: ["notify", "alert"],
+                keywords: ["notify", "alert", ...goToKeywords],
               },
               {
                 title: "Webhooks",
@@ -330,7 +332,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                 Icon: ({ className }) => (
                   <PendingOrIcon id="/settings/webhooks" Icon={WebhookIcon} className={className} />
                 ),
-                keywords: ["hook", "integration", "alert", "connection"],
+                keywords: ["hook", "integration", "alert", "connection", ...goToKeywords],
               },
               {
                 title: "Danger Zone",
@@ -345,14 +347,22 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                     className={className}
                   />
                 ),
-                keywords: ["delete", "danger"],
+                keywords: ["delete", "danger", ...goToKeywords],
               },
             ],
           },
         },
       ],
     }),
-    [onSelectPlaceholder, utils, context, settingsTitle, PendingOrIcon, navigateToSettings],
+    [
+      onSelectPlaceholder,
+      utils,
+      context,
+      settingsTitle,
+      PendingOrIcon,
+      navigateToSettings,
+      goToKeywords,
+    ],
   );
 
   const setCurrentPageId = useCallback(

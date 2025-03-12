@@ -180,7 +180,8 @@ function CommandPanel({
   className,
 }: CommandPanelProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const listRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
   const [value, setValue] = useState("");
   const { isPending, isError } = useCommandPanelItems();
 
@@ -216,7 +217,7 @@ function CommandPanel({
   );
 
   useEffect(() => {
-    const value = getFirstCommandListItem(listRef);
+    const value = getFirstCommandListItem(scrollAreaRef);
     if (value) setValue(value);
   }, [currentPage]);
 
@@ -237,12 +238,13 @@ function CommandPanel({
         currentPage={currentPage}
         allPageIds={allPageIds}
         ref={inputRef}
+        scrollAreaRef={scrollAreaRef}
       />
       <Content
         useCommandPanelItems={useCommandPanelItems}
         currentPage={currentPage}
         setCurrentPageId={setCurrentPageId}
-        listRef={listRef}
+        scrollAreaRef={scrollAreaRef}
       />
       <Footer rootPage={rootPage} currentPage={currentPage} goToParentPage={goToParentPage} />
     </Command>
@@ -253,11 +255,12 @@ function Content({
   useCommandPanelItems,
   currentPage,
   setCurrentPageId,
+  scrollAreaRef,
 }: {
   useCommandPanelItems: TUseCommandPanelItems;
   currentPage: TCommandPanelPage;
   setCurrentPageId: TSetCurrentPageId;
-  listRef: RefObject<HTMLDivElement | null>;
+  scrollAreaRef: RefObject<HTMLDivElement | null>;
 }) {
   const { items, isPending, isError, error } = useCommandPanelItems();
   const allItems = useMemo(() => getAllItemsFromCommandPanelPage(currentPage), [currentPage]);
@@ -274,7 +277,7 @@ function Content({
           No matching results
         </CommandEmpty>
       )}
-      <ScrollArea noFocusOnViewport>
+      <ScrollArea noFocusOnViewport viewportRef={scrollAreaRef}>
         <CommandList>
           <CommandGroup>
             {!isPending &&
@@ -358,13 +361,16 @@ function Input({
   allPageIds,
   placeholder,
   ref,
+  scrollAreaRef,
 }: {
   useCommandPanelItems: TUseCommandPanelItems;
   currentPage: TCommandPanelPage;
   allPageIds: string[];
   placeholder: string;
   ref: RefObject<HTMLInputElement | null>;
+  scrollAreaRef: RefObject<HTMLDivElement | null>;
 }) {
+  const scrollId = useRef<NodeJS.Timeout | undefined>(undefined);
   const [values, setValues] = useState(Object.fromEntries(allPageIds.map((id) => [id, ""])));
 
   const { isPending } = useCommandPanelItems();
@@ -376,6 +382,10 @@ function Input({
       value={values[currentPage.id]}
       onValueChange={(value) => {
         setValues((prev) => ({ ...prev, [currentPage.id]: value }));
+        clearTimeout(scrollId.current);
+        scrollId.current = setTimeout(() => {
+          scrollAreaRef.current?.scrollTo({ top: 0 });
+        });
       }}
       placeholder={placeholder}
     />
