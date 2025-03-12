@@ -352,7 +352,8 @@ function generateTreeCode(node: TreeValue, indent: string = "  "): string {
  * Endpoints are always inserted under their HTTP method key so that, for instance,
  * a GET endpoint at "/github/repositories" is accessed as client.github.repositories.get.
  *
- * This version separates query parameters and request bodies into separate function parameters.
+ * This version separates query parameters and request bodies into separate function parameters
+ * and supports passing fetch options.
  */
 function generateClientFunctions(openApiSpec: OpenAPISpec): {
   clientTree: TreeValue;
@@ -419,17 +420,15 @@ function generateClientFunctions(openApiSpec: OpenAPISpec): {
         requestParse = `${requestSchemaName}Schema.parse(body)`;
       }
 
-      // Determine the function's parameter signature.
+      // Determine the function's parameter signature with optional fetchOptions.
       let paramSignature: string;
-      if (queryType && requestType) {
-        paramSignature = `(query: ${queryType}, body: ${requestType})`;
-      } else if (queryType) {
-        paramSignature = `(query: ${queryType})`;
-      } else if (requestType) {
-        paramSignature = `(body: ${requestType})`;
-      } else {
-        paramSignature = `()`;
-      }
+      let paramList: string[] = [];
+
+      if (queryType) paramList.push(`query: ${queryType}`);
+      if (requestType) paramList.push(`body: ${requestType}`);
+      paramList.push(`fetchOptions?: RequestInit`);
+
+      paramSignature = `(${paramList.join(", ")})`;
 
       // Process response (only handling $ref cases here)
       let responseSchema: string | null = null;
@@ -460,6 +459,7 @@ async ${paramSignature} => {
       "Content-Type": "application/json",
       "Authorization": \`Bearer \${accessToken}\`
     },
+    ...fetchOptions
   };
   ${
     requestType
@@ -539,6 +539,8 @@ async function main(): Promise<void> {
     } else if (arg === "-i" || arg === "--input") {
       inputFile = args[i + 1];
       i++;
+    } else if (!inputFile && !arg.startsWith("-")) {
+      inputFile = arg;
     }
   }
 

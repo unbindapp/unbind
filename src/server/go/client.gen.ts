@@ -251,6 +251,13 @@ export const GithubAppSchema: z.ZodType<unknown> = z
   })
   .strict();
 
+export const GithubAppCreateResponseBodySchema = z
+  .object({
+    $schema: z.string().optional(), // A URL to the JSON Schema for this object.
+    data: z.string(),
+  })
+  .strict();
+
 export const GithubAppInstallationListResponseBodySchema = z
   .object({
     $schema: z.string().optional(), // A URL to the JSON Schema for this object.
@@ -322,6 +329,9 @@ export type UserEdges = z.infer<typeof UserEdgesSchema>;
 export type User = z.infer<typeof UserSchema>;
 export type GithubAppEdges = z.infer<typeof GithubAppEdgesSchema>;
 export type GithubApp = z.infer<typeof GithubAppSchema>;
+export type GithubAppCreateResponseBody = z.infer<
+  typeof GithubAppCreateResponseBodySchema
+>;
 export type GithubAppInstallationListResponseBody = z.infer<
   typeof GithubAppInstallationListResponseBodySchema
 >;
@@ -360,7 +370,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
   return {
     auth: {
       callback: {
-        get: async (query: z.infer<typeof get_callbackQuerySchema>) => {
+        get: async (
+          query: z.infer<typeof get_callbackQuerySchema>,
+          fetchOptions?: RequestInit,
+        ) => {
           const baseUrl = `${apiUrl}/auth/callback`;
           const validatedQuery = get_callbackQuerySchema.parse(query);
           const queryString = new URLSearchParams(
@@ -373,6 +386,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${accessToken}`,
             },
+            ...fetchOptions,
           };
 
           const response = await fetch(url, options);
@@ -381,7 +395,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
         },
       },
       login: {
-        get: async () => {
+        get: async (fetchOptions?: RequestInit) => {
           const baseUrl = `${apiUrl}/auth/login`;
 
           const url = baseUrl;
@@ -391,6 +405,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${accessToken}`,
             },
+            ...fetchOptions,
           };
 
           const response = await fetch(url, options);
@@ -402,7 +417,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
     github: {
       app: {
         create: {
-          get: async (query: z.infer<typeof app_createQuerySchema>) => {
+          get: async (
+            query: z.infer<typeof app_createQuerySchema>,
+            fetchOptions?: RequestInit,
+          ) => {
             const baseUrl = `${apiUrl}/github/app/create`;
             const validatedQuery = app_createQuerySchema.parse(query);
             const queryString = new URLSearchParams(
@@ -415,16 +433,20 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${accessToken}`,
               },
+              ...fetchOptions,
             };
 
             const response = await fetch(url, options);
             const data = await response.json();
-            return data;
+            return GithubAppCreateResponseBodySchema.parse(data);
           },
         },
       },
       apps: {
-        get: async (query: z.infer<typeof list_appsQuerySchema>) => {
+        get: async (
+          query: z.infer<typeof list_appsQuerySchema>,
+          fetchOptions?: RequestInit,
+        ) => {
           const baseUrl = `${apiUrl}/github/apps`;
           const validatedQuery = list_appsQuerySchema.parse(query);
           const queryString = new URLSearchParams(
@@ -437,6 +459,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${accessToken}`,
             },
+            ...fetchOptions,
           };
 
           const response = await fetch(url, options);
@@ -447,7 +470,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
       installation: {
         ByInstallation_id: {
           organizations: {
-            get: async () => {
+            get: async (fetchOptions?: RequestInit) => {
               const baseUrl = `${apiUrl}/github/installation/{installation_id}/organizations`;
 
               const url = baseUrl;
@@ -457,6 +480,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                   'Content-Type': 'application/json',
                   Authorization: `Bearer ${accessToken}`,
                 },
+                ...fetchOptions,
               };
 
               const response = await fetch(url, options);
@@ -467,7 +491,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
         },
       },
       installations: {
-        get: async () => {
+        get: async (fetchOptions?: RequestInit) => {
           const baseUrl = `${apiUrl}/github/installations`;
 
           const url = baseUrl;
@@ -477,6 +501,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${accessToken}`,
             },
+            ...fetchOptions,
           };
 
           const response = await fetch(url, options);
@@ -485,7 +510,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
         },
       },
       repositories: {
-        get: async () => {
+        get: async (fetchOptions?: RequestInit) => {
           const baseUrl = `${apiUrl}/github/repositories`;
 
           const url = baseUrl;
@@ -495,6 +520,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${accessToken}`,
             },
+            ...fetchOptions,
           };
 
           const response = await fetch(url, options);
@@ -504,7 +530,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
       },
     },
     healthz: {
-      get: async () => {
+      get: async (fetchOptions?: RequestInit) => {
         const baseUrl = `${apiUrl}/healthz`;
 
         const url = baseUrl;
@@ -514,6 +540,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${accessToken}`,
           },
+          ...fetchOptions,
         };
 
         const response = await fetch(url, options);
@@ -522,7 +549,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
       },
     },
     teams: {
-      get: async () => {
+      get: async (fetchOptions?: RequestInit) => {
         const baseUrl = `${apiUrl}/teams`;
 
         const url = baseUrl;
@@ -532,6 +559,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${accessToken}`,
           },
+          ...fetchOptions,
         };
 
         const response = await fetch(url, options);
@@ -541,7 +569,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
     },
     user: {
       me: {
-        get: async () => {
+        get: async (fetchOptions?: RequestInit) => {
           const baseUrl = `${apiUrl}/user/me`;
 
           const url = baseUrl;
@@ -551,6 +579,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${accessToken}`,
             },
+            ...fetchOptions,
           };
 
           const response = await fetch(url, options);
@@ -561,7 +590,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
     },
     webhook: {
       github: {
-        post: async () => {
+        post: async (fetchOptions?: RequestInit) => {
           const baseUrl = `${apiUrl}/webhook/github`;
 
           const url = baseUrl;
@@ -571,6 +600,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${accessToken}`,
             },
+            ...fetchOptions,
           };
 
           const response = await fetch(url, options);
@@ -579,7 +609,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
         },
         app: {
           save: {
-            get: async (query: z.infer<typeof app_saveQuerySchema>) => {
+            get: async (
+              query: z.infer<typeof app_saveQuerySchema>,
+              fetchOptions?: RequestInit,
+            ) => {
               const baseUrl = `${apiUrl}/webhook/github/app/save`;
               const validatedQuery = app_saveQuerySchema.parse(query);
               const queryString = new URLSearchParams(
@@ -592,6 +625,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                   'Content-Type': 'application/json',
                   Authorization: `Bearer ${accessToken}`,
                 },
+                ...fetchOptions,
               };
 
               const response = await fetch(url, options);
