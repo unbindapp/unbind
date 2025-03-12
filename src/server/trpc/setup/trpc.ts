@@ -6,7 +6,9 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
+import { env } from "@/lib/env";
 import { auth } from "@/server/auth/auth";
+import { createClient } from "@/server/go/client.gen";
 import { initTRPC } from "@trpc/server";
 import { Session } from "next-auth";
 import superjson from "superjson";
@@ -26,18 +28,26 @@ import { ZodError } from "zod";
  */
 export const createTRPCContext = async (opts: { headers: Headers; skipAuth?: boolean }) => {
   let session: Session | null = null;
+
   if (!opts.skipAuth) {
     session = await auth();
   }
 
+  const goClient: ReturnType<typeof createClient> = createClient({
+    apiUrl: env.NEXT_PUBLIC_UNBIND_API_URL,
+    accessToken: session?.access_token || "",
+  });
+
   type Result = {
     headers: Headers;
     session: Session | null;
+    goClient: typeof goClient;
   };
 
   const result: Result = {
     headers: opts.headers,
     session,
+    goClient,
   };
   return result;
 };

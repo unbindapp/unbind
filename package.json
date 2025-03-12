@@ -2,11 +2,13 @@
   "name": "unbind",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "gen": "ts-node scripts/generate-go-client/main.ts -i https://api.unbind.app/openapi.yaml"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.6",
@@ -60,6 +62,7 @@
     "usehooks-ts": "^3.1.1",
     "vaul": "^1.1.2",
     "virtua": "^0.40.0",
+    "yaml": "^2.7.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {

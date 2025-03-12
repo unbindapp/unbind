@@ -1,5 +1,3 @@
-import { env } from "@/lib/env";
-import { RepositoriesResultSchema } from "@/server/trpc/api/main/types";
 import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -90,19 +88,17 @@ export const mainRouter = createTRPCRouter({
       }),
     )
     .query(async function ({ input: { teamId }, ctx }) {
-      const { session } = ctx;
+      console.log("teamId:", teamId);
+      const { session, goClient } = ctx;
       if (!session) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "Unauthorized",
         });
       }
-      const { data } = await getRepos({
-        teamId,
-        accessToken: session.access_token,
-      });
+      const { data } = await goClient.github.repositories.get();
       return {
-        repos: data,
+        repos: data || [],
       };
     }),
 });
@@ -170,25 +166,6 @@ async function getDeployments({
           d.dockerImage === service.lastDeployment.dockerImage),
     );
   return filteredDeployments;
-}
-
-async function getRepos({ teamId, accessToken }: { teamId: string; accessToken: string }) {
-  console.log("teamId:", teamId);
-  const res = await fetch(`${env.NEXT_PUBLIC_UNBIND_API_URL}/github/repositories`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-  const resJson = await res.json();
-  const parsed = RepositoriesResultSchema.safeParse(resJson);
-  if (!parsed.success) {
-    console.log("Failed to parse response", resJson);
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Failed to parse response",
-    });
-  }
-  return parsed.data;
 }
 
 const teams: TTeam[] = [
