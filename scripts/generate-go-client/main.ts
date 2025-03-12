@@ -3,7 +3,6 @@ import * as fs from "fs";
 import * as path from "path";
 import prettier from "prettier";
 import * as yaml from "yaml";
-import { z } from "zod";
 
 // --------------------
 // Type Definitions
@@ -322,137 +321,223 @@ function generateQueryInputSchema(operation: any): JSONSchema | null {
 }
 
 /**
- * --- New Types for Nested Client Generation ---
+ * --- Types for Path Parameter Handling ---
  */
-interface TreeValue {
-  endpoints: Record<string, string>; // keyed by HTTP method (lowercase)
-  children: Record<string, TreeValue>;
+interface Segment {
+  type: "static" | "parameter";
+  value: string;
+  originalValue?: string;
 }
 
 /**
- * Recursively generates a string representing an object literal from a nested client tree.
- * In this version endpoints are always grouped by HTTP method.
+ * --- New Types for Nested Client Generation ---
  */
-function generateTreeCode(node: TreeValue, indent: string = "  "): string {
+interface TreeNode {
+  endpoints: Record<string, string>; // keyed by HTTP method (lowercase)
+  children: Record<string, TreeNode>;
+  isParam: boolean;
+}
+
+/**
+ * Convert a parameter name to camelCase
+ */
+function toCamelCase(str: string): string {
+  if (!str) return "";
+
+  // First make sure we have a string
+  const safeStr = String(str);
+
+  // Handle kebab-case and snake_case
+  return safeStr.replace(/[-_]([a-z])/gi, (_, char) => {
+    return char ? char.toUpperCase() : "";
+  });
+}
+
+/**
+ * Parse a route into segments, identifying parameters and converting to camelCase
+ */
+function parseRoute(route: string): Segment[] {
+  // Ensure route is a string
+  const safeRoute = route || "";
+
+  // Split by path parameter pattern
+  const parts = safeRoute.split(/(\{[^}]+\})/);
+  const segments: Segment[] = [];
+
+  parts.forEach((part) => {
+    if (!part) return; // Skip empty parts
+
+    if (part.startsWith("{") && part.endsWith("}")) {
+      // This is a parameter
+      const paramName = part.substring(1, part.length - 1);
+      if (paramName) {
+        segments.push({
+          type: "parameter",
+          value: toCamelCase(paramName),
+          originalValue: paramName,
+        });
+      }
+    } else {
+      // This is a static path
+      // Split by slashes and add each non-empty segment
+      part
+        .split("/")
+        .filter(Boolean)
+        .forEach((segment) => {
+          segments.push({
+            type: "static",
+            value: segment,
+          });
+        });
+    }
+  });
+
+  return segments;
+}
+
+/**
+ * Recursively generates a string representing the client tree with parameter functions.
+ */
+function generateTreeCode(node: TreeNode, indent: string = "  "): string {
   const parts: string[] = [];
-  // Add endpoints under their HTTP method keys.
+
+  // Add endpoints under their HTTP method keys
   for (const method of Object.keys(node.endpoints)) {
     parts.push(`${indent}${method}: ${node.endpoints[method]}`);
   }
-  // Add children keys.
+
+  // Add children keys
   for (const key of Object.keys(node.children)) {
-    const childCode = generateTreeCode(node.children[key], indent + "  ");
-    parts.push(`${indent}${key}: ${childCode}`);
+    const childNode = node.children[key];
+
+    if (childNode.isParam) {
+      // Generate a function that accepts a parameter and returns the next level
+      const childCode = generateTreeCode(childNode, indent + "  ");
+      parts.push(`${indent}${key}: (${key}: string | number) => (${childCode})`);
+    } else {
+      // Generate a normal object property
+      const childCode = generateTreeCode(childNode, indent + "  ");
+      parts.push(`${indent}${key}: ${childCode}`);
+    }
   }
+
   return `{\n${parts.join(",\n")}\n${indent.slice(2)}}`;
 }
 
 /**
- * Generates client endpoint functions for all paths and builds a nested tree.
- * Endpoints are always inserted under their HTTP method key so that, for instance,
- * a GET endpoint at "/github/repositories" is accessed as client.github.repositories.get.
- *
- * This version separates query parameters and request bodies into separate function parameters
- * and supports passing fetch options.
+ * Generates the code for an API endpoint function, handling path parameters.
  */
-function generateClientFunctions(openApiSpec: OpenAPISpec): {
-  clientTree: TreeValue;
-  inlineSchemas: Record<string, JSONSchema>;
-} {
-  const inlineInputSchemas: Record<string, JSONSchema> = {};
-  const clientTree: TreeValue = { endpoints: {}, children: {} };
-
-  // Helper to transform a path segment (e.g. convert "{id}" to "ById").
-  function transformSegment(segment: string): string {
-    return segment.replace(/\{(\w+)\}/g, (_, p1) => `By${p1[0].toUpperCase()}${p1.slice(1)}`);
+function generateEndpointFunction(
+  route: string,
+  method: string,
+  operation: any,
+  segments: Segment[],
+  inlineInputSchemas: Record<string, JSONSchema>,
+): string {
+  // Process request body
+  let requestSchemaRef: string | null = null;
+  let inlineRequestSchema: JSONSchema | null = null;
+  if (
+    operation.requestBody &&
+    operation.requestBody.content &&
+    operation.requestBody.content["application/json"]
+  ) {
+    const reqSchema = operation.requestBody.content["application/json"].schema;
+    if (reqSchema && reqSchema.$ref) {
+      requestSchemaRef = getSchemaName(reqSchema.$ref);
+    } else if (reqSchema) {
+      inlineRequestSchema = reqSchema;
+    }
   }
 
-  for (const [route, methods] of Object.entries(openApiSpec.paths)) {
-    for (const [method, operation] of Object.entries(methods as Record<string, any>)) {
-      // Process request body
-      let requestSchemaRef: string | null = null;
-      let inlineRequestSchema: JSONSchema | null = null;
-      if (
-        operation.requestBody &&
-        operation.requestBody.content &&
-        operation.requestBody.content["application/json"]
-      ) {
-        const reqSchema = operation.requestBody.content["application/json"].schema;
-        if (reqSchema && reqSchema.$ref) {
-          requestSchemaRef = getSchemaName(reqSchema.$ref);
-        } else if (reqSchema) {
-          inlineRequestSchema = reqSchema;
-        }
-      }
+  // Process query parameters
+  const inlineQuerySchema = generateQueryInputSchema(operation);
 
-      // Process query parameters
-      const inlineQuerySchema = generateQueryInputSchema(operation);
+  // Prepare separate variables for query and request types.
+  let queryType = "";
+  let requestType = "";
+  let queryParse = "";
+  let requestParse = "";
 
-      // Prepare separate variables for query and request types.
-      let queryType = "";
-      let requestType = "";
-      let queryParse = "";
-      let requestParse = "";
+  if (inlineQuerySchema) {
+    const querySchemaName = operation.operationId
+      ? operation.operationId.replace(/[^a-zA-Z0-9_]/g, "_") + "Query"
+      : method.toLowerCase() +
+        route
+          .replace(/^\//, "")
+          .replace(/\{(\w+)\}/g, (_, p1) => `By${p1[0].toUpperCase()}${p1.slice(1)}`) +
+        "Query";
+    inlineInputSchemas[querySchemaName] = inlineQuerySchema;
+    queryType = `z.infer<typeof ${querySchemaName}Schema>`;
+    queryParse = `${querySchemaName}Schema.parse(query)`;
+  }
 
-      if (inlineQuerySchema) {
-        const querySchemaName = operation.operationId
-          ? operation.operationId.replace(/[^a-zA-Z0-9_]/g, "_") + "Query"
-          : method.toLowerCase() +
-            route
-              .replace(/^\//, "")
-              .replace(/\{(\w+)\}/g, (_, p1) => `By${p1[0].toUpperCase()}${p1.slice(1)}`) +
-            "Query";
-        inlineInputSchemas[querySchemaName] = inlineQuerySchema;
-        queryType = `z.infer<typeof ${querySchemaName}Schema>`;
-        queryParse = `${querySchemaName}Schema.parse(query)`;
-      }
+  if (inlineRequestSchema) {
+    const requestSchemaName = operation.operationId
+      ? operation.operationId.replace(/[^a-zA-Z0-9_]/g, "_") + "Input"
+      : method.toLowerCase() +
+        route
+          .replace(/^\//, "")
+          .replace(/\{(\w+)\}/g, (_, p1) => `By${p1[0].toUpperCase()}${p1.slice(1)}`) +
+        "Input";
+    inlineInputSchemas[requestSchemaName] = inlineRequestSchema;
+    requestType = `z.infer<typeof ${requestSchemaName}Schema>`;
+    requestParse = `${requestSchemaName}Schema.parse(body)`;
+  }
 
-      if (inlineRequestSchema) {
-        const requestSchemaName = operation.operationId
-          ? operation.operationId.replace(/[^a-zA-Z0-9_]/g, "_") + "Input"
-          : method.toLowerCase() +
-            route
-              .replace(/^\//, "")
-              .replace(/\{(\w+)\}/g, (_, p1) => `By${p1[0].toUpperCase()}${p1.slice(1)}`) +
-            "Input";
-        inlineInputSchemas[requestSchemaName] = inlineRequestSchema;
-        requestType = `z.infer<typeof ${requestSchemaName}Schema>`;
-        requestParse = `${requestSchemaName}Schema.parse(body)`;
-      }
+  // Determine the function's parameter signature with optional fetchOptions.
+  let paramList: string[] = [];
 
-      // Determine the function's parameter signature with optional fetchOptions.
-      let paramSignature: string;
-      let paramList: string[] = [];
+  if (queryType) paramList.push(`query: ${queryType}`);
+  if (requestType) paramList.push(`body: ${requestType}`);
+  paramList.push(`fetchOptions?: RequestInit`);
 
-      if (queryType) paramList.push(`query: ${queryType}`);
-      if (requestType) paramList.push(`body: ${requestType}`);
-      paramList.push(`fetchOptions?: RequestInit`);
+  const paramSignature = `(${paramList.join(", ")})`;
 
-      paramSignature = `(${paramList.join(", ")})`;
+  // Process response (only handling $ref cases here)
+  let responseSchema: string | null = null;
+  const response =
+    (operation.responses &&
+      (operation.responses["200"] ||
+        operation.responses["201"] ||
+        operation.responses["default"])) ||
+    null;
+  if (response && response.content && response.content["application/json"]) {
+    responseSchema = getSchemaName(response.content["application/json"].schema?.$ref) || null;
+  }
 
-      // Process response (only handling $ref cases here)
-      let responseSchema: string | null = null;
-      const response =
-        (operation.responses &&
-          (operation.responses["200"] ||
-            operation.responses["201"] ||
-            operation.responses["default"])) ||
-        null;
-      if (response && response.content && response.content["application/json"]) {
-        responseSchema = getSchemaName(response.content["application/json"].schema?.$ref) || null;
-      }
+  // Create a template string to replace path parameters
+  let urlTemplate = route;
+  segments.forEach((segment) => {
+    if (segment.type === "parameter" && segment.originalValue) {
+      urlTemplate = urlTemplate.replace(`{${segment.originalValue}}`, `\${${segment.value}}`);
+    }
+  });
 
-      // Build the function code as an anonymous async arrow function using non-mutative URL creation.
-      const functionCode = `
+  // Build the function code as an anonymous async arrow function
+  const functionCode = `
 async ${paramSignature} => {
-  const baseUrl = \`\${apiUrl}${route}\`;
-  ${
-    queryType
-      ? `const validatedQuery = ${queryParse};
-  const queryString = new URLSearchParams(validatedQuery as Record<string,string>).toString();`
-      : ""
-  }
-  const url = ${queryType ? "queryString ? `\${baseUrl}?\${queryString}` : baseUrl" : "baseUrl"};
+  try {
+    // Make sure apiUrl is defined and is a string
+    if (!apiUrl || typeof apiUrl !== 'string') {
+      throw new Error('API URL is undefined or not a string');
+    }
+    
+    const url = new URL(\`\${apiUrl}${urlTemplate}\`);
+    ${
+      queryType
+        ? `const validatedQuery = ${queryParse};
+    // Only process if validatedQuery is an object
+    if (validatedQuery && typeof validatedQuery === 'object') {
+      Object.entries(validatedQuery).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          url.searchParams.append(key, String(value));
+        }
+      });
+    }`
+        : ""
+    }
+  
   const options: RequestInit = {
     method: "${method.toUpperCase()}",
     headers: {
@@ -467,24 +552,90 @@ async ${paramSignature} => {
   options.body = JSON.stringify(validatedBody);`
       : ""
   }
-  const response = await fetch(url, options);
+  
+  const response = await fetch(url.toString(), options);
+  
+  if (!response.ok) {
+    throw new Error(\`API request failed with status \${response.status}: \${response.statusText}\`);
+  }
+  
   const data = await response.json();
   return ${responseSchema ? `${responseSchema}Schema.parse(data)` : "data"};
+  } catch (error) {
+    console.error('Error in API request:', error);
+    throw error;
+  }
 }`.trim();
 
-      // Split the route into segments (transforming "{id}" to "ById", etc).
-      const segments = route.split("/").filter(Boolean).map(transformSegment);
+  return functionCode;
+}
 
-      // Insert into the client tree.
-      let node = clientTree;
-      for (const segment of segments) {
-        if (!node.children[segment]) {
-          node.children[segment] = { endpoints: {}, children: {} };
-        }
-        node = node.children[segment];
+/**
+ * Generates client endpoint functions for all paths and builds a nested tree.
+ * Supports path parameters as function calls in the client chain.
+ */
+function generateClientFunctions(openApiSpec: OpenAPISpec): {
+  clientTree: TreeNode;
+  inlineSchemas: Record<string, JSONSchema>;
+} {
+  const inlineInputSchemas: Record<string, JSONSchema> = {};
+  const clientTree: TreeNode = { endpoints: {}, children: {}, isParam: false };
+
+  for (const [route, methods] of Object.entries(openApiSpec.paths || {})) {
+    if (!methods || typeof methods !== "object") {
+      console.warn(`Skipping route ${route}: methods is not an object`);
+      continue;
+    }
+
+    // Parse the route into segments
+    const segments = parseRoute(route);
+
+    for (const [method, operation] of Object.entries(methods)) {
+      // Skip if not a valid HTTP method or operation is not an object
+      if (!operation || typeof operation !== "object") {
+        console.warn(`Skipping ${method} operation for route ${route}: operation is not an object`);
+        continue;
       }
-      // Always assign the endpoint under its HTTP method key.
-      node.endpoints[method.toLowerCase()] = functionCode;
+
+      if (
+        !["get", "post", "put", "delete", "patch", "options", "head"].includes(
+          String(method).toLowerCase(),
+        )
+      ) {
+        continue;
+      }
+
+      // Generate the endpoint function
+      const functionCode = generateEndpointFunction(
+        route,
+        method.toLowerCase(),
+        operation,
+        segments,
+        inlineInputSchemas,
+      );
+
+      // Insert into the client tree
+      let currentNode = clientTree;
+
+      // Navigate through segments and build the tree
+      for (const segment of segments) {
+        const segmentKey = segment.value;
+
+        // Create node if it doesn't exist
+        if (!currentNode.children[segmentKey]) {
+          currentNode.children[segmentKey] = {
+            endpoints: {},
+            children: {},
+            isParam: segment.type === "parameter",
+          };
+        }
+
+        // Move to next node
+        currentNode = currentNode.children[segmentKey];
+      }
+
+      // Add endpoint to final node
+      currentNode.endpoints[method.toLowerCase()] = functionCode;
     }
   }
 
@@ -495,11 +646,26 @@ async ${paramSignature} => {
  * Generates code for inline input schemas.
  */
 function generateInlineInputSchemas(inlineSchemas: Record<string, JSONSchema>): string {
+  if (!inlineSchemas || typeof inlineSchemas !== "object") {
+    console.warn("Warning: inlineSchemas is not an object. Returning empty string.");
+    return "";
+  }
+
   return Object.entries(inlineSchemas)
     .map(([name, schema]) => {
-      const expr = generateZodExpression(name, schema, {});
-      return `export const ${name}Schema = ${expr};`;
+      try {
+        if (!name || !schema) {
+          console.warn(`Warning: Invalid schema entry: ${name}`);
+          return "";
+        }
+        const expr = generateZodExpression(name, schema, {});
+        return `export const ${name}Schema = ${expr};`;
+      } catch (error) {
+        console.error(`Error generating schema for ${name}:`, error);
+        return `// Error generating schema for ${name}`;
+      }
     })
+    .filter(Boolean) // Remove empty strings
     .join("\n\n");
 }
 
@@ -515,8 +681,12 @@ Options:
   -h, --help                    Show this help message.
 Description:
   This CLI tool reads an OpenAPI YAML file, generates Zod schemas for both components and inline request/query inputs,
-  and creates a fully typed createClient function (using native fetch) based on your spec.
-  The generated code is formatted with Prettier and saved to the specified output file.
+  and creates a fluent, fully typed API client based on your spec.
+  
+  Features:
+  - Path parameters become function calls in the client chain
+  - e.g., /github/installation/{installation_id}/organizations becomes client.github.installation.installationId("123").organizations.get()
+  - Generated code is formatted with Prettier and saved to the specified output file.
 `;
   console.log(helpText);
 }
@@ -600,7 +770,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
     fs.writeFileSync(outputPath, formattedOutput, "utf8");
-    console.log(`Successfully generated Zod schemas and fully typed client in ${outputPath}`);
+    console.log(`Successfully generated Zod schemas and fluent API client in ${outputPath}`);
   } catch (err) {
     console.error("Error processing file:", err);
     process.exit(1);
