@@ -284,7 +284,7 @@ function Trigger<T>({
       </div>
       {Icon && item && <Icon id={item.id} className="relative size-4.5" />}
       <p className="group-data-pending/button:bg-foreground group-data-pending/button:animate-skeleton relative max-w-32 truncate py-0.5 leading-none group-data-pending/button:rounded-sm group-data-pending/button:text-transparent">
-        {item == undefined ? "Loading" : item?.title}adsflajsdflkajdlkfj
+        {item == undefined ? "Loading" : item?.title}
       </p>
       <ChevronDownIcon
         data-flip-chevron-sm={flipChevronOnSm ? true : undefined}
