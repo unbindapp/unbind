@@ -274,7 +274,7 @@ function Trigger<T>({
       data-no-icon={Icon === undefined ? true : undefined}
       data-pending={item == undefined ? true : undefined}
       className={cn(
-        `group/button relative flex items-center justify-start gap-2 rounded border-none px-1.5 py-4 text-sm font-medium focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent data-no-icon:pl-2.75`,
+        `group/button relative flex items-center justify-start gap-2 rounded border-none px-1.5 py-3.5 text-sm font-medium focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent data-no-icon:pl-2.75`,
         className,
       )}
       {...rest}
@@ -283,8 +283,8 @@ function Trigger<T>({
         <div className="bg-border/0 has-hover:group-hover/button:bg-border group-active/button:bg-border group-focus-visible/button:ring-primary/50 h-full w-full rounded-lg group-focus-visible/button:ring-1" />
       </div>
       {Icon && item && <Icon id={item.id} className="relative size-4.5" />}
-      <p className="group-data-pending/button:bg-foreground group-data-pending/button:animate-skeleton relative max-w-32 overflow-hidden leading-none text-ellipsis whitespace-nowrap group-data-pending/button:rounded-sm group-data-pending/button:text-transparent">
-        {item == undefined ? "Loading" : item?.title}
+      <p className="group-data-pending/button:bg-foreground group-data-pending/button:animate-skeleton relative max-w-32 truncate py-0.5 leading-none group-data-pending/button:rounded-sm group-data-pending/button:text-transparent">
+        {item == undefined ? "Loading" : item?.title}adsflajsdflkajdlkfj
       </p>
       <ChevronDownIcon
         data-flip-chevron-sm={flipChevronOnSm ? true : undefined}
