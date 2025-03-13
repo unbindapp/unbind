@@ -73,6 +73,7 @@ export default function ContextAwareCommandPanel({ context }: Props) {
         setCurrentPageId={setCurrentPageId}
         rootPage={rootPage}
         useCommandPanelItems={useContextAwareCommandPanelItems}
+        dialogContentVariantOptions={{ animate: "none" }}
         open={open}
         setOpen={setOpen}
       />

@@ -14,47 +14,72 @@ const DialogPortal = DialogPrimitive.Portal;
 
 const DialogClose = DialogPrimitive.Close;
 
+export const dialogOverlayVariants = cva(
+  "bg-barrier/barrier fixed inset-0 z-50 flex w-full justify-center overflow-auto px-2 pt-12 pb-[calc((100vh-3rem)*0.08+2rem)] data-no-x-padding:px-0 data-no-y-padding:py-0 md:pb-[calc((100vh-3rem)*0.1+3rem)]",
+  {
+    variants: {
+      animate: {
+        default:
+          "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-200 data-[state=closed]:duration-200 data-[state=open]:duration-200",
+        none: "",
+      },
+    },
+    defaultVariants: {
+      animate: "default",
+    },
+  },
+);
+
+type TDialogOverlayVariants = VariantProps<typeof dialogOverlayVariants>;
+
 function DialogOverlay({
   className,
   noXPadding,
   noYPadding,
+  animate,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Overlay> & {
   noXPadding?: boolean;
   noYPadding?: boolean;
-}) {
+} & TDialogOverlayVariants) {
   return (
     <DialogPrimitive.Overlay
       data-no-x-padding={noXPadding}
       data-no-y-padding={noYPadding}
-      className={cn(
-        "bg-barrier/barrier data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 flex w-full justify-center overflow-auto px-2 pt-12 pb-[calc((100vh-3rem)*0.08+2rem)] duration-200 data-no-x-padding:px-0 data-no-y-padding:py-0 data-[state=closed]:duration-200 data-[state=open]:duration-200 md:pb-[calc((100vh-3rem)*0.1+3rem)]",
-        className,
-      )}
+      className={dialogOverlayVariants({ animate, className })}
       {...props}
     />
   );
 }
 
-const dialogContentVariants = cva(
-  "z-50 relative flex flex-col gap-5 w-auto max-w-full pointer-events-none duration-200 data-[state=open]:duration-200 data-[state=closed]:duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-bottom-[6%] data-[state=open]:slide-in-from-bottom-[6%]",
+export const dialogContentVariants = cva(
+  "z-50 relative flex flex-col gap-5 w-auto max-w-full pointer-events-none my-auto outline-hidden focus:outline-hidden",
   {
     variants: {
       variant: {
         default: "bg-background border rounded-xl p-5 pt-4 shadow-dialog shadow-shadow/shadow",
         styleless: "",
       },
+      animate: {
+        default:
+          "duration-200 data-[state=open]:duration-200 data-[state=closed]:duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-[95%] data-[state=open]:zoom-in-[95%] data-[state=closed]:slide-out-to-bottom-[5%] data-[state=open]:slide-in-from-bottom-[5%]",
+        none: "",
+      },
     },
     defaultVariants: {
       variant: "default",
+      animate: "default",
     },
   },
 );
+
+export type TDialogContentVariants = VariantProps<typeof dialogContentVariants>;
 
 function DialogContent({
   className,
   classNameInnerWrapper,
   variant,
+  animate,
   children,
   onCloseAutoFocus,
   onEscapeKeyDown,
@@ -62,7 +87,7 @@ function DialogContent({
   noYPadding,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> &
-  VariantProps<typeof dialogContentVariants> & {
+  TDialogContentVariants & {
     classNameInnerWrapper?: string;
     noXPadding?: boolean;
     noYPadding?: boolean;
@@ -97,15 +122,11 @@ function DialogContent({
 
   return (
     <DialogPortal>
-      <DialogOverlay noYPadding={noYPadding} noXPadding={noXPadding}>
+      <DialogOverlay noYPadding={noYPadding} noXPadding={noXPadding} animate={animate}>
         <DialogPrimitive.Content
           onCloseAutoFocus={handleCloseAutoFocus}
           onEscapeKeyDown={handleEscapeKeyDown}
-          className={cn(
-            "my-auto w-auto outline-hidden focus:outline-hidden",
-            dialogContentVariants({ variant }),
-            className,
-          )}
+          className={dialogContentVariants({ variant, animate, className })}
           {...props}
         >
           <div className={cn("flex w-full flex-col gap-4", classNameInnerWrapper)}>

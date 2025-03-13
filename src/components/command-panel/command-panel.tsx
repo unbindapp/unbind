@@ -18,6 +18,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  TCommandVariants,
 } from "@/components/ui/command";
 import {
   Dialog,
@@ -25,10 +26,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  TDialogContentVariants,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DialogDescription } from "@radix-ui/react-dialog";
-import { cva, VariantProps } from "class-variance-authority";
 import { useCommandState } from "cmdk";
 import { ChevronLeftIcon, ChevronRightIcon, LoaderIcon } from "lucide-react";
 import { ReactNode, RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -40,6 +41,20 @@ type TProps = {
   children?: ReactNode;
   title: string;
   description: string;
+  dialogContentVariantOptions?: TDialogContentVariants;
+};
+
+const defaultCommandVariantOptionsDialog: TCommandVariants = {
+  variant: "modal",
+};
+
+const defaultCommandVariantOptionsDrawer: TCommandVariants = {
+  variant: "modal",
+  wrapper: "none",
+};
+
+const defaultDialogContentVariantOptions: TDialogContentVariants = {
+  variant: "styleless",
 };
 
 export function CommandPanelTrigger({
@@ -54,8 +69,22 @@ export function CommandPanelTrigger({
   setCurrentPageId,
   title,
   description,
-}: TProps & CommandPanelProps) {
+  commandVariantOptions,
+  dialogContentVariantOptions,
+}: TProps & TCommandPanelProps) {
   const { isExtraSmall } = useDeviceSize();
+  const mergedCommandPanelVariantOptionsDialog = useMemo(
+    () => ({ ...defaultCommandVariantOptionsDialog, ...commandVariantOptions }),
+    [commandVariantOptions],
+  );
+  const mergedCommandPanelVariantOptionsDrawer = useMemo(
+    () => ({ ...defaultCommandVariantOptionsDrawer, ...commandVariantOptions }),
+    [commandVariantOptions],
+  );
+  const mergedDialogContentVariantOptions = useMemo(
+    () => ({ ...defaultDialogContentVariantOptions, ...dialogContentVariantOptions }),
+    [dialogContentVariantOptions],
+  );
 
   const onEscapeKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -89,7 +118,7 @@ export function CommandPanelTrigger({
               currentPage={currentPage}
               goToParentPage={goToParentPage}
               useCommandPanelItems={useCommandPanelItems}
-              variant="no-wrapper"
+              commandVariantOptions={mergedCommandPanelVariantOptionsDrawer}
               className="rounded-2xl"
             />
           </div>
@@ -115,7 +144,7 @@ export function CommandPanelTrigger({
           focusable.focus?.();
         }}
         onEscapeKeyDown={onEscapeKeyDown}
-        variant="styleless"
+        {...mergedDialogContentVariantOptions}
         className="w-112"
       >
         <DialogHeader>
@@ -129,6 +158,8 @@ export function CommandPanelTrigger({
           currentPage={currentPage}
           goToParentPage={goToParentPage}
           useCommandPanelItems={useCommandPanelItems}
+          commandVariantOptions={mergedCommandPanelVariantOptionsDialog}
+          className="w-112"
         />
       </DialogContent>
     </Dialog>
@@ -144,20 +175,7 @@ type TUseCommandPanelItems = () => {
 
 type TSetCurrentPageId = (id: string) => void;
 
-const commandPanelVariants = cva("w-full", {
-  variants: {
-    variant: {
-      default:
-        "rounded-xl h-108 max-h-[min(calc(100vh-(100vh-3rem)*0.1-7rem),50vh)] sm:max-h-[calc(100vh-(100vh-3rem)*0.1-7rem)] border shadow-xl shadow-shadow/shadow",
-      "no-wrapper": "",
-    },
-  },
-  defaultVariants: {
-    variant: "default",
-  },
-});
-
-type CommandPanelProps = {
+type TCommandPanelProps = {
   currentPage: TCommandPanelPage;
   goToParentPage: (e?: KeyboardEvent) => void;
   useCommandPanelItems: TUseCommandPanelItems;
@@ -165,9 +183,8 @@ type CommandPanelProps = {
   allPageIds: string[];
   setCurrentPageId: TSetCurrentPageId;
   className?: string;
-} & TCommandPanelVariants;
-
-type TCommandPanelVariants = VariantProps<typeof commandPanelVariants>;
+  commandVariantOptions?: TCommandVariants;
+};
 
 function CommandPanel({
   currentPage,
@@ -176,9 +193,9 @@ function CommandPanel({
   rootPage,
   allPageIds,
   setCurrentPageId,
-  variant,
+  commandVariantOptions,
   className,
-}: CommandPanelProps) {
+}: TCommandPanelProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -226,11 +243,8 @@ function CommandPanel({
       filter={isPending || isError ? () => 1 : undefined}
       value={value}
       onValueChange={setValue}
-      variant="modal"
-      className={commandPanelVariants({
-        variant,
-        className,
-      })}
+      {...commandVariantOptions}
+      className={className}
     >
       <Input
         useCommandPanelItems={useCommandPanelItems}

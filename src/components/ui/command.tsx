@@ -16,23 +16,33 @@ const commandVariants = cva(
         default: "bg-popover text-popover-foreground",
         modal: "bg-background text-foreground",
       },
+      wrapper: {
+        default:
+          "rounded-xl h-108 max-h-[min(calc(100vh-(100vh-3rem)*0.1-7rem),50vh)] sm:max-h-[calc(100vh-(100vh-3rem)*0.1-7rem)] border shadow-xl shadow-shadow/shadow",
+        none: "",
+      },
     },
     defaultVariants: {
       variant: "default",
+      wrapper: "default",
     },
   },
 );
 
+export type TCommandVariants = VariantProps<typeof commandVariants>;
+
 function Command({
   className,
   variant,
+  wrapper,
   ...props
-}: React.ComponentProps<typeof CommandPrimitive> & VariantProps<typeof commandVariants>) {
+}: React.ComponentProps<typeof CommandPrimitive> & TCommandVariants) {
   return (
     <CommandPrimitive
       className={cn(
         commandVariants({
           variant,
+          wrapper,
           className,
         }),
       )}
