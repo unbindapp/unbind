@@ -181,7 +181,7 @@ async function createGitHubApp({
 
   const goClient = createClient({ accessToken, apiUrl: env.NEXT_PUBLIC_UNBIND_API_URL });
 
-  const res = await goClient.github.app.create.get(
+  const res = await goClient.github.app.create(
     { redirect_url: redirectUrl },
     { signal: abortController.signal },
   );

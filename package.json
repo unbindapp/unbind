@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "gen": "ts-node scripts/generate-go-client/main.ts -i https://api.unbind.app/openapi.yaml"
+    "gen": "bun run ./scripts/generate-go-client/main.ts -i https://api.unbind.app/openapi.yaml"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.6",

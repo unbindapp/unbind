@@ -96,7 +96,7 @@ export const mainRouter = createTRPCRouter({
           message: "Unauthorized",
         });
       }
-      const { data } = await goClient.github.repositories.get();
+      const { data } = await goClient.github.repositories();
       return {
         repos: data || [],
       };

@@ -2,7 +2,6 @@ import { z } from 'zod';
 
 export const CallbackResponseBodySchema = z
   .object({
-    $schema: z.string().optional(), // A URL to the JSON Schema for this object.
     access_token: z.string(),
     expiry: z.string(),
     id_token: z.string(),
@@ -13,10 +12,9 @@ export const CallbackResponseBodySchema = z
 
 export const CreateProjectInputBodySchema = z
   .object({
-    $schema: z.string().optional(), // A URL to the JSON Schema for this object.
     description: z.string(),
     display_name: z.string(),
-    name: z.string(),
+    team_id: z.string(),
   })
   .strict();
 
@@ -34,7 +32,6 @@ export const ProjectResponseSchema = z
 
 export const CreateProjectResponseBodySchema = z
   .object({
-    $schema: z.string().optional(), // A URL to the JSON Schema for this object.
     data: ProjectResponseSchema,
   })
   .strict();
@@ -49,7 +46,6 @@ export const ErrorDetailSchema = z
 
 export const ErrorModelSchema = z
   .object({
-    $schema: z.string().optional(), // A URL to the JSON Schema for this object.
     detail: z.string().optional(), // A human-readable explanation specific to this occurrence of the problem.
     errors: z.array(ErrorDetailSchema).nullable().optional(), // Optional list of individual error details
     instance: z.string().optional(), // A URI reference that identifies the specific occurrence of the problem.
@@ -146,7 +142,6 @@ export const OrganizationSchema = z
 
 export const GithubAdminOrganizationListResponseBodySchema = z
   .object({
-    $schema: z.string().optional(), // A URL to the JSON Schema for this object.
     data: z.array(OrganizationSchema).nullable(),
   })
   .strict();
@@ -173,7 +168,6 @@ export const GithubRepositorySchema = z
 
 export const GithubAdminRepositoryListResponseBodySchema = z
   .object({
-    $schema: z.string().optional(), // A URL to the JSON Schema for this object.
     data: z.array(GithubRepositorySchema).nullable(),
   })
   .strict();
@@ -390,78 +384,70 @@ export const GithubAppSchema: z.ZodType<unknown> = z
 
 export const GithubAppCreateResponseBodySchema = z
   .object({
-    $schema: z.string().optional(), // A URL to the JSON Schema for this object.
     data: z.string(),
   })
   .strict();
 
 export const GithubAppInstallationListResponseBodySchema = z
   .object({
-    $schema: z.string().optional(), // A URL to the JSON Schema for this object.
     data: z.array(GithubInstallationSchema).nullable(),
   })
   .strict();
 
 export const GithubAppListResponseBodySchema = z
   .object({
-    $schema: z.string().optional(), // A URL to the JSON Schema for this object.
     data: z.array(GithubAppSchema).nullable(),
   })
   .strict();
 
 export const HealthResponseBodySchema = z
   .object({
-    $schema: z.string().optional(), // A URL to the JSON Schema for this object.
     status: z.string(),
   })
   .strict();
 
 export const ListProjectResponseBodySchema = z
   .object({
-    $schema: z.string().optional(), // A URL to the JSON Schema for this object.
     data: z.array(ProjectResponseSchema).nullable(),
   })
   .strict();
 
 export const MeResponseBodySchema = z
   .object({
-    $schema: z.string().optional(), // A URL to the JSON Schema for this object.
     data: UserSchema,
   })
   .strict();
 
 export const TeamResponseBodySchema = z
   .object({
-    $schema: z.string().optional(), // A URL to the JSON Schema for this object.
     data: z.array(GetTeamResponseSchema).nullable(),
   })
   .strict();
 
 export const UpdateProjectInputBodySchema = z
   .object({
-    $schema: z.string().optional(), // A URL to the JSON Schema for this object.
     description: z.string(),
     display_name: z.string(),
+    project_id: z.string(),
+    team_id: z.string(),
   })
   .strict();
 
 export const UpdateProjectResponseBodySchema = z
   .object({
-    $schema: z.string().optional(), // A URL to the JSON Schema for this object.
     data: ProjectResponseSchema,
   })
   .strict();
 
 export const UpdateTeamInputBodySchema = z
   .object({
-    $schema: z.string().optional(), // A URL to the JSON Schema for this object.
     display_name: z.string(),
+    team_id: z.string(),
   })
   .strict();
 
 export const UpdateTeamResponseBodySchema = z
   .object({
-    $schema: z.string().optional(), // A URL to the JSON Schema for this object.
     data: GetTeamResponseSchema,
   })
   .strict();
@@ -549,6 +535,10 @@ export const list_appsQuerySchema = z.object({
   with_installations: z.boolean().optional(),
 });
 
+export const list_projectsQuerySchema = z.object({
+  team_id: z.string(),
+});
+
 export const app_saveQuerySchema = z.object({
   code: z.string(),
   state: z.string(),
@@ -562,315 +552,51 @@ export type ClientOptions = {
 export function createClient({ accessToken, apiUrl }: ClientOptions) {
   return {
     auth: {
-      callback: {
-        get: async (
-          query: z.infer<typeof callbackQuerySchema>,
-          fetchOptions?: RequestInit,
-        ): Promise<CallbackResponseBody> => {
-          try {
-            // Make sure apiUrl is defined and is a string
-            if (!apiUrl || typeof apiUrl !== 'string') {
-              throw new Error('API URL is undefined or not a string');
-            }
-
-            const url = new URL(`${apiUrl}/auth/callback`);
-            const validatedQuery = callbackQuerySchema.parse(query);
-            // Only process if validatedQuery is an object
-            if (validatedQuery && typeof validatedQuery === 'object') {
-              Object.entries(validatedQuery).forEach(([key, value]) => {
-                if (value !== undefined && value !== null) {
-                  url.searchParams.append(key, String(value));
-                }
-              });
-            }
-
-            const options: RequestInit = {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
-              },
-              ...fetchOptions,
-            };
-
-            const response = await fetch(url.toString(), options);
-
-            if (!response.ok) {
-              throw new Error(
-                `API request failed with status ${response.status}: ${response.statusText}`,
-              );
-            }
-
-            const data = await response.json();
-            return CallbackResponseBodySchema.parse(data);
-          } catch (error) {
-            console.error('Error in API request:', error);
-            throw error;
-          }
-        },
-      },
-      login: {
-        get: async (fetchOptions?: RequestInit) => {
-          try {
-            // Make sure apiUrl is defined and is a string
-            if (!apiUrl || typeof apiUrl !== 'string') {
-              throw new Error('API URL is undefined or not a string');
-            }
-
-            const url = new URL(`${apiUrl}/auth/login`);
-
-            const options: RequestInit = {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
-              },
-              ...fetchOptions,
-            };
-
-            const response = await fetch(url.toString(), options);
-
-            if (!response.ok) {
-              throw new Error(
-                `API request failed with status ${response.status}: ${response.statusText}`,
-              );
-            }
-
-            const data = await response.json();
-            return data;
-          } catch (error) {
-            console.error('Error in API request:', error);
-            throw error;
-          }
-        },
-      },
-    },
-    github: {
-      app: {
-        create: {
-          get: async (
-            query: z.infer<typeof app_createQuerySchema>,
-            fetchOptions?: RequestInit,
-          ): Promise<GithubAppCreateResponseBody> => {
-            try {
-              // Make sure apiUrl is defined and is a string
-              if (!apiUrl || typeof apiUrl !== 'string') {
-                throw new Error('API URL is undefined or not a string');
-              }
-
-              const url = new URL(`${apiUrl}/github/app/create`);
-              const validatedQuery = app_createQuerySchema.parse(query);
-              // Only process if validatedQuery is an object
-              if (validatedQuery && typeof validatedQuery === 'object') {
-                Object.entries(validatedQuery).forEach(([key, value]) => {
-                  if (value !== undefined && value !== null) {
-                    url.searchParams.append(key, String(value));
-                  }
-                });
-              }
-
-              const options: RequestInit = {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${accessToken}`,
-                },
-                ...fetchOptions,
-              };
-
-              const response = await fetch(url.toString(), options);
-
-              if (!response.ok) {
-                throw new Error(
-                  `API request failed with status ${response.status}: ${response.statusText}`,
-                );
-              }
-
-              const data = await response.json();
-              return GithubAppCreateResponseBodySchema.parse(data);
-            } catch (error) {
-              console.error('Error in API request:', error);
-              throw error;
-            }
-          },
-        },
-      },
-      apps: {
-        get: async (
-          query: z.infer<typeof list_appsQuerySchema> = {},
-          fetchOptions?: RequestInit,
-        ): Promise<GithubAppListResponseBody> => {
-          try {
-            // Make sure apiUrl is defined and is a string
-            if (!apiUrl || typeof apiUrl !== 'string') {
-              throw new Error('API URL is undefined or not a string');
-            }
-
-            const url = new URL(`${apiUrl}/github/apps`);
-            const validatedQuery = list_appsQuerySchema.parse(query);
-            // Only process if validatedQuery is an object
-            if (validatedQuery && typeof validatedQuery === 'object') {
-              Object.entries(validatedQuery).forEach(([key, value]) => {
-                if (value !== undefined && value !== null) {
-                  url.searchParams.append(key, String(value));
-                }
-              });
-            }
-
-            const options: RequestInit = {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
-              },
-              ...fetchOptions,
-            };
-
-            const response = await fetch(url.toString(), options);
-
-            if (!response.ok) {
-              throw new Error(
-                `API request failed with status ${response.status}: ${response.statusText}`,
-              );
-            }
-
-            const data = await response.json();
-            return GithubAppListResponseBodySchema.parse(data);
-          } catch (error) {
-            console.error('Error in API request:', error);
-            throw error;
-          }
-        },
-      },
-      installation: {
-        installationId: (installationId: string | number) => ({
-          organizations: {
-            get: async (
-              fetchOptions?: RequestInit,
-            ): Promise<GithubAdminOrganizationListResponseBody> => {
-              try {
-                // Make sure apiUrl is defined and is a string
-                if (!apiUrl || typeof apiUrl !== 'string') {
-                  throw new Error('API URL is undefined or not a string');
-                }
-
-                const url = new URL(
-                  `${apiUrl}/github/installation/${installationId}/organizations`,
-                );
-
-                const options: RequestInit = {
-                  method: 'GET',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${accessToken}`,
-                  },
-                  ...fetchOptions,
-                };
-
-                const response = await fetch(url.toString(), options);
-
-                if (!response.ok) {
-                  throw new Error(
-                    `API request failed with status ${response.status}: ${response.statusText}`,
-                  );
-                }
-
-                const data = await response.json();
-                return GithubAdminOrganizationListResponseBodySchema.parse(
-                  data,
-                );
-              } catch (error) {
-                console.error('Error in API request:', error);
-                throw error;
-              }
-            },
-          },
-        }),
-      },
-      installations: {
-        get: async (
-          fetchOptions?: RequestInit,
-        ): Promise<GithubAppInstallationListResponseBody> => {
-          try {
-            // Make sure apiUrl is defined and is a string
-            if (!apiUrl || typeof apiUrl !== 'string') {
-              throw new Error('API URL is undefined or not a string');
-            }
-
-            const url = new URL(`${apiUrl}/github/installations`);
-
-            const options: RequestInit = {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
-              },
-              ...fetchOptions,
-            };
-
-            const response = await fetch(url.toString(), options);
-
-            if (!response.ok) {
-              throw new Error(
-                `API request failed with status ${response.status}: ${response.statusText}`,
-              );
-            }
-
-            const data = await response.json();
-            return GithubAppInstallationListResponseBodySchema.parse(data);
-          } catch (error) {
-            console.error('Error in API request:', error);
-            throw error;
-          }
-        },
-      },
-      repositories: {
-        get: async (
-          fetchOptions?: RequestInit,
-        ): Promise<GithubAdminRepositoryListResponseBody> => {
-          try {
-            // Make sure apiUrl is defined and is a string
-            if (!apiUrl || typeof apiUrl !== 'string') {
-              throw new Error('API URL is undefined or not a string');
-            }
-
-            const url = new URL(`${apiUrl}/github/repositories`);
-
-            const options: RequestInit = {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
-              },
-              ...fetchOptions,
-            };
-
-            const response = await fetch(url.toString(), options);
-
-            if (!response.ok) {
-              throw new Error(
-                `API request failed with status ${response.status}: ${response.statusText}`,
-              );
-            }
-
-            const data = await response.json();
-            return GithubAdminRepositoryListResponseBodySchema.parse(data);
-          } catch (error) {
-            console.error('Error in API request:', error);
-            throw error;
-          }
-        },
-      },
-    },
-    health: {
-      get: async (fetchOptions?: RequestInit): Promise<HealthResponseBody> => {
+      callback: async (
+        params: z.infer<typeof callbackQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<CallbackResponseBody> => {
         try {
-          // Make sure apiUrl is defined and is a string
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
+          const url = new URL(`${apiUrl}/auth/callback`);
+          const validatedQuery = callbackQuerySchema.parse(params);
+          const queryKeys = ['code'];
+          queryKeys.forEach((key) => {
+            const value = (validatedQuery as Record<string, string>)[key];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
 
-          const url = new URL(`${apiUrl}/health`);
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            throw new Error(
+              `API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return CallbackResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      login: async (params?: undefined, fetchOptions?: RequestInit) => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/auth/login`);
 
           const options: RequestInit = {
             method: 'GET',
@@ -882,32 +608,38 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           };
 
           const response = await fetch(url.toString(), options);
-
           if (!response.ok) {
             throw new Error(
               `API request failed with status ${response.status}: ${response.statusText}`,
             );
           }
-
           const data = await response.json();
-          return HealthResponseBodySchema.parse(data);
+          return data;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
         }
       },
     },
-    teams: {
-      list: {
-        get: async (fetchOptions?: RequestInit): Promise<TeamResponseBody> => {
+    github: {
+      app: {
+        create: async (
+          params: z.infer<typeof app_createQuerySchema>,
+          fetchOptions?: RequestInit,
+        ): Promise<GithubAppCreateResponseBody> => {
           try {
-            // Make sure apiUrl is defined and is a string
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-
-            const url = new URL(`${apiUrl}/teams/list`);
-
+            const url = new URL(`${apiUrl}/github/app/create`);
+            const validatedQuery = app_createQuerySchema.parse(params);
+            const queryKeys = ['redirect_url', 'organization'];
+            queryKeys.forEach((key) => {
+              const value = (validatedQuery as Record<string, string>)[key];
+              if (value !== undefined && value !== null) {
+                url.searchParams.append(key, String(value));
+              }
+            });
             const options: RequestInit = {
               method: 'GET',
               headers: {
@@ -918,32 +650,343 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             };
 
             const response = await fetch(url.toString(), options);
-
             if (!response.ok) {
               throw new Error(
                 `API request failed with status ${response.status}: ${response.statusText}`,
               );
             }
-
             const data = await response.json();
-            return TeamResponseBodySchema.parse(data);
+            return GithubAppCreateResponseBodySchema.parse(data);
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
           }
         },
       },
-      teamId: (teamId: string | number) => ({
-        put: async (
-          body: UpdateTeamInputBody,
+      apps: async (
+        params: z.infer<typeof list_appsQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<GithubAppListResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/github/apps`);
+          const validatedQuery = list_appsQuerySchema.parse(params);
+          const queryKeys = ['with_installations'];
+          queryKeys.forEach((key) => {
+            const value = (validatedQuery as Record<string, string>)[key];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            throw new Error(
+              `API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return GithubAppListResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      installation: {
+        installationId: (installationId: string | number) => ({
+          organizations: async (
+            params?: undefined,
+            fetchOptions?: RequestInit,
+          ): Promise<GithubAdminOrganizationListResponseBody> => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
+              }
+              const url = new URL(
+                `${apiUrl}/github/installation/${installationId}/organizations`,
+              );
+
+              const options: RequestInit = {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${accessToken}`,
+                },
+                ...fetchOptions,
+              };
+
+              const response = await fetch(url.toString(), options);
+              if (!response.ok) {
+                throw new Error(
+                  `API request failed with status ${response.status}: ${response.statusText}`,
+                );
+              }
+              const data = await response.json();
+              return GithubAdminOrganizationListResponseBodySchema.parse(data);
+            } catch (error) {
+              console.error('Error in API request:', error);
+              throw error;
+            }
+          },
+        }),
+      },
+      installations: async (
+        params?: undefined,
+        fetchOptions?: RequestInit,
+      ): Promise<GithubAppInstallationListResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/github/installations`);
+
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            throw new Error(
+              `API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return GithubAppInstallationListResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      repositories: async (
+        params?: undefined,
+        fetchOptions?: RequestInit,
+      ): Promise<GithubAdminRepositoryListResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/github/repositories`);
+
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            throw new Error(
+              `API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return GithubAdminRepositoryListResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+    },
+    health: async (
+      params?: undefined,
+      fetchOptions?: RequestInit,
+    ): Promise<HealthResponseBody> => {
+      try {
+        if (!apiUrl || typeof apiUrl !== 'string') {
+          throw new Error('API URL is undefined or not a string');
+        }
+        const url = new URL(`${apiUrl}/health`);
+
+        const options: RequestInit = {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+          ...fetchOptions,
+        };
+
+        const response = await fetch(url.toString(), options);
+        if (!response.ok) {
+          throw new Error(
+            `API request failed with status ${response.status}: ${response.statusText}`,
+          );
+        }
+        const data = await response.json();
+        return HealthResponseBodySchema.parse(data);
+      } catch (error) {
+        console.error('Error in API request:', error);
+        throw error;
+      }
+    },
+    projects: {
+      create: async (
+        params: CreateProjectInputBody,
+        fetchOptions?: RequestInit,
+      ): Promise<CreateProjectResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/projects/create`);
+
+          const options: RequestInit = {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = CreateProjectInputBodySchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            throw new Error(
+              `API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return CreateProjectResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      list: async (
+        params: z.infer<typeof list_projectsQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<ListProjectResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/projects/list`);
+          const validatedQuery = list_projectsQuerySchema.parse(params);
+          const queryKeys = ['team_id'];
+          queryKeys.forEach((key) => {
+            const value = (validatedQuery as Record<string, string>)[key];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            throw new Error(
+              `API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return ListProjectResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      update: async (
+        params: UpdateProjectInputBody,
+        fetchOptions?: RequestInit,
+      ): Promise<UpdateProjectResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/projects/update`);
+
+          const options: RequestInit = {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = UpdateProjectInputBodySchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            throw new Error(
+              `API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return UpdateProjectResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+    },
+    teams: {
+      list: async (
+        params?: undefined,
+        fetchOptions?: RequestInit,
+      ): Promise<TeamResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/teams/list`);
+
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            throw new Error(
+              `API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return TeamResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      teamId:
+        (teamId: string | number) =>
+        async (
+          params: UpdateTeamInputBody,
           fetchOptions?: RequestInit,
         ): Promise<UpdateTeamResponseBody> => {
           try {
-            // Make sure apiUrl is defined and is a string
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-
             const url = new URL(`${apiUrl}/teams/${teamId}`);
 
             const options: RequestInit = {
@@ -954,19 +997,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               },
               ...fetchOptions,
             };
-            if (body !== undefined) {
-              const validatedBody = UpdateTeamInputBodySchema.parse(body);
-              options.body = JSON.stringify(validatedBody);
-            }
-
+            const validatedBody = UpdateTeamInputBodySchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
             const response = await fetch(url.toString(), options);
-
             if (!response.ok) {
               throw new Error(
                 `API request failed with status ${response.status}: ${response.statusText}`,
               );
             }
-
             const data = await response.json();
             return UpdateTeamResponseBodySchema.parse(data);
           } catch (error) {
@@ -974,183 +1012,48 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             throw error;
           }
         },
-        project: {
-          create: {
-            post: async (
-              body: CreateProjectInputBody,
-              fetchOptions?: RequestInit,
-            ): Promise<CreateProjectResponseBody> => {
-              try {
-                // Make sure apiUrl is defined and is a string
-                if (!apiUrl || typeof apiUrl !== 'string') {
-                  throw new Error('API URL is undefined or not a string');
-                }
-
-                const url = new URL(`${apiUrl}/teams/${teamId}/project/create`);
-
-                const options: RequestInit = {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${accessToken}`,
-                  },
-                  ...fetchOptions,
-                };
-                if (body !== undefined) {
-                  const validatedBody =
-                    CreateProjectInputBodySchema.parse(body);
-                  options.body = JSON.stringify(validatedBody);
-                }
-
-                const response = await fetch(url.toString(), options);
-
-                if (!response.ok) {
-                  throw new Error(
-                    `API request failed with status ${response.status}: ${response.statusText}`,
-                  );
-                }
-
-                const data = await response.json();
-                return CreateProjectResponseBodySchema.parse(data);
-              } catch (error) {
-                console.error('Error in API request:', error);
-                throw error;
-              }
-            },
-          },
-          list: {
-            get: async (
-              fetchOptions?: RequestInit,
-            ): Promise<ListProjectResponseBody> => {
-              try {
-                // Make sure apiUrl is defined and is a string
-                if (!apiUrl || typeof apiUrl !== 'string') {
-                  throw new Error('API URL is undefined or not a string');
-                }
-
-                const url = new URL(`${apiUrl}/teams/${teamId}/project/list`);
-
-                const options: RequestInit = {
-                  method: 'GET',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${accessToken}`,
-                  },
-                  ...fetchOptions,
-                };
-
-                const response = await fetch(url.toString(), options);
-
-                if (!response.ok) {
-                  throw new Error(
-                    `API request failed with status ${response.status}: ${response.statusText}`,
-                  );
-                }
-
-                const data = await response.json();
-                return ListProjectResponseBodySchema.parse(data);
-              } catch (error) {
-                console.error('Error in API request:', error);
-                throw error;
-              }
-            },
-          },
-          projectId: (projectId: string | number) => ({
-            update: {
-              put: async (
-                body: UpdateProjectInputBody,
-                fetchOptions?: RequestInit,
-              ): Promise<UpdateProjectResponseBody> => {
-                try {
-                  // Make sure apiUrl is defined and is a string
-                  if (!apiUrl || typeof apiUrl !== 'string') {
-                    throw new Error('API URL is undefined or not a string');
-                  }
-
-                  const url = new URL(
-                    `${apiUrl}/teams/${teamId}/project/${projectId}/update`,
-                  );
-
-                  const options: RequestInit = {
-                    method: 'PUT',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      Authorization: `Bearer ${accessToken}`,
-                    },
-                    ...fetchOptions,
-                  };
-                  if (body !== undefined) {
-                    const validatedBody =
-                      UpdateProjectInputBodySchema.parse(body);
-                    options.body = JSON.stringify(validatedBody);
-                  }
-
-                  const response = await fetch(url.toString(), options);
-
-                  if (!response.ok) {
-                    throw new Error(
-                      `API request failed with status ${response.status}: ${response.statusText}`,
-                    );
-                  }
-
-                  const data = await response.json();
-                  return UpdateProjectResponseBodySchema.parse(data);
-                } catch (error) {
-                  console.error('Error in API request:', error);
-                  throw error;
-                }
-              },
-            },
-          }),
-        },
-      }),
     },
     user: {
-      me: {
-        get: async (fetchOptions?: RequestInit): Promise<MeResponseBody> => {
-          try {
-            // Make sure apiUrl is defined and is a string
-            if (!apiUrl || typeof apiUrl !== 'string') {
-              throw new Error('API URL is undefined or not a string');
-            }
-
-            const url = new URL(`${apiUrl}/user/me`);
-
-            const options: RequestInit = {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
-              },
-              ...fetchOptions,
-            };
-
-            const response = await fetch(url.toString(), options);
-
-            if (!response.ok) {
-              throw new Error(
-                `API request failed with status ${response.status}: ${response.statusText}`,
-              );
-            }
-
-            const data = await response.json();
-            return MeResponseBodySchema.parse(data);
-          } catch (error) {
-            console.error('Error in API request:', error);
-            throw error;
+      me: async (
+        params?: undefined,
+        fetchOptions?: RequestInit,
+      ): Promise<MeResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
           }
-        },
+          const url = new URL(`${apiUrl}/user/me`);
+
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            throw new Error(
+              `API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return MeResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
       },
     },
     webhook: {
-      github: {
-        post: async (fetchOptions?: RequestInit) => {
+      github: Object.assign(
+        async (params?: undefined, fetchOptions?: RequestInit) => {
           try {
-            // Make sure apiUrl is defined and is a string
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-
             const url = new URL(`${apiUrl}/webhook/github`);
 
             const options: RequestInit = {
@@ -1163,13 +1066,11 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             };
 
             const response = await fetch(url.toString(), options);
-
             if (!response.ok) {
               throw new Error(
                 `API request failed with status ${response.status}: ${response.statusText}`,
               );
             }
-
             const data = await response.json();
             return data;
           } catch (error) {
@@ -1177,29 +1078,25 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             throw error;
           }
         },
-        app: {
-          save: {
-            get: async (
-              query: z.infer<typeof app_saveQuerySchema>,
+        {
+          app: {
+            save: async (
+              params: z.infer<typeof app_saveQuerySchema>,
               fetchOptions?: RequestInit,
             ) => {
               try {
-                // Make sure apiUrl is defined and is a string
                 if (!apiUrl || typeof apiUrl !== 'string') {
                   throw new Error('API URL is undefined or not a string');
                 }
-
                 const url = new URL(`${apiUrl}/webhook/github/app/save`);
-                const validatedQuery = app_saveQuerySchema.parse(query);
-                // Only process if validatedQuery is an object
-                if (validatedQuery && typeof validatedQuery === 'object') {
-                  Object.entries(validatedQuery).forEach(([key, value]) => {
-                    if (value !== undefined && value !== null) {
-                      url.searchParams.append(key, String(value));
-                    }
-                  });
-                }
-
+                const validatedQuery = app_saveQuerySchema.parse(params);
+                const queryKeys = ['code', 'state'];
+                queryKeys.forEach((key) => {
+                  const value = (validatedQuery as Record<string, string>)[key];
+                  if (value !== undefined && value !== null) {
+                    url.searchParams.append(key, String(value));
+                  }
+                });
                 const options: RequestInit = {
                   method: 'GET',
                   headers: {
@@ -1210,13 +1107,11 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                 };
 
                 const response = await fetch(url.toString(), options);
-
                 if (!response.ok) {
                   throw new Error(
                     `API request failed with status ${response.status}: ${response.statusText}`,
                   );
                 }
-
                 const data = await response.json();
                 return data;
               } catch (error) {
@@ -1226,7 +1121,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             },
           },
         },
-      },
+      ),
     },
   };
 }
