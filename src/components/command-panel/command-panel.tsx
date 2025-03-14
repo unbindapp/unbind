@@ -10,6 +10,7 @@ import BottomDrawer, {
   BottomDrawerTrigger,
 } from "@/components/navigation/bottom-drawer";
 import { useDeviceSize } from "@/components/providers/device-size-provider";
+import { useDeviceType } from "@/components/providers/device-type-provider";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -198,6 +199,7 @@ function CommandPanel({
 }: TCommandPanelProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const { isTouchscreen } = useDeviceType();
 
   const [value, setValue] = useState("");
   const { isPending, isError } = useCommandPanelItems();
@@ -234,6 +236,7 @@ function CommandPanel({
   );
 
   useEffect(() => {
+    if (isTouchscreen) return;
     const value = getFirstCommandListItem(scrollAreaRef);
     if (value) setValue(value);
   }, [currentPage]);
