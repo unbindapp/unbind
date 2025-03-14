@@ -11,6 +11,34 @@ export const CallbackResponseBodySchema = z
   })
   .strict();
 
+export const CreateProjectInputBodySchema = z
+  .object({
+    $schema: z.string().optional(), // A URL to the JSON Schema for this object.
+    description: z.string(),
+    display_name: z.string(),
+    name: z.string(),
+  })
+  .strict();
+
+export const ProjectResponseSchema = z
+  .object({
+    created_at: z.string(),
+    description: z.string(),
+    display_name: z.string(),
+    id: z.string(),
+    name: z.string(),
+    status: z.string(),
+    team_id: z.string(),
+  })
+  .strict();
+
+export const CreateProjectResponseBodySchema = z
+  .object({
+    $schema: z.string().optional(), // A URL to the JSON Schema for this object.
+    data: ProjectResponseSchema,
+  })
+  .strict();
+
 export const ErrorDetailSchema = z
   .object({
     location: z.string().optional(), // Where the error occurred, e.g. 'body.items[3].tags' or 'path.thing-id'
@@ -28,6 +56,15 @@ export const ErrorModelSchema = z
     status: z.number().optional(), // HTTP status code
     title: z.string().optional(), // A short, human-readable summary of the problem type. This value should not change between occurrences of the error.
     type: z.string().optional(), // A URI reference to human-readable documentation for the error.
+  })
+  .strict();
+
+export const GetTeamResponseSchema = z
+  .object({
+    created_at: z.string(),
+    display_name: z.string(),
+    id: z.string(),
+    name: z.string(),
   })
   .strict();
 
@@ -173,6 +210,103 @@ export const GithubInstallationSchema = z
   })
   .strict();
 
+export const PermissionEdgesSchema = z
+  .object({
+    groups: z
+      .array(z.lazy(() => GroupSchema))
+      .nullable()
+      .optional(),
+  })
+  .strict();
+
+export const PermissionSchema = z
+  .object({
+    action: z.string().optional(),
+    created_at: z.string().optional(),
+    edges: PermissionEdgesSchema,
+    id: z.string(),
+    labels: z.object({}).optional(),
+    resource_id: z.string().optional(),
+    resource_type: z.string().optional(),
+    scope: z.string().optional(),
+    updated_at: z.string().optional(),
+  })
+  .strict();
+
+export const ProjectEdgesSchema = z
+  .object({
+    team: z.lazy(() => TeamSchema).optional(),
+  })
+  .strict();
+
+export const ProjectSchema = z
+  .object({
+    created_at: z.string().optional(),
+    description: z.string().optional(),
+    display_name: z.string().optional(),
+    edges: ProjectEdgesSchema,
+    id: z.string(),
+    name: z.string().optional(),
+    status: z.string().optional(),
+    team_id: z.string().optional(),
+    updated_at: z.string().optional(),
+  })
+  .strict();
+
+export const TeamEdgesSchema = z
+  .object({
+    groups: z
+      .array(z.lazy(() => GroupSchema))
+      .nullable()
+      .optional(),
+    members: z
+      .array(z.lazy(() => UserSchema))
+      .nullable()
+      .optional(),
+    projects: z.array(ProjectSchema).nullable().optional(),
+  })
+  .strict();
+
+export const TeamSchema: z.ZodType<unknown> = z
+  .object({
+    created_at: z.string().optional(),
+    description: z.string().optional(),
+    display_name: z.string().optional(),
+    edges: TeamEdgesSchema,
+    id: z.string(),
+    name: z.string().optional(),
+    namespace: z.string().optional(),
+    updated_at: z.string().optional(),
+  })
+  .strict();
+
+export const GroupEdgesSchema = z
+  .object({
+    permissions: z.array(PermissionSchema).nullable().optional(),
+    team: TeamSchema.optional(),
+    users: z
+      .array(z.lazy(() => UserSchema))
+      .nullable()
+      .optional(),
+  })
+  .strict();
+
+export const GroupSchema: z.ZodType<unknown> = z
+  .object({
+    created_at: z.string().optional(),
+    description: z.string().optional(),
+    edges: GroupEdgesSchema,
+    external_id: z.string().optional(),
+    id: z.string(),
+    identity_provider: z.string().optional(),
+    k8s_role_name: z.string().optional(),
+    name: z.string().optional(),
+    superuser: z.boolean().optional(),
+    team_id: z.string().optional(),
+    updated_at: z.string().optional(),
+  })
+  .strict();
+
 export const Oauth2CodeEdgesSchema = z
   .object({
     user: z.lazy(() => UserSchema).optional(),
@@ -218,8 +352,10 @@ export const UserEdgesSchema = z
       .array(z.lazy(() => GithubAppSchema))
       .nullable()
       .optional(),
+    groups: z.array(GroupSchema).nullable().optional(),
     oauth2_codes: z.array(Oauth2CodeSchema).nullable().optional(),
     oauth2_tokens: z.array(Oauth2TokenSchema).nullable().optional(),
+    teams: z.array(TeamSchema).nullable().optional(),
   })
   .strict();
 
@@ -280,6 +416,13 @@ export const HealthResponseBodySchema = z
   })
   .strict();
 
+export const ListProjectResponseBodySchema = z
+  .object({
+    $schema: z.string().optional(), // A URL to the JSON Schema for this object.
+    data: z.array(ProjectResponseSchema).nullable(),
+  })
+  .strict();
+
 export const MeResponseBodySchema = z
   .object({
     $schema: z.string().optional(), // A URL to the JSON Schema for this object.
@@ -287,24 +430,53 @@ export const MeResponseBodySchema = z
   })
   .strict();
 
-export const UnbindTeamSchema = z
-  .object({
-    created_at: z.string(),
-    name: z.string(),
-    namespace: z.string(),
-  })
-  .strict();
-
 export const TeamResponseBodySchema = z
   .object({
     $schema: z.string().optional(), // A URL to the JSON Schema for this object.
-    data: z.array(UnbindTeamSchema).nullable(),
+    data: z.array(GetTeamResponseSchema).nullable(),
+  })
+  .strict();
+
+export const UpdateProjectInputBodySchema = z
+  .object({
+    $schema: z.string().optional(), // A URL to the JSON Schema for this object.
+    description: z.string(),
+    display_name: z.string(),
+  })
+  .strict();
+
+export const UpdateProjectResponseBodySchema = z
+  .object({
+    $schema: z.string().optional(), // A URL to the JSON Schema for this object.
+    data: ProjectResponseSchema,
+  })
+  .strict();
+
+export const UpdateTeamInputBodySchema = z
+  .object({
+    $schema: z.string().optional(), // A URL to the JSON Schema for this object.
+    display_name: z.string(),
+  })
+  .strict();
+
+export const UpdateTeamResponseBodySchema = z
+  .object({
+    $schema: z.string().optional(), // A URL to the JSON Schema for this object.
+    data: GetTeamResponseSchema,
   })
   .strict();
 
 export type CallbackResponseBody = z.infer<typeof CallbackResponseBodySchema>;
+export type CreateProjectInputBody = z.infer<
+  typeof CreateProjectInputBodySchema
+>;
+export type ProjectResponse = z.infer<typeof ProjectResponseSchema>;
+export type CreateProjectResponseBody = z.infer<
+  typeof CreateProjectResponseBodySchema
+>;
 export type ErrorDetail = z.infer<typeof ErrorDetailSchema>;
 export type ErrorModel = z.infer<typeof ErrorModelSchema>;
+export type GetTeamResponse = z.infer<typeof GetTeamResponseSchema>;
 export type Plan = z.infer<typeof PlanSchema>;
 export type Organization = z.infer<typeof OrganizationSchema>;
 export type GithubAdminOrganizationListResponseBody = z.infer<
@@ -322,6 +494,14 @@ export type GithubInstallationPermissions = z.infer<
   typeof GithubInstallationPermissionsSchema
 >;
 export type GithubInstallation = z.infer<typeof GithubInstallationSchema>;
+export type PermissionEdges = z.infer<typeof PermissionEdgesSchema>;
+export type Permission = z.infer<typeof PermissionSchema>;
+export type ProjectEdges = z.infer<typeof ProjectEdgesSchema>;
+export type Project = z.infer<typeof ProjectSchema>;
+export type TeamEdges = z.infer<typeof TeamEdgesSchema>;
+export type Team = z.infer<typeof TeamSchema>;
+export type GroupEdges = z.infer<typeof GroupEdgesSchema>;
+export type Group = z.infer<typeof GroupSchema>;
 export type Oauth2CodeEdges = z.infer<typeof Oauth2CodeEdgesSchema>;
 export type Oauth2Code = z.infer<typeof Oauth2CodeSchema>;
 export type Oauth2TokenEdges = z.infer<typeof Oauth2TokenEdgesSchema>;
@@ -340,9 +520,21 @@ export type GithubAppListResponseBody = z.infer<
   typeof GithubAppListResponseBodySchema
 >;
 export type HealthResponseBody = z.infer<typeof HealthResponseBodySchema>;
+export type ListProjectResponseBody = z.infer<
+  typeof ListProjectResponseBodySchema
+>;
 export type MeResponseBody = z.infer<typeof MeResponseBodySchema>;
-export type UnbindTeam = z.infer<typeof UnbindTeamSchema>;
 export type TeamResponseBody = z.infer<typeof TeamResponseBodySchema>;
+export type UpdateProjectInputBody = z.infer<
+  typeof UpdateProjectInputBodySchema
+>;
+export type UpdateProjectResponseBody = z.infer<
+  typeof UpdateProjectResponseBodySchema
+>;
+export type UpdateTeamInputBody = z.infer<typeof UpdateTeamInputBodySchema>;
+export type UpdateTeamResponseBody = z.infer<
+  typeof UpdateTeamResponseBodySchema
+>;
 
 export const callbackQuerySchema = z.object({
   code: z.string(),
@@ -374,7 +566,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
         get: async (
           query: z.infer<typeof callbackQuerySchema>,
           fetchOptions?: RequestInit,
-        ) => {
+        ): Promise<CallbackResponseBody> => {
           try {
             // Make sure apiUrl is defined and is a string
             if (!apiUrl || typeof apiUrl !== 'string') {
@@ -459,7 +651,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           get: async (
             query: z.infer<typeof app_createQuerySchema>,
             fetchOptions?: RequestInit,
-          ) => {
+          ): Promise<GithubAppCreateResponseBody> => {
             try {
               // Make sure apiUrl is defined and is a string
               if (!apiUrl || typeof apiUrl !== 'string') {
@@ -505,9 +697,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
       },
       apps: {
         get: async (
-          query: z.infer<typeof list_appsQuerySchema>,
+          query: z.infer<typeof list_appsQuerySchema> = {},
           fetchOptions?: RequestInit,
-        ) => {
+        ): Promise<GithubAppListResponseBody> => {
           try {
             // Make sure apiUrl is defined and is a string
             if (!apiUrl || typeof apiUrl !== 'string') {
@@ -553,7 +745,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
       installation: {
         installationId: (installationId: string | number) => ({
           organizations: {
-            get: async (fetchOptions?: RequestInit) => {
+            get: async (
+              fetchOptions?: RequestInit,
+            ): Promise<GithubAdminOrganizationListResponseBody> => {
               try {
                 // Make sure apiUrl is defined and is a string
                 if (!apiUrl || typeof apiUrl !== 'string') {
@@ -594,7 +788,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
         }),
       },
       installations: {
-        get: async (fetchOptions?: RequestInit) => {
+        get: async (
+          fetchOptions?: RequestInit,
+        ): Promise<GithubAppInstallationListResponseBody> => {
           try {
             // Make sure apiUrl is defined and is a string
             if (!apiUrl || typeof apiUrl !== 'string') {
@@ -629,7 +825,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
         },
       },
       repositories: {
-        get: async (fetchOptions?: RequestInit) => {
+        get: async (
+          fetchOptions?: RequestInit,
+        ): Promise<GithubAdminRepositoryListResponseBody> => {
           try {
             // Make sure apiUrl is defined and is a string
             if (!apiUrl || typeof apiUrl !== 'string') {
@@ -665,7 +863,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
       },
     },
     health: {
-      get: async (fetchOptions?: RequestInit) => {
+      get: async (fetchOptions?: RequestInit): Promise<HealthResponseBody> => {
         try {
           // Make sure apiUrl is defined and is a string
           if (!apiUrl || typeof apiUrl !== 'string') {
@@ -701,7 +899,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
     },
     teams: {
       list: {
-        get: async (fetchOptions?: RequestInit) => {
+        get: async (fetchOptions?: RequestInit): Promise<TeamResponseBody> => {
           try {
             // Make sure apiUrl is defined and is a string
             if (!apiUrl || typeof apiUrl !== 'string') {
@@ -735,10 +933,181 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           }
         },
       },
+      teamId: (teamId: string | number) => ({
+        put: async (
+          body: UpdateTeamInputBody,
+          fetchOptions?: RequestInit,
+        ): Promise<UpdateTeamResponseBody> => {
+          try {
+            // Make sure apiUrl is defined and is a string
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+
+            const url = new URL(`${apiUrl}/teams/${teamId}`);
+
+            const options: RequestInit = {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+            if (body !== undefined) {
+              const validatedBody = UpdateTeamInputBodySchema.parse(body);
+              options.body = JSON.stringify(validatedBody);
+            }
+
+            const response = await fetch(url.toString(), options);
+
+            if (!response.ok) {
+              throw new Error(
+                `API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+
+            const data = await response.json();
+            return UpdateTeamResponseBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+        project: {
+          create: {
+            post: async (
+              body: CreateProjectInputBody,
+              fetchOptions?: RequestInit,
+            ): Promise<CreateProjectResponseBody> => {
+              try {
+                // Make sure apiUrl is defined and is a string
+                if (!apiUrl || typeof apiUrl !== 'string') {
+                  throw new Error('API URL is undefined or not a string');
+                }
+
+                const url = new URL(`${apiUrl}/teams/${teamId}/project/create`);
+
+                const options: RequestInit = {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${accessToken}`,
+                  },
+                  ...fetchOptions,
+                };
+                if (body !== undefined) {
+                  const validatedBody =
+                    CreateProjectInputBodySchema.parse(body);
+                  options.body = JSON.stringify(validatedBody);
+                }
+
+                const response = await fetch(url.toString(), options);
+
+                if (!response.ok) {
+                  throw new Error(
+                    `API request failed with status ${response.status}: ${response.statusText}`,
+                  );
+                }
+
+                const data = await response.json();
+                return CreateProjectResponseBodySchema.parse(data);
+              } catch (error) {
+                console.error('Error in API request:', error);
+                throw error;
+              }
+            },
+          },
+          list: {
+            get: async (
+              fetchOptions?: RequestInit,
+            ): Promise<ListProjectResponseBody> => {
+              try {
+                // Make sure apiUrl is defined and is a string
+                if (!apiUrl || typeof apiUrl !== 'string') {
+                  throw new Error('API URL is undefined or not a string');
+                }
+
+                const url = new URL(`${apiUrl}/teams/${teamId}/project/list`);
+
+                const options: RequestInit = {
+                  method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${accessToken}`,
+                  },
+                  ...fetchOptions,
+                };
+
+                const response = await fetch(url.toString(), options);
+
+                if (!response.ok) {
+                  throw new Error(
+                    `API request failed with status ${response.status}: ${response.statusText}`,
+                  );
+                }
+
+                const data = await response.json();
+                return ListProjectResponseBodySchema.parse(data);
+              } catch (error) {
+                console.error('Error in API request:', error);
+                throw error;
+              }
+            },
+          },
+          projectId: (projectId: string | number) => ({
+            update: {
+              put: async (
+                body: UpdateProjectInputBody,
+                fetchOptions?: RequestInit,
+              ): Promise<UpdateProjectResponseBody> => {
+                try {
+                  // Make sure apiUrl is defined and is a string
+                  if (!apiUrl || typeof apiUrl !== 'string') {
+                    throw new Error('API URL is undefined or not a string');
+                  }
+
+                  const url = new URL(
+                    `${apiUrl}/teams/${teamId}/project/${projectId}/update`,
+                  );
+
+                  const options: RequestInit = {
+                    method: 'PUT',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${accessToken}`,
+                    },
+                    ...fetchOptions,
+                  };
+                  if (body !== undefined) {
+                    const validatedBody =
+                      UpdateProjectInputBodySchema.parse(body);
+                    options.body = JSON.stringify(validatedBody);
+                  }
+
+                  const response = await fetch(url.toString(), options);
+
+                  if (!response.ok) {
+                    throw new Error(
+                      `API request failed with status ${response.status}: ${response.statusText}`,
+                    );
+                  }
+
+                  const data = await response.json();
+                  return UpdateProjectResponseBodySchema.parse(data);
+                } catch (error) {
+                  console.error('Error in API request:', error);
+                  throw error;
+                }
+              },
+            },
+          }),
+        },
+      }),
     },
     user: {
       me: {
-        get: async (fetchOptions?: RequestInit) => {
+        get: async (fetchOptions?: RequestInit): Promise<MeResponseBody> => {
           try {
             // Make sure apiUrl is defined and is a string
             if (!apiUrl || typeof apiUrl !== 'string') {

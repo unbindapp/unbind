@@ -293,18 +293,69 @@ function getSchemaName(ref: string | undefined): string | null {
 }
 
 /**
+ * Process request body schema from operation
+ */
+function processRequestBody(operation: any): {
+  schemaRef: string | null;
+  inlineSchema: JSONSchema | null;
+  isRequired: boolean;
+} {
+  const result = {
+    schemaRef: null as string | null,
+    inlineSchema: null as JSONSchema | null,
+    isRequired: false,
+  };
+
+  if (!operation.requestBody) {
+    return result;
+  }
+
+  // Check if the request body is required
+  result.isRequired = operation.requestBody.required === true;
+
+  // Get content schema
+  if (
+    operation.requestBody.content &&
+    operation.requestBody.content["application/json"] &&
+    operation.requestBody.content["application/json"].schema
+  ) {
+    const schema = operation.requestBody.content["application/json"].schema;
+
+    // Check if it's a reference to existing schema
+    if (schema.$ref) {
+      result.schemaRef = getSchemaName(schema.$ref);
+    } else {
+      // Or it's an inline schema
+      result.inlineSchema = schema;
+    }
+  }
+
+  return result;
+}
+
+/**
  * Generates an inline JSONSchema for query parameters.
  */
-function generateQueryInputSchema(operation: any): JSONSchema | null {
-  if (!operation.parameters) return null;
+function generateQueryInputSchema(operation: any): {
+  schema: JSONSchema | null;
+  hasRequiredParams: boolean;
+} {
+  if (!operation.parameters) {
+    return { schema: null, hasRequiredParams: false };
+  }
+
   const queryParams = (operation.parameters as any[]).filter((param) => param.in === "query");
-  if (queryParams.length === 0) return null;
+  if (queryParams.length === 0) {
+    return { schema: null, hasRequiredParams: false };
+  }
 
   const schema: JSONSchema = {
     type: "object",
     properties: {},
     required: [],
   };
+
+  let hasRequiredParams = false;
 
   for (const param of queryParams) {
     if (param.schema) {
@@ -314,10 +365,12 @@ function generateQueryInputSchema(operation: any): JSONSchema | null {
       }
       if (param.required) {
         schema.required!.push(param.name);
+        hasRequiredParams = true;
       }
     }
   }
-  return schema;
+
+  return { schema, hasRequiredParams };
 }
 
 /**
@@ -425,6 +478,17 @@ function generateTreeCode(node: TreeNode, indent: string = "  "): string {
 }
 
 /**
+ * Create a unique schema name based on operation/route details
+ */
+function createSchemaName(operation: any, method: string, route: string, type: string): string {
+  return operation.operationId
+    ? `${operation.operationId.replace(/[^a-zA-Z0-9_]/g, "_")}${type}`
+    : `${method.toLowerCase()}${route
+        .replace(/^\//, "")
+        .replace(/\{(\w+)\}/g, (_, p1) => `By${p1[0].toUpperCase()}${p1.slice(1)}`)}${type}`;
+}
+
+/**
  * Generates the code for an API endpoint function, handling path parameters.
  */
 function generateEndpointFunction(
@@ -435,75 +499,85 @@ function generateEndpointFunction(
   inlineInputSchemas: Record<string, JSONSchema>,
 ): string {
   // Process request body
-  let requestSchemaRef: string | null = null;
-  let inlineRequestSchema: JSONSchema | null = null;
-  if (
-    operation.requestBody &&
-    operation.requestBody.content &&
-    operation.requestBody.content["application/json"]
-  ) {
-    const reqSchema = operation.requestBody.content["application/json"].schema;
-    if (reqSchema && reqSchema.$ref) {
-      requestSchemaRef = getSchemaName(reqSchema.$ref);
-    } else if (reqSchema) {
-      inlineRequestSchema = reqSchema;
-    }
-  }
+  const requestBody = processRequestBody(operation);
 
   // Process query parameters
-  const inlineQuerySchema = generateQueryInputSchema(operation);
+  const { schema: inlineQuerySchema, hasRequiredParams: hasRequiredQueryParams } =
+    generateQueryInputSchema(operation);
 
   // Prepare separate variables for query and request types.
   let queryType = "";
   let requestType = "";
   let queryParse = "";
   let requestParse = "";
+  let querySchemaName = "";
+  let requestSchemaName = "";
 
+  // Handle query parameters
   if (inlineQuerySchema) {
-    const querySchemaName = operation.operationId
-      ? operation.operationId.replace(/[^a-zA-Z0-9_]/g, "_") + "Query"
-      : method.toLowerCase() +
-        route
-          .replace(/^\//, "")
-          .replace(/\{(\w+)\}/g, (_, p1) => `By${p1[0].toUpperCase()}${p1.slice(1)}`) +
-        "Query";
+    querySchemaName = createSchemaName(operation, method, route, "Query");
     inlineInputSchemas[querySchemaName] = inlineQuerySchema;
     queryType = `z.infer<typeof ${querySchemaName}Schema>`;
     queryParse = `${querySchemaName}Schema.parse(query)`;
   }
 
-  if (inlineRequestSchema) {
-    const requestSchemaName = operation.operationId
-      ? operation.operationId.replace(/[^a-zA-Z0-9_]/g, "_") + "Input"
-      : method.toLowerCase() +
-        route
-          .replace(/^\//, "")
-          .replace(/\{(\w+)\}/g, (_, p1) => `By${p1[0].toUpperCase()}${p1.slice(1)}`) +
-        "Input";
-    inlineInputSchemas[requestSchemaName] = inlineRequestSchema;
+  // Handle request body based on referenced schema or inline schema
+  if (requestBody.schemaRef) {
+    requestType = requestBody.schemaRef;
+    requestParse = `${requestBody.schemaRef}Schema.parse(body)`;
+  } else if (requestBody.inlineSchema) {
+    requestSchemaName = createSchemaName(operation, method, route, "Input");
+    inlineInputSchemas[requestSchemaName] = requestBody.inlineSchema;
     requestType = `z.infer<typeof ${requestSchemaName}Schema>`;
     requestParse = `${requestSchemaName}Schema.parse(body)`;
   }
 
-  // Determine the function's parameter signature with optional fetchOptions.
+  // Determine the function's parameter signature with optional/required parameters
   let paramList: string[] = [];
 
-  if (queryType) paramList.push(`query: ${queryType}`);
-  if (requestType) paramList.push(`body: ${requestType}`);
+  // Add query parameters if any
+  if (queryType) {
+    paramList.push(`query: ${queryType}${hasRequiredQueryParams ? "" : " = {}"}`);
+  }
+
+  // Add body parameter if any
+  if (requestType) {
+    paramList.push(`body: ${requestType}${requestBody.isRequired ? "" : " | undefined"}`);
+  }
+
+  // Always add fetchOptions
   paramList.push(`fetchOptions?: RequestInit`);
 
   const paramSignature = `(${paramList.join(", ")})`;
 
-  // Process response (only handling $ref cases here)
+  // Process response (handle references and inline schemas)
   let responseSchema: string | null = null;
+  let responseType: string | null = null;
+
   const response =
     (operation.responses &&
       (operation.responses["200"] ||
         operation.responses["201"] ||
         operation.responses["default"])) ||
     null;
+
   if (response && response.content && response.content["application/json"]) {
-    responseSchema = getSchemaName(response.content["application/json"].schema?.$ref) || null;
+    const responseContent = response.content["application/json"];
+
+    if (responseContent.schema) {
+      if (responseContent.schema.$ref) {
+        responseSchema = getSchemaName(responseContent.schema.$ref);
+        if (responseSchema) {
+          responseType = `${responseSchema}`;
+        }
+      } else {
+        // Handle inline response schema
+        const responseSchemaName = createSchemaName(operation, method, route, "Response");
+        inlineInputSchemas[responseSchemaName] = responseContent.schema;
+        responseSchema = responseSchemaName;
+        responseType = `z.infer<typeof ${responseSchemaName}Schema>`;
+      }
+    }
   }
 
   // Create a template string to replace path parameters
@@ -516,7 +590,7 @@ function generateEndpointFunction(
 
   // Build the function code as an anonymous async arrow function
   const functionCode = `
-async ${paramSignature} => {
+async ${paramSignature}${responseType ? `: Promise<${responseType}>` : ""} => {
   try {
     // Make sure apiUrl is defined and is a string
     if (!apiUrl || typeof apiUrl !== 'string') {
@@ -548,8 +622,10 @@ async ${paramSignature} => {
   };
   ${
     requestType
-      ? `const validatedBody = ${requestParse};
-  options.body = JSON.stringify(validatedBody);`
+      ? `if (body !== undefined) {
+    const validatedBody = ${requestParse};
+    options.body = JSON.stringify(validatedBody);
+  }`
       : ""
   }
   
