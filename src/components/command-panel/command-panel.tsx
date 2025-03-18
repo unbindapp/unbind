@@ -453,7 +453,7 @@ function Item({
   return (
     <CommandItem
       data-placeholder={isPlaceholder ? true : undefined}
-      value={item.value || item.title}
+      value={item.title}
       keywords={item.keywords}
       className="group/item active:bg-border flex w-full flex-row items-center justify-between gap-6 px-3.5 py-3 text-left font-medium data-placeholder:text-transparent"
       onSelect={onSelect}
