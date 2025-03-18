@@ -1,21 +1,26 @@
-import ServiceIcon from "@/components/icons/service";
 import { LinkButton } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import { groupByServiceGroup } from "@/lib/helpers";
-import { TProject } from "@/server/trpc/api/main/router";
-import { EllipsisIcon } from "lucide-react";
+import { AppRouterOutputs } from "@/server/trpc/api/root";
 
 type TProps = {
-  project: TProject;
+  project: AppRouterOutputs["projects"]["list"]["projects"][number];
   className?: string;
 };
 
-const iconLenght = 4;
+/* const iconLenght = 4; */
 
 export default function ProjectCard({ project, className }: TProps) {
-  const defaultEnvironment = project.environments[0];
-  const href = `${project.teamId}/project/${project.id}/environment/${defaultEnvironment.id}`;
-  const groupedServices = groupByServiceGroup(defaultEnvironment.services);
+  const defaultEnvironment = project.environments?.[0];
+  if (!defaultEnvironment)
+    return (
+      <li className={cn("text-destructive flex w-full flex-col p-1", className)}>
+        <div className="bg-destructive/10 border-destructive/10 min-h-36 rounded-xl border px-5 py-3.5 font-medium">
+          {`Couldn't find default environment`}
+        </div>
+      </li>
+    );
+  const href = `${project.team_id}/project/${project.id}/environment/${defaultEnvironment.id}`;
+  /* const groupedServices = groupByServiceGroup(defaultEnvironment.services); */
 
   return (
     <li className={cn("flex w-full flex-col p-1", className)}>
@@ -25,10 +30,10 @@ export default function ProjectCard({ project, className }: TProps) {
         className="bg-background-hover flex min-h-36 w-full flex-col items-start gap-12 rounded-xl border px-5 py-3.5 text-left"
       >
         <h3 className="w-full overflow-hidden leading-tight font-bold text-ellipsis whitespace-nowrap">
-          {project.title}
+          {project.display_name}
         </h3>
         <div className="flex w-full flex-1 flex-col justify-end">
-          <div className="text-muted-foreground flex w-full items-center justify-between gap-3">
+          {/* <div className="text-muted-foreground flex w-full items-center justify-between gap-3">
             <p className="min-w-0 shrink overflow-hidden text-sm font-medium text-ellipsis whitespace-nowrap">
               {defaultEnvironment.services.length > 0
                 ? `${defaultEnvironment.services.length} services`
@@ -50,7 +55,7 @@ export default function ProjectCard({ project, className }: TProps) {
                 {groupedServices.length > iconLenght && <EllipsisIcon className="size-5" />}
               </div>
             )}
-          </div>
+          </div> */}
         </div>
       </LinkButton>
     </li>

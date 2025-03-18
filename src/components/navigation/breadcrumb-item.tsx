@@ -13,19 +13,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/components/ui/utils";
 import { ArrowRightIcon, CheckIcon, ChevronDownIcon, PlusIcon } from "lucide-react";
-import { usePathname } from "next/navigation";
 import { ComponentProps, Dispatch, FC, SetStateAction, useEffect, useState } from "react";
 
-type Item<T> = T & { id: string; title: string };
+type Item<T> = T & { id: string; display_name: string };
 
 type TProps<T> = {
   title: string;
   selectedItem: Item<T> | undefined;
   items: Item<T>[] | undefined;
   onSelect: (id: string) => void;
-  getHrefForId: (id: string) => string | null;
   IconItem?: FC<{ id: string; className?: string }>;
   flipChevronOnSm?: boolean;
+  showArrow?: (i: T) => boolean;
 } & (
   | { newItemTitle: string; onSelectNewItem: () => void }
   | { newItemTitle?: undefined; onSelectNewItem?: undefined }
@@ -36,14 +35,13 @@ export function BreadcrumbItem<T>({
   selectedItem,
   items,
   onSelect,
-  getHrefForId,
   IconItem,
   flipChevronOnSm,
   newItemTitle,
   onSelectNewItem,
+  showArrow,
 }: TProps<T>) {
   const [open, setOpen] = useState(false);
-  const pathname = usePathname();
   const [lastHoveredItem, setLastHoveredItem] = useState(selectedItem);
 
   useEffect(() => {
@@ -51,7 +49,7 @@ export function BreadcrumbItem<T>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  const newItem = newItemTitle ? ({ id: "new", title: newItemTitle } as Item<T>) : undefined;
+  const newItem = newItemTitle ? ({ id: "new", display_name: newItemTitle } as Item<T>) : undefined;
 
   return (
     <DropdownOrDrawer title={title} open={open} onOpenChange={setOpen}>
@@ -61,8 +59,6 @@ export function BreadcrumbItem<T>({
       <DropdownOrDrawerContentForDrawer>
         <div className="group/list flex w-full flex-col px-2 pt-2 pb-8">
           {items?.map((i, index) => {
-            const href = getHrefForId(i.id);
-            const showArrow = href !== null && pathname !== href;
             return (
               <SheetItem
                 item={i}
@@ -99,8 +95,6 @@ export function BreadcrumbItem<T>({
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           {items?.map((i, index) => {
-            const href = getHrefForId(i.id);
-            const showArrow = href !== null && pathname !== href;
             return (
               <DropdownItem
                 item={i}
@@ -155,7 +149,7 @@ function SheetItem<T>({
   onSelect: (id: string) => void;
   lastHoveredItem: Item<T> | undefined;
   setLastHoveredItem: Dispatch<SetStateAction<Item<T> | undefined>>;
-  showArrow?: boolean;
+  showArrow?: (i: Item<T>) => boolean;
   IconItem?: FC<{ id: string; className?: string }>;
   className?: string;
 }) {
@@ -168,7 +162,7 @@ function SheetItem<T>({
       data-last-hovered={lastHoveredItem?.id === item.id ? true : undefined}
       onMouseEnter={() => setLastHoveredItem(item)}
       onTouchStart={() => setLastHoveredItem(item)}
-      data-show-arrow={showArrow ? true : undefined}
+      data-show-arrow={showArrow?.(item) ? true : undefined}
       variant="ghost"
       className={cn(
         `data-last-hovered:bg-border data-highlighted:group-has-[*[data-highlighted]]/list:bg-border group/item data-highlighted:text-foreground flex w-full cursor-default items-center justify-between gap-3 rounded-lg px-3 py-3.5 text-left font-medium group-has-[*[data-highlighted]]/list:bg-transparent`,
@@ -177,7 +171,7 @@ function SheetItem<T>({
     >
       <div className="flex min-w-0 flex-1 items-center gap-1.5">
         {IconItem && <IconItem id={item.id} className="-my-1 -ml-1 size-5 shrink-0" />}
-        <p className="min-w-0 shrink">{item.title}</p>
+        <p className="min-w-0 shrink">{item.display_name}</p>
       </div>
       <div className="relative -mr-0.5 size-5">
         {selectedItem?.id === item.id && (
@@ -214,7 +208,7 @@ function DropdownItem<T>({
   onSelect: (id: string) => void;
   lastHoveredItem: Item<T> | undefined;
   setLastHoveredItem: Dispatch<SetStateAction<Item<T> | undefined>>;
-  showArrow?: boolean;
+  showArrow?: (i: Item<T>) => boolean;
   IconItem?: FC<{ id: string; className?: string }>;
   className?: string;
 }) {
@@ -224,7 +218,7 @@ function DropdownItem<T>({
         setOpen(false);
         onSelect(item.id);
       }}
-      data-show-arrow={showArrow ? true : undefined}
+      data-show-arrow={showArrow?.(item) ? true : undefined}
       data-last-hovered={lastHoveredItem?.id === item.id ? true : undefined}
       className={cn(
         `group/item data-last-hovered:bg-border data-highlighted:group-has-[*[data-highlighted]]/list:bg-border justify-between group-has-[*[data-highlighted]]/list:bg-transparent`,
@@ -235,7 +229,7 @@ function DropdownItem<T>({
     >
       <div className="flex min-w-0 flex-1 items-center gap-1.5">
         {IconItem && <IconItem id={item.id} className="-my-1 -ml-0.5 size-4.5 shrink-0" />}
-        <p className="min-w-0 shrink">{item.title}</p>
+        <p className="min-w-0 shrink">{item.display_name}</p>
       </div>
       <div className="relative -mr-0.5 size-4.5 shrink-0 transition-transform group-data-highlighted/item:group-data-show-arrow/item:rotate-90">
         {selectedItem?.id === item.id && (
@@ -284,7 +278,7 @@ function Trigger<T>({
       </div>
       {Icon && item && <Icon id={item.id} className="relative size-4.5" />}
       <p className="group-data-pending/button:bg-foreground group-data-pending/button:animate-skeleton relative max-w-32 truncate py-0.5 leading-none group-data-pending/button:rounded-sm group-data-pending/button:text-transparent">
-        {item == undefined ? "Loading" : item?.title}
+        {item == undefined ? "Loading" : item?.display_name}
       </p>
       <ChevronDownIcon
         data-flip-chevron-sm={flipChevronOnSm ? true : undefined}

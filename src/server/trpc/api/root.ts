@@ -1,5 +1,8 @@
+import { environmentsRouter } from "@/server/trpc/api/environments/router";
 import { githubRouter } from "@/server/trpc/api/github/router";
 import { mainRouter } from "@/server/trpc/api/main/router";
+import { projectsRouter } from "@/server/trpc/api/projects/router";
+import { teamsRouter } from "@/server/trpc/api/teams/router";
 import { createTRPCRouter } from "@/server/trpc/setup/trpc";
 import { inferRouterClient, TRPCClientErrorLike } from "@trpc/client";
 import { inferReactQueryProcedureOptions } from "@trpc/react-query";
@@ -13,6 +16,9 @@ import { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
  */
 export const appRouter = createTRPCRouter({
   main: mainRouter,
+  teams: teamsRouter,
+  projects: projectsRouter,
+  environments: environmentsRouter,
   github: githubRouter,
 });
 

@@ -6,6 +6,6 @@ type TProps = {
 };
 
 export default function Logs({ service }: TProps) {
-  console.log("Service from logs tab", service);
+  console.log("service", service);
   return <TemporaryLogs containerType="sheet" hideServiceByDefault />;
 }

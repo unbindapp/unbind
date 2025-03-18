@@ -18,7 +18,7 @@ type TProps = {
 };
 
 export default function ProjectCardList({ teamId }: TProps) {
-  const [, { data }] = api.main.getProjects.useSuspenseQuery({
+  const [, { data }] = api.projects.list.useSuspenseQuery({
     teamId,
   });
   const projects = data?.projects;

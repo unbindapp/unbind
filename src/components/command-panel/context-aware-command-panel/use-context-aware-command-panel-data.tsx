@@ -36,9 +36,22 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
     commandPanelPageKey,
     parseAsString.withDefault(commandPanelContextAwareRootPage),
   );
-  const timeout = useRef<NodeJS.Timeout | null>(null);
-
   const { asyncPush, isPending: isAsyncPushPending } = useAsyncPush();
+  const timeout = useRef<NodeJS.Timeout | null>(null);
+  const utils = api.useUtils();
+
+  const { mutate: createProject, isPending: isCreateProjectPending } =
+    api.projects.create.useMutation({
+      onSuccess: async (res) => {
+        const projectId = res.data?.id;
+        const environmentId = res.data?.environments?.[0].id;
+        if (!projectId || !environmentId) {
+          return;
+        }
+        await utils.projects.list.invalidate({ teamId: context.teamId });
+        await asyncPush(`/${context.teamId}/project/${projectId}/environment/${environmentId}`);
+      },
+    });
 
   const onSelectPlaceholder = useCallback(() => {
     toast.success("Successful", {
@@ -55,25 +68,25 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
     }, 150);
   }, [setPanelId, setPanelPageId]);
 
-  const utils = api.useUtils();
-
   const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
   const PendingOrIcon = useCallback(
     ({
       id,
       Icon,
       className,
+      isPending,
     }: {
       id: string;
       Icon: FC<{ className?: string }>;
       className?: string;
+      isPending: boolean;
     }) => {
-      if (isAsyncPushPending && lastSelectedId === id) {
+      if (isPending && lastSelectedId === id) {
         return <LoaderIcon className={cn("animate-spin", className)} />;
       }
       return <Icon className={className} />;
     },
-    [isAsyncPushPending, lastSelectedId],
+    [lastSelectedId],
   );
 
   const navigateToSettings = useCallback(
@@ -98,14 +111,24 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
       inputPlaceholder: "Search commands...",
       items: [
         ...(context.contextType === "team"
-          ? [
+          ? ([
               {
-                title: "New Project",
+                title: isCreateProjectPending ? "Creating project..." : "New Project",
                 keywords: [],
-                onSelect: () => onSelectPlaceholder(),
-                Icon: FolderPlusIcon,
+                onSelect: () => {
+                  setLastSelectedId("new-project");
+                  createProject({ teamId: context.teamId });
+                },
+                Icon: ({ className }) => (
+                  <PendingOrIcon
+                    isPending={isCreateProjectPending || isAsyncPushPending}
+                    id="new-project"
+                    Icon={FolderPlusIcon}
+                    className={className}
+                  />
+                ),
               },
-            ]
+            ] as TCommandPanelItem[])
           : []),
         {
           title: "GitHub Repo",
@@ -278,7 +301,12 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                 title: settingsTitle,
                 onSelect: () => navigateToSettings({ context, pathname: "" }),
                 Icon: ({ className }) => (
-                  <PendingOrIcon id="/settings" Icon={SettingsIcon} className={className} />
+                  <PendingOrIcon
+                    isPending={isAsyncPushPending}
+                    id="/settings"
+                    Icon={SettingsIcon}
+                    className={className}
+                  />
                 ),
                 keywords: ["settings", "general", "change", "tweak", "adjust", ...goToKeywords],
               },
@@ -290,6 +318,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                 },
                 Icon: ({ className }) => (
                   <PendingOrIcon
+                    isPending={isAsyncPushPending}
                     id="/settings/shared-variables"
                     Icon={KeyRoundIcon}
                     className={className}
@@ -304,7 +333,12 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                   navigateToSettings({ context, pathname: "/members" });
                 },
                 Icon: ({ className }) => (
-                  <PendingOrIcon id="/settings/members" Icon={UsersIcon} className={className} />
+                  <PendingOrIcon
+                    isPending={isAsyncPushPending}
+                    id="/settings/members"
+                    Icon={UsersIcon}
+                    className={className}
+                  />
                 ),
                 keywords: ["person", "people", "group", ...goToKeywords],
               },
@@ -316,6 +350,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                 },
                 Icon: ({ className }) => (
                   <PendingOrIcon
+                    isPending={isAsyncPushPending}
                     id="/settings/notifications"
                     Icon={BellIcon}
                     className={className}
@@ -330,7 +365,12 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                   navigateToSettings({ context, pathname: "/webhooks" });
                 },
                 Icon: ({ className }) => (
-                  <PendingOrIcon id="/settings/webhooks" Icon={WebhookIcon} className={className} />
+                  <PendingOrIcon
+                    isPending={isAsyncPushPending}
+                    id="/settings/webhooks"
+                    Icon={WebhookIcon}
+                    className={className}
+                  />
                 ),
                 keywords: ["hook", "integration", "alert", "connection", ...goToKeywords],
               },
@@ -342,6 +382,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                 },
                 Icon: ({ className }) => (
                   <PendingOrIcon
+                    isPending={isAsyncPushPending}
                     id="/settings/danger-zone"
                     Icon={TriangleAlertIcon}
                     className={className}
@@ -362,6 +403,9 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
       PendingOrIcon,
       navigateToSettings,
       goToKeywords,
+      createProject,
+      isAsyncPushPending,
+      isCreateProjectPending,
     ],
   );
 

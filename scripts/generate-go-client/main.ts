@@ -308,7 +308,7 @@ async ${paramSignature}${responseType ? `: Promise<${responseType}>` : ""} => {
         ? `const validatedQuery = ${queryParse};
     const queryKeys = ${queryKeysCode};
     queryKeys.forEach((key) => {
-      const value = (validatedQuery as Record<string,string>)[key];
+      const value = (validatedQuery as Record<string,string|number>)[key];
       if (value !== undefined && value !== null) {
         url.searchParams.append(key, String(value));
       }

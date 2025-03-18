@@ -5,7 +5,8 @@ import { BreadcrumbSeparator, BreadcrumbWrapper } from "@/components/navigation/
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { api } from "@/server/trpc/setup/client";
-import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 type TProps = {
@@ -19,9 +20,9 @@ export default function ProjectBreadcrumb({ className }: TProps) {
     projectId: projectIdFromPathname,
     environmentId: environmentIdFromPathname,
   } = useIdsFromPathname();
+  const pathname = usePathname();
 
-  const { data: teamData } = api.main.getTeams.useQuery({});
-  const { data: projectsData } = api.main.getProjects.useQuery(
+  const { data: projectsData } = api.projects.list.useQuery(
     { teamId: teamIdFromPathname! },
     {
       enabled: teamIdFromPathname !== undefined,
@@ -30,7 +31,6 @@ export default function ProjectBreadcrumb({ className }: TProps) {
 
   const [selectedProjectId, setSelectedProjectId] = useState(projectIdFromPathname);
   const [selectedEnvironmentId, setSelectedEnvironmentId] = useState(environmentIdFromPathname);
-  const environments = projectsData?.projects.find((p) => p.id === selectedProjectId)?.environments;
 
   useEffect(() => {
     setSelectedProjectId(projectIdFromPathname);
@@ -44,39 +44,49 @@ export default function ProjectBreadcrumb({ className }: TProps) {
     ? projectsData?.projects.find((p) => p.id === selectedProjectId)
     : undefined;
 
-  const selectedEnvironment = selectedEnvironmentId
-    ? selectedProject?.environments.find((e) => e.id === selectedEnvironmentId)
-    : undefined;
+  const selectedEnvironment = selectedProject?.environments?.find(
+    (e) => e.id === selectedEnvironmentId,
+  );
 
-  async function onProjectIdSelect(id: string) {
-    setSelectedProjectId(id);
-    const href = getHrefForProjectId(id);
-    if (!href) return;
-    await asyncPush(href);
-  }
+  const getHrefForProjectId = useCallback(
+    (id: string) => {
+      const project = projectsData?.projects.find((p) => p.id === id);
+      const environment = project?.environments?.[0];
+      if (!project || !environment || !teamIdFromPathname) return null;
+      return `/${teamIdFromPathname}/project/${project.id}/environment/${environment.id}`;
+    },
+    [projectsData, teamIdFromPathname],
+  );
 
-  function getHrefForProjectId(id: string) {
-    const team = teamData?.teams.find((t) => t.id === teamIdFromPathname);
-    const project = projectsData?.projects.find((p) => p.id === id);
-    const environment = project?.environments[0];
-    if (!project || !environment || !team) return null;
-    return `/${team.id}/project/${project.id}/environment/${environment.id}`;
-  }
+  const onProjectIdSelect = useCallback(
+    async (id: string) => {
+      setSelectedProjectId(id);
+      const href = getHrefForProjectId(id);
+      if (!href) return;
+      await asyncPush(href);
+    },
+    [getHrefForProjectId, asyncPush],
+  );
 
-  async function onEnvironmentIdSelect(id: string) {
-    setSelectedEnvironmentId(id);
-    const href = getHrefForEnvironmentId(id);
-    if (!href) return;
-    await asyncPush(href);
-  }
+  const getHrefForEnvironmentId = useCallback(
+    (id: string) => {
+      const project = projectsData?.projects.find((p) => p.id === selectedProjectId);
+      const environment = project?.environments?.find((e) => e.id === id);
+      if (!project || !environment || !teamIdFromPathname) return null;
+      return `/${teamIdFromPathname}/project/${project.id}/environment/${environment.id}`;
+    },
+    [projectsData, selectedProjectId, teamIdFromPathname],
+  );
 
-  function getHrefForEnvironmentId(id: string) {
-    const team = teamData?.teams.find((t) => t.id === teamIdFromPathname);
-    const project = projectsData?.projects.find((p) => p.id === selectedProjectId);
-    const environment = project?.environments.find((e) => e.id === id);
-    if (!project || !environment || !team) return null;
-    return `/${team.id}/project/${project.id}/environment/${environment.id}`;
-  }
+  const onEnvironmentIdSelect = useCallback(
+    async (id: string) => {
+      setSelectedEnvironmentId(id);
+      const href = getHrefForEnvironmentId(id);
+      if (!href) return;
+      await asyncPush(href);
+    },
+    [getHrefForEnvironmentId, asyncPush],
+  );
 
   return (
     <BreadcrumbWrapper className={className}>
@@ -86,7 +96,6 @@ export default function ProjectBreadcrumb({ className }: TProps) {
         selectedItem={selectedProject}
         items={projectsData?.projects}
         onSelect={onProjectIdSelect}
-        getHrefForId={getHrefForProjectId}
         newItemTitle="New Project"
         onSelectNewItem={() =>
           toast.success("New project created", {
@@ -95,15 +104,18 @@ export default function ProjectBreadcrumb({ className }: TProps) {
             closeButton: false,
           })
         }
+        showArrow={(project) => {
+          const href = getHrefForProjectId(project.id);
+          return href !== null && href !== pathname;
+        }}
       />
       <BreadcrumbSeparator />
       <BreadcrumbItem
         flipChevronOnSm
         title="Environments"
         selectedItem={selectedEnvironment}
-        items={environments}
+        items={selectedProject?.environments || []}
         onSelect={onEnvironmentIdSelect}
-        getHrefForId={getHrefForEnvironmentId}
         newItemTitle="New Environment"
         onSelectNewItem={() =>
           toast.success("New environment created", {

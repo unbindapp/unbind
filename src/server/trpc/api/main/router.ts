@@ -3,23 +3,6 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 export const mainRouter = createTRPCRouter({
-  getTeams: publicProcedure.input(z.object({})).query(async function () {
-    return {
-      teams,
-    };
-  }),
-  getProjects: publicProcedure
-    .input(
-      z.object({
-        teamId: z.string(),
-      }),
-    )
-    .query(async function ({ input: { teamId } }) {
-      const projects = await getProjects({ teamId });
-      return {
-        projects,
-      };
-    }),
   getServices: publicProcedure
     .input(
       z.object({
@@ -29,11 +12,12 @@ export const mainRouter = createTRPCRouter({
       }),
     )
     .query(async function ({ input: { teamId, projectId, environmentId } }) {
-      const project = projects.find((p) => p.id === projectId && p.teamId === teamId);
+      console.log("teamId:", teamId, "projectId:", projectId, "environmentId:", environmentId);
+      const project = projects[0];
       if (!project) {
         throw new Error("Project not found");
       }
-      const environment = project.environments.find((e) => e.id === environmentId);
+      const environment = project.environments.find(() => true);
       if (!environment) {
         throw new Error("Environment not found");
       }
@@ -167,21 +151,6 @@ async function getDeployments({
     );
   return filteredDeployments;
 }
-
-const teams: TTeam[] = [
-  {
-    id: "5048c703-10c9-4bd8-b311-cf02b527b400",
-    title: "Default",
-  },
-  {
-    id: "e7bb6643-3f31-4b73-b71f-b3ab14b604d2",
-    title: "Stablecog",
-  },
-  {
-    id: "4f80fefe-2a65-4c13-bec1-84729b733eaf",
-    title: "Appditto",
-  },
-];
 
 const projects: TProject[] = [
   {

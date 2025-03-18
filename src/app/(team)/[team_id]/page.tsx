@@ -12,7 +12,7 @@ export const metadata: Metadata = {};
 
 export default async function Page({ params }: TProps) {
   const { team_id: teamId } = await params;
-  await apiServer.main.getProjects.prefetch({ teamId });
+  await apiServer.projects.list.prefetch({ teamId });
 
   return (
     <HydrateClient>

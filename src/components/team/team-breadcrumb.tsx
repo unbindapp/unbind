@@ -16,7 +16,7 @@ export default function TeamBreadcrumb({ className }: TProps) {
   const { asyncPush } = useAsyncPush();
   const { teamId: teamIdFromPathname } = useIdsFromPathname();
 
-  const { data: teamData } = api.main.getTeams.useQuery({});
+  const { data: teamData } = api.teams.list.useQuery();
 
   const [selectedTeamId, setSelectedTeamId] = useState(teamIdFromPathname);
 
@@ -49,7 +49,6 @@ export default function TeamBreadcrumb({ className }: TProps) {
         selectedItem={selectedTeam}
         items={teamData?.teams}
         onSelect={onTeamIdSelect}
-        getHrefForId={getHrefForTeamId}
         newItemTitle="New Team"
         onSelectNewItem={() =>
           toast.success("New team created", {

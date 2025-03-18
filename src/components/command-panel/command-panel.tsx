@@ -239,6 +239,7 @@ function CommandPanel({
     if (isTouchscreen) return;
     const value = getFirstCommandListItem(scrollAreaRef);
     if (value) setValue(value);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
 
   return (
