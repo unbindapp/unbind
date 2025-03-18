@@ -10,7 +10,8 @@ type TProps = {
 /* const iconLenght = 4; */
 
 export default function ProjectCard({ project, className }: TProps) {
-  const defaultEnvironment = project.environments?.[0];
+  const environments = project.environments;
+  const defaultEnvironment = environments.length >= 1 ? project.environments[0] : null;
   if (!defaultEnvironment)
     return (
       <li className={cn("text-destructive flex w-full flex-col p-1", className)}>

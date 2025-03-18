@@ -44,14 +44,16 @@ export default function ProjectBreadcrumb({ className }: TProps) {
     ? projectsData?.projects.find((p) => p.id === selectedProjectId)
     : undefined;
 
-  const selectedEnvironment = selectedProject?.environments?.find(
+  const selectedEnvironment = selectedProject?.environments.find(
     (e) => e.id === selectedEnvironmentId,
   );
 
   const getHrefForProjectId = useCallback(
     (id: string) => {
       const project = projectsData?.projects.find((p) => p.id === id);
-      const environment = project?.environments?.[0];
+      const environments = project?.environments;
+      if (!environments || environments.length < 1) return null;
+      const environment = environments[0];
       if (!project || !environment || !teamIdFromPathname) return null;
       return `/${teamIdFromPathname}/project/${project.id}/environment/${environment.id}`;
     },
@@ -71,7 +73,7 @@ export default function ProjectBreadcrumb({ className }: TProps) {
   const getHrefForEnvironmentId = useCallback(
     (id: string) => {
       const project = projectsData?.projects.find((p) => p.id === selectedProjectId);
-      const environment = project?.environments?.find((e) => e.id === id);
+      const environment = project?.environments.find((e) => e.id === id);
       if (!project || !environment || !teamIdFromPathname) return null;
       return `/${teamIdFromPathname}/project/${project.id}/environment/${environment.id}`;
     },
@@ -114,7 +116,7 @@ export default function ProjectBreadcrumb({ className }: TProps) {
         flipChevronOnSm
         title="Environments"
         selectedItem={selectedEnvironment}
-        items={selectedProject?.environments || []}
+        items={selectedProject?.environments}
         onSelect={onEnvironmentIdSelect}
         newItemTitle="New Environment"
         onSelectNewItem={() =>

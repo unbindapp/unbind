@@ -44,9 +44,13 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
     api.projects.create.useMutation({
       onSuccess: async (res) => {
         const projectId = res.data?.id;
-        const environmentId = res.data?.environments?.[0].id;
+        const environments = res.data.environments;
+        if (environments.length < 1) {
+          throw new Error("No environment found");
+        }
+        const environmentId = environments[0].id;
         if (!projectId || !environmentId) {
-          return;
+          throw new Error("Project or environment ID not found");
         }
         await utils.projects.list.invalidate({ teamId: context.teamId });
         await asyncPush(`/${context.teamId}/project/${projectId}/environment/${environmentId}`);
