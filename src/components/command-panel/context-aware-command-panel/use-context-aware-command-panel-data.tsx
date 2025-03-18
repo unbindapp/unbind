@@ -113,8 +113,9 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
         ...(context.contextType === "team"
           ? ([
               {
-                title: "New Project",
-                keywords: ["New Project"],
+                value: "New Project",
+                title: isCreateProjectPending ? "Creating project..." : "New Project",
+                keywords: ["New Project", "Create project...", "Creating project..."],
                 onSelect: () => {
                   if (isCreateProjectPending) return;
                   setLastSelectedId("new-project");

@@ -58,7 +58,7 @@ export const projectsRouter = createTRPCRouter({
         projectId: z.string(),
       }),
     )
-    .query(async function ({ input: { teamId, projectId }, ctx }) {
+    .mutation(async function ({ input: { teamId, projectId }, ctx }) {
       const { session, goClient } = ctx;
       if (!session) {
         throw new TRPCError({

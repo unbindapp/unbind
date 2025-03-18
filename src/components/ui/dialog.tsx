@@ -85,12 +85,14 @@ function DialogContent({
   onEscapeKeyDown,
   noXPadding,
   noYPadding,
+  hideXButton,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> &
   TDialogContentVariants & {
     classNameInnerWrapper?: string;
     noXPadding?: boolean;
     noYPadding?: boolean;
+    hideXButton?: boolean;
   }) {
   const isCloseFromKey = React.useRef<boolean>(false);
 
@@ -131,7 +133,7 @@ function DialogContent({
         >
           <div className={cn("flex w-full flex-col gap-4", classNameInnerWrapper)}>
             {children}
-            {variant !== "styleless" && (
+            {!hideXButton && variant !== "styleless" && (
               <DialogPrimitive.Close className="focus-visible:ring-foreground text-muted-foreground absolute top-0 right-0 rounded-xl p-2.5 opacity-50 ring-1 ring-transparent focus-visible:outline-hidden active:opacity-100 disabled:pointer-events-none has-hover:hover:opacity-100">
                 <XIcon className="h-5 w-5" />
                 <span className="sr-only">Close</span>
