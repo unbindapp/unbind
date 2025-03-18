@@ -331,7 +331,10 @@ async ${paramSignature}${responseType ? `: Promise<${responseType}>` : ""} => {
     }
     const response = await fetch(url.toString(), options);
     if (!response.ok) {
-      throw new Error(\`API request failed with status \${response.status}: \${response.statusText}\`);
+      console.log(\`GO API request failed with status \${response.status}: \${response.statusText}\`);
+      const data = await response.json();
+      console.log(\`GO API request error: \${data}\`);
+      throw new Error(\`GO API request failed with status \${response.status}: \${response.statusText}\`);
     }
     const data = await response.json();
     return ${responseSchema ? `${responseSchema}Schema.parse(data)` : "data"};
