@@ -329,7 +329,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                     className={className}
                   />
                 ),
-                keywords: ["secrets", "keys", "values", ...goToKeywords],
+                keywords: ["environment variables", "secrets", "keys", "values", ...goToKeywords],
               },
               {
                 title: "Members",
