@@ -2,6 +2,7 @@
 
 import { useProject } from "@/app/(project)/[team_id]/project/[project_id]/environment/[environment_id]/_components/project-provider";
 import ErrorLine from "@/components/error-line";
+import { useProjects } from "@/components/project/projects-provider";
 import { Button } from "@/components/ui/button";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { ProjectUpdateFormSchema } from "@/server/trpc/api/projects/types";
@@ -14,8 +15,8 @@ type TProps = {
 };
 
 export default function GeneralTabContent({ teamId, projectId }: TProps) {
-  const { data, refetch } = useProject();
-  const utils = api.useUtils();
+  const { data, refetch: refetchProject } = useProject();
+  const { refetch: refetchProjects } = useProjects();
 
   const { mutateAsync: updateProject, error } = api.projects.update.useMutation();
 
@@ -34,7 +35,7 @@ export default function GeneralTabContent({ teamId, projectId }: TProps) {
         projectId,
         teamId,
       });
-      await Promise.all([refetch(), utils.projects.list.invalidate({ teamId })]);
+      await Promise.all([refetchProject(), refetchProjects()]);
       formApi.reset();
     },
   });
@@ -106,7 +107,16 @@ export default function GeneralTabContent({ teamId, projectId }: TProps) {
                 variant="outline"
                 className="gap-1.5"
               >
-                <RotateCcwIcon className="-ml-1 size-4.5 shrink-0" />
+                <RotateCcwIcon
+                  data-rotated={
+                    typeof values === "object" &&
+                    values.displayName === data?.project.display_name &&
+                    values.description === data?.project.description
+                      ? true
+                      : undefined
+                  }
+                  className="-ml-1 size-4.5 shrink-0 transition-transform data-rotated:-rotate-135"
+                />
                 <p className="min-w-0">Undo</p>
               </Button>
             </div>
