@@ -1,10 +1,10 @@
 "use client";
 
+import { useProjects } from "@/components/project/projects-provider";
 import { BreadcrumbItem } from "@/components/navigation/breadcrumb-item";
 import { BreadcrumbSeparator, BreadcrumbWrapper } from "@/components/navigation/breadcrumb-wrapper";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import { api } from "@/server/trpc/setup/client";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -22,12 +22,7 @@ export default function ProjectBreadcrumb({ className }: TProps) {
   } = useIdsFromPathname();
   const pathname = usePathname();
 
-  const { data: projectsData } = api.projects.list.useQuery(
-    { teamId: teamIdFromPathname! },
-    {
-      enabled: teamIdFromPathname !== undefined,
-    },
-  );
+  const { data: projectsData } = useProjects();
 
   const [selectedProjectId, setSelectedProjectId] = useState(projectIdFromPathname);
   const [selectedEnvironmentId, setSelectedEnvironmentId] = useState(environmentIdFromPathname);

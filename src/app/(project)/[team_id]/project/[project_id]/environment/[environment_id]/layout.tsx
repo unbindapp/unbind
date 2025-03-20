@@ -1,4 +1,5 @@
 import ProjectProvider from "@/app/(project)/[team_id]/project/[project_id]/environment/[environment_id]/_components/project-provider";
+import ProjectsProvider from "@/components/project/projects-provider";
 import ContextAwareCommandPanel from "@/components/command-panel/context-aware-command-panel/context-aware-command-panel";
 import NavbarSafeAreaInsetBottom from "@/components/navigation/navbar-safe-area-inset-bottom";
 import ProjectNavbar from "@/components/project/project-navbar";
@@ -13,26 +14,33 @@ type TProps = {
 export default async function Layout({ children, params }: TProps) {
   const { team_id: teamId, project_id: projectId, environment_id: environmentId } = await params;
 
-  const initialData = await apiServer.projects.get({
-    teamId,
-    projectId,
-  });
+  const [projectInitialData, projectsInitialData] = await Promise.all([
+    apiServer.projects.get({
+      teamId,
+      projectId,
+    }),
+    apiServer.projects.list({
+      teamId,
+    }),
+  ]);
 
   return (
     <HydrateClient>
-      <ProjectProvider initialData={initialData} teamId={teamId} projectId={projectId}>
-        <ProjectNavbar />
-        {children}
-        <NavbarSafeAreaInsetBottom className="sm:hidden" />
-        <ContextAwareCommandPanel
-          context={{
-            contextType: "project",
-            projectId,
-            environmentId,
-            teamId,
-          }}
-        />
-      </ProjectProvider>
+      <ProjectsProvider initialData={projectsInitialData} teamId={teamId}>
+        <ProjectProvider initialData={projectInitialData} teamId={teamId} projectId={projectId}>
+          <ProjectNavbar />
+          {children}
+          <NavbarSafeAreaInsetBottom className="sm:hidden" />
+          <ContextAwareCommandPanel
+            context={{
+              contextType: "project",
+              projectId,
+              environmentId,
+              teamId,
+            }}
+          />
+        </ProjectProvider>
+      </ProjectsProvider>
     </HydrateClient>
   );
 }

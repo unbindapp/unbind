@@ -3,8 +3,8 @@
 import { BreadcrumbItem } from "@/components/navigation/breadcrumb-item";
 import { BreadcrumbWrapper } from "@/components/navigation/breadcrumb-wrapper";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
+import { useTeams } from "@/components/team/teams-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import { api } from "@/server/trpc/setup/client";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -16,7 +16,7 @@ export default function TeamBreadcrumb({ className }: TProps) {
   const { asyncPush } = useAsyncPush();
   const { teamId: teamIdFromPathname } = useIdsFromPathname();
 
-  const { data: teamData } = api.teams.list.useQuery();
+  const { data: teamData } = useTeams();
 
   const [selectedTeamId, setSelectedTeamId] = useState(teamIdFromPathname);
 

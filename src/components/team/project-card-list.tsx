@@ -1,5 +1,6 @@
 "use client";
 
+import { useProjects } from "@/components/project/projects-provider";
 import { commandPanelKey, commandPanelPageKey } from "@/components/command-panel/constants";
 import {
   commandPanelTeamFromList,
@@ -8,7 +9,6 @@ import {
 import { TeamCommandPanelTrigger } from "@/components/team/command-panel/team-command-panel";
 import ProjectCard from "@/components/team/project-card";
 import { Button } from "@/components/ui/button";
-import { api } from "@/server/trpc/setup/client";
 import { PlusIcon } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
 import { useRef } from "react";
@@ -18,9 +18,7 @@ type TProps = {
 };
 
 export default function ProjectCardList({ teamId }: TProps) {
-  const [, { data }] = api.projects.list.useSuspenseQuery({
-    teamId,
-  });
+  const { data } = useProjects();
   const projects = data?.projects;
 
   const [commandPanelId, setCommandPanelId] = useQueryState(commandPanelKey);
