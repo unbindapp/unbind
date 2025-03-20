@@ -1,130 +1,5 @@
 import { z } from 'zod';
 
-export const CallbackResponseBodySchema = z
-  .object({
-    access_token: z.string(),
-    expiry: z.string(),
-    id_token: z.string(),
-    refresh_token: z.string(),
-    token_type: z.string(),
-  })
-  .strict();
-
-export const CreateProjectInputBodySchema = z
-  .object({
-    description: z.string(),
-    display_name: z.string(),
-    team_id: z.string(),
-  })
-  .strict();
-
-export const EnvironmentResponseSchema = z
-  .object({
-    active: z.boolean(),
-    created_at: z.string(),
-    description: z.string(),
-    display_name: z.string(),
-    id: z.string(),
-    name: z.string(),
-  })
-  .strict();
-
-export const ProjectResponseSchema = z
-  .object({
-    created_at: z.string(),
-    description: z.string(),
-    display_name: z.string(),
-    environments: z.array(EnvironmentResponseSchema),
-    id: z.string(),
-    name: z.string(),
-    status: z.string(),
-    team_id: z.string(),
-  })
-  .strict();
-
-export const CreateProjectResponseBodySchema = z
-  .object({
-    data: ProjectResponseSchema,
-  })
-  .strict();
-
-export const CreateServiceInputSchema = z
-  .object({
-    auto_deploy: z.boolean().optional(),
-    description: z.string(),
-    display_name: z.string(),
-    environment_id: z.string(),
-    git_branch: z.string().optional(),
-    github_installation_id: z.number().optional(),
-    host: z.string().optional(),
-    image: z.string().optional(),
-    port: z.number().optional(),
-    public: z.boolean().optional(),
-    replicas: z.number().optional(),
-    repository_name: z.string().optional(),
-    repository_owner: z.string().optional(),
-    run_command: z.string().optional(),
-    subtype: z.string(), // One of react, go, node, next, other
-    type: z.string(), // One of database, api, web, or custom
-  })
-  .strict();
-
-export const ServiceConfigResponseSchema = z
-  .object({
-    auto_deploy: z.boolean(),
-    git_branch: z.string().optional(),
-    host: z.string().optional(),
-    image: z.string().optional(),
-    port: z.number().optional(),
-    public: z.boolean(),
-    replicas: z.number(),
-    run_command: z.string().optional(),
-  })
-  .strict();
-
-export const ServiceResponseSchema = z
-  .object({
-    config: ServiceConfigResponseSchema,
-    created_at: z.string(),
-    description: z.string(),
-    display_name: z.string(),
-    environment_id: z.string(),
-    git_repository: z.string().optional(),
-    github_installation_id: z.number().optional(),
-    id: z.string(),
-    name: z.string(),
-    subtype: z.string(),
-    type: z.string(),
-    updated_at: z.string(),
-  })
-  .strict();
-
-export const CreateServiceResponseBodySchema = z
-  .object({
-    data: ServiceResponseSchema,
-  })
-  .strict();
-
-export const DataStructSchema = z
-  .object({
-    deleted: z.boolean(),
-    id: z.string(),
-  })
-  .strict();
-
-export const DeleteProjectInputBodySchema = z
-  .object({
-    project_id: z.string(),
-    team_id: z.string(),
-  })
-  .strict();
-
-export const DeleteProjectResponseBodySchema = z
-  .object({
-    data: DataStructSchema,
-  })
-  .strict();
-
 export const PermissionEdgesSchema = z
   .object({
     groups: z
@@ -148,59 +23,13 @@ export const PermissionSchema = z
   })
   .strict();
 
-export const ServiceConfigEdgesSchema = z
-  .object({
-    service: z.lazy(() => ServiceSchema).optional(),
-  })
-  .strict();
-
-export const ServiceConfigSchema = z
-  .object({
-    auto_deploy: z.boolean().optional(),
-    created_at: z.string().optional(),
-    edges: ServiceConfigEdgesSchema,
-    git_branch: z.string().optional(),
-    host: z.string().optional(),
-    id: z.string(),
-    image: z.string().optional(),
-    port: z.number().optional(),
-    public: z.boolean().optional(),
-    replicas: z.number().optional(),
-    run_command: z.string().optional(),
-    service_id: z.string().optional(),
-    updated_at: z.string().optional(),
-  })
-  .strict();
-
-export const ServiceEdgesSchema = z
-  .object({
-    environment: z.lazy(() => EnvironmentSchema).optional(),
-    github_installation: z.lazy(() => GithubInstallationSchema).optional(),
-    service_config: ServiceConfigSchema.optional(),
-  })
-  .strict();
-
-export const ServiceSchema: z.ZodType<unknown> = z
-  .object({
-    created_at: z.string().optional(),
-    description: z.string().optional(),
-    display_name: z.string().optional(),
-    edges: ServiceEdgesSchema,
-    environment_id: z.string().optional(),
-    git_repository: z.string().optional(),
-    github_installation_id: z.number().optional(),
-    id: z.string(),
-    name: z.string().optional(),
-    subtype: z.string().optional(),
-    type: z.string().optional(),
-    updated_at: z.string().optional(),
-  })
-  .strict();
-
 export const GithubInstallationEdgesSchema = z
   .object({
     github_app: z.lazy(() => GithubAppSchema).optional(),
-    services: z.array(ServiceSchema).nullable().optional(),
+    services: z
+      .array(z.lazy(() => ServiceSchema))
+      .nullable()
+      .optional(),
   })
   .strict();
 
@@ -211,7 +40,7 @@ export const GithubInstallationPermissionsSchema = z
   })
   .strict();
 
-export const GithubInstallationSchema: z.ZodType<unknown> = z
+export const GithubInstallationSchema = z
   .object({
     account_id: z.number().optional(),
     account_login: z.string().optional(),
@@ -356,6 +185,7 @@ export const TeamSchema: z.ZodType<unknown> = z
     display_name: z.string().optional(),
     edges: TeamEdgesSchema,
     id: z.string(),
+    kubernetes_secret: z.string().optional(),
     name: z.string().optional(),
     namespace: z.string().optional(),
     updated_at: z.string().optional(),
@@ -379,6 +209,7 @@ export const ProjectSchema: z.ZodType<unknown> = z
     display_name: z.string().optional(),
     edges: ProjectEdgesSchema,
     id: z.string(),
+    kubernetes_secret: z.string().optional(),
     name: z.string().optional(),
     status: z.string().optional(),
     team_id: z.string().optional(),
@@ -389,7 +220,10 @@ export const ProjectSchema: z.ZodType<unknown> = z
 export const EnvironmentEdgesSchema = z
   .object({
     project: ProjectSchema.optional(),
-    services: z.array(ServiceSchema).nullable().optional(),
+    services: z
+      .array(z.lazy(() => ServiceSchema))
+      .nullable()
+      .optional(),
   })
   .strict();
 
@@ -401,9 +235,251 @@ export const EnvironmentSchema: z.ZodType<unknown> = z
     display_name: z.string().optional(),
     edges: EnvironmentEdgesSchema,
     id: z.string(),
+    kubernetes_secret: z.string().optional(),
     name: z.string().optional(),
     project_id: z.string().optional(),
     updated_at: z.string().optional(),
+  })
+  .strict();
+
+export const ServiceConfigEdgesSchema = z
+  .object({
+    service: z.lazy(() => ServiceSchema).optional(),
+  })
+  .strict();
+
+export const ServiceConfigSchema = z
+  .object({
+    auto_deploy: z.boolean().optional(),
+    created_at: z.string().optional(),
+    edges: ServiceConfigEdgesSchema,
+    git_branch: z.string().optional(),
+    host: z.string().optional(),
+    id: z.string(),
+    image: z.string().optional(),
+    port: z.number().optional(),
+    public: z.boolean().optional(),
+    replicas: z.number().optional(),
+    run_command: z.string().optional(),
+    service_id: z.string().optional(),
+    updated_at: z.string().optional(),
+  })
+  .strict();
+
+export const ServiceEdgesSchema = z
+  .object({
+    build_jobs: z
+      .array(z.lazy(() => BuildJobSchema))
+      .nullable()
+      .optional(),
+    environment: EnvironmentSchema.optional(),
+    github_installation: GithubInstallationSchema.optional(),
+    service_config: ServiceConfigSchema.optional(),
+  })
+  .strict();
+
+export const ServiceSchema: z.ZodType<unknown> = z
+  .object({
+    builder: z.string().optional(),
+    created_at: z.string().optional(),
+    description: z.string().optional(),
+    display_name: z.string().optional(),
+    edges: ServiceEdgesSchema,
+    environment_id: z.string().optional(),
+    framework: z.string().optional(),
+    git_repository: z.string().optional(),
+    github_installation_id: z.number().optional(),
+    id: z.string(),
+    kubernetes_secret: z.string().optional(),
+    name: z.string().optional(),
+    runtime: z.string().optional(),
+    type: z.string().optional(),
+    updated_at: z.string().optional(),
+  })
+  .strict();
+
+export const BuildJobEdgesSchema = z
+  .object({
+    service: ServiceSchema.optional(),
+  })
+  .strict();
+
+export const BuildJobSchema: z.ZodType<unknown> = z
+  .object({
+    attempts: z.number().optional(),
+    completed_at: z.string().optional(),
+    created_at: z.string().optional(),
+    edges: BuildJobEdgesSchema,
+    error: z.string().optional(),
+    id: z.string(),
+    kubernetes_job_name: z.string().optional(),
+    kubernetes_job_status: z.string().optional(),
+    service_id: z.string().optional(),
+    started_at: z.string().optional(),
+    status: z.string().optional(),
+    updated_at: z.string().optional(),
+  })
+  .strict();
+
+export const CallbackResponseBodySchema = z
+  .object({
+    access_token: z.string(),
+    expiry: z.string(),
+    id_token: z.string(),
+    refresh_token: z.string(),
+    token_type: z.string(),
+  })
+  .strict();
+
+export const CreateProjectInputBodySchema = z
+  .object({
+    description: z.string(),
+    display_name: z.string(),
+    team_id: z.string(),
+  })
+  .strict();
+
+export const EnvironmentResponseSchema = z
+  .object({
+    active: z.boolean(),
+    created_at: z.string(),
+    description: z.string(),
+    display_name: z.string(),
+    id: z.string(),
+    name: z.string(),
+  })
+  .strict();
+
+export const ProjectResponseSchema = z
+  .object({
+    created_at: z.string(),
+    description: z.string(),
+    display_name: z.string(),
+    environments: z.array(EnvironmentResponseSchema),
+    id: z.string(),
+    name: z.string(),
+    status: z.string(),
+    team_id: z.string(),
+  })
+  .strict();
+
+export const CreateProjectResponseBodySchema = z
+  .object({
+    data: ProjectResponseSchema,
+  })
+  .strict();
+
+export const ItemSchema = z
+  .object({
+    name: z.string(),
+    value: z.string(),
+  })
+  .strict();
+
+export const CreateSecretsInputBodySchema = z
+  .object({
+    environment_id: z.string(), // If present without service_id, mutate environment secrets - requires project_id
+    project_id: z.string(), // If present without environment_id, mutate team secrets
+    secrets: z.array(ItemSchema).nullable(),
+    service_id: z.string(), // If present, mutate service secrets - requires project_id and environment_id
+    team_id: z.string(),
+  })
+  .strict();
+
+export const CreateServiceInputSchema = z
+  .object({
+    Builder: z.string(), // Builder of the service - docker, railpack
+    Type: z.string(), // Type of service, e.g. 'git', 'docker'
+    auto_deploy: z.boolean().optional(),
+    description: z.string(),
+    display_name: z.string(),
+    environment_id: z.string(),
+    git_branch: z.string().optional(),
+    github_installation_id: z.number().optional(),
+    host: z.string().optional(),
+    image: z.string().optional(),
+    port: z.number().optional(),
+    project_id: z.string(),
+    public: z.boolean().optional(),
+    replicas: z.number().optional(),
+    repository_name: z.string().optional(),
+    repository_owner: z.string().optional(),
+    run_command: z.string().optional(),
+    team_id: z.string(),
+  })
+  .strict();
+
+export const ServiceConfigResponseSchema = z
+  .object({
+    auto_deploy: z.boolean(),
+    git_branch: z.string().optional(),
+    host: z.string().optional(),
+    image: z.string().optional(),
+    port: z.number().optional(),
+    public: z.boolean(),
+    replicas: z.number(),
+    run_command: z.string().optional(),
+  })
+  .strict();
+
+export const ServiceResponseSchema = z
+  .object({
+    builder: z.string(),
+    config: ServiceConfigResponseSchema,
+    created_at: z.string(),
+    description: z.string(),
+    display_name: z.string(),
+    environment_id: z.string(),
+    framework: z.string().optional(),
+    git_repository: z.string().optional(),
+    github_installation_id: z.number().optional(),
+    id: z.string(),
+    name: z.string(),
+    runtime: z.string().optional(),
+    type: z.string(),
+    updated_at: z.string(),
+  })
+  .strict();
+
+export const CreateServiceResponseBodySchema = z
+  .object({
+    data: ServiceResponseSchema,
+  })
+  .strict();
+
+export const DataStructSchema = z
+  .object({
+    deleted: z.boolean(),
+    id: z.string(),
+  })
+  .strict();
+
+export const DeleteProjectInputBodySchema = z
+  .object({
+    project_id: z.string(),
+    team_id: z.string(),
+  })
+  .strict();
+
+export const DeleteProjectResponseBodySchema = z
+  .object({
+    data: DataStructSchema,
+  })
+  .strict();
+
+export const SecretDeleteInputSchema = z
+  .object({
+    name: z.string(),
+  })
+  .strict();
+
+export const DeleteSecretSecretsInputBodySchema = z
+  .object({
+    environment_id: z.string(), // If present without service_id, mutate environment secrets - requires project_id
+    project_id: z.string(), // If present without environment_id, mutate team secrets
+    secrets: z.array(SecretDeleteInputSchema).nullable(),
+    service_id: z.string(), // If present, mutate service secrets - requires project_id and environment_id
+    team_id: z.string(),
   })
   .strict();
 
@@ -423,6 +499,12 @@ export const ErrorModelSchema = z
     status: z.number().optional(), // HTTP status code
     title: z.string().optional(), // A short, human-readable summary of the problem type. This value should not change between occurrences of the error.
     type: z.string().optional(), // A URI reference to human-readable documentation for the error.
+  })
+  .strict();
+
+export const GetProjectResponseBodySchema = z
+  .object({
+    data: ProjectResponseSchema,
   })
   .strict();
 
@@ -566,6 +648,7 @@ export const GithubBranchSchema = z
   .object({
     name: z.string(),
     protected: z.boolean(),
+    ref: z.string(),
     sha: z.string(),
   })
   .strict();
@@ -573,6 +656,7 @@ export const GithubBranchSchema = z
 export const GithubTagSchema = z
   .object({
     name: z.string(),
+    ref: z.string(),
     sha: z.string(),
   })
   .strict();
@@ -629,6 +713,22 @@ export const MeResponseBodySchema = z
   })
   .strict();
 
+export const SecretTypeSchema = z.any() as z.ZodType<unknown>;
+
+export const SecretResponseSchema = z
+  .object({
+    key: z.string(),
+    type: SecretTypeSchema,
+    value: z.string(),
+  })
+  .strict();
+
+export const SecretsResponseBodySchema = z
+  .object({
+    data: z.array(SecretResponseSchema).nullable(),
+  })
+  .strict();
+
 export const TeamResponseBodySchema = z
   .object({
     data: z.array(GetTeamResponseSchema).nullable(),
@@ -663,34 +763,8 @@ export const UpdateTeamResponseBodySchema = z
   })
   .strict();
 
-export type CallbackResponseBody = z.infer<typeof CallbackResponseBodySchema>;
-export type CreateProjectInputBody = z.infer<
-  typeof CreateProjectInputBodySchema
->;
-export type EnvironmentResponse = z.infer<typeof EnvironmentResponseSchema>;
-export type ProjectResponse = z.infer<typeof ProjectResponseSchema>;
-export type CreateProjectResponseBody = z.infer<
-  typeof CreateProjectResponseBodySchema
->;
-export type CreateServiceInput = z.infer<typeof CreateServiceInputSchema>;
-export type ServiceConfigResponse = z.infer<typeof ServiceConfigResponseSchema>;
-export type ServiceResponse = z.infer<typeof ServiceResponseSchema>;
-export type CreateServiceResponseBody = z.infer<
-  typeof CreateServiceResponseBodySchema
->;
-export type DataStruct = z.infer<typeof DataStructSchema>;
-export type DeleteProjectInputBody = z.infer<
-  typeof DeleteProjectInputBodySchema
->;
-export type DeleteProjectResponseBody = z.infer<
-  typeof DeleteProjectResponseBodySchema
->;
 export type PermissionEdges = z.infer<typeof PermissionEdgesSchema>;
 export type Permission = z.infer<typeof PermissionSchema>;
-export type ServiceConfigEdges = z.infer<typeof ServiceConfigEdgesSchema>;
-export type ServiceConfig = z.infer<typeof ServiceConfigSchema>;
-export type ServiceEdges = z.infer<typeof ServiceEdgesSchema>;
-export type Service = z.infer<typeof ServiceSchema>;
 export type GithubInstallationEdges = z.infer<
   typeof GithubInstallationEdgesSchema
 >;
@@ -714,8 +788,47 @@ export type ProjectEdges = z.infer<typeof ProjectEdgesSchema>;
 export type Project = z.infer<typeof ProjectSchema>;
 export type EnvironmentEdges = z.infer<typeof EnvironmentEdgesSchema>;
 export type Environment = z.infer<typeof EnvironmentSchema>;
+export type ServiceConfigEdges = z.infer<typeof ServiceConfigEdgesSchema>;
+export type ServiceConfig = z.infer<typeof ServiceConfigSchema>;
+export type ServiceEdges = z.infer<typeof ServiceEdgesSchema>;
+export type Service = z.infer<typeof ServiceSchema>;
+export type BuildJobEdges = z.infer<typeof BuildJobEdgesSchema>;
+export type BuildJob = z.infer<typeof BuildJobSchema>;
+export type CallbackResponseBody = z.infer<typeof CallbackResponseBodySchema>;
+export type CreateProjectInputBody = z.infer<
+  typeof CreateProjectInputBodySchema
+>;
+export type EnvironmentResponse = z.infer<typeof EnvironmentResponseSchema>;
+export type ProjectResponse = z.infer<typeof ProjectResponseSchema>;
+export type CreateProjectResponseBody = z.infer<
+  typeof CreateProjectResponseBodySchema
+>;
+export type Item = z.infer<typeof ItemSchema>;
+export type CreateSecretsInputBody = z.infer<
+  typeof CreateSecretsInputBodySchema
+>;
+export type CreateServiceInput = z.infer<typeof CreateServiceInputSchema>;
+export type ServiceConfigResponse = z.infer<typeof ServiceConfigResponseSchema>;
+export type ServiceResponse = z.infer<typeof ServiceResponseSchema>;
+export type CreateServiceResponseBody = z.infer<
+  typeof CreateServiceResponseBodySchema
+>;
+export type DataStruct = z.infer<typeof DataStructSchema>;
+export type DeleteProjectInputBody = z.infer<
+  typeof DeleteProjectInputBodySchema
+>;
+export type DeleteProjectResponseBody = z.infer<
+  typeof DeleteProjectResponseBodySchema
+>;
+export type SecretDeleteInput = z.infer<typeof SecretDeleteInputSchema>;
+export type DeleteSecretSecretsInputBody = z.infer<
+  typeof DeleteSecretSecretsInputBodySchema
+>;
 export type ErrorDetail = z.infer<typeof ErrorDetailSchema>;
 export type ErrorModel = z.infer<typeof ErrorModelSchema>;
+export type GetProjectResponseBody = z.infer<
+  typeof GetProjectResponseBodySchema
+>;
 export type GetTeamResponse = z.infer<typeof GetTeamResponseSchema>;
 export type Plan = z.infer<typeof PlanSchema>;
 export type Organization = z.infer<typeof OrganizationSchema>;
@@ -749,6 +862,9 @@ export type ListProjectResponseBody = z.infer<
   typeof ListProjectResponseBodySchema
 >;
 export type MeResponseBody = z.infer<typeof MeResponseBodySchema>;
+export type SecretType = z.infer<typeof SecretTypeSchema>;
+export type SecretResponse = z.infer<typeof SecretResponseSchema>;
+export type SecretsResponseBody = z.infer<typeof SecretsResponseBodySchema>;
 export type TeamResponseBody = z.infer<typeof TeamResponseBodySchema>;
 export type UpdateProjectInputBody = z.infer<
   typeof UpdateProjectInputBodySchema
@@ -780,8 +896,20 @@ export const repo_detailQuerySchema = z.object({
   repo_name: z.string(),
 });
 
+export const get_projectQuerySchema = z.object({
+  id: z.string(),
+  team_id: z.string(),
+});
+
 export const list_projectsQuerySchema = z.object({
   team_id: z.string(),
+});
+
+export const list_secretsQuerySchema = z.object({
+  team_id: z.string(),
+  project_id: z.string().optional(), // If present, fetch project secrets
+  environment_id: z.string().optional(), // If present, fetch environment secrets - requires project_id
+  service_id: z.string().optional(), // If present, fetch service secrets - requires project_id and environment_id
 });
 
 export const app_saveQuerySchema = z.object({
@@ -1255,6 +1383,52 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           throw error;
         }
       },
+      get: async (
+        params: z.infer<typeof get_projectQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<GetProjectResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/projects/get`);
+          const validatedQuery = get_projectQuerySchema.parse(params);
+          const queryKeys = ['id', 'team_id'];
+          queryKeys.forEach((key) => {
+            const value = (validatedQuery as Record<string, string | number>)[
+              key
+            ];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error: ${data}`);
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return GetProjectResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
       list: async (
         params: z.infer<typeof list_projectsQuerySchema>,
         fetchOptions?: RequestInit,
@@ -1334,6 +1508,136 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           }
           const data = await response.json();
           return UpdateProjectResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+    },
+    secrets: {
+      create: async (
+        params: CreateSecretsInputBody,
+        fetchOptions?: RequestInit,
+      ): Promise<SecretsResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/secrets/create`);
+
+          const options: RequestInit = {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = CreateSecretsInputBodySchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error: ${data}`);
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return SecretsResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      delete: async (
+        params: DeleteSecretSecretsInputBody,
+        fetchOptions?: RequestInit,
+      ): Promise<SecretsResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/secrets/delete`);
+
+          const options: RequestInit = {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+          const validatedBody =
+            DeleteSecretSecretsInputBodySchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error: ${data}`);
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return SecretsResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      list: async (
+        params: z.infer<typeof list_secretsQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<SecretsResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/secrets/list`);
+          const validatedQuery = list_secretsQuerySchema.parse(params);
+          const queryKeys = [
+            'team_id',
+            'project_id',
+            'environment_id',
+            'service_id',
+          ];
+          queryKeys.forEach((key) => {
+            const value = (validatedQuery as Record<string, string | number>)[
+              key
+            ];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error: ${data}`);
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return SecretsResponseBodySchema.parse(data);
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
