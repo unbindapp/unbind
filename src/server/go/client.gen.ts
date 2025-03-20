@@ -278,6 +278,10 @@ export const ServiceEdgesSchema = z
   })
   .strict();
 
+export const FrameworkSchema = z.any() as z.ZodType<unknown>;
+
+export const ProviderSchema = z.any() as z.ZodType<unknown>;
+
 export const ServiceSchema: z.ZodType<unknown> = z
   .object({
     builder: z.string().optional(),
@@ -286,13 +290,14 @@ export const ServiceSchema: z.ZodType<unknown> = z
     display_name: z.string().optional(),
     edges: ServiceEdgesSchema,
     environment_id: z.string().optional(),
-    framework: z.string().optional(),
+    framework: FrameworkSchema.optional(),
     git_repository: z.string().optional(),
     github_installation_id: z.number().optional(),
     id: z.string(),
+    kubernetes_build_secret: z.string().optional(),
     kubernetes_secret: z.string().optional(),
     name: z.string().optional(),
-    runtime: z.string().optional(),
+    provider: ProviderSchema.optional(),
     type: z.string().optional(),
     updated_at: z.string().optional(),
   })
@@ -345,8 +350,11 @@ export const EnvironmentResponseSchema = z
     created_at: z.string(),
     description: z.string(),
     display_name: z.string(),
+    framework_summary: z.array(FrameworkSchema).optional(),
     id: z.string(),
     name: z.string(),
+    provider_summary: z.array(ProviderSchema).optional(),
+    service_count: z.number().optional(),
   })
   .strict();
 
@@ -376,13 +384,17 @@ export const ItemSchema = z
   })
   .strict();
 
+export const SecretTypeSchema = z.any() as z.ZodType<unknown>;
+
 export const CreateSecretsInputBodySchema = z
   .object({
-    environment_id: z.string(), // If present without service_id, mutate environment secrets - requires project_id
-    project_id: z.string(), // If present without environment_id, mutate team secrets
+    build_secret: z.boolean().optional(),
+    environment_id: z.string().optional(), // If present without service_id, mutate environment secrets - requires project_id
+    project_id: z.string().optional(), // If present without environment_id, mutate team secrets
     secrets: z.array(ItemSchema).nullable(),
-    service_id: z.string(), // If present, mutate service secrets - requires project_id and environment_id
+    service_id: z.string().optional(), // If present, mutate service secrets - requires project_id and environment_id
     team_id: z.string(),
+    type: SecretTypeSchema, // The type of secret to fetch
   })
   .strict();
 
@@ -430,12 +442,12 @@ export const ServiceResponseSchema = z
     description: z.string(),
     display_name: z.string(),
     environment_id: z.string(),
-    framework: z.string().optional(),
+    framework: FrameworkSchema.optional(),
     git_repository: z.string().optional(),
     github_installation_id: z.number().optional(),
     id: z.string(),
     name: z.string(),
-    runtime: z.string().optional(),
+    provider: ProviderSchema.optional(),
     type: z.string(),
     updated_at: z.string(),
   })
@@ -475,11 +487,13 @@ export const SecretDeleteInputSchema = z
 
 export const DeleteSecretSecretsInputBodySchema = z
   .object({
-    environment_id: z.string(), // If present without service_id, mutate environment secrets - requires project_id
-    project_id: z.string(), // If present without environment_id, mutate team secrets
+    build_secret: z.boolean().optional(),
+    environment_id: z.string().optional(), // If present without service_id, mutate environment secrets - requires project_id
+    project_id: z.string().optional(), // If present without environment_id, mutate team secrets
     secrets: z.array(SecretDeleteInputSchema).nullable(),
-    service_id: z.string(), // If present, mutate service secrets - requires project_id and environment_id
+    service_id: z.string().optional(), // If present, mutate service secrets - requires project_id and environment_id
     team_id: z.string(),
+    type: SecretTypeSchema, // The type of secret to fetch
   })
   .strict();
 
@@ -505,6 +519,12 @@ export const ErrorModelSchema = z
 export const GetProjectResponseBodySchema = z
   .object({
     data: ProjectResponseSchema,
+  })
+  .strict();
+
+export const GetServiceResponseBodySchema = z
+  .object({
+    data: ServiceResponseSchema,
   })
   .strict();
 
@@ -617,6 +637,7 @@ export const GithubRepositorySchema = z
     id: z.number(),
     name: z.string(),
     owner: GithubRepositoryOwnerSchema,
+    updated_at: z.string(),
   })
   .strict();
 
@@ -707,17 +728,22 @@ export const ListProjectResponseBodySchema = z
   })
   .strict();
 
+export const ListServiceResponseBodySchema = z
+  .object({
+    data: z.array(ServiceResponseSchema).nullable(),
+  })
+  .strict();
+
 export const MeResponseBodySchema = z
   .object({
     data: UserSchema,
   })
   .strict();
 
-export const SecretTypeSchema = z.any() as z.ZodType<unknown>;
-
 export const SecretResponseSchema = z
   .object({
-    key: z.string(),
+    build_secret: z.boolean(), // Whether or not this secret is for build process, not deployement
+    name: z.string(),
     type: SecretTypeSchema,
     value: z.string(),
   })
@@ -735,6 +761,12 @@ export const TeamResponseBodySchema = z
   })
   .strict();
 
+export const UpdatServiceResponseBodySchema = z
+  .object({
+    data: ServiceResponseSchema,
+  })
+  .strict();
+
 export const UpdateProjectInputBodySchema = z
   .object({
     description: z.string(),
@@ -747,6 +779,25 @@ export const UpdateProjectInputBodySchema = z
 export const UpdateProjectResponseBodySchema = z
   .object({
     data: ProjectResponseSchema,
+  })
+  .strict();
+
+export const UpdateServiceInputSchema = z
+  .object({
+    auto_deploy: z.boolean().optional(),
+    description: z.string().nullable().optional(),
+    display_name: z.string().nullable().optional(),
+    environment_id: z.string(),
+    git_branch: z.string().optional(),
+    host: z.string().optional(),
+    image: z.string().optional(),
+    port: z.number().optional(),
+    project_id: z.string(),
+    public: z.boolean().optional(),
+    replicas: z.number().optional(),
+    run_command: z.string().optional(),
+    service_id: z.string(),
+    team_id: z.string(),
   })
   .strict();
 
@@ -791,6 +842,8 @@ export type Environment = z.infer<typeof EnvironmentSchema>;
 export type ServiceConfigEdges = z.infer<typeof ServiceConfigEdgesSchema>;
 export type ServiceConfig = z.infer<typeof ServiceConfigSchema>;
 export type ServiceEdges = z.infer<typeof ServiceEdgesSchema>;
+export type Framework = z.infer<typeof FrameworkSchema>;
+export type Provider = z.infer<typeof ProviderSchema>;
 export type Service = z.infer<typeof ServiceSchema>;
 export type BuildJobEdges = z.infer<typeof BuildJobEdgesSchema>;
 export type BuildJob = z.infer<typeof BuildJobSchema>;
@@ -804,6 +857,7 @@ export type CreateProjectResponseBody = z.infer<
   typeof CreateProjectResponseBodySchema
 >;
 export type Item = z.infer<typeof ItemSchema>;
+export type SecretType = z.infer<typeof SecretTypeSchema>;
 export type CreateSecretsInputBody = z.infer<
   typeof CreateSecretsInputBodySchema
 >;
@@ -828,6 +882,9 @@ export type ErrorDetail = z.infer<typeof ErrorDetailSchema>;
 export type ErrorModel = z.infer<typeof ErrorModelSchema>;
 export type GetProjectResponseBody = z.infer<
   typeof GetProjectResponseBodySchema
+>;
+export type GetServiceResponseBody = z.infer<
+  typeof GetServiceResponseBodySchema
 >;
 export type GetTeamResponse = z.infer<typeof GetTeamResponseSchema>;
 export type Plan = z.infer<typeof PlanSchema>;
@@ -861,17 +918,23 @@ export type HealthResponseBody = z.infer<typeof HealthResponseBodySchema>;
 export type ListProjectResponseBody = z.infer<
   typeof ListProjectResponseBodySchema
 >;
+export type ListServiceResponseBody = z.infer<
+  typeof ListServiceResponseBodySchema
+>;
 export type MeResponseBody = z.infer<typeof MeResponseBodySchema>;
-export type SecretType = z.infer<typeof SecretTypeSchema>;
 export type SecretResponse = z.infer<typeof SecretResponseSchema>;
 export type SecretsResponseBody = z.infer<typeof SecretsResponseBodySchema>;
 export type TeamResponseBody = z.infer<typeof TeamResponseBodySchema>;
+export type UpdatServiceResponseBody = z.infer<
+  typeof UpdatServiceResponseBodySchema
+>;
 export type UpdateProjectInputBody = z.infer<
   typeof UpdateProjectInputBodySchema
 >;
 export type UpdateProjectResponseBody = z.infer<
   typeof UpdateProjectResponseBodySchema
 >;
+export type UpdateServiceInput = z.infer<typeof UpdateServiceInputSchema>;
 export type UpdateTeamInputBody = z.infer<typeof UpdateTeamInputBodySchema>;
 export type UpdateTeamResponseBody = z.infer<
   typeof UpdateTeamResponseBodySchema
@@ -897,7 +960,7 @@ export const repo_detailQuerySchema = z.object({
 });
 
 export const get_projectQuerySchema = z.object({
-  id: z.string(),
+  project_id: z.string(),
   team_id: z.string(),
 });
 
@@ -910,6 +973,19 @@ export const list_secretsQuerySchema = z.object({
   project_id: z.string().optional(), // If present, fetch project secrets
   environment_id: z.string().optional(), // If present, fetch environment secrets - requires project_id
   service_id: z.string().optional(), // If present, fetch service secrets - requires project_id and environment_id
+});
+
+export const get_serviceQuerySchema = z.object({
+  id: z.string(),
+  team_id: z.string(),
+  project_id: z.string(),
+  environment_id: z.string(),
+});
+
+export const list_serviceQuerySchema = z.object({
+  team_id: z.string(),
+  project_id: z.string(),
+  environment_id: z.string(),
 });
 
 export const app_saveQuerySchema = z.object({
@@ -959,7 +1035,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
             const data = await response.json();
-            console.log(`GO API request error: ${data}`);
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
             throw new Error(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
@@ -993,7 +1071,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
             const data = await response.json();
-            console.log(`GO API request error: ${data}`);
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
             throw new Error(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
@@ -1042,7 +1122,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
               );
               const data = await response.json();
-              console.log(`GO API request error: ${data}`);
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+
               throw new Error(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
               );
@@ -1089,7 +1171,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
             const data = await response.json();
-            console.log(`GO API request error: ${data}`);
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
             throw new Error(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
@@ -1130,7 +1214,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                   `GO API request failed with status ${response.status}: ${response.statusText}`,
                 );
                 const data = await response.json();
-                console.log(`GO API request error: ${data}`);
+                console.log(`GO API request error`, data);
+                console.log(`Request URL is:`, url.toString());
+
                 throw new Error(
                   `GO API request failed with status ${response.status}: ${response.statusText}`,
                 );
@@ -1169,7 +1255,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
             const data = await response.json();
-            console.log(`GO API request error: ${data}`);
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
             throw new Error(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
@@ -1207,7 +1295,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
               );
               const data = await response.json();
-              console.log(`GO API request error: ${data}`);
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+
               throw new Error(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
               );
@@ -1254,7 +1344,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                   `GO API request failed with status ${response.status}: ${response.statusText}`,
                 );
                 const data = await response.json();
-                console.log(`GO API request error: ${data}`);
+                console.log(`GO API request error`, data);
+                console.log(`Request URL is:`, url.toString());
+
                 throw new Error(
                   `GO API request failed with status ${response.status}: ${response.statusText}`,
                 );
@@ -1294,7 +1386,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             `GO API request failed with status ${response.status}: ${response.statusText}`,
           );
           const data = await response.json();
-          console.log(`GO API request error: ${data}`);
+          console.log(`GO API request error`, data);
+          console.log(`Request URL is:`, url.toString());
+
           throw new Error(
             `GO API request failed with status ${response.status}: ${response.statusText}`,
           );
@@ -1333,7 +1427,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
             const data = await response.json();
-            console.log(`GO API request error: ${data}`);
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
             throw new Error(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
@@ -1371,7 +1467,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
             const data = await response.json();
-            console.log(`GO API request error: ${data}`);
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
             throw new Error(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
@@ -1393,7 +1491,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           }
           const url = new URL(`${apiUrl}/projects/get`);
           const validatedQuery = get_projectQuerySchema.parse(params);
-          const queryKeys = ['id', 'team_id'];
+          const queryKeys = ['project_id', 'team_id'];
           queryKeys.forEach((key) => {
             const value = (validatedQuery as Record<string, string | number>)[
               key
@@ -1417,7 +1515,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
             const data = await response.json();
-            console.log(`GO API request error: ${data}`);
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
             throw new Error(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
@@ -1463,7 +1563,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
             const data = await response.json();
-            console.log(`GO API request error: ${data}`);
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
             throw new Error(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
@@ -1501,7 +1603,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
             const data = await response.json();
-            console.log(`GO API request error: ${data}`);
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
             throw new Error(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
@@ -1541,7 +1645,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
             const data = await response.json();
-            console.log(`GO API request error: ${data}`);
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
             throw new Error(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
@@ -1580,7 +1686,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
             const data = await response.json();
-            console.log(`GO API request error: ${data}`);
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
             throw new Error(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
@@ -1631,7 +1739,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
             const data = await response.json();
-            console.log(`GO API request error: ${data}`);
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
             throw new Error(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
@@ -1671,13 +1781,151 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
             const data = await response.json();
-            console.log(`GO API request error: ${data}`);
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
             throw new Error(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
           }
           const data = await response.json();
           return CreateServiceResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      get: async (
+        params: z.infer<typeof get_serviceQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<GetServiceResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/services/get`);
+          const validatedQuery = get_serviceQuerySchema.parse(params);
+          const queryKeys = ['id', 'team_id', 'project_id', 'environment_id'];
+          queryKeys.forEach((key) => {
+            const value = (validatedQuery as Record<string, string | number>)[
+              key
+            ];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return GetServiceResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      list: async (
+        params: z.infer<typeof list_serviceQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<ListServiceResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/services/list`);
+          const validatedQuery = list_serviceQuerySchema.parse(params);
+          const queryKeys = ['team_id', 'project_id', 'environment_id'];
+          queryKeys.forEach((key) => {
+            const value = (validatedQuery as Record<string, string | number>)[
+              key
+            ];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return ListServiceResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      update: async (
+        params: UpdateServiceInput,
+        fetchOptions?: RequestInit,
+      ): Promise<UpdatServiceResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/services/update`);
+
+          const options: RequestInit = {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = UpdateServiceInputSchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return UpdatServiceResponseBodySchema.parse(data);
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -1710,7 +1958,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
             const data = await response.json();
-            console.log(`GO API request error: ${data}`);
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
             throw new Error(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
@@ -1748,7 +1998,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
             const data = await response.json();
-            console.log(`GO API request error: ${data}`);
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
             throw new Error(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
@@ -1787,7 +2039,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
             const data = await response.json();
-            console.log(`GO API request error: ${data}`);
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
             throw new Error(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
@@ -1824,7 +2078,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
               );
               const data = await response.json();
-              console.log(`GO API request error: ${data}`);
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+
               throw new Error(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
               );
@@ -1872,7 +2128,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                     `GO API request failed with status ${response.status}: ${response.statusText}`,
                   );
                   const data = await response.json();
-                  console.log(`GO API request error: ${data}`);
+                  console.log(`GO API request error`, data);
+                  console.log(`Request URL is:`, url.toString());
+
                   throw new Error(
                     `GO API request failed with status ${response.status}: ${response.statusText}`,
                   );

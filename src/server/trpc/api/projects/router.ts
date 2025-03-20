@@ -1,9 +1,30 @@
 import { generateProjectName } from "@/server/trpc/api/projects/helpers";
+import { ProjectUpdateFormSchema } from "@/server/trpc/api/projects/types";
 import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 export const projectsRouter = createTRPCRouter({
+  get: publicProcedure
+    .input(
+      z.object({
+        teamId: z.string(),
+        projectId: z.string(),
+      }),
+    )
+    .query(async function ({ input: { teamId, projectId }, ctx }) {
+      const { session, goClient } = ctx;
+      if (!session) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You need to be logged in to access this resource",
+        });
+      }
+      const res = await goClient.projects.get({ team_id: teamId, project_id: projectId });
+      return {
+        project: res.data || null,
+      };
+    }),
   list: publicProcedure
     .input(
       z.object({
@@ -47,6 +68,35 @@ export const projectsRouter = createTRPCRouter({
         display_name: displayName || defaultDisplayName,
         description: description || defaultDescription,
       });
+      return {
+        data: res.data || [],
+      };
+    }),
+  update: publicProcedure
+    .input(
+      z
+        .object({
+          teamId: z.string(),
+          projectId: z.string(),
+        })
+        .merge(ProjectUpdateFormSchema),
+    )
+    .mutation(async function ({ input: { displayName, description, teamId, projectId }, ctx }) {
+      const { session, goClient } = ctx;
+      if (!session) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You need to be logged in to access this resource",
+        });
+      }
+
+      const res = await goClient.projects.update({
+        team_id: teamId,
+        project_id: projectId,
+        display_name: displayName,
+        description,
+      });
+
       return {
         data: res.data || [],
       };

@@ -22,11 +22,44 @@ const inputVariants = cva(
   },
 );
 
-export interface InputProps
-  extends React.InputHTMLAttributes<HTMLInputElement>,
-    VariantProps<typeof inputVariants> {}
+export type InputProps = React.InputHTMLAttributes<HTMLInputElement> &
+  VariantProps<typeof inputVariants> &
+  InputLayout;
 
-function Input({ className, variant, fadeOnDisabled, type, ...props }: InputProps) {
+type InputLayout =
+  | {
+      layout: "label-included";
+      inputTitle: string;
+    }
+  | {
+      layout?: never;
+      inputTitle?: never;
+    };
+
+function Input({ className, variant, fadeOnDisabled, title, layout, type, ...props }: InputProps) {
+  if (layout === "label-included") {
+    return (
+      <div className={cn("relative", className)}>
+        <input
+          type={type}
+          className={cn(
+            inputVariants({
+              variant,
+              fadeOnDisabled,
+            }),
+            "peer relative pt-5.5 pb-1.5",
+            className,
+          )}
+          {...props}
+          placeholder=""
+        />
+        <label className="text-muted-foreground pointer-events-none absolute top-1/2 left-3.25 origin-top-left -translate-y-[calc(100%-0.2rem)] scale-75 font-medium transition peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100 peer-focus:-translate-y-[calc(100%-0.2rem)] peer-focus:scale-75">
+          {title}
+        </label>
+      </div>
+    );
+  }
+
   return (
     <input
       type={type}

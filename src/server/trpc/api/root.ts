@@ -6,7 +6,7 @@ import { teamsRouter } from "@/server/trpc/api/teams/router";
 import { createTRPCRouter } from "@/server/trpc/setup/trpc";
 import { inferRouterClient, TRPCClientErrorLike } from "@trpc/client";
 import { inferReactQueryProcedureOptions } from "@trpc/react-query";
-import { UseTRPCQueryResult } from "@trpc/react-query/shared";
+import { UseTRPCQueryResult, UseTRPCSuspenseQueryResult } from "@trpc/react-query/shared";
 import { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 
 /**
@@ -30,6 +30,11 @@ export type AppRouterInputs = inferRouterInputs<AppRouter>;
 export type AppRouterOutputs = inferRouterOutputs<AppRouter>;
 
 export type AppRouterQueryResult<Output> = UseTRPCQueryResult<
+  Output,
+  TRPCClientErrorLike<AppRouter>
+>;
+
+export type AppRouterSuspenseQueryResult<Output> = UseTRPCSuspenseQueryResult<
   Output,
   TRPCClientErrorLike<AppRouter>
 >;

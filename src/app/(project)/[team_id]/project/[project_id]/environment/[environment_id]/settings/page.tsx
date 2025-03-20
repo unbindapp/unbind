@@ -1,11 +1,18 @@
 import GeneralTabContent from "@/app/(project)/[team_id]/project/[project_id]/environment/[environment_id]/settings/_components/general-tab-content";
-import SettingsTabTitle from "@/components/settings/settings-tab-title";
 
-export default function Page() {
+type TProps = {
+  params: Promise<{
+    team_id: string;
+    project_id: string;
+    environment_id: string;
+  }>;
+};
+
+export default async function Page({ params }: TProps) {
+  const { team_id: teamId, project_id: projectId } = await params;
   return (
     <>
-      <SettingsTabTitle>General</SettingsTabTitle>
-      <GeneralTabContent />
+      <GeneralTabContent teamId={teamId} projectId={projectId} />
     </>
   );
 }
