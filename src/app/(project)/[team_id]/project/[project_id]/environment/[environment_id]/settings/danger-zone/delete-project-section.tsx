@@ -105,7 +105,7 @@ function DeleteButton({ teamId, projectId }: { teamId: string; projectId: string
           <Input onInput={(e) => setInputValue(e.currentTarget.value)} value={inputValue} />
           {error && <ErrorLine message={error?.message} className="mt-4" />}
           <div className="mt-4 flex w-full flex-wrap items-center justify-end gap-2">
-            <DialogClose asChild className="text-muted-foreground max-w-full">
+            <DialogClose asChild className="text-muted-foreground">
               <Button type="button" variant="ghost">
                 Cancel
               </Button>
@@ -120,7 +120,7 @@ function DeleteButton({ teamId, projectId }: { teamId: string; projectId: string
               {isProjectDeleting && (
                 <LoaderIcon className="absolute top-1/2 left-1/2 -translate-1/2 animate-spin" />
               )}
-              <p className="group-data-pending/button:opacity-0">Delete</p>
+              <p className="min-w-0 group-data-pending/button:opacity-0">Delete</p>
             </Button>
           </div>
         </form>

@@ -11,7 +11,7 @@ export const minButtonSizeEnforcerClassName =
   "before:w-full before:h-full before:min-w-[44px] before:min-h-[44px] before:z-[-1] before:bg-transparent before:absolute before:-translate-y-1/2 before:top-1/2 before:-translate-x-1/2 before:left-1/2";
 
 const buttonVariants = cva(
-  "relative text-center leading-tight max-w-full inline-flex items-center select-none z-0 touch-manipulation justify-center gap-1.5 rounded-lg font-bold focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-primary/50 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0",
+  "relative text-center leading-tight max-w-full select-none z-0 touch-manipulation gap-1.5 rounded-lg font-bold focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-primary/50 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -72,6 +72,10 @@ const buttonVariants = cva(
         default: "focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         "input-like": "",
       },
+      layout: {
+        default: "",
+        flex: "inline-flex items-center justify-center",
+      },
     },
     defaultVariants: {
       variant: "default",
@@ -80,6 +84,7 @@ const buttonVariants = cva(
       fadeOnDisabled: "default",
       focusVariant: "default",
       forceMinSize: "default",
+      layout: "default",
     },
   },
 );
@@ -108,9 +113,11 @@ function Button({
   forceMinSize,
   state,
   asChild = false,
+  children,
   ...props
 }: ButtonProps) {
   const Comp = asChild ? Slot : "button";
+  const isText = typeof children === "string";
   return (
     <Comp
       className={cn(
@@ -121,12 +128,15 @@ function Button({
           fadeOnDisabled,
           focusVariant,
           forceMinSize,
+          layout: isText ? undefined : "flex",
           className,
         }),
       )}
       disabled={state === "loading" ? true : disabled}
       {...props}
-    />
+    >
+      {children}
+    </Comp>
   );
 }
 
@@ -138,10 +148,14 @@ function LinkButton({
   fadeOnDisabled,
   focusVariant,
   forceMinSize,
+  children,
+  asChild,
   ...props
 }: LinkButtonProps) {
+  const Comp = asChild ? Slot : Link;
+  const isText = typeof children === "string";
   return (
-    <Link
+    <Comp
       className={cn(
         buttonVariants({
           variant,
@@ -151,10 +165,13 @@ function LinkButton({
           fadeOnDisabled,
           focusVariant,
           forceMinSize,
+          layout: isText ? undefined : "flex",
         }),
       )}
       {...props}
-    />
+    >
+      {children}
+    </Comp>
   );
 }
 

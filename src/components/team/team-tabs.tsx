@@ -58,7 +58,7 @@ export default function TeamTabs({
               data-active={isActive(tab, activeTabPath) ? true : undefined}
               key={tab.href}
               className={cn(
-                `text-muted-foreground group/button data-active:text-foreground rounded px-3 py-4.25 text-sm leading-none font-medium focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent sm:py-4`,
+                `text-muted-foreground group/button data-active:text-foreground max-w-36 rounded px-3 py-4.25 text-sm leading-none font-medium focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent sm:py-4`,
                 classNameButton,
               )}
               variant="ghost"
@@ -74,8 +74,7 @@ export default function TeamTabs({
               <div className="pointer-events-none absolute top-0 left-0 h-full w-full py-1.5">
                 <div className="bg-border/0 has-hover:group-hover/button:bg-border group-active/button:bg-border group-focus-visible/button:ring-primary/50 h-full w-full rounded-lg group-focus-visible/button:ring-1" />
               </div>
-
-              <p className="relative">{tab.title}</p>
+              <p className="relative truncate">{tab.title}</p>
             </LinkButton>
           ))}
         </div>
