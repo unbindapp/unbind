@@ -44,7 +44,6 @@ export default function VariableForm({ teamId, projectId, environmentId, service
       const text = clipboardData.getData("text");
       if (!text) return;
       const lines = text.trim().split("\n");
-      console.log({ lines });
       if (lines.length === 1) return;
 
       e.preventDefault();
