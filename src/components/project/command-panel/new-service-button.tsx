@@ -6,6 +6,7 @@ import {
   commandPanelProjectRootPage,
 } from "@/components/project/command-panel/constants";
 import { ProjectCommandPanelTrigger } from "@/components/project/command-panel/project-command-panel";
+import { useServices } from "@/components/service/services-provider";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
@@ -14,12 +15,11 @@ import { parseAsString, useQueryState } from "nuqs";
 import { useRef } from "react";
 
 type TProps = {
-  teamId: string;
-  projectId: string;
   className?: string;
 };
 
-export default function NewServiceButton({ teamId, projectId, className }: TProps) {
+export default function NewServiceButton({ className }: TProps) {
+  const { teamId, projectId } = useServices();
   const [commandPanelId, setCommandPanelId] = useQueryState(commandPanelKey);
   const [, setCommandPanelPageId] = useQueryState(
     commandPanelPageKey,

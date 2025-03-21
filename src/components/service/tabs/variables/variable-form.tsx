@@ -13,7 +13,7 @@ type Props = {
 };
 
 export default function VariableForm({ teamId, projectId, environmentId, serviceId }: Props) {
-  console.log({ teamId, projectId, environmentId, serviceId });
+  console.log(teamId, projectId, environmentId, serviceId);
   const [isOpen, setIsOpen] = useState(false);
   const variableCount = 12;
   const form = useAppForm({

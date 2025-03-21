@@ -1,10 +1,9 @@
 import { cn } from "@/components/ui/utils";
-import { TDeploymentSource, TServiceType } from "@/server/trpc/api/main/router";
 import { BanIcon } from "lucide-react";
 import { ComponentProps } from "react";
 
 type TProps = ComponentProps<"svg"> & {
-  variant: TServiceType | TDeploymentSource;
+  variant: string | unknown;
   className?: string;
   color?: "monochrome" | "brand";
 };

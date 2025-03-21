@@ -1,22 +1,35 @@
-"use client";
-
 import ServiceIcon from "@/components/icons/service";
 import LastDeploymentTime from "@/components/service/last-deployment-time";
 import ServicePanel from "@/components/service/service-panel";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import { TService } from "@/server/trpc/api/main/router";
+import { TServiceShallow } from "@/server/trpc/api/services/types";
 
 type TProps = {
-  service: TService;
+  service: TServiceShallow;
+  teamId: string;
+  projectId: string;
+  environmentId: string;
   className?: string;
   classNameCard?: string;
 };
 
-export default function ServiceCard({ service, className, classNameCard }: TProps) {
+export default function ServiceCard({
+  service,
+  teamId,
+  projectId,
+  environmentId,
+  className,
+  classNameCard,
+}: TProps) {
   return (
     <li className={cn("flex w-full flex-col p-1", className)}>
-      <ServicePanel service={service}>
+      <ServicePanel
+        service={service}
+        teamId={teamId}
+        projectId={projectId}
+        environmentId={environmentId}
+      >
         <Button
           variant="ghost"
           className={cn(
@@ -25,9 +38,9 @@ export default function ServiceCard({ service, className, classNameCard }: TProp
           )}
         >
           <div className="flex w-full items-center justify-start gap-2">
-            <ServiceIcon color="brand" variant={service.type} className="-ml-1 size-6" />
+            <ServiceIcon color="brand" variant={service.framework} className="-ml-1 size-6" />
             <h3 className="min-w-0 shrink overflow-hidden leading-tight font-bold text-ellipsis whitespace-nowrap">
-              {service.title}
+              {service.display_name}
             </h3>
           </div>
           <div className="flex w-full flex-1 flex-col justify-end">

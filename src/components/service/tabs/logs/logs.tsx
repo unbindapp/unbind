@@ -1,11 +1,8 @@
 import TemporaryLogs from "@/components/logs/temporary-logs";
-import { TService } from "@/server/trpc/api/main/router";
+import { useService } from "@/components/service/service-provider";
 
-type TProps = {
-  service: TService;
-};
-
-export default function Logs({ service }: TProps) {
-  console.log("service", service);
+export default function Logs() {
+  const { serviceId } = useService();
+  console.log("Logs for serviceId:", serviceId);
   return <TemporaryLogs containerType="sheet" hideServiceByDefault />;
 }

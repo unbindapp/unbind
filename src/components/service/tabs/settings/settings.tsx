@@ -1,10 +1,7 @@
-import { TService } from "@/server/trpc/api/main/router";
+import { useService } from "@/components/service/service-provider";
 
-type TProps = {
-  service: TService;
-};
-
-export default function Settings({ service }: TProps) {
-  console.log("Service from settings tab", service);
+export default function Settings() {
+  const { serviceId } = useService();
+  console.log("Service for serviceId: ", serviceId);
   return <div></div>;
 }

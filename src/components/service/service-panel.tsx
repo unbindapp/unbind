@@ -1,12 +1,13 @@
 import ServiceIcon from "@/components/icons/service";
 import TabIndicator from "@/components/navigation/tab-indicator";
+import { useDeviceSize } from "@/components/providers/device-size-provider";
 import { servicePanelServiceIdKey, servicePanelTabKey } from "@/components/service/constants";
+import ServiceProvider from "@/components/service/service-provider";
 import Deployments from "@/components/service/tabs/deployments/deployments";
 import Logs from "@/components/service/tabs/logs/logs";
 import Metrics from "@/components/service/tabs/metrics/metrics";
 import Settings from "@/components/service/tabs/settings/settings";
 import Variables from "@/components/service/tabs/variables/variables";
-import { useDeviceSize } from "@/components/providers/device-size-provider";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -17,7 +18,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { TService } from "@/server/trpc/api/main/router";
+import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { XIcon } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
 import { FC, ReactNode } from "react";
@@ -25,7 +26,7 @@ import { FC, ReactNode } from "react";
 type TTab = {
   title: string;
   value: string;
-  Page: FC<{ service: TService }>;
+  Page: FC;
   noScrollArea?: boolean;
 };
 
@@ -38,26 +39,36 @@ const tabs: TTab[] = [
 ];
 
 type TProps = {
-  service: TService;
+  teamId: string;
+  projectId: string;
+  environmentId: string;
+  service: TServiceShallow;
   children: ReactNode;
 };
 
-export default function ServicePanel({ service, children }: TProps) {
+export default function ServicePanel({
+  service,
+  teamId,
+  projectId,
+  environmentId,
+  children,
+}: TProps) {
   const [currentTab, setCurrentTab] = useQueryState(
     servicePanelTabKey,
     parseAsString.withDefault(tabs[0].value),
   );
   const currentPage = tabs.find((tab) => tab.value === currentTab);
 
-  const [serviceId, setServiceId] = useQueryState(servicePanelServiceIdKey);
+  const [serviceIdFromSearchParam, setServiceIdFromSearchParam] =
+    useQueryState(servicePanelServiceIdKey);
 
-  const open = serviceId === service.id;
+  const open = serviceIdFromSearchParam === service.id;
   const setOpen = (open: boolean) => {
     if (open) {
-      setServiceId(service.id);
+      setServiceIdFromSearchParam(service.id);
       return;
     }
-    setServiceId(null);
+    setServiceIdFromSearchParam(null);
     setCurrentTab(null);
   };
   const { isExtraSmall } = useDeviceSize();
@@ -78,12 +89,12 @@ export default function ServicePanel({ service, children }: TProps) {
           <DrawerHeader className="flex min-w-0 flex-1 items-center justify-start p-0">
             <DrawerTitle className="flex min-w-0 flex-1 items-center justify-start gap-2.5">
               <ServiceIcon
-                variant={service.type}
+                variant={service.framework}
                 color="brand"
                 className="-ml-1 size-7 sm:size-8"
               />
               <p className="min-w-0 shrink text-left text-xl leading-tight sm:text-2xl">
-                {service.title}
+                {service.display_name}
               </p>
             </DrawerTitle>
           </DrawerHeader>
@@ -121,7 +132,16 @@ export default function ServicePanel({ service, children }: TProps) {
         <div className="flex min-h-0 w-full flex-1 flex-col">
           <div className="flex min-h-0 w-full flex-1 flex-col">
             <ConditionalScrollArea noArea={currentPage?.noScrollArea}>
-              {currentPage && <currentPage.Page service={service} />}
+              {currentPage && (
+                <ServiceProvider
+                  teamId={teamId}
+                  projectId={projectId}
+                  environmentId={environmentId}
+                  serviceId={service.id}
+                >
+                  <currentPage.Page />
+                </ServiceProvider>
+              )}
             </ConditionalScrollArea>
           </div>
         </div>

@@ -1,18 +1,18 @@
 import { useTimeDifference } from "@/lib/hooks/use-time-difference";
-import { TDeploymentSource, TService } from "@/server/trpc/api/main/router";
+import { TService } from "@/server/trpc/api/services/types";
 
 type TProps = {
   service: TService;
 };
 
-const sourceToTitle: Record<TDeploymentSource, string> = {
+const sourceToTitle: Record<string, string> = {
   github: "GitHub",
   docker: "Docker",
 };
 
 export default function LastDeploymentTime({ service }: TProps) {
   const { str: timeDiffStr } = useTimeDifference({
-    timestamp: service.lastDeployment?.timestamp,
+    timestamp: new Date(service.created_at).getTime(),
   });
 
   return (
@@ -20,9 +20,7 @@ export default function LastDeploymentTime({ service }: TProps) {
       suppressHydrationWarning
       className="min-w-0 shrink overflow-hidden text-sm font-medium text-ellipsis whitespace-nowrap"
     >
-      {!service.lastDeployment || !timeDiffStr
-        ? "No deployments yet"
-        : `${timeDiffStr} via ${sourceToTitle[service.lastDeployment.source]}`}
+      {`${timeDiffStr} via ${sourceToTitle[service.builder] || "Unknown"}`}
     </p>
   );
 }

@@ -1,21 +1,18 @@
 "use client";
 
 import ErrorCard from "@/components/error-card";
+import { useService } from "@/components/service/service-provider";
 import DeploymentCard from "@/components/service/tabs/deployments/deployment-card";
 import TabWrapper from "@/components/service/tabs/tab-wrapper";
-import { TService } from "@/server/trpc/api/main/router";
 import { api } from "@/server/trpc/setup/client";
 
-type TProps = {
-  service: TService;
-};
-
-export default function Deployments({ service }: TProps) {
+export default function Deployments() {
+  const { teamId, projectId, environmentId, serviceId } = useService();
   const { data, isPending, isError, error } = api.main.getDeployments.useQuery({
-    teamId: service.teamId,
-    projectId: service.projectId,
-    environmentId: service.environmentId,
-    serviceId: service.id,
+    teamId,
+    projectId,
+    environmentId,
+    serviceId,
   });
 
   return (

@@ -1,17 +1,12 @@
 import ErrorCard from "@/components/error-card";
+import { useService } from "@/components/service/service-provider";
 import TabWrapper from "@/components/service/tabs/tab-wrapper";
 import VariableCard from "@/components/service/tabs/variables/variable-card";
 import VariableForm from "@/components/service/tabs/variables/variable-form";
-import { TService } from "@/server/trpc/api/main/router";
 import { api } from "@/server/trpc/setup/client";
 
-type TProps = {
-  service: TService;
-};
-
-export default function Variables({ service }: TProps) {
-  const { teamId, projectId, environmentId, id: serviceId } = service;
-
+export default function Variables() {
+  const { teamId, projectId, environmentId, serviceId } = useService();
   const { data, isPending, isError, error } = api.main.getVariables.useQuery({
     teamId,
     projectId,

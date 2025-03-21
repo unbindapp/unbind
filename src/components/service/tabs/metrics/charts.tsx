@@ -1,9 +1,8 @@
 "use client";
 
 import MetricsChartList, { TChartObject, TChartRow } from "@/components/charts/metrics-chart-list";
+import { useService } from "@/components/service/service-provider";
 import { cn } from "@/components/ui/utils";
-import { TService } from "@/server/trpc/api/main/router";
-import { api } from "@/server/trpc/setup/client";
 import { useMemo } from "react";
 
 const now = Date.now();
@@ -20,16 +19,15 @@ function random(seed: number) {
 }
 
 type TProps = {
-  service: TService;
   className?: string;
 };
 
-export default function Charts({ service, className }: TProps) {
-  const { data, isPending, isError, error } = api.main.getServices.useQuery({
-    teamId: service.teamId,
-    projectId: service.projectId,
-    environmentId: service.environmentId,
-  });
+export default function Charts({ className }: TProps) {
+  const {
+    query: { data, isPending, isError, error },
+  } = useService();
+
+  const service = data?.service;
 
   const cpu: TChartObject = useMemo(() => {
     return {
@@ -38,7 +36,7 @@ export default function Charts({ service, className }: TProps) {
             const obj: TChartRow = {
               timestamp: t.timestamp,
             };
-            obj[service.title] = random(t.seed);
+            obj[service.display_name] = random(t.seed);
             return obj;
           })
         : undefined,
@@ -55,7 +53,7 @@ export default function Charts({ service, className }: TProps) {
             const obj: TChartRow = {
               timestamp: t.timestamp,
             };
-            obj[service.title] = 1024 * 1024 * Math.round(random(t.seed) * 10 + 50);
+            obj[service.display_name] = 1024 * 1024 * Math.round(random(t.seed) * 10 + 50);
             return obj;
           })
         : undefined,
@@ -72,7 +70,7 @@ export default function Charts({ service, className }: TProps) {
             const obj: TChartRow = {
               timestamp: t.timestamp,
             };
-            obj[service.title] = (50 + tI) * (1024 * 1024);
+            obj[service.display_name] = (50 + tI) * (1024 * 1024);
             return obj;
           })
         : undefined,
@@ -89,7 +87,7 @@ export default function Charts({ service, className }: TProps) {
             const obj: TChartRow = {
               timestamp: t.timestamp,
             };
-            obj[service.title] = random(t.seed) * 100 * 1024;
+            obj[service.display_name] = random(t.seed) * 100 * 1024;
             return obj;
           })
         : undefined,
@@ -98,16 +96,6 @@ export default function Charts({ service, className }: TProps) {
       error: error?.message,
     };
   }, [service, isPending, isError, error]);
-
-  if (data && data.services.length === 0) {
-    return (
-      <div className={cn("w-full p-0", className)}>
-        <div className="text-muted-foreground flex min-h-36 w-full items-center justify-center rounded-xl border px-4 py-2.5 text-center">
-          <p className="w-full leading-tight">There are no metrics yet</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <MetricsChartList
