@@ -93,7 +93,7 @@ export const projectsRouter = createTRPCRouter({
         team_id: teamId,
         project_id: projectId,
         display_name: displayName,
-        description: description ? description : undefined,
+        description,
       });
 
       return {

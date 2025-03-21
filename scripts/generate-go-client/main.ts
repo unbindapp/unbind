@@ -162,7 +162,7 @@ function generateTreeCode(node: TreeNode, indent: string = "  "): string {
     const childNode = node.children[key];
     const childCode = generateTreeCode(childNode, indent + "  ");
     if (childNode.isParam) {
-      childParts.push(`${indent}${key}: (${key}: string | number) => (${childCode})`);
+      childParts.push(`${indent}${key}: (${key}: string | number | boolean) => (${childCode})`);
     } else {
       childParts.push(`${indent}${key}: ${childCode}`);
     }
@@ -308,7 +308,7 @@ async ${paramSignature}${responseType ? `: Promise<${responseType}>` : ""} => {
         ? `const validatedQuery = ${queryParse};
     const queryKeys = ${queryKeysCode};
     queryKeys.forEach((key) => {
-      const value = (validatedQuery as Record<string,string|number>)[key];
+      const value = (validatedQuery as Record<string,string | number | boolean>)[key];
       if (value !== undefined && value !== null) {
         url.searchParams.append(key, String(value));
       }
@@ -525,6 +525,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
       parser: "typescript",
       singleQuote: true,
       trailingComma: "all",
+      printWidth: 100,
     });
 
     const outputPath = path.resolve(process.cwd(), outputFile);
