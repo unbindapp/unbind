@@ -20,7 +20,7 @@ export default function ProjectCard({ project, className }: TProps) {
         </div>
       </li>
     );
-  const href = `${project.team_id}/project/${project.id}/environment/${defaultEnvironment.id}`;
+  const href = `${project.team_id}/project/${project.id}?environment=${defaultEnvironment.id}`;
   /* const groupedServices = groupByServiceGroup(defaultEnvironment.services); */
 
   return (

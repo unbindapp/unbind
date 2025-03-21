@@ -9,8 +9,8 @@ export function useIdsFromPathname() {
 
   const teamId = pathnameArr.length > 1 ? pathnameArr[1] : undefined;
   const projectId = pathnameArr.length > 3 ? pathnameArr[3] : undefined;
-  const environmentId = pathnameArr.length > 5 ? pathnameArr[5] : undefined;
-  const [serviceId] = useQueryState("service_id");
+  const [environmentId] = useQueryState("environment");
+  const [serviceId] = useQueryState("service");
 
   return {
     teamId,

@@ -1,4 +1,4 @@
-import GeneralTabContent from "@/app/(project)/[team_id]/project/[project_id]/environment/[environment_id]/settings/_components/general-tab-content";
+import GeneralTabContent from "@/app/(project)/[team_id]/project/[project_id]/settings/_components/general-tab-content";
 
 type TProps = {
   params: Promise<{

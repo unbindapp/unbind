@@ -5,7 +5,7 @@ import { BreadcrumbItem } from "@/components/navigation/breadcrumb-item";
 import { BreadcrumbSeparator, BreadcrumbWrapper } from "@/components/navigation/breadcrumb-wrapper";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -21,6 +21,7 @@ export default function ProjectBreadcrumb({ className }: TProps) {
     environmentId: environmentIdFromPathname,
   } = useIdsFromPathname();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const { data: projectsData } = useProjects();
 
@@ -50,7 +51,7 @@ export default function ProjectBreadcrumb({ className }: TProps) {
       if (!environments || environments.length < 1) return null;
       const environment = environments[0];
       if (!project || !environment || !teamIdFromPathname) return null;
-      return `/${teamIdFromPathname}/project/${project.id}/environment/${environment.id}`;
+      return `/${teamIdFromPathname}/project/${project.id}?environment=${environment.id}`;
     },
     [projectsData, teamIdFromPathname],
   );
@@ -70,7 +71,7 @@ export default function ProjectBreadcrumb({ className }: TProps) {
       const project = projectsData?.projects.find((p) => p.id === selectedProjectId);
       const environment = project?.environments.find((e) => e.id === id);
       if (!project || !environment || !teamIdFromPathname) return null;
-      return `/${teamIdFromPathname}/project/${project.id}/environment/${environment.id}`;
+      return `/${teamIdFromPathname}/project/${project.id}?environment=${environment.id}`;
     },
     [projectsData, selectedProjectId, teamIdFromPathname],
   );
@@ -103,7 +104,9 @@ export default function ProjectBreadcrumb({ className }: TProps) {
         }
         showArrow={(project) => {
           const href = getHrefForProjectId(project.id);
-          return href !== null && href !== pathname;
+          const params = searchParams.toString();
+          const searchParamsStr = params ? `?${params}` : "";
+          return href !== null && href !== pathname + searchParamsStr;
         }}
       />
       <BreadcrumbSeparator />

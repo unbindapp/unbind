@@ -1,6 +1,6 @@
 "use client";
 
-import { useProject } from "@/app/(project)/[team_id]/project/[project_id]/environment/[environment_id]/_components/project-provider";
+import { useProject } from "@/app/(project)/[team_id]/project/[project_id]/_components/project-provider";
 import ErrorLine from "@/components/error-line";
 import { useProjects } from "@/components/project/projects-provider";
 import { Button } from "@/components/ui/button";

@@ -32,12 +32,10 @@ export type TContextAwareCommandPanelContext =
   | {
       teamId: string;
       projectId?: never;
-      environmentId?: never;
       contextType: "team";
     }
   | {
       teamId: string;
       projectId: string;
-      environmentId: string;
       contextType: "project";
     };

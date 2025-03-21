@@ -13,6 +13,7 @@ import ServiceIcon from "@/components/icons/service";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { cn } from "@/components/ui/utils";
+import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { api } from "@/server/trpc/setup/client";
 import {
   BellIcon,
@@ -41,6 +42,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
   const timeout = useRef<NodeJS.Timeout | null>(null);
   const utils = api.useUtils();
   const { invalidate: invalidateProjects } = useProjectsUtils({ teamId: context.teamId });
+  const { environmentId } = useIdsFromPathname();
 
   const { mutate: createProject, isPending: isCreateProjectPending } =
     api.projects.create.useMutation({
@@ -55,7 +57,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
           throw new Error("Project or environment ID not found");
         }
         await invalidateProjects();
-        await asyncPush(`/${context.teamId}/project/${projectId}/environment/${environmentId}`);
+        await asyncPush(`/${context.teamId}/project/${projectId}?environment=${environmentId}`);
       },
     });
 
@@ -98,9 +100,9 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
   const navigateToSettings = useCallback(
     ({ pathname, context }: { pathname: string; context: TContextAwareCommandPanelContext }) => {
       setLastSelectedId(`/settings${pathname}`);
-      asyncPush(getSettingsPageHref({ context, pathname }));
+      asyncPush(getSettingsPageHref({ context, pathname, environmentId }));
     },
-    [asyncPush],
+    [asyncPush, environmentId],
   );
 
   const goToKeywords = useMemo(() => ["go to", "navigate to", "jump to"], []);
@@ -475,11 +477,13 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
 function getSettingsPageHref({
   pathname,
   context,
+  environmentId,
 }: {
   pathname: string;
   context: TContextAwareCommandPanelContext;
+  environmentId?: string | null;
 }) {
   return context.contextType === "project"
-    ? `/${context.teamId}/project/${context.projectId}/environment/${context.environmentId}/settings${pathname}`
+    ? `/${context.teamId}/project/${context.projectId}/settings${pathname}?environment=${environmentId}`
     : `/${context.teamId}/settings${pathname}`;
 }

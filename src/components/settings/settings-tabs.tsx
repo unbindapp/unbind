@@ -10,13 +10,14 @@ export type TSettingsTab = {
   href: string;
   Icon: FC<{ className?: string; style?: { transform?: string } }>;
   strictMatch?: boolean;
+  searchParamStr: string;
 };
 
 type TProps = {
   tabs: TSettingsTab[];
 };
 
-export default function SettingsTabBar({ tabs }: TProps) {
+export default function SettingsTabs({ tabs }: TProps) {
   const pathname = usePathname();
   const [activeTabPath, setActiveTabPath] = useState<string | undefined>(pathname);
 
@@ -33,7 +34,7 @@ export default function SettingsTabBar({ tabs }: TProps) {
             key={tab.href}
             data-active={isActive(tab, activeTabPath) ? true : undefined}
             onClick={() => setActiveTabPath(tab.href)}
-            href={tab.href}
+            href={tab.href + tab.searchParamStr}
             variant="ghost"
             className="text-muted-foreground data-active:text-foreground group/button shrink-0 justify-start gap-1.5 rounded-lg px-3 py-4.25 text-left text-sm font-medium focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent sm:py-4 md:w-full md:gap-2.5 md:px-4 md:py-4 md:text-base"
           >

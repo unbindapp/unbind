@@ -1,18 +1,26 @@
-import NewServiceButton from "@/components/project/command-panel/new-service-button";
+import { getProjectPageSearchParams } from "@/app/(project)/[team_id]/project/[project_id]/_components/search-params";
 import PageWrapper from "@/components/page-wrapper";
+import NewServiceButton from "@/components/project/command-panel/new-service-button";
 import ServiceCardList from "@/components/service/service-card-list";
 import { apiServer, HydrateClient } from "@/server/trpc/setup/server";
+import { type SearchParams } from "nuqs/server";
 
 type TProps = {
   params: Promise<{
     team_id: string;
     project_id: string;
-    environment_id: string;
   }>;
+  searchParams: Promise<SearchParams>;
 };
 
-export default async function Page({ params }: TProps) {
-  const { team_id: teamId, project_id: projectId, environment_id: environmentId } = await params;
+export default async function Page({ params, searchParams }: TProps) {
+  const { team_id: teamId, project_id: projectId } = await params;
+  const { environmentId } = await getProjectPageSearchParams({
+    teamId,
+    projectId,
+    searchParams,
+    currentPathname: `/${teamId}/project/${projectId}`,
+  });
 
   await apiServer.main.getServices.prefetch({
     teamId,

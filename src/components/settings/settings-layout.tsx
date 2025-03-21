@@ -1,4 +1,4 @@
-import SettingsTabBar, { TSettingsTab } from "@/components/settings/settings-tab-bar";
+import SettingsTabs, { TSettingsTab } from "@/components/settings/settings-tabs";
 import { ReactNode } from "react";
 
 type TProps = {
@@ -15,7 +15,7 @@ export default function SettingsLayout({ title, tabs, children }: TProps) {
           {title || "Settings"}
         </h1>
         <div className="relative flex w-full flex-1 flex-col pt-2 md:flex-row md:items-stretch md:gap-4 md:pt-3">
-          <SettingsTabBar tabs={tabs} />
+          <SettingsTabs tabs={tabs} />
           <div className="flex min-w-0 flex-1 flex-col px-4 pt-4 pb-12 sm:px-6 sm:pt-5 md:pt-2 md:pr-2 md:pl-0">
             {children}
           </div>

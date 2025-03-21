@@ -1,7 +1,7 @@
 "use client";
 
 import SettingsLayout from "@/components/settings/settings-layout";
-import { TSettingsTab } from "@/components/settings/settings-tab-bar";
+import { TSettingsTab } from "@/components/settings/settings-tabs";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import {
   BellIcon,
