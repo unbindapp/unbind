@@ -2,6 +2,7 @@ import { environmentsRouter } from "@/server/trpc/api/environments/router";
 import { githubRouter } from "@/server/trpc/api/github/router";
 import { mainRouter } from "@/server/trpc/api/main/router";
 import { projectsRouter } from "@/server/trpc/api/projects/router";
+import { secretsRouter } from "@/server/trpc/api/secrets/router";
 import { teamsRouter } from "@/server/trpc/api/teams/router";
 import { createTRPCRouter } from "@/server/trpc/setup/trpc";
 import { inferRouterClient, TRPCClientErrorLike } from "@trpc/client";
@@ -19,6 +20,7 @@ export const appRouter = createTRPCRouter({
   teams: teamsRouter,
   projects: projectsRouter,
   environments: environmentsRouter,
+  secrets: secretsRouter,
   github: githubRouter,
 });
 

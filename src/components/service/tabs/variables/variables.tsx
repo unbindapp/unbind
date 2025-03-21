@@ -1,6 +1,7 @@
 import ErrorCard from "@/components/error-card";
 import TabWrapper from "@/components/service/tabs/tab-wrapper";
 import VariableCard from "@/components/service/tabs/variables/variable-card";
+import VariableForm from "@/components/service/tabs/variables/variable-form";
 import { TService } from "@/server/trpc/api/main/router";
 import { api } from "@/server/trpc/setup/client";
 
@@ -9,15 +10,25 @@ type TProps = {
 };
 
 export default function Variables({ service }: TProps) {
+  const { teamId, projectId, environmentId, id: serviceId } = service;
+
   const { data, isPending, isError, error } = api.main.getVariables.useQuery({
-    teamId: service.teamId,
-    projectId: service.projectId,
-    environmentId: service.environmentId,
-    serviceId: service.id,
+    teamId,
+    projectId,
+    environmentId,
+    serviceId,
   });
 
   return (
     <TabWrapper>
+      {data?.variables && (
+        <VariableForm
+          teamId={teamId}
+          projectId={projectId}
+          environmentId={environmentId}
+          serviceId={serviceId}
+        />
+      )}
       {data?.variables &&
         data.variables.length > 0 &&
         data.variables.map((variable) => <VariableCard key={variable.key} variable={variable} />)}
