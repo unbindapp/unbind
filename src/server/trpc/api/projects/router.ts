@@ -61,12 +61,11 @@ export const projectsRouter = createTRPCRouter({
         });
       }
       const defaultDisplayName = generateProjectName();
-      const defaultDescription = "A new project";
 
       const res = await goClient.projects.create({
         team_id: teamId,
         display_name: displayName || defaultDisplayName,
-        description: description || defaultDescription,
+        description,
       });
       return {
         data: res.data || [],
@@ -94,7 +93,7 @@ export const projectsRouter = createTRPCRouter({
         team_id: teamId,
         project_id: projectId,
         display_name: displayName,
-        description,
+        description: description ? description : undefined,
       });
 
       return {

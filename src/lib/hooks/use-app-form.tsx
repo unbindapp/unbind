@@ -6,12 +6,15 @@ import { AnyFieldApi, createFormHook, createFormHookContexts } from "@tanstack/r
 
 const { fieldContext, formContext } = createFormHookContexts();
 
-function InputWithInfo({ className, ...rest }: InputProps & { field: AnyFieldApi }) {
-  console.log(rest.field.state.meta.errors);
+function InputWithInfo({
+  className,
+  hideInfo,
+  ...rest
+}: InputProps & { field: AnyFieldApi; hideInfo?: boolean }) {
   return (
     <div className={cn("flex flex-col", className)}>
       <Input {...rest} className="w-full" />
-      {rest.field.state.meta.isTouched && rest.field.state.meta.errors.length ? (
+      {!hideInfo && rest.field.state.meta.isTouched && rest.field.state.meta.errors.length ? (
         <ErrorLine
           className="bg-transparent py-1.5 pl-1.5"
           message={rest.field.state.meta.errors[0].message}

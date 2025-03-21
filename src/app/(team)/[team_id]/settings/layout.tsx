@@ -24,31 +24,37 @@ export default function Layout({ children }: { children: ReactNode }) {
         href: `${basePath}`,
         Icon: SlidersHorizontalIcon,
         strictMatch: true,
+        searchParamStr: "",
       },
       {
         label: "Shared Variables",
         href: `${basePath}/shared-variables`,
         Icon: KeyRoundIcon,
+        searchParamStr: "",
       },
       {
         label: "Members",
         href: `${basePath}/members`,
         Icon: UsersIcon,
+        searchParamStr: "",
       },
       {
         label: "Notifications",
         href: `${basePath}/notifications`,
         Icon: BellIcon,
+        searchParamStr: "",
       },
       {
         label: "Webhooks",
         href: `${basePath}/webhooks`,
         Icon: WebhookIcon,
+        searchParamStr: "",
       },
       {
         label: "Danger Zone",
         href: `${basePath}/danger-zone`,
         Icon: TriangleAlertIcon,
+        searchParamStr: "",
       },
     ];
     return t;

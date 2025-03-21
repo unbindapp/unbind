@@ -338,7 +338,7 @@ export const CallbackResponseBodySchema = z
 
 export const CreateProjectInputBodySchema = z
   .object({
-    description: z.string(),
+    description: z.string().optional(),
     display_name: z.string(),
     team_id: z.string(),
   })
@@ -755,6 +755,10 @@ export const SecretsResponseBodySchema = z
   })
   .strict();
 
+export const SortByFieldSchema = z.any() as z.ZodType<unknown>;
+
+export const SortOrderSchema = z.any() as z.ZodType<unknown>;
+
 export const TeamResponseBodySchema = z
   .object({
     data: z.array(GetTeamResponseSchema).nullable(),
@@ -769,8 +773,8 @@ export const UpdatServiceResponseBodySchema = z
 
 export const UpdateProjectInputBodySchema = z
   .object({
-    description: z.string(),
-    display_name: z.string(),
+    description: z.string().optional(),
+    display_name: z.string().optional(),
     project_id: z.string(),
     team_id: z.string(),
   })
@@ -924,6 +928,8 @@ export type ListServiceResponseBody = z.infer<
 export type MeResponseBody = z.infer<typeof MeResponseBodySchema>;
 export type SecretResponse = z.infer<typeof SecretResponseSchema>;
 export type SecretsResponseBody = z.infer<typeof SecretsResponseBodySchema>;
+export type SortByField = z.infer<typeof SortByFieldSchema>;
+export type SortOrder = z.infer<typeof SortOrderSchema>;
 export type TeamResponseBody = z.infer<typeof TeamResponseBodySchema>;
 export type UpdatServiceResponseBody = z.infer<
   typeof UpdatServiceResponseBodySchema
@@ -965,6 +971,8 @@ export const get_projectQuerySchema = z.object({
 });
 
 export const list_projectsQuerySchema = z.object({
+  sory_by: SortByFieldSchema.optional(),
+  sort_order: SortOrderSchema.optional(),
   team_id: z.string(),
 });
 
@@ -1539,7 +1547,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           }
           const url = new URL(`${apiUrl}/projects/list`);
           const validatedQuery = list_projectsQuerySchema.parse(params);
-          const queryKeys = ['team_id'];
+          const queryKeys = ['sory_by', 'sort_order', 'team_id'];
           queryKeys.forEach((key) => {
             const value = (validatedQuery as Record<string, string | number>)[
               key

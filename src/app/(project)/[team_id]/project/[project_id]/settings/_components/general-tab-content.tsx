@@ -23,14 +23,14 @@ export default function GeneralTabContent({ teamId, projectId }: TProps) {
   const form = useAppForm({
     defaultValues: {
       displayName: data?.project.display_name || "",
-      description: data?.project.description || "",
+      description: data?.project.description || undefined,
     },
     validators: {
       onChange: ProjectUpdateFormSchema,
     },
     onSubmit: async ({ formApi, value }) => {
       await updateProject({
-        description: value.description,
+        description: value.description || "",
         displayName: value.displayName,
         projectId,
         teamId,
