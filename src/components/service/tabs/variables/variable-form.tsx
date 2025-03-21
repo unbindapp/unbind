@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { SecretSchema, TSecret } from "@/server/trpc/api/secrets/types";
 import { PlusIcon, TrashIcon } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { z } from "zod";
 
 type Props = {
@@ -34,6 +34,47 @@ export default function VariableForm({ teamId, projectId, environmentId, service
       formApi.reset();
     },
   });
+
+  type TForm = typeof form;
+
+  const onPaste = useCallback(
+    (e: React.ClipboardEvent<HTMLInputElement>, form: TForm, index: number) => {
+      const clipboardData = e.clipboardData;
+      if (!clipboardData) return;
+      const text = clipboardData.getData("text");
+      if (!text) return;
+      const lines = text.trim().split("\n");
+      console.log({ lines });
+      if (lines.length === 1) return;
+
+      e.preventDefault();
+      const pairs = lines
+        .map((line) => {
+          const [name, value] = line.split("=");
+          if (!name || !value) {
+            return undefined;
+          }
+          const validatedName = name.trim();
+          const validatedValue = value.trim();
+          return { name: validatedName, value: validatedValue };
+        })
+        .filter(Boolean) as TSecret[];
+
+      for (let i = 0; i < pairs.length; i++) {
+        const pair = pairs[i];
+        if (
+          i === 0 &&
+          !form.state.values.secrets[index].name &&
+          !form.state.values.secrets[index].value
+        ) {
+          form.replaceFieldValue("secrets", index, pair);
+          continue;
+        }
+        form.insertFieldValue("secrets", index + i, pair);
+      }
+    },
+    [],
+  );
 
   return (
     <div className="flex w-full flex-col gap-2 pb-2">
@@ -80,6 +121,7 @@ export default function VariableForm({ teamId, projectId, environmentId, service
                                   field={field}
                                   value={subField.state.value}
                                   onBlur={subField.handleBlur}
+                                  onPaste={(e) => onPaste(e, form, i)}
                                   onChange={(e) => subField.handleChange(e.target.value)}
                                   placeholder="CLIENT_KEY"
                                   className="flex-1 sm:max-w-64"
@@ -95,6 +137,7 @@ export default function VariableForm({ teamId, projectId, environmentId, service
                                     field={field}
                                     value={subField.state.value}
                                     onBlur={subField.handleBlur}
+                                    onPaste={(e) => onPaste(e, form, i)}
                                     onChange={(e) => subField.handleChange(e.target.value)}
                                     className="flex-1"
                                     placeholder="abc123"
@@ -102,16 +145,31 @@ export default function VariableForm({ teamId, projectId, environmentId, service
                                 );
                               }}
                             </form.Field>
-                            <Button
-                              disabled={i === 0}
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              className="h-auto w-11 self-stretch"
-                              onClick={() => field.removeValue(i)}
-                            >
-                              <TrashIcon className="size-5" />
-                            </Button>
+                            <form.Subscribe
+                              selector={(state) => [state.values.secrets[0]]}
+                              children={([firstSecret]) => (
+                                <Button
+                                  disabled={
+                                    field.state.value.length <= 1 &&
+                                    firstSecret.name === "" &&
+                                    firstSecret.value === ""
+                                  }
+                                  type="button"
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-auto w-11 self-stretch"
+                                  onClick={() => {
+                                    if (field.state.value.length <= 1) {
+                                      field.replaceValue(0, { name: "", value: "" });
+                                      return;
+                                    }
+                                    field.removeValue(i);
+                                  }}
+                                >
+                                  <TrashIcon className="size-5" />
+                                </Button>
+                              )}
+                            />
                           </div>
                         </div>
                       </div>
