@@ -1,6 +1,7 @@
 "use client";
 
 import ErrorLine from "@/components/error-line";
+import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { Button } from "@/components/ui/button";
 import {
@@ -48,8 +49,8 @@ function DeleteButton({ teamId, projectId }: { teamId: string; projectId: string
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const textToConfirm = "I want to delete this project permanently";
   const [inputValue, setInputValue] = useState("");
-  const utils = api.useUtils();
   const { asyncPush } = useAsyncPush();
+  const { invalidate: invalidateProjects } = useProjectsUtils({ teamId });
 
   const {
     mutate: deleteProject,
@@ -58,7 +59,7 @@ function DeleteButton({ teamId, projectId }: { teamId: string; projectId: string
     reset,
   } = api.projects.delete.useMutation({
     onSuccess: async () => {
-      utils.projects.list.invalidate({ teamId });
+      invalidateProjects();
       await asyncPush(`/${teamId}`);
     },
   });

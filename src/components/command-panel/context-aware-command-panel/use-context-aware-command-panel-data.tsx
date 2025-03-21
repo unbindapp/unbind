@@ -10,6 +10,7 @@ import {
   TContextAwareCommandPanelContext,
 } from "@/components/command-panel/types";
 import ServiceIcon from "@/components/icons/service";
+import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { cn } from "@/components/ui/utils";
 import { api } from "@/server/trpc/setup/client";
@@ -39,6 +40,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
   const { asyncPush, isPending: isAsyncPushPending } = useAsyncPush();
   const timeout = useRef<NodeJS.Timeout | null>(null);
   const utils = api.useUtils();
+  const { invalidate: invalidateProjects } = useProjectsUtils({ teamId: context.teamId });
 
   const { mutate: createProject, isPending: isCreateProjectPending } =
     api.projects.create.useMutation({
@@ -52,7 +54,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
         if (!projectId || !environmentId) {
           throw new Error("Project or environment ID not found");
         }
-        await utils.projects.list.invalidate({ teamId: context.teamId });
+        await invalidateProjects();
         await asyncPush(`/${context.teamId}/project/${projectId}/environment/${environmentId}`);
       },
     });

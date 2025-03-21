@@ -27,3 +27,10 @@ export const useProjects = () => {
 };
 
 export default ProjectsProvider;
+
+export const useProjectsUtils = ({ teamId }: { teamId: string }) => {
+  const utils = api.useUtils();
+  return {
+    invalidate: () => utils.projects.list.invalidate({ teamId }),
+  };
+};
