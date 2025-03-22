@@ -1,17 +1,22 @@
+import ServiceIcon from "@/components/icons/service";
 import { LinkButton } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { AppRouterOutputs } from "@/server/trpc/api/root";
+import { EllipsisIcon } from "lucide-react";
 
 type TProps = {
   project: AppRouterOutputs["projects"]["list"]["projects"][number];
   className?: string;
 };
 
-/* const iconLenght = 4; */
+const iconLenght = 4;
 
 export default function ProjectCard({ project, className }: TProps) {
   const environments = project.environments;
   const defaultEnvironment = environments.length >= 1 ? project.environments[0] : null;
+  const serviceCount = defaultEnvironment?.service_count;
+  const serviceIcons = defaultEnvironment?.framework_summary;
+
   if (!defaultEnvironment)
     return (
       <li className={cn("text-destructive flex w-full flex-col p-1", className)}>
@@ -34,29 +39,21 @@ export default function ProjectCard({ project, className }: TProps) {
           {project.display_name}
         </h3>
         <div className="flex w-full flex-1 flex-col justify-end">
-          {/* <div className="text-muted-foreground flex w-full items-center justify-between gap-3">
+          <div className="text-muted-foreground flex w-full items-center justify-between gap-3">
             <p className="min-w-0 shrink overflow-hidden text-sm font-medium text-ellipsis whitespace-nowrap">
-              {defaultEnvironment.services.length > 0
-                ? `${defaultEnvironment.services.length} services`
+              {serviceCount !== undefined && serviceCount > 0
+                ? `${defaultEnvironment.service_count} service${serviceCount > 1 ? "s" : ""}`
                 : "No services"}
             </p>
-            {groupedServices.length > 0 && (
+            {serviceIcons !== undefined && serviceIcons.length > 0 && (
               <div className="-my-2 -mr-1 flex items-center gap-1">
-                {groupedServices
-                  .slice(0, iconLenght)
-                  .map((g) =>
-                    g.group ? (
-                      <ServiceIcon className="size-5" key={g.group.id} variant={g.group.type} />
-                    ) : (
-                      g.services.map((s) => (
-                        <ServiceIcon className="size-5" key={s.id} variant={s.type} />
-                      ))
-                    ),
-                  )}
-                {groupedServices.length > iconLenght && <EllipsisIcon className="size-5" />}
+                {serviceIcons.map((s) => (
+                  <ServiceIcon className="size-5" key={s as string} variant={s} />
+                ))}
+                {serviceIcons.length > iconLenght && <EllipsisIcon className="size-5" />}
               </div>
             )}
-          </div> */}
+          </div>
         </div>
       </LinkButton>
     </li>
