@@ -7,6 +7,7 @@ type TProps = {
 
 const sourceToTitle: Record<string, string> = {
   github: "GitHub",
+  git: "Git",
   docker: "Docker",
 };
 

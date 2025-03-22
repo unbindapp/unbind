@@ -83,7 +83,7 @@ export default function ServiceIcon({ color = "monochrome", variant, className }
       </svg>
     );
   }
-  if (variant === "nextjs") {
+  if (variant === "nextjs" || variant === "next") {
     return (
       <svg
         className={cn(defaultClass, color === "brand" && "text-nextjs", className)}
