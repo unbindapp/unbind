@@ -48,12 +48,7 @@ export default function ServiceCardList() {
     <ol className="flex w-full flex-wrap">
       {services && services.length === 0 && (
         <li className="flex w-full flex-col p-1 sm:w-1/2 lg:w-1/3">
-          <ProjectCommandPanelTrigger
-            open={open}
-            setOpen={setOpen}
-            teamId={teamId}
-            projectId={projectId}
-          >
+          <ProjectCommandPanelTrigger open={open} setOpen={setOpen}>
             <Button
               variant="ghost"
               className="text-muted-foreground flex min-h-36 w-full items-center justify-center rounded-xl border px-5 py-3.5 text-center font-medium"
