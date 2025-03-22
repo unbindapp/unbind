@@ -17,10 +17,9 @@ type Props = {
 
 export default function VariableForm({ teamId, projectId, environmentId, serviceId }: Props) {
   const [isOpen, setIsOpen] = useState(false);
-  const variableCount = 12;
 
   const { mutateAsync: createSecrets, error } = api.secrets.create.useMutation();
-  const { refetch } = useVariables();
+  const { data, isPending, refetch } = useVariables();
 
   const form = useAppForm({
     defaultValues: {
@@ -88,8 +87,13 @@ export default function VariableForm({ teamId, projectId, environmentId, service
   return (
     <div className="flex w-full flex-col gap-2 pb-2">
       <div className="flex w-full items-center justify-between gap-2">
-        <h2 className="min-w-0 shrink truncate px-1 text-lg leading-tight font-bold">
-          {variableCount} Variables
+        <h2
+          data-pending={isPending ? true : undefined}
+          className="data-pending:bg-foreground data-pending:animate-skeleton min-w-0 shrink truncate px-1 text-lg leading-tight font-bold data-pending:rounded-md data-pending:text-transparent"
+        >
+          {isPending || !data
+            ? "Loading..."
+            : `${data.secrets.length} Variable${data.secrets.length > 1 ? "s" : ""}`}
         </h2>
         <Button
           data-open={isOpen ? true : undefined}
