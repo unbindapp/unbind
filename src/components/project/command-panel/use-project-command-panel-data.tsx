@@ -1,3 +1,4 @@
+import { useProject } from "@/app/(project)/[team_id]/project/[project_id]/_components/project-provider";
 import { commandPanelKey, commandPanelPageKey } from "@/components/command-panel/constants";
 import { findCommandPanelPage } from "@/components/command-panel/helpers";
 import { TCommandPanelItem, TCommandPanelPage } from "@/components/command-panel/types";
@@ -9,13 +10,19 @@ import { parseAsString, useQueryState } from "nuqs";
 import { useCallback, useMemo, useRef } from "react";
 import { toast } from "sonner";
 
-export default function useProjectCommandPanelData({ teamId }: { teamId: string }) {
+export default function useProjectCommandPanelData() {
+  const {
+    teamId,
+    projectId,
+    query: { data: projectData },
+  } = useProject();
   const [, setPanelId] = useQueryState(commandPanelKey);
   const [panelPageId, setPanelPageId] = useQueryState(
     commandPanelPageKey,
     parseAsString.withDefault(commandPanelProjectRootPage),
   );
   const timeout = useRef<NodeJS.Timeout | null>(null);
+  const { mutateAsync: createService } = api.services.create.useMutation();
 
   const onSelectPlaceholder = useCallback(() => {
     toast.success("Successful", {
@@ -55,7 +62,22 @@ export default function useProjectCommandPanelData({ teamId }: { teamId: string 
               const items: TCommandPanelItem[] = res.repos.map((r) => ({
                 title: `${r.full_name}`,
                 keywords: [],
-                onSelect: () => onSelectPlaceholder(),
+                onSelect: async () => {
+                  await createService({
+                    type: "git",
+                    builder: "railpack",
+                    gitBranch: "master",
+                    repositoryOwner: r.full_name.split("/")[0],
+                    repositoryName: r.full_name.split("/")[1],
+                    displayName: r.full_name,
+                    description: "This is a test.",
+                    teamId,
+                    projectId,
+                    environmentId: projectData?.project.environments[0].id || "",
+                    gitHubInstallationId: 63091290,
+                  });
+                  onSelectPlaceholder();
+                },
                 Icon: ({ className }: { className?: string }) => (
                   <ServiceIcon color="brand" variant="github" className={className} />
                 ),
@@ -200,7 +222,7 @@ export default function useProjectCommandPanelData({ teamId }: { teamId: string 
         },
       ],
     }),
-    [onSelectPlaceholder, utils, teamId],
+    [onSelectPlaceholder, utils, teamId, projectId, projectData, createService],
   );
 
   const setCurrentPageId = useCallback(

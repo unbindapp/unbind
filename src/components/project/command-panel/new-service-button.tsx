@@ -6,7 +6,6 @@ import {
   commandPanelProjectRootPage,
 } from "@/components/project/command-panel/constants";
 import { ProjectCommandPanelTrigger } from "@/components/project/command-panel/project-command-panel";
-import { useServices } from "@/components/service/services-provider";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
@@ -19,7 +18,6 @@ type TProps = {
 };
 
 export default function NewServiceButton({ className }: TProps) {
-  const { teamId, projectId } = useServices();
   const [commandPanelId, setCommandPanelId] = useQueryState(commandPanelKey);
   const [, setCommandPanelPageId] = useQueryState(
     commandPanelPageKey,
@@ -43,7 +41,7 @@ export default function NewServiceButton({ className }: TProps) {
   };
 
   return (
-    <ProjectCommandPanelTrigger open={open} setOpen={setOpen} teamId={teamId} projectId={projectId}>
+    <ProjectCommandPanelTrigger open={open} setOpen={setOpen}>
       <Button
         className={cn("bg-background-hover -my-2 rounded-lg py-2", className)}
         size="sm"

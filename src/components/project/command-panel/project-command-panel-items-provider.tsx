@@ -1,5 +1,6 @@
 "use client";
 
+import { useProject } from "@/app/(project)/[team_id]/project/[project_id]/_components/project-provider";
 import { TCommandPanelItem, TCommandPanelPage } from "@/components/command-panel/types";
 import { useQuery } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext } from "react";
@@ -16,11 +17,10 @@ const ProjectCommandPanelItemsContext = createContext<TProjectCommandPanelItemsC
 );
 
 export const ProjectCommandPanelItemsProvider: React.FC<{
-  teamId: string;
-  projectId: string;
   page: TCommandPanelPage;
   children: ReactNode;
-}> = ({ teamId, projectId, page, children }) => {
+}> = ({ page, children }) => {
+  const { teamId, projectId } = useProject();
   const { data, isError, isPending, error } = useQuery({
     queryKey: ["project-command-panel", teamId, page.id],
     queryFn: page.items ? () => page.items : () => page.getItems({ teamId, projectId }),

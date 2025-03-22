@@ -6,20 +6,18 @@ import useProjectCommandPanelData from "@/components/project/command-panel/use-p
 import { ReactNode } from "react";
 
 type TProps = {
-  teamId: string;
-  projectId: string;
   className?: string;
   open: boolean;
   setOpen: (open: boolean) => void;
   children: ReactNode;
 };
 
-export function ProjectCommandPanelTrigger({ teamId, projectId, open, setOpen, children }: TProps) {
+export function ProjectCommandPanelTrigger({ open, setOpen, children }: TProps) {
   const { rootPage, currentPage, setCurrentPageId, allPageIds, goToParentPage } =
-    useProjectCommandPanelData({ teamId });
+    useProjectCommandPanelData();
 
   return (
-    <ProjectCommandPanelItemsProvider teamId={teamId} projectId={projectId} page={currentPage}>
+    <ProjectCommandPanelItemsProvider page={currentPage}>
       <CommandPanelTrigger
         allPageIds={allPageIds}
         currentPage={currentPage}

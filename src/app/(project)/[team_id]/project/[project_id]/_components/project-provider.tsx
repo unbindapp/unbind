@@ -2,9 +2,13 @@
 
 import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
 import { api } from "@/server/trpc/setup/client";
-import { createContext, ReactNode, useContext } from "react";
+import { createContext, ReactNode, useContext, useMemo } from "react";
 
-type TProjectContext = AppRouterQueryResult<AppRouterOutputs["projects"]["get"]>;
+type TProjectContext = {
+  query: AppRouterQueryResult<AppRouterOutputs["projects"]["get"]>;
+  teamId: string;
+  projectId: string;
+};
 
 const ProjectContext = createContext<TProjectContext | null>(null);
 
@@ -15,8 +19,9 @@ export const ProjectProvider: React.FC<{
   children: ReactNode;
 }> = ({ teamId, projectId, initialData, children }) => {
   const query = api.projects.get.useQuery({ projectId, teamId }, { initialData });
+  const value = useMemo(() => ({ query, teamId, projectId }), [query, teamId, projectId]);
 
-  return <ProjectContext.Provider value={query}>{children}</ProjectContext.Provider>;
+  return <ProjectContext.Provider value={value}>{children}</ProjectContext.Provider>;
 };
 
 export const useProject = () => {

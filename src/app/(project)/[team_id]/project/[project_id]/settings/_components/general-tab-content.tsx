@@ -19,7 +19,9 @@ type TProps = {
 };
 
 export default function GeneralTabContent({ teamId, projectId }: TProps) {
-  const { data, refetch: refetchProject } = useProject();
+  const {
+    query: { data, refetch: refetchProject },
+  } = useProject();
   const { refetch: refetchProjects } = useProjects();
 
   const { mutateAsync: updateProject, error } = api.projects.update.useMutation();
