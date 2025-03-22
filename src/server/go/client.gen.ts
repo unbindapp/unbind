@@ -278,9 +278,36 @@ export const ServiceEdgesSchema = z
   })
   .strict();
 
-export const FrameworkSchema = z.any() as z.ZodType<unknown>;
+export const FrameworkSchema = z.enum([
+  'next',
+  'astro',
+  'vite',
+  'cra',
+  'angular',
+  'remix',
+  'bun',
+  'express',
+  'python',
+  'django',
+  'flask',
+  'fastapi',
+  'fasthtml',
+  'gin',
+  'spring-boot',
+  'laravel',
+  'unknown',
+]);
 
-export const ProviderSchema = z.any() as z.ZodType<unknown>;
+export const ProviderSchema = z.enum([
+  'node',
+  'deno',
+  'go',
+  'java',
+  'php',
+  'python',
+  'staticfile',
+  'unknown',
+]);
 
 export const ServiceSchema: z.ZodType<unknown> = z
   .object({
@@ -309,7 +336,13 @@ export const BuildJobEdgesSchema = z
   })
   .strict();
 
-export const BuildJobStatusSchema = z.any() as z.ZodType<unknown>;
+export const BuildJobStatusSchema = z.enum([
+  'queued',
+  'running',
+  'completed',
+  'cancelled',
+  'failed',
+]);
 
 export const BuildJobSchema: z.ZodType<unknown> = z
   .object({
@@ -495,7 +528,7 @@ export const SecretDeleteInputSchema = z
   })
   .strict();
 
-export const SecretTypeSchema = z.any() as z.ZodType<unknown>;
+export const SecretTypeSchema = z.enum(['team', 'project', 'environment', 'service']);
 
 export const DeleteSecretSecretsInputBodySchema = z
   .object({
@@ -792,7 +825,7 @@ export const LogSSEErrorSchema = z
   })
   .strict();
 
-export const LogTypeSchema = z.any() as z.ZodType<unknown>;
+export const LogTypeSchema = z.enum(['team', 'project', 'environment', 'service']);
 
 export const MeResponseBodySchema = z
   .object({
@@ -815,9 +848,9 @@ export const SecretsResponseBodySchema = z
   })
   .strict();
 
-export const SortByFieldSchema = z.any() as z.ZodType<unknown>;
+export const SortByFieldSchema = z.enum(['created_at', 'updated_at']);
 
-export const SortOrderSchema = z.any() as z.ZodType<unknown>;
+export const SortOrderSchema = z.enum(['asc', 'desc']);
 
 export const TeamResponseBodySchema = z
   .object({

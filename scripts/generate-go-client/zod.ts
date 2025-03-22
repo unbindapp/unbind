@@ -16,6 +16,27 @@ export function jsonToZodString({
 }): string {
   let isNullable = false;
   let typeValue = property.type;
+
+  // Handle enums first, as they take precedence over type checking
+  if (Array.isArray(property.enum)) {
+    if (property.enum.length === 0) {
+      return "z.never()";
+    }
+
+    // Check if all enum values are strings
+    const allStrings = property.enum.every((val) => typeof val === "string");
+
+    if (allStrings) {
+      // Use z.enum for string enums (more type-safe)
+      const enumValues = property.enum.map((val) => JSON.stringify(val)).join(", ");
+      return isNullable ? `z.enum([${enumValues}]).nullable()` : `z.enum([${enumValues}])`;
+    } else {
+      // Use z.union of literals for mixed type enums
+      const literals = property.enum.map((val) => `z.literal(${JSON.stringify(val)})`).join(", ");
+      return isNullable ? `z.union([${literals}]).nullable()` : `z.union([${literals}])`;
+    }
+  }
+
   if (Array.isArray(property.type)) {
     if (property.type.includes("null")) {
       isNullable = true;
@@ -152,6 +173,26 @@ export function generateZodExpression({
   schemaDef: JSONSchema;
   orderMap: Record<string, number>;
 }): string {
+  // Handle enums first, regardless of the schema type
+  if (Array.isArray(schemaDef.enum)) {
+    if (schemaDef.enum.length === 0) {
+      return "z.never()";
+    }
+
+    // Check if all enum values are strings
+    const allStrings = schemaDef.enum.every((val) => typeof val === "string");
+
+    if (allStrings) {
+      // Use z.enum for string enums (more type-safe)
+      const enumValues = schemaDef.enum.map((val) => JSON.stringify(val)).join(", ");
+      return `z.enum([${enumValues}])`;
+    } else {
+      // Use z.union of literals for mixed type enums
+      const literals = schemaDef.enum.map((val) => `z.literal(${JSON.stringify(val)})`).join(", ");
+      return `z.union([${literals}])`;
+    }
+  }
+
   if (schemaDef.type === "object" && schemaDef.properties) {
     const fields: string[] = [];
     for (const [propName, propSchema] of Object.entries(schemaDef.properties)) {
@@ -182,6 +223,12 @@ export function generateZodExpression({
     });
     return `z.array(${itemType})`;
   } else {
-    return "z.any() as z.ZodType<unknown>";
+    // Handle any other type that isn't explicitly handled
+    return jsonToZodString({
+      property: schemaDef,
+      currentSchemaName: schemaName,
+      orderMap,
+      lazySchemas,
+    });
   }
 }
