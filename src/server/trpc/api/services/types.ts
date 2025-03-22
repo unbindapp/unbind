@@ -11,6 +11,7 @@ export const CreateServiceSharedSchema = z.object({
   projectId: z.string(),
   environmentId: z.string(),
   port: z.number().optional(),
+  host: z.string().optional(),
   gitHubInstallationId: z.number(),
 });
 

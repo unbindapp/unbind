@@ -1083,6 +1083,7 @@ export const list_projectsQuerySchema = z.object({
 });
 
 export const list_secretsQuerySchema = z.object({
+  type: SecretTypeSchema, // The type of secret
   team_id: z.string(),
   project_id: z.string().optional(), // If present, fetch project secrets
   environment_id: z.string().optional(), // If present, fetch environment secrets - requires project_id
@@ -1969,7 +1970,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           }
           const url = new URL(`${apiUrl}/secrets/list`);
           const validatedQuery = list_secretsQuerySchema.parse(params);
-          const queryKeys = ['team_id', 'project_id', 'environment_id', 'service_id'];
+          const queryKeys = ['type', 'team_id', 'project_id', 'environment_id', 'service_id'];
           queryKeys.forEach((key) => {
             const value = (validatedQuery as Record<string, string | number | boolean>)[key];
             if (value !== undefined && value !== null) {

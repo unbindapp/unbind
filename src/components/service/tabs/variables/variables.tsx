@@ -3,16 +3,11 @@ import { useService } from "@/components/service/service-provider";
 import TabWrapper from "@/components/service/tabs/tab-wrapper";
 import VariableCard from "@/components/service/tabs/variables/variable-card";
 import VariableForm from "@/components/service/tabs/variables/variable-form";
-import { api } from "@/server/trpc/setup/client";
+import { useVariables } from "@/components/service/tabs/variables/variables-provider";
 
 export default function Variables() {
   const { teamId, projectId, environmentId, serviceId } = useService();
-  const { data, isPending, isError, error } = api.secrets.list.useQuery({
-    teamId,
-    projectId,
-    environmentId,
-    serviceId,
-  });
+  const { data, isPending, isError, error } = useVariables();
   const variables = data?.secrets;
 
   return (

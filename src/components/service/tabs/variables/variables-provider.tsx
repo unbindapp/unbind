@@ -15,7 +15,13 @@ export const VariablesProvider: React.FC<{
   serviceId: string;
   children: ReactNode;
 }> = ({ teamId, projectId, environmentId, serviceId, children }) => {
-  const query = api.secrets.list.useQuery({ teamId, projectId, environmentId, serviceId });
+  const query = api.secrets.list.useQuery({
+    teamId,
+    projectId,
+    environmentId,
+    serviceId,
+    type: "service",
+  });
 
   return <VariablesContext.Provider value={query}>{children}</VariablesContext.Provider>;
 };

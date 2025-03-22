@@ -69,6 +69,7 @@ export const servicesRouter = createTRPCRouter({
       repositoryName,
       repositoryOwner,
       gitHubInstallationId,
+      host,
     },
     ctx,
   }) {
@@ -91,6 +92,7 @@ export const servicesRouter = createTRPCRouter({
       repository_name: repositoryName,
       repository_owner: repositoryOwner,
       github_installation_id: gitHubInstallationId,
+      host,
       replicas: 1,
       port: 3000,
     });

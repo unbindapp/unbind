@@ -75,6 +75,7 @@ export default function useProjectCommandPanelData() {
                     projectId,
                     environmentId: projectData?.project.environments[0].id || "",
                     gitHubInstallationId: 63091290,
+                    host: `${r.full_name.replaceAll("/", "-")}.unbind.app`,
                   });
                   onSelectPlaceholder();
                 },

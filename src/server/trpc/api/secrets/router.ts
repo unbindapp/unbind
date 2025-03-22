@@ -1,3 +1,4 @@
+import { list_secretsQuerySchema } from "@/server/go/client.gen";
 import { SecretSchema, SecretTypeSchema } from "@/server/trpc/api/secrets/types";
 import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
 import { TRPCError } from "@trpc/server";
@@ -11,9 +12,10 @@ export const secretsRouter = createTRPCRouter({
         projectId: z.string().optional(),
         environmentId: z.string().optional(),
         serviceId: z.string().optional(),
+        type: list_secretsQuerySchema.shape.type,
       }),
     )
-    .query(async function ({ input: { teamId, projectId, environmentId, serviceId }, ctx }) {
+    .query(async function ({ input: { teamId, projectId, environmentId, serviceId, type }, ctx }) {
       const { session, goClient } = ctx;
       if (!session) {
         throw new TRPCError({
@@ -26,6 +28,7 @@ export const secretsRouter = createTRPCRouter({
         project_id: projectId,
         environment_id: environmentId,
         service_id: serviceId,
+        type,
       });
       return {
         secrets: res.data || [],
