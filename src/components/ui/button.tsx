@@ -6,12 +6,13 @@ import Link from "next/link";
 import * as React from "react";
 
 import { cn } from "@/components/ui/utils";
+import { LoaderIcon } from "lucide-react";
 
 export const minButtonSizeEnforcerClassName =
   "before:w-full before:h-full before:min-w-[44px] before:min-h-[44px] before:z-[-1] before:bg-transparent before:absolute before:-translate-y-1/2 before:top-1/2 before:-translate-x-1/2 before:left-1/2";
 
 const buttonVariants = cva(
-  "relative text-center leading-tight max-w-full select-none z-0 touch-manipulation gap-1.5 rounded-lg font-bold focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-primary/50 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0",
+  "relative group/button text-center leading-tight max-w-full select-none z-0 touch-manipulation gap-1.5 rounded-lg font-bold focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-primary/50 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -89,11 +90,30 @@ const buttonVariants = cva(
   },
 );
 
-export interface ButtonProps
-  extends React.ComponentProps<"button">,
-    VariantProps<typeof buttonVariants> {
-  asChild?: boolean;
-}
+const spinnerVariants = cva(
+  "pointer-events-none opacity-0 group-data-pending/button:opacity-100 absolute top-1/2 left-1/2 -translate-1/2 animate-spin opacity-0 group-data-submitting/button:opacity-100",
+  {
+    variants: {
+      size: {
+        default: "size-6",
+        sm: "size-6",
+        lg: "size-7",
+        icon: "size-5",
+      },
+    },
+    defaultVariants: {
+      size: "default",
+    },
+  },
+);
+
+export type ButtonProps = React.ComponentProps<"button"> &
+  VariantProps<typeof buttonVariants> & {
+    spinnerVariants?: VariantProps<typeof spinnerVariants>;
+  } & {
+    asChild?: boolean;
+    isPending?: boolean;
+  };
 
 export type TButtonVariants = VariantProps<typeof buttonVariants>;
 
@@ -112,7 +132,9 @@ function Button({
   focusVariant,
   forceMinSize,
   state,
+  isPending,
   asChild = false,
+  spinnerVariants: spinnerVariantProps,
   children,
   ...props
 }: ButtonProps) {
@@ -120,6 +142,7 @@ function Button({
   const isText = typeof children === "string";
   return (
     <Comp
+      data-pending={isPending ? true : undefined}
       className={cn(
         buttonVariants({
           variant,
@@ -132,10 +155,17 @@ function Button({
           className,
         }),
       )}
-      disabled={state === "loading" ? true : disabled}
+      disabled={state === "loading" || isPending ? true : disabled}
       {...props}
     >
-      {children}
+      {isPending ? (
+        <>
+          <LoaderIcon className={cn(spinnerVariants(spinnerVariantProps))} />
+          <p className="min-w-0 shrink group-data-pending/button:opacity-0">{children}</p>
+        </>
+      ) : (
+        children
+      )}
     </Comp>
   );
 }

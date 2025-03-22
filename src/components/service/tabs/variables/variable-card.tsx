@@ -2,13 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import { useCopyToClipboard } from "@/lib/hooks/use-copy";
-import { TVariable } from "@/server/trpc/api/main/router";
+import { AppRouterOutputs } from "@/server/trpc/api/root";
 import { CheckIcon, CopyIcon, EllipsisVerticalIcon, EyeIcon, EyeOffIcon } from "lucide-react";
 import { useState } from "react";
 
 type TProps =
   | {
-      variable: TVariable;
+      variable: AppRouterOutputs["secrets"]["list"]["secrets"][number];
       isPlaceholder?: never;
     }
   | {
@@ -28,7 +28,7 @@ export default function VariableCard({ variable, isPlaceholder }: TProps) {
     >
       <div className="flex w-full shrink-0 py-2 pr-8 sm:w-56 sm:pr-4">
         <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden text-sm leading-none text-ellipsis whitespace-nowrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
-          {isPlaceholder ? "Loading key" : variable.key}
+          {isPlaceholder ? "Loading key" : variable.name}
         </p>
       </div>
       <div className="flex w-full min-w-0 flex-1 items-center sm:mt-0 sm:w-auto">

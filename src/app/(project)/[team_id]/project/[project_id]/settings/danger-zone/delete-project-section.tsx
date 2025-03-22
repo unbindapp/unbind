@@ -17,7 +17,7 @@ import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { api } from "@/server/trpc/setup/client";
-import { LoaderIcon, TriangleAlertIcon } from "lucide-react";
+import { TriangleAlertIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import { z } from "zod";
 
@@ -152,9 +152,9 @@ function DeleteButton({ teamId, projectId }: { teamId: string; projectId: string
                       !canSubmit ||
                       (typeof values === "object" && values.textToConfirm !== textToConfirm)
                     }
+                    isPending={isSubmitting ? true : false}
                   >
-                    <LoaderIcon className="pointer-events-none absolute top-1/2 left-1/2 -translate-1/2 animate-spin opacity-0 group-data-submitting/button:opacity-100" />
-                    <p className="min-w-0 shrink group-data-submitting/button:opacity-0">Delete</p>
+                    Delete
                   </form.SubmitButton>
                 </div>
               )}

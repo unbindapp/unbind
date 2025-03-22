@@ -8,6 +8,7 @@ import Logs from "@/components/service/tabs/logs/logs";
 import Metrics from "@/components/service/tabs/metrics/metrics";
 import Settings from "@/components/service/tabs/settings/settings";
 import Variables from "@/components/service/tabs/variables/variables";
+import VariablesProvider from "@/components/service/tabs/variables/variables-provider";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -27,15 +28,26 @@ type TTab = {
   title: string;
   value: string;
   Page: FC;
+  Provider: FC<TProviderProps>;
   noScrollArea?: boolean;
 };
 
+type TProviderProps = {
+  teamId: string;
+  projectId: string;
+  environmentId: string;
+  serviceId: string;
+  children: ReactNode;
+};
+
+const EmptyProvider = ({ children }: TProviderProps) => <>{children}</>;
+
 const tabs: TTab[] = [
-  { title: "Deployments", value: "deployments", Page: Deployments },
-  { title: "Variables", value: "variables", Page: Variables },
-  { title: "Logs", value: "logs", Page: Logs, noScrollArea: true },
-  { title: "Metrics", value: "metrics", Page: Metrics },
-  { title: "Settings", value: "settings", Page: Settings },
+  { title: "Deployments", value: "deployments", Page: Deployments, Provider: EmptyProvider },
+  { title: "Variables", value: "variables", Page: Variables, Provider: VariablesProvider },
+  { title: "Logs", value: "logs", Page: Logs, Provider: EmptyProvider, noScrollArea: true },
+  { title: "Metrics", value: "metrics", Provider: EmptyProvider, Page: Metrics },
+  { title: "Settings", value: "settings", Provider: EmptyProvider, Page: Settings },
 ];
 
 type TProps = {
@@ -58,6 +70,7 @@ export default function ServicePanel({
     parseAsString.withDefault(tabs[0].value),
   );
   const currentPage = tabs.find((tab) => tab.value === currentTab);
+  const CurrentProvider = currentPage?.Provider;
 
   const [serviceIdFromSearchParam, setServiceIdFromSearchParam] =
     useQueryState(servicePanelServiceIdKey);
@@ -89,7 +102,7 @@ export default function ServicePanel({
           <DrawerHeader className="flex min-w-0 flex-1 items-center justify-start p-0">
             <DrawerTitle className="flex min-w-0 flex-1 items-center justify-start gap-2.5">
               <ServiceIcon
-                variant={service.framework}
+                variant={service.framework || service.provider}
                 color="brand"
                 className="-ml-1 size-7 sm:size-8"
               />
@@ -132,14 +145,21 @@ export default function ServicePanel({
         <div className="flex min-h-0 w-full flex-1 flex-col">
           <div className="flex min-h-0 w-full flex-1 flex-col">
             <ConditionalScrollArea noArea={currentPage?.noScrollArea}>
-              {currentPage && (
+              {currentPage && CurrentProvider && (
                 <ServiceProvider
                   teamId={teamId}
                   projectId={projectId}
                   environmentId={environmentId}
                   serviceId={service.id}
                 >
-                  <currentPage.Page />
+                  <CurrentProvider
+                    teamId={teamId}
+                    projectId={projectId}
+                    environmentId={environmentId}
+                    serviceId={service.id}
+                  >
+                    <currentPage.Page />
+                  </CurrentProvider>
                 </ServiceProvider>
               )}
             </ConditionalScrollArea>

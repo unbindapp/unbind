@@ -7,16 +7,17 @@ import { api } from "@/server/trpc/setup/client";
 
 export default function Variables() {
   const { teamId, projectId, environmentId, serviceId } = useService();
-  const { data, isPending, isError, error } = api.main.getVariables.useQuery({
+  const { data, isPending, isError, error } = api.secrets.list.useQuery({
     teamId,
     projectId,
     environmentId,
     serviceId,
   });
+  const variables = data?.secrets;
 
   return (
     <TabWrapper>
-      {data?.variables && (
+      {variables && (
         <VariableForm
           teamId={teamId}
           projectId={projectId}
@@ -24,10 +25,10 @@ export default function Variables() {
           serviceId={serviceId}
         />
       )}
-      {data?.variables &&
-        data.variables.length > 0 &&
-        data.variables.map((variable) => <VariableCard key={variable.key} variable={variable} />)}
-      {data?.variables && data.variables.length === 0 && (
+      {variables &&
+        variables.length > 0 &&
+        variables.map((variable) => <VariableCard key={variable.name} variable={variable} />)}
+      {variables && variables.length === 0 && (
         <div className="text-muted-foreground px-2 py-5 text-center leading-tight font-medium">
           No variables yet
         </div>

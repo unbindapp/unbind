@@ -1,6 +1,9 @@
+import ErrorLine from "@/components/error-line";
+import { useVariables } from "@/components/service/tabs/variables/variables-provider";
 import { Button } from "@/components/ui/button";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { SecretSchema, TSecret } from "@/server/trpc/api/secrets/types";
+import { api } from "@/server/trpc/setup/client";
 import { PlusIcon, TrashIcon } from "lucide-react";
 import { useCallback, useState } from "react";
 import { z } from "zod";
@@ -13,9 +16,12 @@ type Props = {
 };
 
 export default function VariableForm({ teamId, projectId, environmentId, serviceId }: Props) {
-  console.log(teamId, projectId, environmentId, serviceId);
   const [isOpen, setIsOpen] = useState(false);
   const variableCount = 12;
+
+  const { mutateAsync: createSecrets, error } = api.secrets.create.useMutation();
+  const { refetch } = useVariables();
+
   const form = useAppForm({
     defaultValues: {
       secrets: [{ name: "", value: "" }] as TSecret[],
@@ -23,14 +29,18 @@ export default function VariableForm({ teamId, projectId, environmentId, service
     validators: {
       onChange: z.object({ secrets: z.array(SecretSchema) }),
     },
-    onSubmit: async ({ formApi }) => {
-      /* await updateProject({
-        description: value.description || "",
-        displayName: value.displayName,
-        projectId,
+    onSubmit: async ({ formApi, value }) => {
+      const secrets = value.secrets;
+      await createSecrets({
         teamId,
+        projectId,
+        environmentId,
+        serviceId,
+        isBuildSecret: false,
+        type: "service",
+        secrets,
       });
-      await Promise.all([refetchProject(), refetchProjects()]) */
+      await refetch();
       formApi.reset();
     },
   });
@@ -84,16 +94,22 @@ export default function VariableForm({ teamId, projectId, environmentId, service
         <Button
           data-open={isOpen ? true : undefined}
           data-closed={!isOpen ? true : undefined}
-          className="group/button data-closed:border-primary shrink-0 gap-1 px-2.5 py-1.75 data-closed:border"
+          className="group/button shrink-0 gap-1 px-3 py-2"
           onClick={() => setIsOpen((o) => !o)}
-          variant={isOpen ? "outline" : "default"}
+          variant="outline"
         >
           <PlusIcon className="-ml-1 size-5 shrink-0 transition-transform group-data-open/button:rotate-45" />
           <p>{isOpen ? "Close" : "New Variable"}</p>
         </Button>
       </div>
       {isOpen && (
-        <form className="flex w-full flex-col rounded-xl border">
+        <form
+          className="flex w-full flex-col rounded-xl border"
+          onSubmit={(e) => {
+            e.preventDefault();
+            form.handleSubmit();
+          }}
+        >
           <form.AppField
             name="secrets"
             mode="array"
@@ -117,7 +133,7 @@ export default function VariableForm({ teamId, projectId, environmentId, service
                             {(subField) => {
                               return (
                                 <field.TextField
-                                  field={field}
+                                  field={subField}
                                   value={subField.state.value}
                                   onBlur={subField.handleBlur}
                                   onPaste={(e) => onPaste(e, form, i)}
@@ -128,12 +144,12 @@ export default function VariableForm({ teamId, projectId, environmentId, service
                               );
                             }}
                           </form.Field>
-                          <div className="flex flex-1 gap-2">
+                          <div className="flex flex-1 items-start gap-2">
                             <form.Field key={`value-${i}`} name={`secrets[${i}].value`}>
                               {(subField) => {
                                 return (
                                   <field.TextField
-                                    field={field}
+                                    field={subField}
                                     value={subField.state.value}
                                     onBlur={subField.handleBlur}
                                     onPaste={(e) => onPaste(e, form, i)}
@@ -156,7 +172,7 @@ export default function VariableForm({ teamId, projectId, environmentId, service
                                   type="button"
                                   variant="outline"
                                   size="icon"
-                                  className="h-auto w-11 self-stretch"
+                                  className="h-11 w-11"
                                   onClick={() => {
                                     if (field.state.value.length <= 1) {
                                       field.replaceValue(0, { name: "", value: "" });
@@ -188,8 +204,18 @@ export default function VariableForm({ teamId, projectId, environmentId, service
               </div>
             )}
           />
-          <div className="bg-background-hover flex w-full flex-row items-center justify-end rounded-b-xl border-t p-2 md:p-3">
-            <Button>Save</Button>
+          <div className="bg-background-hover flex w-full flex-col gap-3 rounded-b-xl border-t p-2 md:p-3">
+            {error && <ErrorLine message={error.message} />}
+            <div className="flex w-full flex-row items-center justify-end">
+              <form.Subscribe
+                selector={(state) => [state.canSubmit, state.isSubmitting]}
+                children={([canSubmit, isSubmitting]) => (
+                  <form.SubmitButton disabled={!canSubmit} isPending={isSubmitting}>
+                    Save
+                  </form.SubmitButton>
+                )}
+              />
+            </div>
           </div>
         </form>
       )}

@@ -99,11 +99,14 @@ export default function GeneralTabContent({ teamId, projectId }: TProps) {
                   className="group/button flex-1 md:flex-none xl:py-3.5"
                   disabled={!canSubmit || valuesUnchanged}
                 >
-                  <LoaderIcon className="pointer-events-none absolute top-1/2 left-1/2 -translate-1/2 animate-spin opacity-0 group-data-submitting/button:opacity-100" />
-                  <div className="flex min-w-0 shrink items-center justify-center gap-1.5 group-data-submitting/button:pointer-events-none group-data-submitting/button:opacity-0">
-                    <SaveIcon className="-ml-1 size-4.5 shrink-0" />
-                    <p className="min-w-0 shrink">Save</p>
+                  <div className="-ml-1 size-5 shrink-0">
+                    {isSubmitting ? (
+                      <LoaderIcon className="size-full animate-spin" />
+                    ) : (
+                      <SaveIcon className="size-full" />
+                    )}
                   </div>
+                  <p className="min-w-0 shrink">Save</p>
                 </form.SubmitButton>
                 <Button
                   disabled={valuesUnchanged}
@@ -113,7 +116,7 @@ export default function GeneralTabContent({ teamId, projectId }: TProps) {
                 >
                   <RotateCcwIcon
                     data-rotated={valuesUnchanged ? true : undefined}
-                    className="-ml-1 size-4.5 shrink-0 transition-transform data-rotated:-rotate-135"
+                    className="-ml-1 size-5 shrink-0 transition-transform data-rotated:-rotate-135"
                   />
                   <p className="min-w-0">Undo</p>
                 </Button>

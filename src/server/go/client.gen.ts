@@ -413,7 +413,7 @@ export const CreateServiceInputSchema = z
     Builder: z.string(), // Builder of the service - docker, railpack
     Type: z.string(), // Type of service, e.g. 'git', 'docker'
     auto_deploy: z.boolean().optional(),
-    description: z.string(),
+    description: z.string().optional(),
     display_name: z.string(),
     environment_id: z.string(),
     git_branch: z.string().optional(),
