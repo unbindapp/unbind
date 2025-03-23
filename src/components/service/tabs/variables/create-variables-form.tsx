@@ -31,7 +31,7 @@ export default function CreateVariablesForm() {
         projectId,
         environmentId,
         serviceId,
-        isBuildSecret: false,
+        isBuildSecret: true,
         type: "service",
         secrets,
       });
