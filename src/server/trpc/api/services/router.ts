@@ -82,8 +82,8 @@ export const servicesRouter = createTRPCRouter({
       });
     }
     const service = await goClient.services.create({
-      Builder: builder,
-      Type: type,
+      builder,
+      type,
       team_id: teamId,
       project_id: projectId,
       environment_id: environmentId,

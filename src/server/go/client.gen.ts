@@ -443,9 +443,8 @@ export const CreateProjectResponseBodySchema = z
 
 export const CreateServiceInputSchema = z
   .object({
-    Builder: z.string(), // Builder of the service - docker, railpack
-    Type: z.string(), // Type of service, e.g. 'git', 'docker'
     auto_deploy: z.boolean().optional(),
+    builder: z.string(), // Builder of the service - docker, railpack
     description: z.string().optional(),
     display_name: z.string(),
     environment_id: z.string(),
@@ -461,6 +460,7 @@ export const CreateServiceInputSchema = z
     repository_owner: z.string().optional(),
     run_command: z.string().optional(),
     team_id: z.string(),
+    type: z.string(), // Type of service, e.g. 'git', 'docker'
   })
   .strict();
 
