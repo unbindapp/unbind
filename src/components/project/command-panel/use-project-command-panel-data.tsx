@@ -69,7 +69,7 @@ export default function useProjectCommandPanelData() {
                     gitBranch: "master",
                     repositoryOwner: r.full_name.split("/")[0],
                     repositoryName: r.full_name.split("/")[1],
-                    displayName: r.full_name,
+                    displayName: r.full_name.split("/")[1],
                     description: "This is a test.",
                     teamId,
                     projectId,
