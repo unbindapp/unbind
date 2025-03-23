@@ -1,25 +1,18 @@
 import ErrorCard from "@/components/error-card";
-import { useService } from "@/components/service/service-provider";
 import TabWrapper from "@/components/service/tabs/tab-wrapper";
 import VariableCard from "@/components/service/tabs/variables/variable-card";
-import VariableForm from "@/components/service/tabs/variables/variable-form";
+import VariablesHeader from "@/components/service/tabs/variables/variables-header";
 import { useVariables } from "@/components/service/tabs/variables/variables-provider";
 
 export default function Variables() {
-  const { teamId, projectId, environmentId, serviceId } = useService();
-  const { data, isPending, isError, error } = useVariables();
+  const {
+    list: { data, isPending, error },
+  } = useVariables();
   const variables = data?.secrets;
 
   return (
     <TabWrapper>
-      {variables && (
-        <VariableForm
-          teamId={teamId}
-          projectId={projectId}
-          environmentId={environmentId}
-          serviceId={serviceId}
-        />
-      )}
+      <VariablesHeader />
       {variables &&
         variables.length > 0 &&
         variables.map((variable) => <VariableCard key={variable.name} variable={variable} />)}
@@ -31,7 +24,7 @@ export default function Variables() {
       {!data &&
         isPending &&
         Array.from({ length: 10 }).map((_, i) => <VariableCard key={i} isPlaceholder />)}
-      {!data && !isPending && isError && <ErrorCard message={error.message} />}
+      {!data && !isPending && error && <ErrorCard message={error.message} />}
     </TabWrapper>
   );
 }

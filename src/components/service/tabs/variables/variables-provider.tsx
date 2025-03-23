@@ -2,9 +2,16 @@
 
 import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
 import { api } from "@/server/trpc/setup/client";
-import { createContext, ReactNode, useContext } from "react";
+import { createContext, ReactNode, useContext, useMemo } from "react";
 
-type TVariablesContext = AppRouterQueryResult<AppRouterOutputs["secrets"]["list"]>;
+type TVariablesContext = {
+  list: AppRouterQueryResult<AppRouterOutputs["secrets"]["list"]>;
+  create: ReturnType<typeof api.secrets.create.useMutation>;
+  teamId: string;
+  projectId: string;
+  environmentId: string;
+  serviceId: string;
+};
 
 const VariablesContext = createContext<TVariablesContext | null>(null);
 
@@ -15,7 +22,7 @@ export const VariablesProvider: React.FC<{
   serviceId: string;
   children: ReactNode;
 }> = ({ teamId, projectId, environmentId, serviceId, children }) => {
-  const query = api.secrets.list.useQuery({
+  const list = api.secrets.list.useQuery({
     teamId,
     projectId,
     environmentId,
@@ -23,7 +30,21 @@ export const VariablesProvider: React.FC<{
     type: "service",
   });
 
-  return <VariablesContext.Provider value={query}>{children}</VariablesContext.Provider>;
+  const create = api.secrets.create.useMutation();
+
+  const value: TVariablesContext = useMemo(
+    () => ({
+      list,
+      create,
+      teamId,
+      projectId,
+      environmentId,
+      serviceId,
+    }),
+    [list, create, teamId, projectId, environmentId, serviceId],
+  );
+
+  return <VariablesContext.Provider value={value}>{children}</VariablesContext.Provider>;
 };
 
 export const useVariables = () => {

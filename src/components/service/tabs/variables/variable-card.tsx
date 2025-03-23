@@ -64,8 +64,8 @@ export default function VariableCard({ variable, isPlaceholder }: TProps) {
           fadeOnDisabled={false}
         >
           <div className="relative size-4">
-            <EyeIcon className="size-4 group-data-visible/button:opacity-0" />
-            <EyeOffIcon className="absolute top-0 left-0 size-4 opacity-0 group-data-visible/button:opacity-100" />
+            <EyeIcon className="size-full group-data-visible/button:opacity-0" />
+            <EyeOffIcon className="absolute top-0 left-0 size-full opacity-0 group-data-visible/button:opacity-100" />
             {isPlaceholder && (
               <div className="bg-muted-more-foreground animate-skeleton absolute top-0 left-0 size-full rounded-sm" />
             )}
@@ -85,7 +85,7 @@ export default function VariableCard({ variable, isPlaceholder }: TProps) {
             className="text-muted-more-foreground rounded-md group-data-placeholder/card:text-transparent"
           >
             {isPlaceholder ? (
-              <div className="group-data-placeholder/card:bg-muted-foreground group-data-placeholder/card:animate-skeleton size-5 group-data-placeholder/card:rounded-md" />
+              <div className="group-data-placeholder/card:bg-muted-foreground group-data-placeholder/card:animate-skeleton size-6 group-data-placeholder/card:rounded-md" />
             ) : (
               <EllipsisVerticalIcon className="size-6" />
             )}

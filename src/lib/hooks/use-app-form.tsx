@@ -9,15 +9,16 @@ const { fieldContext, formContext } = createFormHookContexts();
 function InputWithInfo({
   className,
   hideInfo,
+  field,
   ...rest
 }: InputProps & { field: AnyFieldApi; hideInfo?: boolean }) {
   return (
     <div className={cn("flex flex-col", className)}>
       <Input {...rest} className="w-full" />
-      {!hideInfo && rest.field.state.meta.isTouched && rest.field.state.meta.errors.length ? (
+      {!hideInfo && field.state.meta.isTouched && field.state.meta.errors.length ? (
         <ErrorLine
           className="bg-transparent py-1.5 pl-1.5"
-          message={rest.field.state.meta.errors[0].message}
+          message={field.state.meta.errors[0].message}
         />
       ) : null}
     </div>
