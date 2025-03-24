@@ -8,7 +8,7 @@ export default function Variables() {
   const {
     list: { data, isPending, error },
   } = useVariables();
-  const variables = data?.secrets;
+  const variables = data?.variables;
 
   return (
     <TabWrapper>

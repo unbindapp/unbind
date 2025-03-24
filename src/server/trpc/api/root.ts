@@ -1,7 +1,7 @@
 import { githubRouter } from "@/server/trpc/api/github/router";
 import { mainRouter } from "@/server/trpc/api/main/router";
 import { projectsRouter } from "@/server/trpc/api/projects/router";
-import { secretsRouter } from "@/server/trpc/api/secrets/router";
+import { variablesRouter } from "@/server/trpc/api/variables/router";
 import { servicesRouter } from "@/server/trpc/api/services/router";
 import { teamsRouter } from "@/server/trpc/api/teams/router";
 import { createTRPCRouter } from "@/server/trpc/setup/trpc";
@@ -20,7 +20,7 @@ export const appRouter = createTRPCRouter({
   teams: teamsRouter,
   projects: projectsRouter,
   services: servicesRouter,
-  secrets: secretsRouter,
+  variables: variablesRouter,
   github: githubRouter,
 });
 

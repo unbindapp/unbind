@@ -22,7 +22,7 @@ export const CreateBuildInputBodySchema = z
 export const DeploymentStatusSchema = z.enum([
   'queued',
   'running',
-  'completed',
+  'succeeded',
   'cancelled',
   'failed',
 ]);
@@ -204,23 +204,23 @@ export const DeleteProjectResponseBodySchema = z
   })
   .strict();
 
-export const SecretDeleteInputSchema = z
+export const VariableTypeSchema = z.enum(['team', 'project', 'environment', 'service']);
+
+export const VariableDeleteInputSchema = z
   .object({
     name: z.string(),
   })
   .strict();
 
-export const SecretTypeSchema = z.enum(['team', 'project', 'environment', 'service']);
-
-export const DeleteSecretSecretsInputBodySchema = z
+export const DeleteVariablesInputBodySchema = z
   .object({
-    environment_id: z.string().optional(), // If present without service_id, mutate environment secrets - requires project_id
-    is_build_secret: z.boolean().optional(),
-    project_id: z.string().optional(), // If present without environment_id, mutate team secrets
-    secrets: z.array(SecretDeleteInputSchema).nullable(),
-    service_id: z.string().optional(), // If present, mutate service secrets - requires project_id and environment_id
+    environment_id: z.string().optional(), // If present without service_id, mutate environment variables - requires project_id
+    is_build_variable: z.boolean().optional(),
+    project_id: z.string().optional(), // If present without environment_id, mutate team variables
+    service_id: z.string().optional(), // If present, mutate service variables - requires project_id and environment_id
     team_id: z.string(),
-    type: SecretTypeSchema, // The type of secret
+    type: VariableTypeSchema, // The type of variable
+    variables: z.array(VariableDeleteInputSchema).nullable(),
   })
   .strict();
 
@@ -790,7 +790,7 @@ export const PaginationResponseMetadataSchema = z
 
 export const ListDeploymentResponseDataSchema = z
   .object({
-    jobs: z.array(DeploymentResponseSchema).nullable(),
+    deployments: z.array(DeploymentResponseSchema).nullable(),
     metadata: PaginationResponseMetadataSchema,
   })
   .strict();
@@ -836,23 +836,22 @@ export const MeResponseBodySchema = z
   })
   .strict();
 
-export const SecretResponseSchema = z
-  .object({
-    name: z.string(),
-    type: SecretTypeSchema,
-    value: z.string(),
-  })
-  .strict();
-
-export const SecretsResponseBodySchema = z
-  .object({
-    data: z.array(SecretResponseSchema),
-  })
-  .strict();
-
 export const SortByFieldSchema = z.enum(['created_at', 'updated_at']);
 
 export const SortOrderSchema = z.enum(['asc', 'desc']);
+
+export const SystemMetaSchema = z
+  .object({
+    external_ipv4: z.string(),
+    external_ipv6: z.string(),
+  })
+  .strict();
+
+export const SystemMetaResponseBodySchema = z
+  .object({
+    data: SystemMetaSchema,
+  })
+  .strict();
 
 export const TeamResponseBodySchema = z
   .object({
@@ -916,15 +915,29 @@ export const UpdateTeamResponseBodySchema = z
   })
   .strict();
 
-export const UpsertSecretsInputBodySchema = z
+export const UpsertVariablesInputBodySchema = z
   .object({
-    environment_id: z.string().optional(), // If present without service_id, mutate environment secrets - requires project_id
-    is_build_secret: z.boolean().optional(),
-    project_id: z.string().optional(), // If present without environment_id, mutate team secrets
-    secrets: z.array(ItemSchema).nullable(),
-    service_id: z.string().optional(), // If present, mutate service secrets - requires project_id and environment_id
+    environment_id: z.string().optional(), // If present without service_id, mutate environment variables - requires project_id
+    is_build_variable: z.boolean().optional(),
+    project_id: z.string().optional(), // If present without environment_id, mutate team variables
+    service_id: z.string().optional(), // If present, mutate service variables - requires project_id and environment_id
     team_id: z.string(),
-    type: SecretTypeSchema, // The type of secret
+    type: VariableTypeSchema, // The type of variable
+    variables: z.array(ItemSchema).nullable(),
+  })
+  .strict();
+
+export const VariableResponseSchema = z
+  .object({
+    name: z.string(),
+    type: VariableTypeSchema,
+    value: z.string(),
+  })
+  .strict();
+
+export const VariablesResponseBodySchema = z
+  .object({
+    data: z.array(VariableResponseSchema),
   })
   .strict();
 
@@ -948,9 +961,9 @@ export type CreateServiceResponseBody = z.infer<typeof CreateServiceResponseBody
 export type DataStruct = z.infer<typeof DataStructSchema>;
 export type DeleteProjectInputBody = z.infer<typeof DeleteProjectInputBodySchema>;
 export type DeleteProjectResponseBody = z.infer<typeof DeleteProjectResponseBodySchema>;
-export type SecretDeleteInput = z.infer<typeof SecretDeleteInputSchema>;
-export type SecretType = z.infer<typeof SecretTypeSchema>;
-export type DeleteSecretSecretsInputBody = z.infer<typeof DeleteSecretSecretsInputBodySchema>;
+export type VariableType = z.infer<typeof VariableTypeSchema>;
+export type VariableDeleteInput = z.infer<typeof VariableDeleteInputSchema>;
+export type DeleteVariablesInputBody = z.infer<typeof DeleteVariablesInputBodySchema>;
 export type PermissionEdges = z.infer<typeof PermissionEdgesSchema>;
 export type Permission = z.infer<typeof PermissionSchema>;
 export type GithubInstallationEdges = z.infer<typeof GithubInstallationEdgesSchema>;
@@ -1016,10 +1029,10 @@ export type LogEvent = z.infer<typeof LogEventSchema>;
 export type LogSSEError = z.infer<typeof LogSSEErrorSchema>;
 export type LogType = z.infer<typeof LogTypeSchema>;
 export type MeResponseBody = z.infer<typeof MeResponseBodySchema>;
-export type SecretResponse = z.infer<typeof SecretResponseSchema>;
-export type SecretsResponseBody = z.infer<typeof SecretsResponseBodySchema>;
 export type SortByField = z.infer<typeof SortByFieldSchema>;
 export type SortOrder = z.infer<typeof SortOrderSchema>;
+export type SystemMeta = z.infer<typeof SystemMetaSchema>;
+export type SystemMetaResponseBody = z.infer<typeof SystemMetaResponseBodySchema>;
 export type TeamResponseBody = z.infer<typeof TeamResponseBodySchema>;
 export type UpdatServiceResponseBody = z.infer<typeof UpdatServiceResponseBodySchema>;
 export type UpdateProjectInputBody = z.infer<typeof UpdateProjectInputBodySchema>;
@@ -1027,7 +1040,9 @@ export type UpdateProjectResponseBody = z.infer<typeof UpdateProjectResponseBody
 export type UpdateServiceInput = z.infer<typeof UpdateServiceInputSchema>;
 export type UpdateTeamInputBody = z.infer<typeof UpdateTeamInputBodySchema>;
 export type UpdateTeamResponseBody = z.infer<typeof UpdateTeamResponseBodySchema>;
-export type UpsertSecretsInputBody = z.infer<typeof UpsertSecretsInputBodySchema>;
+export type UpsertVariablesInputBody = z.infer<typeof UpsertVariablesInputBodySchema>;
+export type VariableResponse = z.infer<typeof VariableResponseSchema>;
+export type VariablesResponseBody = z.infer<typeof VariablesResponseBodySchema>;
 
 export const callbackQuerySchema = z.object({
   code: z.string(),
@@ -1035,8 +1050,7 @@ export const callbackQuerySchema = z.object({
 
 export const list_deploymentsQuerySchema = z.object({
   cursor: z.string().optional(),
-  status: DeploymentStatusSchema.optional(), // Filter by status
-  id: z.string(), // The ID of the build
+  statuses: z.array(DeploymentStatusSchema).nullable().optional(), // Filter by status
   team_id: z.string(), // The ID of the team
   project_id: z.string(), // The ID of the project
   environment_id: z.string(), // The ID of the environment
@@ -1088,14 +1102,6 @@ export const list_projectsQuerySchema = z.object({
   team_id: z.string(),
 });
 
-export const list_secretsQuerySchema = z.object({
-  type: SecretTypeSchema, // The type of secret
-  team_id: z.string(),
-  project_id: z.string().optional(), // If present, fetch project secrets
-  environment_id: z.string().optional(), // If present, fetch environment secrets - requires project_id
-  service_id: z.string().optional(), // If present, fetch service secrets - requires project_id and environment_id
-});
-
 export const get_serviceQuerySchema = z.object({
   service_id: z.string(),
   team_id: z.string(),
@@ -1107,6 +1113,14 @@ export const list_serviceQuerySchema = z.object({
   team_id: z.string(),
   project_id: z.string(),
   environment_id: z.string(),
+});
+
+export const list_variablesQuerySchema = z.object({
+  type: VariableTypeSchema, // The type of variable
+  team_id: z.string(),
+  project_id: z.string().optional(), // If present, fetch project variables
+  environment_id: z.string().optional(), // If present, fetch environment variables - requires project_id
+  service_id: z.string().optional(), // If present, fetch service variables - requires project_id and environment_id
 });
 
 export const app_saveQuerySchema = z.object({
@@ -1134,7 +1148,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           const validatedQuery = callbackQuerySchema.parse(params);
           const queryKeys = ['code'];
           queryKeys.forEach((key) => {
-            const value = (validatedQuery as Record<string, string | number | boolean>)[key];
+            const value = validatedQuery[key as keyof typeof validatedQuery];
             if (value !== undefined && value !== null) {
               url.searchParams.append(key, String(value));
             }
@@ -1258,15 +1272,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           const validatedQuery = list_deploymentsQuerySchema.parse(params);
           const queryKeys = [
             'cursor',
-            'status',
-            'id',
+            'statuses',
             'team_id',
             'project_id',
             'environment_id',
             'service_id',
           ];
           queryKeys.forEach((key) => {
-            const value = (validatedQuery as Record<string, string | number | boolean>)[key];
+            const value = validatedQuery[key as keyof typeof validatedQuery];
             if (value !== undefined && value !== null) {
               url.searchParams.append(key, String(value));
             }
@@ -1314,7 +1327,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           const validatedQuery = get_environmentQuerySchema.parse(params);
           const queryKeys = ['id', 'team_id', 'project_id'];
           queryKeys.forEach((key) => {
-            const value = (validatedQuery as Record<string, string | number | boolean>)[key];
+            const value = validatedQuery[key as keyof typeof validatedQuery];
             if (value !== undefined && value !== null) {
               url.searchParams.append(key, String(value));
             }
@@ -1363,7 +1376,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             const validatedQuery = app_createQuerySchema.parse(params);
             const queryKeys = ['redirect_url', 'organization'];
             queryKeys.forEach((key) => {
-              const value = (validatedQuery as Record<string, string | number | boolean>)[key];
+              const value = validatedQuery[key as keyof typeof validatedQuery];
               if (value !== undefined && value !== null) {
                 url.searchParams.append(key, String(value));
               }
@@ -1410,7 +1423,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           const validatedQuery = list_appsQuerySchema.parse(params);
           const queryKeys = ['with_installations'];
           queryKeys.forEach((key) => {
-            const value = (validatedQuery as Record<string, string | number | boolean>)[key];
+            const value = validatedQuery[key as keyof typeof validatedQuery];
             if (value !== undefined && value !== null) {
               url.searchParams.append(key, String(value));
             }
@@ -1579,7 +1592,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               const validatedQuery = repo_detailQuerySchema.parse(params);
               const queryKeys = ['installation_id', 'owner', 'repo_name'];
               queryKeys.forEach((key) => {
-                const value = (validatedQuery as Record<string, string | number | boolean>)[key];
+                const value = validatedQuery[key as keyof typeof validatedQuery];
                 if (value !== undefined && value !== null) {
                   url.searchParams.append(key, String(value));
                 }
@@ -1676,7 +1689,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             'search',
           ];
           queryKeys.forEach((key) => {
-            const value = (validatedQuery as Record<string, string | number | boolean>)[key];
+            const value = validatedQuery[key as keyof typeof validatedQuery];
             if (value !== undefined && value !== null) {
               url.searchParams.append(key, String(value));
             }
@@ -1804,7 +1817,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           const validatedQuery = get_projectQuerySchema.parse(params);
           const queryKeys = ['project_id', 'team_id'];
           queryKeys.forEach((key) => {
-            const value = (validatedQuery as Record<string, string | number | boolean>)[key];
+            const value = validatedQuery[key as keyof typeof validatedQuery];
             if (value !== undefined && value !== null) {
               url.searchParams.append(key, String(value));
             }
@@ -1850,7 +1863,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           const validatedQuery = list_projectsQuerySchema.parse(params);
           const queryKeys = ['sort_by', 'sort_order', 'team_id'];
           queryKeys.forEach((key) => {
-            const value = (validatedQuery as Record<string, string | number | boolean>)[key];
+            const value = validatedQuery[key as keyof typeof validatedQuery];
             if (value !== undefined && value !== null) {
               url.searchParams.append(key, String(value));
             }
@@ -1925,134 +1938,6 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
         }
       },
     },
-    secrets: {
-      delete: async (
-        params: DeleteSecretSecretsInputBody,
-        fetchOptions?: RequestInit,
-      ): Promise<SecretsResponseBody> => {
-        try {
-          if (!apiUrl || typeof apiUrl !== 'string') {
-            throw new Error('API URL is undefined or not a string');
-          }
-          const url = new URL(`${apiUrl}/secrets/delete`);
-
-          const options: RequestInit = {
-            method: 'DELETE',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
-            },
-            ...fetchOptions,
-          };
-          const validatedBody = DeleteSecretSecretsInputBodySchema.parse(params);
-          options.body = JSON.stringify(validatedBody);
-          const response = await fetch(url.toString(), options);
-          if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-          }
-          const data = await response.json();
-          return SecretsResponseBodySchema.parse(data);
-        } catch (error) {
-          console.error('Error in API request:', error);
-          throw error;
-        }
-      },
-      list: async (
-        params: z.infer<typeof list_secretsQuerySchema>,
-        fetchOptions?: RequestInit,
-      ): Promise<SecretsResponseBody> => {
-        try {
-          if (!apiUrl || typeof apiUrl !== 'string') {
-            throw new Error('API URL is undefined or not a string');
-          }
-          const url = new URL(`${apiUrl}/secrets/list`);
-          const validatedQuery = list_secretsQuerySchema.parse(params);
-          const queryKeys = ['type', 'team_id', 'project_id', 'environment_id', 'service_id'];
-          queryKeys.forEach((key) => {
-            const value = (validatedQuery as Record<string, string | number | boolean>)[key];
-            if (value !== undefined && value !== null) {
-              url.searchParams.append(key, String(value));
-            }
-          });
-          const options: RequestInit = {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
-            },
-            ...fetchOptions,
-          };
-
-          const response = await fetch(url.toString(), options);
-          if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-          }
-          const data = await response.json();
-          return SecretsResponseBodySchema.parse(data);
-        } catch (error) {
-          console.error('Error in API request:', error);
-          throw error;
-        }
-      },
-      upsert: async (
-        params: UpsertSecretsInputBody,
-        fetchOptions?: RequestInit,
-      ): Promise<SecretsResponseBody> => {
-        try {
-          if (!apiUrl || typeof apiUrl !== 'string') {
-            throw new Error('API URL is undefined or not a string');
-          }
-          const url = new URL(`${apiUrl}/secrets/upsert`);
-
-          const options: RequestInit = {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
-            },
-            ...fetchOptions,
-          };
-          const validatedBody = UpsertSecretsInputBodySchema.parse(params);
-          options.body = JSON.stringify(validatedBody);
-          const response = await fetch(url.toString(), options);
-          if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-          }
-          const data = await response.json();
-          return SecretsResponseBodySchema.parse(data);
-        } catch (error) {
-          console.error('Error in API request:', error);
-          throw error;
-        }
-      },
-    },
     services: {
       create: async (
         params: CreateServiceInput,
@@ -2106,7 +1991,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           const validatedQuery = get_serviceQuerySchema.parse(params);
           const queryKeys = ['service_id', 'team_id', 'project_id', 'environment_id'];
           queryKeys.forEach((key) => {
-            const value = (validatedQuery as Record<string, string | number | boolean>)[key];
+            const value = validatedQuery[key as keyof typeof validatedQuery];
             if (value !== undefined && value !== null) {
               url.searchParams.append(key, String(value));
             }
@@ -2152,7 +2037,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           const validatedQuery = list_serviceQuerySchema.parse(params);
           const queryKeys = ['team_id', 'project_id', 'environment_id'];
           queryKeys.forEach((key) => {
-            const value = (validatedQuery as Record<string, string | number | boolean>)[key];
+            const value = validatedQuery[key as keyof typeof validatedQuery];
             if (value !== undefined && value !== null) {
               url.searchParams.append(key, String(value));
             }
@@ -2221,6 +2106,47 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           }
           const data = await response.json();
           return UpdatServiceResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+    },
+    system: {
+      get: async (
+        params?: undefined,
+        fetchOptions?: RequestInit,
+      ): Promise<SystemMetaResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/system/get`);
+
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return SystemMetaResponseBodySchema.parse(data);
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -2343,6 +2269,134 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
         }
       },
     },
+    variables: {
+      delete: async (
+        params: DeleteVariablesInputBody,
+        fetchOptions?: RequestInit,
+      ): Promise<VariablesResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/variables/delete`);
+
+          const options: RequestInit = {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = DeleteVariablesInputBodySchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return VariablesResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      list: async (
+        params: z.infer<typeof list_variablesQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<VariablesResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/variables/list`);
+          const validatedQuery = list_variablesQuerySchema.parse(params);
+          const queryKeys = ['type', 'team_id', 'project_id', 'environment_id', 'service_id'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return VariablesResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      upsert: async (
+        params: UpsertVariablesInputBody,
+        fetchOptions?: RequestInit,
+      ): Promise<VariablesResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/variables/upsert`);
+
+          const options: RequestInit = {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = UpsertVariablesInputBodySchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return VariablesResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+    },
     webhook: {
       github: Object.assign(
         async (params?: undefined, fetchOptions?: RequestInit) => {
@@ -2395,7 +2449,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                 const validatedQuery = app_saveQuerySchema.parse(params);
                 const queryKeys = ['code', 'state'];
                 queryKeys.forEach((key) => {
-                  const value = (validatedQuery as Record<string, string | number | boolean>)[key];
+                  const value = validatedQuery[key as keyof typeof validatedQuery];
                   if (value !== undefined && value !== null) {
                     url.searchParams.append(key, String(value));
                   }

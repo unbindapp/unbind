@@ -19,7 +19,7 @@ export default function VariablesHeader() {
         <h2 className="group-data-pending/header:bg-foreground group-data-pending/header:animate-skeleton min-w-0 shrink truncate px-1 text-lg leading-tight font-bold group-data-pending/header:rounded-md group-data-pending/header:text-transparent">
           {isPending || !data
             ? "10 Variables"
-            : `${data.secrets.length} Variable${data.secrets.length > 1 ? "s" : ""}`}
+            : `${data.variables.length} Variable${data.variables.length > 1 ? "s" : ""}`}
         </h2>
         <Button
           disabled={isPending}

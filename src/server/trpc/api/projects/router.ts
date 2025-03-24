@@ -68,7 +68,7 @@ export const projectsRouter = createTRPCRouter({
         description,
       });
       return {
-        data: res.data || [],
+        data: res.data,
       };
     }),
   update: publicProcedure
@@ -97,7 +97,7 @@ export const projectsRouter = createTRPCRouter({
       });
 
       return {
-        data: res.data || [],
+        data: res.data,
       };
     }),
   delete: publicProcedure

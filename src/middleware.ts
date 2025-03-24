@@ -16,12 +16,12 @@ const tokenRefreshBuffer = 30;
 
 const authSecret = process.env.AUTH_SECRET!;
 const dexClientId = process.env.DEX_CLIENT_ID!;
-const dexClientSecret = process.env.DEX_CLIENT_SECRET!;
+const dexClienTVariable = process.env.DEX_CLIENT_SECRET!;
 const dexIssuer = process.env.DEX_ISSUER!;
 
 if (!authSecret) throw new Error("AUTH_SECRET is not set");
 if (!dexClientId) throw new Error("DEX_CLIENT_ID is not set");
-if (!dexClientSecret) throw new Error("DEX_CLIENT_SECRET is not set");
+if (!dexClienTVariable) throw new Error("DEX_CLIENT_SECRET is not set");
 if (!dexIssuer) throw new Error("DEX_ISSUER is not set");
 
 export const config = {
@@ -140,7 +140,7 @@ export async function refreshAccessToken(token: JWT): Promise<JWT> {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
           client_id: dexClientId,
-          client_secret: dexClientSecret,
+          client_secret: dexClienTVariable,
           grant_type: "refresh_token",
           refresh_token: refreshToken,
         }),

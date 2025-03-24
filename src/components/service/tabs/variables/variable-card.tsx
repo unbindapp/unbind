@@ -8,7 +8,7 @@ import { useState } from "react";
 
 type TProps =
   | {
-      variable: AppRouterOutputs["secrets"]["list"]["secrets"][number];
+      variable: AppRouterOutputs["variables"]["list"]["variables"][number];
       isPlaceholder?: never;
     }
   | {

@@ -2,7 +2,7 @@ import ErrorLine from "@/components/error-line";
 import { useVariables } from "@/components/service/tabs/variables/variables-provider";
 import { Button } from "@/components/ui/button";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { SecretSchema, TSecret } from "@/server/trpc/api/secrets/types";
+import { VariableSchema, TVariable } from "@/server/trpc/api/variables/types";
 import { PlusIcon, TrashIcon } from "lucide-react";
 import { useCallback } from "react";
 import { z } from "zod";
@@ -19,20 +19,20 @@ export default function CreateVariablesForm() {
 
   const form = useAppForm({
     defaultValues: {
-      secrets: [{ name: "", value: "" }] as TSecret[],
+      variables: [{ name: "", value: "" }] as TVariable[],
     },
     validators: {
-      onChange: z.object({ secrets: z.array(SecretSchema).min(1) }),
+      onChange: z.object({ variables: z.array(VariableSchema).min(1) }),
     },
     onSubmit: async ({ formApi, value }) => {
-      const secrets = value.secrets;
+      const variables = value.variables;
       await createSecrets({
         teamId,
         projectId,
         environmentId,
         serviceId,
+        variables,
         type: "service",
-        secrets,
       });
       await refetchSecrets();
       formApi.reset();
@@ -62,19 +62,19 @@ export default function CreateVariablesForm() {
           const validatedValue = value.trim();
           return { name: validatedName, value: validatedValue };
         })
-        .filter(Boolean) as TSecret[];
+        .filter(Boolean) as TVariable[];
 
       for (let i = 0; i < pairs.length; i++) {
         const pair = pairs[i];
         if (
           i === 0 &&
-          !form.state.values.secrets[index].name &&
-          !form.state.values.secrets[index].value
+          !form.state.values.variables[index].name &&
+          !form.state.values.variables[index].value
         ) {
-          form.replaceFieldValue("secrets", index, pair);
+          form.replaceFieldValue("variables", index, pair);
           continue;
         }
-        form.insertFieldValue("secrets", index + i, pair);
+        form.insertFieldValue("variables", index + i, pair);
       }
     },
     [],
@@ -86,12 +86,12 @@ export default function CreateVariablesForm() {
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        form.validateArrayFieldsStartingFrom("secrets", 0, "submit");
+        form.validateArrayFieldsStartingFrom("variables", 0, "submit");
         form.handleSubmit();
       }}
     >
       <form.AppField
-        name="secrets"
+        name="variables"
         mode="array"
         children={(field) => (
           <div className="flex w-full flex-col items-start gap-2">
@@ -106,7 +106,7 @@ export default function CreateVariablesForm() {
                       data-first={i === 0 ? true : undefined}
                       className="flex w-full flex-col gap-2 p-3 sm:-mt-5 sm:flex-row sm:data-first:mt-0 md:-mt-7 md:p-4"
                     >
-                      <form.Field key={`secrets[${i}].name`} name={`secrets[${i}].name`}>
+                      <form.Field key={`variables[${i}].name`} name={`variables[${i}].name`}>
                         {(subField) => {
                           return (
                             <field.TextField
@@ -122,7 +122,7 @@ export default function CreateVariablesForm() {
                         }}
                       </form.Field>
                       <div className="flex flex-1 items-start gap-2">
-                        <form.Field key={`secrets[${i}].value`} name={`secrets[${i}].value`}>
+                        <form.Field key={`variables[${i}].value`} name={`variables[${i}].value`}>
                           {(subField) => {
                             return (
                               <field.TextField
@@ -138,13 +138,13 @@ export default function CreateVariablesForm() {
                           }}
                         </form.Field>
                         <form.Subscribe
-                          selector={(state) => [state.values.secrets[0]]}
-                          children={([firstSecret]) => (
+                          selector={(state) => [state.values.variables[0]]}
+                          children={([firsTVariable]) => (
                             <Button
                               disabled={
                                 field.state.value.length <= 1 &&
-                                firstSecret.name === "" &&
-                                firstSecret.value === ""
+                                firsTVariable.name === "" &&
+                                firsTVariable.value === ""
                               }
                               type="button"
                               variant="outline"

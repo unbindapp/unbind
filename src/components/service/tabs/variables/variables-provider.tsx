@@ -5,8 +5,8 @@ import { api } from "@/server/trpc/setup/client";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
 type TVariablesContext = {
-  list: AppRouterQueryResult<AppRouterOutputs["secrets"]["list"]>;
-  create: ReturnType<typeof api.secrets.create.useMutation>;
+  list: AppRouterQueryResult<AppRouterOutputs["variables"]["list"]>;
+  create: ReturnType<typeof api.variables.create.useMutation>;
   teamId: string;
   projectId: string;
   environmentId: string;
@@ -22,7 +22,7 @@ export const VariablesProvider: React.FC<{
   serviceId: string;
   children: ReactNode;
 }> = ({ teamId, projectId, environmentId, serviceId, children }) => {
-  const list = api.secrets.list.useQuery({
+  const list = api.variables.list.useQuery({
     teamId,
     projectId,
     environmentId,
@@ -30,7 +30,7 @@ export const VariablesProvider: React.FC<{
     type: "service",
   });
 
-  const create = api.secrets.create.useMutation();
+  const create = api.variables.create.useMutation();
 
   const value: TVariablesContext = useMemo(
     () => ({
@@ -60,6 +60,6 @@ export default VariablesProvider;
 export const useVariablesUtils = ({ teamId }: { teamId: string }) => {
   const utils = api.useUtils();
   return {
-    invalidate: () => utils.secrets.list.invalidate({ teamId }),
+    invalidate: () => utils.variables.list.invalidate({ teamId }),
   };
 };

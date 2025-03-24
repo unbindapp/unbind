@@ -1,10 +1,10 @@
-import { list_secretsQuerySchema } from "@/server/go/client.gen";
-import { SecretSchema, SecretTypeSchema } from "@/server/trpc/api/secrets/types";
+import { list_variablesQuerySchema } from "@/server/go/client.gen";
+import { VariableSchema, VariableTypeSchema } from "@/server/trpc/api/variables/types";
 import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-export const secretsRouter = createTRPCRouter({
+export const variablesRouter = createTRPCRouter({
   list: publicProcedure
     .input(
       z.object({
@@ -12,7 +12,7 @@ export const secretsRouter = createTRPCRouter({
         projectId: z.string().uuid().optional(),
         environmentId: z.string().uuid().optional(),
         serviceId: z.string().uuid().optional(),
-        type: list_secretsQuerySchema.shape.type,
+        type: list_variablesQuerySchema.shape.type,
       }),
     )
     .query(async function ({ input: { teamId, projectId, environmentId, serviceId, type }, ctx }) {
@@ -23,7 +23,7 @@ export const secretsRouter = createTRPCRouter({
           message: "You need to be logged in to access this resource",
         });
       }
-      const res = await goClient.secrets.list({
+      const res = await goClient.variables.list({
         team_id: teamId,
         project_id: projectId,
         environment_id: environmentId,
@@ -31,7 +31,7 @@ export const secretsRouter = createTRPCRouter({
         type,
       });
       return {
-        secrets: res.data || [],
+        variables: res.data,
       };
     }),
   create: publicProcedure
@@ -41,12 +41,12 @@ export const secretsRouter = createTRPCRouter({
         projectId: z.string().uuid(),
         environmentId: z.string().uuid(),
         serviceId: z.string().uuid(),
-        secrets: z.array(SecretSchema),
-        type: SecretTypeSchema,
+        variables: z.array(VariableSchema),
+        type: VariableTypeSchema,
       }),
     )
     .mutation(async function ({
-      input: { teamId, projectId, environmentId, serviceId, secrets, type },
+      input: { teamId, projectId, environmentId, serviceId, variables, type },
       ctx,
     }) {
       const { session, goClient } = ctx;
@@ -56,16 +56,16 @@ export const secretsRouter = createTRPCRouter({
           message: "You need to be logged in to access this resource",
         });
       }
-      const res = await goClient.secrets.upsert({
+      const res = await goClient.variables.upsert({
         team_id: teamId,
         project_id: projectId,
         environment_id: environmentId,
         service_id: serviceId,
-        secrets: secrets,
+        variables,
         type,
       });
       return {
-        secrets: res.data || [],
+        variables: res.data,
       };
     }),
   delete: publicProcedure
@@ -75,12 +75,12 @@ export const secretsRouter = createTRPCRouter({
         projectId: z.string().uuid(),
         environmentId: z.string().uuid(),
         serviceId: z.string().uuid(),
-        secrets: z.array(z.object({ name: z.string() })),
-        type: SecretTypeSchema,
+        variables: z.array(z.object({ name: z.string() })),
+        type: VariableTypeSchema,
       }),
     )
     .mutation(async function ({
-      input: { teamId, projectId, environmentId, serviceId, secrets, type },
+      input: { teamId, projectId, environmentId, serviceId, variables, type },
       ctx,
     }) {
       const { session, goClient } = ctx;
@@ -90,12 +90,12 @@ export const secretsRouter = createTRPCRouter({
           message: "You need to be logged in to access this resource",
         });
       }
-      const res = await goClient.secrets.delete({
+      const res = await goClient.variables.delete({
         team_id: teamId,
         project_id: projectId,
         environment_id: environmentId,
         service_id: serviceId,
-        secrets,
+        variables,
         type,
       });
       return {
