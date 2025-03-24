@@ -22,7 +22,7 @@ export default function CreateVariablesForm() {
       secrets: [{ name: "", value: "" }] as TSecret[],
     },
     validators: {
-      onChange: z.object({ secrets: z.array(SecretSchema) }),
+      onChange: z.object({ secrets: z.array(SecretSchema).min(1) }),
     },
     onSubmit: async ({ formApi, value }) => {
       const secrets = value.secrets;
@@ -31,7 +31,6 @@ export default function CreateVariablesForm() {
         projectId,
         environmentId,
         serviceId,
-        isBuildSecret: true,
         type: "service",
         secrets,
       });
@@ -86,10 +85,8 @@ export default function CreateVariablesForm() {
       className="flex w-full flex-col rounded-xl border"
       onSubmit={(e) => {
         e.preventDefault();
-        for (let i = 0; i < form.state.values.secrets.length; i++) {
-          form.setFieldMeta(`secrets[${i}].name`, (meta) => ({ ...meta, isTouched: true }));
-          form.setFieldMeta(`secrets[${i}].value`, (meta) => ({ ...meta, isTouched: true }));
-        }
+        e.stopPropagation();
+        form.validateArrayFieldsStartingFrom("secrets", 0, "submit");
         form.handleSubmit();
       }}
     >

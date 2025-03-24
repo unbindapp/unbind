@@ -119,10 +119,14 @@ export const CreateProjectResponseBodySchema = z
   })
   .strict();
 
+export const ServiceBuilderSchema = z.enum(['nixpacks', 'railpack', 'docker']);
+
+export const ServiceTypeSchema = z.enum(['git', 'dockerfile']);
+
 export const CreateServiceInputSchema = z
   .object({
     auto_deploy: z.boolean().optional(),
-    builder: z.string(), // Builder of the service - docker, railpack
+    builder: ServiceBuilderSchema, // Builder of the service - docker, nixpacks, railpack
     description: z.string().optional(),
     display_name: z.string(),
     environment_id: z.string(),
@@ -138,38 +142,38 @@ export const CreateServiceInputSchema = z
     repository_owner: z.string().optional(),
     run_command: z.string().optional(),
     team_id: z.string(),
-    type: z.string(), // Type of service, e.g. 'git', 'docker'
+    type: ServiceTypeSchema, // Type of service, e.g. 'git', 'docker'
   })
   .strict();
 
 export const ServiceConfigResponseSchema = z
   .object({
     auto_deploy: z.boolean(),
+    builder: ServiceBuilderSchema,
+    framework: FrameworkSchema.optional(),
     git_branch: z.string().optional(),
     host: z.string().optional(),
     image: z.string().optional(),
     port: z.number().optional(),
+    provider: ProviderSchema.optional(),
     public: z.boolean(),
     replicas: z.number(),
     run_command: z.string().optional(),
+    type: ServiceTypeSchema,
   })
   .strict();
 
 export const ServiceResponseSchema = z
   .object({
-    builder: z.string(),
     config: ServiceConfigResponseSchema,
     created_at: z.string(),
     description: z.string(),
     display_name: z.string(),
     environment_id: z.string(),
-    framework: FrameworkSchema.optional(),
     git_repository: z.string().optional(),
     github_installation_id: z.number().optional(),
     id: z.string(),
     name: z.string(),
-    provider: ProviderSchema.optional(),
-    type: z.string(),
     updated_at: z.string(),
   })
   .strict();
@@ -471,17 +475,21 @@ export const ServiceConfigEdgesSchema = z
 export const ServiceConfigSchema = z
   .object({
     auto_deploy: z.boolean().optional(),
+    builder: ServiceBuilderSchema.optional(),
     created_at: z.string().optional(),
     edges: ServiceConfigEdgesSchema,
+    framework: FrameworkSchema.optional(),
     git_branch: z.string().optional(),
     host: z.string().optional(),
     id: z.string(),
     image: z.string().optional(),
     port: z.number().optional(),
+    provider: ProviderSchema.optional(),
     public: z.boolean().optional(),
     replicas: z.number().optional(),
     run_command: z.string().optional(),
     service_id: z.string().optional(),
+    type: ServiceTypeSchema.optional(),
     updated_at: z.string().optional(),
   })
   .strict();
@@ -500,20 +508,16 @@ export const ServiceEdgesSchema = z
 
 export const ServiceSchema: z.ZodType<unknown> = z
   .object({
-    builder: z.string().optional(),
     created_at: z.string().optional(),
     description: z.string().optional(),
     display_name: z.string().optional(),
     edges: ServiceEdgesSchema,
     environment_id: z.string().optional(),
-    framework: FrameworkSchema.optional(),
     git_repository: z.string().optional(),
     github_installation_id: z.number().optional(),
     id: z.string(),
     kubernetes_secret: z.string().optional(),
     name: z.string().optional(),
-    provider: ProviderSchema.optional(),
-    type: z.string().optional(),
     updated_at: z.string().optional(),
   })
   .strict();
@@ -880,6 +884,7 @@ export const UpdateProjectResponseBodySchema = z
 export const UpdateServiceInputSchema = z
   .object({
     auto_deploy: z.boolean().optional(),
+    builder: ServiceBuilderSchema.optional(),
     description: z.string().nullable().optional(),
     display_name: z.string().nullable().optional(),
     environment_id: z.string(),
@@ -893,6 +898,7 @@ export const UpdateServiceInputSchema = z
     run_command: z.string().optional(),
     service_id: z.string(),
     team_id: z.string(),
+    type: ServiceTypeSchema.optional(),
   })
   .strict();
 
@@ -933,6 +939,8 @@ export type Provider = z.infer<typeof ProviderSchema>;
 export type EnvironmentResponse = z.infer<typeof EnvironmentResponseSchema>;
 export type ProjectResponse = z.infer<typeof ProjectResponseSchema>;
 export type CreateProjectResponseBody = z.infer<typeof CreateProjectResponseBodySchema>;
+export type ServiceBuilder = z.infer<typeof ServiceBuilderSchema>;
+export type ServiceType = z.infer<typeof ServiceTypeSchema>;
 export type CreateServiceInput = z.infer<typeof CreateServiceInputSchema>;
 export type ServiceConfigResponse = z.infer<typeof ServiceConfigResponseSchema>;
 export type ServiceResponse = z.infer<typeof ServiceResponseSchema>;

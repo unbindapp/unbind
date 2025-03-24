@@ -40,7 +40,7 @@ export default function ServiceCard({
           <div className="flex w-full items-center justify-start gap-2">
             <ServiceIcon
               color="brand"
-              variant={service.framework || service.provider}
+              variant={service.config.framework || service.config.provider}
               className="-ml-1 size-6"
             />
             <h3 className="min-w-0 shrink overflow-hidden leading-tight font-bold text-ellipsis whitespace-nowrap">

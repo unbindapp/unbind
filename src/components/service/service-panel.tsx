@@ -102,7 +102,7 @@ export default function ServicePanel({
           <DrawerHeader className="flex min-w-0 flex-1 items-center justify-start p-0">
             <DrawerTitle className="flex min-w-0 flex-1 items-center justify-start gap-2.5">
               <ServiceIcon
-                variant={service.framework || service.provider}
+                variant={service.config.framework || service.config.provider}
                 color="brand"
                 className="-ml-1 size-7 sm:size-8"
               />

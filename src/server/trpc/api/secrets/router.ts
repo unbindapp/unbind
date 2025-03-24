@@ -42,12 +42,11 @@ export const secretsRouter = createTRPCRouter({
         environmentId: z.string(),
         serviceId: z.string(),
         secrets: z.array(SecretSchema),
-        isBuildSecret: z.boolean(),
         type: SecretTypeSchema,
       }),
     )
     .mutation(async function ({
-      input: { teamId, projectId, environmentId, serviceId, secrets, isBuildSecret, type },
+      input: { teamId, projectId, environmentId, serviceId, secrets, type },
       ctx,
     }) {
       const { session, goClient } = ctx;
