@@ -8,8 +8,8 @@ export const projectsRouter = createTRPCRouter({
   get: publicProcedure
     .input(
       z.object({
-        teamId: z.string(),
-        projectId: z.string(),
+        teamId: z.string().uuid(),
+        projectId: z.string().uuid(),
       }),
     )
     .query(async function ({ input: { teamId, projectId }, ctx }) {
@@ -28,7 +28,7 @@ export const projectsRouter = createTRPCRouter({
   list: publicProcedure
     .input(
       z.object({
-        teamId: z.string(),
+        teamId: z.string().uuid(),
       }),
     )
     .query(async function ({ input: { teamId }, ctx }) {
@@ -47,7 +47,7 @@ export const projectsRouter = createTRPCRouter({
   create: publicProcedure
     .input(
       z.object({
-        teamId: z.string(),
+        teamId: z.string().uuid(),
         displayName: z.string().optional(),
         description: z.string().optional(),
       }),
@@ -75,8 +75,8 @@ export const projectsRouter = createTRPCRouter({
     .input(
       z
         .object({
-          teamId: z.string(),
-          projectId: z.string(),
+          teamId: z.string().uuid(),
+          projectId: z.string().uuid(),
         })
         .merge(ProjectUpdateFormSchema),
     )
@@ -103,8 +103,8 @@ export const projectsRouter = createTRPCRouter({
   delete: publicProcedure
     .input(
       z.object({
-        teamId: z.string(),
-        projectId: z.string(),
+        teamId: z.string().uuid(),
+        projectId: z.string().uuid(),
       }),
     )
     .mutation(async function ({ input: { teamId, projectId }, ctx }) {

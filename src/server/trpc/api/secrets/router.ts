@@ -8,10 +8,10 @@ export const secretsRouter = createTRPCRouter({
   list: publicProcedure
     .input(
       z.object({
-        teamId: z.string(),
-        projectId: z.string().optional(),
-        environmentId: z.string().optional(),
-        serviceId: z.string().optional(),
+        teamId: z.string().uuid(),
+        projectId: z.string().uuid().optional(),
+        environmentId: z.string().uuid().optional(),
+        serviceId: z.string().uuid().optional(),
         type: list_secretsQuerySchema.shape.type,
       }),
     )
@@ -37,10 +37,10 @@ export const secretsRouter = createTRPCRouter({
   create: publicProcedure
     .input(
       z.object({
-        teamId: z.string(),
-        projectId: z.string(),
-        environmentId: z.string(),
-        serviceId: z.string(),
+        teamId: z.string().uuid(),
+        projectId: z.string().uuid(),
+        environmentId: z.string().uuid(),
+        serviceId: z.string().uuid(),
         secrets: z.array(SecretSchema),
         type: SecretTypeSchema,
       }),
@@ -71,10 +71,10 @@ export const secretsRouter = createTRPCRouter({
   delete: publicProcedure
     .input(
       z.object({
-        teamId: z.string(),
-        projectId: z.string(),
-        environmentId: z.string(),
-        serviceId: z.string(),
+        teamId: z.string().uuid(),
+        projectId: z.string().uuid(),
+        environmentId: z.string().uuid(),
+        serviceId: z.string().uuid(),
         secrets: z.array(z.object({ name: z.string() })),
         type: SecretTypeSchema,
       }),

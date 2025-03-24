@@ -21,7 +21,7 @@ export default function LastDeploymentTime({ service }: TProps) {
       suppressHydrationWarning
       className="min-w-0 shrink overflow-hidden text-sm font-medium text-ellipsis whitespace-nowrap"
     >
-      {`${timeDiffStr} via ${sourceToTitle[service.builder] || "Unknown"}`}
+      {`${timeDiffStr} via ${sourceToTitle[service.config.builder] || "Unknown"}`}
     </p>
   );
 }

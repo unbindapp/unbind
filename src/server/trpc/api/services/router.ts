@@ -7,9 +7,9 @@ export const servicesRouter = createTRPCRouter({
   list: publicProcedure
     .input(
       z.object({
-        teamId: z.string(),
-        projectId: z.string(),
-        environmentId: z.string(),
+        teamId: z.string().uuid(),
+        projectId: z.string().uuid(),
+        environmentId: z.string().uuid(),
       }),
     )
     .query(async function ({ input: { teamId, projectId, environmentId }, ctx }) {
@@ -32,10 +32,10 @@ export const servicesRouter = createTRPCRouter({
   get: publicProcedure
     .input(
       z.object({
-        teamId: z.string(),
-        projectId: z.string(),
-        environmentId: z.string(),
-        serviceId: z.string(),
+        teamId: z.string().uuid(),
+        projectId: z.string().uuid(),
+        environmentId: z.string().uuid(),
+        serviceId: z.string().uuid(),
       }),
     )
     .query(async function ({ input: { teamId, projectId, environmentId, serviceId }, ctx }) {
