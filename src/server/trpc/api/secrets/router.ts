@@ -63,7 +63,6 @@ export const secretsRouter = createTRPCRouter({
         environment_id: environmentId,
         service_id: serviceId,
         secrets: secrets,
-        is_build_secret: isBuildSecret,
         type,
       });
       return {

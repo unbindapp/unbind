@@ -1,5 +1,225 @@
 import { z } from 'zod';
 
+export const CallbackResponseBodySchema = z
+  .object({
+    access_token: z.string(),
+    expiry: z.string(),
+    id_token: z.string(),
+    refresh_token: z.string(),
+    token_type: z.string(),
+  })
+  .strict();
+
+export const CreateBuildInputBodySchema = z
+  .object({
+    environment_id: z.string(),
+    project_id: z.string(),
+    service_id: z.string(),
+    team_id: z.string(),
+  })
+  .strict();
+
+export const DeploymentStatusSchema = z.enum([
+  'queued',
+  'running',
+  'completed',
+  'cancelled',
+  'failed',
+]);
+
+export const DeploymentResponseSchema = z
+  .object({
+    attempts: z.number(),
+    completed_at: z.string().optional(),
+    created_at: z.string(),
+    error: z.string().optional(),
+    id: z.string(),
+    service_id: z.string(),
+    started_at: z.string().optional(),
+    status: DeploymentStatusSchema,
+    updated_at: z.string(),
+  })
+  .strict();
+
+export const CreateBuildOutputBodySchema = z
+  .object({
+    data: DeploymentResponseSchema,
+  })
+  .strict();
+
+export const CreateProjectInputBodySchema = z
+  .object({
+    description: z.string().nullable().optional(),
+    display_name: z.string(),
+    team_id: z.string(),
+  })
+  .strict();
+
+export const FrameworkSchema = z.enum([
+  'next',
+  'astro',
+  'vite',
+  'cra',
+  'angular',
+  'remix',
+  'bun',
+  'express',
+  'python',
+  'django',
+  'flask',
+  'fastapi',
+  'fasthtml',
+  'gin',
+  'spring-boot',
+  'laravel',
+  'unknown',
+]);
+
+export const ProviderSchema = z.enum([
+  'node',
+  'deno',
+  'go',
+  'java',
+  'php',
+  'python',
+  'staticfile',
+  'unknown',
+]);
+
+export const EnvironmentResponseSchema = z
+  .object({
+    active: z.boolean(),
+    created_at: z.string(),
+    description: z.string(),
+    display_name: z.string(),
+    framework_summary: z.array(FrameworkSchema).optional(),
+    id: z.string(),
+    name: z.string(),
+    provider_summary: z.array(ProviderSchema).optional(),
+    service_count: z.number().optional(),
+  })
+  .strict();
+
+export const ProjectResponseSchema = z
+  .object({
+    created_at: z.string(),
+    description: z.string().nullable(),
+    display_name: z.string(),
+    environments: z.array(EnvironmentResponseSchema),
+    id: z.string(),
+    name: z.string(),
+    status: z.string(),
+    team_id: z.string(),
+  })
+  .strict();
+
+export const CreateProjectResponseBodySchema = z
+  .object({
+    data: ProjectResponseSchema,
+  })
+  .strict();
+
+export const CreateServiceInputSchema = z
+  .object({
+    auto_deploy: z.boolean().optional(),
+    builder: z.string(), // Builder of the service - docker, railpack
+    description: z.string().optional(),
+    display_name: z.string(),
+    environment_id: z.string(),
+    git_branch: z.string().optional(),
+    github_installation_id: z.number().optional(),
+    host: z.string().optional(),
+    image: z.string().optional(),
+    port: z.number().optional(),
+    project_id: z.string(),
+    public: z.boolean().optional(),
+    replicas: z.number().optional(),
+    repository_name: z.string().optional(),
+    repository_owner: z.string().optional(),
+    run_command: z.string().optional(),
+    team_id: z.string(),
+    type: z.string(), // Type of service, e.g. 'git', 'docker'
+  })
+  .strict();
+
+export const ServiceConfigResponseSchema = z
+  .object({
+    auto_deploy: z.boolean(),
+    git_branch: z.string().optional(),
+    host: z.string().optional(),
+    image: z.string().optional(),
+    port: z.number().optional(),
+    public: z.boolean(),
+    replicas: z.number(),
+    run_command: z.string().optional(),
+  })
+  .strict();
+
+export const ServiceResponseSchema = z
+  .object({
+    builder: z.string(),
+    config: ServiceConfigResponseSchema,
+    created_at: z.string(),
+    description: z.string(),
+    display_name: z.string(),
+    environment_id: z.string(),
+    framework: FrameworkSchema.optional(),
+    git_repository: z.string().optional(),
+    github_installation_id: z.number().optional(),
+    id: z.string(),
+    name: z.string(),
+    provider: ProviderSchema.optional(),
+    type: z.string(),
+    updated_at: z.string(),
+  })
+  .strict();
+
+export const CreateServiceResponseBodySchema = z
+  .object({
+    data: ServiceResponseSchema,
+  })
+  .strict();
+
+export const DataStructSchema = z
+  .object({
+    deleted: z.boolean(),
+    id: z.string(),
+  })
+  .strict();
+
+export const DeleteProjectInputBodySchema = z
+  .object({
+    project_id: z.string(),
+    team_id: z.string(),
+  })
+  .strict();
+
+export const DeleteProjectResponseBodySchema = z
+  .object({
+    data: DataStructSchema,
+  })
+  .strict();
+
+export const SecretDeleteInputSchema = z
+  .object({
+    name: z.string(),
+  })
+  .strict();
+
+export const SecretTypeSchema = z.enum(['team', 'project', 'environment', 'service']);
+
+export const DeleteSecretSecretsInputBodySchema = z
+  .object({
+    environment_id: z.string().optional(), // If present without service_id, mutate environment secrets - requires project_id
+    is_build_secret: z.boolean().optional(),
+    project_id: z.string().optional(), // If present without environment_id, mutate team secrets
+    secrets: z.array(SecretDeleteInputSchema).nullable(),
+    service_id: z.string().optional(), // If present, mutate service secrets - requires project_id and environment_id
+    team_id: z.string(),
+    type: SecretTypeSchema, // The type of secret
+  })
+  .strict();
+
 export const PermissionEdgesSchema = z
   .object({
     groups: z
@@ -268,8 +488,8 @@ export const ServiceConfigSchema = z
 
 export const ServiceEdgesSchema = z
   .object({
-    build_jobs: z
-      .array(z.lazy(() => BuildJobSchema))
+    deployments: z
+      .array(z.lazy(() => DeploymentSchema))
       .nullable()
       .optional(),
     environment: EnvironmentSchema.optional(),
@@ -277,37 +497,6 @@ export const ServiceEdgesSchema = z
     service_config: ServiceConfigSchema.optional(),
   })
   .strict();
-
-export const FrameworkSchema = z.enum([
-  'next',
-  'astro',
-  'vite',
-  'cra',
-  'angular',
-  'remix',
-  'bun',
-  'express',
-  'python',
-  'django',
-  'flask',
-  'fastapi',
-  'fasthtml',
-  'gin',
-  'spring-boot',
-  'laravel',
-  'unknown',
-]);
-
-export const ProviderSchema = z.enum([
-  'node',
-  'deno',
-  'go',
-  'java',
-  'php',
-  'python',
-  'staticfile',
-  'unknown',
-]);
 
 export const ServiceSchema: z.ZodType<unknown> = z
   .object({
@@ -321,7 +510,6 @@ export const ServiceSchema: z.ZodType<unknown> = z
     git_repository: z.string().optional(),
     github_installation_id: z.number().optional(),
     id: z.string(),
-    kubernetes_build_secret: z.string().optional(),
     kubernetes_secret: z.string().optional(),
     name: z.string().optional(),
     provider: ProviderSchema.optional(),
@@ -330,215 +518,26 @@ export const ServiceSchema: z.ZodType<unknown> = z
   })
   .strict();
 
-export const BuildJobEdgesSchema = z
+export const DeploymentEdgesSchema = z
   .object({
     service: ServiceSchema.optional(),
   })
   .strict();
 
-export const BuildJobStatusSchema = z.enum([
-  'queued',
-  'running',
-  'completed',
-  'cancelled',
-  'failed',
-]);
-
-export const BuildJobSchema: z.ZodType<unknown> = z
+export const DeploymentSchema: z.ZodType<unknown> = z
   .object({
     attempts: z.number().optional(),
     completed_at: z.string().optional(),
     created_at: z.string().optional(),
-    edges: BuildJobEdgesSchema,
+    edges: DeploymentEdgesSchema,
     error: z.string().optional(),
     id: z.string(),
     kubernetes_job_name: z.string().optional(),
     kubernetes_job_status: z.string().optional(),
     service_id: z.string().optional(),
     started_at: z.string().optional(),
-    status: BuildJobStatusSchema.optional(),
+    status: DeploymentStatusSchema.optional(),
     updated_at: z.string().optional(),
-  })
-  .strict();
-
-export const BuildJobResponseSchema = z
-  .object({
-    attempts: z.number(),
-    completed_at: z.string().optional(),
-    created_at: z.string(),
-    error: z.string().optional(),
-    id: z.string(),
-    service_id: z.string(),
-    started_at: z.string().optional(),
-    status: BuildJobStatusSchema,
-    updated_at: z.string(),
-  })
-  .strict();
-
-export const CallbackResponseBodySchema = z
-  .object({
-    access_token: z.string(),
-    expiry: z.string(),
-    id_token: z.string(),
-    refresh_token: z.string(),
-    token_type: z.string(),
-  })
-  .strict();
-
-export const CreateBuildInputBodySchema = z
-  .object({
-    environment_id: z.string(),
-    project_id: z.string(),
-    service_id: z.string(),
-    team_id: z.string(),
-  })
-  .strict();
-
-export const CreateBuildOutputBodySchema = z
-  .object({
-    data: BuildJobResponseSchema,
-  })
-  .strict();
-
-export const CreateProjectInputBodySchema = z
-  .object({
-    description: z.string().nullable().optional(),
-    display_name: z.string(),
-    team_id: z.string(),
-  })
-  .strict();
-
-export const EnvironmentResponseSchema = z
-  .object({
-    active: z.boolean(),
-    created_at: z.string(),
-    description: z.string(),
-    display_name: z.string(),
-    framework_summary: z.array(FrameworkSchema).optional(),
-    id: z.string(),
-    name: z.string(),
-    provider_summary: z.array(ProviderSchema).optional(),
-    service_count: z.number().optional(),
-  })
-  .strict();
-
-export const ProjectResponseSchema = z
-  .object({
-    created_at: z.string(),
-    description: z.string().nullable(),
-    display_name: z.string(),
-    environments: z.array(EnvironmentResponseSchema),
-    id: z.string(),
-    name: z.string(),
-    status: z.string(),
-    team_id: z.string(),
-  })
-  .strict();
-
-export const CreateProjectResponseBodySchema = z
-  .object({
-    data: ProjectResponseSchema,
-  })
-  .strict();
-
-export const CreateServiceInputSchema = z
-  .object({
-    auto_deploy: z.boolean().optional(),
-    builder: z.string(), // Builder of the service - docker, railpack
-    description: z.string().optional(),
-    display_name: z.string(),
-    environment_id: z.string(),
-    git_branch: z.string().optional(),
-    github_installation_id: z.number().optional(),
-    host: z.string().optional(),
-    image: z.string().optional(),
-    port: z.number().optional(),
-    project_id: z.string(),
-    public: z.boolean().optional(),
-    replicas: z.number().optional(),
-    repository_name: z.string().optional(),
-    repository_owner: z.string().optional(),
-    run_command: z.string().optional(),
-    team_id: z.string(),
-    type: z.string(), // Type of service, e.g. 'git', 'docker'
-  })
-  .strict();
-
-export const ServiceConfigResponseSchema = z
-  .object({
-    auto_deploy: z.boolean(),
-    git_branch: z.string().optional(),
-    host: z.string().optional(),
-    image: z.string().optional(),
-    port: z.number().optional(),
-    public: z.boolean(),
-    replicas: z.number(),
-    run_command: z.string().optional(),
-  })
-  .strict();
-
-export const ServiceResponseSchema = z
-  .object({
-    builder: z.string(),
-    config: ServiceConfigResponseSchema,
-    created_at: z.string(),
-    description: z.string(),
-    display_name: z.string(),
-    environment_id: z.string(),
-    framework: FrameworkSchema.optional(),
-    git_repository: z.string().optional(),
-    github_installation_id: z.number().optional(),
-    id: z.string(),
-    name: z.string(),
-    provider: ProviderSchema.optional(),
-    type: z.string(),
-    updated_at: z.string(),
-  })
-  .strict();
-
-export const CreateServiceResponseBodySchema = z
-  .object({
-    data: ServiceResponseSchema,
-  })
-  .strict();
-
-export const DataStructSchema = z
-  .object({
-    deleted: z.boolean(),
-    id: z.string(),
-  })
-  .strict();
-
-export const DeleteProjectInputBodySchema = z
-  .object({
-    project_id: z.string(),
-    team_id: z.string(),
-  })
-  .strict();
-
-export const DeleteProjectResponseBodySchema = z
-  .object({
-    data: DataStructSchema,
-  })
-  .strict();
-
-export const SecretDeleteInputSchema = z
-  .object({
-    name: z.string(),
-  })
-  .strict();
-
-export const SecretTypeSchema = z.enum(['team', 'project', 'environment', 'service']);
-
-export const DeleteSecretSecretsInputBodySchema = z
-  .object({
-    environment_id: z.string().optional(), // If present without service_id, mutate environment secrets - requires project_id
-    is_build_secret: z.boolean().optional(),
-    project_id: z.string().optional(), // If present without environment_id, mutate team secrets
-    secrets: z.array(SecretDeleteInputSchema).nullable(),
-    service_id: z.string().optional(), // If present, mutate service secrets - requires project_id and environment_id
-    team_id: z.string(),
-    type: SecretTypeSchema, // The type of secret
   })
   .strict();
 
@@ -785,16 +784,16 @@ export const PaginationResponseMetadataSchema = z
   })
   .strict();
 
-export const ListBuildJobResponseDataSchema = z
+export const ListDeploymentResponseDataSchema = z
   .object({
-    jobs: z.array(BuildJobResponseSchema).nullable(),
+    jobs: z.array(DeploymentResponseSchema).nullable(),
     metadata: PaginationResponseMetadataSchema,
   })
   .strict();
 
-export const ListBuildJobsResponseBodySchema = z
+export const ListDeploymentsResponseBodySchema = z
   .object({
-    data: ListBuildJobResponseDataSchema,
+    data: ListDeploymentResponseDataSchema,
   })
   .strict();
 
@@ -835,7 +834,6 @@ export const MeResponseBodySchema = z
 
 export const SecretResponseSchema = z
   .object({
-    is_build_secret: z.boolean(), // Whether or not this secret is for build process, not deployement
     name: z.string(),
     type: SecretTypeSchema,
     value: z.string(),
@@ -924,6 +922,27 @@ export const UpsertSecretsInputBodySchema = z
   })
   .strict();
 
+export type CallbackResponseBody = z.infer<typeof CallbackResponseBodySchema>;
+export type CreateBuildInputBody = z.infer<typeof CreateBuildInputBodySchema>;
+export type DeploymentStatus = z.infer<typeof DeploymentStatusSchema>;
+export type DeploymentResponse = z.infer<typeof DeploymentResponseSchema>;
+export type CreateBuildOutputBody = z.infer<typeof CreateBuildOutputBodySchema>;
+export type CreateProjectInputBody = z.infer<typeof CreateProjectInputBodySchema>;
+export type Framework = z.infer<typeof FrameworkSchema>;
+export type Provider = z.infer<typeof ProviderSchema>;
+export type EnvironmentResponse = z.infer<typeof EnvironmentResponseSchema>;
+export type ProjectResponse = z.infer<typeof ProjectResponseSchema>;
+export type CreateProjectResponseBody = z.infer<typeof CreateProjectResponseBodySchema>;
+export type CreateServiceInput = z.infer<typeof CreateServiceInputSchema>;
+export type ServiceConfigResponse = z.infer<typeof ServiceConfigResponseSchema>;
+export type ServiceResponse = z.infer<typeof ServiceResponseSchema>;
+export type CreateServiceResponseBody = z.infer<typeof CreateServiceResponseBodySchema>;
+export type DataStruct = z.infer<typeof DataStructSchema>;
+export type DeleteProjectInputBody = z.infer<typeof DeleteProjectInputBodySchema>;
+export type DeleteProjectResponseBody = z.infer<typeof DeleteProjectResponseBodySchema>;
+export type SecretDeleteInput = z.infer<typeof SecretDeleteInputSchema>;
+export type SecretType = z.infer<typeof SecretTypeSchema>;
+export type DeleteSecretSecretsInputBody = z.infer<typeof DeleteSecretSecretsInputBodySchema>;
 export type PermissionEdges = z.infer<typeof PermissionEdgesSchema>;
 export type Permission = z.infer<typeof PermissionSchema>;
 export type GithubInstallationEdges = z.infer<typeof GithubInstallationEdgesSchema>;
@@ -948,30 +967,9 @@ export type Environment = z.infer<typeof EnvironmentSchema>;
 export type ServiceConfigEdges = z.infer<typeof ServiceConfigEdgesSchema>;
 export type ServiceConfig = z.infer<typeof ServiceConfigSchema>;
 export type ServiceEdges = z.infer<typeof ServiceEdgesSchema>;
-export type Framework = z.infer<typeof FrameworkSchema>;
-export type Provider = z.infer<typeof ProviderSchema>;
 export type Service = z.infer<typeof ServiceSchema>;
-export type BuildJobEdges = z.infer<typeof BuildJobEdgesSchema>;
-export type BuildJobStatus = z.infer<typeof BuildJobStatusSchema>;
-export type BuildJob = z.infer<typeof BuildJobSchema>;
-export type BuildJobResponse = z.infer<typeof BuildJobResponseSchema>;
-export type CallbackResponseBody = z.infer<typeof CallbackResponseBodySchema>;
-export type CreateBuildInputBody = z.infer<typeof CreateBuildInputBodySchema>;
-export type CreateBuildOutputBody = z.infer<typeof CreateBuildOutputBodySchema>;
-export type CreateProjectInputBody = z.infer<typeof CreateProjectInputBodySchema>;
-export type EnvironmentResponse = z.infer<typeof EnvironmentResponseSchema>;
-export type ProjectResponse = z.infer<typeof ProjectResponseSchema>;
-export type CreateProjectResponseBody = z.infer<typeof CreateProjectResponseBodySchema>;
-export type CreateServiceInput = z.infer<typeof CreateServiceInputSchema>;
-export type ServiceConfigResponse = z.infer<typeof ServiceConfigResponseSchema>;
-export type ServiceResponse = z.infer<typeof ServiceResponseSchema>;
-export type CreateServiceResponseBody = z.infer<typeof CreateServiceResponseBodySchema>;
-export type DataStruct = z.infer<typeof DataStructSchema>;
-export type DeleteProjectInputBody = z.infer<typeof DeleteProjectInputBodySchema>;
-export type DeleteProjectResponseBody = z.infer<typeof DeleteProjectResponseBodySchema>;
-export type SecretDeleteInput = z.infer<typeof SecretDeleteInputSchema>;
-export type SecretType = z.infer<typeof SecretTypeSchema>;
-export type DeleteSecretSecretsInputBody = z.infer<typeof DeleteSecretSecretsInputBodySchema>;
+export type DeploymentEdges = z.infer<typeof DeploymentEdgesSchema>;
+export type Deployment = z.infer<typeof DeploymentSchema>;
 export type ErrorDetail = z.infer<typeof ErrorDetailSchema>;
 export type ErrorModel = z.infer<typeof ErrorModelSchema>;
 export type GetEnvironmentOutputBody = z.infer<typeof GetEnvironmentOutputBodySchema>;
@@ -1002,8 +1000,8 @@ export type GithubRepositoryDetailResponseBody = z.infer<
 export type HealthResponseBody = z.infer<typeof HealthResponseBodySchema>;
 export type Item = z.infer<typeof ItemSchema>;
 export type PaginationResponseMetadata = z.infer<typeof PaginationResponseMetadataSchema>;
-export type ListBuildJobResponseData = z.infer<typeof ListBuildJobResponseDataSchema>;
-export type ListBuildJobsResponseBody = z.infer<typeof ListBuildJobsResponseBodySchema>;
+export type ListDeploymentResponseData = z.infer<typeof ListDeploymentResponseDataSchema>;
+export type ListDeploymentsResponseBody = z.infer<typeof ListDeploymentsResponseBodySchema>;
 export type ListProjectResponseBody = z.infer<typeof ListProjectResponseBodySchema>;
 export type ListServiceResponseBody = z.infer<typeof ListServiceResponseBodySchema>;
 export type LogEvent = z.infer<typeof LogEventSchema>;
@@ -1027,9 +1025,9 @@ export const callbackQuerySchema = z.object({
   code: z.string(),
 });
 
-export const list_buildsQuerySchema = z.object({
+export const list_deploymentsQuerySchema = z.object({
   cursor: z.string().optional(),
-  status: BuildJobStatusSchema.optional(), // Filter by status
+  status: DeploymentStatusSchema.optional(), // Filter by status
   id: z.string(), // The ID of the build
   team_id: z.string(), // The ID of the team
   project_id: z.string(), // The ID of the project
@@ -1199,7 +1197,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
         }
       },
     },
-    builds: {
+    deployments: {
       create: async (
         params: CreateBuildInputBody,
         fetchOptions?: RequestInit,
@@ -1208,7 +1206,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/builds/create`);
+          const url = new URL(`${apiUrl}/deployments/create`);
 
           const options: RequestInit = {
             method: 'POST',
@@ -1241,15 +1239,15 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
         }
       },
       list: async (
-        params: z.infer<typeof list_buildsQuerySchema>,
+        params: z.infer<typeof list_deploymentsQuerySchema>,
         fetchOptions?: RequestInit,
-      ): Promise<ListBuildJobsResponseBody> => {
+      ): Promise<ListDeploymentsResponseBody> => {
         try {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/builds/list`);
-          const validatedQuery = list_buildsQuerySchema.parse(params);
+          const url = new URL(`${apiUrl}/deployments/list`);
+          const validatedQuery = list_deploymentsQuerySchema.parse(params);
           const queryKeys = [
             'cursor',
             'status',
@@ -1288,7 +1286,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return ListBuildJobsResponseBodySchema.parse(data);
+          return ListDeploymentsResponseBodySchema.parse(data);
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;

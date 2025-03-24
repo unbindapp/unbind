@@ -22,6 +22,8 @@ export default function VariablesHeader() {
             : `${data.secrets.length} Variable${data.secrets.length > 1 ? "s" : ""}`}
         </h2>
         <Button
+          disabled={isPending}
+          fadeOnDisabled={false}
           data-open={isOpen ? true : undefined}
           data-closed={!isOpen ? true : undefined}
           className="group/button group-data-pending/header:bg-border group-data-pending/header:animate-skeleton shrink-0 gap-1 px-3 py-2 group-data-pending/header:text-transparent"
