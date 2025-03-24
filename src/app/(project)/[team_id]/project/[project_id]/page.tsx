@@ -5,6 +5,8 @@ import ServiceCardList from "@/components/service/service-card-list";
 import ServicesProvider from "@/components/service/services-provider";
 import { apiServer } from "@/server/trpc/setup/server";
 import { type SearchParams } from "nuqs/server";
+import { ResultAsync } from "neverthrow";
+import { notFound } from "next/navigation";
 
 type TProps = {
   params: Promise<{
@@ -16,22 +18,38 @@ type TProps = {
 
 export default async function Page({ params, searchParams }: TProps) {
   const { team_id: teamId, project_id: projectId } = await params;
-  const { environmentId } = await getProjectPageSearchParams({
-    teamId,
-    projectId,
-    searchParams,
-    currentPathname: `/${teamId}/project/${projectId}`,
-  });
+  const searchParamsRes = await ResultAsync.fromPromise(
+    getProjectPageSearchParams({
+      teamId,
+      projectId,
+      searchParams,
+      currentPathname: `/${teamId}/project/${projectId}`,
+    }),
+    () => new Error("Failed to get search params"),
+  );
 
-  const initialData = await apiServer.services.list({
-    teamId,
-    projectId,
-    environmentId,
-  });
+  if (searchParamsRes.isErr()) {
+    return notFound();
+  }
+
+  const environmentId = searchParamsRes.value.environmentId;
+
+  const initialData = await ResultAsync.fromPromise(
+    apiServer.services.list({
+      teamId,
+      projectId,
+      environmentId,
+    }),
+    () => new Error("Failed to fetch services"),
+  );
+
+  if (initialData.isErr()) {
+    return notFound();
+  }
 
   return (
     <ServicesProvider
-      initialData={initialData}
+      initialData={initialData.value}
       teamId={teamId}
       projectId={projectId}
       environmentId={environmentId}

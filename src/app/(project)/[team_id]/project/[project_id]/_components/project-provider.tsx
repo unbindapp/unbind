@@ -15,7 +15,7 @@ const ProjectContext = createContext<TProjectContext | null>(null);
 export const ProjectProvider: React.FC<{
   teamId: string;
   projectId: string;
-  initialData: AppRouterOutputs["projects"]["get"];
+  initialData?: AppRouterOutputs["projects"]["get"];
   children: ReactNode;
 }> = ({ teamId, projectId, initialData, children }) => {
   const query = api.projects.get.useQuery({ projectId, teamId }, { initialData });

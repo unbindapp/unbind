@@ -16,7 +16,7 @@ export default function TeamBreadcrumb({ className }: TProps) {
   const { asyncPush } = useAsyncPush();
   const { teamId: teamIdFromPathname } = useIdsFromPathname();
 
-  const { data: teamData } = useTeams();
+  const { data: teamData, isPending } = useTeams();
 
   const [selectedTeamId, setSelectedTeamId] = useState(teamIdFromPathname);
 
@@ -24,9 +24,10 @@ export default function TeamBreadcrumb({ className }: TProps) {
     setSelectedTeamId(teamIdFromPathname);
   }, [teamIdFromPathname, teamData]);
 
-  const selectedTeam = selectedTeamId
-    ? teamData?.teams.find((t) => t.id === selectedTeamId)
-    : undefined;
+  const selectedTeam =
+    selectedTeamId && !isPending
+      ? teamData?.teams.find((t) => t.id === selectedTeamId) || null
+      : undefined;
 
   async function onTeamIdSelect(id: string) {
     setSelectedTeamId(id);

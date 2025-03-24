@@ -19,7 +19,7 @@ type Item<T> = T & { id: string; display_name: string };
 
 type TProps<T> = {
   title: string;
-  selectedItem: Item<T> | undefined;
+  selectedItem: Item<T> | undefined | null;
   items: Item<T>[] | undefined;
   onSelect: (id: string) => void;
   IconItem?: FC<{ id: string; className?: string }>;
@@ -54,7 +54,13 @@ export function BreadcrumbItem<T>({
   return (
     <DropdownOrDrawer title={title} open={open} onOpenChange={setOpen}>
       <DropdownOrDrawerTrigger>
-        <Trigger item={selectedItem} Icon={IconItem} flipChevronOnSm={flipChevronOnSm} />
+        <Trigger
+          item={
+            selectedItem === null ? { display_name: "Not Found", id: "not-found" } : selectedItem
+          }
+          Icon={IconItem}
+          flipChevronOnSm={flipChevronOnSm}
+        />
       </DropdownOrDrawerTrigger>
       <DropdownOrDrawerContentForDrawer>
         <div className="group/list flex w-full flex-col px-2 pt-2 pb-8">
@@ -144,11 +150,11 @@ function SheetItem<T>({
   className,
 }: {
   item: Item<T>;
-  selectedItem: Item<T> | undefined;
+  selectedItem: Item<T> | null | undefined;
   setOpen: (open: boolean) => void;
   onSelect: (id: string) => void;
-  lastHoveredItem: Item<T> | undefined;
-  setLastHoveredItem: Dispatch<SetStateAction<Item<T> | undefined>>;
+  lastHoveredItem: Item<T> | null | undefined;
+  setLastHoveredItem: Dispatch<SetStateAction<Item<T> | null | undefined>>;
   showArrow?: (i: Item<T>) => boolean;
   IconItem?: FC<{ id: string; className?: string }>;
   className?: string;
@@ -203,11 +209,11 @@ function DropdownItem<T>({
   className,
 }: {
   item: Item<T>;
-  selectedItem: Item<T> | undefined;
+  selectedItem: Item<T> | null | undefined;
   setOpen: (open: boolean) => void;
   onSelect: (id: string) => void;
-  lastHoveredItem: Item<T> | undefined;
-  setLastHoveredItem: Dispatch<SetStateAction<Item<T> | undefined>>;
+  lastHoveredItem: Item<T> | null | undefined;
+  setLastHoveredItem: Dispatch<SetStateAction<Item<T> | null | undefined>>;
   showArrow?: (i: Item<T>) => boolean;
   IconItem?: FC<{ id: string; className?: string }>;
   className?: string;

@@ -3,7 +3,9 @@ import ContextAwareCommandPanel from "@/components/command-panel/context-aware-c
 import NavbarSafeAreaInsetBottom from "@/components/navigation/navbar-safe-area-inset-bottom";
 import ProjectNavbar from "@/components/project/project-navbar";
 import ProjectsProvider from "@/components/project/projects-provider";
-import { apiServer, HydrateClient } from "@/server/trpc/setup/server";
+import { apiServer } from "@/server/trpc/setup/server";
+import { ResultAsync } from "neverthrow";
+import { redirect } from "next/navigation";
 import { ReactNode } from "react";
 
 type TProps = {
@@ -15,31 +17,43 @@ export default async function Layout({ children, params }: TProps) {
   const { team_id: teamId, project_id: projectId } = await params;
 
   const [projectInitialData, projectsInitialData] = await Promise.all([
-    apiServer.projects.get({
-      teamId,
-      projectId,
-    }),
-    apiServer.projects.list({
-      teamId,
-    }),
+    ResultAsync.fromPromise(
+      apiServer.projects.get({
+        teamId,
+        projectId,
+      }),
+      () => new Error("Failed to fetch project"),
+    ),
+    ResultAsync.fromPromise(
+      apiServer.projects.list({
+        teamId,
+      }),
+      () => new Error("Failed to fetch projects"),
+    ),
   ]);
 
+  if (projectInitialData.isErr()) {
+    return redirect(`/${teamId}`);
+  }
+
+  if (projectsInitialData.isErr()) {
+    return redirect(`/${teamId}`);
+  }
+
   return (
-    <HydrateClient>
-      <ProjectsProvider initialData={projectsInitialData} teamId={teamId}>
-        <ProjectProvider initialData={projectInitialData} teamId={teamId} projectId={projectId}>
-          <ProjectNavbar />
-          {children}
-          <NavbarSafeAreaInsetBottom className="sm:hidden" />
-          <ContextAwareCommandPanel
-            context={{
-              contextType: "project",
-              projectId,
-              teamId,
-            }}
-          />
-        </ProjectProvider>
-      </ProjectsProvider>
-    </HydrateClient>
+    <ProjectsProvider initialData={projectsInitialData.value} teamId={teamId}>
+      <ProjectProvider initialData={projectInitialData.value} teamId={teamId} projectId={projectId}>
+        <ProjectNavbar />
+        {children}
+        <NavbarSafeAreaInsetBottom className="sm:hidden" />
+        <ContextAwareCommandPanel
+          context={{
+            contextType: "project",
+            projectId,
+            teamId,
+          }}
+        />
+      </ProjectProvider>
+    </ProjectsProvider>
   );
 }
