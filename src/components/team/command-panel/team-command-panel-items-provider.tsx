@@ -19,7 +19,7 @@ export const TeamCommandPanelItemsProvider: React.FC<{
   children: ReactNode;
 }> = ({ teamId, page, children }) => {
   const { data, isError, isPending, error } = useQuery({
-    queryKey: ["team-command-panel", teamId, page.id],
+    queryKey: ["team-command-panel-items", teamId, page.id],
     queryFn: page.items ? () => page.items : () => page.getItems({ teamId, projectId: "" }),
     enabled: page.items ? false : true,
   });
