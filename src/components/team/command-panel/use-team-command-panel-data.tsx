@@ -81,7 +81,7 @@ export default function useTeamCommandPanelData({ teamId }: { teamId: string }) 
           keywords: ["deploy from github", "deploy from gitlab", "deploy from bitbucket"],
           Icon: ({ className }) => <ServiceIcon variant="github" className={className} />,
           subpage: {
-            id: "github_repos",
+            id: "github_repos_team",
             title: "GitHub Repos",
             parentPageId: commandPanelTeamRootPage,
             inputPlaceholder: "Deploy from GitHub...",

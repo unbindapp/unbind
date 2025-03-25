@@ -139,7 +139,7 @@ export default function useProjectCommandPanelData() {
           keywords: ["deploy from github", "deploy from gitlab", "deploy from bitbucket"],
           Icon: ({ className }) => <ServiceIcon variant="github" className={className} />,
           subpage: {
-            id: "github_repos",
+            id: "github_repos_project",
             title: "GitHub Repos",
             parentPageId: commandPanelProjectRootPage,
             inputPlaceholder: "Deploy from GitHub...",

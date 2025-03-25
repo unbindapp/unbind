@@ -142,7 +142,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
           keywords: ["deploy from github", "deploy from gitlab", "deploy from bitbucket"],
           Icon: ({ className }) => <ServiceIcon variant="github" className={className} />,
           subpage: {
-            id: "github_repos",
+            id: "github_repos_context_aware",
             title: "GitHub Repos",
             parentPageId: commandPanelContextAwareRootPage,
             inputPlaceholder: "Deploy from GitHub...",
