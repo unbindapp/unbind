@@ -1,4 +1,5 @@
 import { useProject } from "@/app/(project)/[team_id]/project/[project_id]/_components/project-provider";
+import { useCommandPanelState } from "@/components/command-panel/command-panel-state-provider";
 import { commandPanelKey, commandPanelPageKey } from "@/components/command-panel/constants";
 import { findCommandPanelPage } from "@/components/command-panel/helpers";
 import { TCommandPanelItem, TCommandPanelPage } from "@/components/command-panel/types";
@@ -6,17 +7,17 @@ import ServiceIcon from "@/components/icons/service";
 import { commandPanelProjectRootPage } from "@/components/project/command-panel/constants";
 import { servicePanelServiceIdKey } from "@/components/service/constants";
 import { useServicesUtils } from "@/components/service/services-provider";
-import { cn } from "@/components/ui/utils";
 import { AppRouterOutputs } from "@/server/trpc/api/root";
 import { api } from "@/server/trpc/setup/client";
 import { useMutation } from "@tanstack/react-query";
-import { BlocksIcon, DatabaseIcon, LoaderIcon } from "lucide-react";
+import { BlocksIcon, DatabaseIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { parseAsString, useQueryState } from "nuqs";
-import { FC, useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { toast } from "sonner";
 
 export default function useProjectCommandPanelData() {
+  const { setIsPendingId } = useCommandPanelState();
   const {
     teamId,
     projectId,
@@ -36,7 +37,8 @@ export default function useProjectCommandPanelData() {
   );
   const timeout = useRef<NodeJS.Timeout | null>(null);
   const { mutateAsync: createServiceInDb } = api.services.create.useMutation();
-  const { mutateAsync: createService, isPending: isPendingCreateService } = useMutation({
+  const { mutateAsync: createService } = useMutation({
+    mutationKey: ["create_service"],
     mutationFn: async ({
       repository,
     }: {
@@ -91,8 +93,10 @@ export default function useProjectCommandPanelData() {
       return result;
     },
     onSuccess: (data) => {
-      console.log("Service created", data);
       setOpenServicePanelId(data.service.id);
+    },
+    onSettled: () => {
+      setIsPendingId(null);
     },
   });
 
@@ -123,25 +127,6 @@ export default function useProjectCommandPanelData() {
 
   const utils = api.useUtils();
 
-  const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
-  const PendingOrIconForCreateService = useCallback(
-    ({
-      id,
-      Icon,
-      className,
-    }: {
-      id: string;
-      Icon: FC<{ className?: string }>;
-      className?: string;
-    }) => {
-      if (isPendingCreateService && lastSelectedId === id) {
-        return <LoaderIcon className={cn("animate-spin", className)} />;
-      }
-      return <Icon className={className} />;
-    },
-    [lastSelectedId, isPendingCreateService],
-  );
-
   const rootPage: TCommandPanelPage = useMemo(
     () => ({
       id: commandPanelProjectRootPage,
@@ -158,27 +143,25 @@ export default function useProjectCommandPanelData() {
             title: "GitHub Repos",
             parentPageId: commandPanelProjectRootPage,
             inputPlaceholder: "Deploy from GitHub...",
-            IconSet: ({ id, className }: { id: string; className?: string }) => (
-              <PendingOrIconForCreateService
-                id={id}
-                Icon={({ className }) => (
-                  <ServiceIcon color="brand" variant="github" className={className} />
-                )}
-                className={className}
-              />
-            ),
             getItems: async () => {
               const res = await utils.git.listRepositories.fetch({ teamId });
-              const items: TCommandPanelItem[] = res.repositories.map((r) => ({
-                title: `${r.full_name}`,
-                keywords: [],
-                onSelect: async () => {
-                  if (isPendingCreateService) return;
-                  setLastSelectedId(`${r.full_name}`);
-                  await createService({ repository: r });
-                  closePanel();
-                },
-              }));
+              const items: TCommandPanelItem[] = res.repositories.map((r) => {
+                const id = `git_repo_${r.full_name}`;
+                return {
+                  id,
+                  title: `${r.full_name}`,
+                  keywords: [],
+                  onSelect: async ({ isPendingId }) => {
+                    if (isPendingId !== null) return;
+                    setIsPendingId(`${r.full_name}`);
+                    await createService({ repository: r });
+                    closePanel();
+                  },
+                  Icon: ({ className }) => (
+                    <ServiceIcon color="brand" variant="github" className={className} />
+                  ),
+                };
+              });
               return items;
             },
           },
@@ -319,15 +302,8 @@ export default function useProjectCommandPanelData() {
         },
       ],
     }),
-    [
-      onSelectPlaceholder,
-      utils,
-      teamId,
-      closePanel,
-      PendingOrIconForCreateService,
-      createService,
-      isPendingCreateService,
-    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [onSelectPlaceholder, utils, teamId, closePanel],
   );
 
   const setCurrentPageId = useCallback(

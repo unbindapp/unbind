@@ -1,3 +1,4 @@
+import { useCommandPanelState } from "@/components/command-panel/command-panel-state-provider";
 import { commandPanelKey, commandPanelPageKey } from "@/components/command-panel/constants";
 import { findCommandPanelPage } from "@/components/command-panel/helpers";
 import { TCommandPanelItem, TCommandPanelPage } from "@/components/command-panel/types";
@@ -5,21 +6,22 @@ import ServiceIcon from "@/components/icons/service";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { commandPanelTeamRootPage } from "@/components/team/command-panel/constants";
-import { cn } from "@/components/ui/utils";
 import { api } from "@/server/trpc/setup/client";
-import { BlocksIcon, DatabaseIcon, FolderPlusIcon, LoaderIcon } from "lucide-react";
+import { BlocksIcon, DatabaseIcon, FolderPlusIcon } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
-import { FC, useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { toast } from "sonner";
 
 export default function useTeamCommandPanelData({ teamId }: { teamId: string }) {
+  const { setIsPendingId } = useCommandPanelState();
+
   const [, setPanelId] = useQueryState(commandPanelKey);
   const [panelPageId, setPanelPageId] = useQueryState(
     commandPanelPageKey,
     parseAsString.withDefault(commandPanelTeamRootPage),
   );
   const timeout = useRef<NodeJS.Timeout | null>(null);
-  const { asyncPush, isPending: isAsyncPushPending } = useAsyncPush();
+  const { asyncPush } = useAsyncPush();
 
   const onSelectPlaceholder = useCallback(() => {
     toast.success("Successful", {
@@ -38,45 +40,23 @@ export default function useTeamCommandPanelData({ teamId }: { teamId: string }) 
 
   const utils = api.useUtils();
 
-  const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
-  const PendingOrIcon = useCallback(
-    ({
-      id,
-      Icon,
-      className,
-      isPending,
-    }: {
-      id: string;
-      Icon: FC<{ className?: string }>;
-      className?: string;
-      isPending: boolean;
-    }) => {
-      if (isPending && lastSelectedId === id) {
-        return <LoaderIcon className={cn("animate-spin", className)} />;
-      }
-      return <Icon className={className} />;
-    },
-    [lastSelectedId],
-  );
-
   const { invalidate: invalidateProjects } = useProjectsUtils({ teamId: teamId });
 
-  const { mutate: createProject, isPending: isCreateProjectPending } =
-    api.projects.create.useMutation({
-      onSuccess: async (res) => {
-        const projectId = res.data?.id;
-        const environments = res.data.environments;
-        if (environments.length < 1) {
-          throw new Error("No environment found");
-        }
-        const environmentId = environments[0].id;
-        if (!projectId || !environmentId) {
-          throw new Error("Project or environment ID not found");
-        }
-        await invalidateProjects();
-        await asyncPush(`/${teamId}/project/${projectId}?environment=${environmentId}`);
-      },
-    });
+  const { mutate: createProject } = api.projects.create.useMutation({
+    onSuccess: async (res) => {
+      const projectId = res.data?.id;
+      const environments = res.data.environments;
+      if (environments.length < 1) {
+        throw new Error("No environment found");
+      }
+      const environmentId = environments[0].id;
+      if (!projectId || !environmentId) {
+        throw new Error("Project or environment ID not found");
+      }
+      await invalidateProjects();
+      await asyncPush(`/${teamId}/project/${projectId}?environment=${environmentId}`);
+    },
+  });
 
   const rootPage: TCommandPanelPage = useMemo(
     () => ({
@@ -86,21 +66,15 @@ export default function useTeamCommandPanelData({ teamId }: { teamId: string }) 
       inputPlaceholder: "Deploy something...",
       items: [
         {
+          id: "new-project",
           title: "New Project",
           keywords: ["New Project", "Create project...", "Creating project..."],
-          onSelect: () => {
-            if (isCreateProjectPending) return;
-            setLastSelectedId("new-project");
+          onSelect: ({ isPendingId }) => {
+            if (isPendingId === "new-project") return;
+            setIsPendingId("new-project");
             createProject({ teamId: teamId });
           },
-          Icon: ({ className }) => (
-            <PendingOrIcon
-              isPending={isCreateProjectPending || isAsyncPushPending}
-              id="new-project"
-              Icon={FolderPlusIcon}
-              className={className}
-            />
-          ),
+          Icon: FolderPlusIcon,
         },
         {
           title: "GitHub Repo",
@@ -111,15 +85,15 @@ export default function useTeamCommandPanelData({ teamId }: { teamId: string }) 
             title: "GitHub Repos",
             parentPageId: commandPanelTeamRootPage,
             inputPlaceholder: "Deploy from GitHub...",
-            IconSet: ({ className }: { className?: string }) => (
-              <ServiceIcon color="brand" variant="github" className={className} />
-            ),
             getItems: async () => {
               const res = await utils.main.getRepos.fetch({ teamId });
               const items: TCommandPanelItem[] = res.repos.map((r) => ({
                 title: `${r.full_name}`,
                 keywords: [],
                 onSelect: () => onSelectPlaceholder(),
+                Icon: ({ className }: { className?: string }) => (
+                  <ServiceIcon color="brand" variant="github" className={className} />
+                ),
               }));
               return items;
             },
@@ -261,15 +235,8 @@ export default function useTeamCommandPanelData({ teamId }: { teamId: string }) 
         },
       ],
     }),
-    [
-      onSelectPlaceholder,
-      utils,
-      teamId,
-      isCreateProjectPending,
-      isAsyncPushPending,
-      PendingOrIcon,
-      createProject,
-    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [onSelectPlaceholder, utils, teamId, createProject],
   );
 
   const setCurrentPageId = useCallback(

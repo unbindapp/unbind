@@ -47,8 +47,8 @@ export default function ProjectCard({ project, className }: TProps) {
             </p>
             {serviceIcons !== undefined && serviceIcons.length > 0 && (
               <div className="-my-2 -mr-1 flex items-center gap-1">
-                {serviceIcons.map((s) => (
-                  <ServiceIcon className="size-5" key={s as string} variant={s} />
+                {serviceIcons.map((s, index) => (
+                  <ServiceIcon className="size-5" key={`${s}-${index}`} variant={s} />
                 ))}
                 {serviceIcons.length > iconLenght && <EllipsisIcon className="size-5" />}
               </div>

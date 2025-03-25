@@ -6,7 +6,7 @@ export type TCommandPanelPage = {
   parentPageId: string | null;
   inputPlaceholder: string;
 } & (
-  | { items: TCommandPanelItem[]; getItems?: never; IconSet?: never }
+  | { items: TCommandPanelItem[]; getItems?: never }
   | {
       getItems: ({
         teamId,
@@ -15,17 +15,17 @@ export type TCommandPanelPage = {
         teamId: string;
         projectId: string;
       }) => Promise<TCommandPanelItem[]>;
-      IconSet: FC<{ id: string; className?: string }>;
       items?: never;
     }
 );
 
 export type TCommandPanelItem = {
+  id?: string;
   title: string;
   titleSuffix?: string;
-  Icon?: FC<{ className?: string }>;
+  Icon: FC<{ className?: string }>;
   subpage?: TCommandPanelPage;
-  onSelect?: () => void;
+  onSelect?: (props: { isPendingId: string | null }) => void;
   keywords: string[];
 };
 

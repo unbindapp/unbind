@@ -1,4 +1,5 @@
 import { CommandPanelTrigger } from "@/components/command-panel/command-panel";
+import { CommandPanelStateProvider } from "@/components/command-panel/command-panel-state-provider";
 import ProjectCommandPanelItemsProvider, {
   useProjectCommandPanelItems,
 } from "@/components/project/command-panel/project-command-panel-items-provider";
@@ -12,7 +13,17 @@ type TProps = {
   children: ReactNode;
 };
 
-export function ProjectCommandPanelTrigger({ open, setOpen, children }: TProps) {
+export default function ProjectCommandPanelTrigger({ open, setOpen, children }: TProps) {
+  return (
+    <CommandPanelStateProvider>
+      <ProjectCommandPanelTrigger_ open={open} setOpen={setOpen}>
+        {children}
+      </ProjectCommandPanelTrigger_>
+    </CommandPanelStateProvider>
+  );
+}
+
+function ProjectCommandPanelTrigger_({ open, setOpen, children }: TProps) {
   const { rootPage, currentPage, setCurrentPageId, allPageIds, goToParentPage } =
     useProjectCommandPanelData();
 

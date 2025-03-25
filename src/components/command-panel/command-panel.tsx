@@ -1,3 +1,4 @@
+import { useCommandPanelState } from "@/components/command-panel/command-panel-state-provider";
 import {
   getAllItemsFromCommandPanelPage,
   getFirstCommandListItem,
@@ -30,6 +31,7 @@ import {
   TDialogContentVariants,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/components/ui/utils";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { useCommandState } from "cmdk";
 import { ChevronLeftIcon, ChevronRightIcon, LoaderIcon } from "lucide-react";
@@ -300,20 +302,18 @@ function Content({
           <CommandGroup>
             {!isPending &&
               items &&
-              items.map((item) => (
+              items.map((item, i) => (
                 <Item
-                  currentPage={currentPage}
-                  key={item.title}
+                  key={`${item.id || item.title}-${i}`}
                   item={item}
                   setCurrentPageId={setCurrentPageId}
                 />
               ))}
             {!isPending &&
               !isError &&
-              allOtherItems.map((item) => (
+              allOtherItems.map((item, i) => (
                 <ConditionalItem
-                  currentPage={currentPage}
-                  key={item.title}
+                  key={`${item.id || item.title}-${i}`}
                   item={item}
                   setCurrentPageId={setCurrentPageId}
                 />
@@ -322,8 +322,7 @@ function Content({
               !items &&
               Array.from({ length: 10 }).map((_, i) => (
                 <Item
-                  currentPage={currentPage}
-                  key={i}
+                  key={`loading-${i}`}
                   item={{
                     title: `Loading ${i}`,
                     keywords: [],
@@ -422,39 +421,36 @@ function Input({
 }
 
 function ConditionalItem({
-  currentPage,
   item,
   setCurrentPageId,
 }: {
-  currentPage: TCommandPanelPage;
   item: TCommandPanelItem;
   setCurrentPageId: (id: string) => void;
 }) {
   const search = useCommandState((state) => state.search);
   if (!search) return null;
-  return <Item currentPage={currentPage} item={item} setCurrentPageId={setCurrentPageId} />;
+  return <Item item={item} setCurrentPageId={setCurrentPageId} />;
 }
 
 function Item({
-  currentPage,
   item,
   setCurrentPageId,
   isPlaceholder,
 }: {
-  currentPage: TCommandPanelPage;
   item: TCommandPanelItem;
   setCurrentPageId: (id: string) => void;
   isPlaceholder?: boolean;
 }) {
   const search = useCommandState((state) => state.search);
   const value = useCommandState((state) => state.value);
+  const { isPendingId } = useCommandPanelState();
 
   const onSelect = useCallback(() => {
     if (item.subpage) {
       setCurrentPageId(item.subpage.id);
     }
-    item.onSelect?.();
-  }, [item, setCurrentPageId]);
+    item.onSelect?.({ isPendingId });
+  }, [item, setCurrentPageId, isPendingId]);
 
   useHotkeys("arrowright", () => onSelect(), {
     enabled:
@@ -465,6 +461,16 @@ function Item({
     enableOnFormTags: true,
   });
 
+  const Icon = useMemo(() => {
+    if (item.id !== undefined ? isPendingId === item.id : isPendingId === item.title) {
+      function Loader({ className }: { className?: string }) {
+        return <LoaderIcon className={cn("animate-spin", className)} />;
+      }
+      return Loader;
+    }
+    return item.Icon;
+  }, [isPendingId, item.id, item.title, item.Icon]);
+
   return (
     <CommandItem
       data-placeholder={isPlaceholder ? true : undefined}
@@ -474,16 +480,7 @@ function Item({
       onSelect={onSelect}
     >
       <div className="flex min-w-0 flex-1 items-center justify-start gap-2.5">
-        {currentPage.IconSet ? (
-          <currentPage.IconSet
-            id={item.title}
-            className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton -ml-0.5 size-5 group-data-placeholder/item:rounded-full"
-          />
-        ) : (
-          item.Icon && (
-            <item.Icon className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton -ml-0.5 size-5 group-data-placeholder/item:rounded-full" />
-          )
-        )}
+        <Icon className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton -ml-0.5 size-5 group-data-placeholder/item:rounded-full" />
         <p className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink leading-tight group-data-placeholder/item:rounded-md">
           {item.title}
           {item.titleSuffix && <span className="text-muted-foreground">{item.titleSuffix}</span>}

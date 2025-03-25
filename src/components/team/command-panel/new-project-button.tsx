@@ -5,7 +5,7 @@ import {
   commandPanelTeam,
   commandPanelTeamRootPage,
 } from "@/components/team/command-panel/constants";
-import { TeamCommandPanelTrigger } from "@/components/team/command-panel/team-command-panel";
+import TeamCommandPanelTrigger from "@/components/team/command-panel/team-command-panel";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { PlusIcon } from "lucide-react";

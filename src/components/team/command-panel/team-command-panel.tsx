@@ -1,4 +1,5 @@
 import { CommandPanelTrigger } from "@/components/command-panel/command-panel";
+import { CommandPanelStateProvider } from "@/components/command-panel/command-panel-state-provider";
 import TeamCommandPanelItemsProvider, {
   useTeamCommandPanelItems,
 } from "@/components/team/command-panel/team-command-panel-items-provider";
@@ -13,7 +14,17 @@ type TProps = {
   children: ReactNode;
 };
 
-export function TeamCommandPanelTrigger({ teamId, open, setOpen, children }: TProps) {
+export default function TeamCommandPanelTrigger({ teamId, open, setOpen, children }: TProps) {
+  return (
+    <CommandPanelStateProvider>
+      <TeamCommandPanelTrigger_ teamId={teamId} open={open} setOpen={setOpen}>
+        {children}
+      </TeamCommandPanelTrigger_>
+    </CommandPanelStateProvider>
+  );
+}
+
+function TeamCommandPanelTrigger_({ teamId, open, setOpen, children }: TProps) {
   const { rootPage, currentPage, setCurrentPageId, allPageIds, goToParentPage } =
     useTeamCommandPanelData({ teamId });
 

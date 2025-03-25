@@ -5,7 +5,7 @@ import {
   commandPanelProjectFromList,
   commandPanelProjectRootPage,
 } from "@/components/project/command-panel/constants";
-import { ProjectCommandPanelTrigger } from "@/components/project/command-panel/project-command-panel";
+import ProjectCommandPanelTrigger from "@/components/project/command-panel/project-command-panel";
 import ServiceCard from "@/components/service/service-card";
 import { useServices } from "@/components/service/services-provider";
 import { Button } from "@/components/ui/button";

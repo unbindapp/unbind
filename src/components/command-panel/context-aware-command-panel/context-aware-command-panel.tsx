@@ -1,6 +1,7 @@
 "use client";
 
 import { CommandPanelTrigger } from "@/components/command-panel/command-panel";
+import { CommandPanelStateProvider } from "@/components/command-panel/command-panel-state-provider";
 import {
   commandPanelContextAware,
   commandPanelContextAwareRootPage,
@@ -21,6 +22,14 @@ type Props = {
 };
 
 export default function ContextAwareCommandPanel({ context }: Props) {
+  return (
+    <CommandPanelStateProvider>
+      <ContextAwareCommandPanel_ context={context} />
+    </CommandPanelStateProvider>
+  );
+}
+
+function ContextAwareCommandPanel_({ context }: Props) {
   const [commandPanelId, setCommandPanelId] = useQueryState(commandPanelKey);
   const [, setCommandPanelPageId] = useQueryState(
     commandPanelPageKey,

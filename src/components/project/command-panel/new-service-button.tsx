@@ -5,7 +5,7 @@ import {
   commandPanelProject,
   commandPanelProjectRootPage,
 } from "@/components/project/command-panel/constants";
-import { ProjectCommandPanelTrigger } from "@/components/project/command-panel/project-command-panel";
+import ProjectCommandPanelTrigger from "@/components/project/command-panel/project-command-panel";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";

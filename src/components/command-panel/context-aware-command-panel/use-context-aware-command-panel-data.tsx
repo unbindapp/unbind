@@ -1,3 +1,4 @@
+import { useCommandPanelState } from "@/components/command-panel/command-panel-state-provider";
 import {
   commandPanelContextAwareRootPage,
   commandPanelKey,
@@ -12,7 +13,6 @@ import {
 import ServiceIcon from "@/components/icons/service";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
-import { cn } from "@/components/ui/utils";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { api } from "@/server/trpc/setup/client";
 import {
@@ -22,44 +22,48 @@ import {
   DatabaseIcon,
   FolderPlusIcon,
   KeyRoundIcon,
-  LoaderIcon,
   SettingsIcon,
   TriangleAlertIcon,
   UsersIcon,
   WebhookIcon,
 } from "lucide-react";
+import { ResultAsync } from "neverthrow";
 import { parseAsString, useQueryState } from "nuqs";
-import { FC, useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { toast } from "sonner";
 
 export default function useContextAwareCommandPanelData(context: TContextAwareCommandPanelContext) {
+  const { setIsPendingId } = useCommandPanelState();
+
   const [, setPanelId] = useQueryState(commandPanelKey);
   const [panelPageId, setPanelPageId] = useQueryState(
     commandPanelPageKey,
     parseAsString.withDefault(commandPanelContextAwareRootPage),
   );
-  const { asyncPush, isPending: isAsyncPushPending } = useAsyncPush();
+  const { asyncPush } = useAsyncPush();
   const timeout = useRef<NodeJS.Timeout | null>(null);
   const utils = api.useUtils();
   const { invalidate: invalidateProjects } = useProjectsUtils({ teamId: context.teamId });
   const { environmentId } = useIdsFromPathname();
 
-  const { mutate: createProject, isPending: isCreateProjectPending } =
-    api.projects.create.useMutation({
-      onSuccess: async (res) => {
-        const projectId = res.data?.id;
-        const environments = res.data.environments;
-        if (environments.length < 1) {
-          throw new Error("No environment found");
-        }
-        const environmentId = environments[0].id;
-        if (!projectId || !environmentId) {
-          throw new Error("Project or environment ID not found");
-        }
-        await invalidateProjects();
-        await asyncPush(`/${context.teamId}/project/${projectId}?environment=${environmentId}`);
-      },
-    });
+  const { mutate: createProject } = api.projects.create.useMutation({
+    onSuccess: async (res) => {
+      const projectId = res.data?.id;
+      const environments = res.data.environments;
+      if (environments.length < 1) {
+        throw new Error("No environment found");
+      }
+      const environmentId = environments[0].id;
+      if (!projectId || !environmentId) {
+        throw new Error("Project or environment ID not found");
+      }
+      await invalidateProjects();
+      await asyncPush(`/${context.teamId}/project/${projectId}?environment=${environmentId}`);
+    },
+    onSettled: () => {
+      setIsPendingId(null);
+    },
+  });
 
   const onSelectPlaceholder = useCallback(() => {
     toast.success("Successful", {
@@ -76,33 +80,33 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
     }, 150);
   }, [setPanelId, setPanelPageId]);
 
-  const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
-  const PendingOrIcon = useCallback(
-    ({
-      id,
-      Icon,
-      className,
-      isPending,
-    }: {
-      id: string;
-      Icon: FC<{ className?: string }>;
-      className?: string;
-      isPending: boolean;
-    }) => {
-      if (isPending && lastSelectedId === id) {
-        return <LoaderIcon className={cn("animate-spin", className)} />;
-      }
-      return <Icon className={className} />;
-    },
-    [lastSelectedId],
-  );
-
   const navigateToSettings = useCallback(
-    ({ pathname, context }: { pathname: string; context: TContextAwareCommandPanelContext }) => {
-      setLastSelectedId(`/settings${pathname}`);
-      asyncPush(getSettingsPageHref({ context, pathname, environmentId }));
+    async ({
+      pathname,
+      context,
+      isPendingId,
+    }: {
+      pathname: string;
+      context: TContextAwareCommandPanelContext;
+      isPendingId?: string | null;
+    }) => {
+      const key = `/settings${pathname}`;
+      if (isPendingId === key) return;
+      setIsPendingId(key);
+      const res = await ResultAsync.fromPromise(
+        asyncPush(getSettingsPageHref({ context, pathname, environmentId })),
+        () => new Error("Failed to navigate to settings"),
+      );
+      if (res.isErr()) {
+        toast.error("Failed to navigate", {
+          description: res.error.message,
+          duration: 3000,
+        });
+      }
+      setIsPendingId(null);
     },
-    [asyncPush, environmentId],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [environmentId],
   );
 
   const goToKeywords = useMemo(() => ["go to", "navigate to", "jump to"], []);
@@ -121,21 +125,15 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
         ...(context.contextType === "team"
           ? ([
               {
+                id: "new-project",
                 title: "New Project",
                 keywords: ["New Project", "Create project...", "Creating project..."],
-                onSelect: () => {
-                  if (isCreateProjectPending) return;
-                  setLastSelectedId("new-project");
+                onSelect: (props) => {
+                  if (props?.isPendingId === "new-project") return;
+                  setIsPendingId("new-project");
                   createProject({ teamId: context.teamId });
                 },
-                Icon: ({ className }) => (
-                  <PendingOrIcon
-                    isPending={isCreateProjectPending || isAsyncPushPending}
-                    id="new-project"
-                    Icon={FolderPlusIcon}
-                    className={className}
-                  />
-                ),
+                Icon: FolderPlusIcon,
               },
             ] as TCommandPanelItem[])
           : []),
@@ -148,15 +146,15 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
             title: "GitHub Repos",
             parentPageId: commandPanelContextAwareRootPage,
             inputPlaceholder: "Deploy from GitHub...",
-            IconSet: ({ className }: { id: string; className?: string }) => (
-              <ServiceIcon color="brand" variant="github" className={className} />
-            ),
             getItems: async () => {
               const res = await utils.main.getRepos.fetch({ teamId: context.teamId });
               const items: TCommandPanelItem[] = res.repos.map((r) => ({
                 title: `${r.full_name}`,
                 keywords: [],
                 onSelect: () => onSelectPlaceholder(),
+                Icon: ({ className }: { className?: string }) => (
+                  <ServiceIcon color="brand" variant="github" className={className} />
+                ),
               }));
               return items;
             },
@@ -307,96 +305,82 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
             parentPageId: commandPanelContextAwareRootPage,
             items: [
               {
+                id: `/settings`,
                 title: settingsTitle,
-                onSelect: () => navigateToSettings({ context, pathname: "" }),
-                Icon: ({ className }) => (
-                  <PendingOrIcon
-                    isPending={isAsyncPushPending}
-                    id="/settings"
-                    Icon={SettingsIcon}
-                    className={className}
-                  />
-                ),
+                onSelect: (props) => {
+                  navigateToSettings({ context, pathname: "", isPendingId: props?.isPendingId });
+                },
+                Icon: SettingsIcon,
                 keywords: ["settings", "general", "change", "tweak", "adjust", ...goToKeywords],
               },
               {
+                id: `/settings/shared-variables`,
                 title: "Shared Variables",
                 titleSuffix: ` | ${settingsTitle}`,
-                onSelect: () => {
-                  navigateToSettings({ context, pathname: "/shared-variables" });
+                onSelect: (props) => {
+                  navigateToSettings({
+                    context,
+                    pathname: "/shared-variables",
+                    isPendingId: props?.isPendingId,
+                  });
                 },
-                Icon: ({ className }) => (
-                  <PendingOrIcon
-                    isPending={isAsyncPushPending}
-                    id="/settings/shared-variables"
-                    Icon={KeyRoundIcon}
-                    className={className}
-                  />
-                ),
+                Icon: KeyRoundIcon,
                 keywords: ["environment variables", "secrets", "keys", "values", ...goToKeywords],
               },
               {
+                id: `/settings/members`,
                 title: "Members",
                 titleSuffix: ` | ${settingsTitle}`,
-                onSelect: () => {
-                  navigateToSettings({ context, pathname: "/members" });
+                onSelect: (props) => {
+                  navigateToSettings({
+                    context,
+                    pathname: "/members",
+                    isPendingId: props?.isPendingId,
+                  });
                 },
-                Icon: ({ className }) => (
-                  <PendingOrIcon
-                    isPending={isAsyncPushPending}
-                    id="/settings/members"
-                    Icon={UsersIcon}
-                    className={className}
-                  />
-                ),
+                Icon: UsersIcon,
                 keywords: ["person", "people", "group", ...goToKeywords],
               },
               {
+                id: `/settings/notifications`,
                 title: "Notifications",
                 titleSuffix: ` | ${settingsTitle}`,
-                onSelect: () => {
-                  navigateToSettings({ context, pathname: "/notifications" });
+                onSelect: (props) => {
+                  navigateToSettings({
+                    context,
+                    pathname: "/notifications",
+                    isPendingId: props?.isPendingId,
+                  });
                 },
-                Icon: ({ className }) => (
-                  <PendingOrIcon
-                    isPending={isAsyncPushPending}
-                    id="/settings/notifications"
-                    Icon={BellIcon}
-                    className={className}
-                  />
-                ),
+                Icon: BellIcon,
                 keywords: ["notify", "alert", ...goToKeywords],
               },
               {
+                id: `/settings/webhooks`,
                 title: "Webhooks",
                 titleSuffix: ` | ${settingsTitle}`,
-                onSelect: () => {
-                  navigateToSettings({ context, pathname: "/webhooks" });
+                onSelect: (props) => {
+                  navigateToSettings({
+                    context,
+                    pathname: "/webhooks",
+                    isPendingId: props?.isPendingId,
+                  });
                 },
-                Icon: ({ className }) => (
-                  <PendingOrIcon
-                    isPending={isAsyncPushPending}
-                    id="/settings/webhooks"
-                    Icon={WebhookIcon}
-                    className={className}
-                  />
-                ),
+                Icon: WebhookIcon,
                 keywords: ["hook", "integration", "alert", "connection", ...goToKeywords],
               },
               {
+                id: `/settings/danger-zone`,
                 title: "Danger Zone",
                 titleSuffix: ` | ${settingsTitle}`,
-                onSelect: () => {
-                  navigateToSettings({ context, pathname: "/danger-zone" });
+                onSelect: (props) => {
+                  navigateToSettings({
+                    context,
+                    pathname: "/danger-zone",
+                    isPendingId: props?.isPendingId,
+                  });
                 },
-                Icon: ({ className }) => (
-                  <PendingOrIcon
-                    isPending={isAsyncPushPending}
-                    id="/settings/danger-zone"
-                    Icon={TriangleAlertIcon}
-                    className={className}
-                  />
-                ),
+                Icon: TriangleAlertIcon,
                 keywords: ["delete", "danger", ...goToKeywords],
               },
             ],
@@ -404,18 +388,8 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
         },
       ],
     }),
-    [
-      onSelectPlaceholder,
-      utils,
-      context,
-      settingsTitle,
-      PendingOrIcon,
-      navigateToSettings,
-      goToKeywords,
-      createProject,
-      isAsyncPushPending,
-      isCreateProjectPending,
-    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [onSelectPlaceholder, utils, context, settingsTitle, navigateToSettings, goToKeywords],
   );
 
   const setCurrentPageId = useCallback(
