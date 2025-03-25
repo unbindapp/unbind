@@ -1,4 +1,3 @@
-import GitProviderIcon from "@/components/icons/git-provider";
 import ServiceIcon from "@/components/icons/service";
 import { useService } from "@/components/service/service-provider";
 import CreateVariablesForm from "@/components/service/tabs/variables/create-variables-form";
