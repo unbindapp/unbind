@@ -1,5 +1,5 @@
 import TabIndicator from "@/components/navigation/tab-indicator";
-import { TTab } from "@/components/service/panel/content";
+import { TTab } from "@/components/service/panel/service-panel-content";
 import { useService } from "@/components/service/service-provider";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";

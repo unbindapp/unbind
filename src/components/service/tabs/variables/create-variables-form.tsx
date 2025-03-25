@@ -21,8 +21,8 @@ export const CreateVariablesFormSchema = z.object({
 
 export default function CreateVariablesForm({ variant = "default", onBlur, className }: TProps) {
   const {
-    list: { refetch: refetchSecrets },
-    create: { mutateAsync: createSecrets, error: createError },
+    list: { refetch: refetchVariables },
+    upsert: { mutateAsync: upsertVariables, error: createError },
     teamId,
     projectId,
     environmentId,
@@ -43,7 +43,7 @@ export default function CreateVariablesForm({ variant = "default", onBlur, class
       if (variant === "collapsible") return;
 
       const variables = value.variables;
-      await createSecrets({
+      await upsertVariables({
         teamId,
         projectId,
         environmentId,
@@ -51,7 +51,7 @@ export default function CreateVariablesForm({ variant = "default", onBlur, class
         variables,
         type: "service",
       });
-      await refetchSecrets();
+      await refetchVariables();
       formApi.reset();
     },
   });

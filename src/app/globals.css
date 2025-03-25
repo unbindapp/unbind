@@ -51,6 +51,8 @@
   --warning-foreground: hsl(120 35% 95%);
   --success: hsl(120 85% 20%);
   --success-foreground: hsl(120 35% 95%);
+  --process: hsl(220 85% 28%);
+  --process-foreground: hsl(120 35% 95%);
   --shadow: hsl(120 30% 4%);
   --border: hsl(120 20% 85%);
   --input: hsl(120 50% 97%);
@@ -133,6 +135,8 @@
   --warning-foreground: hsl(120 9% 6%);
   --success: hsl(120 50% 65%);
   --success-foreground: hsl(120 9% 6%);
+  --process: hsl(220 50% 65%);
+  --process-foreground: hsl(120 9% 6%);
   --shadow: hsl(120 11% 3%);
   --border: hsl(120 5% 12%);
   --input: hsl(120 7% 8%);
@@ -308,6 +312,9 @@
 
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
+
+  --color-process: var(--process);
+  --color-process-foreground: var(--process-foreground);
 
   --color-link-chip: var(--link-chip);
   --color-shadow: var(--shadow);

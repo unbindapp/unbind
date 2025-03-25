@@ -21,7 +21,7 @@ export const CreateBuildInputBodySchema = z
 
 export const DeploymentStatusSchema = z.enum([
   'queued',
-  'running',
+  'building',
   'succeeded',
   'cancelled',
   'failed',
@@ -558,6 +558,7 @@ export const ServiceSchema: z.ZodType<unknown> = z
     edges: ServiceEdgesSchema,
     environment_id: z.string().optional(),
     git_repository: z.string().optional(),
+    git_repository_owner: z.string().optional(),
     github_installation_id: z.number().optional(),
     id: z.string(),
     kubernetes_secret: z.string().optional(),

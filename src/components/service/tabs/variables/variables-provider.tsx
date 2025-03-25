@@ -6,7 +6,7 @@ import { createContext, ReactNode, useContext, useMemo } from "react";
 
 type TVariablesContext = {
   list: AppRouterQueryResult<AppRouterOutputs["variables"]["list"]>;
-  create: ReturnType<typeof api.variables.create.useMutation>;
+  upsert: ReturnType<typeof api.variables.upsert.useMutation>;
   teamId: string;
   projectId: string;
   environmentId: string;
@@ -30,18 +30,18 @@ export const VariablesProvider: React.FC<{
     type: "service",
   });
 
-  const create = api.variables.create.useMutation();
+  const upsert = api.variables.upsert.useMutation();
 
   const value: TVariablesContext = useMemo(
     () => ({
       list,
-      create,
+      upsert,
       teamId,
       projectId,
       environmentId,
       serviceId,
     }),
-    [list, create, teamId, projectId, environmentId, serviceId],
+    [list, upsert, teamId, projectId, environmentId, serviceId],
   );
 
   return <VariablesContext.Provider value={value}>{children}</VariablesContext.Provider>;
@@ -57,9 +57,34 @@ export const useVariables = () => {
 
 export default VariablesProvider;
 
-export const useVariablesUtils = ({ teamId }: { teamId: string }) => {
+export const useVariablesUtils = ({
+  teamId,
+  projectId,
+  environmentId,
+  serviceId,
+}: {
+  teamId: string;
+  projectId: string;
+  environmentId: string;
+  serviceId: string;
+}) => {
   const utils = api.useUtils();
   return {
-    invalidate: () => utils.variables.list.invalidate({ teamId }),
+    invalidate: () =>
+      utils.variables.list.invalidate({
+        teamId,
+        projectId,
+        environmentId,
+        serviceId,
+        type: "service",
+      }),
+    refetch: () =>
+      utils.variables.list.refetch({
+        teamId,
+        projectId,
+        environmentId,
+        serviceId,
+        type: "service",
+      }),
   };
 };

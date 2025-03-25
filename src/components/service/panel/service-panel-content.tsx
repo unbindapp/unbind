@@ -1,8 +1,9 @@
 "use client";
 
 import { servicePanelTabKey } from "@/components/service/constants";
-import { DeployedServiceContent } from "@/components/service/panel/content-deployed";
-import UndeployedServiceContent from "@/components/service/panel/content-undeployed";
+import { DeployedServiceContent } from "@/components/service/panel/service-panel-content-deployed";
+import UndeployedServiceContent from "@/components/service/panel/service-panel-content-undeployed";
+import { useService } from "@/components/service/service-provider";
 import Deployments from "@/components/service/tabs/deployments/deployments";
 import Logs from "@/components/service/tabs/logs/logs";
 import Metrics from "@/components/service/tabs/metrics/metrics";
@@ -47,6 +48,7 @@ type TProps = {
 };
 
 export default function ServicePanelContent({ service }: TProps) {
+  const { teamId, projectId, environmentId } = useService();
   const [currentTabId, setCurrentTab] = useQueryState(
     servicePanelTabKey,
     parseAsString.withDefault(tabs[0].value),
@@ -54,7 +56,16 @@ export default function ServicePanelContent({ service }: TProps) {
   const currentTab = tabs.find((tab) => tab.value === currentTabId);
 
   if (!service.last_deployment) {
-    return <UndeployedServiceContent service={service} />;
+    return (
+      <VariablesProvider
+        teamId={teamId}
+        projectId={projectId}
+        environmentId={environmentId}
+        serviceId={service.id}
+      >
+        <UndeployedServiceContent service={service} />
+      </VariablesProvider>
+    );
   }
 
   return (

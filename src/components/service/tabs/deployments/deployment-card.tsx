@@ -8,35 +8,61 @@ import { CircleCheckIcon, EllipsisVerticalIcon, LoaderIcon, TriangleAlertIcon } 
 type TProps =
   | {
       deployment: TDeploymentShallow;
+      lastDeploymentId?: string;
       isPlaceholder?: never;
     }
   | {
       isPlaceholder: true;
+      lastDeploymentId?: string;
       deployment?: never;
     };
 
-export default function DeploymentCard({ deployment, isPlaceholder }: TProps) {
+function getColor({
+  deployment,
+  isPlaceholder,
+  lastDeploymentId,
+}: {
+  deployment?: TDeploymentShallow;
+  isPlaceholder?: boolean;
+  lastDeploymentId?: string;
+}) {
+  if (isPlaceholder || !deployment) {
+    return "default";
+  } else {
+    switch (deployment.status) {
+      case "queued":
+        return "process";
+      case "building":
+        return "process";
+      case "failed":
+        return "destructive";
+      case "cancelled":
+        return "default";
+      case "succeeded":
+        if (lastDeploymentId && deployment && lastDeploymentId === deployment.id) return "success";
+        return "default";
+      default:
+        return "default";
+    }
+  }
+}
+
+export default function DeploymentCard({ deployment, lastDeploymentId, isPlaceholder }: TProps) {
   return (
     <div
-      data-status={
-        isPlaceholder
-          ? "default"
-          : deployment.status === "running"
-            ? "success"
-            : deployment.status === "failed"
-              ? "destructive"
-              : "default"
-      }
+      data-color={getColor({ deployment, isPlaceholder, lastDeploymentId })}
       data-placeholder={isPlaceholder ? true : undefined}
-      className="group/card data-[status=destructive]/card:bg-destructive/4 data-[status=success]/card:bg-success/4 data-[status=destructive]/card:border-destructive/20 data-[status=success]/card:border-success/20 relative flex w-full flex-row items-stretch rounded-xl border p-2"
+      className="group/card data-[color=destructive]:bg-destructive/4 data-[color=process]:bg-process/4 data-[color=success]:bg-success/4 data-[color=destructive]:border-destructive/20 data-[color=process]:border-process/20 data-[color=success]:border-success/20 relative flex w-full flex-row items-stretch rounded-xl border p-2"
     >
-      <div className="bg-foreground/8 group-data-[status=destructive]/card:bg-destructive group-data-[status=success]/card:bg-success group-data-placeholder/card:bg-muted-more-foreground group-data-placeholder/card:animate-skeleton w-1 self-stretch rounded-full" />
+      <div className="bg-foreground/8 group-data-[color=destructive]/card:bg-destructive group-data-[color=process]/card:bg-process group-data-[color=success]/card:bg-success group-data-placeholder/card:bg-muted-more-foreground group-data-placeholder/card:animate-skeleton w-1 self-stretch rounded-full" />
       <div className="flex min-w-0 flex-1 flex-col py-0.5 pr-6 pl-3 sm:flex-row sm:items-center sm:px-3 sm:py-2">
         <div className="flex shrink-0 items-center justify-start pr-3 sm:w-32">
-          <div className="bg-foreground/8 text-muted-foreground group-data-[status=destructive]/card:bg-destructive/12 group-data-[status=destructive]/card:text-destructive group-data-[status=success]/card:bg-success/12 group-data-[status=success]/card:text-success group-data-placeholder/card:bg-muted-more-foreground group-data-placeholder/card:animate-skeleton flex min-w-0 shrink items-center justify-start gap-1.5 rounded-md px-2 py-1.25 text-sm font-medium group-data-placeholder/card:text-transparent">
+          <div className="bg-foreground/8 text-muted-foreground group-data-[color=destructive]/card:bg-destructive/12 group-data-[color=destructive]/card:text-destructive group-data-[color=process]/card:bg-process/12 group-data-[color=process]/card:text-process group-data-[color=success]/card:bg-success/12 group-data-[color=success]/card:text-success group-data-placeholder/card:bg-muted-more-foreground group-data-placeholder/card:animate-skeleton flex min-w-0 shrink items-center justify-start gap-1.5 rounded-md px-2 py-1.25 text-sm font-medium group-data-placeholder/card:text-transparent">
             {isPlaceholder ? (
               <LoaderIcon className="-ml-0.25 size-3.5 shrink-0" />
-            ) : deployment.status === "running" ? (
+            ) : deployment.status === "building" || deployment.status === "queued" ? (
+              <LoaderIcon className="-ml-0.25 size-3.5 shrink-0 animate-spin" />
+            ) : deployment.status === "succeeded" && deployment.id === lastDeploymentId ? (
               <CircleCheckIcon className="-ml-0.25 size-3.5 shrink-0" />
             ) : deployment.status === "failed" ? (
               <TriangleAlertIcon className="-ml-0.25 size-3.5 shrink-0" />
@@ -46,11 +72,13 @@ export default function DeploymentCard({ deployment, isPlaceholder }: TProps) {
             <p className="min-w-0 shrink leading-tight">
               {isPlaceholder
                 ? "LOADING"
-                : deployment.status === "running"
-                  ? "ACTIVE"
-                  : deployment.status === "failed"
-                    ? "FAILED"
-                    : "REMOVED"}
+                : deployment.status === "building" || deployment.status === "queued"
+                  ? "BUILDING"
+                  : deployment.status === "succeeded" && deployment.id === lastDeploymentId
+                    ? "ACTIVE"
+                    : deployment.status === "failed"
+                      ? "FAILED"
+                      : "REMOVED"}
             </p>
           </div>
         </div>

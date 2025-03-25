@@ -34,7 +34,7 @@ export const variablesRouter = createTRPCRouter({
         variables: res.data,
       };
     }),
-  create: publicProcedure
+  upsert: publicProcedure
     .input(
       z.object({
         teamId: z.string().uuid(),
