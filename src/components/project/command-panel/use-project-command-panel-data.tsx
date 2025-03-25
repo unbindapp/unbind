@@ -4,8 +4,12 @@ import { findCommandPanelPage } from "@/components/command-panel/helpers";
 import { TCommandPanelItem, TCommandPanelPage } from "@/components/command-panel/types";
 import ServiceIcon from "@/components/icons/service";
 import { commandPanelProjectRootPage } from "@/components/project/command-panel/constants";
+import { servicePanelServiceIdKey } from "@/components/service/constants";
+import { useServicesUtils } from "@/components/service/services-provider";
 import { cn } from "@/components/ui/utils";
+import { AppRouterOutputs } from "@/server/trpc/api/root";
 import { api } from "@/server/trpc/setup/client";
+import { useMutation } from "@tanstack/react-query";
 import { BlocksIcon, DatabaseIcon, LoaderIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { parseAsString, useQueryState } from "nuqs";
@@ -15,15 +19,82 @@ import { toast } from "sonner";
 export default function useProjectCommandPanelData() {
   const {
     teamId,
+    projectId,
     query: { data: projectData },
   } = useProject();
+  const { refetch: refetchServices } = useServicesUtils({
+    teamId,
+    projectId,
+    environmentId: projectData?.project.environments[0].id || "",
+  });
+
+  const [, setOpenServicePanelId] = useQueryState(servicePanelServiceIdKey);
   const [, setPanelId] = useQueryState(commandPanelKey);
   const [panelPageId, setPanelPageId] = useQueryState(
     commandPanelPageKey,
     parseAsString.withDefault(commandPanelProjectRootPage),
   );
   const timeout = useRef<NodeJS.Timeout | null>(null);
-  const { isPending: isPendingCreateService } = api.services.create.useMutation();
+  const { mutateAsync: createServiceInDb } = api.services.create.useMutation();
+  const { mutateAsync: createService, isPending: isPendingCreateService } = useMutation({
+    mutationFn: async ({
+      repository,
+    }: {
+      repository: AppRouterOutputs["git"]["listRepositories"]["repositories"][number];
+    }) => {
+      const environments = projectData?.project.environments;
+      if (!environments || environments.length < 1) {
+        toast.error("No environments found.");
+        throw new Error("No environments found.");
+      }
+      const environmentId = environments[0].id;
+      const owner = repository.full_name.split("/")[0];
+      const repoName = repository.full_name.split("/")[1];
+      const installationId = repository.installation_id;
+      const repoWithDetails = await ResultAsync.fromPromise(
+        utils.git.getRepository.fetch({
+          installationId,
+          owner,
+          repoName,
+        }),
+        () => new Error("Failed to fetch repository."),
+      );
+      if (repoWithDetails.isErr()) {
+        toast.error("Failed to fetch", {
+          description: repoWithDetails.error.message,
+        });
+        throw repoWithDetails.error;
+      }
+      const branches = repoWithDetails.value.repository.branches;
+      if (!branches || branches.length < 1) {
+        toast.error("No branches", {
+          description: "No branches found in the repository.",
+        });
+        throw new Error("No branches found in the repository.");
+      }
+      const firstBranch = branches[0];
+      const result = await createServiceInDb({
+        type: "github",
+        builder: "railpack",
+        gitBranch: firstBranch.name,
+        repositoryOwner: owner,
+        repositoryName: repoName,
+        displayName: repoName,
+        description: "A new service.",
+        teamId,
+        projectId,
+        environmentId,
+        gitHubInstallationId: installationId,
+        public: true,
+      });
+      await refetchServices();
+      return result;
+    },
+    onSuccess: (data) => {
+      console.log("Service created", data);
+      setOpenServicePanelId(data.service.id);
+    },
+  });
 
   const onSelectPlaceholder = useCallback(() => {
     toast.success("Successful", {
@@ -53,24 +124,22 @@ export default function useProjectCommandPanelData() {
   const utils = api.useUtils();
 
   const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
-  const PendingOrIcon = useCallback(
+  const PendingOrIconForCreateService = useCallback(
     ({
       id,
       Icon,
       className,
-      isPending,
     }: {
       id: string;
       Icon: FC<{ className?: string }>;
       className?: string;
-      isPending: boolean;
     }) => {
-      if (isPending && lastSelectedId === id) {
+      if (isPendingCreateService && lastSelectedId === id) {
         return <LoaderIcon className={cn("animate-spin", className)} />;
       }
       return <Icon className={className} />;
     },
-    [lastSelectedId],
+    [lastSelectedId, isPendingCreateService],
   );
 
   const rootPage: TCommandPanelPage = useMemo(
@@ -89,63 +158,26 @@ export default function useProjectCommandPanelData() {
             title: "GitHub Repos",
             parentPageId: commandPanelProjectRootPage,
             inputPlaceholder: "Deploy from GitHub...",
+            IconSet: ({ id, className }: { id: string; className?: string }) => (
+              <PendingOrIconForCreateService
+                id={id}
+                Icon={({ className }) => (
+                  <ServiceIcon color="brand" variant="github" className={className} />
+                )}
+                className={className}
+              />
+            ),
             getItems: async () => {
-              const res = await utils.main.getRepos.fetch({ teamId });
-              const items: TCommandPanelItem[] = res.repos.map((r) => ({
+              const res = await utils.git.listRepositories.fetch({ teamId });
+              const items: TCommandPanelItem[] = res.repositories.map((r) => ({
                 title: `${r.full_name}`,
                 keywords: [],
                 onSelect: async () => {
                   if (isPendingCreateService) return;
-                  setLastSelectedId("github_repo_" + r.id);
-                  const environments = projectData?.project.environments;
-                  if (!environments || environments.length < 1) {
-                    toast.error("No environments found.");
-                    return;
-                  }
-                  const environmentId = environments[0].id;
-                  console.log(environmentId);
-                  const owner = r.full_name.split("/")[0];
-                  const repoName = r.full_name.split("/")[1];
-                  const installationId = r.installation_id;
-                  const repo = await ResultAsync.fromPromise(
-                    utils.git.getRepository.fetch({
-                      installationId,
-                      owner,
-                      repoName,
-                    }),
-                    () => new Error("Failed to fetch repository."),
-                  );
-                  if (repo.isErr()) {
-                    toast.error("Failed to fetch repository.");
-                    return;
-                  }
-                  console.log(repo.value.repository);
-                  /* await createService({
-                    type: "git",
-                    builder: "railpack",
-                    gitBranch: "master",
-                    repositoryOwner: owner,
-                    repositoryName: repoName,
-                    displayName: repoName,
-                    description: "A new service.",
-                    teamId,
-                    projectId,
-                    environmentId,
-                    gitHubInstallationId: installationId,
-                    public: true,
-                  }); */
+                  setLastSelectedId(`${r.full_name}`);
+                  await createService({ repository: r });
                   closePanel();
                 },
-                Icon: ({ className }: { className?: string }) => (
-                  <PendingOrIcon
-                    id={"github_repo_" + r.id}
-                    Icon={({ className }) => (
-                      <ServiceIcon color="brand" variant="github" className={className} />
-                    )}
-                    className={className}
-                    isPending={isPendingCreateService}
-                  />
-                ),
               }));
               return items;
             },
@@ -291,10 +323,10 @@ export default function useProjectCommandPanelData() {
       onSelectPlaceholder,
       utils,
       teamId,
-      projectData,
-      isPendingCreateService,
       closePanel,
-      PendingOrIcon,
+      PendingOrIconForCreateService,
+      createService,
+      isPendingCreateService,
     ],
   );
 

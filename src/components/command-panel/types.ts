@@ -6,7 +6,7 @@ export type TCommandPanelPage = {
   parentPageId: string | null;
   inputPlaceholder: string;
 } & (
-  | { items: TCommandPanelItem[]; getItems?: never }
+  | { items: TCommandPanelItem[]; getItems?: never; IconSet?: never }
   | {
       getItems: ({
         teamId,
@@ -15,6 +15,7 @@ export type TCommandPanelPage = {
         teamId: string;
         projectId: string;
       }) => Promise<TCommandPanelItem[]>;
+      IconSet: FC<{ id: string; className?: string }>;
       items?: never;
     }
 );
@@ -22,7 +23,7 @@ export type TCommandPanelPage = {
 export type TCommandPanelItem = {
   title: string;
   titleSuffix?: string;
-  Icon: FC<{ className?: string }>;
+  Icon?: FC<{ className?: string }>;
   subpage?: TCommandPanelPage;
   onSelect?: () => void;
   keywords: string[];

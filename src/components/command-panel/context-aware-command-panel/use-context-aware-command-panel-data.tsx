@@ -148,15 +148,15 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
             title: "GitHub Repos",
             parentPageId: commandPanelContextAwareRootPage,
             inputPlaceholder: "Deploy from GitHub...",
+            IconSet: ({ className }: { id: string; className?: string }) => (
+              <ServiceIcon color="brand" variant="github" className={className} />
+            ),
             getItems: async () => {
               const res = await utils.main.getRepos.fetch({ teamId: context.teamId });
               const items: TCommandPanelItem[] = res.repos.map((r) => ({
                 title: `${r.full_name}`,
                 keywords: [],
                 onSelect: () => onSelectPlaceholder(),
-                Icon: ({ className }: { className?: string }) => (
-                  <ServiceIcon color="brand" variant="github" className={className} />
-                ),
               }));
               return items;
             },

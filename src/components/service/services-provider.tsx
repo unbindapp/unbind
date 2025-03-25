@@ -51,5 +51,6 @@ export const useServicesUtils = ({
   const utils = api.useUtils();
   return {
     invalidate: () => utils.services.list.invalidate({ teamId, projectId, environmentId }),
+    refetch: () => utils.services.list.refetch({ teamId, projectId, environmentId }),
   };
 };

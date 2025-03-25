@@ -301,17 +301,28 @@ function Content({
             {!isPending &&
               items &&
               items.map((item) => (
-                <Item key={item.title} item={item} setCurrentPageId={setCurrentPageId} />
+                <Item
+                  currentPage={currentPage}
+                  key={item.title}
+                  item={item}
+                  setCurrentPageId={setCurrentPageId}
+                />
               ))}
             {!isPending &&
               !isError &&
               allOtherItems.map((item) => (
-                <ConditionalItem key={item.title} item={item} setCurrentPageId={setCurrentPageId} />
+                <ConditionalItem
+                  currentPage={currentPage}
+                  key={item.title}
+                  item={item}
+                  setCurrentPageId={setCurrentPageId}
+                />
               ))}
             {isPending &&
               !items &&
               Array.from({ length: 10 }).map((_, i) => (
                 <Item
+                  currentPage={currentPage}
                   key={i}
                   item={{
                     title: `Loading ${i}`,
@@ -411,22 +422,26 @@ function Input({
 }
 
 function ConditionalItem({
+  currentPage,
   item,
   setCurrentPageId,
 }: {
+  currentPage: TCommandPanelPage;
   item: TCommandPanelItem;
   setCurrentPageId: (id: string) => void;
 }) {
   const search = useCommandState((state) => state.search);
   if (!search) return null;
-  return <Item item={item} setCurrentPageId={setCurrentPageId} />;
+  return <Item currentPage={currentPage} item={item} setCurrentPageId={setCurrentPageId} />;
 }
 
 function Item({
+  currentPage,
   item,
   setCurrentPageId,
   isPlaceholder,
 }: {
+  currentPage: TCommandPanelPage;
   item: TCommandPanelItem;
   setCurrentPageId: (id: string) => void;
   isPlaceholder?: boolean;
@@ -459,7 +474,16 @@ function Item({
       onSelect={onSelect}
     >
       <div className="flex min-w-0 flex-1 items-center justify-start gap-2.5">
-        <item.Icon className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton -ml-0.5 size-5 group-data-placeholder/item:rounded-full" />
+        {currentPage.IconSet ? (
+          <currentPage.IconSet
+            id={item.title}
+            className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton -ml-0.5 size-5 group-data-placeholder/item:rounded-full"
+          />
+        ) : (
+          item.Icon && (
+            <item.Icon className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton -ml-0.5 size-5 group-data-placeholder/item:rounded-full" />
+          )
+        )}
         <p className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink leading-tight group-data-placeholder/item:rounded-md">
           {item.title}
           {item.titleSuffix && <span className="text-muted-foreground">{item.titleSuffix}</span>}
