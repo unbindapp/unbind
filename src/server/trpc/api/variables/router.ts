@@ -1,5 +1,5 @@
 import { list_variablesQuerySchema } from "@/server/go/client.gen";
-import { VariableSchema, VariableTypeSchema } from "@/server/trpc/api/variables/types";
+import { VariableForCreateSchema, VariableTypeSchema } from "@/server/trpc/api/variables/types";
 import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -41,7 +41,7 @@ export const variablesRouter = createTRPCRouter({
         projectId: z.string().uuid(),
         environmentId: z.string().uuid(),
         serviceId: z.string().uuid(),
-        variables: z.array(VariableSchema),
+        variables: z.array(VariableForCreateSchema),
         type: VariableTypeSchema,
       }),
     )

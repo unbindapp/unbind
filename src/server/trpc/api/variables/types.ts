@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const VariableTypeSchema = z.enum(["team", "project", "service"]);
-export const VariableSchema = z.object({
+export const VariableForCreateSchema = z.object({
   name: z
     .string()
     .min(1, { message: "Name is required." })
@@ -9,4 +9,4 @@ export const VariableSchema = z.object({
   value: z.string().min(1, { message: "Value is required." }),
 });
 
-export type TVariable = z.infer<typeof VariableSchema>;
+export type TVariableForCreate = z.infer<typeof VariableForCreateSchema>;

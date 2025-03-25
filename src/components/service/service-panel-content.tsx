@@ -7,13 +7,15 @@ import Deployments from "@/components/service/tabs/deployments/deployments";
 import Logs from "@/components/service/tabs/logs/logs";
 import Metrics from "@/components/service/tabs/metrics/metrics";
 import Settings from "@/components/service/tabs/settings/settings";
+import CreateVariablesForm from "@/components/service/tabs/variables/create-variables-form";
 import Variables from "@/components/service/tabs/variables/variables";
 import VariablesProvider from "@/components/service/tabs/variables/variables-provider";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
+import { TVariableForCreate } from "@/server/trpc/api/variables/types";
 import { parseAsString, useQueryState } from "nuqs";
-import { FC, ReactNode } from "react";
+import { FC, ReactNode, useState } from "react";
 
 export type TServicePage = FC;
 export type TServicePageProvider = FC<TServicePageProviderProps>;
@@ -49,7 +51,6 @@ type TProps = {
 };
 
 export default function ServicePanelContent({ service }: TProps) {
-  const { teamId, projectId, environmentId } = useService();
   const [currentTabId, setCurrentTab] = useQueryState(
     servicePanelTabKey,
     parseAsString.withDefault(tabs[0].value),
@@ -57,13 +58,69 @@ export default function ServicePanelContent({ service }: TProps) {
   const currentTab = tabs.find((tab) => tab.value === currentTabId);
 
   if (!service.last_deployment) {
-    return (
-      <div className="flex w-full flex-1 flex-col items-center justify-center overflow-hidden">
-        Initial setup
-      </div>
-    );
+    return <UndeployedServiceContent service={service} />;
   }
 
+  return (
+    <DeployedServiceContent
+      currentTab={currentTab}
+      currentTabId={currentTabId}
+      tabs={tabs}
+      setCurrentTab={setCurrentTab}
+      service={service}
+    />
+  );
+}
+
+function ConditionalScrollArea({ noArea, children }: { noArea?: boolean; children?: ReactNode }) {
+  if (noArea) return children;
+  return <ScrollArea className="pb-[var(--safe-area-inset-bottom)]">{children}</ScrollArea>;
+}
+
+function UndeployedServiceContent({ service }: { service: TServiceShallow }) {
+  const { teamId, projectId, environmentId } = useService();
+  const [variables, setVariables] = useState<TVariableForCreate[]>([]);
+
+  return (
+    <div className="mt-4 flex w-full flex-1 flex-col overflow-hidden border-t sm:mt-6">
+      <div className="flex w-full flex-1 flex-col overflow-auto px-3 py-4 sm:p-6">
+        <h2 className="-mt-1 px-2 text-xl font-bold sm:text-2xl">Deploy Service</h2>
+        <VariablesProvider
+          teamId={teamId}
+          projectId={projectId}
+          environmentId={environmentId}
+          serviceId={service.id}
+        >
+          <CreateVariablesForm
+            className="mt-4"
+            variant="collapsible"
+            onBlur={(v) => {
+              setVariables(v.value.variables);
+            }}
+          />
+        </VariablesProvider>
+        <Button onClick={() => console.log("VARIABLES", variables)} className="mt-4">
+          Deploy
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function DeployedServiceContent({
+  tabs,
+  currentTab,
+  currentTabId,
+  setCurrentTab,
+  service,
+}: {
+  tabs: TTab[];
+  currentTab: TTab | undefined;
+  currentTabId: string;
+  setCurrentTab: (tab: string) => void;
+  service: TServiceShallow;
+}) {
+  const { teamId, projectId, environmentId } = useService();
   return (
     <div className="flex w-full flex-1 flex-col overflow-hidden">
       <nav className="touch:scrollbar-hidden flex w-full justify-start overflow-auto border-b">
@@ -103,9 +160,4 @@ export default function ServicePanelContent({ service }: TProps) {
       </div>
     </div>
   );
-}
-
-function ConditionalScrollArea({ noArea, children }: { noArea?: boolean; children?: ReactNode }) {
-  if (noArea) return children;
-  return <ScrollArea className="pb-[var(--safe-area-inset-bottom)]">{children}</ScrollArea>;
 }

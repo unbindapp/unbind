@@ -1,13 +1,25 @@
 import ErrorLine from "@/components/error-line";
 import { useVariables } from "@/components/service/tabs/variables/variables-provider";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { VariableSchema, TVariable } from "@/server/trpc/api/variables/types";
-import { PlusIcon, TrashIcon } from "lucide-react";
-import { useCallback } from "react";
+import { TVariableForCreate, VariableForCreateSchema } from "@/server/trpc/api/variables/types";
+import { FormValidateOrFn } from "@tanstack/react-form";
+import { ChevronDownIcon, PlusIcon, TrashIcon } from "lucide-react";
+import { useCallback, useState } from "react";
 import { z } from "zod";
 
-export default function CreateVariablesForm() {
+type TProps = {
+  variant?: "default" | "collapsible";
+  onBlur?: TCreateVariablesFormOnBlur;
+  className?: string;
+};
+
+export const CreateVariablesFormSchema = z.object({
+  variables: z.array(VariableForCreateSchema).min(1),
+});
+
+export default function CreateVariablesForm({ variant = "default", onBlur, className }: TProps) {
   const {
     list: { refetch: refetchSecrets },
     create: { mutateAsync: createSecrets, error: createError },
@@ -17,14 +29,19 @@ export default function CreateVariablesForm() {
     serviceId,
   } = useVariables();
 
+  const [isOpen, setIsOpen] = useState(false);
+
   const form = useAppForm({
     defaultValues: {
-      variables: [{ name: "", value: "" }] as TVariable[],
+      variables: [{ name: "", value: "" }] as TVariableForCreate[],
     },
     validators: {
-      onChange: z.object({ variables: z.array(VariableSchema).min(1) }),
+      onChange: CreateVariablesFormSchema,
+      onBlur,
     },
     onSubmit: async ({ formApi, value }) => {
+      if (variant === "collapsible") return;
+
       const variables = value.variables;
       await createSecrets({
         teamId,
@@ -62,7 +79,7 @@ export default function CreateVariablesForm() {
           const validatedValue = value.trim();
           return { name: validatedName, value: validatedValue };
         })
-        .filter(Boolean) as TVariable[];
+        .filter(Boolean) as TVariableForCreate[];
 
       for (let i = 0; i < pairs.length; i++) {
         const pair = pairs[i];
@@ -81,117 +98,146 @@ export default function CreateVariablesForm() {
   );
 
   return (
-    <form
-      className="flex w-full flex-col rounded-xl border"
-      onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        form.validateArrayFieldsStartingFrom("variables", 0, "submit");
-        form.handleSubmit();
-      }}
+    <div
+      data-open={variant !== "collapsible" || isOpen ? true : undefined}
+      data-variant={variant}
+      className={cn("group/card flex w-full flex-col rounded-xl border", className)}
     >
-      <form.AppField
-        name="variables"
-        mode="array"
-        children={(field) => (
-          <div className="flex w-full flex-col items-start gap-2">
-            {/* All secret rows */}
-            <div className="flex w-full flex-col items-start gap-1">
-              {field.state.value.map((_, i) => {
-                return (
-                  <div key={`secret-wrapper-${i}`} className="flex w-full flex-col gap-1 sm:gap-0">
-                    {i !== 0 && <div className="bg-border h-px w-full sm:hidden" />}
-                    <div
-                      key={`secret-${i}`}
-                      data-first={i === 0 ? true : undefined}
-                      className="flex w-full flex-col gap-2 p-3 sm:-mt-5 sm:flex-row sm:data-first:mt-0 md:-mt-7 md:p-4"
-                    >
-                      <form.Field key={`variables[${i}].name`} name={`variables[${i}].name`}>
-                        {(subField) => {
-                          return (
-                            <field.TextField
-                              field={subField}
-                              value={subField.state.value}
-                              onBlur={subField.handleBlur}
-                              onPaste={(e) => onPaste(e, form, i)}
-                              onChange={(e) => subField.handleChange(e.target.value)}
-                              placeholder="CLIENT_KEY"
-                              className="flex-1 sm:max-w-64"
-                            />
-                          );
-                        }}
-                      </form.Field>
-                      <div className="flex flex-1 items-start gap-2">
-                        <form.Field key={`variables[${i}].value`} name={`variables[${i}].value`}>
-                          {(subField) => {
-                            return (
-                              <field.TextField
-                                field={subField}
-                                value={subField.state.value}
-                                onBlur={subField.handleBlur}
-                                onPaste={(e) => onPaste(e, form, i)}
-                                onChange={(e) => subField.handleChange(e.target.value)}
-                                className="flex-1"
-                                placeholder="abc123"
-                              />
-                            );
-                          }}
-                        </form.Field>
-                        <form.Subscribe
-                          selector={(state) => [state.values.variables[0]]}
-                          children={([firsTVariable]) => (
-                            <Button
-                              disabled={
-                                field.state.value.length <= 1 &&
-                                firsTVariable.name === "" &&
-                                firsTVariable.value === ""
-                              }
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              className="h-11 w-11"
-                              onClick={() => {
-                                if (field.state.value.length <= 1) {
-                                  field.replaceValue(0, { name: "", value: "" });
-                                  return;
-                                }
-                                field.removeValue(i);
-                              }}
+      {variant === "collapsible" && (
+        <Button
+          onClick={() => setIsOpen((o) => !o)}
+          variant="ghost"
+          className="text-muted-foreground justify-start py-3.5 text-left font-semibold group-data-open/card:rounded-b-none"
+        >
+          <ChevronDownIcon className="-ml-1.25 size-5 shrink-0 -rotate-90 transition-transform group-data-open/card:rotate-0" />
+          <p className="min-w-0 shrink">Environment Variables</p>
+        </Button>
+      )}
+      {(variant !== "collapsible" || isOpen) && (
+        <form
+          className="flex w-full flex-col group-data-[variant=collapsible]/card:-mt-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.validateArrayFieldsStartingFrom("variables", 0, "submit");
+            form.handleSubmit();
+          }}
+        >
+          <form.AppField
+            name="variables"
+            mode="array"
+            children={(field) => (
+              <div className="flex w-full flex-col items-start gap-2">
+                {/* All secret rows */}
+                <div className="flex w-full flex-col items-start gap-1">
+                  {field.state.value.map((_, i) => {
+                    return (
+                      <div
+                        key={`secret-wrapper-${i}`}
+                        className="flex w-full flex-col gap-1 sm:gap-0"
+                      >
+                        {i !== 0 && <div className="bg-border h-px w-full sm:hidden" />}
+                        <div
+                          key={`secret-${i}`}
+                          data-first={i === 0 ? true : undefined}
+                          className="flex w-full flex-col gap-2 p-3 sm:-mt-5 sm:flex-row sm:data-first:mt-0 md:-mt-7 md:p-4"
+                        >
+                          <form.Field key={`variables[${i}].name`} name={`variables[${i}].name`}>
+                            {(subField) => {
+                              return (
+                                <field.TextField
+                                  field={subField}
+                                  value={subField.state.value}
+                                  onBlur={subField.handleBlur}
+                                  onPaste={(e) => onPaste(e, form, i)}
+                                  onChange={(e) => subField.handleChange(e.target.value)}
+                                  placeholder="CLIENT_KEY"
+                                  className="flex-1 sm:max-w-64"
+                                />
+                              );
+                            }}
+                          </form.Field>
+                          <div className="flex flex-1 items-start gap-2">
+                            <form.Field
+                              key={`variables[${i}].value`}
+                              name={`variables[${i}].value`}
                             >
-                              <TrashIcon className="size-5" />
-                            </Button>
-                          )}
-                        />
+                              {(subField) => {
+                                return (
+                                  <field.TextField
+                                    field={subField}
+                                    value={subField.state.value}
+                                    onBlur={subField.handleBlur}
+                                    onPaste={(e) => onPaste(e, form, i)}
+                                    onChange={(e) => subField.handleChange(e.target.value)}
+                                    className="flex-1"
+                                    placeholder="abc123"
+                                  />
+                                );
+                              }}
+                            </form.Field>
+                            <form.Subscribe
+                              selector={(state) => [state.values.variables[0]]}
+                              children={([firsTVariable]) => (
+                                <Button
+                                  disabled={
+                                    field.state.value.length <= 1 &&
+                                    firsTVariable.name === "" &&
+                                    firsTVariable.value === ""
+                                  }
+                                  type="button"
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-11 w-11"
+                                  onClick={() => {
+                                    if (field.state.value.length <= 1) {
+                                      field.replaceValue(0, { name: "", value: "" });
+                                      return;
+                                    }
+                                    field.removeValue(i);
+                                  }}
+                                >
+                                  <TrashIcon className="size-5" />
+                                </Button>
+                              )}
+                            />
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="-mt-6 w-full p-3 md:-mt-8 md:p-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => field.pushValue({ name: "", value: "" })}
-              >
-                <PlusIcon className="-ml-1.5 size-5 shrink-0" />
-                <p className="min-w-0 shrink">Add Another</p>
-              </Button>
-            </div>
-          </div>
-        )}
-      />
-      <div className="bg-background-hover flex w-full flex-col gap-3 rounded-b-xl border-t p-2 md:p-3">
-        {createError && <ErrorLine message={createError.message} />}
-        <div className="flex w-full flex-row items-center justify-end">
-          <form.Subscribe
-            selector={(state) => [state.isSubmitting]}
-            children={([isSubmitting]) => (
-              <form.SubmitButton isPending={isSubmitting}>Save</form.SubmitButton>
+                    );
+                  })}
+                </div>
+                <div className="-mt-6 w-full p-3 md:-mt-8 md:p-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => field.pushValue({ name: "", value: "" })}
+                  >
+                    <PlusIcon className="-ml-1.5 size-5 shrink-0" />
+                    <p className="min-w-0 shrink">Add Another</p>
+                  </Button>
+                </div>
+              </div>
             )}
           />
-        </div>
-      </div>
-    </form>
+          {variant !== "collapsible" && (
+            <div className="bg-background-hover flex w-full flex-col gap-3 rounded-b-xl border-t p-2 md:p-3">
+              {createError && <ErrorLine message={createError.message} />}
+              <div className="flex w-full flex-row items-center justify-end">
+                <form.Subscribe
+                  selector={(state) => [state.isSubmitting]}
+                  children={([isSubmitting]) => (
+                    <form.SubmitButton isPending={isSubmitting}>Save</form.SubmitButton>
+                  )}
+                />
+              </div>
+            </div>
+          )}
+        </form>
+      )}
+    </div>
   );
 }
+
+export type TCreateVariablesForm = z.infer<typeof CreateVariablesFormSchema>;
+export type TCreateVariablesFormOnBlur = FormValidateOrFn<TCreateVariablesForm>;

@@ -136,7 +136,7 @@ export const PortSpecSchema = z
   })
   .strict();
 
-export const ServiceTypeSchema = z.enum(['git', 'dockerfile']);
+export const ServiceTypeSchema = z.enum(['github', 'docker-image']);
 
 export const CreateServiceInputSchema = z
   .object({
@@ -157,7 +157,7 @@ export const CreateServiceInputSchema = z
     repository_owner: z.string().optional(),
     run_command: z.string().optional(),
     team_id: z.string(),
-    type: ServiceTypeSchema, // Type of service, e.g. 'git', 'docker'
+    type: ServiceTypeSchema, // Type of service, e.g. 'github', 'docker-image'
   })
   .strict();
 
