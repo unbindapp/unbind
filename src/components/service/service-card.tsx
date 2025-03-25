@@ -1,6 +1,6 @@
 import ServiceIcon from "@/components/icons/service";
 import LastDeploymentTime from "@/components/service/last-deployment-time";
-import ServicePanel from "@/components/service/service-panel";
+import ServicePanel from "@/components/service/panel/panel";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { TServiceShallow } from "@/server/trpc/api/services/types";

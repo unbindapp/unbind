@@ -1,7 +1,7 @@
 import ServiceIcon from "@/components/icons/service";
 import { useDeviceSize } from "@/components/providers/device-size-provider";
 import { servicePanelServiceIdKey, servicePanelTabKey } from "@/components/service/constants";
-import ServicePanelContent, { tabs } from "@/components/service/service-panel-content";
+import ServicePanelContent, { tabs } from "@/components/service/panel/content";
 import ServiceProvider from "@/components/service/service-provider";
 import { Button } from "@/components/ui/button";
 import {
