@@ -25,10 +25,10 @@ export default function ServiceCard({
   return (
     <li className={cn("flex w-full flex-col p-1", className)}>
       <ServicePanel
-        service={service}
         teamId={teamId}
         projectId={projectId}
         environmentId={environmentId}
+        service={service}
       >
         <Button
           variant="ghost"

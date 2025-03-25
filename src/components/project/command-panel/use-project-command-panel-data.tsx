@@ -4,16 +4,17 @@ import { findCommandPanelPage } from "@/components/command-panel/helpers";
 import { TCommandPanelItem, TCommandPanelPage } from "@/components/command-panel/types";
 import ServiceIcon from "@/components/icons/service";
 import { commandPanelProjectRootPage } from "@/components/project/command-panel/constants";
+import { cn } from "@/components/ui/utils";
 import { api } from "@/server/trpc/setup/client";
-import { BlocksIcon, DatabaseIcon } from "lucide-react";
+import { BlocksIcon, DatabaseIcon, LoaderIcon } from "lucide-react";
+import { ResultAsync } from "neverthrow";
 import { parseAsString, useQueryState } from "nuqs";
-import { useCallback, useMemo, useRef } from "react";
+import { FC, useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 export default function useProjectCommandPanelData() {
   const {
     teamId,
-    projectId,
     query: { data: projectData },
   } = useProject();
   const [, setPanelId] = useQueryState(commandPanelKey);
@@ -22,7 +23,7 @@ export default function useProjectCommandPanelData() {
     parseAsString.withDefault(commandPanelProjectRootPage),
   );
   const timeout = useRef<NodeJS.Timeout | null>(null);
-  const { mutateAsync: createService } = api.services.create.useMutation();
+  const { isPending: isPendingCreateService } = api.services.create.useMutation();
 
   const onSelectPlaceholder = useCallback(() => {
     toast.success("Successful", {
@@ -39,7 +40,38 @@ export default function useProjectCommandPanelData() {
     }, 150);
   }, [setPanelId, setPanelPageId]);
 
+  const closePanel = useCallback(() => {
+    setPanelId(null);
+    if (timeout.current) {
+      clearTimeout(timeout.current);
+    }
+    timeout.current = setTimeout(() => {
+      setPanelPageId(null);
+    }, 150);
+  }, [setPanelId, setPanelPageId]);
+
   const utils = api.useUtils();
+
+  const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
+  const PendingOrIcon = useCallback(
+    ({
+      id,
+      Icon,
+      className,
+      isPending,
+    }: {
+      id: string;
+      Icon: FC<{ className?: string }>;
+      className?: string;
+      isPending: boolean;
+    }) => {
+      if (isPending && lastSelectedId === id) {
+        return <LoaderIcon className={cn("animate-spin", className)} />;
+      }
+      return <Icon className={className} />;
+    },
+    [lastSelectedId],
+  );
 
   const rootPage: TCommandPanelPage = useMemo(
     () => ({
@@ -63,25 +95,56 @@ export default function useProjectCommandPanelData() {
                 title: `${r.full_name}`,
                 keywords: [],
                 onSelect: async () => {
-                  await createService({
+                  if (isPendingCreateService) return;
+                  setLastSelectedId("github_repo_" + r.id);
+                  const environments = projectData?.project.environments;
+                  if (!environments || environments.length < 1) {
+                    toast.error("No environments found.");
+                    return;
+                  }
+                  const environmentId = environments[0].id;
+                  console.log(environmentId);
+                  const owner = r.full_name.split("/")[0];
+                  const repoName = r.full_name.split("/")[1];
+                  const installationId = r.installation_id;
+                  const repo = await ResultAsync.fromPromise(
+                    utils.git.getRepository.fetch({
+                      installationId,
+                      owner,
+                      repoName,
+                    }),
+                    () => new Error("Failed to fetch repository."),
+                  );
+                  if (repo.isErr()) {
+                    toast.error("Failed to fetch repository.");
+                    return;
+                  }
+                  console.log(repo.value.repository);
+                  /* await createService({
                     type: "git",
                     builder: "railpack",
                     gitBranch: "master",
-                    repositoryOwner: r.full_name.split("/")[0],
-                    repositoryName: r.full_name.split("/")[1],
-                    displayName: r.full_name.split("/")[1],
-                    description: "This is a test.",
+                    repositoryOwner: owner,
+                    repositoryName: repoName,
+                    displayName: repoName,
+                    description: "A new service.",
                     teamId,
                     projectId,
-                    environmentId: projectData?.project.environments[0].id || "",
-                    gitHubInstallationId: 63091290,
-                    host: `${r.full_name.replaceAll("/", "-")}.unbind.app`,
+                    environmentId,
+                    gitHubInstallationId: installationId,
                     public: true,
-                  });
-                  onSelectPlaceholder();
+                  }); */
+                  closePanel();
                 },
                 Icon: ({ className }: { className?: string }) => (
-                  <ServiceIcon color="brand" variant="github" className={className} />
+                  <PendingOrIcon
+                    id={"github_repo_" + r.id}
+                    Icon={({ className }) => (
+                      <ServiceIcon color="brand" variant="github" className={className} />
+                    )}
+                    className={className}
+                    isPending={isPendingCreateService}
+                  />
                 ),
               }));
               return items;
@@ -224,7 +287,15 @@ export default function useProjectCommandPanelData() {
         },
       ],
     }),
-    [onSelectPlaceholder, utils, teamId, projectId, projectData, createService],
+    [
+      onSelectPlaceholder,
+      utils,
+      teamId,
+      projectData,
+      isPendingCreateService,
+      closePanel,
+      PendingOrIcon,
+    ],
   );
 
   const setCurrentPageId = useCallback(

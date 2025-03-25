@@ -8,7 +8,7 @@ import { api } from "@/server/trpc/setup/client";
 
 export default function Deployments() {
   const { teamId, projectId, environmentId, serviceId } = useService();
-  const { data, isPending, isError, error } = api.main.getDeployments.useQuery({
+  const { data, isPending, error } = api.deployments.list.useQuery({
     teamId,
     projectId,
     environmentId,
@@ -19,8 +19,8 @@ export default function Deployments() {
     <TabWrapper>
       {data?.deployments &&
         data.deployments.length > 0 &&
-        data.deployments.map((deployment, i) => (
-          <DeploymentCard key={deployment.id} deployment={deployment} active={i === 0} />
+        data.deployments.map((deployment) => (
+          <DeploymentCard key={deployment.id} deployment={deployment} />
         ))}
       {data?.deployments && data.deployments.length === 0 && (
         <div className="text-muted-foreground px-2 py-5 text-center leading-tight font-medium">
@@ -30,7 +30,7 @@ export default function Deployments() {
       {!data &&
         isPending &&
         Array.from({ length: 10 }).map((_, i) => <DeploymentCard key={i} isPlaceholder />)}
-      {!data && !isPending && isError && <ErrorCard message={error.message} />}
+      {!data && !isPending && error && <ErrorCard message={error.message} />}
     </TabWrapper>
   );
 }

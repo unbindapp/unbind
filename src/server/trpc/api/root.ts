@@ -9,6 +9,8 @@ import { inferRouterClient, TRPCClientErrorLike } from "@trpc/client";
 import { inferReactQueryProcedureOptions } from "@trpc/react-query";
 import { UseTRPCQueryResult, UseTRPCSuspenseQueryResult } from "@trpc/react-query/shared";
 import { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
+import { gitRouter } from "@/server/trpc/api/git/router";
+import { deploymentsRouter } from "@/server/trpc/api/deployments/router";
 
 /**
  * This is the primary router for your server.
@@ -20,8 +22,10 @@ export const appRouter = createTRPCRouter({
   teams: teamsRouter,
   projects: projectsRouter,
   services: servicesRouter,
+  deployments: deploymentsRouter,
   variables: variablesRouter,
   github: githubRouter,
+  git: gitRouter,
 });
 
 // export type definition of API

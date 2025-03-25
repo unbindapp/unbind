@@ -2,28 +2,26 @@ import BroomIcon from "@/components/icons/broom";
 import ServiceIcon from "@/components/icons/service";
 import DeploymentTime from "@/components/service/tabs/deployments/deployment-time";
 import { Button } from "@/components/ui/button";
-import { TDeployment } from "@/server/trpc/api/main/router";
+import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
 import { CircleCheckIcon, EllipsisVerticalIcon, LoaderIcon, TriangleAlertIcon } from "lucide-react";
 
 type TProps =
   | {
-      deployment: TDeployment;
-      active: boolean;
+      deployment: TDeploymentShallow;
       isPlaceholder?: never;
     }
   | {
       isPlaceholder: true;
       deployment?: never;
-      active?: never;
     };
 
-export default function DeploymentCard({ deployment, active, isPlaceholder }: TProps) {
+export default function DeploymentCard({ deployment, isPlaceholder }: TProps) {
   return (
     <div
       data-status={
         isPlaceholder
           ? "default"
-          : active === true && deployment.status === "succeeded"
+          : deployment.status === "running"
             ? "success"
             : deployment.status === "failed"
               ? "destructive"
@@ -38,7 +36,7 @@ export default function DeploymentCard({ deployment, active, isPlaceholder }: TP
           <div className="bg-foreground/8 text-muted-foreground group-data-[status=destructive]/card:bg-destructive/12 group-data-[status=destructive]/card:text-destructive group-data-[status=success]/card:bg-success/12 group-data-[status=success]/card:text-success group-data-placeholder/card:bg-muted-more-foreground group-data-placeholder/card:animate-skeleton flex min-w-0 shrink items-center justify-start gap-1.5 rounded-md px-2 py-1.25 text-sm font-medium group-data-placeholder/card:text-transparent">
             {isPlaceholder ? (
               <LoaderIcon className="-ml-0.25 size-3.5 shrink-0" />
-            ) : deployment.status === "succeeded" && active ? (
+            ) : deployment.status === "running" ? (
               <CircleCheckIcon className="-ml-0.25 size-3.5 shrink-0" />
             ) : deployment.status === "failed" ? (
               <TriangleAlertIcon className="-ml-0.25 size-3.5 shrink-0" />
@@ -48,7 +46,7 @@ export default function DeploymentCard({ deployment, active, isPlaceholder }: TP
             <p className="min-w-0 shrink leading-tight">
               {isPlaceholder
                 ? "LOADING"
-                : deployment.status === "succeeded" && active
+                : deployment.status === "running"
                   ? "ACTIVE"
                   : deployment.status === "failed"
                     ? "FAILED"
@@ -58,16 +56,16 @@ export default function DeploymentCard({ deployment, active, isPlaceholder }: TP
         </div>
         <ServiceIcon
           color="brand"
-          variant={isPlaceholder ? "github" : deployment.source}
+          variant={isPlaceholder ? "github" : /* deployment.source */ "github"}
           className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton mt-2 size-6 group-data-placeholder/card:rounded-full group-data-placeholder/card:text-transparent sm:mt-0"
         />
         <div className="mt-2 flex min-w-0 flex-1 shrink flex-col items-start gap-1.5 pr-2 pb-1 sm:mt-0 sm:pl-3">
           <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink leading-tight group-data-placeholder/card:rounded-md group-data-placeholder/card:text-transparent">
-            {isPlaceholder
+            {/* {isPlaceholder
               ? "Loading message..."
               : deployment.source === "github"
                 ? deployment.commitMessage
-                : deployment.dockerImage}
+                : deployment.dockerImage} */}
           </p>
           {isPlaceholder ? (
             <DeploymentTime isPlaceholder={true} />

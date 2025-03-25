@@ -5,15 +5,15 @@ type TProps = {
   service: TService;
 };
 
-const sourceToTitle: Record<string, string> = {
-  github: "GitHub",
+const sourceToTitle: Record<TService["config"]["type"], string> = {
   git: "Git",
-  docker: "Docker",
+  dockerfile: "Dockerfile",
 };
 
 export default function LastDeploymentTime({ service }: TProps) {
+  const lastDeployment = service.last_deployment;
   const { str: timeDiffStr } = useTimeDifference({
-    timestamp: new Date(service.created_at).getTime(),
+    timestamp: lastDeployment ? new Date(lastDeployment.created_at).getTime() : 0,
   });
 
   return (
@@ -21,7 +21,9 @@ export default function LastDeploymentTime({ service }: TProps) {
       suppressHydrationWarning
       className="min-w-0 shrink overflow-hidden text-sm font-medium text-ellipsis whitespace-nowrap"
     >
-      {`${timeDiffStr} via ${sourceToTitle[service.config.builder] || "Unknown"}`}
+      {lastDeployment
+        ? `${timeDiffStr} via ${sourceToTitle[service.config.type] || "Unknown"}`
+        : "No deployments yet"}
     </p>
   );
 }
