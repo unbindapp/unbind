@@ -153,7 +153,7 @@ export default function useProjectCommandPanelData() {
                   keywords: [],
                   onSelect: async ({ isPendingId }) => {
                     if (isPendingId !== null) return;
-                    setIsPendingId(`${r.full_name}`);
+                    setIsPendingId(id);
                     await createService({ repository: r });
                     closePanel();
                   },

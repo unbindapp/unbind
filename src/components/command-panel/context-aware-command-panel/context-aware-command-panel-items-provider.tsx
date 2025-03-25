@@ -21,7 +21,7 @@ export const ContextAwareCommandPanelItemsProvider: React.FC<{
   children: ReactNode;
 }> = ({ teamId, projectId, page, children }) => {
   const { data, isError, isPending, error } = useQuery({
-    queryKey: ["project-command-panel", teamId, page.id],
+    queryKey: ["context-aware-command-panel-items", teamId, projectId, page.id],
     queryFn: page.items ? () => page.items : () => page.getItems({ teamId, projectId }),
     enabled: page.items ? false : true,
   });

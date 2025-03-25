@@ -9,7 +9,7 @@ type TProps = {
   className?: string;
 };
 
-const iconLenght = 4;
+const iconLength = 4;
 
 export default function ProjectCard({ project, className }: TProps) {
   const environments = project.environments;
@@ -47,10 +47,10 @@ export default function ProjectCard({ project, className }: TProps) {
             </p>
             {serviceIcons !== undefined && serviceIcons.length > 0 && (
               <div className="-my-2 -mr-1 flex items-center gap-1">
-                {serviceIcons.map((s, index) => (
+                {serviceIcons.slice(0, iconLength).map((s, index) => (
                   <ServiceIcon className="size-5" key={`${s}-${index}`} variant={s} />
                 ))}
-                {serviceIcons.length > iconLenght && <EllipsisIcon className="size-5" />}
+                {serviceIcons.length > iconLength && <EllipsisIcon className="size-5" />}
               </div>
             )}
           </div>

@@ -461,19 +461,27 @@ function Item({
     enableOnFormTags: true,
   });
 
+  const isItemPending =
+    isPendingId === null
+      ? false
+      : item.id !== undefined
+        ? isPendingId === item.id
+        : isPendingId === item.title;
+
   const Icon = useMemo(() => {
-    if (item.id !== undefined ? isPendingId === item.id : isPendingId === item.title) {
+    if (isItemPending) {
       function Loader({ className }: { className?: string }) {
         return <LoaderIcon className={cn("animate-spin", className)} />;
       }
       return Loader;
     }
     return item.Icon;
-  }, [isPendingId, item.id, item.title, item.Icon]);
+  }, [isItemPending, item.Icon]);
 
   return (
     <CommandItem
       data-placeholder={isPlaceholder ? true : undefined}
+      data-pending={isItemPending ? true : undefined}
       value={item.title}
       keywords={item.keywords}
       className="group/item active:bg-border flex w-full flex-row items-center justify-between gap-6 px-3.5 py-3 text-left font-medium data-placeholder:text-transparent"
@@ -487,6 +495,9 @@ function Item({
         </p>
       </div>
       {item.subpage && <ChevronRightIcon className="-mr-1.5 size-5 shrink-0" />}
+      <div className="absolute top-0 left-0 hidden h-full w-full items-center justify-center overflow-hidden rounded-lg group-data-pending/item:block">
+        <div className="from-top-loader/0 via-top-loader/20 to-top-loader/0 animate-ping-pong absolute top-1/2 left-1/2 aspect-square w-[100%] origin-center -translate-1/2 bg-gradient-to-r" />
+      </div>
     </CommandItem>
   );
 }
