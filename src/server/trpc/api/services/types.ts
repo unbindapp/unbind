@@ -29,3 +29,7 @@ export const CreateServiceFromGitSchema = z
     ...CreateServiceSharedSchema.shape,
   })
   .strip();
+
+export type THost = NonNullable<
+  AppRouterOutputs["services"]["get"]["service"]["config"]["hosts"]
+>[0];

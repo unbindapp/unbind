@@ -15,7 +15,7 @@ export default function LogoLink() {
       <div className="flex items-center justify-center">
         <LinkButton
           size="icon"
-          className="group/button h-full w-11.5 rounded-lg focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent"
+          className="group/button h-full min-h-11.5 w-11.5 rounded-lg focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent"
           variant="ghost"
           href={projectIdFromPathname ? `/${teamIdFromPathname}` : "/"}
         >

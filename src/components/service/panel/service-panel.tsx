@@ -3,7 +3,7 @@ import { useDeviceSize } from "@/components/providers/device-size-provider";
 import { servicePanelServiceIdKey, servicePanelTabKey } from "@/components/service/constants";
 import ServicePanelContent, { tabs } from "@/components/service/panel/service-panel-content";
 import ServiceProvider from "@/components/service/service-provider";
-import { Button } from "@/components/ui/button";
+import { Button, LinkButton } from "@/components/ui/button";
 import {
   Drawer,
   DrawerClose,
@@ -12,8 +12,9 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { TServiceShallow } from "@/server/trpc/api/services/types";
-import { XIcon } from "lucide-react";
+import { AppRouterOutputs } from "@/server/trpc/api/root";
+import { THost, TServiceShallow } from "@/server/trpc/api/services/types";
+import { GlobeIcon, XIcon } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
 import { ReactNode } from "react";
 
@@ -65,7 +66,7 @@ export default function ServicePanel({
       >
         <div className="flex w-full items-start justify-start gap-4 px-5 pt-4 sm:px-8 sm:pt-6">
           <DrawerHeader className="flex min-w-0 flex-1 items-center justify-start p-0">
-            <DrawerTitle className="flex min-w-0 flex-1 items-center justify-start gap-2.5">
+            <DrawerTitle className="flex min-w-0 shrink items-center justify-start gap-2.5">
               <ServiceIcon
                 variant={service.config.framework || service.config.provider}
                 color="brand"
@@ -75,6 +76,7 @@ export default function ServicePanel({
                 {service.display_name}
               </p>
             </DrawerTitle>
+            <ServiceUrl service={service} />
           </DrawerHeader>
           {!isExtraSmall && (
             <DrawerClose asChild>
@@ -99,4 +101,34 @@ export default function ServicePanel({
       </DrawerContent>
     </Drawer>
   );
+}
+
+function getUrlDisplayStr(hostObj: THost) {
+  return hostObj.host + (hostObj.path === "/" ? "" : hostObj.path);
+}
+
+function getUrl(hostObj: THost) {
+  return "https://" + hostObj.host + hostObj.path;
+}
+
+function ServiceUrl({ service }: { service: TServiceShallow }) {
+  if (service.config.hosts && service.config.hosts.length >= 1) {
+    const firstHost = service.config.hosts[0];
+    return (
+      <div className="-my-1 flex max-w-1/2 min-w-0 shrink items-start justify-start pl-2">
+        <LinkButton
+          className="max-w-full px-2.5 py-1.25 text-left font-medium"
+          variant="outline"
+          target="_blank"
+          size="sm"
+          href={getUrl(firstHost)}
+          key={getUrlDisplayStr(firstHost)}
+        >
+          <GlobeIcon className="-ml-0.5 size-3.5" />
+          <p className="min-w-0 shrink truncate">{getUrlDisplayStr(firstHost)}</p>
+        </LinkButton>
+      </div>
+    );
+  }
+  return null;
 }
