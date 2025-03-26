@@ -58,14 +58,16 @@ export default function ServicePanelContent({ service }: TProps) {
 
   if (!service.last_deployment) {
     return (
-      <VariablesProvider
-        teamId={teamId}
-        projectId={projectId}
-        environmentId={environmentId}
-        serviceId={service.id}
-      >
-        <UndeployedServiceContent service={service} />
-      </VariablesProvider>
+      <DeploymentsProvider>
+        <VariablesProvider
+          teamId={teamId}
+          projectId={projectId}
+          environmentId={environmentId}
+          serviceId={service.id}
+        >
+          <UndeployedServiceContent service={service} />
+        </VariablesProvider>
+      </DeploymentsProvider>
     );
   }
 

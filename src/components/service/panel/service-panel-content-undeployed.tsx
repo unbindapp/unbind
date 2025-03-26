@@ -1,5 +1,6 @@
 import ErrorLine from "@/components/error-line";
 import ServiceIcon from "@/components/icons/service";
+import { useDeployments } from "@/components/service/deployments/deployments-provider";
 import { useService } from "@/components/service/service-provider";
 import { useServicesUtils } from "@/components/service/services-provider";
 import CreateVariablesForm, {
@@ -27,6 +28,9 @@ export default function UndeployedServiceContent({ service }: TProps) {
     query: { refetch: refetchService },
   } = useService();
   const { refetch: refetchServices } = useServicesUtils({ teamId, projectId, environmentId });
+  const {
+    query: { refetch: refetchDeployments },
+  } = useDeployments();
 
   const [variables, setVariables] = useState<TVariableForCreate[]>([]);
 
@@ -68,7 +72,7 @@ export default function UndeployedServiceContent({ service }: TProps) {
         serviceId: service.id,
       });
 
-      await Promise.all([refetchServices(), refetchService()]);
+      await Promise.all([refetchServices(), refetchService(), refetchDeployments()]);
 
       formApi.reset();
     },
