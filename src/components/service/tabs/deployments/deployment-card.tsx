@@ -2,8 +2,10 @@ import BroomIcon from "@/components/icons/broom";
 import ServiceIcon from "@/components/icons/service";
 import DeploymentTime from "@/components/service/tabs/deployments/deployment-time";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/components/ui/utils";
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
 import { CircleCheckIcon, EllipsisVerticalIcon, LoaderIcon, TriangleAlertIcon } from "lucide-react";
+import { useMemo } from "react";
 
 type TProps =
   | {
@@ -48,6 +50,18 @@ function getColor({
 }
 
 export default function DeploymentCard({ deployment, lastDeploymentId, isPlaceholder }: TProps) {
+  const LoaderWithSpin = ({ className }: { className?: string }) => (
+    <LoaderIcon className={cn("animate-spin", className)} />
+  );
+  const Icon = useMemo(() => {
+    if (isPlaceholder) return LoaderWithSpin;
+    if (deployment.status === "building" || deployment.status === "queued") return LoaderWithSpin;
+    if (deployment.status === "succeeded" && deployment.id === lastDeploymentId)
+      return CircleCheckIcon;
+    if (deployment.status === "failed") return TriangleAlertIcon;
+    return BroomIcon;
+  }, [isPlaceholder, deployment?.status, deployment?.id, lastDeploymentId]);
+
   return (
     <div
       data-color={getColor({ deployment, isPlaceholder, lastDeploymentId })}
@@ -58,17 +72,7 @@ export default function DeploymentCard({ deployment, lastDeploymentId, isPlaceho
       <div className="flex min-w-0 flex-1 flex-col py-0.5 pr-6 pl-3 sm:flex-row sm:items-center sm:px-3 sm:py-2">
         <div className="flex shrink-0 items-center justify-start pr-3 sm:w-32">
           <div className="bg-foreground/8 text-muted-foreground group-data-[color=destructive]/card:bg-destructive/12 group-data-[color=destructive]/card:text-destructive group-data-[color=process]/card:bg-process/12 group-data-[color=process]/card:text-process group-data-[color=success]/card:bg-success/12 group-data-[color=success]/card:text-success group-data-placeholder/card:bg-muted-more-foreground group-data-placeholder/card:animate-skeleton flex min-w-0 shrink items-center justify-start gap-1.5 rounded-md px-2 py-1.25 text-sm font-medium group-data-placeholder/card:text-transparent">
-            {isPlaceholder ? (
-              <LoaderIcon className="-ml-0.25 size-3.5 shrink-0" />
-            ) : deployment.status === "building" || deployment.status === "queued" ? (
-              <LoaderIcon className="-ml-0.25 size-3.5 shrink-0 animate-spin" />
-            ) : deployment.status === "succeeded" && deployment.id === lastDeploymentId ? (
-              <CircleCheckIcon className="-ml-0.25 size-3.5 shrink-0" />
-            ) : deployment.status === "failed" ? (
-              <TriangleAlertIcon className="-ml-0.25 size-3.5 shrink-0" />
-            ) : (
-              <BroomIcon className="-ml-0.25 size-3.5 shrink-0" />
-            )}
+            <Icon className="-ml-0.25 size-3.5 shrink-0" />
             <p className="min-w-0 shrink leading-tight">
               {isPlaceholder
                 ? "LOADING"

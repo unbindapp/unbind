@@ -1,6 +1,7 @@
 "use client";
 
 import { servicePanelTabKey } from "@/components/service/constants";
+import DeploymentsProvider from "@/components/service/deployments/deployments-provider";
 import { DeployedServiceContent } from "@/components/service/panel/service-panel-content-deployed";
 import UndeployedServiceContent from "@/components/service/panel/service-panel-content-undeployed";
 import { useService } from "@/components/service/service-provider";
@@ -36,7 +37,7 @@ export type TServicePageProviderProps = {
 export const EmptyProvider = ({ children }: TServicePageProviderProps) => children;
 
 export const tabs: TTab[] = [
-  { title: "Deployments", value: "deployments", Page: Deployments, Provider: EmptyProvider },
+  { title: "Deployments", value: "deployments", Page: Deployments, Provider: DeploymentsProvider },
   { title: "Variables", value: "variables", Page: Variables, Provider: VariablesProvider },
   { title: "Logs", value: "logs", Page: Logs, Provider: EmptyProvider, noScrollArea: true },
   { title: "Metrics", value: "metrics", Provider: EmptyProvider, Page: Metrics },

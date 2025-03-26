@@ -6,9 +6,7 @@ import CreateVariablesForm, {
   CreateVariablesFormSchema,
   TCreateVariablesForm,
 } from "@/components/service/tabs/variables/create-variables-form";
-import VariablesProvider, {
-  useVariables,
-} from "@/components/service/tabs/variables/variables-provider";
+import VariablesProvider from "@/components/service/tabs/variables/variables-provider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
@@ -29,7 +27,6 @@ export default function UndeployedServiceContent({ service }: TProps) {
     query: { refetch: refetchService },
   } = useService();
   const { refetch: refetchServices } = useServicesUtils({ teamId, projectId, environmentId });
-  const {} = useVariables();
 
   const [variables, setVariables] = useState<TVariableForCreate[]>([]);
 
@@ -42,8 +39,6 @@ export default function UndeployedServiceContent({ service }: TProps) {
     defaultValues: {},
     validators: {},
     onSubmit: async ({ formApi }) => {
-      await new Promise((r) => setTimeout(r, 1000));
-
       const parsedVariables: TCreateVariablesForm = { variables: [] };
 
       for (const variable of variables) {
@@ -73,8 +68,7 @@ export default function UndeployedServiceContent({ service }: TProps) {
         serviceId: service.id,
       });
 
-      await refetchServices();
-      await refetchService();
+      await Promise.all([refetchServices(), refetchService()]);
 
       formApi.reset();
     },

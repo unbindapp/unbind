@@ -1,28 +1,18 @@
 "use client";
 
 import ErrorCard from "@/components/error-card";
+import { useDeployments } from "@/components/service/deployments/deployments-provider";
 import { useService } from "@/components/service/service-provider";
 import DeploymentCard from "@/components/service/tabs/deployments/deployment-card";
 import TabWrapper from "@/components/service/tabs/tab-wrapper";
-import { api } from "@/server/trpc/setup/client";
 
 export default function Deployments() {
   const {
-    teamId,
-    projectId,
-    environmentId,
-    serviceId,
     query: { data: serviceData },
   } = useService();
-  const { data, isPending, error } = api.deployments.list.useQuery(
-    {
-      teamId,
-      projectId,
-      environmentId,
-      serviceId,
-    },
-    { refetchInterval: 5000 },
-  );
+  const {
+    query: { data, isPending, error },
+  } = useDeployments();
 
   return (
     <TabWrapper>
