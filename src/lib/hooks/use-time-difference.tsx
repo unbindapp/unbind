@@ -14,24 +14,26 @@ export function useTimeDifference({
 }) {
   const { timestamp: now } = useTimestamp();
 
-  const differenceMs = timestamp ? timestamp - now : 0;
+  const differenceMs = timestamp ? now - timestamp : 0;
+  const sign = differenceMs < 0 ? 1 : -1;
+  const differenceMsAbs = Math.abs(differenceMs);
 
-  const differenceDays = Math.ceil(differenceMs / 1000 / 60 / 60 / 24);
-  const differenceHours = Math.ceil(differenceMs / 1000 / 60 / 60);
-  const differenceMinutes = Math.ceil(differenceMs / 1000 / 60);
-  const differenceSeconds = Math.ceil(differenceMs / 1000);
+  const differenceDaysAbs = Math.floor(differenceMsAbs / 1000 / 60 / 60 / 24);
+  const differenceHoursAbs = Math.floor(differenceMsAbs / 1000 / 60 / 60);
+  const differenceMinutesAbs = Math.floor(differenceMsAbs / 1000 / 60);
+  const differenceSecondsAbs = Math.floor(differenceMsAbs / 1000);
 
-  const diffDaysStr = rtf.format(differenceDays, "days");
-  const diffHoursStr = rtf.format(differenceHours, "hours");
-  const diffMinutesStr = rtf.format(differenceMinutes, "minutes");
-  const diffSecondsStr = rtf.format(differenceSeconds, "seconds");
+  const diffDaysStr = rtf.format(sign * differenceDaysAbs, "days");
+  const diffHoursStr = rtf.format(sign * differenceHoursAbs, "hours");
+  const diffMinutesStr = rtf.format(sign * differenceMinutesAbs, "minutes");
+  const diffSecondsStr = rtf.format(sign * differenceSecondsAbs, "seconds");
 
   const differenceStr =
-    Math.abs(differenceDays) >= 1
+    differenceDaysAbs >= 1
       ? diffDaysStr
-      : Math.abs(differenceHours) >= 1
+      : differenceHoursAbs >= 1
         ? diffHoursStr
-        : Math.abs(differenceMinutes) >= 1
+        : differenceMinutesAbs >= 1
           ? diffMinutesStr
           : diffSecondsStr;
 
