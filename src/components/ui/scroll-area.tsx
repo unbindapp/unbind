@@ -11,11 +11,13 @@ function ScrollArea({
   noFocusOnViewport,
   orientation = "vertical",
   viewportClassName,
+  scrollBarClassName,
   children,
   ...props
 }: React.ComponentProps<typeof ScrollAreaPrimitive.Root> & {
   viewportRef?: React.Ref<HTMLDivElement>;
   viewportClassName?: string;
+  scrollBarClassName?: string;
   orientation?: "vertical" | "horizontal";
   noFocusOnViewport?: boolean;
 }) {
@@ -36,7 +38,7 @@ function ScrollArea({
       >
         {children}
       </ScrollAreaPrimitive.Viewport>
-      <ScrollBar orientation={orientation} />
+      <ScrollBar className={scrollBarClassName} orientation={orientation} />
       <ScrollAreaPrimitive.Corner />
     </ScrollAreaPrimitive.Root>
   );

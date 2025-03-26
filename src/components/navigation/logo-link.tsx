@@ -11,11 +11,11 @@ export default function LogoLink() {
   const projectIdFromPathname = pathnameArr.length > 3 ? pathnameArr[3] : undefined;
 
   return (
-    <div className="flex items-center justify-center self-stretch">
-      <div className="flex h-12 items-center justify-center sm:h-11.5">
+    <div className="flex items-stretch justify-center self-stretch">
+      <div className="flex items-center justify-center">
         <LinkButton
           size="icon"
-          className="group/button h-12 w-12 rounded-lg focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent sm:h-11.5 sm:w-11.5"
+          className="group/button h-full w-11.5 rounded-lg focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent"
           variant="ghost"
           href={projectIdFromPathname ? `/${teamIdFromPathname}` : "/"}
         >

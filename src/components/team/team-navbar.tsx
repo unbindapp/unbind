@@ -15,7 +15,7 @@ export default async function TeamNavbar() {
         <TeamBreadcrumb />
       </NavbarBreadcrumb>
       <NavbarTabsLg>
-        <TeamTabs classNameInner="lg:px-0" layoutId="team-tabs-lg" />
+        <TeamTabs layoutId="team-tabs-lg" />
       </NavbarTabsLg>
       <NavbarTabsMd>
         <TeamTabs layoutId="team-tabs-md" />

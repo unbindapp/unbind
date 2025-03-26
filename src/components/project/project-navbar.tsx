@@ -19,7 +19,7 @@ export default async function ProjectNavbar({ className }: TProps) {
         <ProjectBreadcrumb />
       </NavbarBreadcrumb>
       <NavbarTabsLg>
-        <ProjectTabs classNameInner="lg:px-0" layoutId="project-tabs-lg" />
+        <ProjectTabs layoutId="project-tabs-lg" />
       </NavbarTabsLg>
       <NavbarTabsMd>
         <ProjectTabs layoutId="project-tabs-md" />

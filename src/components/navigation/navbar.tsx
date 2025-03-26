@@ -1,5 +1,6 @@
 import { BreadcrumbSeparator } from "@/components/navigation/breadcrumb-wrapper";
 import LogoLink from "@/components/navigation/logo-link";
+import NavbarScrollArea from "@/components/navigation/navbar-scroll-area";
 import UserAvatarOrSignIn from "@/components/navigation/user-avatar-or-sign-in";
 import { cn } from "@/components/ui/utils";
 import { auth } from "@/server/auth/auth";
@@ -40,28 +41,32 @@ export async function Navbar({
         className,
       )}
     >
-      {tabsSm && <div className="flex w-full border-b sm:hidden">{tabsSm}</div>}
+      {tabsSm && (
+        <div className="flex w-full border-b sm:hidden">
+          <NavbarScrollArea>{tabsSm}</NavbarScrollArea>
+        </div>
+      )}
       <div className="flex w-full items-stretch justify-between gap-5 px-3">
         <div className="-ml-2 flex min-w-0 shrink items-stretch justify-start sm:-ml-1.5">
           <LogoLink />
           {breadcrumb && <BreadcrumbSeparator />}
           {(breadcrumb || tabsLg) && (
-            <div className="touch:scrollbar-hidden flex min-h-full min-w-0 shrink items-stretch justify-start overflow-auto">
+            <NavbarScrollArea>
               {breadcrumb}
               {tabsLg && <BreadcrumbSeparator className="hidden lg:flex" />}
-            </div>
+            </NavbarScrollArea>
           )}
-          {tabsLg && (
-            <div className="hidden min-h-full min-w-0 shrink items-stretch justify-start overflow-auto lg:flex">
-              {tabsLg}
-            </div>
-          )}
+          {tabsLg && <NavbarScrollArea className="hidden lg:flex">{tabsLg}</NavbarScrollArea>}
         </div>
         <div className="flex shrink-0 items-center justify-end">
           <UserAvatarOrSignIn session={session} />
         </div>
       </div>
-      {tabsMd && <div className="hidden w-full border-t sm:flex lg:hidden">{tabsMd}</div>}
+      {tabsMd && (
+        <div className="hidden w-full border-t sm:flex lg:hidden">
+          <NavbarScrollArea>{tabsMd}</NavbarScrollArea>
+        </div>
+      )}
     </nav>
   );
 }
