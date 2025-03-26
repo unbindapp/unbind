@@ -6,11 +6,13 @@ import { z } from "zod";
 export const servicesRouter = createTRPCRouter({
   list: publicProcedure
     .input(
-      z.object({
-        teamId: z.string().uuid(),
-        projectId: z.string().uuid(),
-        environmentId: z.string().uuid(),
-      }),
+      z
+        .object({
+          teamId: z.string().uuid(),
+          projectId: z.string().uuid(),
+          environmentId: z.string().uuid(),
+        })
+        .strip(),
     )
     .query(async function ({ input: { teamId, projectId, environmentId }, ctx }) {
       const { session, goClient } = ctx;
@@ -31,12 +33,14 @@ export const servicesRouter = createTRPCRouter({
     }),
   get: publicProcedure
     .input(
-      z.object({
-        teamId: z.string().uuid(),
-        projectId: z.string().uuid(),
-        environmentId: z.string().uuid(),
-        serviceId: z.string().uuid(),
-      }),
+      z
+        .object({
+          teamId: z.string().uuid(),
+          projectId: z.string().uuid(),
+          environmentId: z.string().uuid(),
+          serviceId: z.string().uuid(),
+        })
+        .strip(),
     )
     .query(async function ({ input: { teamId, projectId, environmentId, serviceId }, ctx }) {
       const { session, goClient } = ctx;

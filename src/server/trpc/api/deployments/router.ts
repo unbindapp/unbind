@@ -6,14 +6,16 @@ import { z } from "zod";
 export const deploymentsRouter = createTRPCRouter({
   list: publicProcedure
     .input(
-      z.object({
-        teamId: z.string().uuid(),
-        projectId: z.string().uuid(),
-        environmentId: z.string().uuid(),
-        serviceId: z.string().uuid(),
-        cursor: z.string().optional(),
-        statuses: list_deploymentsQuerySchema.shape.statuses,
-      }),
+      z
+        .object({
+          teamId: z.string().uuid(),
+          projectId: z.string().uuid(),
+          environmentId: z.string().uuid(),
+          serviceId: z.string().uuid(),
+          cursor: z.string().optional(),
+          statuses: list_deploymentsQuerySchema.shape.statuses,
+        })
+        .strip(),
     )
     .query(async function ({
       input: { teamId, projectId, environmentId, serviceId, cursor, statuses },
@@ -40,12 +42,14 @@ export const deploymentsRouter = createTRPCRouter({
     }),
   create: publicProcedure
     .input(
-      z.object({
-        teamId: z.string().uuid(),
-        projectId: z.string().uuid(),
-        environmentId: z.string().uuid(),
-        serviceId: z.string().uuid(),
-      }),
+      z
+        .object({
+          teamId: z.string().uuid(),
+          projectId: z.string().uuid(),
+          environmentId: z.string().uuid(),
+          serviceId: z.string().uuid(),
+        })
+        .strip(),
     )
     .mutation(async function ({ input: { teamId, projectId, environmentId, serviceId }, ctx }) {
       const { session, goClient } = ctx;

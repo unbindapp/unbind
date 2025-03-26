@@ -7,10 +7,12 @@ import { z } from "zod";
 export const projectsRouter = createTRPCRouter({
   get: publicProcedure
     .input(
-      z.object({
-        teamId: z.string().uuid(),
-        projectId: z.string().uuid(),
-      }),
+      z
+        .object({
+          teamId: z.string().uuid(),
+          projectId: z.string().uuid(),
+        })
+        .strip(),
     )
     .query(async function ({ input: { teamId, projectId }, ctx }) {
       const { session, goClient } = ctx;
@@ -27,9 +29,11 @@ export const projectsRouter = createTRPCRouter({
     }),
   list: publicProcedure
     .input(
-      z.object({
-        teamId: z.string().uuid(),
-      }),
+      z
+        .object({
+          teamId: z.string().uuid(),
+        })
+        .strip(),
     )
     .query(async function ({ input: { teamId }, ctx }) {
       const { session, goClient } = ctx;
@@ -46,11 +50,13 @@ export const projectsRouter = createTRPCRouter({
     }),
   create: publicProcedure
     .input(
-      z.object({
-        teamId: z.string().uuid(),
-        displayName: z.string().optional(),
-        description: z.string().optional(),
-      }),
+      z
+        .object({
+          teamId: z.string().uuid(),
+          displayName: z.string().optional(),
+          description: z.string().optional(),
+        })
+        .strip(),
     )
     .mutation(async function ({ input: { teamId, displayName, description }, ctx }) {
       const { session, goClient } = ctx;
@@ -78,6 +84,7 @@ export const projectsRouter = createTRPCRouter({
           teamId: z.string().uuid(),
           projectId: z.string().uuid(),
         })
+        .strip()
         .merge(ProjectUpdateFormSchema),
     )
     .mutation(async function ({ input: { displayName, description, teamId, projectId }, ctx }) {
@@ -102,10 +109,12 @@ export const projectsRouter = createTRPCRouter({
     }),
   delete: publicProcedure
     .input(
-      z.object({
-        teamId: z.string().uuid(),
-        projectId: z.string().uuid(),
-      }),
+      z
+        .object({
+          teamId: z.string().uuid(),
+          projectId: z.string().uuid(),
+        })
+        .strip(),
     )
     .mutation(async function ({ input: { teamId, projectId }, ctx }) {
       const { session, goClient } = ctx;

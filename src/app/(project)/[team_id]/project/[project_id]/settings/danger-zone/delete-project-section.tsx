@@ -67,11 +67,13 @@ function DeleteButton({ teamId, projectId }: { teamId: string; projectId: string
       textToConfirm: "",
     },
     validators: {
-      onChange: z.object({
-        textToConfirm: z.string().refine((v) => v === textToConfirm, {
-          message: "Please type the correct text to confirm",
-        }),
-      }),
+      onChange: z
+        .object({
+          textToConfirm: z.string().refine((v) => v === textToConfirm, {
+            message: "Please type the correct text to confirm",
+          }),
+        })
+        .strip(),
     },
     onSubmit: async ({ formApi }) => {
       await deleteProject({ teamId, projectId });

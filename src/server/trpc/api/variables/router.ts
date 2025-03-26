@@ -7,13 +7,15 @@ import { z } from "zod";
 export const variablesRouter = createTRPCRouter({
   list: publicProcedure
     .input(
-      z.object({
-        teamId: z.string().uuid(),
-        projectId: z.string().uuid().optional(),
-        environmentId: z.string().uuid().optional(),
-        serviceId: z.string().uuid().optional(),
-        type: list_variablesQuerySchema.shape.type,
-      }),
+      z
+        .object({
+          teamId: z.string().uuid(),
+          projectId: z.string().uuid().optional(),
+          environmentId: z.string().uuid().optional(),
+          serviceId: z.string().uuid().optional(),
+          type: list_variablesQuerySchema.shape.type,
+        })
+        .strip(),
     )
     .query(async function ({ input: { teamId, projectId, environmentId, serviceId, type }, ctx }) {
       const { session, goClient } = ctx;
@@ -36,14 +38,16 @@ export const variablesRouter = createTRPCRouter({
     }),
   upsert: publicProcedure
     .input(
-      z.object({
-        teamId: z.string().uuid(),
-        projectId: z.string().uuid(),
-        environmentId: z.string().uuid(),
-        serviceId: z.string().uuid(),
-        variables: z.array(VariableForCreateSchema),
-        type: VariableTypeSchema,
-      }),
+      z
+        .object({
+          teamId: z.string().uuid(),
+          projectId: z.string().uuid(),
+          environmentId: z.string().uuid(),
+          serviceId: z.string().uuid(),
+          variables: z.array(VariableForCreateSchema),
+          type: VariableTypeSchema,
+        })
+        .strip(),
     )
     .mutation(async function ({
       input: { teamId, projectId, environmentId, serviceId, variables, type },
@@ -70,14 +74,16 @@ export const variablesRouter = createTRPCRouter({
     }),
   delete: publicProcedure
     .input(
-      z.object({
-        teamId: z.string().uuid(),
-        projectId: z.string().uuid(),
-        environmentId: z.string().uuid(),
-        serviceId: z.string().uuid(),
-        variables: z.array(z.object({ name: z.string() })),
-        type: VariableTypeSchema,
-      }),
+      z
+        .object({
+          teamId: z.string().uuid(),
+          projectId: z.string().uuid(),
+          environmentId: z.string().uuid(),
+          serviceId: z.string().uuid(),
+          variables: z.array(z.object({ name: z.string() }).strip()),
+          type: VariableTypeSchema,
+        })
+        .strip(),
     )
     .mutation(async function ({
       input: { teamId, projectId, environmentId, serviceId, variables, type },

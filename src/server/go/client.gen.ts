@@ -8,7 +8,7 @@ export const CallbackResponseBodySchema = z
     refresh_token: z.string(),
     token_type: z.string(),
   })
-  .strict();
+  .strip();
 
 export const CreateBuildInputBodySchema = z
   .object({
@@ -17,7 +17,14 @@ export const CreateBuildInputBodySchema = z
     service_id: z.string(),
     team_id: z.string(),
   })
-  .strict();
+  .strip();
+
+export const GitCommitterSchema = z
+  .object({
+    avatar_url: z.string(),
+    name: z.string(),
+  })
+  .strip();
 
 export const DeploymentStatusSchema = z.enum([
   'queued',
@@ -30,6 +37,9 @@ export const DeploymentStatusSchema = z.enum([
 export const DeploymentResponseSchema = z
   .object({
     attempts: z.number(),
+    commit_author: GitCommitterSchema.optional(),
+    commit_message: z.string().optional(),
+    commit_sha: z.string().optional(),
     completed_at: z.string().optional(),
     created_at: z.string(),
     error: z.string().optional(),
@@ -39,13 +49,13 @@ export const DeploymentResponseSchema = z
     status: DeploymentStatusSchema,
     updated_at: z.string(),
   })
-  .strict();
+  .strip();
 
 export const CreateBuildOutputBodySchema = z
   .object({
     data: DeploymentResponseSchema,
   })
-  .strict();
+  .strip();
 
 export const CreateProjectInputBodySchema = z
   .object({
@@ -53,7 +63,7 @@ export const CreateProjectInputBodySchema = z
     display_name: z.string(),
     team_id: z.string(),
   })
-  .strict();
+  .strip();
 
 export const FrameworkSchema = z.enum([
   'next',
@@ -98,7 +108,7 @@ export const EnvironmentResponseSchema = z
     provider_summary: z.array(ProviderSchema).optional(),
     service_count: z.number().optional(),
   })
-  .strict();
+  .strip();
 
 export const ProjectResponseSchema = z
   .object({
@@ -111,15 +121,15 @@ export const ProjectResponseSchema = z
     status: z.string(),
     team_id: z.string(),
   })
-  .strict();
+  .strip();
 
 export const CreateProjectResponseBodySchema = z
   .object({
     data: ProjectResponseSchema,
   })
-  .strict();
+  .strip();
 
-export const ServiceBuilderSchema = z.enum(['nixpacks', 'railpack', 'docker']);
+export const ServiceBuilderSchema = z.enum(['railpack', 'docker']);
 
 export const HostSpecSchema = z
   .object({
@@ -127,14 +137,14 @@ export const HostSpecSchema = z
     path: z.string(),
     port: z.number().optional(),
   })
-  .strict();
+  .strip();
 
 export const PortSpecSchema = z
   .object({
     port: z.number(),
     protocol: z.string().optional(),
   })
-  .strict();
+  .strip();
 
 export const ServiceTypeSchema = z.enum(['github', 'docker-image']);
 
@@ -159,7 +169,7 @@ export const CreateServiceInputSchema = z
     team_id: z.string(),
     type: ServiceTypeSchema, // Type of service, e.g. 'github', 'docker-image'
   })
-  .strict();
+  .strip();
 
 export const ServiceConfigResponseSchema = z
   .object({
@@ -176,12 +186,13 @@ export const ServiceConfigResponseSchema = z
     run_command: z.string().optional(),
     type: ServiceTypeSchema,
   })
-  .strict();
+  .strip();
 
 export const ServiceResponseSchema = z
   .object({
     config: ServiceConfigResponseSchema,
     created_at: z.string(),
+    current_deployment_id: z.string().optional(),
     description: z.string(),
     display_name: z.string(),
     environment_id: z.string(),
@@ -192,20 +203,20 @@ export const ServiceResponseSchema = z
     name: z.string(),
     updated_at: z.string(),
   })
-  .strict();
+  .strip();
 
 export const CreateServiceResponseBodySchema = z
   .object({
     data: ServiceResponseSchema,
   })
-  .strict();
+  .strip();
 
 export const DataStructSchema = z
   .object({
     deleted: z.boolean(),
     id: z.string(),
   })
-  .strict();
+  .strip();
 
 export const DeleteEnvironmentInputBodySchema = z
   .object({
@@ -213,26 +224,26 @@ export const DeleteEnvironmentInputBodySchema = z
     project_id: z.string(),
     team_id: z.string(),
   })
-  .strict();
+  .strip();
 
 export const DeleteEnvironmentResponseBodySchema = z
   .object({
     data: DataStructSchema,
   })
-  .strict();
+  .strip();
 
 export const DeleteProjectInputBodySchema = z
   .object({
     project_id: z.string(),
     team_id: z.string(),
   })
-  .strict();
+  .strip();
 
 export const DeleteProjectResponseBodySchema = z
   .object({
     data: DataStructSchema,
   })
-  .strict();
+  .strip();
 
 export const DeleteServiceInputBodySchema = z
   .object({
@@ -241,13 +252,13 @@ export const DeleteServiceInputBodySchema = z
     service_id: z.string(),
     team_id: z.string(),
   })
-  .strict();
+  .strip();
 
 export const DeleteServiceResponseBodySchema = z
   .object({
     data: DataStructSchema,
   })
-  .strict();
+  .strip();
 
 export const VariableTypeSchema = z.enum(['team', 'project', 'environment', 'service']);
 
@@ -255,7 +266,7 @@ export const VariableDeleteInputSchema = z
   .object({
     name: z.string(),
   })
-  .strict();
+  .strip();
 
 export const DeleteVariablesInputBodySchema = z
   .object({
@@ -266,334 +277,7 @@ export const DeleteVariablesInputBodySchema = z
     type: VariableTypeSchema, // The type of variable
     variables: z.array(VariableDeleteInputSchema).nullable(),
   })
-  .strict();
-
-export const PermissionEdgesSchema = z
-  .object({
-    groups: z
-      .array(z.lazy(() => GroupSchema))
-      .nullable()
-      .optional(),
-  })
-  .strict();
-
-export const PermissionSchema = z
-  .object({
-    action: z.string().optional(),
-    created_at: z.string().optional(),
-    edges: PermissionEdgesSchema,
-    id: z.string(),
-    labels: z.object({}).optional(),
-    resource_id: z.string().optional(),
-    resource_type: z.string().optional(),
-    scope: z.string().optional(),
-    updated_at: z.string().optional(),
-  })
-  .strict();
-
-export const GithubInstallationEdgesSchema = z
-  .object({
-    github_app: z.lazy(() => GithubAppSchema).optional(),
-    services: z
-      .array(z.lazy(() => ServiceSchema))
-      .nullable()
-      .optional(),
-  })
-  .strict();
-
-export const GithubInstallationPermissionsSchema = z
-  .object({
-    contents: z.string().optional(),
-    metadata: z.string().optional(),
-  })
-  .strict();
-
-export const GithubInstallationSchema = z
-  .object({
-    account_id: z.number().optional(),
-    account_login: z.string().optional(),
-    account_type: z.string().optional(),
-    account_url: z.string().optional(),
-    active: z.boolean().optional(),
-    created_at: z.string().optional(),
-    edges: GithubInstallationEdgesSchema,
-    events: z.array(z.string()).nullable().optional(),
-    github_app_id: z.number().optional(),
-    id: z.number().optional(),
-    permissions: GithubInstallationPermissionsSchema.optional(),
-    repository_selection: z.string().optional(),
-    suspended: z.boolean().optional(),
-    updated_at: z.string().optional(),
-  })
-  .strict();
-
-export const GithubAppEdgesSchema = z
-  .object({
-    installations: z.array(GithubInstallationSchema).nullable().optional(),
-    users: z.lazy(() => UserSchema).optional(),
-  })
-  .strict();
-
-export const GithubAppSchema: z.ZodType<unknown> = z
-  .object({
-    client_id: z.string().optional(),
-    created_at: z.string().optional(),
-    created_by: z.string().optional(),
-    edges: GithubAppEdgesSchema,
-    id: z.number().optional(),
-    name: z.string().optional(),
-    updated_at: z.string().optional(),
-  })
-  .strict();
-
-export const Oauth2CodeEdgesSchema = z
-  .object({
-    user: z.lazy(() => UserSchema).optional(),
-  })
-  .strict();
-
-export const Oauth2CodeSchema = z
-  .object({
-    client_id: z.string().optional(),
-    created_at: z.string().optional(),
-    edges: Oauth2CodeEdgesSchema,
-    expires_at: z.string().optional(),
-    id: z.string(),
-    revoked: z.boolean().optional(),
-    scope: z.string().optional(),
-    updated_at: z.string().optional(),
-  })
-  .strict();
-
-export const Oauth2TokenEdgesSchema = z
-  .object({
-    user: z.lazy(() => UserSchema).optional(),
-  })
-  .strict();
-
-export const Oauth2TokenSchema = z
-  .object({
-    client_id: z.string().optional(),
-    created_at: z.string().optional(),
-    device_info: z.string().optional(),
-    edges: Oauth2TokenEdgesSchema,
-    expires_at: z.string().optional(),
-    id: z.string(),
-    revoked: z.boolean().optional(),
-    scope: z.string().optional(),
-    updated_at: z.string().optional(),
-  })
-  .strict();
-
-export const UserEdgesSchema = z
-  .object({
-    created_by: z.array(GithubAppSchema).nullable().optional(),
-    groups: z
-      .array(z.lazy(() => GroupSchema))
-      .nullable()
-      .optional(),
-    oauth2_codes: z.array(Oauth2CodeSchema).nullable().optional(),
-    oauth2_tokens: z.array(Oauth2TokenSchema).nullable().optional(),
-    teams: z
-      .array(z.lazy(() => TeamSchema))
-      .nullable()
-      .optional(),
-  })
-  .strict();
-
-export const UserSchema: z.ZodType<unknown> = z
-  .object({
-    created_at: z.string().optional(),
-    edges: UserEdgesSchema,
-    email: z.string().optional(),
-    id: z.string(),
-    updated_at: z.string().optional(),
-  })
-  .strict();
-
-export const GroupEdgesSchema = z
-  .object({
-    permissions: z.array(PermissionSchema).nullable().optional(),
-    team: z.lazy(() => TeamSchema).optional(),
-    users: z.array(UserSchema).nullable().optional(),
-  })
-  .strict();
-
-export const GroupSchema: z.ZodType<unknown> = z
-  .object({
-    created_at: z.string().optional(),
-    description: z.string().optional(),
-    edges: GroupEdgesSchema,
-    external_id: z.string().optional(),
-    id: z.string(),
-    identity_provider: z.string().optional(),
-    k8s_role_name: z.string().optional(),
-    name: z.string().optional(),
-    superuser: z.boolean().optional(),
-    team_id: z.string().optional(),
-    updated_at: z.string().optional(),
-  })
-  .strict();
-
-export const TeamEdgesSchema = z
-  .object({
-    groups: z.array(GroupSchema).nullable().optional(),
-    members: z.array(UserSchema).nullable().optional(),
-    projects: z
-      .array(z.lazy(() => ProjectSchema))
-      .nullable()
-      .optional(),
-  })
-  .strict();
-
-export const TeamSchema: z.ZodType<unknown> = z
-  .object({
-    created_at: z.string().optional(),
-    description: z.string().optional(),
-    display_name: z.string().optional(),
-    edges: TeamEdgesSchema,
-    id: z.string(),
-    kubernetes_secret: z.string().optional(),
-    name: z.string().optional(),
-    namespace: z.string().optional(),
-    updated_at: z.string().optional(),
-  })
-  .strict();
-
-export const ProjectEdgesSchema = z
-  .object({
-    environments: z
-      .array(z.lazy(() => EnvironmentSchema))
-      .nullable()
-      .optional(),
-    team: TeamSchema.optional(),
-  })
-  .strict();
-
-export const ProjectSchema: z.ZodType<unknown> = z
-  .object({
-    created_at: z.string().optional(),
-    description: z.string().optional(),
-    display_name: z.string().optional(),
-    edges: ProjectEdgesSchema,
-    id: z.string(),
-    kubernetes_secret: z.string().optional(),
-    name: z.string().optional(),
-    status: z.string().optional(),
-    team_id: z.string().optional(),
-    updated_at: z.string().optional(),
-  })
-  .strict();
-
-export const EnvironmentEdgesSchema = z
-  .object({
-    project: ProjectSchema.optional(),
-    services: z
-      .array(z.lazy(() => ServiceSchema))
-      .nullable()
-      .optional(),
-  })
-  .strict();
-
-export const EnvironmentSchema: z.ZodType<unknown> = z
-  .object({
-    active: z.boolean().optional(),
-    created_at: z.string().optional(),
-    description: z.string().optional(),
-    display_name: z.string().optional(),
-    edges: EnvironmentEdgesSchema,
-    id: z.string(),
-    kubernetes_secret: z.string().optional(),
-    name: z.string().optional(),
-    project_id: z.string().optional(),
-    updated_at: z.string().optional(),
-  })
-  .strict();
-
-export const ServiceConfigEdgesSchema = z
-  .object({
-    service: z.lazy(() => ServiceSchema).optional(),
-  })
-  .strict();
-
-export const ServiceConfigSchema = z
-  .object({
-    auto_deploy: z.boolean().optional(),
-    builder: ServiceBuilderSchema.optional(),
-    created_at: z.string().optional(),
-    edges: ServiceConfigEdgesSchema,
-    framework: FrameworkSchema.optional(),
-    git_branch: z.string().optional(),
-    hosts: z.array(HostSpecSchema).nullable().optional(),
-    id: z.string(),
-    image: z.string().optional(),
-    ports: z.array(PortSpecSchema).nullable().optional(),
-    provider: ProviderSchema.optional(),
-    public: z.boolean().optional(),
-    replicas: z.number().optional(),
-    run_command: z.string().optional(),
-    service_id: z.string().optional(),
-    type: ServiceTypeSchema.optional(),
-    updated_at: z.string().optional(),
-  })
-  .strict();
-
-export const ServiceEdgesSchema = z
-  .object({
-    deployments: z
-      .array(z.lazy(() => DeploymentSchema))
-      .nullable()
-      .optional(),
-    environment: EnvironmentSchema.optional(),
-    github_installation: GithubInstallationSchema.optional(),
-    service_config: ServiceConfigSchema.optional(),
-  })
-  .strict();
-
-export const ServiceSchema: z.ZodType<unknown> = z
-  .object({
-    created_at: z.string().optional(),
-    description: z.string().optional(),
-    display_name: z.string().optional(),
-    edges: ServiceEdgesSchema,
-    environment_id: z.string().optional(),
-    git_repository: z.string().optional(),
-    git_repository_owner: z.string().optional(),
-    github_installation_id: z.number().optional(),
-    id: z.string(),
-    kubernetes_secret: z.string().optional(),
-    name: z.string().optional(),
-    updated_at: z.string().optional(),
-  })
-  .strict();
-
-export const DeploymentEdgesSchema = z
-  .object({
-    service: ServiceSchema.optional(),
-  })
-  .strict();
-
-export const DeploymentSourceSchema = z.enum(['manual', 'git']);
-
-export const DeploymentSchema: z.ZodType<unknown> = z
-  .object({
-    attempts: z.number().optional(),
-    commit_message: z.string().optional(),
-    commit_sha: z.string().optional(),
-    completed_at: z.string().optional(),
-    created_at: z.string().optional(),
-    edges: DeploymentEdgesSchema,
-    error: z.string().optional(),
-    id: z.string(),
-    kubernetes_job_name: z.string().optional(),
-    kubernetes_job_status: z.string().optional(),
-    service_id: z.string().optional(),
-    source: DeploymentSourceSchema.optional(),
-    started_at: z.string().optional(),
-    status: DeploymentStatusSchema.optional(),
-    updated_at: z.string().optional(),
-  })
-  .strict();
+  .strip();
 
 export const ErrorDetailSchema = z
   .object({
@@ -601,7 +285,7 @@ export const ErrorDetailSchema = z
     message: z.string().optional(), // Error message text
     value: z.any().optional(), // The value at the given location
   })
-  .strict();
+  .strip();
 
 export const ErrorModelSchema = z
   .object({
@@ -612,25 +296,25 @@ export const ErrorModelSchema = z
     title: z.string().optional(), // A short, human-readable summary of the problem type. This value should not change between occurrences of the error.
     type: z.string().optional(), // A URI reference to human-readable documentation for the error.
   })
-  .strict();
+  .strip();
 
 export const GetEnvironmentOutputBodySchema = z
   .object({
     data: EnvironmentResponseSchema,
   })
-  .strict();
+  .strip();
 
 export const GetProjectResponseBodySchema = z
   .object({
     data: ProjectResponseSchema,
   })
-  .strict();
+  .strip();
 
 export const GetServiceResponseBodySchema = z
   .object({
     data: ServiceResponseSchema,
   })
-  .strict();
+  .strip();
 
 export const PlanSchema = z
   .object({
@@ -641,7 +325,7 @@ export const PlanSchema = z
     seats: z.number().optional(),
     space: z.number().optional(),
   })
-  .strict();
+  .strip();
 
 export const OrganizationSchema = z
   .object({
@@ -702,13 +386,13 @@ export const OrganizationSchema = z
     url: z.string().optional(),
     web_commit_signoff_required: z.boolean().optional(),
   })
-  .strict();
+  .strip();
 
 export const GithubAdminOrganizationListResponseBodySchema = z
   .object({
     data: z.array(OrganizationSchema).nullable(),
   })
-  .strict();
+  .strip();
 
 export const GithubRepositoryOwnerSchema = z
   .object({
@@ -717,7 +401,7 @@ export const GithubRepositoryOwnerSchema = z
     login: z.string(),
     name: z.string(),
   })
-  .strict();
+  .strip();
 
 export const GithubRepositorySchema = z
   .object({
@@ -731,31 +415,67 @@ export const GithubRepositorySchema = z
     owner: GithubRepositoryOwnerSchema,
     updated_at: z.string(),
   })
-  .strict();
+  .strip();
 
 export const GithubAdminRepositoryListResponseBodySchema = z
   .object({
     data: z.array(GithubRepositorySchema).nullable(),
   })
-  .strict();
+  .strip();
+
+export const GithubInstallationPermissionsSchema = z
+  .object({
+    contents: z.string().optional(),
+    metadata: z.string().optional(),
+  })
+  .strip();
+
+export const GithubInstallationAPIResponseSchema = z
+  .object({
+    account_id: z.number().optional(),
+    account_login: z.string().optional(),
+    account_type: z.string().optional(),
+    account_url: z.string().optional(),
+    active: z.boolean().optional(),
+    created_at: z.string().optional(),
+    events: z.array(z.string()).nullable().optional(),
+    github_app_id: z.number().optional(),
+    id: z.number().optional(),
+    permissions: GithubInstallationPermissionsSchema.optional(),
+    repository_selection: z.string().optional(),
+    suspended: z.boolean().optional(),
+    updated_at: z.string().optional(),
+  })
+  .strip();
+
+export const GithubAppAPIResponseSchema = z
+  .object({
+    created_at: z.string().optional(),
+    created_by: z.string().optional(),
+    id: z.number().optional(),
+    installations: z.array(GithubInstallationAPIResponseSchema).nullable().optional(),
+    name: z.string().optional(),
+    updated_at: z.string().optional(),
+  })
+  .strip();
 
 export const GithubAppCreateResponseBodySchema = z
   .object({
     data: z.string(),
   })
-  .strict();
+  .strip();
 
 export const GithubAppInstallationListResponseBodySchema = z
   .object({
-    data: z.array(GithubInstallationSchema).nullable(),
+    data: z.array(GithubInstallationAPIResponseSchema).nullable(),
   })
-  .strict();
+  .strip();
 
 export const GithubAppListResponseBodySchema = z
   .object({
-    data: z.array(GithubAppSchema).nullable(),
+    data: z.array(GithubAppAPIResponseSchema).nullable(),
   })
-  .strict();
+  .strip();
 
 export const GithubBranchSchema = z
   .object({
@@ -764,7 +484,7 @@ export const GithubBranchSchema = z
     ref: z.string(),
     sha: z.string(),
   })
-  .strict();
+  .strip();
 
 export const GithubTagSchema = z
   .object({
@@ -772,7 +492,7 @@ export const GithubTagSchema = z
     ref: z.string(),
     sha: z.string(),
   })
-  .strict();
+  .strip();
 
 export const GithubRepositoryDetailSchema = z
   .object({
@@ -801,26 +521,26 @@ export const GithubRepositoryDetailSchema = z
     url: z.string(),
     watchersCount: z.number(),
   })
-  .strict();
+  .strip();
 
 export const GithubRepositoryDetailResponseBodySchema = z
   .object({
     data: GithubRepositoryDetailSchema,
   })
-  .strict();
+  .strip();
 
 export const HealthResponseBodySchema = z
   .object({
     status: z.string(),
   })
-  .strict();
+  .strip();
 
 export const ItemSchema = z
   .object({
     name: z.string(),
     value: z.string(),
   })
-  .strict();
+  .strip();
 
 export const PaginationResponseMetadataSchema = z
   .object({
@@ -828,32 +548,32 @@ export const PaginationResponseMetadataSchema = z
     next: z.string().optional(),
     previous: z.string().optional(),
   })
-  .strict();
+  .strip();
 
 export const ListDeploymentResponseDataSchema = z
   .object({
     deployments: z.array(DeploymentResponseSchema).nullable(),
     metadata: PaginationResponseMetadataSchema,
   })
-  .strict();
+  .strip();
 
 export const ListDeploymentsResponseBodySchema = z
   .object({
     data: ListDeploymentResponseDataSchema,
   })
-  .strict();
+  .strip();
 
 export const ListProjectResponseBodySchema = z
   .object({
     data: z.array(ProjectResponseSchema).nullable(),
   })
-  .strict();
+  .strip();
 
 export const ListServiceResponseBodySchema = z
   .object({
     data: z.array(ServiceResponseSchema).nullable(),
   })
-  .strict();
+  .strip();
 
 export const LogEventSchema = z
   .object({
@@ -861,22 +581,31 @@ export const LogEventSchema = z
     pod_name: z.string(),
     timestamp: z.string().optional(),
   })
-  .strict();
+  .strip();
 
 export const LogSSEErrorSchema = z
   .object({
     code: z.number(),
     message: z.string(),
   })
-  .strict();
+  .strip();
 
 export const LogTypeSchema = z.enum(['team', 'project', 'environment', 'service']);
 
+export const UserAPIResponseSchema = z
+  .object({
+    created_at: z.string().optional(),
+    email: z.string().optional(),
+    id: z.string(),
+    updated_at: z.string().optional(),
+  })
+  .strip();
+
 export const MeResponseBodySchema = z
   .object({
-    data: UserSchema,
+    data: UserAPIResponseSchema,
   })
-  .strict();
+  .strip();
 
 export const SortByFieldSchema = z.enum(['created_at', 'updated_at']);
 
@@ -887,13 +616,13 @@ export const SystemMetaSchema = z
     external_ipv4: z.string(),
     external_ipv6: z.string(),
   })
-  .strict();
+  .strip();
 
 export const SystemMetaResponseBodySchema = z
   .object({
     data: SystemMetaSchema,
   })
-  .strict();
+  .strip();
 
 export const TeamResponseSchema = z
   .object({
@@ -903,19 +632,19 @@ export const TeamResponseSchema = z
     id: z.string(),
     name: z.string(),
   })
-  .strict();
+  .strip();
 
 export const TeamResponseBodySchema = z
   .object({
     data: z.array(TeamResponseSchema),
   })
-  .strict();
+  .strip();
 
 export const UpdatServiceResponseBodySchema = z
   .object({
     data: ServiceResponseSchema,
   })
-  .strict();
+  .strip();
 
 export const UpdateProjectInputBodySchema = z
   .object({
@@ -924,13 +653,13 @@ export const UpdateProjectInputBodySchema = z
     project_id: z.string(),
     team_id: z.string(),
   })
-  .strict();
+  .strip();
 
 export const UpdateProjectResponseBodySchema = z
   .object({
     data: ProjectResponseSchema,
   })
-  .strict();
+  .strip();
 
 export const UpdateServiceInputSchema = z
   .object({
@@ -951,7 +680,7 @@ export const UpdateServiceInputSchema = z
     team_id: z.string(),
     type: ServiceTypeSchema.optional(),
   })
-  .strict();
+  .strip();
 
 export const UpdateTeamInputBodySchema = z
   .object({
@@ -959,13 +688,13 @@ export const UpdateTeamInputBodySchema = z
     display_name: z.string(),
     team_id: z.string(),
   })
-  .strict();
+  .strip();
 
 export const UpdateTeamResponseBodySchema = z
   .object({
     data: TeamResponseSchema,
   })
-  .strict();
+  .strip();
 
 export const UpsertVariablesInputBodySchema = z
   .object({
@@ -976,7 +705,7 @@ export const UpsertVariablesInputBodySchema = z
     type: VariableTypeSchema, // The type of variable
     variables: z.array(ItemSchema).nullable(),
   })
-  .strict();
+  .strip();
 
 export const VariableResponseSchema = z
   .object({
@@ -984,16 +713,17 @@ export const VariableResponseSchema = z
     type: VariableTypeSchema,
     value: z.string(),
   })
-  .strict();
+  .strip();
 
 export const VariablesResponseBodySchema = z
   .object({
     data: z.array(VariableResponseSchema),
   })
-  .strict();
+  .strip();
 
 export type CallbackResponseBody = z.infer<typeof CallbackResponseBodySchema>;
 export type CreateBuildInputBody = z.infer<typeof CreateBuildInputBodySchema>;
+export type GitCommitter = z.infer<typeof GitCommitterSchema>;
 export type DeploymentStatus = z.infer<typeof DeploymentStatusSchema>;
 export type DeploymentResponse = z.infer<typeof DeploymentResponseSchema>;
 export type CreateBuildOutputBody = z.infer<typeof CreateBuildOutputBodySchema>;
@@ -1021,34 +751,6 @@ export type DeleteServiceResponseBody = z.infer<typeof DeleteServiceResponseBody
 export type VariableType = z.infer<typeof VariableTypeSchema>;
 export type VariableDeleteInput = z.infer<typeof VariableDeleteInputSchema>;
 export type DeleteVariablesInputBody = z.infer<typeof DeleteVariablesInputBodySchema>;
-export type PermissionEdges = z.infer<typeof PermissionEdgesSchema>;
-export type Permission = z.infer<typeof PermissionSchema>;
-export type GithubInstallationEdges = z.infer<typeof GithubInstallationEdgesSchema>;
-export type GithubInstallationPermissions = z.infer<typeof GithubInstallationPermissionsSchema>;
-export type GithubInstallation = z.infer<typeof GithubInstallationSchema>;
-export type GithubAppEdges = z.infer<typeof GithubAppEdgesSchema>;
-export type GithubApp = z.infer<typeof GithubAppSchema>;
-export type Oauth2CodeEdges = z.infer<typeof Oauth2CodeEdgesSchema>;
-export type Oauth2Code = z.infer<typeof Oauth2CodeSchema>;
-export type Oauth2TokenEdges = z.infer<typeof Oauth2TokenEdgesSchema>;
-export type Oauth2Token = z.infer<typeof Oauth2TokenSchema>;
-export type UserEdges = z.infer<typeof UserEdgesSchema>;
-export type User = z.infer<typeof UserSchema>;
-export type GroupEdges = z.infer<typeof GroupEdgesSchema>;
-export type Group = z.infer<typeof GroupSchema>;
-export type TeamEdges = z.infer<typeof TeamEdgesSchema>;
-export type Team = z.infer<typeof TeamSchema>;
-export type ProjectEdges = z.infer<typeof ProjectEdgesSchema>;
-export type Project = z.infer<typeof ProjectSchema>;
-export type EnvironmentEdges = z.infer<typeof EnvironmentEdgesSchema>;
-export type Environment = z.infer<typeof EnvironmentSchema>;
-export type ServiceConfigEdges = z.infer<typeof ServiceConfigEdgesSchema>;
-export type ServiceConfig = z.infer<typeof ServiceConfigSchema>;
-export type ServiceEdges = z.infer<typeof ServiceEdgesSchema>;
-export type Service = z.infer<typeof ServiceSchema>;
-export type DeploymentEdges = z.infer<typeof DeploymentEdgesSchema>;
-export type DeploymentSource = z.infer<typeof DeploymentSourceSchema>;
-export type Deployment = z.infer<typeof DeploymentSchema>;
 export type ErrorDetail = z.infer<typeof ErrorDetailSchema>;
 export type ErrorModel = z.infer<typeof ErrorModelSchema>;
 export type GetEnvironmentOutputBody = z.infer<typeof GetEnvironmentOutputBodySchema>;
@@ -1064,6 +766,9 @@ export type GithubRepository = z.infer<typeof GithubRepositorySchema>;
 export type GithubAdminRepositoryListResponseBody = z.infer<
   typeof GithubAdminRepositoryListResponseBodySchema
 >;
+export type GithubInstallationPermissions = z.infer<typeof GithubInstallationPermissionsSchema>;
+export type GithubInstallationAPIResponse = z.infer<typeof GithubInstallationAPIResponseSchema>;
+export type GithubAppAPIResponse = z.infer<typeof GithubAppAPIResponseSchema>;
 export type GithubAppCreateResponseBody = z.infer<typeof GithubAppCreateResponseBodySchema>;
 export type GithubAppInstallationListResponseBody = z.infer<
   typeof GithubAppInstallationListResponseBodySchema
@@ -1085,6 +790,7 @@ export type ListServiceResponseBody = z.infer<typeof ListServiceResponseBodySche
 export type LogEvent = z.infer<typeof LogEventSchema>;
 export type LogSSEError = z.infer<typeof LogSSEErrorSchema>;
 export type LogType = z.infer<typeof LogTypeSchema>;
+export type UserAPIResponse = z.infer<typeof UserAPIResponseSchema>;
 export type MeResponseBody = z.infer<typeof MeResponseBodySchema>;
 export type SortByField = z.infer<typeof SortByFieldSchema>;
 export type SortOrder = z.infer<typeof SortOrderSchema>;
@@ -1102,89 +808,115 @@ export type UpsertVariablesInputBody = z.infer<typeof UpsertVariablesInputBodySc
 export type VariableResponse = z.infer<typeof VariableResponseSchema>;
 export type VariablesResponseBody = z.infer<typeof VariablesResponseBodySchema>;
 
-export const callbackQuerySchema = z.object({
-  code: z.string(),
-});
+export const callbackQuerySchema = z
+  .object({
+    code: z.string(),
+  })
+  .passthrough();
 
-export const list_deploymentsQuerySchema = z.object({
-  cursor: z.string().optional(),
-  statuses: z.array(DeploymentStatusSchema).nullable().optional(), // Filter by status
-  team_id: z.string(), // The ID of the team
-  project_id: z.string(), // The ID of the project
-  environment_id: z.string(), // The ID of the environment
-  service_id: z.string(), // The ID of the service
-});
+export const list_deploymentsQuerySchema = z
+  .object({
+    cursor: z.string().optional(),
+    statuses: z.array(DeploymentStatusSchema).nullable().optional(), // Filter by status
+    team_id: z.string(), // The ID of the team
+    project_id: z.string(), // The ID of the project
+    environment_id: z.string(), // The ID of the environment
+    service_id: z.string(), // The ID of the service
+  })
+  .passthrough();
 
-export const get_environmentQuerySchema = z.object({
-  id: z.string(),
-  team_id: z.string(),
-  project_id: z.string(),
-});
+export const get_environmentQuerySchema = z
+  .object({
+    id: z.string(),
+    team_id: z.string(),
+    project_id: z.string(),
+  })
+  .passthrough();
 
-export const app_createQuerySchema = z.object({
-  redirect_url: z.string(), // The client URL to redirect to after the installation is finished
-  organization: z.string().optional(), // The organization to install the app for, if any
-});
+export const app_createQuerySchema = z
+  .object({
+    redirect_url: z.string(), // The client URL to redirect to after the installation is finished
+    organization: z.string().optional(), // The organization to install the app for, if any
+  })
+  .passthrough();
 
-export const list_appsQuerySchema = z.object({
-  with_installations: z.boolean().optional(),
-});
+export const list_appsQuerySchema = z
+  .object({
+    with_installations: z.boolean().optional(),
+  })
+  .passthrough();
 
-export const repo_detailQuerySchema = z.object({
-  installation_id: z.number(),
-  owner: z.string(),
-  repo_name: z.string(),
-});
+export const repo_detailQuerySchema = z
+  .object({
+    installation_id: z.number(),
+    owner: z.string(),
+    repo_name: z.string(),
+  })
+  .passthrough();
 
-export const stream_logsQuerySchema = z.object({
-  type: LogTypeSchema,
-  team_id: z.string(),
-  project_id: z.string().optional(),
-  environment_id: z.string().optional(),
-  service_id: z.string().optional(),
-  since: z.string().optional(), // Duration to look back (e.g., '1h', '30m')
-  tail: z.number().optional(), // Number of lines to get from the end
-  previous: z.boolean().optional(), // Get logs from previous instance
-  timestamps: z.boolean().optional(), // Include timestamps in logs
-  search: z.string().optional(), // Optional text pattern to filter logs
-});
+export const stream_logsQuerySchema = z
+  .object({
+    type: LogTypeSchema,
+    team_id: z.string(),
+    project_id: z.string().optional(),
+    environment_id: z.string().optional(),
+    service_id: z.string().optional(),
+    since: z.string().optional(), // Duration to look back (e.g., '1h', '30m')
+    tail: z.number().optional(), // Number of lines to get from the end
+    previous: z.boolean().optional(), // Get logs from previous instance
+    timestamps: z.boolean().optional(), // Include timestamps in logs
+    search: z.string().optional(), // Optional text pattern to filter logs
+  })
+  .passthrough();
 
-export const get_projectQuerySchema = z.object({
-  project_id: z.string(),
-  team_id: z.string(),
-});
+export const get_projectQuerySchema = z
+  .object({
+    project_id: z.string(),
+    team_id: z.string(),
+  })
+  .passthrough();
 
-export const list_projectsQuerySchema = z.object({
-  sort_by: SortByFieldSchema.optional(),
-  sort_order: SortOrderSchema.optional(),
-  team_id: z.string(),
-});
+export const list_projectsQuerySchema = z
+  .object({
+    sort_by: SortByFieldSchema.optional(),
+    sort_order: SortOrderSchema.optional(),
+    team_id: z.string(),
+  })
+  .passthrough();
 
-export const get_serviceQuerySchema = z.object({
-  service_id: z.string(),
-  team_id: z.string(),
-  project_id: z.string(),
-  environment_id: z.string(),
-});
+export const get_serviceQuerySchema = z
+  .object({
+    service_id: z.string(),
+    team_id: z.string(),
+    project_id: z.string(),
+    environment_id: z.string(),
+  })
+  .passthrough();
 
-export const list_serviceQuerySchema = z.object({
-  team_id: z.string(),
-  project_id: z.string(),
-  environment_id: z.string(),
-});
+export const list_serviceQuerySchema = z
+  .object({
+    team_id: z.string(),
+    project_id: z.string(),
+    environment_id: z.string(),
+  })
+  .passthrough();
 
-export const list_variablesQuerySchema = z.object({
-  type: VariableTypeSchema, // The type of variable
-  team_id: z.string(),
-  project_id: z.string().optional(), // If present, fetch project variables
-  environment_id: z.string().optional(), // If present, fetch environment variables - requires project_id
-  service_id: z.string().optional(), // If present, fetch service variables - requires project_id and environment_id
-});
+export const list_variablesQuerySchema = z
+  .object({
+    type: VariableTypeSchema, // The type of variable
+    team_id: z.string(),
+    project_id: z.string().optional(), // If present, fetch project variables
+    environment_id: z.string().optional(), // If present, fetch environment variables - requires project_id
+    service_id: z.string().optional(), // If present, fetch service variables - requires project_id and environment_id
+  })
+  .passthrough();
 
-export const app_saveQuerySchema = z.object({
-  code: z.string(),
-  state: z.string(),
-});
+export const app_saveQuerySchema = z
+  .object({
+    code: z.string(),
+    state: z.string(),
+  })
+  .passthrough();
 
 export type ClientOptions = {
   accessToken: string;

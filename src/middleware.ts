@@ -184,13 +184,15 @@ export async function refreshAccessToken(token: JWT): Promise<JWT> {
   return newTokenObj;
 }
 
-const TokenRefreshResponseSchema = z.object({
-  access_token: z.string(),
-  token_type: z.string(),
-  expires_in: z.number(),
-  refresh_token: z.string(),
-  id_token: z.string(),
-});
+const TokenRefreshResponseSchema = z
+  .object({
+    access_token: z.string(),
+    token_type: z.string(),
+    expires_in: z.number(),
+    refresh_token: z.string(),
+    id_token: z.string(),
+  })
+  .strip();
 
 declare module "next-auth/jwt" {
   interface JWT {

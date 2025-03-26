@@ -15,9 +15,11 @@ type TProps = {
   className?: string;
 };
 
-export const CreateVariablesFormSchema = z.object({
-  variables: z.array(VariableForCreateSchema).min(1),
-});
+export const CreateVariablesFormSchema = z
+  .object({
+    variables: z.array(VariableForCreateSchema).min(1),
+  })
+  .strip();
 
 export default function CreateVariablesForm({ variant = "default", onBlur, className }: TProps) {
   const {

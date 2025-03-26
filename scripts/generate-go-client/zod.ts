@@ -211,7 +211,9 @@ export function generateZodExpression({
     }
     let objectExpr = `z.object({\n${fields.join("\n")}\n})`;
     if (schemaDef.additionalProperties === false) {
-      objectExpr += ".strict()";
+      objectExpr += ".strip()";
+    } else {
+      objectExpr += ".passthrough()";
     }
     return objectExpr;
   } else if (schemaDef.type === "array" && schemaDef.items) {

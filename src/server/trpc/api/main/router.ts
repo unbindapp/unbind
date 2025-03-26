@@ -5,11 +5,13 @@ import { z } from "zod";
 export const mainRouter = createTRPCRouter({
   getServices: publicProcedure
     .input(
-      z.object({
-        teamId: z.string().uuid(),
-        projectId: z.string().uuid(),
-        environmentId: z.string().uuid(),
-      }),
+      z
+        .object({
+          teamId: z.string().uuid(),
+          projectId: z.string().uuid(),
+          environmentId: z.string().uuid(),
+        })
+        .strip(),
     )
     .query(async function ({ input: { teamId, projectId, environmentId } }) {
       console.log("teamId:", teamId, "projectId:", projectId, "environmentId:", environmentId);
@@ -27,12 +29,14 @@ export const mainRouter = createTRPCRouter({
     }),
   getDeployments: publicProcedure
     .input(
-      z.object({
-        teamId: z.string().uuid(),
-        projectId: z.string().uuid(),
-        environmentId: z.string().uuid(),
-        serviceId: z.string().uuid(),
-      }),
+      z
+        .object({
+          teamId: z.string().uuid(),
+          projectId: z.string().uuid(),
+          environmentId: z.string().uuid(),
+          serviceId: z.string().uuid(),
+        })
+        .strip(),
     )
     .query(async function ({ input: { teamId, projectId, environmentId, serviceId } }) {
       const deployments = await getDeployments({
@@ -47,12 +51,14 @@ export const mainRouter = createTRPCRouter({
     }),
   getVariables: publicProcedure
     .input(
-      z.object({
-        teamId: z.string().uuid(),
-        projectId: z.string().uuid(),
-        environmentId: z.string().uuid(),
-        serviceId: z.string().uuid(),
-      }),
+      z
+        .object({
+          teamId: z.string().uuid(),
+          projectId: z.string().uuid(),
+          environmentId: z.string().uuid(),
+          serviceId: z.string().uuid(),
+        })
+        .strip(),
     )
     .query(async function ({ input: { teamId, projectId, environmentId, serviceId } }) {
       const variables = await getVariables({
@@ -67,9 +73,11 @@ export const mainRouter = createTRPCRouter({
     }),
   getRepos: publicProcedure
     .input(
-      z.object({
-        teamId: z.string().uuid(),
-      }),
+      z
+        .object({
+          teamId: z.string().uuid(),
+        })
+        .strip(),
     )
     .query(async function ({ input: { teamId }, ctx }) {
       console.log("teamId:", teamId);

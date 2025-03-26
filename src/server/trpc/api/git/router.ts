@@ -3,7 +3,10 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 export const gitRouter = createTRPCRouter({
-  listRepositories: publicProcedure.input(z.object({})).query(async function ({ input: {}, ctx }) {
+  listRepositories: publicProcedure.input(z.object({}).strip()).query(async function ({
+    input: {},
+    ctx,
+  }) {
     const { session, goClient } = ctx;
     if (!session) {
       throw new TRPCError({
@@ -18,11 +21,13 @@ export const gitRouter = createTRPCRouter({
   }),
   getRepository: publicProcedure
     .input(
-      z.object({
-        installationId: z.number(),
-        owner: z.string(),
-        repoName: z.string(),
-      }),
+      z
+        .object({
+          installationId: z.number(),
+          owner: z.string(),
+          repoName: z.string(),
+        })
+        .strip(),
     )
     .query(async function ({ input: { installationId, owner, repoName }, ctx }) {
       const { session, goClient } = ctx;
