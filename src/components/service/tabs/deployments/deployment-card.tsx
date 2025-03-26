@@ -86,18 +86,23 @@ export default function DeploymentCard({ deployment, lastDeploymentId, isPlaceho
             </p>
           </div>
         </div>
-        <ServiceIcon
-          color="brand"
-          variant={isPlaceholder ? "github" : /* deployment.source */ "github"}
-          className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton mt-2 size-6 group-data-placeholder/card:rounded-full group-data-placeholder/card:text-transparent sm:mt-0"
-        />
-        <div className="mt-2 flex min-w-0 flex-1 shrink flex-col items-start gap-1.5 pr-2 pb-1 sm:mt-0 sm:pl-3">
-          <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink leading-tight group-data-placeholder/card:rounded-md group-data-placeholder/card:text-transparent">
-            {/* {isPlaceholder
+        <div className="mt-2 flex shrink-0 flex-col items-start justify-center sm:mt-0">
+          <ServiceIcon
+            color="brand"
+            variant={isPlaceholder ? "github" : /* deployment.source */ "github"}
+            className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton size-6 group-data-placeholder/card:rounded-full group-data-placeholder/card:text-transparent"
+          />
+        </div>
+        <div className="mt-2 flex min-w-0 flex-1 shrink flex-col items-start gap-1 pr-2 pb-1 sm:mt-0 sm:pl-3">
+          <p
+            data-no-message={!isPlaceholder && !deployment.commit_message ? true : undefined}
+            className="data-no-message:bg-border data-no-message:text-muted-foreground group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink leading-tight group-data-placeholder/card:rounded-md group-data-placeholder/card:text-transparent data-no-message:-my-0.25 data-no-message:rounded data-no-message:px-1.5 data-no-message:py-0.25"
+          >
+            {isPlaceholder
               ? "Loading message..."
-              : deployment.source === "github"
-                ? deployment.commitMessage
-                : deployment.dockerImage} */}
+              : deployment.commit_message
+                ? deployment.commit_message
+                : "Commit message not available"}
           </p>
           {isPlaceholder ? (
             <DeploymentTime isPlaceholder={true} />
