@@ -54,7 +54,7 @@ export default function TeamTabs({
           data-active={isActive(tab, activeTabPath) ? true : undefined}
           key={tab.href}
           className={cn(
-            `text-muted-foreground group/button data-active:text-foreground max-w-36 rounded px-3 py-3.25 text-sm leading-none font-medium focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent sm:py-3`,
+            `text-muted-foreground group/button data-active:text-foreground max-w-36 rounded px-3 py-3.5 text-sm leading-none font-medium focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent`,
             classNameButton,
           )}
           variant="ghost"
