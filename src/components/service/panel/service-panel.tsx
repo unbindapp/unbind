@@ -12,7 +12,6 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { AppRouterOutputs } from "@/server/trpc/api/root";
 import { THost, TServiceShallow } from "@/server/trpc/api/services/types";
 import { GlobeIcon, XIcon } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
