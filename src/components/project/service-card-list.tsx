@@ -6,8 +6,8 @@ import {
   commandPanelProjectRootPage,
 } from "@/components/project/command-panel/constants";
 import ProjectCommandPanelTrigger from "@/components/project/command-panel/project-command-panel";
-import ServiceCard from "@/components/service/service-card";
-import { useServices } from "@/components/service/services-provider";
+import ServiceCard from "@/components/project/service-card";
+import { useServices } from "@/components/project/services-provider";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
@@ -48,7 +48,11 @@ export default function ServiceCardList() {
     <ol className="flex w-full flex-wrap">
       {services && services.length === 0 && (
         <li className="flex w-full flex-col p-1 sm:w-1/2 lg:w-1/3">
-          <ProjectCommandPanelTrigger open={open} setOpen={setOpen}>
+          <ProjectCommandPanelTrigger
+            open={open}
+            setOpen={setOpen}
+            modalId={commandPanelProjectFromList}
+          >
             <Button
               variant="ghost"
               className="text-muted-foreground flex min-h-36 w-full items-center justify-center rounded-xl border px-5 py-3.5 text-center font-medium"

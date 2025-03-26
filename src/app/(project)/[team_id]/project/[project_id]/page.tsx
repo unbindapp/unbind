@@ -1,12 +1,12 @@
 import { getProjectPageSearchParams } from "@/app/(project)/[team_id]/project/[project_id]/_components/search-params";
 import PageWrapper from "@/components/page-wrapper";
 import NewServiceButton from "@/components/project/command-panel/new-service-button";
-import ServiceCardList from "@/components/service/service-card-list";
-import ServicesProvider from "@/components/service/services-provider";
+import ServicesProvider from "@/components/project/services-provider";
 import { apiServer } from "@/server/trpc/setup/server";
 import { type SearchParams } from "nuqs/server";
 import { ResultAsync } from "neverthrow";
 import { notFound } from "next/navigation";
+import ServiceCardList from "@/components/project/service-card-list";
 
 type TProps = {
   params: Promise<{

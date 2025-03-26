@@ -48,7 +48,7 @@ export default function DeleteProjectSection({ className }: Props) {
 
 function DeleteButton({ teamId, projectId }: { teamId: string; projectId: string }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const textToConfirm = "I want to delete this project permanently";
+  const textToConfirm = "Delete this project permanently";
   const { asyncPush } = useAsyncPush();
   const { invalidate: invalidateProjects } = useProjectsUtils({ teamId });
 

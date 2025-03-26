@@ -2,7 +2,7 @@ import ErrorLine from "@/components/error-line";
 import ServiceIcon from "@/components/icons/service";
 import { useDeployments } from "@/components/service/deployments/deployments-provider";
 import { useService } from "@/components/service/service-provider";
-import { useServicesUtils } from "@/components/service/services-provider";
+import { useServicesUtils } from "@/components/project/services-provider";
 import CreateVariablesForm, {
   CreateVariablesFormSchema,
   TCreateVariablesForm,

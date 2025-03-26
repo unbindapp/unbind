@@ -41,7 +41,7 @@ export default function NewServiceButton({ className }: TProps) {
   };
 
   return (
-    <ProjectCommandPanelTrigger open={open} setOpen={setOpen}>
+    <ProjectCommandPanelTrigger open={open} setOpen={setOpen} modalId={commandPanelProject}>
       <Button
         className={cn("bg-background-hover -my-2 rounded-lg py-2", className)}
         size="sm"

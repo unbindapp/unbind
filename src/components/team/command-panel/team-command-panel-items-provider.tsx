@@ -16,10 +16,11 @@ const TeamCommandPanelItemsContext = createContext<TTeamCommandPanelItemsContext
 export const TeamCommandPanelItemsProvider: React.FC<{
   teamId: string;
   page: TCommandPanelPage;
+  modalId: string;
   children: ReactNode;
-}> = ({ teamId, page, children }) => {
+}> = ({ teamId, page, modalId, children }) => {
   const { data, isError, isPending, error } = useQuery({
-    queryKey: ["team-command-panel-items", teamId, page.id],
+    queryKey: ["team-command-panel-items", modalId, teamId, page.id],
     queryFn: page.items ? () => page.items : () => page.getItems({ teamId, projectId: "" }),
     enabled: page.items ? false : true,
   });

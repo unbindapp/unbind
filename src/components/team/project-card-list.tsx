@@ -47,7 +47,12 @@ export default function ProjectCardList({ teamId }: TProps) {
     <ol className="flex w-full flex-wrap">
       {projects && projects.length === 0 && (
         <li className="flex w-full flex-col p-1 sm:w-1/2 lg:w-1/3">
-          <TeamCommandPanelTrigger open={open} setOpen={setOpen} teamId={teamId}>
+          <TeamCommandPanelTrigger
+            modalId={commandPanelTeamFromList}
+            open={open}
+            setOpen={setOpen}
+            teamId={teamId}
+          >
             <Button
               variant="ghost"
               className="text-muted-foreground flex min-h-36 w-full items-center justify-center rounded-xl border px-5 py-3.5 text-center font-medium"

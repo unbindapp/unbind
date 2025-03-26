@@ -6,7 +6,7 @@ import { TCommandPanelItem, TCommandPanelPage } from "@/components/command-panel
 import ServiceIcon from "@/components/icons/service";
 import { commandPanelProjectRootPage } from "@/components/project/command-panel/constants";
 import { servicePanelServiceIdKey } from "@/components/service/constants";
-import { useServicesUtils } from "@/components/service/services-provider";
+import { useServicesUtils } from "@/components/project/services-provider";
 import { AppRouterOutputs } from "@/server/trpc/api/root";
 import { api } from "@/server/trpc/setup/client";
 import { useMutation } from "@tanstack/react-query";

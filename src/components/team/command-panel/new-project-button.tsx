@@ -41,7 +41,12 @@ export default function NewTeamButton({ teamId, className }: TProps) {
   };
 
   return (
-    <TeamCommandPanelTrigger open={open} setOpen={setOpen} teamId={teamId}>
+    <TeamCommandPanelTrigger
+      modalId={commandPanelTeam}
+      open={open}
+      setOpen={setOpen}
+      teamId={teamId}
+    >
       <Button
         className={cn("bg-background-hover -my-2 rounded-lg py-2", className)}
         size="sm"

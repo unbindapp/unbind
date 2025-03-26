@@ -11,25 +11,32 @@ type TProps = {
   className?: string;
   open: boolean;
   setOpen: (open: boolean) => void;
+  modalId: string;
   children: ReactNode;
 };
 
-export default function TeamCommandPanelTrigger({ teamId, open, setOpen, children }: TProps) {
+export default function TeamCommandPanelTrigger({
+  teamId,
+  open,
+  setOpen,
+  modalId,
+  children,
+}: TProps) {
   return (
     <CommandPanelStateProvider>
-      <TeamCommandPanelTrigger_ teamId={teamId} open={open} setOpen={setOpen}>
+      <TeamCommandPanelTrigger_ modalId={modalId} teamId={teamId} open={open} setOpen={setOpen}>
         {children}
       </TeamCommandPanelTrigger_>
     </CommandPanelStateProvider>
   );
 }
 
-function TeamCommandPanelTrigger_({ teamId, open, setOpen, children }: TProps) {
+function TeamCommandPanelTrigger_({ teamId, open, setOpen, modalId, children }: TProps) {
   const { rootPage, currentPage, setCurrentPageId, allPageIds, goToParentPage } =
     useTeamCommandPanelData({ teamId });
 
   return (
-    <TeamCommandPanelItemsProvider teamId={teamId} page={currentPage}>
+    <TeamCommandPanelItemsProvider modalId={modalId} teamId={teamId} page={currentPage}>
       <CommandPanelTrigger
         allPageIds={allPageIds}
         currentPage={currentPage}

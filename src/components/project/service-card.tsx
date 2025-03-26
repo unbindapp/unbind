@@ -1,5 +1,5 @@
 import ServiceIcon from "@/components/icons/service";
-import LastDeploymentTime from "@/components/service/last-deployment-time";
+import LastDeploymentTime from "@/components/project/last-deployment-time";
 import ServicePanel from "@/components/service/panel/service-panel";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";

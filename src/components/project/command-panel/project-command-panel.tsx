@@ -11,24 +11,25 @@ type TProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
   children: ReactNode;
+  modalId: string;
 };
 
-export default function ProjectCommandPanelTrigger({ open, setOpen, children }: TProps) {
+export default function ProjectCommandPanelTrigger({ open, setOpen, modalId, children }: TProps) {
   return (
     <CommandPanelStateProvider>
-      <ProjectCommandPanelTrigger_ open={open} setOpen={setOpen}>
+      <ProjectCommandPanelTrigger_ modalId={modalId} open={open} setOpen={setOpen}>
         {children}
       </ProjectCommandPanelTrigger_>
     </CommandPanelStateProvider>
   );
 }
 
-function ProjectCommandPanelTrigger_({ open, setOpen, children }: TProps) {
+function ProjectCommandPanelTrigger_({ open, setOpen, modalId, children }: TProps) {
   const { rootPage, currentPage, setCurrentPageId, allPageIds, goToParentPage } =
     useProjectCommandPanelData();
 
   return (
-    <ProjectCommandPanelItemsProvider page={currentPage}>
+    <ProjectCommandPanelItemsProvider page={currentPage} modalId={modalId}>
       <CommandPanelTrigger
         allPageIds={allPageIds}
         currentPage={currentPage}
