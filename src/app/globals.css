@@ -155,7 +155,7 @@
 
   --link-chip: hsl(210 100% 85%);
 
-  --top-loader: hsl(120 70% 70%);
+  --top-loader: hsl(120 70% 70);
 
   --google: hsl(120 100% 97%);
   --google-foreground: hsl(120 9% 6%);
@@ -205,7 +205,7 @@
   --animate-spin: spin 1s linear infinite;
   --animate-loading-bar: loading-bar 45s linear infinite;
   --animate-line-in: line-in 0.01s step-end forwards;
-  --animate-ping-pong: ping-pong 1s cubic-bezier(0.5, 0, 0.5, 1) infinite alternate;
+  --animate-ping-pong: ping-pong 2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
 
   --radius-px: 1px;
   --radius-2px: 2px;
@@ -269,10 +269,13 @@
   }
   @keyframes ping-pong {
     0% {
-      transform: translateX(-100%);
+      transform: translateX(-95%);
+    }
+    50% {
+      transform: translateX(95%);
     }
     100% {
-      transform: translateX(100%);
+      transform: translateX(-95%);
     }
   }
 }
