@@ -96,7 +96,7 @@ export default function GeneralTabContent({ teamId, projectId }: TProps) {
               <div className="flex w-full flex-row gap-3 md:w-auto">
                 <form.SubmitButton
                   data-submitting={isSubmitting ? true : undefined}
-                  className="group/button flex-1 md:flex-none xl:py-3.5"
+                  className="group/button flex-1 md:flex-none xl:py-3.75"
                   disabled={!canSubmit || valuesUnchanged}
                 >
                   <div className="-ml-1 size-5 shrink-0">
@@ -112,7 +112,7 @@ export default function GeneralTabContent({ teamId, projectId }: TProps) {
                   disabled={valuesUnchanged}
                   onClick={() => form.reset()}
                   variant="outline"
-                  className="gap-1.5"
+                  className="gap-1.5 xl:py-3.75"
                 >
                   <RotateCcwIcon
                     data-rotated={valuesUnchanged ? true : undefined}
