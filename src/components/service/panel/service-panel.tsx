@@ -116,16 +116,16 @@ function ServiceUrl({ hostObject }: { hostObject: THost }) {
   return (
     <div className="-mb-0.5 flex w-full items-start justify-start px-2.75 pt-0.5 sm:px-6">
       <LinkButton
-        className="text-muted-foreground group/button min-w-0 shrink px-2.25 py-1.25 text-left font-normal"
+        className="text-muted-foreground group/button min-w-0 shrink px-2.25 py-1.25 text-left font-medium"
         variant="ghost"
         target="_blank"
         size="sm"
         href={getUrl(hostObject)}
         key={getUrl(hostObject)}
       >
-        <div className="relative -ml-0.5 size-3.5 transition-transform group-hover/button:rotate-45">
-          <GlobeIcon className="size-full group-hover/button:opacity-0" />
-          <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-hover/button:opacity-100" />
+        <div className="relative -ml-0.5 size-3.5 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45">
+          <GlobeIcon className="size-full group-active/button:opacity-0 has-hover:group-hover/button:opacity-0" />
+          <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-active/button:opacity-100 has-hover:group-hover/button:opacity-100" />
         </div>
         <p className="min-w-0 shrink truncate">{getUrlDisplayStr(hostObject)}</p>
       </LinkButton>
