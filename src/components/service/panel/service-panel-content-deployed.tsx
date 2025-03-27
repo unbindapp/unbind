@@ -3,6 +3,7 @@ import { TTab } from "@/components/service/panel/service-panel-content";
 import { useService } from "@/components/service/service-provider";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/components/ui/utils";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { ReactNode } from "react";
 
@@ -12,6 +13,7 @@ type TProps = {
   currentTabId: string;
   setCurrentTab: (tab: string) => void;
   service: TServiceShallow;
+  className?: string;
 };
 
 export function DeployedServiceContent({
@@ -20,12 +22,13 @@ export function DeployedServiceContent({
   currentTabId,
   setCurrentTab,
   service,
+  className,
 }: TProps) {
   const { teamId, projectId, environmentId } = useService();
   return (
-    <div className="flex w-full flex-1 flex-col overflow-hidden">
+    <div className={cn("flex w-full flex-1 flex-col overflow-hidden", className)}>
       <nav className="touch:scrollbar-hidden flex w-full justify-start overflow-auto border-b">
-        <div className="flex justify-start px-2 pt-3.5 sm:px-4.5">
+        <div className="flex justify-start px-2 pt-2 sm:px-4.5 sm:pt-3">
           {tabs.map((tab) => (
             <Button
               key={tab.value}

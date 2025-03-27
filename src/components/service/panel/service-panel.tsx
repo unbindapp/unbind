@@ -13,7 +13,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { THost, TServiceShallow } from "@/server/trpc/api/services/types";
-import { GlobeIcon, XIcon } from "lucide-react";
+import { ExternalLinkIcon, GlobeIcon, XIcon } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
 import { ReactNode } from "react";
 
@@ -65,17 +65,16 @@ export default function ServicePanel({
       >
         <div className="flex w-full items-start justify-start gap-4 px-5 pt-4 sm:px-8 sm:pt-6">
           <DrawerHeader className="flex min-w-0 flex-1 items-center justify-start p-0">
-            <DrawerTitle className="flex min-w-0 shrink items-center justify-start gap-2.5">
+            <DrawerTitle className="flex min-w-0 shrink items-center justify-start gap-1.5">
               <ServiceIcon
                 variant={service.config.framework || service.config.provider}
                 color="brand"
-                className="-ml-1 size-7 sm:size-8"
+                className="-ml-1 size-6 sm:size-7"
               />
               <p className="min-w-0 shrink text-left text-xl leading-tight sm:text-2xl">
                 {service.display_name}
               </p>
             </DrawerTitle>
-            <ServiceUrl service={service} />
           </DrawerHeader>
           {!isExtraSmall && (
             <DrawerClose asChild>
@@ -89,6 +88,9 @@ export default function ServicePanel({
             </DrawerClose>
           )}
         </div>
+        {service.config.hosts && service.config.hosts.length >= 1 && (
+          <ServiceUrl hostObject={service.config.hosts[0]} />
+        )}
         <ServiceProvider
           teamId={teamId}
           projectId={projectId}
@@ -110,24 +112,23 @@ function getUrl(hostObj: THost) {
   return "https://" + hostObj.host + hostObj.path;
 }
 
-function ServiceUrl({ service }: { service: TServiceShallow }) {
-  if (service.config.hosts && service.config.hosts.length >= 1) {
-    const firstHost = service.config.hosts[0];
-    return (
-      <div className="-my-1 flex max-w-1/2 min-w-0 shrink items-start justify-start pl-2">
-        <LinkButton
-          className="max-w-full px-2.5 py-1.25 text-left font-medium"
-          variant="outline"
-          target="_blank"
-          size="sm"
-          href={getUrl(firstHost)}
-          key={getUrlDisplayStr(firstHost)}
-        >
-          <GlobeIcon className="-ml-0.5 size-3.5" />
-          <p className="min-w-0 shrink truncate">{getUrlDisplayStr(firstHost)}</p>
-        </LinkButton>
-      </div>
-    );
-  }
-  return null;
+function ServiceUrl({ hostObject }: { hostObject: THost }) {
+  return (
+    <div className="-mb-0.5 flex w-full items-start justify-start px-2.75 pt-0.5 sm:px-6">
+      <LinkButton
+        className="text-muted-foreground group/button min-w-0 shrink px-2.25 py-1.25 text-left font-normal"
+        variant="ghost"
+        target="_blank"
+        size="sm"
+        href={getUrl(hostObject)}
+        key={getUrl(hostObject)}
+      >
+        <div className="relative -ml-0.5 size-3.5 transition-transform group-hover/button:rotate-45">
+          <GlobeIcon className="size-full group-hover/button:opacity-0" />
+          <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-hover/button:opacity-100" />
+        </div>
+        <p className="min-w-0 shrink truncate">{getUrlDisplayStr(hostObject)}</p>
+      </LinkButton>
+    </div>
+  );
 }

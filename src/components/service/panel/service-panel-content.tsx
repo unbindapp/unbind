@@ -46,9 +46,10 @@ export const tabs: TTab[] = [
 
 type TProps = {
   service: TServiceShallow;
+  className?: string;
 };
 
-export default function ServicePanelContent({ service }: TProps) {
+export default function ServicePanelContent({ service, className }: TProps) {
   const { teamId, projectId, environmentId } = useService();
   const [currentTabId, setCurrentTab] = useQueryState(
     servicePanelTabKey,
@@ -65,7 +66,7 @@ export default function ServicePanelContent({ service }: TProps) {
           environmentId={environmentId}
           serviceId={service.id}
         >
-          <UndeployedServiceContent service={service} />
+          <UndeployedServiceContent className={className} service={service} />
         </VariablesProvider>
       </DeploymentsProvider>
     );

@@ -15,12 +15,14 @@ import { TVariableForCreate, VariableForCreateSchema } from "@/server/trpc/api/v
 import { api } from "@/server/trpc/setup/client";
 import { GitBranchIcon } from "lucide-react";
 import { useState } from "react";
+import { cn } from "@/components/ui/utils";
 
 type TProps = {
   service: TServiceShallow;
+  className?: string;
 };
 
-export default function UndeployedServiceContent({ service }: TProps) {
+export default function UndeployedServiceContent({ service, className }: TProps) {
   const {
     teamId,
     projectId,
@@ -79,7 +81,9 @@ export default function UndeployedServiceContent({ service }: TProps) {
   });
 
   return (
-    <div className="mt-4 flex w-full flex-1 flex-col overflow-hidden border-t sm:mt-6">
+    <div
+      className={cn("mt-4 flex w-full flex-1 flex-col overflow-hidden border-t sm:mt-6", className)}
+    >
       <ScrollArea viewportClassName="pb-[calc(var(--safe-area-inset-bottom)+2rem)]">
         <div className="flex w-full flex-1 flex-col gap-4 overflow-auto px-3 py-4 sm:p-6">
           <h2 className="-mt-1 px-2 text-xl font-bold sm:text-2xl">Deploy Service</h2>
