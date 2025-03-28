@@ -177,7 +177,7 @@ function DeleteTrigger({
   const [isOpen, setIsOpen] = useState(false);
   const { teamId, projectId, environmentId, serviceId } = useService();
 
-  const { invalidate: invalidateVariables, setVariables } = useVariablesUtils({
+  const { invalidate: invalidateVariables, optimisticRemove } = useVariablesUtils({
     teamId,
     projectId,
     environmentId,
@@ -193,7 +193,7 @@ function DeleteTrigger({
   } = api.variables.delete.useMutation({
     onSuccess: async (d) => {
       setIsOpen(false);
-      setVariables(d.data);
+      optimisticRemove([variable]);
       invalidateVariables();
       closeDropdown();
     },

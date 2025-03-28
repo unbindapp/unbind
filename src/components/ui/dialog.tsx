@@ -147,7 +147,7 @@ function DialogContent({
 }
 
 function DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("flex w-full flex-col gap-1", className)} {...props} />;
+  return <div className={cn("flex w-full flex-col gap-2", className)} {...props} />;
 }
 
 function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {

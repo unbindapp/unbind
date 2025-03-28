@@ -13,6 +13,7 @@ type TProps = {
   variant?: "default" | "collapsible";
   onBlur?: TCreateVariablesFormOnBlur;
   className?: string;
+  afterSuccessfulSubmit?: (variables: TVariableForCreate[]) => void;
 };
 
 export const CreateVariablesFormSchema = z
@@ -21,7 +22,12 @@ export const CreateVariablesFormSchema = z
   })
   .strip();
 
-export default function CreateVariablesForm({ variant = "default", onBlur, className }: TProps) {
+export default function CreateVariablesForm({
+  variant = "default",
+  onBlur,
+  afterSuccessfulSubmit,
+  className,
+}: TProps) {
   const {
     list: { refetch: refetchVariables },
     upsert: { mutateAsync: upsertVariables, error: createError },
@@ -43,7 +49,6 @@ export default function CreateVariablesForm({ variant = "default", onBlur, class
     },
     onSubmit: async ({ formApi, value }) => {
       if (variant === "collapsible") return;
-
       const variables = value.variables;
       await upsertVariables({
         teamId,
@@ -55,6 +60,7 @@ export default function CreateVariablesForm({ variant = "default", onBlur, class
       });
       await refetchVariables();
       formApi.reset();
+      afterSuccessfulSubmit?.(variables);
     },
   });
 
