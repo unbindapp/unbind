@@ -242,7 +242,6 @@ function DeleteTrigger({
                 projectId,
                 environmentId,
                 serviceId,
-                // @ts-expect-error | TODO: GO API should fix the types
                 type: variable.type,
                 variables: [{ name: variable.name }],
               })

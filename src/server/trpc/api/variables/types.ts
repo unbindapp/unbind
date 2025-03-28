@@ -1,7 +1,6 @@
 import { AppRouterOutputs } from "@/server/trpc/api/root";
 import { z } from "zod";
 
-export const VariableTypeSchema = z.enum(["team", "project", "service"]);
 export const VariableForCreateSchema = z
   .object({
     name: z

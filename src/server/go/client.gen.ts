@@ -83,6 +83,7 @@ export const FrameworkSchema = z.enum([
   'gin',
   'spring-boot',
   'laravel',
+  'rails',
   'unknown',
 ]);
 
@@ -93,6 +94,7 @@ export const ProviderSchema = z.enum([
   'java',
   'php',
   'python',
+  'ruby',
   'staticfile',
   'unknown',
 ]);
@@ -155,6 +157,7 @@ export const CreateServiceInputSchema = z
     builder: ServiceBuilderSchema, // Builder of the service - docker, nixpacks, railpack
     description: z.string().optional(),
     display_name: z.string(),
+    dockerfile_path: z.string().optional(), // Optional path to Dockerfile, if using docker builder
     environment_id: z.string(),
     git_branch: z.string().optional(),
     github_installation_id: z.number().optional(),
@@ -668,6 +671,7 @@ export const UpdateServiceInputSchema = z
     builder: ServiceBuilderSchema.optional(),
     description: z.string().nullable().optional(),
     display_name: z.string().nullable().optional(),
+    dockerfile_path: z.string().optional(), // Optional path to Dockerfile, if using docker builder - set empty string to reset to default
     environment_id: z.string(),
     git_branch: z.string().optional(),
     hosts: z.array(HostSpecSchema).nullable().optional(),

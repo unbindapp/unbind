@@ -1,5 +1,5 @@
-import { list_variablesQuerySchema } from "@/server/go/client.gen";
-import { VariableForCreateSchema, VariableTypeSchema } from "@/server/trpc/api/variables/types";
+import { list_variablesQuerySchema, VariableTypeSchema } from "@/server/go/client.gen";
+import { VariableForCreateSchema } from "@/server/trpc/api/variables/types";
 import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
