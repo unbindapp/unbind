@@ -16,17 +16,19 @@ export default function VariablesHeader() {
       className="group/header flex w-full flex-col gap-2 pb-2"
     >
       <div className="flex w-full items-center justify-between gap-2">
-        <h2 className="group-data-pending/header:bg-foreground group-data-pending/header:animate-skeleton min-w-0 shrink truncate px-1 text-lg leading-tight font-bold group-data-pending/header:rounded-md group-data-pending/header:text-transparent">
-          {isPending || !data
-            ? "10 Variables"
-            : `${data.variables.length} Variable${data.variables.length > 1 ? "s" : ""}`}
-        </h2>
+        <div className="min-w-0 shrink overflow-hidden px-1">
+          <h2 className="group-data-pending/header:bg-foreground group-data-pending/header:animate-skeleton min-w-0 shrink truncate text-lg leading-tight font-bold group-data-pending/header:rounded-md group-data-pending/header:text-transparent">
+            {isPending || !data
+              ? "10 Variables"
+              : `${data.variables.length} Variable${data.variables.length > 1 ? "s" : ""}`}
+          </h2>
+        </div>
         <Button
           disabled={isPending}
           fadeOnDisabled={false}
           data-open={isOpen ? true : undefined}
           data-closed={!isOpen ? true : undefined}
-          className="group/button group-data-pending/header:bg-border group-data-pending/header:animate-skeleton shrink-0 gap-1 px-3 py-2 group-data-pending/header:text-transparent"
+          className="group/button group-data-pending/header:bg-muted-more-foreground group-data-pending/header:animate-skeleton shrink-0 gap-1 px-3 py-2 group-data-pending/header:text-transparent"
           onClick={() => setIsOpen((o) => !o)}
           variant="outline"
         >
