@@ -42,7 +42,7 @@ export default function DeploymentTime({ deployment, isPlaceholder }: TProps) {
       ) : (
         <div className="-ml-1.5 h-4.5" />
       )}
-      <div className="flex min-w-0 shrink flex-wrap items-center justify-start space-x-2 text-sm leading-tight">
+      <div className="flex min-w-0 shrink flex-wrap items-center justify-start gap-1 space-x-1 text-sm leading-tight">
         <p className="text-muted-foreground group-data-placeholder/time:bg-muted-foreground group-data-placeholder/time:animate-skeleton min-w-0 shrink group-data-placeholder/time:rounded-md group-data-placeholder/time:text-transparent">
           {isPlaceholder ? "1 hr. ago | 90s" : str}
         </p>

@@ -8,7 +8,7 @@ import TabWrapper from "@/components/service/tabs/tab-wrapper";
 
 export default function Deployments() {
   const {
-    query: { data: serviceData, isPending: isServicePending, error: err },
+    query: { data: serviceData, isPending: isServicePending },
   } = useService();
   const {
     query: { data, isPending, error },
@@ -31,7 +31,7 @@ export default function Deployments() {
       )}
       <div
         data-pending={isPending ? true : undefined}
-        className="group/header flex w-full items-center justify-start px-2 pt-3 pb-0.5"
+        className="group/header flex w-full items-center justify-start px-2 pt-3 pb-1"
       >
         <h3 className="text-muted-foreground group-data-pending/header:bg-muted-foreground group-data-pending/header:animate-skeleton leading-tight font-medium group-data-pending/header:rounded-md group-data-pending/header:text-transparent">
           History
