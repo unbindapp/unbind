@@ -191,7 +191,7 @@ function DeleteTrigger({
     error,
     reset,
   } = api.variables.delete.useMutation({
-    onSuccess: async (d) => {
+    onSuccess: async () => {
       setIsOpen(false);
       optimisticRemove([variable]);
       invalidateVariables();
