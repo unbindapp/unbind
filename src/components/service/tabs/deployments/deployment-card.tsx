@@ -4,7 +4,13 @@ import DeploymentTime from "@/components/service/tabs/deployments/deployment-tim
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
-import { CircleCheckIcon, EllipsisVerticalIcon, LoaderIcon, TriangleAlertIcon } from "lucide-react";
+import {
+  CircleCheckIcon,
+  EllipsisVerticalIcon,
+  LoaderIcon,
+  TriangleAlertIcon,
+  XIcon,
+} from "lucide-react";
 import { useMemo } from "react";
 
 type TProps =
@@ -35,6 +41,7 @@ export default function DeploymentCard({ deployment, currentDeployment, isPlaceh
     )
       return CircleCheckIcon;
     if (deployment.status === "failed") return TriangleAlertIcon;
+    if (deployment.status === "cancelled") return XIcon;
     return BroomIcon;
   }, [isPlaceholder, deployment?.status, deployment?.id, currentDeployment]);
 
@@ -60,7 +67,9 @@ export default function DeploymentCard({ deployment, currentDeployment, isPlaceh
                     ? "ACTIVE"
                     : deployment.status === "failed"
                       ? "FAILED"
-                      : "REMOVED"}
+                      : deployment.status === "cancelled"
+                        ? "CANCELLED"
+                        : "REMOVED"}
             </p>
           </div>
         </div>
