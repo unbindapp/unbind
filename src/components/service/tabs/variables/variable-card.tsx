@@ -26,7 +26,7 @@ export default function VariableCard({ variable, isPlaceholder }: TProps) {
       data-value-visible={isValueVisible ? true : undefined}
       className="has-hover:hover:bg-background-hover group/card relative flex w-full flex-col rounded-xl border px-3 py-0.75 font-mono data-placeholder:text-transparent sm:flex-row sm:items-center sm:rounded-lg"
     >
-      <div className="flex w-full shrink-0 py-2 pr-8 sm:w-56 sm:pr-4">
+      <div className="flex w-full shrink-0 py-2 pr-8 sm:w-56 sm:pr-4 md:w-64">
         <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden text-sm leading-none text-ellipsis whitespace-nowrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
           {isPlaceholder ? "Loading key" : variable.name}
         </p>
