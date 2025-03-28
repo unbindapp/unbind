@@ -13,6 +13,7 @@ import {
 import ServiceIcon from "@/components/icons/service";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
+import { defaultAnimationMs } from "@/lib/constants";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { api } from "@/server/trpc/setup/client";
 import {
@@ -77,7 +78,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
     }
     timeout.current = setTimeout(() => {
       setPanelPageId(null);
-    }, 150);
+    }, defaultAnimationMs);
   }, [setPanelId, setPanelPageId]);
 
   const navigateToSettings = useCallback(

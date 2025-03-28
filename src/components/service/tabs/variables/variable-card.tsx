@@ -1,14 +1,44 @@
 "use client";
 
+import ErrorLine from "@/components/error-line";
+import { useService } from "@/components/service/service-provider";
+import { useVariablesUtils } from "@/components/service/tabs/variables/variables-provider";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { defaultAnimationMs } from "@/lib/constants";
 import { useCopyToClipboard } from "@/lib/hooks/use-copy";
-import { AppRouterOutputs } from "@/server/trpc/api/root";
-import { CheckIcon, CopyIcon, EllipsisVerticalIcon, EyeIcon, EyeOffIcon } from "lucide-react";
-import { useState } from "react";
+import { TVariableShallow } from "@/server/trpc/api/variables/types";
+import { api } from "@/server/trpc/setup/client";
+import {
+  CheckIcon,
+  CopyIcon,
+  EllipsisVerticalIcon,
+  EyeIcon,
+  EyeOffIcon,
+  PenIcon,
+  TrashIcon,
+} from "lucide-react";
+import { ReactNode, useRef, useState } from "react";
 
 type TProps =
   | {
-      variable: AppRouterOutputs["variables"]["list"]["variables"][number];
+      variable: TVariableShallow;
       isPlaceholder?: never;
     }
   | {
@@ -77,21 +107,151 @@ export default function VariableCard({ variable, isPlaceholder }: TProps) {
           </p>
         </div>
         <div className="absolute top-1 right-1 ml-auto pl-1 sm:relative sm:top-auto sm:right-auto sm:-mr-2.25">
-          <Button
-            disabled={isPlaceholder}
-            fadeOnDisabled={false}
-            variant="ghost"
-            size="icon"
-            className="text-muted-more-foreground rounded-md group-data-placeholder/card:text-transparent"
-          >
-            {isPlaceholder ? (
-              <div className="group-data-placeholder/card:bg-muted-foreground group-data-placeholder/card:animate-skeleton size-6 group-data-placeholder/card:rounded-md" />
-            ) : (
-              <EllipsisVerticalIcon className="size-6" />
-            )}
-          </Button>
+          {isPlaceholder ? (
+            <Button disabled fadeOnDisabled={false} variant="ghost" size="icon">
+              <div className="bg-muted-foreground animate-skeleton size-6 rounded-md" />
+            </Button>
+          ) : (
+            <ThreeDotButton variable={variable} />
+          )}
         </div>
       </div>
     </div>
+  );
+}
+
+function ThreeDotButton({ variable }: { variable: TVariableShallow }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          data-open={isOpen ? true : undefined}
+          fadeOnDisabled={false}
+          variant="ghost"
+          size="icon"
+          className="text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent"
+        >
+          <EllipsisVerticalIcon className="size-6 transition-transform group-data-open/button:rotate-90" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        className="z-50"
+        sideOffset={-1}
+        data-open={isOpen ? true : undefined}
+        align="end"
+        forceMount={true}
+      >
+        <ScrollArea>
+          <DropdownMenuGroup>
+            <DropdownMenuItem>
+              <PenIcon className="size-4" />
+              <p className="min-w-0 shrink leading-tight">Edit</p>
+            </DropdownMenuItem>
+            <DeleteTrigger variable={variable} closeDropdown={() => setIsOpen(false)}>
+              <DropdownMenuItem
+                onSelect={(e) => e.preventDefault()}
+                className="text-destructive data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
+              >
+                <TrashIcon className="size-4" />
+                <p className="min-w-0 shrink leading-tight">Delete</p>
+              </DropdownMenuItem>
+            </DeleteTrigger>
+          </DropdownMenuGroup>
+        </ScrollArea>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function DeleteTrigger({
+  variable,
+  closeDropdown,
+  children,
+}: {
+  variable: TVariableShallow;
+  closeDropdown: () => void;
+  children: ReactNode;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const { teamId, projectId, environmentId, serviceId } = useService();
+
+  const { invalidate: invalidateVariables, setVariables } = useVariablesUtils({
+    teamId,
+    projectId,
+    environmentId,
+    serviceId,
+    type: "service",
+  });
+
+  const {
+    mutate: deleteVariable,
+    isPending,
+    error,
+    reset,
+  } = api.variables.delete.useMutation({
+    onSuccess: async (d) => {
+      setIsOpen(false);
+      setVariables(d.data);
+      invalidateVariables();
+      closeDropdown();
+    },
+  });
+
+  const timeout = useRef<NodeJS.Timeout | null>(null);
+
+  return (
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open);
+        if (!open) {
+          closeDropdown();
+          if (timeout.current) clearTimeout(timeout.current);
+          timeout.current = setTimeout(() => {
+            reset();
+          }, defaultAnimationMs);
+        }
+      }}
+    >
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent hideXButton className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>
+            Delete Variable:{" "}
+            <span className="bg-border rounded-md px-1.5 py-0.5 font-mono">{variable.name}</span>
+          </DialogTitle>
+          <DialogDescription>
+            Are you sure you want to delete this variable? This action cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
+        {error && <ErrorLine message={error?.message} className="-mb-4" />}
+        <div className="mt-4 flex w-full flex-wrap items-center justify-end gap-2">
+          <DialogClose asChild className="text-muted-foreground">
+            <Button type="button" variant="ghost">
+              Cancel
+            </Button>
+          </DialogClose>
+          <Button
+            onClick={() =>
+              deleteVariable({
+                teamId,
+                projectId,
+                environmentId,
+                serviceId,
+                // @ts-expect-error | TODO: GO API should fix the types
+                type: variable.type,
+                variables: [{ name: variable.name }],
+              })
+            }
+            variant="destructive"
+            isPending={isPending}
+          >
+            Delete
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -110,6 +110,7 @@ export default function UndeployedServiceContent({ service, className }: TProps)
             projectId={projectId}
             environmentId={environmentId}
             serviceId={service.id}
+            type="service"
           >
             <CreateVariablesForm
               variant="collapsible"

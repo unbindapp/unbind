@@ -8,6 +8,7 @@ import {
 import TeamCommandPanelTrigger from "@/components/team/command-panel/team-command-panel";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
+import { defaultAnimationMs } from "@/lib/constants";
 import { PlusIcon } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
 import { useRef } from "react";
@@ -36,7 +37,7 @@ export default function NewTeamButton({ teamId, className }: TProps) {
       }
       timeout.current = setTimeout(() => {
         setCommandPanelPageId(null);
-      }, 150);
+      }, defaultAnimationMs);
     }
   };
 

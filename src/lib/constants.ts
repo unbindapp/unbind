@@ -30,3 +30,5 @@ export const sc: Record<
     xOrder: 2,
   },
 };
+
+export const defaultAnimationMs = 150;

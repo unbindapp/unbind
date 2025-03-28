@@ -123,7 +123,7 @@ function ServiceUrl({ hostObject }: { hostObject: THost }) {
         href={getUrl(hostObject)}
         key={getUrl(hostObject)}
       >
-        <div className="relative -ml-0.5 size-3.5 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45">
+        <div className="relative -ml-0.5 size-3.5 shrink-0 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45">
           <GlobeIcon className="size-full group-active/button:opacity-0 has-hover:group-hover/button:opacity-0" />
           <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-active/button:opacity-100 has-hover:group-hover/button:opacity-100" />
         </div>

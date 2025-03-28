@@ -13,6 +13,7 @@ import ContextAwareCommandPanelItemsProvider, {
 } from "@/components/command-panel/context-aware-command-panel/context-aware-command-panel-items-provider";
 import useContextAwareCommandPanelData from "@/components/command-panel/context-aware-command-panel/use-context-aware-command-panel-data";
 import { TContextAwareCommandPanelContext } from "@/components/command-panel/types";
+import { defaultAnimationMs } from "@/lib/constants";
 import { parseAsString, useQueryState } from "nuqs";
 import { useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -51,7 +52,7 @@ function ContextAwareCommandPanel_({ context }: Props) {
       }
       timeout.current = setTimeout(() => {
         setCommandPanelPageId(null);
-      }, 150);
+      }, defaultAnimationMs);
     }
   };
 

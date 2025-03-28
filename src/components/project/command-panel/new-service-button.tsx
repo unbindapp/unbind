@@ -9,6 +9,7 @@ import ProjectCommandPanelTrigger from "@/components/project/command-panel/proje
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
+import { defaultAnimationMs } from "@/lib/constants";
 import { PlusIcon } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
 import { useRef } from "react";
@@ -36,7 +37,7 @@ export default function NewServiceButton({ className }: TProps) {
       }
       timeout.current = setTimeout(() => {
         setCommandPanelPageId(null);
-      }, 150);
+      }, defaultAnimationMs);
     }
   };
 

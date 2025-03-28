@@ -38,7 +38,34 @@ export const EmptyProvider = ({ children }: TServicePageProviderProps) => childr
 
 export const tabs: TTab[] = [
   { title: "Deployments", value: "deployments", Page: Deployments, Provider: DeploymentsProvider },
-  { title: "Variables", value: "variables", Page: Variables, Provider: VariablesProvider },
+  {
+    title: "Variables",
+    value: "variables",
+    Page: Variables,
+    Provider: ({
+      teamId,
+      projectId,
+      environmentId,
+      serviceId,
+      children,
+    }: {
+      teamId: string;
+      projectId: string;
+      environmentId: string;
+      serviceId: string;
+      children: ReactNode;
+    }) => (
+      <VariablesProvider
+        teamId={teamId}
+        projectId={projectId}
+        environmentId={environmentId}
+        serviceId={serviceId}
+        type="service"
+      >
+        {children}
+      </VariablesProvider>
+    ),
+  },
   { title: "Logs", value: "logs", Page: Logs, Provider: EmptyProvider, noScrollArea: true },
   { title: "Metrics", value: "metrics", Provider: EmptyProvider, Page: Metrics },
   { title: "Settings", value: "settings", Provider: EmptyProvider, Page: Settings },
@@ -65,6 +92,7 @@ export default function ServicePanelContent({ service, className }: TProps) {
           projectId={projectId}
           environmentId={environmentId}
           serviceId={service.id}
+          type="service"
         >
           <UndeployedServiceContent className={className} service={service} />
         </VariablesProvider>

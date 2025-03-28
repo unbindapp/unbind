@@ -15,6 +15,7 @@ import { ResultAsync } from "neverthrow";
 import { parseAsString, useQueryState } from "nuqs";
 import { useCallback, useMemo, useRef } from "react";
 import { toast } from "sonner";
+import { defaultAnimationMs } from "@/lib/constants";
 
 export default function useProjectCommandPanelData() {
   const { setIsPendingId } = useCommandPanelState();
@@ -112,7 +113,7 @@ export default function useProjectCommandPanelData() {
     }
     timeout.current = setTimeout(() => {
       setPanelPageId(null);
-    }, 150);
+    }, defaultAnimationMs);
   }, [setPanelId, setPanelPageId]);
 
   const closePanel = useCallback(() => {
@@ -122,7 +123,7 @@ export default function useProjectCommandPanelData() {
     }
     timeout.current = setTimeout(() => {
       setPanelPageId(null);
-    }, 150);
+    }, defaultAnimationMs);
   }, [setPanelId, setPanelPageId]);
 
   const utils = api.useUtils();

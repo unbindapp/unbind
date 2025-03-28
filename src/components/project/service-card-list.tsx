@@ -9,6 +9,7 @@ import ProjectCommandPanelTrigger from "@/components/project/command-panel/proje
 import ServiceCard from "@/components/project/service-card";
 import { useServices } from "@/components/project/services-provider";
 import { Button } from "@/components/ui/button";
+import { defaultAnimationMs } from "@/lib/constants";
 import { PlusIcon } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
 import { useRef } from "react";
@@ -40,7 +41,7 @@ export default function ServiceCardList() {
       }
       timeout.current = setTimeout(() => {
         setCommandPanelPageId(null);
-      }, 150);
+      }, defaultAnimationMs);
     }
   };
 

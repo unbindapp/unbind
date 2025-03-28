@@ -1,6 +1,7 @@
 "use client";
 
-import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
+import { AppRouterInputs, AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
+import { TVariableShallow } from "@/server/trpc/api/variables/types";
 import { api } from "@/server/trpc/setup/client";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
@@ -20,14 +21,15 @@ export const VariablesProvider: React.FC<{
   projectId: string;
   environmentId: string;
   serviceId: string;
+  type: AppRouterInputs["variables"]["list"]["type"];
   children: ReactNode;
-}> = ({ teamId, projectId, environmentId, serviceId, children }) => {
+}> = ({ teamId, projectId, environmentId, serviceId, type, children }) => {
   const list = api.variables.list.useQuery({
     teamId,
     projectId,
     environmentId,
     serviceId,
-    type: "service",
+    type,
   });
 
   const upsert = api.variables.upsert.useMutation();
@@ -62,11 +64,13 @@ export const useVariablesUtils = ({
   projectId,
   environmentId,
   serviceId,
+  type,
 }: {
   teamId: string;
   projectId: string;
   environmentId: string;
   serviceId: string;
+  type: AppRouterInputs["variables"]["list"]["type"];
 }) => {
   const utils = api.useUtils();
   return {
@@ -76,7 +80,7 @@ export const useVariablesUtils = ({
         projectId,
         environmentId,
         serviceId,
-        type: "service",
+        type,
       }),
     refetch: () =>
       utils.variables.list.refetch({
@@ -84,7 +88,43 @@ export const useVariablesUtils = ({
         projectId,
         environmentId,
         serviceId,
-        type: "service",
+        type,
       }),
+    optimisticRemove: (variables: TVariableShallow[]) => {
+      utils.variables.list.setData(
+        { teamId, projectId, environmentId, serviceId, type },
+        (data) => {
+          if (!data) return data;
+          return {
+            ...data,
+            variables: data.variables.filter((v1) => {
+              const shouldRemove = variables.some((v2) =>
+                areVariablesMatching({ variable1: v1, variable2: v2 }),
+              );
+              return !shouldRemove;
+            }),
+          };
+        },
+      );
+    },
+    setVariables: (variables: TVariableShallow[]) => {
+      utils.variables.list.setData({ teamId, projectId, environmentId, serviceId, type }, () => ({
+        variables: variables,
+      }));
+    },
   };
 };
+
+function areVariablesMatching({
+  variable1,
+  variable2,
+}: {
+  variable1: TVariableShallow;
+  variable2: TVariableShallow;
+}) {
+  return (
+    variable1.name === variable2.name &&
+    variable1.value === variable2.value &&
+    variable1.type === variable2.type
+  );
+}

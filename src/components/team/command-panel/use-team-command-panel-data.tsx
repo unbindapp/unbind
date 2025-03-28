@@ -6,6 +6,7 @@ import ServiceIcon from "@/components/icons/service";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { commandPanelTeamRootPage } from "@/components/team/command-panel/constants";
+import { defaultAnimationMs } from "@/lib/constants";
 import { api } from "@/server/trpc/setup/client";
 import { BlocksIcon, DatabaseIcon, FolderPlusIcon } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
@@ -35,7 +36,7 @@ export default function useTeamCommandPanelData({ teamId }: { teamId: string }) 
     }
     timeout.current = setTimeout(() => {
       setPanelPageId(null);
-    }, 150);
+    }, defaultAnimationMs);
   }, [setPanelId, setPanelPageId]);
 
   const utils = api.useUtils();

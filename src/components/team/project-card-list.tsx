@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
 import { useRef } from "react";
+import { defaultAnimationMs } from "@/lib/constants";
 
 type TProps = {
   teamId: string;
@@ -39,7 +40,7 @@ export default function ProjectCardList({ teamId }: TProps) {
       }
       timeout.current = setTimeout(() => {
         setCommandPanelPageId(null);
-      }, 150);
+      }, defaultAnimationMs);
     }
   };
 
