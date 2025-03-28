@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
 
+//
+
 export default function VariablesHeader() {
   const [isOpen, setIsOpen] = useState(false);
   const {
@@ -23,6 +25,7 @@ export default function VariablesHeader() {
               : `${data.variables.length} Variable${data.variables.length > 1 ? "s" : ""}`}
           </h2>
         </div>
+
         <Button
           disabled={isPending}
           fadeOnDisabled={false}
