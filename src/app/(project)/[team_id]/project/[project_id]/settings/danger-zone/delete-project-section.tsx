@@ -101,7 +101,7 @@ function DeleteButton({ teamId, projectId }: { teamId: string; projectId: string
       <DialogTrigger asChild>
         <Button variant="destructive">Delete Project</Button>
       </DialogTrigger>
-      <DialogContent hideXButton className="max-w-lg">
+      <DialogContent hideXButton classNameInnerWrapper="max-w-lg">
         <DialogHeader>
           <DialogTitle>Delete Project</DialogTitle>
           <DialogDescription>

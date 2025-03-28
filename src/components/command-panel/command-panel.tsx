@@ -148,7 +148,6 @@ export function CommandPanelTrigger({
         }}
         onEscapeKeyDown={onEscapeKeyDown}
         {...mergedDialogContentVariantOptions}
-        className="w-112"
       >
         <DialogHeader>
           <DialogTitle className="sr-only">{title}</DialogTitle>

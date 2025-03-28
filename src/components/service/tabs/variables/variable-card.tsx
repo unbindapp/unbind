@@ -216,11 +216,13 @@ function DeleteTrigger({
       }}
     >
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent hideXButton className="max-w-lg">
+      <DialogContent hideXButton classNameInnerWrapper="max-w-md">
         <DialogHeader>
-          <DialogTitle>
-            Delete Variable:{" "}
-            <span className="bg-border rounded-md px-1.5 py-0.5 font-mono">{variable.name}</span>
+          <DialogTitle className="leading-snug">
+            <span className="pr-1.5">Delete Variable:</span>{" "}
+            <span className="bg-border -ml-1 rounded-md px-1.5 py-0.25 font-mono">
+              {variable.name}
+            </span>
           </DialogTitle>
           <DialogDescription>
             Are you sure you want to delete this variable? This action cannot be undone.
