@@ -36,8 +36,6 @@ export const deploymentsRouter = createTRPCRouter({
         cursor,
         statuses,
       });
-
-      console.log("deployments", deployments.data);
       return {
         ...deployments.data,
       };

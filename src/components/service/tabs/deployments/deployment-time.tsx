@@ -44,9 +44,9 @@ export default function DeploymentTime({ deployment, isPlaceholder }: TProps) {
       )}
       <div className="flex min-w-0 shrink flex-wrap items-center justify-start space-x-2 text-sm leading-tight">
         <p className="text-muted-foreground group-data-placeholder/time:bg-muted-foreground group-data-placeholder/time:animate-skeleton min-w-0 shrink group-data-placeholder/time:rounded-md group-data-placeholder/time:text-transparent">
-          {isPlaceholder ? "1 hr. ago" : str}
+          {isPlaceholder ? "1 hr. ago | 90s" : str}
         </p>
-        <p className="text-muted-more-foreground">|</p>
+        {durationStr && <p className="text-muted-more-foreground">|</p>}
         {durationStr && (
           <div className="text-muted-foreground -my-0.25 flex min-w-0 shrink items-center justify-start gap-0.75">
             <TimerIcon className="-ml-0.5 size-3.5 shrink-0" />

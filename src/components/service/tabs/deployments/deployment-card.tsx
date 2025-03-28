@@ -10,61 +10,37 @@ import { useMemo } from "react";
 type TProps =
   | {
       deployment: TDeploymentShallow;
-      lastDeploymentId?: string;
+      currentDeployment: TDeploymentShallow | undefined;
       isPlaceholder?: never;
+      withCurrentTag?: boolean;
     }
   | {
       isPlaceholder: true;
-      lastDeploymentId?: string;
+      currentDeployment?: never;
       deployment?: never;
+      withCurrentTag?: never;
     };
 
-function getColor({
-  deployment,
-  isPlaceholder,
-  lastDeploymentId,
-}: {
-  deployment?: TDeploymentShallow;
-  isPlaceholder?: boolean;
-  lastDeploymentId?: string;
-}) {
-  if (isPlaceholder || !deployment) {
-    return "default";
-  } else {
-    switch (deployment.status) {
-      case "queued":
-        return "process";
-      case "building":
-        return "process";
-      case "failed":
-        return "destructive";
-      case "cancelled":
-        return "default";
-      case "succeeded":
-        if (lastDeploymentId && deployment && lastDeploymentId === deployment.id) return "success";
-        return "default";
-      default:
-        return "default";
-    }
-  }
-}
-
-export default function DeploymentCard({ deployment, lastDeploymentId, isPlaceholder }: TProps) {
+export default function DeploymentCard({ deployment, currentDeployment, isPlaceholder }: TProps) {
   const LoaderWithSpin = ({ className }: { className?: string }) => (
     <LoaderIcon className={cn("animate-spin", className)} />
   );
   const Icon = useMemo(() => {
     if (isPlaceholder) return LoaderWithSpin;
     if (deployment.status === "building" || deployment.status === "queued") return LoaderWithSpin;
-    if (deployment.status === "succeeded" && deployment.id === lastDeploymentId)
+    if (
+      deployment.status === "succeeded" &&
+      currentDeployment &&
+      deployment.id === currentDeployment.id
+    )
       return CircleCheckIcon;
     if (deployment.status === "failed") return TriangleAlertIcon;
     return BroomIcon;
-  }, [isPlaceholder, deployment?.status, deployment?.id, lastDeploymentId]);
+  }, [isPlaceholder, deployment?.status, deployment?.id, currentDeployment]);
 
   return (
     <div
-      data-color={getColor({ deployment, isPlaceholder, lastDeploymentId })}
+      data-color={getColor({ deployment, isPlaceholder, currentDeployment })}
       data-placeholder={isPlaceholder ? true : undefined}
       className="group/card data-[color=destructive]:bg-destructive/4 data-[color=process]:bg-process/4 data-[color=success]:bg-success/4 data-[color=destructive]:border-destructive/20 data-[color=process]:border-process/20 data-[color=success]:border-success/20 relative flex w-full flex-row items-stretch rounded-xl border p-2"
     >
@@ -78,7 +54,9 @@ export default function DeploymentCard({ deployment, lastDeploymentId, isPlaceho
                 ? "LOADING"
                 : deployment.status === "building" || deployment.status === "queued"
                   ? "BUILDING"
-                  : deployment.status === "succeeded" && deployment.id === lastDeploymentId
+                  : deployment.status === "succeeded" &&
+                      currentDeployment &&
+                      deployment.id === currentDeployment.id
                     ? "ACTIVE"
                     : deployment.status === "failed"
                       ? "FAILED"
@@ -124,4 +102,35 @@ export default function DeploymentCard({ deployment, lastDeploymentId, isPlaceho
       </div>
     </div>
   );
+}
+
+function getColor({
+  deployment,
+  isPlaceholder,
+  currentDeployment,
+}: {
+  deployment?: TDeploymentShallow;
+  isPlaceholder?: boolean;
+  currentDeployment?: TDeploymentShallow;
+}) {
+  if (isPlaceholder || !deployment) {
+    return "default";
+  } else {
+    switch (deployment.status) {
+      case "queued":
+        return "process";
+      case "building":
+        return "process";
+      case "failed":
+        return "destructive";
+      case "cancelled":
+        return "default";
+      case "succeeded":
+        if (currentDeployment && deployment && currentDeployment.id === deployment.id)
+          return "success";
+        return "default";
+      default:
+        return "default";
+    }
+  }
 }
