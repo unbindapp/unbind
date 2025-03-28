@@ -8,7 +8,7 @@ import TabWrapper from "@/components/service/tabs/tab-wrapper";
 
 export default function Deployments() {
   const {
-    query: { data: serviceData, isPending: isServicePending },
+    query: { data: serviceData, isPending: isServicePending, error: err },
   } = useService();
   const {
     query: { data, isPending, error },
