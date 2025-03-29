@@ -285,15 +285,17 @@ function EditVariableForm({
               >
                 <XIcon className="size-5" />
               </Button>
-              <form.SubmitButton
-                spinnerVariants={{ size: "icon" }}
-                aria-label="Confirm"
-                size="icon"
-                className="rounded-lg sm:rounded-md"
-                isPending={isSubmitting}
-              >
-                <CheckIcon className="size-5" strokeWidth={2.5} />
-              </form.SubmitButton>
+              <div className="size-9 py-[0.5px]">
+                <form.SubmitButton
+                  spinnerVariants={{ size: "icon" }}
+                  aria-label="Confirm"
+                  size="icon"
+                  className="h-full rounded-lg sm:rounded-md"
+                  isPending={isSubmitting}
+                >
+                  <CheckIcon className="size-5" strokeWidth={2.5} />
+                </form.SubmitButton>
+              </div>
             </>
           )}
         />
