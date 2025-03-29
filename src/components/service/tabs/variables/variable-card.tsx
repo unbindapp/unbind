@@ -228,6 +228,10 @@ function EditVariableForm({
       onChange: z.object({ variableValue: VariableForCreateValueSchema }),
     },
     onSubmit: async (d) => {
+      if (d.value.variableValue === variable.value) {
+        setIsEditingVariable(false);
+        return;
+      }
       await upsertVariables({
         teamId,
         projectId,
