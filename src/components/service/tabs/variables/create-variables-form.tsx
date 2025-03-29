@@ -14,6 +14,7 @@ type TProps = {
   onBlur?: TCreateVariablesFormOnBlur;
   className?: string;
   afterSuccessfulSubmit?: (variables: TVariableForCreate[]) => void;
+  isOpen?: boolean;
 };
 
 export const CreateVariablesFormSchema = z
@@ -27,6 +28,7 @@ export default function CreateVariablesForm({
   onBlur,
   afterSuccessfulSubmit,
   className,
+  isOpen: isOpenProp,
 }: TProps) {
   const {
     list: { refetch: refetchVariables },
@@ -104,6 +106,10 @@ export default function CreateVariablesForm({
     },
     [],
   );
+
+  if (isOpenProp === false) {
+    return null;
+  }
 
   return (
     <div

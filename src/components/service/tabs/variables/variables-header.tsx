@@ -36,7 +36,7 @@ export default function VariablesHeader() {
           <p>{isOpen ? "Close" : "New Variable"}</p>
         </Button>
       </div>
-      {isOpen && <CreateVariablesForm afterSuccessfulSubmit={() => setIsOpen(false)} />}
+      <CreateVariablesForm afterSuccessfulSubmit={() => setIsOpen(false)} isOpen={isOpen} />
     </div>
   );
 }
