@@ -14,30 +14,67 @@ export function useTimeDifference({
 }) {
   const { timestamp: now } = useTimestamp();
 
+  if (!timestamp) {
+    return {
+      str: null,
+    };
+  }
+
   const differenceMs = timestamp ? now - timestamp : 0;
   const sign = differenceMs < 0 ? 1 : -1;
   const differenceMsAbs = Math.abs(differenceMs);
 
-  const differenceDaysAbs = Math.floor(differenceMsAbs / 1000 / 60 / 60 / 24);
-  const differenceHoursAbs = Math.floor(differenceMsAbs / 1000 / 60 / 60);
-  const differenceMinutesAbs = Math.floor(differenceMsAbs / 1000 / 60);
-  const differenceSecondsAbs = Math.floor(differenceMsAbs / 1000);
+  const secondsDivider = 1000;
+  const minutesDivider = secondsDivider * 60;
+  const hoursDivider = minutesDivider * 60;
+  const daysDivider = hoursDivider * 24;
+  const weeksDivider = daysDivider * 7;
+  const monthsDivider = daysDivider * 30;
+  const yearsDivider = monthsDivider * 12;
 
-  const diffDaysStr = rtf.format(sign * differenceDaysAbs, "days");
-  const diffHoursStr = rtf.format(sign * differenceHoursAbs, "hours");
-  const diffMinutesStr = rtf.format(sign * differenceMinutesAbs, "minutes");
-  const diffSecondsStr = rtf.format(sign * differenceSecondsAbs, "seconds");
+  const differenceYearsAbs = Math.floor(differenceMsAbs / yearsDivider);
+  if (differenceYearsAbs >= 1) {
+    return {
+      str: rtf.format(sign * differenceYearsAbs, "years"),
+    };
+  }
 
-  const differenceStr =
-    differenceDaysAbs >= 1
-      ? diffDaysStr
-      : differenceHoursAbs >= 1
-        ? diffHoursStr
-        : differenceMinutesAbs >= 1
-          ? diffMinutesStr
-          : diffSecondsStr;
+  const differenceMonthsAbs = Math.floor(differenceMsAbs / monthsDivider);
+  if (differenceMonthsAbs >= 1) {
+    return {
+      str: rtf.format(sign * differenceMonthsAbs, "months"),
+    };
+  }
+
+  const differenceWeeksAbs = Math.floor(differenceMsAbs / weeksDivider);
+  if (differenceWeeksAbs >= 1) {
+    return {
+      str: rtf.format(sign * differenceWeeksAbs, "weeks"),
+    };
+  }
+
+  const differenceDaysAbs = Math.floor(differenceMsAbs / daysDivider);
+  if (differenceDaysAbs >= 1) {
+    return {
+      str: rtf.format(sign * differenceDaysAbs, "days"),
+    };
+  }
+
+  const differenceHoursAbs = Math.floor(differenceMsAbs / hoursDivider);
+  if (differenceHoursAbs >= 1) {
+    return {
+      str: rtf.format(sign * differenceHoursAbs, "hours"),
+    };
+  }
+
+  const differenceMinutesAbs = Math.floor(differenceMsAbs / minutesDivider);
+  if (differenceMinutesAbs >= 1) {
+    return {
+      str: rtf.format(sign * differenceMinutesAbs, "minutes"),
+    };
+  }
 
   return {
-    str: timestamp ? differenceStr : null,
+    str: Math.floor(differenceMsAbs / secondsDivider),
   };
 }
