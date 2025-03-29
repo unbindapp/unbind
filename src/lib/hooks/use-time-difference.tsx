@@ -11,7 +11,9 @@ export function useTimeDifference({
 }: {
   timestamp?: number;
   rtf?: Intl.RelativeTimeFormat;
-}) {
+}): {
+  str: string | null;
+} {
   const { timestamp: now } = useTimestamp();
 
   if (!timestamp) {
@@ -74,7 +76,8 @@ export function useTimeDifference({
     };
   }
 
+  const differenceSecondsAbs = Math.floor(differenceMsAbs / secondsDivider);
   return {
-    str: Math.floor(differenceMsAbs / secondsDivider),
+    str: rtf.format(sign * differenceSecondsAbs, "seconds"),
   };
 }
