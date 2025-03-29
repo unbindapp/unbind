@@ -1,9 +1,9 @@
-import TemporaryLogs from "@/components/logs/temporary-logs";
+import LogViewer from "@/components/logs/log-viewer";
+import { auth } from "@/server/auth/auth";
 
 export default async function Page() {
-  return (
-    <div className="flex w-full flex-1 flex-col items-center">
-      <TemporaryLogs containerType="page" />
-    </div>
-  );
+  const session = await auth();
+  if (!session) return null;
+
+  return <LogViewer containerType="page" session={session} />;
 }

@@ -1,6 +1,7 @@
 "use client";
 
-import LogLine, { TLogLine } from "@/components/logs/log-line";
+import { useProject } from "@/app/(project)/[team_id]/project/[project_id]/_components/project-provider";
+import LogLine, { LogLineSchema } from "@/components/logs/log-line";
 import LogViewDropdownProvider from "@/components/logs/log-view-dropdown-provider";
 import LogViewPreferencesProvider, {
   logViewPreferenceKeys,
@@ -8,22 +9,27 @@ import LogViewPreferencesProvider, {
 } from "@/components/logs/log-view-preferences-provider";
 import NavigationBar from "@/components/logs/navigation-bar";
 import TopBar from "@/components/logs/top-bar";
+import { env } from "@/lib/env";
+import { useSSEQuery } from "@/lib/hooks/use-sse-query";
+import { Session } from "next-auth";
+import { useQueryState } from "nuqs";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useThrottledCallback } from "use-debounce";
 import { VList, VListHandle } from "virtua";
+import { z } from "zod";
 
 type TProps = {
-  logs: TLogLine[];
   containerType: "page" | "sheet";
   hideServiceByDefault?: boolean;
+  session: Session;
   className?: string;
 };
 
-export default function LogViewer({ logs, hideServiceByDefault, containerType }: TProps) {
+export default function LogViewer({ hideServiceByDefault, session, containerType }: TProps) {
   return (
     <LogViewPreferencesProvider hideServiceByDefault={hideServiceByDefault}>
       <LogViewDropdownProvider>
-        <Logs_ logs={logs} containerType={containerType} />
+        <Logs containerType={containerType} session={session} />
       </LogViewDropdownProvider>
     </LogViewPreferencesProvider>
   );
@@ -31,7 +37,39 @@ export default function LogViewer({ logs, hideServiceByDefault, containerType }:
 
 const SCROLL_THRESHOLD = 50;
 
-function Logs_({ logs, containerType }: TProps) {
+const sseQuerySchema = z.object({
+  data: LogLineSchema.array(),
+});
+
+function Logs({ containerType, session }: TProps) {
+  const { teamId, projectId } = useProject();
+  const [environmentId] = useQueryState("environment");
+
+  const urlParams = useMemo(
+    () =>
+      new URLSearchParams({
+        team_id: teamId,
+        project_id: projectId,
+        environment_id: environmentId || "",
+        type: "project",
+      }),
+    [teamId, projectId, environmentId],
+  );
+  const sseUrl = `${env.NEXT_PUBLIC_UNBIND_API_URL}/logs/stream?${urlParams.toString()}`;
+
+  const sseQueryProps = useMemo(
+    () => ({
+      queryKey: ["logs"],
+      sseUrl,
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      schema: sseQuerySchema,
+    }),
+    [sseUrl, session.access_token],
+  );
+  const { data: logs } = useSSEQuery(sseQueryProps);
+
   const virtualListRef = useRef<VListHandle>(null);
   const follow = useRef(true);
   const prevScrollY = useRef<number | null>(null);
@@ -51,10 +89,11 @@ function Logs_({ logs, containerType }: TProps) {
   }, []);
 
   const scrollToBottom = useCallback(() => {
+    if (!logs) return;
     follow.current = true;
     const virtualList = virtualListRef.current;
     if (!virtualList) return;
-    virtualList.scrollToIndex(logs.length - 1);
+    virtualList.scrollToIndex(logs.data.length - 1);
   }, [logs]);
 
   useEffect(() => {
@@ -111,20 +150,19 @@ function Logs_({ logs, containerType }: TProps) {
 
   const throttledOnScroll = useThrottledCallback(onScroll, 50);
 
-  const listItems = useMemo(
-    () =>
-      logs.map((logLine, index) => (
-        <LogLine
-          key={index}
-          data-container={containerType}
-          data-first={index === 0 ? true : undefined}
-          data-last={index === logs.length - 1 ? true : undefined}
-          logLine={logLine}
-          classNameInner="min-[1288px]:group-data-[container=page]/line:rounded-sm"
-        />
-      )),
-    [logs, containerType],
-  );
+  const listItems = useMemo(() => {
+    if (!logs) return [];
+    return logs.data.map((logLine, index) => (
+      <LogLine
+        key={index}
+        data-container={containerType}
+        data-first={index === 0 ? true : undefined}
+        data-last={index === logs.data.length - 1 ? true : undefined}
+        logLine={logLine}
+        classNameInner="min-[1288px]:group-data-[container=page]/line:rounded-sm"
+      />
+    ));
+  }, [logs, containerType]);
 
   return (
     <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden">

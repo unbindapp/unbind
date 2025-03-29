@@ -11,6 +11,7 @@
     "gen": "bun run ./scripts/generate-go-client/main.ts -i https://api.unbind.app/openapi.yaml"
   },
   "dependencies": {
+    "@fortaine/fetch-event-source": "^3.0.6",
     "@radix-ui/react-alert-dialog": "^1.1.6",
     "@radix-ui/react-dialog": "^1.1.6",
     "@radix-ui/react-dropdown-menu": "^2.1.6",

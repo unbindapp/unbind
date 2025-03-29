@@ -6,14 +6,17 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { format } from "date-fns";
 import { ComponentProps, ReactNode } from "react";
+import { z } from "zod";
 
-export type TLogLine = {
-  level: "info" | "warn" | "error";
-  timestamp: number;
-  message: string;
-  deploymentId: string;
-  serviceId: string;
-};
+export const LogLineSchema = z
+  .object({
+    message: z.string(),
+    pod_name: z.string(),
+    timestamp: z.string(),
+  })
+  .strip();
+
+export type TLogLine = z.infer<typeof LogLineSchema>;
 
 type TProps = {
   logLine: TLogLine;
@@ -30,7 +33,7 @@ export default function LogLine({ logLine, className, classNameInner, ...rest }:
     <div
       {...rest}
       suppressHydrationWarning
-      data-level={logLine.level}
+      data-level={"info"}
       data-wrap={viewPreferences.includes(logViewPreferenceKeys.lineWrapping) ? true : undefined}
       data-extra-columns={hasExtraColumns ? true : undefined}
       className={cn(
@@ -68,7 +71,7 @@ export default function LogLine({ logLine, className, classNameInner, ...rest }:
                           suppressHydrationWarning
                           className="text-muted-foreground w-24 min-w-0 shrink overflow-hidden px-1 pr-4 leading-tight text-ellipsis whitespace-nowrap"
                         >
-                          {logLine.serviceId}
+                          {logLine.pod_name}
                         </p>
                       )}
                     </div>
