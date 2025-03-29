@@ -163,7 +163,7 @@ function DropdownMenuItem({
   return (
     <DropdownMenuPrimitive.Item
       className={cn(
-        "active:bg-accent focus:bg-accent focus:text-accent-foreground relative flex cursor-default items-center justify-start gap-2.5 rounded-md px-2.5 py-2.25 leading-tight font-medium outline-hidden select-none data-disabled:pointer-events-none [&>svg]:shrink-0",
+        "active:bg-accent focus:bg-accent focus:text-accent-foreground relative flex cursor-default items-center justify-start gap-2.5 rounded-md px-3 py-2.25 leading-tight font-medium outline-hidden select-none data-disabled:pointer-events-none [&>svg]:shrink-0",
         fadeOnDisabled && "data-disabled:opacity-50",
         inset && "pl-8",
         className,

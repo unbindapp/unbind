@@ -110,7 +110,7 @@ export default function VariableCard({ variable, isPlaceholder }: TProps) {
               </div>
             </Button>
             <div className="relative flex h-9 min-w-0 flex-1 items-center justify-start py-1 pl-2">
-              <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden font-mono text-xs leading-none text-ellipsis whitespace-nowrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
+              <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden pr-2 font-mono text-xs leading-none text-ellipsis whitespace-nowrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
                 {isPlaceholder || !isValueVisible ? "••••••••••" : variable.value}
               </p>
             </div>
@@ -174,7 +174,7 @@ function ThreeDotButton({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="z-50"
+        className="z-50 w-40"
         sideOffset={-1}
         data-open={isOpen ? true : undefined}
         align="end"
@@ -183,7 +183,7 @@ function ThreeDotButton({
         <ScrollArea>
           <DropdownMenuGroup>
             <DropdownMenuItem onSelect={() => setIsEditingVariable((o) => !o)}>
-              <PenIcon className="size-4" />
+              <PenIcon className="-ml-0.5 size-5" />
               <p className="min-w-0 shrink leading-tight">Edit</p>
             </DropdownMenuItem>
             <DeleteTrigger variable={variable} closeDropdown={() => setIsOpen(false)}>
@@ -191,7 +191,7 @@ function ThreeDotButton({
                 onSelect={(e) => e.preventDefault()}
                 className="text-destructive data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
               >
-                <TrashIcon className="size-4" />
+                <TrashIcon className="-ml-0.5 size-5" />
                 <p className="min-w-0 shrink leading-tight">Delete</p>
               </DropdownMenuItem>
             </DeleteTrigger>

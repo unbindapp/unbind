@@ -76,6 +76,7 @@ export default function UserAvatar({ email, className }: TProps) {
             className="flex w-full items-center justify-start"
           >
             <Button
+              disabled={isPendingSignOut}
               type="submit"
               className="w-full cursor-default items-center justify-start gap-2.5 rounded-lg px-3 py-3.5 text-left font-medium"
               variant="ghost"
@@ -104,14 +105,21 @@ export default function UserAvatar({ email, className }: TProps) {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <ThemeButton variant="dropdown-menu-item" />
-          <DropdownMenuItem className="p-0" onSelect={() => formRef.current?.requestSubmit()}>
+          <DropdownMenuItem
+            disabled={isPendingSignOut}
+            className="p-0"
+            onSelect={() => {
+              if (isPendingSignOut) return;
+              formRef.current?.requestSubmit();
+            }}
+          >
             <form
               ref={formRef}
               action={actionSignOut}
               className="flex w-full items-center justify-start"
             >
               <button
-                className="flex w-full cursor-default items-center gap-2.5 px-2.5 py-2.25 text-left leading-tight"
+                className="flex w-full cursor-default items-center gap-2.5 px-3 py-2.25 text-left leading-tight"
                 type="submit"
               >
                 <LogOutIcon className="-my-1 -ml-0.5 size-5 shrink-0" />
