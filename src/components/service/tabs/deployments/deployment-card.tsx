@@ -53,7 +53,7 @@ export default function DeploymentCard({ deployment, currentDeployment, isPlaceh
     >
       <div className="bg-foreground/8 group-data-[color=destructive]/card:bg-destructive group-data-[color=process]/card:bg-process group-data-[color=success]/card:bg-success group-data-placeholder/card:bg-muted-more-foreground group-data-placeholder/card:animate-skeleton w-1 self-stretch rounded-full" />
       <div className="flex min-w-0 flex-1 flex-col py-0.5 pr-6 pl-3 sm:flex-row sm:items-center sm:px-3 sm:py-2">
-        <div className="flex shrink-0 items-center justify-start pr-3 sm:w-32">
+        <div className="flex shrink-0 items-center justify-start pr-3 sm:w-34">
           <div className="bg-foreground/8 text-muted-foreground group-data-[color=destructive]/card:bg-destructive/12 group-data-[color=destructive]/card:text-destructive group-data-[color=process]/card:bg-process/12 group-data-[color=process]/card:text-process group-data-[color=success]/card:bg-success/12 group-data-[color=success]/card:text-success group-data-placeholder/card:bg-muted-more-foreground group-data-placeholder/card:animate-skeleton flex min-w-0 shrink items-center justify-start gap-1.5 rounded-md px-2 py-1.25 text-sm font-medium group-data-placeholder/card:text-transparent">
             <Icon className="-ml-0.25 size-3.5 shrink-0" />
             <p className="min-w-0 shrink leading-tight">

@@ -21,17 +21,17 @@ export default function Deployments() {
   return (
     <TabWrapper>
       {(isAnyPending || currentDeployment) && (
-        <>
+        <div className="w-full pb-3">
           {currentDeployment ? (
             <DeploymentCard deployment={currentDeployment} currentDeployment={currentDeployment} />
           ) : (
             <DeploymentCard isPlaceholder={true} />
           )}
-        </>
+        </div>
       )}
       <div
         data-pending={isPending ? true : undefined}
-        className="group/header flex w-full items-center justify-start px-2 pt-3 pb-1"
+        className="group/header flex w-full items-center justify-start px-2 pb-1"
       >
         <h3 className="text-muted-foreground group-data-pending/header:bg-muted-foreground group-data-pending/header:animate-skeleton leading-tight font-medium group-data-pending/header:rounded-md group-data-pending/header:text-transparent">
           History
