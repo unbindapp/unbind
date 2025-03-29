@@ -4,19 +4,9 @@ import {
 } from "@/components/logs/log-view-preferences-provider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
+import { TLogLine } from "@/lib/hooks/use-logs";
 import { format } from "date-fns";
 import { ComponentProps, ReactNode } from "react";
-import { z } from "zod";
-
-export const LogLineSchema = z
-  .object({
-    message: z.string(),
-    pod_name: z.string(),
-    timestamp: z.string(),
-  })
-  .strip();
-
-export type TLogLine = z.infer<typeof LogLineSchema>;
 
 type TProps = {
   logLine: TLogLine;

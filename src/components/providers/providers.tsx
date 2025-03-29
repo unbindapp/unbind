@@ -7,23 +7,26 @@ import { TRPCReactProvider } from "@/server/trpc/setup/client";
 import { Provider as JotaiProvider } from "jotai";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import React from "react";
+import { SessionProvider } from "next-auth/react";
 
 export default async function Providers({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <TRPCReactProvider>
-      <AsyncPushProvider>
-        <JotaiProvider>
-          <NuqsAdapter>
-            <ThemeProvider>
-              <DeviceTypeProvider>
-                <DeviceSizeProvider>
-                  <TimestampProvider>{children}</TimestampProvider>
-                </DeviceSizeProvider>
-              </DeviceTypeProvider>
-            </ThemeProvider>
-          </NuqsAdapter>
-        </JotaiProvider>
-      </AsyncPushProvider>
+      <SessionProvider>
+        <AsyncPushProvider>
+          <JotaiProvider>
+            <NuqsAdapter>
+              <ThemeProvider>
+                <DeviceTypeProvider>
+                  <DeviceSizeProvider>
+                    <TimestampProvider>{children}</TimestampProvider>
+                  </DeviceSizeProvider>
+                </DeviceTypeProvider>
+              </ThemeProvider>
+            </NuqsAdapter>
+          </JotaiProvider>
+        </AsyncPushProvider>
+      </SessionProvider>
     </TRPCReactProvider>
   );
 }

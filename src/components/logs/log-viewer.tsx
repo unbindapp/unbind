@@ -1,7 +1,6 @@
 "use client";
 
-import { useProject } from "@/app/(project)/[team_id]/project/[project_id]/_components/project-provider";
-import LogLine, { LogLineSchema } from "@/components/logs/log-line";
+import LogLine from "@/components/logs/log-line";
 import LogViewDropdownProvider from "@/components/logs/log-view-dropdown-provider";
 import LogViewPreferencesProvider, {
   logViewPreferenceKeys,
@@ -10,25 +9,42 @@ import LogViewPreferencesProvider, {
 import NavigationBar from "@/components/logs/navigation-bar";
 import TopBar from "@/components/logs/top-bar";
 import { env } from "@/lib/env";
-import { useSSEQuery } from "@/lib/hooks/use-sse-query";
-import { Session } from "next-auth";
-import { useQueryState } from "nuqs";
+import { useLogs } from "@/lib/hooks/use-logs";
+import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useThrottledCallback } from "use-debounce";
 import { VList, VListHandle } from "virtua";
 
-type TProps = {
+type TBaseProps = {
   containerType: "page" | "sheet";
   hideServiceByDefault?: boolean;
-  session: Session;
   className?: string;
+  type: "team" | "project" | "environment" | "service";
+  teamId: string;
+  projectId: string;
+  environmentId: string;
+  serviceId?: string;
 };
 
-export default function LogViewer({ hideServiceByDefault, session, containerType }: TProps) {
+type TProps = TBaseProps &
+  (
+    | {
+        type: "environment";
+        environmentId: string;
+        serviceId?: never;
+      }
+    | {
+        type: "service";
+        environmentId: string;
+        serviceId: string;
+      }
+  );
+
+export default function LogViewer({ hideServiceByDefault, ...rest }: TProps) {
   return (
     <LogViewPreferencesProvider hideServiceByDefault={hideServiceByDefault}>
       <LogViewDropdownProvider>
-        <Logs containerType={containerType} session={session} />
+        <Logs {...rest} />
       </LogViewDropdownProvider>
     </LogViewPreferencesProvider>
   );
@@ -36,35 +52,37 @@ export default function LogViewer({ hideServiceByDefault, session, containerType
 
 const SCROLL_THRESHOLD = 50;
 
-function Logs({ containerType, session }: TProps) {
-  const { teamId, projectId } = useProject();
-  const [environmentId] = useQueryState("environment");
+function Logs({ containerType, type, teamId, projectId, environmentId, serviceId }: TProps) {
+  const { data: session } = useSession();
+  const urlParams = useMemo(() => {
+    const params = new URLSearchParams({
+      team_id: teamId,
+      project_id: projectId,
+      environment_id: environmentId,
+      type: type,
+      tail: "1000",
+      since: "24h",
+    });
+    if (type === "service") {
+      params.set("service_id", serviceId);
+    }
+    return params;
+  }, [teamId, projectId, environmentId, serviceId, type]);
 
-  const urlParams = useMemo(
-    () =>
-      new URLSearchParams({
-        team_id: teamId,
-        project_id: projectId,
-        environment_id: environmentId || "",
-        type: "environment",
-        since: "1h",
-      }),
-    [teamId, projectId, environmentId],
-  );
   const sseUrl = `${env.NEXT_PUBLIC_UNBIND_API_URL}/logs/stream?${urlParams.toString()}`;
 
   const sseQueryProps = useMemo(() => {
-    const params: Parameters<typeof useSSEQuery>[0] = {
-      queryKey: ["logs"],
+    const params: Parameters<typeof useLogs>[0] = {
       sseUrl,
       headers: {
-        Authorization: `Bearer ${session.access_token}`,
+        Authorization: `Bearer ${session?.access_token}`,
       },
-      messageSchema: LogLineSchema,
+      enabled: session ? true : false,
     };
     return params;
-  }, [sseUrl, session.access_token]);
-  const { data: logs } = useSSEQuery(sseQueryProps);
+  }, [sseUrl, session]);
+
+  const { data: logs } = useLogs(sseQueryProps);
 
   const virtualListRef = useRef<VListHandle>(null);
   const follow = useRef(true);
