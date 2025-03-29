@@ -21,9 +21,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/components/ui/utils";
 import { defaultAnimationMs } from "@/lib/constants";
+import { useAppForm } from "@/lib/hooks/use-app-form";
 import { useCopyToClipboard } from "@/lib/hooks/use-copy";
-import { TVariableShallow } from "@/server/trpc/api/variables/types";
+import { TVariableShallow, VariableForCreateValueSchema } from "@/server/trpc/api/variables/types";
 import { api } from "@/server/trpc/setup/client";
 import {
   CheckIcon,
@@ -33,8 +35,10 @@ import {
   EyeOffIcon,
   PenIcon,
   TrashIcon,
+  XIcon,
 } from "lucide-react";
-import { ReactNode, useRef, useState } from "react";
+import { Dispatch, ReactNode, useRef, useState } from "react";
+import { z } from "zod";
 
 type TProps =
   | {
@@ -49,78 +53,108 @@ type TProps =
 export default function VariableCard({ variable, isPlaceholder }: TProps) {
   const [isValueVisible, setIsValueVisible] = useState(false);
   const { copyToClipboard, isRecentlyCopied } = useCopyToClipboard();
+  const [isEditingVariable, setIsEditingVariable] = useState(false);
 
   return (
     <div
       data-placeholder={isPlaceholder ? true : undefined}
       data-value-visible={isValueVisible ? true : undefined}
-      className="has-hover:hover:bg-background-hover group/card relative flex w-full flex-col rounded-xl border px-3 py-0.75 font-mono data-placeholder:text-transparent sm:flex-row sm:items-center sm:rounded-lg"
+      data-not-editing={!isEditingVariable ? true : undefined}
+      className="data-not-editing:has-hover:hover:bg-background-hover group/card relative flex w-full flex-col rounded-xl border px-3 py-0.75 data-placeholder:text-transparent sm:flex-row sm:items-center sm:rounded-lg sm:pr-0.75"
     >
-      <div className="flex w-full shrink-0 py-2 pr-8 sm:w-56 sm:pr-4 md:w-64">
-        <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden text-sm leading-none text-ellipsis whitespace-nowrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
+      <div className="flex h-9 w-full shrink-0 items-center py-2 pr-8 sm:w-56 sm:pr-4 md:w-64">
+        <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden font-mono text-sm leading-none text-ellipsis whitespace-nowrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
           {isPlaceholder ? "Loading key" : variable.name}
         </p>
       </div>
-      <div className="flex w-full min-w-0 flex-1 items-center sm:mt-0 sm:w-auto">
-        <Button
-          data-copied={isRecentlyCopied ? true : undefined}
-          onClick={isPlaceholder ? () => null : () => copyToClipboard(variable.value)}
-          variant="ghost"
-          forceMinSize="medium"
-          size="icon"
-          className="text-muted-more-foreground group/button -ml-2 rounded-md group-data-placeholder/card:text-transparent"
-          disabled={isPlaceholder}
-          fadeOnDisabled={false}
-        >
-          <div className="relative size-4 transition-transform group-data-copied/button:rotate-90">
-            <CopyIcon className="group-data-copied/button:text-success size-full transition-opacity group-data-copied/button:opacity-0" />
-            <CheckIcon
-              strokeWidth={3}
-              className="group-data-copied/button:text-success absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-opacity group-data-copied/button:opacity-100"
-            />
-            {isPlaceholder && (
-              <div className="bg-muted-more-foreground animate-skeleton absolute top-0 left-0 size-full rounded-sm" />
+      <div className="relative -ml-2 flex w-[calc(100%+1rem)] min-w-0 flex-1 items-center sm:mt-0 sm:w-auto">
+        {(!variable || !isEditingVariable) && (
+          <>
+            <Button
+              data-copied={isRecentlyCopied ? true : undefined}
+              onClick={isPlaceholder ? () => null : () => copyToClipboard(variable.value)}
+              variant="ghost"
+              forceMinSize="medium"
+              size="icon"
+              className="text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent"
+              disabled={isPlaceholder}
+              fadeOnDisabled={false}
+            >
+              <div className="relative size-4 transition-transform group-data-copied/button:rotate-90">
+                <CopyIcon className="group-data-copied/button:text-success size-full transition-opacity group-data-copied/button:opacity-0" />
+                <CheckIcon
+                  strokeWidth={3}
+                  className="group-data-copied/button:text-success absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-opacity group-data-copied/button:opacity-100"
+                />
+                {isPlaceholder && (
+                  <div className="bg-muted-more-foreground animate-skeleton absolute top-0 left-0 size-full rounded-sm" />
+                )}
+              </div>
+            </Button>
+            <Button
+              data-visible={isValueVisible ? true : undefined}
+              onClick={() => setIsValueVisible((prev) => !prev)}
+              variant="ghost"
+              forceMinSize="medium"
+              size="icon"
+              className="text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent"
+              disabled={isPlaceholder}
+              fadeOnDisabled={false}
+            >
+              <div className="relative size-4">
+                <EyeIcon className="size-full group-data-visible/button:opacity-0" />
+                <EyeOffIcon className="absolute top-0 left-0 size-full opacity-0 group-data-visible/button:opacity-100" />
+                {isPlaceholder && (
+                  <div className="bg-muted-more-foreground animate-skeleton absolute top-0 left-0 size-full rounded-sm" />
+                )}
+              </div>
+            </Button>
+            <div className="relative flex h-9 min-w-0 flex-1 items-center justify-start py-1 pl-2">
+              <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden font-mono text-xs leading-none text-ellipsis whitespace-nowrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
+                {isPlaceholder || !isValueVisible ? "••••••••••" : variable.value}
+              </p>
+            </div>
+            {isPlaceholder ? (
+              <Button disabled fadeOnDisabled={false} variant="ghost" size="icon">
+                <div className="bg-muted-foreground animate-skeleton size-6 rounded-md" />
+              </Button>
+            ) : (
+              <ThreeDotButton
+                variable={variable}
+                setIsEditingVariable={setIsEditingVariable}
+                className="hidden sm:flex"
+              />
             )}
-          </div>
-        </Button>
-        <Button
-          data-visible={isValueVisible ? true : undefined}
-          onClick={() => setIsValueVisible((prev) => !prev)}
-          variant="ghost"
-          forceMinSize="medium"
-          size="icon"
-          className="text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent"
-          disabled={isPlaceholder}
-          fadeOnDisabled={false}
-        >
-          <div className="relative size-4">
-            <EyeIcon className="size-full group-data-visible/button:opacity-0" />
-            <EyeOffIcon className="absolute top-0 left-0 size-full opacity-0 group-data-visible/button:opacity-100" />
-            {isPlaceholder && (
-              <div className="bg-muted-more-foreground animate-skeleton absolute top-0 left-0 size-full rounded-sm" />
-            )}
-          </div>
-        </Button>
-        <div className="flex min-w-0 shrink py-1 pl-2">
-          <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden text-xs leading-none text-ellipsis whitespace-nowrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
-            {isPlaceholder || !isValueVisible ? "••••••••••" : variable.value}
-          </p>
-        </div>
-        <div className="absolute top-1 right-1 ml-auto pl-1 sm:relative sm:top-auto sm:right-auto sm:-mr-2.25">
+          </>
+        )}
+        {variable && isEditingVariable && (
+          <EditVariableForm variable={variable} setIsEditingVariable={setIsEditingVariable} />
+        )}
+      </div>
+      {(!isEditingVariable || !variable) && (
+        <div className="absolute top-0.75 right-0.75 sm:hidden">
           {isPlaceholder ? (
             <Button disabled fadeOnDisabled={false} variant="ghost" size="icon">
               <div className="bg-muted-foreground animate-skeleton size-6 rounded-md" />
             </Button>
           ) : (
-            <ThreeDotButton variable={variable} />
+            <ThreeDotButton variable={variable} setIsEditingVariable={setIsEditingVariable} />
           )}
         </div>
-      </div>
+      )}
     </div>
   );
 }
 
-function ThreeDotButton({ variable }: { variable: TVariableShallow }) {
+function ThreeDotButton({
+  variable,
+  setIsEditingVariable,
+  className,
+}: {
+  variable: TVariableShallow;
+  setIsEditingVariable: Dispatch<React.SetStateAction<boolean>>;
+  className?: string;
+}) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -131,7 +165,10 @@ function ThreeDotButton({ variable }: { variable: TVariableShallow }) {
           fadeOnDisabled={false}
           variant="ghost"
           size="icon"
-          className="text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent"
+          className={cn(
+            "text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent",
+            className,
+          )}
         >
           <EllipsisVerticalIcon className="size-6 transition-transform group-data-open/button:rotate-90" />
         </Button>
@@ -145,7 +182,7 @@ function ThreeDotButton({ variable }: { variable: TVariableShallow }) {
       >
         <ScrollArea>
           <DropdownMenuGroup>
-            <DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setIsEditingVariable((o) => !o)}>
               <PenIcon className="size-4" />
               <p className="min-w-0 shrink leading-tight">Edit</p>
             </DropdownMenuItem>
@@ -162,6 +199,108 @@ function ThreeDotButton({ variable }: { variable: TVariableShallow }) {
         </ScrollArea>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+function EditVariableForm({
+  variable,
+  setIsEditingVariable,
+}: {
+  variable: TVariableShallow;
+  setIsEditingVariable: Dispatch<React.SetStateAction<boolean>>;
+}) {
+  const { teamId, projectId, environmentId, serviceId } = useService();
+  const { refetch } = useVariablesUtils({
+    teamId,
+    projectId,
+    environmentId,
+    serviceId,
+    type: variable.type,
+  });
+  const { mutateAsync: upsertVariables, error } = api.variables.upsert.useMutation({
+    onSuccess: () => {},
+  });
+  const form = useAppForm({
+    defaultValues: {
+      variableValue: variable.value,
+    },
+    validators: {
+      onChange: z.object({ variableValue: VariableForCreateValueSchema }),
+    },
+    onSubmit: async (d) => {
+      await upsertVariables({
+        teamId,
+        projectId,
+        environmentId,
+        serviceId,
+        type: variable.type,
+        variables: [{ name: variable.name, value: d.value.variableValue }],
+      });
+      refetch();
+      setIsEditingVariable(false);
+    },
+  });
+
+  return (
+    <div className="flex flex-1 flex-col gap-1">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          form.handleSubmit();
+        }}
+        className="bg-background flex flex-1 items-start justify-start gap-1 rounded-lg"
+      >
+        <form.AppField
+          name="variableValue"
+          children={(field) => (
+            <field.TextField
+              field={field}
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+              className="flex-1"
+              placeholder="abc123"
+              inputClassName="rounded-lg px-2.5 py-1.5 h-9 sm:rounded-md font-mono"
+              infoClassName="pt-1 pb-0.5 text-xs"
+            />
+          )}
+        />
+        <form.Subscribe
+          selector={(state) => [state.isSubmitting]}
+          children={([isSubmitting]) => (
+            <>
+              <Button
+                disabled={isSubmitting}
+                type="button"
+                onClick={() => setIsEditingVariable(false)}
+                aria-label="Cancel"
+                size="icon"
+                variant="outline"
+                className="rounded-lg sm:rounded-md"
+              >
+                <XIcon className="size-5" />
+              </Button>
+              <form.SubmitButton
+                spinnerVariants={{ size: "icon" }}
+                aria-label="Confirm"
+                size="icon"
+                className="rounded-lg sm:rounded-md"
+                isPending={isSubmitting}
+              >
+                <CheckIcon className="size-5" strokeWidth={2.5} />
+              </form.SubmitButton>
+            </>
+          )}
+        />
+      </form>
+      {error && (
+        <ErrorLine
+          message={error.message}
+          className="rounded-lg px-2 py-1.5 text-xs sm:rounded-md"
+        />
+      )}
+    </div>
   );
 }
 

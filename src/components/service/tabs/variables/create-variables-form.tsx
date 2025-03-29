@@ -160,6 +160,7 @@ export default function CreateVariablesForm({
                                   onPaste={(e) => onPaste(e, form, i)}
                                   onChange={(e) => subField.handleChange(e.target.value)}
                                   placeholder="CLIENT_KEY"
+                                  inputClassName="font-mono"
                                   className="flex-1 sm:max-w-64"
                                 />
                               );
@@ -178,6 +179,7 @@ export default function CreateVariablesForm({
                                     onBlur={subField.handleBlur}
                                     onPaste={(e) => onPaste(e, form, i)}
                                     onChange={(e) => subField.handleChange(e.target.value)}
+                                    inputClassName="font-mono"
                                     className="flex-1"
                                     placeholder="abc123"
                                   />

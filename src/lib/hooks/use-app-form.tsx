@@ -10,14 +10,24 @@ function InputWithInfo({
   className,
   hideInfo,
   field,
+  inputClassName,
+  infoClassName,
   ...rest
-}: InputProps & { field: AnyFieldApi; hideInfo?: boolean }) {
+}: InputProps & {
+  field: AnyFieldApi;
+  hideInfo?: boolean;
+  inputClassName?: string;
+  infoClassName?: string;
+}) {
+  if (hideInfo) {
+    return <Input {...rest} className={cn("w-full", className, inputClassName)} />;
+  }
   return (
     <div className={cn("flex flex-col", className)}>
-      <Input {...rest} className="w-full" />
-      {!hideInfo && field.state.meta.isTouched && field.state.meta.errors.length ? (
+      <Input {...rest} className={cn("w-full", inputClassName)} />
+      {field.state.meta.isTouched && field.state.meta.errors.length ? (
         <ErrorLine
-          className="bg-transparent py-1.5 pl-1.5"
+          className={cn("bg-transparent py-1.5 pl-1.5", infoClassName)}
           message={field.state.meta.errors[0].message}
         />
       ) : null}
