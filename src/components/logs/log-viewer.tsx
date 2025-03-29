@@ -51,7 +51,7 @@ function Logs({ containerType, session }: TProps) {
         team_id: teamId,
         project_id: projectId,
         environment_id: environmentId || "",
-        type: "project",
+        type: "environment",
       }),
     [teamId, projectId, environmentId],
   );
