@@ -4,23 +4,23 @@ import { fetchEventSource } from "@fortaine/fetch-event-source";
 import { z } from "zod";
 
 // A custom hook that sets up SSE with headers and integrates with Tanstack Query.
-export function useSSEQuery<Schema extends z.ZodTypeAny>({
+export function useSSEQuery<MessageSchema extends z.ZodTypeAny>({
   queryKey,
   sseUrl,
   headers,
   initialFetch,
-  schema,
+  messageSchema,
 }: {
   queryKey: QueryKey;
   sseUrl: string;
   headers?: Record<string, string>;
-  initialFetch?: () => Promise<z.infer<Schema>>;
-  schema: Schema;
-}): UseQueryResult<z.infer<Schema>> {
+  initialFetch?: () => Promise<z.infer<MessageSchema>>;
+  messageSchema: MessageSchema;
+}): UseQueryResult<Array<z.infer<MessageSchema>>> {
   const queryClient = useQueryClient();
 
   // Use the passed in initialFetch function for the initial query
-  const queryResult = useQuery<z.infer<Schema>>({ queryKey, queryFn: initialFetch });
+  const queryResult = useQuery<Array<z.infer<MessageSchema>>>({ queryKey, queryFn: initialFetch });
 
   useEffect(() => {
     const controller = new AbortController();
@@ -34,8 +34,11 @@ export function useSSEQuery<Schema extends z.ZodTypeAny>({
       onmessage(event) {
         try {
           const newData = JSON.parse(event.data);
-          const parsedData = schema.parse(newData);
-          queryClient.setQueryData(queryKey, parsedData);
+          const parsedData = messageSchema.parse(newData);
+          queryClient.setQueryData(queryKey, (old: Array<z.infer<MessageSchema>>) => [
+            ...(old || []),
+            parsedData,
+          ]);
         } catch (error) {
           console.error("Error parsing SSE data:", error);
         }
@@ -49,7 +52,7 @@ export function useSSEQuery<Schema extends z.ZodTypeAny>({
     return () => {
       controller.abort();
     };
-  }, [queryClient, queryKey, sseUrl, headers, schema]);
+  }, [queryClient, queryKey, sseUrl, headers, messageSchema]);
 
   return queryResult;
 }

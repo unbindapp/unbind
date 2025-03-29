@@ -47,6 +47,8 @@ export default async function Page({ params, searchParams }: TProps) {
     return notFound();
   }
 
+  console.log("Project page for projectId:", projectId);
+
   return (
     <ServicesProvider
       initialData={initialData.value}

@@ -16,7 +16,6 @@ import { useQueryState } from "nuqs";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useThrottledCallback } from "use-debounce";
 import { VList, VListHandle } from "virtua";
-import { z } from "zod";
 
 type TProps = {
   containerType: "page" | "sheet";
@@ -37,10 +36,6 @@ export default function LogViewer({ hideServiceByDefault, session, containerType
 
 const SCROLL_THRESHOLD = 50;
 
-const sseQuerySchema = z.object({
-  data: LogLineSchema.array(),
-});
-
 function Logs({ containerType, session }: TProps) {
   const { teamId, projectId } = useProject();
   const [environmentId] = useQueryState("environment");
@@ -52,22 +47,23 @@ function Logs({ containerType, session }: TProps) {
         project_id: projectId,
         environment_id: environmentId || "",
         type: "environment",
+        since: "1h",
       }),
     [teamId, projectId, environmentId],
   );
   const sseUrl = `${env.NEXT_PUBLIC_UNBIND_API_URL}/logs/stream?${urlParams.toString()}`;
 
-  const sseQueryProps = useMemo(
-    () => ({
+  const sseQueryProps = useMemo(() => {
+    const params: Parameters<typeof useSSEQuery>[0] = {
       queryKey: ["logs"],
       sseUrl,
       headers: {
         Authorization: `Bearer ${session.access_token}`,
       },
-      schema: sseQuerySchema,
-    }),
-    [sseUrl, session.access_token],
-  );
+      messageSchema: LogLineSchema,
+    };
+    return params;
+  }, [sseUrl, session.access_token]);
   const { data: logs } = useSSEQuery(sseQueryProps);
 
   const virtualListRef = useRef<VListHandle>(null);
@@ -93,7 +89,7 @@ function Logs({ containerType, session }: TProps) {
     follow.current = true;
     const virtualList = virtualListRef.current;
     if (!virtualList) return;
-    virtualList.scrollToIndex(logs.data.length - 1);
+    virtualList.scrollToIndex(logs.length - 1);
   }, [logs]);
 
   useEffect(() => {
@@ -152,12 +148,12 @@ function Logs({ containerType, session }: TProps) {
 
   const listItems = useMemo(() => {
     if (!logs) return [];
-    return logs.data.map((logLine, index) => (
+    return logs.map((logLine, index) => (
       <LogLine
         key={index}
         data-container={containerType}
         data-first={index === 0 ? true : undefined}
-        data-last={index === logs.data.length - 1 ? true : undefined}
+        data-last={index === logs.length - 1 ? true : undefined}
         logLine={logLine}
         classNameInner="min-[1288px]:group-data-[container=page]/line:rounded-sm"
       />

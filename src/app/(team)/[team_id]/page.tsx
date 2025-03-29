@@ -37,6 +37,8 @@ export default async function Page({ params }: TProps) {
     return notFound();
   }
 
+  console.log("Team page for teamId:", teamId);
+
   return (
     <ProjectsProvider initialData={projectsInitialData.value} teamId={teamId}>
       <PageWrapper>

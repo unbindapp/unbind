@@ -39,7 +39,6 @@ export const config = {
 };
 
 export const middleware: NextMiddleware = async (request: NextRequest) => {
-  console.log("🔀 Middleware");
   const token = await getToken({
     cookieName: sessionCookieName,
     req: request,

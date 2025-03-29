@@ -4,5 +4,7 @@ import { redirect } from "next/navigation";
 export default async function Home() {
   const res = await apiServer.teams.list();
   const firstTeam = res.teams[0];
-  redirect(`/${firstTeam.id}`);
+  const redirectTo = `/${firstTeam.id}`;
+  console.log("Redirecting to: ", redirectTo);
+  redirect(redirectTo);
 }
