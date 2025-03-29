@@ -556,6 +556,7 @@ export const PaginationResponseMetadataSchema = z
 
 export const ListDeploymentResponseDataSchema = z
   .object({
+    current_deployment: DeploymentResponseSchema,
     deployments: z.array(DeploymentResponseSchema).nullable(),
     metadata: PaginationResponseMetadataSchema,
   })

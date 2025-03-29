@@ -2,25 +2,19 @@
 
 import ErrorCard from "@/components/error-card";
 import { useDeployments } from "@/components/service/deployments/deployments-provider";
-import { useService } from "@/components/service/service-provider";
 import DeploymentCard from "@/components/service/tabs/deployments/deployment-card";
 import TabWrapper from "@/components/service/tabs/tab-wrapper";
 
 export default function Deployments() {
   const {
-    query: { data: serviceData, isPending: isServicePending },
-  } = useService();
-  const {
     query: { data, isPending, error },
   } = useDeployments();
 
-  const currentDeployment = serviceData?.service.current_deployment;
-
-  const isAnyPending = isServicePending || isPending;
+  const currentDeployment = data?.current_deployment;
 
   return (
     <TabWrapper>
-      {(isAnyPending || currentDeployment) && (
+      {(isPending || currentDeployment) && (
         <div className="w-full pb-3">
           {currentDeployment ? (
             <DeploymentCard deployment={currentDeployment} currentDeployment={currentDeployment} />
@@ -45,7 +39,7 @@ export default function Deployments() {
             <DeploymentCard
               key={deployment.id}
               deployment={deployment}
-              currentDeployment={serviceData?.service.current_deployment}
+              currentDeployment={currentDeployment}
             />
           ))}
       {data?.deployments && data.deployments.length === 0 && (
