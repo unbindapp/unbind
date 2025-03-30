@@ -51,6 +51,7 @@ export default function LogViewer({ hideServiceByDefault, ...rest }: TProps) {
 }
 
 const SCROLL_THRESHOLD = 50;
+const placeholderArray = Array.from({ length: 50 });
 
 function Logs({ containerType, type, teamId, projectId, environmentId, serviceId }: TProps) {
   const { data: session } = useSession();
@@ -103,18 +104,11 @@ function Logs({ containerType, type, teamId, projectId, environmentId, serviceId
   }, []);
 
   const scrollToBottom = useCallback(() => {
-    if (!logs) return;
     follow.current = true;
     const virtualList = virtualListRef.current;
     if (!virtualList) return;
-    virtualList.scrollToIndex(logs.length - 1);
+    virtualList.scrollToIndex((logs || placeholderArray).length - 1);
   }, [logs]);
-
-  useEffect(() => {
-    if (!autoFollow) return;
-    scrollToBottom();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoFollow]);
 
   useEffect(() => {
     if (!follow.current) return;
@@ -123,6 +117,12 @@ function Logs({ containerType, type, teamId, projectId, environmentId, serviceId
     scrollToBottom();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [logs]);
+
+  useEffect(() => {
+    if (!autoFollow) return;
+    scrollToBottom();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoFollow]);
 
   const onScroll = useCallback(() => {
     // This is to prevent follow from being broken on initial load
@@ -165,15 +165,26 @@ function Logs({ containerType, type, teamId, projectId, environmentId, serviceId
   const throttledOnScroll = useThrottledCallback(onScroll, 50);
 
   const listItems = useMemo(() => {
-    if (!logs) return [];
+    if (!logs) {
+      return placeholderArray.map((_, index) => (
+        <LogLine
+          isPlaceholder
+          key={index}
+          data-container={containerType}
+          data-first={index === 0 ? true : undefined}
+          data-last={index === placeholderArray.length - 1 ? true : undefined}
+          classNameInner="min-[1288px]:group-data-[container=page]/line:rounded-sm"
+        />
+      ));
+    }
     return logs.map((logLine, index) => (
       <LogLine
         key={index}
         data-container={containerType}
         data-first={index === 0 ? true : undefined}
         data-last={index === logs.length - 1 ? true : undefined}
-        logLine={logLine}
         classNameInner="min-[1288px]:group-data-[container=page]/line:rounded-sm"
+        logLine={logLine}
       />
     ));
   }, [logs, containerType]);
@@ -191,7 +202,6 @@ function Logs({ containerType, type, teamId, projectId, environmentId, serviceId
       <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden">
         <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_0.75rem,black_calc(100%-0.75rem),transparent)]">
           <VList
-            reverse
             overscan={20}
             data-container={containerType}
             style={{ height: undefined }}

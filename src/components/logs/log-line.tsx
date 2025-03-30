@@ -8,12 +8,17 @@ import { TLogLine } from "@/lib/hooks/use-logs";
 import { format } from "date-fns";
 import { ComponentProps, ReactNode } from "react";
 
-type TProps = {
-  logLine: TLogLine;
+type TProps = ComponentProps<"div"> & {
   classNameInner?: string;
-} & ComponentProps<"div">;
+} & ({ logLine: TLogLine; isPlaceholder?: never } | { logLine?: never; isPlaceholder: true });
 
-export default function LogLine({ logLine, className, classNameInner, ...rest }: TProps) {
+export default function LogLine({
+  logLine,
+  isPlaceholder,
+  className,
+  classNameInner,
+  ...rest
+}: TProps) {
   const { preferences: viewPreferences } = useLogViewPreferences();
 
   const hasExtraColumns =
@@ -30,6 +35,7 @@ export default function LogLine({ logLine, className, classNameInner, ...rest }:
         `group/line flex w-full items-stretch py-px font-mono text-xs data-first:pt-3 data-last:pb-[calc(1rem+var(--safe-area-inset-bottom))] data-[container=page]:data-last:pb-4 data-[container=sheet]:data-last:pb-[calc(1rem+var(--safe-area-inset-bottom))] sm:data-last:pb-[calc(1.5rem+var(--safe-area-inset-bottom))] sm:data-[container=page]:data-last:pb-[calc(1.5rem+var(--safe-area-inset-bottom))] sm:data-[container=sheet]:data-last:pb-[calc(1.5rem+var(--safe-area-inset-bottom))]`,
         className,
       )}
+      data-placeholder={isPlaceholder ? true : undefined}
     >
       <div
         className={cn(
@@ -49,28 +55,36 @@ export default function LogLine({ logLine, className, classNameInner, ...rest }:
                   <div className="bg-background flex min-w-0 flex-1 [mask-image:linear-gradient(to_left,transparent,black_1rem)] md:min-w-auto">
                     <div className="bg-background group-hover/line:bg-border group-data-[level=warn]/line:bg-warning/10 group-data-[level=error]/line:bg-destructive/10 group-data-[level=warn]/line:group-hover/line:bg-warning/20 group-data-[level=error]/line:group-hover/line:bg-destructive/20 flex min-w-0 flex-1 items-center justify-start md:min-w-auto">
                       {viewPreferences.includes(logViewPreferenceKeys.timestamp) && (
-                        <p
-                          suppressHydrationWarning
-                          className="text-muted-foreground w-36 min-w-0 shrink overflow-hidden px-1 pr-4 leading-tight text-ellipsis whitespace-nowrap"
-                        >
-                          {format(logLine.timestamp, "MMM dd, HH:mm:ss")}
-                        </p>
+                        <div className="w-36 min-w-0 shrink overflow-hidden pr-4 pl-1">
+                          <p
+                            suppressHydrationWarning
+                            className="group-data-placeholder/line:bg-muted-foreground group-data-placeholder/line:animate-skeleton text-muted-foreground truncate leading-tight text-ellipsis whitespace-nowrap group-data-placeholder/line:rounded group-data-placeholder/line:text-transparent"
+                          >
+                            {isPlaceholder
+                              ? "Jan 01, 01:01:01"
+                              : format(logLine.timestamp, "MMM dd, HH:mm:ss")}
+                          </p>
+                        </div>
                       )}
                       {viewPreferences.includes(logViewPreferenceKeys.serviceId) && (
-                        <p
-                          suppressHydrationWarning
-                          className="text-muted-foreground w-24 min-w-0 shrink overflow-hidden px-1 pr-4 leading-tight text-ellipsis whitespace-nowrap"
-                        >
-                          {logLine.pod_name}
-                        </p>
+                        <div className="w-24 min-w-0 shrink overflow-hidden pr-4 pl-1">
+                          <p
+                            suppressHydrationWarning
+                            className="group-data-placeholder/line:bg-muted-foreground group-data-placeholder/line:animate-skeleton text-muted-foreground truncate leading-tight text-ellipsis whitespace-nowrap group-data-placeholder/line:rounded group-data-placeholder/line:text-transparent"
+                          >
+                            {isPlaceholder ? "Unbind" : logLine.pod_name}
+                          </p>
+                        </div>
                       )}
                     </div>
                   </div>
                 </div>
               )}
-              <p className="group-data-[wrap]/line:min-0 px-1 py-1 pr-4 leading-tight whitespace-pre group-data-extra-columns/line:-mt-2 group-data-wrap/line:shrink group-data-wrap/line:whitespace-normal lg:group-data-extra-columns/line:mt-0">
-                {logLine.message}
-              </p>
+              <div className="flex max-w-full py-1 pr-4 pl-1 group-data-wrap/line:max-w-auto group-data-wrap/line:min-w-0 group-data-wrap/line:shrink">
+                <p className="group-data-placeholder/line:bg-foreground group-data-placeholder/line:animate-skeleton leading-tight whitespace-pre group-data-extra-columns/line:-mt-2 group-data-placeholder/line:rounded group-data-placeholder/line:text-transparent group-data-wrap/line:min-w-0 group-data-wrap/line:shrink group-data-wrap/line:whitespace-normal lg:group-data-extra-columns/line:mt-0">
+                  {isPlaceholder ? "Loading the messages..." : logLine.message}
+                </p>
+              </div>
             </div>
           </ConditionalScrollArea>
         </div>
