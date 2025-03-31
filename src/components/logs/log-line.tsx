@@ -41,10 +41,11 @@ export default function LogLine({
         className,
       )}
       data-placeholder={isPlaceholder ? true : undefined}
+      data-real={!isPlaceholder ? true : undefined}
     >
       <div
         className={cn(
-          `group-data-[level=warn]/line:bg-warning/10 group-data-[level=error]/line:bg-destructive/10 group-hover/line:bg-border group-data-[level=warn]/line:group-hover/line:bg-warning/20 group-data-[level=error]/line:group-hover/line:bg-destructive/20 flex w-full items-center pl-3 sm:pl-4`,
+          `group-data-[level=warn]/line:bg-warning/10 group-data-[level=error]/line:bg-destructive/10 group-data-real/line:group-hover/line:bg-border group-data-[level=warn]/line:group-data-real/line:group-hover/line:bg-warning/20 group-data-[level=error]/line:group-data-real/line:group-hover/line:bg-destructive/20 flex w-full items-center pl-3 sm:pl-4`,
           classNameInner,
         )}
       >
@@ -58,7 +59,7 @@ export default function LogLine({
               {hasExtraColumns && (
                 <div className="sticky left-0 z-10 flex items-center justify-start py-1 group-data-wrap/line:relative group-data-wrap/line:left-auto group-data-wrap/line:w-full md:group-data-wrap/line:w-auto">
                   <div className="bg-background flex min-w-0 flex-1 [mask-image:linear-gradient(to_left,transparent,black_1rem)] md:min-w-auto">
-                    <div className="bg-background group-hover/line:bg-border group-data-[level=warn]/line:bg-warning/10 group-data-[level=error]/line:bg-destructive/10 group-data-[level=warn]/line:group-hover/line:bg-warning/20 group-data-[level=error]/line:group-hover/line:bg-destructive/20 flex min-w-0 flex-1 items-center justify-start md:min-w-auto">
+                    <div className="bg-background group-data-real/line:group-hover/line:bg-border group-data-[level=warn]/line:bg-warning/10 group-data-[level=error]/line:bg-destructive/10 group-data-[level=warn]/line:group-data-real/line:group-hover/line:bg-warning/20 group-data-[level=error]/line:group-data-real/line:group-hover/line:bg-destructive/20 flex min-w-0 flex-1 items-center justify-start md:min-w-auto">
                       {viewPreferences.includes(logViewPreferenceKeys.timestamp) && (
                         <div className="w-36 min-w-0 shrink overflow-hidden pr-4 pl-1">
                           <p
