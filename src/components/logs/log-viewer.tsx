@@ -7,10 +7,13 @@ import LogViewPreferencesProvider, {
   useLogViewPreferences,
 } from "@/components/logs/log-view-preferences-provider";
 import NavigationBar from "@/components/logs/navigation-bar";
-import TopBar from "@/components/logs/top-bar";
+import SearchBar from "@/components/logs/search-bar";
+import { useServices } from "@/components/project/services-provider";
 import { env } from "@/lib/env";
 import { useLogs } from "@/lib/hooks/use-logs";
+import { SearchIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { parseAsString, useQueryState } from "nuqs";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useThrottledCallback } from "use-debounce";
 import { VList, VListHandle } from "virtua";
@@ -55,6 +58,7 @@ const placeholderArray = Array.from({ length: 50 });
 
 function Logs({ containerType, type, teamId, projectId, environmentId, serviceId }: TProps) {
   const { data: session } = useSession();
+  const [search] = useQueryState("q", parseAsString.withDefault(""));
   const urlParams = useMemo(() => {
     const params = new URLSearchParams({
       team_id: teamId,
@@ -67,8 +71,11 @@ function Logs({ containerType, type, teamId, projectId, environmentId, serviceId
     if (type === "service") {
       params.set("service_id", serviceId);
     }
+    if (search) {
+      params.set("filters", `|~ \"(?i)${search}\"`);
+    }
     return params;
-  }, [teamId, projectId, environmentId, serviceId, type]);
+  }, [teamId, projectId, environmentId, serviceId, type, search]);
 
   const sseUrl = `${env.NEXT_PUBLIC_UNBIND_API_URL}/logs/stream?${urlParams.toString()}`;
 
@@ -83,7 +90,7 @@ function Logs({ containerType, type, teamId, projectId, environmentId, serviceId
     return params;
   }, [sseUrl, session]);
 
-  const { data: logs } = useLogs(sseQueryProps);
+  const { data: logs, isPending: isPendingLogs } = useLogs(sseQueryProps);
 
   const virtualListRef = useRef<VListHandle>(null);
   const follow = useRef(true);
@@ -94,6 +101,10 @@ function Logs({ containerType, type, teamId, projectId, environmentId, serviceId
 
   const { preferences: viewPreferences } = useLogViewPreferences();
   const autoFollow = viewPreferences.includes(logViewPreferenceKeys.autoFollow);
+
+  const {
+    query: { data: servicesData },
+  } = useServices();
 
   const scrollToTop = useCallback(() => {
     follow.current = false;
@@ -165,7 +176,7 @@ function Logs({ containerType, type, teamId, projectId, environmentId, serviceId
   const throttledOnScroll = useThrottledCallback(onScroll, 50);
 
   const listItems = useMemo(() => {
-    if (!logs) {
+    if (!logs || !servicesData) {
       return placeholderArray.map((_, index) => (
         <LogLine
           isPlaceholder
@@ -185,32 +196,45 @@ function Logs({ containerType, type, teamId, projectId, environmentId, serviceId
         data-last={index === logs.length - 1 ? true : undefined}
         classNameInner="min-[1288px]:group-data-[container=page]/line:rounded-sm"
         logLine={logLine}
+        serviceName={
+          servicesData.services.find((service) => service.id === logLine.metadata.service_id)
+            ?.display_name || logLine.metadata.service_id
+        }
       />
     ));
-  }, [logs, containerType]);
+  }, [logs, servicesData, containerType]);
 
   return (
-    <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+    <div
+      data-container={containerType}
+      className="group/wrapper relative flex min-h-0 w-full flex-1 flex-col overflow-hidden"
+    >
       {/* Top bar that has the input */}
-      <div
-        data-container={containerType}
-        className="flex w-full items-stretch data-[container=page]:px-[max(0px,calc((100%-1280px-1.25rem)/2))]"
-      >
-        <TopBar className="px-2 pt-2 sm:px-2.5 sm:pt-2.5" />
+      <div className="flex w-full items-stretch group-data-[container=page]/wrapper:px-[max(0px,calc((100%-1280px-1.25rem)/2))]">
+        <SearchBar isPendingLogs={isPendingLogs} className="px-2 pt-2 sm:px-2.5 sm:pt-2.5" />
       </div>
       {/* List */}
       <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden">
         <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_0.75rem,black_calc(100%-0.75rem),transparent)]">
-          <VList
-            overscan={20}
-            data-container={containerType}
-            style={{ height: undefined }}
-            className="min-h-0 w-full flex-1 font-mono data-[container=page]:px-[max(0px,calc((100%-1280px)/2))]"
-            ref={virtualListRef}
-            onScroll={throttledOnScroll}
-          >
-            {listItems}
-          </VList>
+          {!isPendingLogs && listItems.length === 0 && (
+            <div className="text-muted-foreground flex w-full flex-col items-center gap-2 group-data-[container=page]/wrapper:px-[max(0px,calc((100%-1280px)/2))]">
+              <div className="flex w-full flex-col items-center justify-center gap-1 px-4 py-6">
+                <SearchIcon className="size-6 shrink-0" />
+                <p className="w-full text-center">No matching logs</p>
+              </div>
+            </div>
+          )}
+          {(isPendingLogs || listItems.length > 0) && (
+            <VList
+              overscan={20}
+              style={{ height: undefined }}
+              className="min-h-0 w-full flex-1 font-mono group-data-[container=page]/wrapper:px-[max(0px,calc((100%-1280px)/2))]"
+              ref={virtualListRef}
+              onScroll={throttledOnScroll}
+            >
+              {listItems}
+            </VList>
+          )}
         </div>
         <NavigationBar
           data-container={containerType}

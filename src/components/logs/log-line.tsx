@@ -10,10 +10,14 @@ import { ComponentProps, ReactNode } from "react";
 
 type TProps = ComponentProps<"div"> & {
   classNameInner?: string;
-} & ({ logLine: TLogLine; isPlaceholder?: never } | { logLine?: never; isPlaceholder: true });
+} & (
+    | { logLine: TLogLine; serviceName: string; isPlaceholder?: never }
+    | { logLine?: never; serviceName?: never; isPlaceholder: true }
+  );
 
 export default function LogLine({
   logLine,
+  serviceName,
   isPlaceholder,
   className,
   classNameInner,
@@ -24,6 +28,7 @@ export default function LogLine({
   const hasExtraColumns =
     viewPreferences.includes(logViewPreferenceKeys.timestamp) ||
     viewPreferences.includes(logViewPreferenceKeys.serviceId);
+
   return (
     <div
       {...rest}
@@ -67,12 +72,12 @@ export default function LogLine({
                         </div>
                       )}
                       {viewPreferences.includes(logViewPreferenceKeys.serviceId) && (
-                        <div className="w-24 min-w-0 shrink overflow-hidden pr-4 pl-1">
+                        <div className="w-28 min-w-0 shrink overflow-hidden pr-4 pl-1">
                           <p
                             suppressHydrationWarning
                             className="group-data-placeholder/line:bg-muted-foreground group-data-placeholder/line:animate-skeleton text-muted-foreground truncate leading-tight text-ellipsis whitespace-nowrap group-data-placeholder/line:rounded group-data-placeholder/line:text-transparent"
                           >
-                            {isPlaceholder ? "Unbind" : logLine.pod_name}
+                            {isPlaceholder ? "Unbind" : serviceName}
                           </p>
                         </div>
                       )}

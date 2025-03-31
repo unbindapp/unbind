@@ -14,6 +14,14 @@ export const LogLineSchema = z
     message: z.string(),
     pod_name: z.string(),
     timestamp: z.string(),
+    metadata: z
+      .object({
+        team_id: z.string(),
+        project_id: z.string(),
+        environment_id: z.string(),
+        service_id: z.string(),
+      })
+      .strip(),
   })
   .strip();
 export type TLogLine = z.infer<typeof LogLineSchema>;
@@ -25,7 +33,6 @@ export function useLogs({ sseUrl, headers, enabled }: TProps) {
   const queryClient = useQueryClient();
   const queryKey: QueryKey = useMemo(() => ["logs", sseUrl], [sseUrl]);
 
-  // Use the passed in initialFetch function for the initial query
   const queryResult = useQuery<TLogLine[]>({ queryKey });
 
   useEffect(() => {
@@ -38,19 +45,22 @@ export function useLogs({ sseUrl, headers, enabled }: TProps) {
         ...(headers || {}),
       },
       signal: controller.signal,
-      onmessage(event) {
+      onmessage: (event) => {
         try {
           const newData = JSON.parse(event.data);
+          console.log("New data:", newData);
           const parsedData = MessageSchema.parse(newData);
-          queryClient.setQueryData(queryKey, (old: TLogLine[]) => [
-            ...(old || []),
-            ...parsedData.logs,
-          ]);
+          queryClient.setQueryData(queryKey, (old: TLogLine[]) => {
+            const newLogs = parsedData.logs.filter(
+              (l) => !old?.some((o) => o.timestamp === l.timestamp),
+            );
+            return [...(old || []), ...newLogs];
+          });
         } catch (error) {
           console.error("Error parsing SSE data:", error);
         }
       },
-      onerror(error) {
+      onerror: (error) => {
         console.error("SSE connection error:", error);
         controller.abort();
       },

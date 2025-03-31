@@ -1,6 +1,8 @@
 import { getProjectPageSearchParams } from "@/app/(project)/[team_id]/project/[project_id]/_components/search-params";
 import LogViewer from "@/components/logs/log-viewer";
+import ServicesProvider from "@/components/project/services-provider";
 import { auth } from "@/server/auth/auth";
+import { apiServer } from "@/server/trpc/setup/server";
 import { ResultAsync } from "neverthrow";
 import { notFound } from "next/navigation";
 import { SearchParams } from "nuqs";
@@ -34,13 +36,33 @@ export default async function Page({ params, searchParams }: TProps) {
 
   const environmentId = searchParamsRes.value.environmentId;
 
+  const initialData = await ResultAsync.fromPromise(
+    apiServer.services.list({
+      teamId,
+      projectId,
+      environmentId,
+    }),
+    () => new Error("Failed to fetch services"),
+  );
+
+  if (initialData.isErr()) {
+    return notFound();
+  }
+
   return (
-    <LogViewer
-      containerType="page"
+    <ServicesProvider
+      initialData={initialData.value}
       teamId={teamId}
       projectId={projectId}
       environmentId={environmentId}
-      type="environment"
-    />
+    >
+      <LogViewer
+        containerType="page"
+        teamId={teamId}
+        projectId={projectId}
+        environmentId={environmentId}
+        type="environment"
+      />
+    </ServicesProvider>
   );
 }

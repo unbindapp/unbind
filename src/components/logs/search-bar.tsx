@@ -17,29 +17,59 @@ import {
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
-import { FilterIcon, RotateCcwIcon, SearchIcon, SettingsIcon, XIcon } from "lucide-react";
+import {
+  FilterIcon,
+  LoaderIcon,
+  RotateCcwIcon,
+  SearchIcon,
+  SettingsIcon,
+  XIcon,
+} from "lucide-react";
+import { parseAsString, useQueryState } from "nuqs";
+import { useState } from "react";
 import { toast } from "sonner";
 
 type TProps = {
+  isPendingLogs: boolean;
   className?: string;
 };
 
-export default function TopBar({ className }: TProps) {
+export default function SearchBar({ isPendingLogs, className }: TProps) {
+  const [search, setSearch] = useQueryState("q", parseAsString.withDefault(""));
+  const [searchInputValue, setSearchInputValue] = useState(search);
+
   return (
     <div className={cn("flex w-full items-stretch gap-2", className)}>
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          toast.success("Search", {
-            description: "This is fake",
-            duration: 2000,
-            closeButton: false,
-          });
+          setSearch(searchInputValue);
         }}
         className="relative flex flex-1 items-stretch"
       >
-        <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-        <Input className="flex-1 rounded-lg py-2.25 pr-22 pl-8.5" placeholder="Search logs..." />
+        <div className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2">
+          {isPendingLogs ? (
+            <LoaderIcon className="size-full animate-spin" />
+          ) : (
+            <SearchIcon className="size-full" />
+          )}
+        </div>
+        <Input
+          value={searchInputValue}
+          type="text"
+          onChange={(e) => {
+            setSearchInputValue(e.target.value);
+            if (!e.target.value) setSearch("");
+          }}
+          name="search"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          inputMode="search"
+          enterKeyHint="search"
+          className="flex-1 rounded-lg py-2.25 pr-22 pl-8.5"
+          placeholder="Search logs..."
+        />
         <div className="absolute top-0 right-0 flex h-full justify-end">
           <Button
             aria-label="Filter Logs"
