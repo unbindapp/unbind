@@ -145,11 +145,9 @@ function DeleteButton({ teamId, projectId }: { teamId: string; projectId: string
             <form.Subscribe
               selector={(state) => [state.canSubmit, state.isSubmitting, state.values]}
               children={([canSubmit, isSubmitting, values]) => (
-                <div className="flex w-full flex-row gap-3 lg:w-auto">
                   <form.SubmitButton
                     data-submitting={isSubmitting ? true : undefined}
                     variant="destructive"
-                    className="group/button flex-1"
                     disabled={
                       !canSubmit ||
                       (typeof values === "object" && values.textToConfirm !== textToConfirm)
@@ -158,7 +156,6 @@ function DeleteButton({ teamId, projectId }: { teamId: string; projectId: string
                   >
                     Delete
                   </form.SubmitButton>
-                </div>
               )}
             />
           </div>
