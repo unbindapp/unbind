@@ -3,6 +3,7 @@ import {
   logViewPreferences,
   useLogViewPreferences,
 } from "@/components/logs/log-view-preferences-provider";
+import { useLogViewState } from "@/components/logs/log-view-state-provider";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -25,7 +26,6 @@ import {
   SettingsIcon,
   XIcon,
 } from "lucide-react";
-import { parseAsString, useQueryState } from "nuqs";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -35,7 +35,7 @@ type TProps = {
 };
 
 export default function SearchBar({ isPendingLogs, className }: TProps) {
-  const [search, setSearch] = useQueryState("q", parseAsString.withDefault(""));
+  const { search, setSearch } = useLogViewState();
   const [searchInputValue, setSearchInputValue] = useState(search);
 
   return (
