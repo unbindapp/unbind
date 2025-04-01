@@ -3,34 +3,21 @@
 import { useLogViewState } from "@/components/logs/log-view-state-provider";
 import { createSearchFilter } from "@/components/logs/search-filter";
 import { env } from "@/lib/env";
+import { LogEventSchema } from "@/server/go/client.gen";
+import { AppRouterInputs, AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
+import { api } from "@/server/trpc/setup/client";
 import { fetchEventSource } from "@fortaine/fetch-event-source";
-import { QueryKey, useQuery, useQueryClient, UseQueryResult } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { createContext, ReactNode, useContext, useEffect, useMemo } from "react";
 import { z } from "zod";
 
-type TLogsContext = UseQueryResult<TLogLine[]> & {};
+type TLogsContext = AppRouterQueryResult<AppRouterOutputs["logs"]["list"]> & {};
 
 const LogsContext = createContext<TLogsContext | null>(null);
 
-export const LogLineSchema = z
-  .object({
-    message: z.string(),
-    pod_name: z.string(),
-    timestamp: z.string(),
-    metadata: z
-      .object({
-        team_id: z.string(),
-        project_id: z.string(),
-        environment_id: z.string(),
-        service_id: z.string(),
-      })
-      .strip(),
-  })
-  .strip();
-export type TLogLine = z.infer<typeof LogLineSchema>;
+export type TLogLine = z.infer<typeof LogEventSchema>;
 
-export const MessageSchema = z.object({ logs: LogLineSchema.array() });
+export const MessageSchema = z.object({ logs: LogEventSchema.array() }).strip();
 export type TMessage = z.infer<typeof MessageSchema>;
 
 export type TLogType = "team" | "project" | "environment" | "service";
@@ -67,15 +54,24 @@ export const LogsProvider: React.FC<TProps> = ({
   const { search } = useLogViewState();
 
   const filtersStr = createSearchFilter(search);
+  const since = "24h";
 
-  const urlParams = useMemo(() => {
+  const [queryProps, urlParams] = useMemo(() => {
+    const props: AppRouterInputs["logs"]["list"] = {
+      type,
+      teamId,
+      projectId,
+      environmentId,
+      serviceId,
+      filters: filtersStr,
+      since,
+    };
     const params = new URLSearchParams({
-      team_id: teamId,
-      project_id: projectId,
-      environment_id: environmentId,
-      type: type,
-      tail: "1000",
-      since: "24h",
+      team_id: props.teamId,
+      project_id: props.projectId || "",
+      environment_id: props.environmentId || "",
+      type: props.type,
+      since: props.since || "",
     });
     if (type === "service") {
       params.set("service_id", serviceId);
@@ -83,15 +79,13 @@ export const LogsProvider: React.FC<TProps> = ({
     if (filtersStr) {
       params.set("filters", filtersStr);
     }
-    return params;
+    return [props, params];
   }, [teamId, projectId, environmentId, serviceId, type, filtersStr]);
 
   const sseUrl = `${env.NEXT_PUBLIC_UNBIND_API_URL}/logs/stream?${urlParams.toString()}`;
 
-  const queryClient = useQueryClient();
-
-  const queryKey: QueryKey = useMemo(() => ["logs", sseUrl], [sseUrl]);
-  const queryResult = useQuery<TLogLine[]>({ queryKey: ["logs", sseUrl] });
+  const utils = api.useUtils();
+  const queryResult = api.logs.list.useQuery(queryProps);
 
   useEffect(() => {
     if (!session) return;
@@ -107,12 +101,19 @@ export const LogsProvider: React.FC<TProps> = ({
         try {
           const newData = JSON.parse(event.data);
           console.log("New data:", newData);
+          if (newData.type !== "log") {
+            return;
+          }
           const parsedData = MessageSchema.parse(newData);
-          queryClient.setQueryData(queryKey, (old: TLogLine[]) => {
+          utils.logs.list.setData(queryProps, (old) => {
             const newLogs = parsedData.logs.filter(
-              (l) => !old?.some((o) => o.timestamp === l.timestamp),
+              (l) => !old?.logs.some((o) => o.timestamp === l.timestamp),
             );
-            return [...(old || []), ...newLogs];
+            const finalArray: AppRouterOutputs["logs"]["list"]["logs"] = [
+              ...(old?.logs || []),
+              ...newLogs,
+            ];
+            return { ...old, logs: finalArray };
           });
         } catch (error) {
           console.error("Error parsing SSE data:", error);
@@ -127,7 +128,7 @@ export const LogsProvider: React.FC<TProps> = ({
     return () => {
       controller.abort();
     };
-  }, [queryClient, queryKey, sseUrl, session]);
+  }, [sseUrl, session, queryProps]);
 
   return <LogsContext.Provider value={queryResult}>{children}</LogsContext.Provider>;
 };

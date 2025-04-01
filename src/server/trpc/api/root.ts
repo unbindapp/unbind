@@ -11,6 +11,7 @@ import { UseTRPCQueryResult, UseTRPCSuspenseQueryResult } from "@trpc/react-quer
 import { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 import { gitRouter } from "@/server/trpc/api/git/router";
 import { deploymentsRouter } from "@/server/trpc/api/deployments/router";
+import { logsRouter } from "@/server/trpc/api/logs/router";
 
 /**
  * This is the primary router for your server.
@@ -24,6 +25,7 @@ export const appRouter = createTRPCRouter({
   services: servicesRouter,
   deployments: deploymentsRouter,
   variables: variablesRouter,
+  logs: logsRouter,
   github: githubRouter,
   git: gitRouter,
 });

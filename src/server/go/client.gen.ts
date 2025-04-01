@@ -1,5 +1,25 @@
 import { z } from 'zod';
 
+export const BuildkitSettingsResponseSchema = z
+  .object({
+    max_parallelism: z.number(), // buildkitd max_parallelism setting
+    replicas: z.number(), // The number of buildkitd replicas, higher will allow faster concurrent builds
+  })
+  .strip();
+
+export const BuildkitSettingsUpdateInputBodySchema = z
+  .object({
+    max_parallelism: z.number(),
+    replicas: z.number(),
+  })
+  .strip();
+
+export const BuildkitSettingsUpdateResponseBodySchema = z
+  .object({
+    settings: BuildkitSettingsResponseSchema,
+  })
+  .strip();
+
 export const CallbackResponseBodySchema = z
   .object({
     access_token: z.string(),
@@ -308,6 +328,35 @@ export const GetEnvironmentOutputBodySchema = z
   })
   .strip();
 
+export const MetricsPairSchema = z
+  .object({
+    time: z.string(),
+    value: z.number(),
+  })
+  .strip();
+
+export const MetricsMapEntrySchema = z
+  .object({
+    cpu: z.array(MetricsPairSchema).nullable(),
+    disk: z.array(MetricsPairSchema).nullable(),
+    network: z.array(MetricsPairSchema).nullable(),
+    ram: z.array(MetricsPairSchema).nullable(),
+  })
+  .strip();
+
+export const MetricsResultSchema = z
+  .object({
+    services: z.object({}),
+    step: z.number(),
+  })
+  .strip();
+
+export const GetMetricsResponseBodySchema = z
+  .object({
+    data: MetricsResultSchema,
+  })
+  .strip();
+
 export const GetProjectResponseBodySchema = z
   .object({
     data: ProjectResponseSchema,
@@ -580,22 +629,37 @@ export const ListServiceResponseBodySchema = z
   })
   .strip();
 
+export const LogMetadataSchema = z
+  .object({
+    environment_id: z.string(),
+    project_id: z.string(),
+    service_id: z.string(),
+    team_id: z.string(),
+  })
+  .strip();
+
 export const LogEventSchema = z
   .object({
     message: z.string(),
+    metadata: LogMetadataSchema,
     pod_name: z.string(),
     timestamp: z.string().optional(),
   })
   .strip();
 
-export const LogSSEErrorSchema = z
+export const LogEventsMessageTypeSchema = z.enum(['log', 'heartbeat', 'error']);
+
+export const LogEventsSchema = z
   .object({
-    code: z.number(),
-    message: z.string(),
+    error_message: z.string().optional(),
+    logs: z.array(LogEventSchema).nullable().optional(),
+    type: LogEventsMessageTypeSchema,
   })
   .strip();
 
 export const LogTypeSchema = z.enum(['team', 'project', 'environment', 'service']);
+
+export const LokiDirectionSchema = z.enum(['forward', 'backward']);
 
 export const UserAPIResponseSchema = z
   .object({
@@ -612,12 +676,21 @@ export const MeResponseBodySchema = z
   })
   .strip();
 
+export const MetricsTypeSchema = z.enum(['team', 'project', 'environment', 'service']);
+
+export const QueryLogsResponseBodySchema = z
+  .object({
+    data: z.array(LogEventSchema).nullable(),
+  })
+  .strip();
+
 export const SortByFieldSchema = z.enum(['created_at', 'updated_at']);
 
 export const SortOrderSchema = z.enum(['asc', 'desc']);
 
 export const SystemMetaSchema = z
   .object({
+    buildkit_settings: BuildkitSettingsResponseSchema,
     external_ipv4: z.string(),
     external_ipv6: z.string(),
   })
@@ -727,6 +800,11 @@ export const VariablesResponseBodySchema = z
   })
   .strip();
 
+export type BuildkitSettingsResponse = z.infer<typeof BuildkitSettingsResponseSchema>;
+export type BuildkitSettingsUpdateInputBody = z.infer<typeof BuildkitSettingsUpdateInputBodySchema>;
+export type BuildkitSettingsUpdateResponseBody = z.infer<
+  typeof BuildkitSettingsUpdateResponseBodySchema
+>;
 export type CallbackResponseBody = z.infer<typeof CallbackResponseBodySchema>;
 export type CreateBuildInputBody = z.infer<typeof CreateBuildInputBodySchema>;
 export type GitCommitter = z.infer<typeof GitCommitterSchema>;
@@ -760,6 +838,10 @@ export type DeleteVariablesInputBody = z.infer<typeof DeleteVariablesInputBodySc
 export type ErrorDetail = z.infer<typeof ErrorDetailSchema>;
 export type ErrorModel = z.infer<typeof ErrorModelSchema>;
 export type GetEnvironmentOutputBody = z.infer<typeof GetEnvironmentOutputBodySchema>;
+export type MetricsPair = z.infer<typeof MetricsPairSchema>;
+export type MetricsMapEntry = z.infer<typeof MetricsMapEntrySchema>;
+export type MetricsResult = z.infer<typeof MetricsResultSchema>;
+export type GetMetricsResponseBody = z.infer<typeof GetMetricsResponseBodySchema>;
 export type GetProjectResponseBody = z.infer<typeof GetProjectResponseBodySchema>;
 export type GetServiceResponseBody = z.infer<typeof GetServiceResponseBodySchema>;
 export type Plan = z.infer<typeof PlanSchema>;
@@ -793,11 +875,16 @@ export type ListDeploymentResponseData = z.infer<typeof ListDeploymentResponseDa
 export type ListDeploymentsResponseBody = z.infer<typeof ListDeploymentsResponseBodySchema>;
 export type ListProjectResponseBody = z.infer<typeof ListProjectResponseBodySchema>;
 export type ListServiceResponseBody = z.infer<typeof ListServiceResponseBodySchema>;
+export type LogMetadata = z.infer<typeof LogMetadataSchema>;
 export type LogEvent = z.infer<typeof LogEventSchema>;
-export type LogSSEError = z.infer<typeof LogSSEErrorSchema>;
+export type LogEventsMessageType = z.infer<typeof LogEventsMessageTypeSchema>;
+export type LogEvents = z.infer<typeof LogEventsSchema>;
 export type LogType = z.infer<typeof LogTypeSchema>;
+export type LokiDirection = z.infer<typeof LokiDirectionSchema>;
 export type UserAPIResponse = z.infer<typeof UserAPIResponseSchema>;
 export type MeResponseBody = z.infer<typeof MeResponseBodySchema>;
+export type MetricsType = z.infer<typeof MetricsTypeSchema>;
+export type QueryLogsResponseBody = z.infer<typeof QueryLogsResponseBodySchema>;
 export type SortByField = z.infer<typeof SortByFieldSchema>;
 export type SortOrder = z.infer<typeof SortOrderSchema>;
 export type SystemMeta = z.infer<typeof SystemMetaSchema>;
@@ -860,6 +947,22 @@ export const repo_detailQuerySchema = z
   })
   .passthrough();
 
+export const query_logsQuerySchema = z
+  .object({
+    type: LogTypeSchema,
+    team_id: z.string(),
+    project_id: z.string().optional(),
+    environment_id: z.string().optional(),
+    service_id: z.string().optional(),
+    filters: z.string().optional(), // Optional logql filter string
+    start: z.string().optional(), // Start time for the query
+    end: z.string().optional(), // End time for the query
+    since: z.string().optional(), // Duration to look back (e.g., '1h', '30m')
+    limit: z.number().optional(), // Number of log lines to get
+    direction: LokiDirectionSchema.optional(), // Direction of the logs (forward or backward)
+  })
+  .passthrough();
+
 export const stream_logsQuerySchema = z
   .object({
     type: LogTypeSchema,
@@ -869,9 +972,20 @@ export const stream_logsQuerySchema = z
     service_id: z.string().optional(),
     since: z.string().optional(), // Duration to look back (e.g., '1h', '30m')
     tail: z.number().optional(), // Number of lines to get from the end
-    previous: z.boolean().optional(), // Get logs from previous instance
     timestamps: z.boolean().optional(), // Include timestamps in logs
-    search: z.string().optional(), // Optional text pattern to filter logs
+    filters: z.string().optional(), // Optional logql filter string
+  })
+  .passthrough();
+
+export const get_metricsQuerySchema = z
+  .object({
+    type: MetricsTypeSchema,
+    team_id: z.string(),
+    project_id: z.string().optional(),
+    environment_id: z.string().optional(),
+    service_id: z.string().optional(),
+    start: z.string().optional(), // Start time for the query, defaults to 1 week ago
+    end: z.string().optional(), // End time for the query, defaults to now
   })
   .passthrough();
 
@@ -1502,6 +1616,64 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
       }
     },
     logs: {
+      query: async (
+        params: z.infer<typeof query_logsQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<QueryLogsResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/logs/query`);
+          const validatedQuery = query_logsQuerySchema.parse(params);
+          const queryKeys = [
+            'type',
+            'team_id',
+            'project_id',
+            'environment_id',
+            'service_id',
+            'filters',
+            'start',
+            'end',
+            'since',
+            'limit',
+            'direction',
+          ];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return QueryLogsResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
       stream: async (
         params: z.infer<typeof stream_logsQuerySchema>,
         fetchOptions?: RequestInit,
@@ -1520,9 +1692,8 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             'service_id',
             'since',
             'tail',
-            'previous',
             'timestamps',
-            'search',
+            'filters',
           ];
           queryKeys.forEach((key) => {
             const value = validatedQuery[key as keyof typeof validatedQuery];
@@ -1554,6 +1725,62 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           }
           const data = await response.json();
           return data;
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+    },
+    metrics: {
+      get: async (
+        params: z.infer<typeof get_metricsQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<GetMetricsResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/metrics/get`);
+          const validatedQuery = get_metricsQuerySchema.parse(params);
+          const queryKeys = [
+            'type',
+            'team_id',
+            'project_id',
+            'environment_id',
+            'service_id',
+            'start',
+            'end',
+          ];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return GetMetricsResponseBodySchema.parse(data);
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -1989,6 +2216,48 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
       },
     },
     system: {
+      buildkit: {
+        update: async (
+          params: BuildkitSettingsUpdateInputBody,
+          fetchOptions?: RequestInit,
+        ): Promise<BuildkitSettingsUpdateResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/system/buildkit/update`);
+
+            const options: RequestInit = {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+            const validatedBody = BuildkitSettingsUpdateInputBodySchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+              console.log(`Request body is:`, validatedBody);
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return BuildkitSettingsUpdateResponseBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+      },
       get: async (
         params?: undefined,
         fetchOptions?: RequestInit,

@@ -77,7 +77,8 @@ const SCROLL_THRESHOLD = 50;
 const placeholderArray = Array.from({ length: 50 });
 
 function Logs({ containerType }: { containerType: "page" | "sheet" }) {
-  const { data: logs, isPending: isPendingLogs } = useLogs();
+  const { data } = useLogs();
+  const logs = data?.logs;
 
   const virtualListRef = useRef<VListHandle>(null);
   const follow = useRef(true);
@@ -162,33 +163,39 @@ function Logs({ containerType }: { containerType: "page" | "sheet" }) {
 
   const throttledOnScroll = useThrottledCallback(onScroll, 50);
 
-  const listItems = useMemo(() => {
+  const [isPendingLogs, listItems] = useMemo(() => {
     if (!logs || !servicesData) {
-      return placeholderArray.map((_, index) => (
+      return [
+        true,
+        placeholderArray.map((_, index) => (
+          <LogLine
+            isPlaceholder
+            key={index}
+            data-container={containerType}
+            data-first={index === 0 ? true : undefined}
+            data-last={index === placeholderArray.length - 1 ? true : undefined}
+            classNameInner="min-[1288px]:group-data-[container=page]/line:rounded-sm"
+          />
+        )),
+      ];
+    }
+    return [
+      false,
+      logs.map((logLine, index) => (
         <LogLine
-          isPlaceholder
           key={index}
           data-container={containerType}
           data-first={index === 0 ? true : undefined}
-          data-last={index === placeholderArray.length - 1 ? true : undefined}
+          data-last={index === logs.length - 1 ? true : undefined}
           classNameInner="min-[1288px]:group-data-[container=page]/line:rounded-sm"
+          logLine={logLine}
+          serviceName={
+            servicesData.services.find((service) => service.id === logLine.metadata.service_id)
+              ?.display_name || logLine.metadata.service_id
+          }
         />
-      ));
-    }
-    return logs.map((logLine, index) => (
-      <LogLine
-        key={index}
-        data-container={containerType}
-        data-first={index === 0 ? true : undefined}
-        data-last={index === logs.length - 1 ? true : undefined}
-        classNameInner="min-[1288px]:group-data-[container=page]/line:rounded-sm"
-        logLine={logLine}
-        serviceName={
-          servicesData.services.find((service) => service.id === logLine.metadata.service_id)
-            ?.display_name || logLine.metadata.service_id
-        }
-      />
-    ));
+      )),
+    ];
   }, [logs, servicesData, containerType]);
 
   return (

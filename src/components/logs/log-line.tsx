@@ -68,7 +68,10 @@ export default function LogLine({
                           >
                             {isPlaceholder
                               ? "Jan 01, 01:01:01"
-                              : format(logLine.timestamp, "MMM dd, HH:mm:ss")}
+                              : format(
+                                  logLine.timestamp || new Date().toISOString(),
+                                  "MMM dd, HH:mm:ss",
+                                )}
                           </p>
                         </div>
                       )}

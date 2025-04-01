@@ -56,7 +56,7 @@ export default function SearchBar({ isPendingLogs, className }: TProps) {
         </div>
         <Input
           value={searchInputValue}
-          type="text"
+          type="search"
           onChange={(e) => {
             setSearchInputValue(e.target.value);
             if (!e.target.value) setSearch("");
