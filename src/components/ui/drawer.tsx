@@ -77,12 +77,10 @@ function DrawerContent({
         {...props}
       >
         {hasHandle && (
-          <div
+          <DrawerPrimitive.Handle
             data-hide-handle={hideHandle ? true : undefined}
-            className="absolute top-0 left-1/2 flex h-12 w-[calc(min(33.3%,5rem))] -translate-x-1/2 -translate-y-full items-end justify-center pb-2 transition duration-100 data-hide-handle:-translate-y-6"
-          >
-            <div className="bg-muted-more-foreground h-1.5 w-full rounded-full" />
-          </div>
+            className="bg-muted-more-foreground! absolute! left-1/2 h-1.5! w-[calc(min(33.3%,5rem))]! -translate-x-1/2 -translate-y-3.5! opacity-100! transition duration-100! data-hide-handle:translate-y-1.5!"
+          ></DrawerPrimitive.Handle>
         )}
         {children}
       </DrawerPrimitive.Content>

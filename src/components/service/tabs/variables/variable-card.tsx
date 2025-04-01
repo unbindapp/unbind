@@ -76,7 +76,7 @@ export default function VariableCard({ variable, isPlaceholder }: TProps) {
               variant="ghost"
               forceMinSize="medium"
               size="icon"
-              className="text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent"
+              className="text-muted-more-foreground group/button rounded-lg group-data-placeholder/card:text-transparent sm:rounded-md"
               disabled={isPlaceholder}
               fadeOnDisabled={false}
             >
@@ -97,7 +97,7 @@ export default function VariableCard({ variable, isPlaceholder }: TProps) {
               variant="ghost"
               forceMinSize="medium"
               size="icon"
-              className="text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent"
+              className="text-muted-more-foreground group/button rounded-lg group-data-placeholder/card:text-transparent sm:rounded-md"
               disabled={isPlaceholder}
               fadeOnDisabled={false}
             >
@@ -135,10 +135,14 @@ export default function VariableCard({ variable, isPlaceholder }: TProps) {
         <div className="absolute top-0.75 right-0.75 sm:hidden">
           {isPlaceholder ? (
             <Button disabled fadeOnDisabled={false} variant="ghost" size="icon">
-              <div className="bg-muted-foreground animate-skeleton size-6 rounded-md" />
+              <div className="bg-muted-foreground animate-skeleton size-6 rounded-lg" />
             </Button>
           ) : (
-            <ThreeDotButton variable={variable} setIsEditingVariable={setIsEditingVariable} />
+            <ThreeDotButton
+              className="rounded-lg"
+              variable={variable}
+              setIsEditingVariable={setIsEditingVariable}
+            />
           )}
         </div>
       )}
