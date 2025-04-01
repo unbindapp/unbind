@@ -2,9 +2,9 @@ import {
   logViewPreferenceKeys,
   useLogViewPreferences,
 } from "@/components/logs/log-view-preferences-provider";
+import { TLogLine } from "@/components/logs/logs-provider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
-import { TLogLine } from "@/lib/hooks/use-logs";
 import { format } from "date-fns";
 import { ComponentProps, ReactNode } from "react";
 

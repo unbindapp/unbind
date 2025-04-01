@@ -1,6 +1,6 @@
-import ChartWrapper from "@/components/charts/chart-wrapper";
-import { bytesToHumanReadable, cpuToHumanReadable } from "@/components/charts/formatters";
-import MetricsChart from "@/components/charts/metrics-chart";
+import ChartWrapper from "@/components/metrics/chart-wrapper";
+import { bytesToHumanReadable, cpuToHumanReadable } from "@/components/metrics/formatters";
+import MetricsChart from "@/components/metrics/metrics-chart";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 

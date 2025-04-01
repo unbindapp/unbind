@@ -1,6 +1,6 @@
 "use client";
 
-import MetricsChartList, { TChartObject, TChartRow } from "@/components/charts/metrics-chart-list";
+import MetricsChartList, { TChartObject, TChartRow } from "@/components/metrics/metrics-chart-list";
 import { api } from "@/server/trpc/setup/client";
 import { useMemo } from "react";
 

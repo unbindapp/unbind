@@ -1,6 +1,6 @@
 "use client";
 
-import MetricsChartList, { TChartObject, TChartRow } from "@/components/charts/metrics-chart-list";
+import MetricsChartList, { TChartObject, TChartRow } from "@/components/metrics/metrics-chart-list";
 import { useService } from "@/components/service/service-provider";
 import { cn } from "@/components/ui/utils";
 import { useMemo } from "react";

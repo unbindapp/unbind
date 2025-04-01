@@ -7,14 +7,11 @@ import LogViewPreferencesProvider, {
   useLogViewPreferences,
 } from "@/components/logs/log-view-preferences-provider";
 import LogViewStateProvider, { useLogViewState } from "@/components/logs/log-view-state-provider";
+import LogsProvider, { TLogType, useLogs } from "@/components/logs/logs-provider";
 import NavigationBar from "@/components/logs/navigation-bar";
 import SearchBar from "@/components/logs/search-bar";
-import { createSearchFilter } from "@/components/logs/search-filter";
 import { useServices } from "@/components/project/services-provider";
-import { env } from "@/lib/env";
-import { useLogs } from "@/lib/hooks/use-logs";
 import { SearchIcon } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useThrottledCallback } from "use-debounce";
 import { VList, VListHandle } from "virtua";
@@ -23,33 +20,53 @@ type TBaseProps = {
   containerType: "page" | "sheet";
   hideServiceByDefault?: boolean;
   className?: string;
-  type: "team" | "project" | "environment" | "service";
+  type: TLogType;
   teamId: string;
   projectId: string;
   environmentId: string;
-  serviceId?: string;
 };
 
 type TProps = TBaseProps &
   (
     | {
         type: "environment";
-        environmentId: string;
         serviceId?: never;
       }
     | {
         type: "service";
-        environmentId: string;
         serviceId: string;
       }
   );
 
-export default function LogViewer({ hideServiceByDefault, ...rest }: TProps) {
+export default function LogViewer({
+  hideServiceByDefault,
+  teamId,
+  projectId,
+  environmentId,
+  serviceId,
+  type,
+  containerType,
+}: TProps) {
+  const typeAndIds: { type: TLogType } & (
+    | { type: "service"; serviceId: string; environmentId?: never }
+    | { type: "environment"; environmentId: string; serviceId?: never }
+  ) =
+    type === "service"
+      ? { type: "service", serviceId: serviceId }
+      : { type: "environment", environmentId: environmentId };
+
   return (
     <LogViewPreferencesProvider hideServiceByDefault={hideServiceByDefault}>
       <LogViewDropdownProvider>
         <LogViewStateProvider>
-          <Logs {...rest} />
+          <LogsProvider
+            teamId={teamId}
+            projectId={projectId}
+            environmentId={environmentId}
+            {...typeAndIds}
+          >
+            <Logs containerType={containerType} />
+          </LogsProvider>
         </LogViewStateProvider>
       </LogViewDropdownProvider>
     </LogViewPreferencesProvider>
@@ -59,44 +76,8 @@ export default function LogViewer({ hideServiceByDefault, ...rest }: TProps) {
 const SCROLL_THRESHOLD = 50;
 const placeholderArray = Array.from({ length: 50 });
 
-function Logs({ containerType, type, teamId, projectId, environmentId, serviceId }: TProps) {
-  const { data: session } = useSession();
-  const { search } = useLogViewState();
-
-  const filtersStr = createSearchFilter(search);
-
-  const urlParams = useMemo(() => {
-    const params = new URLSearchParams({
-      team_id: teamId,
-      project_id: projectId,
-      environment_id: environmentId,
-      type: type,
-      tail: "1000",
-      since: "24h",
-    });
-    if (type === "service") {
-      params.set("service_id", serviceId);
-    }
-    if (filtersStr) {
-      params.set("filters", filtersStr);
-    }
-    return params;
-  }, [teamId, projectId, environmentId, serviceId, type, filtersStr]);
-
-  const sseUrl = `${env.NEXT_PUBLIC_UNBIND_API_URL}/logs/stream?${urlParams.toString()}`;
-
-  const sseQueryProps = useMemo(() => {
-    const params: Parameters<typeof useLogs>[0] = {
-      sseUrl,
-      headers: {
-        Authorization: `Bearer ${session?.access_token}`,
-      },
-      enabled: session ? true : false,
-    };
-    return params;
-  }, [sseUrl, session]);
-
-  const { data: logs, isPending: isPendingLogs } = useLogs(sseQueryProps);
+function Logs({ containerType }: { containerType: "page" | "sheet" }) {
+  const { data: logs, isPending: isPendingLogs } = useLogs();
 
   const virtualListRef = useRef<VListHandle>(null);
   const follow = useRef(true);
