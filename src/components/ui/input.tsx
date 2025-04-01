@@ -59,7 +59,7 @@ function Input({
             className,
           )}
           {...props}
-          placeholder=""
+          placeholder=" "
         />
         <label className="text-muted-foreground pointer-events-none absolute top-1/2 left-3.25 origin-top-left -translate-y-[calc(100%-0.25rem)] scale-75 font-medium transition peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100 peer-focus:-translate-y-[calc(100%-0.25rem)] peer-focus:scale-75">
           {inputTitle}
