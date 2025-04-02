@@ -15,42 +15,29 @@ export function createSearchFilter(search: string): string {
       .split(" OR ")
       .map((part) => part.trim())
       .filter(Boolean);
+    // Remove quotes if present for literal matching
     const regexParts = parts.map((part) => {
-      // If part is quoted, use it exactly, otherwise make case insensitive
-      if (part.startsWith('"') && part.endsWith('"')) {
-        return escapeRegExp(part.substring(1, part.length - 1));
-      } else {
-        return `(?i)${escapeRegExp(part)}`;
-      }
+      return part.startsWith('"') && part.endsWith('"') ? part.substring(1, part.length - 1) : part;
     });
-
-    // Join with regex OR
-    return `|~ "${regexParts.join("|")}"`;
+    // Build a case-insensitive alternation
+    return `|~ "(?i:(${regexParts.join("|")}))"`;
   }
 
-  // Handle AND expressions by converting to regexes that must all match
+  // Handle AND expressions by converting to an in-order regex
   if (search.includes(" AND ")) {
     const parts = search
       .split(" AND ")
       .map((part) => part.trim())
-      .filter(Boolean);
-    const regexParts = parts.map((part) => {
-      // If part is quoted, use it exactly, otherwise make case insensitive
-      if (part.startsWith('"') && part.endsWith('"')) {
-        return `(?=.*${escapeRegExp(part.substring(1, part.length - 1))})`;
-      } else {
-        return `(?=.*(?i)${escapeRegExp(part)})`;
-      }
-    });
-
-    // Use positive lookaheads to require all terms
-    return `|~ "${regexParts.join("")}.*"`;
+      .filter(Boolean)
+      .map((part) => {
+        return part.startsWith('"') && part.endsWith('"')
+          ? part.substring(1, part.length - 1)
+          : part;
+      });
+    // Concatenate parts with .* so they must appear in order
+    return `|~ "(?i:${parts.join(".*")})"`;
   }
 
   // Default case: simple case-insensitive regex search
-  return `|~ "(?i)${escapeRegExp(search)}"`;
-}
-
-function escapeRegExp(string: string): string {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return `|~ "(?i:${search})"`;
 }

@@ -128,7 +128,7 @@ export const LogsProvider: React.FC<TProps> = ({
     return () => {
       controller.abort();
     };
-  }, [sseUrl, session, queryProps]);
+  }, [sseUrl, session, queryProps, utils.logs.list]);
 
   return <LogsContext.Provider value={queryResult}>{children}</LogsContext.Provider>;
 };
