@@ -39,7 +39,7 @@ export const metricsRouter = createTRPCRouter({
         end,
       });
       return {
-        data: metricsData.data || [],
+        ...metricsData.data,
       };
     }),
 });

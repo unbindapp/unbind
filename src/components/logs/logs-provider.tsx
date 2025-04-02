@@ -88,6 +88,7 @@ export const LogsProvider: React.FC<TProps> = ({
 
   useEffect(() => {
     if (!session) return;
+    if (queryResult.isPending) return;
     const controller = new AbortController();
 
     fetchEventSource(sseUrl, {
@@ -127,7 +128,7 @@ export const LogsProvider: React.FC<TProps> = ({
     return () => {
       controller.abort();
     };
-  }, [sseUrl, session, queryProps, utils.logs.list]);
+  }, [sseUrl, session, queryProps, utils.logs.list, queryResult.isPending]);
 
   return <LogsContext.Provider value={queryResult}>{children}</LogsContext.Provider>;
 };

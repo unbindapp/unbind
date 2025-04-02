@@ -23,7 +23,7 @@ export const BuildkitSettingsUpdateResponseBodySchema = z
 export const CallbackResponseBodySchema = z
   .object({
     access_token: z.string(),
-    expiry: z.string(),
+    expiry: z.string().datetime(),
     id_token: z.string(),
     refresh_token: z.string(),
     token_type: z.string(),
@@ -60,15 +60,15 @@ export const DeploymentResponseSchema = z
     commit_author: GitCommitterSchema.optional(),
     commit_message: z.string().optional(),
     commit_sha: z.string().optional(),
-    completed_at: z.string().optional(),
-    created_at: z.string(),
+    completed_at: z.string().datetime().optional(),
+    created_at: z.string().datetime(),
     error: z.string().optional(),
     id: z.string(),
     image: z.string().optional(),
     service_id: z.string(),
-    started_at: z.string().optional(),
+    started_at: z.string().datetime().optional(),
     status: DeploymentStatusSchema,
-    updated_at: z.string(),
+    updated_at: z.string().datetime(),
   })
   .strip();
 
@@ -104,6 +104,7 @@ export const FrameworkSchema = z.enum([
   'spring-boot',
   'laravel',
   'rails',
+  'rocket',
   'unknown',
 ]);
 
@@ -115,6 +116,7 @@ export const ProviderSchema = z.enum([
   'php',
   'python',
   'ruby',
+  'rust',
   'staticfile',
   'unknown',
 ]);
@@ -122,7 +124,7 @@ export const ProviderSchema = z.enum([
 export const EnvironmentResponseSchema = z
   .object({
     active: z.boolean(),
-    created_at: z.string(),
+    created_at: z.string().datetime(),
     description: z.string(),
     display_name: z.string(),
     framework_summary: z.array(FrameworkSchema).optional(),
@@ -135,7 +137,7 @@ export const EnvironmentResponseSchema = z
 
 export const ProjectResponseSchema = z
   .object({
-    created_at: z.string(),
+    created_at: z.string().datetime(),
     description: z.string().nullable(),
     display_name: z.string(),
     environments: z.array(EnvironmentResponseSchema),
@@ -215,7 +217,7 @@ export const ServiceConfigResponseSchema = z
 export const ServiceResponseSchema = z
   .object({
     config: ServiceConfigResponseSchema,
-    created_at: z.string(),
+    created_at: z.string().datetime(),
     current_deployment: DeploymentResponseSchema.optional(),
     description: z.string(),
     display_name: z.string(),
@@ -225,7 +227,7 @@ export const ServiceResponseSchema = z
     id: z.string(),
     last_deployment: DeploymentResponseSchema.optional(),
     name: z.string(),
-    updated_at: z.string(),
+    updated_at: z.string().datetime(),
   })
   .strip();
 
@@ -328,32 +330,29 @@ export const GetEnvironmentOutputBodySchema = z
   })
   .strip();
 
-export const MetricsPairSchema = z
+export const MetricsTypeSchema = z.enum(['team', 'project', 'environment', 'service']);
+
+export const MetricDetailSchema = z
   .object({
-    time: z.string(),
-    value: z.number(),
+    breakdown: z.record(z.number().nullable()), // Map of IDs to their respective values
+    timestamp: z.string().datetime(),
+    value: z.number(), // Aggregated value for the timestamp
   })
   .strip();
 
 export const MetricsMapEntrySchema = z
   .object({
-    cpu: z.array(MetricsPairSchema),
-    disk: z.array(MetricsPairSchema),
-    network: z.array(MetricsPairSchema),
-    ram: z.array(MetricsPairSchema),
-  })
-  .strip();
-
-export const MetricsEntrySchema = z
-  .object({
-    data: MetricsMapEntrySchema,
-    id: z.string(),
+    cpu: z.array(MetricDetailSchema),
+    disk: z.array(MetricDetailSchema),
+    network: z.array(MetricDetailSchema),
+    ram: z.array(MetricDetailSchema),
   })
   .strip();
 
 export const MetricsResultSchema = z
   .object({
-    metrics: z.array(MetricsEntrySchema),
+    broken_down_by: MetricsTypeSchema, // The type of metric that is broken down, e.g. team, project
+    metrics: MetricsMapEntrySchema,
     step: z.number(),
   })
   .strip();
@@ -473,7 +472,7 @@ export const GithubRepositorySchema = z
     installation_id: z.number(),
     name: z.string(),
     owner: GithubRepositoryOwnerSchema,
-    updated_at: z.string(),
+    updated_at: z.string().datetime(),
   })
   .strip();
 
@@ -497,25 +496,25 @@ export const GithubInstallationAPIResponseSchema = z
     account_type: z.string().optional(),
     account_url: z.string().optional(),
     active: z.boolean().optional(),
-    created_at: z.string().optional(),
+    created_at: z.string().datetime().optional(),
     events: z.array(z.string()).nullable().optional(),
     github_app_id: z.number().optional(),
     id: z.number().optional(),
     permissions: GithubInstallationPermissionsSchema.optional(),
     repository_selection: z.string().optional(),
     suspended: z.boolean().optional(),
-    updated_at: z.string().optional(),
+    updated_at: z.string().datetime().optional(),
   })
   .strip();
 
 export const GithubAppAPIResponseSchema = z
   .object({
-    created_at: z.string().optional(),
+    created_at: z.string().datetime().optional(),
     created_by: z.string().optional(),
     id: z.number().optional(),
     installations: z.array(GithubInstallationAPIResponseSchema).nullable().optional(),
     name: z.string().optional(),
-    updated_at: z.string().optional(),
+    updated_at: z.string().datetime().optional(),
   })
   .strip();
 
@@ -558,7 +557,7 @@ export const GithubRepositoryDetailSchema = z
   .object({
     archived: z.boolean(),
     branches: z.array(GithubBranchSchema).nullable(),
-    createdAt: z.string(),
+    createdAt: z.string().datetime(),
     defaultBranch: z.string(),
     description: z.string(),
     disabled: z.boolean(),
@@ -573,11 +572,11 @@ export const GithubRepositoryDetailSchema = z
     openIssuesCount: z.number(),
     owner: GithubRepositoryOwnerSchema,
     private: z.boolean(),
-    pushedAt: z.string(),
+    pushedAt: z.string().datetime(),
     size: z.number(),
     stargazersCount: z.number(),
     tags: z.array(GithubTagSchema).nullable(),
-    updatedAt: z.string(),
+    updatedAt: z.string().datetime(),
     url: z.string(),
     watchersCount: z.number(),
   })
@@ -605,8 +604,8 @@ export const ItemSchema = z
 export const PaginationResponseMetadataSchema = z
   .object({
     has_next: z.boolean(),
-    next: z.string().optional(),
-    previous: z.string().optional(),
+    next: z.string().datetime().optional(),
+    previous: z.string().datetime().optional(),
   })
   .strip();
 
@@ -650,7 +649,7 @@ export const LogEventSchema = z
     message: z.string(),
     metadata: LogMetadataSchema,
     pod_name: z.string(),
-    timestamp: z.string().optional(),
+    timestamp: z.string().datetime().optional(),
   })
   .strip();
 
@@ -670,10 +669,10 @@ export const LokiDirectionSchema = z.enum(['forward', 'backward']);
 
 export const UserAPIResponseSchema = z
   .object({
-    created_at: z.string().optional(),
+    created_at: z.string().datetime().optional(),
     email: z.string().optional(),
     id: z.string(),
-    updated_at: z.string().optional(),
+    updated_at: z.string().datetime().optional(),
   })
   .strip();
 
@@ -682,8 +681,6 @@ export const MeResponseBodySchema = z
     data: UserAPIResponseSchema,
   })
   .strip();
-
-export const MetricsTypeSchema = z.enum(['team', 'project', 'environment', 'service']);
 
 export const QueryLogsResponseBodySchema = z
   .object({
@@ -711,7 +708,7 @@ export const SystemMetaResponseBodySchema = z
 
 export const TeamResponseSchema = z
   .object({
-    created_at: z.string(),
+    created_at: z.string().datetime(),
     description: z.string().nullable(),
     display_name: z.string(),
     id: z.string(),
@@ -845,9 +842,9 @@ export type DeleteVariablesInputBody = z.infer<typeof DeleteVariablesInputBodySc
 export type ErrorDetail = z.infer<typeof ErrorDetailSchema>;
 export type ErrorModel = z.infer<typeof ErrorModelSchema>;
 export type GetEnvironmentOutputBody = z.infer<typeof GetEnvironmentOutputBodySchema>;
-export type MetricsPair = z.infer<typeof MetricsPairSchema>;
+export type MetricsType = z.infer<typeof MetricsTypeSchema>;
+export type MetricDetail = z.infer<typeof MetricDetailSchema>;
 export type MetricsMapEntry = z.infer<typeof MetricsMapEntrySchema>;
-export type MetricsEntry = z.infer<typeof MetricsEntrySchema>;
 export type MetricsResult = z.infer<typeof MetricsResultSchema>;
 export type GetMetricsResponseBody = z.infer<typeof GetMetricsResponseBodySchema>;
 export type GetProjectResponseBody = z.infer<typeof GetProjectResponseBodySchema>;
@@ -891,7 +888,6 @@ export type LogType = z.infer<typeof LogTypeSchema>;
 export type LokiDirection = z.infer<typeof LokiDirectionSchema>;
 export type UserAPIResponse = z.infer<typeof UserAPIResponseSchema>;
 export type MeResponseBody = z.infer<typeof MeResponseBodySchema>;
-export type MetricsType = z.infer<typeof MetricsTypeSchema>;
 export type QueryLogsResponseBody = z.infer<typeof QueryLogsResponseBodySchema>;
 export type SortByField = z.infer<typeof SortByFieldSchema>;
 export type SortOrder = z.infer<typeof SortOrderSchema>;
@@ -917,7 +913,7 @@ export const callbackQuerySchema = z
 
 export const list_deploymentsQuerySchema = z
   .object({
-    cursor: z.string().optional(),
+    cursor: z.string().datetime().optional(),
     statuses: z.array(DeploymentStatusSchema).nullable().optional(), // Filter by status
     team_id: z.string(), // The ID of the team
     project_id: z.string(), // The ID of the project
@@ -963,8 +959,8 @@ export const query_logsQuerySchema = z
     environment_id: z.string().optional(),
     service_id: z.string().optional(),
     filters: z.string().optional(), // Optional logql filter string
-    start: z.string().optional(), // Start time for the query
-    end: z.string().optional(), // End time for the query
+    start: z.string().datetime().optional(), // Start time for the query
+    end: z.string().datetime().optional(), // End time for the query
     since: z.string().optional(), // Duration to look back (e.g., '1h', '30m')
     limit: z.number().optional(), // Number of log lines to get
     direction: LokiDirectionSchema.optional(), // Direction of the logs (forward or backward)
@@ -992,8 +988,8 @@ export const get_metricsQuerySchema = z
     project_id: z.string().optional(),
     environment_id: z.string().optional(),
     service_id: z.string().optional(),
-    start: z.string().optional(), // Start time for the query, defaults to 1 week ago
-    end: z.string().optional(), // End time for the query, defaults to now
+    start: z.string().datetime().optional(), // Start time for the query, defaults to 1 week ago
+    end: z.string().datetime().optional(), // End time for the query, defaults to now
   })
   .passthrough();
 

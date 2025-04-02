@@ -32,5 +32,5 @@ export function bytesToHumanReadable(v: number) {
 }
 
 export function cpuToHumanReadable(v: number) {
-  return `${v.toLocaleString(undefined, { maximumFractionDigits: 1 })} CPU`;
+  return `${v.toLocaleString(undefined, { maximumSignificantDigits: 3 })}`;
 }

@@ -10,10 +10,12 @@ import { format } from "date-fns";
 import { useCallback, useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
+export type TChartDataItem = { timestamp: string } & Record<string, string | number | null>;
+
 type TProps = {
   yFormatter: ((value: number, index: number) => string) | undefined;
   tooltipValueFormatter: (value: number) => string;
-  chartData: (Record<string, number> & { timestamp: number })[];
+  chartData: TChartDataItem[];
   className?: string;
   classNameChart?: string;
 };

@@ -1,37 +1,65 @@
 import ChartWrapper from "@/components/metrics/chart-wrapper";
 import { bytesToHumanReadable, cpuToHumanReadable } from "@/components/metrics/formatters";
-import MetricsChart from "@/components/metrics/metrics-chart";
+import MetricsChart, { TChartDataItem } from "@/components/metrics/metrics-chart";
+import { useMetrics } from "@/components/metrics/metrics-provider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
-
-export type TChartRow = Record<string, number> & { timestamp: number };
-export type TChartObject = {
-  data: TChartRow[] | undefined;
-  isPending: boolean;
-  isError: boolean;
-  error: string | undefined;
-};
+import { useMemo } from "react";
 
 type TProps = {
-  cpu: TChartObject;
-  ram: TChartObject;
-  disk: TChartObject;
-  network: TChartObject;
   className?: string;
   classNameChart?: string;
   noLegends?: boolean;
 };
 
-export default function MetricsChartList({
-  cpu,
-  ram,
-  disk,
-  network,
-  className,
-  classNameChart,
-  noLegends,
-}: TProps) {
+type TMetrics = {
+  cpu: TChartDataItem[];
+  ram: TChartDataItem[];
+  disk: TChartDataItem[];
+  network: TChartDataItem[];
+};
+
+export default function MetricsChartList({ className, classNameChart, noLegends }: TProps) {
+  const { data, isPending, error } = useMetrics();
   const defaultErrorMessage = "Something went wrong";
+
+  const modifiedData: TMetrics | undefined = useMemo(() => {
+    if (!data) return undefined;
+
+    const shapedData: TMetrics = {
+      cpu: [],
+      ram: [],
+      disk: [],
+      network: [],
+    };
+
+    for (const metric of data.metrics.cpu) {
+      shapedData.cpu.push({
+        timestamp: metric.timestamp,
+        ...metric.breakdown,
+      });
+    }
+    for (const metric of data.metrics.ram) {
+      shapedData.ram.push({
+        timestamp: metric.timestamp,
+        ...metric.breakdown,
+      });
+    }
+    for (const metric of data.metrics.disk) {
+      shapedData.disk.push({
+        timestamp: metric.timestamp,
+        ...metric.breakdown,
+      });
+    }
+    for (const metric of data.metrics.network) {
+      shapedData.network.push({
+        timestamp: metric.timestamp,
+        ...metric.breakdown,
+      });
+    }
+    return shapedData;
+  }, [data]);
+
   return (
     <div className={cn("flex w-full flex-wrap items-stretch", className)}>
       <ChartWrapper
@@ -39,13 +67,13 @@ export default function MetricsChartList({
         description="CPU usage over time"
         className={cn("w-full lg:w-1/2", classNameChart)}
       >
-        {cpu.isPending && !cpu.data && <LoadingPlaceholder noLegends={noLegends} />}
-        {cpu.isError && !cpu.isPending && !cpu.data && (
-          <Error noLegends={noLegends}>{cpu.error || defaultErrorMessage}</Error>
+        {isPending && !modifiedData && <LoadingPlaceholder noLegends={noLegends} />}
+        {error && !isPending && !modifiedData && (
+          <Error noLegends={noLegends}>{error.message || defaultErrorMessage}</Error>
         )}
-        {cpu.data && (
+        {modifiedData && (
           <MetricsChart
-            chartData={cpu.data}
+            chartData={modifiedData.cpu}
             yFormatter={cpuToHumanReadable}
             tooltipValueFormatter={cpuToHumanReadable}
           />
@@ -56,13 +84,13 @@ export default function MetricsChartList({
         description="RAM usage over time"
         className={cn("w-full lg:w-1/2", classNameChart)}
       >
-        {ram.isPending && !ram.data && <LoadingPlaceholder noLegends={noLegends} />}
-        {ram.isError && !ram.isPending && !ram.data && (
-          <Error noLegends={noLegends}>{ram.error || defaultErrorMessage}</Error>
+        {isPending && !modifiedData && <LoadingPlaceholder noLegends={noLegends} />}
+        {error && !isPending && !modifiedData && (
+          <Error noLegends={noLegends}>{error.message || defaultErrorMessage}</Error>
         )}
-        {ram.data && (
+        {modifiedData && (
           <MetricsChart
-            chartData={ram.data}
+            chartData={modifiedData.ram}
             yFormatter={bytesToHumanReadable}
             tooltipValueFormatter={bytesToHumanReadable}
           />
@@ -73,13 +101,13 @@ export default function MetricsChartList({
         description="Disk usage over time"
         className={cn("w-full lg:w-1/2", classNameChart)}
       >
-        {disk.isPending && !disk.data && <LoadingPlaceholder noLegends={noLegends} />}
-        {disk.isError && !disk.isPending && !disk.data && (
-          <Error noLegends={noLegends}>{disk.error || defaultErrorMessage}</Error>
+        {isPending && !modifiedData && <LoadingPlaceholder noLegends={noLegends} />}
+        {error && !isPending && !modifiedData && (
+          <Error noLegends={noLegends}>{error.message || defaultErrorMessage}</Error>
         )}
-        {disk.data && (
+        {modifiedData && (
           <MetricsChart
-            chartData={disk.data}
+            chartData={modifiedData.disk}
             yFormatter={bytesToHumanReadable}
             tooltipValueFormatter={bytesToHumanReadable}
           />
@@ -90,13 +118,13 @@ export default function MetricsChartList({
         description="Network usage over time"
         className={cn("w-full lg:w-1/2", classNameChart)}
       >
-        {network.isPending && !network.data && <LoadingPlaceholder noLegends={noLegends} />}
-        {network.isError && !network.isPending && !network.data && (
-          <Error noLegends={noLegends}>{network.error || defaultErrorMessage}</Error>
+        {isPending && !modifiedData && <LoadingPlaceholder noLegends={noLegends} />}
+        {error && !isPending && !modifiedData && (
+          <Error noLegends={noLegends}>{error.message || defaultErrorMessage}</Error>
         )}
-        {network.data && (
+        {modifiedData && (
           <MetricsChart
-            chartData={network.data}
+            chartData={modifiedData.network}
             yFormatter={bytesToHumanReadable}
             tooltipValueFormatter={bytesToHumanReadable}
           />
