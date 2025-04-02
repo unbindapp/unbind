@@ -17,6 +17,9 @@ type TLogsContext = AppRouterQueryResult<AppRouterOutputs["logs"]["list"]> & {};
 const LogsContext = createContext<TLogsContext | null>(null);
 
 export type TLogLine = z.infer<typeof LogEventSchema>;
+export type TLogLineWithLevel = TLogLine & {
+  level: "info" | "warn" | "error";
+};
 
 export const MessageSchema = z.object({ logs: LogEventSchema.array() }).strip();
 export type TMessage = z.infer<typeof MessageSchema>;
@@ -54,6 +57,7 @@ export const LogsProvider: React.FC<TProps> = ({
 
   const filtersStr = createSearchFilter(search);
   const since = "24h";
+  const limit = 1000;
 
   const [queryProps, urlParams] = useMemo(() => {
     const props: AppRouterInputs["logs"]["list"] = {
@@ -64,14 +68,20 @@ export const LogsProvider: React.FC<TProps> = ({
       serviceId,
       filters: filtersStr,
       since,
+      limit,
     };
     const params = new URLSearchParams({
       team_id: props.teamId,
       project_id: props.projectId || "",
       environment_id: props.environmentId || "",
       type: props.type,
-      since: props.since || "",
     });
+    if (props.since) {
+      params.set("since", props.since);
+    }
+    if (props.limit) {
+      params.set("limit", String(props.limit));
+    }
     if (type === "service") {
       params.set("service_id", serviceId);
     }

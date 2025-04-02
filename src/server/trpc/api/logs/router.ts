@@ -15,11 +15,12 @@ export const logsRouter = createTRPCRouter({
           serviceId: z.string().uuid().optional(),
           filters: z.string().optional(),
           since: z.enum(["24h", "1w", "1m"]).optional(),
+          limit: z.number().optional().default(500),
         })
         .strip(),
     )
     .query(async function ({
-      input: { type, teamId, projectId, environmentId, serviceId, filters, since },
+      input: { type, teamId, projectId, environmentId, serviceId, filters, since, limit },
       ctx,
     }) {
       const { session, goClient } = ctx;
@@ -37,9 +38,10 @@ export const logsRouter = createTRPCRouter({
         filters,
         since,
         type,
+        limit,
       });
       return {
-        logs: logsData.data || [],
+        logs: logsData.data,
       };
     }),
 });

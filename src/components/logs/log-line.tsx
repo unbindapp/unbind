@@ -2,7 +2,7 @@ import {
   logViewPreferenceKeys,
   useLogViewPreferences,
 } from "@/components/logs/log-view-preferences-provider";
-import { TLogLine } from "@/components/logs/logs-provider";
+import { TLogLineWithLevel } from "@/components/logs/logs-provider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { format } from "date-fns";
@@ -11,7 +11,7 @@ import { ComponentProps, ReactNode } from "react";
 type TProps = ComponentProps<"div"> & {
   classNameInner?: string;
 } & (
-    | { logLine: TLogLine; serviceName: string; isPlaceholder?: never }
+    | { logLine: TLogLineWithLevel; serviceName: string; isPlaceholder?: never }
     | { logLine?: never; serviceName?: never; isPlaceholder: true }
   );
 
@@ -33,7 +33,7 @@ export default function LogLine({
     <div
       {...rest}
       suppressHydrationWarning
-      data-level={"info"}
+      data-level={logLine?.level || "info"}
       data-wrap={viewPreferences.includes(logViewPreferenceKeys.lineWrapping) ? true : undefined}
       data-extra-columns={hasExtraColumns ? true : undefined}
       className={cn(
@@ -68,10 +68,9 @@ export default function LogLine({
                           >
                             {isPlaceholder
                               ? "Jan 01, 01:01:01"
-                              : format(
-                                  logLine.timestamp || new Date().toISOString(),
-                                  "MMM dd, HH:mm:ss",
-                                )}
+                              : logLine.timestamp === undefined
+                                ? "Time Unknown"
+                                : format(logLine.timestamp, "MMM dd, HH:mm:ss")}
                           </p>
                         </div>
                       )}

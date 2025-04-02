@@ -684,7 +684,7 @@ export const MeResponseBodySchema = z
 
 export const QueryLogsResponseBodySchema = z
   .object({
-    data: z.array(LogEventSchema).nullable(),
+    data: z.array(LogEventSchema),
   })
   .strip();
 

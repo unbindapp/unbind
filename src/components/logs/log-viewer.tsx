@@ -7,7 +7,7 @@ import LogViewPreferencesProvider, {
   useLogViewPreferences,
 } from "@/components/logs/log-view-preferences-provider";
 import LogViewStateProvider, { useLogViewState } from "@/components/logs/log-view-state-provider";
-import LogsProvider, { useLogs } from "@/components/logs/logs-provider";
+import LogsProvider, { TLogLineWithLevel, useLogs } from "@/components/logs/logs-provider";
 import NavigationBar from "@/components/logs/navigation-bar";
 import SearchBar from "@/components/logs/search-bar";
 import { useServices } from "@/components/project/services-provider";
@@ -79,7 +79,13 @@ const placeholderArray = Array.from({ length: 50 });
 
 function Logs({ containerType }: { containerType: "page" | "sheet" }) {
   const { data, isPending, error } = useLogs();
-  const logs = data?.logs;
+  const logs: TLogLineWithLevel[] | undefined = useMemo(() => {
+    if (!data) return undefined;
+    return data.logs.map((logLine) => ({
+      ...logLine,
+      level: getLevelFromMessage(logLine.message),
+    }));
+  }, [data]);
 
   const virtualListRef = useRef<VListHandle>(null);
   const follow = useRef(true);
@@ -270,4 +276,14 @@ function NoLogsFound() {
       </div>
     </div>
   );
+}
+
+function getLevelFromMessage(message: string): TLogLineWithLevel["level"] {
+  if (/error/i.test(message)) {
+    return "error";
+  }
+  if (/warn/i.test(message)) {
+    return "warn";
+  }
+  return "info";
 }
