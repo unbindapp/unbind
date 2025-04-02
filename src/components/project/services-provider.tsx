@@ -17,7 +17,7 @@ export const ServicesProvider: React.FC<{
   teamId: string;
   projectId: string;
   environmentId: string;
-  initialData: AppRouterOutputs["services"]["list"];
+  initialData?: AppRouterOutputs["services"]["list"];
   children: ReactNode;
 }> = ({ teamId, projectId, environmentId, initialData, children }) => {
   const query = api.services.list.useQuery({ teamId, projectId, environmentId }, { initialData });

@@ -2,9 +2,20 @@
 
 import MetricsChartList from "@/components/metrics/metrics-chart-list";
 import { useMetrics } from "@/components/metrics/metrics-provider";
+import { useServices } from "@/components/project/services-provider";
+import { useMemo } from "react";
 
 export default function Charts() {
   const { data } = useMetrics();
+  const {
+    query: { data: servicesData, error: servicesError, isPending: servicesIsPending },
+  } = useServices();
+
+  const tooltipNameFormatter: ((name: string) => string) | undefined = useMemo(() => {
+    if (!servicesData) return undefined;
+    return (name: string) =>
+      servicesData.services.find((service) => service.id === name)?.display_name || name;
+  }, [servicesData]);
 
   if (data && data.metrics.cpu.length === 0) {
     return (
@@ -16,5 +27,11 @@ export default function Charts() {
     );
   }
 
-  return <MetricsChartList />;
+  return (
+    <MetricsChartList
+      tooltipNameFormatter={tooltipNameFormatter}
+      tooltipNameFormatterError={!tooltipNameFormatter ? servicesError?.message : undefined}
+      tooltipNameFormatterIsPending={!tooltipNameFormatter ? servicesIsPending : false}
+    />
+  );
 }

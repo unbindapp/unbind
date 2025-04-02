@@ -10,6 +10,9 @@ type TProps = {
   className?: string;
   classNameChart?: string;
   noLegends?: boolean;
+  tooltipNameFormatter: ((name: string) => string) | undefined;
+  tooltipNameFormatterIsPending: boolean;
+  tooltipNameFormatterError: string | undefined;
 };
 
 type TMetrics = {
@@ -19,9 +22,19 @@ type TMetrics = {
   network: TChartDataItem[];
 };
 
-export default function MetricsChartList({ className, classNameChart, noLegends }: TProps) {
-  const { data, isPending, error } = useMetrics();
+export default function MetricsChartList({
+  className,
+  classNameChart,
+  noLegends,
+  tooltipNameFormatter,
+  tooltipNameFormatterError,
+  tooltipNameFormatterIsPending,
+}: TProps) {
+  const { data, isPending: isPendingMetrics, error: errorMetrics } = useMetrics();
   const defaultErrorMessage = "Something went wrong";
+
+  const isPending = tooltipNameFormatterIsPending || isPendingMetrics;
+  const error = tooltipNameFormatterError || errorMetrics?.message;
 
   const modifiedData: TMetrics | undefined = useMemo(() => {
     if (!data) return undefined;
@@ -69,13 +82,14 @@ export default function MetricsChartList({ className, classNameChart, noLegends 
       >
         {isPending && !modifiedData && <LoadingPlaceholder noLegends={noLegends} />}
         {error && !isPending && !modifiedData && (
-          <Error noLegends={noLegends}>{error.message || defaultErrorMessage}</Error>
+          <Error noLegends={noLegends}>{error || defaultErrorMessage}</Error>
         )}
         {modifiedData && (
           <MetricsChart
             chartData={modifiedData.cpu}
             yFormatter={cpuToHumanReadable}
             tooltipValueFormatter={cpuToHumanReadable}
+            tooltipNameFormatter={tooltipNameFormatter}
           />
         )}
       </ChartWrapper>
@@ -86,30 +100,14 @@ export default function MetricsChartList({ className, classNameChart, noLegends 
       >
         {isPending && !modifiedData && <LoadingPlaceholder noLegends={noLegends} />}
         {error && !isPending && !modifiedData && (
-          <Error noLegends={noLegends}>{error.message || defaultErrorMessage}</Error>
+          <Error noLegends={noLegends}>{error || defaultErrorMessage}</Error>
         )}
         {modifiedData && (
           <MetricsChart
             chartData={modifiedData.ram}
             yFormatter={bytesToHumanReadable}
             tooltipValueFormatter={bytesToHumanReadable}
-          />
-        )}
-      </ChartWrapper>
-      <ChartWrapper
-        title="Disk"
-        description="Disk usage over time"
-        className={cn("w-full lg:w-1/2", classNameChart)}
-      >
-        {isPending && !modifiedData && <LoadingPlaceholder noLegends={noLegends} />}
-        {error && !isPending && !modifiedData && (
-          <Error noLegends={noLegends}>{error.message || defaultErrorMessage}</Error>
-        )}
-        {modifiedData && (
-          <MetricsChart
-            chartData={modifiedData.disk}
-            yFormatter={bytesToHumanReadable}
-            tooltipValueFormatter={bytesToHumanReadable}
+            tooltipNameFormatter={tooltipNameFormatter}
           />
         )}
       </ChartWrapper>
@@ -120,13 +118,32 @@ export default function MetricsChartList({ className, classNameChart, noLegends 
       >
         {isPending && !modifiedData && <LoadingPlaceholder noLegends={noLegends} />}
         {error && !isPending && !modifiedData && (
-          <Error noLegends={noLegends}>{error.message || defaultErrorMessage}</Error>
+          <Error noLegends={noLegends}>{error || defaultErrorMessage}</Error>
         )}
         {modifiedData && (
           <MetricsChart
             chartData={modifiedData.network}
             yFormatter={bytesToHumanReadable}
             tooltipValueFormatter={bytesToHumanReadable}
+            tooltipNameFormatter={tooltipNameFormatter}
+          />
+        )}
+      </ChartWrapper>
+      <ChartWrapper
+        title="Disk"
+        description="Disk usage over time"
+        className={cn("w-full lg:w-1/2", classNameChart)}
+      >
+        {isPending && !modifiedData && <LoadingPlaceholder noLegends={noLegends} />}
+        {error && !isPending && !modifiedData && (
+          <Error noLegends={noLegends}>{error || defaultErrorMessage}</Error>
+        )}
+        {modifiedData && (
+          <MetricsChart
+            chartData={modifiedData.disk}
+            yFormatter={bytesToHumanReadable}
+            tooltipValueFormatter={bytesToHumanReadable}
+            tooltipNameFormatter={tooltipNameFormatter}
           />
         )}
       </ChartWrapper>

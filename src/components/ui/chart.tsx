@@ -104,6 +104,7 @@ function ChartTooltipContent({
   hideIndicator = false,
   label,
   labelFormatter,
+  nameFormatter,
   labelClassName,
   formatter,
   color,
@@ -118,6 +119,7 @@ function ChartTooltipContent({
     nameKey?: string;
     labelKey?: string;
     valueFormatter?: (value: string | number | (string | number)[]) => string;
+    nameFormatter?: (name: string) => string;
   }) {
   const { config } = useChart();
 
@@ -212,9 +214,13 @@ function ChartTooltipContent({
                   >
                     <div className="grid gap-1.5">
                       {nestLabel ? tooltipLabel : null}
-                      <span>{itemConfig?.label || item.name}</span>
+                      <span>
+                        {(typeof itemConfig?.label === "string" && nameFormatter
+                          ? nameFormatter(itemConfig.label)
+                          : itemConfig?.label) || item.name}
+                      </span>
                     </div>
-                    {item.value && (
+                    {item.value !== null && item.value !== undefined && (
                       <span className="text-foreground font-mono font-semibold tabular-nums">
                         {valueFormatter(item.value)}
                       </span>
