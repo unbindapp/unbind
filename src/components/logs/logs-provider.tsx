@@ -4,6 +4,7 @@ import { useLogViewState } from "@/components/logs/log-view-state-provider";
 import { createSearchFilter } from "@/components/logs/search-filter";
 import { env } from "@/lib/env";
 import { LogEventSchema } from "@/server/go/client.gen";
+import { TLogType } from "@/server/trpc/api/logs/types";
 import { AppRouterInputs, AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
 import { api } from "@/server/trpc/setup/client";
 import { fetchEventSource } from "@fortaine/fetch-event-source";
@@ -19,8 +20,6 @@ export type TLogLine = z.infer<typeof LogEventSchema>;
 
 export const MessageSchema = z.object({ logs: LogEventSchema.array() }).strip();
 export type TMessage = z.infer<typeof MessageSchema>;
-
-export type TLogType = "team" | "project" | "environment" | "service";
 
 type TBaseProps = {
   children: ReactNode;

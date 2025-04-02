@@ -1,5 +1,6 @@
 "use client";
 
+import MetricsProvider from "@/components/metrics/metrics-provider";
 import { servicePanelTabKey } from "@/components/service/constants";
 import DeploymentsProvider from "@/components/service/deployments/deployments-provider";
 import { DeployedServiceContent } from "@/components/service/panel/service-panel-content-deployed";
@@ -42,33 +43,16 @@ export const tabs: TTab[] = [
     title: "Variables",
     value: "variables",
     Page: Variables,
-    Provider: ({
-      teamId,
-      projectId,
-      environmentId,
-      serviceId,
-      children,
-    }: {
-      teamId: string;
-      projectId: string;
-      environmentId: string;
-      serviceId: string;
-      children: ReactNode;
-    }) => (
-      <VariablesProvider
-        teamId={teamId}
-        projectId={projectId}
-        environmentId={environmentId}
-        serviceId={serviceId}
-        type="service"
-      >
-        {children}
-      </VariablesProvider>
-    ),
+    Provider: (props: TServicePageProviderProps) => <VariablesProvider type="service" {...props} />,
   },
   { title: "Logs", value: "logs", Page: Logs, Provider: EmptyProvider, noScrollArea: true },
-  { title: "Metrics", value: "metrics", Provider: EmptyProvider, Page: Metrics },
-  { title: "Settings", value: "settings", Provider: EmptyProvider, Page: Settings },
+  {
+    title: "Metrics",
+    value: "metrics",
+    Page: Metrics,
+    Provider: (props: TServicePageProviderProps) => <MetricsProvider type="service" {...props} />,
+  },
+  { title: "Settings", value: "settings", Page: Settings, Provider: EmptyProvider },
 ];
 
 type TProps = {

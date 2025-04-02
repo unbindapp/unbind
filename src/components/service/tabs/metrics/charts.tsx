@@ -1,103 +1,27 @@
 "use client";
 
-import MetricsChartList, { TChartObject, TChartRow } from "@/components/metrics/metrics-chart-list";
-import { useService } from "@/components/service/service-provider";
-import { cn } from "@/components/ui/utils";
-import { useMemo } from "react";
+import { useMetrics } from "@/components/metrics/metrics-provider";
 
-const now = Date.now();
-
-const length = 30;
-const timestamps = Array.from({ length }).map((_, i) => ({
-  timestamp: now - (length - i) * 1000 * 60 * 60 * 24,
-  seed: Math.round(Math.random() * 100_000),
-}));
-
-function random(seed: number) {
-  const x = Math.sin(seed++) * 10000;
-  return x - Math.floor(x);
-}
-
-type TProps = {
+/* type TProps = {
   className?: string;
-};
+}; */
 
-export default function Charts({ className }: TProps) {
-  const {
-    query: { data, isPending, isError, error },
-  } = useService();
+export default function Charts() {
+  const { data } = useMetrics();
+  console.log("Service panel metrics:", data);
+  const metrics = data?.data.metrics;
 
-  const service = data?.service;
+  if (metrics && metrics.length === 0) {
+    <div className="w-full p-1">
+      <div className="text-muted-foreground flex min-h-36 w-full items-center justify-center rounded-xl border px-4 py-2.5 text-center">
+        <p className="w-full leading-tight">There are no metrics yet</p>
+      </div>
+    </div>;
+  }
 
-  const cpu: TChartObject = useMemo(() => {
-    return {
-      data: service
-        ? timestamps.map((t) => {
-            const obj: TChartRow = {
-              timestamp: t.timestamp,
-            };
-            obj[service.display_name] = random(t.seed);
-            return obj;
-          })
-        : undefined,
-      isPending,
-      isError,
-      error: error?.message,
-    };
-  }, [service, isPending, isError, error]);
+  return null;
 
-  const ram: TChartObject = useMemo(() => {
-    return {
-      data: service
-        ? timestamps.map((t) => {
-            const obj: TChartRow = {
-              timestamp: t.timestamp,
-            };
-            obj[service.display_name] = 1024 * 1024 * Math.round(random(t.seed) * 10 + 50);
-            return obj;
-          })
-        : undefined,
-      isPending,
-      isError,
-      error: error?.message,
-    };
-  }, [service, isPending, isError, error]);
-
-  const disk: TChartObject = useMemo(() => {
-    return {
-      data: service
-        ? timestamps.map((t, tI) => {
-            const obj: TChartRow = {
-              timestamp: t.timestamp,
-            };
-            obj[service.display_name] = (50 + tI) * (1024 * 1024);
-            return obj;
-          })
-        : undefined,
-      isPending,
-      isError,
-      error: error?.message,
-    };
-  }, [service, isPending, isError, error]);
-
-  const network: TChartObject = useMemo(() => {
-    return {
-      data: service
-        ? timestamps.map((t) => {
-            const obj: TChartRow = {
-              timestamp: t.timestamp,
-            };
-            obj[service.display_name] = random(t.seed) * 100 * 1024;
-            return obj;
-          })
-        : undefined,
-      isPending,
-      isError,
-      error: error?.message,
-    };
-  }, [service, isPending, isError, error]);
-
-  return (
+  /* return (
     <MetricsChartList
       cpu={cpu}
       ram={ram}
@@ -106,5 +30,5 @@ export default function Charts({ className }: TProps) {
       className={cn("-mx-1 -my-1 w-[calc(100%+0.5rem)]", className)}
       noLegends
     />
-  );
+  ); */
 }

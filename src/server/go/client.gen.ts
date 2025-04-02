@@ -337,16 +337,23 @@ export const MetricsPairSchema = z
 
 export const MetricsMapEntrySchema = z
   .object({
-    cpu: z.array(MetricsPairSchema).nullable(),
-    disk: z.array(MetricsPairSchema).nullable(),
-    network: z.array(MetricsPairSchema).nullable(),
-    ram: z.array(MetricsPairSchema).nullable(),
+    cpu: z.array(MetricsPairSchema),
+    disk: z.array(MetricsPairSchema),
+    network: z.array(MetricsPairSchema),
+    ram: z.array(MetricsPairSchema),
+  })
+  .strip();
+
+export const MetricsEntrySchema = z
+  .object({
+    data: MetricsMapEntrySchema,
+    id: z.string(),
   })
   .strip();
 
 export const MetricsResultSchema = z
   .object({
-    services: z.object({}),
+    metrics: z.array(MetricsEntrySchema),
     step: z.number(),
   })
   .strip();
@@ -840,6 +847,7 @@ export type ErrorModel = z.infer<typeof ErrorModelSchema>;
 export type GetEnvironmentOutputBody = z.infer<typeof GetEnvironmentOutputBodySchema>;
 export type MetricsPair = z.infer<typeof MetricsPairSchema>;
 export type MetricsMapEntry = z.infer<typeof MetricsMapEntrySchema>;
+export type MetricsEntry = z.infer<typeof MetricsEntrySchema>;
 export type MetricsResult = z.infer<typeof MetricsResultSchema>;
 export type GetMetricsResponseBody = z.infer<typeof GetMetricsResponseBodySchema>;
 export type GetProjectResponseBody = z.infer<typeof GetProjectResponseBodySchema>;

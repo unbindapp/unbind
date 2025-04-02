@@ -7,10 +7,11 @@ import LogViewPreferencesProvider, {
   useLogViewPreferences,
 } from "@/components/logs/log-view-preferences-provider";
 import LogViewStateProvider, { useLogViewState } from "@/components/logs/log-view-state-provider";
-import LogsProvider, { TLogType, useLogs } from "@/components/logs/logs-provider";
+import LogsProvider, { useLogs } from "@/components/logs/logs-provider";
 import NavigationBar from "@/components/logs/navigation-bar";
 import SearchBar from "@/components/logs/search-bar";
 import { useServices } from "@/components/project/services-provider";
+import { TLogType } from "@/server/trpc/api/logs/types";
 import { SearchIcon, TriangleAlertIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useThrottledCallback } from "use-debounce";

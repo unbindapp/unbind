@@ -12,6 +12,7 @@ import { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 import { gitRouter } from "@/server/trpc/api/git/router";
 import { deploymentsRouter } from "@/server/trpc/api/deployments/router";
 import { logsRouter } from "@/server/trpc/api/logs/router";
+import { metricsRouter } from "@/server/trpc/api/metrics/router";
 
 /**
  * This is the primary router for your server.
@@ -26,6 +27,7 @@ export const appRouter = createTRPCRouter({
   deployments: deploymentsRouter,
   variables: variablesRouter,
   logs: logsRouter,
+  metrics: metricsRouter,
   github: githubRouter,
   git: gitRouter,
 });
