@@ -253,15 +253,13 @@ function TitleButton({
           <div className="mt-2 flex w-full flex-wrap items-center justify-end gap-2">
             <DialogClose asChild className="text-muted-foreground">
               <Button type="button" variant="ghost">
-                Cancel
+                Close
               </Button>
             </DialogClose>
             <form.Subscribe
               selector={(state) => [state.isSubmitting]}
               children={([isSubmitting]) => (
-                <form.SubmitButton isPending={isSubmitting ? true : false}>
-                  Change
-                </form.SubmitButton>
+                <form.SubmitButton isPending={isSubmitting ? true : false}>Save</form.SubmitButton>
               )}
             />
           </div>
