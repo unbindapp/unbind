@@ -207,7 +207,7 @@ export default function CreateVariablesForm({
                                   className="h-11 w-11"
                                   onClick={() => {
                                     if (field.state.value.length <= 1) {
-                                      field.replaceValue(0, { name: "", value: "" });
+                                      form.reset();
                                       return;
                                     }
                                     field.removeValue(i);

@@ -84,8 +84,8 @@ export default function GeneralTabContent({ teamId }: TProps) {
           )}
         />
         <form.Subscribe
-          selector={(state) => [state.canSubmit, state.isSubmitting, state.values]}
-          children={([canSubmit, isSubmitting, values]) => {
+          selector={(state) => [state.isSubmitting, state.values]}
+          children={([isSubmitting, values]) => {
             const valuesUnchanged =
               typeof values === "object" &&
               values.displayName === data?.team.display_name &&
@@ -95,7 +95,7 @@ export default function GeneralTabContent({ teamId }: TProps) {
                 <form.SubmitButton
                   data-submitting={isSubmitting ? true : undefined}
                   className="group/button flex-1 md:flex-none xl:py-3.75"
-                  disabled={!canSubmit || valuesUnchanged}
+                  disabled={valuesUnchanged}
                 >
                   <div className="-ml-1 size-5 shrink-0">
                     {isSubmitting ? (
