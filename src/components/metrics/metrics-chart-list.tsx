@@ -90,6 +90,7 @@ export default function MetricsChartList({
             yFormatter={cpuToHumanReadable}
             tooltipValueFormatter={cpuToHumanReadable}
             tooltipNameFormatter={tooltipNameFormatter}
+            noLegends={noLegends}
           />
         )}
       </ChartWrapper>
@@ -108,6 +109,7 @@ export default function MetricsChartList({
             yFormatter={bytesToHumanReadable}
             tooltipValueFormatter={bytesToHumanReadable}
             tooltipNameFormatter={tooltipNameFormatter}
+            noLegends={noLegends}
           />
         )}
       </ChartWrapper>
@@ -126,6 +128,7 @@ export default function MetricsChartList({
             yFormatter={bytesToHumanReadable}
             tooltipValueFormatter={bytesToHumanReadable}
             tooltipNameFormatter={tooltipNameFormatter}
+            noLegends={noLegends}
           />
         )}
       </ChartWrapper>
@@ -144,6 +147,7 @@ export default function MetricsChartList({
             yFormatter={bytesToHumanReadable}
             tooltipValueFormatter={bytesToHumanReadable}
             tooltipNameFormatter={tooltipNameFormatter}
+            noLegends={noLegends}
           />
         )}
       </ChartWrapper>

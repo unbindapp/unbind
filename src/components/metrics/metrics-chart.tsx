@@ -20,6 +20,7 @@ type TProps = {
   chartData: TChartDataItem[];
   className?: string;
   classNameChart?: string;
+  noLegends?: boolean;
 };
 
 const margin = { left: 4, right: 4, top: 4, bottom: 4 };
@@ -33,6 +34,7 @@ export default function MetricsChart({
   chartData,
   className,
   classNameChart,
+  noLegends,
 }: TProps) {
   const [dataKeys, allDataKeysAreNull] = useMemo(() => {
     const keys = new Set<string>();
@@ -137,7 +139,7 @@ export default function MetricsChart({
           </AreaChart>
         </ChartContainer>
       )}
-      {dataKeys.length > 1 && (
+      {!noLegends && dataKeys.length >= 1 && (
         <ol
           data-no-data-keys={allDataKeysAreNull ? true : undefined}
           data-has-active={activeDataKey ? true : undefined}

@@ -6,7 +6,13 @@ import { useService } from "@/components/service/service-provider";
 import { cn } from "@/components/ui/utils";
 import { useMemo } from "react";
 
-export default function Charts({ className }: { className?: string }) {
+export default function Charts({
+  className,
+  noLegends,
+}: {
+  className?: string;
+  noLegends?: boolean;
+}) {
   const { data } = useMetrics();
   const {
     query: { data: serviceData, error: serviceError, isPending: serviceIsPending },
@@ -34,6 +40,7 @@ export default function Charts({ className }: { className?: string }) {
       tooltipNameFormatter={tooltipNameFormatter}
       tooltipNameFormatterError={!tooltipNameFormatter ? serviceError?.message : undefined}
       tooltipNameFormatterIsPending={!tooltipNameFormatter ? serviceIsPending : false}
+      noLegends={noLegends}
     />
   );
 }

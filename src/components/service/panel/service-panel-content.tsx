@@ -1,6 +1,7 @@
 "use client";
 
 import MetricsProvider from "@/components/metrics/metrics-provider";
+import MetricsStateProvider from "@/components/metrics/metrics-state-provider";
 import { servicePanelTabKey } from "@/components/service/constants";
 import DeploymentsProvider from "@/components/service/deployments/deployments-provider";
 import { DeployedServiceContent } from "@/components/service/panel/service-panel-content-deployed";
@@ -50,7 +51,11 @@ export const tabs: TTab[] = [
     title: "Metrics",
     value: "metrics",
     Page: Metrics,
-    Provider: (props: TServicePageProviderProps) => <MetricsProvider type="service" {...props} />,
+    Provider: (props: TServicePageProviderProps) => (
+      <MetricsStateProvider>
+        <MetricsProvider type="service" {...props} />
+      </MetricsStateProvider>
+    ),
   },
   { title: "Settings", value: "settings", Page: Settings, Provider: EmptyProvider },
 ];

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMetricsState } from "@/components/metrics/metrics-state-provider";
 import { TLogType } from "@/server/trpc/api/logs/types";
 import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
 import { api } from "@/server/trpc/setup/client";
@@ -37,7 +38,15 @@ export const MetricsProvider: React.FC<TProps> = ({
   type,
   children,
 }) => {
-  const query = api.metrics.list.useQuery({ teamId, projectId, environmentId, serviceId, type });
+  const { interval } = useMetricsState();
+  const query = api.metrics.list.useQuery({
+    teamId,
+    projectId,
+    environmentId,
+    serviceId,
+    type,
+    interval: interval.value,
+  });
 
   return <MetricsContext.Provider value={query}>{children}</MetricsContext.Provider>;
 };

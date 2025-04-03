@@ -1,7 +1,16 @@
 import { MetricsTypeSchema } from "@/server/go/client.gen";
+import { MetricsIntervalEnum, TMetricsIntervalEnum } from "@/server/trpc/api/metrics/types";
 import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+
+const intervalToStart: Record<TMetricsIntervalEnum, () => string> = {
+  "1h": () => new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+  "6h": () => new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+  "24h": () => new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+  "7d": () => new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+  "30d": () => new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+};
 
 export const metricsRouter = createTRPCRouter({
   list: publicProcedure
@@ -13,13 +22,12 @@ export const metricsRouter = createTRPCRouter({
           projectId: z.string().uuid().optional(),
           environmentId: z.string().uuid().optional(),
           serviceId: z.string().uuid().optional(),
-          start: z.string().optional(),
-          end: z.string().optional(),
+          interval: MetricsIntervalEnum,
         })
         .strip(),
     )
     .query(async function ({
-      input: { type, teamId, projectId, environmentId, serviceId, start, end },
+      input: { type, teamId, projectId, environmentId, serviceId, interval },
       ctx,
     }) {
       const { session, goClient } = ctx;
@@ -29,6 +37,8 @@ export const metricsRouter = createTRPCRouter({
           message: "You need to be logged in to access this resource",
         });
       }
+      const start = intervalToStart[interval]();
+
       const metricsData = await goClient.metrics.get({
         type,
         team_id: teamId,
@@ -36,7 +46,6 @@ export const metricsRouter = createTRPCRouter({
         environment_id: environmentId,
         service_id: serviceId,
         start,
-        end,
       });
       return {
         ...metricsData.data,
