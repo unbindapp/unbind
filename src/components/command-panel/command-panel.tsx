@@ -238,10 +238,11 @@ function CommandPanel({
 
   useEffect(() => {
     if (isTouchscreen) return;
+    if (isPending) return;
     const value = getFirstCommandListItem(scrollAreaRef);
     if (value) setValue(value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage]);
+  }, [currentPage, isPending]);
 
   return (
     <Command
@@ -329,6 +330,8 @@ function Content({
                   }}
                   setCurrentPageId={() => null}
                   isPlaceholder={true}
+                  disabled={true}
+                  fadeOnDisabled={false}
                 />
               ))}
           </CommandGroup>
@@ -435,10 +438,14 @@ function Item({
   item,
   setCurrentPageId,
   isPlaceholder,
+  disabled,
+  fadeOnDisabled,
 }: {
   item: TCommandPanelItem;
   setCurrentPageId: (id: string) => void;
   isPlaceholder?: boolean;
+  disabled?: boolean;
+  fadeOnDisabled?: boolean;
 }) {
   const search = useCommandState((state) => state.search);
   const value = useCommandState((state) => state.value);
@@ -485,6 +492,8 @@ function Item({
       keywords={item.keywords}
       className="group/item active:bg-border flex w-full flex-row items-center justify-between gap-6 px-3.5 py-3 text-left font-medium data-placeholder:text-transparent"
       onSelect={onSelect}
+      disabled={disabled}
+      fadeOnDisabled={fadeOnDisabled}
     >
       <div className="bg-background border-top-loader/25 absolute top-0 left-0 hidden h-full w-full items-center justify-center overflow-hidden rounded-lg border group-data-pending/item:block">
         <div className="from-top-loader/0 via-top-loader/25 to-top-loader/0 animate-ping-pong absolute top-1/2 left-1/2 aspect-square w-[100%] origin-center -translate-1/2 bg-gradient-to-r" />

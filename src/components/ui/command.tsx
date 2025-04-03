@@ -132,7 +132,7 @@ function CommandSeparator({
 }
 
 const commandItemVariants = cva(
-  "relative flex cursor-default gap-2 select-none items-center rounded-lg px-2 py-1.5 outline-hidden data-[disabled=true]:pointer-events-none data-[selected=true]:bg-border data-[selected=true]:text-foreground data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+  "relative flex cursor-default gap-2 select-none items-center rounded-lg px-2 py-1.5 outline-hidden data-[disabled=true]:pointer-events-none data-[selected=true]:bg-border data-[disabled=true]:data-[selected=true]:bg-transparent data-[selected=true]:text-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -141,6 +141,10 @@ const commandItemVariants = cva(
       state: {
         default: "",
         pending: "opacity-100 data-[disabled=true]:opacity-100",
+      },
+      fadeOnDisabled: {
+        default: "disabled:opacity-50",
+        false: "",
       },
     },
     defaultVariants: {
@@ -154,11 +158,12 @@ function CommandItem({
   state,
   disabled,
   variant,
+  fadeOnDisabled,
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.Item> & VariantProps<typeof commandItemVariants>) {
   return (
     <CommandPrimitive.Item
-      className={cn(commandItemVariants({ state, variant }), className)}
+      className={cn(commandItemVariants({ state, variant, fadeOnDisabled }), className)}
       disabled={state === "pending" ? true : disabled}
       {...props}
     />
