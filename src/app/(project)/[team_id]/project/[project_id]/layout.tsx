@@ -1,4 +1,4 @@
-import ProjectProvider from "@/app/(project)/[team_id]/project/[project_id]/_components/project-provider";
+import ProjectProvider from "@/components/project/project-provider";
 import ContextAwareCommandPanel from "@/components/command-panel/context-aware-command-panel/context-aware-command-panel";
 import NavbarSafeAreaInsetBottom from "@/components/navigation/navbar-safe-area-inset-bottom";
 import ProjectNavbar from "@/components/project/project-navbar";

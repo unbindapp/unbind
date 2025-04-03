@@ -31,7 +31,7 @@ export default function MetricsIntervalDropdown({ className }: TProps) {
           size="icon"
           variant="outline"
           className={cn(
-            "group/button w-44 touch-manipulation justify-between text-left font-medium",
+            "group/button w-42 touch-manipulation justify-between text-left font-medium",
             className,
           )}
         >

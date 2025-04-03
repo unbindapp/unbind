@@ -1,4 +1,4 @@
-import { useProject } from "@/app/(project)/[team_id]/project/[project_id]/_components/project-provider";
+import { useProject } from "@/components/project/project-provider";
 import { useCommandPanelState } from "@/components/command-panel/command-panel-state-provider";
 import { commandPanelKey, commandPanelPageKey } from "@/components/command-panel/constants";
 import { findCommandPanelPage } from "@/components/command-panel/helpers";

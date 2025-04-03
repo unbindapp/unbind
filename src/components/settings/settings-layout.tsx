@@ -14,7 +14,7 @@ export default function SettingsLayout({ title, tabs, children }: TProps) {
         <h1 className="w-full px-5 text-2xl leading-tight font-bold sm:px-6 md:px-3">
           {title || "Settings"}
         </h1>
-        <div className="relative flex w-full flex-1 flex-col pt-2 md:flex-row md:items-stretch md:gap-4 md:pt-3">
+        <div className="relative flex w-full flex-1 flex-col pt-1 md:flex-row md:items-stretch md:gap-4 md:pt-3">
           <SettingsTabs tabs={tabs} />
           <div className="flex min-w-0 flex-1 flex-col px-4 pt-4 pb-12 sm:px-6 sm:pt-5 md:pt-2 md:pr-2 md:pl-0">
             {children}

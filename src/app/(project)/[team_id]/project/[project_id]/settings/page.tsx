@@ -10,9 +10,5 @@ type TProps = {
 
 export default async function Page({ params }: TProps) {
   const { team_id: teamId, project_id: projectId } = await params;
-  return (
-    <>
-      <GeneralTabContent teamId={teamId} projectId={projectId} />
-    </>
-  );
+  return <GeneralTabContent teamId={teamId} projectId={projectId} />;
 }
