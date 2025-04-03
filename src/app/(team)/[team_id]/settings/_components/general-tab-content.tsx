@@ -62,7 +62,7 @@ export default function GeneralTabContent({ teamId }: TProps) {
               onBlur={field.handleBlur}
               onChange={(e) => field.handleChange(e.target.value)}
               layout="label-included"
-              inputTitle="Project Name"
+              inputTitle="Team Name"
               className="flex-1 xl:max-w-72"
               maxLength={teamNameMaxLength}
             />
@@ -77,7 +77,7 @@ export default function GeneralTabContent({ teamId }: TProps) {
               onBlur={field.handleBlur}
               onChange={(e) => field.handleChange(e.target.value)}
               layout="label-included"
-              inputTitle="Project Description"
+              inputTitle="Team Description"
               className="flex-1"
               maxLength={teamDescriptionMaxLength}
             />
