@@ -1,4 +1,7 @@
-import { CreateServiceFromGitSchema } from "@/server/trpc/api/services/types";
+import {
+  CreateServiceFromGitSchema,
+  UpdateServiceInputSchema,
+} from "@/server/trpc/api/services/types";
 import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -99,6 +102,29 @@ export const servicesRouter = createTRPCRouter({
       public: isPublic,
       replicas: 1,
       auto_deploy: true,
+    });
+    return {
+      service: service.data,
+    };
+  }),
+  update: publicProcedure.input(UpdateServiceInputSchema).mutation(async function ({
+    input: { teamId, projectId, environmentId, serviceId, displayName, description },
+    ctx,
+  }) {
+    const { session, goClient } = ctx;
+    if (!session) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "You need to be logged in to access this resource",
+      });
+    }
+    const service = await goClient.services.update({
+      team_id: teamId,
+      project_id: projectId,
+      environment_id: environmentId,
+      service_id: serviceId,
+      display_name: displayName,
+      description,
     });
     return {
       service: service.data,

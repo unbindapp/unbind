@@ -126,10 +126,10 @@ function DialogContent({
     <DialogPortal>
       <DialogOverlay noYPadding={noYPadding} noXPadding={noXPadding} animate={animate}>
         <DialogPrimitive.Content
+          {...props}
           onCloseAutoFocus={handleCloseAutoFocus}
           onEscapeKeyDown={handleEscapeKeyDown}
           className={dialogContentVariants({ variant, animate, className })}
-          {...props}
         >
           <div className={cn("flex w-full flex-col gap-4", classNameInnerWrapper)}>
             {children}

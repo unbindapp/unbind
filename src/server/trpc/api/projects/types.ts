@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const projectNameMinLength = 3;
+export const projectNameMinLength = 2;
 export const projectNameMaxLength = 32;
 export const projectDescriptionMaxLength = 128;
 

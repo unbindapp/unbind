@@ -101,7 +101,7 @@ function DeleteButton({ teamId, projectId }: { teamId: string; projectId: string
       <DialogTrigger asChild>
         <Button variant="destructive">Delete Project</Button>
       </DialogTrigger>
-      <DialogContent hideXButton classNameInnerWrapper="max-w-lg">
+      <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
           <DialogTitle>Delete Project</DialogTitle>
           <DialogDescription>
@@ -145,17 +145,17 @@ function DeleteButton({ teamId, projectId }: { teamId: string; projectId: string
             <form.Subscribe
               selector={(state) => [state.canSubmit, state.isSubmitting, state.values]}
               children={([canSubmit, isSubmitting, values]) => (
-                  <form.SubmitButton
-                    data-submitting={isSubmitting ? true : undefined}
-                    variant="destructive"
-                    disabled={
-                      !canSubmit ||
-                      (typeof values === "object" && values.textToConfirm !== textToConfirm)
-                    }
-                    isPending={isSubmitting ? true : false}
-                  >
-                    Delete
-                  </form.SubmitButton>
+                <form.SubmitButton
+                  data-submitting={isSubmitting ? true : undefined}
+                  variant="destructive"
+                  disabled={
+                    !canSubmit ||
+                    (typeof values === "object" && values.textToConfirm !== textToConfirm)
+                  }
+                  isPending={isSubmitting ? true : false}
+                >
+                  Delete
+                </form.SubmitButton>
               )}
             />
           </div>
