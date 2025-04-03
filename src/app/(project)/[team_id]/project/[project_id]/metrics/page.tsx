@@ -1,6 +1,6 @@
 import { getProjectPageSearchParams } from "@/app/(project)/[team_id]/project/[project_id]/_components/search-params";
 import Charts from "@/app/(project)/[team_id]/project/[project_id]/metrics/_components/charts";
-import MetricsIntervalDropdown from "@/components/metrics/interval-dropdown";
+import MetricsIntervalDropdown from "@/components/metrics/metrics-interval-dropdown";
 import MetricsProvider from "@/components/metrics/metrics-provider";
 import MetricsStateProvider from "@/components/metrics/metrics-state-provider";
 import { metricsSearchParams } from "@/components/metrics/search-params";

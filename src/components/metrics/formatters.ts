@@ -32,5 +32,6 @@ export function bytesToHumanReadable(v: number) {
 }
 
 export function cpuToHumanReadable(v: number) {
-  return `${v.toLocaleString(undefined, { maximumSignificantDigits: 3 })}`;
+  const str = `${v.toLocaleString(undefined, { maximumSignificantDigits: 3 })}`;
+  return str.startsWith("0.") ? str.substring(1) : str;
 }

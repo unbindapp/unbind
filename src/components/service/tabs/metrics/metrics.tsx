@@ -1,4 +1,4 @@
-import MetricsIntervalDropdown from "@/components/metrics/interval-dropdown";
+import MetricsIntervalDropdown from "@/components/metrics/metrics-interval-dropdown";
 import Charts from "@/components/service/tabs/metrics/charts";
 import TabWrapper from "@/components/service/tabs/tab-wrapper";
 

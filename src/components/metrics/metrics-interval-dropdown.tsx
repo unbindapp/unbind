@@ -36,7 +36,7 @@ export default function MetricsIntervalDropdown({ className }: TProps) {
           )}
         >
           <p className="min-w-0 shrink truncate">{interval.label}</p>
-          <ChevronDownIcon className="text-muted-more-foreground -mr-1 size-5 shrink-0 transition-transform group-data-open/button:rotate-180" />
+          <ChevronDownIcon className="text-muted-more-foreground -mr-1 size-4.5 shrink-0 transition-transform group-data-open/button:rotate-180" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[var(--radix-popper-anchor-width)]">
