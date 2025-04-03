@@ -2,8 +2,10 @@
 
 import MetricsChartList from "@/components/metrics/metrics-chart-list";
 import { useMetrics } from "@/components/metrics/metrics-provider";
+import NoItemsCard from "@/components/no-items-card";
 import { useService } from "@/components/service/service-provider";
 import { cn } from "@/components/ui/utils";
+import { ChartColumnIcon } from "lucide-react";
 import { useMemo } from "react";
 
 export default function Charts({
@@ -25,13 +27,7 @@ export default function Charts({
   }, [serviceData]);
 
   if (data && data.metrics.cpu.length === 0) {
-    return (
-      <div className="w-full p-1">
-        <div className="text-muted-foreground flex min-h-36 w-full items-center justify-center rounded-xl border px-4 py-2.5 text-center">
-          <p className="w-full leading-tight">There are no metrics yet</p>
-        </div>
-      </div>
-    );
+    return <NoItemsCard Icon={ChartColumnIcon}>No metrics yet</NoItemsCard>;
   }
 
   return (

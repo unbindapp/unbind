@@ -37,7 +37,7 @@ export default function useProjectCommandPanelData() {
     parseAsString.withDefault(commandPanelProjectRootPage),
   );
   const timeout = useRef<NodeJS.Timeout | null>(null);
-  const { mutateAsync: createServiceInDb } = api.services.create.useMutation();
+  const { mutateAsync: createServiceViaApi } = api.services.create.useMutation();
   const { mutateAsync: createService } = useMutation({
     mutationKey: ["create_service"],
     mutationFn: async ({
@@ -76,14 +76,13 @@ export default function useProjectCommandPanelData() {
         throw new Error("No branches found in the repository.");
       }
       const firstBranch = branches[0];
-      const result = await createServiceInDb({
+      const result = await createServiceViaApi({
         type: "github",
         builder: "railpack",
         gitBranch: firstBranch.name,
         repositoryOwner: owner,
         repositoryName: repoName,
         displayName: repoName,
-        description: "A new service.",
         teamId,
         projectId,
         environmentId,

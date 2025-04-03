@@ -1,9 +1,11 @@
 "use client";
 
 import ErrorCard from "@/components/error-card";
+import NoItemsCard from "@/components/no-items-card";
 import { useDeployments } from "@/components/service/deployments/deployments-provider";
 import DeploymentCard from "@/components/service/tabs/deployments/deployment-card";
 import TabWrapper from "@/components/service/tabs/tab-wrapper";
+import { RocketIcon } from "lucide-react";
 
 export default function Deployments() {
   const {
@@ -43,9 +45,12 @@ export default function Deployments() {
             />
           ))}
       {data?.deployments && data.deployments.length === 0 && (
-        <div className="text-muted-foreground px-2 py-5 text-center leading-tight font-medium">
+        <NoItemsCard
+          Icon={RocketIcon}
+          className="text-muted-foreground px-2 py-5 text-center leading-tight font-medium"
+        >
           No deployments yet
-        </div>
+        </NoItemsCard>
       )}
       {!data &&
         isPending &&

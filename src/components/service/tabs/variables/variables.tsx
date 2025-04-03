@@ -1,8 +1,10 @@
 import ErrorCard from "@/components/error-card";
+import NoItemsCard from "@/components/no-items-card";
 import TabWrapper from "@/components/service/tabs/tab-wrapper";
 import VariableCard from "@/components/service/tabs/variables/variable-card";
 import VariablesHeader from "@/components/service/tabs/variables/variables-header";
 import { useVariables } from "@/components/service/tabs/variables/variables-provider";
+import { KeyRoundIcon } from "lucide-react";
 
 export default function Variables() {
   const {
@@ -17,9 +19,7 @@ export default function Variables() {
         variables.length > 0 &&
         variables.map((variable) => <VariableCard key={variable.name} variable={variable} />)}
       {variables && variables.length === 0 && (
-        <div className="text-muted-foreground px-2 py-5 text-center leading-tight font-medium">
-          No variables yet
-        </div>
+        <NoItemsCard Icon={KeyRoundIcon}>No variables yet</NoItemsCard>
       )}
       {!data &&
         isPending &&

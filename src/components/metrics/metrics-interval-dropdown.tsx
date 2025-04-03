@@ -28,10 +28,9 @@ export default function MetricsIntervalDropdown({ className }: TProps) {
           data-open={isDropdownOpen ? true : undefined}
           aria-label="Metrics Interval"
           type="button"
-          size="icon"
           variant="outline"
           className={cn(
-            "group/button w-42 touch-manipulation justify-between text-left font-medium",
+            "group/button w-42 touch-manipulation justify-between py-2 text-left font-medium",
             className,
           )}
         >
