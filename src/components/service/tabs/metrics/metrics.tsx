@@ -6,7 +6,7 @@ export default function Metrics() {
   return (
     <TabWrapper>
       <MetricsIntervalDropdown />
-      <div className="flex w-full flex-row flex-wrap">
+      <div className="flex w-full flex-row flex-wrap pt-1">
         <Charts noLegends />
       </div>
     </TabWrapper>

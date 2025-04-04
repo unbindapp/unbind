@@ -13,7 +13,7 @@ export default function VariablesHeader() {
   return (
     <div
       data-pending={isPending ? true : undefined}
-      className="group/header flex w-full flex-col gap-2 pb-2"
+      className="group/header flex w-full flex-col gap-2 pb-1"
     >
       <div className="flex w-full items-center justify-between gap-2">
         <div className="min-w-0 shrink overflow-hidden px-1">
