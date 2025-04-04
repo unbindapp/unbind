@@ -1,5 +1,6 @@
 import TabIndicator from "@/components/navigation/tab-indicator";
 import { TTab } from "@/components/service/panel/service-panel-content";
+import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useService } from "@/components/service/service-provider";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -9,22 +10,14 @@ import { ReactNode } from "react";
 
 type TProps = {
   tabs: TTab[];
-  currentTab: TTab | undefined;
-  currentTabId: string;
-  setCurrentTab: (tab: string) => void;
   service: TServiceShallow;
   className?: string;
+  currentTab: TTab | undefined;
 };
 
-export function DeployedServiceContent({
-  tabs,
-  currentTab,
-  currentTabId,
-  setCurrentTab,
-  service,
-  className,
-}: TProps) {
+export function DeployedServiceContent({ currentTab, tabs, service, className }: TProps) {
   const { teamId, projectId, environmentId } = useService();
+  const { currentTabId, setCurrentTabId } = useServicePanel();
   return (
     <div className={cn("flex w-full flex-1 flex-col overflow-hidden", className)}>
       <nav className="touch:scrollbar-hidden flex w-full justify-start overflow-auto border-b">
@@ -33,7 +26,7 @@ export function DeployedServiceContent({
             <Button
               key={tab.value}
               variant="ghost"
-              onClick={() => setCurrentTab(tab.value)}
+              onClick={() => setCurrentTabId(tab.value)}
               data-active={tab.value === currentTabId ? true : undefined}
               className="group/button text-muted-foreground data-active:text-foreground min-w-0 shrink rounded-t-md rounded-b-none px-3 pt-2.5 pb-4.5 font-medium active:bg-transparent has-hover:hover:bg-transparent"
             >

@@ -7,6 +7,7 @@ import { type SearchParams } from "nuqs/server";
 import { ResultAsync } from "neverthrow";
 import { notFound } from "next/navigation";
 import ServiceCardList from "@/components/project/service-card-list";
+import ServicePanelProvider from "@/components/service/panel/service-panel-provider";
 
 type TProps = {
   params: Promise<{
@@ -56,17 +57,19 @@ export default async function Page({ params, searchParams }: TProps) {
       projectId={projectId}
       environmentId={environmentId}
     >
-      <PageWrapper>
-        <div className="flex w-full max-w-7xl flex-col">
-          <div className="flex w-full flex-wrap items-center justify-between gap-4 px-1">
-            <h1 className="min-w-0 px-2 text-2xl leading-tight font-bold">Services</h1>
-            <NewServiceButton />
+      <ServicePanelProvider>
+        <PageWrapper>
+          <div className="flex w-full max-w-7xl flex-col">
+            <div className="flex w-full flex-wrap items-center justify-between gap-4 px-1">
+              <h1 className="min-w-0 px-2 text-2xl leading-tight font-bold">Services</h1>
+              <NewServiceButton />
+            </div>
+            <div className="flex w-full items-center justify-center pt-3">
+              <ServiceCardList />
+            </div>
           </div>
-          <div className="flex w-full items-center justify-center pt-3">
-            <ServiceCardList />
-          </div>
-        </div>
-      </PageWrapper>
+        </PageWrapper>
+      </ServicePanelProvider>
     </ServicesProvider>
   );
 }

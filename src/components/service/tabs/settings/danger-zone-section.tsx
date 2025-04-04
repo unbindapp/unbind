@@ -1,8 +1,7 @@
-"use client";
-
 import ErrorLine from "@/components/error-line";
-import { useProjectsUtils } from "@/components/project/projects-provider";
-import { useAsyncPush } from "@/components/providers/async-push-provider";
+import { useServicesUtils } from "@/components/project/services-provider";
+import { useServicePanel } from "@/components/service/panel/service-panel-provider";
+import { useService } from "@/components/service/service-provider";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,18 +14,16 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { api } from "@/server/trpc/setup/client";
 import { TriangleAlertIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import { z } from "zod";
 
-type Props = {
+type TProps = {
   className?: string;
 };
 
-export default function DeleteProjectSection({ className }: Props) {
-  const { teamId, projectId } = useIdsFromPathname();
+export default function DangerZoneSection({ className }: TProps) {
   return (
     <div
       className={cn(
@@ -37,28 +34,34 @@ export default function DeleteProjectSection({ className }: Props) {
       <div className="-mt-0.75 flex w-full items-center justify-start gap-2 px-1">
         <TriangleAlertIcon className="size-4.5 shrink-0" />
         <p className="min-w-0 shrink leading-snug text-balance">
-          Proceed with caution! Deleting this project will delete all environments and services
-          inside it. This action cannot be undone.
+          Proceed with caution! This action cannot be undone.
         </p>
       </div>
-      {teamId && projectId && <DeleteButton teamId={teamId} projectId={projectId} />}
+      <DeleteButton />
     </div>
   );
 }
 
-function DeleteButton({ teamId, projectId }: { teamId: string; projectId: string }) {
+function DeleteButton() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const textToConfirm = "Delete this project permanently";
-  const { asyncPush } = useAsyncPush();
-  const { invalidate: invalidateProjects } = useProjectsUtils({ teamId });
+  const textToConfirm = "Delete this service permanently";
+  const { teamId, projectId, environmentId, serviceId } = useService();
+  const { invalidate: invalidateServices } = useServicesUtils({
+    teamId,
+    projectId,
+    environmentId,
+  });
+  const { resetCurrentTabId, setCurrentServiceId } = useServicePanel();
 
   const {
-    mutateAsync: deleteProject,
+    mutateAsync: deleteService,
     error,
     reset,
-  } = api.projects.delete.useMutation({
+  } = api.services.delete.useMutation({
     onSuccess: async () => {
-      invalidateProjects();
+      invalidateServices();
+      setCurrentServiceId(null);
+      resetCurrentTabId();
     },
   });
 
@@ -76,8 +79,7 @@ function DeleteButton({ teamId, projectId }: { teamId: string; projectId: string
         .strip(),
     },
     onSubmit: async ({ formApi }) => {
-      await deleteProject({ teamId, projectId });
-      await asyncPush(`/${teamId}`);
+      await deleteService({ teamId, projectId, environmentId, serviceId });
       formApi.reset();
     },
   });
@@ -99,14 +101,13 @@ function DeleteButton({ teamId, projectId }: { teamId: string; projectId: string
       }}
     >
       <DialogTrigger asChild>
-        <Button variant="destructive">Delete Project</Button>
+        <Button variant="destructive">Delete Service</Button>
       </DialogTrigger>
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
-          <DialogTitle>Delete Project</DialogTitle>
+          <DialogTitle>Delete Service</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete this project? This action cannot be undone. All the
-            services and data inside this project will be permanently deleted.
+            Are you sure you want to delete this services? This action cannot be undone.
             <br />
             <br />
             Type {`"`}

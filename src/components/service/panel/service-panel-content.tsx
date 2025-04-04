@@ -2,10 +2,11 @@
 
 import MetricsProvider from "@/components/metrics/metrics-provider";
 import MetricsStateProvider from "@/components/metrics/metrics-state-provider";
-import { servicePanelTabKey } from "@/components/service/constants";
 import DeploymentsProvider from "@/components/service/deployments/deployments-provider";
+import { TServicePanelTabEnum } from "@/components/service/panel/constants";
 import { DeployedServiceContent } from "@/components/service/panel/service-panel-content-deployed";
 import UndeployedServiceContent from "@/components/service/panel/service-panel-content-undeployed";
+import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useService } from "@/components/service/service-provider";
 import Deployments from "@/components/service/tabs/deployments/deployments";
 import Logs from "@/components/service/tabs/logs/logs";
@@ -14,7 +15,6 @@ import Settings from "@/components/service/tabs/settings/settings";
 import Variables from "@/components/service/tabs/variables/variables";
 import VariablesProvider from "@/components/service/tabs/variables/variables-provider";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
-import { parseAsString, useQueryState } from "nuqs";
 import { FC, ReactNode } from "react";
 
 export type TServicePage = FC;
@@ -22,7 +22,7 @@ export type TServicePageProvider = FC<TServicePageProviderProps>;
 
 export type TTab = {
   title: string;
-  value: string;
+  value: TServicePanelTabEnum;
   Page: TServicePage;
   Provider: TServicePageProvider;
   noScrollArea?: boolean;
@@ -67,10 +67,7 @@ type TProps = {
 
 export default function ServicePanelContent({ service, className }: TProps) {
   const { teamId, projectId, environmentId } = useService();
-  const [currentTabId, setCurrentTab] = useQueryState(
-    servicePanelTabKey,
-    parseAsString.withDefault(tabs[0].value),
-  );
+  const { currentTabId } = useServicePanel();
   const currentTab = tabs.find((tab) => tab.value === currentTabId);
 
   if (!service.last_deployment) {
@@ -89,13 +86,5 @@ export default function ServicePanelContent({ service, className }: TProps) {
     );
   }
 
-  return (
-    <DeployedServiceContent
-      currentTab={currentTab}
-      currentTabId={currentTabId}
-      tabs={tabs}
-      setCurrentTab={setCurrentTab}
-      service={service}
-    />
-  );
+  return <DeployedServiceContent tabs={tabs} service={service} currentTab={currentTab} />;
 }

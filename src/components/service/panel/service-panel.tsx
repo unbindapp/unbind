@@ -2,8 +2,8 @@ import ErrorLine from "@/components/error-line";
 import ServiceIcon from "@/components/icons/service";
 import { useServicesUtils } from "@/components/project/services-provider";
 import { useDeviceSize } from "@/components/providers/device-size-provider";
-import { servicePanelServiceIdKey, servicePanelTabKey } from "@/components/service/constants";
-import ServicePanelContent, { tabs } from "@/components/service/panel/service-panel-content";
+import ServicePanelContent from "@/components/service/panel/service-panel-content";
+import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import ServiceProvider, { useServiceUtils } from "@/components/service/service-provider";
 import { Button, LinkButton } from "@/components/ui/button";
 import {
@@ -20,8 +20,8 @@ import {
   DrawerClose,
   DrawerContent,
   DrawerHeader,
-  DrawerTrigger,
   DrawerTitle,
+  DrawerTrigger,
 } from "@/components/ui/drawer";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import {
@@ -34,7 +34,6 @@ import {
 } from "@/server/trpc/api/services/types";
 import { api } from "@/server/trpc/setup/client";
 import { ExternalLinkIcon, GlobeIcon, PenIcon, XIcon } from "lucide-react";
-import { parseAsString, useQueryState } from "nuqs";
 import { ReactNode, useRef, useState } from "react";
 import { z } from "zod";
 
@@ -53,13 +52,11 @@ export default function ServicePanel({
   service,
   children,
 }: TProps) {
-  const [, setCurrentTab] = useQueryState(
-    servicePanelTabKey,
-    parseAsString.withDefault(tabs[0].value),
-  );
-
-  const [serviceIdFromSearchParam, setServiceIdFromSearchParam] =
-    useQueryState(servicePanelServiceIdKey);
+  const {
+    setCurrentTabId,
+    currentServiceId: serviceIdFromSearchParam,
+    setCurrentServiceId: setServiceIdFromSearchParam,
+  } = useServicePanel();
 
   const open = serviceIdFromSearchParam === service.id;
   const setOpen = (open: boolean) => {
@@ -68,7 +65,7 @@ export default function ServicePanel({
       return;
     }
     setServiceIdFromSearchParam(null);
-    setCurrentTab(null);
+    setCurrentTabId(null);
   };
   const { isExtraSmall } = useDeviceSize();
 
