@@ -51,7 +51,7 @@ function DeleteButton() {
     projectId,
     environmentId,
   });
-  const { resetCurrentTabId, setCurrentServiceId } = useServicePanel();
+  const { closePanel } = useServicePanel();
 
   const {
     mutateAsync: deleteService,
@@ -60,8 +60,7 @@ function DeleteButton() {
   } = api.services.delete.useMutation({
     onSuccess: async () => {
       invalidateServices();
-      setCurrentServiceId(null);
-      resetCurrentTabId();
+      closePanel();
     },
   });
 

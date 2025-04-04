@@ -15,6 +15,7 @@ type TServicePanelContext = {
   currentServiceId: string | null;
   setCurrentServiceId: UseQueryStateReturn<string | null, string | null>["1"];
   resetCurrentTabId: () => void;
+  closePanel: () => void;
 };
 
 const ServicePanelContext = createContext<TServicePanelContext | null>(null);
@@ -35,6 +36,10 @@ export const ServicePanelProvider: React.FC<{
       setCurrentTabId,
       currentServiceId,
       setCurrentServiceId,
+      closePanel: () => {
+        setCurrentServiceId(null);
+        setCurrentTabId(servicePanelDefaultTabId);
+      },
       resetCurrentTabId: () => setCurrentTabId(servicePanelDefaultTabId),
     }),
     [currentTabId, setCurrentTabId, currentServiceId, setCurrentServiceId],

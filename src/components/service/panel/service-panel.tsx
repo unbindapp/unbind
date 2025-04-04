@@ -52,20 +52,15 @@ export default function ServicePanel({
   service,
   children,
 }: TProps) {
-  const {
-    setCurrentTabId,
-    currentServiceId: serviceIdFromSearchParam,
-    setCurrentServiceId: setServiceIdFromSearchParam,
-  } = useServicePanel();
+  const { closePanel, currentServiceId, setCurrentServiceId } = useServicePanel();
 
-  const open = serviceIdFromSearchParam === service.id;
+  const open = currentServiceId === service.id;
   const setOpen = (open: boolean) => {
     if (open) {
-      setServiceIdFromSearchParam(service.id);
-      return;
+      setCurrentServiceId(service.id);
+    } else {
+      closePanel();
     }
-    setServiceIdFromSearchParam(null);
-    setCurrentTabId(null);
   };
   const { isExtraSmall } = useDeviceSize();
 
