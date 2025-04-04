@@ -438,6 +438,31 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
     );
   }
 
+  if (brand === "python") {
+    return (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className={cn(defaultClassName, className)}
+        width="24"
+        height="25"
+        fill="none"
+        viewBox="0 0 24 25"
+        {...rest}
+      >
+        <path
+          className={color === "brand" ? "text-python-1" : undefined}
+          fill="currentColor"
+          d="M11.918 2.069c-5.072 0-4.75 2.192-4.75 2.192v2.28h4.822v.713H5.246S2 6.854 2 12.001c0 5.146 2.866 4.937 2.866 4.937h1.655v-2.4S6.43 11.67 9.307 11.67h4.83s2.694.043 2.694-2.609v-4.35s.409-2.652-4.887-2.652zM9.252 3.595a.867.867 0 1 1-.845.889v-.015a.867.867 0 0 1 .867-.867z"
+        />
+        <path
+          className={color === "brand" ? "text-python-2" : undefined}
+          fill="currentColor"
+          d="M12.06 21.933c5.072 0 4.751-2.2 4.751-2.2v-2.271H11.99v-.714h6.765S22 17.11 22 11.994s-2.866-4.937-2.866-4.937h-1.677v2.37s.093 2.866-2.786 2.866H9.84s-2.696-.041-2.696 2.61v4.38s-.409 2.652 4.887 2.652h.029zm2.666-1.533a.868.868 0 1 1 .845-.889v.022a.867.867 0 0 1-.867.867z"
+        />
+      </svg>
+    );
+  }
+
   return (
     <BanIcon
       className={cn(

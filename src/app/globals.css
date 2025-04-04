@@ -106,6 +106,8 @@
   --mongodb: hsl(145 100% 35%);
   --n8n: hsl(346 80% 45%);
   --nodejs: hsl(108 40% 30%);
+  --python-1: hsl(207 52% 35%);
+  --python-2: hsl(47 100% 42%);
 
   --barrier: hsl(120 30% 4%);
 
@@ -191,6 +193,8 @@
   --mongodb: hsl(145 100% 47%);
   --n8n: hsl(346 79% 61%);
   --nodejs: hsl(108 40% 60%);
+  --python-1: hsl(207 47% 52%);
+  --python-2: hsl(49 100% 70%);
 
   --barrier: hsl(120 10% 4%);
 
@@ -377,6 +381,8 @@
   --color-ghost: var(--ghost);
   --color-n8n: var(--n8n);
   --color-nodejs: var(--nodejs);
+  --color-python-1: var(--python-1);
+  --color-python-2: var(--python-2);
 
   --color-barrier: var(--barrier);
 
