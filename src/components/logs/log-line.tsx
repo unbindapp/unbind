@@ -88,6 +88,7 @@ export default function LogLine({
                   </div>
                 </div>
               )}
+              {/* Message itself */}
               <div className="flex max-w-full py-1 pr-4 pl-1 group-data-wrap/line:max-w-auto group-data-wrap/line:min-w-0 group-data-wrap/line:shrink">
                 <p className="group-data-placeholder/line:bg-foreground group-data-placeholder/line:animate-skeleton leading-tight whitespace-pre group-data-extra-columns/line:-mt-2 group-data-placeholder/line:rounded group-data-placeholder/line:text-transparent group-data-wrap/line:min-w-0 group-data-wrap/line:shrink group-data-wrap/line:whitespace-normal lg:group-data-extra-columns/line:mt-0">
                   {isPlaceholder ? "Loading the messages..." : logLine.message}
