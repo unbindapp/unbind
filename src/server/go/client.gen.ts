@@ -46,6 +46,25 @@ export const GitCommitterSchema = z
   })
   .strip();
 
+export const LogMetadataSchema = z
+  .object({
+    deployment_id: z.string().optional(),
+    environment_id: z.string().optional(),
+    project_id: z.string().optional(),
+    service_id: z.string().optional(),
+    team_id: z.string().optional(),
+  })
+  .strip();
+
+export const LogEventSchema = z
+  .object({
+    message: z.string(),
+    metadata: LogMetadataSchema,
+    pod_name: z.string(),
+    timestamp: z.string().datetime().optional(),
+  })
+  .strip();
+
 export const DeploymentStatusSchema = z.enum([
   'queued',
   'building',
@@ -62,6 +81,7 @@ export const DeploymentResponseSchema = z
     commit_sha: z.string().optional(),
     completed_at: z.string().datetime().optional(),
     created_at: z.string().datetime(),
+    deployment_logs: z.array(LogEventSchema),
     error: z.string().optional(),
     id: z.string(),
     image: z.string().optional(),
@@ -652,24 +672,6 @@ export const ListServiceResponseBodySchema = z
   })
   .strip();
 
-export const LogMetadataSchema = z
-  .object({
-    environment_id: z.string(),
-    project_id: z.string(),
-    service_id: z.string(),
-    team_id: z.string(),
-  })
-  .strip();
-
-export const LogEventSchema = z
-  .object({
-    message: z.string(),
-    metadata: LogMetadataSchema,
-    pod_name: z.string(),
-    timestamp: z.string().datetime().optional(),
-  })
-  .strip();
-
 export const LogEventsMessageTypeSchema = z.enum(['log', 'heartbeat', 'error']);
 
 export const LogEventsSchema = z
@@ -680,7 +682,7 @@ export const LogEventsSchema = z
   })
   .strip();
 
-export const LogTypeSchema = z.enum(['team', 'project', 'environment', 'service']);
+export const LogTypeSchema = z.enum(['team', 'project', 'environment', 'service', 'deployment']);
 
 export const LokiDirectionSchema = z.enum(['forward', 'backward']);
 
@@ -819,6 +821,8 @@ export type BuildkitSettingsUpdateResponseBody = z.infer<
 export type CallbackResponseBody = z.infer<typeof CallbackResponseBodySchema>;
 export type CreateBuildInputBody = z.infer<typeof CreateBuildInputBodySchema>;
 export type GitCommitter = z.infer<typeof GitCommitterSchema>;
+export type LogMetadata = z.infer<typeof LogMetadataSchema>;
+export type LogEvent = z.infer<typeof LogEventSchema>;
 export type DeploymentStatus = z.infer<typeof DeploymentStatusSchema>;
 export type DeploymentResponse = z.infer<typeof DeploymentResponseSchema>;
 export type CreateBuildOutputBody = z.infer<typeof CreateBuildOutputBodySchema>;
@@ -889,8 +893,6 @@ export type ListDeploymentResponseData = z.infer<typeof ListDeploymentResponseDa
 export type ListDeploymentsResponseBody = z.infer<typeof ListDeploymentsResponseBodySchema>;
 export type ListProjectResponseBody = z.infer<typeof ListProjectResponseBodySchema>;
 export type ListServiceResponseBody = z.infer<typeof ListServiceResponseBodySchema>;
-export type LogMetadata = z.infer<typeof LogMetadataSchema>;
-export type LogEvent = z.infer<typeof LogEventSchema>;
 export type LogEventsMessageType = z.infer<typeof LogEventsMessageTypeSchema>;
 export type LogEvents = z.infer<typeof LogEventsSchema>;
 export type LogType = z.infer<typeof LogTypeSchema>;
@@ -967,6 +969,7 @@ export const query_logsQuerySchema = z
     project_id: z.string().optional(),
     environment_id: z.string().optional(),
     service_id: z.string().optional(),
+    deployment_id: z.string().optional(),
     filters: z.string().optional(), // Optional logql filter string
     start: z.string().datetime().optional(), // Start time for the query
     end: z.string().datetime().optional(), // End time for the query
@@ -983,6 +986,7 @@ export const stream_logsQuerySchema = z
     project_id: z.string().optional(),
     environment_id: z.string().optional(),
     service_id: z.string().optional(),
+    deployment_id: z.string().optional(),
     since: z.string().optional(), // Duration to look back (e.g., '1h', '30m')
     tail: z.number().optional(), // Number of lines to get from the end
     timestamps: z.boolean().optional(), // Include timestamps in logs
@@ -1652,6 +1656,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             'project_id',
             'environment_id',
             'service_id',
+            'deployment_id',
             'filters',
             'start',
             'end',
@@ -1710,6 +1715,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             'project_id',
             'environment_id',
             'service_id',
+            'deployment_id',
             'since',
             'tail',
             'timestamps',

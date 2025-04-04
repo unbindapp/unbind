@@ -96,6 +96,13 @@ export default function DeploymentCard({ deployment, currentDeployment, isPlaceh
           ) : (
             <DeploymentTime deployment={deployment} />
           )}
+          {!isPlaceholder &&
+            deployment.status === "building" &&
+            deployment.deployment_logs.length > 0 && (
+              <div className="bg-border mt-1 w-full rounded-sm px-1.5 py-0.5 font-mono text-xs">
+                <p className="truncate leading-tight">{deployment.deployment_logs[0].message}</p>
+              </div>
+            )}
         </div>
         <Button
           size="icon"
