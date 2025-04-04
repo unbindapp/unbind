@@ -1,6 +1,6 @@
 import MetricsIntervalDropdown from "@/components/metrics/metrics-interval-dropdown";
-import Charts from "@/components/service/tabs/metrics/charts";
-import TabWrapper from "@/components/service/tabs/tab-wrapper";
+import Charts from "@/components/service/panel/tabs/metrics/charts";
+import TabWrapper from "@/components/service/panel/tabs/tab-wrapper";
 
 export default function Metrics() {
   return (

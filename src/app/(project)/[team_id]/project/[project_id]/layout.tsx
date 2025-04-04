@@ -7,6 +7,7 @@ import { apiServer } from "@/server/trpc/setup/server";
 import { ResultAsync } from "neverthrow";
 import { redirect } from "next/navigation";
 import { ReactNode } from "react";
+import ServicePanelProvider from "@/components/service/panel/service-panel-provider";
 
 type TProps = {
   children: ReactNode;
@@ -43,16 +44,21 @@ export default async function Layout({ children, params }: TProps) {
   return (
     <ProjectsProvider initialData={projectsInitialData.value} teamId={teamId}>
       <ProjectProvider initialData={projectInitialData.value} teamId={teamId} projectId={projectId}>
-        <ProjectNavbar />
-        {children}
-        <NavbarSafeAreaInsetBottom className="sm:hidden" />
-        <ContextCommandPanel
-          context={{
-            contextType: "project",
-            projectId,
-            teamId,
-          }}
-        />
+        <ServicePanelProvider>
+          <ProjectNavbar />
+          {children}
+          <NavbarSafeAreaInsetBottom className="sm:hidden" />
+          <ContextCommandPanel
+            title="Project Command Panel"
+            description="Project command panel"
+            idSuffix="layout"
+            context={{
+              contextType: "project",
+              projectId,
+              teamId,
+            }}
+          />
+        </ServicePanelProvider>
       </ProjectProvider>
     </ProjectsProvider>
   );

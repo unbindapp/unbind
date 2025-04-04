@@ -2,7 +2,7 @@
 
 import ErrorLine from "@/components/error-line";
 import { useService } from "@/components/service/service-provider";
-import { useVariablesUtils } from "@/components/service/tabs/variables/variables-provider";
+import { useVariablesUtils } from "@/components/service/panel/tabs/variables/variables-provider";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

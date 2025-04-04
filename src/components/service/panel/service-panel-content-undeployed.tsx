@@ -1,13 +1,13 @@
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
-import { useDeployments } from "@/components/service/deployments/deployments-provider";
+import { useDeployments } from "@/components/service/deployments-provider";
 import { useService } from "@/components/service/service-provider";
 import { useServicesUtils } from "@/components/project/services-provider";
 import CreateVariablesForm, {
   CreateVariablesFormSchema,
   TCreateVariablesForm,
-} from "@/components/service/tabs/variables/create-variables-form";
-import VariablesProvider from "@/components/service/tabs/variables/variables-provider";
+} from "@/components/service/panel/tabs/variables/create-variables-form";
+import VariablesProvider from "@/components/service/panel/tabs/variables/variables-provider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TServiceShallow } from "@/server/trpc/api/services/types";

@@ -1,5 +1,5 @@
 import ErrorLine from "@/components/error-line";
-import { useVariables } from "@/components/service/tabs/variables/variables-provider";
+import { useVariables } from "@/components/service/panel/tabs/variables/variables-provider";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";

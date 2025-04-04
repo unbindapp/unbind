@@ -2,9 +2,9 @@
 
 import ErrorCard from "@/components/error-card";
 import NoItemsCard from "@/components/no-items-card";
-import { useDeployments } from "@/components/service/deployments/deployments-provider";
-import DeploymentCard from "@/components/service/tabs/deployments/deployment-card";
-import TabWrapper from "@/components/service/tabs/tab-wrapper";
+import { useDeployments } from "@/components/service/deployments-provider";
+import DeploymentCard from "@/components/service/panel/tabs/deployments/deployment-card";
+import TabWrapper from "@/components/service/panel/tabs/tab-wrapper";
 import { RocketIcon } from "lucide-react";
 
 export default function Deployments() {

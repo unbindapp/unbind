@@ -1,5 +1,5 @@
-import CreateVariablesForm from "@/components/service/tabs/variables/create-variables-form";
-import { useVariables } from "@/components/service/tabs/variables/variables-provider";
+import CreateVariablesForm from "@/components/service/panel/tabs/variables/create-variables-form";
+import { useVariables } from "@/components/service/panel/tabs/variables/variables-provider";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";

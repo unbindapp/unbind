@@ -1,18 +1,12 @@
 "use client";
 
-import { commandPanelKey, commandPanelPageKey } from "@/components/command-panel/constants";
-import {
-  commandPanelProjectFromList,
-  commandPanelProjectRootPage,
-} from "@/components/project/command-panel/constants";
-import ProjectCommandPanelTrigger from "@/components/project/command-panel/project-command-panel";
+import ContextCommandPanel from "@/components/command-panel/context-command-panel/context-command-panel";
+import { TContextCommandPanelContext } from "@/components/command-panel/types";
 import ServiceCard from "@/components/project/service-card";
 import { useServices } from "@/components/project/services-provider";
 import { Button } from "@/components/ui/button";
-import { defaultAnimationMs } from "@/lib/constants";
 import { PlusIcon } from "lucide-react";
-import { parseAsString, useQueryState } from "nuqs";
-import { useRef } from "react";
+import { useMemo } from "react";
 
 export default function ServiceCardList() {
   const {
@@ -23,36 +17,20 @@ export default function ServiceCardList() {
   } = useServices();
   const services = data?.services;
 
-  const [commandPanelId, setCommandPanelId] = useQueryState(commandPanelKey);
-  const [, setCommandPanelPageId] = useQueryState(
-    commandPanelPageKey,
-    parseAsString.withDefault(commandPanelProjectRootPage),
+  const context: TContextCommandPanelContext = useMemo(
+    () => ({ contextType: "new-service", teamId, projectId }),
+    [teamId, projectId],
   );
-
-  const open = commandPanelId === commandPanelProjectFromList;
-  const timeout = useRef<NodeJS.Timeout | null>(null);
-  const setOpen = (open: boolean) => {
-    if (open) {
-      setCommandPanelId(commandPanelProjectFromList);
-    } else {
-      setCommandPanelId(null);
-      if (timeout.current) {
-        clearTimeout(timeout.current);
-      }
-      timeout.current = setTimeout(() => {
-        setCommandPanelPageId(null);
-      }, defaultAnimationMs);
-    }
-  };
 
   return (
     <ol className="flex w-full flex-wrap">
       {services && services.length === 0 && (
         <li className="flex w-full flex-col p-1 sm:w-1/2 lg:w-1/3">
-          <ProjectCommandPanelTrigger
-            open={open}
-            setOpen={setOpen}
-            modalId={commandPanelProjectFromList}
+          <ContextCommandPanel
+            title="Create New Service"
+            description="Create a new service on Unbind"
+            context={context}
+            idSuffix="list"
           >
             <Button
               variant="ghost"
@@ -61,7 +39,7 @@ export default function ServiceCardList() {
               <PlusIcon className="-ml-1.5 size-5 shrink-0" />
               <p className="min-w-0 shrink leading-tight">New Service</p>
             </Button>
-          </ProjectCommandPanelTrigger>
+          </ContextCommandPanel>
         </li>
       )}
       {services &&

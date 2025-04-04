@@ -1,6 +1,6 @@
 import PageWrapper from "@/components/page-wrapper";
 import ProjectsProvider from "@/components/project/projects-provider";
-import NewProjectButton from "@/components/team/command-panel/new-project-button";
+import NewProjectButton from "@/components/team/new-project-button";
 import ProjectCardList from "@/components/team/project-card-list";
 import { apiServer } from "@/server/trpc/setup/server";
 import { Metadata } from "next";

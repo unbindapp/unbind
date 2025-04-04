@@ -57,10 +57,15 @@ export default function useNavigateItem({ context }: TProps) {
   const goToKeywords = useMemo(() => ["go to", "navigate to", "jump to"], []);
 
   const settingsTitle = useMemo(() => {
-    return context.contextType === "project" ? "Project Settings" : "Team Settings";
+    return context.contextType === "project" || context.contextType === "new-service"
+      ? "Project Settings"
+      : "Team Settings";
   }, [context]);
 
-  const item: TCommandPanelItem = useMemo(() => {
+  const item: TCommandPanelItem | null = useMemo(() => {
+    if (context.contextType !== "team" && context.contextType !== "project") {
+      return null;
+    }
     return {
       title: "Go to",
       keywords: ["navigate", "jump"],
@@ -174,7 +179,7 @@ function getSettingsPageHref({
   context: TContextCommandPanelContext;
   environmentId?: string | null;
 }) {
-  return context.contextType === "project"
+  return context.contextType === "project" || context.contextType === "new-service"
     ? `/${context.teamId}/project/${context.projectId}/settings${pathname}?environment=${environmentId}`
     : `/${context.teamId}/settings${pathname}`;
 }

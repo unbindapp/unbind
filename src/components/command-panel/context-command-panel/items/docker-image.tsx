@@ -1,3 +1,4 @@
+import { contextCommandPanelRootPage } from "@/components/command-panel/constants";
 import { TCommandPanelItem } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
 import BrandIcon from "@/components/icons/brand";
@@ -6,7 +7,9 @@ import { useCallback, useMemo, useRef } from "react";
 import { toast } from "sonner";
 
 export default function useDockerImageItem() {
-  const { setPanelId, setPanelPageId } = useCommandPanel();
+  const { closePanel } = useCommandPanel({
+    defaultPageId: contextCommandPanelRootPage,
+  });
   const timeout = useRef<NodeJS.Timeout | null>(null);
 
   const onSelectPlaceholder = useCallback(() => {
@@ -15,14 +18,13 @@ export default function useDockerImageItem() {
       duration: 3000,
       closeButton: false,
     });
-    setPanelId(null);
     if (timeout.current) {
       clearTimeout(timeout.current);
     }
     timeout.current = setTimeout(() => {
-      setPanelPageId(null);
+      closePanel();
     }, defaultAnimationMs);
-  }, [setPanelId, setPanelPageId]);
+  }, [closePanel]);
 
   const item: TCommandPanelItem = useMemo(() => {
     return {

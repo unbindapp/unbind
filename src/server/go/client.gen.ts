@@ -226,6 +226,7 @@ export const ServiceResponseSchema = z
     github_installation_id: z.number().optional(),
     id: z.string(),
     last_deployment: DeploymentResponseSchema.optional(),
+    last_successful_deployment: DeploymentResponseSchema.optional(),
     name: z.string(),
     updated_at: z.string().datetime(),
   })
@@ -372,6 +373,22 @@ export const GetProjectResponseBodySchema = z
 export const GetServiceResponseBodySchema = z
   .object({
     data: ServiceResponseSchema,
+  })
+  .strip();
+
+export const TeamResponseSchema = z
+  .object({
+    created_at: z.string().datetime(),
+    description: z.string().nullable(),
+    display_name: z.string(),
+    id: z.string(),
+    name: z.string(),
+  })
+  .strip();
+
+export const GetTeamResponseBodySchema = z
+  .object({
+    data: TeamResponseSchema,
   })
   .strip();
 
@@ -706,16 +723,6 @@ export const SystemMetaResponseBodySchema = z
   })
   .strip();
 
-export const TeamResponseSchema = z
-  .object({
-    created_at: z.string().datetime(),
-    description: z.string().nullable(),
-    display_name: z.string(),
-    id: z.string(),
-    name: z.string(),
-  })
-  .strip();
-
 export const TeamResponseBodySchema = z
   .object({
     data: z.array(TeamResponseSchema),
@@ -849,6 +856,8 @@ export type MetricsResult = z.infer<typeof MetricsResultSchema>;
 export type GetMetricsResponseBody = z.infer<typeof GetMetricsResponseBodySchema>;
 export type GetProjectResponseBody = z.infer<typeof GetProjectResponseBodySchema>;
 export type GetServiceResponseBody = z.infer<typeof GetServiceResponseBodySchema>;
+export type TeamResponse = z.infer<typeof TeamResponseSchema>;
+export type GetTeamResponseBody = z.infer<typeof GetTeamResponseBodySchema>;
 export type Plan = z.infer<typeof PlanSchema>;
 export type Organization = z.infer<typeof OrganizationSchema>;
 export type GithubAdminOrganizationListResponseBody = z.infer<
@@ -893,7 +902,6 @@ export type SortByField = z.infer<typeof SortByFieldSchema>;
 export type SortOrder = z.infer<typeof SortOrderSchema>;
 export type SystemMeta = z.infer<typeof SystemMetaSchema>;
 export type SystemMetaResponseBody = z.infer<typeof SystemMetaResponseBodySchema>;
-export type TeamResponse = z.infer<typeof TeamResponseSchema>;
 export type TeamResponseBody = z.infer<typeof TeamResponseBodySchema>;
 export type UpdatServiceResponseBody = z.infer<typeof UpdatServiceResponseBodySchema>;
 export type UpdateProjectInputBody = z.infer<typeof UpdateProjectInputBodySchema>;
@@ -914,6 +922,7 @@ export const callbackQuerySchema = z
 export const list_deploymentsQuerySchema = z
   .object({
     cursor: z.string().datetime().optional(),
+    per_page: z.number(),
     statuses: z.array(DeploymentStatusSchema).nullable().optional(), // Filter by status
     team_id: z.string(), // The ID of the team
     project_id: z.string(), // The ID of the project
@@ -1022,6 +1031,12 @@ export const list_serviceQuerySchema = z
     team_id: z.string(),
     project_id: z.string(),
     environment_id: z.string(),
+  })
+  .passthrough();
+
+export const get_teamQuerySchema = z
+  .object({
+    team_id: z.string(),
   })
   .passthrough();
 
@@ -1186,6 +1201,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           const validatedQuery = list_deploymentsQuerySchema.parse(params);
           const queryKeys = [
             'cursor',
+            'per_page',
             'statuses',
             'team_id',
             'project_id',
@@ -2303,6 +2319,52 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
       },
     },
     teams: {
+      get: async (
+        params: z.infer<typeof get_teamQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<GetTeamResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/teams/get`);
+          const validatedQuery = get_teamQuerySchema.parse(params);
+          const queryKeys = ['team_id'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return GetTeamResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
       list: async (params?: undefined, fetchOptions?: RequestInit): Promise<TeamResponseBody> => {
         try {
           if (!apiUrl || typeof apiUrl !== 'string') {

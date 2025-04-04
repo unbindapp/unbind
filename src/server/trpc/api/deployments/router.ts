@@ -35,6 +35,7 @@ export const deploymentsRouter = createTRPCRouter({
         service_id: serviceId,
         cursor,
         statuses,
+        per_page: 50,
       });
       return {
         ...deployments.data,

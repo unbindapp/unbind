@@ -38,7 +38,12 @@ export default async function Layout({ children, params }: TProps) {
         <TeamNavbar />
         {children}
         <NavbarSafeAreaInsetBottom className="sm:hidden" />
-        <ContextCommandPanel context={{ contextType: "team", teamId }} />
+        <ContextCommandPanel
+          title="Team Command Panel"
+          description="Team command panel"
+          context={{ contextType: "team", teamId }}
+          idSuffix="layout"
+        />
       </TeamProvider>
     </TeamsProvider>
   );

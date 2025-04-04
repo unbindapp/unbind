@@ -1,18 +1,12 @@
 "use client";
 
+import ContextCommandPanel from "@/components/command-panel/context-command-panel/context-command-panel";
+import { TContextCommandPanelContext } from "@/components/command-panel/types";
 import { useProjects } from "@/components/project/projects-provider";
-import { commandPanelKey, commandPanelPageKey } from "@/components/command-panel/constants";
-import {
-  commandPanelTeamFromList,
-  commandPanelTeamRootPage,
-} from "@/components/team/command-panel/constants";
-import TeamCommandPanelTrigger from "@/components/team/command-panel/team-command-panel";
 import ProjectCard from "@/components/team/project-card";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
-import { parseAsString, useQueryState } from "nuqs";
-import { useRef } from "react";
-import { defaultAnimationMs } from "@/lib/constants";
+import { useMemo } from "react";
 
 type TProps = {
   teamId: string;
@@ -22,37 +16,20 @@ export default function ProjectCardList({ teamId }: TProps) {
   const { data } = useProjects();
   const projects = data?.projects;
 
-  const [commandPanelId, setCommandPanelId] = useQueryState(commandPanelKey);
-  const [, setCommandPanelPageId] = useQueryState(
-    commandPanelPageKey,
-    parseAsString.withDefault(commandPanelTeamRootPage),
+  const context: TContextCommandPanelContext = useMemo(
+    () => ({ contextType: "new-project", teamId }),
+    [teamId],
   );
-
-  const open = commandPanelId === commandPanelTeamFromList;
-  const timeout = useRef<NodeJS.Timeout | null>(null);
-  const setOpen = (open: boolean) => {
-    if (open) {
-      setCommandPanelId(commandPanelTeamFromList);
-    } else {
-      setCommandPanelId(null);
-      if (timeout.current) {
-        clearTimeout(timeout.current);
-      }
-      timeout.current = setTimeout(() => {
-        setCommandPanelPageId(null);
-      }, defaultAnimationMs);
-    }
-  };
 
   return (
     <ol className="flex w-full flex-wrap">
       {projects && projects.length === 0 && (
         <li className="flex w-full flex-col p-1 sm:w-1/2 lg:w-1/3">
-          <TeamCommandPanelTrigger
-            modalId={commandPanelTeamFromList}
-            open={open}
-            setOpen={setOpen}
-            teamId={teamId}
+          <ContextCommandPanel
+            title="Create New Project"
+            description="Create a new project on Unbind"
+            idSuffix="list"
+            context={context}
           >
             <Button
               variant="ghost"
@@ -61,7 +38,7 @@ export default function ProjectCardList({ teamId }: TProps) {
               <PlusIcon className="-ml-1.5 size-5 shrink-0" />
               <p className="min-w-0 shrink leading-tight">New Project</p>
             </Button>
-          </TeamCommandPanelTrigger>
+          </ContextCommandPanel>
         </li>
       )}
       {projects &&

@@ -3,7 +3,7 @@ import useDatabaseItem from "@/components/command-panel/context-command-panel/it
 import useDockerImageItem from "@/components/command-panel/context-command-panel/items/docker-image";
 import useNavigateItem from "@/components/command-panel/context-command-panel/items/navigation";
 import useNewProjectItem from "@/components/command-panel/context-command-panel/items/new-project";
-import useRepoItem from "@/components/command-panel/context-command-panel/items/repo";
+import { useRepoItemHook } from "@/components/command-panel/context-command-panel/items/repo";
 import useTemplateItem from "@/components/command-panel/context-command-panel/items/template";
 import { findCommandPanelPage } from "@/components/command-panel/helpers";
 import { TCommandPanelPage, TContextCommandPanelContext } from "@/components/command-panel/types";
@@ -13,13 +13,16 @@ import { useCallback, useMemo, useRef } from "react";
 import { toast } from "sonner";
 
 export default function useContextCommandPanelData(context: TContextCommandPanelContext) {
-  const { panelPageId, setPanelId, setPanelPageId } = useCommandPanel();
+  const { panelPageId, setPanelId, setPanelPageId } = useCommandPanel({
+    defaultPageId: contextCommandPanelRootPage,
+  });
   const timeout = useRef<NodeJS.Timeout | null>(null);
 
+  const useRepoItem = useRepoItemHook({ context });
+  const { item: repoItem } = useRepoItem({ context });
   const { item: templateItem } = useTemplateItem();
   const { item: navigateItem } = useNavigateItem({ context });
   const { item: databaseItem } = useDatabaseItem();
-  const { item: repoItem } = useRepoItem({ context });
   const { item: dockerImageItem } = useDockerImageItem();
   const { item: newProjectItem } = useNewProjectItem({ context });
 
@@ -41,20 +44,35 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
   const rootPage: TCommandPanelPage = useMemo(
     () => ({
       id: contextCommandPanelRootPage,
-      title: "Commands",
+      title:
+        context.contextType === "new-project"
+          ? "New Project"
+          : context.contextType === "new-service"
+            ? "New service"
+            : "Commands",
       parentPageId: null,
       inputPlaceholder: "Search commands...",
       items: [
-        ...(context.contextType === "team" ? [newProjectItem] : []),
-        repoItem,
+        ...(context.contextType === "team" || context.contextType === "new-project"
+          ? [newProjectItem]
+          : []),
+        ...(repoItem ? [repoItem] : []),
         databaseItem,
         templateItem,
         dockerImageItem,
-        navigateItem,
+        ...(navigateItem ? [navigateItem] : []),
       ],
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [onSelectPlaceholder, repoItem, databaseItem, templateItem, dockerImageItem, navigateItem],
+    [
+      onSelectPlaceholder,
+      repoItem,
+      databaseItem,
+      templateItem,
+      dockerImageItem,
+      navigateItem,
+      context,
+    ],
   );
 
   const setCurrentPageId = useCallback(

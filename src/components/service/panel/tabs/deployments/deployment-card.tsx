@@ -1,6 +1,6 @@
 import BroomIcon from "@/components/icons/broom";
 import BrandIcon from "@/components/icons/brand";
-import DeploymentTime from "@/components/service/tabs/deployments/deployment-time";
+import DeploymentTime from "@/components/service/panel/tabs/deployments/deployment-time";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";

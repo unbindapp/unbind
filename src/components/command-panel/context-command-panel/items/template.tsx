@@ -8,7 +8,9 @@ import { useCallback, useMemo, useRef } from "react";
 import { toast } from "sonner";
 
 export default function useTemplateItem() {
-  const { setPanelId, setPanelPageId } = useCommandPanel();
+  const { closePanel } = useCommandPanel({
+    defaultPageId: contextCommandPanelRootPage,
+  });
   const timeout = useRef<NodeJS.Timeout | null>(null);
 
   const onSelectPlaceholder = useCallback(() => {
@@ -17,14 +19,13 @@ export default function useTemplateItem() {
       duration: 3000,
       closeButton: false,
     });
-    setPanelId(null);
     if (timeout.current) {
       clearTimeout(timeout.current);
     }
     timeout.current = setTimeout(() => {
-      setPanelPageId(null);
+      closePanel();
     }, defaultAnimationMs);
-  }, [setPanelId, setPanelPageId]);
+  }, [closePanel]);
 
   const item: TCommandPanelItem = useMemo(() => {
     return {

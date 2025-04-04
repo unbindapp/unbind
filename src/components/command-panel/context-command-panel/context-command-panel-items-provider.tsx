@@ -1,6 +1,10 @@
 "use client";
 
-import { TCommandPanelItem, TCommandPanelPage } from "@/components/command-panel/types";
+import {
+  TCommandPanelItem,
+  TCommandPanelPage,
+  TContextCommandPanelContext,
+} from "@/components/command-panel/types";
 import { useQuery } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext } from "react";
 
@@ -19,10 +23,11 @@ export const ContextCommandPanelItemsProvider: React.FC<{
   teamId: string;
   projectId: string;
   page: TCommandPanelPage;
+  context: TContextCommandPanelContext;
   children: ReactNode;
-}> = ({ teamId, projectId, page, children }) => {
+}> = ({ teamId, projectId, page, context, children }) => {
   const { data, isError, isPending, error } = useQuery({
-    queryKey: ["context-aware-command-panel-items", teamId, projectId, page.id],
+    queryKey: ["context-aware-command-panel-items", teamId, projectId, page.id, context],
     queryFn: page.items ? () => page.items : () => page.getItems({ teamId, projectId }),
     enabled: page.items ? false : true,
   });
