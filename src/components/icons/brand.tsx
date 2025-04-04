@@ -381,7 +381,7 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
     return (
       <svg
         aria-label="GitLab Icon"
-        className={cn(defaultClassName, className)}
+        className={cn(defaultClassName, color === "brand" && "text-github", className)}
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
@@ -400,7 +400,7 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
     return (
       <svg
         aria-label="GitHub Icon"
-        className={cn(defaultClassName, className)}
+        className={cn(defaultClassName, color === "brand" && "text-gitlab", className)}
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
@@ -417,9 +417,35 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
       </svg>
     );
   }
+  if (brand === "node" || brand === "nodejs") {
+    return (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className={cn(defaultClassName, color === "brand" && "text-nodejs", className)}
+        width="24"
+        height="24"
+        fill="none"
+        viewBox="0 0 24 24"
+        {...rest}
+      >
+        <path
+          fill="currentColor"
+          fillRule="evenodd"
+          d="M11.15 22.778c.263.141.546.222.85.222s.607-.08.85-.182l8.078-4.669a1.7 1.7 0 0 0 .85-1.475V7.357a1.7 1.7 0 0 0-.85-1.476L12.85 1.212a1.81 1.81 0 0 0-1.7 0L3.07 5.882a1.7 1.7 0 0 0-.85 1.475v9.317a1.7 1.7 0 0 0 .85 1.475l2.126 1.213c1.032.505 1.397.505 1.862.505 1.52 0 2.39-.93 2.39-2.526V8.145a.246.246 0 0 0-.243-.243H8.173a.246.246 0 0 0-.243.243v9.196c0 .707-.75 1.415-1.943.808L3.78 16.876c-.081-.04-.122-.142-.122-.222V7.336c0-.08.04-.182.122-.222l8.078-4.649c.06-.04.162-.04.243 0l8.078 4.649c.081.04.122.121.122.222v9.318c0 .1-.04.181-.122.222l-8.078 4.669c-.06.04-.162.04-.243 0l-2.065-1.233c-.06-.04-.142-.06-.202-.02-.567.323-.669.363-1.215.545-.122.04-.324.122.08.344zm-.912-9.176c0 1.374.729 2.991 4.272 2.991 2.551 0 4.03-1.01 4.03-2.79 0-1.737-1.175-2.202-3.665-2.526-2.51-.323-2.774-.505-2.774-1.091 0-.485.223-1.132 2.085-1.132 1.66 0 2.288.364 2.531 1.476a.24.24 0 0 0 .223.182h1.073c.06 0 .121-.04.162-.081q.06-.091.06-.182c-.162-1.94-1.437-2.83-4.028-2.83-2.308 0-3.685.97-3.685 2.607 0 1.759 1.376 2.244 3.583 2.466 2.653.263 2.855.647 2.855 1.172 0 .91-.729 1.294-2.43 1.294-2.146 0-2.611-.525-2.773-1.597 0-.121-.101-.202-.223-.202h-1.053a.246.246 0 0 0-.243.243"
+          clipRule="evenodd"
+        />
+      </svg>
+    );
+  }
+
   return (
     <BanIcon
-      className={cn(defaultClassName, color === "brand" && "text-foreground", className)}
+      className={cn(
+        "scale-85",
+        defaultClassName,
+        color === "brand" && "text-foreground",
+        className,
+      )}
       {...rest}
     />
   );
