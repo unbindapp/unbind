@@ -1,12 +1,13 @@
-import { useProject } from "@/components/project/project-provider";
 import { useCommandPanelState } from "@/components/command-panel/command-panel-state-provider";
 import { commandPanelKey, commandPanelPageKey } from "@/components/command-panel/constants";
 import { findCommandPanelPage } from "@/components/command-panel/helpers";
 import { TCommandPanelItem, TCommandPanelPage } from "@/components/command-panel/types";
-import ServiceIcon from "@/components/icons/service";
+import ServiceLogoIcon from "@/components/icons/service-logo-icon";
 import { commandPanelProjectRootPage } from "@/components/project/command-panel/constants";
-import { servicePanelServiceIdKey } from "@/components/service/constants";
+import { useProject } from "@/components/project/project-provider";
 import { useServicesUtils } from "@/components/project/services-provider";
+import { servicePanelServiceIdKey } from "@/components/service/constants";
+import { defaultAnimationMs } from "@/lib/constants";
 import { AppRouterOutputs } from "@/server/trpc/api/root";
 import { api } from "@/server/trpc/setup/client";
 import { useMutation } from "@tanstack/react-query";
@@ -15,7 +16,6 @@ import { ResultAsync } from "neverthrow";
 import { parseAsString, useQueryState } from "nuqs";
 import { useCallback, useMemo, useRef } from "react";
 import { toast } from "sonner";
-import { defaultAnimationMs } from "@/lib/constants";
 
 export default function useProjectCommandPanelData() {
   const { setIsPendingId } = useCommandPanelState();
@@ -137,7 +137,7 @@ export default function useProjectCommandPanelData() {
         {
           title: "GitHub Repo",
           keywords: ["deploy from github", "deploy from gitlab", "deploy from bitbucket"],
-          Icon: ({ className }) => <ServiceIcon variant="github" className={className} />,
+          Icon: ({ className }) => <ServiceLogoIcon variant="github" className={className} />,
           subpage: {
             id: "github_repos_project",
             title: "GitHub Repos",
@@ -158,7 +158,7 @@ export default function useProjectCommandPanelData() {
                     closePanel();
                   },
                   Icon: ({ className }) => (
-                    <ServiceIcon color="brand" variant="github" className={className} />
+                    <ServiceLogoIcon color="brand" variant="github" className={className} />
                   ),
                 };
               });
@@ -181,7 +181,7 @@ export default function useProjectCommandPanelData() {
                 keywords: ["database", "sql", "mysql"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceIcon color="brand" variant="postgresql" className={className} />
+                  <ServiceLogoIcon color="brand" variant="postgresql" className={className} />
                 ),
               },
               {
@@ -189,7 +189,7 @@ export default function useProjectCommandPanelData() {
                 keywords: ["database", "cache", "key value"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceIcon color="brand" variant="redis" className={className} />
+                  <ServiceLogoIcon color="brand" variant="redis" className={className} />
                 ),
               },
               {
@@ -197,7 +197,7 @@ export default function useProjectCommandPanelData() {
                 keywords: ["database", "object"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceIcon color="brand" variant="mongodb" className={className} />
+                  <ServiceLogoIcon color="brand" variant="mongodb" className={className} />
                 ),
               },
               {
@@ -205,7 +205,7 @@ export default function useProjectCommandPanelData() {
                 keywords: ["database", "sql", "postgresql"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceIcon color="brand" variant="mysql" className={className} />
+                  <ServiceLogoIcon color="brand" variant="mysql" className={className} />
                 ),
               },
               {
@@ -213,7 +213,7 @@ export default function useProjectCommandPanelData() {
                 keywords: ["database", "analytics", "sql"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceIcon color="brand" variant="clickhouse" className={className} />
+                  <ServiceLogoIcon color="brand" variant="clickhouse" className={className} />
                 ),
               },
             ],
@@ -234,7 +234,7 @@ export default function useProjectCommandPanelData() {
                 keywords: ["cms", "content"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceIcon color="brand" variant="strapi" className={className} />
+                  <ServiceLogoIcon color="brand" variant="strapi" className={className} />
                 ),
               },
               {
@@ -242,7 +242,7 @@ export default function useProjectCommandPanelData() {
                 keywords: ["analytics", "privacy", "tracking"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceIcon color="brand" variant="umami" className={className} />
+                  <ServiceLogoIcon color="brand" variant="umami" className={className} />
                 ),
               },
               {
@@ -250,7 +250,7 @@ export default function useProjectCommandPanelData() {
                 keywords: ["full text search", "elasticsearch", "ram"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceIcon color="brand" variant="meilisearch" className={className} />
+                  <ServiceLogoIcon color="brand" variant="meilisearch" className={className} />
                 ),
               },
               {
@@ -258,7 +258,7 @@ export default function useProjectCommandPanelData() {
                 keywords: ["s3", "file storage"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceIcon color="brand" variant="minio" className={className} />
+                  <ServiceLogoIcon color="brand" variant="minio" className={className} />
                 ),
               },
               {
@@ -272,7 +272,7 @@ export default function useProjectCommandPanelData() {
                 ],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceIcon color="brand" variant="pocketbase" className={className} />
+                  <ServiceLogoIcon color="brand" variant="pocketbase" className={className} />
                 ),
               },
               {
@@ -280,7 +280,7 @@ export default function useProjectCommandPanelData() {
                 keywords: ["workflow automation", "ai", "devops", "itops"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceIcon color="brand" variant="n8n" className={className} />
+                  <ServiceLogoIcon color="brand" variant="n8n" className={className} />
                 ),
               },
               {
@@ -288,7 +288,7 @@ export default function useProjectCommandPanelData() {
                 keywords: ["blogging"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceIcon color="brand" variant="ghost" className={className} />
+                  <ServiceLogoIcon color="brand" variant="ghost" className={className} />
                 ),
               },
             ],
@@ -298,7 +298,7 @@ export default function useProjectCommandPanelData() {
           title: "Docker Image",
           keywords: ["deploy"],
           onSelect: () => onSelectPlaceholder(),
-          Icon: ({ className }) => <ServiceIcon variant="docker" className={className} />,
+          Icon: ({ className }) => <ServiceLogoIcon variant="docker" className={className} />,
         },
       ],
     }),

@@ -1,9 +1,9 @@
 import ErrorLine from "@/components/error-line";
-import ServiceIcon from "@/components/icons/service";
 import { useServicesUtils } from "@/components/project/services-provider";
 import { useDeviceSize } from "@/components/providers/device-size-provider";
 import ServicePanelContent from "@/components/service/panel/service-panel-content";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
+import ServiceIcon from "@/components/service/service-icon";
 import ServiceProvider, { useServiceUtils } from "@/components/service/service-provider";
 import { Button, LinkButton } from "@/components/ui/button";
 import {
@@ -191,11 +191,7 @@ function TitleButton({
           variant="ghost"
           className="group/button -my-1 -ml-2.5 flex min-w-0 shrink items-center justify-start gap-1.5 px-2.5 py-1"
         >
-          <ServiceIcon
-            variant={service.config.framework || service.config.provider}
-            color="brand"
-            className="-ml-1 size-6 sm:size-7"
-          />
+          <ServiceIcon service={service} color="brand" className="-ml-1 size-6 sm:size-7" />
           <p className="min-w-0 shrink text-left text-xl leading-tight sm:text-2xl">
             {service.display_name}
           </p>

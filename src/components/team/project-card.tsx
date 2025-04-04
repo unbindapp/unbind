@@ -1,4 +1,4 @@
-import ServiceIcon from "@/components/icons/service";
+import ServiceIcon from "@/components/icons/service-logo-icon";
 import { LinkButton } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { AppRouterOutputs } from "@/server/trpc/api/root";

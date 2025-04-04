@@ -1,5 +1,5 @@
 import ErrorLine from "@/components/error-line";
-import ServiceIcon from "@/components/icons/service";
+import ServiceLogoIcon from "@/components/icons/service-logo-icon";
 import { useDeployments } from "@/components/service/deployments/deployments-provider";
 import { useService } from "@/components/service/service-provider";
 import { useServicesUtils } from "@/components/project/services-provider";
@@ -92,7 +92,7 @@ export default function UndeployedServiceContent({ service, className }: TProps)
               <div className="flex w-full flex-col gap-1 sm:w-1/2">
                 <p className="w-full px-2 leading-tight font-medium">Source</p>
                 <div className="mt-1 flex w-full flex-row items-center gap-2 rounded-xl border px-3.5 py-2.5">
-                  <ServiceIcon variant="github" className="size-5 shrink-0" />
+                  <ServiceLogoIcon variant="github" className="size-5 shrink-0" />
                   <p className="min-w-0 shrink truncate font-medium">{service.git_repository}</p>
                 </div>
               </div>

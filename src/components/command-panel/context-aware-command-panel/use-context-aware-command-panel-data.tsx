@@ -10,7 +10,7 @@ import {
   TCommandPanelPage,
   TContextAwareCommandPanelContext,
 } from "@/components/command-panel/types";
-import ServiceIcon from "@/components/icons/service";
+import ServiceLogoIcon from "@/components/icons/service-logo-icon";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { defaultAnimationMs } from "@/lib/constants";
@@ -141,7 +141,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
         {
           title: "GitHub Repo",
           keywords: ["deploy from github", "deploy from gitlab", "deploy from bitbucket"],
-          Icon: ({ className }) => <ServiceIcon variant="github" className={className} />,
+          Icon: ({ className }) => <ServiceLogoIcon variant="github" className={className} />,
           subpage: {
             id: "github_repos_context_aware",
             title: "GitHub Repos",
@@ -154,7 +154,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                 keywords: [],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }: { className?: string }) => (
-                  <ServiceIcon color="brand" variant="github" className={className} />
+                  <ServiceLogoIcon color="brand" variant="github" className={className} />
                 ),
               }));
               return items;
@@ -176,7 +176,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                 keywords: ["database", "sql", "mysql"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceIcon color="brand" variant="postgresql" className={className} />
+                  <ServiceLogoIcon color="brand" variant="postgresql" className={className} />
                 ),
               },
               {
@@ -184,7 +184,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                 keywords: ["database", "cache", "key value"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceIcon color="brand" variant="redis" className={className} />
+                  <ServiceLogoIcon color="brand" variant="redis" className={className} />
                 ),
               },
               {
@@ -192,7 +192,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                 keywords: ["database", "object"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceIcon color="brand" variant="mongodb" className={className} />
+                  <ServiceLogoIcon color="brand" variant="mongodb" className={className} />
                 ),
               },
               {
@@ -200,7 +200,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                 keywords: ["database", "sql", "postgresql"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceIcon color="brand" variant="mysql" className={className} />
+                  <ServiceLogoIcon color="brand" variant="mysql" className={className} />
                 ),
               },
               {
@@ -208,7 +208,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                 keywords: ["database", "analytics", "sql"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceIcon color="brand" variant="clickhouse" className={className} />
+                  <ServiceLogoIcon color="brand" variant="clickhouse" className={className} />
                 ),
               },
             ],
@@ -229,7 +229,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                 keywords: ["cms", "content"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceIcon color="brand" variant="strapi" className={className} />
+                  <ServiceLogoIcon color="brand" variant="strapi" className={className} />
                 ),
               },
               {
@@ -237,7 +237,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                 keywords: ["analytics", "privacy", "tracking"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceIcon color="brand" variant="umami" className={className} />
+                  <ServiceLogoIcon color="brand" variant="umami" className={className} />
                 ),
               },
               {
@@ -245,7 +245,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                 keywords: ["full text search", "elasticsearch", "ram"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceIcon color="brand" variant="meilisearch" className={className} />
+                  <ServiceLogoIcon color="brand" variant="meilisearch" className={className} />
                 ),
               },
               {
@@ -253,7 +253,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                 keywords: ["s3", "file storage"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceIcon color="brand" variant="minio" className={className} />
+                  <ServiceLogoIcon color="brand" variant="minio" className={className} />
                 ),
               },
               {
@@ -267,7 +267,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                 ],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceIcon color="brand" variant="pocketbase" className={className} />
+                  <ServiceLogoIcon color="brand" variant="pocketbase" className={className} />
                 ),
               },
               {
@@ -275,7 +275,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                 keywords: ["workflow automation", "ai", "devops", "itops"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceIcon color="brand" variant="n8n" className={className} />
+                  <ServiceLogoIcon color="brand" variant="n8n" className={className} />
                 ),
               },
               {
@@ -283,7 +283,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
                 keywords: ["blogging"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceIcon color="brand" variant="ghost" className={className} />
+                  <ServiceLogoIcon color="brand" variant="ghost" className={className} />
                 ),
               },
             ],
@@ -293,7 +293,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
           title: "Docker Image",
           keywords: ["deploy"],
           onSelect: () => onSelectPlaceholder(),
-          Icon: ({ className }) => <ServiceIcon variant="docker" className={className} />,
+          Icon: ({ className }) => <ServiceLogoIcon variant="docker" className={className} />,
         },
         {
           title: "Go to",

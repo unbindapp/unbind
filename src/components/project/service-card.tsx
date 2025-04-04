@@ -1,6 +1,6 @@
-import ServiceIcon from "@/components/icons/service";
 import LastDeploymentTime from "@/components/project/last-deployment-time";
 import ServicePanel from "@/components/service/panel/service-panel";
+import ServiceIcon from "@/components/service/service-icon";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
@@ -38,11 +38,7 @@ export default function ServiceCard({
           )}
         >
           <div className="flex w-full items-center justify-start gap-2">
-            <ServiceIcon
-              color="brand"
-              variant={service.config.framework || service.config.provider}
-              className="-ml-1 size-6"
-            />
+            <ServiceIcon service={service} className="-ml-1 size-6" />
             <h3 className="min-w-0 shrink overflow-hidden leading-tight font-bold text-ellipsis whitespace-nowrap">
               {service.display_name}
             </h3>

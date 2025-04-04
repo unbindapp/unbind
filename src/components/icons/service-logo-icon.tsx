@@ -10,7 +10,12 @@ type TProps = ComponentProps<"svg"> & {
 
 const defaultClassName = "size-5 shrink-0";
 
-export default function ServiceIcon({ color = "monochrome", variant, className, ...rest }: TProps) {
+export default function ServiceLogoIcon({
+  color = "monochrome",
+  variant,
+  className,
+  ...rest
+}: TProps) {
   if (variant === "go") {
     return (
       <svg
