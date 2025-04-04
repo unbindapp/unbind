@@ -1,4 +1,4 @@
-import ServiceIcon from "@/components/icons/brand";
+import BrandIcon from "@/components/icons/brand";
 import { LinkButton } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { AppRouterOutputs } from "@/server/trpc/api/root";
@@ -48,7 +48,7 @@ export default function ProjectCard({ project, className }: TProps) {
             {serviceIcons !== undefined && serviceIcons.length > 0 && (
               <div className="-my-2 -mr-1 flex items-center gap-1">
                 {serviceIcons.slice(0, iconLength).map((s, index) => (
-                  <ServiceIcon className="size-5" key={`${s}-${index}`} variant={s} />
+                  <BrandIcon brand={s} className="size-5" key={`${s}-${index}`} />
                 ))}
                 {serviceIcons.length > iconLength && <EllipsisIcon className="size-5" />}
               </div>

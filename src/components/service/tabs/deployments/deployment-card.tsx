@@ -1,5 +1,5 @@
 import BroomIcon from "@/components/icons/broom";
-import ServiceIcon from "@/components/icons/brand";
+import BrandIcon from "@/components/icons/brand";
 import DeploymentTime from "@/components/service/tabs/deployments/deployment-time";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
@@ -74,9 +74,9 @@ export default function DeploymentCard({ deployment, currentDeployment, isPlaceh
           </div>
         </div>
         <div className="mt-2 flex shrink-0 flex-col items-start justify-center sm:mt-0">
-          <ServiceIcon
+          <BrandIcon
+            brand={isPlaceholder ? "github" : /* deployment.source */ "github"}
             color="brand"
-            variant={isPlaceholder ? "github" : /* deployment.source */ "github"}
             className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton size-6 group-data-placeholder/card:rounded-full group-data-placeholder/card:text-transparent"
           />
         </div>
