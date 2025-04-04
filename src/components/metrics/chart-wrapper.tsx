@@ -17,7 +17,7 @@ export default function ChartWrapper({ title, description, className, children }
           <CardTitle className="text-lg">{title}</CardTitle>
           <CardDescription>{description}</CardDescription>
         </CardHeader>
-        <CardContent className="flex-1 px-4 pt-2 pb-3 sm:px-6 sm:pb-4">{children}</CardContent>
+        <CardContent className="flex-1 px-4 pt-2 pb-3 sm:px-5 sm:pb-4">{children}</CardContent>
       </Card>
     </div>
   );

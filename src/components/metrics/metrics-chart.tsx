@@ -23,7 +23,7 @@ type TProps = {
   noLegends?: boolean;
 };
 
-const margin = { left: 4, right: 4, top: 4, bottom: 4 };
+const margin = { left: 4, right: 12, top: 4, bottom: 4 };
 
 const colorCount = 10;
 
@@ -143,7 +143,7 @@ export default function MetricsChart({
         <ol
           data-no-data-keys={allDataKeysAreNull ? true : undefined}
           data-has-active={activeDataKey ? true : undefined}
-          className="group/list -ml-1.5 flex w-[calc(100%+0.75rem)] flex-wrap pt-1.5 data-no-data-keys:pointer-events-none data-no-data-keys:opacity-0 sm:-ml-2 sm:w-[calc(100%+1rem)]"
+          className="group/list -ml-1.5 flex w-[calc(100%+0.75rem)] flex-wrap pt-1.5 data-no-data-keys:pointer-events-none data-no-data-keys:opacity-0 sm:-ml-1 sm:w-[calc(100%+0.5rem)]"
         >
           {dataKeys.map((dataKey) => (
             <li key={dataKey} className="max-w-full">
