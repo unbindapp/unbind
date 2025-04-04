@@ -77,8 +77,8 @@ function ContextAwareCommandPanel_({ context }: Props) {
       <CommandPanelTrigger
         allPageIds={allPageIds}
         currentPage={currentPage}
-        title="Project Command Panel"
-        description="Add a new service or manage existing services"
+        title="Command Panel"
+        description="Access features of Unbind with ease."
         goToParentPage={goToParentPage}
         setCurrentPageId={setCurrentPageId}
         rootPage={rootPage}

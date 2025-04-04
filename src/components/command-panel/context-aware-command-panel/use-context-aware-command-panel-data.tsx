@@ -1,70 +1,30 @@
-import { useCommandPanelState } from "@/components/command-panel/command-panel-state-provider";
-import {
-  commandPanelContextAwareRootPage,
-  commandPanelKey,
-  commandPanelPageKey,
-} from "@/components/command-panel/constants";
+import { commandPanelContextAwareRootPage } from "@/components/command-panel/constants";
+import useDatabaseItem from "@/components/command-panel/context-aware-command-panel/items/database";
+import useDockerImageItem from "@/components/command-panel/context-aware-command-panel/items/docker-image";
+import useNavigateItem from "@/components/command-panel/context-aware-command-panel/items/navigation";
+import useNewProjectItem from "@/components/command-panel/context-aware-command-panel/items/new-project";
+import useRepoItem from "@/components/command-panel/context-aware-command-panel/items/repo";
+import useTemplateItem from "@/components/command-panel/context-aware-command-panel/items/template";
 import { findCommandPanelPage } from "@/components/command-panel/helpers";
 import {
-  TCommandPanelItem,
   TCommandPanelPage,
   TContextAwareCommandPanelContext,
 } from "@/components/command-panel/types";
-import BrandIcon from "@/components/icons/brand";
-import { useProjectsUtils } from "@/components/project/projects-provider";
-import { useAsyncPush } from "@/components/providers/async-push-provider";
+import useCommandPanel from "@/components/command-panel/use-command-panel";
 import { defaultAnimationMs } from "@/lib/constants";
-import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import { api } from "@/server/trpc/setup/client";
-import {
-  BellIcon,
-  BlocksIcon,
-  CornerDownRightIcon,
-  DatabaseIcon,
-  FolderPlusIcon,
-  KeyRoundIcon,
-  SettingsIcon,
-  TriangleAlertIcon,
-  UsersIcon,
-  WebhookIcon,
-} from "lucide-react";
-import { ResultAsync } from "neverthrow";
-import { parseAsString, useQueryState } from "nuqs";
 import { useCallback, useMemo, useRef } from "react";
 import { toast } from "sonner";
 
 export default function useContextAwareCommandPanelData(context: TContextAwareCommandPanelContext) {
-  const { setIsPendingId } = useCommandPanelState();
-
-  const [, setPanelId] = useQueryState(commandPanelKey);
-  const [panelPageId, setPanelPageId] = useQueryState(
-    commandPanelPageKey,
-    parseAsString.withDefault(commandPanelContextAwareRootPage),
-  );
-  const { asyncPush } = useAsyncPush();
+  const { panelPageId, setPanelId, setPanelPageId } = useCommandPanel();
   const timeout = useRef<NodeJS.Timeout | null>(null);
-  const utils = api.useUtils();
-  const { invalidate: invalidateProjects } = useProjectsUtils({ teamId: context.teamId });
-  const { environmentId } = useIdsFromPathname();
 
-  const { mutate: createProject } = api.projects.create.useMutation({
-    onSuccess: async (res) => {
-      const projectId = res.data?.id;
-      const environments = res.data.environments;
-      if (environments.length < 1) {
-        throw new Error("No environment found");
-      }
-      const environmentId = environments[0].id;
-      if (!projectId || !environmentId) {
-        throw new Error("Project or environment ID not found");
-      }
-      await invalidateProjects();
-      await asyncPush(`/${context.teamId}/project/${projectId}?environment=${environmentId}`);
-    },
-    onSettled: () => {
-      setIsPendingId(null);
-    },
-  });
+  const { item: templateItem } = useTemplateItem();
+  const { item: navigateItem } = useNavigateItem({ context });
+  const { item: databaseItem } = useDatabaseItem();
+  const { item: repoItem } = useRepoItem({ context });
+  const { item: dockerImageItem } = useDockerImageItem();
+  const { item: newProjectItem } = useNewProjectItem({ context });
 
   const onSelectPlaceholder = useCallback(() => {
     toast.success("Successful", {
@@ -81,41 +41,6 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
     }, defaultAnimationMs);
   }, [setPanelId, setPanelPageId]);
 
-  const navigateToSettings = useCallback(
-    async ({
-      pathname,
-      context,
-      isPendingId,
-    }: {
-      pathname: string;
-      context: TContextAwareCommandPanelContext;
-      isPendingId?: string | null;
-    }) => {
-      const key = `/settings${pathname}`;
-      if (isPendingId === key) return;
-      setIsPendingId(key);
-      const res = await ResultAsync.fromPromise(
-        asyncPush(getSettingsPageHref({ context, pathname, environmentId })),
-        () => new Error("Failed to navigate to settings"),
-      );
-      if (res.isErr()) {
-        toast.error("Failed to navigate", {
-          description: res.error.message,
-          duration: 3000,
-        });
-      }
-      setIsPendingId(null);
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [environmentId],
-  );
-
-  const goToKeywords = useMemo(() => ["go to", "navigate to", "jump to"], []);
-
-  const settingsTitle = useMemo(() => {
-    return context.contextType === "project" ? "Project Settings" : "Team Settings";
-  }, [context]);
-
   const rootPage: TCommandPanelPage = useMemo(
     () => ({
       id: commandPanelContextAwareRootPage,
@@ -123,278 +48,16 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
       parentPageId: null,
       inputPlaceholder: "Search commands...",
       items: [
-        ...(context.contextType === "team"
-          ? ([
-              {
-                id: "new-project",
-                title: "New Project",
-                keywords: ["New Project", "Create project...", "Creating project..."],
-                onSelect: (props) => {
-                  if (props?.isPendingId === "new-project") return;
-                  setIsPendingId("new-project");
-                  createProject({ teamId: context.teamId });
-                },
-                Icon: FolderPlusIcon,
-              },
-            ] as TCommandPanelItem[])
-          : []),
-        {
-          title: "GitHub Repo",
-          keywords: ["deploy from github", "deploy from gitlab", "deploy from bitbucket"],
-          Icon: ({ className }: { className?: string }) => (
-            <BrandIcon brand="github" className={className} />
-          ),
-          subpage: {
-            id: "github_repos_context_aware",
-            title: "GitHub Repos",
-            parentPageId: commandPanelContextAwareRootPage,
-            inputPlaceholder: "Deploy from GitHub...",
-            getItems: async () => {
-              const res = await utils.git.listRepositories.fetch({ teamId: context.teamId });
-              const items: TCommandPanelItem[] = res.repositories.map((r) => ({
-                title: `${r.full_name}`,
-                keywords: [],
-                onSelect: () => onSelectPlaceholder(),
-                Icon: ({ className }: { className?: string }) => (
-                  <BrandIcon brand="github" color="brand" className={className} />
-                ),
-              }));
-              return items;
-            },
-          },
-        },
-        {
-          title: "Database",
-          keywords: ["persistent", "persistence"],
-          Icon: DatabaseIcon,
-          subpage: {
-            id: "databases",
-            title: "Databases",
-            parentPageId: commandPanelContextAwareRootPage,
-            inputPlaceholder: "Deploy a database...",
-            items: [
-              {
-                title: "PostgreSQL",
-                keywords: ["database", "sql", "mysql"],
-                onSelect: () => onSelectPlaceholder(),
-                Icon: ({ className }: { className?: string }) => (
-                  <BrandIcon brand="postgresql" color="brand" className={className} />
-                ),
-              },
-              {
-                title: "Redis",
-                keywords: ["database", "cache", "key value"],
-                onSelect: () => onSelectPlaceholder(),
-                Icon: ({ className }: { className?: string }) => (
-                  <BrandIcon brand="redis" color="brand" className={className} />
-                ),
-              },
-              {
-                title: "MongoDB",
-                keywords: ["database", "object"],
-                onSelect: () => onSelectPlaceholder(),
-                Icon: ({ className }: { className?: string }) => (
-                  <BrandIcon brand="mongodb" color="brand" className={className} />
-                ),
-              },
-              {
-                title: "MySQL",
-                keywords: ["database", "sql", "postgresql"],
-                onSelect: () => onSelectPlaceholder(),
-                Icon: ({ className }: { className?: string }) => (
-                  <BrandIcon brand="mysql" color="brand" className={className} />
-                ),
-              },
-              {
-                title: "ClickHouse",
-                keywords: ["database", "analytics", "sql"],
-                onSelect: () => onSelectPlaceholder(),
-                Icon: ({ className }: { className?: string }) => (
-                  <BrandIcon brand="clickhouse" color="brand" className={className} />
-                ),
-              },
-            ],
-          },
-        },
-        {
-          title: "Template",
-          keywords: ["blueprint", "stack", "group"],
-          Icon: BlocksIcon,
-          subpage: {
-            id: "templates",
-            title: "Templates",
-            parentPageId: commandPanelContextAwareRootPage,
-            inputPlaceholder: "Deploy a template...",
-            items: [
-              {
-                title: "Strapi",
-                keywords: ["cms", "content"],
-                onSelect: () => onSelectPlaceholder(),
-                Icon: ({ className }: { className?: string }) => (
-                  <BrandIcon brand="strapi" color="brand" className={className} />
-                ),
-              },
-              {
-                title: "Umami",
-                keywords: ["analytics", "privacy", "tracking"],
-                onSelect: () => onSelectPlaceholder(),
-                Icon: ({ className }: { className?: string }) => (
-                  <BrandIcon brand="umami" color="brand" className={className} />
-                ),
-              },
-              {
-                title: "Meilisearch",
-                keywords: ["full text search", "elasticsearch", "ram"],
-                onSelect: () => onSelectPlaceholder(),
-                Icon: ({ className }: { className?: string }) => (
-                  <BrandIcon brand="meilisearch" color="brand" className={className} />
-                ),
-              },
-              {
-                title: "MinIO",
-                keywords: ["s3", "file storage"],
-                onSelect: () => onSelectPlaceholder(),
-                Icon: ({ className }: { className?: string }) => (
-                  <BrandIcon brand="minio" color="brand" className={className} />
-                ),
-              },
-              {
-                title: "PocketBase",
-                keywords: [
-                  "paas",
-                  "backend",
-                  "authentication",
-                  "realtime database",
-                  "file storage",
-                ],
-                onSelect: () => onSelectPlaceholder(),
-                Icon: ({ className }: { className?: string }) => (
-                  <BrandIcon brand="pocketbase" color="brand" className={className} />
-                ),
-              },
-              {
-                title: "N8N",
-                keywords: ["workflow automation", "ai", "devops", "itops"],
-                onSelect: () => onSelectPlaceholder(),
-                Icon: ({ className }: { className?: string }) => (
-                  <BrandIcon brand="n8n" color="brand" className={className} />
-                ),
-              },
-              {
-                title: "Ghost",
-                keywords: ["blogging"],
-                onSelect: () => onSelectPlaceholder(),
-                Icon: ({ className }: { className?: string }) => (
-                  <BrandIcon brand="ghost" color="brand" className={className} />
-                ),
-              },
-            ],
-          },
-        },
-        {
-          title: "Docker Image",
-          keywords: ["deploy"],
-          onSelect: () => onSelectPlaceholder(),
-          Icon: ({ className }: { className?: string }) => (
-            <BrandIcon brand="docker" className={className} />
-          ),
-        },
-        {
-          title: "Go to",
-          keywords: ["navigate", "jump"],
-          Icon: CornerDownRightIcon,
-          subpage: {
-            title: "Go to",
-            id: "go_to",
-            inputPlaceholder: "Go to...",
-            parentPageId: commandPanelContextAwareRootPage,
-            items: [
-              {
-                id: `/settings`,
-                title: settingsTitle,
-                onSelect: (props) => {
-                  navigateToSettings({ context, pathname: "", isPendingId: props?.isPendingId });
-                },
-                Icon: SettingsIcon,
-                keywords: ["settings", "general", "change", "tweak", "adjust", ...goToKeywords],
-              },
-              {
-                id: `/settings/shared-variables`,
-                title: "Shared Variables",
-                titleSuffix: ` | ${settingsTitle}`,
-                onSelect: (props) => {
-                  navigateToSettings({
-                    context,
-                    pathname: "/shared-variables",
-                    isPendingId: props?.isPendingId,
-                  });
-                },
-                Icon: KeyRoundIcon,
-                keywords: ["environment variables", "secrets", "keys", "values", ...goToKeywords],
-              },
-              {
-                id: `/settings/members`,
-                title: "Members",
-                titleSuffix: ` | ${settingsTitle}`,
-                onSelect: (props) => {
-                  navigateToSettings({
-                    context,
-                    pathname: "/members",
-                    isPendingId: props?.isPendingId,
-                  });
-                },
-                Icon: UsersIcon,
-                keywords: ["person", "people", "group", ...goToKeywords],
-              },
-              {
-                id: `/settings/notifications`,
-                title: "Notifications",
-                titleSuffix: ` | ${settingsTitle}`,
-                onSelect: (props) => {
-                  navigateToSettings({
-                    context,
-                    pathname: "/notifications",
-                    isPendingId: props?.isPendingId,
-                  });
-                },
-                Icon: BellIcon,
-                keywords: ["notify", "alert", ...goToKeywords],
-              },
-              {
-                id: `/settings/webhooks`,
-                title: "Webhooks",
-                titleSuffix: ` | ${settingsTitle}`,
-                onSelect: (props) => {
-                  navigateToSettings({
-                    context,
-                    pathname: "/webhooks",
-                    isPendingId: props?.isPendingId,
-                  });
-                },
-                Icon: WebhookIcon,
-                keywords: ["hook", "integration", "alert", "connection", ...goToKeywords],
-              },
-              {
-                id: `/settings/danger-zone`,
-                title: "Danger Zone",
-                titleSuffix: ` | ${settingsTitle}`,
-                onSelect: (props) => {
-                  navigateToSettings({
-                    context,
-                    pathname: "/danger-zone",
-                    isPendingId: props?.isPendingId,
-                  });
-                },
-                Icon: TriangleAlertIcon,
-                keywords: ["delete", "danger", ...goToKeywords],
-              },
-            ],
-          },
-        },
+        ...(context.contextType === "team" ? [newProjectItem] : []),
+        repoItem,
+        databaseItem,
+        templateItem,
+        dockerImageItem,
+        navigateItem,
       ],
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [onSelectPlaceholder, utils, context, settingsTitle, navigateToSettings, goToKeywords],
+    [onSelectPlaceholder, repoItem, databaseItem, templateItem, dockerImageItem, navigateItem],
   );
 
   const setCurrentPageId = useCallback(
@@ -451,18 +114,4 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
     allPageIds,
     goToParentPage,
   };
-}
-
-function getSettingsPageHref({
-  pathname,
-  context,
-  environmentId,
-}: {
-  pathname: string;
-  context: TContextAwareCommandPanelContext;
-  environmentId?: string | null;
-}) {
-  return context.contextType === "project"
-    ? `/${context.teamId}/project/${context.projectId}/settings${pathname}?environment=${environmentId}`
-    : `/${context.teamId}/settings${pathname}`;
 }

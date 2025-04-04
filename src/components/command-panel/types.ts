@@ -31,12 +31,22 @@ export type TCommandPanelItem = {
 
 export type TContextAwareCommandPanelContext =
   | {
+      contextType: "team";
       teamId: string;
       projectId?: never;
-      contextType: "team";
     }
   | {
+      contextType: "project";
       teamId: string;
       projectId: string;
-      contextType: "project";
+    }
+  | {
+      contextType: "new-service";
+      teamId: string;
+      projectId: string;
+    }
+  | {
+      contextType: "new-project";
+      teamId: string;
+      projectId?: never;
     };
