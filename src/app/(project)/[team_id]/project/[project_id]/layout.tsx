@@ -1,5 +1,5 @@
 import ProjectProvider from "@/components/project/project-provider";
-import ContextAwareCommandPanel from "@/components/command-panel/context-aware-command-panel/context-aware-command-panel";
+import ContextCommandPanel from "@/components/command-panel/context-command-panel/context-command-panel";
 import NavbarSafeAreaInsetBottom from "@/components/navigation/navbar-safe-area-inset-bottom";
 import ProjectNavbar from "@/components/project/project-navbar";
 import ProjectsProvider from "@/components/project/projects-provider";
@@ -46,7 +46,7 @@ export default async function Layout({ children, params }: TProps) {
         <ProjectNavbar />
         {children}
         <NavbarSafeAreaInsetBottom className="sm:hidden" />
-        <ContextAwareCommandPanel
+        <ContextCommandPanel
           context={{
             contextType: "project",
             projectId,

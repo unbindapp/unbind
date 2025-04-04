@@ -1,8 +1,5 @@
 import { useCommandPanelState } from "@/components/command-panel/command-panel-state-provider";
-import {
-  TCommandPanelItem,
-  TContextAwareCommandPanelContext,
-} from "@/components/command-panel/types";
+import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/command-panel/types";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { api } from "@/server/trpc/setup/client";
@@ -10,7 +7,7 @@ import { FolderPlusIcon } from "lucide-react";
 import { useMemo } from "react";
 
 type TProps = {
-  context: TContextAwareCommandPanelContext;
+  context: TContextCommandPanelContext;
 };
 
 export default function useNewProjectItem({ context }: TProps) {

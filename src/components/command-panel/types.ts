@@ -29,7 +29,7 @@ export type TCommandPanelItem = {
   keywords: string[];
 };
 
-export type TContextAwareCommandPanelContext =
+export type TContextCommandPanelContext =
   | {
       contextType: "team";
       teamId: string;

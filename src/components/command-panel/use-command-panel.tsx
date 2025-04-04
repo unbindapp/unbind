@@ -1,5 +1,5 @@
 import {
-  commandPanelContextAwareRootPage,
+  contextCommandPanelRootPage,
   commandPanelKey,
   commandPanelPageKey,
 } from "@/components/command-panel/constants";
@@ -10,7 +10,7 @@ export default function useCommandPanel() {
   const [panelId, setPanelId] = useQueryState(commandPanelKey);
   const [panelPageId, setPanelPageId] = useQueryState(
     commandPanelPageKey,
-    parseAsString.withDefault(commandPanelContextAwareRootPage),
+    parseAsString.withDefault(contextCommandPanelRootPage),
   );
   const value = useMemo(
     () => ({

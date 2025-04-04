@@ -1,8 +1,5 @@
-import { commandPanelContextAwareRootPage } from "@/components/command-panel/constants";
-import {
-  TCommandPanelItem,
-  TContextAwareCommandPanelContext,
-} from "@/components/command-panel/types";
+import { contextCommandPanelRootPage } from "@/components/command-panel/constants";
+import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
 import BrandIcon from "@/components/icons/brand";
 import { defaultAnimationMs } from "@/lib/constants";
@@ -11,7 +8,7 @@ import { useCallback, useMemo, useRef } from "react";
 import { toast } from "sonner";
 
 type TProps = {
-  context: TContextAwareCommandPanelContext;
+  context: TContextCommandPanelContext;
 };
 
 export default function useRepoItem({ context }: TProps) {
@@ -44,7 +41,7 @@ export default function useRepoItem({ context }: TProps) {
       subpage: {
         id: "github_repos_context_aware",
         title: "GitHub Repos",
-        parentPageId: commandPanelContextAwareRootPage,
+        parentPageId: contextCommandPanelRootPage,
         inputPlaceholder: "Deploy from GitHub...",
         getItems: async () => {
           const res = await utils.git.listRepositories.fetch({ teamId: context.teamId });

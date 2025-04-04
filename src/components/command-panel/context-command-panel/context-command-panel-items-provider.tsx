@@ -4,17 +4,18 @@ import { TCommandPanelItem, TCommandPanelPage } from "@/components/command-panel
 import { useQuery } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext } from "react";
 
-type TContextAwareCommandPanelItemsContext = {
+type TContextCommandPanelItemsContext = {
   items: TCommandPanelItem[] | undefined;
   isPending: boolean;
   isError: boolean;
   error: Error | null;
 };
 
-const ContextAwareCommandPanelItemsContext =
-  createContext<TContextAwareCommandPanelItemsContext | null>(null);
+const ContextCommandPanelItemsContext = createContext<TContextCommandPanelItemsContext | null>(
+  null,
+);
 
-export const ContextAwareCommandPanelItemsProvider: React.FC<{
+export const ContextCommandPanelItemsProvider: React.FC<{
   teamId: string;
   projectId: string;
   page: TCommandPanelPage;
@@ -27,7 +28,7 @@ export const ContextAwareCommandPanelItemsProvider: React.FC<{
   });
 
   return (
-    <ContextAwareCommandPanelItemsContext.Provider
+    <ContextCommandPanelItemsContext.Provider
       value={{
         items: page.items ? page.items : data,
         isError: page.items ? false : isError,
@@ -36,18 +37,18 @@ export const ContextAwareCommandPanelItemsProvider: React.FC<{
       }}
     >
       {children}
-    </ContextAwareCommandPanelItemsContext.Provider>
+    </ContextCommandPanelItemsContext.Provider>
   );
 };
 
-export const useContextAwareCommandPanelItems = () => {
-  const context = useContext(ContextAwareCommandPanelItemsContext);
+export const useContextCommandPanelItems = () => {
+  const context = useContext(ContextCommandPanelItemsContext);
   if (!context) {
     throw new Error(
-      "useContextAwareCommandPanelItems must be used within an ContextAwareCommandPanelItemsProvider",
+      "useContextCommandPanelItems must be used within an ContextCommandPanelItemsProvider",
     );
   }
   return context;
 };
 
-export default ContextAwareCommandPanelItemsProvider;
+export default ContextCommandPanelItemsProvider;

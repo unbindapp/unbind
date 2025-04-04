@@ -1,21 +1,18 @@
-import { commandPanelContextAwareRootPage } from "@/components/command-panel/constants";
-import useDatabaseItem from "@/components/command-panel/context-aware-command-panel/items/database";
-import useDockerImageItem from "@/components/command-panel/context-aware-command-panel/items/docker-image";
-import useNavigateItem from "@/components/command-panel/context-aware-command-panel/items/navigation";
-import useNewProjectItem from "@/components/command-panel/context-aware-command-panel/items/new-project";
-import useRepoItem from "@/components/command-panel/context-aware-command-panel/items/repo";
-import useTemplateItem from "@/components/command-panel/context-aware-command-panel/items/template";
+import { contextCommandPanelRootPage } from "@/components/command-panel/constants";
+import useDatabaseItem from "@/components/command-panel/context-command-panel/items/database";
+import useDockerImageItem from "@/components/command-panel/context-command-panel/items/docker-image";
+import useNavigateItem from "@/components/command-panel/context-command-panel/items/navigation";
+import useNewProjectItem from "@/components/command-panel/context-command-panel/items/new-project";
+import useRepoItem from "@/components/command-panel/context-command-panel/items/repo";
+import useTemplateItem from "@/components/command-panel/context-command-panel/items/template";
 import { findCommandPanelPage } from "@/components/command-panel/helpers";
-import {
-  TCommandPanelPage,
-  TContextAwareCommandPanelContext,
-} from "@/components/command-panel/types";
+import { TCommandPanelPage, TContextCommandPanelContext } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
 import { defaultAnimationMs } from "@/lib/constants";
 import { useCallback, useMemo, useRef } from "react";
 import { toast } from "sonner";
 
-export default function useContextAwareCommandPanelData(context: TContextAwareCommandPanelContext) {
+export default function useContextCommandPanelData(context: TContextCommandPanelContext) {
   const { panelPageId, setPanelId, setPanelPageId } = useCommandPanel();
   const timeout = useRef<NodeJS.Timeout | null>(null);
 
@@ -43,7 +40,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
 
   const rootPage: TCommandPanelPage = useMemo(
     () => ({
-      id: commandPanelContextAwareRootPage,
+      id: contextCommandPanelRootPage,
       title: "Commands",
       parentPageId: null,
       inputPlaceholder: "Search commands...",
@@ -91,7 +88,7 @@ export default function useContextAwareCommandPanelData(context: TContextAwareCo
 
   const goToParentPage = useCallback(
     (e?: KeyboardEvent) => {
-      if (currentPage.id === commandPanelContextAwareRootPage) {
+      if (currentPage.id === contextCommandPanelRootPage) {
         return;
       }
       if (currentPage.parentPageId === null) return;

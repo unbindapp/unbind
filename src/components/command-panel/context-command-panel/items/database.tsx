@@ -1,4 +1,4 @@
-import { commandPanelContextAwareRootPage } from "@/components/command-panel/constants";
+import { contextCommandPanelRootPage } from "@/components/command-panel/constants";
 import { TCommandPanelItem } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
 import BrandIcon from "@/components/icons/brand";
@@ -34,7 +34,7 @@ export default function useDatabaseItem() {
       subpage: {
         id: "databases",
         title: "Databases",
-        parentPageId: commandPanelContextAwareRootPage,
+        parentPageId: contextCommandPanelRootPage,
         inputPlaceholder: "Deploy a database...",
         items: [
           {

@@ -1,4 +1,4 @@
-import ContextAwareCommandPanel from "@/components/command-panel/context-aware-command-panel/context-aware-command-panel";
+import ContextCommandPanel from "@/components/command-panel/context-command-panel/context-command-panel";
 import NavbarSafeAreaInsetBottom from "@/components/navigation/navbar-safe-area-inset-bottom";
 import TeamNavbar from "@/components/team/team-navbar";
 import TeamProvider from "@/components/team/team-provider";
@@ -38,7 +38,7 @@ export default async function Layout({ children, params }: TProps) {
         <TeamNavbar />
         {children}
         <NavbarSafeAreaInsetBottom className="sm:hidden" />
-        <ContextAwareCommandPanel context={{ contextType: "team", teamId }} />
+        <ContextCommandPanel context={{ contextType: "team", teamId }} />
       </TeamProvider>
     </TeamsProvider>
   );

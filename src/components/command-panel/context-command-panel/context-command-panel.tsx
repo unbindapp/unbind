@@ -3,48 +3,48 @@
 import { CommandPanelTrigger } from "@/components/command-panel/command-panel";
 import { CommandPanelStateProvider } from "@/components/command-panel/command-panel-state-provider";
 import {
-  commandPanelContextAware,
-  commandPanelContextAwareRootPage,
   commandPanelKey,
   commandPanelPageKey,
+  contextCommandPanelId,
+  contextCommandPanelRootPage,
 } from "@/components/command-panel/constants";
-import ContextAwareCommandPanelItemsProvider, {
-  useContextAwareCommandPanelItems,
-} from "@/components/command-panel/context-aware-command-panel/context-aware-command-panel-items-provider";
-import useContextAwareCommandPanelData from "@/components/command-panel/context-aware-command-panel/use-context-aware-command-panel-data";
-import { TContextAwareCommandPanelContext } from "@/components/command-panel/types";
+import ContextCommandPanelItemsProvider, {
+  useContextCommandPanelItems,
+} from "@/components/command-panel/context-command-panel/context-command-panel-items-provider";
+import useContextCommandPanelData from "@/components/command-panel/context-command-panel/use-context-command-panel-data";
+import { TContextCommandPanelContext } from "@/components/command-panel/types";
 import { defaultAnimationMs } from "@/lib/constants";
 import { parseAsString, useQueryState } from "nuqs";
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 type Props = {
-  context: TContextAwareCommandPanelContext;
+  context: TContextCommandPanelContext;
 };
 
-export default function ContextAwareCommandPanel({ context }: Props) {
+export default function ContextCommandPanel({ context }: Props) {
   return (
     <CommandPanelStateProvider>
-      <ContextAwareCommandPanel_ context={context} />
+      <ContextCommandPanel_ context={context} />
     </CommandPanelStateProvider>
   );
 }
 
-function ContextAwareCommandPanel_({ context }: Props) {
+function ContextCommandPanel_({ context }: Props) {
   const [commandPanelId, setCommandPanelId] = useQueryState(commandPanelKey);
   const [, setCommandPanelPageId] = useQueryState(
     commandPanelPageKey,
-    parseAsString.withDefault(commandPanelContextAwareRootPage),
+    parseAsString.withDefault(contextCommandPanelRootPage),
   );
 
   const { rootPage, currentPage, setCurrentPageId, allPageIds, goToParentPage } =
-    useContextAwareCommandPanelData(context);
+    useContextCommandPanelData(context);
 
-  const open = commandPanelId === commandPanelContextAware;
+  const open = commandPanelId === contextCommandPanelId;
   const timeout = useRef<NodeJS.Timeout | null>(null);
   const setOpen = (open: boolean) => {
     if (open) {
-      setCommandPanelId(commandPanelContextAware);
+      setCommandPanelId(contextCommandPanelId);
     } else {
       setCommandPanelId(null);
       if (timeout.current) {
@@ -59,7 +59,7 @@ function ContextAwareCommandPanel_({ context }: Props) {
   useHotkeys(
     "mod+k",
     () => {
-      setCommandPanelId(commandPanelContextAware);
+      setCommandPanelId(contextCommandPanelId);
     },
     {
       enabled: true,
@@ -68,8 +68,20 @@ function ContextAwareCommandPanel_({ context }: Props) {
     },
   );
 
+  const dialogContentVariantOptions: Parameters<
+    typeof CommandPanelTrigger
+  >["0"]["dialogContentVariantOptions"] = useMemo(
+    () => ({
+      animate:
+        context.contextType === "new-project" || context.contextType === "new-service"
+          ? "default"
+          : "none",
+    }),
+    [context.contextType],
+  );
+
   return (
-    <ContextAwareCommandPanelItemsProvider
+    <ContextCommandPanelItemsProvider
       teamId={context.teamId}
       projectId={context.projectId || ""}
       page={currentPage}
@@ -82,11 +94,11 @@ function ContextAwareCommandPanel_({ context }: Props) {
         goToParentPage={goToParentPage}
         setCurrentPageId={setCurrentPageId}
         rootPage={rootPage}
-        useCommandPanelItems={useContextAwareCommandPanelItems}
-        dialogContentVariantOptions={{ animate: "none" }}
+        useCommandPanelItems={useContextCommandPanelItems}
+        dialogContentVariantOptions={dialogContentVariantOptions}
         open={open}
         setOpen={setOpen}
       />
-    </ContextAwareCommandPanelItemsProvider>
+    </ContextCommandPanelItemsProvider>
   );
 }

@@ -1,9 +1,6 @@
 import { useCommandPanelState } from "@/components/command-panel/command-panel-state-provider";
-import { commandPanelContextAwareRootPage } from "@/components/command-panel/constants";
-import {
-  TCommandPanelItem,
-  TContextAwareCommandPanelContext,
-} from "@/components/command-panel/types";
+import { contextCommandPanelRootPage } from "@/components/command-panel/constants";
+import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/command-panel/types";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import {
@@ -20,7 +17,7 @@ import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 
 type TProps = {
-  context: TContextAwareCommandPanelContext;
+  context: TContextCommandPanelContext;
 };
 
 export default function useNavigateItem({ context }: TProps) {
@@ -35,7 +32,7 @@ export default function useNavigateItem({ context }: TProps) {
       isPendingId,
     }: {
       pathname: string;
-      context: TContextAwareCommandPanelContext;
+      context: TContextCommandPanelContext;
       isPendingId?: string | null;
     }) => {
       const key = `/settings${pathname}`;
@@ -72,7 +69,7 @@ export default function useNavigateItem({ context }: TProps) {
         title: "Go to",
         id: "go_to",
         inputPlaceholder: "Go to...",
-        parentPageId: commandPanelContextAwareRootPage,
+        parentPageId: contextCommandPanelRootPage,
         items: [
           {
             id: `/settings`,
@@ -174,7 +171,7 @@ function getSettingsPageHref({
   environmentId,
 }: {
   pathname: string;
-  context: TContextAwareCommandPanelContext;
+  context: TContextCommandPanelContext;
   environmentId?: string | null;
 }) {
   return context.contextType === "project"
