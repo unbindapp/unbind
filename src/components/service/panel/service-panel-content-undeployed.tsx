@@ -93,7 +93,7 @@ export default function UndeployedServiceContent({ service, className }: TProps)
                 <p className="w-full px-2 leading-tight font-medium">Source</p>
                 <div className="mt-1 flex w-full flex-row items-center gap-2 rounded-xl border px-3.5 py-2.5">
                   <BrandIcon brand="github" className="size-5 shrink-0" />
-                  <p className="min-w-0 shrink truncate font-medium">{service.git_repository}</p>
+                  <p className="min-w-0 shrink truncate font-medium">{`${service.git_repository_owner}/${service.git_repository}`}</p>
                 </div>
               </div>
               <div className="flex w-full flex-col gap-1 sm:w-1/2">

@@ -199,7 +199,9 @@ function Logs({ containerType }: { containerType: "page" | "sheet" }) {
         logLine={logLine}
         serviceName={
           servicesData.services.find((service) => service.id === logLine.metadata.service_id)
-            ?.display_name || logLine.metadata.service_id
+            ?.display_name ||
+          logLine.metadata.service_id ||
+          "Unknown"
         }
       />
     ));

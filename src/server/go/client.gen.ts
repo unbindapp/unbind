@@ -243,6 +243,7 @@ export const ServiceResponseSchema = z
     display_name: z.string(),
     environment_id: z.string(),
     git_repository: z.string().optional(),
+    git_repository_owner: z.string().optional(),
     github_installation_id: z.number().optional(),
     id: z.string(),
     last_deployment: DeploymentResponseSchema.optional(),
