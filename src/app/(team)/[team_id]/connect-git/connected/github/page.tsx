@@ -1,6 +1,6 @@
 "use client";
 
-import GitProviderIcon from "@/components/icons/git-provider";
+import BrandIcon from "@/components/icons/brand";
 import PageWrapper from "@/components/page-wrapper";
 import { LoaderIcon, TriangleAlertIcon } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -35,7 +35,7 @@ export default function Page() {
           {currentState === "no-opener" ? "Connection failed" : "Connecting to:"}
         </p>
         <div className="mt-2 flex w-full items-center justify-center gap-2">
-          <GitProviderIcon variant="github" className="size-8 shrink-0" />
+          <BrandIcon brand="github" className="size-8 shrink-0" />
           <p className="min-w-0 shrink text-3xl leading-none font-semibold">GitHub</p>
         </div>
       </div>

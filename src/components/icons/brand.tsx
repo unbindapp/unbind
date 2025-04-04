@@ -3,20 +3,15 @@ import { BanIcon } from "lucide-react";
 import { ComponentProps } from "react";
 
 type TProps = ComponentProps<"svg"> & {
-  variant: string | unknown;
+  brand: string | unknown;
   className?: string;
   color?: "monochrome" | "brand";
 };
 
 const defaultClassName = "size-5 shrink-0";
 
-export default function ServiceLogoIcon({
-  color = "monochrome",
-  variant,
-  className,
-  ...rest
-}: TProps) {
-  if (variant === "go") {
+export default function BrandIcon({ color = "monochrome", brand, className, ...rest }: TProps) {
+  if (brand === "go") {
     return (
       <svg
         className={cn(defaultClassName, color === "brand" && "text-go", className)}
@@ -36,7 +31,7 @@ export default function ServiceLogoIcon({
       </svg>
     );
   }
-  if (variant === "meilisearch") {
+  if (brand === "meilisearch") {
     return (
       <svg
         className={cn(defaultClassName, color === "brand" && "text-meilisearch", className)}
@@ -54,7 +49,7 @@ export default function ServiceLogoIcon({
       </svg>
     );
   }
-  if (variant === "minio") {
+  if (brand === "minio") {
     return (
       <svg
         className={cn(defaultClassName, color === "brand" && "text-minio", className)}
@@ -72,7 +67,7 @@ export default function ServiceLogoIcon({
       </svg>
     );
   }
-  if (variant === "mysql") {
+  if (brand === "mysql") {
     return (
       <svg
         className={cn(defaultClassName, color === "brand" && "text-mysql", className)}
@@ -92,7 +87,7 @@ export default function ServiceLogoIcon({
       </svg>
     );
   }
-  if (variant === "nextjs" || variant === "next") {
+  if (brand === "nextjs" || brand === "next") {
     return (
       <svg
         className={cn(defaultClassName, color === "brand" && "text-nextjs", className)}
@@ -110,7 +105,7 @@ export default function ServiceLogoIcon({
       </svg>
     );
   }
-  if (variant === "postgresql") {
+  if (brand === "postgresql") {
     return (
       <svg
         className={cn(defaultClassName, color === "brand" && "text-postgresql", className)}
@@ -130,7 +125,7 @@ export default function ServiceLogoIcon({
       </svg>
     );
   }
-  if (variant === "redis") {
+  if (brand === "redis") {
     return (
       <svg
         className={cn(defaultClassName, color === "brand" && "text-redis", className)}
@@ -148,7 +143,7 @@ export default function ServiceLogoIcon({
       </svg>
     );
   }
-  if (variant === "rust") {
+  if (brand === "rust") {
     return (
       <svg
         className={cn(defaultClassName, color === "brand" && "text-rust", className)}
@@ -166,7 +161,7 @@ export default function ServiceLogoIcon({
       </svg>
     );
   }
-  if (variant === "svelte") {
+  if (brand === "svelte") {
     return (
       <svg
         className={cn(defaultClassName, color === "brand" && "text-svelte", className)}
@@ -184,7 +179,7 @@ export default function ServiceLogoIcon({
       </svg>
     );
   }
-  if (variant === "umami") {
+  if (brand === "umami") {
     return (
       <svg
         className={cn(defaultClassName, color === "brand" && "text-umami", className)}
@@ -202,7 +197,7 @@ export default function ServiceLogoIcon({
       </svg>
     );
   }
-  if (variant === "clickhouse") {
+  if (brand === "clickhouse") {
     return (
       <svg
         className={cn(defaultClassName, color === "brand" && "text-clickhouse", className)}
@@ -220,7 +215,7 @@ export default function ServiceLogoIcon({
       </svg>
     );
   }
-  if (variant === "astro") {
+  if (brand === "astro") {
     return (
       <svg
         className={cn(defaultClassName, color === "brand" && "text-astro", className)}
@@ -238,7 +233,7 @@ export default function ServiceLogoIcon({
       </svg>
     );
   }
-  if (variant === "github") {
+  if (brand === "github") {
     return (
       <svg
         className={cn(defaultClassName, color === "brand" && "text-github", className)}
@@ -256,7 +251,7 @@ export default function ServiceLogoIcon({
       </svg>
     );
   }
-  if (variant === "docker") {
+  if (brand === "docker") {
     return (
       <svg
         className={cn(defaultClassName, color === "brand" && "text-docker", className)}
@@ -274,7 +269,7 @@ export default function ServiceLogoIcon({
       </svg>
     );
   }
-  if (variant === "strapi") {
+  if (brand === "strapi") {
     return (
       <svg
         className={cn(defaultClassName, color === "brand" && "text-strapi", className)}
@@ -304,7 +299,7 @@ export default function ServiceLogoIcon({
       </svg>
     );
   }
-  if (variant === "mongodb") {
+  if (brand === "mongodb") {
     return (
       <svg
         className={cn(defaultClassName, color === "brand" && "text-mongodb", className)}
@@ -322,7 +317,7 @@ export default function ServiceLogoIcon({
       </svg>
     );
   }
-  if (variant === "pocketbase") {
+  if (brand === "pocketbase") {
     return (
       <svg
         className={cn(defaultClassName, color === "brand" && "text-pocketbase", className)}
@@ -342,7 +337,7 @@ export default function ServiceLogoIcon({
       </svg>
     );
   }
-  if (variant === "ghost") {
+  if (brand === "ghost") {
     return (
       <svg
         className={cn(defaultClassName, color === "brand" && "text-ghost", className)}
@@ -362,7 +357,7 @@ export default function ServiceLogoIcon({
       </svg>
     );
   }
-  if (variant === "n8n") {
+  if (brand === "n8n") {
     return (
       <svg
         className={cn(defaultClassName, color === "brand" && "text-n8n", className)}
@@ -382,7 +377,7 @@ export default function ServiceLogoIcon({
       </svg>
     );
   }
-  if (variant === "gitlab") {
+  if (brand === "gitlab") {
     return (
       <svg
         aria-label="GitLab Icon"
@@ -401,7 +396,7 @@ export default function ServiceLogoIcon({
       </svg>
     );
   }
-  if (variant === "gitlab") {
+  if (brand === "gitlab") {
     return (
       <svg
         aria-label="GitHub Icon"

@@ -4,7 +4,7 @@ import {
   gitProviders,
   TGitProvider,
 } from "@/app/(team)/[team_id]/connect-git/_components/constants";
-import GitProviderIcon from "@/components/icons/git-provider";
+import BrandIcon from "@/components/icons/brand";
 import { Button } from "@/components/ui/button";
 import { env } from "@/lib/env";
 import { createClient } from "@/server/go/client.gen";
@@ -68,7 +68,7 @@ function GitProviderButton({
         {isPending ? (
           <LoaderIcon className="size-full animate-spin p-0.25" />
         ) : (
-          <GitProviderIcon className="size-full" variant={provider.slug} />
+          <BrandIcon className="size-full" brand={provider.slug} />
         )}
         <div
           data-show={popupState === "connected" ? true : undefined}

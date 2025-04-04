@@ -1,5 +1,5 @@
 import BroomIcon from "@/components/icons/broom";
-import ServiceIcon from "@/components/icons/service-logo-icon";
+import ServiceIcon from "@/components/icons/brand";
 import DeploymentTime from "@/components/service/tabs/deployments/deployment-time";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";

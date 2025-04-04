@@ -2,7 +2,7 @@ import { useCommandPanelState } from "@/components/command-panel/command-panel-s
 import { commandPanelKey, commandPanelPageKey } from "@/components/command-panel/constants";
 import { findCommandPanelPage } from "@/components/command-panel/helpers";
 import { TCommandPanelItem, TCommandPanelPage } from "@/components/command-panel/types";
-import ServiceLogoIcon from "@/components/icons/service-logo-icon";
+import BrandIcon from "@/components/icons/brand";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { commandPanelTeamRootPage } from "@/components/team/command-panel/constants";
@@ -81,7 +81,7 @@ export default function useTeamCommandPanelData({ teamId }: { teamId: string }) 
           title: "GitHub Repo",
           keywords: ["deploy from github", "deploy from gitlab", "deploy from bitbucket"],
           Icon: ({ className }: { className?: string }) => (
-            <ServiceLogoIcon variant="github" className={className} />
+            <BrandIcon brand="github" className={className} />
           ),
           subpage: {
             id: "github_repos_team",
@@ -95,7 +95,7 @@ export default function useTeamCommandPanelData({ teamId }: { teamId: string }) 
                 keywords: [],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }: { className?: string }) => (
-                  <ServiceLogoIcon color="brand" variant="github" className={className} />
+                  <BrandIcon brand="github" color="brand" className={className} />
                 ),
               }));
               return items;
@@ -117,7 +117,7 @@ export default function useTeamCommandPanelData({ teamId }: { teamId: string }) 
                 keywords: ["database", "sql", "mysql"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceLogoIcon color="brand" variant="postgresql" className={className} />
+                  <BrandIcon brand="postgresql" color="brand" className={className} />
                 ),
               },
               {
@@ -125,7 +125,7 @@ export default function useTeamCommandPanelData({ teamId }: { teamId: string }) 
                 keywords: ["database", "cache", "key value"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceLogoIcon color="brand" variant="redis" className={className} />
+                  <BrandIcon brand="redis" color="brand" className={className} />
                 ),
               },
               {
@@ -133,7 +133,7 @@ export default function useTeamCommandPanelData({ teamId }: { teamId: string }) 
                 keywords: ["database", "object"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceLogoIcon color="brand" variant="mongodb" className={className} />
+                  <BrandIcon brand="mongodb" color="brand" className={className} />
                 ),
               },
               {
@@ -141,7 +141,7 @@ export default function useTeamCommandPanelData({ teamId }: { teamId: string }) 
                 keywords: ["database", "sql", "postgresql"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceLogoIcon color="brand" variant="mysql" className={className} />
+                  <BrandIcon brand="mysql" color="brand" className={className} />
                 ),
               },
               {
@@ -149,7 +149,7 @@ export default function useTeamCommandPanelData({ teamId }: { teamId: string }) 
                 keywords: ["database", "analytics", "sql"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceLogoIcon color="brand" variant="clickhouse" className={className} />
+                  <BrandIcon brand="clickhouse" color="brand" className={className} />
                 ),
               },
             ],
@@ -170,7 +170,7 @@ export default function useTeamCommandPanelData({ teamId }: { teamId: string }) 
                 keywords: ["cms", "content"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceLogoIcon color="brand" variant="strapi" className={className} />
+                  <BrandIcon brand="strapi" color="brand" className={className} />
                 ),
               },
               {
@@ -178,7 +178,7 @@ export default function useTeamCommandPanelData({ teamId }: { teamId: string }) 
                 keywords: ["analytics", "privacy", "tracking"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceLogoIcon color="brand" variant="umami" className={className} />
+                  <BrandIcon brand="umami" color="brand" className={className} />
                 ),
               },
               {
@@ -186,7 +186,7 @@ export default function useTeamCommandPanelData({ teamId }: { teamId: string }) 
                 keywords: ["full text search", "elasticsearch", "ram"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceLogoIcon color="brand" variant="meilisearch" className={className} />
+                  <BrandIcon brand="meilisearch" color="brand" className={className} />
                 ),
               },
               {
@@ -194,7 +194,7 @@ export default function useTeamCommandPanelData({ teamId }: { teamId: string }) 
                 keywords: ["s3", "file storage"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceLogoIcon color="brand" variant="minio" className={className} />
+                  <BrandIcon brand="minio" color="brand" className={className} />
                 ),
               },
               {
@@ -208,7 +208,7 @@ export default function useTeamCommandPanelData({ teamId }: { teamId: string }) 
                 ],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceLogoIcon color="brand" variant="pocketbase" className={className} />
+                  <BrandIcon brand="pocketbase" color="brand" className={className} />
                 ),
               },
               {
@@ -216,7 +216,7 @@ export default function useTeamCommandPanelData({ teamId }: { teamId: string }) 
                 keywords: ["workflow automation", "ai", "devops", "itops"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceLogoIcon color="brand" variant="n8n" className={className} />
+                  <BrandIcon brand="n8n" color="brand" className={className} />
                 ),
               },
               {
@@ -224,7 +224,7 @@ export default function useTeamCommandPanelData({ teamId }: { teamId: string }) 
                 keywords: ["blogging"],
                 onSelect: () => onSelectPlaceholder(),
                 Icon: ({ className }) => (
-                  <ServiceLogoIcon color="brand" variant="ghost" className={className} />
+                  <BrandIcon brand="ghost" color="brand" className={className} />
                 ),
               },
             ],
@@ -234,7 +234,7 @@ export default function useTeamCommandPanelData({ teamId }: { teamId: string }) 
           title: "Docker Image",
           keywords: ["deploy"],
           onSelect: () => onSelectPlaceholder(),
-          Icon: ({ className }) => <ServiceLogoIcon variant="docker" className={className} />,
+          Icon: ({ className }) => <BrandIcon brand="docker" className={className} />,
         },
       ],
     }),
