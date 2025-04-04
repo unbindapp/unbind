@@ -4,6 +4,7 @@ import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/com
 import useCommandPanel from "@/components/command-panel/use-command-panel";
 import BrandIcon from "@/components/icons/brand";
 import { useProject } from "@/components/project/project-provider";
+import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useServicesUtils } from "@/components/project/services-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { AppRouterOutputs } from "@/server/trpc/api/root";
@@ -37,9 +38,14 @@ function useRepoItem({ context }: TProps) {
   const { setIsPendingId } = useCommandPanelState();
   const utils = api.useUtils();
   const {
+    teamId,
     projectId,
     query: { data: projectData },
   } = useProject();
+
+  const { invalidate: invalidateProjects } = useProjectsUtils({ teamId });
+  const { invalidate: invalidateProject } = useProjectsUtils({ teamId });
+
   const { openPanel } = useServicePanel();
 
   const { refetch: refetchServices } = useServicesUtils({
@@ -105,6 +111,8 @@ function useRepoItem({ context }: TProps) {
     },
     onSuccess: (data) => {
       openPanel(data.service.id);
+      invalidateProject();
+      invalidateProjects();
     },
     onSettled: () => {
       setIsPendingId(null);
@@ -147,7 +155,7 @@ function useRepoItem({ context }: TProps) {
         },
       },
     };
-  }, [utils.git.listRepositories, context.teamId, closePanel, createService, setIsPendingId]);
+  }, [utils.git.listRepositories, context, closePanel, createService, setIsPendingId]);
 
   const value = useMemo(
     () => ({

@@ -86,6 +86,7 @@ function ContextCommandPanel_({ context, idSuffix, title, description, children 
       projectId={context.projectId || ""}
       page={currentPage}
       context={context}
+      idSuffix={idSuffix}
     >
       <CommandPanelTrigger
         allPageIds={allPageIds}

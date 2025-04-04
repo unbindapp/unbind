@@ -24,10 +24,11 @@ export const ContextCommandPanelItemsProvider: React.FC<{
   projectId: string;
   page: TCommandPanelPage;
   context: TContextCommandPanelContext;
+  idSuffix: string;
   children: ReactNode;
-}> = ({ teamId, projectId, page, context, children }) => {
+}> = ({ teamId, projectId, page, idSuffix, context, children }) => {
   const { data, isError, isPending, error } = useQuery({
-    queryKey: ["context-aware-command-panel-items", teamId, projectId, page.id, context],
+    queryKey: ["context-aware-command-panel-items", teamId, projectId, page.id, idSuffix, context],
     queryFn: page.items ? () => page.items : () => page.getItems({ teamId, projectId }),
     enabled: page.items ? false : true,
   });
