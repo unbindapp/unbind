@@ -23,7 +23,7 @@ type TProps = {
   className?: string;
 };
 
-export default function DangerZoneSection({ className }: TProps) {
+export default function DeleteServiceSection({ className }: TProps) {
   return (
     <div
       className={cn(
