@@ -9,7 +9,7 @@ import { AppRouterInputs, AppRouterOutputs, AppRouterQueryResult } from "@/serve
 import { api } from "@/server/trpc/setup/client";
 import { fetchEventSource } from "@fortaine/fetch-event-source";
 import { useSession } from "next-auth/react";
-import { createContext, ReactNode, useContext, useEffect, useMemo } from "react";
+import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 
 type TLogsContext = AppRouterQueryResult<AppRouterOutputs["logs"]["list"]> & {};
@@ -92,6 +92,11 @@ export const LogsProvider: React.FC<TProps> = ({
   end,
   children,
 }) => {
+  const [startLocal] = useState(start);
+  const [endLocal] = useState(end);
+  const [sinceLocal] = useState(since);
+  const [streamDisabledLocal] = useState(streamDisabled);
+
   const { data: session } = useSession();
   const { search } = useLogViewState();
 
@@ -109,14 +114,14 @@ export const LogsProvider: React.FC<TProps> = ({
       filters: filtersStr,
       limit,
     };
-    if (since) {
-      props.since = since;
+    if (sinceLocal) {
+      props.since = sinceLocal;
     }
-    if (end) {
-      props.end = end;
+    if (endLocal) {
+      props.end = endLocal;
     }
     if (start) {
-      props.start = start;
+      props.start = startLocal;
     }
 
     const params = new URLSearchParams({
@@ -168,7 +173,7 @@ export const LogsProvider: React.FC<TProps> = ({
   useEffect(() => {
     if (!session) return;
     if (queryResult.isPending) return;
-    if (streamDisabled) {
+    if (streamDisabledLocal) {
       console.log("Log stream is disabled");
       return;
     } else {

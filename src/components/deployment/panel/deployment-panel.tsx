@@ -120,10 +120,7 @@ export default function DeploymentPanel({ service }: TProps) {
           >
             <div className="flex w-full items-start justify-start gap-4 px-5 pt-4 sm:px-8 sm:pt-6">
               <DrawerHeader className="flex min-w-0 flex-1 items-center justify-start p-0">
-                <DrawerTitle className="sr-only">
-                  {service.display_name} / Deployment / {currentDeployment.id.slice(0, 6)}
-                </DrawerTitle>
-                <div className="start-center flex min-w-0 shrink flex-col justify-start gap-1">
+                <DrawerTitle className="flex min-w-0 shrink flex-col items-start justify-start gap-1">
                   <div className="text-muted-foreground flex min-w-0 shrink items-center gap-1.25 text-left text-sm font-medium sm:text-base">
                     <ServiceIcon
                       service={service}
@@ -140,7 +137,7 @@ export default function DeploymentPanel({ service }: TProps) {
                       {Icon}
                     </span>
                   </p>
-                </div>
+                </DrawerTitle>
               </DrawerHeader>
               {!isExtraSmall && (
                 <DrawerClose asChild>
