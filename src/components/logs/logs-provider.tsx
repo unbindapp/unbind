@@ -117,11 +117,11 @@ export const LogsProvider: React.FC<TProps> = ({
     if (sinceLocal) {
       props.since = sinceLocal;
     }
+    if (startLocal) {
+      props.start = startLocal;
+    }
     if (endLocal) {
       props.end = endLocal;
-    }
-    if (start) {
-      props.start = startLocal;
     }
 
     const params = new URLSearchParams({
