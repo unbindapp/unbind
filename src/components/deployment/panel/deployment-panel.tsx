@@ -29,7 +29,7 @@ export type TDeploymentPanelTab = {
   noScrollArea?: boolean;
 };
 
-type TDeploymentPage = FC;
+type TDeploymentPage = FC<{ deployment: TDeploymentShallow }>;
 type TDeploymentPageProvider = FC<TDeploymentPageProviderProps>;
 
 type TDeploymentPageProviderProps = {
@@ -121,7 +121,7 @@ export default function DeploymentPanel({ service, deployment, children }: TProp
               </DrawerClose>
             )}
           </div>
-          <DeploymentPanelContent tabs={tabs} currentTab={currentTab} />
+          <DeploymentPanelContent deployment={deployment} tabs={tabs} currentTab={currentTab} />
         </DeploymentProvider>
       </DrawerContent>
     </Drawer>

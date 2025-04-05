@@ -12,6 +12,7 @@ import LogsProvider, {
   TDeploymentLogsProps,
   TEnvironmentLogsProps,
   TLogLineWithLevel,
+  TLogsStreamProps,
   TServiceLogsProps,
   useLogs,
 } from "@/components/logs/logs-provider";
@@ -32,7 +33,7 @@ type TBaseProps = {
   type: TLogType;
   teamId: string;
   projectId: string;
-};
+} & TLogsStreamProps;
 
 type TProps = TBaseProps & (TEnvironmentLogsProps | TServiceLogsProps | TDeploymentLogsProps);
 
@@ -45,6 +46,10 @@ export default function LogViewer({
   deploymentId,
   type,
   containerType,
+  streamDisabled,
+  start,
+  end,
+  since,
 }: TProps) {
   const typeAndIds: TEnvironmentLogsProps | TServiceLogsProps | TDeploymentLogsProps =
     type === "service"
@@ -53,11 +58,17 @@ export default function LogViewer({
         ? { type: "deployment", environmentId, serviceId, deploymentId }
         : { type: "environment", environmentId: environmentId };
 
+  const streamProps: TLogsStreamProps = streamDisabled
+    ? { streamDisabled: true, start, end }
+    : start
+      ? { start }
+      : { since };
+
   return (
     <LogViewPreferencesProvider hideServiceByDefault={hideServiceByDefault}>
       <LogViewDropdownProvider>
         <LogViewStateProvider>
-          <LogsProvider teamId={teamId} projectId={projectId} {...typeAndIds}>
+          <LogsProvider teamId={teamId} projectId={projectId} {...typeAndIds} {...streamProps}>
             <Logs containerType={containerType} />
           </LogsProvider>
         </LogViewStateProvider>

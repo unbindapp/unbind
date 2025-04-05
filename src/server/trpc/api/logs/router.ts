@@ -16,6 +16,8 @@ export const logsRouter = createTRPCRouter({
           deploymentId: z.string().uuid().optional(),
           filters: z.string().optional(),
           since: z.enum(["24h", "1w", "1m"]).optional(),
+          start: z.string().optional(),
+          end: z.string().optional(),
           limit: z.number().optional().default(500),
         })
         .strip(),
@@ -30,6 +32,8 @@ export const logsRouter = createTRPCRouter({
         deploymentId,
         filters,
         since,
+        start,
+        end,
         limit,
       },
       ctx,
@@ -42,6 +46,7 @@ export const logsRouter = createTRPCRouter({
         });
       }
       const logsData = await goClient.logs.query({
+        type,
         team_id: teamId,
         project_id: projectId,
         environment_id: environmentId,
@@ -49,8 +54,10 @@ export const logsRouter = createTRPCRouter({
         deployment_id: deploymentId,
         filters,
         since,
-        type,
+        start,
+        end,
         limit,
+        direction: "forward",
       });
       return {
         logs: logsData.data,

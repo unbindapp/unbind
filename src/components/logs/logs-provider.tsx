@@ -30,6 +30,30 @@ type TBaseProps = {
   projectId: string;
   environmentId: string;
   type: TLogType;
+} & TLogsStreamProps;
+
+export type TLogsStreamProps =
+  | TLogsStreamEnabledWithSinceProps
+  | TLogsStreamEnabledWithStartProps
+  | TLogsStreamDisabledProps;
+
+export type TLogsStreamDisabledProps = {
+  streamDisabled: true;
+  start: string;
+  end: string;
+  since?: never;
+};
+export type TLogsStreamEnabledWithSinceProps = {
+  streamDisabled?: never;
+  start?: never;
+  end?: never;
+  since: AppRouterInputs["logs"]["list"]["since"];
+};
+export type TLogsStreamEnabledWithStartProps = {
+  streamDisabled?: never;
+  end?: never;
+  start: string;
+  since?: never;
 };
 
 export type TEnvironmentLogsProps = {
@@ -56,19 +80,22 @@ export type TDeploymentLogsProps = {
 type TProps = TBaseProps & (TEnvironmentLogsProps | TServiceLogsProps | TDeploymentLogsProps);
 
 export const LogsProvider: React.FC<TProps> = ({
+  type,
   teamId,
   projectId,
   environmentId,
   serviceId,
   deploymentId,
-  type,
+  streamDisabled,
+  since = "24h",
+  start,
+  end,
   children,
 }) => {
   const { data: session } = useSession();
   const { search } = useLogViewState();
 
   const filtersStr = createSearchFilter(search);
-  const since = "24h";
   const limit = 1000;
 
   const [queryProps, urlParams] = useMemo(() => {
@@ -80,9 +107,18 @@ export const LogsProvider: React.FC<TProps> = ({
       serviceId,
       deploymentId,
       filters: filtersStr,
-      since,
       limit,
     };
+    if (since) {
+      props.since = since;
+    }
+    if (end) {
+      props.end = end;
+    }
+    if (start) {
+      props.start = start;
+    }
+
     const params = new URLSearchParams({
       type: props.type,
       team_id: props.teamId,
@@ -101,11 +137,28 @@ export const LogsProvider: React.FC<TProps> = ({
     if (props.since) {
       params.set("since", props.since);
     }
+    if (props.start) {
+      params.set("start", props.start);
+    }
+    if (props.end) {
+      params.set("end", props.end);
+    }
     if (props.limit) {
       params.set("limit", String(props.limit));
     }
     return [props, params];
-  }, [teamId, projectId, environmentId, serviceId, deploymentId, type, filtersStr]);
+  }, [
+    teamId,
+    projectId,
+    environmentId,
+    serviceId,
+    deploymentId,
+    type,
+    filtersStr,
+    since,
+    start,
+    end,
+  ]);
 
   const sseUrl = `${env.NEXT_PUBLIC_UNBIND_API_URL}/logs/stream?${urlParams.toString()}`;
 
@@ -115,6 +168,12 @@ export const LogsProvider: React.FC<TProps> = ({
   useEffect(() => {
     if (!session) return;
     if (queryResult.isPending) return;
+    if (streamDisabled) {
+      console.log("Log stream is disabled");
+      return;
+    } else {
+      console.log("Log stream is enabled");
+    }
     const controller = new AbortController();
 
     fetchEventSource(sseUrl, {
@@ -126,7 +185,6 @@ export const LogsProvider: React.FC<TProps> = ({
       onmessage: (event) => {
         try {
           const newData = JSON.parse(event.data);
-          console.log("New data:", newData);
           if (newData.type !== "log") {
             return;
           }
@@ -154,7 +212,7 @@ export const LogsProvider: React.FC<TProps> = ({
     return () => {
       controller.abort();
     };
-  }, [sseUrl, session, queryProps, utils.logs.list, queryResult.isPending]);
+  }, [sseUrl, session, queryProps, utils.logs.list, queryResult.isPending, streamDisabled]);
 
   return <LogsContext.Provider value={queryResult}>{children}</LogsContext.Provider>;
 };

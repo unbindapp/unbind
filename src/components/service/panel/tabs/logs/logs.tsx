@@ -12,6 +12,7 @@ export default function Logs() {
       serviceId={serviceId}
       type="service"
       hideServiceByDefault
+      since="24h"
     />
   );
 }

@@ -5,14 +5,16 @@ import { useDeploymentPanel } from "@/components/deployment/panel/deployment-pan
 import TabIndicator from "@/components/navigation/tab-indicator";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
+import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
 
 type TProps = {
   tabs: TDeploymentPanelTab[];
   className?: string;
   currentTab: TDeploymentPanelTab | undefined;
+  deployment: TDeploymentShallow;
 };
 
-export function DeploymentPanelContent({ currentTab, tabs, className }: TProps) {
+export function DeploymentPanelContent({ deployment, currentTab, tabs, className }: TProps) {
   const { teamId, projectId, environmentId, serviceId, deploymentId } = useDeployment();
   const { currentTabId, setCurrentTabId } = useDeploymentPanel();
 
@@ -48,7 +50,7 @@ export function DeploymentPanelContent({ currentTab, tabs, className }: TProps) 
                 serviceId={serviceId}
                 deploymentId={deploymentId}
               >
-                <currentTab.Page />
+                <currentTab.Page deployment={deployment} />
               </currentTab.Provider>
             )}
           </ConditionalScrollArea>
