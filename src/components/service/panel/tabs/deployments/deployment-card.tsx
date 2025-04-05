@@ -79,7 +79,7 @@ export default function DeploymentCard({ deployment, currentDeployment, isPlaceh
             className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton size-6 group-data-placeholder/card:rounded-full group-data-placeholder/card:text-transparent"
           />
         </div>
-        <div className="mt-2 flex min-w-0 flex-1 flex-col items-start gap-1.25 pr-2 pb-1 sm:mt-0 sm:pl-3">
+        <div className="mt-1.5 flex min-w-0 flex-1 flex-col items-start gap-1.25 pr-2 pb-0.5 sm:mt-0 sm:pl-3">
           <p
             data-no-message={!isPlaceholder && !deployment.commit_message ? true : undefined}
             className="data-no-message:bg-border data-no-message:text-muted-foreground group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton max-w-full min-w-0 shrink leading-tight group-data-placeholder/card:rounded-md group-data-placeholder/card:text-transparent data-no-message:-my-0.25 data-no-message:rounded data-no-message:px-1.5 data-no-message:py-0.25"
