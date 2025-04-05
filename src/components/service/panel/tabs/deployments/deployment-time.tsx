@@ -1,7 +1,8 @@
+import AnimatedTimerIcon from "@/components/icons/animated-timer";
+import { useTime } from "@/components/providers/time-provider";
 import { cn } from "@/components/ui/utils";
 import { useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
-import { TimerIcon } from "lucide-react";
 import Image from "next/image";
 
 type TProps = {
@@ -18,6 +19,7 @@ type TProps = {
 );
 
 export default function DeploymentTime({ deployment, isPlaceholder, className }: TProps) {
+  const { now } = useTime();
   const { str } = useTimeDifference({
     timestamp: isPlaceholder ? Date.now() : new Date(deployment.created_at).getTime(),
   });
@@ -26,7 +28,12 @@ export default function DeploymentTime({ deployment, isPlaceholder, className }:
     ? undefined
     : deployment.completed_at && deployment.created_at
       ? getDurationStr({ end: deployment.completed_at, start: deployment.created_at })
-      : null;
+      : deployment.created_at &&
+          (deployment.status === "building" || deployment.status === "queued")
+        ? getDurationStr({ end: now, start: deployment.created_at })
+        : undefined;
+
+  const isBuilding = deployment?.status === "building" || deployment?.status === "queued";
 
   return (
     <div
@@ -53,7 +60,7 @@ export default function DeploymentTime({ deployment, isPlaceholder, className }:
         {durationStr && <p className="text-muted-more-foreground">|</p>}
         {durationStr && (
           <div className="text-muted-foreground -my-0.25 flex min-w-0 shrink items-center justify-start gap-0.75">
-            <TimerIcon className="-ml-0.5 size-3.5 shrink-0" />
+            <AnimatedTimerIcon animate={isBuilding} className="-ml-0.5 size-3.5 shrink-0" />
             <p className="min-w-0 shrink">{durationStr}</p>
           </div>
         )}
@@ -62,7 +69,7 @@ export default function DeploymentTime({ deployment, isPlaceholder, className }:
   );
 }
 
-function getDurationStr({ start, end }: { start: string; end: string }) {
+function getDurationStr({ start, end }: { start: string | number; end: string | number }) {
   const startDate = new Date(start);
   const endDate = new Date(end);
   const duration = endDate.getTime() - startDate.getTime();
