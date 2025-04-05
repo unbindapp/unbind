@@ -1,7 +1,7 @@
 import AnimatedTimerIcon from "@/components/icons/animated-timer";
 import { useTime } from "@/components/providers/time-provider";
 import { cn } from "@/components/ui/utils";
-import { useTimeDifference } from "@/lib/hooks/use-time-difference";
+import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
 import Image from "next/image";
 
@@ -54,10 +54,14 @@ export default function DeploymentTime({ deployment, isPlaceholder, className }:
         <div className="-ml-1.5 h-4.5" />
       )}
       <div className="flex min-w-0 shrink flex-wrap items-center justify-start gap-1 space-x-1 text-sm leading-tight">
-        <p className="text-muted-foreground group-data-placeholder/time:bg-muted-foreground group-data-placeholder/time:animate-skeleton min-w-0 shrink group-data-placeholder/time:rounded-md group-data-placeholder/time:text-transparent">
-          {isPlaceholder ? "1 hr. ago | 90s" : str}
-        </p>
-        {durationStr && <p className="text-muted-more-foreground">|</p>}
+        {!isBuilding && (
+          <>
+            <p className="text-muted-foreground group-data-placeholder/time:bg-muted-foreground group-data-placeholder/time:animate-skeleton min-w-0 shrink group-data-placeholder/time:rounded-md group-data-placeholder/time:text-transparent">
+              {isPlaceholder ? "1 hr. ago | 90s" : str}
+            </p>
+            {durationStr && <p className="text-muted-more-foreground">|</p>}
+          </>
+        )}
         {durationStr && (
           <div className="text-muted-foreground -my-0.25 flex min-w-0 shrink items-center justify-start gap-0.75">
             <AnimatedTimerIcon animate={isBuilding} className="-ml-0.5 size-3.5 shrink-0" />
@@ -67,16 +71,4 @@ export default function DeploymentTime({ deployment, isPlaceholder, className }:
       </div>
     </div>
   );
-}
-
-function getDurationStr({ start, end }: { start: string | number; end: string | number }) {
-  const startDate = new Date(start);
-  const endDate = new Date(end);
-  const duration = endDate.getTime() - startDate.getTime();
-  const durationInSec = Math.floor(duration / 1000);
-  const durationInMin = durationInSec / 60;
-  if (durationInSec >= 120) {
-    return `${durationInMin.toLocaleString(undefined, { maximumFractionDigits: 1 })}m`;
-  }
-  return `${Math.ceil(durationInSec)}s`;
 }

@@ -4,8 +4,10 @@ import { DeploymentPanelContent } from "@/components/deployment/panel/deployment
 import { useDeploymentPanel } from "@/components/deployment/panel/deployment-panel-provider";
 import Info from "@/components/deployment/panel/tabs/info/info";
 import Logs from "@/components/deployment/panel/tabs/logs/logs";
+import AnimatedTimerIcon from "@/components/icons/animated-timer";
 import BroomIcon from "@/components/icons/broom";
 import { useDeviceSize } from "@/components/providers/device-size-provider";
+import { useTime } from "@/components/providers/time-provider";
 import ServiceIcon from "@/components/service/service-icon";
 import { useService } from "@/components/service/service-provider";
 import { Button } from "@/components/ui/button";
@@ -16,9 +18,10 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import { getDurationStr } from "@/lib/hooks/use-time-difference";
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
-import { CircleCheckIcon, LoaderIcon, TriangleAlertIcon, XIcon } from "lucide-react";
+import { CircleCheckIcon, TriangleAlertIcon, XIcon } from "lucide-react";
 import { FC, ReactNode, useMemo } from "react";
 
 export type TDeploymentPanelTab = {
@@ -85,7 +88,7 @@ export default function DeploymentPanel({ service }: TProps) {
     if (!status) return null;
     const sharedClassName = "size-4.5 sm:size-5 shrink-0";
     if (status === "building" || status === "queued")
-      return <LoaderIcon className={`${sharedClassName} animate-spin`} />;
+      return <DeploymentProgress deployment={currentDeployment} iconClassName={sharedClassName} />;
     if (
       status === "succeeded" &&
       currentDeploymentOfService &&
@@ -94,7 +97,7 @@ export default function DeploymentPanel({ service }: TProps) {
       return <CircleCheckIcon className={`${sharedClassName}`} />;
     if (status === "failed") return <TriangleAlertIcon className={`${sharedClassName}`} />;
     return <BroomIcon className={`${sharedClassName}`} />;
-  }, [status, id, currentDeploymentOfService]);
+  }, [status, id, currentDeploymentOfService, currentDeployment]);
 
   return (
     <Drawer
@@ -160,5 +163,25 @@ export default function DeploymentPanel({ service }: TProps) {
         )}
       </DrawerContent>
     </Drawer>
+  );
+}
+
+function DeploymentProgress({
+  deployment,
+  iconClassName,
+}: {
+  deployment: TDeploymentShallow;
+  iconClassName: string;
+}) {
+  const { now } = useTime();
+  const durationStr = getDurationStr({
+    end: now,
+    start: new Date(deployment.created_at).getTime(),
+  });
+  return (
+    <div className="flex min-w-0 shrink items-center justify-start gap-0.75">
+      <AnimatedTimerIcon animate={true} className={iconClassName} />
+      <p className="min-w-0 shrink">{durationStr}</p>
+    </div>
   );
 }

@@ -81,3 +81,15 @@ export function useTimeDifference({
     str: rtf.format(sign * differenceSecondsAbs, "seconds"),
   };
 }
+
+export function getDurationStr({ start, end }: { start: string | number; end: string | number }) {
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+  const duration = endDate.getTime() - startDate.getTime();
+  const durationInSec = Math.floor(duration / 1000);
+  const durationInMin = durationInSec / 60;
+  if (durationInSec >= 120) {
+    return `${durationInMin.toLocaleString(undefined, { maximumFractionDigits: 1 })}m`;
+  }
+  return `${Math.ceil(durationInSec)}s`;
+}
