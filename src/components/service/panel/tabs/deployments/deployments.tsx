@@ -28,17 +28,15 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
 
   return (
     <TabWrapper>
-      <DeploymentPanelProvider>
+      <DeploymentPanelProvider deployments={deploymentsData?.deployments ?? []}>
+        <DeploymentPanel service={service} />
         {(isPending || currentDeployment) && (
           <div className="w-full pb-3">
             {serviceData && currentDeployment ? (
-              <>
-                <DeploymentPanel deployment={currentDeployment} service={service} />
-                <DeploymentCard
-                  deployment={currentDeployment}
-                  currentDeployment={currentDeployment}
-                />
-              </>
+              <DeploymentCard
+                deployment={currentDeployment}
+                currentDeployment={currentDeployment}
+              />
             ) : (
               <DeploymentCard isPlaceholder={true} />
             )}
@@ -58,7 +56,6 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
               .filter((d) => (currentDeployment ? currentDeployment.id !== d.id : true))
               .map((deployment) => (
                 <li className="w-full" key={deployment.id}>
-                  <DeploymentPanel deployment={deployment} service={service} />
                   <DeploymentCard
                     key={deployment.id}
                     deployment={deployment}

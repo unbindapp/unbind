@@ -7,6 +7,7 @@ import {
   deploymentPanelTabKey,
   TDeploymentPanelTabEnum,
 } from "@/components/deployment/panel/constants";
+import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
 import { parseAsStringEnum, useQueryState, UseQueryStateReturn } from "nuqs";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
@@ -15,6 +16,7 @@ type TDeploymentPanelContext = {
   setCurrentTabId: UseQueryStateReturn<TDeploymentPanelTabEnum, TDeploymentPanelTabEnum>["1"];
   currentDeploymentId: string | null;
   setCurrentDeploymentId: UseQueryStateReturn<string | null, string | null>["1"];
+  currentDeployment: TDeploymentShallow | undefined;
   resetCurrentTabId: () => void;
   closePanel: () => void;
   openPanel: (deploymentId: string, tabId?: TDeploymentPanelTabEnum) => void;
@@ -24,7 +26,8 @@ const DeploymentPanelContext = createContext<TDeploymentPanelContext | null>(nul
 
 export const DeploymentPanelProvider: React.FC<{
   children: ReactNode;
-}> = ({ children }) => {
+  deployments: TDeploymentShallow[];
+}> = ({ deployments, children }) => {
   const [currentTabId, setCurrentTabId] = useQueryState(
     deploymentPanelTabKey,
     parseAsStringEnum(DeploymentPanelTabEnum.options).withDefault(deploymentPanelDefaultTabId),
@@ -34,12 +37,15 @@ export const DeploymentPanelProvider: React.FC<{
     deploymentPanelDeploymentIdKey,
   );
 
+  const currentDeployment = deployments.find((deployment) => deployment.id === currentDeploymentId);
+
   const value: TDeploymentPanelContext = useMemo(
     () => ({
       currentTabId,
       setCurrentTabId,
       currentDeploymentId,
       setCurrentDeploymentId,
+      currentDeployment,
       openPanel: (deploymentId: string, tabId?: TDeploymentPanelTabEnum) => {
         setCurrentDeploymentId(deploymentId);
         setCurrentTabId(tabId ?? deploymentPanelDefaultTabId);
@@ -50,7 +56,7 @@ export const DeploymentPanelProvider: React.FC<{
       },
       resetCurrentTabId: () => setCurrentTabId(deploymentPanelDefaultTabId),
     }),
-    [currentTabId, setCurrentTabId, currentDeploymentId, setCurrentDeploymentId],
+    [currentTabId, setCurrentTabId, currentDeploymentId, setCurrentDeploymentId, currentDeployment],
   );
 
   return (
