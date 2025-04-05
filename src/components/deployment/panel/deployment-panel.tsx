@@ -60,7 +60,13 @@ type TProps = {
 
 export default function DeploymentPanel({ service }: TProps) {
   const { teamId, projectId, environmentId, serviceId } = useService();
-  const { closePanel, currentTabId, currentDeployment, currentDeploymentId } = useDeploymentPanel();
+  const {
+    closePanel,
+    currentTabId,
+    currentDeployment,
+    currentDeploymentId,
+    currentDeploymentOfService,
+  } = useDeploymentPanel();
 
   const currentTab = tabs.find((tab) => tab.value === currentTabId);
 
@@ -82,13 +88,13 @@ export default function DeploymentPanel({ service }: TProps) {
       return <LoaderIcon className={`${sharedClassName} animate-spin`} />;
     if (
       status === "succeeded" &&
-      service.last_successful_deployment &&
-      id === service.last_successful_deployment.id
+      currentDeploymentOfService &&
+      id === currentDeploymentOfService.id
     )
       return <CircleCheckIcon className={`${sharedClassName}`} />;
     if (status === "failed") return <TriangleAlertIcon className={`${sharedClassName}`} />;
     return <BroomIcon className={`${sharedClassName}`} />;
-  }, [status, id, service.last_successful_deployment]);
+  }, [status, id, currentDeploymentOfService]);
 
   return (
     <Drawer
@@ -101,7 +107,7 @@ export default function DeploymentPanel({ service }: TProps) {
         transparentOverlay
         hasHandle={isExtraSmall}
         data-status={status}
-        data-last-successful={service.last_successful_deployment?.id === id ? true : undefined}
+        data-last-successful={currentDeploymentOfService?.id === id ? true : undefined}
         className="group/content flex h-[calc(100%-1.3rem)] w-full flex-col sm:top-0 sm:right-0 sm:my-0 sm:ml-auto sm:h-full sm:w-256 sm:max-w-[calc(100%-4rem)] sm:rounded-l-2xl sm:rounded-r-none"
       >
         {currentDeployment && (

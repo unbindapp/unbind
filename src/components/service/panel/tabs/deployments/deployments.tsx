@@ -28,7 +28,10 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
 
   return (
     <TabWrapper>
-      <DeploymentPanelProvider deployments={deploymentsData?.deployments ?? []}>
+      <DeploymentPanelProvider
+        currentDeploymentOfService={deploymentsData?.current_deployment || null}
+        deployments={deploymentsData?.deployments || null}
+      >
         <DeploymentPanel service={service} />
         {(isPending || currentDeployment) && (
           <div className="w-full pb-3">

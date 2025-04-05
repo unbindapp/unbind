@@ -20,14 +20,16 @@ type TDeploymentPanelContext = {
   resetCurrentTabId: () => void;
   closePanel: () => void;
   openPanel: (deploymentId: string, tabId?: TDeploymentPanelTabEnum) => void;
+  currentDeploymentOfService: TDeploymentShallow | null;
 };
 
 const DeploymentPanelContext = createContext<TDeploymentPanelContext | null>(null);
 
 export const DeploymentPanelProvider: React.FC<{
   children: ReactNode;
-  deployments: TDeploymentShallow[];
-}> = ({ deployments, children }) => {
+  deployments: TDeploymentShallow[] | null;
+  currentDeploymentOfService: TDeploymentShallow | null;
+}> = ({ deployments, currentDeploymentOfService, children }) => {
   const [currentDeployment, setCurrentDeployment] = useState<TDeploymentShallow | null>(null);
   const [currentTabId, setCurrentTabId] = useQueryState(
     deploymentPanelTabKey,
@@ -42,6 +44,7 @@ export const DeploymentPanelProvider: React.FC<{
 
   useEffect(() => {
     if (currentDeploymentId) {
+      if (!deployments) return;
       setCurrentDeployment(
         deployments.find((deployment) => deployment.id === currentDeploymentId) || null,
       );
@@ -62,6 +65,7 @@ export const DeploymentPanelProvider: React.FC<{
       currentDeploymentId,
       setCurrentDeploymentId,
       currentDeployment,
+      currentDeploymentOfService,
       openPanel: (deploymentId: string, tabId?: TDeploymentPanelTabEnum) => {
         setCurrentDeploymentId(deploymentId);
         setCurrentTabId(tabId ?? deploymentPanelDefaultTabId);
@@ -72,7 +76,14 @@ export const DeploymentPanelProvider: React.FC<{
       },
       resetCurrentTabId: () => setCurrentTabId(deploymentPanelDefaultTabId),
     }),
-    [currentTabId, setCurrentTabId, currentDeploymentId, setCurrentDeploymentId, currentDeployment],
+    [
+      currentTabId,
+      setCurrentTabId,
+      currentDeploymentId,
+      setCurrentDeploymentId,
+      currentDeployment,
+      currentDeploymentOfService,
+    ],
   );
 
   return (
