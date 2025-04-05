@@ -5,8 +5,8 @@ import {
   TGitProvider,
 } from "@/app/(team)/[team_id]/connect-git/_components/constants";
 import BrandIcon from "@/components/icons/brand";
+import { useAppConfig } from "@/components/providers/app-config-provider";
 import { Button } from "@/components/ui/button";
-import { env } from "@/lib/env";
 import { createClient } from "@/server/go/client.gen";
 import { useMutation } from "@tanstack/react-query";
 import { CheckIcon, LoaderIcon } from "lucide-react";
@@ -21,7 +21,8 @@ type TProps = {
 type TPopupState = "closed" | "open" | "connected";
 
 export default function GitProviderButtons({ teamId, session }: TProps) {
-  const gitHubRedirectUrl = env.NEXT_PUBLIC_SITE_URL + `/${teamId}/connect-git/connected/github`;
+  const { siteUrl, apiUrl } = useAppConfig();
+  const gitHubRedirectUrl = siteUrl + `/${teamId}/connect-git/connected/github`;
   const [gitHubPopupState, setGitHubPopupState] = useState<TPopupState>("closed");
 
   const { mutate: onGitHubClick, isPending: isGitHubPending } = useMutation({
@@ -30,6 +31,7 @@ export default function GitProviderButtons({ teamId, session }: TProps) {
         redirectUrl: gitHubRedirectUrl,
         accessToken: session.access_token,
         setPopupState: setGitHubPopupState,
+        apiUrl,
       }),
     mutationKey: ["create-github-app", { teamId }],
   });
@@ -90,10 +92,12 @@ async function createGitHubApp({
   redirectUrl,
   accessToken,
   setPopupState,
+  apiUrl,
 }: {
   redirectUrl: string;
   accessToken: string;
   setPopupState: (state: TPopupState) => void;
+  apiUrl: string;
 }) {
   const width = 800;
   const height = 600;
@@ -178,7 +182,7 @@ async function createGitHubApp({
     }
   }, 250);
 
-  const goClient = createClient({ accessToken, apiUrl: env.NEXT_PUBLIC_UNBIND_API_URL });
+  const goClient = createClient({ accessToken, apiUrl });
 
   const res = await goClient.github.app.create(
     { redirect_url: redirectUrl },

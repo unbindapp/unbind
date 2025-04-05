@@ -1,13 +1,13 @@
+import "@/app/globals.css";
 import TopLoader from "@/components/navigation/top-loader";
 import Providers from "@/components/providers/providers";
+import { metaTheme } from "@/components/providers/themes";
 import { Toaster } from "@/components/ui/sonner";
 import { siteDescription, siteTagline, siteTitle } from "@/lib/constants";
 import { env } from "@/lib/env";
 import { AlertCircleIcon, CheckCircleIcon, InfoIcon, TriangleAlertIcon, XIcon } from "lucide-react";
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import "@/app/globals.css";
-import { metaTheme } from "@/components/providers/themes";
 /* import { ReactScan } from "@/components/providers/react-scan"; */
 
 const sans = localFont({
@@ -26,16 +26,19 @@ const title = `${siteTitle} | ${siteTagline}`;
 export const viewport: Viewport = {
   themeColor: metaTheme.dark,
 };
-export const metadata: Metadata = {
-  title,
-  description: siteDescription,
-  metadataBase: new URL(env.NEXT_PUBLIC_SITE_URL),
-  twitter: {
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
     title,
     description: siteDescription,
-    card: "summary_large_image",
-  },
-};
+    metadataBase: new URL(env.SITE_URL || "https://unbind.app"),
+    twitter: {
+      title,
+      description: siteDescription,
+      card: "summary_large_image",
+    },
+  };
+}
 
 export default async function RootLayout({
   children,

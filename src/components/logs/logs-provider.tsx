@@ -2,7 +2,7 @@
 
 import { useLogViewState } from "@/components/logs/log-view-state-provider";
 import { createSearchFilter } from "@/components/logs/search-filter";
-import { env } from "@/lib/env";
+import { useAppConfig } from "@/components/providers/app-config-provider";
 import { LogEventSchema } from "@/server/go/client.gen";
 import { TLogType } from "@/server/trpc/api/logs/types";
 import { AppRouterInputs, AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
@@ -165,7 +165,8 @@ export const LogsProvider: React.FC<TProps> = ({
     endLocal,
   ]);
 
-  const sseUrl = `${env.NEXT_PUBLIC_UNBIND_API_URL}/logs/stream?${urlParams.toString()}`;
+  const { apiUrl } = useAppConfig();
+  const sseUrl = `${apiUrl}/logs/stream?${urlParams.toString()}`;
 
   const utils = api.useUtils();
   const queryResult = api.logs.list.useQuery(queryProps);
