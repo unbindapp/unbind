@@ -120,19 +120,19 @@ export default function DeploymentPanel({ service }: TProps) {
           >
             <div className="flex w-full items-start justify-start gap-4 px-5 pt-4 sm:px-8 sm:pt-6">
               <DrawerHeader className="flex min-w-0 flex-1 items-center justify-start p-0">
-                <DrawerTitle className="flex min-w-0 shrink flex-col items-start justify-start gap-1">
-                  <div className="text-muted-foreground flex min-w-0 shrink items-center gap-1.25 text-left text-sm font-medium sm:text-base">
+                <DrawerTitle className="flex w-full flex-col items-start justify-start gap-1.5">
+                  <div className="text-muted-foreground flex w-full items-center gap-1.25 text-left text-sm font-medium sm:text-base">
                     <ServiceIcon
                       service={service}
                       color="monochrome"
                       className="-ml-0.25 size-4 sm:size-4.5"
                     />
-                    <p className="min-w-0 shrink">{service.display_name}</p>
+                    <p className="min-w-0 shrink truncate leading-tight">{service.display_name}</p>
                   </div>
-                  <p className="min-w-0 shrink text-left text-xl leading-tight font-semibold sm:text-2xl">
-                    <span>Deployment</span>{" "}
+                  <p className="w-full min-w-0 text-left text-xl leading-tight font-semibold sm:text-2xl">
+                    <span className="truncate">Deployment</span>{" "}
                     <span className="text-muted-more-foreground font-normal">/</span>{" "}
-                    <span className="group-data-[status=failed]/content:text-destructive group-data-last-successful/content:group-data-[status=succeeded]/content:text-success group-data-[status=building]/content:text-process group-data-[status=queued]/content:text-process inline-flex items-center justify-start gap-1.5">
+                    <span className="group-data-[status=failed]/content:text-destructive group-data-last-successful/content:group-data-[status=succeeded]/content:text-success group-data-[status=building]/content:text-process group-data-[status=queued]/content:text-process inline-flex min-w-0 shrink items-center justify-start gap-1.5">
                       {currentDeployment.id.slice(0, 6)}
                       {Icon}
                     </span>
