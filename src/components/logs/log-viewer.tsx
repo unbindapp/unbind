@@ -254,7 +254,7 @@ function NoLogsFound() {
             No matches for <span className="bg-border rounded px-1.5 font-medium">{search}</span>
           </>
         ) : (
-          <>No logs found</>
+          <>No logs yet</>
         )}
       </p>
     </NoItemsCard>
