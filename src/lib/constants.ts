@@ -32,3 +32,4 @@ export const sc: Record<
 };
 
 export const defaultAnimationMs = 150;
+export const drawerAnimationMs = 300;

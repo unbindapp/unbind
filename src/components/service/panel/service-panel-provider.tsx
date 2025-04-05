@@ -7,8 +7,9 @@ import {
   servicePanelTabKey,
   TServicePanelTabEnum,
 } from "@/components/service/panel/constants";
+import { drawerAnimationMs } from "@/lib/constants";
 import { parseAsStringEnum, useQueryState, UseQueryStateReturn } from "nuqs";
-import { createContext, ReactNode, useContext, useMemo } from "react";
+import { createContext, ReactNode, useContext, useMemo, useRef } from "react";
 
 type TServicePanelContext = {
   currentTabId: TServicePanelTabEnum;
@@ -32,6 +33,8 @@ export const ServicePanelProvider: React.FC<{
 
   const [currentServiceId, setCurrentServiceId] = useQueryState(servicePanelServiceIdKey);
 
+  const timeout = useRef<NodeJS.Timeout | null>(null);
+
   const value: TServicePanelContext = useMemo(
     () => ({
       currentTabId,
@@ -44,7 +47,10 @@ export const ServicePanelProvider: React.FC<{
       },
       closePanel: () => {
         setCurrentServiceId(null);
-        setCurrentTabId(servicePanelDefaultTabId);
+        if (timeout.current) clearTimeout(timeout.current);
+        timeout.current = setTimeout(() => {
+          setCurrentTabId(servicePanelDefaultTabId);
+        }, drawerAnimationMs);
       },
       resetCurrentTabId: () => setCurrentTabId(servicePanelDefaultTabId),
     }),

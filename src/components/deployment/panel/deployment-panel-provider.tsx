@@ -7,6 +7,7 @@ import {
   deploymentPanelTabKey,
   TDeploymentPanelTabEnum,
 } from "@/components/deployment/panel/constants";
+import { drawerAnimationMs } from "@/lib/constants";
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
 import { parseAsStringEnum, useQueryState, UseQueryStateReturn } from "nuqs";
 import { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -41,6 +42,7 @@ export const DeploymentPanelProvider: React.FC<{
   );
 
   const timeout = useRef<NodeJS.Timeout | null>(null);
+  const tabTimeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (currentDeploymentId) {
@@ -54,7 +56,7 @@ export const DeploymentPanelProvider: React.FC<{
       }
       timeout.current = setTimeout(() => {
         setCurrentDeployment(null);
-      }, 300);
+      }, drawerAnimationMs);
     }
   }, [currentDeploymentId, deployments]);
 
@@ -72,7 +74,10 @@ export const DeploymentPanelProvider: React.FC<{
       },
       closePanel: () => {
         setCurrentDeploymentId(null);
-        setCurrentTabId(deploymentPanelDefaultTabId);
+        if (tabTimeout.current) clearTimeout(tabTimeout.current);
+        tabTimeout.current = setTimeout(() => {
+          setCurrentTabId(deploymentPanelDefaultTabId);
+        }, drawerAnimationMs);
       },
       resetCurrentTabId: () => setCurrentTabId(deploymentPanelDefaultTabId),
     }),
