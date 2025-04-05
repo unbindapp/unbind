@@ -190,7 +190,7 @@ function TitleButton({
           <p className="min-w-0 shrink text-left text-xl leading-tight sm:text-2xl">
             {service.display_name}
           </p>
-          <PenIcon className="ml-0.5 size-4 -rotate-30 opacity-0 transition group-hover/button:rotate-0 group-hover/button:opacity-100 group-focus-visible/button:rotate-0 group-focus-visible/button:opacity-100 sm:size-4.5" />
+          <PenIcon className="ml-0.5 size-4 -rotate-30 opacity-0 transition group-hover/button:rotate-0 group-hover/button:opacity-100 group-focus-visible/button:rotate-0 group-focus-visible/button:opacity-100 group-active/button:rotate-0 group-active/button:opacity-100 sm:size-4.5" />
         </Button>
       </DialogTrigger>
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">

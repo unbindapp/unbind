@@ -5,7 +5,7 @@ import TeamProvider from "@/components/team/team-provider";
 import TeamsProvider from "@/components/team/teams-provider";
 import { apiServer } from "@/server/trpc/setup/server";
 import { ResultAsync } from "neverthrow";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ReactNode } from "react";
 
 type TProps = {
@@ -24,11 +24,14 @@ export default async function Layout({ children, params }: TProps) {
     ResultAsync.fromPromise(apiServer.teams.list(), () => new Error("Failed to fetch teams")),
   ]);
 
-  if (teamInitialData.isErr()) {
+  if (teamsInitialData.isErr()) {
     return notFound();
   }
 
-  if (teamsInitialData.isErr()) {
+  if (teamInitialData.isErr()) {
+    if (teamsInitialData.value.teams.length >= 1) {
+      return redirect(`/${teamsInitialData.value.teams[0].id}`);
+    }
     return notFound();
   }
 
