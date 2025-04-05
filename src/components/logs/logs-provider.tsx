@@ -4,6 +4,7 @@ import { useLogViewState } from "@/components/logs/log-view-state-provider";
 import { createSearchFilter } from "@/components/logs/search-filter";
 import { useAppConfig } from "@/components/providers/app-config-provider";
 import { LogEventSchema } from "@/server/go/client.gen";
+import { getLogLevelFromMessage } from "@/server/trpc/api/logs/helpers";
 import { TLogType } from "@/server/trpc/api/logs/types";
 import { AppRouterInputs, AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
 import { api } from "@/server/trpc/setup/client";
@@ -15,11 +16,6 @@ import { z } from "zod";
 type TLogsContext = AppRouterQueryResult<AppRouterOutputs["logs"]["list"]> & {};
 
 const LogsContext = createContext<TLogsContext | null>(null);
-
-export type TLogLine = z.infer<typeof LogEventSchema>;
-export type TLogLineWithLevel = TLogLine & {
-  level: "info" | "warn" | "error";
-};
 
 export const MessageSchema = z.object({ logs: LogEventSchema.array() }).strip();
 export type TMessage = z.infer<typeof MessageSchema>;
@@ -201,7 +197,7 @@ export const LogsProvider: React.FC<TProps> = ({
             );
             const finalArray: AppRouterOutputs["logs"]["list"]["logs"] = [
               ...(old?.logs || []),
-              ...newLogs,
+              ...newLogs.map((log) => ({ ...log, level: getLogLevelFromMessage(log.message) })),
             ];
             return { ...old, logs: finalArray };
           });

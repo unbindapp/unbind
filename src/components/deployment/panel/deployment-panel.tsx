@@ -74,6 +74,7 @@ export default function DeploymentPanel({ service }: TProps) {
   const currentTab = tabs.find((tab) => tab.value === currentTabId);
 
   const open = currentDeploymentId !== null;
+
   const onOpenChange = (open: boolean) => {
     if (!open) {
       closePanel();
@@ -89,7 +90,7 @@ export default function DeploymentPanel({ service }: TProps) {
     const sharedClassName = "size-4.5 sm:size-5 shrink-0 -my-1";
 
     if (status === "building" || status === "queued") {
-      return <LoaderIcon className={`${sharedClassName}`} />;
+      return <LoaderIcon className={`${sharedClassName} animate-spin`} />;
     }
 
     if (
@@ -105,7 +106,7 @@ export default function DeploymentPanel({ service }: TProps) {
     }
 
     return <BroomIcon className={`${sharedClassName}`} />;
-  }, [status, id, currentDeploymentOfService, currentDeployment]);
+  }, [status, id, currentDeploymentOfService]);
 
   return (
     <Drawer
@@ -186,8 +187,8 @@ function DeploymentProgress({ deployment }: { deployment: TDeploymentShallow }) 
     start: new Date(deployment.created_at).getTime(),
   });
   return (
-    <div className="text-foreground bg-border flex shrink-0 items-center justify-start gap-1.25 rounded-sm px-1.75 py-0.5 font-mono text-base font-medium sm:rounded-md sm:px-2 sm:py-0.75 sm:text-lg">
-      <AnimatedTimerIcon animate={true} className="-my-1 -ml-0.75 size-4 sm:size-4.5" />
+    <div className="text-foreground bg-border flex shrink-0 items-center justify-start gap-1.25 rounded-sm px-2 py-0.75 font-mono text-sm font-medium sm:rounded-md sm:text-base">
+      <AnimatedTimerIcon animate={true} className="-my-1 -ml-0.75 size-3.5 sm:size-4" />
       <p className="min-w-0 shrink leading-tight">{durationStr}</p>
     </div>
   );

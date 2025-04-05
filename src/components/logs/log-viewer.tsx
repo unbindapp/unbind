@@ -11,7 +11,6 @@ import LogViewStateProvider, { useLogViewState } from "@/components/logs/log-vie
 import LogsProvider, {
   TDeploymentLogsProps,
   TEnvironmentLogsProps,
-  TLogLineWithLevel,
   TLogsStreamProps,
   TServiceLogsProps,
   useLogs,
@@ -20,7 +19,7 @@ import NavigationBar from "@/components/logs/navigation-bar";
 import SearchBar from "@/components/logs/search-bar";
 import NoItemsCard from "@/components/no-items-card";
 import { useServices } from "@/components/project/services-provider";
-import { TLogType } from "@/server/trpc/api/logs/types";
+import { TLogLineWithLevel, TLogType } from "@/server/trpc/api/logs/types";
 import { SearchIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useThrottledCallback } from "use-debounce";

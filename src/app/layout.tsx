@@ -8,7 +8,7 @@ import { env } from "@/lib/env";
 import { AlertCircleIcon, CheckCircleIcon, InfoIcon, TriangleAlertIcon, XIcon } from "lucide-react";
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-/* import { ReactScan } from "@/components/providers/react-scan"; */
+import { ReactScan } from "@/components/providers/react-scan";
 
 const sans = localFont({
   src: "./font/DMSansVF.woff2",
@@ -50,7 +50,7 @@ export default async function RootLayout({
       <body
         className={`${sans.variable} ${mono.variable} bg-background text-foreground relative flex min-h-[100svh] w-full flex-col items-center break-words antialiased`}
       >
-        {/* <ReactScan /> */}
+        <ReactScan />
         <Providers>
           <TopLoader />
           {children}

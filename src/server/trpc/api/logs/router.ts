@@ -1,4 +1,5 @@
 import { query_logsQuerySchema } from "@/server/go/client.gen";
+import { getLogLevelFromMessage } from "@/server/trpc/api/logs/helpers";
 import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -59,8 +60,19 @@ export const logsRouter = createTRPCRouter({
         limit,
         direction: "forward",
       });
+
+      const editedLogsData = logsData.data.map((logLine) => {
+        const { message, ...rest } = logLine;
+        const level = getLogLevelFromMessage(message);
+        return {
+          ...rest,
+          message,
+          level,
+        };
+      });
+
       return {
-        logs: logsData.data,
+        logs: editedLogsData,
       };
     }),
 });
