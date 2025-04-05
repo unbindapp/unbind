@@ -160,9 +160,9 @@ export const LogsProvider: React.FC<TProps> = ({
     deploymentId,
     type,
     filtersStr,
-    since,
-    start,
-    end,
+    sinceLocal,
+    startLocal,
+    endLocal,
   ]);
 
   const sseUrl = `${env.NEXT_PUBLIC_UNBIND_API_URL}/logs/stream?${urlParams.toString()}`;
@@ -217,7 +217,7 @@ export const LogsProvider: React.FC<TProps> = ({
     return () => {
       controller.abort();
     };
-  }, [sseUrl, session, queryProps, utils.logs.list, queryResult.isPending, streamDisabled]);
+  }, [sseUrl, session, queryProps, utils.logs.list, queryResult.isPending, streamDisabledLocal]);
 
   return <LogsContext.Provider value={queryResult}>{children}</LogsContext.Provider>;
 };
