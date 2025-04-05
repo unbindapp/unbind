@@ -21,7 +21,7 @@ import {
 import { getDurationStr } from "@/lib/hooks/use-time-difference";
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
-import { CircleCheckIcon, TriangleAlertIcon, XIcon } from "lucide-react";
+import { CircleCheckIcon, LoaderIcon, TriangleAlertIcon, XIcon } from "lucide-react";
 import { FC, ReactNode, useMemo } from "react";
 
 export type TDeploymentPanelTab = {
@@ -89,7 +89,7 @@ export default function DeploymentPanel({ service }: TProps) {
     const sharedClassName = "size-4.5 sm:size-5 shrink-0 -my-1";
 
     if (status === "building" || status === "queued") {
-      return <DeploymentProgress deployment={currentDeployment} />;
+      return <LoaderIcon className={`${sharedClassName}`} />;
     }
 
     if (
@@ -144,12 +144,15 @@ export default function DeploymentPanel({ service }: TProps) {
                       Deployment
                     </p>
                   </div>
-                  <p className="text-foreground group-data-[status=failed]/content:text-destructive group-data-last-successful/content:group-data-[status=succeeded]/content:text-success group-data-[status=building]/content:text-process group-data-[status=queued]/content:text-process flex w-full items-center justify-start gap-1.5 text-left text-xl leading-tight font-semibold sm:text-2xl">
-                    <span className="min-w-0 shrink group-data-building/content:pr-0.5">
-                      {currentDeployment.id.slice(0, 6)}
-                    </span>
+                  <div className="text-foreground group-data-[status=failed]/content:text-destructive group-data-last-successful/content:group-data-[status=succeeded]/content:text-success group-data-[status=building]/content:text-process group-data-[status=queued]/content:text-process flex w-full items-center justify-start gap-1.5 text-left text-xl leading-tight font-semibold sm:text-2xl">
                     {Icon}
-                  </p>
+                    <p className="min-w-0 shrink truncate pr-0.75">
+                      {currentDeployment.id.slice(0, 6)}
+                    </p>
+                    {(status === "building" || status === "queued") && (
+                      <DeploymentProgress deployment={currentDeployment} />
+                    )}
+                  </div>
                 </DrawerTitle>
               </DrawerHeader>
               {!isExtraSmall && (
@@ -183,7 +186,7 @@ function DeploymentProgress({ deployment }: { deployment: TDeploymentShallow }) 
     start: new Date(deployment.created_at).getTime(),
   });
   return (
-    <div className="text-foreground bg-border flex min-w-0 shrink items-center justify-start gap-1.25 rounded-sm px-1.75 py-0.5 font-mono text-base font-medium sm:rounded-md sm:px-2 sm:py-0.75 sm:text-lg">
+    <div className="text-foreground bg-border flex shrink-0 items-center justify-start gap-1.25 rounded-sm px-1.75 py-0.5 font-mono text-base font-medium sm:rounded-md sm:px-2 sm:py-0.75 sm:text-lg">
       <AnimatedTimerIcon animate={true} className="-my-1 -ml-0.75 size-4 sm:size-4.5" />
       <p className="min-w-0 shrink leading-tight">{durationStr}</p>
     </div>

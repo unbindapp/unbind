@@ -273,10 +273,10 @@ function NoLogsFound() {
 }
 
 function getLevelFromMessage(message: string): TLogLineWithLevel["level"] {
-  if (/error/i.test(message)) {
+  if (/(\s|^)(error|fatal|fail|failed)(\s|$)/i.test(message)) {
     return "error";
   }
-  if (/warn/i.test(message)) {
+  if (/(\s|^)(warn|warning)(\s|$)/i.test(message)) {
     return "warn";
   }
   return "info";
