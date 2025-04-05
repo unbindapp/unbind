@@ -47,7 +47,6 @@ type TDeploymentPageProviderProps = {
 const EmptyProvider = ({ children }: TDeploymentPageProviderProps) => children;
 
 const tabs: TDeploymentPanelTab[] = [
-  { title: "Info", value: "info", Page: Info, Provider: EmptyProvider },
   {
     title: "Build Logs",
     value: "build-logs",
@@ -55,6 +54,7 @@ const tabs: TDeploymentPanelTab[] = [
     Provider: EmptyProvider,
     noScrollArea: true,
   },
+  { title: "Info", value: "info", Page: Info, Provider: EmptyProvider },
 ];
 
 type TProps = {
