@@ -9,8 +9,9 @@ import DeploymentCard from "@/components/service/panel/tabs/deployments/deployme
 import TabWrapper from "@/components/navigation/tab-wrapper";
 import { useService } from "@/components/service/service-provider";
 import { RocketIcon } from "lucide-react";
+import { TServiceShallow } from "@/server/trpc/api/services/types";
 
-export default function Deployments() {
+export default function Deployments({ service }: { service: TServiceShallow }) {
   const {
     query: { data: deploymentsData, isPending: isPendingDeployments, error: errorDeployments },
   } = useDeployments();
@@ -31,12 +32,13 @@ export default function Deployments() {
         {(isPending || currentDeployment) && (
           <div className="w-full pb-3">
             {serviceData && currentDeployment ? (
-              <DeploymentPanel deployment={currentDeployment} service={serviceData?.service}>
+              <>
+                <DeploymentPanel deployment={currentDeployment} service={service} />
                 <DeploymentCard
                   deployment={currentDeployment}
                   currentDeployment={currentDeployment}
                 />
-              </DeploymentPanel>
+              </>
             ) : (
               <DeploymentCard isPlaceholder={true} />
             )}
@@ -56,13 +58,12 @@ export default function Deployments() {
               .filter((d) => (currentDeployment ? currentDeployment.id !== d.id : true))
               .map((deployment) => (
                 <li className="w-full" key={deployment.id}>
-                  <DeploymentPanel deployment={deployment} service={serviceData.service}>
-                    <DeploymentCard
-                      key={deployment.id}
-                      deployment={deployment}
-                      currentDeployment={currentDeployment}
-                    />
-                  </DeploymentPanel>
+                  <DeploymentPanel deployment={deployment} service={service} />
+                  <DeploymentCard
+                    key={deployment.id}
+                    deployment={deployment}
+                    currentDeployment={currentDeployment}
+                  />
                 </li>
               ))}
           </ol>

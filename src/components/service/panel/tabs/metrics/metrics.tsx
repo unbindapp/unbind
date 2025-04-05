@@ -1,8 +1,9 @@
 import MetricsIntervalDropdown from "@/components/metrics/metrics-interval-dropdown";
-import Charts from "@/components/service/panel/tabs/metrics/charts";
 import TabWrapper from "@/components/navigation/tab-wrapper";
+import Charts from "@/components/service/panel/tabs/metrics/charts";
+import { TServiceShallow } from "@/server/trpc/api/services/types";
 
-export default function Metrics() {
+export default function Metrics({}: { service: TServiceShallow }) {
   return (
     <TabWrapper>
       <MetricsIntervalDropdown />

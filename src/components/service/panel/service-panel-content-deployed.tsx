@@ -48,7 +48,7 @@ export function DeployedServiceContent({ currentTab, tabs, service, className }:
                 environmentId={environmentId}
                 serviceId={service.id}
               >
-                <currentTab.Page />
+                <currentTab.Page service={service} />
               </currentTab.Provider>
             )}
           </ConditionalScrollArea>

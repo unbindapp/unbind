@@ -1,3 +1,4 @@
+import { useDeploymentPanel } from "@/components/deployment/panel/deployment-panel-provider";
 import BrandIcon from "@/components/icons/brand";
 import BroomIcon from "@/components/icons/broom";
 import DeploymentTime from "@/components/service/panel/tabs/deployments/deployment-time";
@@ -52,12 +53,15 @@ export default function DeploymentCard({
     return BroomIcon;
   }, [isPlaceholder, deployment?.status, deployment?.id, currentDeployment]);
 
+  const { openPanel } = useDeploymentPanel();
+
   return (
     <div
       {...rest}
       data-color={getColor({ deployment, isPlaceholder, currentDeployment })}
       data-placeholder={isPlaceholder ? true : undefined}
       className="group/card has-hover:hover:bg-border/50 has-hover:hover:data-[color=destructive]:bg-destructive/8 active:data-[color=destructive]:bg-destructive/8 focus-visible:data-[color=destructive]:bg-destructive/8 focus-within:data-[color=destructive]:bg-destructive/8 data-[color=destructive]:bg-destructive/4 has-hover:hover:data-[color=process]:bg-process/8 active:data-[color=process]:bg-process/8 focus-visible:data-[color=process]:bg-process/8 focus-within:data-[color=process]:bg-process/8 data-[color=process]:bg-process/4 data-[color=success]:bg-success/4 has-hover:hover:data-[color=success]:bg-success/8 active:hover:data-[color=success]:bg-success/8 focus-visible:hover:data-[color=success]:bg-success/8 focus-within:hover:data-[color=success]:bg-success/8 data-[color=destructive]:border-destructive/20 data-[color=process]:border-process/20 data-[color=success]:border-success/20 relative flex w-full flex-row items-stretch rounded-xl border p-2"
+      onClick={deployment ? () => openPanel(deployment.id) : undefined}
     >
       <div className="flex min-w-0 flex-1 flex-col py-1 pr-6 pl-1.5 sm:flex-row sm:items-center sm:px-2 sm:py-1.5">
         <div className="flex shrink-0 items-center justify-start pr-3 sm:w-34">

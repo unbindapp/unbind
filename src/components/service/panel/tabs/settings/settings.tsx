@@ -3,8 +3,9 @@ import TabWrapper from "@/components/navigation/tab-wrapper";
 import { cn } from "@/components/ui/utils";
 import { FlameIcon } from "lucide-react";
 import { FC, ReactNode } from "react";
+import { TServiceShallow } from "@/server/trpc/api/services/types";
 
-export default function Settings() {
+export default function Settings({}: { service: TServiceShallow }) {
   return (
     <TabWrapper>
       <Section title="Delete Service" id="danger-zone" Icon={FlameIcon}>

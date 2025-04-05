@@ -17,7 +17,7 @@ type TDeploymentPanelContext = {
   setCurrentDeploymentId: UseQueryStateReturn<string | null, string | null>["1"];
   resetCurrentTabId: () => void;
   closePanel: () => void;
-  openPanel: (serviceId: string, tabId?: TDeploymentPanelTabEnum) => void;
+  openPanel: (deploymentId: string, tabId?: TDeploymentPanelTabEnum) => void;
 };
 
 const DeploymentPanelContext = createContext<TDeploymentPanelContext | null>(null);
@@ -40,8 +40,8 @@ export const DeploymentPanelProvider: React.FC<{
       setCurrentTabId,
       currentDeploymentId,
       setCurrentDeploymentId,
-      openPanel: (serviceId: string, tabId?: TDeploymentPanelTabEnum) => {
-        setCurrentDeploymentId(serviceId);
+      openPanel: (deploymentId: string, tabId?: TDeploymentPanelTabEnum) => {
+        setCurrentDeploymentId(deploymentId);
         setCurrentTabId(tabId ?? deploymentPanelDefaultTabId);
       },
       closePanel: () => {

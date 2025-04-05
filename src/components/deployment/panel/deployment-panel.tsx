@@ -1,25 +1,24 @@
-import { useDeviceSize } from "@/components/providers/device-size-provider";
+import DeploymentProvider from "@/components/deployment/deployment-provider";
+import { TDeploymentPanelTabEnum } from "@/components/deployment/panel/constants";
+import { DeploymentPanelContent } from "@/components/deployment/panel/deployment-panel-content";
 import { useDeploymentPanel } from "@/components/deployment/panel/deployment-panel-provider";
+import Info from "@/components/deployment/panel/tabs/info/info";
+import Logs from "@/components/deployment/panel/tabs/logs/logs";
+import { useDeviceSize } from "@/components/providers/device-size-provider";
+import ServiceIcon from "@/components/service/service-icon";
+import { useService } from "@/components/service/service-provider";
+import { Button } from "@/components/ui/button";
 import {
   Drawer,
   DrawerClose,
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
-  DrawerTrigger,
 } from "@/components/ui/drawer";
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
-import { FC, ReactNode } from "react";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
-import { Button } from "@/components/ui/button";
 import { XIcon } from "lucide-react";
-import ServiceIcon from "@/components/service/service-icon";
-import DeploymentProvider from "@/components/deployment/deployment-provider";
-import { useService } from "@/components/service/service-provider";
-import { TDeploymentPanelTabEnum } from "@/components/deployment/panel/constants";
-import Info from "@/components/deployment/panel/tabs/info/info";
-import Logs from "@/components/deployment/panel/tabs/logs/logs";
-import { DeploymentPanelContent } from "@/components/deployment/panel/deployment-panel-content";
+import { FC, ReactNode } from "react";
 
 export type TDeploymentPanelTab = {
   title: string;
@@ -57,10 +56,9 @@ const tabs: TDeploymentPanelTab[] = [
 type TProps = {
   service: TServiceShallow;
   deployment: TDeploymentShallow;
-  children: ReactNode;
 };
 
-export default function DeploymentPanel({ service, deployment, children }: TProps) {
+export default function DeploymentPanel({ service, deployment }: TProps) {
   const { teamId, projectId, environmentId, serviceId } = useService();
   const { closePanel, currentDeploymentId, setCurrentDeploymentId, currentTabId } =
     useDeploymentPanel();
@@ -84,7 +82,6 @@ export default function DeploymentPanel({ service, deployment, children }: TProp
       direction={isExtraSmall ? "bottom" : "right"}
       handleOnly={!isExtraSmall}
     >
-      <DrawerTrigger asChild>{children}</DrawerTrigger>
       <DrawerContent
         transparentOverlay
         hasHandle={isExtraSmall}

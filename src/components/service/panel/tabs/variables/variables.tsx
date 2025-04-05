@@ -1,12 +1,13 @@
 import ErrorCard from "@/components/error-card";
-import NoItemsCard from "@/components/no-items-card";
 import TabWrapper from "@/components/navigation/tab-wrapper";
+import NoItemsCard from "@/components/no-items-card";
 import VariableCard from "@/components/service/panel/tabs/variables/variable-card";
 import VariablesHeader from "@/components/service/panel/tabs/variables/variables-header";
 import { useVariables } from "@/components/service/panel/tabs/variables/variables-provider";
+import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { KeyRoundIcon } from "lucide-react";
 
-export default function Variables() {
+export default function Variables({}: { service: TServiceShallow }) {
   const {
     list: { data, isPending, error },
   } = useVariables();

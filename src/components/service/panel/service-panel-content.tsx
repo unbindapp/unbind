@@ -17,7 +17,7 @@ import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { FC, ReactNode } from "react";
 import Deployments from "@/components/service/panel/tabs/deployments/deployments";
 
-type TServicePage = FC;
+type TServicePage = FC<{ service: TServiceShallow }>;
 type TServicePageProvider = FC<TServicePageProviderProps>;
 
 export type TServicePanelTab = {
