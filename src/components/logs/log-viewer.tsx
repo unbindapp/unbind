@@ -1,5 +1,6 @@
 "use client";
 
+import ErrorLine from "@/components/error-line";
 import LogLine from "@/components/logs/log-line";
 import LogViewDropdownProvider from "@/components/logs/log-view-dropdown-provider";
 import LogViewPreferencesProvider, {
@@ -10,9 +11,10 @@ import LogViewStateProvider, { useLogViewState } from "@/components/logs/log-vie
 import LogsProvider, { TLogLineWithLevel, useLogs } from "@/components/logs/logs-provider";
 import NavigationBar from "@/components/logs/navigation-bar";
 import SearchBar from "@/components/logs/search-bar";
+import NoItemsCard from "@/components/no-items-card";
 import { useServices } from "@/components/project/services-provider";
 import { TLogType } from "@/server/trpc/api/logs/types";
-import { SearchIcon, TriangleAlertIcon } from "lucide-react";
+import { SearchIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useThrottledCallback } from "use-debounce";
 import { VList, VListHandle } from "virtua";
@@ -172,10 +174,18 @@ function Logs({ containerType }: { containerType: "page" | "sheet" }) {
 
   const listItems = useMemo(() => {
     if (!isPending && error && !logs) {
-      return <Error message={error.message} />;
+      return (
+        <div className="w-full px-2 pt-2.5 pb-[calc(var(--safe-area-inset-bottom)+6.5rem)] font-sans group-data-[container=page]/wrapper:px-2 sm:px-2.5 group-data-[container=page]/wrapper:sm:px-2.5 group-data-[container=page]/wrapper:xl:px-[calc(0.625rem-((100vw-80rem)/2))]">
+          <ErrorLine message={error.message} withIcon />
+        </div>
+      );
     }
     if (!isPending && logs && logs.length === 0) {
-      return <NoLogsFound />;
+      return (
+        <div className="px-2 pt-2.5 pb-[calc(var(--safe-area-inset-bottom)+6.5rem)] font-sans group-data-[container=page]/wrapper:px-2 sm:px-2.5 group-data-[container=page]/wrapper:sm:px-2.5 group-data-[container=page]/wrapper:xl:px-[calc(0.625rem-((100vw-80rem)/2))]">
+          <NoLogsFound data-container={containerType} />
+        </div>
+      );
     }
     if (!logs || !servicesData) {
       return placeholderArray.map((_, index) => (
@@ -185,7 +195,7 @@ function Logs({ containerType }: { containerType: "page" | "sheet" }) {
           data-container={containerType}
           data-first={index === 0 ? true : undefined}
           data-last={index === placeholderArray.length - 1 ? true : undefined}
-          classNameInner="min-[1288px]:group-data-[container=page]/line:rounded-sm"
+          classNameInner="min-[80.25rem]:group-data-[container=page]/line:rounded-sm"
         />
       ));
     }
@@ -195,7 +205,7 @@ function Logs({ containerType }: { containerType: "page" | "sheet" }) {
         data-container={containerType}
         data-first={index === 0 ? true : undefined}
         data-last={index === logs.length - 1 ? true : undefined}
-        classNameInner="min-[1288px]:group-data-[container=page]/line:rounded-sm"
+        classNameInner="min-[80.25rem]:group-data-[container=page]/line:rounded-sm"
         logLine={logLine}
         serviceName={
           servicesData.services.find((service) => service.id === logLine.metadata.service_id)
@@ -214,7 +224,7 @@ function Logs({ containerType }: { containerType: "page" | "sheet" }) {
         className="group/wrapper relative flex min-h-0 w-full flex-1 flex-col overflow-hidden"
       >
         {/* Top bar that has the input */}
-        <div className="flex w-full items-stretch group-data-[container=page]/wrapper:px-[max(0px,calc((100%-1280px-1.25rem)/2))]">
+        <div className="flex w-full items-stretch group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
           <SearchBar isPendingLogs={isPending} className="px-2 pt-2 sm:px-2.5 sm:pt-2.5" />
         </div>
         {/* List */}
@@ -223,7 +233,7 @@ function Logs({ containerType }: { containerType: "page" | "sheet" }) {
             <VList
               overscan={20}
               style={{ height: undefined }}
-              className="min-h-0 w-full flex-1 font-mono group-data-[container=page]/wrapper:px-[max(0px,calc((100%-1280px)/2))]"
+              className="min-h-0 w-full flex-1 font-mono group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem)/2))]"
               ref={virtualListRef}
               onScroll={throttledOnScroll}
             >
@@ -244,39 +254,20 @@ function Logs({ containerType }: { containerType: "page" | "sheet" }) {
   );
 }
 
-function Error({ message }: { message: string }) {
-  return (
-    <div className="text-muted-foreground flex w-full flex-col items-center gap-2 font-sans group-data-[container=page]/wrapper:px-[max(0px,calc((100%-1280px)/2))]">
-      <div className="flex w-full max-w-3xl flex-col items-center justify-center px-4 py-8">
-        <TriangleAlertIcon className="size-8 shrink-0" />
-        <div className="mt-2 flex w-full flex-col items-center">
-          <p className="max-w-full text-center">Something went wrong</p>
-          <p className="bg-destructive/8 text-destructive mt-2 max-w-full rounded-md px-1.5 py-0.5 text-sm">
-            {message}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function NoLogsFound() {
   const { search } = useLogViewState();
   return (
-    <div className="text-muted-foreground flex w-full flex-col items-center gap-2 font-sans group-data-[container=page]/wrapper:px-[max(0px,calc((100%-1280px)/2))]">
-      <div className="flex w-full max-w-3xl flex-col items-center justify-center px-4 py-8">
-        <SearchIcon className="size-8 shrink-0" />
-        <div className="mt-2 flex w-full flex-col items-center">
-          {search ? (
-            <p className="max-w-full text-center">
-              No matches for <span className="bg-border rounded px-1.5 font-medium">{search}</span>
-            </p>
-          ) : (
-            <p className="max-w-full text-center">No logs found</p>
-          )}
-        </div>
-      </div>
-    </div>
+    <NoItemsCard Icon={SearchIcon}>
+      <p className="w-full max-w-lg">
+        {search ? (
+          <>
+            No matches for <span className="bg-border rounded px-1.5 font-medium">{search}</span>
+          </>
+        ) : (
+          <>No logs yet</>
+        )}
+      </p>
+    </NoItemsCard>
   );
 }
 

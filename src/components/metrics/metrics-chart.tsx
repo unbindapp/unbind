@@ -172,6 +172,7 @@ export default function MetricsChart({
           ))}
         </ol>
       )}
+      {!noLegends && dataKeys.length < 1 && <div className="h-8.25 w-full" />}
     </div>
   );
 }

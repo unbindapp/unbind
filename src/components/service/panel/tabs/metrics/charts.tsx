@@ -1,11 +1,8 @@
 "use client";
 
 import MetricsChartList from "@/components/metrics/metrics-chart-list";
-import { useMetrics } from "@/components/metrics/metrics-provider";
-import NoItemsCard from "@/components/no-items-card";
 import { useService } from "@/components/service/service-provider";
 import { cn } from "@/components/ui/utils";
-import { ChartColumnIcon } from "lucide-react";
 import { useMemo } from "react";
 
 export default function Charts({
@@ -15,7 +12,6 @@ export default function Charts({
   className?: string;
   noLegends?: boolean;
 }) {
-  const { data } = useMetrics();
   const {
     query: { data: serviceData, error: serviceError, isPending: serviceIsPending },
   } = useService();
@@ -25,10 +21,6 @@ export default function Charts({
     return (name: string) =>
       serviceData.service.id === name ? serviceData.service.display_name : name;
   }, [serviceData]);
-
-  if (data && data.metrics.cpu.length === 0) {
-    return <NoItemsCard Icon={ChartColumnIcon}>No metrics yet</NoItemsCard>;
-  }
 
   return (
     <MetricsChartList
