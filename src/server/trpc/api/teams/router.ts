@@ -20,16 +20,9 @@ export const teamsRouter = createTRPCRouter({
           message: "You need to be logged in to access this resource",
         });
       }
-      const res = await goClient.teams.list();
-      const team = res.data.find((team) => team.id === teamId);
-      if (!team) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Team not found",
-        });
-      }
+      const res = await goClient.teams.get({ team_id: teamId });
       return {
-        team,
+        team: res.data,
       };
     }),
   list: publicProcedure.query(async function ({ ctx }) {

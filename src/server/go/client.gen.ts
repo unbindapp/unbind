@@ -771,7 +771,6 @@ export const UpdateServiceInputSchema = z
     run_command: z.string().optional(),
     service_id: z.string(),
     team_id: z.string(),
-    type: ServiceTypeSchema.optional(),
   })
   .strip();
 
