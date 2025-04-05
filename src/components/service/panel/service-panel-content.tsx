@@ -8,7 +8,6 @@ import { DeployedServiceContent } from "@/components/service/panel/service-panel
 import UndeployedServiceContent from "@/components/service/panel/service-panel-content-undeployed";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useService } from "@/components/service/service-provider";
-import Deployments from "@/components/service/panel/tabs/deployments/deployments";
 import Logs from "@/components/service/panel/tabs/logs/logs";
 import Metrics from "@/components/service/panel/tabs/metrics/metrics";
 import Settings from "@/components/service/panel/tabs/settings/settings";
@@ -16,6 +15,7 @@ import Variables from "@/components/service/panel/tabs/variables/variables";
 import VariablesProvider from "@/components/service/panel/tabs/variables/variables-provider";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { FC, ReactNode } from "react";
+import Deployments from "@/components/service/panel/tabs/deployments/deployments";
 
 export type TServicePage = FC;
 export type TServicePageProvider = FC<TServicePageProviderProps>;

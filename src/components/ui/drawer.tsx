@@ -47,11 +47,12 @@ const DrawerClose = DrawerPrimitive.Close;
 
 function DrawerOverlay({
   className,
+  transparent,
   ...props
-}: React.ComponentProps<typeof DrawerPrimitive.Overlay>) {
+}: React.ComponentProps<typeof DrawerPrimitive.Overlay> & { transparent?: boolean }) {
   return (
     <DrawerPrimitive.Overlay
-      className={cn("bg-barrier/barrier fixed inset-0 z-50", className)}
+      className={cn("fixed inset-0 z-50", !transparent && "bg-barrier/barrier", className)}
       {...props}
     />
   );
@@ -61,14 +62,16 @@ function DrawerContent({
   className,
   children,
   hasHandle = false,
+  transparentOverlay,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Content> & {
   hasHandle?: boolean;
+  transparentOverlay?: boolean;
 }) {
   const { hideHandle } = useDrawerContext();
   return (
     <DrawerPortal>
-      <DrawerOverlay />
+      <DrawerOverlay transparent={transparentOverlay} />
       <DrawerPrimitive.Content
         className={cn(
           `bg-background ring-border fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-2xl ring-1 focus:outline-hidden focus-visible:outline-hidden`,
