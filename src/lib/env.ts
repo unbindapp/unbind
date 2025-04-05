@@ -12,9 +12,9 @@ export const env = createEnv({
     DEX_CLIENT_SECRET: z.string(),
     DEX_ISSUER: z.string().url(),
     AUTH_SECRET: z.string(),
-    AUTH_URL: z.string().url().default("http://localhost:3000/api/auth"),
-    SITE_URL: z.string().url().default("http://localhost:3000"),
-    UNBIND_API_PUBLIC_URL: z.string().url().default("http://localhost:8080"),
+    AUTH_URL: z.string().url(),
+    SITE_URL: z.string().url(),
+    UNBIND_API_PUBLIC_URL: z.string().url(),
   },
 
   /**
@@ -30,13 +30,13 @@ export const env = createEnv({
    */
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
-    SITE_URL: process.env.SITE_URL,
     DEX_CLIENT_ID: process.env.DEX_CLIENT_ID,
     DEX_CLIENT_SECRET: process.env.DEX_CLIENT_SECRET,
     DEX_ISSUER: process.env.DEX_ISSUER,
     AUTH_SECRET: process.env.AUTH_SECRET,
     AUTH_URL: process.env.AUTH_URL,
-    UNBIND_API_PUBLIC_URL: process.env.UNBIND_API_URL,
+    SITE_URL: process.env.SITE_URL,
+    UNBIND_API_PUBLIC_URL: process.env.UNBIND_API_PUBLIC_URL,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

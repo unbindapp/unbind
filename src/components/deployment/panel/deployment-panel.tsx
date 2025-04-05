@@ -132,7 +132,7 @@ export default function DeploymentPanel({ service }: TProps) {
                   <p className="w-full min-w-0 text-left text-xl leading-tight font-semibold sm:text-2xl">
                     <span className="truncate">Deployment</span>{" "}
                     <span className="text-muted-more-foreground font-normal">/</span>{" "}
-                    <span className="group-data-[status=failed]/content:text-destructive group-data-last-successful/content:group-data-[status=succeeded]/content:text-success group-data-[status=building]/content:text-process group-data-[status=queued]/content:text-process inline-flex min-w-0 shrink items-center justify-start gap-1.5">
+                    <span className="text-muted-foreground group-data-[status=failed]/content:text-destructive group-data-last-successful/content:group-data-[status=succeeded]/content:text-success group-data-[status=building]/content:text-process group-data-[status=queued]/content:text-process inline-flex min-w-0 shrink items-center justify-start gap-1.5">
                       {currentDeployment.id.slice(0, 6)}
                       {Icon}
                     </span>
