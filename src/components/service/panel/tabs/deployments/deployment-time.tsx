@@ -1,9 +1,12 @@
+import { cn } from "@/components/ui/utils";
 import { useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
 import { TimerIcon } from "lucide-react";
 import Image from "next/image";
 
-type TProps =
+type TProps = {
+  className?: string;
+} & (
   | {
       deployment: TDeploymentShallow;
       isPlaceholder?: never;
@@ -11,9 +14,10 @@ type TProps =
   | {
       deployment?: never;
       isPlaceholder: true;
-    };
+    }
+);
 
-export default function DeploymentTime({ deployment, isPlaceholder }: TProps) {
+export default function DeploymentTime({ deployment, isPlaceholder, className }: TProps) {
   const { str } = useTimeDifference({
     timestamp: isPlaceholder ? Date.now() : new Date(deployment.created_at).getTime(),
   });
@@ -27,7 +31,7 @@ export default function DeploymentTime({ deployment, isPlaceholder }: TProps) {
   return (
     <div
       data-placeholder={isPlaceholder ? true : undefined}
-      className="group/time flex min-w-0 shrink items-center justify-start gap-1.5"
+      className={cn("group/time flex min-w-0 shrink items-center justify-start gap-1.5", className)}
     >
       {isPlaceholder ? (
         <div className="bg-muted-foreground animate-skeleton size-4.5 rounded-full" />

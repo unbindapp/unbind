@@ -40,12 +40,6 @@ export const EmptyProvider = ({ children }: TServicePageProviderProps) => childr
 
 export const tabs: TTab[] = [
   { title: "Deployments", value: "deployments", Page: Deployments, Provider: DeploymentsProvider },
-  {
-    title: "Variables",
-    value: "variables",
-    Page: Variables,
-    Provider: (props: TServicePageProviderProps) => <VariablesProvider type="service" {...props} />,
-  },
   { title: "Logs", value: "logs", Page: Logs, Provider: EmptyProvider, noScrollArea: true },
   {
     title: "Metrics",
@@ -56,6 +50,12 @@ export const tabs: TTab[] = [
         <MetricsProvider type="service" {...props} />
       </MetricsStateProvider>
     ),
+  },
+  {
+    title: "Variables",
+    value: "variables",
+    Page: Variables,
+    Provider: (props: TServicePageProviderProps) => <VariablesProvider type="service" {...props} />,
   },
   { title: "Settings", value: "settings", Page: Settings, Provider: EmptyProvider },
 ];
