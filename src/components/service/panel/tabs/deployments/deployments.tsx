@@ -6,7 +6,7 @@ import ErrorCard from "@/components/error-card";
 import NoItemsCard from "@/components/no-items-card";
 import { useDeployments } from "@/components/service/deployments-provider";
 import DeploymentCard from "@/components/service/panel/tabs/deployments/deployment-card";
-import TabWrapper from "@/components/service/panel/tabs/tab-wrapper";
+import TabWrapper from "@/components/navigation/tab-wrapper";
 import { useService } from "@/components/service/service-provider";
 import { RocketIcon } from "lucide-react";
 
@@ -19,10 +19,6 @@ export default function Deployments() {
 
   const {
     query: { data: serviceData, isPending: isPendingService, error: errorService },
-    teamId,
-    projectId,
-    environmentId,
-    serviceId,
   } = useService();
 
   const isPending = isPendingDeployments || isPendingService;
@@ -35,14 +31,7 @@ export default function Deployments() {
         {(isPending || currentDeployment) && (
           <div className="w-full pb-3">
             {serviceData && currentDeployment ? (
-              <DeploymentPanel
-                teamId={teamId}
-                projectId={projectId}
-                environmentId={environmentId}
-                serviceId={serviceId}
-                deployment={currentDeployment}
-                service={serviceData?.service}
-              >
+              <DeploymentPanel deployment={currentDeployment} service={serviceData?.service}>
                 <DeploymentCard
                   deployment={currentDeployment}
                   currentDeployment={currentDeployment}
@@ -67,14 +56,7 @@ export default function Deployments() {
               .filter((d) => (currentDeployment ? currentDeployment.id !== d.id : true))
               .map((deployment) => (
                 <li className="w-full" key={deployment.id}>
-                  <DeploymentPanel
-                    teamId={teamId}
-                    projectId={projectId}
-                    environmentId={environmentId}
-                    serviceId={serviceId}
-                    deployment={deployment}
-                    service={serviceData?.service}
-                  >
+                  <DeploymentPanel deployment={deployment} service={serviceData.service}>
                     <DeploymentCard
                       key={deployment.id}
                       deployment={deployment}

@@ -1,5 +1,5 @@
 import DeleteServiceSection from "@/components/service/panel/tabs/settings/delete-service-section";
-import TabWrapper from "@/components/service/panel/tabs/tab-wrapper";
+import TabWrapper from "@/components/navigation/tab-wrapper";
 import { cn } from "@/components/ui/utils";
 import { FlameIcon } from "lucide-react";
 import { FC, ReactNode } from "react";

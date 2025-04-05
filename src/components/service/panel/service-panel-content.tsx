@@ -17,10 +17,10 @@ import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { FC, ReactNode } from "react";
 import Deployments from "@/components/service/panel/tabs/deployments/deployments";
 
-export type TServicePage = FC;
-export type TServicePageProvider = FC<TServicePageProviderProps>;
+type TServicePage = FC;
+type TServicePageProvider = FC<TServicePageProviderProps>;
 
-export type TTab = {
+export type TServicePanelTab = {
   title: string;
   value: TServicePanelTabEnum;
   Page: TServicePage;
@@ -28,7 +28,7 @@ export type TTab = {
   noScrollArea?: boolean;
 };
 
-export type TServicePageProviderProps = {
+type TServicePageProviderProps = {
   teamId: string;
   projectId: string;
   environmentId: string;
@@ -36,9 +36,9 @@ export type TServicePageProviderProps = {
   children: ReactNode;
 };
 
-export const EmptyProvider = ({ children }: TServicePageProviderProps) => children;
+const EmptyProvider = ({ children }: TServicePageProviderProps) => children;
 
-export const tabs: TTab[] = [
+const tabs: TServicePanelTab[] = [
   { title: "Deployments", value: "deployments", Page: Deployments, Provider: DeploymentsProvider },
   { title: "Logs", value: "logs", Page: Logs, Provider: EmptyProvider, noScrollArea: true },
   {

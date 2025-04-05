@@ -1,6 +1,6 @@
 import ErrorCard from "@/components/error-card";
 import NoItemsCard from "@/components/no-items-card";
-import TabWrapper from "@/components/service/panel/tabs/tab-wrapper";
+import TabWrapper from "@/components/navigation/tab-wrapper";
 import VariableCard from "@/components/service/panel/tabs/variables/variable-card";
 import VariablesHeader from "@/components/service/panel/tabs/variables/variables-header";
 import { useVariables } from "@/components/service/panel/tabs/variables/variables-provider";

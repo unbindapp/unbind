@@ -32,23 +32,35 @@ type TBaseProps = {
   type: TLogType;
 };
 
-type TProps = TBaseProps &
-  (
-    | {
-        type: "environment";
-        serviceId?: never;
-      }
-    | {
-        type: "service";
-        serviceId: string;
-      }
-  );
+export type TEnvironmentLogsProps = {
+  type: "environment";
+  environmentId: string;
+  serviceId?: never;
+  deploymentId?: never;
+};
+
+export type TServiceLogsProps = {
+  type: "service";
+  environmentId: string;
+  serviceId: string;
+  deploymentId?: never;
+};
+
+export type TDeploymentLogsProps = {
+  type: "deployment";
+  environmentId: string;
+  serviceId: string;
+  deploymentId: string;
+};
+
+type TProps = TBaseProps & (TEnvironmentLogsProps | TServiceLogsProps | TDeploymentLogsProps);
 
 export const LogsProvider: React.FC<TProps> = ({
   teamId,
   projectId,
   environmentId,
   serviceId,
+  deploymentId,
   type,
   children,
 }) => {
@@ -66,30 +78,34 @@ export const LogsProvider: React.FC<TProps> = ({
       projectId,
       environmentId,
       serviceId,
+      deploymentId,
       filters: filtersStr,
       since,
       limit,
     };
     const params = new URLSearchParams({
+      type: props.type,
       team_id: props.teamId,
       project_id: props.projectId || "",
       environment_id: props.environmentId || "",
-      type: props.type,
     });
+    if (type === "service" || type === "deployment") {
+      params.set("service_id", serviceId);
+    }
+    if (type === "deployment") {
+      params.set("deployment_id", deploymentId);
+    }
+    if (filtersStr) {
+      params.set("filters", filtersStr);
+    }
     if (props.since) {
       params.set("since", props.since);
     }
     if (props.limit) {
       params.set("limit", String(props.limit));
     }
-    if (type === "service") {
-      params.set("service_id", serviceId);
-    }
-    if (filtersStr) {
-      params.set("filters", filtersStr);
-    }
     return [props, params];
-  }, [teamId, projectId, environmentId, serviceId, type, filtersStr]);
+  }, [teamId, projectId, environmentId, serviceId, deploymentId, type, filtersStr]);
 
   const sseUrl = `${env.NEXT_PUBLIC_UNBIND_API_URL}/logs/stream?${urlParams.toString()}`;
 

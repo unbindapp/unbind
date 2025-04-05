@@ -8,7 +8,13 @@ import LogViewPreferencesProvider, {
   useLogViewPreferences,
 } from "@/components/logs/log-view-preferences-provider";
 import LogViewStateProvider, { useLogViewState } from "@/components/logs/log-view-state-provider";
-import LogsProvider, { TLogLineWithLevel, useLogs } from "@/components/logs/logs-provider";
+import LogsProvider, {
+  TDeploymentLogsProps,
+  TEnvironmentLogsProps,
+  TLogLineWithLevel,
+  TServiceLogsProps,
+  useLogs,
+} from "@/components/logs/logs-provider";
 import NavigationBar from "@/components/logs/navigation-bar";
 import SearchBar from "@/components/logs/search-bar";
 import NoItemsCard from "@/components/no-items-card";
@@ -26,20 +32,9 @@ type TBaseProps = {
   type: TLogType;
   teamId: string;
   projectId: string;
-  environmentId: string;
 };
 
-type TProps = TBaseProps &
-  (
-    | {
-        type: "environment";
-        serviceId?: never;
-      }
-    | {
-        type: "service";
-        serviceId: string;
-      }
-  );
+type TProps = TBaseProps & (TEnvironmentLogsProps | TServiceLogsProps | TDeploymentLogsProps);
 
 export default function LogViewer({
   hideServiceByDefault,
@@ -47,27 +42,22 @@ export default function LogViewer({
   projectId,
   environmentId,
   serviceId,
+  deploymentId,
   type,
   containerType,
 }: TProps) {
-  const typeAndIds: { type: TLogType } & (
-    | { type: "service"; serviceId: string; environmentId?: never }
-    | { type: "environment"; environmentId: string; serviceId?: never }
-  ) =
+  const typeAndIds: TEnvironmentLogsProps | TServiceLogsProps | TDeploymentLogsProps =
     type === "service"
-      ? { type: "service", serviceId: serviceId }
-      : { type: "environment", environmentId: environmentId };
+      ? { type: "service", environmentId: environmentId, serviceId: serviceId }
+      : type === "deployment"
+        ? { type: "deployment", environmentId, serviceId, deploymentId }
+        : { type: "environment", environmentId: environmentId };
 
   return (
     <LogViewPreferencesProvider hideServiceByDefault={hideServiceByDefault}>
       <LogViewDropdownProvider>
         <LogViewStateProvider>
-          <LogsProvider
-            teamId={teamId}
-            projectId={projectId}
-            environmentId={environmentId}
-            {...typeAndIds}
-          >
+          <LogsProvider teamId={teamId} projectId={projectId} {...typeAndIds}>
             <Logs containerType={containerType} />
           </LogsProvider>
         </LogViewStateProvider>

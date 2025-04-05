@@ -1,22 +1,21 @@
 import ConditionalScrollArea from "@/components/conditional-scroll-area";
+import { useDeployment } from "@/components/deployment/deployment-provider";
+import { TDeploymentPanelTab } from "@/components/deployment/panel/deployment-panel";
+import { useDeploymentPanel } from "@/components/deployment/panel/deployment-panel-provider";
 import TabIndicator from "@/components/navigation/tab-indicator";
-import { TServicePanelTab } from "@/components/service/panel/service-panel-content";
-import { useServicePanel } from "@/components/service/panel/service-panel-provider";
-import { useService } from "@/components/service/service-provider";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import { TServiceShallow } from "@/server/trpc/api/services/types";
 
 type TProps = {
-  tabs: TServicePanelTab[];
-  service: TServiceShallow;
+  tabs: TDeploymentPanelTab[];
   className?: string;
-  currentTab: TServicePanelTab | undefined;
+  currentTab: TDeploymentPanelTab | undefined;
 };
 
-export function DeployedServiceContent({ currentTab, tabs, service, className }: TProps) {
-  const { teamId, projectId, environmentId } = useService();
-  const { currentTabId, setCurrentTabId } = useServicePanel();
+export function DeploymentPanelContent({ currentTab, tabs, className }: TProps) {
+  const { teamId, projectId, environmentId, serviceId, deploymentId } = useDeployment();
+  const { currentTabId, setCurrentTabId } = useDeploymentPanel();
+
   return (
     <div className={cn("flex w-full flex-1 flex-col overflow-hidden", className)}>
       <nav className="touch:scrollbar-hidden flex w-full justify-start overflow-auto border-b">
@@ -29,7 +28,7 @@ export function DeployedServiceContent({ currentTab, tabs, service, className }:
               data-active={tab.value === currentTabId ? true : undefined}
               className="group/button text-muted-foreground data-active:text-foreground min-w-0 shrink rounded-t-md rounded-b-none px-3 pt-2.5 pb-4.5 font-medium active:bg-transparent has-hover:hover:bg-transparent"
             >
-              {tab.value === currentTabId && <TabIndicator layoutId="service-panel-tab" />}
+              {tab.value === currentTabId && <TabIndicator layoutId="deployment-panel-tab" />}
               <div className="pointer-events-none absolute h-full w-full py-1">
                 <div className="bg-border/0 has-hover:group-hover/button:bg-border group-active/button:bg-border h-full w-full rounded-lg" />
               </div>
@@ -46,7 +45,8 @@ export function DeployedServiceContent({ currentTab, tabs, service, className }:
                 teamId={teamId}
                 projectId={projectId}
                 environmentId={environmentId}
-                serviceId={service.id}
+                serviceId={serviceId}
+                deploymentId={deploymentId}
               >
                 <currentTab.Page />
               </currentTab.Provider>

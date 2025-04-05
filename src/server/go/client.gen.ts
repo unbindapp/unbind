@@ -46,25 +46,6 @@ export const GitCommitterSchema = z
   })
   .strip();
 
-export const LogMetadataSchema = z
-  .object({
-    deployment_id: z.string().optional(),
-    environment_id: z.string().optional(),
-    project_id: z.string().optional(),
-    service_id: z.string().optional(),
-    team_id: z.string().optional(),
-  })
-  .strip();
-
-export const LogEventSchema = z
-  .object({
-    message: z.string(),
-    metadata: LogMetadataSchema,
-    pod_name: z.string(),
-    timestamp: z.string().datetime().optional(),
-  })
-  .strip();
-
 export const DeploymentStatusSchema = z.enum([
   'queued',
   'building',
@@ -81,7 +62,6 @@ export const DeploymentResponseSchema = z
     commit_sha: z.string().optional(),
     completed_at: z.string().datetime().optional(),
     created_at: z.string().datetime(),
-    deployment_logs: z.array(LogEventSchema),
     error: z.string().optional(),
     id: z.string(),
     image: z.string().optional(),
@@ -343,6 +323,12 @@ export const ErrorModelSchema = z
     status: z.number().optional(), // HTTP status code
     title: z.string().optional(), // A short, human-readable summary of the problem type. This value should not change between occurrences of the error.
     type: z.string().optional(), // A URI reference to human-readable documentation for the error.
+  })
+  .strip();
+
+export const GetDeploymentResponseBodySchema = z
+  .object({
+    data: DeploymentResponseSchema,
   })
   .strip();
 
@@ -673,6 +659,25 @@ export const ListServiceResponseBodySchema = z
   })
   .strip();
 
+export const LogMetadataSchema = z
+  .object({
+    deployment_id: z.string().optional(),
+    environment_id: z.string().optional(),
+    project_id: z.string().optional(),
+    service_id: z.string().optional(),
+    team_id: z.string().optional(),
+  })
+  .strip();
+
+export const LogEventSchema = z
+  .object({
+    message: z.string(),
+    metadata: LogMetadataSchema,
+    pod_name: z.string(),
+    timestamp: z.string().datetime().optional(),
+  })
+  .strip();
+
 export const LogEventsMessageTypeSchema = z.enum(['log', 'heartbeat', 'error']);
 
 export const LogEventsSchema = z
@@ -821,8 +826,6 @@ export type BuildkitSettingsUpdateResponseBody = z.infer<
 export type CallbackResponseBody = z.infer<typeof CallbackResponseBodySchema>;
 export type CreateBuildInputBody = z.infer<typeof CreateBuildInputBodySchema>;
 export type GitCommitter = z.infer<typeof GitCommitterSchema>;
-export type LogMetadata = z.infer<typeof LogMetadataSchema>;
-export type LogEvent = z.infer<typeof LogEventSchema>;
 export type DeploymentStatus = z.infer<typeof DeploymentStatusSchema>;
 export type DeploymentResponse = z.infer<typeof DeploymentResponseSchema>;
 export type CreateBuildOutputBody = z.infer<typeof CreateBuildOutputBodySchema>;
@@ -852,6 +855,7 @@ export type VariableDeleteInput = z.infer<typeof VariableDeleteInputSchema>;
 export type DeleteVariablesInputBody = z.infer<typeof DeleteVariablesInputBodySchema>;
 export type ErrorDetail = z.infer<typeof ErrorDetailSchema>;
 export type ErrorModel = z.infer<typeof ErrorModelSchema>;
+export type GetDeploymentResponseBody = z.infer<typeof GetDeploymentResponseBodySchema>;
 export type GetEnvironmentOutputBody = z.infer<typeof GetEnvironmentOutputBodySchema>;
 export type MetricsType = z.infer<typeof MetricsTypeSchema>;
 export type MetricDetail = z.infer<typeof MetricDetailSchema>;
@@ -893,6 +897,8 @@ export type ListDeploymentResponseData = z.infer<typeof ListDeploymentResponseDa
 export type ListDeploymentsResponseBody = z.infer<typeof ListDeploymentsResponseBodySchema>;
 export type ListProjectResponseBody = z.infer<typeof ListProjectResponseBodySchema>;
 export type ListServiceResponseBody = z.infer<typeof ListServiceResponseBodySchema>;
+export type LogMetadata = z.infer<typeof LogMetadataSchema>;
+export type LogEvent = z.infer<typeof LogEventSchema>;
 export type LogEventsMessageType = z.infer<typeof LogEventsMessageTypeSchema>;
 export type LogEvents = z.infer<typeof LogEventsSchema>;
 export type LogType = z.infer<typeof LogTypeSchema>;
@@ -921,15 +927,25 @@ export const callbackQuerySchema = z
   })
   .passthrough();
 
-export const list_deploymentsQuerySchema = z
+export const get_deploymentQuerySchema = z
   .object({
-    cursor: z.string().datetime().optional(),
-    per_page: z.number(),
-    statuses: z.array(DeploymentStatusSchema).nullable().optional(), // Filter by status
     team_id: z.string(), // The ID of the team
     project_id: z.string(), // The ID of the project
     environment_id: z.string(), // The ID of the environment
     service_id: z.string(), // The ID of the service
+    deployment_id: z.string(), // The ID of the deployment
+  })
+  .passthrough();
+
+export const list_deploymentsQuerySchema = z
+  .object({
+    cursor: z.string().datetime().optional(),
+    per_page: z.number(),
+    team_id: z.string(), // The ID of the team
+    project_id: z.string(), // The ID of the project
+    environment_id: z.string(), // The ID of the environment
+    service_id: z.string(), // The ID of the service
+    statuses: z.array(DeploymentStatusSchema).nullable().optional(), // Filter by status
   })
   .passthrough();
 
@@ -1193,6 +1209,58 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           throw error;
         }
       },
+      get: async (
+        params: z.infer<typeof get_deploymentQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<GetDeploymentResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/deployments/get`);
+          const validatedQuery = get_deploymentQuerySchema.parse(params);
+          const queryKeys = [
+            'team_id',
+            'project_id',
+            'environment_id',
+            'service_id',
+            'deployment_id',
+          ];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return GetDeploymentResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
       list: async (
         params: z.infer<typeof list_deploymentsQuerySchema>,
         fetchOptions?: RequestInit,
@@ -1206,11 +1274,11 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           const queryKeys = [
             'cursor',
             'per_page',
-            'statuses',
             'team_id',
             'project_id',
             'environment_id',
             'service_id',
+            'statuses',
           ];
           queryKeys.forEach((key) => {
             const value = validatedQuery[key as keyof typeof validatedQuery];
