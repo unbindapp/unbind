@@ -60,11 +60,13 @@ export default function DeploymentCard({
       {...rest}
       data-color={getColor({ deployment, isPlaceholder, currentDeployment })}
       data-placeholder={isPlaceholder ? true : undefined}
-      className="group/card has-hover:hover:bg-border/50 has-hover:hover:data-[color=destructive]:bg-destructive/8 active:data-[color=destructive]:bg-destructive/8 focus-visible:data-[color=destructive]:bg-destructive/8 focus-within:data-[color=destructive]:bg-destructive/8 data-[color=destructive]:bg-destructive/4 has-hover:hover:data-[color=process]:bg-process/8 active:data-[color=process]:bg-process/8 focus-visible:data-[color=process]:bg-process/8 focus-within:data-[color=process]:bg-process/8 data-[color=process]:bg-process/4 data-[color=success]:bg-success/4 has-hover:hover:data-[color=success]:bg-success/8 active:hover:data-[color=success]:bg-success/8 focus-visible:hover:data-[color=success]:bg-success/8 focus-within:hover:data-[color=success]:bg-success/8 data-[color=destructive]:border-destructive/20 data-[color=process]:border-process/20 data-[color=success]:border-success/20 relative flex w-full flex-row items-stretch rounded-xl border p-2"
-      onClick={deployment ? () => openPanel(deployment.id) : undefined}
+      className="group/card has-hover:hover:bg-border/50 has-hover:hover:data-[color=destructive]:bg-destructive/8 active:data-[color=destructive]:bg-destructive/8 focus-visible:data-[color=destructive]:bg-destructive/8 focus-within:data-[color=destructive]:bg-destructive/8 data-[color=destructive]:bg-destructive/4 has-hover:hover:data-[color=process]:bg-process/8 active:data-[color=process]:bg-process/8 focus-visible:data-[color=process]:bg-process/8 focus-within:data-[color=process]:bg-process/8 data-[color=process]:bg-process/4 data-[color=success]:bg-success/4 has-hover:hover:data-[color=success]:bg-success/8 active:hover:data-[color=success]:bg-success/8 focus-visible:hover:data-[color=success]:bg-success/8 focus-within:hover:data-[color=success]:bg-success/8 data-[color=destructive]:border-destructive/20 data-[color=process]:border-process/20 data-[color=success]:border-success/20 relative flex w-full flex-row items-stretch rounded-xl border"
     >
-      <div className="flex min-w-0 flex-1 flex-col py-1 pr-6 pl-1.5 sm:flex-row sm:items-center sm:px-2 sm:py-1.5">
-        <div className="flex shrink-0 items-center justify-start pr-3 sm:w-34">
+      <button
+        onClick={deployment ? () => openPanel(deployment.id) : undefined}
+        className="focus-visible:ring-offset-background focus-visible:ring-primary/50 flex min-w-0 flex-1 flex-col rounded-xl px-3.5 py-3 text-left focus-visible:ring-1 focus-visible:ring-offset-2 focus-visible:outline-hidden sm:flex-row sm:items-center sm:py-3.5 sm:pr-12 sm:pl-4"
+      >
+        <div className="flex shrink-0 items-center justify-start pr-8 sm:w-34 sm:pr-3">
           <div className="bg-foreground/8 text-muted-foreground group-data-[color=destructive]/card:bg-destructive/12 group-data-[color=destructive]/card:text-destructive group-data-[color=process]/card:bg-process/12 group-data-[color=process]/card:text-process group-data-[color=success]/card:bg-success/12 group-data-[color=success]/card:text-success group-data-placeholder/card:bg-muted-more-foreground group-data-placeholder/card:animate-skeleton flex min-w-0 shrink items-center justify-start gap-1.5 rounded-md px-2 py-1.25 text-sm font-medium group-data-placeholder/card:text-transparent">
             <Icon className="-ml-0.25 size-3.5 shrink-0" />
             <p className="min-w-0 shrink leading-tight">
@@ -108,18 +110,18 @@ export default function DeploymentCard({
             <DeploymentTime deployment={deployment} />
           )}
         </div>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="text-muted-more-foreground absolute top-1 right-1 shrink-0 rounded-lg group-data-placeholder/line:text-transparent sm:relative sm:top-0 sm:right-0 sm:-mr-2.5"
-        >
-          {isPlaceholder ? (
-            <div className="group-data-placeholder/card:bg-muted-foreground group-data-placeholder/card:animate-skeleton size-5 group-data-placeholder/card:rounded-md" />
-          ) : (
-            <EllipsisVerticalIcon className="size-6" />
-          )}
-        </Button>
-      </div>
+      </button>
+      <Button
+        size="icon"
+        variant="ghost"
+        className="text-muted-more-foreground absolute top-1 right-1 shrink-0 rounded-lg group-data-placeholder/line:text-transparent sm:top-1/2 sm:right-1 sm:-translate-y-1/2"
+      >
+        {isPlaceholder ? (
+          <div className="group-data-placeholder/card:bg-muted-foreground group-data-placeholder/card:animate-skeleton size-5 group-data-placeholder/card:rounded-md" />
+        ) : (
+          <EllipsisVerticalIcon className="size-6" />
+        )}
+      </Button>
     </div>
   );
 }

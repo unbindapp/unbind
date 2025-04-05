@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/drawer";
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
-import { CheckCircleIcon, LoaderIcon, TriangleAlertIcon, XIcon } from "lucide-react";
+import { CircleCheckIcon, LoaderIcon, TriangleAlertIcon, XIcon } from "lucide-react";
 import { FC, ReactNode, useMemo } from "react";
 
 export type TDeploymentPanelTab = {
@@ -73,16 +73,22 @@ export default function DeploymentPanel({ service }: TProps) {
   const { isExtraSmall } = useDeviceSize();
 
   const status = currentDeployment?.status;
+  const id = currentDeployment?.id;
 
   const Icon = useMemo(() => {
     if (!status) return null;
     const sharedClassName = "size-4.5 sm:size-5 shrink-0";
     if (status === "building" || status === "queued")
       return <LoaderIcon className={`${sharedClassName} animate-spin`} />;
-    if (status === "succeeded") return <CheckCircleIcon className={`${sharedClassName}`} />;
+    if (
+      status === "succeeded" &&
+      service.last_successful_deployment &&
+      id === service.last_successful_deployment.id
+    )
+      return <CircleCheckIcon className={`${sharedClassName}`} />;
     if (status === "failed") return <TriangleAlertIcon className={`${sharedClassName}`} />;
     return <BroomIcon className={`${sharedClassName}`} />;
-  }, [status]);
+  }, [status, id, service.last_successful_deployment]);
 
   return (
     <Drawer
@@ -95,6 +101,7 @@ export default function DeploymentPanel({ service }: TProps) {
         transparentOverlay
         hasHandle={isExtraSmall}
         data-status={status}
+        data-last-successful={service.last_successful_deployment?.id === id ? true : undefined}
         className="group/content flex h-[calc(100%-1.3rem)] w-full flex-col sm:top-0 sm:right-0 sm:my-0 sm:ml-auto sm:h-full sm:w-256 sm:max-w-[calc(100%-4rem)] sm:rounded-l-2xl sm:rounded-r-none"
       >
         {currentDeployment && (
@@ -107,18 +114,27 @@ export default function DeploymentPanel({ service }: TProps) {
           >
             <div className="flex w-full items-start justify-start gap-4 px-5 pt-4 sm:px-8 sm:pt-6">
               <DrawerHeader className="flex min-w-0 flex-1 items-center justify-start p-0">
-                <DrawerTitle className="flex min-w-0 shrink items-center justify-start gap-1.5">
-                  <ServiceIcon service={service} color="brand" className="-ml-1 size-6 sm:size-7" />
-                  <p className="min-w-0 shrink text-left text-xl leading-tight sm:text-2xl">
-                    {service.display_name}{" "}
-                    <span className="text-muted-more-foreground font-normal">/</span> Deployment{" "}
+                <DrawerTitle className="sr-only">
+                  {service.display_name} / Deployment / {currentDeployment.id.slice(0, 6)}
+                </DrawerTitle>
+                <div className="start-center flex min-w-0 shrink flex-col justify-start gap-1">
+                  <div className="text-muted-foreground flex min-w-0 shrink items-center gap-1.25 text-left text-sm font-medium sm:text-base">
+                    <ServiceIcon
+                      service={service}
+                      color="monochrome"
+                      className="-ml-0.25 size-4 sm:size-4.5"
+                    />
+                    <p className="min-w-0 shrink">{service.display_name}</p>
+                  </div>
+                  <p className="min-w-0 shrink text-left text-xl leading-tight font-semibold sm:text-2xl">
+                    <span>Deployment</span>{" "}
                     <span className="text-muted-more-foreground font-normal">/</span>{" "}
-                    <span className="group-data-[status=failed]/content:text-destructive group-data-[status=building]/content:text-process group-data-[status=queued]/content:text-process inline-flex items-center justify-start gap-1.5">
+                    <span className="group-data-[status=failed]/content:text-destructive group-data-last-successful/content:group-data-[status=succeeded]/content:text-success group-data-[status=building]/content:text-process group-data-[status=queued]/content:text-process inline-flex items-center justify-start gap-1.5">
                       {currentDeployment.id.slice(0, 6)}
                       {Icon}
                     </span>
                   </p>
-                </DrawerTitle>
+                </div>
               </DrawerHeader>
               {!isExtraSmall && (
                 <DrawerClose asChild>
