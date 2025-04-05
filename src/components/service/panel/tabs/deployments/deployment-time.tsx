@@ -63,7 +63,7 @@ export default function DeploymentTime({ deployment, isPlaceholder, className }:
           </>
         )}
         {durationStr && (
-          <div className="text-muted-foreground -my-0.25 flex min-w-0 shrink items-center justify-start gap-0.75">
+          <div className="text-muted-foreground -my-0.25 flex min-w-0 shrink items-center justify-start gap-0.75 font-mono">
             <AnimatedTimerIcon animate={isBuilding} className="-ml-0.5 size-3.5 shrink-0" />
             <p className="min-w-0 shrink">{durationStr}</p>
           </div>

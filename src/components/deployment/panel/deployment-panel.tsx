@@ -86,16 +86,24 @@ export default function DeploymentPanel({ service }: TProps) {
 
   const Icon = useMemo(() => {
     if (!status) return null;
-    const sharedClassName = "size-4.5 sm:size-5 shrink-0";
-    if (status === "building" || status === "queued")
-      return <DeploymentProgress deployment={currentDeployment} iconClassName={sharedClassName} />;
+    const sharedClassName = "size-4.5 sm:size-5 shrink-0 -my-1";
+
+    if (status === "building" || status === "queued") {
+      return <DeploymentProgress deployment={currentDeployment} />;
+    }
+
     if (
       status === "succeeded" &&
       currentDeploymentOfService &&
       id === currentDeploymentOfService.id
-    )
+    ) {
       return <CircleCheckIcon className={`${sharedClassName}`} />;
-    if (status === "failed") return <TriangleAlertIcon className={`${sharedClassName}`} />;
+    }
+
+    if (status === "failed") {
+      return <TriangleAlertIcon className={`${sharedClassName}`} />;
+    }
+
     return <BroomIcon className={`${sharedClassName}`} />;
   }, [status, id, currentDeploymentOfService, currentDeployment]);
 
@@ -111,6 +119,7 @@ export default function DeploymentPanel({ service }: TProps) {
         hasHandle={isExtraSmall}
         data-status={status}
         data-last-successful={currentDeploymentOfService?.id === id ? true : undefined}
+        data-building={status === "building" || status === "queued" ? true : undefined}
         className="group/content flex h-[calc(100%-1.3rem)] w-full flex-col sm:top-0 sm:right-0 sm:my-0 sm:ml-auto sm:h-full sm:w-256 sm:max-w-[calc(100%-4rem)] sm:rounded-l-2xl sm:rounded-r-none"
       >
         {currentDeployment && (
@@ -124,21 +133,22 @@ export default function DeploymentPanel({ service }: TProps) {
             <div className="flex w-full items-start justify-start gap-4 px-5 pt-4 sm:px-8 sm:pt-6">
               <DrawerHeader className="flex min-w-0 flex-1 items-center justify-start p-0">
                 <DrawerTitle className="flex w-full flex-col items-start justify-start gap-1.5">
-                  <div className="text-muted-foreground flex w-full items-center gap-1.25 text-left text-sm font-medium sm:text-base">
+                  <div className="text-muted-foreground flex w-full items-center gap-1.25 text-left text-sm leading-tight font-medium sm:text-base">
                     <ServiceIcon
                       service={service}
                       color="monochrome"
                       className="-ml-0.25 size-4 sm:size-4.5"
                     />
-                    <p className="min-w-0 shrink truncate leading-tight">{service.display_name}</p>
+                    <p className="min-w-0 shrink truncate">
+                      {service.display_name} <span className="text-muted-more-foreground">/</span>{" "}
+                      Deployment
+                    </p>
                   </div>
-                  <p className="w-full min-w-0 text-left text-xl leading-tight font-semibold sm:text-2xl">
-                    <span className="truncate">Deployment</span>{" "}
-                    <span className="text-muted-more-foreground font-normal">/</span>{" "}
-                    <span className="text-muted-foreground group-data-[status=failed]/content:text-destructive group-data-last-successful/content:group-data-[status=succeeded]/content:text-success group-data-[status=building]/content:text-process group-data-[status=queued]/content:text-process inline-flex min-w-0 shrink items-center justify-start gap-1.5">
+                  <p className="text-foreground group-data-[status=failed]/content:text-destructive group-data-last-successful/content:group-data-[status=succeeded]/content:text-success group-data-[status=building]/content:text-process group-data-[status=queued]/content:text-process flex w-full items-center justify-start gap-1.5 text-left text-xl leading-tight font-semibold sm:text-2xl">
+                    <span className="min-w-0 shrink group-data-building/content:pr-0.5">
                       {currentDeployment.id.slice(0, 6)}
-                      {Icon}
                     </span>
+                    {Icon}
                   </p>
                 </DrawerTitle>
               </DrawerHeader>
@@ -166,22 +176,16 @@ export default function DeploymentPanel({ service }: TProps) {
   );
 }
 
-function DeploymentProgress({
-  deployment,
-  iconClassName,
-}: {
-  deployment: TDeploymentShallow;
-  iconClassName: string;
-}) {
+function DeploymentProgress({ deployment }: { deployment: TDeploymentShallow }) {
   const { now } = useTime();
   const durationStr = getDurationStr({
     end: now,
     start: new Date(deployment.created_at).getTime(),
   });
   return (
-    <div className="flex min-w-0 shrink items-center justify-start gap-0.75">
-      <AnimatedTimerIcon animate={true} className={iconClassName} />
-      <p className="min-w-0 shrink">{durationStr}</p>
+    <div className="text-foreground bg-border flex min-w-0 shrink items-center justify-start gap-1.25 rounded-sm px-1.75 py-0.5 font-mono text-base font-medium sm:rounded-md sm:px-2 sm:py-0.75 sm:text-lg">
+      <AnimatedTimerIcon animate={true} className="-my-1 -ml-0.75 size-4 sm:size-4.5" />
+      <p className="min-w-0 shrink leading-tight">{durationStr}</p>
     </div>
   );
 }
