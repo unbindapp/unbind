@@ -4,6 +4,7 @@ import { DeploymentPanelContent } from "@/components/deployment/panel/deployment
 import { useDeploymentPanel } from "@/components/deployment/panel/deployment-panel-provider";
 import Info from "@/components/deployment/panel/tabs/info/info";
 import Logs from "@/components/deployment/panel/tabs/logs/logs";
+import BroomIcon from "@/components/icons/broom";
 import { useDeviceSize } from "@/components/providers/device-size-provider";
 import ServiceIcon from "@/components/service/service-icon";
 import { useService } from "@/components/service/service-provider";
@@ -17,8 +18,8 @@ import {
 } from "@/components/ui/drawer";
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
-import { XIcon } from "lucide-react";
-import { FC, ReactNode } from "react";
+import { CheckCircleIcon, LoaderIcon, TriangleAlertIcon, XIcon } from "lucide-react";
+import { FC, ReactNode, useMemo } from "react";
 
 export type TDeploymentPanelTab = {
   title: string;
@@ -59,30 +60,42 @@ type TProps = {
 
 export default function DeploymentPanel({ service }: TProps) {
   const { teamId, projectId, environmentId, serviceId } = useService();
-  const { closePanel, setCurrentDeploymentId, currentTabId, currentDeployment } =
-    useDeploymentPanel();
+  const { closePanel, currentTabId, currentDeployment, currentDeploymentId } = useDeploymentPanel();
 
   const currentTab = tabs.find((tab) => tab.value === currentTabId);
 
-  const open = currentDeployment !== undefined;
-  const setOpen = (open: boolean) => {
+  const open = currentDeploymentId !== null;
+  const onOpenChange = (open: boolean) => {
     if (!open) {
       closePanel();
     }
   };
   const { isExtraSmall } = useDeviceSize();
 
+  const status = currentDeployment?.status;
+
+  const Icon = useMemo(() => {
+    if (!status) return null;
+    const sharedClassName = "size-4.5 sm:size-5 shrink-0";
+    if (status === "building" || status === "queued")
+      return <LoaderIcon className={`${sharedClassName} animate-spin`} />;
+    if (status === "succeeded") return <CheckCircleIcon className={`${sharedClassName}`} />;
+    if (status === "failed") return <TriangleAlertIcon className={`${sharedClassName}`} />;
+    return <BroomIcon className={`${sharedClassName}`} />;
+  }, [status]);
+
   return (
     <Drawer
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={onOpenChange}
       direction={isExtraSmall ? "bottom" : "right"}
       handleOnly={!isExtraSmall}
     >
       <DrawerContent
         transparentOverlay
         hasHandle={isExtraSmall}
-        className="flex h-[calc(100%-1.3rem)] w-full flex-col sm:top-0 sm:right-0 sm:my-0 sm:ml-auto sm:h-full sm:w-256 sm:max-w-[calc(100%-4rem)] sm:rounded-l-2xl sm:rounded-r-none"
+        data-status={status}
+        className="group/content flex h-[calc(100%-1.3rem)] w-full flex-col sm:top-0 sm:right-0 sm:my-0 sm:ml-auto sm:h-full sm:w-256 sm:max-w-[calc(100%-4rem)] sm:rounded-l-2xl sm:rounded-r-none"
       >
         {currentDeployment && (
           <DeploymentProvider
@@ -100,7 +113,10 @@ export default function DeploymentPanel({ service }: TProps) {
                     {service.display_name}{" "}
                     <span className="text-muted-more-foreground font-normal">/</span> Deployment{" "}
                     <span className="text-muted-more-foreground font-normal">/</span>{" "}
-                    {currentDeployment.id.slice(0, 6)}
+                    <span className="group-data-[status=failed]/content:text-destructive group-data-[status=building]/content:text-process group-data-[status=queued]/content:text-process inline-flex items-center justify-start gap-1.5">
+                      {currentDeployment.id.slice(0, 6)}
+                      {Icon}
+                    </span>
                   </p>
                 </DrawerTitle>
               </DrawerHeader>

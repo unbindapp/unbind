@@ -9,14 +9,14 @@ import {
 } from "@/components/deployment/panel/constants";
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
 import { parseAsStringEnum, useQueryState, UseQueryStateReturn } from "nuqs";
-import { createContext, ReactNode, useContext, useMemo } from "react";
+import { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 type TDeploymentPanelContext = {
   currentTabId: TDeploymentPanelTabEnum;
   setCurrentTabId: UseQueryStateReturn<TDeploymentPanelTabEnum, TDeploymentPanelTabEnum>["1"];
   currentDeploymentId: string | null;
   setCurrentDeploymentId: UseQueryStateReturn<string | null, string | null>["1"];
-  currentDeployment: TDeploymentShallow | undefined;
+  currentDeployment: TDeploymentShallow | null;
   resetCurrentTabId: () => void;
   closePanel: () => void;
   openPanel: (deploymentId: string, tabId?: TDeploymentPanelTabEnum) => void;
@@ -28,6 +28,7 @@ export const DeploymentPanelProvider: React.FC<{
   children: ReactNode;
   deployments: TDeploymentShallow[];
 }> = ({ deployments, children }) => {
+  const [currentDeployment, setCurrentDeployment] = useState<TDeploymentShallow | null>(null);
   const [currentTabId, setCurrentTabId] = useQueryState(
     deploymentPanelTabKey,
     parseAsStringEnum(DeploymentPanelTabEnum.options).withDefault(deploymentPanelDefaultTabId),
@@ -37,7 +38,22 @@ export const DeploymentPanelProvider: React.FC<{
     deploymentPanelDeploymentIdKey,
   );
 
-  const currentDeployment = deployments.find((deployment) => deployment.id === currentDeploymentId);
+  const timeout = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (currentDeploymentId) {
+      setCurrentDeployment(
+        deployments.find((deployment) => deployment.id === currentDeploymentId) || null,
+      );
+    } else {
+      if (timeout.current) {
+        clearTimeout(timeout.current);
+      }
+      timeout.current = setTimeout(() => {
+        setCurrentDeployment(null);
+      }, 300);
+    }
+  }, [currentDeploymentId, deployments]);
 
   const value: TDeploymentPanelContext = useMemo(
     () => ({
