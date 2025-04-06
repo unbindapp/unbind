@@ -53,6 +53,8 @@
   --success-foreground: hsl(120 35% 95%);
   --process: hsl(220 85% 28%);
   --process-foreground: hsl(120 35% 95%);
+  --wait: hsl(40 100% 25%);
+  --wait-foreground: hsl(120 35% 95%);
   --shadow: hsl(120 30% 4%);
   --border: hsl(120 20% 85%);
   --input: hsl(120 50% 97%);
@@ -140,6 +142,8 @@
   --success-foreground: hsl(120 9% 6%);
   --process: hsl(220 100% 70%);
   --process-foreground: hsl(120 9% 6%);
+  --wait: hsl(40 60% 55%);
+  --wait-foreground: hsl(120 9% 6%);
   --shadow: hsl(120 11% 3%);
   --border: hsl(120 5% 12%);
   --input: hsl(120 7% 8%);
@@ -209,6 +213,7 @@
   --animate-skeleton: skeleton 1.25s ease-in-out infinite;
   --animate-pulse-scale: pulse-scale 1s ease-in-out infinite;
   --animate-spin: spin 1s linear infinite;
+  --animate-hourglass: hourglass 1.25s cubic-bezier(0.75, 0, 0.25, 1) infinite;
   --animate-loading-bar: loading-bar 45s linear infinite;
   --animate-line-in: line-in 0.01s step-end forwards;
   --animate-ping-pong: ping-pong 2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
@@ -263,6 +268,14 @@
     }
     100% {
       transform: rotate(360deg);
+    }
+  }
+  @keyframes hourglass {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(180deg);
     }
   }
   @keyframes line-in {
@@ -324,6 +337,9 @@
 
   --color-process: var(--process);
   --color-process-foreground: var(--process-foreground);
+
+  --color-wait: var(--wait);
+  --color-wait-foreground: var(--wait-foreground);
 
   --color-link-chip: var(--link-chip);
   --color-shadow: var(--shadow);

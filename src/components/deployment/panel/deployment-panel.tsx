@@ -126,7 +126,7 @@ export default function DeploymentPanel({ service }: TProps) {
                       Deployment
                     </p>
                   </div>
-                  <div className="text-foreground group-data-[color=destructive]/content:text-destructive group-data-[color=success]/content:text-success group-data-[color=process]/content:text-process group-data-[color=warning]/content:text-warning flex w-full items-center justify-start gap-1.5 text-left text-xl leading-tight font-semibold sm:text-2xl">
+                  <div className="text-foreground group-data-[color=destructive]/content:text-destructive group-data-[color=success]/content:text-success group-data-[color=process]/content:text-process group-data-[color=wait]/content:text-wait flex w-full items-center justify-start gap-1.5 text-left text-xl leading-tight font-semibold sm:text-2xl">
                     <p className="min-w-0 shrink truncate pr-1">
                       {currentDeployment.id.slice(0, 6)}
                     </p>

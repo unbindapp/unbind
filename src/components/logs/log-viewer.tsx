@@ -21,7 +21,7 @@ import NoItemsCard from "@/components/no-items-card";
 import { useServices } from "@/components/project/services-provider";
 import { cn } from "@/components/ui/utils";
 import { TLogLineWithLevel, TLogType } from "@/server/trpc/api/logs/types";
-import { LoaderIcon, SearchIcon } from "lucide-react";
+import { HourglassIcon, SearchIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useThrottledCallback } from "use-debounce";
 import { VList, VListHandle } from "virtua";
@@ -271,15 +271,15 @@ function Logs({
   );
 }
 
-function AnimatedLoaderIcon({ className }: { className?: string }) {
-  return <LoaderIcon className={cn("animate-spin", className)} />;
+function AnimatedHourglassIcon({ className }: { className?: string }) {
+  return <HourglassIcon className={cn("animate-hourglass", className)} />;
 }
 
 function NoLogsFound({ shouldHaveLogs }: { shouldHaveLogs?: boolean }) {
   const { search } = useLogViewState();
 
   const Icon = useMemo(() => {
-    if (shouldHaveLogs) return AnimatedLoaderIcon;
+    if (shouldHaveLogs) return AnimatedHourglassIcon;
     return SearchIcon;
   }, [shouldHaveLogs]);
 
