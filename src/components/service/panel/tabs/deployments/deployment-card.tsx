@@ -5,9 +5,8 @@ import DeploymentStatusChip, {
 import BrandIcon from "@/components/icons/brand";
 import DeploymentTime from "@/components/service/panel/tabs/deployments/deployment-time";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/components/ui/utils";
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
-import { EllipsisVerticalIcon, LoaderIcon } from "lucide-react";
+import { EllipsisVerticalIcon } from "lucide-react";
 import { HTMLAttributes } from "react";
 
 type TProps = HTMLAttributes<HTMLDivElement> &
@@ -32,9 +31,6 @@ export default function DeploymentCard({
   isPlaceholder,
   ...rest
 }: TProps) {
-  const LoaderWithSpin = ({ className }: { className?: string }) => (
-    <LoaderIcon className={cn("animate-spin", className)} />
-  );
   const { openPanel } = useDeploymentPanel();
 
   return (
