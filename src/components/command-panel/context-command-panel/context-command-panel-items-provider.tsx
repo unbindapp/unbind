@@ -7,7 +7,7 @@ import {
   TContextCommandPanelContext,
 } from "@/components/command-panel/types";
 import { useQuery } from "@tanstack/react-query";
-import { createContext, ReactNode, useContext } from "react";
+import { createContext, ReactNode, useContext, useMemo } from "react";
 
 type TContextCommandPanelItemsContext = {
   items: TCommandPanelItem[] | undefined;
@@ -25,34 +25,35 @@ export const ContextCommandPanelItemsProvider: React.FC<{
   projectId: string;
   page: TCommandPanelPage;
   context: TContextCommandPanelContext;
-  idSuffix: string;
   children: ReactNode;
-}> = ({ teamId, projectId, page, idSuffix, context, children }) => {
+}> = ({ teamId, projectId, page, context, children }) => {
   const search = useCommandPanelStore((s) => s.search);
 
+  const searchKey = useMemo(() => {
+    if (page.usesAsyncSearch) {
+      return search;
+    }
+    return null;
+  }, [search, page.usesAsyncSearch]);
+
   const { data, isError, isPending, error } = useQuery({
-    queryKey: [
-      "context-aware-command-panel-items",
-      teamId,
-      projectId,
-      page.id,
-      idSuffix,
-      context,
-      search,
-    ],
+    queryKey: ["context-aware-command-panel-items", teamId, projectId, page.id, context, searchKey],
     queryFn: page.items ? () => page.items : () => page.getItems({ teamId, projectId, search }),
     enabled: page.items ? false : true,
   });
 
+  const value: TContextCommandPanelItemsContext = useMemo(
+    () => ({
+      items: page.items ? page.items : data,
+      isError: page.items ? false : isError,
+      isPending: page.items ? false : isPending,
+      error: page.items ? null : error,
+    }),
+    [data, error, isError, isPending, page.items],
+  );
+
   return (
-    <ContextCommandPanelItemsContext.Provider
-      value={{
-        items: page.items ? page.items : data,
-        isError: page.items ? false : isError,
-        isPending: page.items ? false : isPending,
-        error: page.items ? null : error,
-      }}
-    >
+    <ContextCommandPanelItemsContext.Provider value={value}>
       {children}
     </ContextCommandPanelItemsContext.Provider>
   );

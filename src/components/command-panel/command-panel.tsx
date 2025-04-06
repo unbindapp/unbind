@@ -222,6 +222,21 @@ function CommandPanel({
   );
 
   useHotkeys(
+    "arrowright",
+    () => {
+      if (inputRef.current?.value) return;
+      const item = currentPage.items?.find((i) => i.id === value || i.title === value);
+      if (item?.subpage) {
+        setCurrentPageId(item.subpage.id);
+      }
+    },
+    {
+      enableOnContentEditable: true,
+      enableOnFormTags: true,
+    },
+  );
+
+  useHotkeys(
     "esc",
     () => {
       goToParentPage();
@@ -472,8 +487,6 @@ function Item({
   fadeOnDisabled?: boolean;
   currentPageId: string;
 }) {
-  const search = useCommandState((state) => state.search);
-  const value = useCommandState((state) => state.value);
   const isPendingId = useCommandPanelStore((s) => s.isPendingId);
   const clearInputValue = useCommandPanelStore((s) => s.clearInputValue);
 
@@ -484,15 +497,6 @@ function Item({
     }
     item.onSelect?.({ isPendingId });
   }, [item, setCurrentPageId, clearInputValue, currentPageId, isPendingId]);
-
-  useHotkeys("arrowright", () => onSelect(), {
-    enabled:
-      value === item.title &&
-      item.subpage !== undefined &&
-      (search === undefined || search === null || search === ""),
-    enableOnContentEditable: true,
-    enableOnFormTags: true,
-  });
 
   const isItemPending =
     isPendingId === null

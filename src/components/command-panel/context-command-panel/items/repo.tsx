@@ -32,7 +32,7 @@ export function useRepoItemHook({ context }: TProps) {
 }
 
 function useRepoItem({ context }: TProps) {
-  const { closePanel } = useCommandPanel({
+  const { closePanel: closeCommandPanel } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
   });
   const setIsPendingId = useCommandPanelStore((s) => s.setIsPendingId);
@@ -46,7 +46,7 @@ function useRepoItem({ context }: TProps) {
   const { invalidate: invalidateProjects } = useProjectsUtils({ teamId });
   const { invalidate: invalidateProject } = useProjectsUtils({ teamId });
 
-  const { openPanel } = useServicePanel();
+  const { openPanel: openServicePanel } = useServicePanel();
 
   const { refetch: refetchServices } = useServicesUtils({
     teamId: context.teamId,
@@ -110,7 +110,8 @@ function useRepoItem({ context }: TProps) {
       return result;
     },
     onSuccess: (data) => {
-      openPanel(data.service.id);
+      closeCommandPanel();
+      openServicePanel(data.service.id);
       invalidateProject();
       invalidateProjects();
     },
@@ -121,7 +122,7 @@ function useRepoItem({ context }: TProps) {
 
   const item: TCommandPanelItem = useMemo(() => {
     return {
-      id: "repo",
+      id: `repos_${context.contextType}`,
       title: "GitHub Repo",
       keywords: ["deploy from github", "deploy from gitlab", "deploy from bitbucket"],
       Icon: ({ className }: { className?: string }) => (
@@ -135,7 +136,7 @@ function useRepoItem({ context }: TProps) {
         getItems: async () => {
           const res = await utils.git.listRepositories.fetch({ teamId: context.teamId });
           const items: TCommandPanelItem[] = res.repositories.map((r) => {
-            const id = `git_repo_${r.full_name}`;
+            const id = `git_repo_${r.full_name}_${context.contextType}`;
             return {
               id,
               title: `${r.full_name}`,
@@ -144,7 +145,6 @@ function useRepoItem({ context }: TProps) {
                 if (isPendingId !== null) return;
                 setIsPendingId(id);
                 await createService({ repository: r });
-                closePanel();
               },
               Icon: ({ className }: { className?: string }) => (
                 <BrandIcon brand="github" color="brand" className={className} />
@@ -155,7 +155,7 @@ function useRepoItem({ context }: TProps) {
         },
       },
     };
-  }, [utils.git.listRepositories, context, closePanel, createService, setIsPendingId]);
+  }, [utils.git.listRepositories, context, createService, setIsPendingId]);
 
   const value = useMemo(
     () => ({

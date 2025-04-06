@@ -12,8 +12,7 @@ import useContextCommandPanelData from "@/components/command-panel/context-comma
 import { CommandPanelStoreProvider } from "@/components/command-panel/store/command-panel-store-provider";
 import { TContextCommandPanelContext } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
-import { defaultAnimationMs } from "@/lib/constants";
-import { ReactNode, useMemo, useRef } from "react";
+import { ReactNode, useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 type TProps = {
@@ -32,29 +31,22 @@ export default function ContextCommandPanel(props: TProps) {
   );
 }
 
-function ContextCommandPanel_({ context, idSuffix, title, description, children }: TProps) {
-  const { panelId, setPanelPageId, setPanelId } = useCommandPanel({
+function ContextCommandPanel_({ context, title, description, children }: TProps) {
+  const { panelId, setPanelId } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
   });
 
   const { rootPage, currentPage, setCurrentPageId, goToParentPage } =
     useContextCommandPanelData(context);
 
-  const thisPanelId = `${contextCommandPanelId}_${context.contextType}_${idSuffix}`;
+  const thisPanelId = `${contextCommandPanelId}_${context.contextType}`;
 
   const open = panelId === thisPanelId;
-  const timeout = useRef<NodeJS.Timeout | null>(null);
   const setOpen = (open: boolean) => {
     if (open) {
       setPanelId(thisPanelId);
     } else {
       setPanelId(null);
-      if (timeout.current) {
-        clearTimeout(timeout.current);
-      }
-      timeout.current = setTimeout(() => {
-        setPanelPageId(null);
-      }, defaultAnimationMs);
     }
   };
 
@@ -86,7 +78,6 @@ function ContextCommandPanel_({ context, idSuffix, title, description, children 
       projectId={context.projectId || ""}
       page={currentPage}
       context={context}
-      idSuffix={idSuffix}
     >
       <CommandPanelTrigger
         currentPage={currentPage}

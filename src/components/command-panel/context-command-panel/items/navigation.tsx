@@ -1,6 +1,7 @@
 import { contextCommandPanelRootPage } from "@/components/command-panel/constants";
 import { useCommandPanelStore } from "@/components/command-panel/store/command-panel-store-provider";
 import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/command-panel/types";
+import useCommandPanel from "@/components/command-panel/use-command-panel";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import {
@@ -24,6 +25,9 @@ export default function useNavigateItem({ context }: TProps) {
   const { environmentId } = useIdsFromPathname();
   const { asyncPush } = useAsyncPush();
   const setIsPendingId = useCommandPanelStore((s) => s.setIsPendingId);
+  const { closePanel } = useCommandPanel({
+    defaultPageId: contextCommandPanelRootPage,
+  });
 
   const navigateToSettings = useCallback(
     async ({
@@ -49,6 +53,7 @@ export default function useNavigateItem({ context }: TProps) {
         });
       }
       setIsPendingId(null);
+      closePanel();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [environmentId],
@@ -72,7 +77,7 @@ export default function useNavigateItem({ context }: TProps) {
       Icon: CornerDownRightIcon,
       subpage: {
         title: "Go to",
-        id: "go_to",
+        id: `go-to_${context.contextType}`,
         inputPlaceholder: "Go to...",
         parentPageId: contextCommandPanelRootPage,
         items: [

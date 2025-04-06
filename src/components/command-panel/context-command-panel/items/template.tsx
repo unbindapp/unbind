@@ -1,31 +1,15 @@
 import { contextCommandPanelRootPage } from "@/components/command-panel/constants";
-import { TCommandPanelItem } from "@/components/command-panel/types";
+import onSelectPlaceholder from "@/components/command-panel/context-command-panel/items/constants";
+import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
 import BrandIcon from "@/components/icons/brand";
-import { defaultAnimationMs } from "@/lib/constants";
 import { BlocksIcon } from "lucide-react";
-import { useCallback, useMemo, useRef } from "react";
-import { toast } from "sonner";
+import { useMemo } from "react";
 
-export default function useTemplateItem() {
+export default function useTemplateItem({ context }: { context: TContextCommandPanelContext }) {
   const { closePanel } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
   });
-  const timeout = useRef<NodeJS.Timeout | null>(null);
-
-  const onSelectPlaceholder = useCallback(() => {
-    toast.success("Successful", {
-      description: "This is fake.",
-      duration: 3000,
-      closeButton: false,
-    });
-    if (timeout.current) {
-      clearTimeout(timeout.current);
-    }
-    timeout.current = setTimeout(() => {
-      closePanel();
-    }, defaultAnimationMs);
-  }, [closePanel]);
 
   const item: TCommandPanelItem = useMemo(() => {
     return {
@@ -33,7 +17,7 @@ export default function useTemplateItem() {
       keywords: ["blueprint", "stack", "group"],
       Icon: BlocksIcon,
       subpage: {
-        id: "templates",
+        id: `templates_${context.contextType}`,
         title: "Templates",
         parentPageId: contextCommandPanelRootPage,
         inputPlaceholder: "Deploy a template...",
@@ -41,7 +25,7 @@ export default function useTemplateItem() {
           {
             title: "Strapi",
             keywords: ["cms", "content"],
-            onSelect: () => onSelectPlaceholder(),
+            onSelect: () => onSelectPlaceholder(closePanel),
             Icon: ({ className }: { className?: string }) => (
               <BrandIcon brand="strapi" color="brand" className={className} />
             ),
@@ -49,7 +33,7 @@ export default function useTemplateItem() {
           {
             title: "Umami",
             keywords: ["analytics", "privacy", "tracking"],
-            onSelect: () => onSelectPlaceholder(),
+            onSelect: () => onSelectPlaceholder(closePanel),
             Icon: ({ className }: { className?: string }) => (
               <BrandIcon brand="umami" color="brand" className={className} />
             ),
@@ -57,7 +41,7 @@ export default function useTemplateItem() {
           {
             title: "Meilisearch",
             keywords: ["full text search", "elasticsearch", "ram"],
-            onSelect: () => onSelectPlaceholder(),
+            onSelect: () => onSelectPlaceholder(closePanel),
             Icon: ({ className }: { className?: string }) => (
               <BrandIcon brand="meilisearch" color="brand" className={className} />
             ),
@@ -65,7 +49,7 @@ export default function useTemplateItem() {
           {
             title: "MinIO",
             keywords: ["s3", "file storage"],
-            onSelect: () => onSelectPlaceholder(),
+            onSelect: () => onSelectPlaceholder(closePanel),
             Icon: ({ className }: { className?: string }) => (
               <BrandIcon brand="minio" color="brand" className={className} />
             ),
@@ -73,7 +57,7 @@ export default function useTemplateItem() {
           {
             title: "PocketBase",
             keywords: ["paas", "backend", "authentication", "realtime database", "file storage"],
-            onSelect: () => onSelectPlaceholder(),
+            onSelect: () => onSelectPlaceholder(closePanel),
             Icon: ({ className }: { className?: string }) => (
               <BrandIcon brand="pocketbase" color="brand" className={className} />
             ),
@@ -81,7 +65,7 @@ export default function useTemplateItem() {
           {
             title: "N8N",
             keywords: ["workflow automation", "ai", "devops", "itops"],
-            onSelect: () => onSelectPlaceholder(),
+            onSelect: () => onSelectPlaceholder(closePanel),
             Icon: ({ className }: { className?: string }) => (
               <BrandIcon brand="n8n" color="brand" className={className} />
             ),
@@ -89,7 +73,7 @@ export default function useTemplateItem() {
           {
             title: "Ghost",
             keywords: ["blogging"],
-            onSelect: () => onSelectPlaceholder(),
+            onSelect: () => onSelectPlaceholder(closePanel),
             Icon: ({ className }: { className?: string }) => (
               <BrandIcon brand="ghost" color="brand" className={className} />
             ),
@@ -97,7 +81,7 @@ export default function useTemplateItem() {
         ],
       },
     };
-  }, [onSelectPlaceholder]);
+  }, [closePanel, context]);
 
   const value = useMemo(
     () => ({

@@ -20,10 +20,10 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
 
   const useRepoItem = useRepoItemHook({ context });
   const { item: repoItem } = useRepoItem({ context });
-  const { item: templateItem } = useTemplateItem();
+  const { item: templateItem } = useTemplateItem({ context });
   const { item: navigateItem } = useNavigateItem({ context });
-  const { item: databaseItem } = useDatabaseItem();
-  const { item: dockerImageItem } = useDockerImageItem();
+  const { item: databaseItem } = useDatabaseItem({ context });
+  const { item: dockerImageItem } = useDockerImageItem({ context });
   const { item: newProjectItem } = useNewProjectItem({ context });
 
   const onSelectPlaceholder = useCallback(() => {

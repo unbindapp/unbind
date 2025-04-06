@@ -1,35 +1,19 @@
 import { contextCommandPanelRootPage } from "@/components/command-panel/constants";
-import { TCommandPanelItem } from "@/components/command-panel/types";
+import onSelectPlaceholder from "@/components/command-panel/context-command-panel/items/constants";
+import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
 import BrandIcon from "@/components/icons/brand";
 import { cn } from "@/components/ui/utils";
-import { defaultAnimationMs } from "@/lib/constants";
 import { formatKMBT } from "@/lib/helpers";
 import { api } from "@/server/trpc/setup/client";
 import { DownloadIcon } from "lucide-react";
-import { useCallback, useMemo, useRef } from "react";
-import { toast } from "sonner";
+import { useMemo } from "react";
 
-export default function useDockerImageItem() {
+export default function useDockerImageItem({ context }: { context: TContextCommandPanelContext }) {
   const { closePanel } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
   });
-  const timeout = useRef<NodeJS.Timeout | null>(null);
   const utils = api.useUtils();
-
-  const onSelectPlaceholder = useCallback(() => {
-    toast.success("Successful", {
-      description: "This is fake.",
-      duration: 3000,
-      closeButton: false,
-    });
-    if (timeout.current) {
-      clearTimeout(timeout.current);
-    }
-    timeout.current = setTimeout(() => {
-      closePanel();
-    }, defaultAnimationMs);
-  }, [closePanel]);
 
   const item: TCommandPanelItem = useMemo(() => {
     const item: TCommandPanelItem = {
@@ -39,7 +23,7 @@ export default function useDockerImageItem() {
         <BrandIcon brand="docker" className={className} />
       ),
       subpage: {
-        id: "docker-images",
+        id: `docker-images_${context.contextType}`,
         title: "Docker Images",
         parentPageId: contextCommandPanelRootPage,
         inputPlaceholder: "Search Docker images...",
@@ -63,13 +47,13 @@ export default function useDockerImageItem() {
                 <p className="min-w-0 shrink text-sm">{formatKMBT(item.pull_count)}</p>
               </div>
             ),
-            onSelect: () => onSelectPlaceholder(),
+            onSelect: () => onSelectPlaceholder(closePanel),
           }));
         },
       },
     };
     return item;
-  }, [onSelectPlaceholder, utils.docker.searchRepositories]);
+  }, [utils.docker.searchRepositories, closePanel, context]);
 
   const value = useMemo(
     () => ({

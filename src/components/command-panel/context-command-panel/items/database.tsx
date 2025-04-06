@@ -1,31 +1,15 @@
 import { contextCommandPanelRootPage } from "@/components/command-panel/constants";
-import { TCommandPanelItem } from "@/components/command-panel/types";
+import onSelectPlaceholder from "@/components/command-panel/context-command-panel/items/constants";
+import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
 import BrandIcon from "@/components/icons/brand";
-import { defaultAnimationMs } from "@/lib/constants";
 import { DatabaseIcon } from "lucide-react";
-import { useCallback, useMemo, useRef } from "react";
-import { toast } from "sonner";
+import { useMemo } from "react";
 
-export default function useDatabaseItem() {
+export default function useDatabaseItem({ context }: { context: TContextCommandPanelContext }) {
   const { closePanel } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
   });
-  const timeout = useRef<NodeJS.Timeout | null>(null);
-
-  const onSelectPlaceholder = useCallback(() => {
-    toast.success("Successful", {
-      description: "This is fake.",
-      duration: 3000,
-      closeButton: false,
-    });
-    if (timeout.current) {
-      clearTimeout(timeout.current);
-    }
-    timeout.current = setTimeout(() => {
-      closePanel();
-    }, defaultAnimationMs);
-  }, [closePanel]);
 
   const item: TCommandPanelItem = useMemo(() => {
     return {
@@ -33,7 +17,7 @@ export default function useDatabaseItem() {
       keywords: ["persistent", "persistence"],
       Icon: DatabaseIcon,
       subpage: {
-        id: "databases",
+        id: `databases_${context.contextType}`,
         title: "Databases",
         parentPageId: contextCommandPanelRootPage,
         inputPlaceholder: "Deploy a database...",
@@ -41,7 +25,7 @@ export default function useDatabaseItem() {
           {
             title: "PostgreSQL",
             keywords: ["database", "sql", "mysql"],
-            onSelect: () => onSelectPlaceholder(),
+            onSelect: () => onSelectPlaceholder(closePanel),
             Icon: ({ className }: { className?: string }) => (
               <BrandIcon brand="postgresql" color="brand" className={className} />
             ),
@@ -49,7 +33,7 @@ export default function useDatabaseItem() {
           {
             title: "Redis",
             keywords: ["database", "cache", "key value"],
-            onSelect: () => onSelectPlaceholder(),
+            onSelect: () => onSelectPlaceholder(closePanel),
             Icon: ({ className }: { className?: string }) => (
               <BrandIcon brand="redis" color="brand" className={className} />
             ),
@@ -57,7 +41,7 @@ export default function useDatabaseItem() {
           {
             title: "MongoDB",
             keywords: ["database", "object"],
-            onSelect: () => onSelectPlaceholder(),
+            onSelect: () => onSelectPlaceholder(closePanel),
             Icon: ({ className }: { className?: string }) => (
               <BrandIcon brand="mongodb" color="brand" className={className} />
             ),
@@ -65,7 +49,7 @@ export default function useDatabaseItem() {
           {
             title: "MySQL",
             keywords: ["database", "sql", "postgresql"],
-            onSelect: () => onSelectPlaceholder(),
+            onSelect: () => onSelectPlaceholder(closePanel),
             Icon: ({ className }: { className?: string }) => (
               <BrandIcon brand="mysql" color="brand" className={className} />
             ),
@@ -73,7 +57,7 @@ export default function useDatabaseItem() {
           {
             title: "ClickHouse",
             keywords: ["database", "analytics", "sql"],
-            onSelect: () => onSelectPlaceholder(),
+            onSelect: () => onSelectPlaceholder(closePanel),
             Icon: ({ className }: { className?: string }) => (
               <BrandIcon brand="clickhouse" color="brand" className={className} />
             ),
@@ -81,7 +65,7 @@ export default function useDatabaseItem() {
         ],
       },
     };
-  }, [onSelectPlaceholder]);
+  }, [context, closePanel]);
 
   const value = useMemo(
     () => ({

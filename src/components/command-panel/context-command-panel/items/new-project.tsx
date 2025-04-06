@@ -1,5 +1,7 @@
+import { contextCommandPanelRootPage } from "@/components/command-panel/constants";
 import { useCommandPanelStore } from "@/components/command-panel/store/command-panel-store-provider";
 import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/command-panel/types";
+import useCommandPanel from "@/components/command-panel/use-command-panel";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { api } from "@/server/trpc/setup/client";
@@ -14,6 +16,9 @@ export default function useNewProjectItem({ context }: TProps) {
   const setIsPendingId = useCommandPanelStore((s) => s.setIsPendingId);
   const { asyncPush } = useAsyncPush();
   const { invalidate: invalidateProjects } = useProjectsUtils({ teamId: context.teamId });
+  const { closePanel } = useCommandPanel({
+    defaultPageId: contextCommandPanelRootPage,
+  });
 
   const { mutate: createProject } = api.projects.create.useMutation({
     onSuccess: async (res) => {
@@ -28,6 +33,7 @@ export default function useNewProjectItem({ context }: TProps) {
       }
       await invalidateProjects();
       await asyncPush(`/${context.teamId}/project/${projectId}?environment=${environmentId}`);
+      closePanel();
     },
     onSettled: () => {
       setIsPendingId(null);
@@ -35,18 +41,19 @@ export default function useNewProjectItem({ context }: TProps) {
   });
 
   const item: TCommandPanelItem = useMemo(() => {
+    const id = `new-project_${context.contextType}`;
     return {
-      id: "new-project",
+      id,
       title: "New Project",
       keywords: ["New Project", "Create project...", "Creating project..."],
       onSelect: (props) => {
-        if (props?.isPendingId === "new-project") return;
-        setIsPendingId("new-project");
+        if (props?.isPendingId === id) return;
+        setIsPendingId(id);
         createProject({ teamId: context.teamId });
       },
       Icon: FolderPlusIcon,
     };
-  }, [setIsPendingId, createProject, context.teamId]);
+  }, [setIsPendingId, createProject, context.teamId, context.contextType]);
 
   const value = useMemo(
     () => ({
