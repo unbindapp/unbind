@@ -213,7 +213,7 @@
   --animate-skeleton: skeleton 1.25s ease-in-out infinite;
   --animate-pulse-scale: pulse-scale 1s ease-in-out infinite;
   --animate-spin: spin 1s linear infinite;
-  --animate-hourglass: hourglass 1.25s cubic-bezier(0.75, 0, 0.25, 1) infinite;
+  --animate-hourglass: hourglass 1.5s cubic-bezier(0.75, 0, 0.25, 1) infinite;
   --animate-loading-bar: loading-bar 45s linear infinite;
   --animate-line-in: line-in 0.01s step-end forwards;
   --animate-ping-pong: ping-pong 2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
