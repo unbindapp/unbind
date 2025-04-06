@@ -83,7 +83,7 @@ export default function DeploymentPanel({ service }: TProps) {
     }
   };
   const { isExtraSmall } = useDeviceSize();
-
+  //
   return (
     <Drawer
       open={open}
