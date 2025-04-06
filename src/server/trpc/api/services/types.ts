@@ -1,4 +1,3 @@
-import { ServiceBuilderSchema, ServiceTypeSchema } from "@/server/go/client.gen";
 import { AppRouterOutputs } from "@/server/trpc/api/root";
 import { z } from "zod";
 
@@ -31,20 +30,34 @@ export const CreateServiceSharedSchema = z
     port: z.number().optional(),
     host: z.string().optional(),
     public: z.boolean(),
-    gitHubInstallationId: z.number(),
   })
   .strip();
 
 export const CreateServiceFromGitSchema = z
   .object({
-    builder: ServiceBuilderSchema,
-    type: ServiceTypeSchema,
+    builder: z.enum(["railpack"]),
+    type: z.enum(["github"]),
     gitBranch: z.string(),
+    gitHubInstallationId: z.number(),
     repositoryName: z.string(),
     repositoryOwner: z.string(),
   })
   .merge(CreateServiceSharedSchema)
   .strip();
+
+export const CreateServiceFromDockerImageSchema = z
+  .object({
+    builder: z.enum(["docker"]),
+    type: z.enum(["docker-image"]),
+    image: z.string(),
+  })
+  .merge(CreateServiceSharedSchema)
+  .strip();
+
+export const CreateServiceSchema = z.discriminatedUnion("type", [
+  CreateServiceFromGitSchema,
+  CreateServiceFromDockerImageSchema,
+]);
 
 export const UpdateServiceInputSchema = z
   .object({

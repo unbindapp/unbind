@@ -1,7 +1,5 @@
-import {
-  CreateServiceFromGitSchema,
-  UpdateServiceInputSchema,
-} from "@/server/trpc/api/services/types";
+import { CreateServiceInput } from "@/server/go/client.gen";
+import { CreateServiceSchema, UpdateServiceInputSchema } from "@/server/trpc/api/services/types";
 import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -63,23 +61,7 @@ export const servicesRouter = createTRPCRouter({
         service: service.data,
       };
     }),
-  create: publicProcedure.input(CreateServiceFromGitSchema).mutation(async function ({
-    input: {
-      builder,
-      type,
-      displayName,
-      description,
-      teamId,
-      projectId,
-      environmentId,
-      gitBranch,
-      repositoryName,
-      repositoryOwner,
-      gitHubInstallationId,
-      public: isPublic,
-    },
-    ctx,
-  }) {
+  create: publicProcedure.input(CreateServiceSchema).mutation(async function ({ input, ctx }) {
     const { session, goClient } = ctx;
     if (!session) {
       throw new TRPCError({
@@ -87,22 +69,39 @@ export const servicesRouter = createTRPCRouter({
         message: "You need to be logged in to access this resource",
       });
     }
-    const service = await goClient.services.create({
-      builder,
-      type,
-      team_id: teamId,
-      project_id: projectId,
-      environment_id: environmentId,
-      display_name: displayName,
-      description: description,
-      git_branch: gitBranch,
-      repository_name: repositoryName,
-      repository_owner: repositoryOwner,
-      github_installation_id: gitHubInstallationId,
-      public: isPublic,
+
+    const sharedParams: CreateServiceInput = {
+      team_id: input.teamId,
+      project_id: input.projectId,
+      environment_id: input.environmentId,
+      display_name: input.displayName,
+      description: input.description,
+      public: input.public,
+      builder: input.builder,
+      type: input.type,
       replicas: 1,
-      auto_deploy: true,
-    });
+    };
+
+    let params: CreateServiceInput;
+
+    if (input.type === "docker-image") {
+      params = {
+        ...sharedParams,
+        builder: input.builder,
+        image: input.image,
+      };
+    } else {
+      params = {
+        ...sharedParams,
+        builder: input.builder,
+        git_branch: input.gitBranch,
+        github_installation_id: input.gitHubInstallationId,
+        repository_name: input.repositoryName,
+        repository_owner: input.repositoryOwner,
+      };
+    }
+
+    const service = await goClient.services.create(params);
     return {
       service: service.data,
     };

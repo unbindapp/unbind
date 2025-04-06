@@ -13,6 +13,7 @@ export default function useDatabaseItem({ context }: { context: TContextCommandP
 
   const item: TCommandPanelItem = useMemo(() => {
     return {
+      id: `databases_${context.contextType}`,
       title: "Database",
       keywords: ["persistent", "persistence"],
       Icon: DatabaseIcon,
@@ -23,6 +24,7 @@ export default function useDatabaseItem({ context }: { context: TContextCommandP
         inputPlaceholder: "Deploy a database...",
         items: [
           {
+            id: `databases_${context.contextType}_postgresql`,
             title: "PostgreSQL",
             keywords: ["database", "sql", "mysql"],
             onSelect: () => onSelectPlaceholder(closePanel),
@@ -31,6 +33,7 @@ export default function useDatabaseItem({ context }: { context: TContextCommandP
             ),
           },
           {
+            id: `databases_${context.contextType}_redis`,
             title: "Redis",
             keywords: ["database", "cache", "key value"],
             onSelect: () => onSelectPlaceholder(closePanel),
@@ -39,6 +42,7 @@ export default function useDatabaseItem({ context }: { context: TContextCommandP
             ),
           },
           {
+            id: `databases_${context.contextType}_mongodb`,
             title: "MongoDB",
             keywords: ["database", "object"],
             onSelect: () => onSelectPlaceholder(closePanel),
@@ -47,6 +51,7 @@ export default function useDatabaseItem({ context }: { context: TContextCommandP
             ),
           },
           {
+            id: `databases_${context.contextType}_mysql`,
             title: "MySQL",
             keywords: ["database", "sql", "postgresql"],
             onSelect: () => onSelectPlaceholder(closePanel),
@@ -55,6 +60,7 @@ export default function useDatabaseItem({ context }: { context: TContextCommandP
             ),
           },
           {
+            id: `databases_${context.contextType}_mariadb`,
             title: "ClickHouse",
             keywords: ["database", "analytics", "sql"],
             onSelect: () => onSelectPlaceholder(closePanel),

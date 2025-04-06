@@ -39,7 +39,7 @@ export default function useNavigateItem({ context }: TProps) {
       context: TContextCommandPanelContext;
       isPendingId?: string | null;
     }) => {
-      const key = `/settings${pathname}`;
+      const key = `go-tos_${context.contextType}_/settings${pathname}`;
       if (isPendingId === key) return;
       setIsPendingId(key);
       const res = await ResultAsync.fromPromise(
@@ -72,17 +72,18 @@ export default function useNavigateItem({ context }: TProps) {
       return null;
     }
     return {
+      id: `go-to_${context.contextType}`,
       title: "Go to",
       keywords: ["navigate", "jump"],
       Icon: CornerDownRightIcon,
       subpage: {
+        id: `go-tos_${context.contextType}`,
         title: "Go to",
-        id: `go-to_${context.contextType}`,
         inputPlaceholder: "Go to...",
         parentPageId: contextCommandPanelRootPage,
         items: [
           {
-            id: `/settings`,
+            id: `go-tos_${context.contextType}_/settings`,
             title: settingsTitle,
             onSelect: (props) => {
               navigateToSettings({ context, pathname: "", isPendingId: props?.isPendingId });
@@ -91,7 +92,7 @@ export default function useNavigateItem({ context }: TProps) {
             keywords: ["settings", "general", "change", "tweak", "adjust", ...goToKeywords],
           },
           {
-            id: `/settings/shared-variables`,
+            id: `go-tos_${context.contextType}_/settings/shared-variables`,
             title: "Shared Variables",
             titleSuffix: ` | ${settingsTitle}`,
             onSelect: (props) => {
@@ -105,7 +106,7 @@ export default function useNavigateItem({ context }: TProps) {
             keywords: ["environment variables", "secrets", "keys", "values", ...goToKeywords],
           },
           {
-            id: `/settings/members`,
+            id: `go-tos_${context.contextType}_/settings/members`,
             title: "Members",
             titleSuffix: ` | ${settingsTitle}`,
             onSelect: (props) => {
@@ -119,7 +120,7 @@ export default function useNavigateItem({ context }: TProps) {
             keywords: ["person", "people", "group", ...goToKeywords],
           },
           {
-            id: `/settings/notifications`,
+            id: `go-tos_${context.contextType}_/settings/notifications`,
             title: "Notifications",
             titleSuffix: ` | ${settingsTitle}`,
             onSelect: (props) => {
@@ -133,7 +134,7 @@ export default function useNavigateItem({ context }: TProps) {
             keywords: ["notify", "alert", ...goToKeywords],
           },
           {
-            id: `/settings/webhooks`,
+            id: `go-tos_${context.contextType}_/settings/webhooks`,
             title: "Webhooks",
             titleSuffix: ` | ${settingsTitle}`,
             onSelect: (props) => {
@@ -147,7 +148,7 @@ export default function useNavigateItem({ context }: TProps) {
             keywords: ["hook", "integration", "alert", "connection", ...goToKeywords],
           },
           {
-            id: `/settings/danger-zone`,
+            id: `go-tos_${context.contextType}_/settings/danger-zone`,
             title: "Danger Zone",
             titleSuffix: ` | ${settingsTitle}`,
             onSelect: (props) => {

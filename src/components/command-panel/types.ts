@@ -22,7 +22,7 @@ export type TCommandPanelPage = {
 );
 
 export type TCommandPanelItem = {
-  id?: string;
+  id: string;
   title: string;
   titleSuffix?: string;
   Icon: FC<{ className?: string }>;

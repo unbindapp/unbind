@@ -56,7 +56,7 @@ function useRepoItem({ context }: TProps) {
 
   const { mutateAsync: createServiceViaApi } = api.services.create.useMutation();
   const { mutateAsync: createService } = useMutation({
-    mutationKey: ["create_service"],
+    mutationKey: ["create-service", "repo"],
     mutationFn: async ({
       repository,
     }: {
@@ -118,18 +118,23 @@ function useRepoItem({ context }: TProps) {
     onSettled: () => {
       setIsPendingId(null);
     },
+    onError: (error) => {
+      toast.error("Failed to Create Service", {
+        description: error.message,
+      });
+    },
   });
 
   const item: TCommandPanelItem = useMemo(() => {
     return {
-      id: `repos_${context.contextType}`,
+      id: `repo_${context.contextType}`,
       title: "GitHub Repo",
       keywords: ["deploy from github", "deploy from gitlab", "deploy from bitbucket"],
       Icon: ({ className }: { className?: string }) => (
         <BrandIcon brand="github" className={className} />
       ),
       subpage: {
-        id: "github_repos_project",
+        id: `repos_${context.contextType}`,
         title: "GitHub Repos",
         parentPageId: contextCommandPanelRootPage,
         inputPlaceholder: "Deploy from GitHub...",

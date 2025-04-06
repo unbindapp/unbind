@@ -1,6 +1,6 @@
 import { contextCommandPanelRootPage } from "@/components/command-panel/constants";
 import useDatabaseItem from "@/components/command-panel/context-command-panel/items/database";
-import useDockerImageItem from "@/components/command-panel/context-command-panel/items/docker-image";
+import { useDockerImageItemHook } from "@/components/command-panel/context-command-panel/items/docker-image";
 import useNavigateItem from "@/components/command-panel/context-command-panel/items/navigation";
 import useNewProjectItem from "@/components/command-panel/context-command-panel/items/new-project";
 import { useRepoItemHook } from "@/components/command-panel/context-command-panel/items/repo";
@@ -19,11 +19,13 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
   const timeout = useRef<NodeJS.Timeout | null>(null);
 
   const useRepoItem = useRepoItemHook({ context });
+  const useDockerImageItem = useDockerImageItemHook({ context });
+
   const { item: repoItem } = useRepoItem({ context });
+  const { item: dockerImageItem } = useDockerImageItem({ context });
   const { item: templateItem } = useTemplateItem({ context });
   const { item: navigateItem } = useNavigateItem({ context });
   const { item: databaseItem } = useDatabaseItem({ context });
-  const { item: dockerImageItem } = useDockerImageItem({ context });
   const { item: newProjectItem } = useNewProjectItem({ context });
 
   const onSelectPlaceholder = useCallback(() => {
@@ -59,7 +61,7 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
         ...(repoItem ? [repoItem] : []),
         databaseItem,
         templateItem,
-        dockerImageItem,
+        ...(dockerImageItem ? [dockerImageItem] : []),
         ...(navigateItem ? [navigateItem] : []),
       ],
     }),
@@ -67,6 +69,7 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
     [
       onSelectPlaceholder,
       repoItem,
+      dockerImageItem,
       databaseItem,
       templateItem,
       dockerImageItem,

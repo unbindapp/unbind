@@ -13,6 +13,7 @@ export default function useTemplateItem({ context }: { context: TContextCommandP
 
   const item: TCommandPanelItem = useMemo(() => {
     return {
+      id: `template_${context.contextType}`,
       title: "Template",
       keywords: ["blueprint", "stack", "group"],
       Icon: BlocksIcon,
@@ -23,6 +24,7 @@ export default function useTemplateItem({ context }: { context: TContextCommandP
         inputPlaceholder: "Deploy a template...",
         items: [
           {
+            id: `templates_${context.contextType}_strapi`,
             title: "Strapi",
             keywords: ["cms", "content"],
             onSelect: () => onSelectPlaceholder(closePanel),
@@ -31,6 +33,7 @@ export default function useTemplateItem({ context }: { context: TContextCommandP
             ),
           },
           {
+            id: `templates_${context.contextType}_umami`,
             title: "Umami",
             keywords: ["analytics", "privacy", "tracking"],
             onSelect: () => onSelectPlaceholder(closePanel),
@@ -39,6 +42,7 @@ export default function useTemplateItem({ context }: { context: TContextCommandP
             ),
           },
           {
+            id: `templates_${context.contextType}_meilisearch`,
             title: "Meilisearch",
             keywords: ["full text search", "elasticsearch", "ram"],
             onSelect: () => onSelectPlaceholder(closePanel),
@@ -47,6 +51,7 @@ export default function useTemplateItem({ context }: { context: TContextCommandP
             ),
           },
           {
+            id: `templates_${context.contextType}_minio`,
             title: "MinIO",
             keywords: ["s3", "file storage"],
             onSelect: () => onSelectPlaceholder(closePanel),
@@ -55,6 +60,7 @@ export default function useTemplateItem({ context }: { context: TContextCommandP
             ),
           },
           {
+            id: `templates_${context.contextType}_pocketbase`,
             title: "PocketBase",
             keywords: ["paas", "backend", "authentication", "realtime database", "file storage"],
             onSelect: () => onSelectPlaceholder(closePanel),
@@ -63,6 +69,7 @@ export default function useTemplateItem({ context }: { context: TContextCommandP
             ),
           },
           {
+            id: `templates_${context.contextType}_n8n`,
             title: "N8N",
             keywords: ["workflow automation", "ai", "devops", "itops"],
             onSelect: () => onSelectPlaceholder(closePanel),
@@ -71,6 +78,7 @@ export default function useTemplateItem({ context }: { context: TContextCommandP
             ),
           },
           {
+            id: `templates_${context.contextType}_ghost`,
             title: "Ghost",
             keywords: ["blogging"],
             onSelect: () => onSelectPlaceholder(closePanel),

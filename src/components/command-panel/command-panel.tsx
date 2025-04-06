@@ -341,6 +341,7 @@ function Content({
                 <Item
                   key={`loading-${i}`}
                   item={{
+                    id: `loading-${i}`,
                     title: `Loading ${i}`,
                     keywords: [],
                     Icon: LoaderIcon,
