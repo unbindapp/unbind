@@ -8,6 +8,7 @@ type TProps = {
   deployment: TDeploymentShallow | undefined;
   isPlaceholder: boolean | undefined;
   currentDeployment: TDeploymentShallow | undefined;
+  iconClassName?: string;
   className?: string;
 };
 
@@ -15,6 +16,7 @@ export default function DeploymentStatusChip({
   deployment,
   isPlaceholder,
   currentDeployment,
+  iconClassName,
   className,
 }: TProps) {
   const [statusText, Icon]: [string, FC<{ className?: string }>] = useMemo(() => {
@@ -44,7 +46,7 @@ export default function DeploymentStatusChip({
         className,
       )}
     >
-      <Icon className="-ml-0.25 size-3.5 shrink-0" />
+      <Icon className={cn("-ml-0.25 size-3.5 shrink-0", iconClassName)} />
       <p className="min-w-0 shrink leading-tight">{statusText}</p>
     </div>
   );

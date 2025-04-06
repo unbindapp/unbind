@@ -123,11 +123,12 @@ export default function DeploymentPanel({ service }: TProps) {
                     </p>
                   </div>
                   <div className="text-foreground group-data-[status=failed]/content:text-destructive group-data-last-successful/content:group-data-[status=succeeded]/content:text-success group-data-[status=building]/content:text-process group-data-[status=queued]/content:text-process flex w-full items-center justify-start gap-1.5 text-left text-xl leading-tight font-semibold sm:text-2xl">
-                    <p className="min-w-0 shrink truncate pr-0.75">
+                    <p className="min-w-0 shrink truncate pr-1">
                       {currentDeployment.id.slice(0, 6)}
                     </p>
                     <DeploymentStatusChip
-                      className="shrink-0 px-1.75 py-0.75"
+                      className="shrink-0 px-1.75 py-0.75 sm:text-base"
+                      iconClassName="sm:size-4"
                       deployment={currentDeployment}
                       currentDeployment={currentDeploymentOfService || undefined}
                       isPlaceholder={false}
@@ -170,8 +171,8 @@ function DeploymentProgress({ deployment }: { deployment: TDeploymentShallow }) 
     start: new Date(deployment.created_at).getTime(),
   });
   return (
-    <div className="text-foreground bg-border flex shrink-0 items-center justify-start gap-1.25 rounded-md px-1.75 py-0.75 font-mono text-sm font-medium">
-      <AnimatedTimerIcon animate={true} className="-ml-0.5 size-3.5 sm:size-4" />
+    <div className="text-foreground bg-border flex shrink-0 items-center justify-start gap-1.25 rounded-md px-2 py-0.75 font-mono text-sm font-medium sm:text-base">
+      <AnimatedTimerIcon animate={true} className="-ml-0.75 size-3.5 sm:size-4" />
       <p className="min-w-0 shrink leading-tight">{durationStr}</p>
     </div>
   );
