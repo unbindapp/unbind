@@ -1,5 +1,5 @@
-import { useCommandPanelState } from "@/components/command-panel/command-panel-state-provider";
 import { contextCommandPanelRootPage } from "@/components/command-panel/constants";
+import { useCommandPanelStore } from "@/components/command-panel/store/command-panel-store-provider";
 import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
 import BrandIcon from "@/components/icons/brand";
@@ -35,7 +35,7 @@ function useRepoItem({ context }: TProps) {
   const { closePanel } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
   });
-  const { setIsPendingId } = useCommandPanelState();
+  const setIsPendingId = useCommandPanelStore((s) => s.setIsPendingId);
   const utils = api.useUtils();
   const {
     teamId,

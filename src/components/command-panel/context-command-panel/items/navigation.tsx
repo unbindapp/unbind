@@ -1,5 +1,5 @@
-import { useCommandPanelState } from "@/components/command-panel/command-panel-state-provider";
 import { contextCommandPanelRootPage } from "@/components/command-panel/constants";
+import { useCommandPanelStore } from "@/components/command-panel/store/command-panel-store-provider";
 import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/command-panel/types";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
@@ -23,7 +23,7 @@ type TProps = {
 export default function useNavigateItem({ context }: TProps) {
   const { environmentId } = useIdsFromPathname();
   const { asyncPush } = useAsyncPush();
-  const { setIsPendingId } = useCommandPanelState();
+  const setIsPendingId = useCommandPanelStore((s) => s.setIsPendingId);
 
   const navigateToSettings = useCallback(
     async ({

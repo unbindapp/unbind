@@ -1,7 +1,6 @@
 "use client";
 
 import { CommandPanelTrigger } from "@/components/command-panel/command-panel";
-import { CommandPanelStateProvider } from "@/components/command-panel/command-panel-state-provider";
 import {
   contextCommandPanelId,
   contextCommandPanelRootPage,
@@ -10,6 +9,7 @@ import ContextCommandPanelItemsProvider, {
   useContextCommandPanelItems,
 } from "@/components/command-panel/context-command-panel/context-command-panel-items-provider";
 import useContextCommandPanelData from "@/components/command-panel/context-command-panel/use-context-command-panel-data";
+import { CommandPanelStoreProvider } from "@/components/command-panel/store/command-panel-store-provider";
 import { TContextCommandPanelContext } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
 import { defaultAnimationMs } from "@/lib/constants";
@@ -26,9 +26,9 @@ type TProps = {
 
 export default function ContextCommandPanel(props: TProps) {
   return (
-    <CommandPanelStateProvider>
+    <CommandPanelStoreProvider>
       <ContextCommandPanel_ {...props} />
-    </CommandPanelStateProvider>
+    </CommandPanelStoreProvider>
   );
 }
 
@@ -37,7 +37,7 @@ function ContextCommandPanel_({ context, idSuffix, title, description, children 
     defaultPageId: contextCommandPanelRootPage,
   });
 
-  const { rootPage, currentPage, setCurrentPageId, allPageIds, goToParentPage } =
+  const { rootPage, currentPage, setCurrentPageId, goToParentPage } =
     useContextCommandPanelData(context);
 
   const thisPanelId = `${contextCommandPanelId}_${context.contextType}_${idSuffix}`;
@@ -89,7 +89,6 @@ function ContextCommandPanel_({ context, idSuffix, title, description, children 
       idSuffix={idSuffix}
     >
       <CommandPanelTrigger
-        allPageIds={allPageIds}
         currentPage={currentPage}
         title={title}
         description={description}

@@ -1,4 +1,4 @@
-import { useCommandPanelState } from "@/components/command-panel/command-panel-state-provider";
+import { useCommandPanelStore } from "@/components/command-panel/store/command-panel-store-provider";
 import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/command-panel/types";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
@@ -11,7 +11,7 @@ type TProps = {
 };
 
 export default function useNewProjectItem({ context }: TProps) {
-  const { setIsPendingId } = useCommandPanelState();
+  const setIsPendingId = useCommandPanelStore((s) => s.setIsPendingId);
   const { asyncPush } = useAsyncPush();
   const { invalidate: invalidateProjects } = useProjectsUtils({ teamId: context.teamId });
 

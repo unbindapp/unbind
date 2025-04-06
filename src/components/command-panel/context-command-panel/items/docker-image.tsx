@@ -2,8 +2,11 @@ import { contextCommandPanelRootPage } from "@/components/command-panel/constant
 import { TCommandPanelItem } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
 import BrandIcon from "@/components/icons/brand";
+import { cn } from "@/components/ui/utils";
 import { defaultAnimationMs } from "@/lib/constants";
+import { formatKMBT } from "@/lib/helpers";
 import { api } from "@/server/trpc/setup/client";
+import { DownloadIcon } from "lucide-react";
 import { useCallback, useMemo, useRef } from "react";
 import { toast } from "sonner";
 
@@ -48,6 +51,17 @@ export default function useDockerImageItem() {
             keywords: [item.repo_name],
             Icon: ({ className }) => (
               <BrandIcon brand="docker" color="brand" className={className} />
+            ),
+            ChipComponent: ({ className }) => (
+              <div
+                className={cn(
+                  "text-muted-foreground flex items-center justify-end gap-1.5 pl-3 text-right font-mono font-normal",
+                  className,
+                )}
+              >
+                <DownloadIcon className="-my-1 size-4" />
+                <p className="min-w-0 shrink text-sm">{formatKMBT(item.pull_count)}</p>
+              </div>
             ),
             onSelect: () => onSelectPlaceholder(),
           }));

@@ -26,6 +26,7 @@ export type TCommandPanelItem = {
   title: string;
   titleSuffix?: string;
   Icon: FC<{ className?: string }>;
+  ChipComponent?: FC<{ className?: string }>;
   subpage?: TCommandPanelPage;
   onSelect?: (props: { isPendingId: string | null }) => void;
   keywords: string[];

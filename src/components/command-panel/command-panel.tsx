@@ -1,8 +1,8 @@
-import { useCommandPanelState } from "@/components/command-panel/command-panel-state-provider";
 import {
   getAllItemsFromCommandPanelPage,
   getFirstCommandListItem,
 } from "@/components/command-panel/helpers";
+import { useCommandPanelStore } from "@/components/command-panel/store/command-panel-store-provider";
 import { TCommandPanelItem, TCommandPanelPage } from "@/components/command-panel/types";
 import ErrorCard from "@/components/error-card";
 import KeyboardShortcut from "@/components/keyboard-shortcut";
@@ -32,12 +32,12 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
+import { defaultDebounceMs } from "@/lib/constants";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { useCommandState } from "cmdk";
 import { ChevronLeftIcon, ChevronRightIcon, LoaderIcon } from "lucide-react";
 import { ReactNode, RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useDebouncedCallback } from "use-debounce";
 
 type TProps = {
   open: boolean;
@@ -69,7 +69,6 @@ export function CommandPanelTrigger({
   currentPage,
   goToParentPage,
   useCommandPanelItems,
-  allPageIds,
   setCurrentPageId,
   title,
   description,
@@ -117,7 +116,6 @@ export function CommandPanelTrigger({
           <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden pb-[var(--safe-area-inset-bottom)]">
             <CommandPanel
               rootPage={rootPage}
-              allPageIds={allPageIds}
               setCurrentPageId={setCurrentPageId}
               currentPage={currentPage}
               goToParentPage={goToParentPage}
@@ -156,7 +154,6 @@ export function CommandPanelTrigger({
         </DialogHeader>
         <CommandPanel
           rootPage={rootPage}
-          allPageIds={allPageIds}
           setCurrentPageId={setCurrentPageId}
           currentPage={currentPage}
           goToParentPage={goToParentPage}
@@ -183,7 +180,6 @@ type TCommandPanelProps = {
   goToParentPage: (e?: KeyboardEvent) => void;
   useCommandPanelItems: TUseCommandPanelItems;
   rootPage: TCommandPanelPage;
-  allPageIds: string[];
   setCurrentPageId: TSetCurrentPageId;
   className?: string;
   commandVariantOptions?: TCommandVariants;
@@ -194,7 +190,6 @@ function CommandPanel({
   goToParentPage,
   useCommandPanelItems,
   rootPage,
-  allPageIds,
   setCurrentPageId,
   commandVariantOptions,
   className,
@@ -262,7 +257,6 @@ function CommandPanel({
         useCommandPanelItems={useCommandPanelItems}
         placeholder={currentPage.inputPlaceholder}
         currentPage={currentPage}
-        allPageIds={allPageIds}
         ref={inputRef}
         scrollAreaRef={scrollAreaRef}
       />
@@ -312,6 +306,7 @@ function Content({
                 <Item
                   key={`${item.id || item.title}-${i}`}
                   item={item}
+                  currentPageId={currentPage.id}
                   setCurrentPageId={setCurrentPageId}
                 />
               ))}
@@ -321,6 +316,7 @@ function Content({
                 <ConditionalItem
                   key={`${item.id || item.title}-${i}`}
                   item={item}
+                  currentPageId={currentPage.id}
                   setCurrentPageId={setCurrentPageId}
                 />
               ))}
@@ -334,6 +330,7 @@ function Content({
                     keywords: [],
                     Icon: LoaderIcon,
                   }}
+                  currentPageId={currentPage.id}
                   setCurrentPageId={() => null}
                   isPlaceholder={true}
                   disabled={true}
@@ -394,45 +391,52 @@ function Footer({
 function Input({
   useCommandPanelItems,
   currentPage,
-  allPageIds,
   placeholder,
   ref,
   scrollAreaRef,
 }: {
   useCommandPanelItems: TUseCommandPanelItems;
   currentPage: TCommandPanelPage;
-  allPageIds: string[];
   placeholder: string;
   ref: RefObject<HTMLInputElement | null>;
   scrollAreaRef: RefObject<HTMLDivElement | null>;
 }) {
-  const scrollId = useRef<NodeJS.Timeout | undefined>(undefined);
-  const [values, setValues] = useState(Object.fromEntries(allPageIds.map((id) => [id, ""])));
+  const setSearch = useCommandPanelStore((s) => s.setSearch);
+  const inputValues = useCommandPanelStore((s) => s.inputValues);
+  const setInputValue = useCommandPanelStore((s) => s.setInputValue);
 
   const { isPending } = useCommandPanelItems();
 
-  const { setSearch } = useCommandPanelState();
-  const debouncedSetSearch = useDebouncedCallback(setSearch, 300);
+  const scrollId = useRef<NodeJS.Timeout | undefined>(undefined);
+  const timeout = useRef<NodeJS.Timeout | null>(null);
+
+  const inputValue = inputValues[currentPage.id] || "";
+
+  useEffect(() => {
+    if (timeout.current) clearTimeout(timeout.current);
+    if (inputValue) {
+      timeout.current = setTimeout(() => {
+        setSearch(inputValue);
+      }, defaultDebounceMs);
+    } else {
+      setSearch(inputValue);
+    }
+    return () => {
+      if (timeout.current) clearTimeout(timeout.current);
+    };
+  }, [inputValue, setSearch, currentPage.usesAsyncSearch]);
 
   return (
     <CommandInput
       ref={ref}
       showSpinner={isPending}
-      value={values[currentPage.id]}
+      value={inputValue}
       onValueChange={(value) => {
-        setValues((prev) => ({ ...prev, [currentPage.id]: value }));
+        setInputValue(currentPage.id, value);
         clearTimeout(scrollId.current);
         scrollId.current = setTimeout(() => {
           scrollAreaRef.current?.scrollTo({ top: 0 });
         });
-        if (currentPage.usesAsyncSearch) {
-          if (value) {
-            debouncedSetSearch(value);
-          } else {
-            debouncedSetSearch(value);
-            setSearch(value);
-          }
-        }
       }}
       placeholder={placeholder}
     />
@@ -441,14 +445,16 @@ function Input({
 
 function ConditionalItem({
   item,
+  currentPageId,
   setCurrentPageId,
 }: {
   item: TCommandPanelItem;
+  currentPageId: string;
   setCurrentPageId: (id: string) => void;
 }) {
   const search = useCommandState((state) => state.search);
   if (!search) return null;
-  return <Item item={item} setCurrentPageId={setCurrentPageId} />;
+  return <Item item={item} currentPageId={currentPageId} setCurrentPageId={setCurrentPageId} />;
 }
 
 function Item({
@@ -457,23 +463,27 @@ function Item({
   isPlaceholder,
   disabled,
   fadeOnDisabled,
+  currentPageId,
 }: {
   item: TCommandPanelItem;
   setCurrentPageId: (id: string) => void;
   isPlaceholder?: boolean;
   disabled?: boolean;
   fadeOnDisabled?: boolean;
+  currentPageId: string;
 }) {
   const search = useCommandState((state) => state.search);
   const value = useCommandState((state) => state.value);
-  const { isPendingId } = useCommandPanelState();
+  const isPendingId = useCommandPanelStore((s) => s.isPendingId);
+  const clearInputValue = useCommandPanelStore((s) => s.clearInputValue);
 
   const onSelect = useCallback(() => {
     if (item.subpage) {
+      clearInputValue(currentPageId);
       setCurrentPageId(item.subpage.id);
     }
     item.onSelect?.({ isPendingId });
-  }, [item, setCurrentPageId, isPendingId]);
+  }, [item, setCurrentPageId, clearInputValue, currentPageId, isPendingId]);
 
   useHotkeys("arrowright", () => onSelect(), {
     enabled:
@@ -521,6 +531,7 @@ function Item({
           {item.title}
           {item.titleSuffix && <span className="text-muted-foreground">{item.titleSuffix}</span>}
         </p>
+        {item.ChipComponent && <item.ChipComponent className="ml-auto shrink-0" />}
       </div>
       {item.subpage && <ChevronRightIcon className="relative -mr-1.5 size-5 shrink-0" />}
     </CommandItem>

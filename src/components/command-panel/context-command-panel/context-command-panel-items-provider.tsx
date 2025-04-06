@@ -1,6 +1,6 @@
 "use client";
 
-import { useCommandPanelState } from "@/components/command-panel/command-panel-state-provider";
+import { useCommandPanelStore } from "@/components/command-panel/store/command-panel-store-provider";
 import {
   TCommandPanelItem,
   TCommandPanelPage,
@@ -28,7 +28,7 @@ export const ContextCommandPanelItemsProvider: React.FC<{
   idSuffix: string;
   children: ReactNode;
 }> = ({ teamId, projectId, page, idSuffix, context, children }) => {
-  const { search } = useCommandPanelState();
+  const search = useCommandPanelStore((s) => s.search);
 
   const { data, isError, isPending, error } = useQuery({
     queryKey: [

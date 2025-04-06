@@ -66,7 +66,8 @@
     "vaul": "^1.1.2",
     "virtua": "^0.40.0",
     "yaml": "^2.7.0",
-    "zod": "^3.24.1"
+    "zod": "^3.24.1",
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
