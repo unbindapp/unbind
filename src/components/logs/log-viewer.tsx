@@ -20,7 +20,7 @@ import SearchBar from "@/components/logs/search-bar";
 import NoItemsCard from "@/components/no-items-card";
 import { useServices } from "@/components/project/services-provider";
 import { TLogLineWithLevel, TLogType } from "@/server/trpc/api/logs/types";
-import { SearchIcon } from "lucide-react";
+import { LoaderIcon, SearchIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useThrottledCallback } from "use-debounce";
 import { VList, VListHandle } from "virtua";
@@ -32,6 +32,7 @@ type TBaseProps = {
   type: TLogType;
   teamId: string;
   projectId: string;
+  shouldHaveLogs?: boolean;
 } & TLogsStreamProps;
 
 type TProps = TBaseProps & (TEnvironmentLogsProps | TServiceLogsProps | TDeploymentLogsProps);
@@ -49,6 +50,7 @@ export default function LogViewer({
   start,
   end,
   since,
+  shouldHaveLogs,
 }: TProps) {
   const typeAndIds: TEnvironmentLogsProps | TServiceLogsProps | TDeploymentLogsProps =
     type === "service"
@@ -68,7 +70,7 @@ export default function LogViewer({
       <LogViewDropdownProvider>
         <LogViewStateProvider>
           <LogsProvider teamId={teamId} projectId={projectId} {...typeAndIds} {...streamProps}>
-            <Logs containerType={containerType} type={type} />
+            <Logs containerType={containerType} type={type} shouldHaveLogs={shouldHaveLogs} />
           </LogsProvider>
         </LogViewStateProvider>
       </LogViewDropdownProvider>
@@ -79,7 +81,15 @@ export default function LogViewer({
 const SCROLL_THRESHOLD = 50;
 const placeholderArray = Array.from({ length: 50 });
 
-function Logs({ containerType, type }: { containerType: "page" | "sheet"; type: TLogType }) {
+function Logs({
+  containerType,
+  type,
+  shouldHaveLogs,
+}: {
+  containerType: "page" | "sheet";
+  type: TLogType;
+  shouldHaveLogs?: boolean;
+}) {
   const { data, isPending, error } = useLogs();
   const logs: TLogLineWithLevel[] | undefined = useMemo(() => {
     if (!data) return undefined;
@@ -183,7 +193,7 @@ function Logs({ containerType, type }: { containerType: "page" | "sheet"; type: 
     if (!isPending && logs && logs.length === 0) {
       return (
         <div className="px-2 pt-2.5 pb-[calc(var(--safe-area-inset-bottom)+6.5rem)] font-sans group-data-[container=page]/wrapper:px-2 sm:px-2.5 group-data-[container=page]/wrapper:sm:px-2.5 group-data-[container=page]/wrapper:xl:px-[calc(0.625rem-((100vw-80rem)/2))]">
-          <NoLogsFound data-container={containerType} />
+          <NoLogsFound data-container={containerType} shouldHaveLogs={shouldHaveLogs} />
         </div>
       );
     }
@@ -217,7 +227,7 @@ function Logs({ containerType, type }: { containerType: "page" | "sheet"; type: 
         }
       />
     ));
-  }, [logs, servicesData, containerType, error, isPending, type]);
+  }, [logs, servicesData, containerType, error, isPending, type, shouldHaveLogs]);
 
   return (
     <LogViewStateProvider>
@@ -260,15 +270,27 @@ function Logs({ containerType, type }: { containerType: "page" | "sheet"; type: 
   );
 }
 
-function NoLogsFound() {
+function AnimatedLoaderIcon({ className }: { className?: string }) {
+  return <LoaderIcon className={className} />;
+}
+
+function NoLogsFound({ shouldHaveLogs }: { shouldHaveLogs?: boolean }) {
   const { search } = useLogViewState();
+
+  const Icon = useMemo(() => {
+    if (shouldHaveLogs) return AnimatedLoaderIcon;
+    return SearchIcon;
+  }, [shouldHaveLogs]);
+
   return (
-    <NoItemsCard Icon={SearchIcon}>
+    <NoItemsCard Icon={Icon}>
       <p className="w-full max-w-lg">
         {search ? (
           <>
             No matches for <span className="bg-border rounded px-1.5 font-medium">{search}</span>
           </>
+        ) : shouldHaveLogs ? (
+          <>Waiting for logs</>
         ) : (
           <>No logs found</>
         )}

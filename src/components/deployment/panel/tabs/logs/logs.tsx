@@ -35,6 +35,7 @@ export default function Logs({ deployment }: TProps) {
       deploymentId={deploymentId}
       type="deployment"
       hideServiceByDefault
+      shouldHaveLogs={deployment.status === "building" || deployment.status === "queued"}
       {...streamProps}
     />
   );
