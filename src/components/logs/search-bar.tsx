@@ -1,5 +1,6 @@
 import { useLogViewDropdown } from "@/components/logs/log-view-dropdown-provider";
 import {
+  logViewPreferenceKeys,
   logViewPreferences,
   useLogViewPreferences,
 } from "@/components/logs/log-view-preferences-provider";
@@ -18,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
+import { TLogType } from "@/server/trpc/api/logs/types";
 import {
   FilterIcon,
   LoaderIcon,
@@ -31,10 +33,11 @@ import { toast } from "sonner";
 
 type TProps = {
   isPendingLogs: boolean;
+  logType: TLogType;
   className?: string;
 };
 
-export default function SearchBar({ isPendingLogs, className }: TProps) {
+export default function SearchBar({ isPendingLogs, logType, className }: TProps) {
   const { search, setSearch } = useLogViewState();
   const [searchInputValue, setSearchInputValue] = useState(search);
 
@@ -87,14 +90,17 @@ export default function SearchBar({ isPendingLogs, className }: TProps) {
           >
             <FilterIcon className="size-5" />
           </Button>
-          <SettingsButton className="group/button relative h-auto w-10 rounded-l-none rounded-r-lg border-l" />
+          <SettingsButton
+            logType={logType}
+            className="group/button relative h-auto w-10 rounded-l-none rounded-r-lg border-l"
+          />
         </div>
       </form>
     </div>
   );
 }
 
-function SettingsButton({ className }: { className?: string }) {
+function SettingsButton({ logType, className }: { logType: TLogType; className?: string }) {
   const { preferences, setPreferences, isDefaultState, resetPreferences } = useLogViewPreferences();
   const [isDropdownOpen, setIsDropdownOpen] = useLogViewDropdown();
 
@@ -126,32 +132,36 @@ function SettingsButton({ className }: { className?: string }) {
               {index > 0 && <DropdownMenuSeparator />}
               <DropdownMenuLabel className="pb-0">{group.label}</DropdownMenuLabel>
               <DropdownMenuGroup title={group.label}>
-                {group.items.map((item) =>
-                  item.type === "checkbox" ? (
-                    <DropdownMenuCheckboxItem
-                      className="py-3.5 sm:py-2.25"
-                      checked={preferences.includes(item.value)}
-                      onCheckedChange={(checked) => {
-                        setPreferences((prevSettings) => {
-                          if (checked && prevSettings.includes(item.value)) {
-                            return prevSettings;
-                          }
-                          if (checked) {
-                            return [...prevSettings, item.value];
-                          }
-                          return prevSettings.filter((setting) => setting !== item.value);
-                        });
-                      }}
-                      key={item.value}
-                    >
-                      <p className="min-w-0 shrink">{item.label}</p>
-                    </DropdownMenuCheckboxItem>
-                  ) : (
-                    <DropdownMenuItem className="py-3.5 sm:py-2.25" key={item.value}>
-                      <p className="min-w-0 shrink">{item.label}</p>
-                    </DropdownMenuItem>
-                  ),
-                )}
+                {group.items
+                  .filter(
+                    (i) => i.value !== logViewPreferenceKeys.serviceId || logType !== "deployment",
+                  )
+                  .map((item) =>
+                    item.type === "checkbox" ? (
+                      <DropdownMenuCheckboxItem
+                        className="py-3.5 sm:py-2.25"
+                        checked={preferences.includes(item.value)}
+                        onCheckedChange={(checked) => {
+                          setPreferences((prevSettings) => {
+                            if (checked && prevSettings.includes(item.value)) {
+                              return prevSettings;
+                            }
+                            if (checked) {
+                              return [...prevSettings, item.value];
+                            }
+                            return prevSettings.filter((setting) => setting !== item.value);
+                          });
+                        }}
+                        key={item.value}
+                      >
+                        <p className="min-w-0 shrink">{item.label}</p>
+                      </DropdownMenuCheckboxItem>
+                    ) : (
+                      <DropdownMenuItem className="py-3.5 sm:py-2.25" key={item.value}>
+                        <p className="min-w-0 shrink">{item.label}</p>
+                      </DropdownMenuItem>
+                    ),
+                  )}
               </DropdownMenuGroup>
             </div>
           ))}

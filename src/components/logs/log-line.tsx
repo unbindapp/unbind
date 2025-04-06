@@ -4,12 +4,13 @@ import {
 } from "@/components/logs/log-view-preferences-provider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
-import { TLogLineWithLevel } from "@/server/trpc/api/logs/types";
+import { TLogLineWithLevel, TLogType } from "@/server/trpc/api/logs/types";
 import { format } from "date-fns";
 import { ComponentProps, ReactNode } from "react";
 
 type TProps = ComponentProps<"div"> & {
   classNameInner?: string;
+  type: TLogType;
 } & (
     | { logLine: TLogLineWithLevel; serviceName: string; isPlaceholder?: never }
     | { logLine?: never; serviceName?: never; isPlaceholder: true }
@@ -18,6 +19,7 @@ type TProps = ComponentProps<"div"> & {
 export default function LogLine({
   logLine,
   serviceName,
+  type,
   isPlaceholder,
   className,
   classNameInner,
@@ -74,16 +76,17 @@ export default function LogLine({
                           </p>
                         </div>
                       )}
-                      {viewPreferences.includes(logViewPreferenceKeys.serviceId) && (
-                        <div className="w-28 min-w-0 shrink overflow-hidden pr-4 pl-1">
-                          <p
-                            suppressHydrationWarning
-                            className="group-data-placeholder/line:bg-muted-foreground group-data-placeholder/line:animate-skeleton text-muted-foreground truncate leading-tight text-ellipsis whitespace-nowrap group-data-placeholder/line:rounded group-data-placeholder/line:text-transparent"
-                          >
-                            {isPlaceholder ? "Unbind" : serviceName}
-                          </p>
-                        </div>
-                      )}
+                      {type !== "deployment" &&
+                        viewPreferences.includes(logViewPreferenceKeys.serviceId) && (
+                          <div className="w-28 min-w-0 shrink overflow-hidden pr-4 pl-1">
+                            <p
+                              suppressHydrationWarning
+                              className="group-data-placeholder/line:bg-muted-foreground group-data-placeholder/line:animate-skeleton text-muted-foreground truncate leading-tight text-ellipsis whitespace-nowrap group-data-placeholder/line:rounded group-data-placeholder/line:text-transparent"
+                            >
+                              {isPlaceholder ? "Unbind" : serviceName}
+                            </p>
+                          </div>
+                        )}
                     </div>
                   </div>
                 </div>

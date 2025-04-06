@@ -68,7 +68,7 @@ export default function LogViewer({
       <LogViewDropdownProvider>
         <LogViewStateProvider>
           <LogsProvider teamId={teamId} projectId={projectId} {...typeAndIds} {...streamProps}>
-            <Logs containerType={containerType} />
+            <Logs containerType={containerType} type={type} />
           </LogsProvider>
         </LogViewStateProvider>
       </LogViewDropdownProvider>
@@ -79,7 +79,7 @@ export default function LogViewer({
 const SCROLL_THRESHOLD = 50;
 const placeholderArray = Array.from({ length: 50 });
 
-function Logs({ containerType }: { containerType: "page" | "sheet" }) {
+function Logs({ containerType, type }: { containerType: "page" | "sheet"; type: TLogType }) {
   const { data, isPending, error } = useLogs();
   const logs: TLogLineWithLevel[] | undefined = useMemo(() => {
     if (!data) return undefined;
@@ -191,6 +191,7 @@ function Logs({ containerType }: { containerType: "page" | "sheet" }) {
       return placeholderArray.map((_, index) => (
         <LogLine
           isPlaceholder
+          type={type}
           key={index}
           data-container={containerType}
           data-first={index === 0 ? true : undefined}
@@ -202,6 +203,7 @@ function Logs({ containerType }: { containerType: "page" | "sheet" }) {
     return logs.map((logLine, index) => (
       <LogLine
         key={index}
+        type={type}
         data-container={containerType}
         data-first={index === 0 ? true : undefined}
         data-last={index === logs.length - 1 ? true : undefined}
@@ -215,7 +217,7 @@ function Logs({ containerType }: { containerType: "page" | "sheet" }) {
         }
       />
     ));
-  }, [logs, servicesData, containerType, error, isPending]);
+  }, [logs, servicesData, containerType, error, isPending, type]);
 
   return (
     <LogViewStateProvider>
@@ -225,7 +227,11 @@ function Logs({ containerType }: { containerType: "page" | "sheet" }) {
       >
         {/* Top bar that has the input */}
         <div className="flex w-full items-stretch group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
-          <SearchBar isPendingLogs={isPending} className="px-2 pt-2 sm:px-2.5 sm:pt-2.5" />
+          <SearchBar
+            logType={type}
+            isPendingLogs={isPending}
+            className="px-2 pt-2 sm:px-2.5 sm:pt-2.5"
+          />
         </div>
         {/* List */}
         <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden">
