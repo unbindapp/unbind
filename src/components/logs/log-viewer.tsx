@@ -19,6 +19,7 @@ import NavigationBar from "@/components/logs/navigation-bar";
 import SearchBar from "@/components/logs/search-bar";
 import NoItemsCard from "@/components/no-items-card";
 import { useServices } from "@/components/project/services-provider";
+import { cn } from "@/components/ui/utils";
 import { TLogLineWithLevel, TLogType } from "@/server/trpc/api/logs/types";
 import { LoaderIcon, SearchIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -271,7 +272,7 @@ function Logs({
 }
 
 function AnimatedLoaderIcon({ className }: { className?: string }) {
-  return <LoaderIcon className={className} />;
+  return <LoaderIcon className={cn("animate-spin", className)} />;
 }
 
 function NoLogsFound({ shouldHaveLogs }: { shouldHaveLogs?: boolean }) {
