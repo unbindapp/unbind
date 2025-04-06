@@ -1,18 +1,14 @@
 import { useDeploymentPanel } from "@/components/deployment/panel/deployment-panel-provider";
+import DeploymentStatusChip, {
+  getDeploymentStatusChipColor,
+} from "@/components/deployment/status-chip";
 import BrandIcon from "@/components/icons/brand";
-import BroomIcon from "@/components/icons/broom";
 import DeploymentTime from "@/components/service/panel/tabs/deployments/deployment-time";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
-import {
-  CircleCheckIcon,
-  EllipsisVerticalIcon,
-  LoaderIcon,
-  TriangleAlertIcon,
-  XIcon,
-} from "lucide-react";
-import { HTMLAttributes, useMemo } from "react";
+import { EllipsisVerticalIcon, LoaderIcon } from "lucide-react";
+import { HTMLAttributes } from "react";
 
 type TProps = HTMLAttributes<HTMLDivElement> &
   (
@@ -39,52 +35,25 @@ export default function DeploymentCard({
   const LoaderWithSpin = ({ className }: { className?: string }) => (
     <LoaderIcon className={cn("animate-spin", className)} />
   );
-  const Icon = useMemo(() => {
-    if (isPlaceholder) return LoaderWithSpin;
-    if (deployment.status === "building" || deployment.status === "queued") return LoaderWithSpin;
-    if (
-      deployment.status === "succeeded" &&
-      currentDeployment &&
-      deployment.id === currentDeployment.id
-    )
-      return CircleCheckIcon;
-    if (deployment.status === "failed") return TriangleAlertIcon;
-    if (deployment.status === "cancelled") return XIcon;
-    return BroomIcon;
-  }, [isPlaceholder, deployment?.status, deployment?.id, currentDeployment]);
-
   const { openPanel } = useDeploymentPanel();
 
   return (
     <div
       {...rest}
-      data-color={getColor({ deployment, isPlaceholder, currentDeployment })}
+      data-color={getDeploymentStatusChipColor({ deployment, isPlaceholder, currentDeployment })}
       data-placeholder={isPlaceholder ? true : undefined}
       className="group/card relative flex w-full flex-row items-stretch rounded-xl"
     >
       <button
         onClick={deployment ? () => openPanel(deployment.id) : undefined}
-        className="has-hover:group-hover/card:bg-border/50 has-hover:group-hover/card:group-data-[color=destructive]/card:bg-destructive/8 has-hover:group-hover/card:group-data-[color=process]/card:bg-process/8 has-hover:group-hover/card:group-data-[color=success]/card:bg-success/8 has-hover:hover:bg-border/50 has-hover:hover:group-data-[color=destructive]/card:bg-destructive/8 has-hover:hover:group-data-[color=process]/card:bg-process/8 has-hover:hover:group-data-[color=success]/card:bg-success/8 focus-within:bg-border/50 focus-within:group-data-[color=success]/card:bg-success/8 focus-within:group-data-[color=destructive]/card:bg-destructive/8 focus-within:group-data-[color=process]/card:bg-process/8 focus-visible:bg-border/50 focus-visible:group-data-[color=process]/card:bg-process/8 focus-visible:group-data-[color=destructive]/card:bg-destructive/8 focus-visible:hover:group-data-[color=success]/card:bg-success/8 group-data-[color=destructive]/card:bg-destructive/4 group-data-[color=process]/card:bg-process/4 group-data-[color=success]/card:bg-success/4 active:bg-border/50 active:group-data-[color=destructive]/card:bg-destructive/8 active:group-data-[color=process]/card:bg-process/8 active:hover:group-data-[color=success]/card:bg-success/8 group-data-[color=destructive]/card:border-destructive/20 group-data-[color=process]/card:border-process/20 group-data-[color=success]/card:border-success/20 focus-visible:ring-offset-background focus-visible:ring-primary/50 flex min-w-0 flex-1 flex-col rounded-xl border px-3.5 py-3 text-left focus-visible:ring-1 focus-visible:ring-offset-2 focus-visible:outline-hidden sm:flex-row sm:items-center sm:py-3.5 sm:pr-13 sm:pl-4"
+        className="has-hover:group-hover/card:bg-border/50 has-hover:group-hover/card:group-data-[color=destructive]/card:bg-destructive/8 has-hover:group-hover/card:group-data-[color=process]/card:bg-process/8 has-hover:group-hover/card:group-data-[color=success]/card:bg-success/8 has-hover:hover:bg-border/50 has-hover:hover:group-data-[color=destructive]/card:bg-destructive/8 has-hover:hover:group-data-[color=process]/card:bg-process/8 has-hover:hover:group-data-[color=success]/card:bg-success/8 focus-within:bg-border/50 focus-within:group-data-[color=success]/card:bg-success/8 focus-within:group-data-[color=destructive]/card:bg-destructive/8 focus-within:group-data-[color=process]/card:bg-process/8 focus-visible:bg-border/50 focus-visible:group-data-[color=process]/card:bg-process/8 focus-visible:group-data-[color=destructive]/card:bg-destructive/8 focus-visible:hover:group-data-[color=success]/card:bg-success/8 group-data-[color=destructive]/card:bg-destructive/4 group-data-[color=process]/card:bg-process/4 group-data-[color=success]/card:bg-success/4 active:bg-border/50 active:group-data-[color=destructive]/card:bg-destructive/8 active:group-data-[color=process]/card:bg-process/8 active:group-data-[color=success]/card:bg-success/8 group-data-[color=destructive]/card:border-destructive/20 group-data-[color=process]/card:border-process/20 group-data-[color=success]/card:border-success/20 focus-visible:ring-offset-background focus-visible:ring-primary/50 flex min-w-0 flex-1 flex-col rounded-xl border px-3.5 py-3 text-left focus-visible:ring-1 focus-visible:ring-offset-2 focus-visible:outline-hidden sm:flex-row sm:items-center sm:py-3.5 sm:pr-13 sm:pl-4"
       >
         <div className="flex shrink-0 items-center justify-start pr-8 sm:w-34 sm:pr-3">
-          <div className="bg-foreground/8 text-muted-foreground group-data-[color=destructive]/card:bg-destructive/12 group-data-[color=destructive]/card:text-destructive group-data-[color=process]/card:bg-process/12 group-data-[color=process]/card:text-process group-data-[color=success]/card:bg-success/12 group-data-[color=success]/card:text-success group-data-placeholder/card:bg-muted-more-foreground group-data-placeholder/card:animate-skeleton flex min-w-0 shrink items-center justify-start gap-1.5 rounded-md px-2 py-1.25 text-sm font-medium group-data-placeholder/card:text-transparent">
-            <Icon className="-ml-0.25 size-3.5 shrink-0" />
-            <p className="min-w-0 shrink leading-tight">
-              {isPlaceholder
-                ? "LOADING"
-                : deployment.status === "building" || deployment.status === "queued"
-                  ? "BUILDING"
-                  : deployment.status === "succeeded" &&
-                      currentDeployment &&
-                      deployment.id === currentDeployment.id
-                    ? "ACTIVE"
-                    : deployment.status === "failed"
-                      ? "FAILED"
-                      : deployment.status === "cancelled"
-                        ? "CANCELLED"
-                        : "REMOVED"}
-            </p>
-          </div>
+          <DeploymentStatusChip
+            deployment={deployment}
+            currentDeployment={currentDeployment}
+            isPlaceholder={isPlaceholder}
+          />
         </div>
         <div className="mt-2 flex shrink-0 flex-col items-start justify-center sm:mt-0">
           <BrandIcon
@@ -124,35 +93,4 @@ export default function DeploymentCard({
       </Button>
     </div>
   );
-}
-
-function getColor({
-  deployment,
-  isPlaceholder,
-  currentDeployment,
-}: {
-  deployment?: TDeploymentShallow;
-  isPlaceholder?: boolean;
-  currentDeployment?: TDeploymentShallow;
-}) {
-  if (isPlaceholder || !deployment) {
-    return "default";
-  } else {
-    switch (deployment.status) {
-      case "queued":
-        return "process";
-      case "building":
-        return "process";
-      case "failed":
-        return "destructive";
-      case "cancelled":
-        return "default";
-      case "succeeded":
-        if (currentDeployment && deployment && currentDeployment.id === deployment.id)
-          return "success";
-        return "default";
-      default:
-        return "default";
-    }
-  }
 }

@@ -138,7 +138,7 @@
   --warning-foreground: hsl(120 9% 6%);
   --success: hsl(120 50% 65%);
   --success-foreground: hsl(120 9% 6%);
-  --process: hsl(220 50% 65%);
+  --process: hsl(220 100% 70%);
   --process-foreground: hsl(120 9% 6%);
   --shadow: hsl(120 11% 3%);
   --border: hsl(120 5% 12%);

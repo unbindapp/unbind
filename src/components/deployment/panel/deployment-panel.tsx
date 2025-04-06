@@ -4,8 +4,8 @@ import { DeploymentPanelContent } from "@/components/deployment/panel/deployment
 import { useDeploymentPanel } from "@/components/deployment/panel/deployment-panel-provider";
 import Info from "@/components/deployment/panel/tabs/info/info";
 import Logs from "@/components/deployment/panel/tabs/logs/logs";
+import DeploymentStatusChip from "@/components/deployment/status-chip";
 import AnimatedTimerIcon from "@/components/icons/animated-timer";
-import BroomIcon from "@/components/icons/broom";
 import { useDeviceSize } from "@/components/providers/device-size-provider";
 import { useTime } from "@/components/providers/time-provider";
 import ServiceIcon from "@/components/service/service-icon";
@@ -21,8 +21,8 @@ import {
 import { getDurationStr } from "@/lib/hooks/use-time-difference";
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
-import { CircleCheckIcon, LoaderIcon, TriangleAlertIcon, XIcon } from "lucide-react";
-import { FC, ReactNode, useMemo } from "react";
+import { XIcon } from "lucide-react";
+import { FC, ReactNode } from "react";
 
 export type TDeploymentPanelTab = {
   title: string;
@@ -85,29 +85,6 @@ export default function DeploymentPanel({ service }: TProps) {
   const status = currentDeployment?.status;
   const id = currentDeployment?.id;
 
-  const Icon = useMemo(() => {
-    if (!status) return null;
-    const sharedClassName = "size-4.5 sm:size-5 shrink-0 -my-1";
-
-    if (status === "building" || status === "queued") {
-      return <LoaderIcon className={`${sharedClassName} animate-spin`} />;
-    }
-
-    if (
-      status === "succeeded" &&
-      currentDeploymentOfService &&
-      id === currentDeploymentOfService.id
-    ) {
-      return <CircleCheckIcon className={`${sharedClassName}`} />;
-    }
-
-    if (status === "failed") {
-      return <TriangleAlertIcon className={`${sharedClassName}`} />;
-    }
-
-    return <BroomIcon className={`${sharedClassName}`} />;
-  }, [status, id, currentDeploymentOfService]);
-
   return (
     <Drawer
       open={open}
@@ -146,11 +123,17 @@ export default function DeploymentPanel({ service }: TProps) {
                     </p>
                   </div>
                   <div className="text-foreground group-data-[status=failed]/content:text-destructive group-data-last-successful/content:group-data-[status=succeeded]/content:text-success group-data-[status=building]/content:text-process group-data-[status=queued]/content:text-process flex w-full items-center justify-start gap-1.5 text-left text-xl leading-tight font-semibold sm:text-2xl">
-                    {Icon}
                     <p className="min-w-0 shrink truncate pr-0.75">
                       {currentDeployment.id.slice(0, 6)}
                     </p>
-                    {(status === "building" || status === "queued") && (
+                    <DeploymentStatusChip
+                      className="shrink-0 px-1.75 py-0.75"
+                      deployment={currentDeployment}
+                      currentDeployment={currentDeploymentOfService || undefined}
+                      isPlaceholder={false}
+                    />
+                    {(currentDeployment.status === "building" ||
+                      currentDeployment.status === "queued") && (
                       <DeploymentProgress deployment={currentDeployment} />
                     )}
                   </div>
@@ -187,8 +170,8 @@ function DeploymentProgress({ deployment }: { deployment: TDeploymentShallow }) 
     start: new Date(deployment.created_at).getTime(),
   });
   return (
-    <div className="text-foreground bg-border flex shrink-0 items-center justify-start gap-1.25 rounded-sm px-2 py-0.75 font-mono text-sm font-medium sm:rounded-md sm:text-base">
-      <AnimatedTimerIcon animate={true} className="-my-1 -ml-0.75 size-3.5 sm:size-4" />
+    <div className="text-foreground bg-border flex shrink-0 items-center justify-start gap-1.25 rounded-md px-1.75 py-0.75 font-mono text-sm font-medium">
+      <AnimatedTimerIcon animate={true} className="-ml-0.5 size-3.5 sm:size-4" />
       <p className="min-w-0 shrink leading-tight">{durationStr}</p>
     </div>
   );
