@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
 import { EllipsisVerticalIcon } from "lucide-react";
 import { HTMLAttributes } from "react";
-//
 
 type TProps = HTMLAttributes<HTMLDivElement> &
   (
