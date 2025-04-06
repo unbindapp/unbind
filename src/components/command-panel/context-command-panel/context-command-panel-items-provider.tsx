@@ -1,5 +1,6 @@
 "use client";
 
+import { useCommandPanelState } from "@/components/command-panel/command-panel-state-provider";
 import {
   TCommandPanelItem,
   TCommandPanelPage,
@@ -27,9 +28,19 @@ export const ContextCommandPanelItemsProvider: React.FC<{
   idSuffix: string;
   children: ReactNode;
 }> = ({ teamId, projectId, page, idSuffix, context, children }) => {
+  const { search } = useCommandPanelState();
+
   const { data, isError, isPending, error } = useQuery({
-    queryKey: ["context-aware-command-panel-items", teamId, projectId, page.id, idSuffix, context],
-    queryFn: page.items ? () => page.items : () => page.getItems({ teamId, projectId }),
+    queryKey: [
+      "context-aware-command-panel-items",
+      teamId,
+      projectId,
+      page.id,
+      idSuffix,
+      context,
+      search,
+    ],
+    queryFn: page.items ? () => page.items : () => page.getItems({ teamId, projectId, search }),
     enabled: page.items ? false : true,
   });
 

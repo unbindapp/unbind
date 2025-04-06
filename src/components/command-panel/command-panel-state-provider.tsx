@@ -13,6 +13,8 @@ import {
 type TCommandPanelStateContext = {
   isPendingId: string | null;
   setIsPendingId: Dispatch<SetStateAction<string | null>>;
+  search: string;
+  setSearch: Dispatch<SetStateAction<string>>;
 };
 
 const CommandPanelStateContext = createContext<TCommandPanelStateContext | null>(null);
@@ -21,14 +23,17 @@ export const CommandPanelStateProvider: React.FC<{
   children: ReactNode;
   isPendingId?: string | null;
 }> = ({ isPendingId: isPendingIdProp, children }) => {
+  const [search, setSearch] = useState("");
   const [isPendingId, setIsPendingId] = useState(isPendingIdProp || null);
 
   const value: TCommandPanelStateContext = useMemo(
     () => ({
       isPendingId,
       setIsPendingId,
+      search,
+      setSearch,
     }),
-    [isPendingId],
+    [isPendingId, search],
   );
 
   return (

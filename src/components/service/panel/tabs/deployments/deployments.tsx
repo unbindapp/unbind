@@ -3,13 +3,13 @@
 import DeploymentPanel from "@/components/deployment/panel/deployment-panel";
 import DeploymentPanelProvider from "@/components/deployment/panel/deployment-panel-provider";
 import ErrorCard from "@/components/error-card";
+import TabWrapper from "@/components/navigation/tab-wrapper";
 import NoItemsCard from "@/components/no-items-card";
 import { useDeployments } from "@/components/service/deployments-provider";
 import DeploymentCard from "@/components/service/panel/tabs/deployments/deployment-card";
-import TabWrapper from "@/components/navigation/tab-wrapper";
 import { useService } from "@/components/service/service-provider";
-import { RocketIcon } from "lucide-react";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
+import { HistoryIcon, RocketIcon } from "lucide-react";
 
 export default function Deployments({ service }: { service: TServiceShallow }) {
   const {
@@ -54,19 +54,28 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
           </h3>
         </div>
         {hasData && deploymentsData?.deployments && deploymentsData.deployments.length > 0 && (
-          <ol className="flex w-full flex-col gap-2">
-            {deploymentsData.deployments
-              .filter((d) => (currentDeployment ? currentDeployment.id !== d.id : true))
-              .map((deployment) => (
-                <li className="w-full" key={deployment.id}>
-                  <DeploymentCard
-                    key={deployment.id}
-                    deployment={deployment}
-                    currentDeployment={currentDeployment}
-                  />
-                </li>
-              ))}
-          </ol>
+          <>
+            {deploymentsData.deployments.filter((d) =>
+              currentDeployment ? currentDeployment.id !== d.id : true,
+            ).length > 0 && (
+              <ol className="flex w-full flex-col gap-2">
+                {deploymentsData.deployments
+                  .filter((d) => (currentDeployment ? currentDeployment.id !== d.id : true))
+                  .map((deployment) => (
+                    <li className="w-full" key={deployment.id}>
+                      <DeploymentCard
+                        key={deployment.id}
+                        deployment={deployment}
+                        currentDeployment={currentDeployment}
+                      />
+                    </li>
+                  ))}
+              </ol>
+            )}
+            {deploymentsData.deployments.filter((d) =>
+              currentDeployment ? currentDeployment.id !== d.id : true,
+            ).length === 0 && <NoItemsCard Icon={HistoryIcon}>No history yet</NoItemsCard>}
+          </>
         )}
         {hasData && deploymentsData?.deployments && deploymentsData.deployments.length === 0 && (
           <NoItemsCard

@@ -37,6 +37,7 @@ import { useCommandState } from "cmdk";
 import { ChevronLeftIcon, ChevronRightIcon, LoaderIcon } from "lucide-react";
 import { ReactNode, RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useDebouncedCallback } from "use-debounce";
 
 type TProps = {
   open: boolean;
@@ -239,14 +240,19 @@ function CommandPanel({
   useEffect(() => {
     if (isTouchscreen) return;
     if (isPending) return;
-    const value = getFirstCommandListItem(scrollAreaRef);
-    if (value) setValue(value);
+    const timeout = setTimeout(() => {
+      const value = getFirstCommandListItem(scrollAreaRef);
+      if (value) setValue(value);
+    });
+    return () => {
+      clearTimeout(timeout);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, isPending]);
 
   return (
     <Command
-      filter={isPending || isError ? () => 1 : undefined}
+      filter={isPending || isError || currentPage.usesAsyncSearch ? () => 1 : undefined}
       value={value}
       onValueChange={setValue}
       {...commandVariantOptions}
@@ -405,6 +411,9 @@ function Input({
 
   const { isPending } = useCommandPanelItems();
 
+  const { setSearch } = useCommandPanelState();
+  const debouncedSetSearch = useDebouncedCallback(setSearch, 300);
+
   return (
     <CommandInput
       ref={ref}
@@ -416,6 +425,14 @@ function Input({
         scrollId.current = setTimeout(() => {
           scrollAreaRef.current?.scrollTo({ top: 0 });
         });
+        if (currentPage.usesAsyncSearch) {
+          if (value) {
+            debouncedSetSearch(value);
+          } else {
+            debouncedSetSearch(value);
+            setSearch(value);
+          }
+        }
       }}
       placeholder={placeholder}
     />

@@ -1,22 +1,24 @@
 import { FC } from "react";
 
+type TGetItemsFunction = (params: {
+  teamId: string;
+  projectId: string;
+  search?: string;
+}) => Promise<TCommandPanelItem[]>;
+
 export type TCommandPanelPage = {
   title: string;
   id: string;
   parentPageId: string | null;
   inputPlaceholder: string;
 } & (
-  | { items: TCommandPanelItem[]; getItems?: never }
+  | { items: TCommandPanelItem[]; getItems?: never; usesAsyncSearch?: never }
   | {
-      getItems: ({
-        teamId,
-        projectId,
-      }: {
-        teamId: string;
-        projectId: string;
-      }) => Promise<TCommandPanelItem[]>;
       items?: never;
+      getItems: TGetItemsFunction;
+      usesAsyncSearch?: never;
     }
+  | { usesAsyncSearch: boolean; getItems: TGetItemsFunction; items?: never }
 );
 
 export type TCommandPanelItem = {

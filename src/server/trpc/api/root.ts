@@ -13,6 +13,7 @@ import { gitRouter } from "@/server/trpc/api/git/router";
 import { deploymentsRouter } from "@/server/trpc/api/deployments/router";
 import { logsRouter } from "@/server/trpc/api/logs/router";
 import { metricsRouter } from "@/server/trpc/api/metrics/router";
+import { dockerRouter } from "@/server/trpc/api/docker/router";
 
 /**
  * This is the primary router for your server.
@@ -30,6 +31,7 @@ export const appRouter = createTRPCRouter({
   metrics: metricsRouter,
   github: githubRouter,
   git: gitRouter,
+  docker: dockerRouter,
 });
 
 // export type definition of API

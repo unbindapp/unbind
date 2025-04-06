@@ -16,7 +16,7 @@ import { defaultAnimationMs } from "@/lib/constants";
 import { ReactNode, useMemo, useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
-type Props = {
+type TProps = {
   context: TContextCommandPanelContext;
   children?: ReactNode;
   idSuffix: string;
@@ -24,7 +24,7 @@ type Props = {
   description: string;
 };
 
-export default function ContextCommandPanel(props: Props) {
+export default function ContextCommandPanel(props: TProps) {
   return (
     <CommandPanelStateProvider>
       <ContextCommandPanel_ {...props} />
@@ -32,7 +32,7 @@ export default function ContextCommandPanel(props: Props) {
   );
 }
 
-function ContextCommandPanel_({ context, idSuffix, title, description, children }: Props) {
+function ContextCommandPanel_({ context, idSuffix, title, description, children }: TProps) {
   const { panelId, setPanelPageId, setPanelId } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
   });
