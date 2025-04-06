@@ -4,7 +4,9 @@ import { DeploymentPanelContent } from "@/components/deployment/panel/deployment
 import { useDeploymentPanel } from "@/components/deployment/panel/deployment-panel-provider";
 import Info from "@/components/deployment/panel/tabs/info/info";
 import Logs from "@/components/deployment/panel/tabs/logs/logs";
-import DeploymentStatusChip from "@/components/deployment/status-chip";
+import DeploymentStatusChip, {
+  getDeploymentStatusChipColor,
+} from "@/components/deployment/status-chip";
 import AnimatedTimerIcon from "@/components/icons/animated-timer";
 import { useDeviceSize } from "@/components/providers/device-size-provider";
 import { useTime } from "@/components/providers/time-provider";
@@ -82,9 +84,6 @@ export default function DeploymentPanel({ service }: TProps) {
   };
   const { isExtraSmall } = useDeviceSize();
 
-  const status = currentDeployment?.status;
-  const id = currentDeployment?.id;
-
   return (
     <Drawer
       open={open}
@@ -95,9 +94,14 @@ export default function DeploymentPanel({ service }: TProps) {
       <DrawerContent
         transparentOverlay
         hasHandle={isExtraSmall}
-        data-status={status}
-        data-last-successful={currentDeploymentOfService?.id === id ? true : undefined}
-        data-building={status === "building" || status === "queued" ? true : undefined}
+        data-color={
+          currentDeployment && currentDeploymentOfService
+            ? getDeploymentStatusChipColor({
+                deployment: currentDeployment,
+                currentDeployment: currentDeploymentOfService,
+              })
+            : "default"
+        }
         className="group/content flex h-[calc(100%-1.3rem)] w-full flex-col sm:top-0 sm:right-0 sm:my-0 sm:ml-auto sm:h-full sm:w-256 sm:max-w-[calc(100%-4rem)] sm:rounded-l-2xl sm:rounded-r-none"
       >
         {currentDeployment && (
@@ -122,7 +126,7 @@ export default function DeploymentPanel({ service }: TProps) {
                       Deployment
                     </p>
                   </div>
-                  <div className="text-foreground group-data-[status=failed]/content:text-destructive group-data-last-successful/content:group-data-[status=succeeded]/content:text-success group-data-[status=building]/content:text-process group-data-[status=queued]/content:text-process flex w-full items-center justify-start gap-1.5 text-left text-xl leading-tight font-semibold sm:text-2xl">
+                  <div className="text-foreground group-data-[color=destructive]/content:text-destructive group-data-[color=success]/content:text-success group-data-[color=process]/content:text-process group-data-[color=warning]/content:text-warning flex w-full items-center justify-start gap-1.5 text-left text-xl leading-tight font-semibold sm:text-2xl">
                     <p className="min-w-0 shrink truncate pr-1">
                       {currentDeployment.id.slice(0, 6)}
                     </p>

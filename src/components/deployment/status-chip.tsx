@@ -42,7 +42,7 @@ export default function DeploymentStatusChip({
       data-placeholder={isPlaceholder ? true : undefined}
       data-color={getDeploymentStatusChipColor({ deployment, currentDeployment, isPlaceholder })}
       className={cn(
-        "bg-foreground/8 text-muted-foreground data-[color=destructive]:bg-destructive/12 data-[color=destructive]:text-destructive data-[color=process]:bg-process/12 data-[color=process]:text-process data-[color=success]:bg-success/12 data-[color=success]:text-success data-placeholder:bg-muted-more-foreground data-placeholder:animate-skeleton flex min-w-0 shrink items-center justify-start gap-1.5 rounded-md px-2 py-1.25 text-sm font-medium data-placeholder:text-transparent",
+        "bg-foreground/8 text-muted-foreground data-[color=warning]:bg-warning/12 data-[color=destructive]:bg-destructive/12 data-[color=destructive]:text-destructive data-[color=warning]:text-warning data-[color=process]:bg-process/12 data-[color=process]:text-process data-[color=success]:bg-success/12 data-[color=success]:text-success data-placeholder:bg-muted-more-foreground data-placeholder:animate-skeleton flex min-w-0 shrink items-center justify-start gap-1.5 rounded-md px-2 py-1.25 text-sm font-medium data-placeholder:text-transparent",
         className,
       )}
     >
@@ -62,7 +62,7 @@ export function getDeploymentStatusChipColor({
   currentDeployment?: TDeploymentShallow;
 }) {
   if (isPlaceholder || !deployment) return "default";
-  if (deployment.status === "queued") return "process";
+  if (deployment.status === "queued") return "warning";
   if (deployment.status === "building") return "process";
   if (deployment.status === "failed") return "destructive";
   if (deployment.status === "cancelled") return "default";
