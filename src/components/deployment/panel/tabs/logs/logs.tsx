@@ -14,8 +14,8 @@ export default function Logs({ deployment }: TProps) {
   const createdAt = deployment.created_at;
   const completedAt = deployment.completed_at;
 
-  const createdAtTimestamp = createdAt ? new Date(createdAt).getTime() : null;
-  const completedAtTimestamp = completedAt ? new Date(completedAt).getTime() : null;
+  const createdAtTimestamp = createdAt ? new Date(createdAt).getTime() : undefined;
+  const completedAtTimestamp = completedAt ? new Date(completedAt).getTime() : undefined;
 
   return (
     <LogViewer
@@ -28,10 +28,8 @@ export default function Logs({ deployment }: TProps) {
       type="deployment"
       hideServiceByDefault
       shouldHaveLogs={deployment.status === "building" || deployment.status === "queued"}
-      httpDefaultEndTimestamp={completedAtTimestamp ? completedAtTimestamp + hourInMs : undefined}
-      httpDefaultStartTimestamp={
-        createdAtTimestamp ? createdAtTimestamp - hourInMs : Date.now() - hourInMs * 24
-      }
+      httpDefaultEndTimestamp={completedAtTimestamp}
+      httpDefaultStartTimestamp={createdAtTimestamp}
     />
   );
 }
