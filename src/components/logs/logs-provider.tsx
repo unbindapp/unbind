@@ -29,7 +29,8 @@ type TBaseProps = {
   teamId: string;
   projectId: string;
   type: TLogType;
-  hardEndOfLogsTimestamp?: number;
+  httpDefaultStartTimestamp?: number;
+  httpDefaultEndTimestamp?: number;
 };
 
 export type TEnvironmentLogsProps = {
@@ -62,12 +63,16 @@ export const LogsProvider: React.FC<TProps> = ({
   environmentId,
   serviceId,
   deploymentId,
-  hardEndOfLogsTimestamp,
+  httpDefaultStartTimestamp,
+  httpDefaultEndTimestamp,
   children,
 }) => {
   const { data: session } = useSession();
   const { search } = useLogViewState();
-  const [end] = useState(new Date(hardEndOfLogsTimestamp || Date.now()).toISOString());
+  const [start] = useState(
+    new Date(httpDefaultStartTimestamp || Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+  );
+  const [end] = useState(new Date(httpDefaultEndTimestamp || Date.now()).toISOString());
 
   const filtersStr = createSearchFilter(search);
   const limit = 1000;
@@ -85,6 +90,7 @@ export const LogsProvider: React.FC<TProps> = ({
     deploymentId,
     filters: filtersStr,
     limit,
+    start,
     end,
   });
 
@@ -121,7 +127,7 @@ export const LogsProvider: React.FC<TProps> = ({
     enabled: !!session,
     queryKey: ["logs-stream", sseUrl],
     queryFn: async () => {
-      if (hardEndOfLogsTimestamp) {
+      if (httpDefaultEndTimestamp) {
         console.log("Stream is disabled");
         return [];
       } else {
