@@ -20,6 +20,8 @@ const LogsContext = createContext<TLogsContext | null>(null);
 export const MessageSchema = z.object({ logs: LogEventSchema.array() }).strip();
 export type TMessage = z.infer<typeof MessageSchema>;
 
+//
+
 type TBaseProps = {
   children: ReactNode;
   teamId: string;
