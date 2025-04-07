@@ -37,6 +37,7 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
           <div className="w-full pb-3">
             {serviceData && currentDeployment ? (
               <DeploymentCard
+                service={service}
                 deployment={currentDeployment}
                 currentDeployment={currentDeployment}
               />
@@ -64,6 +65,7 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
                   .map((deployment) => (
                     <li className="w-full" key={deployment.id}>
                       <DeploymentCard
+                        service={service}
                         key={deployment.id}
                         deployment={deployment}
                         currentDeployment={currentDeployment}

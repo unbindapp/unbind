@@ -3,6 +3,7 @@ import { useTime } from "@/components/providers/time-provider";
 import { cn } from "@/components/ui/utils";
 import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
+import { TServiceShallow } from "@/server/trpc/api/services/types";
 import Image from "next/image";
 
 type TProps = {
@@ -10,17 +11,19 @@ type TProps = {
 } & (
   | {
       deployment: TDeploymentShallow;
+      service: TServiceShallow;
       isPlaceholder?: never;
     }
   | {
       deployment?: never;
+      service?: never;
       isPlaceholder: true;
     }
 );
 
-export default function DeploymentTime({ deployment, isPlaceholder, className }: TProps) {
+export default function DeploymentTime({ deployment, service, isPlaceholder, className }: TProps) {
   const { now } = useTime();
-  const { str } = useTimeDifference({
+  const { str: deploymentTimeStr } = useTimeDifference({
     timestamp: isPlaceholder ? Date.now() : new Date(deployment.created_at).getTime(),
   });
 
@@ -33,6 +36,12 @@ export default function DeploymentTime({ deployment, isPlaceholder, className }:
         ? getDurationStr({ end: now, start: deployment.created_at })
         : undefined;
 
+  const typeStr = isPlaceholder
+    ? "github"
+    : service.config.type === "docker-image"
+      ? "Docker image"
+      : "GitHub";
+
   const isBuilding = deployment?.status === "building" || deployment?.status === "queued";
 
   return (
@@ -42,7 +51,7 @@ export default function DeploymentTime({ deployment, isPlaceholder, className }:
     >
       {isPlaceholder ? (
         <div className="bg-muted-foreground animate-skeleton size-4.5 rounded-full" />
-      ) : deployment?.commit_author ? (
+      ) : deployment?.commit_author?.avatar_url ? (
         <Image
           alt="Avatar"
           width={24}
@@ -57,7 +66,7 @@ export default function DeploymentTime({ deployment, isPlaceholder, className }:
         {!isBuilding && (
           <>
             <p className="text-muted-foreground group-data-placeholder/time:bg-muted-foreground group-data-placeholder/time:animate-skeleton min-w-0 shrink group-data-placeholder/time:rounded-md group-data-placeholder/time:text-transparent">
-              {isPlaceholder ? "1 hr. ago | 90s" : str}
+              {isPlaceholder ? "1 hr. ago | 90s" : `${deploymentTimeStr} via ${typeStr}`}
             </p>
             {durationStr && <p className="text-muted-more-foreground">|</p>}
           </>

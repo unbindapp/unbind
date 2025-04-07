@@ -6,6 +6,7 @@ import BrandIcon from "@/components/icons/brand";
 import DeploymentTime from "@/components/service/panel/tabs/deployments/deployment-time";
 import { Button } from "@/components/ui/button";
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
+import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { EllipsisVerticalIcon } from "lucide-react";
 import { HTMLAttributes } from "react";
 
@@ -13,14 +14,16 @@ type TProps = HTMLAttributes<HTMLDivElement> &
   (
     | {
         deployment: TDeploymentShallow;
+        service: TServiceShallow;
         currentDeployment: TDeploymentShallow | undefined;
         isPlaceholder?: never;
         withCurrentTag?: boolean;
       }
     | {
-        isPlaceholder: true;
-        currentDeployment?: never;
         deployment?: never;
+        service?: never;
+        currentDeployment?: never;
+        isPlaceholder: true;
         withCurrentTag?: never;
       }
   );
@@ -28,10 +31,13 @@ type TProps = HTMLAttributes<HTMLDivElement> &
 export default function DeploymentCard({
   deployment,
   currentDeployment,
+  service,
   isPlaceholder,
   ...rest
 }: TProps) {
   const { openPanel } = useDeploymentPanel();
+
+  const title = getTitle(deployment, service, isPlaceholder);
 
   return (
     <div
@@ -53,26 +59,32 @@ export default function DeploymentCard({
         </div>
         <div className="mt-2 flex shrink-0 flex-col items-start justify-center sm:mt-0">
           <BrandIcon
-            brand={isPlaceholder ? "github" : /* deployment.source */ "github"}
+            brand={
+              isPlaceholder
+                ? "github"
+                : service.config.type === "docker-image"
+                  ? "docker"
+                  : "github"
+            }
             color="brand"
             className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton size-6 group-data-placeholder/card:rounded-full group-data-placeholder/card:text-transparent"
           />
         </div>
         <div className="mt-1.5 flex min-w-0 flex-1 flex-col items-start gap-1.25 pr-2 pb-0.5 sm:mt-0 sm:pl-3">
           <p
-            data-no-message={!isPlaceholder && !deployment.commit_message ? true : undefined}
+            data-no-message={
+              !isPlaceholder && service.config.type === "github" && !deployment.commit_message
+                ? true
+                : undefined
+            }
             className="data-no-message:bg-border data-no-message:text-muted-foreground group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton max-w-full min-w-0 shrink leading-tight group-data-placeholder/card:rounded-md group-data-placeholder/card:text-transparent data-no-message:-my-0.25 data-no-message:rounded data-no-message:px-1.5 data-no-message:py-0.25"
           >
-            {isPlaceholder
-              ? "Loading message..."
-              : deployment.commit_message
-                ? deployment.commit_message
-                : "Commit message not available"}
+            {title}
           </p>
           {isPlaceholder ? (
             <DeploymentTime isPlaceholder={true} />
           ) : (
-            <DeploymentTime deployment={deployment} />
+            <DeploymentTime deployment={deployment} service={service} />
           )}
         </div>
       </button>
@@ -89,4 +101,16 @@ export default function DeploymentCard({
       </Button>
     </div>
   );
+}
+
+function getTitle(
+  deployment?: TDeploymentShallow,
+  service?: TServiceShallow,
+  isPlaceholder?: boolean,
+) {
+  if (isPlaceholder || !service || !deployment) return "Loading message...";
+  if (service.config.type === "docker-image") return service.config.image;
+  if (service.config.type === "github")
+    return deployment?.commit_message || "Commit message not available";
+  return "Unknown source";
 }
