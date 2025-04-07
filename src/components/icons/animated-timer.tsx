@@ -23,7 +23,7 @@ export default function AnimatedTimerIcon({
       <line x1="10" x2="14" y1="2" y2="2" />
       <line
         style={{ transformOrigin: "50% 58.33333%" }}
-        className={animate ? "animate-spin" : undefined}
+        className={animate ? "animate-spin duration-2000" : undefined}
         x1="12"
         x2="15"
         y1="14"
