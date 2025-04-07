@@ -28,8 +28,9 @@ export default function Logs({ deployment }: TProps) {
       type="deployment"
       hideServiceByDefault
       shouldHaveLogs={deployment.status === "building" || deployment.status === "queued"}
-      httpDefaultEndTimestamp={completedAtTimestamp}
-      httpDefaultStartTimestamp={createdAtTimestamp}
+      httpDefaultEndTimestamp={completedAtTimestamp ? completedAtTimestamp + hourInMs : undefined}
+      httpDefaultStartTimestamp={createdAtTimestamp ? createdAtTimestamp - hourInMs : undefined}
+      disableStream={createdAtTimestamp !== undefined && completedAtTimestamp !== undefined}
     />
   );
 }

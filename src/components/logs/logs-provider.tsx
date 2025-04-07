@@ -31,6 +31,7 @@ type TBaseProps = {
   type: TLogType;
   httpDefaultStartTimestamp?: number;
   httpDefaultEndTimestamp?: number;
+  disableStream?: boolean;
 };
 
 export type TEnvironmentLogsProps = {
@@ -65,6 +66,7 @@ export const LogsProvider: React.FC<TProps> = ({
   deploymentId,
   httpDefaultStartTimestamp,
   httpDefaultEndTimestamp,
+  disableStream,
   children,
 }) => {
   const { data: session } = useSession();
@@ -73,6 +75,7 @@ export const LogsProvider: React.FC<TProps> = ({
     new Date(httpDefaultStartTimestamp || Date.now() - 1000 * 60 * 60 * 24).toISOString(),
   );
   const [end] = useState(new Date(httpDefaultEndTimestamp || Date.now()).toISOString());
+  const [disableStreamLocal] = useState(disableStream);
 
   const filtersStr = createSearchFilter(search);
   const limit = 1000;
@@ -125,9 +128,9 @@ export const LogsProvider: React.FC<TProps> = ({
     error: streamIsError,
   } = useQuery({
     enabled: !!session,
-    queryKey: ["logs-stream", sseUrl],
+    queryKey: ["logs-stream", sseUrl, disableStreamLocal],
     queryFn: async () => {
-      if (httpDefaultEndTimestamp) {
+      if (disableStreamLocal) {
         console.log("Stream is disabled");
         return [];
       } else {
