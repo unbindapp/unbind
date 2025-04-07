@@ -75,7 +75,7 @@ export const LogsProvider: React.FC<TProps> = ({
     new Date(httpDefaultStartTimestamp || Date.now() - 1000 * 60 * 60 * 24).toISOString(),
   );
   const [end] = useState(new Date(httpDefaultEndTimestamp || Date.now()).toISOString());
-  const [disableStreamLocal] = useState(disableStream);
+  const [disableStreamLocal] = useState(disableStream || false);
 
   const filtersStr = createSearchFilter(search);
   const limit = 1000;
@@ -122,13 +122,15 @@ export const LogsProvider: React.FC<TProps> = ({
   const sseUrl = `${apiUrl}/logs/stream?${urlParams.toString()}`;
   const queryClient = useQueryClient();
 
+  const queryKey = ["logs-stream", sseUrl, disableStreamLocal];
+
   const {
     data: streamData,
     isPending: streamIsPending,
     error: streamIsError,
   } = useQuery({
     enabled: !!session,
-    queryKey: ["logs-stream", sseUrl, disableStreamLocal],
+    queryKey,
     queryFn: async () => {
       if (disableStreamLocal) {
         console.log("Stream is disabled");
@@ -152,7 +154,7 @@ export const LogsProvider: React.FC<TProps> = ({
             }
             const { success, data } = MessageSchema.safeParse(newData);
             if (success) {
-              queryClient.setQueryData(["logs-stream", sseUrl], (old: TMessage["logs"]) => {
+              queryClient.setQueryData(queryKey, (old: TMessage["logs"]) => {
                 const updatedLogs = old ? [...old, ...data.logs] : data.logs;
                 return updatedLogs;
               });
