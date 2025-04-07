@@ -32,8 +32,6 @@ type TBaseProps = {
   hardEndOfLogsTimestamp?: number;
 };
 
-//
-
 export type TEnvironmentLogsProps = {
   type: "environment";
   environmentId: string;
