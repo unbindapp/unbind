@@ -13,7 +13,6 @@ export default function Logs({}: { service: TServiceShallow }) {
       serviceId={serviceId}
       type="service"
       hideServiceByDefault
-      since="24h"
     />
   );
 }

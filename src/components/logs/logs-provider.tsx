@@ -4,16 +4,20 @@ import { useLogViewState } from "@/components/logs/log-view-state-provider";
 import { createSearchFilter } from "@/components/logs/search-filter";
 import { useAppConfig } from "@/components/providers/app-config-provider";
 import { LogEventSchema } from "@/server/go/client.gen";
-import { getLogLevelFromMessage } from "@/server/trpc/api/logs/helpers";
 import { TLogType } from "@/server/trpc/api/logs/types";
-import { AppRouterInputs, AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
+import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
 import { api } from "@/server/trpc/setup/client";
 import { fetchEventSource } from "@fortaine/fetch-event-source";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
-import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, ReactNode, useContext, useMemo, useState } from "react";
 import { z } from "zod";
 
-type TLogsContext = AppRouterQueryResult<AppRouterOutputs["logs"]["list"]> & {};
+type TLogsContext = {
+  data: TMessage["logs"] | null;
+  isPending: boolean;
+  error: Error | AppRouterQueryResult<AppRouterOutputs["logs"]["list"]>["error"] | null;
+};
 
 const LogsContext = createContext<TLogsContext | null>(null);
 
@@ -24,32 +28,8 @@ type TBaseProps = {
   children: ReactNode;
   teamId: string;
   projectId: string;
-  environmentId: string;
   type: TLogType;
-} & TLogsStreamProps;
-
-export type TLogsStreamProps =
-  | TLogsStreamEnabledWithSinceProps
-  | TLogsStreamEnabledWithStartProps
-  | TLogsStreamDisabledProps;
-
-export type TLogsStreamDisabledProps = {
-  streamDisabled: true;
-  start: string;
-  end: string;
-  since?: never;
-};
-export type TLogsStreamEnabledWithSinceProps = {
-  streamDisabled?: never;
-  start?: never;
-  end?: never;
-  since: AppRouterInputs["logs"]["list"]["since"];
-};
-export type TLogsStreamEnabledWithStartProps = {
-  streamDisabled?: never;
-  end?: never;
-  start: string;
-  since?: never;
+  hardEndOfLogsTimestamp?: number;
 };
 
 export type TEnvironmentLogsProps = {
@@ -82,49 +62,40 @@ export const LogsProvider: React.FC<TProps> = ({
   environmentId,
   serviceId,
   deploymentId,
-  streamDisabled,
-  since = "24h",
-  start,
-  end,
+  hardEndOfLogsTimestamp,
   children,
 }) => {
-  const [startLocal] = useState(start);
-  const [endLocal] = useState(end);
-  const [sinceLocal] = useState(since);
-  const [streamDisabledLocal] = useState(streamDisabled);
-
   const { data: session } = useSession();
   const { search } = useLogViewState();
+  const [end] = useState(new Date(hardEndOfLogsTimestamp || Date.now()).toISOString());
 
   const filtersStr = createSearchFilter(search);
   const limit = 1000;
 
-  const [queryProps, urlParams] = useMemo(() => {
-    const props: AppRouterInputs["logs"]["list"] = {
-      type,
-      teamId,
-      projectId,
-      environmentId,
-      serviceId,
-      deploymentId,
-      filters: filtersStr,
-      limit,
-    };
-    if (sinceLocal) {
-      props.since = sinceLocal;
-    }
-    if (startLocal) {
-      props.start = startLocal;
-    }
-    if (endLocal) {
-      props.end = endLocal;
-    }
+  const {
+    data: httpData,
+    isPending: httpIsPending,
+    error: httpError,
+  } = api.logs.list.useQuery({
+    type,
+    teamId,
+    projectId,
+    environmentId,
+    serviceId,
+    deploymentId,
+    filters: filtersStr,
+    limit,
+    end,
+  });
 
+  const urlParams = useMemo(() => {
     const params = new URLSearchParams({
-      type: props.type,
-      team_id: props.teamId,
-      project_id: props.projectId || "",
-      environment_id: props.environmentId || "",
+      type: type,
+      team_id: teamId,
+      project_id: projectId || "",
+      environment_id: environmentId || "",
+      start: end,
+      limit: limit.toString(),
     });
     if (type === "service" || type === "deployment") {
       params.set("service_id", serviceId);
@@ -135,89 +106,74 @@ export const LogsProvider: React.FC<TProps> = ({
     if (filtersStr) {
       params.set("filters", filtersStr);
     }
-    if (props.since) {
-      params.set("since", props.since);
-    }
-    if (props.start) {
-      params.set("start", props.start);
-    }
-    if (props.end) {
-      params.set("end", props.end);
-    }
-    if (props.limit) {
-      params.set("limit", String(props.limit));
-    }
-    return [props, params];
-  }, [
-    teamId,
-    projectId,
-    environmentId,
-    serviceId,
-    deploymentId,
-    type,
-    filtersStr,
-    sinceLocal,
-    startLocal,
-    endLocal,
-  ]);
+    return params;
+  }, [type, teamId, projectId, environmentId, serviceId, deploymentId, filtersStr, end]);
 
   const { apiUrl } = useAppConfig();
   const sseUrl = `${apiUrl}/logs/stream?${urlParams.toString()}`;
+  const queryClient = useQueryClient();
 
-  const utils = api.useUtils();
-  const queryResult = api.logs.list.useQuery(queryProps);
-
-  useEffect(() => {
-    if (!session) return;
-    if (queryResult.isPending) return;
-    if (streamDisabledLocal) {
-      console.log("Log stream is disabled");
-      return;
-    } else {
-      console.log("Log stream is enabled");
-    }
-    const controller = new AbortController();
-
-    fetchEventSource(sseUrl, {
-      headers: {
-        Accept: "text/event-stream",
-        Authorization: `Bearer ${session?.access_token}`,
-      },
-      signal: controller.signal,
-      onmessage: (event) => {
-        try {
-          const newData = JSON.parse(event.data);
-          if (newData.type !== "log") {
-            console.log("Log", newData.type, newData);
-            return;
+  const {
+    data: streamData,
+    isPending: streamIsPending,
+    error: streamIsError,
+  } = useQuery({
+    enabled: !!session,
+    queryKey: ["logs-stream", sseUrl],
+    queryFn: async () => {
+      if (hardEndOfLogsTimestamp) {
+        console.log("Stream is disabled");
+        return [];
+      } else {
+        console.log("Stream is enabled");
+      }
+      const controller = new AbortController();
+      fetchEventSource(sseUrl, {
+        headers: {
+          Accept: "text/event-stream",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        signal: controller.signal,
+        onmessage: (event) => {
+          try {
+            const newData = JSON.parse(event.data);
+            if (newData.type !== "log") {
+              console.log("Log", newData.type, newData);
+              return;
+            }
+            const { success, data } = MessageSchema.safeParse(newData);
+            if (success) {
+              queryClient.setQueryData(["logs-stream", sseUrl], (old: TMessage["logs"]) => {
+                const updatedLogs = old ? [...old, ...data.logs] : data.logs;
+                return updatedLogs;
+              });
+            }
+          } catch (error) {
+            console.error("Error parsing SSE data:", error);
           }
-          const parsedData = MessageSchema.parse(newData);
-          utils.logs.list.setData(queryProps, (old) => {
-            const newLogs = parsedData.logs.filter(
-              (l) => !old?.logs.some((o) => o.timestamp === l.timestamp),
-            );
-            const finalArray: AppRouterOutputs["logs"]["list"]["logs"] = [
-              ...(old?.logs || []),
-              ...newLogs.map((log) => ({ ...log, level: getLogLevelFromMessage(log.message) })),
-            ];
-            return { ...old, logs: finalArray };
-          });
-        } catch (error) {
-          console.error("Error parsing SSE data:", error);
-        }
-      },
-      onerror: (error) => {
-        console.error("SSE connection error:", error);
-        controller.abort();
-      },
-    });
+        },
+        onerror: (error) => {
+          console.error("SSE connection error:", error);
+          controller.abort();
+        },
+      });
 
-    return () => {
-      controller.abort();
-    };
-  }, [sseUrl, session, queryProps, utils.logs.list, queryResult.isPending, streamDisabledLocal]);
+      return [];
+    },
+  });
 
-  return <LogsContext.Provider value={queryResult}>{children}</LogsContext.Provider>;
+  const isPending = httpIsPending || streamIsPending;
+  const error = httpError || streamIsError;
+  const data: TMessage["logs"] | null = useMemo(() => {
+    if (httpData && streamData) {
+      return [...httpData.logs, ...(streamData as TMessage["logs"])];
+    }
+    return null;
+  }, [httpData, streamData]);
+
+  const value: TLogsContext = useMemo(() => ({ data, isPending, error }), [data, isPending, error]);
+
+  return <LogsContext.Provider value={value}>{children}</LogsContext.Provider>;
 };
 
 export const useLogs = () => {

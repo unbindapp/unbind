@@ -62,7 +62,6 @@ export default async function Page({ params, searchParams }: TProps) {
         projectId={projectId}
         environmentId={environmentId}
         type="environment"
-        since="24h"
       />
     </ServicesProvider>
   );

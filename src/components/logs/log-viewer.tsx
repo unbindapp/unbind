@@ -11,7 +11,6 @@ import LogViewStateProvider, { useLogViewState } from "@/components/logs/log-vie
 import LogsProvider, {
   TDeploymentLogsProps,
   TEnvironmentLogsProps,
-  TLogsStreamProps,
   TServiceLogsProps,
   useLogs,
 } from "@/components/logs/logs-provider";
@@ -34,7 +33,8 @@ type TBaseProps = {
   teamId: string;
   projectId: string;
   shouldHaveLogs?: boolean;
-} & TLogsStreamProps;
+  hardEndOfLogsTimestamp?: number;
+};
 
 type TProps = TBaseProps & (TEnvironmentLogsProps | TServiceLogsProps | TDeploymentLogsProps);
 
@@ -47,11 +47,8 @@ export default function LogViewer({
   deploymentId,
   type,
   containerType,
-  streamDisabled,
-  start,
-  end,
-  since,
   shouldHaveLogs,
+  hardEndOfLogsTimestamp,
 }: TProps) {
   const typeAndIds: TEnvironmentLogsProps | TServiceLogsProps | TDeploymentLogsProps =
     type === "service"
@@ -60,17 +57,16 @@ export default function LogViewer({
         ? { type: "deployment", environmentId, serviceId, deploymentId }
         : { type: "environment", environmentId: environmentId };
 
-  const streamProps: TLogsStreamProps = streamDisabled
-    ? { streamDisabled: true, start, end }
-    : start
-      ? { start }
-      : { since };
-
   return (
     <LogViewPreferencesProvider hideServiceByDefault={hideServiceByDefault}>
       <LogViewDropdownProvider>
         <LogViewStateProvider>
-          <LogsProvider teamId={teamId} projectId={projectId} {...typeAndIds} {...streamProps}>
+          <LogsProvider
+            teamId={teamId}
+            projectId={projectId}
+            hardEndOfLogsTimestamp={hardEndOfLogsTimestamp}
+            {...typeAndIds}
+          >
             <Logs containerType={containerType} type={type} shouldHaveLogs={shouldHaveLogs} />
           </LogsProvider>
         </LogViewStateProvider>
@@ -94,7 +90,7 @@ function Logs({
   const { data, isPending, error } = useLogs();
   const logs: TLogLineWithLevel[] | undefined = useMemo(() => {
     if (!data) return undefined;
-    return data.logs.map((logLine) => ({
+    return data.map((logLine) => ({
       ...logLine,
       level: getLevelFromMessage(logLine.message),
     }));
