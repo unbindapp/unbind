@@ -188,6 +188,7 @@ export const LogsProvider: React.FC<TProps> = ({
         try {
           const newData = JSON.parse(event.data);
           if (newData.type !== "log") {
+            console.log("Log", newData.type, newData);
             return;
           }
           const parsedData = MessageSchema.parse(newData);

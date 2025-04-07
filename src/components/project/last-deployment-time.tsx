@@ -6,7 +6,7 @@ type TProps = {
 };
 
 const sourceToTitle: Record<TService["config"]["type"], string> = {
-  "docker-image": "Docker Image",
+  "docker-image": "Docker image",
   github: "GitHub",
 };
 
