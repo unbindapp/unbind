@@ -154,7 +154,7 @@ export const CreateProjectResponseBodySchema = z
   })
   .strip();
 
-export const ServiceBuilderSchema = z.enum(['railpack', 'docker']);
+export const ServiceBuilderSchema = z.enum(['railpack', 'docker', 'database']);
 
 export const HostSpecSchema = z
   .object({
@@ -171,12 +171,14 @@ export const PortSpecSchema = z
   })
   .strip();
 
-export const ServiceTypeSchema = z.enum(['github', 'docker-image']);
+export const ServiceTypeSchema = z.enum(['github', 'docker-image', 'database']);
 
 export const CreateServiceInputSchema = z
   .object({
     auto_deploy: z.boolean().optional(),
     builder: ServiceBuilderSchema, // Builder of the service - docker, nixpacks, railpack
+    database_config: z.record(z.any()).optional(),
+    database_type: z.string().optional(),
     description: z.string().optional(),
     display_name: z.string(),
     dockerfile_context: z.string().optional(), // Optional path to Dockerfile context, if using docker builder
@@ -244,6 +246,44 @@ export const DataStructSchema = z
   .object({
     deleted: z.boolean(),
     id: z.string(),
+  })
+  .strip();
+
+export const DatabaseListSchema = z
+  .object({
+    databases: z.array(z.string()).nullable(),
+  })
+  .strip();
+
+export const ParameterPropertySchema = z
+  .object({
+    $ref: z.string().optional(),
+    additionalProperties: ParameterPropertySchema.optional(),
+    default: z.any().optional(),
+    description: z.string().optional(),
+    enum: z.array(z.string()).nullable().optional(),
+    maximum: z.number().optional(),
+    minimum: z.number().optional(),
+    properties: z.record(ParameterPropertySchema).optional(),
+    type: z.string(),
+  })
+  .strip();
+
+export const DefinitionParameterSchemaSchema = z
+  .object({
+    properties: z.record(ParameterPropertySchema),
+    required: z.array(z.string()).nullable().optional(),
+  })
+  .strip();
+
+export const DefinitionSchema = z
+  .object({
+    category: z.string(),
+    description: z.string(),
+    name: z.string(),
+    schema: DefinitionParameterSchemaSchema,
+    type: z.string(),
+    version: z.string(),
   })
   .strip();
 
@@ -324,6 +364,12 @@ export const ErrorModelSchema = z
     status: z.number().optional(), // HTTP status code
     title: z.string().optional(), // A short, human-readable summary of the problem type. This value should not change between occurrences of the error.
     type: z.string().optional(), // A URI reference to human-readable documentation for the error.
+  })
+  .strip();
+
+export const GetDatabaseResponseBodySchema = z
+  .object({
+    data: DefinitionSchema,
   })
   .strip();
 
@@ -626,6 +672,12 @@ export const ItemSchema = z
   })
   .strip();
 
+export const ListDatabasesResponseBodySchema = z
+  .object({
+    data: z.array(DatabaseListSchema),
+  })
+  .strip();
+
 export const PaginationResponseMetadataSchema = z
   .object({
     has_next: z.boolean(),
@@ -763,6 +815,7 @@ export const UpdateServiceInputSchema = z
   .object({
     auto_deploy: z.boolean().optional(),
     builder: ServiceBuilderSchema.optional(),
+    database_config: z.record(z.any()).optional(),
     description: z.string().nullable().optional(),
     display_name: z.string().nullable().optional(),
     dockerfile_context: z.string().optional(), // Optional path to Dockerfile context, if using docker builder - set empty string to reset to default
@@ -846,6 +899,10 @@ export type ServiceConfigResponse = z.infer<typeof ServiceConfigResponseSchema>;
 export type ServiceResponse = z.infer<typeof ServiceResponseSchema>;
 export type CreateServiceResponseBody = z.infer<typeof CreateServiceResponseBodySchema>;
 export type DataStruct = z.infer<typeof DataStructSchema>;
+export type DatabaseList = z.infer<typeof DatabaseListSchema>;
+export type ParameterProperty = z.infer<typeof ParameterPropertySchema>;
+export type DefinitionParameterSchema = z.infer<typeof DefinitionParameterSchemaSchema>;
+export type Definition = z.infer<typeof DefinitionSchema>;
 export type DeleteEnvironmentInputBody = z.infer<typeof DeleteEnvironmentInputBodySchema>;
 export type DeleteEnvironmentResponseBody = z.infer<typeof DeleteEnvironmentResponseBodySchema>;
 export type DeleteProjectInputBody = z.infer<typeof DeleteProjectInputBodySchema>;
@@ -857,6 +914,7 @@ export type VariableDeleteInput = z.infer<typeof VariableDeleteInputSchema>;
 export type DeleteVariablesInputBody = z.infer<typeof DeleteVariablesInputBodySchema>;
 export type ErrorDetail = z.infer<typeof ErrorDetailSchema>;
 export type ErrorModel = z.infer<typeof ErrorModelSchema>;
+export type GetDatabaseResponseBody = z.infer<typeof GetDatabaseResponseBodySchema>;
 export type GetDeploymentResponseBody = z.infer<typeof GetDeploymentResponseBodySchema>;
 export type GetEnvironmentOutputBody = z.infer<typeof GetEnvironmentOutputBodySchema>;
 export type MetricsType = z.infer<typeof MetricsTypeSchema>;
@@ -894,6 +952,7 @@ export type GithubRepositoryDetailResponseBody = z.infer<
 >;
 export type HealthResponseBody = z.infer<typeof HealthResponseBodySchema>;
 export type Item = z.infer<typeof ItemSchema>;
+export type ListDatabasesResponseBody = z.infer<typeof ListDatabasesResponseBodySchema>;
 export type PaginationResponseMetadata = z.infer<typeof PaginationResponseMetadataSchema>;
 export type ListDeploymentResponseData = z.infer<typeof ListDeploymentResponseDataSchema>;
 export type ListDeploymentsResponseBody = z.infer<typeof ListDeploymentsResponseBodySchema>;
@@ -1036,6 +1095,13 @@ export const list_projectsQuerySchema = z
     sort_by: SortByFieldSchema.optional(),
     sort_order: SortOrderSchema.optional(),
     team_id: z.string(),
+  })
+  .passthrough();
+
+export const get_database_definitionQuerySchema = z
+  .object({
+    type: z.string(),
+    version: z.string().optional(),
   })
   .passthrough();
 
@@ -2137,6 +2203,95 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           console.error('Error in API request:', error);
           throw error;
         }
+      },
+      databases: {
+        installable: {
+          get: async (
+            params: z.infer<typeof get_database_definitionQuerySchema>,
+            fetchOptions?: RequestInit,
+          ): Promise<GetDatabaseResponseBody> => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
+              }
+              const url = new URL(`${apiUrl}/services/databases/installable/get`);
+              const validatedQuery = get_database_definitionQuerySchema.parse(params);
+              const queryKeys = ['type', 'version'];
+              queryKeys.forEach((key) => {
+                const value = validatedQuery[key as keyof typeof validatedQuery];
+                if (value !== undefined && value !== null) {
+                  url.searchParams.append(key, String(value));
+                }
+              });
+              const options: RequestInit = {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${accessToken}`,
+                },
+                ...fetchOptions,
+              };
+
+              const response = await fetch(url.toString(), options);
+              if (!response.ok) {
+                console.log(
+                  `GO API request failed with status ${response.status}: ${response.statusText}`,
+                );
+                const data = await response.json();
+                console.log(`GO API request error`, data);
+                console.log(`Request URL is:`, url.toString());
+
+                throw new Error(
+                  `GO API request failed with status ${response.status}: ${response.statusText}`,
+                );
+              }
+              const data = await response.json();
+              return GetDatabaseResponseBodySchema.parse(data);
+            } catch (error) {
+              console.error('Error in API request:', error);
+              throw error;
+            }
+          },
+          list: async (
+            params?: undefined,
+            fetchOptions?: RequestInit,
+          ): Promise<ListDatabasesResponseBody> => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
+              }
+              const url = new URL(`${apiUrl}/services/databases/installable/list`);
+
+              const options: RequestInit = {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${accessToken}`,
+                },
+                ...fetchOptions,
+              };
+
+              const response = await fetch(url.toString(), options);
+              if (!response.ok) {
+                console.log(
+                  `GO API request failed with status ${response.status}: ${response.statusText}`,
+                );
+                const data = await response.json();
+                console.log(`GO API request error`, data);
+                console.log(`Request URL is:`, url.toString());
+
+                throw new Error(
+                  `GO API request failed with status ${response.status}: ${response.statusText}`,
+                );
+              }
+              const data = await response.json();
+              return ListDatabasesResponseBodySchema.parse(data);
+            } catch (error) {
+              console.error('Error in API request:', error);
+              throw error;
+            }
+          },
+        },
       },
       delete: async (
         params: DeleteServiceInputBody,
