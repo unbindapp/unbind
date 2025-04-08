@@ -86,52 +86,16 @@ export const CreateProjectInputBodySchema = z
   })
   .strip();
 
-export const FrameworkSchema = z.enum([
-  'next',
-  'astro',
-  'vite',
-  'cra',
-  'angular',
-  'remix',
-  'bun',
-  'express',
-  'python',
-  'django',
-  'flask',
-  'fastapi',
-  'fasthtml',
-  'gin',
-  'spring-boot',
-  'laravel',
-  'rails',
-  'rocket',
-  'unknown',
-]);
-
-export const ProviderSchema = z.enum([
-  'node',
-  'deno',
-  'go',
-  'java',
-  'php',
-  'python',
-  'ruby',
-  'rust',
-  'staticfile',
-  'unknown',
-]);
-
 export const EnvironmentResponseSchema = z
   .object({
     active: z.boolean(),
     created_at: z.string().datetime(),
     description: z.string(),
     display_name: z.string(),
-    framework_summary: z.array(FrameworkSchema).optional(),
     id: z.string(),
     name: z.string(),
-    provider_summary: z.array(ProviderSchema).optional(),
     service_count: z.number().optional(),
+    service_icons: z.array(z.string()).optional(),
   })
   .strip();
 
@@ -204,12 +168,11 @@ export const ServiceConfigResponseSchema = z
   .object({
     auto_deploy: z.boolean(),
     builder: ServiceBuilderSchema,
-    framework: FrameworkSchema.optional(),
     git_branch: z.string().optional(),
     hosts: z.array(HostSpecSchema).optional(),
+    icon: z.string(),
     image: z.string().optional(),
     ports: z.array(PortSpecSchema).optional(),
-    provider: ProviderSchema.optional(),
     public: z.boolean(),
     replicas: z.number(),
     run_command: z.string().optional(),
@@ -885,8 +848,6 @@ export type DeploymentStatus = z.infer<typeof DeploymentStatusSchema>;
 export type DeploymentResponse = z.infer<typeof DeploymentResponseSchema>;
 export type CreateBuildOutputBody = z.infer<typeof CreateBuildOutputBodySchema>;
 export type CreateProjectInputBody = z.infer<typeof CreateProjectInputBodySchema>;
-export type Framework = z.infer<typeof FrameworkSchema>;
-export type Provider = z.infer<typeof ProviderSchema>;
 export type EnvironmentResponse = z.infer<typeof EnvironmentResponseSchema>;
 export type ProjectResponse = z.infer<typeof ProjectResponseSchema>;
 export type CreateProjectResponseBody = z.infer<typeof CreateProjectResponseBodySchema>;

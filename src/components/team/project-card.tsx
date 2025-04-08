@@ -15,7 +15,7 @@ export default function ProjectCard({ project, className }: TProps) {
   const environments = project.environments;
   const defaultEnvironment = environments.length >= 1 ? project.environments[0] : null;
   const serviceCount = defaultEnvironment?.service_count;
-  const serviceIcons = defaultEnvironment?.framework_summary;
+  const serviceIcons = defaultEnvironment?.service_icons;
 
   if (!defaultEnvironment)
     return (

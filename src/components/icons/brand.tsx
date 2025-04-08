@@ -105,7 +105,7 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
       </svg>
     );
   }
-  if (brand === "postgresql") {
+  if (brand === "postgres" || brand === "postgresql") {
     return (
       <svg
         className={cn(defaultClassName, color === "brand" && "text-postgresql", className)}
@@ -251,7 +251,7 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
       </svg>
     );
   }
-  if (brand === "docker") {
+  if (brand === "docker" || brand === "docker-image") {
     return (
       <svg
         className={cn(defaultClassName, color === "brand" && "text-docker", className)}
