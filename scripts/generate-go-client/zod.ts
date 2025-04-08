@@ -1,6 +1,7 @@
 import { safeTopologicalSort } from "./helpers";
 import { JSONSchema, OpenAPISpec } from "./types";
 
+// To track which schemas require lazy wrapping
 const lazySchemas = new Set<string>();
 
 export function jsonToZodString({
@@ -23,7 +24,6 @@ export function jsonToZodString({
       return "z.never()";
     }
 
-    // Check if all enum values are strings
     const allStrings = property.enum.every((val) => typeof val === "string");
 
     if (allStrings) {
@@ -44,13 +44,15 @@ export function jsonToZodString({
     }
   }
 
-  // Handle $ref references
+  // Handle $ref references, now with explicit self-reference check.
   if (property.$ref) {
     const refMatch = property.$ref.match(/^#\/components\/schemas\/(.+)$/);
     if (refMatch) {
       const refName = refMatch[1];
       const refSchema = `${refName}Schema`;
-      if (orderMap[refName] > orderMap[currentSchemaName]) {
+      // If self-referencing or if the referenced schema is declared later,
+      // wrap it with z.lazy to break circular dependency.
+      if (refName === currentSchemaName || orderMap[refName] > orderMap[currentSchemaName]) {
         lazySchemas.add(refName);
         return isNullable ? `z.lazy(() => ${refSchema}).nullable()` : `z.lazy(() => ${refSchema})`;
       }
@@ -58,7 +60,7 @@ export function jsonToZodString({
     }
   }
 
-  // Handle simple types (and objects/arrays) where type is a string
+  // Handle simple types and compound types.
   if (typeof typeValue === "string") {
     let baseType: string;
     switch (typeValue) {
@@ -73,7 +75,7 @@ export function jsonToZodString({
         baseType = "z.boolean()";
         break;
       case "object":
-        // If properties are defined, build an object schema inline.
+        // If properties are defined, build an inline object schema.
         if (property.properties && Object.keys(property.properties).length > 0) {
           const fields: string[] = [];
           for (const [propName, propSchema] of Object.entries(property.properties)) {
@@ -101,7 +103,6 @@ export function jsonToZodString({
           }
           baseType = objectExpr;
         } else {
-          // No defined properties – treat as a record if additionalProperties is provided.
           if (typeof property.additionalProperties === "object") {
             const additionalPropSchema = jsonToZodString({
               property: property.additionalProperties,
@@ -185,7 +186,6 @@ export function generateZodSchemas(openApiSpec: OpenAPISpec): string {
 
   const header = `import { z } from 'zod';\n\n`;
 
-  // For schemas with circular references, use z.lazy properly
   const schemaDeclarations = sortedSchemaNames.map((schemaName) => {
     const expr = generateZodExpression({
       schemaName,
@@ -215,7 +215,7 @@ export function generateZodExpression({
   schemaDef: JSONSchema;
   orderMap: Record<string, number>;
 }): string {
-  // Handle enums first, regardless of the schema type
+  // Handle enums first
   if (Array.isArray(schemaDef.enum)) {
     if (schemaDef.enum.length === 0) {
       return "z.never()";
@@ -231,7 +231,6 @@ export function generateZodExpression({
   }
 
   if (schemaDef.type === "object") {
-    // If properties are defined, build an object with fields.
     if (schemaDef.properties && Object.keys(schemaDef.properties).length > 0) {
       const fields: string[] = [];
       for (const [propName, propSchema] of Object.entries(schemaDef.properties)) {
@@ -264,7 +263,6 @@ export function generateZodExpression({
       }
       return objectExpr;
     } else {
-      // No defined properties – use a record if an additionalProperties schema is provided.
       if (typeof schemaDef.additionalProperties === "object") {
         const additionalPropSchema = jsonToZodString({
           property: schemaDef.additionalProperties,

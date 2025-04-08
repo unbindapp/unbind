@@ -255,16 +255,16 @@ export const DatabaseListSchema = z
   })
   .strip();
 
-export const ParameterPropertySchema = z
+export const ParameterPropertySchema: z.ZodType<unknown> = z
   .object({
     $ref: z.string().optional(),
-    additionalProperties: ParameterPropertySchema.optional(),
+    additionalProperties: z.lazy(() => ParameterPropertySchema).optional(),
     default: z.any().optional(),
     description: z.string().optional(),
     enum: z.array(z.string()).nullable().optional(),
     maximum: z.number().optional(),
     minimum: z.number().optional(),
-    properties: z.record(ParameterPropertySchema).optional(),
+    properties: z.record(z.lazy(() => ParameterPropertySchema)).optional(),
     type: z.string(),
   })
   .strip();

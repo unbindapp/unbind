@@ -8,6 +8,7 @@ type TProps = {
 const sourceToTitle: Record<TService["config"]["type"], string> = {
   "docker-image": "Docker image",
   github: "GitHub",
+  database: "Database",
 };
 
 export default function LastDeploymentTime({ service }: TProps) {
