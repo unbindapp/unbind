@@ -131,6 +131,7 @@ export const LogsProvider: React.FC<TProps> = ({
   } = useQuery({
     enabled: !!session,
     queryKey,
+    staleTime: Infinity,
     queryFn: async () => {
       if (disableStreamLocal) {
         console.log("Stream is disabled");
@@ -148,8 +149,8 @@ export const LogsProvider: React.FC<TProps> = ({
         onmessage: (event) => {
           try {
             const newData = JSON.parse(event.data);
+            console.log("Log", newData.type, newData);
             if (newData.type !== "log") {
-              console.log("Log", newData.type, newData);
               return;
             }
             const { success, data } = MessageSchema.safeParse(newData);
@@ -166,6 +167,7 @@ export const LogsProvider: React.FC<TProps> = ({
         onerror: (error) => {
           console.error("SSE connection error:", error);
           controller.abort();
+          throw error;
         },
       });
 
