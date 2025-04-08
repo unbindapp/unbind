@@ -5,6 +5,8 @@ type TProps = {
   service: TService;
 };
 
+//
+
 const sourceToTitle: Record<TService["config"]["type"], string> = {
   "docker-image": "Docker image",
   github: "GitHub",
