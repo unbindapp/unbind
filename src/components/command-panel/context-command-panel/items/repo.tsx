@@ -82,22 +82,25 @@ function useRepoItem({ context }: TProps) {
         gitHubInstallationId: installationId,
         public: true,
       });
-      await refetchServices();
       return result;
     },
-    onSuccess: (data) => {
-      closeCommandPanel();
-      openServicePanel(data.service.id);
-      invalidateProject();
-      invalidateProjects();
-    },
-    onSettled: () => {
-      setIsPendingId(null);
+    onSuccess: async (data) => {
+      try {
+        closeCommandPanel();
+        await refetchServices();
+        openServicePanel(data.service.id);
+        invalidateProject();
+        invalidateProjects();
+        setIsPendingId(null);
+      } catch (error) {
+        setIsPendingId(null);
+      }
     },
     onError: (error) => {
       toast.error("Failed to Create Service", {
         description: error.message,
       });
+      setIsPendingId(null);
     },
   });
 
