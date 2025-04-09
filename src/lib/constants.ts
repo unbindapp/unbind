@@ -1,3 +1,5 @@
+import { TService } from "@/server/trpc/api/services/types";
+
 export const siteTitle = "Unbind";
 export const siteTagline = "Self-hosting done right";
 export const siteDescription = "Self-hosting done right.";
@@ -34,3 +36,9 @@ export const sc: Record<
 export const defaultAnimationMs = 150;
 export const drawerAnimationMs = 350;
 export const defaultDebounceMs = 300;
+
+export const sourceToTitle: Record<TService["config"]["type"], string> = {
+  "docker-image": "Docker Image",
+  github: "GitHub",
+  database: "Database Operator",
+};

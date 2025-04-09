@@ -1,14 +1,9 @@
+import { sourceToTitle } from "@/lib/constants";
 import { useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { TService } from "@/server/trpc/api/services/types";
 
 type TProps = {
   service: TService;
-};
-
-const sourceToTitle: Record<TService["config"]["type"], string> = {
-  "docker-image": "Docker image",
-  github: "GitHub",
-  database: "Database",
 };
 
 export default function LastDeploymentTime({ service }: TProps) {

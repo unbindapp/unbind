@@ -1,6 +1,7 @@
 import AnimatedTimerIcon from "@/components/icons/animated-timer";
 import { useTime } from "@/components/providers/time-provider";
 import { cn } from "@/components/ui/utils";
+import { sourceToTitle } from "@/lib/constants";
 import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
@@ -36,12 +37,6 @@ export default function DeploymentTime({ deployment, service, isPlaceholder, cla
         ? getDurationStr({ end: now, start: deployment.created_at })
         : undefined;
 
-  const typeStr = isPlaceholder
-    ? "github"
-    : service.config.type === "docker-image"
-      ? "Docker image"
-      : "GitHub";
-
   const isBuilding = deployment?.status === "building" || deployment?.status === "queued";
 
   return (
@@ -66,7 +61,9 @@ export default function DeploymentTime({ deployment, service, isPlaceholder, cla
         {!isBuilding && (
           <>
             <p className="text-muted-foreground group-data-placeholder/time:bg-muted-foreground group-data-placeholder/time:animate-skeleton min-w-0 shrink group-data-placeholder/time:rounded-md group-data-placeholder/time:text-transparent">
-              {isPlaceholder ? "1 hr. ago | 90s" : `${deploymentTimeStr} via ${typeStr}`}
+              {isPlaceholder
+                ? "1 hr. ago | 90s"
+                : `${deploymentTimeStr} via ${sourceToTitle[service.config.type] || "Unknown"}`}
             </p>
             {durationStr && <p className="text-muted-more-foreground">|</p>}
           </>

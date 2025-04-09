@@ -10,7 +10,7 @@ import { api } from "@/server/trpc/setup/client";
 import { fetchEventSource } from "@fortaine/fetch-event-source";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
-import { createContext, ReactNode, useContext, useMemo, useState } from "react";
+import { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
 type TLogsContext = {
@@ -123,6 +123,13 @@ export const LogsProvider: React.FC<TProps> = ({
   const queryClient = useQueryClient();
 
   const queryKey = ["logs-stream", sseUrl, disableStreamLocal];
+  const streamController = useRef<AbortController>(new AbortController());
+
+  useEffect(() => {
+    return () => {
+      streamController.current.abort();
+    };
+  }, []);
 
   const {
     data: streamData,
@@ -139,13 +146,15 @@ export const LogsProvider: React.FC<TProps> = ({
       } else {
         console.log("Stream is enabled");
       }
-      const controller = new AbortController();
+      streamController.current.abort();
+      streamController.current = new AbortController();
+
       fetchEventSource(sseUrl, {
         headers: {
           Accept: "text/event-stream",
           Authorization: `Bearer ${session?.access_token}`,
         },
-        signal: controller.signal,
+        signal: streamController.current.signal,
         onmessage: (event) => {
           try {
             const newData = JSON.parse(event.data);
@@ -166,7 +175,8 @@ export const LogsProvider: React.FC<TProps> = ({
         },
         onerror: (error) => {
           console.error("SSE connection error:", error);
-          controller.abort();
+          streamController.current.abort();
+          streamController.current = new AbortController();
           throw error;
         },
       });

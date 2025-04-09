@@ -37,7 +37,8 @@ export default function DeploymentCard({
 }: TProps) {
   const { openPanel } = useDeploymentPanel();
 
-  const title = getTitle(deployment, service, isPlaceholder);
+  const { title, titleNotFound } = getTitle(deployment, service, isPlaceholder);
+  const brand = getBrand(service, isPlaceholder);
 
   return (
     <div
@@ -59,25 +60,15 @@ export default function DeploymentCard({
         </div>
         <div className="mt-2 flex shrink-0 flex-col items-start justify-center sm:mt-0">
           <BrandIcon
-            brand={
-              isPlaceholder
-                ? "github"
-                : service.config.type === "docker-image"
-                  ? "docker"
-                  : "github"
-            }
+            brand={brand}
             color="brand"
             className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton size-6 group-data-placeholder/card:rounded-full group-data-placeholder/card:text-transparent"
           />
         </div>
         <div className="mt-1.5 flex min-w-0 flex-1 flex-col items-start gap-1.25 pr-2 pb-0.5 sm:mt-0 sm:pl-3">
           <p
-            data-no-message={
-              !isPlaceholder && service.config.type === "github" && !deployment.commit_message
-                ? true
-                : undefined
-            }
-            className="data-no-message:bg-border data-no-message:text-muted-foreground group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton max-w-full min-w-0 shrink leading-tight group-data-placeholder/card:rounded-md group-data-placeholder/card:text-transparent data-no-message:-my-0.25 data-no-message:rounded data-no-message:px-1.5 data-no-message:py-0.25"
+            data-no-title={titleNotFound ? true : undefined}
+            className="data-no-title:bg-border data-no-title:text-muted-foreground group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton max-w-full min-w-0 shrink leading-tight group-data-placeholder/card:rounded-md group-data-placeholder/card:text-transparent data-no-title:-my-0.25 data-no-title:rounded data-no-title:px-1.5 data-no-title:py-0.25"
           >
             {title}
           </p>
@@ -108,9 +99,27 @@ function getTitle(
   service?: TServiceShallow,
   isPlaceholder?: boolean,
 ) {
-  if (isPlaceholder || !service || !deployment) return "Loading message...";
-  if (service.config.type === "docker-image") return service.config.image;
+  if (isPlaceholder || !service || !deployment)
+    return { title: "Loading title...", titleNotFound: false };
+  if (service.config.type === "docker-image")
+    return {
+      title: service.config.image || "Image unavailable",
+      titleNotFound: !service.config.image,
+    };
   if (service.config.type === "github")
-    return deployment?.commit_message || "Commit message not available";
-  return "Unknown source";
+    return {
+      title: deployment.commit_message || "Commit message unavailable",
+      titleNotFound: !deployment.commit_message,
+    };
+  return {
+    title: "Unknown source",
+    titleNotFound: false,
+  };
+}
+
+function getBrand(service?: TServiceShallow, isPlaceholder?: boolean) {
+  if (isPlaceholder && !service) return "github";
+  if (service?.config.type === "docker-image") return "docker";
+  if (service?.config.type === "database") return "database";
+  return "github";
 }
