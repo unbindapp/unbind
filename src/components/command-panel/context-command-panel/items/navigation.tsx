@@ -5,7 +5,6 @@ import useCommandPanel from "@/components/command-panel/use-command-panel";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import {
-  BellIcon,
   CornerDownRightIcon,
   KeyRoundIcon,
   SettingsIcon,
@@ -118,20 +117,6 @@ export default function useNavigateItem({ context }: TProps) {
             },
             Icon: UsersIcon,
             keywords: ["person", "people", "group", ...goToKeywords],
-          },
-          {
-            id: `go-tos_${context.contextType}_/settings/notifications`,
-            title: "Notifications",
-            titleSuffix: ` | ${settingsTitle}`,
-            onSelect: (props) => {
-              navigateToSettings({
-                context,
-                pathname: "/notifications",
-                isPendingId: props?.isPendingId,
-              });
-            },
-            Icon: BellIcon,
-            keywords: ["notify", "alert", ...goToKeywords],
           },
           {
             id: `go-tos_${context.contextType}_/settings/webhooks`,

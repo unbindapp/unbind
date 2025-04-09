@@ -4,7 +4,6 @@ import SettingsLayout from "@/components/settings/settings-layout";
 import { TSettingsTab } from "@/components/settings/settings-tabs";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import {
-  BellIcon,
   KeyRoundIcon,
   SlidersHorizontalIcon,
   TriangleAlertIcon,
@@ -36,12 +35,6 @@ export default function Layout({ children }: { children: ReactNode }) {
         label: "Members",
         href: `${basePath}/members`,
         Icon: UsersIcon,
-        searchParamStr: "",
-      },
-      {
-        label: "Notifications",
-        href: `${basePath}/notifications`,
-        Icon: BellIcon,
         searchParamStr: "",
       },
       {
