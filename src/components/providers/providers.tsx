@@ -13,7 +13,7 @@ import React from "react";
 
 export default async function Providers({ children }: Readonly<{ children: React.ReactNode }>) {
   const authUrl = env.AUTH_URL;
-  const authBasePath = new URL(authUrl).pathname;
+  const authBasePath = new URL(authUrl || "https://unbind.app").pathname;
 
   return (
     <AppConfigProvider apiUrl={env.UNBIND_API_PUBLIC_URL} siteUrl={env.SITE_URL}>
