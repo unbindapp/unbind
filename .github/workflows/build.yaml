@@ -11,7 +11,7 @@ concurrency:
 jobs:
   setup_env:
     name: ⚙️ Setup environment
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Add SHORT_SHA env property
         run: echo "SHORT_SHA=`echo ${GITHUB_SHA::7}`" >> $GITHUB_ENV
@@ -44,7 +44,7 @@ jobs:
 
   build_amd64:
     name: 🔨 Build AMD64 Docker Image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: setup_env
     env:
       GITHUB_RUN_ID: ${{ github.run_id }}
@@ -77,7 +77,7 @@ jobs:
 
   build_arm64:
     name: 🔨 Build ARM64 Docker Image
-    runs-on: ubuntu-latest-arm
+    runs-on: ubuntu-24.04-arm
     needs: setup_env
     env:
       GITHUB_RUN_ID: ${{ github.run_id }}
@@ -110,7 +110,7 @@ jobs:
 
   create_manifest:
     name: 📦 Create Multi-Arch Manifest
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [setup_env, build_amd64, build_arm64]
     env:
       GITHUB_RUN_ID: ${{ github.run_id }}
