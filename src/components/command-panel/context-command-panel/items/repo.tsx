@@ -10,7 +10,6 @@ import { useServicePanel } from "@/components/service/panel/service-panel-provid
 import { AppRouterOutputs } from "@/server/trpc/api/root";
 import { api } from "@/server/trpc/setup/client";
 import { useMutation } from "@tanstack/react-query";
-import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
 import { toast } from "sonner";
 
@@ -71,32 +70,9 @@ function useRepoItem({ context }: TProps) {
       const owner = repository.full_name.split("/")[0];
       const repoName = repository.full_name.split("/")[1];
       const installationId = repository.installation_id;
-      const repoWithDetails = await ResultAsync.fromPromise(
-        utils.git.getRepository.fetch({
-          installationId,
-          owner,
-          repoName,
-        }),
-        () => new Error("Failed to fetch repository."),
-      );
-      if (repoWithDetails.isErr()) {
-        toast.error("Failed to fetch", {
-          description: repoWithDetails.error.message,
-        });
-        throw repoWithDetails.error;
-      }
-      const branches = repoWithDetails.value.repository.branches;
-      if (!branches || branches.length < 1) {
-        toast.error("No branches", {
-          description: "No branches found in the repository.",
-        });
-        throw new Error("No branches found in the repository.");
-      }
-      const firstBranch = branches[0];
       const result = await createServiceViaApi({
         type: "github",
         builder: "railpack",
-        gitBranch: firstBranch.name,
         repositoryOwner: owner,
         repositoryName: repoName,
         displayName: repoName,

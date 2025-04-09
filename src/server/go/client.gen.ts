@@ -148,7 +148,6 @@ export const CreateServiceInputSchema = z
     dockerfile_context: z.string().optional(), // Optional path to Dockerfile context, if using docker builder
     dockerfile_path: z.string().optional(), // Optional path to Dockerfile, if using docker builder
     environment_id: z.string(),
-    git_branch: z.string().optional(),
     github_installation_id: z.number().optional(),
     hosts: z.array(HostSpecSchema).nullable().optional(),
     image: z.string().optional(),
@@ -168,6 +167,8 @@ export const ServiceConfigResponseSchema = z
   .object({
     auto_deploy: z.boolean(),
     builder: ServiceBuilderSchema,
+    database_type: z.string().optional(),
+    database_version: z.string().optional(),
     git_branch: z.string().optional(),
     hosts: z.array(HostSpecSchema).optional(),
     icon: z.string(),
@@ -244,6 +245,7 @@ export const DefinitionSchema = z
     category: z.string(),
     description: z.string(),
     name: z.string(),
+    port: z.number(),
     schema: DefinitionParameterSchemaSchema,
     type: z.string(),
     version: z.string(),

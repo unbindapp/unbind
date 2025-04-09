@@ -37,7 +37,6 @@ export const CreateServiceFromGitSchema = z
   .object({
     builder: z.enum(["railpack"]),
     type: z.enum(["github"]),
-    gitBranch: z.string(),
     gitHubInstallationId: z.number(),
     repositoryName: z.string(),
     repositoryOwner: z.string(),

@@ -94,7 +94,6 @@ export const servicesRouter = createTRPCRouter({
       params = {
         ...sharedParams,
         builder: input.builder,
-        git_branch: input.gitBranch,
         github_installation_id: input.gitHubInstallationId,
         repository_name: input.repositoryName,
         repository_owner: input.repositoryOwner,

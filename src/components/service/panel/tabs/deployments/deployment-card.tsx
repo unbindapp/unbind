@@ -111,6 +111,14 @@ function getTitle(
       title: deployment.commit_message || "Commit message unavailable",
       titleNotFound: !deployment.commit_message,
     };
+  if (service.config.type === "database") {
+    return {
+      title: service.config.database_type
+        ? `${service.config.database_type}${service.config.database_version ? `:${service.config.database_version}` : ""}`
+        : "Unknown database",
+      titleNotFound: !service.config.database_type,
+    };
+  }
   return {
     title: "Unknown source",
     titleNotFound: false,
