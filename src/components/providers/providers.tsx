@@ -12,10 +12,13 @@ import { NuqsAdapter } from "nuqs/adapters/next/app";
 import React from "react";
 
 export default async function Providers({ children }: Readonly<{ children: React.ReactNode }>) {
+  const authUrl = env.AUTH_URL;
+  const authBasePath = new URL(authUrl).pathname;
+
   return (
     <AppConfigProvider apiUrl={env.UNBIND_API_PUBLIC_URL} siteUrl={env.SITE_URL}>
       <TRPCReactProvider>
-        <SessionProvider>
+        <SessionProvider basePath={authBasePath}>
           <AsyncPushProvider>
             <JotaiProvider>
               <NuqsAdapter>
