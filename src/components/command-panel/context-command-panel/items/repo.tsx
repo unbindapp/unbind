@@ -86,18 +86,21 @@ function useRepoItem({ context }: TProps) {
     },
     onSuccess: async (data) => {
       try {
-        closeCommandPanel();
         await refetchServices();
+        closeCommandPanel();
         openServicePanel(data.service.id);
         invalidateProject();
         invalidateProjects();
         setIsPendingId(null);
       } catch (error) {
+        toast.error("Failed to refetch services", {
+          description: (error as { message: string })?.message || "Unknown error",
+        });
         setIsPendingId(null);
       }
     },
     onError: (error) => {
-      toast.error("Failed to Create Service", {
+      toast.error("Failed to create service", {
         description: error.message,
       });
       setIsPendingId(null);
