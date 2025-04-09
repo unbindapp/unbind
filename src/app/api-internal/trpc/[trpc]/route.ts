@@ -4,6 +4,7 @@ import { type NextRequest } from "next/server";
 import { env } from "@/lib/env";
 import { appRouter } from "@/server/trpc/api/root";
 import { createTRPCContext } from "@/server/trpc/setup/trpc";
+import { trpcPath } from "@/lib/constants";
 
 /**
  * This wraps the `createTRPCContext` helper and provides the required context for the tRPC API when
@@ -17,7 +18,7 @@ const createContext = async (req: NextRequest) => {
 
 const handler = (req: NextRequest) =>
   fetchRequestHandler({
-    endpoint: "/api-internal/trpc",
+    endpoint: trpcPath,
     req,
     router: appRouter,
     createContext: () => createContext(req),

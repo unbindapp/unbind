@@ -42,3 +42,5 @@ export const sourceToTitle: Record<TService["config"]["type"], string> = {
   github: "GitHub",
   database: "Database Operator",
 };
+
+export const trpcPath = "/api-internal/trpc";
