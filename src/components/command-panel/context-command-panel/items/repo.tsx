@@ -10,6 +10,7 @@ import { useServicePanel } from "@/components/service/panel/service-panel-provid
 import { AppRouterOutputs } from "@/server/trpc/api/root";
 import { api } from "@/server/trpc/setup/client";
 import { useMutation } from "@tanstack/react-query";
+import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
 import { toast } from "sonner";
 
@@ -85,19 +86,23 @@ function useRepoItem({ context }: TProps) {
       return result;
     },
     onSuccess: async (data) => {
-      try {
-        await refetchServices();
-        closeCommandPanel();
-        openServicePanel(data.service.id);
-        invalidateProject();
-        invalidateProjects();
-        setIsPendingId(null);
-      } catch (error) {
+      const refetchRes = await ResultAsync.fromPromise(
+        refetchServices(),
+        () => new Error("Failed to refetch services"),
+      );
+      if (refetchRes.isErr()) {
         toast.error("Failed to refetch services", {
-          description: (error as { message: string })?.message || "Unknown error",
+          description: refetchRes.error.message,
         });
         setIsPendingId(null);
+        return;
       }
+
+      closeCommandPanel();
+      openServicePanel(data.service.id);
+      invalidateProject();
+      invalidateProjects();
+      setIsPendingId(null);
     },
     onError: (error) => {
       toast.error("Failed to create service", {

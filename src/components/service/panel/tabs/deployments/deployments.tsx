@@ -8,8 +8,10 @@ import NoItemsCard from "@/components/no-items-card";
 import { useDeployments } from "@/components/service/deployments-provider";
 import DeploymentCard from "@/components/service/panel/tabs/deployments/deployment-card";
 import { useService } from "@/components/service/service-provider";
+import { AppRouterOutputs } from "@/server/trpc/api/root";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { HistoryIcon, RocketIcon } from "lucide-react";
+import { useMemo } from "react";
 
 export default function Deployments({ service }: { service: TServiceShallow }) {
   const {
@@ -26,6 +28,20 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
   const error = errorDeployments || errorService;
   const hasData = deploymentsData !== undefined && serviceData !== undefined;
 
+  const currentOrFirstDeployment =
+    currentDeployment ||
+    (deploymentsData?.deployments && deploymentsData.deployments.length === 1
+      ? deploymentsData.deployments[0]
+      : undefined);
+
+  const filteredDeployments: AppRouterOutputs["deployments"]["list"]["deployments"] | undefined =
+    useMemo(() => {
+      if (!deploymentsData?.deployments) return undefined;
+      return deploymentsData.deployments.filter((d) =>
+        currentOrFirstDeployment ? currentOrFirstDeployment.id !== d.id : true,
+      );
+    }, [deploymentsData, currentOrFirstDeployment]);
+
   return (
     <TabWrapper>
       <DeploymentPanelProvider
@@ -33,12 +49,12 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
         deployments={deploymentsData?.deployments || null}
       >
         <DeploymentPanel service={service} />
-        {(isPending || currentDeployment) && (
+        {(isPending || currentOrFirstDeployment) && (
           <div className="w-full pb-3">
-            {serviceData && currentDeployment ? (
+            {serviceData && currentOrFirstDeployment ? (
               <DeploymentCard
                 service={service}
-                deployment={currentDeployment}
+                deployment={currentOrFirstDeployment}
                 currentDeployment={currentDeployment}
               />
             ) : (
@@ -54,29 +70,25 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
             History
           </h3>
         </div>
-        {hasData && deploymentsData?.deployments && deploymentsData.deployments.length > 0 && (
+        {hasData && filteredDeployments && (
           <>
-            {deploymentsData.deployments.filter((d) =>
-              currentDeployment ? currentDeployment.id !== d.id : true,
-            ).length > 0 && (
+            {filteredDeployments.length > 0 && (
               <ol className="flex w-full flex-col gap-2">
-                {deploymentsData.deployments
-                  .filter((d) => (currentDeployment ? currentDeployment.id !== d.id : true))
-                  .map((deployment) => (
-                    <li className="w-full" key={deployment.id}>
-                      <DeploymentCard
-                        service={service}
-                        key={deployment.id}
-                        deployment={deployment}
-                        currentDeployment={currentDeployment}
-                      />
-                    </li>
-                  ))}
+                {filteredDeployments.map((deployment) => (
+                  <li className="w-full" key={deployment.id}>
+                    <DeploymentCard
+                      service={service}
+                      key={deployment.id}
+                      deployment={deployment}
+                      currentDeployment={currentDeployment}
+                    />
+                  </li>
+                ))}
               </ol>
             )}
-            {deploymentsData.deployments.filter((d) =>
-              currentDeployment ? currentDeployment.id !== d.id : true,
-            ).length === 0 && <NoItemsCard Icon={HistoryIcon}>No history yet</NoItemsCard>}
+            {filteredDeployments.length === 0 && (
+              <NoItemsCard Icon={HistoryIcon}>No history yet</NoItemsCard>
+            )}
           </>
         )}
         {hasData && deploymentsData?.deployments && deploymentsData.deployments.length === 0 && (

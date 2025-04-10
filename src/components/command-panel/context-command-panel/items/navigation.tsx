@@ -50,9 +50,11 @@ export default function useNavigateItem({ context }: TProps) {
           description: res.error.message,
           duration: 3000,
         });
+        setIsPendingId(null);
+        return;
       }
-      setIsPendingId(null);
       closePanel();
+      setIsPendingId(null);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [environmentId],

@@ -12,6 +12,7 @@ import { formatKMBT } from "@/lib/helpers";
 import { api } from "@/server/trpc/setup/client";
 import { useMutation } from "@tanstack/react-query";
 import { DownloadIcon } from "lucide-react";
+import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
 import { toast } from "sonner";
 
@@ -81,22 +82,31 @@ export default function useDockerImageItem({ context }: TProps) {
         public: true,
         image,
       });
-      await refetchServices();
       return result;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       closeCommandPanel();
-      openServicePanel(data.service.id);
       invalidateProject();
       invalidateProjects();
-    },
-    onSettled: () => {
+      const res = await ResultAsync.fromPromise(
+        refetchServices(),
+        () => new Error("Failed to refetch services"),
+      );
+      if (res.isErr()) {
+        toast.error("Failed to refetch services", {
+          description: res.error.message,
+        });
+        setIsPendingId(null);
+        return;
+      }
+      openServicePanel(data.service.id);
       setIsPendingId(null);
     },
     onError: (error) => {
-      toast.error("Failed to Create Service", {
+      toast.error("Failed to create service", {
         description: error.message,
       });
+      setIsPendingId(null);
     },
   });
 

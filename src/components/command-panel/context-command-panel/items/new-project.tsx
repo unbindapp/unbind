@@ -6,7 +6,9 @@ import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { api } from "@/server/trpc/setup/client";
 import { FolderPlusIcon } from "lucide-react";
+import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
+import { toast } from "sonner";
 
 type TProps = {
   context: TContextCommandPanelContext;
@@ -25,17 +27,52 @@ export default function useNewProjectItem({ context }: TProps) {
       const projectId = res.data?.id;
       const environments = res.data.environments;
       if (environments.length < 1) {
-        throw new Error("No environment found");
+        toast.error("No environments found", {
+          description: "There is no environment in this project",
+        });
+        setIsPendingId(null);
+        return;
       }
       const environmentId = environments[0].id;
       if (!projectId || !environmentId) {
-        throw new Error("Project or environment ID not found");
+        toast.error("Project or environment ID is missing", {
+          description: "Project ID or Environment ID is missing",
+        });
+        setIsPendingId(null);
+        return;
       }
-      await invalidateProjects();
-      await asyncPush(`/${context.teamId}/project/${projectId}?environment=${environmentId}`);
+
+      const invalidateRes = await ResultAsync.fromPromise(
+        invalidateProjects(),
+        () => new Error("Failed to invalidate projects"),
+      );
+      if (invalidateRes.isErr()) {
+        toast.error("Failed to invalidate projects", {
+          description: invalidateRes.error.message,
+        });
+        setIsPendingId(null);
+        return;
+      }
+
+      const asyncPushRes = await ResultAsync.fromPromise(
+        asyncPush(`/${context.teamId}/project/${projectId}?environment=${environmentId}`),
+        () => new Error("Failed to navigate to project"),
+      );
+      if (asyncPushRes.isErr()) {
+        toast.error("Failed to navigate to project", {
+          description: asyncPushRes.error.message,
+        });
+        setIsPendingId(null);
+        return;
+      }
+
       closePanel();
+      setIsPendingId(null);
     },
-    onSettled: () => {
+    onError: (error) => {
+      toast.error("Failed to create project", {
+        description: error.message,
+      });
       setIsPendingId(null);
     },
   });
