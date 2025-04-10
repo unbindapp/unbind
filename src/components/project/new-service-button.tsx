@@ -25,7 +25,7 @@ export default function NewServiceButton({ className }: TProps) {
     <ContextCommandPanel
       title="Create New Service"
       description="Create a new service on Unbind"
-      idSuffix="button"
+      triggerType="button"
       context={context}
     >
       <Button

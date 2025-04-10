@@ -28,7 +28,7 @@ export default function ProjectCardList({ teamId }: TProps) {
           <ContextCommandPanel
             title="Create New Project"
             description="Create a new project on Unbind"
-            idSuffix="list"
+            triggerType="list"
             context={context}
           >
             <Button

@@ -6,25 +6,25 @@ import BrandIcon from "@/components/icons/brand";
 import { DatabaseIcon } from "lucide-react";
 import { useMemo } from "react";
 
-export default function useDatabaseItem({ context }: { context: TContextCommandPanelContext }) {
+export default function useDatabaseItem({}: { context: TContextCommandPanelContext }) {
   const { closePanel } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
   });
 
   const item: TCommandPanelItem = useMemo(() => {
     return {
-      id: `databases_${context.contextType}`,
+      id: `database`,
       title: "Database",
       keywords: ["persistent", "persistence"],
       Icon: DatabaseIcon,
       subpage: {
-        id: `databases_${context.contextType}`,
+        id: `databases`,
         title: "Databases",
         parentPageId: contextCommandPanelRootPage,
         inputPlaceholder: "Deploy a database...",
         items: [
           {
-            id: `databases_${context.contextType}_postgresql`,
+            id: `databases_postgresql`,
             title: "PostgreSQL",
             keywords: ["database", "sql", "mysql"],
             onSelect: () => onSelectPlaceholder(closePanel),
@@ -33,7 +33,7 @@ export default function useDatabaseItem({ context }: { context: TContextCommandP
             ),
           },
           {
-            id: `databases_${context.contextType}_redis`,
+            id: `databases_redis`,
             title: "Redis",
             keywords: ["database", "cache", "key value"],
             onSelect: () => onSelectPlaceholder(closePanel),
@@ -42,7 +42,7 @@ export default function useDatabaseItem({ context }: { context: TContextCommandP
             ),
           },
           {
-            id: `databases_${context.contextType}_mongodb`,
+            id: `databases_mongodb`,
             title: "MongoDB",
             keywords: ["database", "object"],
             onSelect: () => onSelectPlaceholder(closePanel),
@@ -51,7 +51,7 @@ export default function useDatabaseItem({ context }: { context: TContextCommandP
             ),
           },
           {
-            id: `databases_${context.contextType}_mysql`,
+            id: `databases_mysql`,
             title: "MySQL",
             keywords: ["database", "sql", "postgresql"],
             onSelect: () => onSelectPlaceholder(closePanel),
@@ -60,7 +60,7 @@ export default function useDatabaseItem({ context }: { context: TContextCommandP
             ),
           },
           {
-            id: `databases_${context.contextType}_mariadb`,
+            id: `databases_mariadb`,
             title: "ClickHouse",
             keywords: ["database", "analytics", "sql"],
             onSelect: () => onSelectPlaceholder(closePanel),
@@ -71,7 +71,7 @@ export default function useDatabaseItem({ context }: { context: TContextCommandP
         ],
       },
     };
-  }, [context, closePanel]);
+  }, [closePanel]);
 
   const value = useMemo(
     () => ({

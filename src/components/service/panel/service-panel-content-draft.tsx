@@ -22,7 +22,7 @@ type TProps = {
   className?: string;
 };
 
-export default function UndeployedServiceContent({ service, className }: TProps) {
+export default function ServicePanelContentDraft({ service, className }: TProps) {
   const {
     teamId,
     projectId,

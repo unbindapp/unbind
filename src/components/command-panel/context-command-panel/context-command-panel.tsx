@@ -18,7 +18,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 type TProps = {
   context: TContextCommandPanelContext;
   children?: ReactNode;
-  idSuffix: string;
+  triggerType: string;
   title: string;
   description: string;
 };
@@ -31,7 +31,7 @@ export default function ContextCommandPanel(props: TProps) {
   );
 }
 
-function ContextCommandPanel_({ context, title, description, children }: TProps) {
+function ContextCommandPanel_({ context, triggerType, title, description, children }: TProps) {
   const { panelId, setPanelId } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
   });
@@ -78,6 +78,7 @@ function ContextCommandPanel_({ context, title, description, children }: TProps)
       projectId={context.projectId || ""}
       page={currentPage}
       context={context}
+      triggerType={triggerType}
     >
       <CommandPanelTrigger
         currentPage={currentPage}

@@ -4,8 +4,8 @@ import MetricsProvider from "@/components/metrics/metrics-provider";
 import MetricsStateProvider from "@/components/metrics/metrics-state-provider";
 import DeploymentsProvider from "@/components/service/deployments-provider";
 import { TServicePanelTabEnum } from "@/components/service/panel/constants";
-import { DeployedServiceContent } from "@/components/service/panel/service-panel-content-deployed";
-import UndeployedServiceContent from "@/components/service/panel/service-panel-content-undeployed";
+import ServicePanelContentDeployed from "@/components/service/panel/service-panel-content-deployed";
+import ServicePanelContentDraft from "@/components/service/panel/service-panel-content-draft";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useService } from "@/components/service/service-provider";
 import Logs from "@/components/service/panel/tabs/logs/logs";
@@ -80,11 +80,11 @@ export default function ServicePanelContent({ service, className }: TProps) {
           serviceId={service.id}
           type="service"
         >
-          <UndeployedServiceContent className={className} service={service} />
+          <ServicePanelContentDraft className={className} service={service} />
         </VariablesProvider>
       </DeploymentsProvider>
     );
   }
 
-  return <DeployedServiceContent tabs={tabs} service={service} currentTab={currentTab} />;
+  return <ServicePanelContentDeployed tabs={tabs} service={service} currentTab={currentTab} />;
 }

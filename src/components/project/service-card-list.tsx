@@ -30,7 +30,7 @@ export default function ServiceCardList() {
             title="Create New Service"
             description="Create a new service on Unbind"
             context={context}
-            idSuffix="list"
+            triggerType="list"
           >
             <Button
               variant="ghost"

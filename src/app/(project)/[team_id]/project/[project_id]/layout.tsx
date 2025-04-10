@@ -51,7 +51,7 @@ export default async function Layout({ children, params }: TProps) {
           <ContextCommandPanel
             title="Project Command Panel"
             description="Project command panel"
-            idSuffix="layout"
+            triggerType="layout"
             context={{
               contextType: "project",
               projectId,

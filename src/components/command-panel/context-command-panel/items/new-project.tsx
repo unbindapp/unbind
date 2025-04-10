@@ -78,7 +78,7 @@ export default function useNewProjectItem({ context }: TProps) {
   });
 
   const item: TCommandPanelItem = useMemo(() => {
-    const id = `new-project_${context.contextType}`;
+    const id = `new-project`;
     return {
       id,
       title: "New Project",
@@ -90,7 +90,7 @@ export default function useNewProjectItem({ context }: TProps) {
       },
       Icon: FolderPlusIcon,
     };
-  }, [setIsPendingId, createProject, context.teamId, context.contextType]);
+  }, [setIsPendingId, createProject, context.teamId]);
 
   const value = useMemo(
     () => ({

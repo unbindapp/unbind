@@ -114,21 +114,21 @@ function useRepoItem({ context }: TProps) {
 
   const item: TCommandPanelItem = useMemo(() => {
     return {
-      id: `repo_${context.contextType}`,
+      id: `repo`,
       title: "GitHub Repo",
       keywords: ["deploy from github", "deploy from gitlab", "deploy from bitbucket"],
       Icon: ({ className }: { className?: string }) => (
         <BrandIcon brand="github" className={className} />
       ),
       subpage: {
-        id: `repos_${context.contextType}`,
+        id: `repos`,
         title: "GitHub Repos",
         parentPageId: contextCommandPanelRootPage,
         inputPlaceholder: "Deploy from GitHub...",
         getItems: async () => {
           const res = await utils.git.listRepositories.fetch({ teamId: context.teamId });
           const items: TCommandPanelItem[] = res.repositories.map((r) => {
-            const id = `git_repo_${r.full_name}_${context.contextType}`;
+            const id = `git_repo_${r.full_name}`;
             return {
               id,
               title: `${r.full_name}`,

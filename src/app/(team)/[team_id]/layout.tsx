@@ -45,7 +45,7 @@ export default async function Layout({ children, params }: TProps) {
           title="Team Command Panel"
           description="Team command panel"
           context={{ contextType: "team", teamId }}
-          idSuffix="layout"
+          triggerType="layout"
         />
       </TeamProvider>
     </TeamsProvider>

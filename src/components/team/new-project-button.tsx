@@ -22,7 +22,7 @@ export default function NewProjectButton({ teamId, className }: TProps) {
     <ContextCommandPanel
       title="Create New Project"
       description="Create a new project on Unbind"
-      idSuffix="button"
+      triggerType="button"
       context={context}
     >
       <Button

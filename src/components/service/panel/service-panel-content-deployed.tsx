@@ -14,7 +14,12 @@ type TProps = {
   currentTab: TServicePanelTab | undefined;
 };
 
-export function DeployedServiceContent({ currentTab, tabs, service, className }: TProps) {
+export default function ServicePanelContentDeployed({
+  currentTab,
+  tabs,
+  service,
+  className,
+}: TProps) {
   const { teamId, projectId, environmentId } = useService();
   const { currentTabId, setCurrentTabId } = useServicePanel();
   return (

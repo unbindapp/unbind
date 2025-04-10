@@ -112,14 +112,14 @@ export default function useDockerImageItem({ context }: TProps) {
 
   const item: TCommandPanelItem = useMemo(() => {
     const item: TCommandPanelItem = {
-      id: `docker-image_${context.contextType}`,
+      id: `docker-image`,
       title: "Docker Image",
       keywords: ["deploy"],
       Icon: ({ className }: { className?: string }) => (
         <BrandIcon brand="docker" className={className} />
       ),
       subpage: {
-        id: `docker-images_${context.contextType}`,
+        id: `docker-images`,
         title: "Docker Images",
         parentPageId: contextCommandPanelRootPage,
         inputPlaceholder: "Search Docker images...",
@@ -127,7 +127,7 @@ export default function useDockerImageItem({ context }: TProps) {
         getItems: async ({ search }) => {
           const res = await utils.docker.searchRepositories.fetch({ search });
           return res.repositories.map((item) => {
-            const id = `docker-image_${item.repo_name}`;
+            const id = `docker-images_${item.repo_name}`;
             return {
               id,
               title: item.repo_name,
@@ -157,7 +157,7 @@ export default function useDockerImageItem({ context }: TProps) {
       },
     };
     return item;
-  }, [utils.docker.searchRepositories, createService, context, setIsPendingId]);
+  }, [utils.docker.searchRepositories, createService, setIsPendingId]);
 
   const value = useMemo(
     () => ({

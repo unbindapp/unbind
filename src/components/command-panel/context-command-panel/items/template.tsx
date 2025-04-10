@@ -6,25 +6,25 @@ import BrandIcon from "@/components/icons/brand";
 import { BlocksIcon } from "lucide-react";
 import { useMemo } from "react";
 
-export default function useTemplateItem({ context }: { context: TContextCommandPanelContext }) {
+export default function useTemplateItem({}: { context: TContextCommandPanelContext }) {
   const { closePanel } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
   });
 
   const item: TCommandPanelItem = useMemo(() => {
     return {
-      id: `template_${context.contextType}`,
+      id: `template`,
       title: "Template",
       keywords: ["blueprint", "stack", "group"],
       Icon: BlocksIcon,
       subpage: {
-        id: `templates_${context.contextType}`,
+        id: `templates`,
         title: "Templates",
         parentPageId: contextCommandPanelRootPage,
         inputPlaceholder: "Deploy a template...",
         items: [
           {
-            id: `templates_${context.contextType}_strapi`,
+            id: `templates_strapi`,
             title: "Strapi",
             keywords: ["cms", "content"],
             onSelect: () => onSelectPlaceholder(closePanel),
@@ -33,7 +33,7 @@ export default function useTemplateItem({ context }: { context: TContextCommandP
             ),
           },
           {
-            id: `templates_${context.contextType}_umami`,
+            id: `templates_umami`,
             title: "Umami",
             keywords: ["analytics", "privacy", "tracking"],
             onSelect: () => onSelectPlaceholder(closePanel),
@@ -42,7 +42,7 @@ export default function useTemplateItem({ context }: { context: TContextCommandP
             ),
           },
           {
-            id: `templates_${context.contextType}_meilisearch`,
+            id: `templates_meilisearch`,
             title: "Meilisearch",
             keywords: ["full text search", "elasticsearch", "ram"],
             onSelect: () => onSelectPlaceholder(closePanel),
@@ -51,7 +51,7 @@ export default function useTemplateItem({ context }: { context: TContextCommandP
             ),
           },
           {
-            id: `templates_${context.contextType}_minio`,
+            id: `templates_minio`,
             title: "MinIO",
             keywords: ["s3", "file storage"],
             onSelect: () => onSelectPlaceholder(closePanel),
@@ -60,7 +60,7 @@ export default function useTemplateItem({ context }: { context: TContextCommandP
             ),
           },
           {
-            id: `templates_${context.contextType}_pocketbase`,
+            id: `templates_pocketbase`,
             title: "PocketBase",
             keywords: ["paas", "backend", "authentication", "realtime database", "file storage"],
             onSelect: () => onSelectPlaceholder(closePanel),
@@ -69,7 +69,7 @@ export default function useTemplateItem({ context }: { context: TContextCommandP
             ),
           },
           {
-            id: `templates_${context.contextType}_n8n`,
+            id: `templates_n8n`,
             title: "N8N",
             keywords: ["workflow automation", "ai", "devops", "itops"],
             onSelect: () => onSelectPlaceholder(closePanel),
@@ -78,7 +78,7 @@ export default function useTemplateItem({ context }: { context: TContextCommandP
             ),
           },
           {
-            id: `templates_${context.contextType}_ghost`,
+            id: `templates_ghost`,
             title: "Ghost",
             keywords: ["blogging"],
             onSelect: () => onSelectPlaceholder(closePanel),
@@ -89,7 +89,7 @@ export default function useTemplateItem({ context }: { context: TContextCommandP
         ],
       },
     };
-  }, [closePanel, context]);
+  }, [closePanel]);
 
   const value = useMemo(
     () => ({

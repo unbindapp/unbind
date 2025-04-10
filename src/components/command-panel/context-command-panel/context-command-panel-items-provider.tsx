@@ -25,8 +25,9 @@ export const ContextCommandPanelItemsProvider: React.FC<{
   projectId: string;
   page: TCommandPanelPage;
   context: TContextCommandPanelContext;
+  triggerType: string;
   children: ReactNode;
-}> = ({ teamId, projectId, page, context, children }) => {
+}> = ({ teamId, projectId, page, context, triggerType, children }) => {
   const search = useCommandPanelStore((s) => s.search);
 
   const searchKey = useMemo(() => {
@@ -37,7 +38,15 @@ export const ContextCommandPanelItemsProvider: React.FC<{
   }, [search, page.usesAsyncSearch]);
 
   const { data, isError, isPending, error } = useQuery({
-    queryKey: ["context-aware-command-panel-items", teamId, projectId, page.id, context, searchKey],
+    queryKey: [
+      "context-aware-command-panel-items",
+      teamId,
+      projectId,
+      page.id,
+      context,
+      triggerType,
+      searchKey,
+    ],
     queryFn: page.items ? () => page.items : () => page.getItems({ teamId, projectId, search }),
     enabled: page.items ? false : true,
   });
