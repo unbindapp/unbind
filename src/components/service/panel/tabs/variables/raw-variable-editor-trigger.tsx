@@ -45,7 +45,7 @@ export default function RawVariableEditorTrigger({ children }: TProps) {
 
   const [recentlySucceeded, setRecentlySucceeded] = useTemporaryValue({
     defaultValue: false,
-    ttl: 3000,
+    ttl: 2500,
   });
 
   const {
@@ -201,10 +201,13 @@ function VariableEditor({
       </ScrollArea>
       <div
         data-open={recentlySucceeded ? true : undefined}
-        className="bg-success text-success-foreground shadow-shadow/shadow pointer-events-none absolute right-3 bottom-3 flex max-w-full translate-y-[calc(100%+0.75rem)] items-center gap-1.25 rounded-full px-2.5 py-0.5 font-sans text-sm font-bold opacity-0 shadow-md transition data-open:translate-y-0 data-open:opacity-100"
+        className="group/div text-success-foreground bg-success shadow-shadow/shadow group/div pointer-events-none absolute right-3 bottom-3 flex max-w-full translate-y-[calc(100%+0.75rem)] items-center gap-1.5 rounded-md px-3 py-1 font-sans text-sm font-bold opacity-0 shadow-md transition duration-200 data-open:translate-y-0 data-open:opacity-100"
       >
-        <CheckCircleIcon className="-ml-1 size-4" strokeWidth={2.5} />
-        <p className="min-w-0 shrink">Updated</p>
+        <CheckCircleIcon
+          className="relative -ml-1 size-4 -rotate-90 transition delay-100 duration-200 group-data-open/div:rotate-0"
+          strokeWidth={2.5}
+        />
+        <p className="relative min-w-0 shrink">Updated</p>
       </div>
     </div>
   );
