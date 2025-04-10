@@ -23,7 +23,10 @@ function ScrollArea({
 }) {
   return (
     <ScrollAreaPrimitive.Root
-      className={cn("group/root relative flex w-full flex-1 flex-col overflow-hidden", className)}
+      className={cn(
+        "group/root relative flex w-full flex-1 flex-col overflow-hidden [&>[data-radix-scroll-area-viewport]]:flex! data-[orientation=vertical]:[&>[data-radix-scroll-area-viewport]]:flex-col!",
+        className,
+      )}
       data-orientation={orientation}
       tabIndex={noFocusOnViewport ? -1 : undefined}
       {...props}

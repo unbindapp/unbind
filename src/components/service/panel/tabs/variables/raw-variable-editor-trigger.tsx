@@ -61,7 +61,7 @@ export default function RawVariableEditorTrigger({ children }: TProps) {
         return;
       }
       const cleaned = editorValue.current.trim();
-      const lines = cleaned.split("\n");
+      const lines = cleaned ? cleaned.split("\n") : [];
       const pairs = lines.map((line) => {
         const [name, value] = line.split("=");
         return { name, value };
@@ -75,6 +75,7 @@ export default function RawVariableEditorTrigger({ children }: TProps) {
         }
         parsedVariables.push({ name: res.data.name, value: res.data.value });
       }
+
       await overwriteVariables({
         type: "service",
         behavior: "overwrite",
@@ -185,11 +186,16 @@ function VariableEditor({
 
   return (
     <div className="relative -mx-3 flex w-[calc(100%+1.5rem)] flex-1 flex-col overflow-hidden sm:mx-0 sm:w-full">
-      <ScrollArea className="bg-background-hover flex-1 overflow-auto rounded-lg border font-mono">
+      <ScrollArea
+        viewportClassName="[&>div]:group-data-[orientation=vertical]/root:flex-1"
+        className="bg-background-hover flex flex-1 flex-col overflow-auto rounded-lg border font-mono"
+      >
         <Editor
+          placeholder="CLIENT_KEY=abc123"
           padding={{ left: 14, right: 14, top: 10, bottom: 10 }}
           value={value}
           onValueChange={(v) => setValue(v)}
+          className="flex-1"
           highlight={(v) => highlight(v, Prism.languages.ini, "ini")}
         />
       </ScrollArea>
