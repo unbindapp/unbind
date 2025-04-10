@@ -1,4 +1,8 @@
-import { list_variablesQuerySchema, VariableTypeSchema } from "@/server/go/client.gen";
+import {
+  list_variablesQuerySchema,
+  VariableTypeSchema,
+  VariableUpdateBehaviorSchema,
+} from "@/server/go/client.gen";
 import { VariableForCreateSchema } from "@/server/trpc/api/variables/types";
 import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
 import { TRPCError } from "@trpc/server";
@@ -36,7 +40,7 @@ export const variablesRouter = createTRPCRouter({
         variables: res.data,
       };
     }),
-  upsert: publicProcedure
+  update: publicProcedure
     .input(
       z
         .object({
@@ -46,11 +50,12 @@ export const variablesRouter = createTRPCRouter({
           serviceId: z.string().uuid(),
           variables: z.array(VariableForCreateSchema),
           type: VariableTypeSchema,
+          behavior: VariableUpdateBehaviorSchema.default("upsert"),
         })
         .strip(),
     )
     .mutation(async function ({
-      input: { teamId, projectId, environmentId, serviceId, variables, type },
+      input: { teamId, projectId, environmentId, serviceId, variables, type, behavior },
       ctx,
     }) {
       const { session, goClient } = ctx;
@@ -60,7 +65,8 @@ export const variablesRouter = createTRPCRouter({
           message: "You need to be logged in to access this resource",
         });
       }
-      const res = await goClient.variables.upsert({
+      const res = await goClient.variables.update({
+        behavior,
         team_id: teamId,
         project_id: projectId,
         environment_id: environmentId,

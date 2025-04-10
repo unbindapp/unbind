@@ -813,8 +813,11 @@ export const UpdateTeamResponseBodySchema = z
   })
   .strip();
 
+export const VariableUpdateBehaviorSchema = z.enum(['upsert', 'overwrite']);
+
 export const UpsertVariablesInputBodySchema = z
   .object({
+    behavior: VariableUpdateBehaviorSchema, // The behavior of the update - upsert or overwrite
     environment_id: z.string().optional(), // If present without service_id, mutate environment variables - requires project_id
     project_id: z.string().optional(), // If present without environment_id, mutate team variables
     service_id: z.string().optional(), // If present, mutate service variables - requires project_id and environment_id
@@ -941,6 +944,7 @@ export type UpdateProjectResponseBody = z.infer<typeof UpdateProjectResponseBody
 export type UpdateServiceInput = z.infer<typeof UpdateServiceInputSchema>;
 export type UpdateTeamInputBody = z.infer<typeof UpdateTeamInputBodySchema>;
 export type UpdateTeamResponseBody = z.infer<typeof UpdateTeamResponseBodySchema>;
+export type VariableUpdateBehavior = z.infer<typeof VariableUpdateBehaviorSchema>;
 export type UpsertVariablesInputBody = z.infer<typeof UpsertVariablesInputBodySchema>;
 export type VariableResponse = z.infer<typeof VariableResponseSchema>;
 export type VariablesResponseBody = z.infer<typeof VariablesResponseBodySchema>;
@@ -2761,7 +2765,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           throw error;
         }
       },
-      upsert: async (
+      update: async (
         params: UpsertVariablesInputBody,
         fetchOptions?: RequestInit,
       ): Promise<VariablesResponseBody> => {
@@ -2769,7 +2773,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/variables/upsert`);
+          const url = new URL(`${apiUrl}/variables/update`);
 
           const options: RequestInit = {
             method: 'POST',

@@ -52,7 +52,6 @@ type TProps =
 
 export default function VariableCard({ variable, isPlaceholder }: TProps) {
   const [isValueVisible, setIsValueVisible] = useState(false);
-  const { copyToClipboard, isRecentlyCopied } = useCopyToClipboard();
   const [isEditingVariable, setIsEditingVariable] = useState(false);
 
   return (
@@ -70,27 +69,7 @@ export default function VariableCard({ variable, isPlaceholder }: TProps) {
       <div className="relative -ml-2 flex w-[calc(100%+1rem)] min-w-0 flex-1 items-center sm:mt-0 sm:w-auto">
         {(!variable || !isEditingVariable) && (
           <>
-            <Button
-              data-copied={isRecentlyCopied ? true : undefined}
-              onClick={isPlaceholder ? () => null : () => copyToClipboard(variable.value)}
-              variant="ghost"
-              forceMinSize="medium"
-              size="icon"
-              className="text-muted-more-foreground group/button rounded-lg group-data-placeholder/card:text-transparent sm:rounded-md"
-              disabled={isPlaceholder}
-              fadeOnDisabled={false}
-            >
-              <div className="relative size-4 transition-transform group-data-copied/button:rotate-90">
-                <CopyIcon className="group-data-copied/button:text-success size-full transition-opacity group-data-copied/button:opacity-0" />
-                <CheckIcon
-                  strokeWidth={3}
-                  className="group-data-copied/button:text-success absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-opacity group-data-copied/button:opacity-100"
-                />
-                {isPlaceholder && (
-                  <div className="bg-muted-more-foreground animate-skeleton absolute top-0 left-0 size-full rounded-sm" />
-                )}
-              </div>
-            </Button>
+            <CopyButton variable={variable} isPlaceholder={isPlaceholder} />
             <Button
               data-visible={isValueVisible ? true : undefined}
               onClick={() => setIsValueVisible((prev) => !prev)}
@@ -221,7 +200,7 @@ function EditVariableForm({
     serviceId,
     type: variable.type,
   });
-  const { mutateAsync: upsertVariables, error } = api.variables.upsert.useMutation({
+  const { mutateAsync: upsertVariables, error } = api.variables.update.useMutation({
     onSuccess: () => {},
   });
   const form = useAppForm({
@@ -403,5 +382,38 @@ function DeleteTrigger({
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function CopyButton({
+  variable,
+  isPlaceholder,
+}: {
+  variable?: TVariableShallow;
+  isPlaceholder?: boolean;
+}) {
+  const { copyToClipboard, isRecentlyCopied } = useCopyToClipboard();
+  return (
+    <Button
+      data-copied={isRecentlyCopied ? true : undefined}
+      onClick={isPlaceholder || !variable ? () => null : () => copyToClipboard(variable.value)}
+      variant="ghost"
+      forceMinSize="medium"
+      size="icon"
+      className="text-muted-more-foreground group/button rounded-lg group-data-placeholder/card:text-transparent sm:rounded-md"
+      disabled={isPlaceholder}
+      fadeOnDisabled={false}
+    >
+      <div className="relative size-4 transition-transform group-data-copied/button:rotate-90">
+        <CopyIcon className="group-data-copied/button:text-success size-full transition-opacity group-data-copied/button:opacity-0" />
+        <CheckIcon
+          strokeWidth={3}
+          className="group-data-copied/button:text-success absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-opacity group-data-copied/button:opacity-100"
+        />
+        {isPlaceholder && (
+          <div className="bg-muted-more-foreground animate-skeleton absolute top-0 left-0 size-full rounded-sm" />
+        )}
+      </div>
+    </Button>
   );
 }

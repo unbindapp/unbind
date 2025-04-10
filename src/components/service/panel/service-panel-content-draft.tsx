@@ -39,7 +39,7 @@ export default function ServicePanelContentDraft({ service, className }: TProps)
   const { mutateAsync: createDeployment, error: deploymentError } =
     api.deployments.create.useMutation();
   const { mutateAsync: upsertVariables, error: errorVariables } =
-    api.variables.upsert.useMutation();
+    api.variables.update.useMutation();
 
   const form = useAppForm({
     defaultValues: {},

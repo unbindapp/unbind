@@ -32,7 +32,7 @@ export default function CreateVariablesForm({
 }: TProps) {
   const {
     list: { refetch: refetchVariables },
-    upsert: { mutateAsync: upsertVariables, error: createError },
+    update: { mutateAsync: updateVariables, error: createError },
     teamId,
     projectId,
     environmentId,
@@ -52,7 +52,7 @@ export default function CreateVariablesForm({
     onSubmit: async ({ formApi, value }) => {
       if (variant === "collapsible") return;
       const variables = value.variables;
-      await upsertVariables({
+      await updateVariables({
         teamId,
         projectId,
         environmentId,

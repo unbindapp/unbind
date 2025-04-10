@@ -7,11 +7,12 @@ import { createContext, ReactNode, useContext, useMemo } from "react";
 
 type TVariablesContext = {
   list: AppRouterQueryResult<AppRouterOutputs["variables"]["list"]>;
-  upsert: ReturnType<typeof api.variables.upsert.useMutation>;
+  update: ReturnType<typeof api.variables.update.useMutation>;
   teamId: string;
   projectId: string;
   environmentId: string;
   serviceId: string;
+  utils: ReturnType<typeof useVariablesUtils>;
 };
 
 const VariablesContext = createContext<TVariablesContext | null>(null);
@@ -32,18 +33,26 @@ export const VariablesProvider: React.FC<{
     type,
   });
 
-  const upsert = api.variables.upsert.useMutation();
+  const update = api.variables.update.useMutation();
+  const utils = useVariablesUtils({
+    teamId,
+    projectId,
+    environmentId,
+    serviceId,
+    type,
+  });
 
   const value: TVariablesContext = useMemo(
     () => ({
       list,
-      upsert,
+      update,
       teamId,
       projectId,
       environmentId,
       serviceId,
+      utils,
     }),
-    [list, upsert, teamId, projectId, environmentId, serviceId],
+    [list, utils, update, teamId, projectId, environmentId, serviceId],
   );
 
   return <VariablesContext.Provider value={value}>{children}</VariablesContext.Provider>;

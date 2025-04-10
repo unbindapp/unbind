@@ -462,6 +462,27 @@
     background: color-mix(in oklab, var(--top-loader) 50%, transparent);
     color: color-mix(in oklab, var(--foreground) 100%, transparent);
   }
+
+  textarea {
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    outline: none;
+    resize: none;
+  }
+
+  .token.attr-name {
+    color: var(--process);
+  }
+
+  .token.attr-value {
+    color: var(--success);
+  }
+
+  .token.punctuation {
+    color: color-mix(in oklab, var(--foreground) 75%, transparent);
+  }
 }
 
 @layer base {
