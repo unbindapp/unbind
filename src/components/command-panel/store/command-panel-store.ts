@@ -4,12 +4,14 @@ export type State = {
   isPendingId: string | null;
   search: string;
   inputValues: Record<string, string>;
+  prevItemId: string | null;
 };
 
 export type Actions = {
   setIsPendingId: (isPendingId: string | null) => void;
   setSearch: (search: string) => void;
   setInputValue: (inputId: string, value: string) => void;
+  setPrevItemId: (prevItemId: string | null) => void;
   clearInputValue: (inputId: string) => void;
 };
 
@@ -17,6 +19,7 @@ export type CommandPanelStore = State & Actions;
 
 const defaultInitState: State = {
   isPendingId: null,
+  prevItemId: null,
   search: "",
   inputValues: {},
 };
@@ -36,6 +39,12 @@ export const createCommandPanelStore = (initState: State = defaultInitState) => 
         },
       }));
     },
+    setPrevItemId: (prevItemId) => {
+      set((state) => ({ ...state, prevItemId }));
+    },
+    setSearch: (search) => {
+      set((state) => ({ ...state, search }));
+    },
     clearInputValue: (id) => {
       set((state) => {
         const newState = { ...state };
@@ -44,9 +53,6 @@ export const createCommandPanelStore = (initState: State = defaultInitState) => 
         }
         return newState;
       });
-    },
-    setSearch: (search) => {
-      set((state) => ({ ...state, search }));
     },
   }));
 };

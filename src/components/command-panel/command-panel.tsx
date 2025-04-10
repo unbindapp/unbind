@@ -1,7 +1,4 @@
-import {
-  getAllItemsFromCommandPanelPage,
-  getFirstCommandListItem,
-} from "@/components/command-panel/helpers";
+import { getAllItemsFromCommandPanelPage } from "@/components/command-panel/helpers";
 import { useCommandPanelStore } from "@/components/command-panel/store/command-panel-store-provider";
 import { TCommandPanelItem, TCommandPanelPage } from "@/components/command-panel/types";
 import ErrorCard from "@/components/error-card";
@@ -196,7 +193,10 @@ function CommandPanel({
 }: TCommandPanelProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+
   const { isTouchscreen } = useDeviceType();
+  const prevItemId = useCommandPanelStore((s) => s.prevItemId);
+  const setPrevItemId = useCommandPanelStore((s) => s.setPrevItemId);
 
   const [value, setValue] = useState("");
   const { isPending, isError } = useCommandPanelItems();
@@ -228,6 +228,7 @@ function CommandPanel({
       const item = currentPage.items?.find((i) => i.id === value || i.title === value);
       if (item?.subpage) {
         setCurrentPageId(item.subpage.id);
+        setPrevItemId(item.id);
       }
     },
     {
@@ -238,8 +239,8 @@ function CommandPanel({
 
   useHotkeys(
     "esc",
-    () => {
-      goToParentPage();
+    (e) => {
+      goToParentPage(e);
     },
     {
       enableOnContentEditable: true,
@@ -251,8 +252,11 @@ function CommandPanel({
     if (isTouchscreen) return;
     if (isPending) return;
     const timeout = setTimeout(() => {
-      const value = getFirstCommandListItem(scrollAreaRef);
-      if (value) setValue(value);
+      const itemToSelect =
+        currentPage.items?.find((i) => i.id === prevItemId) || currentPage.items?.[0];
+      if (itemToSelect) {
+        setTimeout(() => setValue(itemToSelect.title));
+      }
     });
     return () => {
       clearTimeout(timeout);
@@ -489,6 +493,7 @@ function Item({
   currentPageId: string;
 }) {
   const isPendingId = useCommandPanelStore((s) => s.isPendingId);
+  const setPrevItemId = useCommandPanelStore((s) => s.setPrevItemId);
   const clearInputValue = useCommandPanelStore((s) => s.clearInputValue);
 
   const onSelect = useCallback(() => {
@@ -496,8 +501,11 @@ function Item({
       clearInputValue(currentPageId);
       setCurrentPageId(item.subpage.id);
     }
+    if (item.subpage) {
+      setPrevItemId(item.id);
+    }
     item.onSelect?.({ isPendingId });
-  }, [item, setCurrentPageId, clearInputValue, currentPageId, isPendingId]);
+  }, [item, setCurrentPageId, clearInputValue, currentPageId, setPrevItemId, isPendingId]);
 
   const isItemPending =
     isPendingId === null
@@ -518,6 +526,7 @@ function Item({
 
   return (
     <CommandItem
+      id={item.id}
       data-placeholder={isPlaceholder ? true : undefined}
       data-pending={isItemPending ? true : undefined}
       value={item.title}

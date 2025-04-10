@@ -1,5 +1,4 @@
 import { TCommandPanelItem, TCommandPanelPage } from "@/components/command-panel/types";
-import { RefObject } from "react";
 
 export function getAllItemsFromCommandPanelPage(page: TCommandPanelPage): TCommandPanelItem[] {
   if (!page.items) return [];
@@ -29,10 +28,4 @@ export function findCommandPanelPage({
     }
   }
   return null;
-}
-
-export function getFirstCommandListItem(ref: RefObject<HTMLDivElement | null>) {
-  const firstItem = ref.current?.querySelector("[cmdk-item]");
-  const value = firstItem?.getAttribute("data-value");
-  return value;
 }
