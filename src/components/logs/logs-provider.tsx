@@ -76,6 +76,7 @@ export const LogsProvider: React.FC<TProps> = ({
   );
   const [end] = useState(new Date(httpDefaultEndTimestamp || Date.now()).toISOString());
   const [disableStreamLocal] = useState(disableStream || false);
+  const latestStreamedTimestamp = useRef(0);
 
   const filtersStr = createSearchFilter(search);
   const limit = 1000;
@@ -165,7 +166,24 @@ export const LogsProvider: React.FC<TProps> = ({
             const { success, data } = MessageSchema.safeParse(newData);
             if (success) {
               queryClient.setQueryData(queryKey, (old: TMessage["logs"]) => {
-                const updatedLogs = old ? [...old, ...data.logs] : data.logs;
+                const newLogs: TMessage["logs"] = [];
+                let newLogsHighestTimestamp = 0;
+                for (let i = 0; i < data.logs.length; i++) {
+                  const log = data.logs[i];
+                  const timestamp = log.timestamp ? new Date(log.timestamp).getTime() : undefined;
+                  if (timestamp) {
+                    if (timestamp > latestStreamedTimestamp.current) {
+                      newLogs.push(log);
+                    }
+                    if (timestamp > newLogsHighestTimestamp) {
+                      newLogsHighestTimestamp = timestamp;
+                    }
+                  }
+                }
+                if (newLogsHighestTimestamp > latestStreamedTimestamp.current) {
+                  latestStreamedTimestamp.current = newLogsHighestTimestamp;
+                }
+                const updatedLogs = old ? [...old, ...newLogs] : newLogs;
                 return updatedLogs;
               });
             }
