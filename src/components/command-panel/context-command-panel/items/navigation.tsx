@@ -5,9 +5,13 @@ import useCommandPanel from "@/components/command-panel/use-command-panel";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import {
+  ChartColumnIcon,
   CornerDownRightIcon,
+  CpuIcon,
+  FolderIcon,
   KeyRoundIcon,
   SettingsIcon,
+  TextSearchIcon,
   TriangleAlertIcon,
   UsersIcon,
   WebhookIcon,
@@ -28,23 +32,10 @@ export default function useNavigateItem({ context }: TProps) {
     defaultPageId: contextCommandPanelRootPage,
   });
 
-  const navigateToSettings = useCallback(
-    async ({
-      pathname,
-      context,
-      isPendingId,
-    }: {
-      pathname: string;
-      context: TContextCommandPanelContext;
-      isPendingId?: string | null;
-    }) => {
-      const key = `go-tos_/settings${pathname}`;
-      if (isPendingId === key) return;
-      setIsPendingId(key);
-      const res = await ResultAsync.fromPromise(
-        asyncPush(getSettingsPageHref({ context, pathname, environmentId })),
-        () => new Error("Failed to navigate to settings"),
-      );
+  const navigateTo = useCallback(
+    async ({ url, isPendingId, error }: { url: string; isPendingId: string; error: string }) => {
+      setIsPendingId(isPendingId);
+      const res = await ResultAsync.fromPromise(asyncPush(url), () => new Error(error));
       if (res.isErr()) {
         toast.error("Failed to navigate", {
           description: res.error.message,
@@ -53,11 +44,22 @@ export default function useNavigateItem({ context }: TProps) {
         setIsPendingId(null);
         return;
       }
-      closePanel();
       setIsPendingId(null);
+      closePanel();
+    },
+    [asyncPush, closePanel, setIsPendingId],
+  );
+
+  const navigateToSettings = useCallback(
+    async ({ pathname, isPendingId }: { pathname: string; isPendingId: string }) => {
+      await navigateTo({
+        url: getSettingsPageHref({ pathname, context, environmentId }),
+        isPendingId,
+        error: "Failed to navigate to settings",
+      });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [environmentId],
+    [navigateTo, environmentId],
   );
 
   const goToKeywords = useMemo(() => ["go to", "navigate to", "jump to"], []);
@@ -83,24 +85,99 @@ export default function useNavigateItem({ context }: TProps) {
         inputPlaceholder: "Go to...",
         parentPageId: contextCommandPanelRootPage,
         items: [
+          ...(context.contextType === "project"
+            ? ([
+                {
+                  id: `go-tos_services`,
+                  title: "Services",
+                  titleSuffix: ` | Project`,
+                  Icon: CpuIcon,
+                  onSelect: async () => {
+                    navigateTo({
+                      url: `/${context.teamId}/project/${context.projectId}?environment=${environmentId}`,
+                      isPendingId: `go-tos_services`,
+                      error: "Failed to navigate to services",
+                    });
+                  },
+                  keywords: ["project", "home page", ...goToKeywords],
+                },
+                {
+                  id: `go-tos_logs`,
+                  title: "Logs",
+                  titleSuffix: ` | Project`,
+                  Icon: TextSearchIcon,
+                  onSelect: async () => {
+                    navigateTo({
+                      url: `/${context.teamId}/project/${context.projectId}/logs?environment=${environmentId}`,
+                      isPendingId: `go-tos_logs`,
+                      error: "Failed to navigate to logs",
+                    });
+                  },
+                  keywords: ["logs", "errors", "warnings", "status", "project", ...goToKeywords],
+                },
+                {
+                  id: `go-tos_metrics`,
+                  title: "Metrics",
+                  titleSuffix: ` | Project`,
+                  Icon: ChartColumnIcon,
+                  onSelect: async () => {
+                    navigateTo({
+                      url: `/${context.teamId}/project/${context.projectId}/metrics?environment=${environmentId}`,
+                      isPendingId: `go-tos_metrics`,
+                      error: "Failed to navigate to metrics",
+                    });
+                  },
+                  keywords: ["metrics", "usage", "system", "project", ...goToKeywords],
+                },
+              ] as TCommandPanelItem[])
+            : context.contextType === "team"
+              ? [
+                  {
+                    id: `go-tos_projects`,
+                    title: "Projects",
+                    titleSuffix: ` | Team`,
+                    Icon: FolderIcon,
+                    onSelect: async () => {
+                      navigateTo({
+                        url: `/${context.teamId}`,
+                        isPendingId: `go-tos_projects`,
+                        error: "Failed to navigate to projects",
+                      });
+                    },
+                    keywords: ["projects", "home page", "team", ...goToKeywords],
+                  },
+                ]
+              : []),
           {
             id: `go-tos_/settings`,
-            title: settingsTitle,
-            onSelect: (props) => {
-              navigateToSettings({ context, pathname: "", isPendingId: props?.isPendingId });
+            title: context.contextType === "project" ? "Settings" : "Settings",
+            titleSuffix: ` | ${context.contextType === "project" ? "Project" : "Team"}`,
+            onSelect: () => {
+              navigateToSettings({ pathname: "", isPendingId: `go-tos_/settings` });
             },
             Icon: SettingsIcon,
-            keywords: ["settings", "general", "change", "tweak", "adjust", ...goToKeywords],
+            keywords: [
+              "settings",
+              "general",
+              "change",
+              "tweak",
+              "adjust",
+              ...(context.contextType === "project"
+                ? ["project"]
+                : context.contextType === "team"
+                  ? ["team"]
+                  : []),
+              ...goToKeywords,
+            ],
           },
           {
             id: `go-tos_/settings/shared-variables`,
             title: "Shared Variables",
             titleSuffix: ` | ${settingsTitle}`,
-            onSelect: (props) => {
+            onSelect: () => {
               navigateToSettings({
-                context,
                 pathname: "/shared-variables",
-                isPendingId: props?.isPendingId,
+                isPendingId: `go-tos_/settings/shared-variables`,
               });
             },
             Icon: KeyRoundIcon,
@@ -110,11 +187,10 @@ export default function useNavigateItem({ context }: TProps) {
             id: `go-tos_/settings/members`,
             title: "Members",
             titleSuffix: ` | ${settingsTitle}`,
-            onSelect: (props) => {
+            onSelect: () => {
               navigateToSettings({
-                context,
                 pathname: "/members",
-                isPendingId: props?.isPendingId,
+                isPendingId: `go-tos_/settings/members`,
               });
             },
             Icon: UsersIcon,
@@ -124,11 +200,10 @@ export default function useNavigateItem({ context }: TProps) {
             id: `go-tos_/settings/webhooks`,
             title: "Webhooks",
             titleSuffix: ` | ${settingsTitle}`,
-            onSelect: (props) => {
+            onSelect: () => {
               navigateToSettings({
-                context,
                 pathname: "/webhooks",
-                isPendingId: props?.isPendingId,
+                isPendingId: `go-tos_/settings/webhooks`,
               });
             },
             Icon: WebhookIcon,
@@ -138,11 +213,10 @@ export default function useNavigateItem({ context }: TProps) {
             id: `go-tos_/settings/danger-zone`,
             title: "Danger Zone",
             titleSuffix: ` | ${settingsTitle}`,
-            onSelect: (props) => {
+            onSelect: () => {
               navigateToSettings({
-                context,
                 pathname: "/danger-zone",
-                isPendingId: props?.isPendingId,
+                isPendingId: `go-tos_/settings/danger-zone`,
               });
             },
             Icon: TriangleAlertIcon,
@@ -151,7 +225,7 @@ export default function useNavigateItem({ context }: TProps) {
         ],
       },
     };
-  }, [navigateToSettings, context, settingsTitle, goToKeywords]);
+  }, [navigateToSettings, context, settingsTitle, goToKeywords, environmentId, navigateTo]);
 
   const value = useMemo(
     () => ({
