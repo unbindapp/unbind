@@ -12,8 +12,18 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/components/ui/utils";
-import { ArrowRightIcon, CheckIcon, ChevronDownIcon, PlusIcon } from "lucide-react";
-import { ComponentProps, Dispatch, FC, SetStateAction, useEffect, useState } from "react";
+import { ArrowRightIcon, CheckIcon, ChevronDownIcon, LoaderIcon, PlusIcon } from "lucide-react";
+import {
+  ButtonHTMLAttributes,
+  ComponentProps,
+  Dispatch,
+  FC,
+  ReactNode,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 
 type Item<T> = T & { id: string; display_name: string };
 
@@ -30,12 +40,14 @@ type TProps<T> = {
       newItemTitle: string;
       newItemIsPending: boolean;
       newItemDontCloseMenuOnSelect?: boolean;
+      NewItemWrapper?: FC<{ children: ReactNode }>;
       onSelectNewItem: (id: string) => void;
     }
   | {
       newItemTitle?: never;
       newItemIsPending?: never;
       onSelectNewItem?: never;
+      NewItemWrapper?: never;
       newItemDontCloseMenuOnSelect?: never;
     }
 ) &
@@ -51,6 +63,7 @@ export function BreadcrumbItem<T>({
   newItemTitle,
   newItemIsPending,
   newItemDontCloseMenuOnSelect,
+  NewItemWrapper,
   onSelectNewItem,
   showArrow,
   open: openProp,
@@ -68,6 +81,16 @@ export function BreadcrumbItem<T>({
   }, [open]);
 
   const newItem = newItemTitle ? ({ id: "new", display_name: newItemTitle } as Item<T>) : undefined;
+
+  const ConditionalNewItemWrapper = useCallback(
+    ({ children }: { children: ReactNode }) => {
+      if (NewItemWrapper) {
+        return <NewItemWrapper>{children}</NewItemWrapper>;
+      }
+      return children;
+    },
+    [NewItemWrapper],
+  );
 
   return (
     <DropdownOrDrawer title={title} open={open} onOpenChange={setOpen}>
@@ -100,18 +123,20 @@ export function BreadcrumbItem<T>({
           {newItemTitle && newItem && (
             <>
               <div className="bg-border pointer-events-none my-2 h-px w-full shrink-0 rounded-full" />
-              <SheetItem
-                dontCloseMenuOnSelect={newItemDontCloseMenuOnSelect}
-                item={newItem}
-                isPending={newItemIsPending}
-                onSelect={onSelectNewItem}
-                setOpen={setOpen}
-                selectedItem={selectedItem}
-                lastHoveredItem={lastHoveredItem}
-                setLastHoveredItem={setLastHoveredItem}
-                IconItem={PlusIcon}
-                className="text-muted-foreground data-highlighted:text-foreground data-last-hovered:text-foreground mr-4"
-              />
+              <ConditionalNewItemWrapper>
+                <SheetItem
+                  dontCloseMenuOnSelect={newItemDontCloseMenuOnSelect}
+                  item={newItem}
+                  isPending={newItemIsPending}
+                  onSelect={onSelectNewItem}
+                  setOpen={setOpen}
+                  selectedItem={selectedItem}
+                  lastHoveredItem={lastHoveredItem}
+                  setLastHoveredItem={setLastHoveredItem}
+                  IconItem={PlusIcon}
+                  className="text-muted-foreground data-highlighted:text-foreground data-last-hovered:text-foreground mr-4"
+                />
+              </ConditionalNewItemWrapper>
             </>
           )}
         </div>
@@ -140,18 +165,20 @@ export function BreadcrumbItem<T>({
           <>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownItem
-                dontCloseMenuOnSelect={newItemDontCloseMenuOnSelect}
-                item={newItem}
-                isPending={newItemIsPending}
-                onSelect={onSelectNewItem}
-                setOpen={setOpen}
-                selectedItem={selectedItem}
-                lastHoveredItem={lastHoveredItem}
-                setLastHoveredItem={setLastHoveredItem}
-                IconItem={PlusIcon}
-                className="text-muted-foreground data-highlighted:text-foreground data-last-hovered:text-foreground"
-              />
+              <ConditionalNewItemWrapper>
+                <DropdownItem
+                  dontCloseMenuOnSelect={newItemDontCloseMenuOnSelect}
+                  item={newItem}
+                  isPending={newItemIsPending}
+                  onSelect={onSelectNewItem}
+                  setOpen={setOpen}
+                  selectedItem={selectedItem}
+                  lastHoveredItem={lastHoveredItem}
+                  setLastHoveredItem={setLastHoveredItem}
+                  IconItem={PlusIcon}
+                  className="text-muted-foreground"
+                />
+              </ConditionalNewItemWrapper>
             </DropdownMenuGroup>
           </>
         )}
@@ -172,6 +199,7 @@ function SheetItem<T>({
   IconItem,
   isPending,
   className,
+  ...rest
 }: {
   item: Item<T>;
   selectedItem: Item<T> | null | undefined;
@@ -184,9 +212,10 @@ function SheetItem<T>({
   IconItem?: FC<{ id: string; className?: string }>;
   isPending?: boolean;
   className?: string;
-}) {
+} & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onSelect">) {
   return (
     <Button
+      {...rest}
       onClick={() => {
         if (!dontCloseMenuOnSelect) {
           setOpen(false);
@@ -210,7 +239,13 @@ function SheetItem<T>({
         </div>
       )}
       <div className="group-data-pending/item:text-foreground relative flex min-w-0 flex-1 items-center gap-1.5">
-        {IconItem && <IconItem id={item.id} className="-my-1 -ml-1 size-5 shrink-0" />}
+        {IconItem ? (
+          isPending ? (
+            <LoaderIcon id={item.id} className="-my-1 -ml-1 size-5 shrink-0 animate-spin" />
+          ) : (
+            <IconItem id={item.id} className="-my-1 -ml-1 size-5 shrink-0" />
+          )
+        ) : null}
         <p className="min-w-0 shrink">{item.display_name}</p>
       </div>
       <div className="group-data-pending/item:text-foreground relative -mr-0.5 size-5">
@@ -243,6 +278,7 @@ function DropdownItem<T>({
   IconItem,
   isPending,
   className,
+  ...rest
 }: {
   item: Item<T>;
   selectedItem: Item<T> | null | undefined;
@@ -255,9 +291,11 @@ function DropdownItem<T>({
   IconItem?: FC<{ id: string; className?: string }>;
   isPending?: boolean;
   className?: string;
-}) {
+} & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onSelect">) {
   return (
+    // @ts-expect-error - Button props are fine here - TODO
     <DropdownMenuItem
+      {...rest}
       onSelect={(e) => {
         if (!dontCloseMenuOnSelect) {
           setOpen(false);
@@ -268,10 +306,7 @@ function DropdownItem<T>({
       }}
       data-show-arrow={showArrow?.(item) ? true : undefined}
       data-last-hovered={lastHoveredItem?.id === item.id ? true : undefined}
-      className={cn(
-        `group/item data-last-hovered:bg-border data-highlighted:group-has-[*[data-highlighted]]/list:bg-border justify-between group-has-[*[data-highlighted]]/list:bg-transparent`,
-        className,
-      )}
+      className={cn(`group/item`, className)}
       data-pending={isPending ? true : undefined}
       onMouseEnter={() => setLastHoveredItem(item)}
       onTouchStart={() => setLastHoveredItem(item)}
@@ -282,7 +317,13 @@ function DropdownItem<T>({
         </div>
       )}
       <div className="group-data-pending/item:text-foreground relative flex min-w-0 flex-1 items-center gap-1.5">
-        {IconItem && <IconItem id={item.id} className="-my-1 -ml-0.5 size-4.5 shrink-0" />}
+        {IconItem ? (
+          isPending ? (
+            <LoaderIcon id={item.id} className="-my-1 -ml-0.5 size-4.5 shrink-0 animate-spin" />
+          ) : (
+            <IconItem id={item.id} className="-my-1 -ml-0.5 size-4.5 shrink-0" />
+          )
+        ) : null}
         <p className="min-w-0 shrink">{item.display_name}</p>
       </div>
       <div className="group-data-pending/item:text-foreground relative -mr-0.5 size-4.5 shrink-0 transition-transform group-data-highlighted/item:group-data-show-arrow/item:rotate-90">

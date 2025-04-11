@@ -1,3 +1,4 @@
+import { CreateEnvironmentFormNameSchema } from "@/server/trpc/api/environments/types";
 import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -54,7 +55,7 @@ export const environmentsRouter = createTRPCRouter({
         .object({
           teamId: z.string().uuid(),
           projectId: z.string().uuid(),
-          displayName: z.string(),
+          displayName: CreateEnvironmentFormNameSchema,
           description: z.string().optional(),
         })
         .strip(),

@@ -12,7 +12,7 @@ const sessionCookieMaxAge = 60 * 60 * 24 * 14;
 const secureCookie = isProd;
 const sameSiteCookie = "lax";
 
-const tokenRefreshBuffer = 30;
+const tokenRefreshBuffer = 60 * 15;
 
 const authSecret = process.env.AUTH_SECRET!;
 const dexClientId = process.env.DEX_CLIENT_ID!;

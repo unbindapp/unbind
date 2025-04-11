@@ -13,12 +13,14 @@ function InputWithInfo({
   field,
   inputClassName,
   infoClassName,
+  dontCheckUntilSubmit,
   ...rest
 }: InputProps & {
   field: AnyFieldApi;
   hideInfo?: boolean;
   inputClassName?: string;
   infoClassName?: string;
+  dontCheckUntilSubmit?: boolean;
 }) {
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
   field.form.store.subscribe((state) => {
@@ -35,6 +37,7 @@ function InputWithInfo({
       <Input {...rest} className={cn("w-full", inputClassName)} />
       {field.state.meta.isTouched &&
       (field.state.meta.isBlurred || isFormSubmitted) &&
+      (!dontCheckUntilSubmit || isFormSubmitted) &&
       field.state.meta.errors.length ? (
         <ErrorLine
           className={cn("bg-transparent py-1.5 pl-1.5", infoClassName)}

@@ -32,4 +32,11 @@ export const useProject = () => {
   return context;
 };
 
+export const useProjectUtils = ({ teamId, projectId }: { teamId: string; projectId: string }) => {
+  const utils = api.useUtils();
+  return {
+    invalidate: () => utils.projects.get.invalidate({ teamId, projectId }),
+  };
+};
+
 export default ProjectProvider;
