@@ -215,7 +215,6 @@ function SheetItem<T>({
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onSelect">) {
   return (
     <Button
-      {...rest}
       onClick={() => {
         if (!dontCloseMenuOnSelect) {
           setOpen(false);
@@ -232,6 +231,7 @@ function SheetItem<T>({
         `data-last-hovered:bg-border data-highlighted:group-has-[*[data-highlighted]]/list:bg-border group/item data-highlighted:text-foreground flex w-full cursor-default items-center justify-between gap-3 rounded-lg px-3 py-3.5 text-left font-medium group-has-[*[data-highlighted]]/list:bg-transparent`,
         className,
       )}
+      {...rest}
     >
       {isPending && (
         <div className="bg-background border-top-loader/25 absolute top-0 left-0 h-full w-full items-center justify-center overflow-hidden rounded-lg border">
@@ -293,9 +293,7 @@ function DropdownItem<T>({
   className?: string;
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onSelect">) {
   return (
-    // @ts-expect-error - Button props are fine here - TODO
     <DropdownMenuItem
-      {...rest}
       onSelect={(e) => {
         if (!dontCloseMenuOnSelect) {
           setOpen(false);
@@ -308,8 +306,11 @@ function DropdownItem<T>({
       data-last-hovered={lastHoveredItem?.id === item.id ? true : undefined}
       className={cn(`group/item`, className)}
       data-pending={isPending ? true : undefined}
+      // @ts-expect-error - TODO - Check this later, fine for now
       onMouseEnter={() => setLastHoveredItem(item)}
+      // @ts-expect-error - TODO - Check this later, fine for now
       onTouchStart={() => setLastHoveredItem(item)}
+      {...rest}
     >
       {isPending && (
         <div className="bg-background border-top-loader/25 absolute top-0 left-0 h-full w-full items-center justify-center overflow-hidden rounded-md border">
