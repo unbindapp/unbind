@@ -322,6 +322,7 @@ function CreateEnvironmentDialog({
             name="name"
             children={(field) => (
               <field.TextField
+                autoCapitalize="none"
                 dontCheckUntilSubmit
                 field={field}
                 value={field.state.value}
