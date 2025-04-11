@@ -4,7 +4,8 @@ import { useLogViewState } from "@/components/logs/log-view-state-provider";
 import { createSearchFilter } from "@/components/logs/search-filter";
 import { useAppConfig } from "@/components/providers/app-config-provider";
 import { LogEventSchema } from "@/server/go/client.gen";
-import { TLogType } from "@/server/trpc/api/logs/types";
+import { getLogLevelFromMessage } from "@/server/trpc/api/logs/helpers";
+import { TLogLineWithLevel, TLogType } from "@/server/trpc/api/logs/types";
 import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
 import { api } from "@/server/trpc/setup/client";
 import { fetchEventSource } from "@fortaine/fetch-event-source";
@@ -14,7 +15,7 @@ import { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useSt
 import { z } from "zod";
 
 type TLogsContext = {
-  data: TMessage["logs"] | null;
+  data: TLogLineWithLevel[] | null;
   isPending: boolean;
   error: Error | AppRouterQueryResult<AppRouterOutputs["logs"]["list"]>["error"] | null;
 };
@@ -166,14 +167,17 @@ export const LogsProvider: React.FC<TProps> = ({
             const { success, data } = MessageSchema.safeParse(newData);
             if (success) {
               queryClient.setQueryData(queryKey, (old: TMessage["logs"]) => {
-                const newLogs: TMessage["logs"] = [];
+                const newLogs: TLogLineWithLevel[] = [];
                 let newLogsHighestTimestamp = 0;
                 for (let i = 0; i < data.logs.length; i++) {
                   const log = data.logs[i];
                   const timestamp = log.timestamp ? new Date(log.timestamp).getTime() : undefined;
                   if (timestamp) {
                     if (timestamp > latestStreamedTimestamp.current) {
-                      newLogs.push(log);
+                      newLogs.push({
+                        ...log,
+                        level: getLogLevelFromMessage(log.message),
+                      });
                     }
                     if (timestamp > newLogsHighestTimestamp) {
                       newLogsHighestTimestamp = timestamp;
@@ -205,9 +209,9 @@ export const LogsProvider: React.FC<TProps> = ({
 
   const isPending = httpIsPending || streamIsPending;
   const error = httpError || streamIsError;
-  const data: TMessage["logs"] | null = useMemo(() => {
+  const data: TLogLineWithLevel[] | null = useMemo(() => {
     if (httpData && streamData) {
-      return [...httpData.logs, ...(streamData as TMessage["logs"])];
+      return [...httpData.logs, ...(streamData as TLogLineWithLevel[])];
     }
     return null;
   }, [httpData, streamData]);

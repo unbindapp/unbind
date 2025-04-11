@@ -19,7 +19,7 @@ import SearchBar from "@/components/logs/search-bar";
 import NoItemsCard from "@/components/no-items-card";
 import { useServices } from "@/components/project/services-provider";
 import { cn } from "@/components/ui/utils";
-import { TLogLineWithLevel, TLogType } from "@/server/trpc/api/logs/types";
+import { TLogType } from "@/server/trpc/api/logs/types";
 import { HourglassIcon, SearchIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useThrottledCallback } from "use-debounce";
@@ -93,14 +93,7 @@ function Logs({
   type: TLogType;
   shouldHaveLogs?: boolean;
 }) {
-  const { data, isPending, error } = useLogs();
-  const logs: TLogLineWithLevel[] | undefined = useMemo(() => {
-    if (!data) return undefined;
-    return data.map((logLine) => ({
-      ...logLine,
-      level: getLevelFromMessage(logLine.message),
-    }));
-  }, [data]);
+  const { data: logs, isPending, error } = useLogs();
 
   const virtualListRef = useRef<VListHandle>(null);
   const follow = useRef(true);
@@ -300,14 +293,4 @@ function NoLogsFound({ shouldHaveLogs }: { shouldHaveLogs?: boolean }) {
       </p>
     </NoItemsCard>
   );
-}
-
-function getLevelFromMessage(message: string): TLogLineWithLevel["level"] {
-  if (/(\s|^)(error|fatal|fail|failed)(\s|$)/i.test(message)) {
-    return "error";
-  }
-  if (/(\s|^)(warn|warning)(\s|$)/i.test(message)) {
-    return "warn";
-  }
-  return "info";
 }

@@ -63,11 +63,9 @@ export const logsRouter = createTRPCRouter({
 
       const editedLogsData = logsData.data
         .map((logLine) => {
-          const { message, ...rest } = logLine;
-          const level = getLogLevelFromMessage(message);
+          const level = getLogLevelFromMessage(logLine.message);
           return {
-            ...rest,
-            message,
+            ...logLine,
             level,
           };
         })
