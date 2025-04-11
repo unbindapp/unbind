@@ -1,37 +1,35 @@
 "use client";
 
-import EnvironmentCard from "@/app/(project)/[team_id]/project/[project_id]/settings/environments/_components/environment-card";
+import EnvironmentCard, {
+  NewEnvironmentCard,
+} from "@/app/(project)/[team_id]/project/[project_id]/settings/environments/_components/environment-card";
+import { useEnvironments } from "@/components/environment/environments-provider";
 import ErrorLine from "@/components/error-line";
 import NoItemsCard from "@/components/no-items-card";
 import { cn } from "@/components/ui/utils";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import { api } from "@/server/trpc/setup/client";
 import { BoxIcon } from "lucide-react";
-import { ReactNode } from "react";
-
-type TProps = {};
+import { ReactNode, useEffect, useState } from "react";
 
 const placeholderArray = Array.from({ length: 4 }, (_, i) => i);
 
-export default function EnvironmentsTabContent({}: TProps) {
-  const { teamId, projectId } = useIdsFromPathname();
-  const { data, error, isPending } = api.environments.list.useQuery(
-    {
-      teamId: teamId!,
-      projectId: projectId!,
-    },
-    { enabled: !!teamId && !!projectId },
-  );
+export default function EnvironmentsTabContent() {
+  const {
+    query: { data, error, isPending },
+    teamId,
+    projectId,
+  } = useEnvironments();
 
   const environments = data?.environments;
 
-  if (teamId === undefined || projectId === undefined) {
-    return (
-      <Wrapper>
-        <ErrorLine message="Missing team or project ID" />
-      </Wrapper>
-    );
-  }
+  const { environmentId } = useIdsFromPathname();
+  const [lastSelectedEnvironmentId, setLastSelectedEnvironmentId] = useState<string | null>(
+    environmentId,
+  );
+
+  useEffect(() => {
+    setLastSelectedEnvironmentId(environmentId);
+  }, [environmentId]);
 
   if (error) {
     return (
@@ -67,8 +65,13 @@ export default function EnvironmentsTabContent({}: TProps) {
           environment={environment}
           teamId={teamId}
           projectId={projectId}
+          isSelected={environment.id === lastSelectedEnvironmentId}
+          onClick={() => {
+            setLastSelectedEnvironmentId(environment.id);
+          }}
         />
       ))}
+      <NewEnvironmentCard teamId={teamId} projectId={projectId} />
     </Wrapper>
   );
 }

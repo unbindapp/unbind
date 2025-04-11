@@ -13,6 +13,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/components/ui/utils";
+import { defaultAnimationMs } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { api } from "@/server/trpc/setup/client";
 import { TriangleAlertIcon } from "lucide-react";
@@ -95,7 +96,7 @@ function DeleteButton() {
           timeout.current = setTimeout(() => {
             form.reset();
             reset();
-          }, 200);
+          }, defaultAnimationMs);
         }
       }}
     >

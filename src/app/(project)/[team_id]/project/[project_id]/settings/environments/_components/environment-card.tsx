@@ -1,7 +1,8 @@
 "use client";
 
+import { useEnvironments } from "@/components/environment/environments-provider";
 import ErrorLine from "@/components/error-line";
-import { useProjectUtils } from "@/components/project/project-provider";
+import { useProject, useProjectUtils } from "@/components/project/project-provider";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { Button } from "@/components/ui/button";
@@ -25,14 +26,17 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { defaultAnimationMs } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
+import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import {
   CreateEnvironmentFormNameSchema,
   environmentNameMaxLength,
   TEnvironmentShallow,
 } from "@/server/trpc/api/environments/types";
 import { api } from "@/server/trpc/setup/client";
-import { EllipsisVerticalIcon, PenIcon, TrashIcon } from "lucide-react";
+import { EllipsisVerticalIcon, PenIcon, PlusIcon, TrashIcon } from "lucide-react";
+import { ResultAsync } from "neverthrow";
 import { ReactNode, useRef, useState } from "react";
+import { toast } from "sonner";
 import { z } from "zod";
 
 type TProps =
@@ -41,15 +45,28 @@ type TProps =
       environment?: never;
       teamId?: never;
       projectId?: never;
+      isSelected?: never;
+      onClick?: never;
     }
   | {
       isPlaceholder?: never;
       environment: TEnvironmentShallow;
       teamId: string;
       projectId: string;
+      isSelected: boolean;
+      onClick: () => void;
     };
 
-export default function EnvironmentCard({ environment, teamId, projectId, isPlaceholder }: TProps) {
+export default function EnvironmentCard({
+  environment,
+  teamId,
+  projectId,
+  isPlaceholder,
+  isSelected,
+  onClick: onClickProp,
+}: TProps) {
+  const { asyncPush } = useAsyncPush();
+
   return (
     <li className="relative w-full p-1 sm:w-1/2">
       <div
@@ -60,8 +77,16 @@ export default function EnvironmentCard({ environment, teamId, projectId, isPlac
           disabled={isPlaceholder}
           fadeOnDisabled={false}
           variant="outline-muted"
+          onClick={() => {
+            if (!environment) return;
+            onClickProp?.();
+            asyncPush(
+              `/${teamId}/project/${projectId}/settings/environments?environment=${environment?.id}`,
+            );
+          }}
           className="has-hover:group-hover/item:bg-background-hover flex w-full flex-row items-center justify-start py-3 pr-12 pl-4 font-medium"
         >
+          <SelectedIndicator isSelected={isSelected} />
           <p className="group-data-pending/item:bg-foreground group-data-pending/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-pending/item:rounded-md group-data-pending/item:text-transparent">
             {isPlaceholder ? "Loading" : environment.display_name}
           </p>
@@ -123,13 +148,23 @@ function ThreeDotButton({
       >
         <ScrollArea>
           <DropdownMenuGroup>
-            <RenameTrigger environment={environment} teamId={teamId} projectId={projectId}>
+            <RenameTrigger
+              environment={environment}
+              teamId={teamId}
+              projectId={projectId}
+              closeDropdown={() => setIsOpen(false)}
+            >
               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                 <PenIcon className="-ml-0.5 size-5" />
                 <p className="min-w-0 shrink leading-tight">Rename</p>
               </DropdownMenuItem>
             </RenameTrigger>
-            <DeleteTrigger environment={environment} teamId={teamId} projectId={projectId}>
+            <DeleteTrigger
+              environment={environment}
+              teamId={teamId}
+              projectId={projectId}
+              closeDropdown={() => setIsOpen(false)}
+            >
               <DropdownMenuItem
                 onSelect={(e) => e.preventDefault()}
                 className="text-destructive data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
@@ -149,24 +184,36 @@ function DeleteTrigger({
   environment,
   teamId,
   projectId,
+  closeDropdown,
   children,
 }: {
   environment: TEnvironmentShallow;
   teamId: string;
   projectId: string;
+  closeDropdown: () => void;
   children: ReactNode;
 }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const textToConfirm = "Delete this environment permanently";
   const { asyncPush } = useAsyncPush();
+  const { environmentId } = useIdsFromPathname();
+
+  const {
+    query: { data: projectsData },
+  } = useProject();
   const { invalidate: invalidateProjects } = useProjectsUtils({ teamId });
+  const { invalidate: invalidateProject } = useProjectUtils({ teamId, projectId });
+  const {
+    utils: { invalidate: invalidateEnvironments },
+  } = useEnvironments();
 
   const {
     mutateAsync: deleteEnvironment,
-    error,
-    reset,
+    error: deleteEnvironmentError,
+    reset: deleteEnvironmentReset,
   } = api.environments.delete.useMutation({
     onSuccess: async () => {
+      invalidateProject();
       invalidateProjects();
     },
   });
@@ -185,8 +232,43 @@ function DeleteTrigger({
         .strip(),
     },
     onSubmit: async ({ formApi }) => {
+      const deletingCurrentEnv = environmentId === environment.id;
       await deleteEnvironment({ id: environment.id, teamId, projectId });
+      if (deletingCurrentEnv) {
+        invalidateEnvironments();
+        const environments = projectsData?.project.environments;
+        const environment =
+          environments && environments.length >= 1
+            ? environments.find((e) => e.id === projectsData.project.default_environment_id) ||
+              environments[0]
+            : null;
+
+        const navigateRes = await ResultAsync.fromPromise(
+          asyncPush(
+            `/${teamId}/project/${projectId}/settings/environments${environment ? `?environment=${environment.id}` : ""}`,
+          ),
+          () => new Error("Failed to navigate to environments"),
+        );
+
+        if (navigateRes.isErr()) {
+          toast.error("Failed to navigate", {
+            description: navigateRes.error.message,
+          });
+        }
+      } else {
+        const invalidateRes = await ResultAsync.fromPromise(
+          invalidateEnvironments(),
+          () => new Error("Failed to fetch environments"),
+        );
+
+        if (invalidateRes.isErr()) {
+          toast.error("Failed to fetch environments", {
+            description: invalidateRes.error.message,
+          });
+        }
+      }
       formApi.reset();
+      closeDropdown();
     },
   });
 
@@ -201,8 +283,8 @@ function DeleteTrigger({
           if (timeout.current) clearTimeout(timeout.current);
           timeout.current = setTimeout(() => {
             form.reset();
-            reset();
-          }, 200);
+            deleteEnvironmentReset();
+          }, defaultAnimationMs);
         }
       }}
     >
@@ -241,7 +323,9 @@ function DeleteTrigger({
               />
             )}
           />
-          {error && <ErrorLine message={error?.message} className="mt-4" />}
+          {deleteEnvironmentError && (
+            <ErrorLine message={deleteEnvironmentError?.message} className="mt-4" />
+          )}
           <div className="mt-4 flex w-full flex-wrap items-center justify-end gap-2">
             <DialogClose asChild className="text-muted-foreground">
               <Button type="button" variant="ghost">
@@ -275,27 +359,37 @@ function RenameTrigger({
   environment,
   teamId,
   projectId,
+  closeDropdown,
   children,
 }: {
   environment: TEnvironmentShallow;
   teamId: string;
   projectId: string;
+  closeDropdown: () => void;
   children: ReactNode;
 }) {
   const {
     mutateAsync: updateEnvironment,
     error: updateEnvironmentError,
     reset: updateEnvironmentReset,
-  } = api.environments.update.useMutation();
-  const { asyncPush } = useAsyncPush();
+  } = api.environments.update.useMutation({
+    onSuccess: () => {
+      invalidateProject();
+      invalidateProjects();
+    },
+  });
+
   const { invalidate: invalidateProjects } = useProjectsUtils({ teamId });
   const { invalidate: invalidateProject } = useProjectUtils({ teamId, projectId });
+  const {
+    utils: { invalidate: invalidateEnvironments },
+  } = useEnvironments();
 
   const [open, setOpen] = useState(false);
 
   const form = useAppForm({
     defaultValues: {
-      name: "",
+      name: environment.display_name,
     },
     validators: {
       onChange: z
@@ -305,20 +399,27 @@ function RenameTrigger({
         .strip(),
     },
     onSubmit: async ({ formApi, value }) => {
-      const res = await updateEnvironment({
+      await updateEnvironment({
         id: environment.id,
         displayName: value.name,
         teamId,
         projectId,
       });
 
-      const environmentId = res.data.id;
-      invalidateProject();
-      invalidateProjects();
+      const invalidateRes = await ResultAsync.fromPromise(
+        invalidateEnvironments(),
+        () => new Error("Failed to fetch environments"),
+      );
+
+      if (invalidateRes.isErr()) {
+        toast.error("Failed to fetch environments", {
+          description: invalidateRes.error.message,
+        });
+      }
 
       setOpen(false);
-
       formApi.reset();
+      closeDropdown();
     },
   });
 
@@ -386,6 +487,172 @@ function RenameTrigger({
                   isPending={isSubmitting ? true : false}
                 >
                   Rename
+                </form.SubmitButton>
+              )}
+            />
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function SelectedIndicator({ isSelected }: { isSelected: boolean | undefined }) {
+  return (
+    <div
+      data-selected={isSelected ? true : undefined}
+      className="group/indicator data-selected:ring-foreground/50 absolute top-0 left-0 h-full w-full rounded-lg ring-1 ring-transparent"
+    />
+  );
+}
+
+export function NewEnvironmentCard({ teamId, projectId }: { teamId: string; projectId: string }) {
+  const {
+    mutateAsync: createEnvironment,
+    error: createEnvironmentError,
+    reset: createEnvironmentReset,
+  } = api.environments.create.useMutation({
+    onSuccess: () => {
+      invalidateProject();
+      invalidateProjects();
+    },
+  });
+  const { asyncPush } = useAsyncPush();
+
+  const { invalidate: invalidateProjects } = useProjectsUtils({ teamId });
+  const { invalidate: invalidateProject } = useProjectUtils({ teamId, projectId });
+  const {
+    utils: { invalidate: invalidateEnvironments },
+  } = useEnvironments();
+
+  const [open, setOpen] = useState(false);
+
+  const form = useAppForm({
+    defaultValues: {
+      name: "",
+    },
+    validators: {
+      onChange: z
+        .object({
+          name: CreateEnvironmentFormNameSchema,
+        })
+        .strip(),
+    },
+    onSubmit: async ({ formApi, value }) => {
+      const res = await createEnvironment({
+        displayName: value.name,
+        teamId,
+        projectId,
+      });
+
+      const newEnvironmentId = res.data.id;
+
+      const invalidateRes = await ResultAsync.fromPromise(
+        invalidateEnvironments(),
+        () => new Error("Failed to fetch environments"),
+      );
+
+      if (invalidateRes.isErr()) {
+        toast.error("Failed to fetch environments", {
+          description: invalidateRes.error.message,
+        });
+      }
+
+      const navigateRes = await ResultAsync.fromPromise(
+        asyncPush(
+          `/${teamId}/project/${projectId}/settings/environments?environment=${newEnvironmentId}`,
+        ),
+        () => new Error("Failed to navigate to environments"),
+      );
+      if (navigateRes.isErr()) {
+        toast.error("Failed to navigate", {
+          description: navigateRes.error.message,
+        });
+      }
+
+      setOpen(false);
+      formApi.reset();
+    },
+  });
+
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (!o) {
+          if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+          }
+          timeoutRef.current = setTimeout(() => {
+            form.reset();
+            createEnvironmentReset();
+          }, defaultAnimationMs);
+        }
+      }}
+    >
+      <DialogTrigger asChild>
+        <li className="relative w-full p-1 sm:w-1/2">
+          <div className="group/item relative flex w-full items-center justify-start">
+            <Button
+              variant="outline"
+              className="text-muted-foreground has-hover:group-hover/item:bg-background-hover flex w-full flex-row items-center justify-start px-4 py-3 font-medium"
+            >
+              <PlusIcon className="-my-1 -ml-1 size-4.5 shrink-0" />
+              <p className="group-data-pending/item:bg-foreground group-data-pending/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-pending/item:rounded-md group-data-pending/item:text-transparent">
+                Create Environment
+              </p>
+            </Button>
+          </div>
+        </li>
+      </DialogTrigger>
+      <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
+        <DialogHeader>
+          <DialogTitle>Create Environment</DialogTitle>
+          <DialogDescription>Give a name to the new environment.</DialogDescription>
+        </DialogHeader>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            form.handleSubmit();
+          }}
+          className="mt-2 flex flex-col"
+        >
+          <form.AppField
+            name="name"
+            children={(field) => (
+              <field.TextField
+                autoCapitalize="none"
+                dontCheckUntilSubmit
+                field={field}
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(e) => field.handleChange(e.target.value)}
+                className="w-full"
+                placeholder={"staging"}
+                maxLength={environmentNameMaxLength}
+              />
+            )}
+          />
+          {createEnvironmentError && (
+            <ErrorLine message={createEnvironmentError?.message} className="mt-4" />
+          )}
+          <div className="mt-4 flex w-full flex-wrap items-center justify-end gap-2">
+            <DialogClose asChild className="text-muted-foreground">
+              <Button type="button" variant="ghost">
+                Close
+              </Button>
+            </DialogClose>
+            <form.Subscribe
+              selector={(state) => [state.isSubmitting]}
+              children={([isSubmitting]) => (
+                <form.SubmitButton
+                  data-submitting={isSubmitting ? true : undefined}
+                  isPending={isSubmitting ? true : false}
+                >
+                  Create
                 </form.SubmitButton>
               )}
             />

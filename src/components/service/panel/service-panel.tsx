@@ -23,6 +23,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { defaultAnimationMs } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import {
   serviceDescriptionMaxLength,
@@ -177,7 +178,7 @@ function TitleButton({
           timeout.current = setTimeout(() => {
             form.reset();
             reset();
-          }, 200);
+          }, defaultAnimationMs);
         }
       }}
     >

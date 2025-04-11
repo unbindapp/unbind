@@ -14,6 +14,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/components/ui/utils";
+import { defaultAnimationMs } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { api } from "@/server/trpc/setup/client";
@@ -94,7 +95,7 @@ function DeleteButton({ teamId, projectId }: { teamId: string; projectId: string
           timeout.current = setTimeout(() => {
             form.reset();
             reset();
-          }, 200);
+          }, defaultAnimationMs);
         }
       }}
     >

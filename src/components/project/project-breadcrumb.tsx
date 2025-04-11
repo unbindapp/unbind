@@ -39,6 +39,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useProject, useProjectUtils } from "@/components/project/project-provider";
 import { defaultAnimationMs } from "@/lib/constants";
+import { useEnvironmentsUtils } from "@/components/environment/environments-provider";
 
 type TProps = {
   className?: string;
@@ -239,6 +240,7 @@ function CreateEnvironmentDialog({
   const { asyncPush } = useAsyncPush();
   const { invalidate: invalidateProjects } = useProjectsUtils({ teamId });
   const { invalidate: invalidateProject } = useProjectUtils({ teamId, projectId });
+  const { invalidate: invalidateEnvironments } = useEnvironmentsUtils({ teamId, projectId });
 
   const [open, setOpen] = useState(false);
 
@@ -263,13 +265,14 @@ function CreateEnvironmentDialog({
       const environmentId = res.data.id;
       invalidateProject();
       invalidateProjects();
+      invalidateEnvironments();
 
       setOpen(false);
       onFormSubmitSuccessful();
 
       const asyncPushRes = await ResultAsync.fromPromise(
         asyncPush(`/${teamId}/project/${projectId}?environment=${environmentId}`),
-        () => new Error("Failed to navigate to project"),
+        () => new Error("Failed to navigate"),
       );
       if (asyncPushRes.isErr()) {
         toast.error("Failed to navigate to project", {
