@@ -24,6 +24,8 @@ const buttonVariants = cva(
           "bg-success text-success-foreground has-hover:hover:bg-success/85 active:bg-success/85",
         outline:
           "border border-border bg-background has-hover:hover:bg-border active:bg-border has-hover:hover:text-foreground active:text-foreground",
+        "outline-muted":
+          "border border-border bg-background has-hover:hover:bg-background-hover active:bg-background-hover has-hover:hover:text-foreground active:text-foreground",
         "outline-foreground":
           "border border-foreground bg-background has-hover:hover:bg-foreground/8 active:bg-foreground/8 has-hover:hover:text-foreground active:text-foreground",
         "warning-outline":

@@ -4,6 +4,7 @@ import SettingsLayout from "@/components/settings/settings-layout";
 import { TSettingsTab } from "@/components/settings/settings-tabs";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import {
+  BoxIcon,
   KeyRoundIcon,
   SlidersHorizontalIcon,
   TriangleAlertIcon,
@@ -30,6 +31,12 @@ export default function Layout({ children }: { children: ReactNode }) {
         label: "Shared Variables",
         href: `${basePath}/shared-variables`,
         Icon: KeyRoundIcon,
+        searchParamStr: environment,
+      },
+      {
+        label: "Environments",
+        href: `${basePath}/environments`,
+        Icon: BoxIcon,
         searchParamStr: environment,
       },
       {
