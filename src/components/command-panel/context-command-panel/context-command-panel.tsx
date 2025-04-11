@@ -76,6 +76,7 @@ function ContextCommandPanel_({ context, triggerType, title, description, childr
     <ContextCommandPanelItemsProvider
       teamId={context.teamId}
       projectId={context.projectId || ""}
+      environmentId={context.environmentId}
       page={currentPage}
       context={context}
       triggerType={triggerType}

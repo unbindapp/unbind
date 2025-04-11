@@ -3,6 +3,7 @@
 import ContextCommandPanel from "@/components/command-panel/context-command-panel/context-command-panel";
 import { TContextCommandPanelContext } from "@/components/command-panel/types";
 import { useProject } from "@/components/project/project-provider";
+import { useServices } from "@/components/project/services-provider";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
@@ -15,10 +16,11 @@ type TProps = {
 
 export default function NewServiceButton({ className }: TProps) {
   const { teamId, projectId } = useProject();
+  const { environmentId } = useServices();
 
   const context: TContextCommandPanelContext = useMemo(
-    () => ({ contextType: "new-service", teamId, projectId }),
-    [teamId, projectId],
+    () => ({ contextType: "new-service", teamId, projectId, environmentId }),
+    [teamId, projectId, environmentId],
   );
 
   return (

@@ -23,11 +23,12 @@ const ContextCommandPanelItemsContext = createContext<TContextCommandPanelItemsC
 export const ContextCommandPanelItemsProvider: React.FC<{
   teamId: string;
   projectId: string;
+  environmentId: string | undefined;
   page: TCommandPanelPage;
   context: TContextCommandPanelContext;
   triggerType: string;
   children: ReactNode;
-}> = ({ teamId, projectId, page, context, triggerType, children }) => {
+}> = ({ teamId, projectId, environmentId, page, context, triggerType, children }) => {
   const search = useCommandPanelStore((s) => s.search);
 
   const searchKey = useMemo(() => {
@@ -42,6 +43,7 @@ export const ContextCommandPanelItemsProvider: React.FC<{
       "context-aware-command-panel-items",
       teamId,
       projectId,
+      environmentId,
       page.id,
       context,
       triggerType,

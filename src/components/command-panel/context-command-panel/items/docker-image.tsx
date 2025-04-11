@@ -67,7 +67,7 @@ export default function useDockerImageItem({ context }: TProps) {
         toast.error("No environments found.");
         throw new Error("No environments found.");
       }
-      const environmentId = projectData.project.default_environment_id || environments[0].id;
+      const defaultEnvironmentId = projectData.project.default_environment_id || environments[0].id;
       const imageParts = image.split("/");
       const imageName = imageParts[imageParts.length - 1];
       const imageTag = imageName.split(":");
@@ -79,7 +79,7 @@ export default function useDockerImageItem({ context }: TProps) {
         displayName: imageNameWithoutTag,
         teamId: context.teamId,
         projectId,
-        environmentId,
+        environmentId: context.environmentId || defaultEnvironmentId,
         public: true,
         image,
       });

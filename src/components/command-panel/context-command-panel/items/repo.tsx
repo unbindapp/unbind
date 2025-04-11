@@ -48,11 +48,13 @@ function useRepoItem({ context }: TProps) {
 
   const { openPanel: openServicePanel } = useServicePanel();
 
+  const environments = projectData?.project.environments;
+  const defaultEnvironmentId = projectData?.project.default_environment_id || environments?.[0]?.id;
+
   const { refetch: refetchServices } = useServicesUtils({
     teamId: context.teamId,
     projectId,
-    environmentId:
-      projectData?.project.default_environment_id || projectData?.project.environments[0].id || "",
+    environmentId: context.environmentId || defaultEnvironmentId || "",
   });
 
   const { mutateAsync: createServiceViaApi } = api.services.create.useMutation();
@@ -63,15 +65,14 @@ function useRepoItem({ context }: TProps) {
     }: {
       repository: AppRouterOutputs["git"]["listRepositories"]["repositories"][number];
     }) => {
-      const environments = projectData?.project.environments;
-      if (!environments || environments.length < 1) {
-        toast.error("No environments found.");
-        throw new Error("No environments found.");
-      }
-      const environmentId = projectData?.project.default_environment_id || environments[0].id;
       const owner = repository.full_name.split("/")[0];
       const repoName = repository.full_name.split("/")[1];
       const installationId = repository.installation_id;
+      const environmentId = context.environmentId || defaultEnvironmentId;
+      if (!environmentId) {
+        toast.error("No environment found");
+        throw new Error("No environment found");
+      }
       const result = await createServiceViaApi({
         type: "github",
         builder: "railpack",

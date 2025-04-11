@@ -18,8 +18,8 @@ export default function ServiceCardList() {
   const services = data?.services;
 
   const context: TContextCommandPanelContext = useMemo(
-    () => ({ contextType: "new-service", teamId, projectId }),
-    [teamId, projectId],
+    () => ({ contextType: "new-service", teamId, projectId, environmentId }),
+    [teamId, projectId, environmentId],
   );
 
   return (

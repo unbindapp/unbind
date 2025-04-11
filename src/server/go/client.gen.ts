@@ -120,9 +120,12 @@ export const ProjectResponseSchema = z
     default_environment_id: z.string().optional(),
     description: z.string().nullable(),
     display_name: z.string(),
+    environment_count: z.number(),
     environments: z.array(EnvironmentResponseSchema),
     id: z.string(),
     name: z.string(),
+    service_count: z.number().optional(),
+    service_icons: z.array(z.string()).optional(),
     status: z.string(),
     team_id: z.string(),
   })

@@ -37,19 +37,23 @@ export type TContextCommandPanelContext =
       contextType: "team";
       teamId: string;
       projectId?: never;
-    }
-  | {
-      contextType: "project";
-      teamId: string;
-      projectId: string;
-    }
-  | {
-      contextType: "new-service";
-      teamId: string;
-      projectId: string;
+      environmentId?: never;
     }
   | {
       contextType: "new-project";
       teamId: string;
       projectId?: never;
+      environmentId?: never;
+    }
+  | {
+      contextType: "project";
+      teamId: string;
+      projectId: string;
+      environmentId: string;
+    }
+  | {
+      contextType: "new-service";
+      teamId: string;
+      projectId: string;
+      environmentId: string;
     };

@@ -19,9 +19,9 @@ export default function ProjectCard({ project, className }: TProps) {
         ? environments.find((e) => e.id === project.default_environment_id)
         : project.environments[0]
       : null;
-  const serviceCount = defaultEnvironment?.service_count;
 
-  const serviceIcons = defaultEnvironment?.service_icons;
+  const serviceCount = project.service_count;
+  const serviceIcons = project.service_icons;
 
   if (!defaultEnvironment)
     return (
@@ -48,7 +48,7 @@ export default function ProjectCard({ project, className }: TProps) {
           <div className="text-muted-foreground flex w-full items-center justify-between gap-3">
             <p className="min-w-0 shrink overflow-hidden text-sm font-medium text-ellipsis whitespace-nowrap">
               {serviceCount !== undefined && serviceCount > 0
-                ? `${defaultEnvironment.service_count} service${serviceCount > 1 ? "s" : ""}`
+                ? `${serviceCount} service${serviceCount > 1 ? "s" : ""}`
                 : "No services"}
             </p>
             {serviceIcons !== undefined && serviceIcons.length > 0 && (
