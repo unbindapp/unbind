@@ -33,7 +33,7 @@ export default function useNewProjectItem({ context }: TProps) {
         setIsPendingId(null);
         return;
       }
-      const environmentId = environments[0].id;
+      const environmentId = res.data.default_environment_id || environments[0].id;
       if (!projectId || !environmentId) {
         toast.error("Project or environment ID is missing", {
           description: "Project ID or Environment ID is missing",

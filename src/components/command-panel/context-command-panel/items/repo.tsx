@@ -51,7 +51,8 @@ function useRepoItem({ context }: TProps) {
   const { refetch: refetchServices } = useServicesUtils({
     teamId: context.teamId,
     projectId,
-    environmentId: projectData?.project.environments[0].id || "",
+    environmentId:
+      projectData?.project.default_environment_id || projectData?.project.environments[0].id || "",
   });
 
   const { mutateAsync: createServiceViaApi } = api.services.create.useMutation();
@@ -67,7 +68,7 @@ function useRepoItem({ context }: TProps) {
         toast.error("No environments found.");
         throw new Error("No environments found.");
       }
-      const environmentId = environments[0].id;
+      const environmentId = projectData?.project.default_environment_id || environments[0].id;
       const owner = repository.full_name.split("/")[0];
       const repoName = repository.full_name.split("/")[1];
       const installationId = repository.installation_id;

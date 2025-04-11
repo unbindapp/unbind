@@ -78,10 +78,11 @@ export const CreateBuildOutputBodySchema = z
   })
   .strip();
 
-export const CreateProjectInputBodySchema = z
+export const CreateEnvironmentInputSchema = z
   .object({
-    description: z.string().nullable().optional(),
+    description: z.string().nullable(),
     display_name: z.string(),
+    project_id: z.string(),
     team_id: z.string(),
   })
   .strip();
@@ -99,9 +100,24 @@ export const EnvironmentResponseSchema = z
   })
   .strip();
 
+export const CreateEnvironmentResponseBodySchema = z
+  .object({
+    data: EnvironmentResponseSchema,
+  })
+  .strip();
+
+export const CreateProjectInputBodySchema = z
+  .object({
+    description: z.string().nullable().optional(),
+    display_name: z.string(),
+    team_id: z.string(),
+  })
+  .strip();
+
 export const ProjectResponseSchema = z
   .object({
     created_at: z.string().datetime(),
+    default_environment_id: z.string().optional(),
     description: z.string().nullable(),
     display_name: z.string(),
     environments: z.array(EnvironmentResponseSchema),
@@ -665,6 +681,12 @@ export const ListDeploymentsResponseBodySchema = z
   })
   .strip();
 
+export const ListEnvironmentsOutputBodySchema = z
+  .object({
+    data: z.array(EnvironmentResponseSchema).nullable(),
+  })
+  .strip();
+
 export const ListProjectResponseBodySchema = z
   .object({
     data: z.array(ProjectResponseSchema).nullable(),
@@ -761,8 +783,25 @@ export const UpdatServiceResponseBodySchema = z
   })
   .strip();
 
+export const UpdateEnvironmentInputSchema = z
+  .object({
+    description: z.string().nullable(),
+    environment_id: z.string(),
+    name: z.string().nullable(),
+    project_id: z.string(),
+    team_id: z.string(),
+  })
+  .strip();
+
+export const UpdateEnvironmentResponseBodySchema = z
+  .object({
+    data: EnvironmentResponseSchema,
+  })
+  .strip();
+
 export const UpdateProjectInputBodySchema = z
   .object({
+    default_environment_id: z.string().optional(),
     description: z.string().nullable().optional(),
     display_name: z.string().optional(),
     project_id: z.string(),
@@ -852,8 +891,10 @@ export type GitCommitter = z.infer<typeof GitCommitterSchema>;
 export type DeploymentStatus = z.infer<typeof DeploymentStatusSchema>;
 export type DeploymentResponse = z.infer<typeof DeploymentResponseSchema>;
 export type CreateBuildOutputBody = z.infer<typeof CreateBuildOutputBodySchema>;
-export type CreateProjectInputBody = z.infer<typeof CreateProjectInputBodySchema>;
+export type CreateEnvironmentInput = z.infer<typeof CreateEnvironmentInputSchema>;
 export type EnvironmentResponse = z.infer<typeof EnvironmentResponseSchema>;
+export type CreateEnvironmentResponseBody = z.infer<typeof CreateEnvironmentResponseBodySchema>;
+export type CreateProjectInputBody = z.infer<typeof CreateProjectInputBodySchema>;
 export type ProjectResponse = z.infer<typeof ProjectResponseSchema>;
 export type CreateProjectResponseBody = z.infer<typeof CreateProjectResponseBodySchema>;
 export type ServiceBuilder = z.infer<typeof ServiceBuilderSchema>;
@@ -922,6 +963,7 @@ export type ListDatabasesResponseBody = z.infer<typeof ListDatabasesResponseBody
 export type PaginationResponseMetadata = z.infer<typeof PaginationResponseMetadataSchema>;
 export type ListDeploymentResponseData = z.infer<typeof ListDeploymentResponseDataSchema>;
 export type ListDeploymentsResponseBody = z.infer<typeof ListDeploymentsResponseBodySchema>;
+export type ListEnvironmentsOutputBody = z.infer<typeof ListEnvironmentsOutputBodySchema>;
 export type ListProjectResponseBody = z.infer<typeof ListProjectResponseBodySchema>;
 export type ListServiceResponseBody = z.infer<typeof ListServiceResponseBodySchema>;
 export type LogMetadata = z.infer<typeof LogMetadataSchema>;
@@ -939,6 +981,8 @@ export type SystemMeta = z.infer<typeof SystemMetaSchema>;
 export type SystemMetaResponseBody = z.infer<typeof SystemMetaResponseBodySchema>;
 export type TeamResponseBody = z.infer<typeof TeamResponseBodySchema>;
 export type UpdatServiceResponseBody = z.infer<typeof UpdatServiceResponseBodySchema>;
+export type UpdateEnvironmentInput = z.infer<typeof UpdateEnvironmentInputSchema>;
+export type UpdateEnvironmentResponseBody = z.infer<typeof UpdateEnvironmentResponseBodySchema>;
 export type UpdateProjectInputBody = z.infer<typeof UpdateProjectInputBodySchema>;
 export type UpdateProjectResponseBody = z.infer<typeof UpdateProjectResponseBodySchema>;
 export type UpdateServiceInput = z.infer<typeof UpdateServiceInputSchema>;
@@ -980,6 +1024,13 @@ export const list_deploymentsQuerySchema = z
 export const get_environmentQuerySchema = z
   .object({
     id: z.string(),
+    team_id: z.string(),
+    project_id: z.string(),
+  })
+  .passthrough();
+
+export const list_environmentsQuerySchema = z
+  .object({
     team_id: z.string(),
     project_id: z.string(),
   })
@@ -1352,6 +1403,46 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
       },
     },
     environments: {
+      create: async (
+        params: CreateEnvironmentInput,
+        fetchOptions?: RequestInit,
+      ): Promise<CreateEnvironmentResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/environments/create`);
+
+          const options: RequestInit = {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = CreateEnvironmentInputSchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return CreateEnvironmentResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
       delete: async (
         params: DeleteEnvironmentInputBody,
         fetchOptions?: RequestInit,
@@ -1433,6 +1524,92 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           }
           const data = await response.json();
           return GetEnvironmentOutputBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      list: async (
+        params: z.infer<typeof list_environmentsQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<ListEnvironmentsOutputBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/environments/list`);
+          const validatedQuery = list_environmentsQuerySchema.parse(params);
+          const queryKeys = ['team_id', 'project_id'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return ListEnvironmentsOutputBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      update: async (
+        params: UpdateEnvironmentInput,
+        fetchOptions?: RequestInit,
+      ): Promise<UpdateEnvironmentResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/environments/update`);
+
+          const options: RequestInit = {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = UpdateEnvironmentInputSchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return UpdateEnvironmentResponseBodySchema.parse(data);
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;

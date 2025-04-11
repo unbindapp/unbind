@@ -49,7 +49,9 @@ export default function ProjectBreadcrumb({ className }: TProps) {
       const project = projectsData?.projects.find((p) => p.id === id);
       const environments = project?.environments;
       if (!environments || environments.length < 1) return null;
-      const environment = environments[0];
+      const environment = project.default_environment_id
+        ? project.environments.find((e) => e.id === project.default_environment_id)
+        : environments[0];
       if (!project || !environment || !teamIdFromPathname) return null;
       return `/${teamIdFromPathname}/project/${project.id}?environment=${environment.id}`;
     },

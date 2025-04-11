@@ -13,8 +13,14 @@ const iconLength = 4;
 
 export default function ProjectCard({ project, className }: TProps) {
   const environments = project.environments;
-  const defaultEnvironment = environments.length >= 1 ? project.environments[0] : null;
+  const defaultEnvironment =
+    environments.length >= 1
+      ? project.default_environment_id
+        ? environments.find((e) => e.id === project.default_environment_id)
+        : project.environments[0]
+      : null;
   const serviceCount = defaultEnvironment?.service_count;
+
   const serviceIcons = defaultEnvironment?.service_icons;
 
   if (!defaultEnvironment)

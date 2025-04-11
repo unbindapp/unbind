@@ -26,7 +26,7 @@ export async function getProjectPageSearchParams({
     if (environments.length === 0) {
       throw Error("No environments found");
     }
-    const environmentId = environments[0].id;
+    const environmentId = res.project.default_environment_id || environments[0].id;
     redirect(`${currentPathname}?environment=${environmentId}`);
   }
   return { environmentId };

@@ -54,7 +54,8 @@ export default function useDockerImageItem({ context }: TProps) {
   const { refetch: refetchServices } = useServicesUtils({
     teamId: context.teamId,
     projectId,
-    environmentId: projectData?.project.environments[0].id || "",
+    environmentId:
+      projectData?.project.default_environment_id || projectData?.project.environments[0].id || "",
   });
 
   const { mutateAsync: createServiceViaApi } = api.services.create.useMutation();
@@ -66,7 +67,7 @@ export default function useDockerImageItem({ context }: TProps) {
         toast.error("No environments found.");
         throw new Error("No environments found.");
       }
-      const environmentId = environments[0].id;
+      const environmentId = projectData.project.default_environment_id || environments[0].id;
       const imageParts = image.split("/");
       const imageName = imageParts[imageParts.length - 1];
       const imageTag = imageName.split(":");
