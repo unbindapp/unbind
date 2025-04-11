@@ -51,6 +51,7 @@ export default function TeamBreadcrumb({ className }: TProps) {
         items={teamData?.teams}
         onSelect={onTeamIdSelect}
         newItemTitle="New Team"
+        newItemIsPending={false}
         onSelectNewItem={() =>
           toast.success("New team created", {
             description: "This is fake.",

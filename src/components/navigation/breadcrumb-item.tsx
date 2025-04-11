@@ -26,9 +26,20 @@ type TProps<T> = {
   flipChevronOnSm?: boolean;
   showArrow?: (i: T) => boolean;
 } & (
-  | { newItemTitle: string; onSelectNewItem: () => void }
-  | { newItemTitle?: undefined; onSelectNewItem?: undefined }
-);
+  | {
+      newItemTitle: string;
+      newItemIsPending: boolean;
+      newItemDontCloseMenuOnSelect?: boolean;
+      onSelectNewItem: (id: string) => void;
+    }
+  | {
+      newItemTitle?: never;
+      newItemIsPending?: never;
+      onSelectNewItem?: never;
+      newItemDontCloseMenuOnSelect?: never;
+    }
+) &
+  ({ open: boolean; setOpen: (open: boolean) => void } | { open?: never; setOpen?: never });
 
 export function BreadcrumbItem<T>({
   title,
@@ -38,11 +49,18 @@ export function BreadcrumbItem<T>({
   IconItem,
   flipChevronOnSm,
   newItemTitle,
+  newItemIsPending,
+  newItemDontCloseMenuOnSelect,
   onSelectNewItem,
   showArrow,
+  open: openProp,
+  setOpen: setOpenProp,
 }: TProps<T>) {
-  const [open, setOpen] = useState(false);
+  const [openLocal, setOpenLocal] = useState(false);
   const [lastHoveredItem, setLastHoveredItem] = useState(selectedItem);
+
+  const open = openProp !== undefined ? openProp : openLocal;
+  const setOpen = setOpenProp !== undefined ? setOpenProp : setOpenLocal;
 
   useEffect(() => {
     setLastHoveredItem(selectedItem);
@@ -83,7 +101,9 @@ export function BreadcrumbItem<T>({
             <>
               <div className="bg-border pointer-events-none my-2 h-px w-full shrink-0 rounded-full" />
               <SheetItem
+                dontCloseMenuOnSelect={newItemDontCloseMenuOnSelect}
                 item={newItem}
+                isPending={newItemIsPending}
                 onSelect={onSelectNewItem}
                 setOpen={setOpen}
                 selectedItem={selectedItem}
@@ -121,7 +141,9 @@ export function BreadcrumbItem<T>({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownItem
+                dontCloseMenuOnSelect={newItemDontCloseMenuOnSelect}
                 item={newItem}
+                isPending={newItemIsPending}
                 onSelect={onSelectNewItem}
                 setOpen={setOpen}
                 selectedItem={selectedItem}
@@ -142,29 +164,36 @@ function SheetItem<T>({
   item,
   selectedItem,
   setOpen,
+  dontCloseMenuOnSelect,
   onSelect,
   lastHoveredItem,
   setLastHoveredItem,
   showArrow,
   IconItem,
+  isPending,
   className,
 }: {
   item: Item<T>;
   selectedItem: Item<T> | null | undefined;
   setOpen: (open: boolean) => void;
+  dontCloseMenuOnSelect?: boolean;
   onSelect: (id: string) => void;
   lastHoveredItem: Item<T> | null | undefined;
   setLastHoveredItem: Dispatch<SetStateAction<Item<T> | null | undefined>>;
   showArrow?: (i: Item<T>) => boolean;
   IconItem?: FC<{ id: string; className?: string }>;
+  isPending?: boolean;
   className?: string;
 }) {
   return (
     <Button
       onClick={() => {
-        setOpen(false);
+        if (!dontCloseMenuOnSelect) {
+          setOpen(false);
+        }
         onSelect(item.id);
       }}
+      data-pending={isPending ? true : undefined}
       data-last-hovered={lastHoveredItem?.id === item.id ? true : undefined}
       onMouseEnter={() => setLastHoveredItem(item)}
       onTouchStart={() => setLastHoveredItem(item)}
@@ -175,11 +204,16 @@ function SheetItem<T>({
         className,
       )}
     >
-      <div className="flex min-w-0 flex-1 items-center gap-1.5">
+      {isPending && (
+        <div className="bg-background border-top-loader/25 absolute top-0 left-0 h-full w-full items-center justify-center overflow-hidden rounded-lg border">
+          <div className="from-top-loader/0 via-top-loader/25 to-top-loader/0 animate-ping-pong absolute top-1/2 left-1/2 aspect-square w-[100%] origin-center -translate-1/2 bg-gradient-to-r" />
+        </div>
+      )}
+      <div className="group-data-pending/item:text-foreground relative flex min-w-0 flex-1 items-center gap-1.5">
         {IconItem && <IconItem id={item.id} className="-my-1 -ml-1 size-5 shrink-0" />}
         <p className="min-w-0 shrink">{item.display_name}</p>
       </div>
-      <div className="relative -mr-0.5 size-5">
+      <div className="group-data-pending/item:text-foreground relative -mr-0.5 size-5">
         {selectedItem?.id === item.id && (
           <>
             <CheckIcon
@@ -201,27 +235,35 @@ function DropdownItem<T>({
   item,
   selectedItem,
   setOpen,
+  dontCloseMenuOnSelect,
   onSelect,
   lastHoveredItem,
   setLastHoveredItem,
   showArrow,
   IconItem,
+  isPending,
   className,
 }: {
   item: Item<T>;
   selectedItem: Item<T> | null | undefined;
   setOpen: (open: boolean) => void;
+  dontCloseMenuOnSelect?: boolean;
   onSelect: (id: string) => void;
   lastHoveredItem: Item<T> | null | undefined;
   setLastHoveredItem: Dispatch<SetStateAction<Item<T> | null | undefined>>;
   showArrow?: (i: Item<T>) => boolean;
   IconItem?: FC<{ id: string; className?: string }>;
+  isPending?: boolean;
   className?: string;
 }) {
   return (
     <DropdownMenuItem
-      onSelect={() => {
-        setOpen(false);
+      onSelect={(e) => {
+        if (!dontCloseMenuOnSelect) {
+          setOpen(false);
+        } else {
+          e.preventDefault();
+        }
         onSelect(item.id);
       }}
       data-show-arrow={showArrow?.(item) ? true : undefined}
@@ -230,14 +272,20 @@ function DropdownItem<T>({
         `group/item data-last-hovered:bg-border data-highlighted:group-has-[*[data-highlighted]]/list:bg-border justify-between group-has-[*[data-highlighted]]/list:bg-transparent`,
         className,
       )}
+      data-pending={isPending ? true : undefined}
       onMouseEnter={() => setLastHoveredItem(item)}
       onTouchStart={() => setLastHoveredItem(item)}
     >
-      <div className="flex min-w-0 flex-1 items-center gap-1.5">
+      {isPending && (
+        <div className="bg-background border-top-loader/25 absolute top-0 left-0 h-full w-full items-center justify-center overflow-hidden rounded-md border">
+          <div className="from-top-loader/0 via-top-loader/25 to-top-loader/0 animate-ping-pong absolute top-1/2 left-1/2 aspect-square w-[100%] origin-center -translate-1/2 bg-gradient-to-r" />
+        </div>
+      )}
+      <div className="group-data-pending/item:text-foreground relative flex min-w-0 flex-1 items-center gap-1.5">
         {IconItem && <IconItem id={item.id} className="-my-1 -ml-0.5 size-4.5 shrink-0" />}
         <p className="min-w-0 shrink">{item.display_name}</p>
       </div>
-      <div className="relative -mr-0.5 size-4.5 shrink-0 transition-transform group-data-highlighted/item:group-data-show-arrow/item:rotate-90">
+      <div className="group-data-pending/item:text-foreground relative -mr-0.5 size-4.5 shrink-0 transition-transform group-data-highlighted/item:group-data-show-arrow/item:rotate-90">
         {selectedItem?.id === item.id && (
           <>
             <CheckIcon
