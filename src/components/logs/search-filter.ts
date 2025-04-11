@@ -3,41 +3,48 @@ export function createSearchFilter(search: string): string {
     return "";
   }
 
+  // Escape any unescaped double quotes inside the search string.
+  // This replaces " with \"
+  const escapedSearch = search.replace(/"/g, '\\"');
+
   // Handle strict search with quotes (entire string is quoted)
-  if (search.startsWith('"') && search.endsWith('"')) {
-    const strictTerm = search.substring(1, search.length - 1);
+  if (escapedSearch.startsWith('\\"') && escapedSearch.endsWith('\\"')) {
+    const strictTerm = escapedSearch.substring(2, escapedSearch.length - 2);
     return `|= "${strictTerm}"`;
   }
 
   // Handle OR expressions by converting to regex alternation
-  if (search.includes(" OR ")) {
-    const parts = search
+  if (escapedSearch.includes(" OR ")) {
+    const parts = escapedSearch
       .split(" OR ")
       .map((part) => part.trim())
       .filter(Boolean);
-    // Remove quotes if present for literal matching
+    // Remove extra escaped quotes for literal matching
     const regexParts = parts.map((part) => {
-      return part.startsWith('"') && part.endsWith('"') ? part.substring(1, part.length - 1) : part;
+      return part.startsWith('\\"') && part.endsWith('\\"')
+        ? part.substring(2, part.length - 2)
+        : part;
     });
     // Build a case-insensitive alternation
     return `|~ "(?i:(${regexParts.join("|")}))"`;
   }
 
-  // Handle AND expressions by converting to an in-order regex
-  if (search.includes(" AND ")) {
-    const parts = search
+  // Handle AND expressions by converting to multiple filters
+  if (escapedSearch.includes(" AND ")) {
+    const parts = escapedSearch
       .split(" AND ")
       .map((part) => part.trim())
-      .filter(Boolean)
+      .filter(Boolean);
+    return parts
       .map((part) => {
-        return part.startsWith('"') && part.endsWith('"')
-          ? part.substring(1, part.length - 1)
-          : part;
-      });
-    // Concatenate parts with .* so they must appear in order
-    return `|~ "(?i:${parts.join(".*")})"`;
+        if (part.startsWith('\\"') && part.endsWith('\\"')) {
+          part = part.substring(2, part.length - 2);
+        }
+        return `|~ "(?i:${part})"`;
+      })
+      .join(" ");
   }
 
   // Default case: simple case-insensitive regex search
-  return `|~ "(?i:${search})"`;
+  return `|~ "(?i:${escapedSearch})"`;
 }
