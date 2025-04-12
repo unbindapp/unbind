@@ -27,17 +27,8 @@ function InputWithInfo({
   infoClassName?: string;
   dontCheckUntilSubmit?: boolean;
 }) {
-  const [isFormSubmitted, setIsFormSubmitted] = useState(false);
   const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
-  useEffect(() => {
-    if (submissionAttempts === 0) {
-      setIsFormSubmitted(false);
-      return;
-    }
-    if (submissionAttempts > 0) {
-      setIsFormSubmitted(true);
-    }
-  }, [submissionAttempts]);
+  const isFormSubmitted = submissionAttempts > 0;
 
   if (hideInfo) {
     return <Input {...rest} className={cn("w-full", className, inputClassName)} />;
