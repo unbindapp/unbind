@@ -92,6 +92,7 @@ export default function useDockerImageItem({ context }: TProps) {
       closeCommandPanel();
       invalidateProject();
       invalidateProjects();
+
       const res = await ResultAsync.fromPromise(
         refetchServices(),
         () => new Error("Failed to refetch services"),
@@ -103,7 +104,9 @@ export default function useDockerImageItem({ context }: TProps) {
         setIsPendingId(null);
         return;
       }
+
       openServicePanel(data.service.id);
+
       setIsPendingId(null);
     },
     onError: (error) => {

@@ -92,6 +92,10 @@ function useRepoItem({ context }: TProps) {
       return result;
     },
     onSuccess: async (data) => {
+      closeCommandPanel();
+      invalidateProject();
+      invalidateProjects();
+
       const refetchRes = await ResultAsync.fromPromise(
         refetchServices(),
         () => new Error("Failed to refetch services"),
@@ -104,10 +108,8 @@ function useRepoItem({ context }: TProps) {
         return;
       }
 
-      closeCommandPanel();
       openServicePanel(data.service.id);
-      invalidateProject();
-      invalidateProjects();
+
       setIsPendingId(null);
     },
     onError: (error) => {

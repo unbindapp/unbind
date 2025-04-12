@@ -1,5 +1,6 @@
 "use client";
 
+import { useDeploymentPanelId } from "@/components/deployment/panel/deployment-panel-id-provider";
 import {
   servicePanelDefaultTabId,
   servicePanelServiceIdKey,
@@ -8,6 +9,7 @@ import {
   TServicePanelTabEnum,
 } from "@/components/service/panel/constants";
 import { drawerAnimationMs } from "@/lib/constants";
+import useEffectAfterMount from "@/lib/hooks/use-effect-after-mount";
 import { parseAsStringEnum, useQueryState, UseQueryStateReturn } from "nuqs";
 import { createContext, ReactNode, useContext, useMemo, useRef } from "react";
 
@@ -26,12 +28,17 @@ const ServicePanelContext = createContext<TServicePanelContext | null>(null);
 export const ServicePanelProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
+  const { setDeploymentPanelId } = useDeploymentPanelId();
   const [currentTabId, setCurrentTabId] = useQueryState(
     servicePanelTabKey,
     parseAsStringEnum(ServicePanelTabEnum.options).withDefault(servicePanelDefaultTabId),
   );
 
   const [currentServiceId, setCurrentServiceId] = useQueryState(servicePanelServiceIdKey);
+
+  useEffectAfterMount(() => {
+    setDeploymentPanelId(null);
+  }, [currentServiceId]);
 
   const timeout = useRef<NodeJS.Timeout | null>(null);
 
