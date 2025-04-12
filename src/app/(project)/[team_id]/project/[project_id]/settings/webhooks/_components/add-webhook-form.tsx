@@ -1,5 +1,7 @@
 "use client";
 
+import ErrorLine from "@/components/error-line";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { z } from "zod";
@@ -60,12 +62,16 @@ export default function AddWebhookForm({ className }: TProps) {
     },
     validators: {
       onChange: z.object({
-        selectedIds: WebhookIdEnum.array(),
-        url: z.string().url(),
+        selectedIds: WebhookIdEnum.array().min(1, {
+          message: "Select at least one event.",
+        }),
+        url: z.string().url("Invalid URL."),
       }),
     },
-    onSubmit: async ({ formApi }) => {
+    onSubmit: async ({ formApi, value }) => {
+      const selectedIds = value.selectedIds;
       formApi.reset();
+      formApi.setFieldValue("selectedIds", selectedIds);
     },
   });
 
@@ -82,23 +88,64 @@ export default function AddWebhookForm({ className }: TProps) {
         <p className="text-muted-foreground mt-1 leading-tight">
           Select the events that will call the webhook.
         </p>
-        <div className="mt-4 flex w-full flex-wrap gap-6 sm:gap-8">
-          {webhookGroups.map((group) => (
-            <div key={group.title} className="flex w-full flex-col sm:w-[calc((100%-2rem)/2)]">
-              <h3 className="text-muted-foreground text-sm leading-tight font-medium">
-                {group.title}
-              </h3>
-              <div className="mt-3.5 flex w-full flex-col gap-4">
-                {group.options.map((option) => (
-                  <div key={option.id} className="flex w-full gap-2.5">
-                    <div className="border-foreground/50 size-4 shrink-0 rounded-sm border"></div>
-                    <p className="-mt-0.5 min-w-0 shrink leading-tight">{option.title}</p>
+        <form.AppField
+          name="selectedIds"
+          children={(field) => (
+            <div className="mt-4 flex w-full flex-col">
+              <div className="flex w-full flex-wrap gap-6 sm:gap-8">
+                {webhookGroups.map((group) => (
+                  <div
+                    key={group.title}
+                    className="flex w-full flex-col sm:w-[calc((100%-2rem)/2)]"
+                  >
+                    <h3 className="text-muted-foreground text-sm leading-tight font-medium">
+                      {group.title}
+                    </h3>
+                    <div className="-mx-2.5 mt-1.5 flex w-[calc(100%+1.25rem)] flex-col items-start justify-start">
+                      {group.options.map((option) => (
+                        <label
+                          key={option.id}
+                          className="has-hover:hover:bg-border active:bg-border flex max-w-full cursor-pointer touch-manipulation items-center gap-2.5 rounded-md px-3 py-2"
+                        >
+                          <Checkbox
+                            onBlur={field.handleBlur}
+                            checked={field.state.value.includes(option.id)}
+                            onCheckedChange={(c) => {
+                              field.handleChange((prev) => {
+                                if (c) {
+                                  if (prev.includes(option.id)) return prev;
+                                  return [...prev, option.id];
+                                }
+                                return prev.filter((id) => id !== option.id);
+                              });
+                            }}
+                            className="-ml-0.25"
+                          />
+                          <p className="min-w-0 shrink leading-tight select-none">{option.title}</p>
+                        </label>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
+              <form.Subscribe
+                selector={(state) => [state.submissionAttempts]}
+                children={([submissionAttempts]) => {
+                  const errors = field.state.meta.errors;
+                  const message = errors && errors.length > 0 ? errors[0]?.message : undefined;
+                  if (submissionAttempts > 0 && message) {
+                    return (
+                      <ErrorLine
+                        className="mt-4 bg-transparent p-0 leading-tight"
+                        message={message}
+                      />
+                    );
+                  }
+                }}
+              />
             </div>
-          ))}
-        </div>
+          )}
+        />
         <h2 className="mt-6 w-full text-lg leading-tight font-semibold">Endpoint</h2>
         <p className="text-muted-foreground mt-1 leading-tight">
           The events will be sent to this URL. They are automatically formatted based on the URL.
@@ -122,7 +169,9 @@ export default function AddWebhookForm({ className }: TProps) {
         <form.Subscribe
           selector={(state) => [state.isSubmitting]}
           children={([isSubmitting]) => (
-            <form.SubmitButton isPending={isSubmitting}>Create Webhook</form.SubmitButton>
+            <form.SubmitButton className="px-4" isPending={isSubmitting}>
+              Create Webhook
+            </form.SubmitButton>
           )}
         />
       </div>
