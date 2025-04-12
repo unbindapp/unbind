@@ -603,7 +603,7 @@ export function NewEnvironmentCard({ teamId, projectId }: { teamId: string; proj
             >
               <PlusIcon className="-my-1 -ml-1 size-4.5 shrink-0" />
               <p className="group-data-pending/item:bg-foreground group-data-pending/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-pending/item:rounded-md group-data-pending/item:text-transparent">
-                Create Environment
+                New Environment
               </p>
             </Button>
           </div>

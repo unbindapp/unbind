@@ -28,15 +28,15 @@ export default function Layout({ children }: { children: ReactNode }) {
         searchParamStr: environment,
       },
       {
-        label: "Shared Variables",
-        href: `${basePath}/shared-variables`,
-        Icon: KeyRoundIcon,
-        searchParamStr: environment,
-      },
-      {
         label: "Environments",
         href: `${basePath}/environments`,
         Icon: BoxIcon,
+        searchParamStr: environment,
+      },
+      {
+        label: "Shared Variables",
+        href: `${basePath}/shared-variables`,
+        Icon: KeyRoundIcon,
         searchParamStr: environment,
       },
       {
