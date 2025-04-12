@@ -1,4 +1,7 @@
-import { getProjectPageSearchParams } from "@/app/(project)/[team_id]/project/[project_id]/_components/search-params";
+import {
+  getProjectPageParams,
+  TProjectPageParams,
+} from "@/app/(project)/[team_id]/project/[project_id]/_components/search-params";
 import Charts from "@/app/(project)/[team_id]/project/[project_id]/metrics/_components/charts";
 import MetricsIntervalDropdown from "@/components/metrics/metrics-interval-dropdown";
 import MetricsProvider from "@/components/metrics/metrics-provider";
@@ -6,24 +9,13 @@ import MetricsStateProvider from "@/components/metrics/metrics-state-provider";
 import { metricsSearchParams } from "@/components/metrics/search-params";
 import PageWrapper from "@/components/page-wrapper";
 import ServicesProvider from "@/components/project/services-provider";
-import { SearchParams } from "nuqs";
 
-type TProps = {
-  params: Promise<{
-    team_id: string;
-    project_id: string;
-  }>;
-  searchParams: Promise<SearchParams>;
-};
-
-export default async function Page({ params, searchParams }: TProps) {
-  const { team_id: teamId, project_id: projectId } = await params;
-  const [{ environmentId }] = await Promise.all([
-    getProjectPageSearchParams({
-      teamId,
-      projectId,
+export default async function Page({ params, searchParams }: TProjectPageParams) {
+  const [{ teamId, projectId, environmentId }] = await Promise.all([
+    getProjectPageParams({
       searchParams,
-      currentPathname: `/${teamId}/project/${projectId}/metrics`,
+      params,
+      currentPathname: `/metrics`,
     }),
     metricsSearchParams.parse(searchParams),
   ]);

@@ -11,11 +11,11 @@ import ServicePanelProvider from "@/components/service/panel/service-panel-provi
 
 type TProps = {
   children: ReactNode;
-  params: Promise<{ team_id: string; project_id: string; environment_id?: string }>;
+  params: Promise<{ team_id: string; project_id: string }>;
 };
 
 export default async function Layout({ children, params }: TProps) {
-  const { team_id: teamId, project_id: projectId, environment_id } = await params;
+  const { team_id: teamId, project_id: projectId } = await params;
 
   const [projectInitialData, projectsInitialData] = await Promise.all([
     ResultAsync.fromPromise(
@@ -56,7 +56,6 @@ export default async function Layout({ children, params }: TProps) {
               contextType: "project",
               projectId,
               teamId,
-              environmentId: environment_id || "",
             }}
           />
         </ServicePanelProvider>

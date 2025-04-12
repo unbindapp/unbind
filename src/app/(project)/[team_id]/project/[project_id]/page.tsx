@@ -1,4 +1,4 @@
-import { getProjectPageSearchParams } from "@/app/(project)/[team_id]/project/[project_id]/_components/search-params";
+import { getProjectPageParams } from "@/app/(project)/[team_id]/project/[project_id]/_components/search-params";
 import PageWrapper from "@/components/page-wrapper";
 import NewServiceButton from "@/components/project/new-service-button";
 import ServiceCardList from "@/components/project/service-card-list";
@@ -17,22 +17,11 @@ type TProps = {
 };
 
 export default async function Page({ params, searchParams }: TProps) {
-  const { team_id: teamId, project_id: projectId } = await params;
-  const searchParamsRes = await ResultAsync.fromPromise(
-    getProjectPageSearchParams({
-      teamId,
-      projectId,
-      searchParams,
-      currentPathname: `/${teamId}/project/${projectId}`,
-    }),
-    () => new Error("Failed to get search params"),
-  );
-
-  if (searchParamsRes.isErr()) {
-    return notFound();
-  }
-
-  const environmentId = searchParamsRes.value.environmentId;
+  const { teamId, projectId, environmentId } = await getProjectPageParams({
+    params,
+    searchParams,
+    currentPathname: ``,
+  });
 
   const initialData = await ResultAsync.fromPromise(
     apiServer.services.list({

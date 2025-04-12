@@ -9,6 +9,7 @@ import { useServicesUtils } from "@/components/project/services-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { cn } from "@/components/ui/utils";
 import { formatKMBT } from "@/lib/helpers";
+import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { api } from "@/server/trpc/setup/client";
 import { useMutation } from "@tanstack/react-query";
 import { DownloadIcon } from "lucide-react";
@@ -37,6 +38,7 @@ export default function useDockerImageItem({ context }: TProps) {
   const { closePanel: closeCommandPanel } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
   });
+  const { environmentId: environmentIdFromPathname } = useIdsFromPathname();
 
   const utils = api.useUtils();
   const setIsPendingId = useCommandPanelStore((s) => s.setIsPendingId);
@@ -57,7 +59,7 @@ export default function useDockerImageItem({ context }: TProps) {
   const { refetch: refetchServices } = useServicesUtils({
     teamId: context.teamId,
     projectId,
-    environmentId: context.environmentId || defaultEnvironmentId || "",
+    environmentId: environmentIdFromPathname || defaultEnvironmentId || "",
   });
 
   const { mutateAsync: createServiceViaApi } = api.services.create.useMutation();
@@ -69,7 +71,7 @@ export default function useDockerImageItem({ context }: TProps) {
       const imageTag = imageName.split(":");
       const imageNameWithoutTag = imageTag[0];
 
-      const environmentId = context.environmentId || defaultEnvironmentId;
+      const environmentId = environmentIdFromPathname || defaultEnvironmentId;
       if (!environmentId) {
         throw new Error("Environment ID is missing");
       }

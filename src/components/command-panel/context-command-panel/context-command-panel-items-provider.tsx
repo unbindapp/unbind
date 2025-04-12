@@ -6,6 +6,7 @@ import {
   TCommandPanelPage,
   TContextCommandPanelContext,
 } from "@/components/command-panel/types";
+import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { useQuery } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
@@ -23,13 +24,13 @@ const ContextCommandPanelItemsContext = createContext<TContextCommandPanelItemsC
 export const ContextCommandPanelItemsProvider: React.FC<{
   teamId: string;
   projectId: string;
-  environmentId: string | undefined;
   page: TCommandPanelPage;
   context: TContextCommandPanelContext;
   triggerType: string;
   children: ReactNode;
-}> = ({ teamId, projectId, environmentId, page, context, triggerType, children }) => {
+}> = ({ teamId, projectId, page, context, triggerType, children }) => {
   const search = useCommandPanelStore((s) => s.search);
+  const { environmentId } = useIdsFromPathname();
 
   const searchKey = useMemo(() => {
     if (page.usesAsyncSearch) {

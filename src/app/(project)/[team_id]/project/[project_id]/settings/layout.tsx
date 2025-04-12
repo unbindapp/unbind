@@ -1,65 +1,52 @@
-"use client";
-
 import SettingsLayout from "@/components/settings/settings-layout";
 import { TSettingsTab } from "@/components/settings/settings-tabs";
-import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import {
-  BoxIcon,
-  KeyRoundIcon,
-  SlidersHorizontalIcon,
-  TriangleAlertIcon,
-  UsersIcon,
-  WebhookIcon,
-} from "lucide-react";
-import { ReactNode, useMemo } from "react";
+import { ReactNode } from "react";
 
-export default function Layout({ children }: { children: ReactNode }) {
-  const { teamId, projectId, environmentId } = useIdsFromPathname();
+type TProps = {
+  params: Promise<{
+    team_id: string;
+    project_id: string;
+  }>;
+  children: ReactNode;
+};
 
-  const tabs = useMemo<TSettingsTab[]>(() => {
-    const basePath = `/${teamId}/project/${projectId}/settings`;
-    const environment = `?environment=${environmentId}`;
-    const t: TSettingsTab[] = [
-      {
-        label: "General",
-        href: `${basePath}`,
-        Icon: SlidersHorizontalIcon,
-        strictMatch: true,
-        searchParamStr: environment,
-      },
-      {
-        label: "Environments",
-        href: `${basePath}/environments`,
-        Icon: BoxIcon,
-        searchParamStr: environment,
-      },
-      {
-        label: "Shared Variables",
-        href: `${basePath}/shared-variables`,
-        Icon: KeyRoundIcon,
-        searchParamStr: environment,
-      },
-      {
-        label: "Members",
-        href: `${basePath}/members`,
-        Icon: UsersIcon,
-        searchParamStr: environment,
-      },
-      {
-        label: "Webhooks",
-        href: `${basePath}/webhooks`,
-        Icon: WebhookIcon,
-        searchParamStr: environment,
-      },
-      {
-        label: "Danger Zone",
-        href: `${basePath}/danger-zone`,
-        Icon: TriangleAlertIcon,
-        searchParamStr: environment,
-      },
-    ];
-    return t;
-  }, [teamId, projectId, environmentId]);
+export default async function Layout({ params, children }: TProps) {
+  const { team_id: teamId, project_id: projectId } = await params;
+
+  const basePath = `/${teamId}/project/${projectId}/settings`;
+  const tabs: TSettingsTab[] = [
+    {
+      label: "General",
+      href: `${basePath}`,
+      icon: "general",
+      strictMatch: true,
+    },
+    {
+      label: "Environments",
+      href: `${basePath}/environments`,
+      icon: "environments",
+    },
+    {
+      label: "Shared Variables",
+      href: `${basePath}/shared-variables`,
+      icon: "shared-variables",
+    },
+    {
+      label: "Members",
+      href: `${basePath}/members`,
+      icon: "members",
+    },
+    {
+      label: "Webhooks",
+      href: `${basePath}/webhooks`,
+      icon: "webhooks",
+    },
+    {
+      label: "Danger Zone",
+      href: `${basePath}/danger-zone`,
+      icon: "danger-zone",
+    },
+  ];
 
   return <SettingsLayout tabs={tabs}>{children}</SettingsLayout>;
 }

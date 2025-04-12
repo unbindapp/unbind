@@ -1,3 +1,7 @@
+import {
+  getProjectPageParams,
+  TProjectPageParams,
+} from "@/app/(project)/[team_id]/project/[project_id]/_components/search-params";
 import EnvironmentsTabContent from "@/app/(project)/[team_id]/project/[project_id]/settings/environments/_components/environments-tab-content";
 import EnvironmentsProvider from "@/components/environment/environments-provider";
 import SettingsTabTitle from "@/components/settings/settings-tab-title";
@@ -5,15 +9,12 @@ import { apiServer } from "@/server/trpc/setup/server";
 import { ResultAsync } from "neverthrow";
 import { notFound } from "next/navigation";
 
-type TProps = {
-  params: Promise<{
-    team_id: string;
-    project_id: string;
-  }>;
-};
-
-export default async function Page({ params }: TProps) {
-  const { team_id: teamId, project_id: projectId } = await params;
+export default async function Page({ params, searchParams }: TProjectPageParams) {
+  const { teamId, projectId } = await getProjectPageParams({
+    params,
+    searchParams,
+    currentPathname: `/settings/environments`,
+  });
 
   const initialData = await ResultAsync.fromPromise(
     apiServer.environments.list({

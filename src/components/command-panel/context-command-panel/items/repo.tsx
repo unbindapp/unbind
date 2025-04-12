@@ -7,6 +7,7 @@ import { useProject } from "@/components/project/project-provider";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useServicesUtils } from "@/components/project/services-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
+import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { AppRouterOutputs } from "@/server/trpc/api/root";
 import { api } from "@/server/trpc/setup/client";
 import { useMutation } from "@tanstack/react-query";
@@ -36,6 +37,8 @@ function useRepoItem({ context }: TProps) {
     defaultPageId: contextCommandPanelRootPage,
   });
   const setIsPendingId = useCommandPanelStore((s) => s.setIsPendingId);
+  const { environmentId: environmentIdFromPathname } = useIdsFromPathname();
+
   const utils = api.useUtils();
   const {
     teamId,
@@ -54,7 +57,7 @@ function useRepoItem({ context }: TProps) {
   const { refetch: refetchServices } = useServicesUtils({
     teamId: context.teamId,
     projectId,
-    environmentId: context.environmentId || defaultEnvironmentId || "",
+    environmentId: environmentIdFromPathname || defaultEnvironmentId || "",
   });
 
   const { mutateAsync: createServiceViaApi } = api.services.create.useMutation();
@@ -69,7 +72,7 @@ function useRepoItem({ context }: TProps) {
       const repoName = repository.full_name.split("/")[1];
       const installationId = repository.installation_id;
 
-      const environmentId = context.environmentId || defaultEnvironmentId;
+      const environmentId = environmentIdFromPathname || defaultEnvironmentId;
       if (!environmentId) {
         throw new Error("Environment ID is missing");
       }

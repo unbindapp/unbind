@@ -1,16 +1,16 @@
 "use client";
 
+import SettingsTabIcon, { TSettingsTabVariant } from "@/components/icons/settings-tab-icon";
 import TabIndicator from "@/components/navigation/tab-indicator";
 import { LinkButton } from "@/components/ui/button";
-import { usePathname } from "next/navigation";
-import { FC, useEffect, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export type TSettingsTab = {
   label: string;
   href: string;
-  Icon: FC<{ className?: string; style?: { transform?: string } }>;
+  icon: TSettingsTabVariant;
   strictMatch?: boolean;
-  searchParamStr: string;
 };
 
 type TProps = {
@@ -19,6 +19,8 @@ type TProps = {
 
 export default function SettingsTabs({ tabs }: TProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const searchParamsStr = searchParams.toString();
   const [activeTabPath, setActiveTabPath] = useState<string | undefined>(pathname);
 
   useEffect(() => {
@@ -34,7 +36,7 @@ export default function SettingsTabs({ tabs }: TProps) {
             key={tab.href}
             data-active={isActive(tab, activeTabPath) ? true : undefined}
             onClick={() => setActiveTabPath(tab.href)}
-            href={tab.href + tab.searchParamStr}
+            href={tab.href + (searchParamsStr ? `?${searchParamsStr}` : "")}
             variant="ghost"
             className="text-muted-foreground data-active:text-foreground group/button shrink-0 justify-start gap-1.5 rounded-lg px-3 py-4.25 text-left text-sm font-medium focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent sm:py-4 md:w-full md:gap-2.5 md:px-4 md:py-4 md:text-base"
           >
@@ -47,7 +49,10 @@ export default function SettingsTabs({ tabs }: TProps) {
                 className="md:w-2px md:top-2.75 md:h-[calc(100%-1.375rem)]"
               />
             )}
-            <tab.Icon className="relative -my-1 -ml-0.25 size-4 shrink-0 translate-z-0 md:-ml-1 md:size-5" />
+            <SettingsTabIcon
+              variant={tab.icon}
+              className="relative -my-1 -ml-0.25 size-4 shrink-0 translate-z-0 md:-ml-1 md:size-5"
+            />
             <p className="relative leading-none whitespace-nowrap md:min-w-0 md:shrink md:whitespace-normal">
               {tab.label}
             </p>

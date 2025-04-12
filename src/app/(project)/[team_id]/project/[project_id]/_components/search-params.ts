@@ -31,3 +31,34 @@ export async function getProjectPageSearchParams({
   }
   return { environmentId };
 }
+
+export type TProjectPageParams = {
+  params: Promise<{
+    team_id: string;
+    project_id: string;
+  }>;
+  searchParams: Promise<SearchParams>;
+};
+
+export async function getProjectPageParams({
+  params,
+  searchParams,
+  currentPathname,
+}: TProjectPageParams & {
+  currentPathname: string;
+}) {
+  const { team_id: teamId, project_id: projectId } = await params;
+  const [{ environmentId }] = await Promise.all([
+    getProjectPageSearchParams({
+      teamId,
+      projectId,
+      searchParams,
+      currentPathname: `/${teamId}/project/${projectId}` + currentPathname,
+    }),
+  ]);
+  return {
+    teamId,
+    projectId,
+    environmentId,
+  };
+}
