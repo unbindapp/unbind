@@ -104,10 +104,12 @@ export default function AddWebhookForm({ className }: TProps) {
                     <div className="-mx-3 mt-1.5 flex w-[calc(100%+1.5rem)] flex-col items-start justify-start">
                       {group.options.map((option) => (
                         <label
+                          htmlFor={option.id}
                           key={option.id}
                           className="has-hover:hover:bg-border active:bg-border flex max-w-full cursor-pointer touch-manipulation items-center gap-2.5 rounded-md px-3.5 py-2.5"
                         >
                           <Checkbox
+                            id={option.id}
                             onBlur={field.handleBlur}
                             checked={field.state.value.includes(option.id)}
                             onCheckedChange={(c) => {
