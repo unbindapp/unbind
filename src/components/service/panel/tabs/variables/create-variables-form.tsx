@@ -204,7 +204,7 @@ export default function CreateVariablesForm({
                                   type="button"
                                   variant="outline"
                                   size="icon"
-                                  className="h-11 w-11"
+                                  className="h-10.5 w-10.5"
                                   onClick={() => {
                                     if (field.state.value.length <= 1) {
                                       form.reset();
@@ -237,7 +237,7 @@ export default function CreateVariablesForm({
             )}
           />
           {variant !== "collapsible" && (
-            <div className="bg-background-hover flex w-full flex-col gap-3 rounded-b-xl border-t p-2 md:p-3">
+            <div className="bg-background-hover flex w-full flex-col gap-3 rounded-b-xl border-t p-2 md:p-2.5">
               {createError && <ErrorLine message={createError.message} />}
               <div className="flex w-full flex-row items-center justify-end">
                 <form.Subscribe
