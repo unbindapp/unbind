@@ -51,27 +51,28 @@ export default function useDockerImageItem({ context }: TProps) {
 
   const { openPanel: openServicePanel } = useServicePanel();
 
+  const environments = projectData?.project.environments;
+  const defaultEnvironmentId = projectData?.project.default_environment_id || environments?.[0]?.id;
+
   const { refetch: refetchServices } = useServicesUtils({
     teamId: context.teamId,
     projectId,
-    environmentId:
-      projectData?.project.default_environment_id || projectData?.project.environments[0].id || "",
+    environmentId: context.environmentId || defaultEnvironmentId || "",
   });
 
   const { mutateAsync: createServiceViaApi } = api.services.create.useMutation();
   const { mutateAsync: createService } = useMutation({
     mutationKey: ["create-service", "docker-image"],
     mutationFn: async ({ image }: { image: string }) => {
-      const environments = projectData?.project.environments;
-      if (!environments || environments.length < 1) {
-        toast.error("No environments found.");
-        throw new Error("No environments found.");
-      }
-      const defaultEnvironmentId = projectData.project.default_environment_id || environments[0].id;
       const imageParts = image.split("/");
       const imageName = imageParts[imageParts.length - 1];
       const imageTag = imageName.split(":");
       const imageNameWithoutTag = imageTag[0];
+
+      const environmentId = context.environmentId || defaultEnvironmentId;
+      if (!environmentId) {
+        throw new Error("Environment ID is missing");
+      }
 
       const result = await createServiceViaApi({
         type: "docker-image",
@@ -79,7 +80,7 @@ export default function useDockerImageItem({ context }: TProps) {
         displayName: imageNameWithoutTag,
         teamId: context.teamId,
         projectId,
-        environmentId: context.environmentId || defaultEnvironmentId,
+        environmentId,
         public: true,
         image,
       });

@@ -233,19 +233,25 @@ function DeleteTrigger({
     },
     onSubmit: async ({ formApi }) => {
       const deletingCurrentEnv = environmentId === environment.id;
+      const currentEnvironmentId = environment.id;
+
       await deleteEnvironment({ id: environment.id, teamId, projectId });
       if (deletingCurrentEnv) {
         invalidateEnvironments();
         const environments = projectsData?.project.environments;
-        const environment =
-          environments && environments.length >= 1
-            ? environments.find((e) => e.id === projectsData.project.default_environment_id) ||
-              environments[0]
-            : null;
+        const defaultEnvironmentId = projectsData?.project.default_environment_id;
+        const filteredEnvironments = environments?.filter((e) => e.id !== currentEnvironmentId);
+
+        const environmentIdToNavigateTo =
+          defaultEnvironmentId && currentEnvironmentId !== defaultEnvironmentId
+            ? defaultEnvironmentId
+            : filteredEnvironments && filteredEnvironments?.length >= 1
+              ? filteredEnvironments[0].id
+              : null;
 
         const navigateRes = await ResultAsync.fromPromise(
           asyncPush(
-            `/${teamId}/project/${projectId}/settings/environments${environment ? `?environment=${environment.id}` : ""}`,
+            `/${teamId}/project/${projectId}/settings/environments${environmentIdToNavigateTo ? `?environment=${environmentIdToNavigateTo}` : ""}`,
           ),
           () => new Error("Failed to navigate to environments"),
         );

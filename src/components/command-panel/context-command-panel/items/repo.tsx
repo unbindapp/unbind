@@ -68,11 +68,12 @@ function useRepoItem({ context }: TProps) {
       const owner = repository.full_name.split("/")[0];
       const repoName = repository.full_name.split("/")[1];
       const installationId = repository.installation_id;
+
       const environmentId = context.environmentId || defaultEnvironmentId;
       if (!environmentId) {
-        toast.error("No environment found");
-        throw new Error("No environment found");
+        throw new Error("Environment ID is missing");
       }
+
       const result = await createServiceViaApi({
         type: "github",
         builder: "railpack",
