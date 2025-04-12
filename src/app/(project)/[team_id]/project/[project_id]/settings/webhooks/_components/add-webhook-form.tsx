@@ -57,14 +57,12 @@ const webhookGroups: TWebhookGroup[] = [
 export default function AddWebhookForm({ className }: TProps) {
   const form = useAppForm({
     defaultValues: {
-      selectedIds: [] as TWebhookId[],
+      selectedIds: new Set<TWebhookId>(),
       url: "",
     },
     validators: {
       onChange: z.object({
-        selectedIds: WebhookIdEnum.array().min(1, {
-          message: "Select at least one event.",
-        }),
+        selectedIds: z.set(WebhookIdEnum).min(1, "Select at least one event."),
         url: z.string().url("Invalid URL."),
       }),
     },
@@ -88,21 +86,19 @@ export default function AddWebhookForm({ className }: TProps) {
         <p className="text-muted-foreground mt-1 leading-tight">
           Select the events that will call the webhook.
         </p>
-        <form.AppField
-          name="selectedIds"
-          children={(field) => (
-            <div className="mt-4 flex w-full flex-col">
-              <div className="flex w-full flex-wrap gap-6 sm:gap-8">
-                {webhookGroups.map((group) => (
-                  <div
-                    key={group.title}
-                    className="flex w-full flex-col sm:w-[calc((100%-2rem)/2)]"
-                  >
-                    <h3 className="text-muted-foreground text-sm leading-tight font-medium">
-                      {group.title}
-                    </h3>
-                    <div className="-mx-3 mt-1.5 flex w-[calc(100%+1.5rem)] flex-col items-start justify-start">
-                      {group.options.map((option) => (
+        <div className="mt-4 flex w-full flex-col">
+          <div className="flex w-full flex-wrap gap-6 sm:gap-8">
+            {webhookGroups.map((group) => (
+              <div key={group.title} className="flex w-full flex-col sm:w-[calc((100%-2rem)/2)]">
+                <h3 className="text-muted-foreground text-sm leading-tight font-medium">
+                  {group.title}
+                </h3>
+                <div className="-mx-3 mt-1.5 flex w-[calc(100%+1.5rem)] flex-col items-start justify-start">
+                  {group.options.map((option) => (
+                    <form.AppField
+                      key={option.id}
+                      name="selectedIds"
+                      children={(field) => (
                         <label
                           htmlFor={option.id}
                           key={option.id}
@@ -111,43 +107,42 @@ export default function AddWebhookForm({ className }: TProps) {
                           <Checkbox
                             id={option.id}
                             onBlur={field.handleBlur}
-                            checked={field.state.value.includes(option.id)}
+                            checked={field.state.value.has(option.id)}
                             onCheckedChange={(c) => {
                               field.handleChange((prev) => {
                                 if (c) {
-                                  if (prev.includes(option.id)) return prev;
-                                  return [...prev, option.id];
+                                  return prev.add(option.id);
                                 }
-                                return prev.filter((id) => id !== option.id);
+                                prev.delete(option.id);
+                                return prev;
                               });
                             }}
                             className="-ml-0.25"
                           />
                           <p className="min-w-0 shrink leading-tight select-none">{option.title}</p>
                         </label>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+                      )}
+                    />
+                  ))}
+                </div>
               </div>
-              <form.Subscribe
-                selector={(state) => [state.submissionAttempts]}
-                children={([submissionAttempts]) => {
-                  const errors = field.state.meta.errors;
-                  const message = errors && errors.length > 0 ? errors[0]?.message : undefined;
-                  if (submissionAttempts > 0 && message) {
-                    return (
-                      <ErrorLine
-                        className="mt-4 bg-transparent p-0 leading-tight"
-                        message={message}
-                      />
-                    );
-                  }
-                }}
-              />
-            </div>
-          )}
-        />
+            ))}
+          </div>
+          <form.Subscribe
+            selector={(state) => [state.submissionAttempts, state.errors]}
+            children={([submissionAttempts, allErrors]) => {
+              if (typeof allErrors === "number") return;
+              if (typeof submissionAttempts !== "number") return;
+              const errors = allErrors[0]?.selectedIds;
+              const message = errors && errors.length > 0 ? errors[0]?.message : undefined;
+              if (submissionAttempts > 0 && message) {
+                return (
+                  <ErrorLine className="mt-4 bg-transparent p-0 leading-tight" message={message} />
+                );
+              }
+            }}
+          />
+        </div>
         <h2 className="mt-6 w-full text-lg leading-tight font-semibold">Endpoint</h2>
         <p className="text-muted-foreground mt-1 leading-tight">
           The events will be sent to this URL. They are automatically formatted based on the URL.
