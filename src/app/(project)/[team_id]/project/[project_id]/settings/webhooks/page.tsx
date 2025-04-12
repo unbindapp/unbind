@@ -15,9 +15,9 @@ export default async function Page({ params, searchParams }: TProjectPageParams)
   return (
     <>
       <SettingsTabTitle>Add Webhooks</SettingsTabTitle>
-      <AddWebhookForm className="mt-3" />
-      <SettingsTabTitle className="mt-6">Webhooks</SettingsTabTitle>
-      <WebhooksList className="mt-3" />
+      <AddWebhookForm className="mt-4" />
+      <SettingsTabTitle className="mt-8">Webhooks</SettingsTabTitle>
+      <WebhooksList className="mt-4" />
     </>
   );
 }
