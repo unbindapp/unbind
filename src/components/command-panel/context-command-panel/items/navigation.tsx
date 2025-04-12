@@ -207,7 +207,16 @@ export default function useNavigateItem({ context }: TProps) {
               });
             },
             Icon: WebhookIcon,
-            keywords: ["hook", "integration", "alert", "connection", ...goToKeywords],
+            keywords: [
+              "notification",
+              "discord",
+              "slack",
+              "hook",
+              "integration",
+              "alert",
+              "connection",
+              ...goToKeywords,
+            ],
           },
           {
             id: `go-tos_/settings/danger-zone`,
