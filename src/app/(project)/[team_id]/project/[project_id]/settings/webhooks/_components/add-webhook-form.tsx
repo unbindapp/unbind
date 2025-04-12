@@ -101,11 +101,11 @@ export default function AddWebhookForm({ className }: TProps) {
                     <h3 className="text-muted-foreground text-sm leading-tight font-medium">
                       {group.title}
                     </h3>
-                    <div className="-mx-2.5 mt-1.5 flex w-[calc(100%+1.25rem)] flex-col items-start justify-start">
+                    <div className="-mx-3 mt-1.5 flex w-[calc(100%+1.5rem)] flex-col items-start justify-start">
                       {group.options.map((option) => (
                         <label
                           key={option.id}
-                          className="has-hover:hover:bg-border active:bg-border flex max-w-full cursor-pointer touch-manipulation items-center gap-2.5 rounded-md px-3 py-2"
+                          className="has-hover:hover:bg-border active:bg-border flex max-w-full cursor-pointer touch-manipulation items-center gap-2.5 rounded-md px-3.5 py-2.5"
                         >
                           <Checkbox
                             onBlur={field.handleBlur}
@@ -165,7 +165,7 @@ export default function AddWebhookForm({ className }: TProps) {
           )}
         />
       </div>
-      <div className="bg-background-hover flex w-full items-center justify-end rounded-b-lg border-t p-2.5">
+      <div className="bg-background-hover flex w-full items-center justify-end rounded-b-lg border-t p-2 sm:p-2.5">
         <form.Subscribe
           selector={(state) => [state.isSubmitting]}
           children={([isSubmitting]) => (
