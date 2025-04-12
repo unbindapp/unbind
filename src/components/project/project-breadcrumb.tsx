@@ -332,7 +332,7 @@ function CreateEnvironmentDialog({
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
                 className="w-full"
-                placeholder="staging"
+                placeholder="development"
                 maxLength={environmentNameMaxLength}
               />
             )}
