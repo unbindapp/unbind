@@ -108,10 +108,13 @@ export default function ProjectBreadcrumb({ className }: TProps) {
     (id: string) => {
       const project = projectsData?.projects.find((p) => p.id === selectedProjectId);
       const environment = project?.environments.find((e) => e.id === id);
-      if (!project || !environment || !teamIdFromPathname) return null;
-      return `/${teamIdFromPathname}/project/${project.id}?environment=${environment.id}`;
+      if (!project || !environment) return null;
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set("environment", environment.id);
+      const newParamsStr = newParams.toString();
+      return `${pathname}?${newParamsStr}`;
     },
-    [projectsData, selectedProjectId, teamIdFromPathname],
+    [projectsData, pathname, selectedProjectId, searchParams],
   );
 
   const onEnvironmentIdSelect = useCallback(

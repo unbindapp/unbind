@@ -643,7 +643,7 @@ export function NewEnvironmentCard({ teamId, projectId }: { teamId: string; proj
           <div className="mt-4 flex w-full flex-wrap items-center justify-end gap-2">
             <DialogClose asChild className="text-muted-foreground">
               <Button type="button" variant="ghost">
-                Close
+                Cancel
               </Button>
             </DialogClose>
             <form.Subscribe
