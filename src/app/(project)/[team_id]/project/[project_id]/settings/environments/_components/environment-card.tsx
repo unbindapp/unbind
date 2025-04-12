@@ -33,7 +33,7 @@ import {
   TEnvironmentShallow,
 } from "@/server/trpc/api/environments/types";
 import { api } from "@/server/trpc/setup/client";
-import { EllipsisVerticalIcon, PenIcon, PlusIcon, TrashIcon } from "lucide-react";
+import { CheckIcon, EllipsisVerticalIcon, PenIcon, PlusIcon, TrashIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { ReactNode, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -84,9 +84,13 @@ export default function EnvironmentCard({
               `/${teamId}/project/${projectId}/settings/environments?environment=${environment?.id}`,
             );
           }}
-          className="has-hover:group-hover/item:bg-background-hover flex w-full flex-row items-center justify-start py-3 pr-12 pl-4 font-medium"
+          className="has-hover:group-hover/item:bg-background-hover flex w-full flex-row items-center justify-start gap-2.5 py-3 pr-12 pl-4 font-medium"
         >
-          <SelectedIndicator isSelected={isSelected} />
+          {isSelected && (
+            <div className="bg-foreground text-background -ml-0.75 flex size-4 items-center justify-center rounded-full p-0.75">
+              <CheckIcon className="size-full" strokeWidth={4} />
+            </div>
+          )}
           <p className="group-data-pending/item:bg-foreground group-data-pending/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-pending/item:rounded-md group-data-pending/item:text-transparent">
             {isPlaceholder ? "Loading" : environment.display_name}
           </p>
@@ -500,15 +504,6 @@ function RenameTrigger({
         </form>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function SelectedIndicator({ isSelected }: { isSelected: boolean | undefined }) {
-  return (
-    <div
-      data-selected={isSelected ? true : undefined}
-      className="group/indicator data-selected:ring-foreground/50 absolute top-0 left-0 h-full w-full rounded-lg ring-1 ring-transparent"
-    />
   );
 }
 
