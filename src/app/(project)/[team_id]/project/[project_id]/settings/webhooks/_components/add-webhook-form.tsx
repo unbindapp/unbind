@@ -102,7 +102,7 @@ export default function AddWebhookForm({ className }: TProps) {
                         <label
                           htmlFor={option.id}
                           key={option.id}
-                          className="has-hover:hover:bg-border active:bg-border flex max-w-full cursor-pointer touch-manipulation items-center gap-2.5 rounded-md px-3.5 py-2.5"
+                          className="has-hover:hover:bg-border active:bg-border flex max-w-full cursor-pointer touch-manipulation items-center gap-2.5 rounded-md px-3.5 py-4.5"
                         >
                           <Checkbox
                             id={option.id}
