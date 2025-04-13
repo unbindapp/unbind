@@ -98,28 +98,15 @@ export default function AddWebhookForm({ className }: TProps) {
                     <form.AppField
                       key={option.id}
                       name="selectedIds"
-                      children={(field) => (
-                        <div
+                      children={() => (
+                        <label
+                          htmlFor={option.id}
                           key={option.id}
                           className="has-hover:hover:bg-border active:bg-border flex max-w-full cursor-pointer touch-manipulation items-center gap-2.5 rounded-md px-3.5 py-2.5"
                         >
-                          <Checkbox
-                            id={option.id}
-                            onBlur={field.handleBlur}
-                            checked={field.state.value.has(option.id)}
-                            onCheckedChange={(c) => {
-                              field.handleChange((prev) => {
-                                if (c) {
-                                  return prev.add(option.id);
-                                }
-                                prev.delete(option.id);
-                                return prev;
-                              });
-                            }}
-                            className="-ml-0.25"
-                          />
+                          <Checkbox id={option.id} className="-ml-0.25" />
                           <p className="min-w-0 shrink leading-tight select-none">{option.title}</p>
-                        </div>
+                        </label>
                       )}
                     />
                   ))}
