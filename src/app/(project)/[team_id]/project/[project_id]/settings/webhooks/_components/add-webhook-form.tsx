@@ -1,7 +1,6 @@
 "use client";
 
 import ErrorLine from "@/components/error-line";
-import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { z } from "zod";
