@@ -1,5 +1,5 @@
 import { cn } from "@/components/ui/utils";
-import { BanIcon } from "lucide-react";
+import { BanIcon, WebhookIcon } from "lucide-react";
 import { ComponentProps } from "react";
 
 type TProps = ComponentProps<"svg"> & {
@@ -483,6 +483,65 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
         />
       </svg>
     );
+  }
+
+  if (brand === "discord") {
+    return (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className={cn(defaultClassName, className)}
+        width="24"
+        height="24"
+        fill="none"
+        viewBox="0 0 24 24"
+        {...rest}
+      >
+        <path
+          className={color === "brand" ? "text-discord" : undefined}
+          fill="currentColor"
+          d="M19.268 5.33c-1.33-.62-2.77-1.07-4.27-1.33a.1.1 0 0 0-.07.03c-.18.33-.39.76-.53 1.09a16.1 16.1 0 0 0-4.8 0c-.14-.34-.35-.76-.54-1.09-.01-.02-.04-.03-.07-.03-1.5.26-2.93.71-4.27 1.33-.01 0-.02.01-.03.02-2.72 4.07-3.47 8.03-3.1 11.95 0 .02.01.04.03.05 1.8 1.32 3.53 2.12 5.24 2.65.03.01.06 0 .07-.02.4-.55.76-1.13 1.07-1.74.02-.04 0-.08-.04-.09-.57-.22-1.11-.48-1.64-.78-.04-.02-.04-.08-.01-.11.11-.08.22-.17.33-.25.02-.02.05-.02.07-.01 3.44 1.57 7.15 1.57 10.55 0 .02-.01.05-.01.07.01.11.09.22.17.33.26.04.03.04.09-.01.11-.52.31-1.07.56-1.64.78-.04.01-.05.06-.04.09.32.61.68 1.19 1.07 1.74.03.01.06.02.09.01 1.72-.53 3.45-1.33 5.25-2.65.02-.01.03-.03.03-.05.44-4.53-.73-8.46-3.1-11.95-.01-.01-.02-.02-.04-.02m-10.75 9.58c-1.03 0-1.89-.95-1.89-2.12s.84-2.12 1.89-2.12c1.06 0 1.9.96 1.89 2.12 0 1.17-.84 2.12-1.89 2.12m6.97 0c-1.03 0-1.89-.95-1.89-2.12s.84-2.12 1.89-2.12c1.06 0 1.9.96 1.89 2.12 0 1.17-.83 2.12-1.89 2.12"
+        />
+      </svg>
+    );
+  }
+
+  if (brand === "slack") {
+    return (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className={cn(defaultClassName, className)}
+        width="24"
+        height="24"
+        fill="none"
+        viewBox="0 0 24 24"
+        {...rest}
+      >
+        <path
+          className={color === "brand" ? "text-slack-1" : undefined}
+          fill="currentColor"
+          d="M9.367 6.204a2.1 2.1 0 0 1-2.1-2.102 2.1 2.1 0 1 1 4.2 0v2.102zm0 1.067c1.161 0 2.1.94 2.1 2.102a2.1 2.1 0 0 1-2.1 2.102H4.1A2.1 2.1 0 0 1 2 9.373 2.1 2.1 0 0 1 4.1 7.27z"
+        />
+        <path
+          className={color === "brand" ? "text-slack-2" : undefined}
+          fill="currentColor"
+          d="M17.784 9.373a2.1 2.1 0 1 1 4.2 0 2.1 2.1 0 0 1-2.1 2.102h-2.1zm-1.05 0a2.1 2.1 0 1 1-4.201 0V4.102a2.099 2.099 0 1 1 4.2 0z"
+        />
+        <path
+          className={color === "brand" ? "text-slack-3" : undefined}
+          fill="currentColor"
+          d="M6.216 14.643a2.1 2.1 0 1 1-4.2 0c0-1.162.939-2.102 2.1-2.102h2.1zm1.05 0a2.099 2.099 0 1 1 4.2 0v5.255a2.1 2.1 0 1 1-4.2 0z"
+        />
+        <path
+          className={color === "brand" ? "text-slack-4" : undefined}
+          fill="currentColor"
+          d="M14.633 17.796c1.162 0 2.1.94 2.1 2.102a2.1 2.1 0 1 1-4.2 0v-2.102zm0-1.05a2.1 2.1 0 0 1-2.1-2.103c0-1.162.939-2.102 2.1-2.102H19.9a2.1 2.1 0 0 1 2.1 2.102 2.1 2.1 0 0 1-2.1 2.102z"
+        />
+      </svg>
+    );
+  }
+
+  if (brand === "webhook") {
+    return <WebhookIcon className={cn(defaultClassName, "scale-85", className)} {...rest} />;
   }
 
   return (

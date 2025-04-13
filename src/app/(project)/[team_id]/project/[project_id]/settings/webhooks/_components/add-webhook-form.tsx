@@ -1,30 +1,23 @@
 "use client";
 
 import ErrorLine from "@/components/error-line";
+import BrandIcon from "@/components/icons/brand";
+import { useProject } from "@/components/project/project-provider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/components/ui/utils";
+import { getWebhookIcon } from "@/components/webhook/helpers";
+import { useWebhooksUtils } from "@/components/webhook/webhooks-provider";
 import { useAppForm } from "@/lib/hooks/use-app-form";
+import { TWebhookIdProjectEnum, WebhookIdProjectEnum } from "@/server/trpc/api/webhooks/types";
+import { api } from "@/server/trpc/setup/client";
 import { z } from "zod";
 
 type TProps = {
   className?: string;
 };
 
-const WebhookIdEnum = z.enum([
-  "service.created",
-  "service.updated",
-  "service.deleted",
-  "deployment.queued",
-  "deployment.building",
-  "deployment.succeeded",
-  "deployment.failed",
-  "deployment.cancelled",
-]);
-
-type TWebhookId = z.infer<typeof WebhookIdEnum>;
-
 type TWebhookOption = {
-  id: TWebhookId;
+  id: TWebhookIdProjectEnum;
   title: string;
 };
 
@@ -55,19 +48,39 @@ const webhookGroups: TWebhookGroup[] = [
 ];
 
 export default function AddWebhookForm({ className }: TProps) {
+  const { teamId, projectId } = useProject();
+  const { invalidate: invalidateWebhooks } = useWebhooksUtils({
+    type: "project",
+    teamId,
+    projectId,
+  });
+
+  const { mutateAsync: createWebhook } = api.webhooks.create.useMutation({
+    onSuccess: () => {
+      invalidateWebhooks();
+    },
+  });
+
   const form = useAppForm({
     defaultValues: {
-      selectedIds: new Set<TWebhookId>(),
+      selectedIds: new Set<TWebhookIdProjectEnum>(),
       url: "",
     },
     validators: {
       onChange: z.object({
-        selectedIds: z.set(WebhookIdEnum).min(1, "Select at least one event."),
+        selectedIds: z.set(WebhookIdProjectEnum).min(1, "Select at least one event."),
         url: z.string().url("Invalid URL."),
       }),
     },
     onSubmit: async ({ formApi, value }) => {
       const selectedIds = value.selectedIds;
+      await createWebhook({
+        type: "project",
+        url: value.url,
+        teamId,
+        projectId,
+        events: selectedIds,
+      });
       formApi.reset();
       formApi.setFieldValue("selectedIds", selectedIds);
     },
@@ -147,27 +160,37 @@ export default function AddWebhookForm({ className }: TProps) {
         <form.AppField
           name="url"
           children={(field) => (
-            <field.TextField
-              dontCheckUntilSubmit
-              className="-mx-1 mt-3 w-[calc(100%+0.5rem)]"
-              field={field}
-              value={field.state.value}
-              onBlur={field.handleBlur}
-              onChange={(e) => field.handleChange(e.target.value)}
-              placeholder="https://discord.com/api/webhooks/..."
-            />
+            <div className="relative -mx-1 mt-3 w-[calc(100%+0.5rem)]">
+              <field.TextField
+                dontCheckUntilSubmit
+                className="w-full"
+                inputClassName="pl-9.5"
+                field={field}
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(e) => field.handleChange(e.target.value)}
+                placeholder="https://discord.com/api/webhooks/..."
+              />
+              <form.Subscribe selector={(state) => [state.values.url]}>
+                {([url]) => (
+                  <BrandIcon
+                    className="text-foreground/50 pointer-events-none absolute top-2.75 left-2.75 size-5"
+                    brand={getWebhookIcon(url)}
+                  />
+                )}
+              </form.Subscribe>
+            </div>
           )}
         />
       </div>
       <div className="bg-background-hover flex w-full items-center justify-end rounded-b-xl border-t p-2 sm:p-2.5">
-        <form.Subscribe
-          selector={(state) => [state.isSubmitting]}
-          children={([isSubmitting]) => (
+        <form.Subscribe selector={(state) => [state.isSubmitting]}>
+          {([isSubmitting]) => (
             <form.SubmitButton className="px-4" isPending={isSubmitting}>
               Create Webhook
             </form.SubmitButton>
           )}
-        />
+        </form.Subscribe>
       </div>
     </form>
   );

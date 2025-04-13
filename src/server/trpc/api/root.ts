@@ -10,6 +10,7 @@ import { projectsRouter } from "@/server/trpc/api/projects/router";
 import { servicesRouter } from "@/server/trpc/api/services/router";
 import { teamsRouter } from "@/server/trpc/api/teams/router";
 import { variablesRouter } from "@/server/trpc/api/variables/router";
+import { webhooksRouter } from "@/server/trpc/api/webhooks/router";
 import { createTRPCRouter } from "@/server/trpc/setup/trpc";
 import { TRPCClient, TRPCClientErrorLike } from "@trpc/client";
 import { inferReactQueryProcedureOptions } from "@trpc/react-query";
@@ -34,6 +35,7 @@ export const appRouter = createTRPCRouter({
   github: githubRouter,
   git: gitRouter,
   docker: dockerRouter,
+  webhooks: webhooksRouter,
 });
 
 // export type definition of API

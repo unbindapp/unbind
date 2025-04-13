@@ -110,6 +110,11 @@
   --nodejs: hsl(108 40% 30%);
   --python-1: hsl(207 52% 35%);
   --python-2: hsl(47 100% 42%);
+  --discord: hsl(235 86% 65%);
+  --slack-1: hsl(194 86% 58%);
+  --slack-2: hsl(155 60% 40%);
+  --slack-3: hsl(341 76% 50%);
+  --slack-4: hsl(42 83% 55%);
 
   --barrier: hsl(120 30% 4%);
 
@@ -199,6 +204,11 @@
   --nodejs: hsl(108 40% 60%);
   --python-1: hsl(207 47% 52%);
   --python-2: hsl(49 100% 70%);
+  --discord: hsl(235 86% 65%);
+  --slack-1: hsl(194 86% 58%);
+  --slack-2: hsl(155 60% 40%);
+  --slack-3: hsl(341 76% 50%);
+  --slack-4: hsl(42 83% 55%);
 
   --barrier: hsl(120 10% 4%);
 
@@ -399,6 +409,11 @@
   --color-nodejs: var(--nodejs);
   --color-python-1: var(--python-1);
   --color-python-2: var(--python-2);
+  --color-discord: var(--discord);
+  --color-slack-1: var(--slack-1);
+  --color-slack-2: var(--slack-2);
+  --color-slack-3: var(--slack-3);
+  --color-slack-4: var(--slack-4);
 
   --color-barrier: var(--barrier);
 
