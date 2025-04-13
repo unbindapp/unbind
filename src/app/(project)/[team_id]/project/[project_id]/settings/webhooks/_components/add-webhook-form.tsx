@@ -79,14 +79,14 @@ export default function AddWebhookForm({ className }: TProps) {
         e.preventDefault();
         form.handleSubmit();
       }}
-      className={cn("flex w-full flex-col rounded-lg border", className)}
+      className={cn("flex w-full flex-col rounded-xl border", className)}
     >
-      <div className="flex w-full flex-col px-5 pt-4 pb-5 sm:px-6 sm:pt-4 sm:pb-6">
+      <div className="flex w-full flex-col px-5 pt-3.5 pb-4.5 sm:px-6 sm:pt-4 sm:pb-6">
         <h2 className="w-full text-lg leading-tight font-semibold">Events</h2>
-        <p className="text-muted-foreground mt-1 leading-tight">
+        <p className="text-muted-foreground mt-1.5 leading-tight">
           Select the events that will call the webhook.
         </p>
-        <div className="mt-4 flex w-full flex-col">
+        <div className="mt-5 flex w-full flex-col">
           <div className="flex w-full flex-wrap gap-6 sm:gap-8">
             {webhookGroups.map((group) => (
               <div key={group.title} className="flex w-full flex-col sm:w-[calc((100%-2rem)/2)]">
@@ -95,14 +95,33 @@ export default function AddWebhookForm({ className }: TProps) {
                 </h3>
                 <div className="-mx-3 mt-1.5 flex w-[calc(100%+1.5rem)] flex-col items-start justify-start">
                   {group.options.map((option) => (
-                    <label
-                      htmlFor={option.id}
+                    <form.AppField
                       key={option.id}
-                      className="has-hover:hover:bg-border active:bg-border flex max-w-full cursor-pointer touch-manipulation items-center gap-2.5 rounded-md px-3.5 py-2.5"
-                    >
-                      <Checkbox id={option.id} className="-ml-0.25" />
-                      <p className="min-w-0 shrink leading-tight select-none">{option.title}</p>
-                    </label>
+                      name="selectedIds"
+                      children={(field) => (
+                        <label
+                          htmlFor={option.id}
+                          key={option.id}
+                          className="has-hover:hover:bg-border active:bg-border flex w-full cursor-pointer touch-manipulation items-center gap-2.5 rounded-md px-3.5 py-2.5"
+                        >
+                          <Checkbox
+                            id={option.id}
+                            onBlur={field.handleBlur}
+                            checked={field.state.value.has(option.id)}
+                            onCheckedChange={(c) => {
+                              field.handleChange((prev) => {
+                                const newSet = new Set(prev);
+                                if (c) newSet.add(option.id);
+                                else newSet.delete(option.id);
+                                return newSet;
+                              });
+                            }}
+                            className="-ml-0.25"
+                          />
+                          <p className="min-w-0 shrink leading-tight select-none">{option.title}</p>
+                        </label>
+                      )}
+                    />
                   ))}
                 </div>
               </div>
@@ -124,7 +143,7 @@ export default function AddWebhookForm({ className }: TProps) {
           />
         </div>
         <h2 className="mt-6 w-full text-lg leading-tight font-semibold">Endpoint</h2>
-        <p className="text-muted-foreground mt-1 leading-tight">
+        <p className="text-muted-foreground mt-1.5 leading-tight">
           The events will be sent to this URL. They are automatically formatted based on the URL.
         </p>
         <form.AppField
@@ -142,7 +161,7 @@ export default function AddWebhookForm({ className }: TProps) {
           )}
         />
       </div>
-      <div className="bg-background-hover flex w-full items-center justify-end rounded-b-lg border-t p-2 sm:p-2.5">
+      <div className="bg-background-hover flex w-full items-center justify-end rounded-b-xl border-t p-2 sm:p-2.5">
         <form.Subscribe
           selector={(state) => [state.isSubmitting]}
           children={([isSubmitting]) => (
