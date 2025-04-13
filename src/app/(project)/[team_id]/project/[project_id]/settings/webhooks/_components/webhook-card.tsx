@@ -43,7 +43,7 @@ export default function WebhookCard({
   return (
     <div
       data-placeholder={isPlaceholder ? true : undefined}
-      className="group/item relative flex flex-col items-start justify-start gap-3 rounded-xl border p-3 pt-2.5 sm:p-4 sm:pt-3.5"
+      className="group/item relative flex flex-col items-start justify-start gap-3 rounded-xl border p-3 sm:p-4 sm:pt-3.5"
     >
       <div className="flex w-full gap-2 px-0.5 pr-10">
         <BrandIcon
