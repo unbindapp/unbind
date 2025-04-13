@@ -99,8 +99,7 @@ export default function AddWebhookForm({ className }: TProps) {
                       key={option.id}
                       name="selectedIds"
                       children={(field) => (
-                        <label
-                          htmlFor={option.id}
+                        <div
                           key={option.id}
                           className="has-hover:hover:bg-border active:bg-border flex max-w-full cursor-pointer touch-manipulation items-center gap-2.5 rounded-md px-3.5 py-2.5"
                         >
@@ -120,7 +119,7 @@ export default function AddWebhookForm({ className }: TProps) {
                             className="-ml-0.25"
                           />
                           <p className="min-w-0 shrink leading-tight select-none">{option.title}</p>
-                        </label>
+                        </div>
                       )}
                     />
                   ))}
