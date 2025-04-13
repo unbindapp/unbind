@@ -1,3 +1,4 @@
+import { AppRouterOutputs } from "@/server/trpc/api/root";
 import { z } from "zod";
 
 export const WebhookTypeProject = z.literal("project");
@@ -23,3 +24,5 @@ export const WebhookIdTeamEnum = z.enum(["project.created", "project.updated", "
 
 export type TWebhookIdProjectEnum = z.infer<typeof WebhookIdProjectEnum>;
 export type TWebhookIdTeamEnum = z.infer<typeof WebhookIdTeamEnum>;
+
+export type TWebhookShallow = AppRouterOutputs["webhooks"]["list"]["webhooks"][number];

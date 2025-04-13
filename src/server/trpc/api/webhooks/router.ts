@@ -37,7 +37,12 @@ export const webhooksRouter = createTRPCRouter({
         });
       }
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      const res: { id: string; url: string; events: TWebhookIdProjectEnum[] }[] = [
+      const res: {
+        id: string;
+        url: string;
+        events: TWebhookIdProjectEnum[];
+        created_at: string;
+      }[] = [
         {
           id: "6e3bddbb-0a0d-4147-8a1f-3cd33cd12cf6",
           url: "https://discord.com/api/webhooks/1234123412341234/asdfasdf_ASDFASDFASDFASDFSDF",
@@ -48,16 +53,19 @@ export const webhooksRouter = createTRPCRouter({
             "deployment.failed",
             "deployment.cancelled",
           ],
+          created_at: new Date().toISOString(),
         },
         {
           id: "55d654a4-133b-419f-aacc-0dbe5c364663",
           url: "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX",
           events: ["service.created", "service.updated", "service.deleted", "deployment.queued"],
+          created_at: new Date().toISOString(),
         },
         {
           id: "6e3bddbb-0a0d-4147-8a1f-3cd33cd12caa",
           url: "https://test.com/webhook",
           events: ["service.created", "service.updated", "service.deleted"],
+          created_at: new Date().toISOString(),
         },
       ];
       return {
