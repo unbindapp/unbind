@@ -155,7 +155,8 @@ export default function AddWebhookForm({ className }: TProps) {
         </div>
         <h2 className="mt-6 w-full text-lg leading-tight font-semibold">Endpoint</h2>
         <p className="text-muted-foreground mt-1.5 leading-tight">
-          The events will be sent to this URL. They are automatically formatted based on the URL.
+          The events will be sent to this URL. They are automatically formatted based on the
+          platform.
         </p>
         <form.AppField
           name="url"
@@ -174,7 +175,9 @@ export default function AddWebhookForm({ className }: TProps) {
               <form.Subscribe selector={(state) => [state.values.url]}>
                 {([url]) => (
                   <BrandIcon
-                    className="text-foreground/50 pointer-events-none absolute top-2.75 left-2.75 size-5"
+                    data-placeholder={url ? undefined : true}
+                    color="brand"
+                    className="data-placeholder:text-foreground/50 pointer-events-none absolute top-2.75 left-2.75 size-5"
                     brand={getWebhookIcon(url)}
                   />
                 )}

@@ -95,7 +95,7 @@ export default function VariableCard({ variable, isPlaceholder }: TProps) {
             </div>
             {isPlaceholder ? (
               <Button disabled fadeOnDisabled={false} variant="ghost" size="icon">
-                <div className="bg-muted-foreground animate-skeleton hidden size-6 rounded-md sm:flex" />
+                <div className="bg-muted-more-foreground animate-skeleton hidden size-6 rounded-md sm:flex" />
               </Button>
             ) : (
               <ThreeDotButton

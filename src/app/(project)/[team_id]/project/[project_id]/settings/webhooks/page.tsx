@@ -16,9 +16,9 @@ export default async function Page({ params, searchParams }: TProjectPageParams)
   return (
     <WebhooksProvider type="project" teamId={teamId} projectId={projectId}>
       <SettingsTabTitle>Add Webhooks</SettingsTabTitle>
-      <AddWebhookForm className="mt-4" />
+      <AddWebhookForm className="mt-3" />
       <SettingsTabTitle className="mt-8">Webhooks</SettingsTabTitle>
-      <WebhooksList className="mt-4" />
+      <WebhooksList className="mt-3" />
     </WebhooksProvider>
   );
 }

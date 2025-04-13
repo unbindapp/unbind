@@ -47,8 +47,9 @@ export default function WebhookCard({
     >
       <div className="flex w-full gap-2 px-0.5 pr-10">
         <BrandIcon
-          className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground size-4.5 group-data-placeholder/item:rounded-sm"
+          color="brand"
           brand={isPlaceholder ? "webhook" : getWebhookIcon(webhook.url)}
+          className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground size-4.5 group-data-placeholder/item:rounded-full"
         />
         <p className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground min-w-0 shrink text-sm leading-tight group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">
           {isPlaceholder ? "https://unbind.app/webhook" : webhook.url}
@@ -58,7 +59,7 @@ export default function WebhookCard({
         {(isPlaceholder ? placeholderArray : webhook.events).map((event, i) => (
           <p
             key={isPlaceholder ? i : event}
-            className="bg-border text-muted-foreground group-data-placeholder/item:bg-muted-more-foreground group-data-placeholder/item:animate-skeleton rounded-sm px-1.5 py-0.75 leading-tight group-data-placeholder/item:text-transparent"
+            className="bg-border text-muted-foreground group-data-placeholder/item:bg-muted-more-foreground group-data-placeholder/item:animate-skeleton max-w-full rounded-sm px-1.5 py-0.75 leading-tight group-data-placeholder/item:text-transparent"
           >
             {isPlaceholder ? "loading.loading" : event}
           </p>
@@ -75,7 +76,7 @@ export default function WebhookCard({
           size="icon"
           className="absolute top-1 right-1 rounded-lg"
         >
-          <div className="bg-muted-foreground animate-skeleton size-6 rounded-md" />
+          <div className="bg-muted-more-foreground animate-skeleton size-6 rounded-md" />
         </Button>
       ) : (
         <ThreeDotButton
