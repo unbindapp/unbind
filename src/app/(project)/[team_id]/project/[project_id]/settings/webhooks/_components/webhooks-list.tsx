@@ -115,9 +115,15 @@ function WebhookCard({
         {isPlaceholder ? "Jan 01, 2024" : format(webhook.created_at, "MMMM dd, yyyy")}
       </p>
       {isPlaceholder ? (
-        <div className="absolute top-1 right-1 flex size-9 items-center justify-center">
-          <div className="bg-muted-foreground animate-skeleton size-5 rounded-md" />
-        </div>
+        <Button
+          disabled
+          fadeOnDisabled={false}
+          variant="ghost"
+          size="icon"
+          className="absolute top-1 right-1"
+        >
+          <div className="bg-muted-foreground animate-skeleton size-6 rounded-md" />
+        </Button>
       ) : (
         <ThreeDotButton
           className="absolute top-1 right-1"
@@ -246,7 +252,7 @@ function DeleteTrigger({
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
           <DialogTitle>Delete Webhook</DialogTitle>
-          <p className="bg-border -mx-0.5 w-[calc(100%+0.25rem)] truncate rounded-md px-2 py-1 text-sm leading-tight font-medium">
+          <p className="bg-border -mx-0.5 max-w-[calc(100%+0.25rem)] truncate rounded-md px-2 py-1 text-sm leading-tight font-medium">
             {webhook.url}
           </p>
           <DialogDescription>

@@ -198,9 +198,10 @@ function DeleteTrigger({
   children: ReactNode;
 }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const textToConfirm = "Delete this environment permanently";
   const { asyncPush } = useAsyncPush();
   const { environmentId } = useIdsFromPathname();
+
+  const textToConfirm = `Delete ${environment.display_name} permanently`;
 
   const {
     query: { data: projectsData },

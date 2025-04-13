@@ -1,6 +1,7 @@
 "use client";
 
 import ErrorLine from "@/components/error-line";
+import { useProject } from "@/components/project/project-provider";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { Button } from "@/components/ui/button";
@@ -49,9 +50,15 @@ export default function DeleteProjectSection({ className }: Props) {
 
 function DeleteButton({ teamId, projectId }: { teamId: string; projectId: string }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const textToConfirm = "Delete this project permanently";
   const { asyncPush } = useAsyncPush();
+  const {
+    query: { data },
+  } = useProject();
   const { invalidate: invalidateProjects } = useProjectsUtils({ teamId });
+
+  const textToConfirm = data?.project.display_name
+    ? `Delete ${data.project.display_name} permanently`
+    : "Delete this project permanently";
 
   const {
     mutateAsync: deleteProject,

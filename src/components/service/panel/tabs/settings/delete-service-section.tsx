@@ -45,8 +45,18 @@ export default function DeleteServiceSection({ className }: TProps) {
 
 function DeleteButton() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const textToConfirm = "Delete this service permanently";
-  const { teamId, projectId, environmentId, serviceId } = useService();
+  const {
+    teamId,
+    projectId,
+    environmentId,
+    serviceId,
+    query: { data },
+  } = useService();
+
+  const textToConfirm = data?.service.display_name
+    ? `Delete ${data.service.display_name} permanently`
+    : "Delete this service permanently";
+
   const { invalidate: invalidateServices } = useServicesUtils({
     teamId,
     projectId,
