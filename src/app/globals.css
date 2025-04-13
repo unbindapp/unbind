@@ -483,6 +483,11 @@
   .token.punctuation {
     color: color-mix(in oklab, var(--foreground) 75%, transparent);
   }
+
+  input[type="checkbox"],
+  label {
+    touch-action: manipulation;
+  }
 }
 
 @layer base {

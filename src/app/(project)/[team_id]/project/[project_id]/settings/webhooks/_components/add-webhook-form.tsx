@@ -95,33 +95,14 @@ export default function AddWebhookForm({ className }: TProps) {
                 </h3>
                 <div className="-mx-3 mt-1.5 flex w-[calc(100%+1.5rem)] flex-col items-start justify-start">
                   {group.options.map((option) => (
-                    <form.AppField
+                    <label
+                      htmlFor={option.id}
                       key={option.id}
-                      name="selectedIds"
-                      children={(field) => (
-                        <label
-                          htmlFor={option.id}
-                          key={option.id}
-                          className="has-hover:hover:bg-border active:bg-border flex w-full cursor-pointer touch-manipulation items-center gap-2.5 rounded-md px-3.5 py-2.5"
-                        >
-                          <Checkbox
-                            id={option.id}
-                            onBlur={field.handleBlur}
-                            checked={field.state.value.has(option.id)}
-                            onCheckedChange={(c) => {
-                              field.handleChange((prev) => {
-                                const newSet = new Set(prev);
-                                if (c) newSet.add(option.id);
-                                else newSet.delete(option.id);
-                                return newSet;
-                              });
-                            }}
-                            className="-ml-0.25"
-                          />
-                          <p className="min-w-0 shrink leading-tight select-none">{option.title}</p>
-                        </label>
-                      )}
-                    />
+                      className="has-hover:hover:bg-border active:bg-border flex w-full cursor-pointer items-center gap-2.5 rounded-md px-3.5 py-2.5"
+                    >
+                      <input type="checkbox" name={option.id} id={option.id} className="-ml-0.25" />
+                      <p className="min-w-0 shrink leading-tight select-none">{option.title}</p>
+                    </label>
                   ))}
                 </div>
               </div>
