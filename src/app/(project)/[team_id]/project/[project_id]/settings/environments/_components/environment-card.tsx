@@ -291,6 +291,7 @@ function DeleteTrigger({
       onOpenChange={(o) => {
         setIsDialogOpen(o);
         if (!o) {
+          closeDropdown();
           if (timeout.current) clearTimeout(timeout.current);
           timeout.current = setTimeout(() => {
             form.reset();
@@ -442,6 +443,7 @@ function RenameTrigger({
       onOpenChange={(o) => {
         setOpen(o);
         if (!o) {
+          closeDropdown();
           if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
           }
