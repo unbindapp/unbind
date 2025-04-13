@@ -81,7 +81,7 @@ export default function AddWebhookForm({ className }: TProps) {
       }}
       className={cn("flex w-full flex-col rounded-lg border", className)}
     >
-      <div className="flex w-full flex-col px-4 pt-3 pb-4 sm:px-6 sm:pt-4 sm:pb-6">
+      <div className="flex w-full flex-col px-5 pt-4 pb-5 sm:px-6 sm:pt-4 sm:pb-6">
         <h2 className="w-full text-lg leading-tight font-semibold">Events</h2>
         <p className="text-muted-foreground mt-1 leading-tight">
           Select the events that will call the webhook.
@@ -93,35 +93,16 @@ export default function AddWebhookForm({ className }: TProps) {
                 <h3 className="text-muted-foreground text-sm leading-tight font-medium">
                   {group.title}
                 </h3>
-                <div className="-mx-3 mt-1.5 flex w-[calc(100%+1.5rem)] flex-col items-start justify-start gap-3">
+                <div className="-mx-3 mt-1.5 flex w-[calc(100%+1.5rem)] flex-col items-start justify-start">
                   {group.options.map((option) => (
-                    <form.AppField
+                    <label
+                      htmlFor={option.id}
                       key={option.id}
-                      name="selectedIds"
-                      children={(field) => (
-                        <label
-                          htmlFor={option.id}
-                          key={option.id}
-                          className="has-hover:hover:bg-border active:bg-border flex max-w-full cursor-pointer touch-manipulation items-center gap-2.5 rounded-md px-3.5 py-2.5"
-                        >
-                          <Checkbox
-                            id={option.id}
-                            onBlur={field.handleBlur}
-                            checked={field.state.value.has(option.id)}
-                            onCheckedChange={(c) => {
-                              field.handleChange((prev) => {
-                                const newSet = new Set(prev);
-                                if (c) newSet.add(option.id);
-                                else newSet.delete(option.id);
-                                return newSet;
-                              });
-                            }}
-                            className="-ml-0.25"
-                          />
-                          <p className="min-w-0 shrink leading-tight select-none">{option.title}</p>
-                        </label>
-                      )}
-                    />
+                      className="has-hover:hover:bg-border active:bg-border flex max-w-full cursor-pointer touch-manipulation items-center gap-2.5 rounded-md px-3.5 py-2.5"
+                    >
+                      <Checkbox id={option.id} className="-ml-0.25" />
+                      <p className="min-w-0 shrink leading-tight select-none">{option.title}</p>
+                    </label>
                   ))}
                 </div>
               </div>
