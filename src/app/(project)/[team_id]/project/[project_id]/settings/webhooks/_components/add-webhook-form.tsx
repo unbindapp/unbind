@@ -1,9 +1,9 @@
 "use client";
 
 import ErrorLine from "@/components/error-line";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { CheckIcon } from "lucide-react";
 import { z } from "zod";
 
 type TProps = {
@@ -93,39 +93,33 @@ export default function AddWebhookForm({ className }: TProps) {
                 <h3 className="text-muted-foreground text-sm leading-tight font-medium">
                   {group.title}
                 </h3>
-                <div className="-mx-3 mt-1.5 flex w-[calc(100%+1.5rem)] flex-col items-start justify-start">
+                <div className="-mx-3 mt-1.5 flex w-[calc(100%+1.5rem)] flex-col items-start justify-start gap-3">
                   {group.options.map((option) => (
                     <form.AppField
                       key={option.id}
                       name="selectedIds"
                       children={(field) => (
-                        <button
-                          type="button"
+                        <label
+                          htmlFor={option.id}
                           key={option.id}
-                          data-checked={field.state.value.has(option.id) ? true : undefined}
-                          onClick={() =>
-                            field.handleChange((prev) => {
-                              const newSet = new Set(prev);
-                              if (prev.has(option.id)) {
-                                newSet.delete(option.id);
-                              } else {
-                                newSet.add(option.id);
-                              }
-                              return newSet;
-                            })
-                          }
-                          className="group/checkbox has-hover:hover:bg-border active:bg-border flex max-w-full cursor-pointer touch-manipulation items-center gap-2.5 rounded-md px-3.5 py-2.5"
+                          className="has-hover:hover:bg-border active:bg-border flex max-w-full cursor-pointer touch-manipulation items-center gap-2.5 rounded-md px-3.5 py-2.5"
                         >
-                          <div
+                          <Checkbox
                             id={option.id}
-                            className="ring-foreground/50 -ml-0.25 size-4 rounded-sm ring-1"
-                          >
-                            <div className="ring-foreground bg-foreground text-background size-full scale-50 rounded-sm p-0.5 opacity-0 ring-1 transition group-data-checked/checkbox:scale-100 group-data-checked/checkbox:opacity-100">
-                              <CheckIcon className="size-full" strokeWidth={4} />
-                            </div>
-                          </div>
+                            onBlur={field.handleBlur}
+                            checked={field.state.value.has(option.id)}
+                            onCheckedChange={(c) => {
+                              field.handleChange((prev) => {
+                                const newSet = new Set(prev);
+                                if (c) newSet.add(option.id);
+                                else newSet.delete(option.id);
+                                return newSet;
+                              });
+                            }}
+                            className="-ml-0.25"
+                          />
                           <p className="min-w-0 shrink leading-tight select-none">{option.title}</p>
-                        </button>
+                        </label>
                       )}
                     />
                   ))}
