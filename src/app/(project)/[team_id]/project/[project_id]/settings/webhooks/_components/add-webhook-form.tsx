@@ -114,7 +114,7 @@ export default function AddWebhookForm({ className }: TProps) {
                       children={(field) => (
                         <label
                           key={option.id}
-                          className="has-hover:hover:bg-border active:bg-border flex w-full cursor-pointer items-center gap-2.5 rounded-md px-3.5 py-2.5"
+                          className="has-hover:hover:bg-border active:bg-border flex w-full cursor-pointer items-center gap-2.75 rounded-md px-3.5 py-2.5"
                         >
                           <Checkbox
                             onBlur={field.handleBlur}
