@@ -4,7 +4,6 @@ import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
 import { useProject } from "@/components/project/project-provider";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/components/ui/utils";
 import { getWebhookIcon } from "@/components/webhook/helpers";
 import { useWebhooksUtils } from "@/components/webhook/webhooks-provider";
@@ -132,7 +131,7 @@ export default function AddWebhookForm({ className }: TProps) {
                             {([selectedIds]) => (
                               <div
                                 data-selected={selectedIds.has(option.id) ? true : undefined}
-                                className="data-selected:bg-foreground bg-foreground/15 size-4 rounded-sm"
+                                className="data-selected:bg-foreground bg-border ring-foreground/20 size-4 rounded-sm ring-1"
                               ></div>
                             )}
                           </form.Subscribe>
