@@ -25,11 +25,11 @@ export default function BuildLogs({ deployment }: TProps) {
       environmentId={environmentId}
       serviceId={serviceId}
       deploymentId={deploymentId}
-      type="deployment"
+      type="build"
       hideServiceByDefault
       shouldHaveLogs={deployment.status === "building" || deployment.status === "queued"}
-      httpDefaultEndTimestamp={completedAtTimestamp ? completedAtTimestamp + hourInMs : undefined}
       httpDefaultStartTimestamp={createdAtTimestamp ? createdAtTimestamp - hourInMs : undefined}
+      httpDefaultEndTimestamp={completedAtTimestamp ? completedAtTimestamp + hourInMs : undefined}
     />
   );
 }

@@ -54,7 +54,15 @@ export type TDeploymentLogsProps = {
   deploymentId: string;
 };
 
-type TProps = TBaseProps & (TEnvironmentLogsProps | TServiceLogsProps | TDeploymentLogsProps);
+export type TDeploymentBuildLogsProps = {
+  type: "build";
+  environmentId: string;
+  serviceId: string;
+  deploymentId: string;
+};
+
+type TProps = TBaseProps &
+  (TEnvironmentLogsProps | TServiceLogsProps | TDeploymentLogsProps | TDeploymentBuildLogsProps);
 
 export const LogsProvider: React.FC<TProps> = ({
   type,
@@ -115,7 +123,7 @@ export const LogsProvider: React.FC<TProps> = ({
     if (type === "service" || type === "deployment") {
       params.set("service_id", serviceId);
     }
-    if (type === "deployment") {
+    if (type === "deployment" || type === "build") {
       params.set("deployment_id", deploymentId);
     }
     if (filtersStr) {
@@ -127,7 +135,7 @@ export const LogsProvider: React.FC<TProps> = ({
   const { data: streamDataRaw, error: streamError } = useSSEQuery({
     url: sseUrl,
     parser: MessageSchema,
-    disabled: !session,
+    disabled: !session || isFiniteQuery,
     filter: (obj) => obj.type === "log",
     accessToken: session?.access_token || "",
   });

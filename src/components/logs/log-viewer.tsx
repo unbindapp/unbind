@@ -1,6 +1,6 @@
 "use client";
 
-import ErrorLine from "@/components/error-line";
+import ErrorCard from "@/components/error-card";
 import LogLine from "@/components/logs/log-line";
 import LogViewDropdownProvider from "@/components/logs/log-view-dropdown-provider";
 import LogViewPreferencesProvider, {
@@ -9,6 +9,7 @@ import LogViewPreferencesProvider, {
 } from "@/components/logs/log-view-preferences-provider";
 import LogViewStateProvider, { useLogViewState } from "@/components/logs/log-view-state-provider";
 import LogsProvider, {
+  TDeploymentBuildLogsProps,
   TDeploymentLogsProps,
   TEnvironmentLogsProps,
   TServiceLogsProps,
@@ -37,7 +38,8 @@ type TBaseProps = {
   httpDefaultEndTimestamp?: number;
 };
 
-type TProps = TBaseProps & (TEnvironmentLogsProps | TServiceLogsProps | TDeploymentLogsProps);
+type TProps = TBaseProps &
+  (TEnvironmentLogsProps | TServiceLogsProps | TDeploymentLogsProps | TDeploymentBuildLogsProps);
 
 export default function LogViewer({
   hideServiceByDefault,
@@ -52,12 +54,18 @@ export default function LogViewer({
   httpDefaultStartTimestamp,
   httpDefaultEndTimestamp,
 }: TProps) {
-  const typeAndIds: TEnvironmentLogsProps | TServiceLogsProps | TDeploymentLogsProps =
+  const typeAndIds:
+    | TEnvironmentLogsProps
+    | TServiceLogsProps
+    | TDeploymentLogsProps
+    | TDeploymentBuildLogsProps =
     type === "service"
       ? { type: "service", environmentId: environmentId, serviceId: serviceId }
       : type === "deployment"
         ? { type: "deployment", environmentId, serviceId, deploymentId }
-        : { type: "environment", environmentId: environmentId };
+        : type === "build"
+          ? { type: "build", environmentId, serviceId, deploymentId }
+          : { type: "environment", environmentId: environmentId };
 
   return (
     <LogViewPreferencesProvider hideServiceByDefault={hideServiceByDefault}>
@@ -179,7 +187,7 @@ function Logs({
     if (!isPending && error && !logs) {
       return (
         <div className="w-full px-2 pt-2.5 pb-[calc(var(--safe-area-inset-bottom)+6.5rem)] font-sans group-data-[container=page]/wrapper:px-2 sm:px-2.5 group-data-[container=page]/wrapper:sm:px-2.5 group-data-[container=page]/wrapper:xl:px-[calc(0.625rem-((100vw-80rem)/2))]">
-          <ErrorLine message={error.message} withIcon />
+          <ErrorCard message={error.message} />
         </div>
       );
     }
