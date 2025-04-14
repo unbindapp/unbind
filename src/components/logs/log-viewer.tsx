@@ -35,7 +35,6 @@ type TBaseProps = {
   shouldHaveLogs?: boolean;
   httpDefaultStartTimestamp?: number;
   httpDefaultEndTimestamp?: number;
-  disableStream?: boolean;
 };
 
 type TProps = TBaseProps & (TEnvironmentLogsProps | TServiceLogsProps | TDeploymentLogsProps);
@@ -52,7 +51,6 @@ export default function LogViewer({
   shouldHaveLogs,
   httpDefaultStartTimestamp,
   httpDefaultEndTimestamp,
-  disableStream,
 }: TProps) {
   const typeAndIds: TEnvironmentLogsProps | TServiceLogsProps | TDeploymentLogsProps =
     type === "service"
@@ -70,7 +68,6 @@ export default function LogViewer({
             projectId={projectId}
             httpDefaultEndTimestamp={httpDefaultEndTimestamp}
             httpDefaultStartTimestamp={httpDefaultStartTimestamp}
-            disableStream={disableStream}
             {...typeAndIds}
           >
             <Logs containerType={containerType} type={type} shouldHaveLogs={shouldHaveLogs} />

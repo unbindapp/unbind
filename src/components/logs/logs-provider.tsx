@@ -40,7 +40,6 @@ type TBaseProps = {
   type: TLogType;
   httpDefaultStartTimestamp?: number;
   httpDefaultEndTimestamp?: number;
-  disableStream?: boolean;
 };
 
 export type TEnvironmentLogsProps = {
@@ -75,7 +74,6 @@ export const LogsProvider: React.FC<TProps> = ({
   deploymentId,
   httpDefaultStartTimestamp,
   httpDefaultEndTimestamp,
-  disableStream,
   children,
 }) => {
   const { data: session } = useSession();
@@ -83,9 +81,10 @@ export const LogsProvider: React.FC<TProps> = ({
   const [start] = useState(
     new Date(httpDefaultStartTimestamp || Date.now() - 1000 * 60 * 60 * 24).toISOString(),
   );
-  const [end] = useState(new Date(httpDefaultEndTimestamp || Date.now()).toISOString());
-  const [disableStreamLocal] = useState(disableStream || false);
-  const latestStreamedTimestamp = useRef(0);
+  const [end] = useState(
+    httpDefaultEndTimestamp ? new Date(httpDefaultEndTimestamp).toISOString() : null,
+  );
+  const isFiniteQuery = !!start && !!end;
 
   const filtersStr = createSearchFilter(search);
   const limit = 1000;
@@ -94,18 +93,23 @@ export const LogsProvider: React.FC<TProps> = ({
     data: httpData,
     isPending: httpIsPending,
     error: httpError,
-  } = api.logs.list.useQuery({
-    type,
-    teamId,
-    projectId,
-    environmentId,
-    serviceId,
-    deploymentId,
-    filters: filtersStr,
-    limit,
-    start,
-    end,
-  });
+  } = api.logs.list.useQuery(
+    {
+      type,
+      teamId,
+      projectId,
+      environmentId,
+      serviceId,
+      deploymentId,
+      filters: filtersStr,
+      limit,
+      start,
+      end: end!,
+    },
+    {
+      enabled: end !== null,
+    },
+  );
 
   const urlParams = useMemo(() => {
     const params = new URLSearchParams({
@@ -113,8 +117,8 @@ export const LogsProvider: React.FC<TProps> = ({
       team_id: teamId,
       project_id: projectId || "",
       environment_id: environmentId || "",
-      start: end,
       limit: limit.toString(),
+      start: start,
     });
     if (type === "service" || type === "deployment") {
       params.set("service_id", serviceId);
@@ -126,14 +130,19 @@ export const LogsProvider: React.FC<TProps> = ({
       params.set("filters", filtersStr);
     }
     return params;
-  }, [type, teamId, projectId, environmentId, serviceId, deploymentId, filtersStr, end]);
+  }, [type, teamId, projectId, environmentId, serviceId, deploymentId, filtersStr, start]);
 
   const { apiUrl } = useAppConfig();
   const sseUrl = `${apiUrl}/logs/stream?${urlParams.toString()}`;
-  const [streamData, setStreamData] = useState<TLogLineWithLevel[]>([]);
+  const [streamData, setStreamData] = useState<TLogLineWithLevel[] | null>(null);
   const [streamError, setStreamError] = useState<Error | null>(null);
   const streamController = useRef<AbortController | null>(null);
   const streamInitTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    setStreamData(null);
+    setStreamError(null);
+  }, [sseUrl]);
 
   const initSSEConnection = useCallback(() => {
     if (!session) return;
@@ -161,25 +170,19 @@ export const LogsProvider: React.FC<TProps> = ({
           const { success, data } = MessageSchema.safeParse(newData);
           if (success) {
             setStreamData((old) => {
+              const lastTimestampStr = old?.[old.length - 1]?.timestamp;
+              const lastTimestamp = lastTimestampStr ? new Date(lastTimestampStr).getTime() : 0;
+
               const newLogs: TLogLineWithLevel[] = [];
-              let newLogsHighestTimestamp = 0;
               for (let i = 0; i < data.logs.length; i++) {
                 const log = data.logs[i];
-                const timestamp = log.timestamp ? new Date(log.timestamp).getTime() : undefined;
-                if (timestamp) {
-                  if (timestamp > latestStreamedTimestamp.current) {
-                    newLogs.push({
-                      ...log,
-                      level: getLogLevelFromMessage(log.message),
-                    });
-                  }
-                  if (timestamp > newLogsHighestTimestamp) {
-                    newLogsHighestTimestamp = timestamp;
-                  }
+                const timestamp = log.timestamp ? new Date(log.timestamp).getTime() : null;
+                if (timestamp && timestamp > lastTimestamp) {
+                  newLogs.push({
+                    ...log,
+                    level: getLogLevelFromMessage(log.message),
+                  });
                 }
-              }
-              if (newLogsHighestTimestamp > latestStreamedTimestamp.current) {
-                latestStreamedTimestamp.current = newLogsHighestTimestamp;
               }
               const updatedLogs = old ? [...old, ...newLogs] : newLogs;
               return updatedLogs;
@@ -208,7 +211,7 @@ export const LogsProvider: React.FC<TProps> = ({
   }, [sseUrl, session]);
 
   useEffect(() => {
-    if (disableStreamLocal) return;
+    if (isFiniteQuery) return;
 
     initSSEConnection();
 
@@ -221,16 +224,19 @@ export const LogsProvider: React.FC<TProps> = ({
       }
       streamController.current = null;
     };
-  }, [disableStreamLocal, initSSEConnection]);
+  }, [isFiniteQuery, initSSEConnection]);
 
-  const isPending = httpIsPending;
+  const isPending = isFiniteQuery ? httpIsPending : !streamData;
   const error = httpError || streamError;
   const data: TLogLineWithLevel[] | null = useMemo(() => {
-    if (httpData && streamData) {
+    if (isFiniteQuery && httpData && streamData) {
       return [...httpData.logs, ...streamData];
     }
+    if (!isFiniteQuery && streamData) {
+      return streamData;
+    }
     return null;
-  }, [httpData, streamData]);
+  }, [httpData, streamData, isFiniteQuery]);
 
   const value: TLogsContext = useMemo(() => ({ data, isPending, error }), [data, isPending, error]);
 

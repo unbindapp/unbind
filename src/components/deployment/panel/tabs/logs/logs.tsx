@@ -30,7 +30,6 @@ export default function Logs({ deployment }: TProps) {
       shouldHaveLogs={deployment.status === "building" || deployment.status === "queued"}
       httpDefaultEndTimestamp={completedAtTimestamp ? completedAtTimestamp + hourInMs : undefined}
       httpDefaultStartTimestamp={createdAtTimestamp ? createdAtTimestamp - hourInMs : undefined}
-      disableStream={createdAtTimestamp !== undefined && completedAtTimestamp !== undefined}
     />
   );
 }
