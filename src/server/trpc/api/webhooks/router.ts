@@ -98,6 +98,7 @@ export const webhooksRouter = createTRPCRouter({
           message: "You need to be logged in to access this resource",
         });
       }
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       return {
         id: "a6c8e1d6-9772-45af-858c-33fafa32b154",
         url: input.url,
@@ -128,6 +129,7 @@ export const webhooksRouter = createTRPCRouter({
           message: "You need to be logged in to access this resource",
         });
       }
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       return {
         id: input.id,
       };

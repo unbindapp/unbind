@@ -11,16 +11,16 @@ function Checkbox({ className, ...props }: React.ComponentProps<typeof CheckboxP
     <CheckboxPrimitive.Root
       data-slot="checkbox"
       className={cn(
-        "peer border-foreground/50 bg-input data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground dark:data-[state=checked]:bg-primary data-[state=checked]:border-primary focus-visible:border-ring focus-visible:ring-foreground/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-4 shrink-0 rounded-[4px] border shadow-xs transition-shadow outline-none focus-visible:ring-[2px] disabled:cursor-not-allowed disabled:opacity-50",
+        "peer bg-border ring-foreground/20 focus-visible:ring-foreground/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 focus-visible:ring-offset-background size-4 shrink-0 rounded-sm ring-1 outline-none focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}
       {...props}
     >
       <CheckboxPrimitive.Indicator
         data-slot="checkbox-indicator"
-        className="flex items-center justify-center text-current transition-none"
+        className="data-[state=checked]:ring-foreground data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground flex size-full items-center justify-center rounded-sm p-0.25 text-current ring-1 ring-transparent transition-none"
       >
-        <CheckIcon className="size-3" strokeWidth={4} />
+        <CheckIcon className="size-full" strokeWidth={4} />
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
   );

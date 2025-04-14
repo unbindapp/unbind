@@ -3,7 +3,7 @@
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
 import { useProject } from "@/components/project/project-provider";
-import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/components/ui/utils";
 import { getWebhookIcon } from "@/components/webhook/helpers";
 import { useWebhooksUtils } from "@/components/webhook/webhooks-provider";
@@ -112,31 +112,26 @@ export default function AddWebhookForm({ className }: TProps) {
                       key={option.id}
                       name="selectedIds"
                       children={(field) => (
-                        <Button
-                          type="button"
-                          variant="ghost"
+                        <label
                           key={option.id}
-                          onBlur={field.handleBlur}
-                          onClick={() => {
-                            field.handleChange((prev) => {
-                              const newSet = new Set(prev);
-                              if (newSet.has(option.id)) newSet.delete(option.id);
-                              else newSet.add(option.id);
-                              return newSet;
-                            });
-                          }}
-                          className="has-hover:hover:bg-border active:bg-border flex w-full cursor-pointer touch-manipulation items-center justify-start gap-2.5 rounded-md px-3.5 py-2.5"
+                          className="has-hover:hover:bg-border active:bg-border flex w-full cursor-pointer items-center gap-2.5 rounded-md px-3.5 py-2.5"
                         >
-                          <form.Subscribe selector={(state) => [state.values.selectedIds]}>
-                            {([selectedIds]) => (
-                              <div
-                                data-selected={selectedIds.has(option.id) ? true : undefined}
-                                className="data-selected:bg-foreground bg-border ring-foreground/20 size-4 rounded-sm ring-1"
-                              ></div>
-                            )}
-                          </form.Subscribe>
-                          <p className="min-w-0 shrink leading-tight select-none">{option.title}</p>
-                        </Button>
+                          <Checkbox
+                            onBlur={field.handleBlur}
+                            checked={field.state.value.has(option.id)}
+                            onCheckedChange={(c) => {
+                              field.handleChange((prev) => {
+                                const newSet = new Set(prev);
+                                if (c) newSet.add(option.id);
+                                else newSet.delete(option.id);
+                                return newSet;
+                              });
+                            }}
+                          />
+                          <p className="min-w-0 shrink leading-tight font-medium select-none">
+                            {option.title}
+                          </p>
+                        </label>
                       )}
                     />
                   ))}
