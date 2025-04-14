@@ -147,12 +147,11 @@ export const LogsProvider: React.FC<TProps> = ({
   const initSSEConnection = useCallback(() => {
     if (!session) return;
 
-    if (!streamController.current) {
-      streamController.current = new AbortController();
-    } else {
+    if (streamController.current) {
       streamController.current.abort();
-      streamController.current = new AbortController();
+      streamController.current = null;
     }
+    streamController.current = new AbortController();
 
     fetchEventSource(sseUrl, {
       headers: {
@@ -219,10 +218,10 @@ export const LogsProvider: React.FC<TProps> = ({
       if (streamController.current) {
         streamController.current.abort();
       }
+      streamController.current = null;
       if (streamInitTimeout.current) {
         clearTimeout(streamInitTimeout.current);
       }
-      streamController.current = null;
     };
   }, [isFiniteQuery, initSSEConnection]);
 
