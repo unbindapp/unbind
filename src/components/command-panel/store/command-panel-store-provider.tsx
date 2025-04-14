@@ -7,15 +7,17 @@ import {
 import { type ReactNode, createContext, useRef, useContext } from "react";
 import { useStore } from "zustand";
 
-export type CommandPanelStoreApi = ReturnType<typeof createCommandPanelStore>;
-export const CommandPanelStoreContext = createContext<CommandPanelStoreApi | undefined>(undefined);
+export type TCommandPanelStoreContext = ReturnType<typeof createCommandPanelStore>;
+export const CommandPanelStoreContext = createContext<TCommandPanelStoreContext | undefined>(
+  undefined,
+);
 
 export interface CommandPanelStoreProviderProps {
   children: ReactNode;
 }
 
 export function CommandPanelStoreProvider({ children }: CommandPanelStoreProviderProps) {
-  const storeRef = useRef<CommandPanelStoreApi | null>(null);
+  const storeRef = useRef<TCommandPanelStoreContext | null>(null);
   if (storeRef.current === null) {
     storeRef.current = createCommandPanelStore();
   }
@@ -28,11 +30,11 @@ export function CommandPanelStoreProvider({ children }: CommandPanelStoreProvide
 }
 
 export function useCommandPanelStore<T>(selector: (store: CommandPanelStore) => T): T {
-  const counterStoreContext = useContext(CommandPanelStoreContext);
+  const context = useContext(CommandPanelStoreContext);
 
-  if (!counterStoreContext) {
+  if (!context) {
     throw new Error(`useCommandPanelStore must be used within CommandPanelStoreProvider`);
   }
 
-  return useStore(counterStoreContext, selector);
+  return useStore(context, selector);
 }
