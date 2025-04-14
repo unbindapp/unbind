@@ -139,11 +139,6 @@ export const LogsProvider: React.FC<TProps> = ({
   const streamController = useRef<AbortController | null>(null);
   const streamInitTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    setStreamData(null);
-    setStreamError(null);
-  }, [sseUrl]);
-
   const initSSEConnection = useCallback(() => {
     if (!session) return;
 
@@ -152,6 +147,9 @@ export const LogsProvider: React.FC<TProps> = ({
       streamController.current = null;
     }
     streamController.current = new AbortController();
+
+    setStreamError(null);
+    setStreamData(null);
 
     fetchEventSource(sseUrl, {
       headers: {
