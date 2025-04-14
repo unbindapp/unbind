@@ -9,9 +9,17 @@ import { TLogLineWithLevel, TLogType } from "@/server/trpc/api/logs/types";
 import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
 import { api } from "@/server/trpc/setup/client";
 import { fetchEventSource } from "@fortaine/fetch-event-source";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
-import { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { z } from "zod";
 
 type TLogsContext = {
@@ -122,96 +130,104 @@ export const LogsProvider: React.FC<TProps> = ({
 
   const { apiUrl } = useAppConfig();
   const sseUrl = `${apiUrl}/logs/stream?${urlParams.toString()}`;
-  const queryClient = useQueryClient();
+  const [streamData, setStreamData] = useState<TLogLineWithLevel[]>([]);
+  const [streamError, setStreamError] = useState<Error | null>(null);
+  const streamController = useRef<AbortController | null>(null);
+  const streamInitTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  const queryKey = ["logs-stream", sseUrl, disableStreamLocal];
-  const streamController = useRef<AbortController>(new AbortController());
+  const initSSEConnection = useCallback(() => {
+    if (!session) return;
 
-  useEffect(() => {
-    return () => {
-      streamController.current.abort();
-    };
-  }, []);
-
-  const {
-    data: streamData,
-    isPending: streamIsPending,
-    error: streamIsError,
-  } = useQuery({
-    enabled: !!session,
-    queryKey,
-    staleTime: Infinity,
-    queryFn: async () => {
-      if (disableStreamLocal) {
-        console.log("Stream is disabled");
-        return [];
-      } else {
-        console.log("Stream is enabled");
-      }
+    if (!streamController.current) {
+      streamController.current = new AbortController();
+    } else {
       streamController.current.abort();
       streamController.current = new AbortController();
+    }
 
-      fetchEventSource(sseUrl, {
-        headers: {
-          Accept: "text/event-stream",
-          Authorization: `Bearer ${session?.access_token}`,
-        },
-        signal: streamController.current.signal,
-        onmessage: (event) => {
-          try {
-            const newData = JSON.parse(event.data);
-            console.log("Log", newData.type, newData);
-            if (newData.type !== "log") {
-              return;
-            }
-            const { success, data } = MessageSchema.safeParse(newData);
-            if (success) {
-              queryClient.setQueryData(queryKey, (old: TMessage["logs"]) => {
-                const newLogs: TLogLineWithLevel[] = [];
-                let newLogsHighestTimestamp = 0;
-                for (let i = 0; i < data.logs.length; i++) {
-                  const log = data.logs[i];
-                  const timestamp = log.timestamp ? new Date(log.timestamp).getTime() : undefined;
-                  if (timestamp) {
-                    if (timestamp > latestStreamedTimestamp.current) {
-                      newLogs.push({
-                        ...log,
-                        level: getLogLevelFromMessage(log.message),
-                      });
-                    }
-                    if (timestamp > newLogsHighestTimestamp) {
-                      newLogsHighestTimestamp = timestamp;
-                    }
+    fetchEventSource(sseUrl, {
+      headers: {
+        Accept: "text/event-stream",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      signal: streamController.current.signal,
+      onmessage: (event) => {
+        try {
+          const newData = JSON.parse(event.data);
+          console.log("Log", newData.type, newData);
+          if (newData.type !== "log") {
+            return;
+          }
+          const { success, data } = MessageSchema.safeParse(newData);
+          if (success) {
+            setStreamData((old) => {
+              const newLogs: TLogLineWithLevel[] = [];
+              let newLogsHighestTimestamp = 0;
+              for (let i = 0; i < data.logs.length; i++) {
+                const log = data.logs[i];
+                const timestamp = log.timestamp ? new Date(log.timestamp).getTime() : undefined;
+                if (timestamp) {
+                  if (timestamp > latestStreamedTimestamp.current) {
+                    newLogs.push({
+                      ...log,
+                      level: getLogLevelFromMessage(log.message),
+                    });
+                  }
+                  if (timestamp > newLogsHighestTimestamp) {
+                    newLogsHighestTimestamp = timestamp;
                   }
                 }
-                if (newLogsHighestTimestamp > latestStreamedTimestamp.current) {
-                  latestStreamedTimestamp.current = newLogsHighestTimestamp;
-                }
-                const updatedLogs = old ? [...old, ...newLogs] : newLogs;
-                return updatedLogs;
-              });
-            }
-          } catch (error) {
-            console.error("Error parsing SSE data:", error);
+              }
+              if (newLogsHighestTimestamp > latestStreamedTimestamp.current) {
+                latestStreamedTimestamp.current = newLogsHighestTimestamp;
+              }
+              const updatedLogs = old ? [...old, ...newLogs] : newLogs;
+              return updatedLogs;
+            });
           }
-        },
-        onerror: (error) => {
-          console.error("SSE connection error:", error);
-          streamController.current.abort();
-          streamController.current = new AbortController();
-          throw error;
-        },
-      });
+        } catch (error) {
+          setStreamError(new Error("Failed to parse SSE data"));
+          console.error("Error parsing SSE data:", error);
+        }
+      },
+      onerror: (error) => {
+        console.error("SSE connection error:", error);
 
-      return [];
-    },
-  });
+        if (!(error instanceof DOMException && error.name === "AbortError")) {
+          setStreamError(error);
+        }
 
-  const isPending = httpIsPending || streamIsPending;
-  const error = httpError || streamIsError;
+        if (streamInitTimeout.current) {
+          clearTimeout(streamInitTimeout.current);
+        }
+        streamInitTimeout.current = setTimeout(() => {
+          initSSEConnection();
+        }, 2000);
+      },
+    });
+  }, [sseUrl, session]);
+
+  useEffect(() => {
+    if (disableStreamLocal) return;
+
+    initSSEConnection();
+
+    return () => {
+      if (streamController.current) {
+        streamController.current.abort();
+      }
+      if (streamInitTimeout.current) {
+        clearTimeout(streamInitTimeout.current);
+      }
+      streamController.current = null;
+    };
+  }, [disableStreamLocal, initSSEConnection]);
+
+  const isPending = httpIsPending;
+  const error = httpError || streamError;
   const data: TLogLineWithLevel[] | null = useMemo(() => {
     if (httpData && streamData) {
-      return [...httpData.logs, ...(streamData as TLogLineWithLevel[])];
+      return [...httpData.logs, ...streamData];
     }
     return null;
   }, [httpData, streamData]);
