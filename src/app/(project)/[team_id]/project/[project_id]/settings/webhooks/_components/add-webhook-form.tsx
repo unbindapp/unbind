@@ -119,10 +119,10 @@ export default function AddWebhookForm({ className }: TProps) {
                           <Checkbox
                             onBlur={field.handleBlur}
                             checked={field.state.value.has(option.id)}
-                            onCheckedChange={(c) => {
+                            onCheckedChange={(checked) => {
                               field.handleChange((prev) => {
                                 const newSet = new Set(prev);
-                                if (c) newSet.add(option.id);
+                                if (checked) newSet.add(option.id);
                                 else newSet.delete(option.id);
                                 return newSet;
                               });
