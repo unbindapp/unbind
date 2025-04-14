@@ -402,6 +402,31 @@ export const GetMetricsResponseBodySchema = z
   })
   .strip();
 
+export const NodeMetricsMapEntrySchema = z
+  .object({
+    cpu: z.array(MetricDetailSchema),
+    disk: z.array(MetricDetailSchema),
+    filesystem: z.array(MetricDetailSchema),
+    load: z.array(MetricDetailSchema),
+    network: z.array(MetricDetailSchema),
+    ram: z.array(MetricDetailSchema),
+  })
+  .strip();
+
+export const NodeMetricsResultSchema = z
+  .object({
+    broken_down_by: z.string(), // The type of node metric that is broken down, e.g. node, zone
+    metrics: NodeMetricsMapEntrySchema,
+    step: z.number(),
+  })
+  .strip();
+
+export const GetNodeMetricsResponseBodySchema = z
+  .object({
+    data: NodeMetricsResultSchema,
+  })
+  .strip();
+
 export const GetProjectResponseBodySchema = z
   .object({
     data: ProjectResponseSchema,
@@ -726,12 +751,19 @@ export const LogEventsMessageTypeSchema = z.enum(['log', 'heartbeat', 'error']);
 export const LogEventsSchema = z
   .object({
     error_message: z.string().optional(),
-    logs: z.array(LogEventSchema).nullable().optional(),
+    logs: z.array(LogEventSchema).nullable(),
     type: LogEventsMessageTypeSchema,
   })
   .strip();
 
-export const LogTypeSchema = z.enum(['team', 'project', 'environment', 'service', 'deployment']);
+export const LogTypeSchema = z.enum([
+  'team',
+  'project',
+  'environment',
+  'service',
+  'deployment',
+  'build',
+]);
 
 export const LokiDirectionSchema = z.enum(['forward', 'backward']);
 
@@ -932,6 +964,9 @@ export type MetricDetail = z.infer<typeof MetricDetailSchema>;
 export type MetricsMapEntry = z.infer<typeof MetricsMapEntrySchema>;
 export type MetricsResult = z.infer<typeof MetricsResultSchema>;
 export type GetMetricsResponseBody = z.infer<typeof GetMetricsResponseBodySchema>;
+export type NodeMetricsMapEntry = z.infer<typeof NodeMetricsMapEntrySchema>;
+export type NodeMetricsResult = z.infer<typeof NodeMetricsResultSchema>;
+export type GetNodeMetricsResponseBody = z.infer<typeof GetNodeMetricsResponseBodySchema>;
 export type GetProjectResponseBody = z.infer<typeof GetProjectResponseBodySchema>;
 export type GetServiceResponseBody = z.infer<typeof GetServiceResponseBodySchema>;
 export type TeamResponse = z.infer<typeof TeamResponseSchema>;
@@ -1085,8 +1120,9 @@ export const stream_logsQuerySchema = z
     environment_id: z.string().optional(),
     service_id: z.string().optional(),
     deployment_id: z.string().optional(),
+    start: z.string().datetime().optional(),
     since: z.string().optional(), // Duration to look back (e.g., '1h', '30m')
-    tail: z.number().optional(), // Number of lines to get from the end
+    limit: z.number().optional(), // Number of lines to get from the end
     timestamps: z.boolean().optional(), // Include timestamps in logs
     filters: z.string().optional(), // Optional logql filter string
   })
@@ -1100,6 +1136,18 @@ export const get_metricsQuerySchema = z
     environment_id: z.string().optional(),
     service_id: z.string().optional(),
     start: z.string().datetime().optional(), // Start time for the query, defaults to 1 week ago
+    end: z.string().datetime().optional(), // End time for the query, defaults to now
+  })
+  .passthrough();
+
+export const get_syste__metricsQuerySchema = z
+  .object({
+    type: z.string(),
+    node_name: z.string().optional(),
+    zone: z.string().optional(),
+    region: z.string().optional(),
+    cluster_name: z.string().optional(),
+    start: z.string().datetime().optional(), // Start time for the query, defaults to 24 hours ago
     end: z.string().datetime().optional(), // End time for the query, defaults to now
   })
   .passthrough();
@@ -1999,8 +2047,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             'environment_id',
             'service_id',
             'deployment_id',
+            'start',
             'since',
-            'tail',
+            'limit',
             'timestamps',
             'filters',
           ];
@@ -2090,6 +2139,52 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           }
           const data = await response.json();
           return GetMetricsResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      getSystem: async (
+        params: z.infer<typeof get_syste__metricsQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<GetNodeMetricsResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/metrics/get-system`);
+          const validatedQuery = get_syste__metricsQuerySchema.parse(params);
+          const queryKeys = ['type', 'node_name', 'zone', 'region', 'cluster_name', 'start', 'end'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return GetNodeMetricsResponseBodySchema.parse(data);
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;

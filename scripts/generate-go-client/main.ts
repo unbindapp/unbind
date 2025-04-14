@@ -161,10 +161,13 @@ function generateTreeCode(node: TreeNode, indent: string = "  "): string {
   for (const key of Object.keys(node.children)) {
     const childNode = node.children[key];
     const childCode = generateTreeCode(childNode, indent + "  ");
+    // Convert property name to camelCase if it contains hyphens
+    const safeKey = propertyNameToCamelCase(key);
+
     if (childNode.isParam) {
-      childParts.push(`${indent}${key}: (${key}: string | number | boolean) => (${childCode})`);
+      childParts.push(`${indent}${safeKey}: (${key}: string | number | boolean) => (${childCode})`);
     } else {
-      childParts.push(`${indent}${key}: ${childCode}`);
+      childParts.push(`${indent}${safeKey}: ${childCode}`);
     }
   }
 
@@ -177,6 +180,17 @@ function generateTreeCode(node: TreeNode, indent: string = "  "): string {
   } else {
     return `{\n${childParts.join(",\n")}\n${indent.slice(2)}}`;
   }
+}
+
+/**
+ * Convert kebab-case to camelCase for property names
+ */
+function propertyNameToCamelCase(name: string): string {
+  // Handle kebab-case by converting to camelCase
+  if (name.includes("-")) {
+    return name.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+  }
+  return name;
 }
 
 // ---------------------------------------------------------------------
