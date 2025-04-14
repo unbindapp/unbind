@@ -107,7 +107,7 @@ export const LogsProvider: React.FC<TProps> = ({
       end: end!,
     },
     {
-      enabled: end !== null,
+      enabled: isFiniteQuery,
     },
   );
 
@@ -228,8 +228,8 @@ export const LogsProvider: React.FC<TProps> = ({
   const isPending = isFiniteQuery ? httpIsPending : !streamData;
   const error = httpError || streamError;
   const data: TLogLineWithLevel[] | null = useMemo(() => {
-    if (isFiniteQuery && httpData && streamData) {
-      return [...httpData.logs, ...streamData];
+    if (isFiniteQuery && httpData) {
+      return [...httpData.logs];
     }
     if (!isFiniteQuery && streamData) {
       return streamData;

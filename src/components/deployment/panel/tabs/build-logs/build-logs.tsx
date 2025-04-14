@@ -8,7 +8,7 @@ type TProps = {
 
 const hourInMs = 60 * 60 * 1000;
 
-export default function Logs({ deployment }: TProps) {
+export default function BuildLogs({ deployment }: TProps) {
   const { teamId, projectId, environmentId, serviceId, deploymentId } = useDeployment();
 
   const createdAt = deployment.created_at;
