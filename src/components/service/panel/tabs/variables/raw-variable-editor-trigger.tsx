@@ -20,7 +20,7 @@ import { CheckCircleIcon, CheckIcon, CopyIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import Prism, { highlight } from "prismjs";
 import "prismjs/components/prism-ini";
-import { ReactNode, RefObject, useEffect, useMemo, useRef, useState } from "react";
+import { ReactNode, RefObject, useEffect, useRef, useState } from "react";
 import Editor from "react-simple-code-editor";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -62,11 +62,13 @@ export default function RawVariableEditorTrigger({ children }: TProps) {
       }
       const cleaned = editorValue.current.trim();
       const lines = cleaned ? cleaned.split("\n") : [];
-      const pairs = lines.map((line) => {
-        const [name, ...rest] = line.split("=");
-        const value = unwrapQuotes(rest.join("="));
-        return { name, value };
-      });
+      const pairs = lines
+        .filter((line) => line.trim() !== "")
+        .map((line) => {
+          const [name, ...rest] = line.split("=");
+          const value = unwrapQuotes(rest.join("="));
+          return { name, value };
+        });
       const parsedVariables: z.infer<typeof VariableForCreateSchema>[] = [];
       for (const pair of pairs) {
         const res = VariableForCreateSchema.safeParse(pair);
@@ -122,32 +124,11 @@ export default function RawVariableEditorTrigger({ children }: TProps) {
             <CopyButton editorValue={editorValue} className="-my-2.5 -mr-3.5 sm:-mr-1.5" />
           </div>
         </DialogHeader>
-        {variables ? (
-          <VariableEditor
-            variables={variables}
-            editorValue={editorValue}
-            recentlySucceeded={recentlySucceeded}
-          />
-        ) : (
-          <div
-            style={{ paddingLeft: 14, paddingRight: 14, paddingTop: 10, paddingBottom: 10 }}
-            className="bg-background-hover flex flex-1 flex-col gap-1 overflow-hidden rounded-xl border font-mono"
-          >
-            {Array.from({ length: 20 }).map((_, i) => (
-              <div
-                key={i}
-                className="pointer-events-none flex w-full items-center gap-1 text-transparent select-none"
-              >
-                <span className="bg-foreground animate-skeleton flex-1 rounded-md leading-tight">
-                  N
-                </span>
-                <span className="bg-muted-more-foreground animate-skeleton flex-[2] rounded-md leading-tight">
-                  V
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
+        <VariableEditorOrPlaceholder
+          variables={variables}
+          editorValue={editorValue}
+          recentlySucceeded={recentlySucceeded}
+        />
         {error && <ErrorLine message={error.message} />}
         <div className="flex w-full flex-wrap items-center justify-end gap-2">
           <DialogClose asChild className="text-muted-foreground">
@@ -169,6 +150,44 @@ export default function RawVariableEditorTrigger({ children }: TProps) {
   );
 }
 
+function VariableEditorOrPlaceholder({
+  variables,
+  editorValue,
+  recentlySucceeded,
+}: {
+  variables?: TVariableShallow[];
+  editorValue: RefObject<string | null>;
+  recentlySucceeded: boolean;
+}) {
+  if (variables) {
+    return (
+      <VariableEditor
+        variables={variables}
+        editorValue={editorValue}
+        recentlySucceeded={recentlySucceeded}
+      />
+    );
+  }
+  return (
+    <div
+      style={{ paddingLeft: 14, paddingRight: 14, paddingTop: 10, paddingBottom: 10 }}
+      className="bg-background-hover flex flex-1 flex-col gap-1 overflow-hidden rounded-xl border font-mono"
+    >
+      {Array.from({ length: 20 }).map((_, i) => (
+        <div
+          key={i}
+          className="pointer-events-none flex w-full items-center gap-1 text-transparent select-none"
+        >
+          <span className="bg-foreground animate-skeleton flex-1 rounded-md leading-tight">N</span>
+          <span className="bg-muted-more-foreground animate-skeleton flex-[2] rounded-md leading-tight">
+            V
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function VariableEditor({
   variables,
   editorValue,
@@ -179,13 +198,19 @@ function VariableEditor({
   recentlySucceeded: boolean;
 }) {
   const [value, setValue] = useState(getEditorValue({ variables }));
-  const hiddenValue = useMemo(() => getEditorValue({ variables, hidden: true }), [variables]);
+  const [hiddenValue, setHiddenValue] = useState(getEditorValue({ variables, hidden: true }));
   const [isHidden, setIsHidden] = useState(true);
 
   useEffect(() => {
     editorValue.current = value;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
+
+  useEffect(() => {
+    if (!recentlySucceeded) return;
+    setValue(getEditorValue({ variables }));
+    setHiddenValue(getEditorValue({ variables, hidden: true }));
+  }, [recentlySucceeded, variables]);
 
   return (
     <div className="relative -mx-3 flex w-[calc(100%+1.5rem)] flex-1 flex-col overflow-hidden sm:mx-0 sm:w-full">
