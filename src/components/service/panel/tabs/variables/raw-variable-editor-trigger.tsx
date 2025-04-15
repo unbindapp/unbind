@@ -131,7 +131,7 @@ export default function RawVariableEditorTrigger({ children }: TProps) {
         ) : (
           <div
             style={{ paddingLeft: 14, paddingRight: 14, paddingTop: 10, paddingBottom: 10 }}
-            className="bg-background-hover flex flex-1 flex-col gap-1 overflow-hidden rounded-lg border font-mono"
+            className="bg-background-hover flex flex-1 flex-col gap-1 overflow-hidden rounded-xl border font-mono"
           >
             {Array.from({ length: 20 }).map((_, i) => (
               <div
@@ -191,7 +191,7 @@ function VariableEditor({
     <div className="relative -mx-3 flex w-[calc(100%+1.5rem)] flex-1 flex-col overflow-hidden sm:mx-0 sm:w-full">
       <ScrollArea
         viewportClassName="[&>div]:group-data-[orientation=vertical]/root:flex-1"
-        className="bg-background-hover flex flex-1 flex-col overflow-auto rounded-lg border font-mono"
+        className="bg-background-hover flex flex-1 flex-col overflow-auto rounded-xl border font-mono"
       >
         <div className="flex w-full flex-1 flex-col">
           <Editor
@@ -205,17 +205,23 @@ function VariableEditor({
           />
         </div>
       </ScrollArea>
-      <div
-        data-open={recentlySucceeded ? true : undefined}
-        className="group/div text-success-foreground bg-success shadow-shadow/shadow group/div pointer-events-none absolute right-3 bottom-3 flex max-w-full translate-y-[calc(100%+0.75rem)] items-center gap-1.5 overflow-hidden rounded-md px-3 py-1 font-sans text-sm font-bold opacity-0 shadow-md transition duration-200 data-open:translate-y-0 data-open:opacity-100"
-      >
-        <CheckCircleIcon
-          className="relative -ml-1 size-4 -rotate-90 transition delay-50 duration-300 group-data-open/div:rotate-0"
-          strokeWidth={2.5}
-        />
-        <p className="relative min-w-0 shrink translate-x-full opacity-0 transition delay-50 duration-300 group-data-open/div:translate-x-0 group-data-open/div:opacity-100">
-          Updated
-        </p>
+      <div className="pointer-events-none absolute right-0 bottom-0 z-10 flex w-full overflow-hidden rounded-b-xl">
+        <div
+          data-open={recentlySucceeded ? true : undefined}
+          className="group/badge bg-background/90 flex w-full translate-y-full items-end justify-end rounded-b-xl opacity-0 transition duration-200 data-open:translate-y-0 data-open:opacity-100"
+        >
+          <div className="bg-success/20 border-success/20 flex w-full items-end justify-end rounded-b-xl border-t p-2 sm:p-3">
+            <div className="text-success-foreground bg-success flex max-w-full items-center gap-1.5 overflow-hidden rounded-md px-3 py-1 font-sans font-bold">
+              <CheckCircleIcon
+                className="relative -ml-1 size-4.5 -rotate-90 transition delay-50 duration-300 group-data-open/badge:rotate-0"
+                strokeWidth={2.5}
+              />
+              <p className="relative min-w-0 shrink translate-x-full opacity-0 transition delay-50 duration-300 group-data-open/badge:translate-x-0 group-data-open/badge:opacity-100">
+                Updated
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

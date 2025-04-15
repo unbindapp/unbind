@@ -227,9 +227,10 @@ export default function CreateVariablesForm({
                   <Button
                     type="button"
                     variant="outline"
+                    className="px-4"
                     onClick={() => field.pushValue({ name: "", value: "" })}
                   >
-                    <PlusIcon className="-ml-1.5 size-5 shrink-0" />
+                    <PlusIcon className="-ml-1.25 size-5 shrink-0" />
                     <p className="min-w-0 shrink">Add Another</p>
                   </Button>
                 </div>
