@@ -158,9 +158,9 @@ export default function MetricsChartList({
 function LoadingPlaceholder({ noLegends }: { noLegends?: boolean }) {
   return (
     <div className="flex w-full flex-col">
-      <div className="bg-border animate-skeleton h-56 w-full rounded-lg" />
+      <div className="bg-muted-more-foreground/50 animate-skeleton h-56 w-full rounded-lg" />
       {!noLegends && (
-        <div className="bg-border animate-skeleton pointer-events-none mt-1.5 flex w-full flex-wrap rounded-lg">
+        <div className="bg-muted-more-foreground/50 animate-skeleton pointer-events-none mt-1.5 flex w-full flex-wrap rounded-lg">
           <div className="text-muted-foreground max-w-full gap-1.5 rounded-md px-2.5 py-1.5 text-left text-xs font-medium">
             <p className="max-w-28 min-w-0 shrink overflow-hidden leading-tight text-ellipsis whitespace-nowrap text-transparent select-none">
               Loading
