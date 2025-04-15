@@ -45,11 +45,11 @@ export default function WebhookCard({
       data-placeholder={isPlaceholder ? true : undefined}
       className="group/item relative flex flex-col items-start justify-start gap-3 rounded-xl border p-3 sm:p-4 sm:pt-3.5"
     >
-      <div className="flex w-full gap-2 px-0.5 pr-10">
+      <div className="flex w-full items-start justify-start gap-2 px-0.5 pr-10">
         <BrandIcon
           color="brand"
           brand={isPlaceholder ? "webhook" : getWebhookIcon(webhook.url)}
-          className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground size-4.5 group-data-placeholder/item:rounded-full"
+          className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground -mt-0.25 size-5 group-data-placeholder/item:rounded-full"
         />
         <p className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground min-w-0 shrink text-sm leading-tight group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">
           {isPlaceholder ? "https://unbind.app/webhook" : webhook.url}

@@ -225,6 +225,43 @@ export const CreateServiceResponseBodySchema = z
   })
   .strip();
 
+export const WebhookTeamEventSchema = z.enum([
+  'project.created',
+  'project.updated',
+  'project.deleted',
+]);
+
+export const WebhookProjectEventSchema = z.enum([
+  'service.created',
+  'service.updated',
+  'service.deleted',
+  'deployment.queued',
+  'deployment.building',
+  'deployment.succeeded',
+  'deployment.failed',
+  'deployment.cancelled',
+]);
+
+export const WebhookTypeSchema = z.enum(['team', 'project']);
+
+export const WebhookResponseSchema = z
+  .object({
+    created_at: z.string().datetime(),
+    events: z.array(z.any()),
+    id: z.string(),
+    project_id: z.string().optional(),
+    team_id: z.string(),
+    type: WebhookTypeSchema,
+    url: z.string(),
+  })
+  .strip();
+
+export const CreateWebhookResponseBodySchema = z
+  .object({
+    data: WebhookResponseSchema,
+  })
+  .strip();
+
 export const DataStructSchema = z
   .object({
     deleted: z.boolean(),
@@ -329,6 +366,21 @@ export const DeleteVariablesInputBodySchema = z
     team_id: z.string(),
     type: VariableTypeSchema, // The type of variable
     variables: z.array(VariableDeleteInputSchema).nullable(),
+  })
+  .strip();
+
+export const DeleteWebhookInputBodySchema = z
+  .object({
+    id: z.string(),
+    project_id: z.string().optional(),
+    team_id: z.string(),
+    type: WebhookTypeSchema,
+  })
+  .strip();
+
+export const DeleteWebhookResponseBodySchema = z
+  .object({
+    data: DataStructSchema,
   })
   .strip();
 
@@ -452,6 +504,12 @@ export const TeamResponseSchema = z
 export const GetTeamResponseBodySchema = z
   .object({
     data: TeamResponseSchema,
+  })
+  .strip();
+
+export const GetWebhookResponseBodySchema = z
+  .object({
+    data: WebhookResponseSchema,
   })
   .strip();
 
@@ -727,6 +785,12 @@ export const ListServiceResponseBodySchema = z
   })
   .strip();
 
+export const ListWebhooksResponseBodySchema = z
+  .object({
+    data: z.array(WebhookResponseSchema),
+  })
+  .strip();
+
 export const LogMetadataSchema = z
   .object({
     deployment_id: z.string().optional(),
@@ -887,6 +951,12 @@ export const UpdateTeamResponseBodySchema = z
   })
   .strip();
 
+export const UpdateWebhookResponseBodySchema = z
+  .object({
+    data: WebhookResponseSchema,
+  })
+  .strip();
+
 export const VariableUpdateBehaviorSchema = z.enum(['upsert', 'overwrite']);
 
 export const UpsertVariablesInputBodySchema = z
@@ -915,6 +985,40 @@ export const VariablesResponseBodySchema = z
   })
   .strip();
 
+export const WebhookCreateInputSchema = z
+  .object({
+    events: z.array(z.any()).nullable(),
+    project_id: z.string().optional(), // required if type is project
+    team_id: z.string(),
+    type: WebhookTypeSchema,
+    url: z.string(),
+  })
+  .strip();
+
+export const WebhookEventSchema = z.enum([
+  'project.created',
+  'project.updated',
+  'project.deleted',
+  'service.created',
+  'service.updated',
+  'service.deleted',
+  'deployment.queued',
+  'deployment.building',
+  'deployment.succeeded',
+  'deployment.failed',
+  'deployment.cancelled',
+]);
+
+export const WebhookUpdateInputSchema = z
+  .object({
+    events: z.array(z.any()).nullable().optional(),
+    id: z.string(),
+    project_id: z.string().optional(), // required if type is project
+    team_id: z.string(),
+    url: z.string().nullable().optional(),
+  })
+  .strip();
+
 export type BuildkitSettingsResponse = z.infer<typeof BuildkitSettingsResponseSchema>;
 export type BuildkitSettingsUpdateInputBody = z.infer<typeof BuildkitSettingsUpdateInputBodySchema>;
 export type BuildkitSettingsUpdateResponseBody = z.infer<
@@ -940,6 +1044,11 @@ export type CreateServiceInput = z.infer<typeof CreateServiceInputSchema>;
 export type ServiceConfigResponse = z.infer<typeof ServiceConfigResponseSchema>;
 export type ServiceResponse = z.infer<typeof ServiceResponseSchema>;
 export type CreateServiceResponseBody = z.infer<typeof CreateServiceResponseBodySchema>;
+export type WebhookTeamEvent = z.infer<typeof WebhookTeamEventSchema>;
+export type WebhookProjectEvent = z.infer<typeof WebhookProjectEventSchema>;
+export type WebhookType = z.infer<typeof WebhookTypeSchema>;
+export type WebhookResponse = z.infer<typeof WebhookResponseSchema>;
+export type CreateWebhookResponseBody = z.infer<typeof CreateWebhookResponseBodySchema>;
 export type DataStruct = z.infer<typeof DataStructSchema>;
 export type DatabaseList = z.infer<typeof DatabaseListSchema>;
 export type ParameterProperty = z.infer<typeof ParameterPropertySchema>;
@@ -954,6 +1063,8 @@ export type DeleteServiceResponseBody = z.infer<typeof DeleteServiceResponseBody
 export type VariableType = z.infer<typeof VariableTypeSchema>;
 export type VariableDeleteInput = z.infer<typeof VariableDeleteInputSchema>;
 export type DeleteVariablesInputBody = z.infer<typeof DeleteVariablesInputBodySchema>;
+export type DeleteWebhookInputBody = z.infer<typeof DeleteWebhookInputBodySchema>;
+export type DeleteWebhookResponseBody = z.infer<typeof DeleteWebhookResponseBodySchema>;
 export type ErrorDetail = z.infer<typeof ErrorDetailSchema>;
 export type ErrorModel = z.infer<typeof ErrorModelSchema>;
 export type GetDatabaseResponseBody = z.infer<typeof GetDatabaseResponseBodySchema>;
@@ -971,6 +1082,7 @@ export type GetProjectResponseBody = z.infer<typeof GetProjectResponseBodySchema
 export type GetServiceResponseBody = z.infer<typeof GetServiceResponseBodySchema>;
 export type TeamResponse = z.infer<typeof TeamResponseSchema>;
 export type GetTeamResponseBody = z.infer<typeof GetTeamResponseBodySchema>;
+export type GetWebhookResponseBody = z.infer<typeof GetWebhookResponseBodySchema>;
 export type Plan = z.infer<typeof PlanSchema>;
 export type Organization = z.infer<typeof OrganizationSchema>;
 export type GithubAdminOrganizationListResponseBody = z.infer<
@@ -1004,6 +1116,7 @@ export type ListDeploymentsResponseBody = z.infer<typeof ListDeploymentsResponse
 export type ListEnvironmentsOutputBody = z.infer<typeof ListEnvironmentsOutputBodySchema>;
 export type ListProjectResponseBody = z.infer<typeof ListProjectResponseBodySchema>;
 export type ListServiceResponseBody = z.infer<typeof ListServiceResponseBodySchema>;
+export type ListWebhooksResponseBody = z.infer<typeof ListWebhooksResponseBodySchema>;
 export type LogMetadata = z.infer<typeof LogMetadataSchema>;
 export type LogEvent = z.infer<typeof LogEventSchema>;
 export type LogEventsMessageType = z.infer<typeof LogEventsMessageTypeSchema>;
@@ -1026,10 +1139,14 @@ export type UpdateProjectResponseBody = z.infer<typeof UpdateProjectResponseBody
 export type UpdateServiceInput = z.infer<typeof UpdateServiceInputSchema>;
 export type UpdateTeamInputBody = z.infer<typeof UpdateTeamInputBodySchema>;
 export type UpdateTeamResponseBody = z.infer<typeof UpdateTeamResponseBodySchema>;
+export type UpdateWebhookResponseBody = z.infer<typeof UpdateWebhookResponseBodySchema>;
 export type VariableUpdateBehavior = z.infer<typeof VariableUpdateBehaviorSchema>;
 export type UpsertVariablesInputBody = z.infer<typeof UpsertVariablesInputBodySchema>;
 export type VariableResponse = z.infer<typeof VariableResponseSchema>;
 export type VariablesResponseBody = z.infer<typeof VariablesResponseBodySchema>;
+export type WebhookCreateInput = z.infer<typeof WebhookCreateInputSchema>;
+export type WebhookEvent = z.infer<typeof WebhookEventSchema>;
+export type WebhookUpdateInput = z.infer<typeof WebhookUpdateInputSchema>;
 
 export const callbackQuerySchema = z
   .object({
@@ -1194,6 +1311,22 @@ export const list_serviceQuerySchema = z
 export const get_teamQuerySchema = z
   .object({
     team_id: z.string(),
+  })
+  .passthrough();
+
+export const get_webhookQuerySchema = z
+  .object({
+    id: z.string(),
+    team_id: z.string(),
+    project_id: z.string().optional(),
+  })
+  .passthrough();
+
+export const list_webhooksQuerySchema = z
+  .object({
+    type: WebhookTypeSchema,
+    team_id: z.string(),
+    project_id: z.string().optional(),
   })
   .passthrough();
 
@@ -2909,6 +3042,220 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           }
           const data = await response.json();
           return UpdateTeamResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+    },
+    unbindwebhooks: {
+      create: async (
+        params: WebhookCreateInput,
+        fetchOptions?: RequestInit,
+      ): Promise<CreateWebhookResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/unbindwebhooks/create`);
+
+          const options: RequestInit = {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = WebhookCreateInputSchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return CreateWebhookResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      delete: async (
+        params: DeleteWebhookInputBody,
+        fetchOptions?: RequestInit,
+      ): Promise<DeleteWebhookResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/unbindwebhooks/delete`);
+
+          const options: RequestInit = {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = DeleteWebhookInputBodySchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return DeleteWebhookResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      get: async (
+        params: z.infer<typeof get_webhookQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<GetWebhookResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/unbindwebhooks/get`);
+          const validatedQuery = get_webhookQuerySchema.parse(params);
+          const queryKeys = ['id', 'team_id', 'project_id'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return GetWebhookResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      list: async (
+        params: z.infer<typeof list_webhooksQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<ListWebhooksResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/unbindwebhooks/list`);
+          const validatedQuery = list_webhooksQuerySchema.parse(params);
+          const queryKeys = ['type', 'team_id', 'project_id'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return ListWebhooksResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      update: async (
+        params: WebhookUpdateInput,
+        fetchOptions?: RequestInit,
+      ): Promise<UpdateWebhookResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/unbindwebhooks/update`);
+
+          const options: RequestInit = {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = WebhookUpdateInputSchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return UpdateWebhookResponseBodySchema.parse(data);
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
