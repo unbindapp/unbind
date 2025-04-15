@@ -2,31 +2,56 @@
 
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
-import { useProject } from "@/components/project/project-provider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/components/ui/utils";
 import { getWebhookIcon } from "@/components/webhook/helpers";
+import { TWebhookProps } from "@/components/webhook/types";
 import { useWebhooksUtils } from "@/components/webhook/webhooks-provider";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { TWebhookIdProjectEnum, WebhookIdProjectEnum } from "@/server/trpc/api/webhooks/types";
+import {
+  TWebhookIdProjectEnum,
+  TWebhookIdTeamEnum,
+  WebhookIdProjectEnum,
+  WebhookIdTeamEnum,
+} from "@/server/trpc/api/webhooks/types";
 import { api } from "@/server/trpc/setup/client";
 import { z } from "zod";
 
 type TProps = {
   className?: string;
+} & TWebhookProps;
+
+type TWebhookOptionTeam = {
+  id: TWebhookIdTeamEnum;
+  title: string;
 };
 
-type TWebhookOption = {
+type TWebhookOptionProject = {
   id: TWebhookIdProjectEnum;
   title: string;
 };
 
-type TWebhookGroup = {
+type TWebhookGroupTeam = {
   title: string;
-  options: TWebhookOption[];
+  options: TWebhookOptionTeam[];
+};
+type TWebhookGroupProject = {
+  title: string;
+  options: TWebhookOptionProject[];
 };
 
-const webhookGroups: TWebhookGroup[] = [
+const webhookGroupsTeam: TWebhookGroupTeam[] = [
+  {
+    title: "Project",
+    options: [
+      { id: "project.created", title: "Project Created" },
+      { id: "project.updated", title: "Project Updated" },
+      { id: "project.deleted", title: "Project Deleted" },
+    ],
+  },
+];
+
+const webhookGroupsProject: TWebhookGroupProject[] = [
   {
     title: "Service",
     options: [
@@ -47,12 +72,9 @@ const webhookGroups: TWebhookGroup[] = [
   },
 ];
 
-export default function AddWebhookForm({ className }: TProps) {
-  const { teamId, projectId } = useProject();
+export default function AddWebhookForm({ className, ...rest }: TProps) {
   const { invalidate: invalidateWebhooks } = useWebhooksUtils({
-    type: "project",
-    teamId,
-    projectId,
+    ...rest,
   });
 
   const { mutateAsync: createWebhook } = api.webhooks.create.useMutation({
@@ -63,23 +85,23 @@ export default function AddWebhookForm({ className }: TProps) {
 
   const form = useAppForm({
     defaultValues: {
-      selectedIds: new Set<TWebhookIdProjectEnum>(),
+      selectedIds: new Set<TWebhookIdTeamEnum | TWebhookIdProjectEnum>(),
       url: "",
     },
     validators: {
       onChange: z.object({
-        selectedIds: z.set(WebhookIdProjectEnum).min(1, "Select at least one event."),
+        selectedIds: z
+          .set(rest.type === "project" ? WebhookIdProjectEnum : WebhookIdTeamEnum)
+          .min(1, "Select at least one event."),
         url: z.string().url("Invalid URL."),
       }),
     },
     onSubmit: async ({ formApi, value }) => {
       const selectedIds = value.selectedIds;
       await createWebhook({
-        type: "project",
         url: value.url,
-        teamId,
-        projectId,
         events: selectedIds,
+        ...rest,
       });
       formApi.reset();
       formApi.setFieldValue("selectedIds", selectedIds);
@@ -101,7 +123,7 @@ export default function AddWebhookForm({ className }: TProps) {
         </p>
         <div className="mt-5 flex w-full flex-col">
           <div className="flex w-full flex-wrap gap-6 sm:gap-8">
-            {webhookGroups.map((group) => (
+            {(rest.type === "project" ? webhookGroupsProject : webhookGroupsTeam).map((group) => (
               <div key={group.title} className="flex w-full flex-col sm:w-[calc((100%-2rem)/2)]">
                 <h3 className="text-muted-foreground text-sm leading-tight font-medium">
                   {group.title}
@@ -156,8 +178,19 @@ export default function AddWebhookForm({ className }: TProps) {
         </div>
         <h2 className="mt-6 w-full text-lg leading-tight font-semibold">Endpoint</h2>
         <p className="text-muted-foreground mt-1.5 leading-tight">
-          The events will be sent to this URL. They are automatically formatted based on the
-          platform.
+          <span className="mr-[0.6ch]">
+            The events will be sent to this URL. Automatic formatting for:
+          </span>
+          <BrandIcon
+            brand="discord"
+            aria-label="Discord"
+            className="mr-[0.4ch] inline-block size-4.5"
+          />
+          <BrandIcon
+            brand="slack"
+            aria-label="Slack"
+            className="mr-[0.4ch] inline-block size-4.5"
+          />
         </p>
         <form.AppField
           name="url"

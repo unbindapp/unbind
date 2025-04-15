@@ -22,6 +22,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { getWebhookIcon } from "@/components/webhook/helpers";
+import { TWebhookProjectProps, TWebhookProps, TWebhookTeamProps } from "@/components/webhook/types";
 import { useWebhooksUtils } from "@/components/webhook/webhooks-provider";
 import { defaultAnimationMs } from "@/lib/constants";
 import { TWebhookShallow } from "@/server/trpc/api/webhooks/types";
@@ -32,43 +33,52 @@ import { ReactNode, useRef, useState } from "react";
 
 const placeholderArray = Array.from({ length: 5 }, (_, i) => i);
 
-export default function WebhookCard({
-  webhook,
-  teamId,
-  projectId,
-  isPlaceholder,
-}:
-  | { webhook: TWebhookShallow; teamId: string; projectId: string; isPlaceholder?: never }
-  | { webhook?: never; teamId?: never; projectId?: never; isPlaceholder: true }) {
+type TProps =
+  | ({
+      webhook: TWebhookShallow;
+    } & TWebhookTeamProps)
+  | ({
+      webhook: TWebhookShallow;
+    } & TWebhookProjectProps)
+  | { type: "placeholder"; webhook?: never; teamId?: never; projectId?: never };
+
+export default function WebhookCard({ type, webhook, teamId, projectId }: TProps) {
+  const threeDotButtonProps =
+    type === "project"
+      ? { type, teamId, projectId, webhook }
+      : type === "team"
+        ? { type, teamId, webhook }
+        : null;
+
   return (
     <div
-      data-placeholder={isPlaceholder ? true : undefined}
+      data-placeholder={type === "placeholder" ? true : undefined}
       className="group/item relative flex flex-col items-start justify-start gap-3 rounded-xl border p-3 sm:p-4 sm:pt-3.5"
     >
       <div className="flex w-full items-start justify-start gap-2 px-0.5 pr-10">
         <BrandIcon
           color="brand"
-          brand={isPlaceholder ? "webhook" : getWebhookIcon(webhook.url)}
+          brand={type === "placeholder" ? "webhook" : getWebhookIcon(webhook.url)}
           className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground -mt-0.25 size-5 group-data-placeholder/item:rounded-full"
         />
         <p className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground min-w-0 shrink text-sm leading-tight group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">
-          {isPlaceholder ? "https://unbind.app/webhook" : webhook.url}
+          {type === "placeholder" ? "https://unbind.app/webhook" : webhook.url}
         </p>
       </div>
       <div className="flex w-full flex-wrap items-start justify-start gap-1.5 text-xs">
-        {(isPlaceholder ? placeholderArray : webhook.events).map((event, i) => (
+        {(type === "placeholder" ? placeholderArray : webhook.events).map((event, i) => (
           <p
-            key={isPlaceholder ? i : event}
+            key={type === "placeholder" ? i : event}
             className="bg-border text-muted-foreground group-data-placeholder/item:bg-muted-more-foreground group-data-placeholder/item:animate-skeleton max-w-full rounded-sm px-1.5 py-0.75 leading-tight group-data-placeholder/item:text-transparent"
           >
-            {isPlaceholder ? "loading.loading" : event}
+            {type === "placeholder" ? "loading.loading" : event}
           </p>
         ))}
       </div>
       <p className="text-muted-foreground group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-muted-foreground max-w-full min-w-0 shrink px-0.75 text-sm leading-tight group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">
-        {isPlaceholder ? "Jan 01, 2024" : format(webhook.created_at, "MMMM dd, yyyy")}
+        {type === "placeholder" ? "Jan 01, 2024" : format(webhook.created_at, "MMMM dd, yyyy")}
       </p>
-      {isPlaceholder ? (
+      {!threeDotButtonProps ? (
         <Button
           disabled
           fadeOnDisabled={false}
@@ -79,12 +89,7 @@ export default function WebhookCard({
           <div className="bg-muted-more-foreground animate-skeleton size-6 rounded-md" />
         </Button>
       ) : (
-        <ThreeDotButton
-          className="absolute top-1 right-1"
-          teamId={teamId}
-          projectId={projectId}
-          webhook={webhook}
-        />
+        <ThreeDotButton {...threeDotButtonProps} className="absolute top-1 right-1" />
       )}
     </div>
   );
@@ -92,16 +97,17 @@ export default function WebhookCard({
 
 function ThreeDotButton({
   webhook,
+  type,
   teamId,
   projectId,
   className,
 }: {
   webhook: TWebhookShallow;
-  teamId: string;
-  projectId: string;
   className?: string;
-}) {
+} & TWebhookProps) {
   const [isOpen, setIsOpen] = useState(false);
+
+  const deleteTriggerProps = type === "project" ? { type, teamId, projectId } : { type, teamId };
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -129,8 +135,7 @@ function ThreeDotButton({
         <ScrollArea>
           <DropdownMenuGroup>
             <DeleteTrigger
-              teamId={teamId}
-              projectId={projectId}
+              {...deleteTriggerProps}
               webhook={webhook}
               closeDropdown={() => setIsOpen(false)}
             >
@@ -151,23 +156,26 @@ function ThreeDotButton({
 
 function DeleteTrigger({
   webhook,
+  type,
   teamId,
   projectId,
   closeDropdown,
   children,
 }: {
   webhook: TWebhookShallow;
-  teamId: string;
-  projectId: string;
   closeDropdown: () => void;
   children: ReactNode;
-}) {
+} & TWebhookProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { invalidate: invalidateWebhooks } = useWebhooksUtils({
-    type: "project",
-    teamId,
-    projectId,
-  });
+  const { invalidate: invalidateWebhooks } = useWebhooksUtils(
+    type === "project"
+      ? { type, teamId, projectId }
+      : {
+          type,
+          teamId,
+          projectId,
+        },
+  );
 
   const timeout = useRef<NodeJS.Timeout | null>(null);
 
@@ -217,7 +225,13 @@ function DeleteTrigger({
             </Button>
           </DialogClose>
           <Button
-            onClick={() => deleteWebhook({ id: webhook.id, type: "project", teamId, projectId })}
+            onClick={() =>
+              deleteWebhook(
+                type === "project"
+                  ? { id: webhook.id, type, teamId, projectId }
+                  : { id: webhook.id, type, teamId },
+              )
+            }
             data-submitting={deleteWebhookIsPending ? true : undefined}
             variant="destructive"
             isPending={deleteWebhookIsPending}

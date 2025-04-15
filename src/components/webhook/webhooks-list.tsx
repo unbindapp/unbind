@@ -1,23 +1,22 @@
 "use client";
 
-import WebhookCard from "@/app/(project)/[team_id]/project/[project_id]/settings/webhooks/_components/webhook-card";
 import ErrorCard from "@/components/error-card";
 import NoItemsCard from "@/components/no-items-card";
-import { useProject } from "@/components/project/project-provider";
 import { cn } from "@/components/ui/utils";
+import { TWebhookProps } from "@/components/webhook/types";
+import WebhookCard from "@/components/webhook/webhook-card";
 import { useWebhooks } from "@/components/webhook/webhooks-provider";
 import { WebhookIcon } from "lucide-react";
 import { ReactNode } from "react";
 
 type TProps = {
   className?: string;
-};
+} & TWebhookProps;
 
 const placeholdeArray = Array.from({ length: 4 }, (_, i) => i);
 
-export default function WebhooksList({ className }: TProps) {
+export default function WebhooksList({ className, ...rest }: TProps) {
   const { data, isPending, error } = useWebhooks();
-  const { teamId, projectId } = useProject();
 
   if (!data && !isPending && error) {
     return (
@@ -31,13 +30,11 @@ export default function WebhooksList({ className }: TProps) {
     return (
       <Wrapper className={className}>
         {placeholdeArray.map((_, i) => (
-          <WebhookCard key={i} isPlaceholder />
+          <WebhookCard key={i} type="placeholder" />
         ))}
       </Wrapper>
     );
   }
-
-  console.log(data.webhooks);
 
   if (data && data.webhooks.length === 0) {
     return (
@@ -50,7 +47,7 @@ export default function WebhooksList({ className }: TProps) {
   return (
     <Wrapper className={className}>
       {data.webhooks.map((webhook) => (
-        <WebhookCard key={webhook.id} webhook={webhook} teamId={teamId} projectId={projectId} />
+        <WebhookCard key={webhook.id} webhook={webhook} {...rest} />
       ))}
     </Wrapper>
   );
