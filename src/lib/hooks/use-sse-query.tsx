@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import pRetry from "p-retry";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TProps<T extends z.ZodType<any>> = {
   url: string;
   accessToken: string;
@@ -11,6 +12,7 @@ type TProps<T extends z.ZodType<any>> = {
   parser: T;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function useSSEQuery<T extends z.ZodType<any>>(props: TProps<T>) {
   const { url, accessToken, disabled } = props;
 
