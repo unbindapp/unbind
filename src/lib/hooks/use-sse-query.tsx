@@ -25,7 +25,7 @@ export default function useSSEQuery<T extends z.ZodType<any>>(props: TProps<T>) 
   propsRef.current = props;
 
   const controller = useRef<AbortController>(new AbortController());
-  const streamInitTimeout = useRef<NodeJS.Timeout | null>(null);
+  const initTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const initSSEConnection = useCallback(() => {
     setError(null);
@@ -47,7 +47,6 @@ export default function useSSEQuery<T extends z.ZodType<any>>(props: TProps<T>) 
       onmessage: (event) => {
         try {
           const newData = JSON.parse(event.data);
-
           if (filter && !filter(newData)) return;
 
           const { success, data: parsedData } = parser.safeParse(newData);
@@ -68,10 +67,8 @@ export default function useSSEQuery<T extends z.ZodType<any>>(props: TProps<T>) 
         if (!(error instanceof DOMException && error.name === "AbortError")) {
           setError(error);
         }
-        if (streamInitTimeout.current) {
-          clearTimeout(streamInitTimeout.current);
-        }
-        streamInitTimeout.current = setTimeout(() => {
+        if (initTimeout.current) clearTimeout(initTimeout.current);
+        initTimeout.current = setTimeout(() => {
           initSSEConnection();
         }, 2000);
       },
@@ -79,27 +76,15 @@ export default function useSSEQuery<T extends z.ZodType<any>>(props: TProps<T>) 
   }, []);
 
   useEffect(() => {
-    return () => {
-      queryKeyRef.current = "";
-    };
-  }, []);
-
-  useEffect(() => {
     if (queryKey !== queryKeyRef.current) {
       queryKeyRef.current = queryKey;
-
-      if (!props.disabled) {
-        initSSEConnection();
-      }
+      if (!props.disabled) initSSEConnection();
     }
 
     return () => {
-      if (controller.current) {
-        controller.current.abort();
-      }
-      if (streamInitTimeout.current) {
-        clearTimeout(streamInitTimeout.current);
-      }
+      queryKeyRef.current = "";
+      if (controller.current) controller.current.abort();
+      if (initTimeout.current) clearTimeout(initTimeout.current);
     };
   }, [queryKey, initSSEConnection, props.disabled, pathname]);
 

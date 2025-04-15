@@ -20,7 +20,7 @@ import { CheckCircleIcon, CheckIcon, CopyIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import Prism, { highlight } from "prismjs";
 import "prismjs/components/prism-ini";
-import { ReactNode, RefObject, useEffect, useRef, useState } from "react";
+import { ReactNode, RefObject, useEffect, useMemo, useRef, useState } from "react";
 import Editor from "react-simple-code-editor";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -63,7 +63,8 @@ export default function RawVariableEditorTrigger({ children }: TProps) {
       const cleaned = editorValue.current.trim();
       const lines = cleaned ? cleaned.split("\n") : [];
       const pairs = lines.map((line) => {
-        const [name, value] = line.split("=");
+        const [name, ...rest] = line.split("=");
+        const value = unwrapQuotes(rest.join("="));
         return { name, value };
       });
       const parsedVariables: z.infer<typeof VariableForCreateSchema>[] = [];
@@ -110,7 +111,7 @@ export default function RawVariableEditorTrigger({ children }: TProps) {
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent
         hideXButton
-        classNameInnerWrapper="w-160 max-w-full h-140 min-h-64 max-h-[60svh]"
+        classNameInnerWrapper="w-200 max-w-full h-140 min-h-64 max-h-[60svh]"
       >
         <DialogHeader className="sm:px-1">
           <DialogTitle>Raw Editor</DialogTitle>
@@ -177,7 +178,9 @@ function VariableEditor({
   editorValue: RefObject<string | null>;
   recentlySucceeded: boolean;
 }) {
-  const [value, setValue] = useState(getEditorValue(variables));
+  const [value, setValue] = useState(getEditorValue({ variables }));
+  const hiddenValue = useMemo(() => getEditorValue({ variables, hidden: true }), [variables]);
+  const [isHidden, setIsHidden] = useState(true);
 
   useEffect(() => {
     editorValue.current = value;
@@ -190,14 +193,17 @@ function VariableEditor({
         viewportClassName="[&>div]:group-data-[orientation=vertical]/root:flex-1"
         className="bg-background-hover flex flex-1 flex-col overflow-auto rounded-lg border font-mono"
       >
-        <Editor
-          placeholder="CLIENT_KEY=abc123"
-          padding={{ left: 14, right: 14, top: 10, bottom: 10 }}
-          value={value}
-          onValueChange={(v) => setValue(v)}
-          className="flex-1"
-          highlight={(v) => highlight(v, Prism.languages.ini, "ini")}
-        />
+        <div className="flex w-full flex-1 flex-col">
+          <Editor
+            placeholder="CLIENT_KEY=abc123"
+            padding={{ left: 14, right: 14, top: 10, bottom: 10 }}
+            value={isHidden ? hiddenValue : value}
+            onValueChange={(v) => setValue(v)}
+            className="flex-1"
+            onFocus={() => setIsHidden(false)}
+            highlight={(v) => highlight(v, Prism.languages.ini, "ini")}
+          />
+        </div>
       </ScrollArea>
       <div
         data-open={recentlySucceeded ? true : undefined}
@@ -215,8 +221,16 @@ function VariableEditor({
   );
 }
 
-function getEditorValue(variables: TVariableShallow[]) {
-  return variables.map((variable) => `${variable.name}=${variable.value}`).join("\n");
+function getEditorValue({
+  variables,
+  hidden,
+}: {
+  variables: TVariableShallow[];
+  hidden?: boolean;
+}) {
+  return variables
+    .map((variable) => `${variable.name}=${hidden ? "••••••••••" : variable.value}`)
+    .join("\n");
 }
 
 function CopyButton({
@@ -246,4 +260,12 @@ function CopyButton({
       </div>
     </Button>
   );
+}
+
+function unwrapQuotes(value: string) {
+  let newValue = value;
+  if (newValue.startsWith('"') && newValue.endsWith('"')) {
+    newValue = newValue.slice(1, -1);
+  }
+  return newValue;
 }
