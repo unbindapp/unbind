@@ -20,7 +20,7 @@ import { CheckCircleIcon, CheckIcon, CopyIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import Prism, { highlight } from "prismjs";
 import "prismjs/components/prism-ini";
-import { ReactNode, RefObject, useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import Editor from "react-simple-code-editor";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -41,12 +41,24 @@ export default function RawVariableEditorTrigger({ children }: TProps) {
   } = useVariables();
 
   const variables = variablesData?.variables;
-  const editorValue = useRef<string | null>(null);
+  const [editorValue, setEditorValue] = useState(variables ? getEditorValue({ variables }) : "");
 
   const [recentlySucceeded, setRecentlySucceeded] = useTemporaryValue({
     defaultValue: false,
     ttl: 3000,
   });
+
+  useEffect(() => {
+    if (!variables) return;
+    setEditorValue(getEditorValue({ variables }));
+  }, [variables]);
+
+  useEffect(() => {
+    if (!variables) return;
+    if (!recentlySucceeded) return;
+    setEditorValue(getEditorValue({ variables }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recentlySucceeded]);
 
   const {
     mutate: replaceVariables,
@@ -54,13 +66,13 @@ export default function RawVariableEditorTrigger({ children }: TProps) {
     error: replaceVariablesError,
   } = useMutation({
     mutationFn: async () => {
-      if (editorValue.current === null) {
+      if (editorValue === null) {
         toast.error("No value", {
           description: "There is no value in the editor",
         });
         return;
       }
-      const cleaned = editorValue.current.trim();
+      const cleaned = editorValue.trim();
       const lines = cleaned ? cleaned.split("\n") : [];
       const pairs = lines
         .filter((line) => line.trim() !== "")
@@ -126,8 +138,9 @@ export default function RawVariableEditorTrigger({ children }: TProps) {
         </DialogHeader>
         <VariableEditorOrPlaceholder
           variables={variables}
-          editorValue={editorValue}
           recentlySucceeded={recentlySucceeded}
+          editorValue={editorValue}
+          onEditorValueChange={setEditorValue}
         />
         {error && <ErrorLine message={error.message} />}
         <div className="flex w-full flex-wrap items-center justify-end gap-2">
@@ -153,17 +166,15 @@ export default function RawVariableEditorTrigger({ children }: TProps) {
 function VariableEditorOrPlaceholder({
   variables,
   editorValue,
+  onEditorValueChange,
   recentlySucceeded,
-}: {
-  variables?: TVariableShallow[];
-  editorValue: RefObject<string | null>;
-  recentlySucceeded: boolean;
-}) {
+}: Omit<TVariableEditorProps, "variables"> & { variables?: TVariableShallow[] }) {
   if (variables) {
     return (
       <VariableEditor
         variables={variables}
         editorValue={editorValue}
+        onEditorValueChange={onEditorValueChange}
         recentlySucceeded={recentlySucceeded}
       />
     );
@@ -188,29 +199,25 @@ function VariableEditorOrPlaceholder({
   );
 }
 
+type TVariableEditorProps = {
+  variables: TVariableShallow[];
+  recentlySucceeded: boolean;
+  onEditorValueChange: (s: string) => void;
+  editorValue: string;
+};
+
 function VariableEditor({
   variables,
-  editorValue,
   recentlySucceeded,
-}: {
-  variables: TVariableShallow[];
-  editorValue: RefObject<string | null>;
-  recentlySucceeded: boolean;
-}) {
-  const [value, setValue] = useState(getEditorValue({ variables }));
+  editorValue,
+  onEditorValueChange,
+}: TVariableEditorProps) {
   const [hiddenValue, setHiddenValue] = useState(getEditorValue({ variables, hidden: true }));
   const [isHidden, setIsHidden] = useState(true);
 
   useEffect(() => {
-    editorValue.current = value;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
-
-  useEffect(() => {
-    if (!recentlySucceeded) return;
-    setValue(getEditorValue({ variables }));
-    setHiddenValue(getEditorValue({ variables, hidden: true }));
-  }, [recentlySucceeded, variables]);
+    if (variables) setHiddenValue(getEditorValue({ variables, hidden: true }));
+  }, [variables]);
 
   return (
     <div className="relative -mx-3 flex w-[calc(100%+1.5rem)] flex-1 flex-col overflow-hidden sm:mx-0 sm:w-full">
@@ -222,8 +229,8 @@ function VariableEditor({
           <Editor
             placeholder="CLIENT_KEY=abc123"
             padding={{ left: 14, right: 14, top: 10, bottom: 10 }}
-            value={isHidden ? hiddenValue : value}
-            onValueChange={(v) => setValue(v)}
+            value={isHidden ? hiddenValue : editorValue}
+            onValueChange={onEditorValueChange}
             className="flex-1"
             onFocus={() => setIsHidden(false)}
             highlight={(v) => highlight(v, Prism.languages.ini, "ini")}
@@ -268,14 +275,14 @@ function CopyButton({
   editorValue,
   className,
 }: {
-  editorValue: RefObject<string | null>;
+  editorValue: string | null;
   className?: string;
 }) {
   const { copyToClipboard, isRecentlyCopied } = useCopyToClipboard();
   return (
     <Button
       data-copied={isRecentlyCopied ? true : undefined}
-      onClick={() => (editorValue.current !== null ? copyToClipboard(editorValue.current) : null)}
+      onClick={() => (editorValue !== null ? copyToClipboard(editorValue) : null)}
       variant="ghost"
       forceMinSize="medium"
       size="icon"
