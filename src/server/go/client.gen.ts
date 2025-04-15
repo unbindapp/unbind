@@ -987,7 +987,7 @@ export const VariablesResponseBodySchema = z
 
 export const WebhookCreateInputSchema = z
   .object({
-    events: z.array(z.any()).nullable(),
+    events: z.array(z.any()),
     project_id: z.string().optional(), // required if type is project
     team_id: z.string(),
     type: WebhookTypeSchema,
