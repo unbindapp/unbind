@@ -208,12 +208,12 @@ function VariableEditor({
       <div className="pointer-events-none absolute right-0 bottom-0 z-10 flex w-full overflow-hidden rounded-b-xl">
         <div
           data-open={recentlySucceeded ? true : undefined}
-          className="group/badge bg-background/90 flex w-full translate-y-full items-end justify-end rounded-b-xl opacity-0 transition duration-200 data-open:translate-y-0 data-open:opacity-100"
+          className="group/badge bg-background/80 flex w-full translate-y-full items-end justify-end rounded-b-xl opacity-0 transition duration-200 data-open:translate-y-0 data-open:opacity-100"
         >
           <div className="bg-success/20 border-success/20 flex w-full items-end justify-end rounded-b-xl border-t p-2 sm:p-3">
-            <div className="text-success-foreground bg-success flex max-w-full items-center gap-1.5 overflow-hidden rounded-md px-3 py-1 font-sans font-bold">
+            <div className="text-success-foreground bg-success flex max-w-full items-center gap-1.5 overflow-hidden rounded-md px-2.5 py-1 font-sans font-bold">
               <CheckCircleIcon
-                className="relative -ml-1 size-4.5 -rotate-90 transition delay-50 duration-300 group-data-open/badge:rotate-0"
+                className="relative -ml-0.5 size-4.5 -rotate-90 transition delay-50 duration-300 group-data-open/badge:rotate-0"
                 strokeWidth={2.5}
               />
               <p className="relative min-w-0 shrink translate-x-full opacity-0 transition delay-50 duration-300 group-data-open/badge:translate-x-0 group-data-open/badge:opacity-100">
