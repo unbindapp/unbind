@@ -15,7 +15,7 @@ const DialogPortal = DialogPrimitive.Portal;
 const DialogClose = DialogPrimitive.Close;
 
 export const dialogOverlayVariants = cva(
-  "bg-barrier/barrier fixed inset-0 z-[1000] flex w-full justify-center overflow-auto px-2 pt-[var(--dialog-top-padding)] pb-[var(--dialog-bottom-padding)] data-no-x-padding:px-0 data-no-y-padding:py-0",
+  "bg-barrier/barrier fixed inset-0 z-[1000] flex w-full justify-center overflow-auto px-2 pt-[var(--dialog-top-padding)] pb-[var(--dialog-bottom-padding)] sm:pb-[var(--dialog-bottom-padding-sm)] data-no-x-padding:px-0 data-no-y-padding:py-0",
   {
     variants: {
       animate: {
