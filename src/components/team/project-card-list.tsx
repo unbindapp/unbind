@@ -44,7 +44,7 @@ export default function ProjectCardList({ teamId }: TProps) {
       {projects &&
         projects.length > 0 &&
         projects.map((i) => (
-          <ProjectCard key={i.id} project={i} className="w-full sm:w-1/2 lg:w-1/3" />
+          <ProjectCard key={i.id} project={i} className="w-full md:w-1/2 lg:w-1/3" />
         ))}
     </ol>
   );

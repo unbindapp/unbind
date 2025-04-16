@@ -23,6 +23,8 @@ export default function ProjectCard({ project, className }: TProps) {
   const serviceCount = project.service_count;
   const serviceIcons = project.service_icons;
 
+  const environmentCount = environments.length;
+
   if (!defaultEnvironment)
     return (
       <li className={cn("text-destructive flex w-full flex-col p-1", className)}>
@@ -46,11 +48,17 @@ export default function ProjectCard({ project, className }: TProps) {
         </h3>
         <div className="flex w-full flex-1 flex-col justify-end">
           <div className="text-muted-foreground flex w-full items-center justify-between gap-3">
-            <p className="min-w-0 shrink overflow-hidden text-sm font-medium text-ellipsis whitespace-nowrap">
-              {serviceCount !== undefined && serviceCount > 0
-                ? `${serviceCount} service${serviceCount > 1 ? "s" : ""}`
-                : "No services"}
-            </p>
+            <div className="flex min-w-0 shrink flex-col">
+              <p className="min-w-0 shrink overflow-hidden text-sm font-medium text-ellipsis whitespace-nowrap">
+                {serviceCount !== undefined && serviceCount > 0
+                  ? `${serviceCount} service${serviceCount > 1 ? "s" : ""}`
+                  : "No services"}
+                <span className="text-muted-more-foreground px-[0.4ch]"> | </span>
+                {environmentCount !== undefined && environmentCount > 0
+                  ? `${environmentCount} environment${environmentCount > 1 ? "s" : ""}`
+                  : "No environments"}
+              </p>
+            </div>
             {serviceIcons !== undefined && serviceIcons.length > 0 && (
               <div className="-my-2 -mr-1 flex items-center gap-1">
                 {serviceIcons.slice(0, iconLength).map((s, index) => (
