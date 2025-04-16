@@ -127,7 +127,7 @@ function DeleteButton({ teamId, projectId }: { teamId: string; projectId: string
             e.preventDefault();
             form.handleSubmit();
           }}
-          className="mt-2 flex flex-col"
+          className="flex flex-col"
         >
           <form.AppField
             name="textToConfirm"

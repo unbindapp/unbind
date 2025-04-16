@@ -204,7 +204,7 @@ function TitleButton({
             e.preventDefault();
             form.handleSubmit();
           }}
-          className="mt-2 flex w-full flex-col gap-2"
+          className="flex w-full flex-col gap-2"
         >
           <form.AppField
             name="displayName"

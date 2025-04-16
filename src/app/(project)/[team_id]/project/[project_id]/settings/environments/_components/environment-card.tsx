@@ -319,7 +319,7 @@ function DeleteTrigger({
             e.preventDefault();
             form.handleSubmit();
           }}
-          className="mt-2 flex flex-col"
+          className="flex flex-col"
         >
           <form.AppField
             name="textToConfirm"
@@ -622,7 +622,7 @@ export function NewEnvironmentCard({ teamId, projectId }: { teamId: string; proj
             e.preventDefault();
             form.handleSubmit();
           }}
-          className="mt-2 flex flex-col"
+          className="flex flex-col"
         >
           <form.AppField
             name="name"
