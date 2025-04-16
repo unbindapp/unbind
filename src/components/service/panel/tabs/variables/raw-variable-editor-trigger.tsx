@@ -125,7 +125,7 @@ export default function RawVariableEditorTrigger({ children }: TProps) {
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent
         hideXButton
-        classNameInnerWrapper="w-200 max-w-full h-140 min-h-64 max-h-[60svh]"
+        classNameInnerWrapper="w-200 max-w-full h-full h-200 sm:h-156 min-h-68 max-h-[calc(var(--safe-screen-height)-var(--dialog-bottom-padding)-var(--dialog-top-padding)-2.5rem)]"
       >
         <DialogHeader className="sm:px-1">
           <DialogTitle>Raw Editor</DialogTitle>

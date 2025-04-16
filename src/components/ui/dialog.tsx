@@ -15,7 +15,7 @@ const DialogPortal = DialogPrimitive.Portal;
 const DialogClose = DialogPrimitive.Close;
 
 export const dialogOverlayVariants = cva(
-  "bg-barrier/barrier fixed inset-0 z-[1000] flex w-full justify-center overflow-auto px-2 pt-12 pb-[calc((100vh-3rem)*0.08+2rem)] data-no-x-padding:px-0 data-no-y-padding:py-0 md:pb-[calc((100vh-3rem)*0.1+3rem)]",
+  "bg-barrier/barrier fixed inset-0 z-[1000] flex w-full justify-center overflow-auto px-2 pt-[var(--dialog-top-padding)] pb-[var(--dialog-bottom-padding)] data-no-x-padding:px-0 data-no-y-padding:py-0",
   {
     variants: {
       animate: {
@@ -46,7 +46,7 @@ function DialogOverlay({
     <DialogPrimitive.Overlay
       data-no-x-padding={noXPadding}
       data-no-y-padding={noYPadding}
-      className={dialogOverlayVariants({ animate, className })}
+      className={cn(dialogOverlayVariants({ animate, className }))}
       {...props}
     />
   );
@@ -78,6 +78,7 @@ export type TDialogContentVariants = VariantProps<typeof dialogContentVariants>;
 function DialogContent({
   className,
   classNameInnerWrapper,
+  classNameOverlay,
   variant,
   animate,
   children,
@@ -90,6 +91,7 @@ function DialogContent({
 }: React.ComponentProps<typeof DialogPrimitive.Content> &
   TDialogContentVariants & {
     classNameInnerWrapper?: string;
+    classNameOverlay?: string;
     noXPadding?: boolean;
     noYPadding?: boolean;
     hideXButton?: boolean;
@@ -124,12 +126,17 @@ function DialogContent({
 
   return (
     <DialogPortal>
-      <DialogOverlay noYPadding={noYPadding} noXPadding={noXPadding} animate={animate}>
+      <DialogOverlay
+        noYPadding={noYPadding}
+        noXPadding={noXPadding}
+        animate={animate}
+        className={classNameOverlay}
+      >
         <DialogPrimitive.Content
           {...props}
           onCloseAutoFocus={handleCloseAutoFocus}
           onEscapeKeyDown={handleEscapeKeyDown}
-          className={dialogContentVariants({ variant, animate, className })}
+          className={cn(dialogContentVariants({ variant, animate, className }))}
         >
           <div className={cn("flex w-full flex-col gap-4", classNameInnerWrapper)}>
             {children}
