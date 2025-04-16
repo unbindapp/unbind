@@ -179,7 +179,7 @@ export default function AddWebhookForm({ className, ...rest }: TProps) {
         <h2 className="mt-6 w-full text-lg leading-tight font-semibold">Endpoint</h2>
         <p className="text-muted-foreground mt-1.5 leading-tight">
           <span className="mr-[0.75ch]">
-            The events will be sent to this URL. Automatic formatting available for:
+            The events will be sent to this URL. Automatic formatting is available for:
           </span>
           <BrandIcon
             brand="discord"
