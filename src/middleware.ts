@@ -33,8 +33,10 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public folder files (images, fonts, etc.)
+     * - opengraph-image (Open Graph image generation)
+     * - twitter-image (Twitter image generation)
      */
-    "/((?!api/auth|api-internal/auth|_next/static|_next/image|favicon.ico|.*\\.(?:jpg|jpeg|gif|png|svg|ico|css|js)).*)",
+    "/((?!api/auth|api-internal/auth|_next/static|_next/image|favicon.ico|opengraph-image\\?|twitter-image\\?|.*\\.(?:jpg|jpeg|gif|png|svg|ico|css|js)).*)",
   ],
 };
 
