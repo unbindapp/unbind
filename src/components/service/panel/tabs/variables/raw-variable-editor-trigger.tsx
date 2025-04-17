@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
-import { unwrapQuotes } from "@/components/variables/helpers";
+import { getVariablesFromRawText } from "@/components/variables/helpers";
 import { useCopyToClipboard } from "@/lib/hooks/use-copy";
 import useTemporaryValue from "@/lib/hooks/use-temporary-value";
 import { TVariableShallow, VariableForCreateSchema } from "@/server/trpc/api/variables/types";
@@ -73,21 +73,15 @@ export default function RawVariableEditorTrigger({ children }: TProps) {
         });
         return;
       }
-      const cleaned = editorValue.trim();
-      const lines = cleaned ? cleaned.split("\n") : [];
-      const pairs = lines
-        .filter((line) => line.trim() !== "")
-        .map((line) => {
-          const [name, ...rest] = line.split("=");
-          const value = unwrapQuotes(rest.join("="));
-          return { name, value };
-        });
+
+      const variables = getVariablesFromRawText(editorValue);
       const parsedVariables: z.infer<typeof VariableForCreateSchema>[] = [];
-      for (const pair of pairs) {
-        const res = VariableForCreateSchema.safeParse(pair);
+
+      for (const variable of variables) {
+        const res = VariableForCreateSchema.safeParse(variable);
         if (!res.success) {
           console.error("Invalid variable", res.error);
-          throw new Error(`Invalid variable "${pair.name}": ${res.error.errors[0].message}`);
+          throw new Error(`Invalid variable "${variable.name}": ${res.error.errors[0].message}`);
         }
         parsedVariables.push({ name: res.data.name, value: res.data.value });
       }

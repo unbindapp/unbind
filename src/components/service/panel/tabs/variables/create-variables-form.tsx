@@ -2,7 +2,7 @@ import ErrorLine from "@/components/error-line";
 import { useVariables } from "@/components/service/panel/tabs/variables/variables-provider";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import { unwrapQuotes } from "@/components/variables/helpers";
+import { getVariablesFromRawText } from "@/components/variables/helpers";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TVariableForCreate, VariableForCreateSchema } from "@/server/trpc/api/variables/types";
 import { FormValidateOrFn } from "@tanstack/react-form";
@@ -73,34 +73,30 @@ export default function CreateVariablesForm({
     (e: React.ClipboardEvent<HTMLInputElement>, form: TForm, index: number) => {
       const clipboardData = e.clipboardData;
       if (!clipboardData) return;
-      const text = clipboardData.getData("text");
-      const cleaned = text.trim();
-      if (!cleaned) return;
 
-      const lines = cleaned ? cleaned.split("\n") : [];
-      const firstLine = lines.length > 0 ? lines[0] : undefined;
-      if (!firstLine || !firstLine.includes("=")) return;
+      const text = clipboardData.getData("text");
+      const variables = getVariablesFromRawText(text);
+
+      if (
+        variables.length === 0 ||
+        (variables.length === 1 && (!variables[0].name || !variables[0].value))
+      ) {
+        return;
+      }
 
       e.preventDefault();
-      const pairs = lines
-        .filter((line) => line.trim() !== "")
-        .map((line) => {
-          const [name, ...rest] = line.split("=");
-          const value = unwrapQuotes(rest.join("="));
-          return { name, value };
-        });
 
-      for (let i = 0; i < pairs.length; i++) {
-        const pair = pairs[i];
+      for (let i = 0; i < variables.length; i++) {
+        const variable = variables[i];
         if (
           i === 0 &&
           !form.state.values.variables[index].name &&
           !form.state.values.variables[index].value
         ) {
-          form.replaceFieldValue("variables", index, pair);
+          form.replaceFieldValue("variables", index, variable);
           continue;
         }
-        form.insertFieldValue("variables", index + i, pair);
+        form.insertFieldValue("variables", index + i, variable);
       }
     },
     [],
