@@ -76,7 +76,7 @@ export default function EnvironmentCard({
         <Button
           disabled={isPlaceholder}
           fadeOnDisabled={false}
-          variant="outline"
+          variant="outline-muted"
           onClick={() => {
             if (!environment) return;
             onClickProp?.();
@@ -84,7 +84,7 @@ export default function EnvironmentCard({
               `/${teamId}/project/${projectId}/settings/environments?environment=${environment?.id}`,
             );
           }}
-          className="has-hover:group-hover/item:bg-border flex w-full flex-row items-center justify-start gap-2.5 py-3 pr-12 pl-4 font-medium"
+          className="has-hover:group-hover/item:bg-background-hover flex w-full flex-row items-center justify-start gap-2.5 py-3 pr-12 pl-4 font-medium"
         >
           {isSelected && (
             <div className="bg-foreground text-background -ml-0.75 flex size-4 items-center justify-center rounded-full p-0.75">
@@ -136,7 +136,7 @@ function ThreeDotButton({
           variant="ghost"
           size="icon"
           className={cn(
-            "text-muted-more-foreground has-hover:hover:bg-foreground/8 active:bg-foreground/8 group/button rounded-md group-data-placeholder/card:text-transparent",
+            "text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent",
             className,
           )}
         >
