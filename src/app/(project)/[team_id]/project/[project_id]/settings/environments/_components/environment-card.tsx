@@ -76,7 +76,7 @@ export default function EnvironmentCard({
         <Button
           disabled={isPlaceholder}
           fadeOnDisabled={false}
-          variant="outline-muted"
+          variant="outline"
           onClick={() => {
             if (!environment) return;
             onClickProp?.();
@@ -84,7 +84,7 @@ export default function EnvironmentCard({
               `/${teamId}/project/${projectId}/settings/environments?environment=${environment?.id}`,
             );
           }}
-          className="has-hover:group-hover/item:bg-background-hover flex w-full flex-row items-center justify-start gap-2.5 py-3 pr-12 pl-4 font-medium"
+          className="has-hover:group-hover/item:bg-border flex w-full flex-row items-center justify-start gap-2.5 py-3 pr-12 pl-4 font-medium"
         >
           {isSelected && (
             <div className="bg-foreground text-background -ml-0.75 flex size-4 items-center justify-center rounded-full p-0.75">
@@ -136,7 +136,7 @@ function ThreeDotButton({
           variant="ghost"
           size="icon"
           className={cn(
-            "text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent",
+            "text-muted-more-foreground has-hover:hover:bg-foreground/8 active:bg-foreground/8 group/button rounded-md group-data-placeholder/card:text-transparent",
             className,
           )}
         >
@@ -602,7 +602,7 @@ export function NewEnvironmentCard({ teamId, projectId }: { teamId: string; proj
           <div className="group/item relative flex w-full items-center justify-start">
             <Button
               variant="outline"
-              className="text-muted-foreground has-hover:group-hover/item:bg-background-hover flex w-full flex-row items-center justify-start px-4 py-3 font-medium"
+              className="text-muted-foreground flex w-full flex-row items-center justify-start px-4 py-3 font-medium"
             >
               <PlusIcon className="-my-1 -ml-1 size-4.5 shrink-0" />
               <p className="group-data-pending/item:bg-foreground group-data-pending/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-pending/item:rounded-md group-data-pending/item:text-transparent">
