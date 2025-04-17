@@ -49,6 +49,7 @@ export const ContextCommandPanelItemsProvider: React.FC<{
       context,
       triggerType,
       searchKey,
+      page.items !== undefined,
     ],
     queryFn: page.items ? () => page.items : () => page.getItems({ teamId, projectId, search }),
     enabled: page.items ? false : true,
