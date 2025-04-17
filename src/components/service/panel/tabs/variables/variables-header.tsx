@@ -1,5 +1,5 @@
 import CreateVariablesForm from "@/components/service/panel/tabs/variables/create-variables-form";
-import RawVariableEditorTrigger from "@/components/service/panel/tabs/variables/raw-variable-editor-trigger";
+import RawVariableEditor from "@/components/service/panel/tabs/variables/raw-variable-editor";
 import { useVariables } from "@/components/service/panel/tabs/variables/variables-provider";
 import { Button } from "@/components/ui/button";
 import { FilePenLineIcon, PlusIcon } from "lucide-react";
@@ -27,7 +27,7 @@ export default function VariablesHeader() {
           </h2>
         </div>
         <div className="flex items-center justify-end gap-1.5">
-          <RawVariableEditorTrigger>
+          <RawVariableEditor>
             <Button
               disabled={isPending}
               fadeOnDisabled={false}
@@ -37,7 +37,7 @@ export default function VariablesHeader() {
               <FilePenLineIcon className="-ml-1 size-5 shrink-0" />
               <p className="min-w-0 shrink">Raw Editor</p>
             </Button>
-          </RawVariableEditorTrigger>
+          </RawVariableEditor>
           <Button
             disabled={isPending}
             fadeOnDisabled={false}

@@ -30,7 +30,7 @@ type TProps = {
   children: ReactNode;
 };
 
-export default function RawVariableEditorTrigger({ children }: TProps) {
+export default function RawVariableEditor({ children }: TProps) {
   const {
     teamId,
     projectId,
