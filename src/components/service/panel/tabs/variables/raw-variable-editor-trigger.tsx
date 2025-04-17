@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
+import { unwrapQuotes } from "@/components/variables/helpers";
 import { useCopyToClipboard } from "@/lib/hooks/use-copy";
 import useTemporaryValue from "@/lib/hooks/use-temporary-value";
 import { TVariableShallow, VariableForCreateSchema } from "@/server/trpc/api/variables/types";
@@ -299,12 +300,4 @@ function CopyButton({
       </div>
     </Button>
   );
-}
-
-function unwrapQuotes(value: string) {
-  let newValue = value;
-  if (newValue.startsWith('"') && newValue.endsWith('"')) {
-    newValue = newValue.slice(1, -1);
-  }
-  return newValue;
 }
