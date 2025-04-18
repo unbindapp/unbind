@@ -1,6 +1,6 @@
 import {
   list_variablesQuerySchema,
-  VariableTypeSchema,
+  VariableReferenceSourceTypeSchema,
   VariableUpdateBehaviorSchema,
 } from "@/server/go/client.gen";
 import { VariableForCreateSchema } from "@/server/trpc/api/variables/types";
@@ -49,7 +49,7 @@ export const variablesRouter = createTRPCRouter({
           environmentId: z.string().uuid(),
           serviceId: z.string().uuid(),
           variables: z.array(VariableForCreateSchema),
-          type: VariableTypeSchema,
+          type: VariableReferenceSourceTypeSchema,
           behavior: VariableUpdateBehaviorSchema.default("upsert"),
         })
         .strip(),
@@ -87,7 +87,7 @@ export const variablesRouter = createTRPCRouter({
           environmentId: z.string().uuid(),
           serviceId: z.string().uuid(),
           variables: z.array(z.object({ name: z.string() }).strip()),
-          type: VariableTypeSchema,
+          type: VariableReferenceSourceTypeSchema,
         })
         .strip(),
     )

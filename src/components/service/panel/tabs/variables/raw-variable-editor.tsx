@@ -43,7 +43,7 @@ export default function RawVariableEditor({ children }: TProps) {
     utils: { refetch: refetchVariables },
   } = useVariables();
 
-  const variables = variablesData?.variables;
+  const variables = variablesData?.variables.items;
   const [editorValue, setEditorValue] = useState(variables ? getEditorValue({ variables }) : "");
 
   const [recentlySucceeded, setRecentlySucceeded] = useTemporaryValue({

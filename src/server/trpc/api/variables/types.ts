@@ -15,4 +15,4 @@ export const VariableForCreateSchema = z
 
 export type TVariableForCreate = z.infer<typeof VariableForCreateSchema>;
 
-export type TVariableShallow = AppRouterOutputs["variables"]["list"]["variables"][number];
+export type TVariableShallow = AppRouterOutputs["variables"]["list"]["variables"]["items"][number];

@@ -106,20 +106,30 @@ export const useVariablesUtils = ({
           if (!data) return data;
           return {
             ...data,
-            variables: data.variables.filter((v1) => {
-              const shouldRemove = variables.some((v2) =>
-                areVariablesMatching({ variable1: v1, variable2: v2 }),
-              );
-              return !shouldRemove;
-            }),
+            variables: {
+              ...data.variables,
+              items: data.variables.items.filter((v1) => {
+                const shouldRemove = variables.some((v2) =>
+                  areVariablesMatching({ variable1: v1, variable2: v2 }),
+                );
+                return !shouldRemove;
+              }),
+            },
           };
         },
       );
     },
     setVariables: (variables: TVariableShallow[]) => {
-      utils.variables.list.setData({ teamId, projectId, environmentId, serviceId, type }, () => ({
-        variables: variables,
-      }));
+      utils.variables.list.setData(
+        { teamId, projectId, environmentId, serviceId, type },
+        (old) => ({
+          ...old,
+          variables: {
+            ...(old?.variables || { items: [], references: [] }),
+            items: variables,
+          },
+        }),
+      );
     },
   };
 };

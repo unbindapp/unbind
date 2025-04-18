@@ -1,5 +1,36 @@
 import { z } from 'zod';
 
+export const VariableReferenceSourceTypeSchema = z.enum([
+  'team',
+  'project',
+  'environment',
+  'service',
+]);
+
+export const VariableReferenceTypeSchema = z.enum([
+  'variable',
+  'external_endpoint',
+  'internal_endpoint',
+]);
+
+export const AvailableVariableReferenceSchema = z
+  .object({
+    keys: z.array(z.string()).nullable(),
+    name: z.string(),
+    source_id: z.string(),
+    source_type: VariableReferenceSourceTypeSchema,
+    type: VariableReferenceTypeSchema,
+  })
+  .strip();
+
+export const AvailableVariableReferenceResponseSchema = z
+  .object({
+    external_endpoints: z.array(AvailableVariableReferenceSchema),
+    internal_endpoints: z.array(AvailableVariableReferenceSchema),
+    variables: z.array(AvailableVariableReferenceSchema),
+  })
+  .strip();
+
 export const BuildkitSettingsResponseSchema = z
   .object({
     max_parallelism: z.number(), // buildkitd max_parallelism setting
@@ -27,6 +58,23 @@ export const CallbackResponseBodySchema = z
     id_token: z.string(),
     refresh_token: z.string(),
     token_type: z.string(),
+  })
+  .strip();
+
+export const ContainerStateSchema = z.enum(['Running', 'Waiting', 'Terminated']);
+
+export const ContainerStatusSchema = z
+  .object({
+    crashLoopReason: z.string().optional(),
+    isCrashing: z.boolean(),
+    lastExitCode: z.number().optional(),
+    lastTermination: z.string().optional(),
+    name: z.string(),
+    ready: z.boolean(),
+    restartCount: z.number(),
+    state: ContainerStateSchema,
+    stateMessage: z.string().optional(),
+    stateReason: z.string().optional(),
   })
   .strip();
 
@@ -65,6 +113,7 @@ export const DeploymentResponseSchema = z
     error: z.string().optional(),
     id: z.string(),
     image: z.string().optional(),
+    job_name: z.string(),
     service_id: z.string(),
     started_at: z.string().datetime().optional(),
     status: DeploymentStatusSchema,
@@ -147,10 +196,12 @@ export const HostSpecSchema = z
   })
   .strip();
 
+export const ProtocolSchema = z.enum(['TCP', 'UDP', 'SCTP']);
+
 export const PortSpecSchema = z
   .object({
     port: z.number(),
-    protocol: z.string().optional(),
+    protocol: ProtocolSchema.optional(),
   })
   .strip();
 
@@ -222,6 +273,42 @@ export const ServiceResponseSchema = z
 export const CreateServiceResponseBodySchema = z
   .object({
     data: ServiceResponseSchema,
+  })
+  .strip();
+
+export const VariableReferenceSourceSchema = z
+  .object({
+    id: z.string(),
+    key: z.string(),
+    name: z.string(),
+    source_type: VariableReferenceSourceTypeSchema,
+    type: VariableReferenceTypeSchema,
+  })
+  .strip();
+
+export const CreateVariableReferenceInputSchema = z
+  .object({
+    sources: z.array(VariableReferenceSourceSchema), // The sources to reference in the template interpolation
+    target_name: z.string(), // The name of the target variable
+    target_service_id: z.string(), // The ID of the service to which this variable reference belongs
+    value_template: z.string(), // The template for the value of the variable reference, e.g. 'https://${sourcename.sourcekey}'
+  })
+  .strip();
+
+export const VariableReferenceResponseSchema = z
+  .object({
+    created_at: z.string().datetime(),
+    id: z.string(), // The ID of the variable reference
+    sources: z.array(VariableReferenceSourceSchema),
+    target_name: z.string(),
+    target_service_id: z.string(),
+    value_template: z.string(),
+  })
+  .strip();
+
+export const CreateVariableReferenceResponseBodySchema = z
+  .object({
+    data: VariableReferenceResponseSchema,
   })
   .strip();
 
@@ -350,8 +437,6 @@ export const DeleteServiceResponseBodySchema = z
   })
   .strip();
 
-export const VariableTypeSchema = z.enum(['team', 'project', 'environment', 'service']);
-
 export const VariableDeleteInputSchema = z
   .object({
     name: z.string(),
@@ -364,7 +449,7 @@ export const DeleteVariablesInputBodySchema = z
     project_id: z.string().optional(), // If present without environment_id, mutate team variables
     service_id: z.string().optional(), // If present, mutate service variables - requires project_id and environment_id
     team_id: z.string(),
-    type: VariableTypeSchema, // The type of variable
+    type: VariableReferenceSourceTypeSchema, // The type of variable
     variables: z.array(VariableDeleteInputSchema).nullable(),
   })
   .strip();
@@ -381,6 +466,45 @@ export const DeleteWebhookInputBodySchema = z
 export const DeleteWebhookResponseBodySchema = z
   .object({
     data: DataStructSchema,
+  })
+  .strip();
+
+export const ExtendedHostSpecSchema = z
+  .object({
+    host: z.string(),
+    issued: z.boolean(),
+    path: z.string(),
+    port: z.number().optional(),
+  })
+  .strip();
+
+export const IngressEndpointSchema = z
+  .object({
+    environment_id: z.string(),
+    hosts: z.array(ExtendedHostSpecSchema),
+    name: z.string(),
+    project_id: z.string(),
+    service_id: z.string(),
+    team_id: z.string(),
+  })
+  .strip();
+
+export const ServiceEndpointSchema = z
+  .object({
+    dns: z.string(),
+    environment_id: z.string(),
+    name: z.string(),
+    ports: z.array(PortSpecSchema),
+    project_id: z.string(),
+    service_id: z.string(),
+    team_id: z.string(),
+  })
+  .strip();
+
+export const EndpointDiscoverySchema = z
+  .object({
+    external: z.array(IngressEndpointSchema),
+    internal: z.array(ServiceEndpointSchema),
   })
   .strip();
 
@@ -467,7 +591,6 @@ export const NodeMetricsMapEntrySchema = z
 
 export const NodeMetricsResultSchema = z
   .object({
-    broken_down_by: z.string(), // The type of node metric that is broken down, e.g. node, zone
     metrics: NodeMetricsMapEntrySchema,
     step: z.number(),
   })
@@ -726,9 +849,15 @@ export const GithubRepositoryDetailResponseBodySchema = z
   })
   .strip();
 
-export const HealthResponseBodySchema = z
+export const InstanceTypeSchema = z.enum(['team', 'project', 'instance', 'service']);
+
+export const InstanceStatusInputSchema = z
   .object({
-    status: z.string(),
+    EnvironmentID: z.string().optional(),
+    ProjectID: z.string().optional(),
+    ServiceID: z.string().optional(),
+    TeamID: z.string(),
+    Type: InstanceTypeSchema,
   })
   .strip();
 
@@ -767,9 +896,40 @@ export const ListDeploymentsResponseBodySchema = z
   })
   .strip();
 
+export const ListEndpointsResponseBodySchema = z
+  .object({
+    data: EndpointDiscoverySchema,
+  })
+  .strip();
+
 export const ListEnvironmentsOutputBodySchema = z
   .object({
     data: z.array(EnvironmentResponseSchema).nullable(),
+  })
+  .strip();
+
+export const PodPhaseSchema = z.enum(['Pending', 'Running', 'Succeeded', 'Failed', 'Unknown']);
+
+export const PodContainerStatusSchema = z
+  .object({
+    containers: z.array(ContainerStatusSchema),
+    environment_id: z.string(),
+    hasCrashingContainers: z.boolean(),
+    initContainers: z.array(ContainerStatusSchema),
+    name: z.string(),
+    namespace: z.string(),
+    phase: PodPhaseSchema,
+    podIP: z.string().optional(),
+    project_id: z.string(),
+    service_id: z.string(),
+    startTime: z.string().optional(),
+    team_id: z.string(),
+  })
+  .strip();
+
+export const ListInstancesResponseBodySchema = z
+  .object({
+    data: z.array(PodContainerStatusSchema),
   })
   .strip();
 
@@ -849,6 +1009,39 @@ export const MeResponseBodySchema = z
 export const QueryLogsResponseBodySchema = z
   .object({
     data: z.array(LogEventSchema),
+  })
+  .strip();
+
+export const ReferenceableVariablesResponseBodySchema = z
+  .object({
+    data: AvailableVariableReferenceResponseSchema,
+  })
+  .strip();
+
+export const ResolveVariableReferenceResponseBodySchema = z
+  .object({
+    data: z.string(),
+  })
+  .strip();
+
+export const RestartInstancesInputBodySchema = z
+  .object({
+    environment_id: z.string(),
+    project_id: z.string(),
+    service_id: z.string(),
+    team_id: z.string(),
+  })
+  .strip();
+
+export const RestartedSchema = z
+  .object({
+    restarted: z.boolean(),
+  })
+  .strip();
+
+export const RestartServicesResponseBodySchema = z
+  .object({
+    data: RestartedSchema,
   })
   .strip();
 
@@ -966,22 +1159,29 @@ export const UpsertVariablesInputBodySchema = z
     project_id: z.string().optional(), // If present without environment_id, mutate team variables
     service_id: z.string().optional(), // If present, mutate service variables - requires project_id and environment_id
     team_id: z.string(),
-    type: VariableTypeSchema, // The type of variable
+    type: VariableReferenceSourceTypeSchema, // The type of variable
     variables: z.array(ItemSchema).nullable(),
+  })
+  .strip();
+
+export const VariableResponseItemSchema = z
+  .object({
+    name: z.string(),
+    type: VariableReferenceSourceTypeSchema,
+    value: z.string(),
   })
   .strip();
 
 export const VariableResponseSchema = z
   .object({
-    name: z.string(),
-    type: VariableTypeSchema,
-    value: z.string(),
+    items: z.array(VariableResponseItemSchema),
+    references: z.array(VariableReferenceResponseSchema),
   })
   .strip();
 
 export const VariablesResponseBodySchema = z
   .object({
-    data: z.array(VariableResponseSchema),
+    data: VariableResponseSchema,
   })
   .strip();
 
@@ -1019,12 +1219,20 @@ export const WebhookUpdateInputSchema = z
   })
   .strip();
 
+export type VariableReferenceSourceType = z.infer<typeof VariableReferenceSourceTypeSchema>;
+export type VariableReferenceType = z.infer<typeof VariableReferenceTypeSchema>;
+export type AvailableVariableReference = z.infer<typeof AvailableVariableReferenceSchema>;
+export type AvailableVariableReferenceResponse = z.infer<
+  typeof AvailableVariableReferenceResponseSchema
+>;
 export type BuildkitSettingsResponse = z.infer<typeof BuildkitSettingsResponseSchema>;
 export type BuildkitSettingsUpdateInputBody = z.infer<typeof BuildkitSettingsUpdateInputBodySchema>;
 export type BuildkitSettingsUpdateResponseBody = z.infer<
   typeof BuildkitSettingsUpdateResponseBodySchema
 >;
 export type CallbackResponseBody = z.infer<typeof CallbackResponseBodySchema>;
+export type ContainerState = z.infer<typeof ContainerStateSchema>;
+export type ContainerStatus = z.infer<typeof ContainerStatusSchema>;
 export type CreateBuildInputBody = z.infer<typeof CreateBuildInputBodySchema>;
 export type GitCommitter = z.infer<typeof GitCommitterSchema>;
 export type DeploymentStatus = z.infer<typeof DeploymentStatusSchema>;
@@ -1038,12 +1246,19 @@ export type ProjectResponse = z.infer<typeof ProjectResponseSchema>;
 export type CreateProjectResponseBody = z.infer<typeof CreateProjectResponseBodySchema>;
 export type ServiceBuilder = z.infer<typeof ServiceBuilderSchema>;
 export type HostSpec = z.infer<typeof HostSpecSchema>;
+export type Protocol = z.infer<typeof ProtocolSchema>;
 export type PortSpec = z.infer<typeof PortSpecSchema>;
 export type ServiceType = z.infer<typeof ServiceTypeSchema>;
 export type CreateServiceInput = z.infer<typeof CreateServiceInputSchema>;
 export type ServiceConfigResponse = z.infer<typeof ServiceConfigResponseSchema>;
 export type ServiceResponse = z.infer<typeof ServiceResponseSchema>;
 export type CreateServiceResponseBody = z.infer<typeof CreateServiceResponseBodySchema>;
+export type VariableReferenceSource = z.infer<typeof VariableReferenceSourceSchema>;
+export type CreateVariableReferenceInput = z.infer<typeof CreateVariableReferenceInputSchema>;
+export type VariableReferenceResponse = z.infer<typeof VariableReferenceResponseSchema>;
+export type CreateVariableReferenceResponseBody = z.infer<
+  typeof CreateVariableReferenceResponseBodySchema
+>;
 export type WebhookTeamEvent = z.infer<typeof WebhookTeamEventSchema>;
 export type WebhookProjectEvent = z.infer<typeof WebhookProjectEventSchema>;
 export type WebhookType = z.infer<typeof WebhookTypeSchema>;
@@ -1060,11 +1275,14 @@ export type DeleteProjectInputBody = z.infer<typeof DeleteProjectInputBodySchema
 export type DeleteProjectResponseBody = z.infer<typeof DeleteProjectResponseBodySchema>;
 export type DeleteServiceInputBody = z.infer<typeof DeleteServiceInputBodySchema>;
 export type DeleteServiceResponseBody = z.infer<typeof DeleteServiceResponseBodySchema>;
-export type VariableType = z.infer<typeof VariableTypeSchema>;
 export type VariableDeleteInput = z.infer<typeof VariableDeleteInputSchema>;
 export type DeleteVariablesInputBody = z.infer<typeof DeleteVariablesInputBodySchema>;
 export type DeleteWebhookInputBody = z.infer<typeof DeleteWebhookInputBodySchema>;
 export type DeleteWebhookResponseBody = z.infer<typeof DeleteWebhookResponseBodySchema>;
+export type ExtendedHostSpec = z.infer<typeof ExtendedHostSpecSchema>;
+export type IngressEndpoint = z.infer<typeof IngressEndpointSchema>;
+export type ServiceEndpoint = z.infer<typeof ServiceEndpointSchema>;
+export type EndpointDiscovery = z.infer<typeof EndpointDiscoverySchema>;
 export type ErrorDetail = z.infer<typeof ErrorDetailSchema>;
 export type ErrorModel = z.infer<typeof ErrorModelSchema>;
 export type GetDatabaseResponseBody = z.infer<typeof GetDatabaseResponseBodySchema>;
@@ -1107,13 +1325,18 @@ export type GithubRepositoryDetail = z.infer<typeof GithubRepositoryDetailSchema
 export type GithubRepositoryDetailResponseBody = z.infer<
   typeof GithubRepositoryDetailResponseBodySchema
 >;
-export type HealthResponseBody = z.infer<typeof HealthResponseBodySchema>;
+export type InstanceType = z.infer<typeof InstanceTypeSchema>;
+export type InstanceStatusInput = z.infer<typeof InstanceStatusInputSchema>;
 export type Item = z.infer<typeof ItemSchema>;
 export type ListDatabasesResponseBody = z.infer<typeof ListDatabasesResponseBodySchema>;
 export type PaginationResponseMetadata = z.infer<typeof PaginationResponseMetadataSchema>;
 export type ListDeploymentResponseData = z.infer<typeof ListDeploymentResponseDataSchema>;
 export type ListDeploymentsResponseBody = z.infer<typeof ListDeploymentsResponseBodySchema>;
+export type ListEndpointsResponseBody = z.infer<typeof ListEndpointsResponseBodySchema>;
 export type ListEnvironmentsOutputBody = z.infer<typeof ListEnvironmentsOutputBodySchema>;
+export type PodPhase = z.infer<typeof PodPhaseSchema>;
+export type PodContainerStatus = z.infer<typeof PodContainerStatusSchema>;
+export type ListInstancesResponseBody = z.infer<typeof ListInstancesResponseBodySchema>;
 export type ListProjectResponseBody = z.infer<typeof ListProjectResponseBodySchema>;
 export type ListServiceResponseBody = z.infer<typeof ListServiceResponseBodySchema>;
 export type ListWebhooksResponseBody = z.infer<typeof ListWebhooksResponseBodySchema>;
@@ -1126,6 +1349,15 @@ export type LokiDirection = z.infer<typeof LokiDirectionSchema>;
 export type UserAPIResponse = z.infer<typeof UserAPIResponseSchema>;
 export type MeResponseBody = z.infer<typeof MeResponseBodySchema>;
 export type QueryLogsResponseBody = z.infer<typeof QueryLogsResponseBodySchema>;
+export type ReferenceableVariablesResponseBody = z.infer<
+  typeof ReferenceableVariablesResponseBodySchema
+>;
+export type ResolveVariableReferenceResponseBody = z.infer<
+  typeof ResolveVariableReferenceResponseBodySchema
+>;
+export type RestartInstancesInputBody = z.infer<typeof RestartInstancesInputBodySchema>;
+export type Restarted = z.infer<typeof RestartedSchema>;
+export type RestartServicesResponseBody = z.infer<typeof RestartServicesResponseBodySchema>;
 export type SortByField = z.infer<typeof SortByFieldSchema>;
 export type SortOrder = z.infer<typeof SortOrderSchema>;
 export type SystemMeta = z.infer<typeof SystemMetaSchema>;
@@ -1142,6 +1374,7 @@ export type UpdateTeamResponseBody = z.infer<typeof UpdateTeamResponseBodySchema
 export type UpdateWebhookResponseBody = z.infer<typeof UpdateWebhookResponseBodySchema>;
 export type VariableUpdateBehavior = z.infer<typeof VariableUpdateBehaviorSchema>;
 export type UpsertVariablesInputBody = z.infer<typeof UpsertVariablesInputBodySchema>;
+export type VariableResponseItem = z.infer<typeof VariableResponseItemSchema>;
 export type VariableResponse = z.infer<typeof VariableResponseSchema>;
 export type VariablesResponseBody = z.infer<typeof VariablesResponseBodySchema>;
 export type WebhookCreateInput = z.infer<typeof WebhookCreateInputSchema>;
@@ -1259,7 +1492,6 @@ export const get_metricsQuerySchema = z
 
 export const get_syste__metricsQuerySchema = z
   .object({
-    type: z.string(),
     node_name: z.string().optional(),
     zone: z.string().optional(),
     region: z.string().optional(),
@@ -1288,6 +1520,15 @@ export const get_database_definitionQuerySchema = z
   .object({
     type: z.string(),
     version: z.string().optional(),
+  })
+  .passthrough();
+
+export const list_service_endpointsQuerySchema = z
+  .object({
+    team_id: z.string(),
+    project_id: z.string(),
+    environment_id: z.string(),
+    service_id: z.string(),
   })
   .passthrough();
 
@@ -1332,11 +1573,31 @@ export const list_webhooksQuerySchema = z
 
 export const list_variablesQuerySchema = z
   .object({
-    type: VariableTypeSchema, // The type of variable
+    type: VariableReferenceSourceTypeSchema, // The type of variable
     team_id: z.string(),
     project_id: z.string().optional(), // If present, fetch project variables
     environment_id: z.string().optional(), // If present, fetch environment variables - requires project_id
     service_id: z.string().optional(), // If present, fetch service variables - requires project_id and environment_id
+  })
+  .passthrough();
+
+export const list_available_referencesQuerySchema = z
+  .object({
+    team_id: z.string(),
+    project_id: z.string(),
+    environment_id: z.string(),
+    service_id: z.string(),
+  })
+  .passthrough();
+
+export const read_variable_referenceQuerySchema = z
+  .object({
+    team_id: z.string().optional(),
+    type: VariableReferenceTypeSchema.optional(),
+    name: z.string().optional(),
+    source_type: VariableReferenceSourceTypeSchema.optional(),
+    source_id: z.string().optional(),
+    key: z.string().optional(),
   })
   .passthrough();
 
@@ -2067,41 +2328,87 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
         },
       ),
     },
-    health: async (params?: undefined, fetchOptions?: RequestInit): Promise<HealthResponseBody> => {
-      try {
-        if (!apiUrl || typeof apiUrl !== 'string') {
-          throw new Error('API URL is undefined or not a string');
-        }
-        const url = new URL(`${apiUrl}/health`);
+    instances: {
+      list: async (
+        params: InstanceStatusInput,
+        fetchOptions?: RequestInit,
+      ): Promise<ListInstancesResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/instances/list`);
 
-        const options: RequestInit = {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-          },
-          ...fetchOptions,
-        };
-
-        const response = await fetch(url.toString(), options);
-        if (!response.ok) {
-          console.log(
-            `GO API request failed with status ${response.status}: ${response.statusText}`,
-          );
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = InstanceStatusInputSchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
           const data = await response.json();
-          console.log(`GO API request error`, data);
-          console.log(`Request URL is:`, url.toString());
-
-          throw new Error(
-            `GO API request failed with status ${response.status}: ${response.statusText}`,
-          );
+          return ListInstancesResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
         }
-        const data = await response.json();
-        return HealthResponseBodySchema.parse(data);
-      } catch (error) {
-        console.error('Error in API request:', error);
-        throw error;
-      }
+      },
+      restart: async (
+        params: RestartInstancesInputBody,
+        fetchOptions?: RequestInit,
+      ): Promise<RestartServicesResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/instances/restart`);
+
+          const options: RequestInit = {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = RestartInstancesInputBodySchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return RestartServicesResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
     },
     logs: {
       query: async (
@@ -2287,7 +2594,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           }
           const url = new URL(`${apiUrl}/metrics/get-system`);
           const validatedQuery = get_syste__metricsQuerySchema.parse(params);
-          const queryKeys = ['type', 'node_name', 'zone', 'region', 'cluster_name', 'start', 'end'];
+          const queryKeys = ['node_name', 'zone', 'region', 'cluster_name', 'start', 'end'];
           queryKeys.forEach((key) => {
             const value = validatedQuery[key as keyof typeof validatedQuery];
             if (value !== undefined && value !== null) {
@@ -2707,6 +3014,54 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           console.error('Error in API request:', error);
           throw error;
         }
+      },
+      endpoints: {
+        list: async (
+          params: z.infer<typeof list_service_endpointsQuerySchema>,
+          fetchOptions?: RequestInit,
+        ): Promise<ListEndpointsResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/services/endpoints/list`);
+            const validatedQuery = list_service_endpointsQuerySchema.parse(params);
+            const queryKeys = ['team_id', 'project_id', 'environment_id', 'service_id'];
+            queryKeys.forEach((key) => {
+              const value = validatedQuery[key as keyof typeof validatedQuery];
+              if (value !== undefined && value !== null) {
+                url.searchParams.append(key, String(value));
+              }
+            });
+            const options: RequestInit = {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return ListEndpointsResponseBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
       },
       get: async (
         params: z.infer<typeof get_serviceQuerySchema>,
@@ -3386,6 +3741,140 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           console.error('Error in API request:', error);
           throw error;
         }
+      },
+      references: {
+        available: async (
+          params: z.infer<typeof list_available_referencesQuerySchema>,
+          fetchOptions?: RequestInit,
+        ): Promise<ReferenceableVariablesResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/variables/references/available`);
+            const validatedQuery = list_available_referencesQuerySchema.parse(params);
+            const queryKeys = ['team_id', 'project_id', 'environment_id', 'service_id'];
+            queryKeys.forEach((key) => {
+              const value = validatedQuery[key as keyof typeof validatedQuery];
+              if (value !== undefined && value !== null) {
+                url.searchParams.append(key, String(value));
+              }
+            });
+            const options: RequestInit = {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return ReferenceableVariablesResponseBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+        create: async (
+          params: CreateVariableReferenceInput,
+          fetchOptions?: RequestInit,
+        ): Promise<CreateVariableReferenceResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/variables/references/create`);
+
+            const options: RequestInit = {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+            const validatedBody = CreateVariableReferenceInputSchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+              console.log(`Request body is:`, validatedBody);
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return CreateVariableReferenceResponseBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+        get: async (
+          params: z.infer<typeof read_variable_referenceQuerySchema>,
+          fetchOptions?: RequestInit,
+        ): Promise<ResolveVariableReferenceResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/variables/references/get`);
+            const validatedQuery = read_variable_referenceQuerySchema.parse(params);
+            const queryKeys = ['team_id', 'type', 'name', 'source_type', 'source_id', 'key'];
+            queryKeys.forEach((key) => {
+              const value = validatedQuery[key as keyof typeof validatedQuery];
+              if (value !== undefined && value !== null) {
+                url.searchParams.append(key, String(value));
+              }
+            });
+            const options: RequestInit = {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return ResolveVariableReferenceResponseBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
       },
       update: async (
         params: UpsertVariablesInputBody,
