@@ -59,6 +59,7 @@
     "react-hotkeys-hook": "^4.6.1",
     "react-scan": "^0.2.4",
     "react-simple-code-editor": "^0.14.1",
+    "react-textarea-autosize": "^8.5.9",
     "recharts": "^2.15.1",
     "server-only": "^0.0.1",
     "sonner": "^1.7.4",

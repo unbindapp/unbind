@@ -6,8 +6,8 @@ import { getVariablesFromRawText } from "@/components/variables/helpers";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TVariableForCreate, VariableForCreateSchema } from "@/server/trpc/api/variables/types";
 import { FormValidateOrFn } from "@tanstack/react-form";
-import { ChevronDownIcon, PlusIcon, TrashIcon } from "lucide-react";
-import { useCallback, useState } from "react";
+import { ChevronDownIcon, LinkIcon, PlusIcon, TrashIcon } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 import { z } from "zod";
 
 type TProps = {
@@ -66,6 +66,20 @@ export default function CreateVariablesForm({
       afterSuccessfulSubmit?.(variables);
     },
   });
+
+  const tokens = useMemo(
+    () => [
+      "${Test 1}",
+      "${Ali}",
+      "${Test 2}",
+      "${Test 3}",
+      "${Test 4}",
+      "${Test 5}",
+      "${Test 6}",
+      "${Test 7}",
+    ],
+    [],
+  );
 
   type TForm = typeof form;
 
@@ -143,13 +157,13 @@ export default function CreateVariablesForm({
                     return (
                       <div
                         key={`secret-wrapper-${i}`}
-                        className="flex w-full flex-col gap-1 sm:gap-0"
+                        className="flex w-full flex-col gap-1 md:gap-0"
                       >
-                        {i !== 0 && <div className="bg-border h-px w-full sm:hidden" />}
+                        {i !== 0 && <div className="bg-border h-px w-full md:hidden" />}
                         <div
                           key={`secret-${i}`}
                           data-first={i === 0 ? true : undefined}
-                          className="flex w-full flex-col gap-2 p-3 sm:-mt-5 sm:flex-row sm:data-first:mt-0 md:-mt-7 md:p-4"
+                          className="flex w-full flex-col gap-2 p-3 md:-mt-7 md:flex-row md:p-4 md:data-first:mt-0 lg:-mt-7"
                         >
                           <form.Field key={`variables[${i}].name`} name={`variables[${i}].name`}>
                             {(subField) => {
@@ -162,7 +176,7 @@ export default function CreateVariablesForm({
                                   onChange={(e) => subField.handleChange(e.target.value)}
                                   placeholder="CLIENT_KEY"
                                   inputClassName="font-mono"
-                                  className="flex-1 sm:max-w-64"
+                                  className="flex-1 md:max-w-64"
                                 />
                               );
                             }}
@@ -174,15 +188,20 @@ export default function CreateVariablesForm({
                             >
                               {(subField) => {
                                 return (
-                                  <field.TextField
+                                  <field.TextareaWithTags
+                                    dontCheckUntilSubmit
                                     field={subField}
                                     value={subField.state.value}
                                     onBlur={subField.handleBlur}
-                                    onPaste={(e) => onPaste(e, form, i)}
                                     onChange={(e) => subField.handleChange(e.target.value)}
-                                    inputClassName="font-mono"
+                                    textareaClassName="font-mono"
                                     className="flex-1"
                                     placeholder="abc123"
+                                    tokenPrefix="${"
+                                    tokenSuffix="}"
+                                    tokens={tokens}
+                                    dropdownButtonText="Reference"
+                                    DropdownButtonIcon={LinkIcon}
                                   />
                                 );
                               }}
