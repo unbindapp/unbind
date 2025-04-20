@@ -159,25 +159,13 @@ export default function TextareaWithTags({
     [onChange, textareaValue, trigger],
   );
 
+  // Synchronizes the textarea value with the value prop
   useEffect(() => {
-    setTextareaValueAndTriggerOnChange(value as string);
-  }, [value, setTextareaValueAndTriggerOnChange]);
+    setTextareaValueAndTriggerOnChange(String(value));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
 
-  useEffect(() => {
-    const filtered = tokens.filter(
-      (token) =>
-        token.toLowerCase().includes(search.toLowerCase()) ||
-        search.toLowerCase().includes(token.toLowerCase()),
-    );
-    setFilteredItems(filtered);
-  }, [search, tokens]);
-
-  useEffect(() => {
-    setTimeout(() => {
-      setSelectedCommandValue(filteredItems[0]);
-    });
-  }, [textareaValue, filteredItems]);
-
+  // Controls the opening of the popover
   useEffect(() => {
     const cursorPosition = textareaRef.current?.selectionStart;
     if (cursorPosition === undefined) return;
@@ -190,6 +178,7 @@ export default function TextareaWithTags({
     }
   }, [textareaValue, trigger]);
 
+  // Controls the search value
   useEffect(() => {
     let lastTokenIndex = -1;
     for (let i = textParts.length - 1; i >= 0; i--) {
@@ -212,6 +201,19 @@ export default function TextareaWithTags({
       setSearch(search);
     }
   }, [textareaValue, textParts, trigger]);
+
+  // Controls the filtered items based on the search value
+  useEffect(() => {
+    const filtered = tokens.filter(
+      (token) =>
+        token.toLowerCase().includes(search.toLowerCase()) ||
+        search.toLowerCase().includes(token.toLowerCase()),
+    );
+    setFilteredItems(filtered);
+    if (filtered.length > 0) {
+      setSelectedCommandValue(filtered[0]);
+    }
+  }, [search, tokens]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
