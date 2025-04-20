@@ -16,6 +16,7 @@ import VariablesProvider from "@/components/service/panel/tabs/variables/variabl
 import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { FC, ReactNode } from "react";
 import Deployments from "@/components/service/panel/tabs/deployments/deployments";
+import VariableReferencesProvider from "@/components/service/panel/tabs/variables/variable-references-provider";
 
 type TServicePage = FC<{ service: TServiceShallow }>;
 type TServicePageProvider = FC<TServicePageProviderProps>;
@@ -55,7 +56,11 @@ const tabs: TServicePanelTab[] = [
     title: "Variables",
     value: "variables",
     Page: Variables,
-    Provider: (props: TServicePageProviderProps) => <VariablesProvider type="service" {...props} />,
+    Provider: ({ children, ...rest }: TServicePageProviderProps) => (
+      <VariablesProvider type="service" {...rest}>
+        <VariableReferencesProvider {...rest}>{children}</VariableReferencesProvider>
+      </VariablesProvider>
+    ),
   },
   { title: "Settings", value: "settings", Page: Settings, Provider: EmptyProvider },
 ];

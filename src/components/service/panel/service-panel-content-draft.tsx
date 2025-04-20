@@ -16,6 +16,7 @@ import { api } from "@/server/trpc/setup/client";
 import { GitBranchIcon } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/components/ui/utils";
+import VariableReferencesProvider from "@/components/service/panel/tabs/variables/variable-references-provider";
 
 type TProps = {
   service: TServiceShallow;
@@ -112,12 +113,19 @@ export default function ServicePanelContentDraft({ service, className }: TProps)
             serviceId={service.id}
             type="service"
           >
-            <CreateVariablesForm
-              variant="collapsible"
-              onBlur={(v) => {
-                setVariables(v.value.variables);
-              }}
-            />
+            <VariableReferencesProvider
+              teamId={teamId}
+              projectId={projectId}
+              environmentId={environmentId}
+              serviceId={service.id}
+            >
+              <CreateVariablesForm
+                variant="collapsible"
+                onBlur={(v) => {
+                  setVariables(v.value.variables);
+                }}
+              />
+            </VariableReferencesProvider>
           </VariablesProvider>
           {deploymentError && <ErrorLine message={deploymentError.message} />}
           {errorVariables && <ErrorLine message={errorVariables.message} />}

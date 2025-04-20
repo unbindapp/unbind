@@ -1,3 +1,4 @@
+import ErrorCard from "@/components/error-card";
 import { Button } from "@/components/ui/button";
 import { Command, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -29,13 +30,16 @@ const variants = cva(
   },
 );
 
+const placeholderArray = Array.from({ length: 10 }, (_, index) => index);
+
 export type TTextareaWithTagsProps = TextareaAutosizeProps &
   RefAttributes<HTMLTextAreaElement> &
   VariantProps<typeof variants> & {
     classNameTextarea?: string;
     tokenPrefix: string;
     tokenSuffix: string;
-    tokens: string[];
+    tokens: string[] | undefined;
+    tokensErrorMessage: string | null;
     dropdownButtonText?: string;
     DropdownButtonIcon?: FC<{ className?: string }>;
   };
@@ -48,6 +52,7 @@ export default function TextareaWithTags({
   tokenPrefix,
   tokenSuffix,
   tokens,
+  tokensErrorMessage,
   dropdownButtonText,
   DropdownButtonIcon,
   value,
@@ -60,7 +65,11 @@ export default function TextareaWithTags({
   const [open, setOpen] = useState(false);
 
   const [filteredItems, setFilteredItems] = useState(tokens);
-  const textParts = useMemo(() => splitByTokens(textareaValue, tokens), [textareaValue, tokens]);
+  const textParts = useMemo(
+    () =>
+      tokens ? splitByTokens(textareaValue, tokens) : [{ value: textareaValue, isToken: false }],
+    [textareaValue, tokens],
+  );
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const commandRef = useRef<HTMLDivElement>(null);
   const trigger = tokenPrefix.slice(0, 1);
@@ -71,6 +80,8 @@ export default function TextareaWithTags({
       e.preventDefault();
 
       if (key.keys?.length !== 1) return;
+      if (!tokens) return;
+      if (!filteredItems) return;
 
       if (key.keys[0] === "enter") {
         if (!open) return;
@@ -204,6 +215,7 @@ export default function TextareaWithTags({
 
   // Controls the filtered items based on the search value
   useEffect(() => {
+    if (!tokens) return;
     const filtered = tokens.filter(
       (token) =>
         token.toLowerCase().includes(search.toLowerCase()) ||
@@ -317,11 +329,11 @@ export default function TextareaWithTags({
                 }
                 textareaRef.current?.focus();
               }}
-              className="text-muted-foreground group/button mt-1 mr-1 mb-auto h-8 px-2.5 font-sans font-semibold"
+              className="text-muted-foreground group/button mt-1 mr-1 mb-auto h-8 px-2 font-sans font-semibold"
             >
-              {DropdownButtonIcon && <DropdownButtonIcon className="-ml-0.5 size-4" />}
+              {DropdownButtonIcon && <DropdownButtonIcon className="size-4" />}
               {dropdownButtonText && (
-                <p className="max-w-full min-w-0 shrink leading-tight group-data-has-value/button:hidden">
+                <p className="max-w-full min-w-0 shrink pr-0.5 leading-tight group-data-has-value/button:hidden">
                   {dropdownButtonText}
                 </p>
               )}
@@ -345,48 +357,62 @@ export default function TextareaWithTags({
           <ScrollArea>
             <CommandList>
               <CommandGroup>
-                {filteredItems.length === 0 && (
+                {filteredItems && filteredItems.length === 0 && (
                   <CommandEmpty className="text-muted-foreground flex items-start justify-start gap-2 px-3 py-2.25 leading-tight">
                     <SearchIcon className="mt-0.5 -ml-0.5 inline-block size-4 shrink-0" />
                     <p className="min-w-0 shrink">No matching items</p>
                   </CommandEmpty>
                 )}
-                {filteredItems.map((i) => (
-                  <CommandItem
-                    onSelect={(v) => {
-                      const input = textareaRef.current;
-                      if (!input) return;
+                {tokensErrorMessage && !filteredItems && (
+                  <ErrorCard className="rounded-md" message={tokensErrorMessage} />
+                )}
+                {!tokensErrorMessage &&
+                  !filteredItems &&
+                  placeholderArray.map((_, index) => (
+                    <CommandItem disabled className="rounded-md py-2.25" key={index}>
+                      <p className="bg-foreground animate-skeleton max-w-full rounded-md leading-tight">
+                        Loading {index}
+                      </p>
+                    </CommandItem>
+                  ))}
+                {filteredItems &&
+                  filteredItems.map((i) => (
+                    <CommandItem
+                      onSelect={(v) => {
+                        const input = textareaRef.current;
+                        if (!input) return;
+                        if (!tokens) return;
 
-                      const { beforeCursor, afterCursor } = getBeforeAndAfterCursor({
-                        input,
-                        value: textareaValue,
-                        trigger,
-                        tokens,
-                      });
+                        const { beforeCursor, afterCursor } = getBeforeAndAfterCursor({
+                          input,
+                          value: textareaValue,
+                          trigger,
+                          tokens,
+                        });
 
-                      const newValue = `${beforeCursor}${v}${afterCursor}`;
-                      setTextareaValueAndTriggerOnChange(newValue);
-                      setOpen(false);
-                      setTimeout(() => {
-                        input.focus();
-                        input.setSelectionRange(newValue.length, newValue.length);
-                      });
-                    }}
-                    className="rounded-md py-2.25"
-                    key={i}
-                    value={i}
-                  >
-                    <p className="w-full leading-tight">
-                      <span className="text-muted-more-foreground">
-                        {i.slice(0, tokenPrefix.length)}
-                      </span>
-                      <span>{i.slice(tokenPrefix.length, i.length - tokenSuffix.length)}</span>
-                      <span className="text-muted-more-foreground">
-                        {i.slice(i.length - tokenSuffix.length, i.length)}
-                      </span>
-                    </p>
-                  </CommandItem>
-                ))}
+                        const newValue = `${beforeCursor}${v}${afterCursor}`;
+                        setTextareaValueAndTriggerOnChange(newValue);
+                        setOpen(false);
+                        setTimeout(() => {
+                          input.focus();
+                          input.setSelectionRange(newValue.length, newValue.length);
+                        });
+                      }}
+                      className="rounded-md py-2.25"
+                      key={i}
+                      value={i}
+                    >
+                      <p className="w-full leading-tight">
+                        <span className="text-muted-more-foreground">
+                          {i.slice(0, tokenPrefix.length)}
+                        </span>
+                        <span>{i.slice(tokenPrefix.length, i.length - tokenSuffix.length)}</span>
+                        <span className="text-muted-more-foreground">
+                          {i.slice(i.length - tokenSuffix.length, i.length)}
+                        </span>
+                      </p>
+                    </CommandItem>
+                  ))}
               </CommandGroup>
             </CommandList>
           </ScrollArea>

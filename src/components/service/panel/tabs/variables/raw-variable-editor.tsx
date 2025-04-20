@@ -36,9 +36,13 @@ export default function RawVariableEditor({ children }: TProps) {
     projectId,
     environmentId,
     serviceId,
-    list: { data: variablesData, error: variablesError, isPending: variablesIsPending },
+    list: {
+      data: variablesData,
+      error: variablesError,
+      isPending: variablesIsPending,
+      refetch: refetchVariables,
+    },
     update: { mutateAsync: overwriteVariables },
-    utils: { refetch: refetchVariables },
   } = useVariables();
 
   const variables = variablesData?.variables.items;

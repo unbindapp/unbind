@@ -1,4 +1,5 @@
 import ErrorLine from "@/components/error-line";
+import { useVariableReferences } from "@/components/service/panel/tabs/variables/variable-references-provider";
 import { useVariables } from "@/components/service/panel/tabs/variables/variables-provider";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
@@ -40,6 +41,10 @@ export default function CreateVariablesForm({
     serviceId,
   } = useVariables();
 
+  const {
+    list: { data: variableReferencesData, error: variableReferencesError },
+  } = useVariableReferences();
+
   const [isOpen, setIsOpen] = useState(false);
 
   const form = useAppForm({
@@ -67,19 +72,21 @@ export default function CreateVariablesForm({
     },
   });
 
-  const tokens = useMemo(
-    () => [
-      "${Test 1}",
-      "${Ali}",
-      "${Test 2}",
-      "${Test 3}",
-      "${Test 4}",
-      "${Test 5}",
-      "${Test 6}",
-      "${Test 7}",
-    ],
-    [],
-  );
+  const tokens = useMemo(() => {
+    if (!variableReferencesData) return undefined;
+    const allVariableObjects = [
+      ...variableReferencesData.data.internal_endpoints,
+      ...variableReferencesData.data.external_endpoints,
+      ...variableReferencesData.data.variables,
+    ];
+    const allKeys: string[] = [];
+    for (const obj of allVariableObjects) {
+      obj.keys?.forEach((key) => {
+        allKeys.push(`\${${obj.name}.${key}}`);
+      });
+    }
+    return allKeys;
+  }, [variableReferencesData]);
 
   type TForm = typeof form;
 
@@ -200,6 +207,7 @@ export default function CreateVariablesForm({
                                     tokenPrefix="${"
                                     tokenSuffix="}"
                                     tokens={tokens}
+                                    tokensErrorMessage={variableReferencesError?.message || null}
                                     dropdownButtonText="Reference"
                                     DropdownButtonIcon={LinkIcon}
                                   />

@@ -1,3 +1,4 @@
+import { cn } from "@/components/ui/utils";
 import { cva, VariantProps } from "class-variance-authority";
 import { TriangleAlertIcon } from "lucide-react";
 
@@ -27,10 +28,12 @@ export default function ErrorCard({ className, message, variant }: TProps) {
   return (
     <div
       data-has-message={message ? true : undefined}
-      className={cardVariants({
-        variant,
-        className,
-      })}
+      className={cn(
+        cardVariants({
+          variant,
+          className,
+        }),
+      )}
     >
       <div className="flex w-full items-center justify-center gap-1.5 px-3 py-4 group-data-has-message/card:py-2">
         <TriangleAlertIcon className="-ml-0.5 size-4 shrink-0" />

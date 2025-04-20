@@ -114,4 +114,34 @@ export const variablesRouter = createTRPCRouter({
         data: res.data,
       };
     }),
+  listAvailableVariableReferences: publicProcedure
+    .input(
+      z
+        .object({
+          teamId: z.string().uuid(),
+          projectId: z.string().uuid(),
+          environmentId: z.string().uuid(),
+          serviceId: z.string().uuid(),
+        })
+        .strip(),
+    )
+    .query(async function ({ input: { teamId, projectId, environmentId, serviceId }, ctx }) {
+      const { session, goClient } = ctx;
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      if (!session) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You need to be logged in to access this resource",
+        });
+      }
+      const res = await goClient.variables.references.available({
+        team_id: teamId,
+        environment_id: environmentId,
+        project_id: projectId,
+        service_id: serviceId,
+      });
+      return {
+        data: res.data,
+      };
+    }),
 });

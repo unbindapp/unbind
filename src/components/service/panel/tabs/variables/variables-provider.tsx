@@ -12,7 +12,6 @@ type TVariablesContext = {
   projectId: string;
   environmentId: string;
   serviceId: string;
-  utils: ReturnType<typeof useVariablesUtils>;
 };
 
 const VariablesContext = createContext<TVariablesContext | null>(null);
@@ -34,13 +33,6 @@ export const VariablesProvider: React.FC<{
   });
 
   const update = api.variables.update.useMutation();
-  const utils = useVariablesUtils({
-    teamId,
-    projectId,
-    environmentId,
-    serviceId,
-    type,
-  });
 
   const value: TVariablesContext = useMemo(
     () => ({
@@ -50,9 +42,8 @@ export const VariablesProvider: React.FC<{
       projectId,
       environmentId,
       serviceId,
-      utils,
     }),
-    [list, utils, update, teamId, projectId, environmentId, serviceId],
+    [list, update, teamId, projectId, environmentId, serviceId],
   );
 
   return <VariablesContext.Provider value={value}>{children}</VariablesContext.Provider>;
