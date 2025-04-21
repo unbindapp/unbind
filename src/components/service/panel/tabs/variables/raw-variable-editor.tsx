@@ -13,6 +13,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { getVariablesFromRawText } from "@/components/variables/helpers";
+import { defaultAnimationMs } from "@/lib/constants";
 import { useCopyToClipboard } from "@/lib/hooks/use-copy";
 import useTemporaryValue from "@/lib/hooks/use-temporary-value";
 import { TVariableShallow, VariableForCreateSchema } from "@/server/trpc/api/variables/types";
@@ -21,7 +22,7 @@ import { CheckCircleIcon, CheckIcon, CopyIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import Prism, { highlight } from "prismjs";
 import "prismjs/components/prism-ini";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import Editor from "react-simple-code-editor";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -48,10 +49,17 @@ export default function RawVariableEditor({ children }: TProps) {
   const variables = variablesData?.variables.items;
   const [editorValue, setEditorValue] = useState(variables ? getEditorValue({ variables }) : "");
 
+  const [open, setOpen] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const [recentlySucceeded, setRecentlySucceeded] = useTemporaryValue({
     defaultValue: false,
     ttl: 3000,
   });
+
+  const resetEditorValue = () => {
+    setEditorValue(variables ? getEditorValue({ variables }) : "");
+  };
 
   useEffect(() => {
     if (!variables) return;
@@ -120,7 +128,18 @@ export default function RawVariableEditor({ children }: TProps) {
   const error = variablesError || replaceVariablesError;
 
   return (
-    <Dialog>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (!o) {
+          if (timeoutRef.current) clearTimeout(timeoutRef.current);
+          timeoutRef.current = setTimeout(() => {
+            resetEditorValue();
+          }, defaultAnimationMs);
+        }
+      }}
+    >
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent
         hideXButton
@@ -146,7 +165,7 @@ export default function RawVariableEditor({ children }: TProps) {
         <div className="flex w-full flex-wrap items-center justify-end gap-2">
           <DialogClose asChild className="text-muted-foreground">
             <Button type="button" variant="ghost">
-              Close
+              Cancel
             </Button>
           </DialogClose>
           <Button
@@ -227,7 +246,7 @@ function VariableEditor({
       >
         <div className="flex w-full flex-1 flex-col">
           <Editor
-            placeholder="CLIENT_KEY=abc123"
+            placeholder="VARIABLE_NAME=Value"
             padding={{ left: 14, right: 14, top: 10, bottom: 10 }}
             value={isHidden ? hiddenValue : editorValue}
             onValueChange={onEditorValueChange}

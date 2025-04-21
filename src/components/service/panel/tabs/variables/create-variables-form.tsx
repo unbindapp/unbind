@@ -181,7 +181,7 @@ export default function CreateVariablesForm({
                                   onBlur={subField.handleBlur}
                                   onPaste={(e) => onPaste(e, form, i)}
                                   onChange={(e) => subField.handleChange(e.target.value)}
-                                  placeholder="CLIENT_KEY"
+                                  placeholder="VARIABLE_NAME"
                                   inputClassName="font-mono"
                                   className="mr-12.5 flex-1 md:mr-0 md:max-w-64"
                                   autoCapitalize="off"
@@ -204,7 +204,7 @@ export default function CreateVariablesForm({
                                   classNameTextarea="font-mono"
                                   classNameDropdownContent="font-mono"
                                   className="flex-1"
-                                  placeholder="abc123"
+                                  placeholder="Value or ${Reference}"
                                   tokenPrefix="${"
                                   tokenSuffix="}"
                                   tokens={tokens}

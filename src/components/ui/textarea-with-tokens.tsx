@@ -92,11 +92,13 @@ export default function TextareaWithTokens({
   const hotkeyRef = useHotkeys(
     "arrowup,arrowdown,enter",
     (e, key) => {
-      e.preventDefault();
+      if (!open) return;
 
       if (key.keys?.length !== 1) return;
       if (!tokens) return;
       if (!filteredItems) return;
+
+      e.preventDefault();
 
       if (key.keys[0] === "enter") {
         if (!open) return;
@@ -255,89 +257,90 @@ export default function TextareaWithTokens({
         onClick={(e) => e.preventDefault()}
         asChild
         className={cn(
-          "bg-input focus-within:ring-foreground/50 relative rounded-lg border text-left focus-within:ring-1",
+          "bg-input focus-within:ring-foreground/50 relative overflow-hidden rounded-lg border text-left focus-within:ring-1",
           className,
         )}
       >
         <div className="flex w-full flex-1">
-          <div className="relative flex min-w-0 flex-1 items-start">
-            <div
-              aria-hidden="true"
-              className={cn(
-                variants({
-                  variant,
-                  fadeOnDisabled,
-                  className: classNameTextarea,
-                }),
-                "pointer-events-none absolute top-0 right-0 bottom-0 left-0 flex h-full w-full overflow-hidden border-none bg-transparent",
-              )}
-            >
-              <p className="w-full">
-                {textParts.map((part, index) => (
-                  <span
-                    data-token={part.isToken ? true : undefined}
-                    key={index}
-                    className="data-token:bg-process/10 data-token:ring-process/20 data-token:text-process data-token:rounded-[4px] data-token:ring-1"
-                  >
-                    {part.isToken ? (
-                      <>
-                        <span className="text-process/50">
-                          {part.value.slice(0, tokenPrefix.length)}
-                        </span>
-                        <span>
-                          {part.value.slice(
-                            tokenPrefix.length,
-                            part.value.length - tokenSuffix.length,
-                          )}
-                        </span>
-                        <span className="text-process/50">
-                          {part.value.slice(
-                            part.value.length - tokenSuffix.length,
-                            part.value.length,
-                          )}
-                        </span>
-                      </>
-                    ) : (
-                      part.value
-                    )}
-                  </span>
-                ))}
-              </p>
+          <ScrollArea className="max-h-35">
+            <div className="relative flex min-w-0 flex-1 items-start">
+              <div
+                aria-hidden="true"
+                className={cn(
+                  variants({
+                    variant,
+                    fadeOnDisabled,
+                    className: classNameTextarea,
+                  }),
+                  "pointer-events-none absolute top-0 right-0 bottom-0 left-0 flex h-full w-full overflow-hidden rounded-none border-none bg-transparent",
+                )}
+              >
+                <p className="w-full">
+                  {textParts.map((part, index) => (
+                    <span
+                      data-token={part.isToken ? true : undefined}
+                      key={index}
+                      className="data-token:bg-process/10 data-token:ring-process/20 data-token:text-process data-token:rounded-[4px] data-token:ring-1"
+                    >
+                      {part.isToken ? (
+                        <>
+                          <span className="text-process/50">
+                            {part.value.slice(0, tokenPrefix.length)}
+                          </span>
+                          <span>
+                            {part.value.slice(
+                              tokenPrefix.length,
+                              part.value.length - tokenSuffix.length,
+                            )}
+                          </span>
+                          <span className="text-process/50">
+                            {part.value.slice(
+                              part.value.length - tokenSuffix.length,
+                              part.value.length,
+                            )}
+                          </span>
+                        </>
+                      ) : (
+                        part.value
+                      )}
+                    </span>
+                  ))}
+                </p>
+              </div>
+              <TextareaAutosize
+                ref={(el) => {
+                  textareaRef.current = el;
+                  hotkeyRef(el);
+                }}
+                value={textareaValue}
+                onChange={(e) => {
+                  const prev = textareaValue;
+                  const newValue = e.target.value;
+                  setTextareaValue(newValue);
+                  if (
+                    prev.length > newValue.length &&
+                    prev.endsWith(trigger) &&
+                    !newValue.endsWith(trigger)
+                  ) {
+                    setOpen(false);
+                  }
+                  if (onChange) {
+                    onChange(e);
+                  }
+                }}
+                minRows={1}
+                className={cn(
+                  variants({
+                    variant,
+                    fadeOnDisabled,
+                    className: classNameTextarea,
+                  }),
+                  "caret-foreground relative border-none border-transparent bg-transparent text-transparent focus-visible:ring-0 focus-visible:ring-transparent",
+                )}
+                {...props}
+              />
             </div>
-            <TextareaAutosize
-              ref={(el) => {
-                textareaRef.current = el;
-                hotkeyRef(el);
-              }}
-              value={textareaValue}
-              onChange={(e) => {
-                const prev = textareaValue;
-                const newValue = e.target.value;
-                setTextareaValue(newValue);
-                if (
-                  prev.length > newValue.length &&
-                  prev.endsWith(trigger) &&
-                  !newValue.endsWith(trigger)
-                ) {
-                  setOpen(false);
-                }
-                if (onChange) {
-                  onChange(e);
-                }
-              }}
-              minRows={1}
-              maxRows={10}
-              className={cn(
-                variants({
-                  variant,
-                  fadeOnDisabled,
-                  className: classNameTextarea,
-                }),
-                "caret-foreground relative border-none border-transparent bg-transparent text-transparent focus-visible:ring-0 focus-visible:ring-transparent",
-              )}
-              {...props}
-            />
-          </div>
+          </ScrollArea>
           {(DropdownButtonIcon || dropdownButtonText) && (
             <Button
               data-has-value={textareaValue ? true : undefined}
