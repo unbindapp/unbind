@@ -262,7 +262,8 @@ export default function TextareaWithTokens({
         )}
       >
         <div className="flex w-full flex-1">
-          <ScrollArea className="max-h-35">
+          {/* Input with scroll area */}
+          <div className="max-h-35 min-w-0 flex-1 overflow-auto">
             <div className="relative flex min-w-0 flex-1 items-start">
               <div
                 aria-hidden="true"
@@ -340,12 +341,16 @@ export default function TextareaWithTokens({
                 {...props}
               />
             </div>
-          </ScrollArea>
+          </div>
+          {/* Dropdown button */}
           {(DropdownButtonIcon || dropdownButtonText) && (
             <Button
               data-has-value={textareaValue ? true : undefined}
               size="sm"
               variant="outline"
+              onFocus={() => {
+                console.log("asdfasd");
+              }}
               onClick={() => {
                 const newOpen = !open;
                 setOpen((prev) => !prev);
@@ -355,13 +360,16 @@ export default function TextareaWithTokens({
                 textareaRef.current?.focus();
               }}
               className={cn(
-                "text-muted-foreground group/button mt-1 mr-1 mb-auto h-8 px-2 font-semibold",
+                "text-muted-foreground focus:ring-primary group/button mt-1 mr-1 mb-auto h-8 gap-1 px-2 font-semibold",
                 classNameDropdownButton,
               )}
             >
               {DropdownButtonIcon && <DropdownButtonIcon className="size-4" />}
               {dropdownButtonText && (
-                <p className="max-w-full min-w-0 shrink pr-0.5 leading-tight group-data-has-value/button:hidden">
+                <p
+                  data-has-icon={DropdownButtonIcon ? true : undefined}
+                  className="max-w-full min-w-0 shrink px-0.5 leading-tight data-has-icon:group-data-has-value/button:hidden"
+                >
                   {dropdownButtonText}
                 </p>
               )}
@@ -377,11 +385,6 @@ export default function TextareaWithTokens({
         )}
         onOpenAutoFocus={(e) => e.preventDefault()}
         onCloseAutoFocus={(e) => e.preventDefault()}
-        onInteractOutside={(e) => {
-          e.preventDefault();
-          setOpen(false);
-          requestAnimationFrame(() => textareaRef.current?.focus());
-        }}
       >
         <Command
           ref={commandRef}
