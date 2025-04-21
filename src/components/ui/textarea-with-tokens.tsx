@@ -277,11 +277,11 @@ export default function TextareaWithTokens({
                   <span
                     data-token={part.isToken ? true : undefined}
                     key={index}
-                    className="data-token:bg-success/8 data-token:ring-success/24 data-token:text-success data-token:rounded-[4px] data-token:ring-1"
+                    className="data-token:bg-process/10 data-token:ring-process/20 data-token:text-process data-token:rounded-[4px] data-token:ring-1"
                   >
                     {part.isToken ? (
                       <>
-                        <span className="text-success/50">
+                        <span className="text-process/50">
                           {part.value.slice(0, tokenPrefix.length)}
                         </span>
                         <span>
@@ -290,7 +290,7 @@ export default function TextareaWithTokens({
                             part.value.length - tokenSuffix.length,
                           )}
                         </span>
-                        <span className="text-success/50">
+                        <span className="text-process/50">
                           {part.value.slice(
                             part.value.length - tokenSuffix.length,
                             part.value.length,

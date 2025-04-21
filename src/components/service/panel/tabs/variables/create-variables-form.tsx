@@ -184,6 +184,10 @@ export default function CreateVariablesForm({
                                   placeholder="CLIENT_KEY"
                                   inputClassName="font-mono"
                                   className="flex-1 md:max-w-64"
+                                  autoCapitalize="off"
+                                  autoCorrect="off"
+                                  autoComplete="off"
+                                  spellCheck="false"
                                 />
                               );
                             }}
@@ -211,6 +215,10 @@ export default function CreateVariablesForm({
                                     tokensErrorMessage={variableReferencesError?.message || null}
                                     dropdownButtonText="Reference"
                                     DropdownButtonIcon={LinkIcon}
+                                    autoCapitalize="off"
+                                    autoCorrect="off"
+                                    autoComplete="off"
+                                    spellCheck="false"
                                   />
                                 );
                               }}
