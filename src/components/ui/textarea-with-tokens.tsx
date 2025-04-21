@@ -367,6 +367,7 @@ export default function TextareaWithTokens({
         </div>
       </PopoverTrigger>
       <PopoverContent
+        animate={false}
         className={cn(
           "flex h-64 max-h-[min(30rem,var(--radix-popper-available-height))] flex-col overflow-hidden rounded-lg p-0",
           classNameDropdownContent,

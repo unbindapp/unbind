@@ -67,7 +67,7 @@ function ContextCommandPanel_({ context, triggerType, title, description, childr
   >["0"]["dialogContentVariantOptions"] = useMemo(
     () => ({
       animate:
-        context.contextType === "team" || context.contextType === "project" ? "none" : "default",
+        context.contextType === "team" || context.contextType === "project" ? false : "default",
     }),
     [context.contextType],
   );
