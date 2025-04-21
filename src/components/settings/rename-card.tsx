@@ -9,11 +9,11 @@ type TRenameCardType = "team" | "project";
 
 type TProps = {
   type: TRenameCardType;
-  displayName: string | undefined;
+  name: string | undefined;
   description: string | null | undefined;
-  displayNameMaxLength: number;
+  nameMaxLength: number;
   descriptionMaxLength: number;
-  onSubmit: (value: { displayName: string; description: string }) => Promise<void>;
+  onSubmit: (value: { name: string; description: string }) => Promise<void>;
   schema: TFormSchema;
   error: {
     message: string;
@@ -22,13 +22,13 @@ type TProps = {
 };
 
 type TFormValues = {
-  displayName: string;
+  name: string;
   description: string;
 };
 
 type TFormSchema = ZodObject<
   {
-    displayName: ZodString;
+    name: ZodString;
     description: ZodString;
   },
   "strip",
@@ -39,9 +39,9 @@ type TFormSchema = ZodObject<
 
 export default function RenameCard({
   type,
-  displayName,
+  name,
   description,
-  displayNameMaxLength,
+  nameMaxLength,
   descriptionMaxLength,
   onSubmit,
   schema,
@@ -50,7 +50,7 @@ export default function RenameCard({
 }: TProps) {
   const form = useAppForm({
     defaultValues: {
-      displayName: displayName || "",
+      name: name || "",
       description: description || "",
     },
     validators: {
@@ -62,7 +62,7 @@ export default function RenameCard({
     },
   });
 
-  const { displayName: displayNameTitle, description: descriptionTitle } = getInputTitles(type);
+  const { name: nameTitle, description: descriptionTitle } = getInputTitles(type);
 
   return (
     <div className={cn("flex w-full flex-col gap-3", className)}>
@@ -74,7 +74,7 @@ export default function RenameCard({
         className="flex w-full flex-col gap-3 xl:flex-row xl:items-start"
       >
         <form.AppField
-          name="displayName"
+          name="name"
           children={(field) => (
             <field.TextField
               field={field}
@@ -82,9 +82,9 @@ export default function RenameCard({
               onBlur={field.handleBlur}
               onChange={(e) => field.handleChange(e.target.value)}
               layout="label-included"
-              inputTitle={displayNameTitle}
+              inputTitle={nameTitle}
               className="flex-1 xl:max-w-72"
-              maxLength={displayNameMaxLength}
+              maxLength={nameMaxLength}
             />
           )}
         />
@@ -108,7 +108,7 @@ export default function RenameCard({
           children={([isSubmitting, values]) => {
             const valuesUnchanged =
               typeof values === "object" &&
-              values.displayName === displayName &&
+              values.name === name &&
               looseMatch(values.description, description);
             return (
               <div className="flex w-full flex-row gap-3 md:w-auto">
@@ -152,17 +152,17 @@ function getInputTitles(type: TRenameCardType) {
   switch (type) {
     case "team":
       return {
-        displayName: "Team Name",
+        name: "Team Name",
         description: "Team Description",
       };
     case "project":
       return {
-        displayName: "Project Name",
+        name: "Project Name",
         description: "Project Description",
       };
     default:
       return {
-        displayName: "Name",
+        name: "Name",
         description: "Description",
       };
   }

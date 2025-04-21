@@ -47,7 +47,7 @@ export const teamsRouter = createTRPCRouter({
         .strip()
         .merge(TeamUpdateFormSchema),
     )
-    .mutation(async function ({ input: { displayName, description, teamId }, ctx }) {
+    .mutation(async function ({ input: { name, description, teamId }, ctx }) {
       const { session, goClient } = ctx;
       if (!session) {
         throw new TRPCError({
@@ -58,7 +58,7 @@ export const teamsRouter = createTRPCRouter({
 
       const res = await goClient.teams.update({
         team_id: teamId,
-        display_name: displayName,
+        name: name,
         description,
       });
 

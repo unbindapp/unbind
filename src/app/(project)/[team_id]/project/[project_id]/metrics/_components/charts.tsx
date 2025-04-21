@@ -12,7 +12,7 @@ export default function Charts() {
   const tooltipNameFormatter: ((name: string) => string) | undefined = useMemo(() => {
     if (!servicesData) return undefined;
     return (name: string) =>
-      servicesData.services.find((service) => service.id === name)?.display_name || name;
+      servicesData.services.find((service) => service.id === name)?.name || name;
   }, [servicesData]);
 
   return (

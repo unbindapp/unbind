@@ -55,12 +55,12 @@ export const environmentsRouter = createTRPCRouter({
         .object({
           teamId: z.string().uuid(),
           projectId: z.string().uuid(),
-          displayName: CreateEnvironmentFormNameSchema,
+          name: CreateEnvironmentFormNameSchema,
           description: z.string().optional(),
         })
         .strip(),
     )
-    .mutation(async function ({ input: { teamId, projectId, displayName, description }, ctx }) {
+    .mutation(async function ({ input: { teamId, projectId, name, description }, ctx }) {
       const { session, goClient } = ctx;
       if (!session) {
         throw new TRPCError({
@@ -72,7 +72,7 @@ export const environmentsRouter = createTRPCRouter({
       const res = await goClient.environments.create({
         team_id: teamId,
         project_id: projectId,
-        display_name: displayName,
+        name: name,
         description: description || null,
       });
       return {
@@ -86,12 +86,12 @@ export const environmentsRouter = createTRPCRouter({
           id: z.string().uuid(),
           teamId: z.string().uuid(),
           projectId: z.string().uuid(),
-          displayName: z.string().optional(),
+          name: z.string().optional(),
           description: z.string().optional(),
         })
         .strip(),
     )
-    .mutation(async function ({ input: { id, displayName, description, teamId, projectId }, ctx }) {
+    .mutation(async function ({ input: { id, name, description, teamId, projectId }, ctx }) {
       const { session, goClient } = ctx;
       if (!session) {
         throw new TRPCError({
@@ -104,7 +104,7 @@ export const environmentsRouter = createTRPCRouter({
         team_id: teamId,
         project_id: projectId,
         environment_id: id,
-        name: displayName || null,
+        name: name || null,
         description: description || null,
       });
 

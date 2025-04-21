@@ -37,7 +37,7 @@ export default function DeleteServiceSection({ className }: Props) {
     <DeleteCard
       type="service"
       error={error}
-      deletingEntityName={data?.service?.display_name}
+      deletingEntityName={data?.service?.name}
       onDialogClose={reset}
       onSubmit={async () => {
         await deleteService({ teamId, projectId, environmentId, serviceId });

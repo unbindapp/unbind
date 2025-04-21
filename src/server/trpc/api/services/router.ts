@@ -74,7 +74,7 @@ export const servicesRouter = createTRPCRouter({
       team_id: input.teamId,
       project_id: input.projectId,
       environment_id: input.environmentId,
-      display_name: input.displayName,
+      name: input.name,
       description: input.description,
       public: input.public,
       builder: input.builder,
@@ -106,7 +106,7 @@ export const servicesRouter = createTRPCRouter({
     };
   }),
   update: publicProcedure.input(UpdateServiceInputSchema).mutation(async function ({
-    input: { teamId, projectId, environmentId, serviceId, displayName, description },
+    input: { teamId, projectId, environmentId, serviceId, name, description },
     ctx,
   }) {
     const { session, goClient } = ctx;
@@ -121,7 +121,7 @@ export const servicesRouter = createTRPCRouter({
       project_id: projectId,
       environment_id: environmentId,
       service_id: serviceId,
-      display_name: displayName,
+      name: name,
       description,
     });
     return {

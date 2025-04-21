@@ -6,7 +6,7 @@ export const teamDescriptionMaxLength = 128;
 
 export const TeamUpdateFormSchema = z
   .object({
-    displayName: z
+    name: z
       .string()
       .min(teamNameMinLength, `Name should be at least ${teamNameMinLength} characters.`)
       .max(teamNameMaxLength, `Name should be at most ${teamNameMaxLength} characters.`),

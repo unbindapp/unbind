@@ -119,7 +119,7 @@ export default function DeploymentPanel({ service }: TProps) {
                       className="-ml-0.25 size-4 sm:size-4.5"
                     />
                     <p className="min-w-0 shrink truncate">
-                      {service.display_name} <span className="text-muted-more-foreground">/</span>{" "}
+                      {service.name} <span className="text-muted-more-foreground">/</span>{" "}
                       Deployment
                     </p>
                   </div>
@@ -165,7 +165,7 @@ export default function DeploymentPanel({ service }: TProps) {
                       className="-ml-0.25 size-4 sm:size-4.5"
                     />
                     <p className="min-w-0 shrink truncate">
-                      {service.display_name} <span className="text-muted-more-foreground">/</span>{" "}
+                      {service.name} <span className="text-muted-more-foreground">/</span>{" "}
                       Deployment
                     </p>
                   </div>

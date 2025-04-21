@@ -11,7 +11,7 @@ export default function Variables({}: { service: TServiceShallow }) {
   const {
     list: { data, isPending, error },
   } = useVariables();
-  const variables = data?.variables.items;
+  const variables = data?.variables;
 
   return (
     <TabWrapper>

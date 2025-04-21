@@ -34,7 +34,7 @@ export default function DeleteProjectSection({ className }: Props) {
     <DeleteCard
       type="project"
       error={error}
-      deletingEntityName={data?.project?.display_name}
+      deletingEntityName={data?.project?.name}
       onDialogClose={reset}
       onSubmit={async () => {
         await deleteProject({ teamId, projectId });

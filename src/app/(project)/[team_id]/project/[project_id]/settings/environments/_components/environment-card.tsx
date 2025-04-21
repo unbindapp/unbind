@@ -92,7 +92,7 @@ export default function EnvironmentCard({
             </div>
           )}
           <p className="group-data-pending/item:bg-foreground group-data-pending/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-pending/item:rounded-md group-data-pending/item:text-transparent">
-            {isPlaceholder ? "Loading" : environment.display_name}
+            {isPlaceholder ? "Loading" : environment.name}
           </p>
         </Button>
         <div className="absolute top-1/2 right-1.25 size-9 -translate-y-1/2">
@@ -201,7 +201,7 @@ function DeleteTrigger({
   const { asyncPush } = useAsyncPush();
   const { environmentId } = useIdsFromPathname();
 
-  const textToConfirm = `Delete ${environment.display_name} permanently`;
+  const textToConfirm = `Delete ${environment.name} permanently`;
 
   const {
     query: { data: projectsData },
@@ -401,7 +401,7 @@ function RenameTrigger({
 
   const form = useAppForm({
     defaultValues: {
-      name: environment.display_name,
+      name: environment.name,
     },
     validators: {
       onChange: z
@@ -413,7 +413,7 @@ function RenameTrigger({
     onSubmit: async ({ formApi, value }) => {
       await updateEnvironment({
         id: environment.id,
-        displayName: value.name,
+        name: value.name,
         teamId,
         projectId,
       });
@@ -544,7 +544,7 @@ export function NewEnvironmentCard({ teamId, projectId }: { teamId: string; proj
     },
     onSubmit: async ({ formApi, value }) => {
       const res = await createEnvironment({
-        displayName: value.name,
+        name: value.name,
         teamId,
         projectId,
       });

@@ -260,7 +260,7 @@ function CreateEnvironmentDialog({
     },
     onSubmit: async ({ formApi, value }) => {
       const res = await createEnvironment({
-        displayName: value.name,
+        name: value.name,
         teamId,
         projectId,
       });

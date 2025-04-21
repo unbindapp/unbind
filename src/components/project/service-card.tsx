@@ -40,7 +40,7 @@ export default function ServiceCard({
           <div className="flex w-full items-center justify-start gap-2">
             <ServiceIcon service={service} className="-ml-1 size-6" />
             <h3 className="min-w-0 shrink overflow-hidden leading-tight font-bold text-ellipsis whitespace-nowrap">
-              {service.display_name}
+              {service.name}
             </h3>
           </div>
           <div className="flex w-full flex-1 flex-col justify-end">

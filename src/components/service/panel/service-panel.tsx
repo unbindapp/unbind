@@ -28,7 +28,7 @@ import { useAppForm } from "@/lib/hooks/use-app-form";
 import {
   serviceDescriptionMaxLength,
   ServiceDescriptionSchema,
-  ServiceDisplayNameSchema,
+  ServicenameSchema,
   serviceNameMaxLength,
   THost,
   TServiceShallow,
@@ -79,7 +79,7 @@ export default function ServicePanel({
       >
         <div className="flex w-full items-start justify-start gap-4 px-5 pt-4 sm:px-8 sm:pt-6">
           <DrawerHeader className="flex min-w-0 flex-1 items-center justify-start p-0">
-            <DrawerTitle className="sr-only">{service.display_name}</DrawerTitle>
+            <DrawerTitle className="sr-only">{service.name}</DrawerTitle>
             <TitleButton
               service={service}
               teamId={teamId}
@@ -138,25 +138,25 @@ function TitleButton({
 
   const form = useAppForm({
     defaultValues: {
-      displayName: service.display_name,
+      name: service.name,
       description: service.description,
     },
     validators: {
       onChange: z
         .object({
-          displayName: ServiceDisplayNameSchema,
+          name: ServicenameSchema,
           description: ServiceDescriptionSchema,
         })
         .strip(),
     },
     onSubmit: async ({ formApi, value }) => {
-      if (value.displayName !== service.display_name || value.description !== service.description) {
+      if (value.name !== service.name || value.description !== service.description) {
         await updateService({
           teamId,
           projectId,
           environmentId,
           serviceId: service.id,
-          displayName: value.displayName,
+          name: value.name,
           description: value.description,
         });
         await Promise.all([refetchService(), refetchServices()]);
@@ -189,7 +189,7 @@ function TitleButton({
         >
           <ServiceIcon service={service} color="brand" className="-ml-1 size-6 sm:size-7" />
           <p className="min-w-0 shrink text-left text-xl leading-tight sm:text-2xl">
-            {service.display_name}
+            {service.name}
           </p>
           <PenIcon className="ml-0.5 size-4 -rotate-30 opacity-0 transition group-focus-visible/button:rotate-0 group-focus-visible/button:opacity-100 group-active/button:rotate-0 group-active/button:opacity-100 has-hover:group-hover/button:rotate-0 has-hover:group-hover/button:opacity-100 sm:size-4.5" />
         </Button>
@@ -207,7 +207,7 @@ function TitleButton({
           className="flex w-full flex-col gap-2"
         >
           <form.AppField
-            name="displayName"
+            name="name"
             children={(field) => (
               <field.TextField
                 field={field}
@@ -215,7 +215,7 @@ function TitleButton({
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
                 className="w-full"
-                placeholder={service.display_name}
+                placeholder={service.name}
                 layout="label-included"
                 inputTitle="Service Name"
                 maxLength={serviceNameMaxLength}

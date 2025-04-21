@@ -16,18 +16,11 @@ export const VariableReferenceTypeSchema = z.enum([
 export const AvailableVariableReferenceSchema = z
   .object({
     keys: z.array(z.string()).nullable(),
-    name: z.string(),
+    kubernetes_name: z.string(),
     source_id: z.string(),
+    source_name: z.string(),
     source_type: VariableReferenceSourceTypeSchema,
     type: VariableReferenceTypeSchema,
-  })
-  .strip();
-
-export const AvailableVariableReferenceResponseSchema = z
-  .object({
-    external_endpoints: z.array(AvailableVariableReferenceSchema),
-    internal_endpoints: z.array(AvailableVariableReferenceSchema),
-    variables: z.array(AvailableVariableReferenceSchema),
   })
   .strip();
 
@@ -130,7 +123,7 @@ export const CreateBuildOutputBodySchema = z
 export const CreateEnvironmentInputSchema = z
   .object({
     description: z.string().nullable(),
-    display_name: z.string(),
+    name: z.string(),
     project_id: z.string(),
     team_id: z.string(),
   })
@@ -141,8 +134,8 @@ export const EnvironmentResponseSchema = z
     active: z.boolean(),
     created_at: z.string().datetime(),
     description: z.string(),
-    display_name: z.string(),
     id: z.string(),
+    kubernetes_name: z.string(),
     name: z.string(),
     service_count: z.number().optional(),
     service_icons: z.array(z.string()).optional(),
@@ -158,7 +151,7 @@ export const CreateEnvironmentResponseBodySchema = z
 export const CreateProjectInputBodySchema = z
   .object({
     description: z.string().nullable().optional(),
-    display_name: z.string(),
+    name: z.string(),
     team_id: z.string(),
   })
   .strip();
@@ -168,10 +161,10 @@ export const ProjectResponseSchema = z
     created_at: z.string().datetime(),
     default_environment_id: z.string().optional(),
     description: z.string().nullable(),
-    display_name: z.string(),
     environment_count: z.number(),
     environments: z.array(EnvironmentResponseSchema),
     id: z.string(),
+    kubernetes_name: z.string(),
     name: z.string(),
     service_count: z.number().optional(),
     service_icons: z.array(z.string()).optional(),
@@ -214,13 +207,13 @@ export const CreateServiceInputSchema = z
     database_config: z.record(z.any()).optional(),
     database_type: z.string().optional(),
     description: z.string().optional(),
-    display_name: z.string(),
     dockerfile_context: z.string().optional(), // Optional path to Dockerfile context, if using docker builder
     dockerfile_path: z.string().optional(), // Optional path to Dockerfile, if using docker builder
     environment_id: z.string(),
     github_installation_id: z.number().optional(),
     hosts: z.array(HostSpecSchema).nullable().optional(),
     image: z.string().optional(),
+    name: z.string(),
     ports: z.array(PortSpecSchema).nullable().optional(),
     project_id: z.string(),
     public: z.boolean().optional(),
@@ -257,12 +250,12 @@ export const ServiceResponseSchema = z
     created_at: z.string().datetime(),
     current_deployment: DeploymentResponseSchema.optional(),
     description: z.string(),
-    display_name: z.string(),
     environment_id: z.string(),
     git_repository: z.string().optional(),
     git_repository_owner: z.string().optional(),
     github_installation_id: z.number().optional(),
     id: z.string(),
+    kubernetes_name: z.string(),
     last_deployment: DeploymentResponseSchema.optional(),
     last_successful_deployment: DeploymentResponseSchema.optional(),
     name: z.string(),
@@ -273,42 +266,6 @@ export const ServiceResponseSchema = z
 export const CreateServiceResponseBodySchema = z
   .object({
     data: ServiceResponseSchema,
-  })
-  .strip();
-
-export const VariableReferenceSourceSchema = z
-  .object({
-    id: z.string(),
-    key: z.string(),
-    name: z.string(),
-    source_type: VariableReferenceSourceTypeSchema,
-    type: VariableReferenceTypeSchema,
-  })
-  .strip();
-
-export const CreateVariableReferenceInputSchema = z
-  .object({
-    sources: z.array(VariableReferenceSourceSchema), // The sources to reference in the template interpolation
-    target_name: z.string(), // The name of the target variable
-    target_service_id: z.string(), // The ID of the service to which this variable reference belongs
-    value_template: z.string(), // The template for the value of the variable reference, e.g. 'https://${sourcename.sourcekey}'
-  })
-  .strip();
-
-export const VariableReferenceResponseSchema = z
-  .object({
-    created_at: z.string().datetime(),
-    id: z.string(), // The ID of the variable reference
-    sources: z.array(VariableReferenceSourceSchema),
-    target_name: z.string(),
-    target_service_id: z.string(),
-    value_template: z.string(),
-  })
-  .strip();
-
-export const CreateVariableReferenceResponseBodySchema = z
-  .object({
-    data: VariableReferenceResponseSchema,
   })
   .strip();
 
@@ -447,10 +404,11 @@ export const DeleteVariablesInputBodySchema = z
   .object({
     environment_id: z.string().optional(), // If present without service_id, mutate environment variables - requires project_id
     project_id: z.string().optional(), // If present without environment_id, mutate team variables
+    reference_ids: z.array(z.string()).optional(),
     service_id: z.string().optional(), // If present, mutate service variables - requires project_id and environment_id
     team_id: z.string(),
     type: VariableReferenceSourceTypeSchema, // The type of variable
-    variables: z.array(VariableDeleteInputSchema).nullable(),
+    variables: z.array(VariableDeleteInputSchema).optional(),
   })
   .strip();
 
@@ -482,7 +440,7 @@ export const IngressEndpointSchema = z
   .object({
     environment_id: z.string(),
     hosts: z.array(ExtendedHostSpecSchema),
-    name: z.string(),
+    kubernetes_name: z.string(),
     project_id: z.string(),
     service_id: z.string(),
     team_id: z.string(),
@@ -493,7 +451,7 @@ export const ServiceEndpointSchema = z
   .object({
     dns: z.string(),
     environment_id: z.string(),
-    name: z.string(),
+    kubernetes_name: z.string(),
     ports: z.array(PortSpecSchema),
     project_id: z.string(),
     service_id: z.string(),
@@ -618,8 +576,8 @@ export const TeamResponseSchema = z
   .object({
     created_at: z.string().datetime(),
     description: z.string().nullable(),
-    display_name: z.string(),
     id: z.string(),
+    kubernetes_name: z.string(),
     name: z.string(),
   })
   .strip();
@@ -1014,7 +972,7 @@ export const QueryLogsResponseBodySchema = z
 
 export const ReferenceableVariablesResponseBodySchema = z
   .object({
-    data: AvailableVariableReferenceResponseSchema,
+    data: z.array(AvailableVariableReferenceSchema),
   })
   .strip();
 
@@ -1095,7 +1053,7 @@ export const UpdateProjectInputBodySchema = z
   .object({
     default_environment_id: z.string().optional(),
     description: z.string().nullable().optional(),
-    display_name: z.string().optional(),
+    name: z.string().optional(),
     project_id: z.string(),
     team_id: z.string(),
   })
@@ -1113,13 +1071,13 @@ export const UpdateServiceInputSchema = z
     builder: ServiceBuilderSchema.optional(),
     database_config: z.record(z.any()).optional(),
     description: z.string().nullable().optional(),
-    display_name: z.string().nullable().optional(),
     dockerfile_context: z.string().optional(), // Optional path to Dockerfile context, if using docker builder - set empty string to reset to default
     dockerfile_path: z.string().optional(), // Optional path to Dockerfile, if using docker builder - set empty string to reset to default
     environment_id: z.string(),
     git_branch: z.string().optional(),
     hosts: z.array(HostSpecSchema).nullable().optional(),
     image: z.string().optional(),
+    name: z.string().nullable().optional(),
     ports: z.array(PortSpecSchema).nullable().optional(),
     project_id: z.string(),
     public: z.boolean().optional(),
@@ -1133,7 +1091,7 @@ export const UpdateServiceInputSchema = z
 export const UpdateTeamInputBodySchema = z
   .object({
     description: z.string().nullable(),
-    display_name: z.string(),
+    name: z.string(),
     team_id: z.string(),
   })
   .strip();
@@ -1152,6 +1110,25 @@ export const UpdateWebhookResponseBodySchema = z
 
 export const VariableUpdateBehaviorSchema = z.enum(['upsert', 'overwrite']);
 
+export const VariableReferenceSourceSchema = z
+  .object({
+    id: z.string(),
+    key: z.string(),
+    kubernetes_name: z.string(),
+    source_name: z.string(),
+    source_type: VariableReferenceSourceTypeSchema,
+    type: VariableReferenceTypeSchema,
+  })
+  .strip();
+
+export const VariableReferenceInputItemSchema = z
+  .object({
+    sources: z.array(VariableReferenceSourceSchema), // The sources to reference in the template interpolation
+    target_name: z.string(), // The name of the target variable
+    value_template: z.string(), // The template for the value of the variable reference, e.g. 'https://${sourcename.sourcekey}'
+  })
+  .strip();
+
 export const UpsertVariablesInputBodySchema = z
   .object({
     behavior: VariableUpdateBehaviorSchema, // The behavior of the update - upsert or overwrite
@@ -1160,7 +1137,19 @@ export const UpsertVariablesInputBodySchema = z
     service_id: z.string().optional(), // If present, mutate service variables - requires project_id and environment_id
     team_id: z.string(),
     type: VariableReferenceSourceTypeSchema, // The type of variable
+    variable_references: z.array(VariableReferenceInputItemSchema).nullable().optional(),
     variables: z.array(ItemSchema).nullable(),
+  })
+  .strip();
+
+export const VariableReferenceResponseSchema = z
+  .object({
+    created_at: z.string().datetime(),
+    id: z.string(), // The ID of the variable reference
+    sources: z.array(VariableReferenceSourceSchema),
+    target_name: z.string(),
+    target_service_id: z.string(),
+    value_template: z.string(),
   })
   .strip();
 
@@ -1174,8 +1163,8 @@ export const VariableResponseItemSchema = z
 
 export const VariableResponseSchema = z
   .object({
-    items: z.array(VariableResponseItemSchema),
-    references: z.array(VariableReferenceResponseSchema),
+    variable_references: z.array(VariableReferenceResponseSchema),
+    variables: z.array(VariableResponseItemSchema),
   })
   .strip();
 
@@ -1222,9 +1211,6 @@ export const WebhookUpdateInputSchema = z
 export type VariableReferenceSourceType = z.infer<typeof VariableReferenceSourceTypeSchema>;
 export type VariableReferenceType = z.infer<typeof VariableReferenceTypeSchema>;
 export type AvailableVariableReference = z.infer<typeof AvailableVariableReferenceSchema>;
-export type AvailableVariableReferenceResponse = z.infer<
-  typeof AvailableVariableReferenceResponseSchema
->;
 export type BuildkitSettingsResponse = z.infer<typeof BuildkitSettingsResponseSchema>;
 export type BuildkitSettingsUpdateInputBody = z.infer<typeof BuildkitSettingsUpdateInputBodySchema>;
 export type BuildkitSettingsUpdateResponseBody = z.infer<
@@ -1253,12 +1239,6 @@ export type CreateServiceInput = z.infer<typeof CreateServiceInputSchema>;
 export type ServiceConfigResponse = z.infer<typeof ServiceConfigResponseSchema>;
 export type ServiceResponse = z.infer<typeof ServiceResponseSchema>;
 export type CreateServiceResponseBody = z.infer<typeof CreateServiceResponseBodySchema>;
-export type VariableReferenceSource = z.infer<typeof VariableReferenceSourceSchema>;
-export type CreateVariableReferenceInput = z.infer<typeof CreateVariableReferenceInputSchema>;
-export type VariableReferenceResponse = z.infer<typeof VariableReferenceResponseSchema>;
-export type CreateVariableReferenceResponseBody = z.infer<
-  typeof CreateVariableReferenceResponseBodySchema
->;
 export type WebhookTeamEvent = z.infer<typeof WebhookTeamEventSchema>;
 export type WebhookProjectEvent = z.infer<typeof WebhookProjectEventSchema>;
 export type WebhookType = z.infer<typeof WebhookTypeSchema>;
@@ -1373,7 +1353,10 @@ export type UpdateTeamInputBody = z.infer<typeof UpdateTeamInputBodySchema>;
 export type UpdateTeamResponseBody = z.infer<typeof UpdateTeamResponseBodySchema>;
 export type UpdateWebhookResponseBody = z.infer<typeof UpdateWebhookResponseBodySchema>;
 export type VariableUpdateBehavior = z.infer<typeof VariableUpdateBehaviorSchema>;
+export type VariableReferenceSource = z.infer<typeof VariableReferenceSourceSchema>;
+export type VariableReferenceInputItem = z.infer<typeof VariableReferenceInputItemSchema>;
 export type UpsertVariablesInputBody = z.infer<typeof UpsertVariablesInputBodySchema>;
+export type VariableReferenceResponse = z.infer<typeof VariableReferenceResponseSchema>;
 export type VariableResponseItem = z.infer<typeof VariableResponseItemSchema>;
 export type VariableResponse = z.infer<typeof VariableResponseSchema>;
 export type VariablesResponseBody = z.infer<typeof VariablesResponseBodySchema>;
@@ -3784,46 +3767,6 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             }
             const data = await response.json();
             return ReferenceableVariablesResponseBodySchema.parse(data);
-          } catch (error) {
-            console.error('Error in API request:', error);
-            throw error;
-          }
-        },
-        create: async (
-          params: CreateVariableReferenceInput,
-          fetchOptions?: RequestInit,
-        ): Promise<CreateVariableReferenceResponseBody> => {
-          try {
-            if (!apiUrl || typeof apiUrl !== 'string') {
-              throw new Error('API URL is undefined or not a string');
-            }
-            const url = new URL(`${apiUrl}/variables/references/create`);
-
-            const options: RequestInit = {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
-              },
-              ...fetchOptions,
-            };
-            const validatedBody = CreateVariableReferenceInputSchema.parse(params);
-            options.body = JSON.stringify(validatedBody);
-            const response = await fetch(url.toString(), options);
-            if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-              console.log(`Request body is:`, validatedBody);
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-            }
-            const data = await response.json();
-            return CreateVariableReferenceResponseBodySchema.parse(data);
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;

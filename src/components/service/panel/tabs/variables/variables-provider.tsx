@@ -99,7 +99,7 @@ export const useVariablesUtils = ({
             ...data,
             variables: {
               ...data.variables,
-              items: data.variables.items.filter((v1) => {
+              items: data.variables.filter((v1) => {
                 const shouldRemove = variables.some((v2) =>
                   areVariablesMatching({ variable1: v1, variable2: v2 }),
                 );
@@ -114,11 +114,8 @@ export const useVariablesUtils = ({
       utils.variables.list.setData(
         { teamId, projectId, environmentId, serviceId, type },
         (old) => ({
-          ...old,
-          variables: {
-            ...(old?.variables || { items: [], references: [] }),
-            items: variables,
-          },
+          variables,
+          variable_references: old?.variable_references || [],
         }),
       );
     },

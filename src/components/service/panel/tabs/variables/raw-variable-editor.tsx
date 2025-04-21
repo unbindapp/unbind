@@ -46,7 +46,7 @@ export default function RawVariableEditor({ children }: TProps) {
     update: { mutateAsync: overwriteVariables },
   } = useVariables();
 
-  const variables = variablesData?.variables.items;
+  const variables = variablesData?.variables;
   const [editorValue, setEditorValue] = useState(variables ? getEditorValue({ variables }) : "");
 
   const [open, setOpen] = useState(false);

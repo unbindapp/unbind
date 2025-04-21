@@ -8,7 +8,7 @@ import { useState } from "react";
 export default function VariablesHeader() {
   const [isOpen, setIsOpen] = useState(false);
   const {
-    list: { data, isPending },
+    list: { data: variablesData, isPending },
   } = useVariables();
 
   return (
@@ -19,11 +19,11 @@ export default function VariablesHeader() {
       <div className="flex w-full flex-col items-start justify-start gap-2.5 pt-1 sm:flex-row sm:items-center sm:justify-between sm:pt-0">
         <div className="min-w-0 shrink overflow-hidden px-1">
           <h2 className="group-data-pending/header:bg-foreground group-data-pending/header:animate-skeleton min-w-0 shrink truncate text-lg leading-tight font-bold group-data-pending/header:rounded-md group-data-pending/header:text-transparent">
-            {isPending || !data
+            {isPending || !variablesData
               ? "10 Variables"
-              : data.variables.items.length === 0
+              : variablesData.variables.length === 0
                 ? "No Variables"
-                : `${data.variables.items.length} Variable${data.variables.items.length > 1 ? "s" : ""}`}
+                : `${variablesData.variables.length} Variable${variablesData.variables.length > 1 ? "s" : ""}`}
           </h2>
         </div>
         <div className="flex items-center justify-end gap-1.5">

@@ -82,7 +82,7 @@ function useRepoItem({ context }: TProps) {
         builder: "railpack",
         repositoryOwner: owner,
         repositoryName: repoName,
-        displayName: repoName,
+        name: repoName,
         teamId: context.teamId,
         projectId,
         environmentId,

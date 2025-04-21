@@ -25,7 +25,7 @@ import {
   useState,
 } from "react";
 
-type Item<T> = T & { id: string; display_name: string };
+type Item<T> = T & { id: string; name: string };
 
 type TProps<T> = {
   title: string;
@@ -80,7 +80,7 @@ export function BreadcrumbItem<T>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  const newItem = newItemTitle ? ({ id: "new", display_name: newItemTitle } as Item<T>) : undefined;
+  const newItem = newItemTitle ? ({ id: "new", name: newItemTitle } as Item<T>) : undefined;
 
   const ConditionalNewItemWrapper = useCallback(
     ({ children }: { children: ReactNode }) => {
@@ -96,9 +96,7 @@ export function BreadcrumbItem<T>({
     <DropdownOrDrawer title={title} open={open} onOpenChange={setOpen}>
       <DropdownOrDrawerTrigger>
         <Trigger
-          item={
-            selectedItem === null ? { display_name: "Not Found", id: "not-found" } : selectedItem
-          }
+          item={selectedItem === null ? { name: "Not Found", id: "not-found" } : selectedItem}
           Icon={IconItem}
           flipChevronOnSm={flipChevronOnSm}
         />
@@ -246,7 +244,7 @@ function SheetItem<T>({
             <IconItem id={item.id} className="-my-1 -ml-1 size-5 shrink-0" />
           )
         ) : null}
-        <p className="min-w-0 shrink">{item.display_name}</p>
+        <p className="min-w-0 shrink">{item.name}</p>
       </div>
       <div className="group-data-pending/item:text-foreground relative -mr-0.5 size-5">
         {selectedItem?.id === item.id && (
@@ -325,7 +323,7 @@ function DropdownItem<T>({
             <IconItem id={item.id} className="-my-1 -ml-0.5 size-4.5 shrink-0" />
           )
         ) : null}
-        <p className="min-w-0 shrink">{item.display_name}</p>
+        <p className="min-w-0 shrink">{item.name}</p>
       </div>
       <div className="group-data-pending/item:text-foreground relative -mr-0.5 size-4.5 shrink-0 transition-transform group-data-highlighted/item:group-data-show-arrow/item:rotate-90">
         {selectedItem?.id === item.id && (
@@ -374,7 +372,7 @@ function Trigger<T>({
       </div>
       {Icon && item && <Icon id={item.id} className="relative size-4.5" />}
       <p className="group-data-pending/button:bg-foreground group-data-pending/button:animate-skeleton relative truncate py-0.5 leading-none group-data-pending/button:rounded-sm group-data-pending/button:text-transparent">
-        {item == undefined ? "Loading" : item?.display_name}
+        {item == undefined ? "Loading" : item?.name}
       </p>
       <ChevronDownIcon
         data-flip-chevron-sm={flipChevronOnSm ? true : undefined}

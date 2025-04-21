@@ -74,15 +74,19 @@ export default function CreateVariablesForm({
 
   const tokens = useMemo(() => {
     if (!variableReferencesData) return undefined;
-    const allVariableObjects = [
-      ...variableReferencesData.data.internal_endpoints,
-      ...variableReferencesData.data.external_endpoints,
-      ...variableReferencesData.data.variables,
-    ];
     const allKeys: string[] = [];
-    for (const obj of allVariableObjects) {
-      obj.keys?.forEach((key) => {
-        allKeys.push(`\${${obj.name}.${key}}`);
+    for (const obj of variableReferencesData.variables) {
+      obj.keys?.forEach((key, index) => {
+        let variableName = key;
+        const number = index + 1;
+        if (obj.type === "internal_endpoint") {
+          variableName = `UNBIND_INTERNAL_URL`;
+          if (number > 1) variableName += `_${number}`;
+        } else if (obj.type === "external_endpoint") {
+          variableName = `UNBIND_EXTERNAL_URL`;
+          if (number > 1) variableName += `_${number}`;
+        }
+        allKeys.push(`\${${obj.source_name}.${variableName}}`);
       });
     }
     return allKeys;

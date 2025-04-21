@@ -44,7 +44,7 @@ export default function ProjectCard({ project, className }: TProps) {
         className="bg-background-hover flex min-h-36 w-full flex-col items-start gap-12 rounded-xl border px-5 py-3.5 text-left"
       >
         <h3 className="w-full overflow-hidden leading-tight font-bold text-ellipsis whitespace-nowrap">
-          {project.display_name}
+          {project.name}
         </h3>
         <div className="flex w-full flex-1 flex-col justify-end">
           <div className="text-muted-foreground flex w-full items-center justify-between gap-3">

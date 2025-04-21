@@ -29,14 +29,14 @@ export default function GeneralTabContent({ teamId }: TProps) {
         onSubmit={async (value) => {
           await updateTeam({
             description: value.description || "",
-            displayName: value.displayName,
+            name: value.name,
             teamId,
           });
           await Promise.all([refetchTeam(), refetchTeams()]);
         }}
-        displayName={data?.team.display_name}
+        name={data?.team.name}
         description={data?.team.description}
-        displayNameMaxLength={teamNameMaxLength}
+        nameMaxLength={teamNameMaxLength}
         descriptionMaxLength={teamDescriptionMaxLength}
         error={error}
         schema={TeamUpdateFormSchema}

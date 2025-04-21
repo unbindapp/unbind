@@ -30,15 +30,15 @@ export default function GeneralTabContent({ teamId, projectId }: TProps) {
         onSubmit={async (value) => {
           await updateProject({
             description: value.description || "",
-            displayName: value.displayName,
+            name: value.name,
             projectId,
             teamId,
           });
           await Promise.all([refetchProject(), refetchProjects()]);
         }}
-        displayName={data?.project.display_name}
+        name={data?.project.name}
         description={data?.project.description}
-        displayNameMaxLength={projectNameMaxLength}
+        nameMaxLength={projectNameMaxLength}
         descriptionMaxLength={projectDescriptionMaxLength}
         error={error}
         schema={ProjectUpdateFormSchema}

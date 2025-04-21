@@ -222,7 +222,7 @@ function Logs({
         logLine={logLine}
         serviceName={
           servicesData.services.find((service) => service.id === logLine.metadata.service_id)
-            ?.display_name ||
+            ?.name ||
           logLine.metadata.service_id ||
           "Unknown"
         }

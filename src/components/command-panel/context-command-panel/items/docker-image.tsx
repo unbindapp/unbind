@@ -79,7 +79,7 @@ export default function useDockerImageItem({ context }: TProps) {
       const result = await createServiceViaApi({
         type: "docker-image",
         builder: "docker",
-        displayName: imageNameWithoutTag,
+        name: imageNameWithoutTag,
         teamId: context.teamId,
         projectId,
         environmentId,

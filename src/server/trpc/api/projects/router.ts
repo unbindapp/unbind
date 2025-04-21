@@ -53,12 +53,12 @@ export const projectsRouter = createTRPCRouter({
       z
         .object({
           teamId: z.string().uuid(),
-          displayName: z.string().optional(),
+          name: z.string().optional(),
           description: z.string().optional(),
         })
         .strip(),
     )
-    .mutation(async function ({ input: { teamId, displayName, description }, ctx }) {
+    .mutation(async function ({ input: { teamId, name, description }, ctx }) {
       const { session, goClient } = ctx;
       if (!session) {
         throw new TRPCError({
@@ -66,11 +66,11 @@ export const projectsRouter = createTRPCRouter({
           message: "You need to be logged in to access this resource",
         });
       }
-      const defaultDisplayName = generateProjectName();
+      const defaultname = generateProjectName();
 
       const res = await goClient.projects.create({
         team_id: teamId,
-        display_name: displayName || defaultDisplayName,
+        name: name || defaultname,
         description,
       });
       return {
@@ -87,7 +87,7 @@ export const projectsRouter = createTRPCRouter({
         .strip()
         .merge(ProjectUpdateFormSchema),
     )
-    .mutation(async function ({ input: { displayName, description, teamId, projectId }, ctx }) {
+    .mutation(async function ({ input: { name, description, teamId, projectId }, ctx }) {
       const { session, goClient } = ctx;
       if (!session) {
         throw new TRPCError({
@@ -99,7 +99,7 @@ export const projectsRouter = createTRPCRouter({
       const res = await goClient.projects.update({
         team_id: teamId,
         project_id: projectId,
-        display_name: displayName,
+        name: name,
         description,
       });
 

@@ -37,7 +37,7 @@ export const variablesRouter = createTRPCRouter({
         type,
       });
       return {
-        variables: res.data,
+        ...res.data,
       };
     }),
   update: publicProcedure
@@ -141,7 +141,7 @@ export const variablesRouter = createTRPCRouter({
         service_id: serviceId,
       });
       return {
-        data: res.data,
+        variables: res.data,
       };
     }),
 });
