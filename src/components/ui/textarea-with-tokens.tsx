@@ -33,7 +33,7 @@ const variants = cva(
 
 const placeholderArray = Array.from({ length: 10 }, (_, index) => index);
 
-export type TTextareaWithTagsProps = TextareaAutosizeProps &
+export type TTextareaWithTokensProps = TextareaAutosizeProps &
   RefAttributes<HTMLTextAreaElement> &
   VariantProps<typeof variants> & {
     classNameTextarea?: string;
@@ -47,7 +47,7 @@ export type TTextareaWithTagsProps = TextareaAutosizeProps &
     DropdownButtonIcon?: FC<{ className?: string }>;
   };
 
-export default function TextareaWithTags({
+export default function TextareaWithTokens({
   variant,
   fadeOnDisabled,
   className,
@@ -63,7 +63,7 @@ export default function TextareaWithTags({
   value,
   onChange,
   ...props
-}: TTextareaWithTagsProps) {
+}: TTextareaWithTokensProps) {
   const [textareaValue, setTextareaValue] = useState(value as string);
   const [search, setSearch] = useState("");
   const [selectedCommandValue, setSelectedCommandValue] = useState("");
@@ -277,7 +277,7 @@ export default function TextareaWithTags({
                   <span
                     data-token={part.isToken ? true : undefined}
                     key={index}
-                    className="data-token:bg-success/10 data-token:ring-input data-token:text-success data-token:rounded-[4px] data-token:ring-1"
+                    className="data-token:bg-success/8 data-token:ring-success/24 data-token:text-success data-token:rounded-[4px] data-token:ring-1"
                   >
                     {part.isToken ? (
                       <>
@@ -367,7 +367,10 @@ export default function TextareaWithTags({
         </div>
       </PopoverTrigger>
       <PopoverContent
-        className={cn("overflow-hidden rounded-lg p-0", classNameDropdownContent)}
+        className={cn(
+          "flex h-64 max-h-[min(30rem,var(--radix-popper-available-height))] flex-col overflow-hidden rounded-lg p-0",
+          classNameDropdownContent,
+        )}
         onOpenAutoFocus={(e) => e.preventDefault()}
         onCloseAutoFocus={(e) => e.preventDefault()}
         onInteractOutside={(e) => {
@@ -381,10 +384,10 @@ export default function TextareaWithTags({
           value={selectedCommandValue}
           onValueChange={setSelectedCommandValue}
           variant="default"
-          className="h-64 max-h-[min(30rem,var(--radix-popper-available-height))] overflow-auto rounded-none border-none bg-transparent shadow-none"
+          className="flex flex-1 flex-col rounded-none border-none bg-transparent shadow-none"
           shouldFilter={false}
         >
-          <ScrollArea>
+          <ScrollArea className="flex flex-1 flex-col">
             <CommandList>
               <CommandGroup>
                 {filteredItems && filteredItems.length === 0 && (

@@ -195,7 +195,7 @@ export default function CreateVariablesForm({
                             >
                               {(subField) => {
                                 return (
-                                  <field.TextareaWithTags
+                                  <field.TextareaWithTokens
                                     dontCheckUntilSubmit
                                     field={subField}
                                     value={subField.state.value}

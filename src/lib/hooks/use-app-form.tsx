@@ -1,7 +1,7 @@
 import ErrorLine from "@/components/error-line";
 import { Button } from "@/components/ui/button";
 import { Input, InputProps } from "@/components/ui/input";
-import TextareaWithTags, { TTextareaWithTagsProps } from "@/components/ui/textarea-with-tags";
+import TextareaWithTokens, { TTextareaWithTokensProps } from "@/components/ui/textarea-with-tokens";
 import { cn } from "@/components/ui/utils";
 import {
   AnyFieldApi,
@@ -49,7 +49,7 @@ function InputWithInfo({
   );
 }
 
-function TextareaWithTagsWithInfo({
+function TextareaWithTokensWithInfo({
   className,
   hideInfo,
   field,
@@ -57,7 +57,7 @@ function TextareaWithTagsWithInfo({
   infoClassName,
   dontCheckUntilSubmit,
   ...rest
-}: TTextareaWithTagsProps & {
+}: TTextareaWithTokensProps & {
   field: AnyFieldApi;
   hideInfo?: boolean;
   textareaClassName?: string;
@@ -68,12 +68,12 @@ function TextareaWithTagsWithInfo({
   const isFormSubmitted = submissionAttempts > 0;
 
   if (hideInfo) {
-    return <TextareaWithTags {...rest} className={cn("w-full", className, textareaClassName)} />;
+    return <TextareaWithTokens {...rest} className={cn("w-full", className, textareaClassName)} />;
   }
 
   return (
     <div className={cn("flex flex-col", className)}>
-      <TextareaWithTags {...rest} className={cn("w-full", textareaClassName)} />
+      <TextareaWithTokens {...rest} className={cn("w-full", textareaClassName)} />
       {(field.state.meta.isTouched || isFormSubmitted) &&
       (field.state.meta.isBlurred || isFormSubmitted) &&
       (!dontCheckUntilSubmit || isFormSubmitted) &&
@@ -91,7 +91,7 @@ export const { useAppForm } = createFormHook({
   fieldComponents: {
     TextField: InputWithInfo,
     NumberField: InputWithInfo,
-    TextareaWithTags: TextareaWithTagsWithInfo,
+    TextareaWithTokens: TextareaWithTokensWithInfo,
   },
   formComponents: {
     SubmitButton: Button,
