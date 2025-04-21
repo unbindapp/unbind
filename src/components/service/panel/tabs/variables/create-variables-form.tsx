@@ -170,7 +170,7 @@ export default function CreateVariablesForm({
                         <div
                           key={`secret-${i}`}
                           data-first={i === 0 ? true : undefined}
-                          className="flex w-full flex-col gap-2 p-3 md:-mt-7 md:flex-row md:p-4 md:data-first:mt-0 lg:-mt-7"
+                          className="relative flex w-full flex-col gap-2 p-3 md:-mt-7 md:flex-row md:items-start md:p-4 md:data-first:mt-0 lg:-mt-7"
                         >
                           <form.Field key={`variables[${i}].name`} name={`variables[${i}].name`}>
                             {(subField) => {
@@ -183,7 +183,7 @@ export default function CreateVariablesForm({
                                   onChange={(e) => subField.handleChange(e.target.value)}
                                   placeholder="CLIENT_KEY"
                                   inputClassName="font-mono"
-                                  className="flex-1 md:max-w-64"
+                                  className="mr-12.5 flex-1 md:mr-0 md:max-w-64"
                                   autoCapitalize="off"
                                   autoCorrect="off"
                                   autoComplete="off"
@@ -192,63 +192,58 @@ export default function CreateVariablesForm({
                               );
                             }}
                           </form.Field>
-                          <div className="flex flex-1 items-start gap-2">
-                            <form.Field
-                              key={`variables[${i}].value`}
-                              name={`variables[${i}].value`}
-                            >
-                              {(subField) => {
-                                return (
-                                  <field.TextareaWithTokens
-                                    dontCheckUntilSubmit
-                                    field={subField}
-                                    value={subField.state.value}
-                                    onBlur={subField.handleBlur}
-                                    onChange={(e) => subField.handleChange(e.target.value)}
-                                    classNameTextarea="font-mono"
-                                    classNameDropdownContent="font-mono"
-                                    className="flex-1"
-                                    placeholder="abc123"
-                                    tokenPrefix="${"
-                                    tokenSuffix="}"
-                                    tokens={tokens}
-                                    tokensErrorMessage={variableReferencesError?.message || null}
-                                    dropdownButtonText="Reference"
-                                    DropdownButtonIcon={LinkIcon}
-                                    autoCapitalize="off"
-                                    autoCorrect="off"
-                                    autoComplete="off"
-                                    spellCheck="false"
-                                  />
-                                );
-                              }}
-                            </form.Field>
-                            <form.Subscribe
-                              selector={(state) => [state.values.variables[0]]}
-                              children={([firsTVariable]) => (
-                                <Button
-                                  disabled={
-                                    field.state.value.length <= 1 &&
-                                    firsTVariable.name === "" &&
-                                    firsTVariable.value === ""
+                          <form.Field key={`variables[${i}].value`} name={`variables[${i}].value`}>
+                            {(subField) => {
+                              return (
+                                <field.TextareaWithTokens
+                                  dontCheckUntilSubmit
+                                  field={subField}
+                                  value={subField.state.value}
+                                  onBlur={subField.handleBlur}
+                                  onChange={(e) => subField.handleChange(e.target.value)}
+                                  classNameTextarea="font-mono"
+                                  classNameDropdownContent="font-mono"
+                                  className="flex-1"
+                                  placeholder="abc123"
+                                  tokenPrefix="${"
+                                  tokenSuffix="}"
+                                  tokens={tokens}
+                                  tokensErrorMessage={variableReferencesError?.message || null}
+                                  dropdownButtonText="Reference"
+                                  DropdownButtonIcon={LinkIcon}
+                                  autoCapitalize="off"
+                                  autoCorrect="off"
+                                  autoComplete="off"
+                                  spellCheck="false"
+                                />
+                              );
+                            }}
+                          </form.Field>
+                          <form.Subscribe
+                            selector={(state) => [state.values.variables[0]]}
+                            children={([firsTVariable]) => (
+                              <Button
+                                disabled={
+                                  field.state.value.length <= 1 &&
+                                  firsTVariable.name === "" &&
+                                  firsTVariable.value === ""
+                                }
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                className="absolute top-3 right-3 h-10.5 w-10.5 md:relative md:top-auto md:right-auto"
+                                onClick={() => {
+                                  if (field.state.value.length <= 1) {
+                                    form.reset();
+                                    return;
                                   }
-                                  type="button"
-                                  variant="outline"
-                                  size="icon"
-                                  className="h-10.5 w-10.5"
-                                  onClick={() => {
-                                    if (field.state.value.length <= 1) {
-                                      form.reset();
-                                      return;
-                                    }
-                                    field.removeValue(i);
-                                  }}
-                                >
-                                  <TrashIcon className="size-5" />
-                                </Button>
-                              )}
-                            />
-                          </div>
+                                  field.removeValue(i);
+                                }}
+                              >
+                                <TrashIcon className="size-5" />
+                              </Button>
+                            )}
+                          />
                         </div>
                       </div>
                     );
