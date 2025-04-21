@@ -201,7 +201,8 @@ export default function CreateVariablesForm({
                                     value={subField.state.value}
                                     onBlur={subField.handleBlur}
                                     onChange={(e) => subField.handleChange(e.target.value)}
-                                    textareaClassName="font-mono"
+                                    classNameTextarea="font-mono"
+                                    classNameDropdownContent="font-mono"
                                     className="flex-1"
                                     placeholder="abc123"
                                     tokenPrefix="${"

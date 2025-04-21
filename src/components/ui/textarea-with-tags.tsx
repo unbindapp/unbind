@@ -10,6 +10,7 @@ import { SearchIcon } from "lucide-react";
 import { FC, RefAttributes, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import TextareaAutosize, { TextareaAutosizeProps } from "react-textarea-autosize";
+import Fuse from "fuse.js";
 
 const variants = cva(
   "flex px-3 font-medium placeholder:font-medium border-border placeholder:text-foreground/50 py-2.5 leading-tight w-full rounded-lg border transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground/75 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-primary/50 disabled:cursor-not-allowed",
@@ -36,6 +37,8 @@ export type TTextareaWithTagsProps = TextareaAutosizeProps &
   RefAttributes<HTMLTextAreaElement> &
   VariantProps<typeof variants> & {
     classNameTextarea?: string;
+    classNameDropdownContent?: string;
+    classNameDropdownButton?: string;
     tokenPrefix: string;
     tokenSuffix: string;
     tokens: string[] | undefined;
@@ -49,6 +52,8 @@ export default function TextareaWithTags({
   fadeOnDisabled,
   className,
   classNameTextarea,
+  classNameDropdownContent,
+  classNameDropdownButton,
   tokenPrefix,
   tokenSuffix,
   tokens,
@@ -64,7 +69,17 @@ export default function TextareaWithTags({
   const [selectedCommandValue, setSelectedCommandValue] = useState("");
   const [open, setOpen] = useState(false);
 
-  const [filteredItems, setFilteredItems] = useState(tokens);
+  const fuse = useMemo(() => {
+    if (!tokens) return null;
+    return new Fuse(
+      tokens.map((i) => ({ name: i })),
+      { keys: ["name"] },
+    );
+  }, [tokens]);
+
+  const [filteredItems, setFilteredItems] = useState(
+    tokens ? tokens.sort(tokensDefaultSort) : undefined,
+  );
   const textParts = useMemo(
     () =>
       tokens ? splitByTokens(textareaValue, tokens) : [{ value: textareaValue, isToken: false }],
@@ -216,12 +231,19 @@ export default function TextareaWithTags({
   // Controls the filtered items based on the search value
   useEffect(() => {
     if (!tokens) return;
-    const filtered = tokens.filter(
-      (token) =>
-        token.toLowerCase().includes(search.toLowerCase()) ||
-        search.toLowerCase().includes(token.toLowerCase()),
-    );
+
+    if (!search.trim()) {
+      setFilteredItems(tokens.sort((a, b) => a.localeCompare(b)));
+      if (tokens.length > 0) {
+        setSelectedCommandValue(tokens[0]);
+      }
+      return;
+    }
+
+    const filtered =
+      fuse?.search({ name: search }).map((i) => i.item.name) || tokensDefaultSearch(tokens, search);
     setFilteredItems(filtered);
+
     if (filtered.length > 0) {
       setSelectedCommandValue(filtered[0]);
     }
@@ -233,7 +255,7 @@ export default function TextareaWithTags({
         onClick={(e) => e.preventDefault()}
         asChild
         className={cn(
-          "bg-input focus-within:ring-foreground/50 relative rounded-lg border text-left font-mono focus-within:ring-1",
+          "bg-input focus-within:ring-foreground/50 relative rounded-lg border text-left focus-within:ring-1",
           className,
         )}
       >
@@ -259,7 +281,7 @@ export default function TextareaWithTags({
                   >
                     {part.isToken ? (
                       <>
-                        <span className="text-success/60">
+                        <span className="text-success/50">
                           {part.value.slice(0, tokenPrefix.length)}
                         </span>
                         <span>
@@ -268,7 +290,7 @@ export default function TextareaWithTags({
                             part.value.length - tokenSuffix.length,
                           )}
                         </span>
-                        <span className="text-success/60">
+                        <span className="text-success/50">
                           {part.value.slice(
                             part.value.length - tokenSuffix.length,
                             part.value.length,
@@ -329,7 +351,10 @@ export default function TextareaWithTags({
                 }
                 textareaRef.current?.focus();
               }}
-              className="text-muted-foreground group/button mt-1 mr-1 mb-auto h-8 px-2 font-sans font-semibold"
+              className={cn(
+                "text-muted-foreground group/button mt-1 mr-1 mb-auto h-8 px-2 font-semibold",
+                classNameDropdownButton,
+              )}
             >
               {DropdownButtonIcon && <DropdownButtonIcon className="size-4" />}
               {dropdownButtonText && (
@@ -342,9 +367,14 @@ export default function TextareaWithTags({
         </div>
       </PopoverTrigger>
       <PopoverContent
-        className="overflow-hidden rounded-lg p-0"
+        className={cn("overflow-hidden rounded-lg p-0", classNameDropdownContent)}
         onOpenAutoFocus={(e) => e.preventDefault()}
         onCloseAutoFocus={(e) => e.preventDefault()}
+        onInteractOutside={(e) => {
+          e.preventDefault();
+          setOpen(false);
+          requestAnimationFrame(() => textareaRef.current?.focus());
+        }}
       >
         <Command
           ref={commandRef}
@@ -393,7 +423,7 @@ export default function TextareaWithTags({
                         const newValue = `${beforeCursor}${v}${afterCursor}`;
                         setTextareaValueAndTriggerOnChange(newValue);
                         setOpen(false);
-                        setTimeout(() => {
+                        requestAnimationFrame(() => {
                           input.focus();
                           input.setSelectionRange(newValue.length, newValue.length);
                         });
@@ -523,4 +553,18 @@ function getBeforeAndAfterCursor({
     beforeCursor: `${beforeFirstPart}${beforeSecondPartEdited}`,
     afterCursor,
   };
+}
+
+function tokensDefaultSort(a: string, b: string) {
+  return a.localeCompare(b);
+}
+
+function tokensDefaultSearch(tokens: string[], search: string) {
+  return tokens
+    .filter(
+      (token: string) =>
+        token.toLowerCase().includes(search.toLowerCase()) ||
+        search.toLowerCase().includes(token.toLowerCase()),
+    )
+    .sort(tokensDefaultSort);
 }
