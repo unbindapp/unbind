@@ -42,6 +42,8 @@ export type TTextareaWithTokensProps = TextareaAutosizeProps &
     tokenPrefix: string;
     tokenSuffix: string;
     tokens: string[] | undefined;
+    tokensNoneAvailableMessage: string;
+    tokensNoMatchingMessage: string;
     tokensErrorMessage: string | null;
     dropdownButtonText?: string;
     DropdownButtonIcon?: FC<{ className?: string }>;
@@ -58,6 +60,8 @@ export default function TextareaWithTokens({
   tokenSuffix,
   tokens,
   tokensErrorMessage,
+  tokensNoneAvailableMessage,
+  tokensNoMatchingMessage,
   dropdownButtonText,
   DropdownButtonIcon,
   value,
@@ -168,13 +172,13 @@ export default function TextareaWithTokens({
     (valueOrFuncion: string | ((prev: string) => string)) => {
       const textareaPrev = textareaValue;
       setTextareaValue(valueOrFuncion);
-      if (
-        textareaPrev.length > textareaValue.length &&
-        textareaPrev.endsWith(trigger) &&
-        !textareaValue.endsWith(trigger)
-      ) {
+
+      const prevTriggerCount = textareaPrev.split(trigger).length - 1;
+      const newTriggerCount = textareaValue.split(trigger).length - 1;
+      if (textareaPrev.length > textareaValue.length && prevTriggerCount > newTriggerCount) {
         setOpen(false);
       }
+
       if (onChange) {
         const value =
           typeof valueOrFuncion === "function" ? valueOrFuncion(textareaValue) : valueOrFuncion;
@@ -318,13 +322,13 @@ export default function TextareaWithTokens({
                   const prev = textareaValue;
                   const newValue = e.target.value;
                   setTextareaValue(newValue);
-                  if (
-                    prev.length > newValue.length &&
-                    prev.endsWith(trigger) &&
-                    !newValue.endsWith(trigger)
-                  ) {
+
+                  const prevTriggerCount = prev.split(trigger).length - 1;
+                  const newTriggerCount = newValue.split(trigger).length - 1;
+                  if (prev.length > newValue.length && prevTriggerCount > newTriggerCount) {
                     setOpen(false);
                   }
+
                   if (onChange) {
                     onChange(e);
                   }
@@ -348,9 +352,6 @@ export default function TextareaWithTokens({
               data-has-value={textareaValue ? true : undefined}
               size="sm"
               variant="outline"
-              onFocus={() => {
-                console.log("asdfasd");
-              }}
               onClick={() => {
                 const newOpen = !open;
                 setOpen((prev) => !prev);
@@ -400,7 +401,11 @@ export default function TextareaWithTokens({
                 {filteredItems && filteredItems.length === 0 && (
                   <CommandEmpty className="text-muted-foreground flex items-start justify-start gap-2 px-3 py-2.25 leading-tight">
                     <SearchIcon className="mt-0.5 -ml-0.5 inline-block size-4 shrink-0" />
-                    <p className="min-w-0 shrink">No matching items</p>
+                    <p className="min-w-0 shrink">
+                      {tokens && tokens.length === 0
+                        ? tokensNoneAvailableMessage
+                        : tokensNoMatchingMessage}
+                    </p>
                   </CommandEmpty>
                 )}
                 {tokensErrorMessage && !filteredItems && (

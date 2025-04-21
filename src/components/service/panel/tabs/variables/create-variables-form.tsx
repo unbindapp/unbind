@@ -212,6 +212,8 @@ export default function CreateVariablesForm({
                                   tokenPrefix="${"
                                   tokenSuffix="}"
                                   tokens={tokens}
+                                  tokensNoneAvailableMessage="No references available yet"
+                                  tokensNoMatchingMessage="No matching references"
                                   tokensErrorMessage={variableReferencesError?.message || null}
                                   dropdownButtonText="Reference"
                                   DropdownButtonIcon={LinkIcon}
