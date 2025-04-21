@@ -247,7 +247,7 @@ export default function TextareaWithTags({
     if (filtered.length > 0) {
       setSelectedCommandValue(filtered[0]);
     }
-  }, [search, tokens]);
+  }, [search, tokens, fuse]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
