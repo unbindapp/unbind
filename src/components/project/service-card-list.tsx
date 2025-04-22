@@ -2,15 +2,18 @@
 
 import ContextCommandPanel from "@/components/command-panel/context-command-panel/context-command-panel";
 import { TContextCommandPanelContext } from "@/components/command-panel/types";
+import ErrorCard from "@/components/error-card";
 import ServiceCard from "@/components/project/service-card";
 import { useServices } from "@/components/project/services-provider";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import { useMemo } from "react";
 
+const placeholderArray = Array.from({ length: 3 });
+
 export default function ServiceCardList() {
   const {
-    query: { data },
+    query: { data, isPending, error },
     teamId,
     projectId,
     environmentId,
@@ -24,6 +27,16 @@ export default function ServiceCardList() {
 
   return (
     <ol className="flex w-full flex-wrap">
+      {!isPending && !services && error && (
+        <li className="w-full p-1">
+          <ErrorCard message={error.message} />
+        </li>
+      )}
+      {isPending &&
+        !services &&
+        placeholderArray.map((_, index) => (
+          <ServiceCard key={index} isPlaceholder className="w-full md:w-1/2 lg:w-1/3" />
+        ))}
       {services && services.length === 0 && (
         <li className="flex w-full flex-col p-1 sm:w-1/2 lg:w-1/3">
           <ContextCommandPanel

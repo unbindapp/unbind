@@ -43,7 +43,9 @@ export const projectsRouter = createTRPCRouter({
           message: "You need to be logged in to access this resource",
         });
       }
+
       const res = await goClient.projects.list({ team_id: teamId });
+
       return {
         projects: res.data || [],
       };

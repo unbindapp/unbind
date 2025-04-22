@@ -23,11 +23,13 @@ export const servicesRouter = createTRPCRouter({
           message: "You need to be logged in to access this resource",
         });
       }
+
       const services = await goClient.services.list({
         team_id: teamId,
         project_id: projectId,
         environment_id: environmentId,
       });
+
       return {
         services: services.data || [],
       };

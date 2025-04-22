@@ -37,10 +37,8 @@ export default async function Page({ params }: TProps) {
     return notFound();
   }
 
-  console.log("Team page for teamId:", teamId);
-
   return (
-    <ProjectsProvider initialData={projectsInitialData.value} teamId={teamId}>
+    <ProjectsProvider teamId={teamId} initialData={projectsInitialData.value}>
       <PageWrapper>
         <div className="flex w-full max-w-7xl flex-col">
           <div className="flex w-full flex-wrap items-center justify-between gap-4 px-1">

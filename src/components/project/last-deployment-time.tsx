@@ -4,19 +4,17 @@ import { TService } from "@/server/trpc/api/services/types";
 
 type TProps = {
   service: TService;
+  className?: string;
 };
 
-export default function LastDeploymentTime({ service }: TProps) {
+export default function LastDeploymentTime({ service, className }: TProps) {
   const lastDeployment = service.last_deployment;
   const { str: timeDiffStr } = useTimeDifference({
     timestamp: lastDeployment ? new Date(lastDeployment.created_at).getTime() : 0,
   });
 
   return (
-    <p
-      suppressHydrationWarning
-      className="min-w-0 shrink overflow-hidden text-sm font-medium text-ellipsis whitespace-nowrap"
-    >
+    <p suppressHydrationWarning className={className}>
       {lastDeployment
         ? `${timeDiffStr} via ${sourceToTitle[service.config.type] || "Unknown"}`
         : "No deployments yet"}

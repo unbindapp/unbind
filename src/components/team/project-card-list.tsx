@@ -2,6 +2,7 @@
 
 import ContextCommandPanel from "@/components/command-panel/context-command-panel/context-command-panel";
 import { TContextCommandPanelContext } from "@/components/command-panel/types";
+import ErrorCard from "@/components/error-card";
 import { useProjects } from "@/components/project/projects-provider";
 import ProjectCard from "@/components/team/project-card";
 import { Button } from "@/components/ui/button";
@@ -12,8 +13,10 @@ type TProps = {
   teamId: string;
 };
 
+const placeholderArray = Array.from({ length: 3 });
+
 export default function ProjectCardList({ teamId }: TProps) {
-  const { data } = useProjects();
+  const { data, isPending, error } = useProjects();
   const projects = data?.projects;
 
   const context: TContextCommandPanelContext = useMemo(
@@ -23,6 +26,16 @@ export default function ProjectCardList({ teamId }: TProps) {
 
   return (
     <ol className="flex w-full flex-wrap">
+      {!isPending && !projects && error && (
+        <li className="w-full p-1">
+          <ErrorCard message={error.message} />
+        </li>
+      )}
+      {isPending &&
+        !projects &&
+        placeholderArray.map((_, index) => (
+          <ProjectCard key={index} isPlaceholder className="w-full md:w-1/2 lg:w-1/3" />
+        ))}
       {projects && projects.length === 0 && (
         <li className="flex w-full flex-col p-1 sm:w-1/2 lg:w-1/3">
           <ContextCommandPanel

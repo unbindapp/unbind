@@ -36,14 +36,12 @@ export default async function Page({ params, searchParams }: TProps) {
     return notFound();
   }
 
-  console.log("Project page for projectId:", projectId);
-
   return (
     <ServicesProvider
-      initialData={initialData.value}
       teamId={teamId}
       projectId={projectId}
       environmentId={environmentId}
+      initialData={initialData.value}
     >
       <PageWrapper>
         <div className="flex w-full max-w-7xl flex-col">
