@@ -492,6 +492,13 @@ function Item({
   fadeOnDisabled?: boolean;
   currentPageId: string;
 }) {
+  const highlightedValue = useCommandState((s) => s.value);
+  const isHighlighted = highlightedValue === item.title;
+
+  useEffect(() => {
+    if (isHighlighted) item.onHighlight?.();
+  }, [isHighlighted, item]);
+
   const isPendingId = useCommandPanelStore((s) => s.isPendingId);
   const setPrevItemId = useCommandPanelStore((s) => s.setPrevItemId);
   const clearInputValue = useCommandPanelStore((s) => s.clearInputValue);
@@ -533,6 +540,7 @@ function Item({
       keywords={item.keywords}
       className="group/item active:bg-border flex w-full flex-row items-center justify-between gap-6 px-3.5 py-3 text-left font-medium data-placeholder:text-transparent"
       onSelect={onSelect}
+      onFocus={() => console.log("onFocus", item.title)}
       disabled={disabled}
       fadeOnDisabled={fadeOnDisabled}
     >

@@ -17,6 +17,7 @@ import {
   WebhookIcon,
 } from "lucide-react";
 import { ResultAsync } from "neverthrow";
+import { useRouter } from "next/navigation";
 import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 
@@ -25,8 +26,10 @@ type TProps = {
 };
 
 export default function useNavigateItem({ context }: TProps) {
-  const { environmentId } = useIdsFromPathname();
   const { asyncPush } = useAsyncPush();
+  const router = useRouter();
+
+  const { environmentId } = useIdsFromPathname();
   const setIsPendingId = useCommandPanelStore((s) => s.setIsPendingId);
   const { closePanel } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
@@ -99,6 +102,11 @@ export default function useNavigateItem({ context }: TProps) {
                       error: "Failed to navigate to services",
                     });
                   },
+                  onHighlight: () => {
+                    router.prefetch(
+                      `/${context.teamId}/project/${context.projectId}?environment=${environmentId}`,
+                    );
+                  },
                   keywords: ["project", "home page", ...goToKeywords],
                 },
                 {
@@ -113,6 +121,11 @@ export default function useNavigateItem({ context }: TProps) {
                       error: "Failed to navigate to logs",
                     });
                   },
+                  onHighlight: () => {
+                    router.prefetch(
+                      `/${context.teamId}/project/${context.projectId}/logs?environment=${environmentId}`,
+                    );
+                  },
                   keywords: ["logs", "errors", "warnings", "status", "project", ...goToKeywords],
                 },
                 {
@@ -126,6 +139,11 @@ export default function useNavigateItem({ context }: TProps) {
                       isPendingId: `go-tos_metrics`,
                       error: "Failed to navigate to metrics",
                     });
+                  },
+                  onHighlight: () => {
+                    router.prefetch(
+                      `/${context.teamId}/project/${context.projectId}/metrics?environment=${environmentId}`,
+                    );
                   },
                   keywords: ["metrics", "usage", "system", "project", ...goToKeywords],
                 },
@@ -144,6 +162,9 @@ export default function useNavigateItem({ context }: TProps) {
                         error: "Failed to navigate to projects",
                       });
                     },
+                    onHighlight: () => {
+                      router.prefetch(`/${context.teamId}`);
+                    },
                     keywords: ["projects", "home page", "team", ...goToKeywords],
                   },
                 ]
@@ -154,6 +175,9 @@ export default function useNavigateItem({ context }: TProps) {
             titleSuffix: ` | ${context.contextType === "project" ? "Project" : "Team"}`,
             onSelect: () => {
               navigateToSettings({ pathname: "", isPendingId: `go-tos_/settings` });
+            },
+            onHighlight: () => {
+              router.prefetch(getSettingsPageHref({ pathname: "", context, environmentId }));
             },
             Icon: SettingsIcon,
             keywords: [
@@ -180,6 +204,11 @@ export default function useNavigateItem({ context }: TProps) {
                 isPendingId: `go-tos_/settings/shared-variables`,
               });
             },
+            onHighlight: () => {
+              router.prefetch(
+                getSettingsPageHref({ pathname: "/shared-variables", context, environmentId }),
+              );
+            },
             Icon: KeyRoundIcon,
             keywords: ["environment variables", "secrets", "keys", "values", ...goToKeywords],
           },
@@ -193,6 +222,11 @@ export default function useNavigateItem({ context }: TProps) {
                 isPendingId: `go-tos_/settings/members`,
               });
             },
+            onHighlight: () => {
+              router.prefetch(
+                getSettingsPageHref({ pathname: "/members", context, environmentId }),
+              );
+            },
             Icon: UsersIcon,
             keywords: ["person", "people", "group", ...goToKeywords],
           },
@@ -205,6 +239,11 @@ export default function useNavigateItem({ context }: TProps) {
                 pathname: "/webhooks",
                 isPendingId: `go-tos_/settings/webhooks`,
               });
+            },
+            onHighlight: () => {
+              router.prefetch(
+                getSettingsPageHref({ pathname: "/webhooks", context, environmentId }),
+              );
             },
             Icon: WebhookIcon,
             keywords: [
@@ -228,13 +267,18 @@ export default function useNavigateItem({ context }: TProps) {
                 isPendingId: `go-tos_/settings/danger-zone`,
               });
             },
+            onHighlight: () => {
+              router.prefetch(
+                getSettingsPageHref({ pathname: "/danger-zone", context, environmentId }),
+              );
+            },
             Icon: TriangleAlertIcon,
             keywords: ["delete", "danger", ...goToKeywords],
           },
         ],
       },
     };
-  }, [navigateToSettings, context, settingsTitle, goToKeywords, environmentId, navigateTo]);
+  }, [navigateToSettings, context, settingsTitle, goToKeywords, environmentId, navigateTo, router]);
 
   const value = useMemo(
     () => ({

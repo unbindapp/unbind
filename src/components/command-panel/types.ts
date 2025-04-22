@@ -29,6 +29,7 @@ export type TCommandPanelItem = {
   ChipComponent?: FC<{ className?: string }>;
   subpage?: TCommandPanelPage;
   onSelect?: (props: { isPendingId: string | null }) => void;
+  onHighlight?: () => void;
   keywords: string[];
 };
 
