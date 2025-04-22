@@ -7,6 +7,7 @@ import * as React from "react";
 
 import { cn } from "@/components/ui/utils";
 import { LoaderIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export const minButtonSizeEnforcerClassName =
   "before:w-full before:h-full before:min-w-[44px] before:min-h-[44px] before:z-[-1] before:bg-transparent before:absolute before:-translate-y-1/2 before:top-1/2 before:-translate-x-1/2 before:left-1/2";
@@ -182,10 +183,36 @@ function LinkButton({
   forceMinSize,
   children,
   asChild,
+  href,
+  onMouseEnter: onMouseEnterProp,
+  onTouchStart: onTouchStartProp,
+  prefetch = "hover",
   ...props
-}: LinkButtonProps) {
+}: Omit<LinkButtonProps, "prefetch"> & { prefetch?: "hover" | false }) {
+  const router = useRouter();
   const Comp = asChild ? Slot : Link;
   const isText = typeof children === "string";
+
+  const onMouseEnter = React.useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+      onMouseEnterProp?.(e);
+      if (prefetch === "hover") {
+        router.prefetch(href.toString());
+      }
+    },
+    [onMouseEnterProp, href, router, prefetch],
+  );
+
+  const onTouchStart = React.useCallback(
+    (e: React.TouchEvent<HTMLAnchorElement>) => {
+      onTouchStartProp?.(e);
+      if (prefetch === "hover") {
+        router.prefetch(href.toString());
+      }
+    },
+    [onTouchStartProp, href, router, prefetch],
+  );
+
   return (
     <Comp
       className={cn(
@@ -200,6 +227,10 @@ function LinkButton({
           layout: isText ? undefined : "flex",
         }),
       )}
+      href={href}
+      onMouseEnter={onMouseEnter}
+      onTouchStart={onTouchStart}
+      prefetch={false}
       {...props}
     >
       {children}
