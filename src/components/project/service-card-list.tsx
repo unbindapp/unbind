@@ -6,8 +6,9 @@ import ErrorCard from "@/components/error-card";
 import ServiceCard from "@/components/project/service-card";
 import { useServices } from "@/components/project/services-provider";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/components/ui/utils";
 import { PlusIcon } from "lucide-react";
-import { useMemo } from "react";
+import { ReactNode, useMemo } from "react";
 
 const placeholderArray = Array.from({ length: 3 });
 
@@ -25,19 +26,29 @@ export default function ServiceCardList() {
     [teamId, projectId, environmentId],
   );
 
-  return (
-    <ol className="flex w-full flex-wrap">
-      {!isPending && !services && error && (
+  if (!isPending && error) {
+    return (
+      <Wrapper>
         <li className="w-full p-1">
           <ErrorCard message={error.message} />
         </li>
-      )}
-      {isPending &&
-        !services &&
-        placeholderArray.map((_, index) => (
+      </Wrapper>
+    );
+  }
+
+  if (isPending || !services) {
+    return (
+      <Wrapper>
+        {placeholderArray.map((_, index) => (
           <ServiceCard key={index} isPlaceholder className="w-full md:w-1/2 lg:w-1/3" />
         ))}
-      {services && services.length === 0 && (
+      </Wrapper>
+    );
+  }
+
+  if (services && services.length === 0) {
+    return (
+      <Wrapper>
         <li className="flex w-full flex-col p-1 sm:w-1/2 lg:w-1/3">
           <ContextCommandPanel
             title="Create New Service"
@@ -54,21 +65,26 @@ export default function ServiceCardList() {
             </Button>
           </ContextCommandPanel>
         </li>
-      )}
-      {services &&
-        services.length > 0 &&
-        services.map((s) => {
-          return (
-            <ServiceCard
-              key={s.id}
-              service={s}
-              teamId={teamId}
-              projectId={projectId}
-              environmentId={environmentId}
-              className="w-full sm:w-1/2 lg:w-1/3"
-            />
-          );
-        })}
-    </ol>
+      </Wrapper>
+    );
+  }
+
+  return (
+    <Wrapper>
+      {services.map((s) => (
+        <ServiceCard
+          key={s.id}
+          service={s}
+          teamId={teamId}
+          projectId={projectId}
+          environmentId={environmentId}
+          className="w-full sm:w-1/2 lg:w-1/3"
+        />
+      ))}
+    </Wrapper>
   );
+}
+
+function Wrapper({ children, className }: { children: ReactNode; className?: string }) {
+  return <ol className={cn("flex w-full flex-wrap", className)}>{children}</ol>;
 }

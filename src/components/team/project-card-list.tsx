@@ -6,8 +6,9 @@ import ErrorCard from "@/components/error-card";
 import { useProjects } from "@/components/project/projects-provider";
 import ProjectCard from "@/components/team/project-card";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/components/ui/utils";
 import { PlusIcon } from "lucide-react";
-import { useMemo } from "react";
+import { ReactNode, useMemo } from "react";
 
 type TProps = {
   teamId: string;
@@ -24,19 +25,29 @@ export default function ProjectCardList({ teamId }: TProps) {
     [teamId],
   );
 
-  return (
-    <ol className="flex w-full flex-wrap">
-      {!isPending && !projects && error && (
+  if (!isPending && error) {
+    return (
+      <Wrapper>
         <li className="w-full p-1">
           <ErrorCard message={error.message} />
         </li>
-      )}
-      {isPending &&
-        !projects &&
-        placeholderArray.map((_, index) => (
+      </Wrapper>
+    );
+  }
+
+  if (isPending || !projects) {
+    return (
+      <Wrapper>
+        {placeholderArray.map((_, index) => (
           <ProjectCard key={index} isPlaceholder className="w-full md:w-1/2 lg:w-1/3" />
         ))}
-      {projects && projects.length === 0 && (
+      </Wrapper>
+    );
+  }
+
+  if (projects && projects.length === 0) {
+    return (
+      <Wrapper>
         <li className="flex w-full flex-col p-1 sm:w-1/2 lg:w-1/3">
           <ContextCommandPanel
             title="Create New Project"
@@ -53,12 +64,19 @@ export default function ProjectCardList({ teamId }: TProps) {
             </Button>
           </ContextCommandPanel>
         </li>
-      )}
-      {projects &&
-        projects.length > 0 &&
-        projects.map((i) => (
-          <ProjectCard key={i.id} project={i} className="w-full md:w-1/2 lg:w-1/3" />
-        ))}
-    </ol>
+      </Wrapper>
+    );
+  }
+
+  return (
+    <Wrapper>
+      {projects.map((i) => (
+        <ProjectCard key={i.id} project={i} className="w-full md:w-1/2 lg:w-1/3" />
+      ))}
+    </Wrapper>
   );
+}
+
+function Wrapper({ children, className }: { children: ReactNode; className?: string }) {
+  return <ol className={cn("flex w-full flex-wrap", className)}>{children}</ol>;
 }
