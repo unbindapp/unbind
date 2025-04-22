@@ -5,6 +5,7 @@ import useCommandPanel from "@/components/command-panel/use-command-panel";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import {
+  BoxIcon,
   ChartColumnIcon,
   CornerDownRightIcon,
   CpuIcon,
@@ -194,6 +195,38 @@ export default function useNavigateItem({ context }: TProps) {
               ...goToKeywords,
             ],
           },
+          ...(context.contextType === "project"
+            ? [
+                {
+                  id: `go-tos_/settings/environments`,
+                  title: "Environments",
+                  titleSuffix: ` | ${settingsTitle}`,
+                  onSelect: () => {
+                    navigateToSettings({
+                      pathname: "/environments",
+                      isPendingId: `go-tos_/settings/environments`,
+                    });
+                  },
+                  onHighlight: () => {
+                    router.prefetch(
+                      getSettingsPageHref({
+                        pathname: "/environments",
+                        context,
+                        environmentId,
+                      }),
+                    );
+                  },
+                  Icon: BoxIcon,
+                  keywords: [
+                    "environments",
+                    "production",
+                    "staging",
+                    "development",
+                    ...goToKeywords,
+                  ],
+                },
+              ]
+            : []),
           {
             id: `go-tos_/settings/shared-variables`,
             title: "Shared Variables",
