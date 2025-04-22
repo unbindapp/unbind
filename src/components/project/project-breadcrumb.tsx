@@ -194,6 +194,9 @@ export default function ProjectBreadcrumb({ className }: TProps) {
       <CreateEnvironmentDialog
         {...props}
         onFormSubmitSuccessful={() => setIsEnvironmentsMenuOpen(false)}
+        dialogOnOpenChange={(o) => {
+          if (!o) setIsEnvironmentsMenuOpen(false);
+        }}
       />
     ),
     [],
@@ -249,11 +252,13 @@ export default function ProjectBreadcrumb({ className }: TProps) {
 type TCreateEnvironmentDialogProps = {
   children: ReactNode;
   onFormSubmitSuccessful: () => void;
+  dialogOnOpenChange?: (open: boolean) => void;
 } & ButtonHTMLAttributes<HTMLButtonElement>;
 
 function CreateEnvironmentDialog({
   children,
   onFormSubmitSuccessful,
+  dialogOnOpenChange,
   ...rest
 }: TCreateEnvironmentDialogProps) {
   const { teamId, projectId } = useProject();
@@ -331,6 +336,7 @@ function CreateEnvironmentDialog({
             createEnvironmentReset();
           }, defaultAnimationMs);
         }
+        dialogOnOpenChange?.(o);
       }}
     >
       <DialogTrigger asChild>{childrenWithRestProps}</DialogTrigger>
