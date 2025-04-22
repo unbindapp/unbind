@@ -5,7 +5,8 @@ import { BreadcrumbWrapper } from "@/components/navigation/breadcrumb-wrapper";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { useTeams } from "@/components/team/teams-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 type TProps = {
@@ -14,6 +15,7 @@ type TProps = {
 
 export default function TeamBreadcrumb({ className }: TProps) {
   const { asyncPush } = useAsyncPush();
+  const router = useRouter();
   const { teamId: teamIdFromPathname } = useIdsFromPathname();
 
   const { data: teamData, isPending } = useTeams();
@@ -29,18 +31,33 @@ export default function TeamBreadcrumb({ className }: TProps) {
       ? teamData?.teams.find((t) => t.id === selectedTeamId) || null
       : undefined;
 
-  async function onTeamIdSelect(id: string) {
-    setSelectedTeamId(id);
-    const href = getHrefForTeamId(id);
-    if (!href) return;
-    await asyncPush(href);
-  }
+  const getHrefForTeamId = useCallback(
+    (id: string) => {
+      const team = teamData?.teams.find((t) => t.id === id);
+      if (!team) return null;
+      return `/${team.id}`;
+    },
+    [teamData],
+  );
 
-  function getHrefForTeamId(id: string) {
-    const team = teamData?.teams.find((t) => t.id === id);
-    if (!team) return null;
-    return `/${team.id}`;
-  }
+  const onTeamIdSelect = useCallback(
+    async (id: string) => {
+      setSelectedTeamId(id);
+      const href = getHrefForTeamId(id);
+      if (!href) return;
+      await asyncPush(href);
+    },
+    [asyncPush, getHrefForTeamId],
+  );
+
+  const onTeamIdHover = useCallback(
+    (id: string) => {
+      const href = getHrefForTeamId(id);
+      if (!href) return;
+      router.prefetch(href);
+    },
+    [getHrefForTeamId, router],
+  );
 
   return (
     <BreadcrumbWrapper className={className}>
@@ -50,6 +67,7 @@ export default function TeamBreadcrumb({ className }: TProps) {
         selectedItem={selectedTeam}
         items={teamData?.teams}
         onSelect={onTeamIdSelect}
+        onHover={onTeamIdHover}
         newItemTitle="New Team"
         newItemIsPending={false}
         onSelectNewItem={() =>

@@ -32,6 +32,7 @@ type TProps<T> = {
   selectedItem: Item<T> | undefined | null;
   items: Item<T>[] | undefined;
   onSelect: (id: string) => void;
+  onHover: (id: string) => void;
   IconItem?: FC<{ id: string; className?: string }>;
   flipChevronOnSm?: boolean;
   showArrow?: (i: T) => boolean;
@@ -58,6 +59,7 @@ export function BreadcrumbItem<T>({
   selectedItem,
   items,
   onSelect,
+  onHover,
   IconItem,
   flipChevronOnSm,
   newItemTitle,
@@ -149,6 +151,7 @@ export function BreadcrumbItem<T>({
                 item={i}
                 key={i.id + index}
                 onSelect={onSelect}
+                onHover={onHover}
                 setOpen={setOpen}
                 selectedItem={selectedItem}
                 lastHoveredItem={lastHoveredItem}
@@ -270,6 +273,7 @@ function DropdownItem<T>({
   setOpen,
   dontCloseMenuOnSelect,
   onSelect,
+  onHover,
   lastHoveredItem,
   setLastHoveredItem,
   showArrow,
@@ -283,6 +287,7 @@ function DropdownItem<T>({
   setOpen: (open: boolean) => void;
   dontCloseMenuOnSelect?: boolean;
   onSelect: (id: string) => void;
+  onHover?: (id: string) => void;
   lastHoveredItem: Item<T> | null | undefined;
   setLastHoveredItem: Dispatch<SetStateAction<Item<T> | null | undefined>>;
   showArrow?: (i: Item<T>) => boolean;
@@ -305,9 +310,15 @@ function DropdownItem<T>({
       className={cn(`group/item`, className)}
       data-pending={isPending ? true : undefined}
       // @ts-expect-error - TODO - Check this later, fine for now
-      onMouseEnter={() => setLastHoveredItem(item)}
+      onMouseEnter={() => {
+        onHover?.(item.id);
+        setLastHoveredItem(item);
+      }}
       // @ts-expect-error - TODO - Check this later, fine for now
-      onTouchStart={() => setLastHoveredItem(item)}
+      onTouchStart={() => {
+        onHover?.(item.id);
+        setLastHoveredItem(item);
+      }}
       {...rest}
     >
       {isPending && (

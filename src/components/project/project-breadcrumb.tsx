@@ -5,7 +5,7 @@ import { BreadcrumbItem } from "@/components/navigation/breadcrumb-item";
 import { BreadcrumbSeparator, BreadcrumbWrapper } from "@/components/navigation/breadcrumb-wrapper";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   ButtonHTMLAttributes,
   cloneElement,
@@ -47,6 +47,7 @@ type TProps = {
 
 export default function ProjectBreadcrumb({ className }: TProps) {
   const { asyncPush } = useAsyncPush();
+  const router = useRouter();
   const {
     teamId: teamIdFromPathname,
     projectId: projectIdFromPathname,
@@ -104,6 +105,16 @@ export default function ProjectBreadcrumb({ className }: TProps) {
     [getHrefForProjectId, asyncPush],
   );
 
+  const onProjectIdHover = useCallback(
+    (id: string) => {
+      const href = getHrefForProjectId(id);
+      if (!href) return;
+      console.log("prefetching", href);
+      router.prefetch(href);
+    },
+    [getHrefForProjectId, router],
+  );
+
   const getHrefForEnvironmentId = useCallback(
     (id: string) => {
       const project = projectsData?.projects.find((p) => p.id === selectedProjectId);
@@ -125,6 +136,15 @@ export default function ProjectBreadcrumb({ className }: TProps) {
       await asyncPush(href);
     },
     [getHrefForEnvironmentId, asyncPush],
+  );
+
+  const onEnvironmentIdHover = useCallback(
+    (id: string) => {
+      const href = getHrefForEnvironmentId(id);
+      if (!href) return;
+      router.prefetch(href);
+    },
+    [getHrefForEnvironmentId, router],
   );
 
   const { mutate: createProject, isPending: isPendingCreateProject } =
@@ -189,6 +209,7 @@ export default function ProjectBreadcrumb({ className }: TProps) {
         open={isProjectsMenuOpen}
         setOpen={setIsProjectsMenuOpen}
         onSelect={onProjectIdSelect}
+        onHover={onProjectIdHover}
         newItemTitle="New Project"
         newItemIsPending={isPendingCreateProject}
         newItemDontCloseMenuOnSelect={true}
@@ -214,6 +235,7 @@ export default function ProjectBreadcrumb({ className }: TProps) {
         open={isEnvironmentsMenuOpen}
         setOpen={setIsEnvironmentsMenuOpen}
         onSelect={onEnvironmentIdSelect}
+        onHover={onEnvironmentIdHover}
         newItemTitle="New Environment"
         newItemIsPending={false}
         NewItemWrapper={CreateEnvironmentDialogMemoized}
