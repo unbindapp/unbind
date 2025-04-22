@@ -1,15 +1,15 @@
 "use client";
 
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
-import { loggerLink, unstable_httpBatchStreamLink } from "@trpc/client";
+import { httpBatchStreamLink, loggerLink, splitLink, httpLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
 import { useState } from "react";
 import SuperJSON from "superjson";
 
+import { trpcPath } from "@/lib/constants";
 import { type AppRouter } from "@/server/trpc/api/root";
 import { env } from "process";
 import { createQueryClient } from "./query-client";
-import { trpcPath } from "@/lib/constants";
 
 export const api = createTRPCReact<AppRouter>();
 
@@ -24,6 +24,15 @@ export const getQueryClient = () => {
   return (clientQueryClientSingleton ??= createQueryClient());
 };
 
+declare module "@trpc/client" {
+  interface OperationContext {
+    skipBatch?: boolean;
+  }
+  interface ClientContext {
+    skipBatch?: boolean;
+  }
+}
+
 export function TRPCReactProvider(props: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
 
@@ -35,14 +44,21 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
             process.env.NODE_ENV === "development" ||
             (op.direction === "down" && op.result instanceof Error),
         }),
-        unstable_httpBatchStreamLink({
-          transformer: SuperJSON,
-          url: getBaseUrl() + trpcPath,
-          headers: () => {
-            const headers = new Headers();
-            headers.set("x-trpc-source", "nextjs-react");
-            return headers;
-          },
+        splitLink({
+          condition: (op) => op.context.skipBatch === true,
+          true: httpLink({
+            transformer: SuperJSON,
+            url: getBaseUrl() + trpcPath,
+          }),
+          false: httpBatchStreamLink({
+            transformer: SuperJSON,
+            url: getBaseUrl() + trpcPath,
+            headers: () => {
+              const headers = new Headers();
+              headers.set("x-trpc-source", "nextjs-react");
+              return headers;
+            },
+          }),
         }),
       ],
     }),

@@ -21,12 +21,15 @@ export const VariableReferencesProvider: React.FC<{
   serviceId: string;
   children: ReactNode;
 }> = ({ teamId, projectId, environmentId, serviceId, children }) => {
-  const list = api.variables.listAvailableVariableReferences.useQuery({
-    teamId,
-    projectId,
-    environmentId,
-    serviceId,
-  });
+  const list = api.variables.listAvailableVariableReferences.useQuery(
+    {
+      teamId,
+      projectId,
+      environmentId,
+      serviceId,
+    },
+    { trpc: { context: { skipBatch: true } } },
+  );
 
   const value: TVariableReferencesContext = useMemo(
     () => ({

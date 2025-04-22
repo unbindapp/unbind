@@ -7,6 +7,8 @@ import { useVariables } from "@/components/service/panel/tabs/variables/variable
 import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { KeyRoundIcon } from "lucide-react";
 
+const placeholderArray = Array.from({ length: 10 });
+
 export default function Variables({}: { service: TServiceShallow }) {
   const {
     list: { data, isPending, error },
@@ -22,9 +24,7 @@ export default function Variables({}: { service: TServiceShallow }) {
       {variables && variables.length === 0 && (
         <NoItemsCard Icon={KeyRoundIcon}>No variables yet</NoItemsCard>
       )}
-      {!data &&
-        isPending &&
-        Array.from({ length: 10 }).map((_, i) => <VariableCard key={i} isPlaceholder />)}
+      {!data && isPending && placeholderArray.map((_, i) => <VariableCard key={i} isPlaceholder />)}
       {!data && !isPending && error && <ErrorCard message={error.message} />}
     </TabWrapper>
   );
