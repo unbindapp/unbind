@@ -21,12 +21,17 @@ type TTeamWebhooks = {
   projectId?: never;
 };
 
-export const WebhooksProvider: React.FC<
-  {
-    children: ReactNode;
-  } & (TProjectWebhooks | TTeamWebhooks)
-> = ({ children, ...rest }) => {
-  const query = api.webhooks.list.useQuery({ ...rest });
+type TWebhooksProviderProps = {
+  initialData?: AppRouterOutputs["webhooks"]["list"];
+  children: ReactNode;
+} & (TProjectWebhooks | TTeamWebhooks);
+
+export const WebhooksProvider: React.FC<TWebhooksProviderProps> = ({
+  children,
+  initialData,
+  ...rest
+}) => {
+  const query = api.webhooks.list.useQuery({ ...rest }, { initialData });
   return <WebhooksContext.Provider value={query}>{children}</WebhooksContext.Provider>;
 };
 
