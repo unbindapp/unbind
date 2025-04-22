@@ -4,7 +4,7 @@ import EnvironmentCard, {
   NewEnvironmentCard,
 } from "@/app/(project)/[team_id]/project/[project_id]/settings/environments/_components/environment-card";
 import { useEnvironments } from "@/components/environment/environments-provider";
-import ErrorLine from "@/components/error-line";
+import ErrorCard from "@/components/error-card";
 import NoItemsCard from "@/components/no-items-card";
 import { cn } from "@/components/ui/utils";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
@@ -34,7 +34,7 @@ export default function EnvironmentsTabContent() {
   if (error) {
     return (
       <Wrapper>
-        <ErrorLine message={error.message} />
+        <ErrorCard message={error.message} />
       </Wrapper>
     );
   }
