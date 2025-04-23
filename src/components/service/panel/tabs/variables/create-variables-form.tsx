@@ -7,7 +7,11 @@ import { TToken } from "@/components/ui/textarea-with-tokens";
 import { cn } from "@/components/ui/utils";
 import { getVariablesFromRawText } from "@/components/variables/helpers";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { TVariableForCreate, VariableForCreateSchema } from "@/server/trpc/api/variables/types";
+import {
+  TVariableForCreate,
+  TVariableReferenceShallow,
+  VariableForCreateSchema,
+} from "@/server/trpc/api/variables/types";
 import { FormValidateOrFn } from "@tanstack/react-form";
 import { ChevronDownIcon, LinkIcon, PlusIcon, TrashIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
@@ -74,11 +78,25 @@ export default function CreateVariablesForm({
     },
   });
 
-  const tokens: TToken[] | undefined = useMemo(() => {
+  const tokens: TToken<TVariableReferenceShallow>[] | undefined = useMemo(() => {
     if (!variableReferencesData) return undefined;
-    const allKeys: TToken[] = [];
+    const sourceNameMap = new Map<string, string[]>();
+    const allKeys: TToken<TVariableReferenceShallow>[] = [];
     for (const obj of variableReferencesData.variables) {
       obj.keys?.forEach((key, index) => {
+        if (!sourceNameMap.has(obj.source_name)) {
+          sourceNameMap.set(obj.source_name, [obj.kubernetes_name]);
+        } else {
+          const sourceNameList = sourceNameMap.get(obj.source_name);
+          if (sourceNameList) {
+            sourceNameMap.set(obj.source_name, [...sourceNameList, obj.kubernetes_name]);
+          }
+        }
+
+        const sourceNameIndex = sourceNameMap.get(obj.source_name)?.indexOf(obj.kubernetes_name);
+        const sourceNameSuffix =
+          sourceNameIndex !== undefined && sourceNameIndex >= 1 ? `(${sourceNameIndex + 1})` : "";
+
         let variableName = key;
         const number = index + 1;
         if (obj.type === "internal_endpoint") {
@@ -89,10 +107,11 @@ export default function CreateVariablesForm({
           if (number > 1) variableName += `_${number}`;
         }
         allKeys.push({
-          value: `\${${obj.source_name}.${variableName}}`,
+          value: `\${${obj.source_name}${sourceNameSuffix}.${variableName}}`,
           Icon: ({ className }: { className?: string }) => (
             <BrandIcon color="brand" brand={obj.source_icon} className={className} />
           ),
+          object: obj,
         });
       });
     }

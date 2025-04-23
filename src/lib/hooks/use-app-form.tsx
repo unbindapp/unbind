@@ -49,7 +49,7 @@ function InputWithInfo({
   );
 }
 
-function TextareaWithTokensWithInfo({
+function TextareaWithTokensWithInfo<T>({
   className,
   hideInfo,
   field,
@@ -57,7 +57,7 @@ function TextareaWithTokensWithInfo({
   infoClassName,
   dontCheckUntilSubmit,
   ...rest
-}: TTextareaWithTokensProps & {
+}: TTextareaWithTokensProps<T> & {
   field: AnyFieldApi;
   hideInfo?: boolean;
   textareaClassName?: string;
