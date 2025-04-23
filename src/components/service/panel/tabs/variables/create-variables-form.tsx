@@ -85,7 +85,7 @@ export default function CreateVariablesForm({
           variableName = key.replace(obj.kubernetes_name, `UNBIND_INTERNAL_URL`);
           if (number > 1) variableName += `_${number}`;
         } else if (obj.type === "external_endpoint") {
-          variableName = key.replace(obj.kubernetes_name, `UNBIND_EXTERNAL_URL`);
+          variableName = `UNBIND_EXTERNAL_URL`;
           if (number > 1) variableName += `_${number}`;
         }
         allKeys.push({

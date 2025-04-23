@@ -415,8 +415,8 @@ export default function TextareaWithTokens({
             <CommandList>
               <CommandGroup>
                 {filteredItems && filteredItems.length === 0 && (
-                  <CommandEmpty className="text-muted-foreground flex items-start justify-start gap-2 px-3 py-2.25 leading-tight">
-                    <SearchIcon className="mt-0.5 -ml-0.5 inline-block size-4 shrink-0" />
+                  <CommandEmpty className="text-muted-foreground flex items-start justify-start gap-2 px-2.5 py-2.25 leading-tight">
+                    <SearchIcon className="size-5 shrink-0" />
                     <p className="min-w-0 shrink">
                       {tokens && tokens.length === 0
                         ? tokensNoneAvailableMessage
@@ -430,7 +430,7 @@ export default function TextareaWithTokens({
                 {!tokensErrorMessage &&
                   !filteredItems &&
                   placeholderArray.map((_, index) => (
-                    <CommandItem disabled className="rounded-md py-2.25" key={index}>
+                    <CommandItem disabled className="rounded-md" key={index}>
                       <p className="bg-foreground animate-skeleton max-w-full rounded-md leading-tight">
                         Loading {index}
                       </p>
@@ -459,11 +459,11 @@ export default function TextareaWithTokens({
                           input.setSelectionRange(newValue.length, newValue.length);
                         });
                       }}
-                      className="rounded-md py-2.25"
+                      className="items-start rounded-md"
                       key={i.value + index}
                       value={i.value}
                     >
-                      {i.Icon && <i.Icon className="size-5" />}
+                      {i.Icon && <i.Icon className="size-5 shrink-0" />}
                       <p className="min-w-0 shrink leading-tight">
                         <span className="text-muted-more-foreground">
                           {i.value.slice(0, tokenPrefix.length)}

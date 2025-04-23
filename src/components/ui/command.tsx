@@ -132,7 +132,7 @@ function CommandSeparator({
 }
 
 const commandItemVariants = cva(
-  "relative flex cursor-default gap-2 select-none items-center rounded-lg px-2 py-1.5 outline-hidden data-[disabled=true]:pointer-events-none data-[selected=true]:bg-border data-[disabled=true]:data-[selected=true]:bg-transparent data-[selected=true]:text-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0",
+  "relative flex cursor-default gap-2 select-none items-center rounded-lg px-2.5 py-2.25 outline-hidden data-[disabled=true]:pointer-events-none data-[selected=true]:bg-border data-[disabled=true]:data-[selected=true]:bg-transparent data-[selected=true]:text-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0",
   {
     variants: {
       variant: {
