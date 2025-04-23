@@ -17,6 +17,7 @@ export const AvailableVariableReferenceSchema = z
   .object({
     keys: z.array(z.string()).nullable(),
     kubernetes_name: z.string(),
+    source_icon: z.string(),
     source_id: z.string(),
     source_name: z.string(),
     source_type: VariableReferenceSourceTypeSchema,
@@ -319,6 +320,15 @@ export const DatabaseListSchema = z
   })
   .strip();
 
+export const HelmChartInfoSchema = z
+  .object({
+    name: z.string(),
+    repository: z.string(),
+    repositoryName: z.string().optional(),
+    version: z.string(),
+  })
+  .strip();
+
 export const ParameterPropertySchema: z.ZodType<unknown> = z
   .object({
     $ref: z.string().optional(),
@@ -343,6 +353,7 @@ export const DefinitionParameterSchemaSchema = z
 export const DefinitionSchema = z
   .object({
     category: z.string(),
+    chart: HelmChartInfoSchema.optional(),
     description: z.string(),
     name: z.string(),
     port: z.number(),
@@ -976,6 +987,12 @@ export const ReferenceableVariablesResponseBodySchema = z
   })
   .strip();
 
+export const ResolveAvailableVariableReferenceResponseBodySchema = z
+  .object({
+    data: z.string(),
+  })
+  .strip();
+
 export const ResolveVariableReferenceResponseBodySchema = z
   .object({
     data: z.string(),
@@ -1115,7 +1132,8 @@ export const VariableReferenceSourceSchema = z
     id: z.string(),
     key: z.string(),
     kubernetes_name: z.string(),
-    source_name: z.string(),
+    source_icon: z.string().optional(),
+    source_name: z.string().optional(),
     source_type: VariableReferenceSourceTypeSchema,
     type: VariableReferenceTypeSchema,
   })
@@ -1246,6 +1264,7 @@ export type WebhookResponse = z.infer<typeof WebhookResponseSchema>;
 export type CreateWebhookResponseBody = z.infer<typeof CreateWebhookResponseBodySchema>;
 export type DataStruct = z.infer<typeof DataStructSchema>;
 export type DatabaseList = z.infer<typeof DatabaseListSchema>;
+export type HelmChartInfo = z.infer<typeof HelmChartInfoSchema>;
 export type ParameterProperty = z.infer<typeof ParameterPropertySchema>;
 export type DefinitionParameterSchema = z.infer<typeof DefinitionParameterSchemaSchema>;
 export type Definition = z.infer<typeof DefinitionSchema>;
@@ -1331,6 +1350,9 @@ export type MeResponseBody = z.infer<typeof MeResponseBodySchema>;
 export type QueryLogsResponseBody = z.infer<typeof QueryLogsResponseBodySchema>;
 export type ReferenceableVariablesResponseBody = z.infer<
   typeof ReferenceableVariablesResponseBodySchema
+>;
+export type ResolveAvailableVariableReferenceResponseBody = z.infer<
+  typeof ResolveAvailableVariableReferenceResponseBodySchema
 >;
 export type ResolveVariableReferenceResponseBody = z.infer<
   typeof ResolveVariableReferenceResponseBodySchema
@@ -1573,7 +1595,7 @@ export const list_available_referencesQuerySchema = z
   })
   .passthrough();
 
-export const read_variable_referenceQuerySchema = z
+export const read_available_variable_referenceQuerySchema = z
   .object({
     team_id: z.string().optional(),
     type: VariableReferenceTypeSchema.optional(),
@@ -1581,6 +1603,13 @@ export const read_variable_referenceQuerySchema = z
     source_type: VariableReferenceSourceTypeSchema.optional(),
     source_id: z.string().optional(),
     key: z.string().optional(),
+  })
+  .passthrough();
+
+export const read_variable_referenceQuerySchema = z
+  .object({
+    service_id: z.string(),
+    reference_id: z.string(),
   })
   .passthrough();
 
@@ -3726,52 +3755,104 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
         }
       },
       references: {
-        available: async (
-          params: z.infer<typeof list_available_referencesQuerySchema>,
-          fetchOptions?: RequestInit,
-        ): Promise<ReferenceableVariablesResponseBody> => {
-          try {
-            if (!apiUrl || typeof apiUrl !== 'string') {
-              throw new Error('API URL is undefined or not a string');
-            }
-            const url = new URL(`${apiUrl}/variables/references/available`);
-            const validatedQuery = list_available_referencesQuerySchema.parse(params);
-            const queryKeys = ['team_id', 'project_id', 'environment_id', 'service_id'];
-            queryKeys.forEach((key) => {
-              const value = validatedQuery[key as keyof typeof validatedQuery];
-              if (value !== undefined && value !== null) {
-                url.searchParams.append(key, String(value));
+        available: Object.assign(
+          async (
+            params: z.infer<typeof list_available_referencesQuerySchema>,
+            fetchOptions?: RequestInit,
+          ): Promise<ReferenceableVariablesResponseBody> => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
               }
-            });
-            const options: RequestInit = {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
-              },
-              ...fetchOptions,
-            };
+              const url = new URL(`${apiUrl}/variables/references/available`);
+              const validatedQuery = list_available_referencesQuerySchema.parse(params);
+              const queryKeys = ['team_id', 'project_id', 'environment_id', 'service_id'];
+              queryKeys.forEach((key) => {
+                const value = validatedQuery[key as keyof typeof validatedQuery];
+                if (value !== undefined && value !== null) {
+                  url.searchParams.append(key, String(value));
+                }
+              });
+              const options: RequestInit = {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${accessToken}`,
+                },
+                ...fetchOptions,
+              };
 
-            const response = await fetch(url.toString(), options);
-            if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              const response = await fetch(url.toString(), options);
+              if (!response.ok) {
+                console.log(
+                  `GO API request failed with status ${response.status}: ${response.statusText}`,
+                );
+                const data = await response.json();
+                console.log(`GO API request error`, data);
+                console.log(`Request URL is:`, url.toString());
+
+                throw new Error(
+                  `GO API request failed with status ${response.status}: ${response.statusText}`,
+                );
+              }
               const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              return ReferenceableVariablesResponseBodySchema.parse(data);
+            } catch (error) {
+              console.error('Error in API request:', error);
+              throw error;
             }
-            const data = await response.json();
-            return ReferenceableVariablesResponseBodySchema.parse(data);
-          } catch (error) {
-            console.error('Error in API request:', error);
-            throw error;
-          }
-        },
+          },
+          {
+            get: async (
+              params: z.infer<typeof read_available_variable_referenceQuerySchema>,
+              fetchOptions?: RequestInit,
+            ): Promise<ResolveAvailableVariableReferenceResponseBody> => {
+              try {
+                if (!apiUrl || typeof apiUrl !== 'string') {
+                  throw new Error('API URL is undefined or not a string');
+                }
+                const url = new URL(`${apiUrl}/variables/references/available/get`);
+                const validatedQuery = read_available_variable_referenceQuerySchema.parse(params);
+                const queryKeys = ['team_id', 'type', 'name', 'source_type', 'source_id', 'key'];
+                queryKeys.forEach((key) => {
+                  const value = validatedQuery[key as keyof typeof validatedQuery];
+                  if (value !== undefined && value !== null) {
+                    url.searchParams.append(key, String(value));
+                  }
+                });
+                const options: RequestInit = {
+                  method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${accessToken}`,
+                  },
+                  ...fetchOptions,
+                };
+
+                const response = await fetch(url.toString(), options);
+                if (!response.ok) {
+                  console.log(
+                    `GO API request failed with status ${response.status}: ${response.statusText}`,
+                  );
+                  const data = await response.json();
+                  console.log(`GO API request error`, data);
+                  console.log(`Request URL is:`, url.toString());
+
+                  throw new Error(
+                    `GO API request failed with status ${response.status}: ${response.statusText}`,
+                  );
+                }
+                const data = await response.json();
+                return ResolveAvailableVariableReferenceResponseBodySchema.parse(data);
+              } catch (error) {
+                console.error('Error in API request:', error);
+                throw error;
+              }
+            },
+          },
+        ),
+      },
+      referneces: {
         get: async (
           params: z.infer<typeof read_variable_referenceQuerySchema>,
           fetchOptions?: RequestInit,
@@ -3780,9 +3861,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/variables/references/get`);
+            const url = new URL(`${apiUrl}/variables/referneces/get`);
             const validatedQuery = read_variable_referenceQuerySchema.parse(params);
-            const queryKeys = ['team_id', 'type', 'name', 'source_type', 'source_id', 'key'];
+            const queryKeys = ['service_id', 'reference_id'];
             queryKeys.forEach((key) => {
               const value = validatedQuery[key as keyof typeof validatedQuery];
               if (value !== undefined && value !== null) {

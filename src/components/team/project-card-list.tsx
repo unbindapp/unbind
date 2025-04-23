@@ -25,7 +25,7 @@ export default function ProjectCardList({ teamId }: TProps) {
     [teamId],
   );
 
-  if (!isPending && error) {
+  if (!projects && !isPending && error) {
     return (
       <Wrapper>
         <li className="w-full p-1">
@@ -35,7 +35,7 @@ export default function ProjectCardList({ teamId }: TProps) {
     );
   }
 
-  if (isPending || !projects) {
+  if (!projects || isPending) {
     return (
       <Wrapper>
         {placeholderArray.map((_, index) => (
@@ -45,7 +45,7 @@ export default function ProjectCardList({ teamId }: TProps) {
     );
   }
 
-  if (projects && projects.length === 0) {
+  if (projects.length === 0) {
     return (
       <Wrapper>
         <li className="flex w-full flex-col p-1 sm:w-1/2 lg:w-1/3">

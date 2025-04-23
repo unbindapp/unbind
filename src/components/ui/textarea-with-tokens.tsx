@@ -33,6 +33,11 @@ const variants = cva(
 
 const placeholderArray = Array.from({ length: 10 }, (_, index) => index);
 
+export type TToken = {
+  value: string;
+  Icon?: FC<{ className?: string }>;
+};
+
 export type TTextareaWithTokensProps = TextareaAutosizeProps &
   RefAttributes<HTMLTextAreaElement> &
   VariantProps<typeof variants> & {
@@ -41,13 +46,17 @@ export type TTextareaWithTokensProps = TextareaAutosizeProps &
     classNameDropdownButton?: string;
     tokenPrefix: string;
     tokenSuffix: string;
-    tokens: string[] | undefined;
+    tokens: TToken[] | undefined;
     tokensNoneAvailableMessage: string;
     tokensNoMatchingMessage: string;
     tokensErrorMessage: string | null;
     dropdownButtonText?: string;
     DropdownButtonIcon?: FC<{ className?: string }>;
   };
+
+type TFuseItem = TToken & {
+  fuseSearchValue: string;
+};
 
 export default function TextareaWithTokens({
   variant,
@@ -75,11 +84,14 @@ export default function TextareaWithTokens({
 
   const fuse = useMemo(() => {
     if (!tokens) return null;
-    return new Fuse(
-      tokens.map((i) => ({ name: i })),
-      { keys: ["name"] },
+    return new Fuse<TFuseItem>(
+      tokens.map((t) => ({
+        ...t,
+        fuseSearchValue: t.value.slice(tokenPrefix.length).slice(0, -tokenSuffix.length),
+      })),
+      { keys: ["fuseSearchValue"] },
     );
-  }, [tokens]);
+  }, [tokens, tokenPrefix.length, tokenSuffix.length]);
 
   const [filteredItems, setFilteredItems] = useState(
     tokens ? tokens.sort(tokensDefaultSort) : undefined,
@@ -126,14 +138,15 @@ export default function TextareaWithTokens({
       }
 
       if (key.keys[0] === "up") {
-        const selectedIndex = filteredItems.indexOf(selectedCommandValue);
+        const selectedIndex = filteredItems.map((i) => i.value).indexOf(selectedCommandValue);
         if (selectedIndex < 0) return;
         const newIndex = Math.max(selectedIndex - 1, 0);
         const newValue = filteredItems[newIndex];
-        setSelectedCommandValue(newValue);
+        setSelectedCommandValue(newValue.value);
 
+        const dataValue = newValue.value;
         const commandItem = commandRef.current?.querySelector(
-          `[data-value="${newValue}"]`,
+          `[data-value="${dataValue}"]`,
         ) as HTMLDivElement;
         if (commandItem) {
           commandItem.scrollIntoView({
@@ -145,14 +158,16 @@ export default function TextareaWithTokens({
       }
 
       if (key.keys[0] === "down") {
-        const selectedIndex = filteredItems.indexOf(selectedCommandValue);
+        const selectedIndex = filteredItems.map((i) => i.value).indexOf(selectedCommandValue);
         if (selectedIndex < 0) return;
         const newIndex = Math.min(selectedIndex + 1, filteredItems.length - 1);
         const newValue = filteredItems[newIndex];
 
-        setSelectedCommandValue(newValue);
+        setSelectedCommandValue(newValue.value);
+
+        const dataValue = newValue.value;
         const commandItem = commandRef.current?.querySelector(
-          `[data-value="${newValue}"]`,
+          `[data-value="${dataValue}"]`,
         ) as HTMLDivElement;
         if (commandItem) {
           commandItem.scrollIntoView({
@@ -239,19 +254,20 @@ export default function TextareaWithTokens({
     if (!tokens) return;
 
     if (!search.trim()) {
-      setFilteredItems(tokens.sort((a, b) => a.localeCompare(b)));
+      setFilteredItems(tokens.sort((a, b) => a.value.localeCompare(b.value)));
       if (tokens.length > 0) {
-        setSelectedCommandValue(tokens[0]);
+        setSelectedCommandValue(tokens[0].value);
       }
       return;
     }
 
-    const filtered =
-      fuse?.search({ name: search }).map((i) => i.item.name) || tokensDefaultSearch(tokens, search);
+    const filtered: TToken[] =
+      fuse?.search<TFuseItem>(search).map((i) => ({ value: i.item.value, Icon: i.item.Icon })) ||
+      tokensDefaultSearch(tokens, search);
     setFilteredItems(filtered);
 
     if (filtered.length > 0) {
-      setSelectedCommandValue(filtered[0]);
+      setSelectedCommandValue(filtered[0].value);
     }
   }, [search, tokens, fuse]);
 
@@ -421,7 +437,7 @@ export default function TextareaWithTokens({
                     </CommandItem>
                   ))}
                 {filteredItems &&
-                  filteredItems.map((i) => (
+                  filteredItems.map((i, index) => (
                     <CommandItem
                       onSelect={(v) => {
                         const input = textareaRef.current;
@@ -444,16 +460,19 @@ export default function TextareaWithTokens({
                         });
                       }}
                       className="rounded-md py-2.25"
-                      key={i}
-                      value={i}
+                      key={i.value + index}
+                      value={i.value}
                     >
-                      <p className="w-full leading-tight">
+                      {i.Icon && <i.Icon className="size-5" />}
+                      <p className="min-w-0 shrink leading-tight">
                         <span className="text-muted-more-foreground">
-                          {i.slice(0, tokenPrefix.length)}
+                          {i.value.slice(0, tokenPrefix.length)}
                         </span>
-                        <span>{i.slice(tokenPrefix.length, i.length - tokenSuffix.length)}</span>
+                        <span>
+                          {i.value.slice(tokenPrefix.length, i.value.length - tokenSuffix.length)}
+                        </span>
                         <span className="text-muted-more-foreground">
-                          {i.slice(i.length - tokenSuffix.length, i.length)}
+                          {i.value.slice(i.value.length - tokenSuffix.length, i.value.length)}
                         </span>
                       </p>
                     </CommandItem>
@@ -467,16 +486,21 @@ export default function TextareaWithTokens({
   );
 }
 
-function splitByTokens(value: string, tokens: string[]) {
+type TSplitItem = {
+  value: string;
+  isToken: boolean;
+};
+
+function splitByTokens(value: string, tokens: TToken[]): TSplitItem[] {
   if (!tokens.length || !value) {
     return [{ value, isToken: false }];
   }
 
-  const sortedTokens = [...tokens].sort((a, b) => b.length - a.length);
+  const sortedTokens = [...tokens].sort((a, b) => b.value.length - a.value.length);
   let result = [{ value, isToken: false }];
 
   for (const token of sortedTokens) {
-    const newResult = [];
+    const newResult: TSplitItem[] = [];
     for (const part of result) {
       if (part.isToken) {
         newResult.push(part);
@@ -496,16 +520,16 @@ function splitByTokens(value: string, tokens: string[]) {
   return result;
 }
 
-function splitByToken(str: string, token: string) {
-  if (!str.includes(token)) {
-    return [{ value: str, isToken: false, startIndex: 0, endIndex: str.length }];
+function splitByToken(str: string, token: TToken): TSplitItem[] {
+  if (!str.includes(token.value)) {
+    return [{ value: str, isToken: false }];
   }
 
-  const result = [];
+  const result: TSplitItem[] = [];
   let startIndex = 0;
   let tokenIndex;
 
-  while ((tokenIndex = str.indexOf(token, startIndex)) !== -1) {
+  while ((tokenIndex = str.indexOf(token.value, startIndex)) !== -1) {
     if (tokenIndex > startIndex) {
       result.push({
         value: str.substring(startIndex, tokenIndex),
@@ -514,11 +538,11 @@ function splitByToken(str: string, token: string) {
     }
 
     result.push({
-      value: token,
+      value: token.value,
       isToken: true,
     });
 
-    startIndex = tokenIndex + token.length;
+    startIndex = tokenIndex + token.value.length;
   }
 
   if (startIndex < str.length) {
@@ -540,7 +564,7 @@ function getBeforeAndAfterCursor({
   input: HTMLTextAreaElement;
   value: string;
   trigger: string;
-  tokens: string[];
+  tokens: TToken[];
 }) {
   const cursorPosition = input.selectionStart;
   const beforeCursor = value.slice(0, cursorPosition);
@@ -570,16 +594,16 @@ function getBeforeAndAfterCursor({
   };
 }
 
-function tokensDefaultSort(a: string, b: string) {
-  return a.localeCompare(b);
+function tokensDefaultSort(a: TToken, b: TToken) {
+  return a.value.localeCompare(b.value);
 }
 
-function tokensDefaultSearch(tokens: string[], search: string) {
+function tokensDefaultSearch(tokens: TToken[], search: string) {
   return tokens
     .filter(
-      (token: string) =>
-        token.toLowerCase().includes(search.toLowerCase()) ||
-        search.toLowerCase().includes(token.toLowerCase()),
+      (token) =>
+        token.value.toLowerCase().includes(search.toLowerCase()) ||
+        search.toLowerCase().includes(token.value.toLowerCase()),
     )
     .sort(tokensDefaultSort);
 }

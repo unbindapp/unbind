@@ -26,7 +26,7 @@ export default function ServiceCardList() {
     [teamId, projectId, environmentId],
   );
 
-  if (!isPending && error) {
+  if (!services && !isPending && error) {
     return (
       <Wrapper>
         <li className="w-full p-1">
@@ -36,7 +36,7 @@ export default function ServiceCardList() {
     );
   }
 
-  if (isPending || !services) {
+  if (!services || isPending) {
     return (
       <Wrapper>
         {placeholderArray.map((_, index) => (
@@ -46,7 +46,7 @@ export default function ServiceCardList() {
     );
   }
 
-  if (services && services.length === 0) {
+  if (services.length === 0) {
     return (
       <Wrapper>
         <li className="flex w-full flex-col p-1 sm:w-1/2 lg:w-1/3">

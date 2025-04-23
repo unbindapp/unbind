@@ -1,7 +1,9 @@
 import ErrorLine from "@/components/error-line";
+import BrandIcon from "@/components/icons/brand";
 import { useVariableReferences } from "@/components/service/panel/tabs/variables/variable-references-provider";
 import { useVariables } from "@/components/service/panel/tabs/variables/variables-provider";
 import { Button } from "@/components/ui/button";
+import { TToken } from "@/components/ui/textarea-with-tokens";
 import { cn } from "@/components/ui/utils";
 import { getVariablesFromRawText } from "@/components/variables/helpers";
 import { useAppForm } from "@/lib/hooks/use-app-form";
@@ -72,21 +74,26 @@ export default function CreateVariablesForm({
     },
   });
 
-  const tokens = useMemo(() => {
+  const tokens: TToken[] | undefined = useMemo(() => {
     if (!variableReferencesData) return undefined;
-    const allKeys: string[] = [];
+    const allKeys: TToken[] = [];
     for (const obj of variableReferencesData.variables) {
       obj.keys?.forEach((key, index) => {
         let variableName = key;
         const number = index + 1;
         if (obj.type === "internal_endpoint") {
-          variableName = `UNBIND_INTERNAL_URL`;
+          variableName = key.replace(obj.kubernetes_name, `UNBIND_INTERNAL_URL`);
           if (number > 1) variableName += `_${number}`;
         } else if (obj.type === "external_endpoint") {
-          variableName = `UNBIND_EXTERNAL_URL`;
+          variableName = key.replace(obj.kubernetes_name, `UNBIND_EXTERNAL_URL`);
           if (number > 1) variableName += `_${number}`;
         }
-        allKeys.push(`\${${obj.source_name}.${variableName}}`);
+        allKeys.push({
+          value: `\${${obj.source_name}.${variableName}}`,
+          Icon: ({ className }: { className?: string }) => (
+            <BrandIcon color="brand" brand={obj.source_icon} className={className} />
+          ),
+        });
       });
     }
     return allKeys;
