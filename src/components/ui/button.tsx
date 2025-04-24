@@ -36,7 +36,7 @@ const buttonVariants = cva(
         ghost:
           "has-hover:hover:bg-border has-hover:hover:text-foreground active:bg-border active:text-foreground",
         "ghost-destructive":
-          "text-destructive has-hover:hover:bg-destructive/20 has-hover:hover:text-destructive active:bg-destructive/20 active:text-destructive",
+          "text-destructive has-hover:hover:bg-destructive/10 has-hover:hover:text-destructive active:bg-destructive/10 active:text-destructive",
         "ghost-warning":
           "text-warning has-hover:hover:bg-warning/20 has-hover:hover:text-warning active:bg-warning/20 active:text-warning",
         "ghost-foreground":
