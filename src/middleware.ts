@@ -41,6 +41,7 @@ export const config = {
 };
 
 export const middleware: NextMiddleware = async (request: NextRequest) => {
+  // TODO - remove these
   console.log("VAR1", process.env.VAR1);
   console.log("VAR2", process.env.VAR2);
   console.log("VAR3", process.env.VAR3);
