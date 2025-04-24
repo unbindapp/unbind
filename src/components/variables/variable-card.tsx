@@ -180,6 +180,7 @@ export default function VariableCard({
                 )}
               </div>
             </Button>
+            {variable?.variable_type === "reference" && variable.error}
             <div className="relative flex min-h-9 min-w-0 flex-1 items-center justify-start py-1.5 pl-2">
               <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden px-0.25 py-0.25 pr-2 font-mono text-xs leading-tight group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
                 {isPlaceholder || !isValueVisible

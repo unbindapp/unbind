@@ -1194,6 +1194,7 @@ export const UpsertVariablesInputBodySchema = z
 export const VariableReferenceResponseSchema = z
   .object({
     created_at: z.string().datetime(),
+    error: z.string().nullable().optional(),
     id: z.string(), // The ID of the variable reference
     name: z.string(),
     sources: z.array(VariableReferenceSourceSchema),
