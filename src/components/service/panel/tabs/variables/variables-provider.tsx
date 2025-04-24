@@ -7,7 +7,7 @@ import { createContext, ReactNode, useContext, useMemo } from "react";
 
 type TVariablesContext = {
   list: AppRouterQueryResult<AppRouterOutputs["variables"]["list"]>;
-  update: ReturnType<typeof api.variables.update.useMutation>;
+  update: ReturnType<typeof api.variables.createOrUpdate.useMutation>;
   teamId: string;
   projectId: string;
   environmentId: string;
@@ -32,7 +32,7 @@ export const VariablesProvider: React.FC<{
     type,
   });
 
-  const update = api.variables.update.useMutation();
+  const update = api.variables.createOrUpdate.useMutation();
 
   const value: TVariablesContext = useMemo(
     () => ({

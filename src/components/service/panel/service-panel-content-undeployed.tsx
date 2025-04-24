@@ -23,7 +23,7 @@ type TProps = {
   className?: string;
 };
 
-export default function ServicePanelContentDraft({ service, className }: TProps) {
+export default function ServicePanelContentUndeployed({ service, className }: TProps) {
   const {
     teamId,
     projectId,
@@ -40,7 +40,7 @@ export default function ServicePanelContentDraft({ service, className }: TProps)
   const { mutateAsync: createDeployment, error: deploymentError } =
     api.deployments.create.useMutation();
   const { mutateAsync: upsertVariables, error: errorVariables } =
-    api.variables.update.useMutation();
+    api.variables.createOrUpdate.useMutation();
 
   const form = useAppForm({
     defaultValues: {},

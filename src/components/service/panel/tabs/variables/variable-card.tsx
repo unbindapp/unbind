@@ -208,7 +208,7 @@ function EditVariableForm({
     serviceId,
     type: variable.variable_type === "reference" ? "service" : variable.type,
   });
-  const { mutateAsync: upsertVariables, error } = api.variables.update.useMutation({
+  const { mutateAsync: upsertVariables, error } = api.variables.createOrUpdate.useMutation({
     onSuccess: () => {},
   });
   const form = useAppForm({

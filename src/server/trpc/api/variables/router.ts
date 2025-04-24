@@ -43,7 +43,7 @@ export const variablesRouter = createTRPCRouter({
         ...res.data,
       };
     }),
-  update: publicProcedure
+  createOrUpdate: publicProcedure
     .input(
       z
         .object({
@@ -52,7 +52,7 @@ export const variablesRouter = createTRPCRouter({
           environmentId: z.string().uuid(),
           serviceId: z.string().uuid(),
           variables: z.array(VariableForCreateSchema),
-          variableReferences: z.array(VariableReferenceForCreateSchema),
+          variableReferences: z.array(VariableReferenceForCreateSchema).optional(),
           type: VariableReferenceSourceTypeSchema,
           behavior: VariableUpdateBehaviorSchema.default("upsert"),
         })

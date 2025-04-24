@@ -5,18 +5,18 @@ import MetricsStateProvider from "@/components/metrics/metrics-state-provider";
 import DeploymentsProvider from "@/components/service/deployments-provider";
 import { TServicePanelTabEnum } from "@/components/service/panel/constants";
 import ServicePanelContentDeployed from "@/components/service/panel/service-panel-content-deployed";
-import ServicePanelContentDraft from "@/components/service/panel/service-panel-content-draft";
+import ServicePanelContentUndeployed from "@/components/service/panel/service-panel-content-undeployed";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
-import { useService } from "@/components/service/service-provider";
+import Deployments from "@/components/service/panel/tabs/deployments/deployments";
 import Logs from "@/components/service/panel/tabs/logs/logs";
 import Metrics from "@/components/service/panel/tabs/metrics/metrics";
 import Settings from "@/components/service/panel/tabs/settings/settings";
+import VariableReferencesProvider from "@/components/service/panel/tabs/variables/variable-references-provider";
 import Variables from "@/components/service/panel/tabs/variables/variables";
 import VariablesProvider from "@/components/service/panel/tabs/variables/variables-provider";
+import { useService } from "@/components/service/service-provider";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { FC, ReactNode } from "react";
-import Deployments from "@/components/service/panel/tabs/deployments/deployments";
-import VariableReferencesProvider from "@/components/service/panel/tabs/variables/variable-references-provider";
 
 type TServicePage = FC<{ service: TServiceShallow }>;
 type TServicePageProvider = FC<TServicePageProviderProps>;
@@ -85,7 +85,7 @@ export default function ServicePanelContent({ service, className }: TProps) {
           serviceId={service.id}
           type="service"
         >
-          <ServicePanelContentDraft className={className} service={service} />
+          <ServicePanelContentUndeployed className={className} service={service} />
         </VariablesProvider>
       </DeploymentsProvider>
     );

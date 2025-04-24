@@ -106,7 +106,7 @@ export default function RawVariableEditor({ children }: TProps) {
         environmentId,
         serviceId,
         variables: parsedVariables,
-        variableReferences: [],
+        variableReferences: undefined,
       });
     },
     mutationKey: ["replace-variables"],
