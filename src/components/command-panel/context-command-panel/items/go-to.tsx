@@ -26,7 +26,7 @@ type TProps = {
   context: TContextCommandPanelContext;
 };
 
-export default function useNavigateItem({ context }: TProps) {
+export default function useGoToItem({ context }: TProps) {
   const { asyncPush } = useAsyncPush();
   const router = useRouter();
 
@@ -228,22 +228,34 @@ export default function useNavigateItem({ context }: TProps) {
               ]
             : []),
           {
-            id: `go-tos_/settings/shared-variables`,
-            title: "Shared Variables",
+            id: `go-tos_/settings/variables`,
+            title:
+              context.contextType === "team"
+                ? "Team Variables"
+                : context.contextType === "project"
+                  ? "Project Variables"
+                  : "Shared Variables",
             titleSuffix: ` | ${settingsTitle}`,
             onSelect: () => {
               navigateToSettings({
-                pathname: "/shared-variables",
-                isPendingId: `go-tos_/settings/shared-variables`,
+                pathname: "/variables",
+                isPendingId: `go-tos_/settings/variables`,
               });
             },
             onHighlight: () => {
               router.prefetch(
-                getSettingsPageHref({ pathname: "/shared-variables", context, environmentId }),
+                getSettingsPageHref({ pathname: "/variables", context, environmentId }),
               );
             },
             Icon: KeyIcon,
-            keywords: ["environment variables", "secrets", "keys", "values", ...goToKeywords],
+            keywords: [
+              "environment variables",
+              "shared variables",
+              "secrets",
+              "keys",
+              "values",
+              ...goToKeywords,
+            ],
           },
           {
             id: `go-tos_/settings/members`,

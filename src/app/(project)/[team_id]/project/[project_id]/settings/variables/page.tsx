@@ -8,11 +8,11 @@ export default async function Page({ params, searchParams }: TProjectPageParams)
   await getProjectPageParams({
     params,
     searchParams,
-    currentPathname: `/settings/shared-variables`,
+    currentPathname: `/settings/variables`,
   });
   return (
     <>
-      <SettingsTabTitle>Shared Variables</SettingsTabTitle>
+      <SettingsTabTitle>Project Variables</SettingsTabTitle>
     </>
   );
 }

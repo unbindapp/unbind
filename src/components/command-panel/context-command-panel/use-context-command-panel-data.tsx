@@ -1,7 +1,7 @@
 import { contextCommandPanelRootPage } from "@/components/command-panel/constants";
 import useDatabaseItem from "@/components/command-panel/context-command-panel/items/database";
 import { useDockerImageItemHook } from "@/components/command-panel/context-command-panel/items/docker-image";
-import useNavigateItem from "@/components/command-panel/context-command-panel/items/navigation";
+import useGoToItem from "@/components/command-panel/context-command-panel/items/go-to";
 import useNewProjectItem from "@/components/command-panel/context-command-panel/items/new-project";
 import { useRepoItemHook } from "@/components/command-panel/context-command-panel/items/repo";
 import useTemplateItem from "@/components/command-panel/context-command-panel/items/template";
@@ -24,7 +24,7 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
   const { item: repoItem } = useRepoItem({ context });
   const { item: dockerImageItem } = useDockerImageItem({ context });
   const { item: templateItem } = useTemplateItem({ context });
-  const { item: navigateItem } = useNavigateItem({ context });
+  const { item: goToItem } = useGoToItem({ context });
   const { item: databaseItem } = useDatabaseItem({ context });
   const { item: newProjectItem } = useNewProjectItem({ context });
 
@@ -62,7 +62,7 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
         databaseItem,
         templateItem,
         ...(dockerImageItem ? [dockerImageItem] : []),
-        ...(navigateItem ? [navigateItem] : []),
+        ...(goToItem ? [goToItem] : []),
       ],
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -73,7 +73,7 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
       databaseItem,
       templateItem,
       dockerImageItem,
-      navigateItem,
+      goToItem,
       context,
     ],
   );

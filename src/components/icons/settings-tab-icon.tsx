@@ -12,7 +12,7 @@ import { ComponentProps } from "react";
 export type TSettingsTabVariant =
   | "general"
   | "environments"
-  | "shared-variables"
+  | "variables"
   | "members"
   | "webhooks"
   | "danger-zone";
@@ -26,7 +26,7 @@ export default function SettingsTabIcon({
     return <BoxIcon className={cn("size-5 shrink-0", className)} {...rest} />;
   }
 
-  if (variant === "shared-variables") {
+  if (variant === "variables") {
     return <KeyIcon className={cn("size-5 shrink-0", className)} {...rest} />;
   }
 

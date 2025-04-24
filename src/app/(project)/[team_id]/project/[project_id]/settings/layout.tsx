@@ -27,9 +27,9 @@ export default async function Layout({ params, children }: TProps) {
       icon: "environments",
     },
     {
-      label: "Shared Variables",
-      href: `${basePath}/shared-variables`,
-      icon: "shared-variables",
+      label: "Project Variables",
+      href: `${basePath}/variables`,
+      icon: "variables",
     },
     {
       label: "Members",

@@ -21,9 +21,9 @@ export default async function Layout({ params, children }: TProps) {
       strictMatch: true,
     },
     {
-      label: "Shared Variables",
-      href: `${basePath}/shared-variables`,
-      icon: "shared-variables",
+      label: "Team Variables",
+      href: `${basePath}/variables`,
+      icon: "variables",
     },
     {
       label: "Members",
