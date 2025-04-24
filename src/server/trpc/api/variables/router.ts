@@ -3,7 +3,10 @@ import {
   VariableReferenceSourceTypeSchema,
   VariableUpdateBehaviorSchema,
 } from "@/server/go/client.gen";
-import { VariableForCreateSchema } from "@/server/trpc/api/variables/types";
+import {
+  VariableForCreateSchema,
+  VariableReferenceForCreateSchema,
+} from "@/server/trpc/api/variables/types";
 import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -49,13 +52,23 @@ export const variablesRouter = createTRPCRouter({
           environmentId: z.string().uuid(),
           serviceId: z.string().uuid(),
           variables: z.array(VariableForCreateSchema),
+          variableReferences: z.array(VariableReferenceForCreateSchema),
           type: VariableReferenceSourceTypeSchema,
           behavior: VariableUpdateBehaviorSchema.default("upsert"),
         })
         .strip(),
     )
     .mutation(async function ({
-      input: { teamId, projectId, environmentId, serviceId, variables, type, behavior },
+      input: {
+        teamId,
+        projectId,
+        environmentId,
+        serviceId,
+        variables,
+        variableReferences,
+        type,
+        behavior,
+      },
       ctx,
     }) {
       const { session, goClient } = ctx;
@@ -72,10 +85,11 @@ export const variablesRouter = createTRPCRouter({
         environment_id: environmentId,
         service_id: serviceId,
         variables,
+        variable_references: variableReferences,
         type,
       });
       return {
-        variables: res.data,
+        data: res.data,
       };
     }),
   delete: publicProcedure
@@ -87,12 +101,13 @@ export const variablesRouter = createTRPCRouter({
           environmentId: z.string().uuid(),
           serviceId: z.string().uuid(),
           variables: z.array(z.object({ name: z.string() }).strip()),
+          variableReferenceIds: z.array(z.string().uuid()),
           type: VariableReferenceSourceTypeSchema,
         })
         .strip(),
     )
     .mutation(async function ({
-      input: { teamId, projectId, environmentId, serviceId, variables, type },
+      input: { teamId, projectId, environmentId, serviceId, variables, variableReferenceIds, type },
       ctx,
     }) {
       const { session, goClient } = ctx;
@@ -108,6 +123,7 @@ export const variablesRouter = createTRPCRouter({
         environment_id: environmentId,
         service_id: serviceId,
         variables,
+        variable_reference_ids: variableReferenceIds,
         type,
       });
       return {

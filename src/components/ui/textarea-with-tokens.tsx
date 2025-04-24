@@ -496,7 +496,7 @@ type TSplitItem<T> = {
   token: TToken<T> | null;
 };
 
-function splitByTokens<T>(str: string, tokens: TToken<T>[]): TSplitItem<T>[] {
+export function splitByTokens<T>(str: string, tokens: TToken<T>[]): TSplitItem<T>[] {
   if (!tokens.length || !str) {
     return [{ value: str, token: null }];
   }

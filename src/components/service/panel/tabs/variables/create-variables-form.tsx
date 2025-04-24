@@ -3,13 +3,14 @@ import BrandIcon from "@/components/icons/brand";
 import { useVariableReferences } from "@/components/service/panel/tabs/variables/variable-references-provider";
 import { useVariables } from "@/components/service/panel/tabs/variables/variables-provider";
 import { Button } from "@/components/ui/button";
-import { TToken } from "@/components/ui/textarea-with-tokens";
+import { splitByTokens, TToken } from "@/components/ui/textarea-with-tokens";
 import { cn } from "@/components/ui/utils";
 import { getVariablesFromRawText } from "@/components/variables/helpers";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import {
+  TAvailableVariableReference,
   TVariableForCreate,
-  TVariableReferenceShallow,
+  TVariableReferenceForCreate,
   VariableForCreateSchema,
 } from "@/server/trpc/api/variables/types";
 import { FormValidateOrFn } from "@tanstack/react-form";
@@ -53,54 +54,36 @@ export default function CreateVariablesForm({
 
   const [isOpen, setIsOpen] = useState(false);
 
-  const form = useAppForm({
-    defaultValues: {
-      variables: [{ name: "", value: "" }] as TVariableForCreate[],
-    },
-    validators: {
-      onChange: CreateVariablesFormSchema,
-      onBlur,
-    },
-    onSubmit: async ({ formApi, value }) => {
-      if (variant === "collapsible") return;
-      const variables = value.variables;
-      await updateVariables({
-        teamId,
-        projectId,
-        environmentId,
-        serviceId,
-        variables,
-        type: "service",
-      });
-      await refetchVariables();
-      formApi.reset();
-      afterSuccessfulSubmit?.(variables);
-    },
-  });
+  type TReferenceExtended = TAvailableVariableReference & {
+    template: string;
+    key: string;
+  };
 
-  const tokens: TToken<TVariableReferenceShallow>[] | undefined = useMemo(() => {
+  const tokens: TToken<TReferenceExtended>[] | undefined = useMemo(() => {
     if (!variableReferencesData) return undefined;
     const sourceNameMap = new Map<string, string[]>();
-    const allKeys: TToken<TVariableReferenceShallow>[] = [];
+    const allKeys: TToken<TReferenceExtended>[] = [];
     for (const obj of variableReferencesData.variables) {
       obj.keys?.forEach((key, index) => {
         if (!sourceNameMap.has(obj.source_name)) {
-          sourceNameMap.set(obj.source_name, [obj.kubernetes_name]);
+          sourceNameMap.set(obj.source_name, [obj.source_kubernetes_name]);
         } else {
           const sourceNameList = sourceNameMap.get(obj.source_name);
           if (sourceNameList) {
-            sourceNameMap.set(obj.source_name, [...sourceNameList, obj.kubernetes_name]);
+            sourceNameMap.set(obj.source_name, [...sourceNameList, obj.source_kubernetes_name]);
           }
         }
 
-        const sourceNameIndex = sourceNameMap.get(obj.source_name)?.indexOf(obj.kubernetes_name);
+        const sourceNameIndex = sourceNameMap
+          .get(obj.source_name)
+          ?.indexOf(obj.source_kubernetes_name);
         const sourceNameSuffix =
           sourceNameIndex !== undefined && sourceNameIndex >= 1 ? `(${sourceNameIndex + 1})` : "";
 
         let variableName = key;
         const number = index + 1;
         if (obj.type === "internal_endpoint") {
-          variableName = key.replace(obj.kubernetes_name, `UNBIND_INTERNAL_URL`);
+          variableName = key.replace(obj.source_kubernetes_name, `UNBIND_INTERNAL_URL`);
           if (number > 1) variableName += `_${number}`;
         } else if (obj.type === "external_endpoint") {
           variableName = `UNBIND_EXTERNAL_URL`;
@@ -111,12 +94,76 @@ export default function CreateVariablesForm({
           Icon: ({ className }: { className?: string }) => (
             <BrandIcon color="brand" brand={obj.source_icon} className={className} />
           ),
-          object: obj,
+          object: { ...obj, template: `\${${obj.source_kubernetes_name}.${key}}`, key },
         });
       });
     }
     return allKeys;
   }, [variableReferencesData]);
+
+  const form = useAppForm({
+    defaultValues: {
+      variables: [{ name: "", value: "" }] as TVariableForCreate[],
+    },
+    validators: {
+      onChange: CreateVariablesFormSchema,
+      onBlur,
+    },
+    onSubmit: async ({ formApi, value }) => {
+      if (variant === "collapsible") return;
+      if (!tokens) return;
+
+      const variablesWithTokens = value.variables.map((v) => ({
+        name: v.name,
+        value: splitByTokens(v.value, tokens),
+      }));
+
+      const variables: TVariableForCreate[] = variablesWithTokens
+        .filter((v) => v.value.every((v) => v.token === null))
+        .map((v) => ({ name: v.name, value: v.value.map((i) => i.value).join("") }));
+
+      const variableReferences: TVariableReferenceForCreate[] = variablesWithTokens
+        .filter((v) => v.value.some((v) => v.token !== null))
+        .map((v) => {
+          // TODO: Filter to only unique sources
+          const sources: TVariableReferenceForCreate["sources"] = v.value
+            .filter((i) => i.token !== null)
+            .map((i) => {
+              const t = i.token!;
+              return {
+                key: t.object.key,
+                type: t.object.type,
+                source_id: t.object.source_id,
+                source_kubernetes_name: t.object.source_kubernetes_name,
+                source_type: t.object.source_type,
+              };
+            });
+
+          return {
+            name: v.name,
+            value: v.value
+              .map((i) => (i.token !== null ? i.token.object.template : i.value))
+              .join(""),
+            sources,
+          };
+        });
+
+      await updateVariables({
+        teamId,
+        projectId,
+        environmentId,
+        serviceId,
+        variables,
+        variableReferences,
+        type: "service",
+      });
+      console.log("variableReferences", variableReferences);
+
+      await refetchVariables();
+      formApi.reset();
+      afterSuccessfulSubmit?.(variables);
+    },
+  });
 
   type TForm = typeof form;
 

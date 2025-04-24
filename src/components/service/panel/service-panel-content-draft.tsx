@@ -64,6 +64,7 @@ export default function ServicePanelContentDraft({ service, className }: TProps)
           environmentId,
           serviceId: service.id,
           variables: data.variables,
+          variableReferences: [],
           type: "service",
         });
       }

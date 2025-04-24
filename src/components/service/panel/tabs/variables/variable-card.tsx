@@ -25,7 +25,11 @@ import { cn } from "@/components/ui/utils";
 import { defaultAnimationMs } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { useCopyToClipboard } from "@/lib/hooks/use-copy";
-import { TVariableShallow, VariableForCreateValueSchema } from "@/server/trpc/api/variables/types";
+import {
+  TVariableReferenceShallow,
+  TVariableShallow,
+  VariableForCreateValueSchema,
+} from "@/server/trpc/api/variables/types";
 import { api } from "@/server/trpc/setup/client";
 import {
   CheckIcon,
@@ -40,9 +44,13 @@ import {
 import { Dispatch, ReactNode, useRef, useState } from "react";
 import { z } from "zod";
 
+export type TVariableOrReferenceShallow =
+  | ({ variable_type: "regular" } & TVariableShallow)
+  | ({ variable_type: "reference" } & TVariableReferenceShallow);
+
 type TProps =
   | {
-      variable: TVariableShallow;
+      variable: TVariableOrReferenceShallow;
       isPlaceholder?: never;
     }
   | {
@@ -134,7 +142,7 @@ function ThreeDotButton({
   setIsEditingVariable,
   className,
 }: {
-  variable: TVariableShallow;
+  variable: TVariableOrReferenceShallow;
   setIsEditingVariable: Dispatch<React.SetStateAction<boolean>>;
   className?: string;
 }) {
@@ -189,7 +197,7 @@ function EditVariableForm({
   variable,
   setIsEditingVariable,
 }: {
-  variable: TVariableShallow;
+  variable: TVariableOrReferenceShallow;
   setIsEditingVariable: Dispatch<React.SetStateAction<boolean>>;
 }) {
   const { teamId, projectId, environmentId, serviceId } = useService();
@@ -198,7 +206,7 @@ function EditVariableForm({
     projectId,
     environmentId,
     serviceId,
-    type: variable.type,
+    type: variable.variable_type === "reference" ? "service" : variable.type,
   });
   const { mutateAsync: upsertVariables, error } = api.variables.update.useMutation({
     onSuccess: () => {},
@@ -220,8 +228,9 @@ function EditVariableForm({
         projectId,
         environmentId,
         serviceId,
-        type: variable.type,
+        type: variable.variable_type === "reference" ? "service" : variable.type,
         variables: [{ name: variable.name, value: d.value.variableValue }],
+        variableReferences: [],
       });
       refetch();
       setIsEditingVariable(false);
@@ -298,7 +307,7 @@ function DeleteTrigger({
   closeDropdown,
   children,
 }: {
-  variable: TVariableShallow;
+  variable: TVariableOrReferenceShallow;
   closeDropdown: () => void;
   children: ReactNode;
 }) {
@@ -321,7 +330,10 @@ function DeleteTrigger({
   } = api.variables.delete.useMutation({
     onSuccess: async () => {
       setIsOpen(false);
-      optimisticRemove([variable]);
+      optimisticRemove({
+        variables: variable.variable_type === "reference" ? [] : [variable],
+        variableReferences: variable.variable_type === "reference" ? [variable] : [],
+      });
       invalidateVariables();
       closeDropdown();
     },
@@ -368,8 +380,9 @@ function DeleteTrigger({
                 projectId,
                 environmentId,
                 serviceId,
-                type: variable.type,
-                variables: [{ name: variable.name }],
+                type: variable.variable_type === "reference" ? "service" : variable.type,
+                variables: variable.variable_type === "reference" ? [] : [{ name: variable.name }],
+                variableReferenceIds: variable.variable_type === "reference" ? [variable.id] : [],
               })
             }
             variant="destructive"
@@ -387,7 +400,7 @@ function CopyButton({
   variable,
   isPlaceholder,
 }: {
-  variable?: TVariableShallow;
+  variable?: TVariableOrReferenceShallow;
   isPlaceholder?: boolean;
 }) {
   const { copyToClipboard, isRecentlyCopied } = useCopyToClipboard();

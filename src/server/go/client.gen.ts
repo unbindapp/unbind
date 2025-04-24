@@ -16,9 +16,9 @@ export const VariableReferenceTypeSchema = z.enum([
 export const AvailableVariableReferenceSchema = z
   .object({
     keys: z.array(z.string()).nullable(),
-    kubernetes_name: z.string(),
     source_icon: z.string(),
     source_id: z.string(),
+    source_kubernetes_name: z.string(),
     source_name: z.string(),
     source_type: VariableReferenceSourceTypeSchema,
     type: VariableReferenceTypeSchema,
@@ -270,6 +270,25 @@ export const CreateServiceResponseBodySchema = z
   })
   .strip();
 
+export const CreateUserInputBodySchema = z
+  .object({
+    email: z.string(),
+    password: z.string(),
+  })
+  .strip();
+
+export const UserDataSchema = z
+  .object({
+    email: z.string(),
+  })
+  .strip();
+
+export const CreateUserResponseBodySchema = z
+  .object({
+    data: UserDataSchema,
+  })
+  .strip();
+
 export const WebhookTeamEventSchema = z.enum([
   'project.created',
   'project.updated',
@@ -415,10 +434,10 @@ export const DeleteVariablesInputBodySchema = z
   .object({
     environment_id: z.string().optional(), // If present without service_id, mutate environment variables - requires project_id
     project_id: z.string().optional(), // If present without environment_id, mutate team variables
-    reference_ids: z.array(z.string()).optional(),
     service_id: z.string().optional(), // If present, mutate service variables - requires project_id and environment_id
     team_id: z.string(),
     type: VariableReferenceSourceTypeSchema, // The type of variable
+    variable_reference_ids: z.array(z.string()).optional(),
     variables: z.array(VariableDeleteInputSchema).optional(),
   })
   .strip();
@@ -1020,6 +1039,18 @@ export const RestartServicesResponseBodySchema = z
   })
   .strip();
 
+export const SetupDataSchema = z
+  .object({
+    is_setup: z.boolean(),
+  })
+  .strip();
+
+export const SetupStatusResponseBodySchema = z
+  .object({
+    data: SetupDataSchema,
+  })
+  .strip();
+
 export const SortByFieldSchema = z.enum(['created_at', 'updated_at']);
 
 export const SortOrderSchema = z.enum(['asc', 'desc']);
@@ -1129,10 +1160,10 @@ export const VariableUpdateBehaviorSchema = z.enum(['upsert', 'overwrite']);
 
 export const VariableReferenceSourceSchema = z
   .object({
-    id: z.string(),
     key: z.string(),
-    kubernetes_name: z.string(),
     source_icon: z.string().optional(),
+    source_id: z.string(),
+    source_kubernetes_name: z.string(),
     source_name: z.string().optional(),
     source_type: VariableReferenceSourceTypeSchema,
     type: VariableReferenceTypeSchema,
@@ -1141,9 +1172,9 @@ export const VariableReferenceSourceSchema = z
 
 export const VariableReferenceInputItemSchema = z
   .object({
+    name: z.string(), // The name of the target variable
     sources: z.array(VariableReferenceSourceSchema), // The sources to reference in the template interpolation
-    target_name: z.string(), // The name of the target variable
-    value_template: z.string(), // The template for the value of the variable reference, e.g. 'https://${sourcename.sourcekey}'
+    value: z.string(), // The template for the value of the variable reference, e.g. 'https://${source_kubernetes_name.key}'
   })
   .strip();
 
@@ -1164,10 +1195,10 @@ export const VariableReferenceResponseSchema = z
   .object({
     created_at: z.string().datetime(),
     id: z.string(), // The ID of the variable reference
+    name: z.string(),
     sources: z.array(VariableReferenceSourceSchema),
-    target_name: z.string(),
     target_service_id: z.string(),
-    value_template: z.string(),
+    value: z.string(),
   })
   .strip();
 
@@ -1257,6 +1288,9 @@ export type CreateServiceInput = z.infer<typeof CreateServiceInputSchema>;
 export type ServiceConfigResponse = z.infer<typeof ServiceConfigResponseSchema>;
 export type ServiceResponse = z.infer<typeof ServiceResponseSchema>;
 export type CreateServiceResponseBody = z.infer<typeof CreateServiceResponseBodySchema>;
+export type CreateUserInputBody = z.infer<typeof CreateUserInputBodySchema>;
+export type UserData = z.infer<typeof UserDataSchema>;
+export type CreateUserResponseBody = z.infer<typeof CreateUserResponseBodySchema>;
 export type WebhookTeamEvent = z.infer<typeof WebhookTeamEventSchema>;
 export type WebhookProjectEvent = z.infer<typeof WebhookProjectEventSchema>;
 export type WebhookType = z.infer<typeof WebhookTypeSchema>;
@@ -1360,6 +1394,8 @@ export type ResolveVariableReferenceResponseBody = z.infer<
 export type RestartInstancesInputBody = z.infer<typeof RestartInstancesInputBodySchema>;
 export type Restarted = z.infer<typeof RestartedSchema>;
 export type RestartServicesResponseBody = z.infer<typeof RestartServicesResponseBodySchema>;
+export type SetupData = z.infer<typeof SetupDataSchema>;
+export type SetupStatusResponseBody = z.infer<typeof SetupStatusResponseBodySchema>;
 export type SortByField = z.infer<typeof SortByFieldSchema>;
 export type SortOrder = z.infer<typeof SortOrderSchema>;
 export type SystemMeta = z.infer<typeof SystemMetaSchema>;
@@ -3202,6 +3238,87 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           }
           const data = await response.json();
           return UpdatServiceResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+    },
+    setup: {
+      createUser: async (
+        params: CreateUserInputBody,
+        fetchOptions?: RequestInit,
+      ): Promise<CreateUserResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/setup/create-user`);
+
+          const options: RequestInit = {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = CreateUserInputBodySchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return CreateUserResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      status: async (
+        params?: undefined,
+        fetchOptions?: RequestInit,
+      ): Promise<SetupStatusResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/setup/status`);
+
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return SetupStatusResponseBodySchema.parse(data);
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;

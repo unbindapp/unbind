@@ -1,7 +1,7 @@
 "use client";
 
 import { AppRouterInputs, AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
-import { TVariableShallow } from "@/server/trpc/api/variables/types";
+import { TVariableReferenceShallow, TVariableShallow } from "@/server/trpc/api/variables/types";
 import { api } from "@/server/trpc/setup/client";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
@@ -90,23 +90,31 @@ export const useVariablesUtils = ({
         serviceId,
         type,
       }),
-    optimisticRemove: (variables: TVariableShallow[]) => {
+    optimisticRemove: ({
+      variables,
+      variableReferences,
+    }: {
+      variables: TVariableShallow[];
+      variableReferences: TVariableReferenceShallow[];
+    }) => {
       utils.variables.list.setData(
         { teamId, projectId, environmentId, serviceId, type },
         (data) => {
           if (!data) return data;
-          return {
+          const newData: AppRouterOutputs["variables"]["list"] = {
             ...data,
-            variables: {
-              ...data.variables,
-              items: data.variables.filter((v1) => {
-                const shouldRemove = variables.some((v2) =>
-                  areVariablesMatching({ variable1: v1, variable2: v2 }),
-                );
-                return !shouldRemove;
-              }),
-            },
+            variables: data.variables.filter((v1) => {
+              const shouldRemove = variables.some((v2) =>
+                areVariablesMatching({ variable1: v1, variable2: v2 }),
+              );
+              return !shouldRemove;
+            }),
+            variable_references: data.variable_references.filter((v1) => {
+              const shouldRemove = variableReferences.some((v2) => v1.id === v2.id);
+              return !shouldRemove;
+            }),
           };
+          return newData;
         },
       );
     },
