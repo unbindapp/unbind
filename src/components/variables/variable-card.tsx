@@ -54,8 +54,6 @@ const hiddenString = "••••••••••";
 const tokenPrefix = "${";
 const tokenSuffix = "}";
 
-//
-
 export type TVariableOrReferenceShallow =
   | ({ variable_type: "regular" } & TVariableShallow)
   | ({ variable_type: "reference" } & TVariableReferenceShallow);
