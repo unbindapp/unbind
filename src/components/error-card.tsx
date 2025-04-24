@@ -5,6 +5,7 @@ import { TriangleAlertIcon } from "lucide-react";
 type TProps = {
   message?: string;
   className?: string;
+  asElement?: "div" | "li";
 } & TCardVariants;
 
 export type TCardVariants = VariantProps<typeof cardVariants>;
@@ -24,9 +25,10 @@ const cardVariants = cva(
   },
 );
 
-export default function ErrorCard({ className, message, variant }: TProps) {
+export default function ErrorCard({ className, message, variant, asElement = "div" }: TProps) {
+  const Element = asElement === "li" ? "li" : "div";
   return (
-    <div
+    <Element
       data-has-message={message ? true : undefined}
       className={cn(
         cardVariants({
@@ -44,6 +46,6 @@ export default function ErrorCard({ className, message, variant }: TProps) {
           {message}
         </p>
       )}
-    </div>
+    </Element>
   );
 }

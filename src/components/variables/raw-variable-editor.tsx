@@ -1,5 +1,5 @@
 import ErrorLine from "@/components/error-line";
-import { useVariables } from "@/components/service/panel/tabs/variables/variables-provider";
+import { useVariables } from "@/components/variables/variables-provider";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -33,17 +33,14 @@ type TProps = {
 
 export default function RawVariableEditor({ children }: TProps) {
   const {
-    teamId,
-    projectId,
-    environmentId,
-    serviceId,
     list: {
       data: variablesData,
       error: variablesError,
       isPending: variablesIsPending,
       refetch: refetchVariables,
     },
-    update: { mutateAsync: overwriteVariables },
+    createOrUpdate: { mutateAsync: createOrUpdateVariables },
+    ...typedProps
   } = useVariables();
 
   const variables = variablesData?.variables;
@@ -98,13 +95,9 @@ export default function RawVariableEditor({ children }: TProps) {
         parsedVariables.push({ name: res.data.name, value: res.data.value });
       }
 
-      await overwriteVariables({
-        type: "service",
+      await createOrUpdateVariables({
+        ...typedProps,
         behavior: "overwrite",
-        teamId,
-        projectId,
-        environmentId,
-        serviceId,
         variables: parsedVariables,
         variableReferences: undefined,
       });

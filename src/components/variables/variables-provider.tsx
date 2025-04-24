@@ -1,49 +1,40 @@
 "use client";
 
-import { AppRouterInputs, AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
+import { TEntityVariableTypeProps } from "@/components/variables/types";
+import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
 import { TVariableReferenceShallow, TVariableShallow } from "@/server/trpc/api/variables/types";
 import { api } from "@/server/trpc/setup/client";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
 type TVariablesContext = {
   list: AppRouterQueryResult<AppRouterOutputs["variables"]["list"]>;
-  update: ReturnType<typeof api.variables.createOrUpdate.useMutation>;
-  teamId: string;
-  projectId: string;
-  environmentId: string;
-  serviceId: string;
-};
+  createOrUpdate: ReturnType<typeof api.variables.createOrUpdate.useMutation>;
+} & TEntityVariableTypeProps;
 
 const VariablesContext = createContext<TVariablesContext | null>(null);
 
-export const VariablesProvider: React.FC<{
-  teamId: string;
-  projectId: string;
-  environmentId: string;
-  serviceId: string;
-  type: AppRouterInputs["variables"]["list"]["type"];
+type TProps = {
+  initialData?: AppRouterOutputs["variables"]["list"];
   children: ReactNode;
-}> = ({ teamId, projectId, environmentId, serviceId, type, children }) => {
-  const list = api.variables.list.useQuery({
-    teamId,
-    projectId,
-    environmentId,
-    serviceId,
-    type,
-  });
+} & TEntityVariableTypeProps;
 
-  const update = api.variables.createOrUpdate.useMutation();
+export const VariablesProvider: React.FC<TProps> = ({ initialData, children, ...typedProps }) => {
+  const list = api.variables.list.useQuery(
+    {
+      ...typedProps,
+    },
+    { initialData },
+  );
+
+  const createOrUpdate = api.variables.createOrUpdate.useMutation();
 
   const value: TVariablesContext = useMemo(
     () => ({
       list,
-      update,
-      teamId,
-      projectId,
-      environmentId,
-      serviceId,
+      createOrUpdate,
+      ...typedProps,
     }),
-    [list, update, teamId, projectId, environmentId, serviceId],
+    [list, createOrUpdate, typedProps],
   );
 
   return <VariablesContext.Provider value={value}>{children}</VariablesContext.Provider>;
@@ -65,13 +56,7 @@ export const useVariablesUtils = ({
   environmentId,
   serviceId,
   type,
-}: {
-  teamId: string;
-  projectId: string;
-  environmentId: string;
-  serviceId: string;
-  type: AppRouterInputs["variables"]["list"]["type"];
-}) => {
+}: TEntityVariableTypeProps) => {
   const utils = api.useUtils();
   return {
     invalidate: () =>

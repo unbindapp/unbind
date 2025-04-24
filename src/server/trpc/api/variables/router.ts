@@ -48,9 +48,9 @@ export const variablesRouter = createTRPCRouter({
       z
         .object({
           teamId: z.string().uuid(),
-          projectId: z.string().uuid(),
-          environmentId: z.string().uuid(),
-          serviceId: z.string().uuid(),
+          projectId: z.string().uuid().optional(),
+          environmentId: z.string().uuid().optional(),
+          serviceId: z.string().uuid().optional(),
           variables: z.array(VariableForCreateSchema),
           variableReferences: z.array(VariableReferenceForCreateSchema).optional(),
           type: VariableReferenceSourceTypeSchema,
@@ -97,9 +97,9 @@ export const variablesRouter = createTRPCRouter({
       z
         .object({
           teamId: z.string().uuid(),
-          projectId: z.string().uuid(),
-          environmentId: z.string().uuid(),
-          serviceId: z.string().uuid(),
+          projectId: z.string().uuid().optional(),
+          environmentId: z.string().uuid().optional(),
+          serviceId: z.string().uuid().optional(),
           variables: z.array(z.object({ name: z.string() }).strip()),
           variableReferenceIds: z.array(z.string().uuid()),
           type: VariableReferenceSourceTypeSchema,

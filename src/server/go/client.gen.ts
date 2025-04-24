@@ -1161,10 +1161,10 @@ export const VariableUpdateBehaviorSchema = z.enum(['upsert', 'overwrite']);
 export const VariableReferenceSourceSchema = z
   .object({
     key: z.string(),
-    source_icon: z.string().optional(),
+    source_icon: z.string(),
     source_id: z.string(),
     source_kubernetes_name: z.string(),
-    source_name: z.string().optional(),
+    source_name: z.string(),
     source_type: VariableReferenceSourceTypeSchema,
     type: VariableReferenceTypeSchema,
   })

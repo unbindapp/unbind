@@ -1,5 +1,5 @@
 import { cn } from "@/components/ui/utils";
-import { BanIcon, WebhookIcon } from "lucide-react";
+import { BanIcon, FolderIcon, UsersIcon, WebhookIcon } from "lucide-react";
 import { ComponentProps } from "react";
 
 type TProps = ComponentProps<"svg"> & {
@@ -565,6 +565,14 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
 
   if (brand === "webhook") {
     return <WebhookIcon className={cn(defaultClassName, "scale-90", className)} {...rest} />;
+  }
+
+  if (brand === "project") {
+    return <FolderIcon className={cn(defaultClassName, "scale-90", className)} {...rest} />;
+  }
+
+  if (brand === "team") {
+    return <UsersIcon className={cn(defaultClassName, "scale-90", className)} {...rest} />;
   }
 
   return (

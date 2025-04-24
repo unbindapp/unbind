@@ -1,11 +1,14 @@
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
-import { useVariableReferences } from "@/components/service/panel/tabs/variables/variable-references-provider";
-import { useVariables } from "@/components/service/panel/tabs/variables/variables-provider";
 import { Button } from "@/components/ui/button";
 import { splitByTokens, TToken } from "@/components/ui/textarea-with-tokens";
 import { cn } from "@/components/ui/utils";
-import { getVariablesFromRawText } from "@/components/variables/helpers";
+import {
+  getReferenceVariableReadableNames,
+  getVariablesFromRawText,
+} from "@/components/variables/helpers";
+import { useVariableReferences } from "@/components/variables/variable-references-provider";
+import { useVariables } from "@/components/variables/variables-provider";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import {
   TAvailableVariableReference,
@@ -14,7 +17,7 @@ import {
   VariableForCreateSchema,
 } from "@/server/trpc/api/variables/types";
 import { FormValidateOrFn } from "@tanstack/react-form";
-import { ChevronDownIcon, LinkIcon, PlusIcon, TrashIcon } from "lucide-react";
+import { ChevronDownIcon, Link2Icon, PlusIcon, TrashIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { z } from "zod";
 
@@ -24,6 +27,7 @@ type TProps = {
   className?: string;
   afterSuccessfulSubmit?: (variables: TVariableForCreate[]) => void;
   isOpen?: boolean;
+  tokensDisabled?: boolean;
 };
 
 export const CreateVariablesFormSchema = z
@@ -37,15 +41,13 @@ export default function CreateVariablesForm({
   onBlur,
   afterSuccessfulSubmit,
   className,
+  tokensDisabled,
   isOpen: isOpenProp,
 }: TProps) {
   const {
     list: { refetch: refetchVariables },
-    update: { mutateAsync: updateVariables, error: createError },
-    teamId,
-    projectId,
-    environmentId,
-    serviceId,
+    createOrUpdate: { mutateAsync: createOrUpdateVariables, error: createError },
+    ...typedProps
   } = useVariables();
 
   const {
@@ -65,34 +67,40 @@ export default function CreateVariablesForm({
     const allKeys: TToken<TReferenceExtended>[] = [];
     for (const obj of variableReferencesData.variables) {
       obj.keys?.forEach((key, index) => {
-        if (!sourceNameMap.has(obj.source_name)) {
-          sourceNameMap.set(obj.source_name, [obj.source_kubernetes_name]);
+        const { sourceName: _sourceName, readableKey: _readableKey } =
+          getReferenceVariableReadableNames({
+            key,
+            object: obj,
+          });
+        const sourceName = _sourceName;
+        let readableKey = _readableKey;
+
+        const number = index + 1;
+
+        if (!sourceNameMap.has(sourceName)) {
+          sourceNameMap.set(sourceName, [obj.source_kubernetes_name]);
         } else {
-          const sourceNameList = sourceNameMap.get(obj.source_name);
+          const sourceNameList = sourceNameMap.get(sourceName);
           if (sourceNameList) {
-            sourceNameMap.set(obj.source_name, [...sourceNameList, obj.source_kubernetes_name]);
+            sourceNameMap.set(sourceName, [...sourceNameList, obj.source_kubernetes_name]);
           }
         }
 
         const sourceNameIndex = sourceNameMap
           .get(obj.source_name)
           ?.indexOf(obj.source_kubernetes_name);
+
         const sourceNameSuffix =
           sourceNameIndex !== undefined && sourceNameIndex >= 1 ? `(${sourceNameIndex + 1})` : "";
 
-        let readableKey = key;
-        const number = index + 1;
-
         if (obj.type === "internal_endpoint") {
-          readableKey = key.replace(obj.source_kubernetes_name, `UNBIND_INTERNAL_URL`);
           if (number > 1) readableKey += `_${number}`;
         } else if (obj.type === "external_endpoint") {
-          readableKey = `UNBIND_EXTERNAL_URL`;
           if (number > 1) readableKey += `_${number}`;
         }
 
         allKeys.push({
-          value: `\${${obj.source_name}${sourceNameSuffix}.${readableKey}}`,
+          value: `\${${sourceName}${sourceNameSuffix}.${readableKey}}`,
           Icon: ({ className }: { className?: string }) => (
             <BrandIcon color="brand" brand={obj.source_icon} className={className} />
           ),
@@ -102,6 +110,20 @@ export default function CreateVariablesForm({
     }
     return allKeys;
   }, [variableReferencesData]);
+
+  const tokenProps = useMemo(() => {
+    if (tokensDisabled) return { tokensDisabled: true } as const;
+    return {
+      tokenPrefix: "${",
+      tokenSuffix: "}",
+      tokens: tokens,
+      tokensNoneAvailableMessage: "No references available yet",
+      tokensNoMatchingMessage: "No matching references",
+      tokensErrorMessage: variableReferencesError?.message || null,
+      dropdownButtonText: "Reference",
+      DropdownButtonIcon: Link2Icon,
+    };
+  }, [tokensDisabled, tokens, variableReferencesError]);
 
   const form = useAppForm({
     defaultValues: {
@@ -138,6 +160,8 @@ export default function CreateVariablesForm({
                 source_id: t.object.source_id,
                 source_kubernetes_name: t.object.source_kubernetes_name,
                 source_type: t.object.source_type,
+                source_name: t.object.source_name,
+                source_icon: t.object.source_icon,
               };
             });
 
@@ -150,14 +174,10 @@ export default function CreateVariablesForm({
           };
         });
 
-      await updateVariables({
-        teamId,
-        projectId,
-        environmentId,
-        serviceId,
+      await createOrUpdateVariables({
+        ...typedProps,
         variables,
         variableReferences,
-        type: "service",
       });
       console.log("variableReferences", variableReferences);
 
@@ -284,14 +304,7 @@ export default function CreateVariablesForm({
                                   classNameDropdownContent="font-mono"
                                   className="flex-1"
                                   placeholder="Value or ${Reference}"
-                                  tokenPrefix="${"
-                                  tokenSuffix="}"
-                                  tokens={tokens}
-                                  tokensNoneAvailableMessage="No references available yet"
-                                  tokensNoMatchingMessage="No matching references"
-                                  tokensErrorMessage={variableReferencesError?.message || null}
-                                  dropdownButtonText="Reference"
-                                  DropdownButtonIcon={LinkIcon}
+                                  {...tokenProps}
                                   autoCapitalize="off"
                                   autoCorrect="off"
                                   autoComplete="off"

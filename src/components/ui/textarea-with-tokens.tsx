@@ -39,21 +39,15 @@ export type TToken<T> = {
   object: T;
 };
 
+type TTokenProps<T> = TTokensEnabledProps<T> | TTokensDisabledProps;
+
 export type TTextareaWithTokensProps<T> = TextareaAutosizeProps &
   RefAttributes<HTMLTextAreaElement> &
   VariantProps<typeof variants> & {
     classNameTextarea?: string;
     classNameDropdownContent?: string;
     classNameDropdownButton?: string;
-    tokenPrefix: string;
-    tokenSuffix: string;
-    tokens: TToken<T>[] | undefined;
-    tokensNoneAvailableMessage: string;
-    tokensNoMatchingMessage: string;
-    tokensErrorMessage: string | null;
-    dropdownButtonText?: string;
-    DropdownButtonIcon?: FC<{ className?: string }>;
-  };
+  } & TTokenProps<T>;
 
 type TFuseItem<T> = TToken<T> & {
   fuseSearchValue: string;
@@ -66,6 +60,7 @@ export default function TextareaWithTokens<T>({
   classNameTextarea,
   classNameDropdownContent,
   classNameDropdownButton,
+  tokensDisabled,
   tokenPrefix,
   tokenSuffix,
   tokens,
@@ -84,6 +79,7 @@ export default function TextareaWithTokens<T>({
   const [open, setOpen] = useState(false);
 
   const fuse = useMemo(() => {
+    if (tokensDisabled) return null;
     if (!tokens) return null;
     return new Fuse<TFuseItem<T>>(
       tokens.map((t) => ({
@@ -92,7 +88,7 @@ export default function TextareaWithTokens<T>({
       })),
       { keys: ["fuseSearchValue"] },
     );
-  }, [tokens, tokenPrefix.length, tokenSuffix.length]);
+  }, [tokens, tokenPrefix?.length, tokenSuffix?.length, tokensDisabled]);
 
   const [filteredItems, setFilteredItems] = useState(
     tokens ? tokens.sort(tokensDefaultSort) : undefined,
@@ -104,7 +100,7 @@ export default function TextareaWithTokens<T>({
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const commandRef = useRef<HTMLDivElement>(null);
-  const trigger = tokenPrefix.slice(0, 1);
+  const trigger = !tokensDisabled ? tokenPrefix.slice(0, 1) : "";
 
   const hotkeyRef = useHotkeys(
     "arrowup,arrowdown,enter",
@@ -181,6 +177,7 @@ export default function TextareaWithTokens<T>({
     },
     {
       enableOnFormTags: true,
+      enabled: !tokensDisabled,
     },
   );
 
@@ -307,7 +304,7 @@ export default function TextareaWithTokens<T>({
                       key={index}
                       className="data-token:bg-process/10 data-token:ring-process/20 data-token:text-process data-token:rounded-[4px] data-token:ring-1"
                     >
-                      {part.token !== null ? (
+                      {!tokensDisabled && part.token !== null ? (
                         <>
                           <span className="text-process/50">
                             {part.value.slice(0, tokenPrefix.length)}
@@ -367,7 +364,7 @@ export default function TextareaWithTokens<T>({
             </div>
           </div>
           {/* Dropdown button */}
-          {(DropdownButtonIcon || dropdownButtonText) && (
+          {!tokensDisabled && (DropdownButtonIcon || dropdownButtonText) && (
             <Button
               data-has-value={textareaValue ? true : undefined}
               size="sm"
@@ -398,95 +395,97 @@ export default function TextareaWithTokens<T>({
           )}
         </div>
       </PopoverTrigger>
-      <PopoverContent
-        animate={false}
-        className={cn(
-          "flex h-64 max-h-[min(30rem,var(--radix-popper-available-height))] flex-col overflow-hidden rounded-lg p-0",
-          classNameDropdownContent,
-        )}
-        onOpenAutoFocus={(e) => e.preventDefault()}
-        onCloseAutoFocus={(e) => e.preventDefault()}
-      >
-        <Command
-          ref={commandRef}
-          value={selectedCommandValue}
-          onValueChange={setSelectedCommandValue}
-          variant="default"
-          className="flex flex-1 flex-col rounded-none border-none bg-transparent shadow-none"
-          shouldFilter={false}
+      {!tokensDisabled && (
+        <PopoverContent
+          animate={false}
+          className={cn(
+            "flex h-64 max-h-[min(30rem,var(--radix-popper-available-height))] flex-col overflow-hidden rounded-lg p-0",
+            classNameDropdownContent,
+          )}
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          onCloseAutoFocus={(e) => e.preventDefault()}
         >
-          <ScrollArea className="flex flex-1 flex-col">
-            <CommandList>
-              <CommandGroup>
-                {filteredItems && filteredItems.length === 0 && (
-                  <CommandEmpty className="text-muted-foreground flex items-start justify-start gap-2 px-2.5 py-2.25 leading-tight">
-                    <SearchIcon className="size-5 shrink-0" />
-                    <p className="min-w-0 shrink">
-                      {tokens && tokens.length === 0
-                        ? tokensNoneAvailableMessage
-                        : tokensNoMatchingMessage}
-                    </p>
-                  </CommandEmpty>
-                )}
-                {tokensErrorMessage && !filteredItems && (
-                  <ErrorCard className="rounded-md" message={tokensErrorMessage} />
-                )}
-                {!tokensErrorMessage &&
-                  !filteredItems &&
-                  placeholderArray.map((_, index) => (
-                    <CommandItem disabled className="rounded-md" key={index}>
-                      <p className="bg-foreground animate-skeleton max-w-full rounded-md leading-tight">
-                        Loading {index}
+          <Command
+            ref={commandRef}
+            value={selectedCommandValue}
+            onValueChange={setSelectedCommandValue}
+            variant="default"
+            className="flex flex-1 flex-col rounded-none border-none bg-transparent shadow-none"
+            shouldFilter={false}
+          >
+            <ScrollArea className="flex flex-1 flex-col">
+              <CommandList>
+                <CommandGroup>
+                  {filteredItems && filteredItems.length === 0 && (
+                    <CommandEmpty className="text-muted-foreground flex items-start justify-start gap-2 px-2.5 py-2.25 leading-tight">
+                      <SearchIcon className="size-5 shrink-0" />
+                      <p className="min-w-0 shrink">
+                        {tokens && tokens.length === 0
+                          ? tokensNoneAvailableMessage
+                          : tokensNoMatchingMessage}
                       </p>
-                    </CommandItem>
-                  ))}
-                {filteredItems &&
-                  filteredItems.map((i, index) => (
-                    <CommandItem
-                      onSelect={(v) => {
-                        const input = textareaRef.current;
-                        if (!input) return;
-                        if (!tokens) return;
+                    </CommandEmpty>
+                  )}
+                  {tokensErrorMessage && !filteredItems && (
+                    <ErrorCard className="rounded-md" message={tokensErrorMessage} />
+                  )}
+                  {!tokensErrorMessage &&
+                    !filteredItems &&
+                    placeholderArray.map((_, index) => (
+                      <CommandItem disabled className="rounded-md" key={index}>
+                        <p className="bg-foreground animate-skeleton max-w-full rounded-md leading-tight">
+                          Loading {index}
+                        </p>
+                      </CommandItem>
+                    ))}
+                  {filteredItems &&
+                    filteredItems.map((i, index) => (
+                      <CommandItem
+                        onSelect={(v) => {
+                          const input = textareaRef.current;
+                          if (!input) return;
+                          if (!tokens) return;
 
-                        const { beforeCursor, afterCursor } = getBeforeAndAfterCursor({
-                          input,
-                          value: textareaValue,
-                          trigger,
-                          tokens,
-                        });
+                          const { beforeCursor, afterCursor } = getBeforeAndAfterCursor({
+                            input,
+                            value: textareaValue,
+                            trigger,
+                            tokens,
+                          });
 
-                        const newValue = `${beforeCursor}${v}${afterCursor}`;
-                        setTextareaValueAndTriggerOnChange(newValue);
+                          const newValue = `${beforeCursor}${v}${afterCursor}`;
+                          setTextareaValueAndTriggerOnChange(newValue);
 
-                        setOpen(false);
-                        requestAnimationFrame(() => {
-                          input.focus();
-                          input.setSelectionRange(newValue.length, newValue.length);
-                        });
-                      }}
-                      className="items-start rounded-md"
-                      key={i.value + index}
-                      value={i.value}
-                    >
-                      {i.Icon && <i.Icon className="size-5 shrink-0" />}
-                      <p className="min-w-0 shrink leading-tight">
-                        <span className="text-muted-more-foreground">
-                          {i.value.slice(0, tokenPrefix.length)}
-                        </span>
-                        <span>
-                          {i.value.slice(tokenPrefix.length, i.value.length - tokenSuffix.length)}
-                        </span>
-                        <span className="text-muted-more-foreground">
-                          {i.value.slice(i.value.length - tokenSuffix.length, i.value.length)}
-                        </span>
-                      </p>
-                    </CommandItem>
-                  ))}
-              </CommandGroup>
-            </CommandList>
-          </ScrollArea>
-        </Command>
-      </PopoverContent>
+                          setOpen(false);
+                          requestAnimationFrame(() => {
+                            input.focus();
+                            input.setSelectionRange(newValue.length, newValue.length);
+                          });
+                        }}
+                        className="items-start rounded-md"
+                        key={i.value + index}
+                        value={i.value}
+                      >
+                        {i.Icon && <i.Icon className="size-5 shrink-0" />}
+                        <p className="min-w-0 shrink leading-tight">
+                          <span className="text-muted-more-foreground">
+                            {i.value.slice(0, tokenPrefix.length)}
+                          </span>
+                          <span>
+                            {i.value.slice(tokenPrefix.length, i.value.length - tokenSuffix.length)}
+                          </span>
+                          <span className="text-muted-more-foreground">
+                            {i.value.slice(i.value.length - tokenSuffix.length, i.value.length)}
+                          </span>
+                        </p>
+                      </CommandItem>
+                    ))}
+                </CommandGroup>
+              </CommandList>
+            </ScrollArea>
+          </Command>
+        </PopoverContent>
+      )}
     </Popover>
   );
 }
@@ -612,3 +611,27 @@ function tokensDefaultSearch<T>(tokens: TToken<T>[], search: string) {
     )
     .sort(tokensDefaultSort);
 }
+
+type TTokensEnabledProps<T> = {
+  tokenPrefix: string;
+  tokenSuffix: string;
+  tokens: TToken<T>[] | undefined;
+  tokensNoneAvailableMessage: string;
+  tokensNoMatchingMessage: string;
+  tokensErrorMessage: string | null;
+  dropdownButtonText?: string;
+  DropdownButtonIcon?: FC<{ className?: string }>;
+  tokensDisabled?: never;
+};
+
+type TTokensDisabledProps = {
+  tokenPrefix?: never;
+  tokenSuffix?: never;
+  tokens?: never;
+  tokensNoneAvailableMessage?: never;
+  tokensNoMatchingMessage?: never;
+  tokensErrorMessage?: never;
+  dropdownButtonText?: never;
+  DropdownButtonIcon?: never;
+  tokensDisabled: true;
+};

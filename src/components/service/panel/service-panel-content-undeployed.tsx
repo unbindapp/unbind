@@ -6,8 +6,8 @@ import { useServicesUtils } from "@/components/project/services-provider";
 import CreateVariablesForm, {
   CreateVariablesFormSchema,
   TCreateVariablesForm,
-} from "@/components/service/panel/tabs/variables/create-variables-form";
-import VariablesProvider from "@/components/service/panel/tabs/variables/variables-provider";
+} from "@/components/variables/create-variables-form";
+import VariablesProvider from "@/components/variables/variables-provider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
@@ -16,7 +16,7 @@ import { api } from "@/server/trpc/setup/client";
 import { GitBranchIcon } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/components/ui/utils";
-import VariableReferencesProvider from "@/components/service/panel/tabs/variables/variable-references-provider";
+import VariableReferencesProvider from "@/components/variables/variable-references-provider";
 
 type TProps = {
   service: TServiceShallow;
@@ -115,6 +115,7 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
             type="service"
           >
             <VariableReferencesProvider
+              type="service"
               teamId={teamId}
               projectId={projectId}
               environmentId={environmentId}

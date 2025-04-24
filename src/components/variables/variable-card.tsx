@@ -1,8 +1,6 @@
 "use client";
 
 import ErrorLine from "@/components/error-line";
-import { useVariablesUtils } from "@/components/service/panel/tabs/variables/variables-provider";
-import { useService } from "@/components/service/service-provider";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,6 +21,9 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { splitByTokens, TSplitItem, TToken } from "@/components/ui/textarea-with-tokens";
 import { cn } from "@/components/ui/utils";
+import { getReferenceVariableReadableNames } from "@/components/variables/helpers";
+import { TEntityVariableTypeProps } from "@/components/variables/types";
+import { useVariablesUtils } from "@/components/variables/variables-provider";
 import { defaultAnimationMs } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { useCopyToClipboard } from "@/lib/hooks/use-copy";
@@ -40,7 +41,7 @@ import {
   EyeIcon,
   EyeOffIcon,
   KeyIcon,
-  LinkIcon,
+  Link2Icon,
   MinusIcon,
   PenIcon,
   TrashIcon,
@@ -57,17 +58,28 @@ export type TVariableOrReferenceShallow =
   | ({ variable_type: "regular" } & TVariableShallow)
   | ({ variable_type: "reference" } & TVariableReferenceShallow);
 
-type TProps =
+type TProps = {
+  asElement?: "div" | "li";
+} & (
   | {
       variable: TVariableOrReferenceShallow;
+      variableTypeProps: TEntityVariableTypeProps;
       isPlaceholder?: never;
     }
   | {
       isPlaceholder: true;
       variable?: never;
-    };
+      variableTypeProps?: never;
+    }
+);
 
-export default function VariableCard({ variable, isPlaceholder }: TProps) {
+export default function VariableCard({
+  variable,
+  variableTypeProps,
+  isPlaceholder,
+  asElement = "div",
+}: TProps) {
+  const Element = asElement === "li" ? "li" : "div";
   const [isValueVisible, setIsValueVisible] = useState(false);
   const [isEditingVariable, setIsEditingVariable] = useState(false);
 
@@ -80,8 +92,15 @@ export default function VariableCard({ variable, isPlaceholder }: TProps) {
 
     sources.forEach((source) => {
       const key = source.key;
-      let readableKey = key;
-      const number = 0 + 1;
+      const { sourceName: _sourceName, readableKey: _readableKey } =
+        getReferenceVariableReadableNames({
+          key,
+          object: source,
+        });
+      const sourceName = _sourceName;
+      let readableKey = _readableKey;
+
+      const number = 1;
 
       if (source.type === "internal_endpoint") {
         readableKey = source.key.replace(source.source_kubernetes_name, `UNBIND_INTERNAL_URL`);
@@ -93,7 +112,7 @@ export default function VariableCard({ variable, isPlaceholder }: TProps) {
 
       sourceMap.set(
         `${tokenPrefix}${source.source_kubernetes_name}.${source.key}${tokenSuffix}`,
-        `${tokenPrefix}${source.source_name}.${readableKey}${tokenSuffix}`,
+        `${tokenPrefix}${sourceName}.${readableKey}${tokenSuffix}`,
       );
     });
 
@@ -118,7 +137,7 @@ export default function VariableCard({ variable, isPlaceholder }: TProps) {
   }, [variable, isPlaceholder]);
 
   return (
-    <div
+    <Element
       data-placeholder={isPlaceholder ? true : undefined}
       data-value-visible={isValueVisible ? true : undefined}
       data-not-editing={!isEditingVariable ? true : undefined}
@@ -127,7 +146,7 @@ export default function VariableCard({ variable, isPlaceholder }: TProps) {
     >
       <div className="flex h-9 w-full shrink-0 items-center py-2 pr-8 sm:w-56 sm:pr-4 md:w-64">
         {variable?.variable_type === "reference" && (
-          <LinkIcon className="text-process mr-2 size-3.5 shrink-0" />
+          <Link2Icon className="text-process mr-2 size-3.5 shrink-0" />
         )}
         {variable?.variable_type === "regular" && (
           <KeyIcon className="text-foreground mr-2 size-3.5 shrink-0" />
@@ -205,6 +224,7 @@ export default function VariableCard({ variable, isPlaceholder }: TProps) {
             ) : (
               <ThreeDotButton
                 variable={variable}
+                variableTypeProps={variableTypeProps}
                 setIsEditingVariable={setIsEditingVariable}
                 className="hidden sm:flex"
               />
@@ -212,7 +232,11 @@ export default function VariableCard({ variable, isPlaceholder }: TProps) {
           </>
         )}
         {variable && isEditingVariable && (
-          <EditVariableForm variable={variable} setIsEditingVariable={setIsEditingVariable} />
+          <EditVariableForm
+            variable={variable}
+            variableTypeProps={variableTypeProps}
+            setIsEditingVariable={setIsEditingVariable}
+          />
         )}
       </div>
       {(!isEditingVariable || !variable) && (
@@ -223,6 +247,7 @@ export default function VariableCard({ variable, isPlaceholder }: TProps) {
             </Button>
           ) : (
             <ThreeDotButton
+              variableTypeProps={variableTypeProps}
               className="rounded-lg"
               variable={variable}
               setIsEditingVariable={setIsEditingVariable}
@@ -230,16 +255,18 @@ export default function VariableCard({ variable, isPlaceholder }: TProps) {
           )}
         </div>
       )}
-    </div>
+    </Element>
   );
 }
 
 function ThreeDotButton({
   variable,
+  variableTypeProps,
   setIsEditingVariable,
   className,
 }: {
   variable: TVariableOrReferenceShallow;
+  variableTypeProps: TEntityVariableTypeProps;
   setIsEditingVariable: Dispatch<React.SetStateAction<boolean>>;
   className?: string;
 }) {
@@ -276,7 +303,11 @@ function ThreeDotButton({
                 <p className="min-w-0 shrink leading-tight">Edit</p>
               </DropdownMenuItem>
             )}
-            <DeleteTrigger variable={variable} closeDropdown={() => setIsOpen(false)}>
+            <DeleteTrigger
+              variable={variable}
+              variableTypeProps={variableTypeProps}
+              closeDropdown={() => setIsOpen(false)}
+            >
               <DropdownMenuItem
                 onSelect={(e) => e.preventDefault()}
                 className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
@@ -294,22 +325,21 @@ function ThreeDotButton({
 
 function EditVariableForm({
   variable,
+  variableTypeProps,
   setIsEditingVariable,
 }: {
   variable: TVariableOrReferenceShallow;
+  variableTypeProps: TEntityVariableTypeProps;
   setIsEditingVariable: Dispatch<React.SetStateAction<boolean>>;
 }) {
-  const { teamId, projectId, environmentId, serviceId } = useService();
   const { refetch } = useVariablesUtils({
-    teamId,
-    projectId,
-    environmentId,
-    serviceId,
-    type: variable.variable_type === "reference" ? "service" : variable.type,
+    ...variableTypeProps,
   });
+
   const { mutateAsync: upsertVariables, error } = api.variables.createOrUpdate.useMutation({
     onSuccess: () => {},
   });
+
   const form = useAppForm({
     defaultValues: {
       variableValue: variable.value,
@@ -323,11 +353,7 @@ function EditVariableForm({
         return;
       }
       await upsertVariables({
-        teamId,
-        projectId,
-        environmentId,
-        serviceId,
-        type: variable.variable_type === "reference" ? "service" : variable.type,
+        ...variableTypeProps,
         variables: [{ name: variable.name, value: d.value.variableValue }],
         variableReferences: [],
       });
@@ -403,22 +429,19 @@ function EditVariableForm({
 
 function DeleteTrigger({
   variable,
+  variableTypeProps,
   closeDropdown,
   children,
 }: {
   variable: TVariableOrReferenceShallow;
+  variableTypeProps: TEntityVariableTypeProps;
   closeDropdown: () => void;
   children: ReactNode;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const { teamId, projectId, environmentId, serviceId } = useService();
 
   const { invalidate: invalidateVariables, optimisticRemove } = useVariablesUtils({
-    teamId,
-    projectId,
-    environmentId,
-    serviceId,
-    type: "service",
+    ...variableTypeProps,
   });
 
   const {
@@ -475,11 +498,7 @@ function DeleteTrigger({
           <Button
             onClick={() =>
               deleteVariable({
-                teamId,
-                projectId,
-                environmentId,
-                serviceId,
-                type: variable.variable_type === "reference" ? "service" : variable.type,
+                ...variableTypeProps,
                 variables: variable.variable_type === "reference" ? [] : [{ name: variable.name }],
                 variableReferenceIds: variable.variable_type === "reference" ? [variable.id] : [],
               })
