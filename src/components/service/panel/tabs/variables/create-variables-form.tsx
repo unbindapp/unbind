@@ -80,17 +80,19 @@ export default function CreateVariablesForm({
         const sourceNameSuffix =
           sourceNameIndex !== undefined && sourceNameIndex >= 1 ? `(${sourceNameIndex + 1})` : "";
 
-        let variableName = key;
+        let readableKey = key;
         const number = index + 1;
+
         if (obj.type === "internal_endpoint") {
-          variableName = key.replace(obj.source_kubernetes_name, `UNBIND_INTERNAL_URL`);
-          if (number > 1) variableName += `_${number}`;
+          readableKey = key.replace(obj.source_kubernetes_name, `UNBIND_INTERNAL_URL`);
+          if (number > 1) readableKey += `_${number}`;
         } else if (obj.type === "external_endpoint") {
-          variableName = `UNBIND_EXTERNAL_URL`;
-          if (number > 1) variableName += `_${number}`;
+          readableKey = `UNBIND_EXTERNAL_URL`;
+          if (number > 1) readableKey += `_${number}`;
         }
+
         allKeys.push({
-          value: `\${${obj.source_name}${sourceNameSuffix}.${variableName}}`,
+          value: `\${${obj.source_name}${sourceNameSuffix}.${readableKey}}`,
           Icon: ({ className }: { className?: string }) => (
             <BrandIcon color="brand" brand={obj.source_icon} className={className} />
           ),

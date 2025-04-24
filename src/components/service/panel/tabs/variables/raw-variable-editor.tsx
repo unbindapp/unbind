@@ -166,7 +166,7 @@ export default function RawVariableEditor({ children }: TProps) {
         <div className="flex w-full flex-wrap items-center justify-end gap-2">
           <DialogClose asChild className="text-muted-foreground">
             <Button type="button" variant="ghost">
-              Cancel
+              Close
             </Button>
           </DialogClose>
           <Button

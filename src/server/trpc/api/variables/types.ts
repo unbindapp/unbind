@@ -21,6 +21,7 @@ export type TVariableReferenceForCreate = z.infer<typeof VariableReferenceForCre
 export type TVariableShallow = AppRouterOutputs["variables"]["list"]["variables"][number];
 export type TVariableReferenceShallow =
   AppRouterOutputs["variables"]["list"]["variable_references"][number];
+export type TVariableReferenceShallowSource = TVariableReferenceShallow["sources"][number];
 
 export type TAvailableVariableReference =
   AppRouterOutputs["variables"]["listAvailableVariableReferences"]["variables"][number];

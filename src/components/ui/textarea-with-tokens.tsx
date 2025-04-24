@@ -491,7 +491,7 @@ export default function TextareaWithTokens<T>({
   );
 }
 
-type TSplitItem<T> = {
+export type TSplitItem<T> = {
   value: string;
   token: TToken<T> | null;
 };

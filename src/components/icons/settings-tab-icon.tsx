@@ -1,7 +1,7 @@
 import { cn } from "@/components/ui/utils";
 import {
   BoxIcon,
-  KeyRoundIcon,
+  KeyIcon,
   SlidersHorizontalIcon,
   TriangleAlertIcon,
   UsersIcon,
@@ -27,7 +27,7 @@ export default function SettingsTabIcon({
   }
 
   if (variant === "shared-variables") {
-    return <KeyRoundIcon className={cn("size-5 shrink-0", className)} {...rest} />;
+    return <KeyIcon className={cn("size-5 shrink-0", className)} {...rest} />;
   }
 
   if (variant === "members") {

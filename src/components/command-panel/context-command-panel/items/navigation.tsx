@@ -10,7 +10,7 @@ import {
   CornerDownRightIcon,
   CpuIcon,
   FolderIcon,
-  KeyRoundIcon,
+  KeyIcon,
   SettingsIcon,
   TextSearchIcon,
   TriangleAlertIcon,
@@ -242,7 +242,7 @@ export default function useNavigateItem({ context }: TProps) {
                 getSettingsPageHref({ pathname: "/shared-variables", context, environmentId }),
               );
             },
-            Icon: KeyRoundIcon,
+            Icon: KeyIcon,
             keywords: ["environment variables", "secrets", "keys", "values", ...goToKeywords],
           },
           {

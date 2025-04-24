@@ -1,8 +1,8 @@
 "use client";
 
 import ErrorLine from "@/components/error-line";
-import { useService } from "@/components/service/service-provider";
 import { useVariablesUtils } from "@/components/service/panel/tabs/variables/variables-provider";
+import { useService } from "@/components/service/service-provider";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -21,12 +21,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { splitByTokens, TSplitItem, TToken } from "@/components/ui/textarea-with-tokens";
 import { cn } from "@/components/ui/utils";
 import { defaultAnimationMs } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { useCopyToClipboard } from "@/lib/hooks/use-copy";
 import {
   TVariableReferenceShallow,
+  TVariableReferenceShallowSource,
   TVariableShallow,
   VariableForCreateValueSchema,
 } from "@/server/trpc/api/variables/types";
@@ -37,12 +39,19 @@ import {
   EllipsisVerticalIcon,
   EyeIcon,
   EyeOffIcon,
+  KeyIcon,
+  LinkIcon,
+  MinusIcon,
   PenIcon,
   TrashIcon,
   XIcon,
 } from "lucide-react";
-import { Dispatch, ReactNode, useRef, useState } from "react";
+import { Dispatch, ReactNode, useMemo, useRef, useState } from "react";
 import { z } from "zod";
+
+const hiddenString = "••••••••••";
+const tokenPrefix = "${";
+const tokenSuffix = "}";
 
 export type TVariableOrReferenceShallow =
   | ({ variable_type: "regular" } & TVariableShallow)
@@ -62,15 +71,71 @@ export default function VariableCard({ variable, isPlaceholder }: TProps) {
   const [isValueVisible, setIsValueVisible] = useState(false);
   const [isEditingVariable, setIsEditingVariable] = useState(false);
 
+  const variableValueParts: TSplitItem<TVariableReferenceShallowSource>[] = useMemo(() => {
+    if (isPlaceholder) return [{ value: hiddenString, token: null }];
+    if (variable.variable_type !== "reference") return [{ value: hiddenString, token: null }];
+
+    const sources = variable.sources;
+    const sourceMap = new Map<string, string>();
+
+    sources.forEach((source) => {
+      const key = source.key;
+      let readableKey = key;
+      const number = 0 + 1;
+
+      if (source.type === "internal_endpoint") {
+        readableKey = source.key.replace(source.source_kubernetes_name, `UNBIND_INTERNAL_URL`);
+        if (number > 1) readableKey += `_${number}`;
+      } else if (source.type === "external_endpoint") {
+        readableKey = `UNBIND_EXTERNAL_URL`;
+        if (number > 1) readableKey += `_${number}`;
+      }
+
+      sourceMap.set(
+        `${tokenPrefix}${source.source_kubernetes_name}.${source.key}${tokenSuffix}`,
+        `${tokenPrefix}${source.source_name}.${readableKey}${tokenSuffix}`,
+      );
+    });
+
+    let textValue = variable.value;
+    sourceMap.forEach((readableKey, key) => {
+      textValue = textValue.replaceAll(key, readableKey);
+    });
+
+    const tokens: TToken<TVariableReferenceShallowSource>[] = variable.sources.map((source) => {
+      const value =
+        sourceMap.get(
+          `${tokenPrefix}${source.source_kubernetes_name}.${source.key}${tokenSuffix}`,
+        ) || "";
+      return {
+        object: source,
+        value,
+      };
+    });
+
+    const splitItems = splitByTokens<TVariableReferenceShallowSource>(textValue, tokens);
+    return splitItems;
+  }, [variable, isPlaceholder]);
+
   return (
     <div
       data-placeholder={isPlaceholder ? true : undefined}
       data-value-visible={isValueVisible ? true : undefined}
       data-not-editing={!isEditingVariable ? true : undefined}
+      data-type={variable?.variable_type}
       className="data-not-editing:has-hover:hover:bg-background-hover group/card relative flex w-full flex-col rounded-xl border px-3 py-0.75 data-placeholder:text-transparent sm:flex-row sm:items-center sm:rounded-lg sm:pr-0.75"
     >
       <div className="flex h-9 w-full shrink-0 items-center py-2 pr-8 sm:w-56 sm:pr-4 md:w-64">
-        <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden font-mono text-sm leading-none text-ellipsis whitespace-nowrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
+        {variable?.variable_type === "reference" && (
+          <LinkIcon className="text-process mr-2 size-3.5 shrink-0" />
+        )}
+        {variable?.variable_type === "regular" && (
+          <KeyIcon className="text-foreground mr-2 size-3.5 shrink-0" />
+        )}
+        {isPlaceholder && (
+          <div className="bg-foreground animate-skeleton mr-2 size-3.5 shrink-0 rounded-full" />
+        )}
+        <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden font-mono text-sm leading-tight text-ellipsis whitespace-nowrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
           {isPlaceholder ? "Loading key" : variable.name}
         </p>
       </div>
@@ -96,9 +161,41 @@ export default function VariableCard({ variable, isPlaceholder }: TProps) {
                 )}
               </div>
             </Button>
-            <div className="relative flex h-9 min-w-0 flex-1 items-center justify-start py-1 pl-2">
-              <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden pr-2 font-mono text-xs leading-none text-ellipsis whitespace-nowrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
-                {isPlaceholder || !isValueVisible ? "••••••••••" : variable.value}
+            <div className="relative flex min-h-9 min-w-0 flex-1 items-center justify-start py-1.5 pl-2">
+              <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden px-0.25 py-0.25 pr-2 font-mono text-xs leading-tight group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
+                {isPlaceholder || !isValueVisible
+                  ? hiddenString
+                  : variable.variable_type === "reference"
+                    ? variableValueParts.map((part, index) => (
+                        <span
+                          data-token={part.token !== null ? true : undefined}
+                          key={index}
+                          className="data-token:bg-process/10 data-token:ring-process/20 data-token:text-process data-token:rounded-[2px] data-token:ring-1"
+                        >
+                          {part.token !== null ? (
+                            <>
+                              <span className="text-process/50">
+                                {part.value.slice(0, tokenPrefix.length)}
+                              </span>
+                              <span>
+                                {part.value.slice(
+                                  tokenPrefix.length,
+                                  part.value.length - tokenSuffix.length,
+                                )}
+                              </span>
+                              <span className="text-process/50">
+                                {part.value.slice(
+                                  part.value.length - tokenSuffix.length,
+                                  part.value.length,
+                                )}
+                              </span>
+                            </>
+                          ) : (
+                            part.value
+                          )}
+                        </span>
+                      ))
+                    : variable.value}
               </p>
             </div>
             {isPlaceholder ? (
@@ -173,10 +270,12 @@ function ThreeDotButton({
       >
         <ScrollArea>
           <DropdownMenuGroup>
-            <DropdownMenuItem onSelect={() => setIsEditingVariable((o) => !o)}>
-              <PenIcon className="-ml-0.5 size-5" />
-              <p className="min-w-0 shrink leading-tight">Edit</p>
-            </DropdownMenuItem>
+            {variable.variable_type !== "reference" && (
+              <DropdownMenuItem onSelect={() => setIsEditingVariable((o) => !o)}>
+                <PenIcon className="-ml-0.5 size-5" />
+                <p className="min-w-0 shrink leading-tight">Edit</p>
+              </DropdownMenuItem>
+            )}
             <DeleteTrigger variable={variable} closeDropdown={() => setIsOpen(false)}>
               <DropdownMenuItem
                 onSelect={(e) => e.preventDefault()}
@@ -406,23 +505,30 @@ function CopyButton({
   const { copyToClipboard, isRecentlyCopied } = useCopyToClipboard();
   return (
     <Button
+      data-variable-type={variable?.variable_type}
       data-copied={isRecentlyCopied ? true : undefined}
       onClick={isPlaceholder || !variable ? () => null : () => copyToClipboard(variable.value)}
       variant="ghost"
       forceMinSize="medium"
       size="icon"
       className="text-muted-more-foreground group/button rounded-lg group-data-placeholder/card:text-transparent sm:rounded-md"
-      disabled={isPlaceholder}
+      disabled={isPlaceholder || variable?.variable_type === "reference"}
       fadeOnDisabled={false}
     >
       <div className="relative size-4 transition-transform group-data-copied/button:rotate-90">
-        <CopyIcon className="group-data-copied/button:text-success size-full transition-opacity group-data-copied/button:opacity-0" />
-        <CheckIcon
-          strokeWidth={3}
-          className="group-data-copied/button:text-success absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-opacity group-data-copied/button:opacity-100"
-        />
-        {isPlaceholder && (
-          <div className="bg-muted-more-foreground animate-skeleton absolute top-0 left-0 size-full rounded-sm" />
+        {variable?.variable_type === "reference" ? (
+          <MinusIcon className="size-full" />
+        ) : (
+          <>
+            <CopyIcon className="group-data-copied/button:text-success size-full transition-opacity group-data-copied/button:opacity-0" />
+            <CheckIcon
+              strokeWidth={3}
+              className="group-data-copied/button:text-success absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-opacity group-data-copied/button:opacity-100"
+            />
+            {isPlaceholder && (
+              <div className="bg-muted-more-foreground animate-skeleton absolute top-0 left-0 size-full rounded-sm" />
+            )}
+          </>
         )}
       </div>
     </Button>
