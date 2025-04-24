@@ -26,7 +26,7 @@ export default async function Page({ params }: TProps) {
     <VariablesProvider type="team" teamId={teamId} initialData={res.value}>
       <VariableReferencesProvider type="team" teamId={teamId}>
         <div className="flex w-full flex-col gap-2">
-          <VariablesHeader />
+          <VariablesHeader tokensDisabled />
           <VariablesList variableTypeProps={{ type: "team", teamId }} />
         </div>
       </VariableReferencesProvider>

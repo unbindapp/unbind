@@ -30,7 +30,7 @@ export default async function Page({ params, searchParams }: TProjectPageParams)
     <VariablesProvider type="project" teamId={teamId} projectId={projectId} initialData={res.value}>
       <VariableReferencesProvider type="project" teamId={teamId} projectId={projectId}>
         <div className="flex w-full flex-col gap-2">
-          <VariablesHeader />
+          <VariablesHeader tokensDisabled />
           <VariablesList variableTypeProps={{ type: "project", teamId, projectId }} />
         </div>
       </VariableReferencesProvider>

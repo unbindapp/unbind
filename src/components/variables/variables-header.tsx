@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { FilePenLineIcon, PlusIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 
-export default function VariablesHeader() {
+export default function VariablesHeader({ tokensDisabled }: { tokensDisabled?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   const {
     type,
@@ -88,7 +88,11 @@ export default function VariablesHeader() {
           </Button>
         </div>
       </div>
-      <CreateVariablesForm afterSuccessfulSubmit={() => setIsOpen(false)} isOpen={isOpen} />
+      <CreateVariablesForm
+        tokensDisabled={tokensDisabled}
+        afterSuccessfulSubmit={() => setIsOpen(false)}
+        isOpen={isOpen}
+      />
     </div>
   );
 }
