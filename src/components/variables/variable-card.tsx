@@ -45,6 +45,7 @@ import {
   MinusIcon,
   PenIcon,
   TrashIcon,
+  TriangleAlertIcon,
   XIcon,
 } from "lucide-react";
 import { Dispatch, ReactNode, useMemo, useRef, useState } from "react";
@@ -146,11 +147,11 @@ export default function VariableCard({
       data-not-editing={!isEditingVariable ? true : undefined}
       data-type={variable?.variable_type}
       data-reference-error={referenceError ? true : undefined}
-      className="data-not-editing:has-hover:hover:bg-background-hover data-reference-error:bg-destructive/5 data-reference-error:has-hover:hover:bg-destructive/7 group/card data-reference-error:border-destructive/10 relative flex w-full flex-col rounded-xl border px-3 py-0.75 data-placeholder:text-transparent sm:flex-row sm:items-center sm:rounded-lg sm:pr-0.75"
+      className="data-reference-error:bg-destructive/4 group/card data-reference-error:border-destructive/12 relative flex w-full flex-col rounded-xl border px-3 py-0.75 data-placeholder:text-transparent sm:flex-row sm:items-center sm:rounded-lg sm:pr-0.75"
     >
       <div className="flex h-9 w-full shrink-0 items-center py-2 pr-8 sm:w-56 sm:pr-4 md:w-64">
         {variable?.variable_type === "reference" && (
-          <Link2Icon className="text-process group-data-reference-error/card:text-destructive mr-2 size-3.5 shrink-0" />
+          <Link2Icon className="text-process mr-2 size-3.5 shrink-0" />
         )}
         {variable?.variable_type === "regular" && (
           <KeyIcon className="text-foreground mr-2 size-3.5 shrink-0" />
@@ -158,7 +159,7 @@ export default function VariableCard({
         {isPlaceholder && (
           <div className="bg-foreground animate-skeleton mr-2 size-3.5 shrink-0 rounded-full" />
         )}
-        <p className="group-data-reference-error/card:text-destructive group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden font-mono text-sm leading-tight text-ellipsis whitespace-nowrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
+        <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden font-mono text-sm leading-tight text-ellipsis whitespace-nowrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
           {isPlaceholder ? "Loading key" : variable.name}
         </p>
       </div>
@@ -178,7 +179,7 @@ export default function VariableCard({
             >
               <div className="relative size-4">
                 {referenceError ? (
-                  <MinusIcon className="size-full" />
+                  <TriangleAlertIcon className="text-destructive size-full" />
                 ) : (
                   <>
                     <EyeIcon className="size-full group-data-visible/button:opacity-0" />
@@ -191,7 +192,7 @@ export default function VariableCard({
               </div>
             </Button>
             <div className="relative flex min-h-9 min-w-0 flex-1 items-center justify-start py-1.5 pl-2">
-              <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden px-0.25 py-0.25 pr-2 font-mono text-xs leading-tight group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
+              <p className="group-data-placeholder/card:bg-foreground group-data-reference-error/card:text-destructive group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden px-0.25 py-0.25 pr-2 font-mono text-xs leading-tight group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
                 {referenceError
                   ? "The referenced value doesn't exist anymore. Consider deleting this."
                   : isPlaceholder || !isValueVisible

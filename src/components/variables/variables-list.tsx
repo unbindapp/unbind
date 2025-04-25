@@ -24,8 +24,13 @@ export default function VariablesList({ variableTypeProps }: TProps) {
     () =>
       data
         ? [
+            ...data.variable_references
+              .filter((v) => v.error !== null)
+              .map((v) => ({ variable_type: "reference", ...v }) as const),
+            ...data.variable_references
+              .filter((v) => v.error === null)
+              .map((v) => ({ variable_type: "reference", ...v }) as const),
             ...data.variables.map((v) => ({ variable_type: "regular", ...v }) as const),
-            ...data.variable_references.map((v) => ({ variable_type: "reference", ...v }) as const),
           ]
         : undefined,
     [data],
