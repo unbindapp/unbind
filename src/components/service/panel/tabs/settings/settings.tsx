@@ -8,7 +8,7 @@ import { TServiceShallow } from "@/server/trpc/api/services/types";
 export default function Settings({}: { service: TServiceShallow }) {
   return (
     <TabWrapper>
-      <Section title="Delete Service" id="danger-zone" Icon={FlameIcon}>
+      <Section className="pt-1 sm:pt-0" title="Delete Service" id="danger-zone" Icon={FlameIcon}>
         <DeleteServiceSection />
       </Section>
     </TabWrapper>
@@ -30,7 +30,7 @@ function Section({
 }) {
   return (
     <div className={cn("flex w-full flex-col", className)} id={id}>
-      <div className="flex w-full items-center justify-start gap-1.5 px-2 pb-3">
+      <div className="flex w-full items-center justify-start gap-1.5 px-1 pb-3">
         <Icon className="size-4.5 shrink-0" />
         <h3 className="min-w-0 shrink text-lg leading-tight font-semibold">{title}</h3>
       </div>

@@ -54,15 +54,15 @@ export default function VariablesHeader({ tokensDisabled }: { tokensDisabled?: b
     <div
       data-type={type}
       data-pending={isPending ? true : undefined}
-      className="group/header flex w-full flex-col gap-2 pb-1"
+      className="group/header flex w-full flex-col gap-2 pt-1 pb-1 data-[type=project]:pt-0 data-[type=team]:pt-0 sm:pt-0"
     >
-      <div className="flex w-full flex-col items-start justify-start gap-2.5 pt-1 sm:flex-row sm:items-center sm:justify-between sm:pt-0 sm:group-data-[type=project]/header:items-start sm:group-data-[type=team]/header:items-start">
+      <div className="flex w-full flex-col items-start justify-start gap-2.5 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 shrink overflow-hidden px-1">
           <h2 className="group-data-pending/header:bg-foreground group-data-pending/header:animate-skeleton min-w-0 shrink truncate text-lg leading-tight font-bold group-data-pending/header:rounded-md group-data-pending/header:text-transparent group-data-[type=project]/header:text-xl group-data-[type=team]/header:text-xl">
             {title}
           </h2>
         </div>
-        <div className="flex shrink-0 items-center justify-end gap-1.5 sm:group-data-[type=project]/header:-mt-1.5 sm:group-data-[type=team]/header:-mt-1.5">
+        <div className="flex shrink-0 items-center justify-end gap-1.5 pt-1 sm:-mt-1.5 sm:pt-0">
           <RawVariableEditor>
             <Button
               disabled={isPending}
