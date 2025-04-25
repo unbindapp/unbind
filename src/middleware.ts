@@ -41,13 +41,6 @@ export const config = {
 };
 
 export const middleware: NextMiddleware = async (request: NextRequest) => {
-  console.log(process.env.PROJECT_VAR_TEST);
-  console.log(process.env.TEAM_VAR_TEST);
-  console.log(process.env.VAR1);
-  console.log(process.env.VAR2);
-  console.log(process.env.VAR3);
-  console.log(process.env.VAR4);
-
   const token = await getToken({
     cookieName: sessionCookieName,
     req: request,

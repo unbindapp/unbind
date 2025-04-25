@@ -303,7 +303,7 @@ export default function CreateVariablesForm({
                                   classNameTextarea="font-mono"
                                   classNameDropdownContent="font-mono"
                                   className="flex-1"
-                                  placeholder="Value or ${Reference}"
+                                  placeholder={tokensDisabled ? "Value" : "Value or ${Reference}"}
                                   {...tokenProps}
                                   autoCapitalize="off"
                                   autoCorrect="off"
