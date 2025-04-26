@@ -1,7 +1,6 @@
 import { MetricsTypeSchema } from "@/server/go/client.gen";
 import { MetricsIntervalEnum, TMetricsIntervalEnum } from "@/server/trpc/api/metrics/types";
-import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
-import { TRPCError } from "@trpc/server";
+import { createTRPCRouter, privateProcedure } from "@/server/trpc/setup/trpc";
 import { z } from "zod";
 
 const intervalToStart: Record<TMetricsIntervalEnum, () => string> = {
@@ -13,7 +12,7 @@ const intervalToStart: Record<TMetricsIntervalEnum, () => string> = {
 };
 
 export const metricsRouter = createTRPCRouter({
-  list: publicProcedure
+  list: privateProcedure
     .input(
       z
         .object({
@@ -28,15 +27,8 @@ export const metricsRouter = createTRPCRouter({
     )
     .query(async function ({
       input: { type, teamId, projectId, environmentId, serviceId, interval },
-      ctx,
+      ctx: { goClient },
     }) {
-      const { session, goClient } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
       const start = intervalToStart[interval]();
 
       const metricsData = await goClient.metrics.get({

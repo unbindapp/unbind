@@ -1,10 +1,10 @@
 import { WebhookEventSchema, WebhookTypeSchema } from "@/server/go/client.gen";
-import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
-import { TRPCError } from "@trpc/server";
+import { createTRPCRouter, privateProcedure } from "@/server/trpc/setup/trpc";
+
 import { z } from "zod";
 
 export const webhooksRouter = createTRPCRouter({
-  list: publicProcedure
+  list: privateProcedure
     .input(
       z.discriminatedUnion("type", [
         z
@@ -22,14 +22,7 @@ export const webhooksRouter = createTRPCRouter({
           .strip(),
       ]),
     )
-    .query(async function ({ input, ctx }) {
-      const { session, goClient } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
+    .query(async function ({ input, ctx: { goClient } }) {
       const res = await goClient.unbindwebhooks.list(
         input.type === WebhookTypeSchema.Enum.project
           ? {
@@ -46,7 +39,7 @@ export const webhooksRouter = createTRPCRouter({
         webhooks: res.data,
       };
     }),
-  create: publicProcedure
+  create: privateProcedure
     .input(
       z.discriminatedUnion("type", [
         z.object({
@@ -64,14 +57,7 @@ export const webhooksRouter = createTRPCRouter({
         }),
       ]),
     )
-    .mutation(async function ({ input, ctx }) {
-      const { session, goClient } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
+    .mutation(async function ({ input, ctx: { goClient } }) {
       const res = await goClient.unbindwebhooks.create(
         input.type === WebhookTypeSchema.Enum.project
           ? {
@@ -92,7 +78,7 @@ export const webhooksRouter = createTRPCRouter({
         data: res.data,
       };
     }),
-  delete: publicProcedure
+  delete: privateProcedure
     .input(
       z.discriminatedUnion("type", [
         z.object({
@@ -108,15 +94,8 @@ export const webhooksRouter = createTRPCRouter({
         }),
       ]),
     )
-    .mutation(async function ({ input, ctx }) {
-      const { session } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
-      const res = await ctx.goClient.unbindwebhooks.delete(
+    .mutation(async function ({ input, ctx: { goClient } }) {
+      const res = await goClient.unbindwebhooks.delete(
         input.type === WebhookTypeSchema.Enum.project
           ? {
               type: WebhookTypeSchema.Enum.project,

@@ -1,10 +1,10 @@
 import { list_deploymentsQuerySchema } from "@/server/go/client.gen";
-import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
+import { createTRPCRouter, privateProcedure } from "@/server/trpc/setup/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 export const deploymentsRouter = createTRPCRouter({
-  list: publicProcedure
+  list: privateProcedure
     .input(
       z
         .object({
@@ -19,15 +19,8 @@ export const deploymentsRouter = createTRPCRouter({
     )
     .query(async function ({
       input: { teamId, projectId, environmentId, serviceId, cursor, statuses },
-      ctx,
+      ctx: { goClient },
     }) {
-      const { session, goClient } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
       const deployments = await goClient.deployments.list({
         team_id: teamId,
         project_id: projectId,
@@ -41,7 +34,7 @@ export const deploymentsRouter = createTRPCRouter({
         ...deployments.data,
       };
     }),
-  get: publicProcedure
+  get: privateProcedure
     .input(
       z
         .object({
@@ -55,15 +48,8 @@ export const deploymentsRouter = createTRPCRouter({
     )
     .query(async function ({
       input: { teamId, projectId, environmentId, serviceId, deploymentId },
-      ctx,
+      ctx: { goClient },
     }) {
-      const { session, goClient } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
       const deployments = await goClient.deployments.list({
         team_id: teamId,
         project_id: projectId,
@@ -82,7 +68,7 @@ export const deploymentsRouter = createTRPCRouter({
         deployment,
       };
     }),
-  create: publicProcedure
+  create: privateProcedure
     .input(
       z
         .object({
@@ -93,14 +79,10 @@ export const deploymentsRouter = createTRPCRouter({
         })
         .strip(),
     )
-    .mutation(async function ({ input: { teamId, projectId, environmentId, serviceId }, ctx }) {
-      const { session, goClient } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
+    .mutation(async function ({
+      input: { teamId, projectId, environmentId, serviceId },
+      ctx: { goClient },
+    }) {
       const deployment = await goClient.deployments.create({
         team_id: teamId,
         project_id: projectId,
@@ -109,6 +91,33 @@ export const deploymentsRouter = createTRPCRouter({
       });
       return {
         deployment: deployment.data,
+      };
+    }),
+  redeploy: privateProcedure
+    .input(
+      z
+        .object({
+          teamId: z.string().uuid(),
+          projectId: z.string().uuid(),
+          environmentId: z.string().uuid(),
+          serviceId: z.string().uuid(),
+          deploymentId: z.string().uuid(),
+        })
+        .strip(),
+    )
+    .mutation(async function ({
+      input: { teamId, projectId, environmentId, serviceId, deploymentId },
+      ctx: { goClient },
+    }) {
+      const result = await goClient.deployments.redeploy({
+        team_id: teamId,
+        project_id: projectId,
+        environment_id: environmentId,
+        service_id: serviceId,
+        deployment_id: deploymentId,
+      });
+      return {
+        data: result.data,
       };
     }),
 });

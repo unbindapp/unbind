@@ -1,5 +1,4 @@
-import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
-import { TRPCError } from "@trpc/server";
+import { createTRPCRouter, privateProcedure } from "@/server/trpc/setup/trpc";
 import { z } from "zod";
 
 const dockerHubApi = "https://hub.docker.com";
@@ -16,7 +15,7 @@ const DockerSearchResultSchema = z
   .strip();
 
 export const dockerRouter = createTRPCRouter({
-  searchRepositories: publicProcedure
+  searchRepositories: privateProcedure
     .input(
       z
         .object({
@@ -24,14 +23,7 @@ export const dockerRouter = createTRPCRouter({
         })
         .strip(),
     )
-    .query(async function ({ input: { search }, ctx }) {
-      const { session } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "Unauthorized",
-        });
-      }
+    .query(async function ({ input: { search } }) {
       if (!search) search = "a";
       const dockerHubSearchEndpoint = `${dockerHubApi}/v2/search/repositories/?page_size=25&query=${search}`;
       const res = await fetch(dockerHubSearchEndpoint);

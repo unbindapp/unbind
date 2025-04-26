@@ -75,6 +75,7 @@ export const ContainerStatusSchema = z
 export const CreateBuildInputBodySchema = z
   .object({
     environment_id: z.string(),
+    git_sha: z.string().nullable().optional(), // The git sha of the deployment
     project_id: z.string(),
     service_id: z.string(),
     team_id: z.string(),
@@ -459,6 +460,7 @@ export const DeleteWebhookResponseBodySchema = z
 
 export const ExtendedHostSpecSchema = z
   .object({
+    dns_configured: z.boolean(),
     host: z.string(),
     issued: z.boolean(),
     path: z.string(),
@@ -1000,6 +1002,22 @@ export const QueryLogsResponseBodySchema = z
   })
   .strip();
 
+export const RedeployInputBodySchema = z
+  .object({
+    deployment_id: z.string(),
+    environment_id: z.string(),
+    project_id: z.string(),
+    service_id: z.string(),
+    team_id: z.string(),
+  })
+  .strip();
+
+export const RedeployOutputBodySchema = z
+  .object({
+    data: DeploymentResponseSchema,
+  })
+  .strip();
+
 export const ReferenceableVariablesResponseBodySchema = z
   .object({
     data: z.array(AvailableVariableReferenceSchema),
@@ -1383,6 +1401,8 @@ export type LokiDirection = z.infer<typeof LokiDirectionSchema>;
 export type UserAPIResponse = z.infer<typeof UserAPIResponseSchema>;
 export type MeResponseBody = z.infer<typeof MeResponseBodySchema>;
 export type QueryLogsResponseBody = z.infer<typeof QueryLogsResponseBodySchema>;
+export type RedeployInputBody = z.infer<typeof RedeployInputBodySchema>;
+export type RedeployOutputBody = z.infer<typeof RedeployOutputBodySchema>;
 export type ReferenceableVariablesResponseBody = z.infer<
   typeof ReferenceableVariablesResponseBodySchema
 >;
@@ -1890,6 +1910,46 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           }
           const data = await response.json();
           return ListDeploymentsResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      redeploy: async (
+        params: RedeployInputBody,
+        fetchOptions?: RequestInit,
+      ): Promise<RedeployOutputBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/deployments/redeploy`);
+
+          const options: RequestInit = {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = RedeployInputBodySchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return RedeployOutputBodySchema.parse(data);
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;

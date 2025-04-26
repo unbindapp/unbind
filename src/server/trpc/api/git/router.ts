@@ -1,25 +1,17 @@
-import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
-import { TRPCError } from "@trpc/server";
+import { createTRPCRouter, privateProcedure } from "@/server/trpc/setup/trpc";
 import { z } from "zod";
 
 export const gitRouter = createTRPCRouter({
-  listRepositories: publicProcedure.input(z.object({}).strip()).query(async function ({
+  listRepositories: privateProcedure.input(z.object({}).strip()).query(async function ({
     input: {},
-    ctx,
+    ctx: { goClient },
   }) {
-    const { session, goClient } = ctx;
-    if (!session) {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "Unauthorized",
-      });
-    }
     const { data } = await goClient.github.repositories();
     return {
       repositories: data || [],
     };
   }),
-  getRepository: publicProcedure
+  getRepository: privateProcedure
     .input(
       z
         .object({
@@ -29,14 +21,7 @@ export const gitRouter = createTRPCRouter({
         })
         .strip(),
     )
-    .query(async function ({ input: { installationId, owner, repoName }, ctx }) {
-      const { session, goClient } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
+    .query(async function ({ input: { installationId, owner, repoName }, ctx: { goClient } }) {
       const service = await goClient.github.repositories.info({
         installation_id: installationId,
         repo_name: repoName,

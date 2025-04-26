@@ -1,10 +1,9 @@
 import { CreateEnvironmentFormNameSchema } from "@/server/trpc/api/environments/types";
-import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
-import { TRPCError } from "@trpc/server";
+import { createTRPCRouter, privateProcedure } from "@/server/trpc/setup/trpc";
 import { z } from "zod";
 
 export const environmentsRouter = createTRPCRouter({
-  get: publicProcedure
+  get: privateProcedure
     .input(
       z
         .object({
@@ -14,20 +13,13 @@ export const environmentsRouter = createTRPCRouter({
         })
         .strip(),
     )
-    .query(async function ({ input: { id, teamId, projectId }, ctx }) {
-      const { session, goClient } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
+    .query(async function ({ input: { id, teamId, projectId }, ctx: { goClient } }) {
       const res = await goClient.environments.get({ id, team_id: teamId, project_id: projectId });
       return {
         environment: res.data,
       };
     }),
-  list: publicProcedure
+  list: privateProcedure
     .input(
       z
         .object({
@@ -36,20 +28,13 @@ export const environmentsRouter = createTRPCRouter({
         })
         .strip(),
     )
-    .query(async function ({ input: { teamId, projectId }, ctx }) {
-      const { session, goClient } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
+    .query(async function ({ input: { teamId, projectId }, ctx: { goClient } }) {
       const res = await goClient.environments.list({ team_id: teamId, project_id: projectId });
       return {
         environments: res.data || [],
       };
     }),
-  create: publicProcedure
+  create: privateProcedure
     .input(
       z
         .object({
@@ -60,15 +45,10 @@ export const environmentsRouter = createTRPCRouter({
         })
         .strip(),
     )
-    .mutation(async function ({ input: { teamId, projectId, name, description }, ctx }) {
-      const { session, goClient } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
-
+    .mutation(async function ({
+      input: { teamId, projectId, name, description },
+      ctx: { goClient },
+    }) {
       const res = await goClient.environments.create({
         team_id: teamId,
         project_id: projectId,
@@ -79,7 +59,7 @@ export const environmentsRouter = createTRPCRouter({
         data: res.data,
       };
     }),
-  update: publicProcedure
+  update: privateProcedure
     .input(
       z
         .object({
@@ -91,15 +71,10 @@ export const environmentsRouter = createTRPCRouter({
         })
         .strip(),
     )
-    .mutation(async function ({ input: { id, name, description, teamId, projectId }, ctx }) {
-      const { session, goClient } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
-
+    .mutation(async function ({
+      input: { id, name, description, teamId, projectId },
+      ctx: { goClient },
+    }) {
       const res = await goClient.environments.update({
         team_id: teamId,
         project_id: projectId,
@@ -112,7 +87,7 @@ export const environmentsRouter = createTRPCRouter({
         data: res.data,
       };
     }),
-  delete: publicProcedure
+  delete: privateProcedure
     .input(
       z
         .object({
@@ -122,14 +97,7 @@ export const environmentsRouter = createTRPCRouter({
         })
         .strip(),
     )
-    .mutation(async function ({ input: { id, teamId, projectId }, ctx }) {
-      const { session, goClient } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
+    .mutation(async function ({ input: { id, teamId, projectId }, ctx: { goClient } }) {
       const res = await goClient.environments.delete({
         environment_id: id,
         team_id: teamId,

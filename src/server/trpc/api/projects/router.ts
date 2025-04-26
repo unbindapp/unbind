@@ -1,11 +1,10 @@
 import { generateProjectName } from "@/server/trpc/api/projects/helpers";
 import { ProjectUpdateFormSchema } from "@/server/trpc/api/projects/types";
-import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
-import { TRPCError } from "@trpc/server";
+import { createTRPCRouter, privateProcedure } from "@/server/trpc/setup/trpc";
 import { z } from "zod";
 
 export const projectsRouter = createTRPCRouter({
-  get: publicProcedure
+  get: privateProcedure
     .input(
       z
         .object({
@@ -14,20 +13,13 @@ export const projectsRouter = createTRPCRouter({
         })
         .strip(),
     )
-    .query(async function ({ input: { teamId, projectId }, ctx }) {
-      const { session, goClient } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
+    .query(async function ({ input: { teamId, projectId }, ctx: { goClient } }) {
       const res = await goClient.projects.get({ team_id: teamId, project_id: projectId });
       return {
         project: res.data,
       };
     }),
-  list: publicProcedure
+  list: privateProcedure
     .input(
       z
         .object({
@@ -35,22 +27,14 @@ export const projectsRouter = createTRPCRouter({
         })
         .strip(),
     )
-    .query(async function ({ input: { teamId }, ctx }) {
-      const { session, goClient } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
-
+    .query(async function ({ input: { teamId }, ctx: { goClient } }) {
       const res = await goClient.projects.list({ team_id: teamId });
 
       return {
         projects: res.data || [],
       };
     }),
-  create: publicProcedure
+  create: privateProcedure
     .input(
       z
         .object({
@@ -60,14 +44,7 @@ export const projectsRouter = createTRPCRouter({
         })
         .strip(),
     )
-    .mutation(async function ({ input: { teamId, name, description }, ctx }) {
-      const { session, goClient } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
+    .mutation(async function ({ input: { teamId, name, description }, ctx: { goClient } }) {
       const defaultname = generateProjectName();
 
       const res = await goClient.projects.create({
@@ -79,7 +56,7 @@ export const projectsRouter = createTRPCRouter({
         data: res.data,
       };
     }),
-  update: publicProcedure
+  update: privateProcedure
     .input(
       z
         .object({
@@ -89,15 +66,10 @@ export const projectsRouter = createTRPCRouter({
         .strip()
         .merge(ProjectUpdateFormSchema),
     )
-    .mutation(async function ({ input: { name, description, teamId, projectId }, ctx }) {
-      const { session, goClient } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
-
+    .mutation(async function ({
+      input: { name, description, teamId, projectId },
+      ctx: { goClient },
+    }) {
       const res = await goClient.projects.update({
         team_id: teamId,
         project_id: projectId,
@@ -109,7 +81,7 @@ export const projectsRouter = createTRPCRouter({
         data: res.data,
       };
     }),
-  delete: publicProcedure
+  delete: privateProcedure
     .input(
       z
         .object({
@@ -118,14 +90,7 @@ export const projectsRouter = createTRPCRouter({
         })
         .strip(),
     )
-    .mutation(async function ({ input: { teamId, projectId }, ctx }) {
-      const { session, goClient } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
+    .mutation(async function ({ input: { teamId, projectId }, ctx: { goClient } }) {
       const res = await goClient.projects.delete({ team_id: teamId, project_id: projectId });
       return {
         data: res.data,

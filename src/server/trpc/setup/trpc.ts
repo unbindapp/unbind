@@ -9,7 +9,7 @@
 import { env } from "@/lib/env";
 import { auth } from "@/server/auth/auth";
 import { createClient } from "@/server/go/client.gen";
-import { initTRPC } from "@trpc/server";
+import { initTRPC, TRPCError } from "@trpc/server";
 import { Session } from "next-auth";
 import superjson from "superjson";
 import { ZodError } from "zod";
@@ -116,11 +116,17 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
   return result;
 });
 
-/**
- * Public (unauthenticated) procedure
- *
- * This is the base piece you use to build new queries and mutations on your tRPC API. It does not
- * guarantee that a user querying is authorized, but you can still access user session data if they
- * are logged in.
- */
+const authMiddleware = t.middleware(async ({ next, ctx }) => {
+  if (!ctx.session) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "You need to be logged in to access this resource",
+    });
+  }
+
+  const result = await next();
+  return result;
+});
+
 export const publicProcedure = t.procedure.use(timingMiddleware);
+export const privateProcedure = t.procedure.use(timingMiddleware).use(authMiddleware);

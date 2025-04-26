@@ -2,9 +2,7 @@ import { deploymentsRouter } from "@/server/trpc/api/deployments/router";
 import { dockerRouter } from "@/server/trpc/api/docker/router";
 import { environmentsRouter } from "@/server/trpc/api/environments/router";
 import { gitRouter } from "@/server/trpc/api/git/router";
-import { githubRouter } from "@/server/trpc/api/github/router";
 import { logsRouter } from "@/server/trpc/api/logs/router";
-import { mainRouter } from "@/server/trpc/api/main/router";
 import { metricsRouter } from "@/server/trpc/api/metrics/router";
 import { projectsRouter } from "@/server/trpc/api/projects/router";
 import { servicesRouter } from "@/server/trpc/api/services/router";
@@ -23,7 +21,6 @@ import { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
-  main: mainRouter,
   teams: teamsRouter,
   projects: projectsRouter,
   services: servicesRouter,
@@ -32,7 +29,6 @@ export const appRouter = createTRPCRouter({
   variables: variablesRouter,
   logs: logsRouter,
   metrics: metricsRouter,
-  github: githubRouter,
   git: gitRouter,
   docker: dockerRouter,
   webhooks: webhooksRouter,

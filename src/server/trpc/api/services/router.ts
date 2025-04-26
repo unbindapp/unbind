@@ -1,11 +1,10 @@
 import { CreateServiceInput } from "@/server/go/client.gen";
 import { CreateServiceSchema, UpdateServiceInputSchema } from "@/server/trpc/api/services/types";
-import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
-import { TRPCError } from "@trpc/server";
+import { createTRPCRouter, privateProcedure } from "@/server/trpc/setup/trpc";
 import { z } from "zod";
 
 export const servicesRouter = createTRPCRouter({
-  list: publicProcedure
+  list: privateProcedure
     .input(
       z
         .object({
@@ -15,15 +14,7 @@ export const servicesRouter = createTRPCRouter({
         })
         .strip(),
     )
-    .query(async function ({ input: { teamId, projectId, environmentId }, ctx }) {
-      const { session, goClient } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
-
+    .query(async function ({ input: { teamId, projectId, environmentId }, ctx: { goClient } }) {
       const services = await goClient.services.list({
         team_id: teamId,
         project_id: projectId,
@@ -34,7 +25,7 @@ export const servicesRouter = createTRPCRouter({
         services: services.data || [],
       };
     }),
-  get: publicProcedure
+  get: privateProcedure
     .input(
       z
         .object({
@@ -45,14 +36,10 @@ export const servicesRouter = createTRPCRouter({
         })
         .strip(),
     )
-    .query(async function ({ input: { teamId, projectId, environmentId, serviceId }, ctx }) {
-      const { session, goClient } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
+    .query(async function ({
+      input: { teamId, projectId, environmentId, serviceId },
+      ctx: { goClient },
+    }) {
       const service = await goClient.services.get({
         team_id: teamId,
         project_id: projectId,
@@ -63,15 +50,10 @@ export const servicesRouter = createTRPCRouter({
         service: service.data,
       };
     }),
-  create: publicProcedure.input(CreateServiceSchema).mutation(async function ({ input, ctx }) {
-    const { session, goClient } = ctx;
-    if (!session) {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "You need to be logged in to access this resource",
-      });
-    }
-
+  create: privateProcedure.input(CreateServiceSchema).mutation(async function ({
+    input,
+    ctx: { goClient },
+  }) {
     const sharedParams: CreateServiceInput = {
       team_id: input.teamId,
       project_id: input.projectId,
@@ -107,17 +89,10 @@ export const servicesRouter = createTRPCRouter({
       service: service.data,
     };
   }),
-  update: publicProcedure.input(UpdateServiceInputSchema).mutation(async function ({
+  update: privateProcedure.input(UpdateServiceInputSchema).mutation(async function ({
     input: { teamId, projectId, environmentId, serviceId, name, description },
-    ctx,
+    ctx: { goClient },
   }) {
-    const { session, goClient } = ctx;
-    if (!session) {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "You need to be logged in to access this resource",
-      });
-    }
     const service = await goClient.services.update({
       team_id: teamId,
       project_id: projectId,
@@ -130,7 +105,7 @@ export const servicesRouter = createTRPCRouter({
       service: service.data,
     };
   }),
-  delete: publicProcedure
+  delete: privateProcedure
     .input(
       z.object({
         teamId: z.string().uuid(),
@@ -139,14 +114,10 @@ export const servicesRouter = createTRPCRouter({
         serviceId: z.string().uuid(),
       }),
     )
-    .mutation(async function ({ input: { teamId, projectId, environmentId, serviceId }, ctx }) {
-      const { session, goClient } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
+    .mutation(async function ({
+      input: { teamId, projectId, environmentId, serviceId },
+      ctx: { goClient },
+    }) {
       const service = await goClient.services.delete({
         team_id: teamId,
         project_id: projectId,

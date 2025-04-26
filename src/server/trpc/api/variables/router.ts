@@ -7,12 +7,11 @@ import {
   VariableForCreateSchema,
   VariableReferenceForCreateSchema,
 } from "@/server/trpc/api/variables/types";
-import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
-import { TRPCError } from "@trpc/server";
+import { createTRPCRouter, privateProcedure } from "@/server/trpc/setup/trpc";
 import { z } from "zod";
 
 export const variablesRouter = createTRPCRouter({
-  list: publicProcedure
+  list: privateProcedure
     .input(
       z
         .object({
@@ -24,14 +23,10 @@ export const variablesRouter = createTRPCRouter({
         })
         .strip(),
     )
-    .query(async function ({ input: { teamId, projectId, environmentId, serviceId, type }, ctx }) {
-      const { session, goClient } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
+    .query(async function ({
+      input: { teamId, projectId, environmentId, serviceId, type },
+      ctx: { goClient },
+    }) {
       const res = await goClient.variables.list({
         team_id: teamId,
         project_id: projectId,
@@ -43,7 +38,7 @@ export const variablesRouter = createTRPCRouter({
         ...res.data,
       };
     }),
-  createOrUpdate: publicProcedure
+  createOrUpdate: privateProcedure
     .input(
       z
         .object({
@@ -69,15 +64,8 @@ export const variablesRouter = createTRPCRouter({
         type,
         behavior,
       },
-      ctx,
+      ctx: { goClient },
     }) {
-      const { session, goClient } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
       const res = await goClient.variables.update({
         behavior,
         team_id: teamId,
@@ -92,7 +80,7 @@ export const variablesRouter = createTRPCRouter({
         data: res.data,
       };
     }),
-  delete: publicProcedure
+  delete: privateProcedure
     .input(
       z
         .object({
@@ -108,15 +96,8 @@ export const variablesRouter = createTRPCRouter({
     )
     .mutation(async function ({
       input: { teamId, projectId, environmentId, serviceId, variables, variableReferenceIds, type },
-      ctx,
+      ctx: { goClient },
     }) {
-      const { session, goClient } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
       const res = await goClient.variables.delete({
         team_id: teamId,
         project_id: projectId,
@@ -130,7 +111,7 @@ export const variablesRouter = createTRPCRouter({
         data: res.data,
       };
     }),
-  listAvailableVariableReferences: publicProcedure
+  listAvailableVariableReferences: privateProcedure
     .input(
       z
         .object({
@@ -141,15 +122,10 @@ export const variablesRouter = createTRPCRouter({
         })
         .strip(),
     )
-    .query(async function ({ input: { teamId, projectId, environmentId, serviceId }, ctx }) {
-      const { session, goClient } = ctx;
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
+    .query(async function ({
+      input: { teamId, projectId, environmentId, serviceId },
+      ctx: { goClient },
+    }) {
       const res = await goClient.variables.references.available({
         team_id: teamId,
         environment_id: environmentId,

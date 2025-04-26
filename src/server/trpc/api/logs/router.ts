@@ -1,11 +1,10 @@
 import { query_logsQuerySchema } from "@/server/go/client.gen";
 import { getLogLevelFromMessage } from "@/server/trpc/api/logs/helpers";
-import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
-import { TRPCError } from "@trpc/server";
+import { createTRPCRouter, privateProcedure } from "@/server/trpc/setup/trpc";
 import { z } from "zod";
 
 export const logsRouter = createTRPCRouter({
-  list: publicProcedure
+  list: privateProcedure
     .input(
       z
         .object({
@@ -37,15 +36,8 @@ export const logsRouter = createTRPCRouter({
         end,
         limit,
       },
-      ctx,
+      ctx: { goClient },
     }) {
-      const { session, goClient } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
       const logsData = await goClient.logs.query({
         type,
         team_id: teamId,

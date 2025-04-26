@@ -1,10 +1,9 @@
 import { TeamUpdateFormSchema } from "@/server/trpc/api/teams/types";
-import { createTRPCRouter, publicProcedure } from "@/server/trpc/setup/trpc";
-import { TRPCError } from "@trpc/server";
+import { createTRPCRouter, privateProcedure } from "@/server/trpc/setup/trpc";
 import { z } from "zod";
 
 export const teamsRouter = createTRPCRouter({
-  get: publicProcedure
+  get: privateProcedure
     .input(
       z
         .object({
@@ -12,33 +11,19 @@ export const teamsRouter = createTRPCRouter({
         })
         .strip(),
     )
-    .query(async function ({ input: { teamId }, ctx }) {
-      const { session, goClient } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
+    .query(async function ({ input: { teamId }, ctx: { goClient } }) {
       const res = await goClient.teams.get({ team_id: teamId });
       return {
         team: res.data,
       };
     }),
-  list: publicProcedure.query(async function ({ ctx }) {
-    const { session, goClient } = ctx;
-    if (!session) {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "You need to be logged in to access this resource",
-      });
-    }
+  list: privateProcedure.query(async function ({ ctx: { goClient } }) {
     const res = await goClient.teams.list();
     return {
       teams: res.data || [],
     };
   }),
-  update: publicProcedure
+  update: privateProcedure
     .input(
       z
         .object({
@@ -47,15 +32,7 @@ export const teamsRouter = createTRPCRouter({
         .strip()
         .merge(TeamUpdateFormSchema),
     )
-    .mutation(async function ({ input: { name, description, teamId }, ctx }) {
-      const { session, goClient } = ctx;
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You need to be logged in to access this resource",
-        });
-      }
-
+    .mutation(async function ({ input: { name, description, teamId }, ctx: { goClient } }) {
       const res = await goClient.teams.update({
         team_id: teamId,
         name: name,
