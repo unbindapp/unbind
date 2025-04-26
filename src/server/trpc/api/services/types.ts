@@ -35,8 +35,8 @@ export const CreateServiceSharedSchema = z
 
 export const CreateServiceFromGitSchema = z
   .object({
-    builder: z.enum(["railpack"]),
     type: z.enum(["github"]),
+    builder: z.enum(["railpack"]),
     gitHubInstallationId: z.number(),
     repositoryName: z.string(),
     repositoryOwner: z.string(),
@@ -46,9 +46,22 @@ export const CreateServiceFromGitSchema = z
 
 export const CreateServiceFromDockerImageSchema = z
   .object({
-    builder: z.enum(["docker"]),
     type: z.enum(["docker-image"]),
+    builder: z.enum(["docker"]),
     image: z.string(),
+  })
+  .merge(CreateServiceSharedSchema)
+  .strip();
+
+const AvailableDatabaseEnum = z.enum(["postgres", "redis"]);
+
+export type TAvailableDatabase = z.infer<typeof AvailableDatabaseEnum>;
+
+export const CreateServiceFromDatabaseSchema = z
+  .object({
+    type: z.enum(["database"]),
+    builder: z.enum(["database"]),
+    database_type: AvailableDatabaseEnum,
   })
   .merge(CreateServiceSharedSchema)
   .strip();
@@ -56,6 +69,7 @@ export const CreateServiceFromDockerImageSchema = z
 export const CreateServiceSchema = z.discriminatedUnion("type", [
   CreateServiceFromGitSchema,
   CreateServiceFromDockerImageSchema,
+  CreateServiceFromDatabaseSchema,
 ]);
 
 export const UpdateServiceInputSchema = z

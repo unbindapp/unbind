@@ -334,12 +334,6 @@ export const DataStructSchema = z
   })
   .strip();
 
-export const DatabaseListSchema = z
-  .object({
-    databases: z.array(z.string()),
-  })
-  .strip();
-
 export const HelmChartInfoSchema = z
   .object({
     name: z.string(),
@@ -455,6 +449,19 @@ export const DeleteWebhookInputBodySchema = z
 export const DeleteWebhookResponseBodySchema = z
   .object({
     data: DataStructSchema,
+  })
+  .strip();
+
+export const DnsCheckSchema = z
+  .object({
+    cloudflare: z.boolean(),
+    dns_configured: z.boolean(),
+  })
+  .strip();
+
+export const DnsCheckResponseBodySchema = z
+  .object({
+    data: DnsCheckSchema,
   })
   .strip();
 
@@ -850,7 +857,7 @@ export const ItemSchema = z
 
 export const ListDatabasesResponseBodySchema = z
   .object({
-    data: DatabaseListSchema,
+    data: z.array(z.string()),
   })
   .strip();
 
@@ -1306,7 +1313,6 @@ export type WebhookType = z.infer<typeof WebhookTypeSchema>;
 export type WebhookResponse = z.infer<typeof WebhookResponseSchema>;
 export type CreateWebhookResponseBody = z.infer<typeof CreateWebhookResponseBodySchema>;
 export type DataStruct = z.infer<typeof DataStructSchema>;
-export type DatabaseList = z.infer<typeof DatabaseListSchema>;
 export type HelmChartInfo = z.infer<typeof HelmChartInfoSchema>;
 export type ParameterProperty = z.infer<typeof ParameterPropertySchema>;
 export type DefinitionParameterSchema = z.infer<typeof DefinitionParameterSchemaSchema>;
@@ -1321,6 +1327,8 @@ export type VariableDeleteInput = z.infer<typeof VariableDeleteInputSchema>;
 export type DeleteVariablesInputBody = z.infer<typeof DeleteVariablesInputBodySchema>;
 export type DeleteWebhookInputBody = z.infer<typeof DeleteWebhookInputBodySchema>;
 export type DeleteWebhookResponseBody = z.infer<typeof DeleteWebhookResponseBodySchema>;
+export type DnsCheck = z.infer<typeof DnsCheckSchema>;
+export type DnsCheckResponseBody = z.infer<typeof DnsCheckResponseBodySchema>;
 export type ExtendedHostSpec = z.infer<typeof ExtendedHostSpecSchema>;
 export type IngressEndpoint = z.infer<typeof IngressEndpointSchema>;
 export type ServiceEndpoint = z.infer<typeof ServiceEndpointSchema>;
@@ -1607,6 +1615,12 @@ export const list_serviceQuerySchema = z
     team_id: z.string(),
     project_id: z.string(),
     environment_id: z.string(),
+  })
+  .passthrough();
+
+export const check_dns_resolutionQuerySchema = z
+  .object({
+    domain: z.string(),
   })
   .passthrough();
 
@@ -3428,6 +3442,54 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             }
             const data = await response.json();
             return BuildkitSettingsUpdateResponseBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+      },
+      dns: {
+        check: async (
+          params: z.infer<typeof check_dns_resolutionQuerySchema>,
+          fetchOptions?: RequestInit,
+        ): Promise<DnsCheckResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/system/dns/check`);
+            const validatedQuery = check_dns_resolutionQuerySchema.parse(params);
+            const queryKeys = ['domain'];
+            queryKeys.forEach((key) => {
+              const value = validatedQuery[key as keyof typeof validatedQuery];
+              if (value !== undefined && value !== null) {
+                url.searchParams.append(key, String(value));
+              }
+            });
+            const options: RequestInit = {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return DnsCheckResponseBodySchema.parse(data);
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;

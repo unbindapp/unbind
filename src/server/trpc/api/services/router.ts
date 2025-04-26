@@ -74,6 +74,12 @@ export const servicesRouter = createTRPCRouter({
         builder: input.builder,
         image: input.image,
       };
+    } else if (input.type === "database") {
+      params = {
+        ...sharedParams,
+        builder: input.builder,
+        database_type: input.database_type,
+      };
     } else {
       params = {
         ...sharedParams,
@@ -131,7 +137,7 @@ export const servicesRouter = createTRPCRouter({
   listDatabases: privateProcedure.input(z.object({})).query(async function ({ ctx: { goClient } }) {
     const result = await goClient.services.databases.installable.list();
     return {
-      databases: result.data.databases,
+      databases: result.data,
     };
   }),
   getDatabase: privateProcedure

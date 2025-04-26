@@ -1,5 +1,5 @@
 import { contextCommandPanelRootPage } from "@/components/command-panel/constants";
-import useDatabaseItem from "@/components/command-panel/context-command-panel/items/database";
+import { useDatabaseItemHook } from "@/components/command-panel/context-command-panel/items/database";
 import { useDockerImageItemHook } from "@/components/command-panel/context-command-panel/items/docker-image";
 import useGoToItem from "@/components/command-panel/context-command-panel/items/go-to";
 import useNewProjectItem from "@/components/command-panel/context-command-panel/items/new-project";
@@ -21,12 +21,14 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
 
   const useRepoItem = useRepoItemHook({ context });
   const useDockerImageItem = useDockerImageItemHook({ context });
+  const useDatabaseItem = useDatabaseItemHook({ context });
 
   const { item: repoItem } = useRepoItem({ context });
   const { item: dockerImageItem } = useDockerImageItem({ context });
+  const { item: databaseItem } = useDatabaseItem({ context });
+
   const { item: templateItem } = useTemplateItem({ context });
   const { item: goToItem } = useGoToItem({ context });
-  const { item: databaseItem } = useDatabaseItem({ context });
   const { item: newProjectItem } = useNewProjectItem({ context });
   const { item: preferencesItem } = usePreferencesItem({ context });
 
@@ -61,7 +63,7 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
           ? [newProjectItem]
           : []),
         ...(repoItem ? [repoItem] : []),
-        databaseItem,
+        ...(databaseItem ? [databaseItem] : []),
         templateItem,
         ...(dockerImageItem ? [dockerImageItem] : []),
         ...(preferencesItem ? [preferencesItem] : []),

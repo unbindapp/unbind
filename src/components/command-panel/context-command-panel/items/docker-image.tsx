@@ -3,7 +3,7 @@ import { useCommandPanelStore } from "@/components/command-panel/store/command-p
 import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
 import BrandIcon from "@/components/icons/brand";
-import { useProject } from "@/components/project/project-provider";
+import { useProject, useProjectUtils } from "@/components/project/project-provider";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useServicesUtils } from "@/components/project/services-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
@@ -34,7 +34,7 @@ export function useDockerImageItemHook({ context }: TProps) {
   return hook;
 }
 
-export default function useDockerImageItem({ context }: TProps) {
+function useDockerImageItem({ context }: TProps) {
   const { closePanel: closeCommandPanel } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
   });
@@ -49,7 +49,7 @@ export default function useDockerImageItem({ context }: TProps) {
   } = useProject();
 
   const { invalidate: invalidateProjects } = useProjectsUtils({ teamId });
-  const { invalidate: invalidateProject } = useProjectsUtils({ teamId });
+  const { invalidate: invalidateProject } = useProjectUtils({ teamId, projectId });
 
   const { openPanel: openServicePanel } = useServicePanel();
 

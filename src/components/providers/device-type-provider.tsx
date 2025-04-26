@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, ReactNode, useContext, useMemo } from "react";
+import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import { useMediaQuery } from "usehooks-ts";
 
 type TDeviceTypeContext = {
@@ -13,12 +13,17 @@ export const DeviceTypeProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
   const isTouchscreen = useMediaQuery("(pointer: coarse)");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") setMounted(true);
+  }, []);
 
   const value: TDeviceTypeContext = useMemo(
     () => ({
-      isTouchscreen,
+      isTouchscreen: mounted ? isTouchscreen : false,
     }),
-    [isTouchscreen],
+    [isTouchscreen, mounted],
   );
 
   return <DeviceTypeContext.Provider value={value}>{children}</DeviceTypeContext.Provider>;
