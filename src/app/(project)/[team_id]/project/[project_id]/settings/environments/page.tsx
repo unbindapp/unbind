@@ -7,7 +7,6 @@ import EnvironmentsProvider from "@/components/environment/environments-provider
 import SettingsTabTitle from "@/components/settings/settings-tab-title";
 import { apiServer } from "@/server/trpc/setup/server";
 import { ResultAsync } from "neverthrow";
-import { notFound } from "next/navigation";
 
 export default async function Page({ params, searchParams }: TProjectPageParams) {
   const { teamId, projectId } = await getProjectPageParams({
@@ -24,12 +23,12 @@ export default async function Page({ params, searchParams }: TProjectPageParams)
     () => new Error("Failed to fetch services"),
   );
 
-  if (initialData.isErr()) {
-    return notFound();
-  }
-
   return (
-    <EnvironmentsProvider teamId={teamId} projectId={projectId} initialData={initialData.value}>
+    <EnvironmentsProvider
+      teamId={teamId}
+      projectId={projectId}
+      initialData={initialData.isOk() ? initialData.value : undefined}
+    >
       <SettingsTabTitle>Environments</SettingsTabTitle>
       <EnvironmentsTabContent />
     </EnvironmentsProvider>

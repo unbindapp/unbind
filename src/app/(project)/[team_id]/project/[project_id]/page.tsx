@@ -5,7 +5,6 @@ import ServiceCardList from "@/components/project/service-card-list";
 import ServicesProvider from "@/components/project/services-provider";
 import { apiServer } from "@/server/trpc/setup/server";
 import { ResultAsync } from "neverthrow";
-import { notFound } from "next/navigation";
 import { type SearchParams } from "nuqs/server";
 
 type TProps = {
@@ -32,16 +31,12 @@ export default async function Page({ params, searchParams }: TProps) {
     () => new Error("Failed to fetch services"),
   );
 
-  if (initialData.isErr()) {
-    return notFound();
-  }
-
   return (
     <ServicesProvider
       teamId={teamId}
       projectId={projectId}
       environmentId={environmentId}
-      initialData={initialData.value}
+      initialData={initialData.isOk() ? initialData.value : undefined}
     >
       <PageWrapper>
         <div className="flex w-full max-w-7xl flex-col">

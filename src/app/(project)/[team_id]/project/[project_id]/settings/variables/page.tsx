@@ -8,7 +8,6 @@ import VariablesList from "@/components/variables/variables-list";
 import VariablesProvider from "@/components/variables/variables-provider";
 import { apiServer } from "@/server/trpc/setup/server";
 import { ResultAsync } from "neverthrow";
-import { notFound } from "next/navigation";
 
 export default async function Page({ params, searchParams }: TProjectPageParams) {
   const { teamId, projectId } = await getProjectPageParams({
@@ -17,17 +16,18 @@ export default async function Page({ params, searchParams }: TProjectPageParams)
     currentPathname: `/settings/variables`,
   });
 
-  const res = await ResultAsync.fromPromise(
+  const initialData = await ResultAsync.fromPromise(
     apiServer.variables.list({ type: "project", teamId, projectId }),
     () => new Error(`Failed to fetch variables`),
   );
 
-  if (res.isErr()) {
-    return notFound();
-  }
-
   return (
-    <VariablesProvider type="project" teamId={teamId} projectId={projectId} initialData={res.value}>
+    <VariablesProvider
+      type="project"
+      teamId={teamId}
+      projectId={projectId}
+      initialData={initialData.isOk() ? initialData.value : undefined}
+    >
       <VariableReferencesProvider type="project" teamId={teamId} projectId={projectId}>
         <div className="flex w-full flex-col gap-2">
           <VariablesHeader tokensDisabled />

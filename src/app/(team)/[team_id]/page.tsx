@@ -15,30 +15,20 @@ export const metadata: Metadata = {};
 
 export default async function Page({ params }: TProps) {
   const { team_id: teamId } = await params;
-  const res = await ResultAsync.fromPromise(
-    apiServer.projects.list.prefetch({ teamId }),
-    () => new Error("Failed to prefetch projects for the team"),
+
+  const initialData = await ResultAsync.fromPromise(
+    apiServer.projects.list({
+      teamId,
+    }),
+    () => new Error("Failed to fetch projects"),
   );
 
-  if (res.isErr()) {
-    return notFound();
-  }
-
-  const [projectsInitialData] = await Promise.all([
-    ResultAsync.fromPromise(
-      apiServer.projects.list({
-        teamId,
-      }),
-      () => new Error("Failed to fetch projects"),
-    ),
-  ]);
-
-  if (projectsInitialData.isErr()) {
+  if (initialData.isErr()) {
     return notFound();
   }
 
   return (
-    <ProjectsProvider teamId={teamId} initialData={projectsInitialData.value}>
+    <ProjectsProvider teamId={teamId} initialData={initialData.value}>
       <PageWrapper>
         <div className="flex w-full max-w-7xl flex-col">
           <div className="flex w-full flex-wrap items-center justify-between gap-4 px-1">
