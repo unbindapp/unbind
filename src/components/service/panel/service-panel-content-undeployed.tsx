@@ -56,6 +56,7 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
     api.variables.createOrUpdate.useMutation();
 
   const tagState = useState<string | null>(null);
+  const branchState = useState<string | null>(null);
 
   const form = useAppForm({
     defaultValues: {},
@@ -104,7 +105,7 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
       <ScrollArea viewportClassName="pb-[calc(var(--safe-area-inset-bottom)+2rem)]">
         <div className="flex w-full flex-1 flex-col gap-4 overflow-auto px-3 py-4 sm:p-6">
           <h2 className="-mt-1 px-2 text-xl font-bold sm:text-2xl">Deploy Service</h2>
-          <Content service={service} tagState={tagState} />
+          <Content service={service} tagState={tagState} branchState={branchState} />
           <VariablesProvider
             teamId={teamId}
             projectId={projectId}
@@ -154,9 +155,17 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
   );
 }
 
-type TTagState = [string | null, Dispatch<SetStateAction<string | null>>];
+type TStringOrNullState = [string | null, Dispatch<SetStateAction<string | null>>];
 
-function Content({ service, tagState }: { service: TServiceShallow; tagState: TTagState }) {
+function Content({
+  service,
+  tagState,
+  branchState,
+}: {
+  service: TServiceShallow;
+  tagState: TStringOrNullState;
+  branchState: TStringOrNullState;
+}) {
   if (service.config.type === "docker-image") {
     const arr = service.config.image?.split(":");
     const image = arr?.[0];
@@ -168,8 +177,15 @@ function Content({ service, tagState }: { service: TServiceShallow; tagState: TT
   }
 
   if (service.config.type === "github") {
-    if (!service.git_repository_owner || !service.git_repository || !service.config.git_branch) {
-      return <ErrorLine message="Git owner, repository or branch is not found." />;
+    if (
+      !service.git_repository_owner ||
+      !service.git_repository ||
+      !service.config.git_branch ||
+      service.github_installation_id === undefined
+    ) {
+      return (
+        <ErrorLine message="Git owner, repository, installation ID, or branch is not found." />
+      );
     }
 
     return (
@@ -177,6 +193,8 @@ function Content({ service, tagState }: { service: TServiceShallow; tagState: TT
         owner={service.git_repository_owner}
         repo={service.git_repository}
         branch={service.config.git_branch}
+        installationId={service.github_installation_id}
+        branchState={branchState}
       />
     );
   }
@@ -201,7 +219,48 @@ function BlockItem({ title, children }: { title: string; children: ReactNode }) 
   );
 }
 
-function GitContent({ repo, owner, branch }: { repo: string; owner: string; branch: string }) {
+function GitContent({
+  repo,
+  owner,
+  branch,
+  installationId,
+  branchState,
+}: {
+  repo: string;
+  owner: string;
+  branch: string;
+  installationId: number;
+  branchState: TStringOrNullState;
+}) {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [currentBranch, setCurrentBranch] = branchState;
+
+  const [commandValue, setCommandValue] = useState("");
+
+  const { data, isPending, error } = api.git.getRepository.useQuery({
+    owner,
+    repoName: repo,
+    installationId,
+  });
+
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const timeout = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (timeout.current) clearTimeout(timeout.current);
+    timeout.current = setTimeout(() => {
+      scrollAreaRef.current?.scrollTo({ top: 0 });
+    });
+
+    if (data?.repository.branches && data.repository.branches.length > 0) {
+      setCommandValue(data.repository.branches[0].name);
+    }
+
+    return () => {
+      if (timeout.current) clearTimeout(timeout.current);
+    };
+  }, [data]);
+
   return (
     <Block>
       <BlockItem title="Repository">
@@ -211,10 +270,69 @@ function GitContent({ repo, owner, branch }: { repo: string; owner: string; bran
         </div>
       </BlockItem>
       <BlockItem title="Branch">
-        <div className="mt-1 flex w-full flex-row items-center gap-2 rounded-xl border px-3.5 py-3">
-          <GitBranchIcon className="size-5 shrink-0 scale-90" />
-          <p className="min-w-0 shrink truncate leading-tight font-medium">{branch}</p>
-        </div>
+        <Popover open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              data-open={isDropdownOpen ? true : undefined}
+              className="group/button mt-1 flex w-full flex-row items-center justify-start gap-2 rounded-xl border px-3.5 py-3 text-left"
+            >
+              <GitBranchIcon className="size-5 shrink-0 scale-90" />
+              <p className="min-w-0 flex-1 shrink truncate leading-tight font-medium">
+                {currentBranch || branch}
+              </p>
+              <ChevronDownIcon className="text-muted-foreground -mr-1 size-5 transition group-data-open/button:rotate-180" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="flex h-68 max-h-[min(30rem,var(--radix-popper-available-height))] overflow-hidden rounded-xl p-0">
+            <Command
+              value={commandValue}
+              onValueChange={setCommandValue}
+              shouldFilter={isPending ? false : true}
+              wrapper="none"
+              className="flex flex-1 flex-col"
+            >
+              <CommandInput showSpinner={isPending} placeholder="Search branches..." />
+              <ScrollArea viewportRef={scrollAreaRef} className="flex flex-1 flex-col">
+                <CommandList>
+                  {data && (
+                    <CommandEmpty className="text-muted-foreground flex items-center justify-start gap-2 px-2.5 py-2.5 leading-tight">
+                      <GitBranchIcon className="size-4.5 shrink-0" />
+                      <p className="min-w-0 shrink">No branch found</p>
+                    </CommandEmpty>
+                  )}
+                  <CommandGroup>
+                    {!data &&
+                      isPending &&
+                      placeholderArray.map((_, index) => (
+                        <CommandItem disabled className="rounded-lg" key={index}>
+                          <p className="bg-foreground animate-skeleton min-w-0 shrink rounded-md leading-tight">
+                            Loading {index}
+                          </p>
+                        </CommandItem>
+                      ))}
+                    {!data && !isPending && error && (
+                      <ErrorCard className="rounded-lg" message={error.message} />
+                    )}
+                    {data &&
+                      data.repository.branches?.map((branch) => (
+                        <CommandItem
+                          onSelect={(v) => {
+                            setCurrentBranch(v);
+                            setIsDropdownOpen(false);
+                          }}
+                          className="rounded-lg"
+                          key={branch.name}
+                        >
+                          <p className="min-w-0 shrink leading-tight">{branch.name}</p>
+                        </CommandItem>
+                      ))}
+                  </CommandGroup>
+                </CommandList>
+              </ScrollArea>
+            </Command>
+          </PopoverContent>
+        </Popover>
       </BlockItem>
     </Block>
   );
@@ -229,9 +347,9 @@ function DockerImageContent({
 }: {
   image: string;
   tag: string;
-  tagState: TTagState;
+  tagState: TStringOrNullState;
 }) {
-  const [isTagDropdownOpen, setIsTagDropdownOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [currentTag, setCurrentTag] = tagState;
 
   const [commandValue, setCommandValue] = useState("");
@@ -270,18 +388,18 @@ function DockerImageContent({
         </div>
       </BlockItem>
       <BlockItem title="Tag">
-        <Popover open={isTagDropdownOpen} onOpenChange={setIsTagDropdownOpen}>
+        <Popover open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
-              data-open={isTagDropdownOpen ? true : undefined}
+              data-open={isDropdownOpen ? true : undefined}
               className="group/button mt-1 flex w-full flex-row items-center justify-start gap-2 rounded-xl border px-3.5 py-3 text-left"
             >
               <TagIcon className="size-5 shrink-0 scale-90" />
               <p className="min-w-0 flex-1 shrink truncate leading-tight font-medium">
                 {currentTag || tag}
               </p>
-              <ChevronDownIcon className="text-muted-foreground -mr-0.5 size-5 transition group-data-open/button:rotate-180" />
+              <ChevronDownIcon className="text-muted-foreground -mr-1 size-5 transition group-data-open/button:rotate-180" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="flex h-68 max-h-[min(30rem,var(--radix-popper-available-height))] overflow-hidden rounded-xl p-0">
@@ -324,7 +442,7 @@ function DockerImageContent({
                         <CommandItem
                           onSelect={(v) => {
                             setCurrentTag(v);
-                            setIsTagDropdownOpen(false);
+                            setIsDropdownOpen(false);
                             setCommandInputValue("");
                           }}
                           className="rounded-lg"
