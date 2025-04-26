@@ -399,7 +399,7 @@ export default function TextareaWithTokens<T>({
         <PopoverContent
           animate={false}
           className={cn(
-            "flex h-64 max-h-[min(30rem,var(--radix-popper-available-height))] flex-col overflow-hidden rounded-lg p-0",
+            "flex h-68 max-h-[min(30rem,var(--radix-popper-available-height))] flex-col overflow-hidden rounded-lg p-0",
             classNameDropdownContent,
           )}
           onOpenAutoFocus={(e) => e.preventDefault()}
@@ -410,7 +410,8 @@ export default function TextareaWithTokens<T>({
             value={selectedCommandValue}
             onValueChange={setSelectedCommandValue}
             variant="default"
-            className="flex flex-1 flex-col rounded-none border-none bg-transparent shadow-none"
+            wrapper="none"
+            className="flex flex-1 flex-col"
             shouldFilter={false}
           >
             <ScrollArea className="flex flex-1 flex-col">
@@ -433,7 +434,7 @@ export default function TextareaWithTokens<T>({
                     !filteredItems &&
                     placeholderArray.map((_, index) => (
                       <CommandItem disabled className="rounded-md" key={index}>
-                        <p className="bg-foreground animate-skeleton max-w-full rounded-md leading-tight">
+                        <p className="bg-foreground animate-skeleton min-w-0 shrink rounded-md leading-tight">
                           Loading {index}
                         </p>
                       </CommandItem>
