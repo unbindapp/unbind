@@ -239,7 +239,7 @@ export default function VariableCard({
                   size="icon"
                   className="rounded-md"
                 >
-                  <div className="bg-muted-more-foreground animate-skeleton size-6" />
+                  <div className="bg-muted-more-foreground animate-skeleton size-6 rounded-md" />
                 </Button>
               ) : referenceError ? (
                 <DeleteTrigger
@@ -279,7 +279,7 @@ export default function VariableCard({
         <div className="absolute top-0.75 right-0.75 sm:hidden">
           {isPlaceholder ? (
             <Button disabled fadeOnDisabled={false} variant="ghost" size="icon">
-              <div className="bg-muted-foreground animate-skeleton size-6 rounded-lg" />
+              <div className="bg-muted-foreground animate-skeleton size-6 rounded-md" />
             </Button>
           ) : referenceError ? (
             <DeleteTrigger
