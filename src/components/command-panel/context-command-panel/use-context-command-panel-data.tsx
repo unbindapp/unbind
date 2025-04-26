@@ -3,6 +3,7 @@ import useDatabaseItem from "@/components/command-panel/context-command-panel/it
 import { useDockerImageItemHook } from "@/components/command-panel/context-command-panel/items/docker-image";
 import useGoToItem from "@/components/command-panel/context-command-panel/items/go-to";
 import useNewProjectItem from "@/components/command-panel/context-command-panel/items/new-project";
+import usePreferencesItem from "@/components/command-panel/context-command-panel/items/preferences";
 import { useRepoItemHook } from "@/components/command-panel/context-command-panel/items/repo";
 import useTemplateItem from "@/components/command-panel/context-command-panel/items/template";
 import { findCommandPanelPage } from "@/components/command-panel/helpers";
@@ -27,6 +28,7 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
   const { item: goToItem } = useGoToItem({ context });
   const { item: databaseItem } = useDatabaseItem({ context });
   const { item: newProjectItem } = useNewProjectItem({ context });
+  const { item: preferencesItem } = usePreferencesItem({ context });
 
   const onSelectPlaceholder = useCallback(() => {
     toast.success("Successful", {
@@ -62,6 +64,7 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
         databaseItem,
         templateItem,
         ...(dockerImageItem ? [dockerImageItem] : []),
+        ...(preferencesItem ? [preferencesItem] : []),
         ...(goToItem ? [goToItem] : []),
       ],
     }),
@@ -74,6 +77,7 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
       templateItem,
       dockerImageItem,
       goToItem,
+      preferencesItem,
       context,
     ],
   );

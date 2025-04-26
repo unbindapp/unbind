@@ -1,6 +1,7 @@
 import { createStore } from "zustand/vanilla";
 
 export type State = {
+  value: string;
   isPendingId: string | null;
   search: string;
   inputValues: Record<string, string>;
@@ -8,6 +9,7 @@ export type State = {
 };
 
 export type Actions = {
+  setValue: (value: string) => void;
   setIsPendingId: (isPendingId: string | null) => void;
   setSearch: (search: string) => void;
   setInputValue: (inputId: string, value: string) => void;
@@ -18,6 +20,7 @@ export type Actions = {
 export type CommandPanelStore = State & Actions;
 
 const defaultInitState: State = {
+  value: "",
   isPendingId: null,
   prevItemId: null,
   search: "",
@@ -38,6 +41,9 @@ export const createCommandPanelStore = (initState: State = defaultInitState) => 
           [id]: value,
         },
       }));
+    },
+    setValue: (value) => {
+      set((state) => ({ ...state, value }));
     },
     setPrevItemId: (prevItemId) => {
       set((state) => ({ ...state, prevItemId }));

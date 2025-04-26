@@ -33,7 +33,7 @@ import { defaultDebounceMs } from "@/lib/constants";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { useCommandState } from "cmdk";
 import { ChevronLeftIcon, ChevronRightIcon, LoaderIcon } from "lucide-react";
-import { ReactNode, RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ReactNode, RefObject, useCallback, useEffect, useMemo, useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 type TProps = {
@@ -197,8 +197,9 @@ function CommandPanel({
   const { isTouchscreen } = useDeviceType();
   const prevItemId = useCommandPanelStore((s) => s.prevItemId);
   const setPrevItemId = useCommandPanelStore((s) => s.setPrevItemId);
+  const value = useCommandPanelStore((s) => s.value);
+  const setValue = useCommandPanelStore((s) => s.setValue);
 
-  const [value, setValue] = useState("");
   const { isPending, isError } = useCommandPanelItems();
 
   useEffect(() => {
@@ -251,16 +252,15 @@ function CommandPanel({
   useEffect(() => {
     if (isTouchscreen) return;
     if (isPending) return;
-    const timeout = setTimeout(() => {
-      const itemToSelect =
-        currentPage.items?.find((i) => i.id === prevItemId) || currentPage.items?.[0];
-      if (itemToSelect) {
-        setTimeout(() => setValue(itemToSelect.title));
-      }
-    });
-    return () => {
-      clearTimeout(timeout);
-    };
+
+    const prevItem = currentPage.items?.find((i) => i.id === prevItemId);
+    const firstItem = scrollAreaRef.current?.querySelector("[cmdk-item]");
+    const firstItemValue = firstItem?.getAttribute("data-value");
+
+    const valueToSelect = prevItem?.title || firstItemValue;
+    if (prevItem) setPrevItemId(null);
+    if (valueToSelect) setValue(valueToSelect);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, isPending]);
 
@@ -540,7 +540,6 @@ function Item({
       keywords={item.keywords}
       className="group/item active:bg-border flex w-full flex-row items-center justify-between gap-6 px-3.5 py-3 text-left font-medium data-placeholder:text-transparent"
       onSelect={onSelect}
-      onFocus={() => console.log("onFocus", item.title)}
       disabled={disabled}
       fadeOnDisabled={fadeOnDisabled}
     >
