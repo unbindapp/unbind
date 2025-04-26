@@ -17,6 +17,7 @@ import VariablesProvider from "@/components/variables/variables-provider";
 import { useService } from "@/components/service/service-provider";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { FC, ReactNode } from "react";
+import SystemProvider from "@/components/system/system-provider";
 
 type TServicePage = FC<{ service: TServiceShallow }>;
 type TServicePageProvider = FC<TServicePageProviderProps>;
@@ -79,17 +80,19 @@ export default function ServicePanelContent({ service, className }: TProps) {
 
   if (!service.last_deployment) {
     return (
-      <DeploymentsProvider>
-        <VariablesProvider
-          teamId={teamId}
-          projectId={projectId}
-          environmentId={environmentId}
-          serviceId={service.id}
-          type="service"
-        >
-          <ServicePanelContentUndeployed className={className} service={service} />
-        </VariablesProvider>
-      </DeploymentsProvider>
+      <SystemProvider>
+        <DeploymentsProvider>
+          <VariablesProvider
+            teamId={teamId}
+            projectId={projectId}
+            environmentId={environmentId}
+            serviceId={service.id}
+            type="service"
+          >
+            <ServicePanelContentUndeployed className={className} service={service} />
+          </VariablesProvider>
+        </DeploymentsProvider>
+      </SystemProvider>
     );
   }
 

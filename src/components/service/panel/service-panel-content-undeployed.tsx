@@ -4,6 +4,7 @@ import BrandIcon from "@/components/icons/brand";
 import { useServicesUtils } from "@/components/project/services-provider";
 import { useDeployments } from "@/components/service/deployments-provider";
 import { useService } from "@/components/service/service-provider";
+import { useSystem } from "@/components/system/system-provider";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -41,6 +42,7 @@ import {
   useState,
 } from "react";
 import { useDebounce } from "use-debounce";
+import { z } from "zod";
 
 type TProps = {
   service: TServiceShallow;
@@ -68,6 +70,7 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
 
   const tagState = useState<string | null>(null);
   const branchState = useState<string | null>(null);
+  const [domain, setDomain] = useState<string>("");
 
   const port =
     service.config.ports && service.config.ports?.length > 0 ? service.config.ports[0].port : null;
@@ -118,7 +121,7 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
       className={cn("mt-4 flex w-full flex-1 flex-col overflow-hidden border-t sm:mt-6", className)}
     >
       <ScrollArea viewportClassName="pb-[calc(var(--safe-area-inset-bottom)+2rem)]">
-        <div className="flex w-full flex-1 flex-col gap-4 overflow-auto px-3 py-4 sm:p-6">
+        <div className="flex w-full flex-1 flex-col gap-5 overflow-auto px-3 py-4 sm:p-6">
           <h2 className="-mt-1 px-2 text-xl font-bold sm:text-2xl">Deploy Service</h2>
           <Content service={service} tagState={tagState} branchState={branchState} />
           <Block>
@@ -127,7 +130,15 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
                 <BlockItemTitle>Domain</BlockItemTitle>
               </BlockItemHeader>
               <BlockItemContent>
-                <Input placeholder="example.com" className="w-full rounded-xl px-3.5 py-3" />
+                <div className="flex w-full flex-col items-start gap-2">
+                  <Input
+                    value={domain}
+                    onChange={(e) => setDomain(e.currentTarget.value)}
+                    placeholder="example.com"
+                    className="w-full rounded-xl px-3.5 py-3"
+                  />
+                  <DomainCard domain={domain} />
+                </div>
               </BlockItemContent>
             </BlockItem>
             <BlockItem>
@@ -135,7 +146,7 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
                 <BlockItemTitle>Port</BlockItemTitle>
               </BlockItemHeader>
               <BlockItemContent>
-                <div className="relative flex w-full flex-col items-start gap-2">
+                <div className="flex w-full flex-col items-start gap-2">
                   <Input
                     value={portInputValue}
                     onChange={(e) => setPortInputValue(e.target.value)}
@@ -143,10 +154,10 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
                     className="w-full rounded-xl px-3.5 py-3"
                   />
                   {port !== null && (
-                    <div className="text-success bg-success/10 border-success/10 flex min-w-0 shrink items-center justify-start gap-1.25 rounded-lg border px-1.5 py-0.75">
+                    <div className="text-success bg-success/10 border-success/10 flex w-full items-center justify-start gap-1.25 rounded-lg border px-2 py-1">
                       <CheckCircleIcon className="-ml-0.25 size-3.5 shrink-0" />
                       <p className="min-w-0 shrink text-sm leading-tight font-medium">
-                        Auto-detected: <span className="font-bold">{port}</span>
+                        Automatically detected port: <span className="font-bold">{port}</span>
                       </p>
                     </div>
                   )}
@@ -324,7 +335,10 @@ function GitContent({
                 <ChevronDownIcon className="text-muted-foreground -mr-1 size-5 transition group-data-open/button:rotate-180" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="flex h-68 max-h-[min(30rem,var(--radix-popper-available-height))] overflow-hidden rounded-xl p-0">
+            <PopoverContent
+              animate={false}
+              className="flex h-68 max-h-[min(30rem,var(--radix-popper-available-height))] overflow-hidden rounded-xl p-0"
+            >
               <Command
                 value={commandValue}
                 onValueChange={setCommandValue}
@@ -513,9 +527,61 @@ function DockerImageContent({
   );
 }
 
+const DomainSchema = z
+  .string()
+  .nonempty()
+  .refine((val) => !val.includes(" "), "Domain can't contain spaces")
+  .refine((val) => val.includes("."), "Domain must contain a dot");
+
+function DomainCard({ domain }: { domain: string }) {
+  const { data, isPending, error } = useSystem();
+  const [isValidDomain, setIsValidDomain] = useState(false);
+
+  useEffect(() => {
+    const { success } = DomainSchema.safeParse(domain);
+    setIsValidDomain(success);
+  }, [domain]);
+
+  if (!isValidDomain) return null;
+
+  return (
+    <div
+      data-pending={!data && isPending ? true : undefined}
+      data-error={!data && !isPending && error ? true : undefined}
+      className="group/card flex w-full flex-col items-start justify-start gap-1 rounded-xl border text-sm select-text"
+    >
+      <div className="flex w-full items-start justify-start gap-6 px-3 pt-2 pb-2.5">
+        <div className="flex flex-col gap-0.5">
+          <p className="text-muted-foreground leading-tight">Type</p>
+          <p className="leading-tight font-medium">A</p>
+        </div>
+        <div className="flex min-w-0 shrink flex-col gap-0.5">
+          <p className="text-muted-foreground leading-tight">Name</p>
+          <p className="leading-tight font-medium">{domain}</p>
+        </div>
+        <div className="flex flex-col gap-0.5">
+          <p className="text-muted-foreground leading-tight">Content</p>
+          <p className="group-data-error/card:text-destructive group-data-pending/card:animate-skeleton group-data-pending/card:bg-foreground leading-tight font-medium group-data-pending/card:rounded-md group-data-pending/card:text-transparent">
+            {data
+              ? data?.data.external_ipv4 || data?.data.external_ipv6
+              : error
+                ? "Error"
+                : "Loading..."}
+          </p>
+        </div>
+      </div>
+      {error && (
+        <div className="w-full px-1.5 pb-1.5">
+          <ErrorLine message={error.message} className="rounded-lg" />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Block({ children }: { children: ReactNode }) {
   return (
-    <div className="-mx-2 flex w-[calc(100%+1rem)] flex-col gap-4 md:flex-row md:gap-0">
+    <div className="-mx-2 -mt-1 flex w-[calc(100%+1rem)] flex-col gap-4 md:flex-row md:gap-0">
       {children}
     </div>
   );
