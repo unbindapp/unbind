@@ -2,13 +2,36 @@ import { useDeploymentPanel } from "@/components/deployment/panel/deployment-pan
 import DeploymentStatusChip, {
   getDeploymentStatusChipColor,
 } from "@/components/deployment/status-chip";
+import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
+import { useServicesUtils } from "@/components/project/services-provider";
+import { useDeploymentsUtils } from "@/components/service/deployments-provider";
 import DeploymentTime from "@/components/service/panel/tabs/deployments/deployment-time";
+import { useService, useServiceUtils } from "@/components/service/service-provider";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { defaultAnimationMs } from "@/lib/constants";
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
-import { EllipsisVerticalIcon } from "lucide-react";
-import { HTMLAttributes } from "react";
+import { api } from "@/server/trpc/setup/client";
+import { EllipsisVerticalIcon, RocketIcon, RotateCcwIcon } from "lucide-react";
+import { HTMLAttributes, ReactNode, useRef, useState } from "react";
 
 type TProps = HTMLAttributes<HTMLDivElement> &
   (
@@ -79,18 +102,234 @@ export default function DeploymentCard({
           )}
         </div>
       </button>
-      <Button
-        size="icon"
-        variant="ghost"
-        className="text-muted-more-foreground active:bg-foreground/6 has-hover:hover:bg-foreground/6 focus-visible:bg-foreground/6 absolute top-1 right-1 shrink-0 rounded-lg group-data-placeholder/line:text-transparent sm:top-1/2 sm:right-2 sm:-translate-y-1/2"
-      >
+      <div className="absolute top-1 right-1 shrink-0 sm:top-1/2 sm:right-2 sm:-translate-y-1/2">
         {isPlaceholder ? (
-          <div className="group-data-placeholder/card:bg-muted-foreground group-data-placeholder/card:animate-skeleton size-5 group-data-placeholder/card:rounded-md" />
+          <Button size="icon" variant="ghost" disabled fadeOnDisabled={false}>
+            <div className="bg-muted-foreground animate-skeleton size-5 rounded-md" />
+          </Button>
         ) : (
-          <EllipsisVerticalIcon className="size-6" />
+          <ThreeDotButton deployment={deployment} currentDeployment={currentDeployment} />
         )}
-      </Button>
+      </div>
     </div>
+  );
+}
+
+function ThreeDotButton({
+  deployment,
+  currentDeployment,
+}: {
+  deployment: TDeploymentShallow;
+  currentDeployment: TDeploymentShallow | undefined;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const isCurrentDeployment = deployment.id === currentDeployment?.id;
+
+  return (
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          size="icon"
+          variant="ghost"
+          className="text-muted-more-foreground active:bg-foreground/6 has-hover:hover:bg-foreground/6 focus-visible:bg-foreground/6"
+        >
+          <EllipsisVerticalIcon className="size-6" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        className="z-50 w-40"
+        sideOffset={-1}
+        data-open={isOpen ? true : undefined}
+        align="end"
+        forceMount={true}
+      >
+        <ScrollArea>
+          <DropdownMenuGroup>
+            {isCurrentDeployment && (
+              <RestartTrigger closeDropdown={() => setIsOpen(false)}>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                  <RotateCcwIcon className="-ml-0.5 size-5" />
+                  <p className="min-w-0 shrink leading-tight">Restart</p>
+                </DropdownMenuItem>
+              </RestartTrigger>
+            )}
+            <RedeployTrigger closeDropdown={() => setIsOpen(false)} deployment={deployment}>
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <RocketIcon className="-ml-0.5 size-5" />
+                <p className="min-w-0 shrink leading-tight">Redeploy</p>
+              </DropdownMenuItem>
+            </RedeployTrigger>
+          </DropdownMenuGroup>
+        </ScrollArea>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function RestartTrigger({
+  closeDropdown,
+  children,
+}: {
+  closeDropdown: () => void;
+  children: ReactNode;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const { teamId, projectId, environmentId, serviceId } = useService();
+
+  const props = { teamId, projectId, environmentId, serviceId };
+  const { refetch: refetchDeployments } = useDeploymentsUtils({
+    ...props,
+  });
+  const { refetch: refetchService } = useServiceUtils({
+    ...props,
+  });
+  const { refetch: refetchServices } = useServicesUtils({
+    ...props,
+  });
+
+  const {
+    mutate: restartDeployment,
+    isPending,
+    error,
+    reset,
+  } = api.instances.restart.useMutation({
+    onSuccess: async () => {
+      await Promise.all([refetchServices(), refetchService(), refetchDeployments()]);
+      setIsOpen(false);
+      closeDropdown();
+    },
+  });
+
+  const timeout = useRef<NodeJS.Timeout | null>(null);
+
+  return (
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open);
+        if (!open) {
+          closeDropdown();
+          if (timeout.current) clearTimeout(timeout.current);
+          timeout.current = setTimeout(() => {
+            reset();
+          }, defaultAnimationMs);
+        }
+      }}
+    >
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent hideXButton classNameInnerWrapper="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Restart</DialogTitle>
+          <DialogDescription>Are you sure you want to restart this deployment?</DialogDescription>
+        </DialogHeader>
+        {error && <ErrorLine message={error?.message} />}
+        <div className="flex w-full flex-wrap items-center justify-end gap-2">
+          <DialogClose asChild className="text-muted-foreground">
+            <Button type="button" variant="ghost">
+              Cancel
+            </Button>
+          </DialogClose>
+          <Button
+            onClick={() =>
+              restartDeployment({
+                teamId,
+                projectId,
+                environmentId,
+                serviceId,
+              })
+            }
+            isPending={isPending}
+          >
+            Restart
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function RedeployTrigger({
+  deployment,
+  closeDropdown,
+  children,
+}: {
+  deployment: TDeploymentShallow;
+  closeDropdown: () => void;
+  children: ReactNode;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const { teamId, projectId, environmentId, serviceId } = useService();
+
+  const props = { teamId, projectId, environmentId, serviceId };
+  const { refetch: refetchDeployments } = useDeploymentsUtils({
+    ...props,
+  });
+  const { refetch: refetchService } = useServiceUtils({
+    ...props,
+  });
+  const { refetch: refetchServices } = useServicesUtils({
+    ...props,
+  });
+
+  const {
+    mutate: redeployDeployment,
+    isPending,
+    error,
+    reset,
+  } = api.deployments.redeploy.useMutation({
+    onSuccess: async () => {
+      await Promise.all([refetchServices(), refetchService(), refetchDeployments()]);
+      setIsOpen(false);
+      closeDropdown();
+    },
+  });
+
+  const timeout = useRef<NodeJS.Timeout | null>(null);
+
+  return (
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open);
+        if (!open) {
+          closeDropdown();
+          if (timeout.current) clearTimeout(timeout.current);
+          timeout.current = setTimeout(() => {
+            reset();
+          }, defaultAnimationMs);
+        }
+      }}
+    >
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent hideXButton classNameInnerWrapper="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Redeploy</DialogTitle>
+          <DialogDescription>Are you sure you want to redeploy this deployment?</DialogDescription>
+        </DialogHeader>
+        {error && <ErrorLine message={error?.message} />}
+        <div className="flex w-full flex-wrap items-center justify-end gap-2">
+          <DialogClose asChild className="text-muted-foreground">
+            <Button type="button" variant="ghost">
+              Cancel
+            </Button>
+          </DialogClose>
+          <Button
+            onClick={() =>
+              redeployDeployment({
+                teamId,
+                projectId,
+                environmentId,
+                serviceId,
+                deploymentId: deployment.id,
+              })
+            }
+            isPending={isPending}
+          >
+            Redeploy
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

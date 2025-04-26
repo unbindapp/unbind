@@ -540,7 +540,7 @@ function DeleteTrigger({
             Are you sure you want to delete this variable? This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
-        {error && <ErrorLine message={error?.message} className="-mb-4" />}
+        {error && <ErrorLine message={error?.message} />}
         <div className="flex w-full flex-wrap items-center justify-end gap-2">
           <DialogClose asChild className="text-muted-foreground">
             <Button type="button" variant="ghost">

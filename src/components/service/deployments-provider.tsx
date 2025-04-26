@@ -56,8 +56,8 @@ export const useDeploymentsUtils = ({
   const utils = api.useUtils();
   return {
     invalidate: () =>
-      utils.services.get.invalidate({ teamId, projectId, environmentId, serviceId }),
-    fetch: () => utils.services.get.fetch({ teamId, projectId, environmentId, serviceId }),
-    refetch: () => utils.services.get.refetch({ teamId, projectId, environmentId, serviceId }),
+      utils.deployments.list.invalidate({ teamId, projectId, environmentId, serviceId }),
+    fetch: () => utils.deployments.list.fetch({ teamId, projectId, environmentId, serviceId }),
+    refetch: () => utils.deployments.list.refetch({ teamId, projectId, environmentId, serviceId }),
   };
 };
