@@ -144,24 +144,22 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
             <BlockItem>
               <BlockItemHeader>
                 <BlockItemTitle>Port</BlockItemTitle>
+                {port !== null && (
+                  <div className="text-success bg-success/10 border-success/10 -my-1 flex min-w-0 shrink items-center justify-start gap-1.25 rounded-full border px-1.5 py-0.25">
+                    <CheckCircleIcon className="-ml-0.5 size-3.5 shrink-0" />
+                    <p className="min-w-0 shrink truncate text-sm leading-tight font-medium">
+                      Detected: <span className="font-bold">{port}</span>
+                    </p>
+                  </div>
+                )}
               </BlockItemHeader>
               <BlockItemContent>
-                <div className="flex w-full flex-col items-start gap-2">
-                  <Input
-                    value={portInputValue}
-                    onChange={(e) => setPortInputValue(e.target.value)}
-                    placeholder="3000"
-                    className="w-full rounded-xl px-3.5 py-3"
-                  />
-                  {port !== null && (
-                    <div className="text-success bg-success/10 border-success/10 flex w-full items-center justify-start gap-1.25 rounded-lg border px-2 py-1">
-                      <CheckCircleIcon className="-ml-0.25 size-3.5 shrink-0" />
-                      <p className="min-w-0 shrink text-sm leading-tight font-medium">
-                        Automatically detected port: <span className="font-bold">{port}</span>
-                      </p>
-                    </div>
-                  )}
-                </div>
+                <Input
+                  value={portInputValue}
+                  onChange={(e) => setPortInputValue(e.target.value)}
+                  placeholder="3000"
+                  className="w-full rounded-xl px-3.5 py-3"
+                />
               </BlockItemContent>
             </BlockItem>
           </Block>
