@@ -336,7 +336,7 @@ export const DataStructSchema = z
 
 export const DatabaseListSchema = z
   .object({
-    databases: z.array(z.string()).nullable(),
+    databases: z.array(z.string()),
   })
   .strip();
 
@@ -729,7 +729,7 @@ export const GithubRepositorySchema = z
 
 export const GithubAdminRepositoryListResponseBodySchema = z
   .object({
-    data: z.array(GithubRepositorySchema).nullable(),
+    data: z.array(GithubRepositorySchema),
   })
   .strip();
 
@@ -839,7 +839,7 @@ export const GithubRepositoryDetailResponseBodySchema = z
   })
   .strip();
 
-export const InstanceTypeSchema = z.enum(['team', 'project', 'instance', 'service']);
+export const InstanceTypeSchema = z.enum(['team', 'project', 'environment', 'service']);
 
 export const ItemSchema = z
   .object({
@@ -850,7 +850,7 @@ export const ItemSchema = z
 
 export const ListDatabasesResponseBodySchema = z
   .object({
-    data: z.array(DatabaseListSchema),
+    data: DatabaseListSchema,
   })
   .strip();
 
@@ -884,7 +884,7 @@ export const ListEndpointsResponseBodySchema = z
 
 export const ListEnvironmentsOutputBodySchema = z
   .object({
-    data: z.array(EnvironmentResponseSchema).nullable(),
+    data: z.array(EnvironmentResponseSchema),
   })
   .strip();
 
@@ -915,13 +915,13 @@ export const ListInstancesResponseBodySchema = z
 
 export const ListProjectResponseBodySchema = z
   .object({
-    data: z.array(ProjectResponseSchema).nullable(),
+    data: z.array(ProjectResponseSchema),
   })
   .strip();
 
 export const ListServiceResponseBodySchema = z
   .object({
-    data: z.array(ServiceResponseSchema).nullable(),
+    data: z.array(ServiceResponseSchema),
   })
   .strip();
 

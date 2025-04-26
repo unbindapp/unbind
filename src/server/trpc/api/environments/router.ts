@@ -31,7 +31,7 @@ export const environmentsRouter = createTRPCRouter({
     .query(async function ({ input: { teamId, projectId }, ctx: { goClient } }) {
       const res = await goClient.environments.list({ team_id: teamId, project_id: projectId });
       return {
-        environments: res.data || [],
+        environments: res.data,
       };
     }),
   create: privateProcedure

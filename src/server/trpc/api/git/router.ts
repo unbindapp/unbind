@@ -8,7 +8,7 @@ export const gitRouter = createTRPCRouter({
   }) {
     const { data } = await goClient.github.repositories();
     return {
-      repositories: data || [],
+      repositories: data,
     };
   }),
   getRepository: privateProcedure

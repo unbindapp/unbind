@@ -378,7 +378,7 @@ export default function TextareaWithTokens<T>({
                 textareaRef.current?.focus();
               }}
               className={cn(
-                "text-muted-foreground focus:ring-primary group/button mt-1 mr-1 mb-auto h-8 gap-1 px-2 font-semibold",
+                "text-muted-foreground focus:ring-primary group/button mt-1 mr-1 mb-auto h-8 max-w-1/2 gap-1 px-2 text-left font-semibold",
                 classNameDropdownButton,
               )}
             >
@@ -386,7 +386,7 @@ export default function TextareaWithTokens<T>({
               {dropdownButtonText && (
                 <p
                   data-has-icon={DropdownButtonIcon ? true : undefined}
-                  className="max-w-full min-w-0 shrink px-0.5 leading-tight data-has-icon:group-data-has-value/button:hidden"
+                  className="min-w-0 shrink truncate px-0.5 leading-tight data-has-icon:group-data-has-value/button:hidden"
                 >
                   {dropdownButtonText}
                 </p>

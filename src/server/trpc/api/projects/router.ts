@@ -31,7 +31,7 @@ export const projectsRouter = createTRPCRouter({
       const res = await goClient.projects.list({ team_id: teamId });
 
       return {
-        projects: res.data || [],
+        projects: res.data,
       };
     }),
   create: privateProcedure

@@ -20,7 +20,7 @@ export const teamsRouter = createTRPCRouter({
   list: privateProcedure.query(async function ({ ctx: { goClient } }) {
     const res = await goClient.teams.list();
     return {
-      teams: res.data || [],
+      teams: res.data,
     };
   }),
   update: privateProcedure

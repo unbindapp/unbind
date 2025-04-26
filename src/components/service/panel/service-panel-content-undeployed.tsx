@@ -29,7 +29,13 @@ import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { TVariableForCreate, VariableForCreateSchema } from "@/server/trpc/api/variables/types";
 import { api } from "@/server/trpc/setup/client";
 import { CommandEmpty } from "cmdk";
-import { CheckCircleIcon, ChevronDownIcon, GitBranchIcon, TagIcon } from "lucide-react";
+import {
+  CheckCircleIcon,
+  ChevronDownIcon,
+  CircleSlashIcon,
+  GitBranchIcon,
+  TagIcon,
+} from "lucide-react";
 import {
   Children,
   cloneElement,
@@ -144,14 +150,26 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
             <BlockItem>
               <BlockItemHeader>
                 <BlockItemTitle>Port</BlockItemTitle>
-                {port !== null && (
-                  <div className="text-success bg-success/10 border-success/10 -my-1 flex min-w-0 shrink items-center justify-start gap-1.25 rounded-full border px-1.5 py-0.25">
-                    <CheckCircleIcon className="-ml-0.5 size-3.5 shrink-0" />
-                    <p className="min-w-0 shrink truncate text-sm leading-tight font-medium">
-                      Detected: <span className="font-bold">{port}</span>
-                    </p>
-                  </div>
-                )}
+                <div
+                  data-detected={port !== null ? true : undefined}
+                  className="bg-warning/10 text-warning border-warning/10 data-detected:text-success data-detected:bg-success/10 data-detected:border-success/10 -my-1 flex min-w-0 shrink items-center justify-start gap-1.5 rounded-full border px-1.75 py-0.25"
+                >
+                  {port !== null ? (
+                    <CheckCircleIcon className="-ml-0.75 size-3.5 shrink-0" />
+                  ) : (
+                    <CircleSlashIcon className="-ml-0.75 size-3.5 shrink-0" />
+                  )}
+                  <p className="min-w-0 shrink truncate text-sm leading-tight font-medium">
+                    {port !== null ? (
+                      <>
+                        {" "}
+                        Detected: <span className="font-bold">{port}</span>
+                      </>
+                    ) : (
+                      "Couldn't detect"
+                    )}
+                  </p>
+                </div>
               </BlockItemHeader>
               <BlockItemContent>
                 <Input

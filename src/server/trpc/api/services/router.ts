@@ -22,7 +22,7 @@ export const servicesRouter = createTRPCRouter({
       });
 
       return {
-        services: services.data || [],
+        services: services.data,
       };
     }),
   get: privateProcedure
@@ -126,6 +126,20 @@ export const servicesRouter = createTRPCRouter({
       });
       return {
         service: service.data,
+      };
+    }),
+  listDatabases: privateProcedure.input(z.object({})).query(async function ({ ctx: { goClient } }) {
+    const result = await goClient.services.databases.installable.list();
+    return {
+      databases: result.data.databases,
+    };
+  }),
+  getDatabase: privateProcedure
+    .input(z.object({ type: z.string(), version: z.string().optional() }))
+    .query(async function ({ input: { type, version }, ctx: { goClient } }) {
+      const result = await goClient.services.databases.installable.get({ type, version });
+      return {
+        database: result.data,
       };
     }),
 });
