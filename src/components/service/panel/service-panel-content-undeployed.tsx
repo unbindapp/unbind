@@ -12,6 +12,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
@@ -27,8 +28,18 @@ import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { TVariableForCreate, VariableForCreateSchema } from "@/server/trpc/api/variables/types";
 import { api } from "@/server/trpc/setup/client";
 import { CommandEmpty } from "cmdk";
-import { ChevronDownIcon, GitBranchIcon, TagIcon } from "lucide-react";
-import { Dispatch, ReactNode, SetStateAction, useEffect, useRef, useState } from "react";
+import { CheckCircleIcon, ChevronDownIcon, GitBranchIcon, TagIcon } from "lucide-react";
+import {
+  Children,
+  cloneElement,
+  Dispatch,
+  isValidElement,
+  ReactNode,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useDebounce } from "use-debounce";
 
 type TProps = {
@@ -57,6 +68,10 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
 
   const tagState = useState<string | null>(null);
   const branchState = useState<string | null>(null);
+
+  const port =
+    service.config.ports && service.config.ports?.length > 0 ? service.config.ports[0].port : null;
+  const [portInputValue, setPortInputValue] = useState<string>(port?.toString() || "");
 
   const form = useAppForm({
     defaultValues: {},
@@ -106,6 +121,39 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
         <div className="flex w-full flex-1 flex-col gap-4 overflow-auto px-3 py-4 sm:p-6">
           <h2 className="-mt-1 px-2 text-xl font-bold sm:text-2xl">Deploy Service</h2>
           <Content service={service} tagState={tagState} branchState={branchState} />
+          <Block>
+            <BlockItem>
+              <BlockItemHeader>
+                <BlockItemTitle>Domain</BlockItemTitle>
+              </BlockItemHeader>
+              <BlockItemContent>
+                <Input placeholder="example.com" className="w-full rounded-xl px-3.5 py-3" />
+              </BlockItemContent>
+            </BlockItem>
+            <BlockItem>
+              <BlockItemHeader>
+                <BlockItemTitle>Port</BlockItemTitle>
+              </BlockItemHeader>
+              <BlockItemContent>
+                <div className="relative flex w-full flex-col items-start gap-2">
+                  <Input
+                    value={portInputValue}
+                    onChange={(e) => setPortInputValue(e.target.value)}
+                    placeholder="3000"
+                    className="w-full rounded-xl px-3.5 py-3"
+                  />
+                  {port !== null && (
+                    <div className="text-success bg-success/10 border-success/10 flex min-w-0 shrink items-center justify-start gap-1.25 rounded-lg border px-1.5 py-0.75">
+                      <CheckCircleIcon className="-ml-0.25 size-3.5 shrink-0" />
+                      <p className="min-w-0 shrink text-sm leading-tight font-medium">
+                        Auto-detected: <span className="font-bold">{port}</span>
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </BlockItemContent>
+            </BlockItem>
+          </Block>
           <VariablesProvider
             teamId={teamId}
             projectId={projectId}
@@ -202,23 +250,6 @@ function Content({
   return <ErrorLine message="Service type is not supported." />;
 }
 
-function Block({ children }: { children: ReactNode }) {
-  return (
-    <div className="-mx-2 flex w-[calc(100%+1rem)] flex-col gap-4 md:flex-row md:gap-0">
-      {children}
-    </div>
-  );
-}
-
-function BlockItem({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <div className="flex w-full flex-col gap-1 px-2 md:w-1/2">
-      <p className="w-full px-2 leading-tight font-semibold">{title}</p>
-      {children}
-    </div>
-  );
-}
-
 function GitContent({
   repo,
   owner,
@@ -263,76 +294,86 @@ function GitContent({
 
   return (
     <Block>
-      <BlockItem title="Repository">
-        <div className="mt-1 flex w-full flex-row items-center gap-2 rounded-xl border px-3.5 py-3">
-          <BrandIcon brand="github" color="brand" className="size-5 shrink-0" />
-          <p className="min-w-0 shrink truncate leading-tight font-medium">{`${owner}/${repo}`}</p>
-        </div>
+      <BlockItem>
+        <BlockItemHeader>
+          <BlockItemTitle>Repository</BlockItemTitle>
+        </BlockItemHeader>
+        <BlockItemContent>
+          <div className="flex w-full flex-row items-center gap-2 rounded-xl border px-3.5 py-3">
+            <BrandIcon brand="github" color="brand" className="size-5 shrink-0" />
+            <p className="min-w-0 shrink truncate leading-tight font-medium">{`${owner}/${repo}`}</p>
+          </div>
+        </BlockItemContent>
       </BlockItem>
-      <BlockItem title="Branch">
-        <Popover open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              data-open={isDropdownOpen ? true : undefined}
-              className="group/button mt-1 flex w-full flex-row items-center justify-start gap-2 rounded-xl border px-3.5 py-3 text-left"
-            >
-              <GitBranchIcon className="size-5 shrink-0 scale-90" />
-              <p className="min-w-0 flex-1 shrink truncate leading-tight font-medium">
-                {currentBranch || branch}
-              </p>
-              <ChevronDownIcon className="text-muted-foreground -mr-1 size-5 transition group-data-open/button:rotate-180" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="flex h-68 max-h-[min(30rem,var(--radix-popper-available-height))] overflow-hidden rounded-xl p-0">
-            <Command
-              value={commandValue}
-              onValueChange={setCommandValue}
-              shouldFilter={isPending ? false : true}
-              wrapper="none"
-              className="flex flex-1 flex-col"
-            >
-              <CommandInput showSpinner={isPending} placeholder="Search branches..." />
-              <ScrollArea viewportRef={scrollAreaRef} className="flex flex-1 flex-col">
-                <CommandList>
-                  {data && (
-                    <CommandEmpty className="text-muted-foreground flex items-center justify-start gap-2 px-2.5 py-2.5 leading-tight">
-                      <GitBranchIcon className="size-4.5 shrink-0" />
-                      <p className="min-w-0 shrink">No branch found</p>
-                    </CommandEmpty>
-                  )}
-                  <CommandGroup>
-                    {!data &&
-                      isPending &&
-                      placeholderArray.map((_, index) => (
-                        <CommandItem disabled className="rounded-lg" key={index}>
-                          <p className="bg-foreground animate-skeleton min-w-0 shrink rounded-md leading-tight">
-                            Loading {index}
-                          </p>
-                        </CommandItem>
-                      ))}
-                    {!data && !isPending && error && (
-                      <ErrorCard className="rounded-lg" message={error.message} />
+      <BlockItem>
+        <BlockItemHeader>
+          <BlockItemTitle>Branch</BlockItemTitle>
+        </BlockItemHeader>
+        <BlockItemContent>
+          <Popover open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                data-open={isDropdownOpen ? true : undefined}
+                className="group/button flex w-full flex-row items-center justify-start gap-2 rounded-xl border px-3.5 py-3 text-left"
+              >
+                <GitBranchIcon className="size-5 shrink-0 scale-90" />
+                <p className="min-w-0 flex-1 shrink truncate leading-tight font-medium">
+                  {currentBranch || branch}
+                </p>
+                <ChevronDownIcon className="text-muted-foreground -mr-1 size-5 transition group-data-open/button:rotate-180" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="flex h-68 max-h-[min(30rem,var(--radix-popper-available-height))] overflow-hidden rounded-xl p-0">
+              <Command
+                value={commandValue}
+                onValueChange={setCommandValue}
+                shouldFilter={isPending ? false : true}
+                wrapper="none"
+                className="flex flex-1 flex-col"
+              >
+                <CommandInput showSpinner={isPending} placeholder="Search branches..." />
+                <ScrollArea viewportRef={scrollAreaRef} className="flex flex-1 flex-col">
+                  <CommandList>
+                    {data && (
+                      <CommandEmpty className="text-muted-foreground flex items-center justify-start gap-2 px-2.5 py-2.5 leading-tight">
+                        <GitBranchIcon className="size-4.5 shrink-0" />
+                        <p className="min-w-0 shrink">No branch found</p>
+                      </CommandEmpty>
                     )}
-                    {data &&
-                      data.repository.branches?.map((branch) => (
-                        <CommandItem
-                          onSelect={(v) => {
-                            setCurrentBranch(v);
-                            setIsDropdownOpen(false);
-                          }}
-                          className="rounded-lg"
-                          key={branch.name}
-                        >
-                          <p className="min-w-0 shrink leading-tight">{branch.name}</p>
-                        </CommandItem>
-                      ))}
-                  </CommandGroup>
-                </CommandList>
-              </ScrollArea>
-            </Command>
-          </PopoverContent>
-        </Popover>
+                    <CommandGroup>
+                      {!data &&
+                        isPending &&
+                        placeholderArray.map((_, index) => (
+                          <CommandItem disabled className="rounded-lg" key={index}>
+                            <p className="bg-foreground animate-skeleton min-w-0 shrink rounded-md leading-tight">
+                              Loading {index}
+                            </p>
+                          </CommandItem>
+                        ))}
+                      {!data && !isPending && error && (
+                        <ErrorCard className="rounded-lg" message={error.message} />
+                      )}
+                      {data &&
+                        data.repository.branches?.map((branch) => (
+                          <CommandItem
+                            onSelect={(v) => {
+                              setCurrentBranch(v);
+                              setIsDropdownOpen(false);
+                            }}
+                            className="rounded-lg"
+                            key={branch.name}
+                          >
+                            <p className="min-w-0 shrink leading-tight">{branch.name}</p>
+                          </CommandItem>
+                        ))}
+                    </CommandGroup>
+                  </CommandList>
+                </ScrollArea>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        </BlockItemContent>
       </BlockItem>
     </Block>
   );
@@ -381,83 +422,154 @@ function DockerImageContent({
 
   return (
     <Block>
-      <BlockItem title="Image">
-        <div className="mt-1 flex w-full flex-row items-center gap-2 rounded-xl border px-3.5 py-3">
-          <BrandIcon brand="docker" color="brand" className="size-5 shrink-0" />
-          <p className="min-w-0 shrink truncate leading-tight font-medium">{image}</p>
-        </div>
+      <BlockItem>
+        <BlockItemHeader>
+          <BlockItemTitle>Image</BlockItemTitle>
+        </BlockItemHeader>
+        <BlockItemContent>
+          <div className="flex w-full flex-row items-center gap-2 rounded-xl border px-3.5 py-3">
+            <BrandIcon brand="docker" color="brand" className="size-5 shrink-0" />
+            <p className="min-w-0 shrink truncate leading-tight font-medium">{image}</p>
+          </div>
+        </BlockItemContent>
       </BlockItem>
-      <BlockItem title="Tag">
-        <Popover open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              data-open={isDropdownOpen ? true : undefined}
-              className="group/button mt-1 flex w-full flex-row items-center justify-start gap-2 rounded-xl border px-3.5 py-3 text-left"
-            >
-              <TagIcon className="size-5 shrink-0 scale-90" />
-              <p className="min-w-0 flex-1 shrink truncate leading-tight font-medium">
-                {currentTag || tag}
-              </p>
-              <ChevronDownIcon className="text-muted-foreground -mr-1 size-5 transition group-data-open/button:rotate-180" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="flex h-68 max-h-[min(30rem,var(--radix-popper-available-height))] overflow-hidden rounded-xl p-0">
-            <Command
-              value={commandValue}
-              onValueChange={setCommandValue}
-              shouldFilter={false}
-              wrapper="none"
-              className="flex flex-1 flex-col"
-            >
-              <CommandInput
-                value={commandInputValue}
-                onValueChange={setCommandInputValue}
-                showSpinner={isPending}
-                placeholder="Search tags..."
-              />
-              <ScrollArea viewportRef={scrollAreaRef} className="flex flex-1 flex-col">
-                <CommandList>
-                  {data && (
-                    <CommandEmpty className="text-muted-foreground flex items-center justify-start gap-2 px-2.5 py-2.5 leading-tight">
-                      <TagIcon className="size-4.5 shrink-0" />
-                      <p className="min-w-0 shrink">No tags found</p>
-                    </CommandEmpty>
-                  )}
-                  <CommandGroup>
-                    {!data &&
-                      isPending &&
-                      placeholderArray.map((_, index) => (
-                        <CommandItem disabled className="rounded-lg" key={index}>
-                          <p className="bg-foreground animate-skeleton min-w-0 shrink rounded-md leading-tight">
-                            Loading {index}
-                          </p>
-                        </CommandItem>
-                      ))}
-                    {!data && !isPending && error && (
-                      <ErrorCard className="rounded-lg" message={error.message} />
+      <BlockItem>
+        <BlockItemHeader>
+          <BlockItemTitle>Tag</BlockItemTitle>
+        </BlockItemHeader>
+        <BlockItemContent>
+          <Popover open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                data-open={isDropdownOpen ? true : undefined}
+                className="group/button flex w-full flex-row items-center justify-start gap-2 rounded-xl border px-3.5 py-3 text-left"
+              >
+                <TagIcon className="size-5 shrink-0 scale-90" />
+                <p className="min-w-0 flex-1 shrink truncate leading-tight font-medium">
+                  {currentTag || tag}
+                </p>
+                <ChevronDownIcon className="text-muted-foreground -mr-1 size-5 transition group-data-open/button:rotate-180" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="flex h-68 max-h-[min(30rem,var(--radix-popper-available-height))] overflow-hidden rounded-xl p-0">
+              <Command
+                value={commandValue}
+                onValueChange={setCommandValue}
+                shouldFilter={false}
+                wrapper="none"
+                className="flex flex-1 flex-col"
+              >
+                <CommandInput
+                  value={commandInputValue}
+                  onValueChange={setCommandInputValue}
+                  showSpinner={isPending}
+                  placeholder="Search tags..."
+                />
+                <ScrollArea viewportRef={scrollAreaRef} className="flex flex-1 flex-col">
+                  <CommandList>
+                    {data && (
+                      <CommandEmpty className="text-muted-foreground flex items-center justify-start gap-2 px-2.5 py-2.5 leading-tight">
+                        <TagIcon className="size-4.5 shrink-0" />
+                        <p className="min-w-0 shrink">No tags found</p>
+                      </CommandEmpty>
                     )}
-                    {data &&
-                      data.tags.map((tag) => (
-                        <CommandItem
-                          onSelect={(v) => {
-                            setCurrentTag(v);
-                            setIsDropdownOpen(false);
-                            setCommandInputValue("");
-                          }}
-                          className="rounded-lg"
-                          key={tag.name}
-                        >
-                          <p className="min-w-0 shrink leading-tight">{tag.name}</p>
-                        </CommandItem>
-                      ))}
-                  </CommandGroup>
-                </CommandList>
-              </ScrollArea>
-            </Command>
-          </PopoverContent>
-        </Popover>
+                    <CommandGroup>
+                      {!data &&
+                        isPending &&
+                        placeholderArray.map((_, index) => (
+                          <CommandItem disabled className="rounded-lg" key={index}>
+                            <p className="bg-foreground animate-skeleton min-w-0 shrink rounded-md leading-tight">
+                              Loading {index}
+                            </p>
+                          </CommandItem>
+                        ))}
+                      {!data && !isPending && error && (
+                        <ErrorCard className="rounded-lg" message={error.message} />
+                      )}
+                      {data &&
+                        data.tags.map((tag) => (
+                          <CommandItem
+                            onSelect={(v) => {
+                              setCurrentTag(v);
+                              setIsDropdownOpen(false);
+                              setCommandInputValue("");
+                            }}
+                            className="rounded-lg"
+                            key={tag.name}
+                          >
+                            <p className="min-w-0 shrink leading-tight">{tag.name}</p>
+                          </CommandItem>
+                        ))}
+                    </CommandGroup>
+                  </CommandList>
+                </ScrollArea>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        </BlockItemContent>
       </BlockItem>
     </Block>
+  );
+}
+
+function Block({ children }: { children: ReactNode }) {
+  return (
+    <div className="-mx-2 flex w-[calc(100%+1rem)] flex-col gap-4 md:flex-row md:gap-0">
+      {children}
+    </div>
+  );
+}
+
+function BlockItemHeader({ children }: { children: ReactNode }) {
+  return (
+    <div className="flex w-full items-center justify-start gap-2.5 px-2 pb-1 leading-tight font-semibold">
+      {children}
+    </div>
+  );
+}
+
+function BlockItemTitle({ children }: { children: ReactNode }) {
+  return <p className="min-w-0 shrink truncate leading-tight font-semibold">{children}</p>;
+}
+
+function BlockItemContent({
+  children,
+  ...rest
+}: {
+  children: ReactNode;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}) {
+  if (isValidElement(children)) {
+    const childrenProps = (children.props || {}) as { className?: string };
+    const { className: restClassName, ...restWithoutClassName } = rest;
+    const mergedProps = {
+      ...childrenProps,
+      ...restWithoutClassName,
+    };
+    if (childrenProps.className || restClassName) {
+      mergedProps.className = cn(childrenProps.className, restClassName);
+    }
+    return cloneElement(children, mergedProps);
+  }
+  return children;
+}
+
+function BlockItem({ children }: { children: ReactNode }) {
+  const childrenArray = Children.toArray(children);
+  const Header = childrenArray.find(
+    (child) =>
+      isValidElement(child) && typeof child.type === "function" && child.type === BlockItemHeader,
+  );
+  const Content = childrenArray.find(
+    (child) =>
+      isValidElement(child) && typeof child.type === "function" && child.type === BlockItemContent,
+  );
+  return (
+    <div className="flex w-full flex-col gap-1 px-2 md:w-1/2">
+      {Header}
+      {Content}
+    </div>
   );
 }

@@ -236,9 +236,9 @@ export default function CreateVariablesForm({
         <Button
           onClick={() => setIsOpen((o) => !o)}
           variant="ghost"
-          className="text-muted-foreground justify-start py-3.5 text-left font-semibold group-data-open/card:rounded-b-none"
+          className="text-muted-foreground justify-start py-3 text-left font-semibold group-data-open/card:rounded-b-none"
         >
-          <ChevronDownIcon className="-ml-1.25 size-5 shrink-0 -rotate-90 transition-transform group-data-open/card:rotate-0" />
+          <ChevronDownIcon className="-ml-1.5 size-5 shrink-0 -rotate-90 transition-transform group-data-open/card:rotate-0" />
           <p className="min-w-0 shrink">Environment Variables</p>
         </Button>
       )}
