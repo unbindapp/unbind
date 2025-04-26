@@ -2,6 +2,7 @@ import { deploymentsRouter } from "@/server/trpc/api/deployments/router";
 import { dockerRouter } from "@/server/trpc/api/docker/router";
 import { environmentsRouter } from "@/server/trpc/api/environments/router";
 import { gitRouter } from "@/server/trpc/api/git/router";
+import { instancesRouter } from "@/server/trpc/api/instances/router";
 import { logsRouter } from "@/server/trpc/api/logs/router";
 import { metricsRouter } from "@/server/trpc/api/metrics/router";
 import { projectsRouter } from "@/server/trpc/api/projects/router";
@@ -24,6 +25,7 @@ export const appRouter = createTRPCRouter({
   teams: teamsRouter,
   projects: projectsRouter,
   services: servicesRouter,
+  instances: instancesRouter,
   deployments: deploymentsRouter,
   environments: environmentsRouter,
   variables: variablesRouter,

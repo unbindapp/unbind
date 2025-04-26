@@ -841,16 +841,6 @@ export const GithubRepositoryDetailResponseBodySchema = z
 
 export const InstanceTypeSchema = z.enum(['team', 'project', 'instance', 'service']);
 
-export const InstanceStatusInputSchema = z
-  .object({
-    EnvironmentID: z.string().optional(),
-    ProjectID: z.string().optional(),
-    ServiceID: z.string().optional(),
-    TeamID: z.string(),
-    Type: InstanceTypeSchema,
-  })
-  .strip();
-
 export const ItemSchema = z
   .object({
     name: z.string(),
@@ -1378,7 +1368,6 @@ export type GithubRepositoryDetailResponseBody = z.infer<
   typeof GithubRepositoryDetailResponseBodySchema
 >;
 export type InstanceType = z.infer<typeof InstanceTypeSchema>;
-export type InstanceStatusInput = z.infer<typeof InstanceStatusInputSchema>;
 export type Item = z.infer<typeof ItemSchema>;
 export type ListDatabasesResponseBody = z.infer<typeof ListDatabasesResponseBodySchema>;
 export type PaginationResponseMetadata = z.infer<typeof PaginationResponseMetadataSchema>;
@@ -1504,6 +1493,16 @@ export const repo_detailQuerySchema = z
     installation_id: z.number(),
     owner: z.string(),
     repo_name: z.string(),
+  })
+  .passthrough();
+
+export const list_instancesQuerySchema = z
+  .object({
+    type: InstanceTypeSchema,
+    team_id: z.string(),
+    project_id: z.string().optional(),
+    environment_id: z.string().optional(),
+    service_id: z.string().optional(),
   })
   .passthrough();
 
@@ -2439,7 +2438,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
     },
     instances: {
       list: async (
-        params: InstanceStatusInput,
+        params: z.infer<typeof list_instancesQuerySchema>,
         fetchOptions?: RequestInit,
       ): Promise<ListInstancesResponseBody> => {
         try {
@@ -2447,7 +2446,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             throw new Error('API URL is undefined or not a string');
           }
           const url = new URL(`${apiUrl}/instances/list`);
-
+          const validatedQuery = list_instancesQuerySchema.parse(params);
+          const queryKeys = ['type', 'team_id', 'project_id', 'environment_id', 'service_id'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
           const options: RequestInit = {
             method: 'GET',
             headers: {
@@ -2456,8 +2462,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             },
             ...fetchOptions,
           };
-          const validatedBody = InstanceStatusInputSchema.parse(params);
-          options.body = JSON.stringify(validatedBody);
+
           const response = await fetch(url.toString(), options);
           if (!response.ok) {
             console.log(
@@ -2466,7 +2471,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             const data = await response.json();
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
+
             throw new Error(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );
