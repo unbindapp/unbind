@@ -307,7 +307,8 @@ function DockerImageContent({
                     </CommandEmpty>
                   )}
                   <CommandGroup>
-                    {(!data || isPending) &&
+                    {!data &&
+                      isPending &&
                       placeholderArray.map((_, index) => (
                         <CommandItem disabled className="rounded-lg" key={index}>
                           <p className="bg-foreground animate-skeleton min-w-0 shrink rounded-md leading-tight">
@@ -315,7 +316,9 @@ function DockerImageContent({
                           </p>
                         </CommandItem>
                       ))}
-                    {!data && !isPending && error && <ErrorCard message={error.message} />}
+                    {!data && !isPending && error && (
+                      <ErrorCard className="rounded-lg" message={error.message} />
+                    )}
                     {data &&
                       data.tags.map((tag) => (
                         <CommandItem
