@@ -110,7 +110,7 @@ const spinnerVariants = cva(
   },
 );
 
-export type ButtonProps = React.ComponentProps<"button"> &
+export type TButtonProps = React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     spinnerVariants?: VariantProps<typeof spinnerVariants>;
   } & {
@@ -120,7 +120,7 @@ export type ButtonProps = React.ComponentProps<"button"> &
 
 export type TButtonVariants = VariantProps<typeof buttonVariants>;
 
-export interface LinkButtonProps
+export interface TLinkButtonProps
   extends React.ComponentProps<typeof Link>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
@@ -140,7 +140,7 @@ function Button({
   spinnerVariants: spinnerVariantProps,
   children,
   ...props
-}: ButtonProps) {
+}: TButtonProps) {
   const Comp = asChild ? Slot : "button";
   const isText = typeof children === "string";
   return (
@@ -188,7 +188,7 @@ function LinkButton({
   onTouchStart: onTouchStartProp,
   prefetch = "hover",
   ...props
-}: Omit<LinkButtonProps, "prefetch"> & { prefetch?: "hover" | false }) {
+}: Omit<TLinkButtonProps, "prefetch"> & { prefetch?: "hover" | false }) {
   const router = useRouter();
   const Comp = asChild ? Slot : Link;
   const isText = typeof children === "string";

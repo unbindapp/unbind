@@ -458,6 +458,7 @@ function Input({
           scrollAreaRef.current?.scrollTo({ top: 0 });
         });
       }}
+      className="py-3"
       placeholder={placeholder}
     />
   );

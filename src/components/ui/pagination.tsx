@@ -1,4 +1,4 @@
-import { ButtonProps, buttonVariants } from "@/components/ui/button";
+import { TButtonProps, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import {
   ChevronLeftIcon,
@@ -26,7 +26,7 @@ function PaginationItem({ className, ...props }: React.ComponentProps<"li">) {
 
 type PaginationLinkProps = {
   isActive?: boolean;
-} & Pick<ButtonProps, "size"> &
+} & Pick<TButtonProps, "size"> &
   (
     | (React.ComponentProps<typeof Link> & { isButton: false })
     | (React.ComponentProps<"button"> & { isButton: true })

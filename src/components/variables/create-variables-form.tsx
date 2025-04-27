@@ -230,15 +230,18 @@ export default function CreateVariablesForm({
     <div
       data-open={variant !== "collapsible" || isOpen ? true : undefined}
       data-variant={variant}
-      className={cn("group/card flex w-full flex-col rounded-xl border", className)}
+      className={cn(
+        "group/card flex w-full flex-col rounded-xl border data-[variant=collapsible]:rounded-lg",
+        className,
+      )}
     >
       {variant === "collapsible" && (
         <Button
           onClick={() => setIsOpen((o) => !o)}
           variant="ghost"
-          className="text-muted-foreground z-10 justify-start py-3 text-left font-semibold group-data-open/card:rounded-b-none"
+          className="text-muted-foreground group-data-open/card:text-foreground z-10 justify-start gap-1 px-3 text-left font-semibold group-data-[variant=collapsible]/card:rounded-md group-data-[variant=collapsible]/card:group-data-open/card:rounded-b-none"
         >
-          <ChevronDownIcon className="-ml-2 size-5 shrink-0 -rotate-90 transition-transform group-data-open/card:rotate-0" />
+          <ChevronDownIcon className="-ml-0.5 size-5 shrink-0 -rotate-90 transition-transform group-data-open/card:rotate-0" />
           <p className="min-w-0 shrink">Environment Variables</p>
         </Button>
       )}

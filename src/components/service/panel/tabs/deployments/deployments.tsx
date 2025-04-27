@@ -5,7 +5,7 @@ import DeploymentPanelProvider from "@/components/deployment/panel/deployment-pa
 import ErrorCard from "@/components/error-card";
 import TabWrapper from "@/components/navigation/tab-wrapper";
 import NoItemsCard from "@/components/no-items-card";
-import { useDeployments } from "@/components/service/deployments-provider";
+import { useDeployments } from "@/components/deployment/deployments-provider";
 import DeploymentCard from "@/components/service/panel/tabs/deployments/deployment-card";
 import { useService } from "@/components/service/service-provider";
 import { AppRouterOutputs } from "@/server/trpc/api/root";

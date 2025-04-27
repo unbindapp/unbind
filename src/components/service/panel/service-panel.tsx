@@ -1,7 +1,7 @@
 import ErrorLine from "@/components/error-line";
 import { useServicesUtils } from "@/components/project/services-provider";
 import { useDeviceSize } from "@/components/providers/device-size-provider";
-import ServicePanelContent from "@/components/service/panel/service-panel-content";
+import ServicePanelContent from "@/components/service/panel/content/service-panel-content";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import ServiceIcon from "@/components/service/service-icon";
 import ServiceProvider, { useServiceUtils } from "@/components/service/service-provider";

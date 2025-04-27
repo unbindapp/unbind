@@ -1,6 +1,6 @@
 import ConditionalScrollArea from "@/components/conditional-scroll-area";
 import TabIndicator from "@/components/navigation/tab-indicator";
-import { TServicePanelTab } from "@/components/service/panel/service-panel-content";
+import { TServicePanelTab } from "@/components/service/panel/content/service-panel-content";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useService } from "@/components/service/service-provider";
 import { Button } from "@/components/ui/button";

@@ -43,7 +43,7 @@ type TProps =
   | { type: "placeholder"; webhook?: never; teamId?: never; projectId?: never };
 
 export default function WebhookCard({ type, webhook, teamId, projectId }: TProps) {
-  const threeDotButtonProps =
+  const threeDotTButtonProps =
     type === "project"
       ? { type, teamId, projectId, webhook }
       : type === "team"
@@ -78,7 +78,7 @@ export default function WebhookCard({ type, webhook, teamId, projectId }: TProps
       <p className="text-muted-foreground group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-muted-foreground max-w-full min-w-0 shrink px-0.75 text-sm leading-tight group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">
         {type === "placeholder" ? "Jan 01, 2024" : format(webhook.created_at, "MMMM dd, yyyy")}
       </p>
-      {!threeDotButtonProps ? (
+      {!threeDotTButtonProps ? (
         <Button
           disabled
           fadeOnDisabled={false}
@@ -89,7 +89,7 @@ export default function WebhookCard({ type, webhook, teamId, projectId }: TProps
           <div className="bg-muted-more-foreground animate-skeleton size-6 rounded-md" />
         </Button>
       ) : (
-        <ThreeDotButton {...threeDotButtonProps} className="absolute top-1 right-1" />
+        <ThreeDotButton {...threeDotTButtonProps} className="absolute top-1 right-1" />
       )}
     </div>
   );
