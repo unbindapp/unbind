@@ -119,6 +119,7 @@
   --slack-2: hsl(155 60% 40%);
   --slack-3: hsl(341 76% 50%);
   --slack-4: hsl(42 83% 55%);
+  --cloudflare: hsl(27 100% 35%);
 
   --barrier: hsl(120 30% 4%);
 
@@ -213,6 +214,7 @@
   --slack-2: hsl(155 60% 40%);
   --slack-3: hsl(341 76% 50%);
   --slack-4: hsl(42 83% 55%);
+  --cloudflare: hsl(27 90% 65%);
 
   --barrier: hsl(120 10% 4%);
 
@@ -418,6 +420,7 @@
   --color-slack-2: var(--slack-2);
   --color-slack-3: var(--slack-3);
   --color-slack-4: var(--slack-4);
+  --color-cloudflare: var(--cloudflare);
 
   --color-barrier: var(--barrier);
 

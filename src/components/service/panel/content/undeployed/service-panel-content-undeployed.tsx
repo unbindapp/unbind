@@ -114,14 +114,14 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
                 <BlockItemTitle>Domain</BlockItemTitle>
               </BlockItemHeader>
               <BlockItemContent>
-                <div className="flex w-full flex-col items-start gap-2">
+                <div className="flex w-full flex-col items-start">
                   <Input
                     value={domain}
                     onChange={(e) => setDomain(e.currentTarget.value)}
                     placeholder="example.com"
-                    className="w-full"
+                    className="z-10 w-full"
                   />
-                  <DomainCard domain={domain} />
+                  <DomainCard domain={domain} className="-mt-3 rounded-t-none pt-2.75" />
                 </div>
               </BlockItemContent>
             </BlockItem>

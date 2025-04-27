@@ -575,6 +575,25 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
     return <UsersIcon className={cn(defaultClassName, "scale-90", className)} {...rest} />;
   }
 
+  if (brand === "cloudflare") {
+    return (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        fill="none"
+        viewBox="0 0 24 24"
+        className={cn(defaultClassName, color === "brand" && "text-cloudflare", className)}
+        {...rest}
+      >
+        <path
+          fill="currentColor"
+          d="M13.154 6.09a5.18 5.18 0 0 1 4.77 4.119c.053.158-.468 1.254-.48 1.281-.321.961-1.39 1.71-2.298 1.763l-8.012.106c-.267.054-.267.374-.053.374l7.904.107c.801 0 1.603.64 1.016 2.028 0 .107-.107.16-.16.16H1.205c-.107 0-.16-.053-.16-.106a3.343 3.343 0 0 1 3.205-3.844c-.48-1.975 1.656-3.79 3.685-2.456a5.18 5.18 0 0 1 5.22-3.531m5.517 4.333a4.33 4.33 0 0 1 3.452 1.714 4.32 4.32 0 0 1 .715 3.785l-.16.106h-6.036c-.107 0-.107-.053-.107-.16.01-.031.55-1.87 2.457-2.082l1.763-.053c.267-.053.266-.374.053-.374l-1.71-.106c-.907-.053-1.335-.801-1.068-1.655l.268-1.121c.053-.107.16-.054.373-.054"
+        />
+      </svg>
+    );
+  }
+
   return (
     <BanIcon
       className={cn(
