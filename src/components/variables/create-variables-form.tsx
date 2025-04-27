@@ -236,15 +236,15 @@ export default function CreateVariablesForm({
         <Button
           onClick={() => setIsOpen((o) => !o)}
           variant="ghost"
-          className="text-muted-foreground justify-start py-3 text-left font-semibold group-data-open/card:rounded-b-none"
+          className="text-muted-foreground z-10 justify-start py-3 text-left font-semibold group-data-open/card:rounded-b-none"
         >
-          <ChevronDownIcon className="-ml-1.5 size-5 shrink-0 -rotate-90 transition-transform group-data-open/card:rotate-0" />
+          <ChevronDownIcon className="-ml-2 size-5 shrink-0 -rotate-90 transition-transform group-data-open/card:rotate-0" />
           <p className="min-w-0 shrink">Environment Variables</p>
         </Button>
       )}
       {(variant !== "collapsible" || isOpen) && (
         <form
-          className="flex w-full flex-col group-data-[variant=collapsible]/card:-mt-2"
+          className="relative flex w-full flex-col group-data-[variant=collapsible]/card:-mt-2"
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();

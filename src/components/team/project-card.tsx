@@ -2,7 +2,6 @@ import BrandIcon from "@/components/icons/brand";
 import { LinkButton } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { AppRouterOutputs } from "@/server/trpc/api/root";
-import { EllipsisIcon } from "lucide-react";
 
 type TProps = {
   className?: string;
@@ -80,7 +79,6 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
                     key={`${s}-${index}`}
                   />
                 ))}
-                {serviceIcons.length > iconLength && <EllipsisIcon className="size-5" />}
               </div>
             )}
           </div>
