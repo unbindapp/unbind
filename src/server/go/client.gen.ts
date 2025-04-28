@@ -25,23 +25,10 @@ export const AvailableVariableReferenceSchema = z
   })
   .strip();
 
-export const BuildkitSettingsResponseSchema = z
-  .object({
-    max_parallelism: z.number(), // buildkitd max_parallelism setting
-    replicas: z.number(), // The number of buildkitd replicas, higher will allow faster concurrent builds
-  })
-  .strip();
-
-export const BuildkitSettingsUpdateInputBodySchema = z
+export const BuildkitSettingsSchema = z
   .object({
     max_parallelism: z.number(),
     replicas: z.number(),
-  })
-  .strip();
-
-export const BuildkitSettingsUpdateResponseBodySchema = z
-  .object({
-    settings: BuildkitSettingsResponseSchema,
   })
   .strip();
 
@@ -437,6 +424,7 @@ export const DnsCheckResponseBodySchema = z
 
 export const ExtendedHostSpecSchema = z
   .object({
+    cloudflare: z.boolean(),
     dns_configured: z.boolean(),
     host: z.string(),
     issued: z.boolean(),
@@ -1024,6 +1012,20 @@ export const RestartServicesResponseBodySchema = z
   })
   .strip();
 
+export const SystemSettingsResponseSchema = z
+  .object({
+    buildkit_settings: BuildkitSettingsSchema.optional(),
+    can_update_buildkit: z.boolean(), // If not externally managed, this indicates if the user can update buildkit settings
+    wildcard_domain: z.string().optional(),
+  })
+  .strip();
+
+export const SettingsResponseBodySchema = z
+  .object({
+    data: SystemSettingsResponseSchema,
+  })
+  .strip();
+
 export const SetupDataSchema = z
   .object({
     is_setup: z.boolean(),
@@ -1042,15 +1044,22 @@ export const SortOrderSchema = z.enum(['asc', 'desc']);
 
 export const SystemMetaSchema = z
   .object({
-    buildkit_settings: BuildkitSettingsResponseSchema,
     external_ipv4: z.string(),
     external_ipv6: z.string(),
+    system_settings: SystemSettingsResponseSchema,
   })
   .strip();
 
 export const SystemMetaResponseBodySchema = z
   .object({
     data: SystemMetaSchema,
+  })
+  .strip();
+
+export const SystemSettingUpdateInputSchema = z
+  .object({
+    buildkit_settings: BuildkitSettingsSchema, // Buildkit settings
+    wildcard_domain: z.string().nullable(), // Wildcard domain for the system
   })
   .strip();
 
@@ -1246,11 +1255,7 @@ export const WebhookUpdateInputSchema = z
 export type VariableReferenceSourceType = z.infer<typeof VariableReferenceSourceTypeSchema>;
 export type VariableReferenceType = z.infer<typeof VariableReferenceTypeSchema>;
 export type AvailableVariableReference = z.infer<typeof AvailableVariableReferenceSchema>;
-export type BuildkitSettingsResponse = z.infer<typeof BuildkitSettingsResponseSchema>;
-export type BuildkitSettingsUpdateInputBody = z.infer<typeof BuildkitSettingsUpdateInputBodySchema>;
-export type BuildkitSettingsUpdateResponseBody = z.infer<
-  typeof BuildkitSettingsUpdateResponseBodySchema
->;
+export type BuildkitSettings = z.infer<typeof BuildkitSettingsSchema>;
 export type CallbackResponseBody = z.infer<typeof CallbackResponseBodySchema>;
 export type ContainerState = z.infer<typeof ContainerStateSchema>;
 export type ContainerStatus = z.infer<typeof ContainerStatusSchema>;
@@ -1380,12 +1385,15 @@ export type ResolveVariableReferenceResponseBody = z.infer<
 export type RestartInstancesInputBody = z.infer<typeof RestartInstancesInputBodySchema>;
 export type Restarted = z.infer<typeof RestartedSchema>;
 export type RestartServicesResponseBody = z.infer<typeof RestartServicesResponseBodySchema>;
+export type SystemSettingsResponse = z.infer<typeof SystemSettingsResponseSchema>;
+export type SettingsResponseBody = z.infer<typeof SettingsResponseBodySchema>;
 export type SetupData = z.infer<typeof SetupDataSchema>;
 export type SetupStatusResponseBody = z.infer<typeof SetupStatusResponseBodySchema>;
 export type SortByField = z.infer<typeof SortByFieldSchema>;
 export type SortOrder = z.infer<typeof SortOrderSchema>;
 export type SystemMeta = z.infer<typeof SystemMetaSchema>;
 export type SystemMetaResponseBody = z.infer<typeof SystemMetaResponseBodySchema>;
+export type SystemSettingUpdateInput = z.infer<typeof SystemSettingUpdateInputSchema>;
 export type TeamResponseBody = z.infer<typeof TeamResponseBodySchema>;
 export type UpdatServiceResponseBody = z.infer<typeof UpdatServiceResponseBodySchema>;
 export type UpdateEnvironmentInput = z.infer<typeof UpdateEnvironmentInputSchema>;
@@ -3374,48 +3382,6 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
       },
     },
     system: {
-      buildkit: {
-        update: async (
-          params: BuildkitSettingsUpdateInputBody,
-          fetchOptions?: RequestInit,
-        ): Promise<BuildkitSettingsUpdateResponseBody> => {
-          try {
-            if (!apiUrl || typeof apiUrl !== 'string') {
-              throw new Error('API URL is undefined or not a string');
-            }
-            const url = new URL(`${apiUrl}/system/buildkit/update`);
-
-            const options: RequestInit = {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
-              },
-              ...fetchOptions,
-            };
-            const validatedBody = BuildkitSettingsUpdateInputBodySchema.parse(params);
-            options.body = JSON.stringify(validatedBody);
-            const response = await fetch(url.toString(), options);
-            if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-              console.log(`Request body is:`, validatedBody);
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-            }
-            const data = await response.json();
-            return BuildkitSettingsUpdateResponseBodySchema.parse(data);
-          } catch (error) {
-            console.error('Error in API request:', error);
-            throw error;
-          }
-        },
-      },
       dns: {
         check: async (
           params: z.infer<typeof check_dns_resolutionQuerySchema>,
@@ -3502,6 +3468,48 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           console.error('Error in API request:', error);
           throw error;
         }
+      },
+      settings: {
+        update: async (
+          params: SystemSettingUpdateInput,
+          fetchOptions?: RequestInit,
+        ): Promise<SettingsResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/system/settings/update`);
+
+            const options: RequestInit = {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+            const validatedBody = SystemSettingUpdateInputSchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+              console.log(`Request body is:`, validatedBody);
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return SettingsResponseBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
       },
     },
     teams: {

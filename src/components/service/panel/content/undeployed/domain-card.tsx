@@ -9,11 +9,7 @@ import { useEffect, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { z } from "zod";
 
-const DomainSchema = z
-  .string()
-  .nonempty()
-  .refine((val) => !val.includes(" "), "Domain can't contain spaces")
-  .refine((val) => val.includes("."), "Domain must contain a dot");
+const UrlSchema = z.string().nonempty().url();
 
 export function DomainCard({ domain, className }: { domain: string; className?: string }) {
   const { data, isPending, error } = useSystem();
@@ -30,12 +26,20 @@ export function DomainCard({ domain, className }: { domain: string; className?: 
   );
 
   useEffect(() => {
-    const { success } = DomainSchema.safeParse(debouncedDomain);
+    let url: URL | undefined;
+    try {
+      url = new URL("https://" + debouncedDomain);
+    } catch {}
+    const { success } = UrlSchema.safeParse(url?.toString() || "");
     setIsValidDebouncedDomain(success);
   }, [debouncedDomain]);
 
   useEffect(() => {
-    const { success } = DomainSchema.safeParse(domain);
+    let url: URL | undefined;
+    try {
+      url = new URL("https://" + domain);
+    } catch {}
+    const { success } = UrlSchema.safeParse(url?.toString() || "");
     setIsValidDomain(success);
   }, [domain]);
 
@@ -43,7 +47,7 @@ export function DomainCard({ domain, className }: { domain: string; className?: 
 
   return (
     <div
-      data-configured={dnsCheckData?.data.dns_configured ? true : undefined}
+      data-configured={data && dnsCheckData?.data.dns_configured ? true : undefined}
       data-pending={!data && isPending ? true : undefined}
       data-error={!data && !isPending && error ? true : undefined}
       className={cn(
@@ -54,7 +58,7 @@ export function DomainCard({ domain, className }: { domain: string; className?: 
       {(!data || !dnsCheckData?.data.dns_configured) && (
         <div className="flex w-full flex-col items-start justify-start">
           <p className="w-full px-3 py-2.5 leading-tight font-medium">
-            Create the DNS record below:
+            Create the DNS record below. You can do it after deployment as well.
           </p>
           <div className="flex w-full items-start justify-start border-t border-b px-3 pt-2 pb-2.5">
             <div className="flex max-w-1/3 flex-col gap-0.5 pr-6">
@@ -103,7 +107,7 @@ export function DomainCard({ domain, className }: { domain: string; className?: 
         </div>
       )}
       {error && (
-        <div className="w-full px-1.5 pb-1.5">
+        <div className="w-full p-1.5">
           <ErrorLine message={error.message} className="rounded-md" />
         </div>
       )}
