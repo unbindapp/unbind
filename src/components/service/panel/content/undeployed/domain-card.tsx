@@ -58,7 +58,7 @@ export function DomainCard({ domain, className }: { domain: string; className?: 
       {(!data || !dnsCheckData?.data.dns_configured) && (
         <div className="flex w-full flex-col items-start justify-start">
           <p className="w-full px-3 py-2.5 leading-tight font-medium">
-            Create the DNS record below. You can do it after deployment as well.
+            Create the DNS record below. You can also do it after deployment.
           </p>
           <div className="flex w-full items-start justify-start border-t border-b px-3 pt-2 pb-2.5">
             <div className="flex max-w-1/3 flex-col gap-0.5 pr-6">
