@@ -20,6 +20,14 @@ type TProps = {
   context: TContextCommandPanelContext;
 };
 
+export function databaseTypeToName(type: string) {
+  if (type === "postgres") return "PostgreSQL";
+  if (type === "postgresql") return "PostgreSQL";
+  if (type === "mysql") return "MySQL";
+  if (type === "redis") return "Redis";
+  return "Unknown";
+}
+
 export function useDatabaseItemHook({ context }: TProps) {
   const hook = useMemo(() => {
     if (context.contextType !== "project" && context.contextType !== "new-service") {
@@ -73,7 +81,7 @@ function useDatabaseItem({ context }: TProps) {
         type: "database",
         builder: "database",
         database_type: databaseType,
-        name: `${databaseType}`,
+        name: databaseTypeToName(databaseType),
         teamId: context.teamId,
         projectId,
         environmentId,

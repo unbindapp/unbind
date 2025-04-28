@@ -9,6 +9,7 @@ import {
   BlockItemTitle,
 } from "@/components/service/panel/content/undeployed/block";
 import { DomainCard } from "@/components/service/panel/content/undeployed/domain-card";
+import { UndeployedContentDatabase } from "@/components/service/panel/content/undeployed/undeployed-content-database";
 import { UndeployedContentDockerImage } from "@/components/service/panel/content/undeployed/undeployed-content-docker-image";
 import { UndeployedContentGit } from "@/components/service/panel/content/undeployed/undeployed-content-git";
 import { useService } from "@/components/service/service-provider";
@@ -54,6 +55,8 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
 
   const tagState = useState<string | null>(null);
   const branchState = useState<string | null>(null);
+  const databaseVersionState = useState<string | null>(null);
+
   const [domain, setDomain] = useState<string>("");
 
   const port =
@@ -100,6 +103,9 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
     },
   });
 
+  const hasDomainAndPort =
+    service.config.type === "github" || service.config.type === "docker-image";
+
   return (
     <div
       className={cn("mt-4 flex w-full flex-1 flex-col overflow-hidden border-t sm:mt-6", className)}
@@ -107,58 +113,65 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
       <ScrollArea viewportClassName="pb-[calc(var(--safe-area-inset-bottom)+2rem)]">
         <div className="flex w-full flex-1 flex-col gap-5 overflow-auto px-3 py-4 sm:p-6">
           <h2 className="-mt-1 px-2 text-xl font-bold sm:text-2xl">Deploy Service</h2>
-          <Content service={service} tagState={tagState} branchState={branchState} />
-          <Block>
-            <BlockItem>
-              <BlockItemHeader>
-                <BlockItemTitle>Domain</BlockItemTitle>
-              </BlockItemHeader>
-              <BlockItemContent>
-                <div className="flex w-full flex-col items-start">
-                  <Input
-                    value={domain}
-                    onChange={(e) => setDomain(e.currentTarget.value)}
-                    placeholder="example.com"
-                    className="z-10 w-full"
-                  />
-                  <DomainCard domain={domain} className="-mt-3 rounded-t-none pt-2.75" />
-                </div>
-              </BlockItemContent>
-            </BlockItem>
-            <BlockItem>
-              <BlockItemHeader>
-                <BlockItemTitle>Port</BlockItemTitle>
-                <div
-                  data-detected={port !== null ? true : undefined}
-                  className="bg-warning/10 text-warning border-warning/10 data-detected:text-success data-detected:bg-success/10 data-detected:border-success/10 -my-1 flex min-w-0 shrink items-center justify-start gap-1.5 rounded-full border px-1.75 py-0.25"
-                >
-                  {port !== null ? (
-                    <CheckCircleIcon className="-ml-0.75 size-3.5 shrink-0" />
-                  ) : (
-                    <CircleSlashIcon className="-ml-0.75 size-3.5 shrink-0" />
-                  )}
-                  <p className="min-w-0 shrink truncate text-sm leading-tight font-medium">
+          <Content
+            service={service}
+            tagState={tagState}
+            branchState={branchState}
+            databaseVersionState={databaseVersionState}
+          />
+          {hasDomainAndPort && (
+            <Block>
+              <BlockItem>
+                <BlockItemHeader>
+                  <BlockItemTitle>Domain</BlockItemTitle>
+                </BlockItemHeader>
+                <BlockItemContent>
+                  <div className="flex w-full flex-col items-start">
+                    <Input
+                      value={domain}
+                      onChange={(e) => setDomain(e.currentTarget.value)}
+                      placeholder="example.com"
+                      className="z-10 w-full"
+                    />
+                    <DomainCard domain={domain} className="-mt-3 rounded-t-none pt-2.75" />
+                  </div>
+                </BlockItemContent>
+              </BlockItem>
+              <BlockItem>
+                <BlockItemHeader>
+                  <BlockItemTitle>Port</BlockItemTitle>
+                  <div
+                    data-detected={port !== null ? true : undefined}
+                    className="bg-warning/10 text-warning border-warning/10 data-detected:text-success data-detected:bg-success/10 data-detected:border-success/10 -my-1 flex min-w-0 shrink items-center justify-start gap-1.5 rounded-full border px-1.75 py-0.25"
+                  >
                     {port !== null ? (
-                      <>
-                        {" "}
-                        Detected: <span className="font-bold">{port}</span>
-                      </>
+                      <CheckCircleIcon className="-ml-0.75 size-3.5 shrink-0" />
                     ) : (
-                      "Couldn't detect"
+                      <CircleSlashIcon className="-ml-0.75 size-3.5 shrink-0" />
                     )}
-                  </p>
-                </div>
-              </BlockItemHeader>
-              <BlockItemContent>
-                <Input
-                  value={portInputValue}
-                  onChange={(e) => setPortInputValue(e.target.value)}
-                  placeholder="3000"
-                  className="w-full"
-                />
-              </BlockItemContent>
-            </BlockItem>
-          </Block>
+                    <p className="min-w-0 shrink truncate text-sm leading-tight font-medium">
+                      {port !== null ? (
+                        <>
+                          {" "}
+                          Detected: <span className="font-bold">{port}</span>
+                        </>
+                      ) : (
+                        "Couldn't detect"
+                      )}
+                    </p>
+                  </div>
+                </BlockItemHeader>
+                <BlockItemContent>
+                  <Input
+                    value={portInputValue}
+                    onChange={(e) => setPortInputValue(e.target.value)}
+                    placeholder="3000"
+                    className="w-full"
+                  />
+                </BlockItemContent>
+              </BlockItem>
+            </Block>
+          )}
           <VariablesProvider
             teamId={teamId}
             projectId={projectId}
@@ -214,10 +227,12 @@ function Content({
   service,
   tagState,
   branchState,
+  databaseVersionState,
 }: {
   service: TServiceShallow;
   tagState: TStringOrNullState;
   branchState: TStringOrNullState;
+  databaseVersionState: TStringOrNullState;
 }) {
   if (service.config.type === "docker-image") {
     const arr = service.config.image?.split(":");
@@ -248,6 +263,20 @@ function Content({
         branch={service.config.git_branch}
         installationId={service.github_installation_id}
         branchState={branchState}
+      />
+    );
+  }
+
+  if (service.config.type === "database") {
+    if (!service.config.database_type) {
+      return <ErrorLine message="Database type is not found." />;
+    }
+
+    return (
+      <UndeployedContentDatabase
+        type={service.config.database_type}
+        versionState={databaseVersionState}
+        version={service.config.database_version}
       />
     );
   }
