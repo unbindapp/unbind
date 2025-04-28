@@ -5,6 +5,7 @@ import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import { cn } from "@/components/ui/utils";
 import { ChevronRightIcon, DotFilledIcon } from "@radix-ui/react-icons";
 import { CheckIcon } from "lucide-react";
+import { cva, VariantProps } from "class-variance-authority";
 
 function DropdownMenu({ modal = true, ...rest }: DropdownMenuPrimitive.DropdownMenuProps) {
   return <DropdownMenuPrimitive.Root modal={modal} {...rest} />;
@@ -82,6 +83,24 @@ function DropdownMenuSubContent({
   );
 }
 
+export const dropdownContentVariants = cva(
+  "bg-popover text-popover-foreground shadow-shadow/shadow z-999 flex max-h-[min(30rem,var(--radix-popper-available-height))] max-w-[var(--radix-popper-available-width)] flex-col overflow-hidden rounded-lg border p-0 shadow-lg",
+  {
+    variants: {
+      animate: {
+        default:
+          "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+        false: "",
+      },
+    },
+    defaultVariants: {
+      animate: "default",
+    },
+  },
+);
+
+type TDropdownContentVariants = VariantProps<typeof dropdownContentVariants>;
+
 function DropdownMenuContent({
   className,
   sideOffset = 4,
@@ -94,8 +113,9 @@ function DropdownMenuContent({
   },
   onPointerDown,
   onCloseAutoFocus,
+  animate,
   ...props
-}: React.ComponentProps<typeof DropdownMenuPrimitive.Content>) {
+}: React.ComponentProps<typeof DropdownMenuPrimitive.Content> & TDropdownContentVariants) {
   const isCloseFromMouse = React.useRef<boolean>(false);
 
   const handlePointerDownOutside = React.useCallback(
@@ -140,11 +160,7 @@ function DropdownMenuContent({
         onPointerDown={handlePointerDown}
         onCloseAutoFocus={handleCloseAutoFocus}
         collisionPadding={collisionPadding}
-        className={cn(
-          "bg-popover text-popover-foreground shadow-shadow/shadow z-999 flex max-h-[min(30rem,var(--radix-popper-available-height))] max-w-[var(--radix-popper-available-width)] flex-col overflow-hidden rounded-lg border p-0 shadow-lg",
-          "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-          className,
-        )}
+        className={cn(dropdownContentVariants({ animate, className }))}
         {...props}
       />
     </DropdownMenuPrimitive.Portal>
@@ -163,7 +179,7 @@ function DropdownMenuItem({
   return (
     <DropdownMenuPrimitive.Item
       className={cn(
-        "active:bg-accent focus:bg-accent focus:text-accent-foreground relative flex cursor-default items-center justify-start gap-2.5 rounded-md px-3 py-2.25 leading-tight font-medium outline-hidden select-none data-disabled:pointer-events-none [&>svg]:shrink-0",
+        "active:bg-accent focus:bg-accent focus:text-accent-foreground relative flex cursor-default items-center justify-start gap-2.5 rounded-md px-3 py-2.5 leading-tight font-medium outline-hidden select-none data-disabled:pointer-events-none [&>svg]:shrink-0",
         fadeOnDisabled && "data-disabled:opacity-50",
         inset && "pl-8",
         className,

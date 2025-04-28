@@ -334,46 +334,16 @@ export const DataStructSchema = z
   })
   .strip();
 
-export const HelmChartInfoSchema = z
+export const DatabaseConfigurableSchema = z
   .object({
-    name: z.string(),
-    repository: z.string(),
-    repositoryName: z.string().optional(),
-    version: z.string(),
+    default: z.string(),
+    options: z.array(z.string()),
   })
   .strip();
 
-export const ParameterPropertySchema: z.ZodType<unknown> = z
+export const DatabaseConfigurablesSchema = z
   .object({
-    $ref: z.string().optional(),
-    additionalProperties: z.lazy(() => ParameterPropertySchema).optional(),
-    default: z.any().optional(),
-    description: z.string().optional(),
-    enum: z.array(z.string()).nullable().optional(),
-    maximum: z.number().optional(),
-    minimum: z.number().optional(),
-    properties: z.record(z.lazy(() => ParameterPropertySchema)).optional(),
-    type: z.string(),
-  })
-  .strip();
-
-export const DefinitionParameterSchemaSchema = z
-  .object({
-    properties: z.record(ParameterPropertySchema),
-    required: z.array(z.string()).nullable().optional(),
-  })
-  .strip();
-
-export const DefinitionSchema = z
-  .object({
-    category: z.string(),
-    chart: HelmChartInfoSchema.optional(),
-    description: z.string(),
-    name: z.string(),
-    port: z.number(),
-    schema: DefinitionParameterSchemaSchema,
-    type: z.string(),
-    version: z.string(),
+    version: DatabaseConfigurableSchema,
   })
   .strip();
 
@@ -526,7 +496,7 @@ export const ErrorModelSchema = z
 
 export const GetDatabaseResponseBodySchema = z
   .object({
-    data: DefinitionSchema,
+    data: DatabaseConfigurablesSchema,
   })
   .strip();
 
@@ -1313,10 +1283,8 @@ export type WebhookType = z.infer<typeof WebhookTypeSchema>;
 export type WebhookResponse = z.infer<typeof WebhookResponseSchema>;
 export type CreateWebhookResponseBody = z.infer<typeof CreateWebhookResponseBodySchema>;
 export type DataStruct = z.infer<typeof DataStructSchema>;
-export type HelmChartInfo = z.infer<typeof HelmChartInfoSchema>;
-export type ParameterProperty = z.infer<typeof ParameterPropertySchema>;
-export type DefinitionParameterSchema = z.infer<typeof DefinitionParameterSchemaSchema>;
-export type Definition = z.infer<typeof DefinitionSchema>;
+export type DatabaseConfigurable = z.infer<typeof DatabaseConfigurableSchema>;
+export type DatabaseConfigurables = z.infer<typeof DatabaseConfigurablesSchema>;
 export type DeleteEnvironmentInputBody = z.infer<typeof DeleteEnvironmentInputBodySchema>;
 export type DeleteEnvironmentResponseBody = z.infer<typeof DeleteEnvironmentResponseBodySchema>;
 export type DeleteProjectInputBody = z.infer<typeof DeleteProjectInputBodySchema>;

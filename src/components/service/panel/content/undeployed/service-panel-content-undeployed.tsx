@@ -268,8 +268,8 @@ function Content({
   }
 
   if (service.config.type === "database") {
-    if (!service.config.database_type) {
-      return <ErrorLine message="Database type is not found." />;
+    if (!service.config.database_type || !service.config.database_version) {
+      return <ErrorLine message="Database type or version is not found." />;
     }
 
     return (
