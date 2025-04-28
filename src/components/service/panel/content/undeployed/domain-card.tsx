@@ -83,7 +83,7 @@ export function DomainCard({ domain, className }: { domain: string; className?: 
         </div>
       )}
       {data && (
-        <div className="group-data-configured/card:text-success text-muted-foreground flex flex-row flex-wrap gap-1.5 px-3 py-2.5 group-data-configured/card:mt-0">
+        <div className="group-data-configured/card:text-success text-muted-foreground flex w-full flex-row flex-wrap gap-1.5 px-3 py-2.5 group-data-configured/card:mt-0">
           <div className="flex max-w-full items-center justify-start gap-1.5 pr-4">
             <div className="-ml-0.25 size-3.5 shrink-0">
               {dnsCheckData?.data.dns_configured ? (
