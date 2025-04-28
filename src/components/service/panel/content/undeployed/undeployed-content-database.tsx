@@ -23,7 +23,7 @@ import { api } from "@/server/trpc/setup/client";
 import { MilestoneIcon } from "lucide-react";
 import { useState } from "react";
 
-const placeholderArray = Array.from({ length: 10 });
+const placeholderArray = Array.from({ length: 4 });
 
 export function UndeployedContentDatabase({
   type,
