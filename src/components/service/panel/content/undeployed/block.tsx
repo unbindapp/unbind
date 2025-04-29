@@ -13,7 +13,7 @@ export function Block({ children }: { children: ReactNode }) {
 
 export function BlockItemHeader({ children }: { children: ReactNode }) {
   return (
-    <div className="flex w-full items-center justify-start gap-2.5 px-2 pb-1 leading-tight font-semibold">
+    <div className="flex w-full items-center justify-start gap-2.5 pb-1 pl-2 leading-tight font-semibold">
       {children}
     </div>
   );
@@ -23,7 +23,7 @@ export function BlockItemTitle({ children }: { children: ReactNode }) {
   return <p className="min-w-0 shrink truncate leading-tight font-semibold">{children}</p>;
 }
 
-export function BlockItem({ children }: { children: ReactNode }) {
+export function BlockItem({ className, children }: { className?: string; children: ReactNode }) {
   const childrenArray = Children.toArray(children);
   const Header = childrenArray.find(
     (child) =>
@@ -34,7 +34,7 @@ export function BlockItem({ children }: { children: ReactNode }) {
       isValidElement(child) && typeof child.type === "function" && child.type === BlockItemContent,
   );
   return (
-    <div className="flex w-full flex-col gap-1 px-2 md:w-1/2">
+    <div className={cn("flex w-full flex-col gap-1 px-2 md:w-1/2", className)}>
       {Header}
       {Content}
     </div>

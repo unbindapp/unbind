@@ -31,7 +31,7 @@ import {
 } from "@/server/trpc/api/variables/types";
 import { api } from "@/server/trpc/setup/client";
 import { useMutation } from "@tanstack/react-query";
-import { CheckCircleIcon, CircleSlashIcon } from "lucide-react";
+import { CheckCircleIcon, CircleSlashIcon, EyeOffIcon } from "lucide-react";
 import { Dispatch, SetStateAction, useRef, useState } from "react";
 
 type TProps = {
@@ -69,6 +69,9 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
   const tagState = useState<string | null>(null);
   const branchState = useState<string | null>(null);
   const databaseVersionState = useState<string | null>(null);
+  const [isPrivateService, setIsPrivateService] = useState<boolean>(false);
+
+  const privateServiceText = "Private service";
 
   const [domain, setDomain] = useState<string>("");
 
@@ -127,7 +130,7 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
     },
   });
 
-  const hasDomainAndPort =
+  const isServicePublicable =
     service.config.type === "github" || service.config.type === "docker-image";
 
   return (
@@ -143,59 +146,95 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
             branchState={branchState}
             databaseVersionState={databaseVersionState}
           />
-          {hasDomainAndPort && (
+          {isServicePublicable && (
             <Block>
               <BlockItem>
                 <BlockItemHeader>
                   <BlockItemTitle>Domain</BlockItemTitle>
+                  <Button
+                    variant="ghost"
+                    onClick={() => setIsPrivateService((prev) => !prev)}
+                    data-private={isPrivateService ? true : undefined}
+                    className="group/button has-hover:hover:bg-border -my-1 -mr-0.5 ml-auto flex cursor-pointer items-center justify-center gap-2.5 rounded-full py-1 pr-1 pl-2.5"
+                  >
+                    <p className="text-muted-foreground group-data-private/button:text-foreground has-hover:group-hover/button:text-foreground min-w-0 shrink font-medium">
+                      Private
+                    </p>
+                    <div className="bg-muted-more-foreground group-data-private/button:bg-foreground relative h-5 w-9 rounded-full transition">
+                      <div className="bg-background absolute top-0.5 left-0.5 size-4 rounded-full transition group-data-private/button:translate-x-4" />
+                    </div>
+                  </Button>
                 </BlockItemHeader>
                 <BlockItemContent>
                   <div className="flex w-full flex-col items-start">
-                    <Input
-                      value={domain}
-                      onChange={(e) => setDomain(e.currentTarget.value)}
-                      placeholder="example.com"
-                      className="z-10 w-full"
-                    />
-                    <DomainCard domain={domain} className="-mt-3 rounded-t-none pt-2.75" />
+                    <div
+                      data-private={isPrivateService ? true : undefined}
+                      className="group/input relative z-10 w-full"
+                    >
+                      <Input
+                        disabled={isPrivateService}
+                        value={isPrivateService ? privateServiceText : domain}
+                        onChange={(e) => setDomain(e.currentTarget.value)}
+                        placeholder="example.com"
+                        className="w-full group-data-private/input:pl-9"
+                      />
+                      {isPrivateService && (
+                        <EyeOffIcon className="text-foreground pointer-events-none absolute top-1/2 left-3 size-4.5 -translate-y-1/2 opacity-50" />
+                      )}
+                    </div>
+                    {!isPrivateService && (
+                      <DomainCard domain={domain} className="-mt-3 rounded-t-none pt-2.75" />
+                    )}
                   </div>
                 </BlockItemContent>
               </BlockItem>
               <BlockItem>
                 <BlockItemHeader>
                   <BlockItemTitle>Port</BlockItemTitle>
-                  <div
-                    data-detected={port !== null ? true : undefined}
-                    className="bg-warning/10 text-warning border-warning/10 data-detected:text-success data-detected:bg-success/10 data-detected:border-success/10 -my-1 flex min-w-0 shrink items-center justify-start gap-1.5 rounded-full border px-1.75 py-0.25"
-                  >
-                    {port !== null ? (
-                      <CheckCircleIcon className="-ml-0.75 size-3.5 shrink-0" />
-                    ) : (
-                      <CircleSlashIcon className="-ml-0.75 size-3.5 shrink-0" />
-                    )}
-                    <p className="min-w-0 shrink truncate text-sm leading-tight font-medium">
+                  {!isPrivateService && (
+                    <div
+                      data-detected={port !== null ? true : undefined}
+                      className="bg-warning/10 text-warning border-warning/10 data-detected:text-success data-detected:bg-success/10 data-detected:border-success/10 -my-1 ml-auto flex min-w-0 shrink items-center justify-start gap-1.5 rounded-full border px-1.75 py-0.25"
+                    >
                       {port !== null ? (
-                        <>
-                          {" "}
-                          Detected: <span className="font-bold">{port}</span>
-                        </>
+                        <CheckCircleIcon className="-ml-0.75 size-3.5 shrink-0" />
                       ) : (
-                        "Couldn't detect"
+                        <CircleSlashIcon className="-ml-0.75 size-3.5 shrink-0" />
                       )}
-                    </p>
-                  </div>
+                      <p className="min-w-0 shrink truncate text-sm leading-tight font-medium">
+                        {port !== null ? (
+                          <>
+                            {" "}
+                            Detected: <span className="font-bold">{port}</span>
+                          </>
+                        ) : (
+                          "Couldn't detect"
+                        )}
+                      </p>
+                    </div>
+                  )}
                 </BlockItemHeader>
                 <BlockItemContent>
-                  <Input
-                    value={portInputValue}
-                    onChange={(e) => setPortInputValue(e.target.value)}
-                    placeholder="3000"
-                    className="w-full"
-                  />
+                  <div
+                    data-private={isPrivateService ? true : undefined}
+                    className="group/input relative w-full"
+                  >
+                    <Input
+                      disabled={isPrivateService}
+                      value={!isPrivateService ? portInputValue : privateServiceText}
+                      onChange={(e) => setPortInputValue(e.target.value)}
+                      placeholder="3000"
+                      className="w-full group-data-private/input:pl-9"
+                    />
+                    {isPrivateService && (
+                      <EyeOffIcon className="text-foreground pointer-events-none absolute top-1/2 left-3 size-4.5 -translate-y-1/2 opacity-50" />
+                    )}
+                  </div>
                 </BlockItemContent>
               </BlockItem>
             </Block>
           )}
+
           <VariablesProvider
             teamId={teamId}
             projectId={projectId}

@@ -5,7 +5,13 @@ import * as SwitchPrimitives from "@radix-ui/react-switch";
 
 import { cn } from "@/components/ui/utils";
 
-function Switch({ className, ...props }: React.ComponentProps<typeof SwitchPrimitives.Root>) {
+function Switch({
+  className,
+  classNameThumb,
+  ...props
+}: React.ComponentProps<typeof SwitchPrimitives.Root> & {
+  classNameThumb?: string;
+}) {
   return (
     <SwitchPrimitives.Root
       className={cn(
@@ -18,6 +24,7 @@ function Switch({ className, ...props }: React.ComponentProps<typeof SwitchPrimi
       <SwitchPrimitives.Thumb
         className={cn(
           "bg-background pointer-events-none block size-5 rounded-full ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0",
+          classNameThumb,
         )}
       />
     </SwitchPrimitives.Root>
