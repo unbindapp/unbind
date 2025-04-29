@@ -1,17 +1,16 @@
-import { ItemSchema, VariableReferenceInputItemSchema } from "@/server/go/client.gen";
+import { VariableReferenceInputItemSchema } from "@/server/go/client.gen";
 import { AppRouterOutputs } from "@/server/trpc/api/root";
 import { z } from "zod";
 
-export const VariableForCreateValueSchema = ItemSchema.shape.value.refine(
-  (value) => value.length >= 1,
-  { message: "Value is required." },
-);
+export const VariableForCreateValueSchema = z.string().nonempty("Value is required.");
 
-export const VariableForCreateSchema = ItemSchema.refine(({ name }) => name.length >= 1, {
-  message: "Name is required.",
-})
-  .refine(({ name }) => !name.includes(" "), { message: "Name can't contain a space." })
-  .refine(({ value }) => value.length >= 1, { message: "Value is required." });
+export const VariableForCreateSchema = z.object({
+  name: z
+    .string()
+    .nonempty("Name is required.")
+    .refine((n) => !n.includes(" "), "Name can't contain spaces."),
+  value: VariableForCreateValueSchema,
+});
 
 export type TVariableForCreate = z.infer<typeof VariableForCreateSchema>;
 

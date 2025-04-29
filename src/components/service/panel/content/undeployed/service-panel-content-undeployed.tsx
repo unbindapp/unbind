@@ -32,7 +32,7 @@ import {
 import { api } from "@/server/trpc/setup/client";
 import { useMutation } from "@tanstack/react-query";
 import { CheckCircleIcon, CircleSlashIcon } from "lucide-react";
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useRef, useState } from "react";
 
 type TProps = {
   service: TServiceShallow;
@@ -58,8 +58,10 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
     type: "service",
   });
 
-  const [createVariablesFormResult, setCreateVariablesFormResult] =
-    useState<TCreateVariablesFormResult>();
+  const createVariablesFormResult = useRef<TCreateVariablesFormResult>({
+    variables: [],
+    variableReferences: [],
+  });
 
   const { mutateAsync: createDeployment } = api.deployments.create.useMutation();
   const { mutateAsync: upsertVariables } = api.variables.createOrUpdate.useMutation();
@@ -80,27 +82,20 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
     error: createFirstDeploymentError,
   } = useMutation({
     mutationFn: async () => {
-      const variablesRegular = createVariablesFormResult?.variables;
-      const variablesReferences = createVariablesFormResult?.variableReferences;
-
       const parsedRegularVariables: TVariableForCreate[] = [];
       const parsedVariableReferences: TVariableReferenceForCreate[] = [];
 
-      if (variablesRegular) {
-        for (const variable of variablesRegular) {
-          const { success, data } = VariableForCreateSchema.safeParse(variable);
-          if (success) {
-            parsedRegularVariables.push(data);
-          }
+      for (const variable of createVariablesFormResult.current.variables) {
+        const { success, data } = VariableForCreateSchema.safeParse(variable);
+        if (success) {
+          parsedRegularVariables.push(data);
         }
       }
 
-      if (variablesReferences) {
-        for (const variable of variablesReferences) {
-          const { success, data } = VariableReferenceForCreateSchema.safeParse(variable);
-          if (success) {
-            parsedVariableReferences.push(data);
-          }
+      for (const variableReference of createVariablesFormResult.current.variableReferences) {
+        const { success, data } = VariableReferenceForCreateSchema.safeParse(variableReference);
+        if (success) {
+          parsedVariableReferences.push(data);
         }
       }
 
@@ -217,7 +212,9 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
             >
               <CreateVariablesForm
                 variant="collapsible"
-                onValueChange={setCreateVariablesFormResult}
+                onValueChange={(v) => {
+                  createVariablesFormResult.current = v;
+                }}
               />
             </VariableReferencesProvider>
           </VariablesProvider>

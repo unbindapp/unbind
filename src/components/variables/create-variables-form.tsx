@@ -46,6 +46,7 @@ export default function CreateVariablesForm({
   afterSuccessfulSubmit,
   className,
   tokensDisabled,
+  onValueChange,
   isOpen: isOpenProp,
 }: TProps) {
   const {
@@ -131,6 +132,19 @@ export default function CreateVariablesForm({
     validators: {
       onChange: CreateVariablesFormSchema,
     },
+    listeners: {
+      onChange: ({ formApi }) => {
+        if (!onValueChange) return;
+        const { variables, variableReferences } = getVariablesPair({
+          variables: formApi.state.values.variables,
+          tokens: tokens || [],
+        });
+        onValueChange({
+          variables,
+          variableReferences,
+        });
+      },
+    },
     onSubmit: async ({ formApi, value }) => {
       if (variant === "collapsible") return;
       if (!tokens) return;
@@ -215,6 +229,8 @@ export default function CreateVariablesForm({
           className="relative flex w-full flex-col group-data-[variant=collapsible]/card:-mt-2"
           onSubmit={(e) => {
             e.preventDefault();
+            e.stopPropagation();
+            form.validateArrayFieldsStartingFrom("variables", 0, "submit");
             form.handleSubmit();
           }}
         >
@@ -247,7 +263,6 @@ export default function CreateVariablesForm({
                                   onPaste={(e) => onPaste(e, form, i)}
                                   onChange={(e) => {
                                     subField.handleChange(e.target.value);
-                                    console.log(subField.state.meta.errors);
                                   }}
                                   placeholder="VARIABLE_NAME"
                                   inputClassName="font-mono"
