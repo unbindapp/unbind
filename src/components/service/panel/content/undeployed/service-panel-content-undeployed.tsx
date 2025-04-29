@@ -13,19 +13,24 @@ import { UndeployedContentDatabase } from "@/components/service/panel/content/un
 import { UndeployedContentDockerImage } from "@/components/service/panel/content/undeployed/undeployed-content-docker-image";
 import { UndeployedContentGit } from "@/components/service/panel/content/undeployed/undeployed-content-git";
 import { useService } from "@/components/service/service-provider";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import CreateVariablesForm, {
-  CreateVariablesFormSchema,
-  TCreateVariablesForm,
+  TCreateVariablesFormResult,
 } from "@/components/variables/create-variables-form";
 import VariableReferencesProvider from "@/components/variables/variable-references-provider";
-import VariablesProvider from "@/components/variables/variables-provider";
-import { useAppForm } from "@/lib/hooks/use-app-form";
+import VariablesProvider, { useVariablesUtils } from "@/components/variables/variables-provider";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
-import { TVariableForCreate, VariableForCreateSchema } from "@/server/trpc/api/variables/types";
+import {
+  TVariableForCreate,
+  TVariableReferenceForCreate,
+  VariableForCreateSchema,
+  VariableReferenceForCreateSchema,
+} from "@/server/trpc/api/variables/types";
 import { api } from "@/server/trpc/setup/client";
+import { useMutation } from "@tanstack/react-query";
 import { CheckCircleIcon, CircleSlashIcon } from "lucide-react";
 import { Dispatch, SetStateAction, useState } from "react";
 
@@ -45,13 +50,19 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
   const {
     query: { refetch: refetchDeployments },
   } = useDeployments();
+  const { refetch: refetchVariables } = useVariablesUtils({
+    teamId,
+    projectId,
+    environmentId,
+    serviceId: service.id,
+    type: "service",
+  });
 
-  const [variables, setVariables] = useState<TVariableForCreate[]>([]);
+  const [createVariablesFormResult, setCreateVariablesFormResult] =
+    useState<TCreateVariablesFormResult>();
 
-  const { mutateAsync: createDeployment, error: deploymentError } =
-    api.deployments.create.useMutation();
-  const { mutateAsync: upsertVariables, error: errorVariables } =
-    api.variables.createOrUpdate.useMutation();
+  const { mutateAsync: createDeployment } = api.deployments.create.useMutation();
+  const { mutateAsync: upsertVariables } = api.variables.createOrUpdate.useMutation();
 
   const tagState = useState<string | null>(null);
   const branchState = useState<string | null>(null);
@@ -63,29 +74,44 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
     service.config.ports && service.config.ports?.length > 0 ? service.config.ports[0].port : null;
   const [portInputValue, setPortInputValue] = useState<string>(port?.toString() || "");
 
-  const form = useAppForm({
-    defaultValues: {},
-    validators: {},
-    onSubmit: async ({ formApi }) => {
-      const parsedVariables: TCreateVariablesForm = { variables: [] };
+  const {
+    mutate: createFirstDeployment,
+    isPending: createFirstDeploymentIsPending,
+    error: createFirstDeploymentError,
+  } = useMutation({
+    mutationFn: async () => {
+      const variablesRegular = createVariablesFormResult?.variables;
+      const variablesReferences = createVariablesFormResult?.variableReferences;
 
-      for (const variable of variables) {
-        const { success, data } = VariableForCreateSchema.safeParse(variable);
-        if (success) {
-          parsedVariables.variables.push(data);
+      const parsedRegularVariables: TVariableForCreate[] = [];
+      const parsedVariableReferences: TVariableReferenceForCreate[] = [];
+
+      if (variablesRegular) {
+        for (const variable of variablesRegular) {
+          const { success, data } = VariableForCreateSchema.safeParse(variable);
+          if (success) {
+            parsedRegularVariables.push(data);
+          }
         }
       }
 
-      const { success, data } = CreateVariablesFormSchema.safeParse(parsedVariables);
+      if (variablesReferences) {
+        for (const variable of variablesReferences) {
+          const { success, data } = VariableReferenceForCreateSchema.safeParse(variable);
+          if (success) {
+            parsedVariableReferences.push(data);
+          }
+        }
+      }
 
-      if (success) {
+      if (parsedRegularVariables.length > 0 || parsedVariableReferences.length > 0) {
         await upsertVariables({
           teamId,
           projectId,
           environmentId,
           serviceId: service.id,
-          variables: data.variables,
-          variableReferences: [],
+          variables: parsedRegularVariables,
+          variableReferences: parsedVariableReferences,
           type: "service",
         });
       }
@@ -97,9 +123,12 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
         serviceId: service.id,
       });
 
-      await Promise.all([refetchServices(), refetchService(), refetchDeployments()]);
-
-      formApi.reset();
+      await Promise.all([
+        refetchServices(),
+        refetchService(),
+        refetchDeployments(),
+        refetchVariables(),
+      ]);
     },
   });
 
@@ -188,32 +217,21 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
             >
               <CreateVariablesForm
                 variant="collapsible"
-                onBlur={(v) => {
-                  setVariables(v.value.variables);
-                }}
+                onValueChange={setCreateVariablesFormResult}
               />
             </VariableReferencesProvider>
           </VariablesProvider>
-          {deploymentError && <ErrorLine message={deploymentError.message} />}
-          {errorVariables && <ErrorLine message={errorVariables.message} />}
+          {createFirstDeploymentError && <ErrorLine message={createFirstDeploymentError.message} />}
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              form.handleSubmit();
+              if (createFirstDeploymentIsPending) return;
+              createFirstDeployment();
             }}
           >
-            <form.Subscribe
-              selector={(state) => [state.canSubmit, state.isSubmitting, state.values]}
-              children={([canSubmit, isSubmitting]) => (
-                <form.SubmitButton
-                  className="w-full"
-                  disabled={!canSubmit}
-                  isPending={isSubmitting ? true : false}
-                >
-                  Deploy
-                </form.SubmitButton>
-              )}
-            />
+            <Button className="w-full" isPending={createFirstDeploymentIsPending}>
+              Deploy
+            </Button>
           </form>
         </div>
       </ScrollArea>

@@ -15,15 +15,15 @@ import {
   TVariableForCreate,
   TVariableReferenceForCreate,
   VariableForCreateSchema,
+  VariableReferenceForCreateSchema,
 } from "@/server/trpc/api/variables/types";
-import { FormValidateOrFn } from "@tanstack/react-form";
 import { ChevronDownIcon, Link2Icon, PlusIcon, TrashIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { z } from "zod";
 
 type TProps = {
   variant?: "default" | "collapsible";
-  onBlur?: TCreateVariablesFormOnBlur;
+  onValueChange?: TCreateVariablesFormOnBlur;
   className?: string;
   afterSuccessfulSubmit?: (variables: TVariableForCreate[]) => void;
   isOpen?: boolean;
@@ -36,9 +36,13 @@ export const CreateVariablesFormSchema = z
   })
   .strip();
 
+type TReferenceExtended = TAvailableVariableReference & {
+  template: string;
+  key: string;
+};
+
 export default function CreateVariablesForm({
   variant = "default",
-  onBlur,
   afterSuccessfulSubmit,
   className,
   tokensDisabled,
@@ -55,11 +59,6 @@ export default function CreateVariablesForm({
   } = useVariableReferences();
 
   const [isOpen, setIsOpen] = useState(false);
-
-  type TReferenceExtended = TAvailableVariableReference & {
-    template: string;
-    key: string;
-  };
 
   const tokens: TToken<TReferenceExtended>[] | undefined = useMemo(() => {
     if (!variableReferencesData) return undefined;
@@ -131,55 +130,21 @@ export default function CreateVariablesForm({
     },
     validators: {
       onChange: CreateVariablesFormSchema,
-      onBlur,
     },
     onSubmit: async ({ formApi, value }) => {
       if (variant === "collapsible") return;
       if (!tokens) return;
 
-      const variablesWithTokens = value.variables.map((v) => ({
-        name: v.name,
-        value: splitByTokens(v.value, tokens),
-      }));
-
-      const variables: TVariableForCreate[] = variablesWithTokens
-        .filter((v) => v.value.every((v) => v.token === null))
-        .map((v) => ({ name: v.name, value: v.value.map((i) => i.value).join("") }));
-
-      const variableReferences: TVariableReferenceForCreate[] = variablesWithTokens
-        .filter((v) => v.value.some((v) => v.token !== null))
-        .map((v) => {
-          // TODO: Filter to only unique sources
-          const sources: TVariableReferenceForCreate["sources"] = v.value
-            .filter((i) => i.token !== null)
-            .map((i) => {
-              const t = i.token!;
-              return {
-                key: t.object.key,
-                type: t.object.type,
-                source_id: t.object.source_id,
-                source_kubernetes_name: t.object.source_kubernetes_name,
-                source_type: t.object.source_type,
-                source_name: t.object.source_name,
-                source_icon: t.object.source_icon,
-              };
-            });
-
-          return {
-            name: v.name,
-            value: v.value
-              .map((i) => (i.token !== null ? i.token.object.template : i.value))
-              .join(""),
-            sources,
-          };
-        });
+      const { variables, variableReferences } = getVariablesPair({
+        variables: value.variables,
+        tokens,
+      });
 
       await createOrUpdateVariables({
         ...typedProps,
         variables,
         variableReferences,
       });
-      console.log("variableReferences", variableReferences);
 
       await refetchVariables();
       formApi.reset();
@@ -250,14 +215,12 @@ export default function CreateVariablesForm({
           className="relative flex w-full flex-col group-data-[variant=collapsible]/card:-mt-2"
           onSubmit={(e) => {
             e.preventDefault();
-            e.stopPropagation();
-            form.validateArrayFieldsStartingFrom("variables", 0, "submit");
             form.handleSubmit();
           }}
         >
           <form.AppField
             name="variables"
-            mode="array"
+            mode="value"
             children={(field) => (
               <div className="flex w-full flex-col items-start gap-2">
                 {/* All secret rows */}
@@ -282,7 +245,10 @@ export default function CreateVariablesForm({
                                   value={subField.state.value}
                                   onBlur={subField.handleBlur}
                                   onPaste={(e) => onPaste(e, form, i)}
-                                  onChange={(e) => subField.handleChange(e.target.value)}
+                                  onChange={(e) => {
+                                    subField.handleChange(e.target.value);
+                                    console.log(subField.state.meta.errors);
+                                  }}
                                   placeholder="VARIABLE_NAME"
                                   inputClassName="font-mono"
                                   className="mr-12.5 flex-1 md:mr-0 md:max-w-64"
@@ -298,6 +264,7 @@ export default function CreateVariablesForm({
                             {(subField) => {
                               return (
                                 <field.TextareaWithTokens
+                                  {...tokenProps}
                                   dontCheckUntilSubmit
                                   field={subField}
                                   value={subField.state.value}
@@ -307,7 +274,6 @@ export default function CreateVariablesForm({
                                   classNameDropdownContent="font-mono"
                                   className="flex-1"
                                   placeholder={tokensDisabled ? "Value" : "Value or ${Reference}"}
-                                  {...tokenProps}
                                   autoCapitalize="off"
                                   autoCorrect="off"
                                   autoComplete="off"
@@ -318,12 +284,12 @@ export default function CreateVariablesForm({
                           </form.Field>
                           <form.Subscribe
                             selector={(state) => [state.values.variables[0]]}
-                            children={([firsTVariable]) => (
+                            children={([firstVariable]) => (
                               <Button
                                 disabled={
                                   field.state.value.length <= 1 &&
-                                  firsTVariable.name === "" &&
-                                  firsTVariable.value === ""
+                                  firstVariable.name === "" &&
+                                  firstVariable.value === ""
                                 }
                                 type="button"
                                 variant="outline"
@@ -380,4 +346,57 @@ export default function CreateVariablesForm({
 }
 
 export type TCreateVariablesForm = z.infer<typeof CreateVariablesFormSchema>;
-export type TCreateVariablesFormOnBlur = FormValidateOrFn<TCreateVariablesForm>;
+
+export const CreateVariablesFormResultSchema = z.object({
+  variables: VariableForCreateSchema.array(),
+  variableReferences: VariableReferenceForCreateSchema.array(),
+});
+export type TCreateVariablesFormResult = z.infer<typeof CreateVariablesFormResultSchema>;
+export type TCreateVariablesFormOnBlur = (props: TCreateVariablesFormResult) => void;
+
+function getVariablesPair({
+  variables,
+  tokens,
+}: {
+  variables: TVariableForCreate[];
+  tokens: TToken<TReferenceExtended>[];
+}) {
+  const variablesWithTokens = variables.map((v) => ({
+    name: v.name,
+    value: splitByTokens(v.value, tokens),
+  }));
+
+  const variablesRegular: TVariableForCreate[] = variablesWithTokens
+    .filter((v) => v.value.every((v) => v.token === null))
+    .map((v) => ({ name: v.name, value: v.value.map((i) => i.value).join("") }));
+
+  const variableReferences: TVariableReferenceForCreate[] = variablesWithTokens
+    .filter((v) => v.value.some((v) => v.token !== null))
+    .map((v) => {
+      // TODO: Filter to only unique sources
+      const sources: TVariableReferenceForCreate["sources"] = v.value
+        .filter((i) => i.token !== null)
+        .map((i) => {
+          const t = i.token!;
+          return {
+            key: t.object.key,
+            type: t.object.type,
+            source_id: t.object.source_id,
+            source_kubernetes_name: t.object.source_kubernetes_name,
+            source_type: t.object.source_type,
+            source_name: t.object.source_name,
+            source_icon: t.object.source_icon,
+          };
+        });
+
+      return {
+        name: v.name,
+        value: v.value.map((i) => (i.token !== null ? i.token.object.template : i.value)).join(""),
+        sources,
+      };
+    });
+  return {
+    variables: variablesRegular,
+    variableReferences,
+  };
+}

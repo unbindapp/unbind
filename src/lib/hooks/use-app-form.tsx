@@ -33,6 +33,7 @@ function InputWithInfo({
   if (hideInfo) {
     return <Input {...rest} className={cn("w-full", className, inputClassName)} />;
   }
+
   return (
     <div className={cn("flex flex-col", className)}>
       <Input {...rest} className={cn("w-full", inputClassName)} />
