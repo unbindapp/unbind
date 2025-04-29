@@ -78,7 +78,7 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
                   />
                 ))}
                 {serviceIcons.length > iconLength && (
-                  <p className="text-muted-foreground flex h-5 min-w-5 items-center justify-center overflow-hidden rounded-full text-center text-sm font-semibold">
+                  <p className="flex h-5 min-w-5 items-center justify-center overflow-hidden rounded-full text-center text-sm font-semibold">
                     +{serviceIcons.length - iconLength}
                   </p>
                 )}
