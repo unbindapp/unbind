@@ -10,7 +10,7 @@ type TProps = {
   | { project?: never; isPlaceholder: true }
 );
 
-const iconLength = 4;
+const iconLength = 5;
 
 export default function ProjectCard({ project, isPlaceholder, className }: TProps) {
   const environments = !isPlaceholder ? project.environments : [];
@@ -55,23 +55,21 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
           {!isPlaceholder ? project.name : "Loading"}
         </h3>
         <div className="flex w-full flex-1 flex-col justify-end">
-          <div className="text-muted-foreground flex w-full items-center justify-between gap-3">
-            <div className="flex min-w-0 shrink flex-col">
-              <p className="group-data-placeholder/item:bg-muted-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink overflow-hidden text-sm font-medium text-ellipsis whitespace-nowrap group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
-                {serviceCount !== undefined && serviceCount > 0
-                  ? `${serviceCount} service${serviceCount > 1 ? "s" : ""}`
-                  : "No services"}
-                <span className="text-muted-more-foreground px-[0.4ch] group-data-placeholder/item:text-transparent">
-                  {" "}
-                  |{" "}
-                </span>
+          <div className="text-muted-foreground flex w-full items-end justify-between gap-6">
+            <div className="flex min-w-0 shrink flex-col gap-1 py-[0.09375rem] text-sm font-medium">
+              <p className="group-data-placeholder/item:bg-muted-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
                 {environmentCount !== undefined && environmentCount > 0
                   ? `${environmentCount} environment${environmentCount > 1 ? "s" : ""}`
                   : "No environments"}
               </p>
+              <p className="group-data-placeholder/item:bg-muted-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
+                {serviceCount !== undefined && serviceCount > 0
+                  ? `${serviceCount} service${serviceCount > 1 ? "s" : ""}`
+                  : "No services"}
+              </p>
             </div>
             {serviceIcons !== undefined && serviceIcons.length > 0 && (
-              <div className="-my-2 -mr-1 flex items-center gap-1">
+              <div className="-mr-1 flex max-w-2/3 shrink-0 items-center gap-1 overflow-hidden">
                 {serviceIcons.slice(0, iconLength).map((s, index) => (
                   <BrandIcon
                     brand={s}
@@ -79,6 +77,11 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
                     key={`${s}-${index}`}
                   />
                 ))}
+                {serviceIcons.length > iconLength && (
+                  <p className="text-muted-foreground flex h-5 min-w-5 items-center justify-center overflow-hidden rounded-full text-center text-sm font-semibold">
+                    +{serviceIcons.length - iconLength}
+                  </p>
+                )}
               </div>
             )}
           </div>
