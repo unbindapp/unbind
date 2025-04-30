@@ -226,7 +226,7 @@ export default function CreateVariablesForm({
       )}
       {(variant !== "collapsible" || isOpen) && (
         <form
-          className="relative flex w-full flex-col group-data-[variant=collapsible]/card:-mt-2"
+          className="relative flex w-full flex-col group-data-[variant=collapsible]/card:-mt-2 md:pt-3.5"
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -251,7 +251,7 @@ export default function CreateVariablesForm({
                         <div
                           key={`secret-${i}`}
                           data-first={i === 0 ? true : undefined}
-                          className="relative flex w-full flex-col gap-2 p-3 md:-mt-7 md:flex-row md:items-start md:p-4 md:data-first:mt-0 lg:-mt-7"
+                          className="relative flex w-full flex-col gap-2 p-3 md:flex-row md:items-start md:px-4 md:py-0.5"
                         >
                           <form.Field key={`variables[${i}].name`} name={`variables[${i}].name`}>
                             {(subField) => {
@@ -327,7 +327,7 @@ export default function CreateVariablesForm({
                     );
                   })}
                 </div>
-                <div className="-mt-6 w-full p-3 md:-mt-8 md:p-4">
+                <div className="-mt-2 w-full p-3 pt-0 md:-mt-0.5 md:p-4 md:pt-0">
                   <Button
                     type="button"
                     variant="outline"
