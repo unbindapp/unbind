@@ -249,9 +249,9 @@ export default function ServicePanelContentUndeployed({ service, className, ...r
                     variant="ghost"
                     onClick={() => setIsPrivateService((prev) => !prev)}
                     data-private={isPrivateService ? true : undefined}
-                    className="group/button has-hover:hover:bg-border -my-1 -mr-0.5 ml-auto flex cursor-pointer items-center justify-center gap-2.5 rounded-full py-1 pr-1 pl-2.5"
+                    className="group/button has-hover:hover:bg-border -my-1 -mr-0.5 ml-auto flex cursor-pointer items-center justify-center gap-2.5 rounded-full py-1 pr-1 pl-2.5 font-medium"
                   >
-                    <p className="text-muted-foreground group-data-private/button:text-foreground has-hover:group-hover/button:text-foreground min-w-0 shrink font-medium">
+                    <p className="text-muted-foreground group-data-private/button:text-foreground has-hover:group-hover/button:text-foreground min-w-0 shrink">
                       Private
                     </p>
                     <div className="bg-muted-more-foreground group-data-private/button:bg-foreground relative h-5 w-9 rounded-full transition">
@@ -288,7 +288,7 @@ export default function ServicePanelContentUndeployed({ service, className, ...r
                   {!isPrivateService && (
                     <div
                       data-detected={port !== null ? true : undefined}
-                      className="bg-warning/10 text-warning border-warning/10 data-detected:text-success data-detected:bg-success/10 data-detected:border-success/10 -my-1 ml-auto flex min-w-0 shrink items-center justify-start gap-1.5 rounded-full border px-1.75 py-0.25"
+                      className="bg-warning/10 text-warning border-warning/10 data-detected:text-success data-detected:bg-success/10 data-detected:border-success/10 -my-1 ml-auto flex min-w-0 shrink items-center justify-start gap-1.5 rounded-full border px-2 py-0.5"
                     >
                       {port !== null ? (
                         <CheckCircleIcon className="-ml-0.75 size-3.5 shrink-0" />
@@ -344,7 +344,6 @@ export default function ServicePanelContentUndeployed({ service, className, ...r
             >
               <CreateVariablesForm
                 variant="collapsible"
-                className="sm:mt-1"
                 onValueChange={(v) => {
                   createVariablesFormResult.current = v;
                 }}
