@@ -341,7 +341,7 @@ function DropdownItem<T>({
           <>
             <CheckIcon
               className="size-full transition-opacity group-data-highlighted/item:group-data-show-arrow/item:opacity-0"
-              strokeWidth={3}
+              strokeWidth={2.5}
             />
             <ArrowRightIcon
               className="absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-opacity group-data-highlighted/item:group-data-show-arrow/item:opacity-100"

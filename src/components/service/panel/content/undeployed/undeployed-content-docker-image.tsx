@@ -22,7 +22,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { defaultDebounceMs } from "@/lib/constants";
 import { api } from "@/server/trpc/setup/client";
-import { TagIcon } from "lucide-react";
+import { CheckIcon, TagIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useDebounce } from "use-debounce";
 
@@ -138,16 +138,26 @@ export function UndeployedContentDockerImage({
                         <ErrorCard className="rounded-lg" message={error.message} />
                       )}
                       {data &&
-                        data.tags.map((tag) => (
+                        data.tags.map((t) => (
                           <CommandItem
                             onSelect={(v) => {
                               setCurrentTag(v);
                               setIsDropdownOpen(false);
                               setCommandInputValue("");
                             }}
-                            key={tag.name}
+                            key={t.name}
+                            data-checked={
+                              (currentTag === null && tag === t.name) || currentTag === t.name
+                                ? true
+                                : undefined
+                            }
+                            className="group/item px-3"
                           >
-                            <p className="min-w-0 shrink leading-tight">{tag.name}</p>
+                            <p className="min-w-0 shrink leading-tight">{t.name}</p>
+                            <CheckIcon
+                              strokeWidth={2.5}
+                              className="-mr-0.5 ml-auto size-4.5 opacity-0 group-data-checked/item:opacity-100"
+                            />
                           </CommandItem>
                         ))}
                     </CommandGroup>

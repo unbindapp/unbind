@@ -56,7 +56,7 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
         </h3>
         <div className="flex w-full flex-1 flex-col justify-end">
           <div className="text-muted-foreground flex w-full items-end justify-between gap-6">
-            <div className="flex min-w-0 shrink flex-col gap-1 py-[0.09375rem] text-sm font-medium">
+            <div className="flex min-w-0 shrink flex-col gap-0.5 py-[0.09375rem] text-sm font-medium">
               <p className="group-data-placeholder/item:bg-muted-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
                 {environmentCount !== undefined && environmentCount > 0
                   ? `${environmentCount} environment${environmentCount > 1 ? "s" : ""}`

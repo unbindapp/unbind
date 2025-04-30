@@ -20,7 +20,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { api } from "@/server/trpc/setup/client";
-import { MilestoneIcon } from "lucide-react";
+import { CheckIcon, MilestoneIcon } from "lucide-react";
 import { useState } from "react";
 
 const placeholderArray = Array.from({ length: 4 });
@@ -78,15 +78,25 @@ export function UndeployedContentDatabase({
                     <ErrorCard className="rounded-lg" message={error.message} />
                   )}
                   {data &&
-                    data.database.version.options.map((version) => (
+                    data.database.version.options.map((v) => (
                       <DropdownMenuItem
                         onSelect={() => {
-                          setCurrentVersion(version);
+                          setCurrentVersion(v);
                           setIsDropdownOpen(false);
                         }}
-                        key={version}
+                        key={v}
+                        data-checked={
+                          (currentVersion === null && version === v) || currentVersion === v
+                            ? true
+                            : undefined
+                        }
+                        className="group/item"
                       >
-                        <p className="min-w-0 shrink leading-tight">{version}</p>
+                        <p className="min-w-0 shrink leading-tight">{v}</p>
+                        <CheckIcon
+                          strokeWidth={2.5}
+                          className="-mr-0.5 ml-auto size-4.5 opacity-0 group-data-checked/item:opacity-100"
+                        />
                       </DropdownMenuItem>
                     ))}
                   {!data &&

@@ -21,7 +21,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { api } from "@/server/trpc/setup/client";
-import { GitBranchIcon } from "lucide-react";
+import { CheckIcon, GitBranchIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 const placeholderArray = Array.from({ length: 10 });
@@ -134,15 +134,26 @@ export function UndeployedContentGit({
                         <ErrorCard className="rounded-lg" message={error.message} />
                       )}
                       {data &&
-                        data.repository.branches?.map((branch) => (
+                        data.repository.branches?.map((b) => (
                           <CommandItem
                             onSelect={(v) => {
                               setCurrentBranch(v);
                               setIsDropdownOpen(false);
                             }}
-                            key={branch.name}
+                            key={b.name}
+                            className="group/item px-3"
+                            data-checked={
+                              (currentBranch === null && branch === b.name) ||
+                              currentBranch === b.name
+                                ? true
+                                : undefined
+                            }
                           >
-                            <p className="min-w-0 shrink leading-tight">{branch.name}</p>
+                            <p className="min-w-0 shrink leading-tight">{b.name}</p>
+                            <CheckIcon
+                              strokeWidth={2.5}
+                              className="-mr-0.5 ml-auto size-4.5 opacity-0 group-data-checked/item:opacity-100"
+                            />
                           </CommandItem>
                         ))}
                     </CommandGroup>
