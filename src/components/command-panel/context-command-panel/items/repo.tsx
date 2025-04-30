@@ -87,7 +87,7 @@ function useRepoItem({ context }: TProps) {
         projectId,
         environmentId,
         gitHubInstallationId: installationId,
-        public: true,
+        isPublic: true,
       });
       return result;
     },

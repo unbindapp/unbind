@@ -340,22 +340,22 @@ function getTitle(
 ) {
   if (isPlaceholder || !service || !deployment)
     return { title: "Loading title...", titleNotFound: false };
-  if (service.config.type === "docker-image")
+  if (service.type === "docker-image")
     return {
       title: service.config.image || "Image unavailable",
       titleNotFound: !service.config.image,
     };
-  if (service.config.type === "github")
+  if (service.type === "github")
     return {
       title: deployment.commit_message || "Commit message unavailable",
       titleNotFound: !deployment.commit_message,
     };
-  if (service.config.type === "database") {
+  if (service.type === "database") {
     return {
-      title: service.config.database_type
-        ? `${service.config.database_type}${service.config.database_version ? `:${service.config.database_version}` : ""}`
+      title: service.database_type
+        ? `${service.database_type}${service.database_version ? `:${service.database_version}` : ""}`
         : "Unknown database",
-      titleNotFound: !service.config.database_type,
+      titleNotFound: !service.database_type,
     };
   }
   return {
@@ -366,7 +366,7 @@ function getTitle(
 
 function getBrand(service?: TServiceShallow, isPlaceholder?: boolean) {
   if (isPlaceholder && !service) return "github";
-  if (service?.config.type === "docker-image") return "docker";
-  if (service?.config.type === "database") return "database";
+  if (service?.type === "docker-image") return "docker";
+  if (service?.type === "database") return "database";
   return "github";
 }

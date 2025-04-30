@@ -170,6 +170,12 @@ export const CreateProjectResponseBodySchema = z
 
 export const ServiceBuilderSchema = z.enum(['railpack', 'docker', 'database']);
 
+export const DatabaseConfigSchema = z
+  .object({
+    version: z.string().optional(),
+  })
+  .strip();
+
 export const HostSpecSchema = z
   .object({
     host: z.string(),
@@ -193,7 +199,7 @@ export const CreateServiceInputSchema = z
   .object({
     auto_deploy: z.boolean().optional(),
     builder: ServiceBuilderSchema, // Builder of the service - docker, nixpacks, railpack
-    database_config: z.record(z.any()).optional(),
+    database_config: DatabaseConfigSchema.optional(),
     database_type: z.string().optional(),
     description: z.string().optional(),
     dockerfile_context: z.string().optional(), // Optional path to Dockerfile context, if using docker builder
@@ -202,10 +208,10 @@ export const CreateServiceInputSchema = z
     github_installation_id: z.number().optional(),
     hosts: z.array(HostSpecSchema).nullable().optional(),
     image: z.string().optional(),
+    is_public: z.boolean().optional(),
     name: z.string(),
     ports: z.array(PortSpecSchema).nullable().optional(),
     project_id: z.string(),
-    public: z.boolean().optional(),
     replicas: z.number().optional(),
     repository_name: z.string().optional(),
     repository_owner: z.string().optional(),
@@ -219,17 +225,14 @@ export const ServiceConfigResponseSchema = z
   .object({
     auto_deploy: z.boolean(),
     builder: ServiceBuilderSchema,
-    database_type: z.string().optional(),
-    database_version: z.string().optional(),
     git_branch: z.string().optional(),
     hosts: z.array(HostSpecSchema).optional(),
     icon: z.string(),
     image: z.string().optional(),
+    is_public: z.boolean(),
     ports: z.array(PortSpecSchema).optional(),
-    public: z.boolean(),
     replicas: z.number(),
     run_command: z.string().optional(),
-    type: ServiceTypeSchema,
   })
   .strip();
 
@@ -238,6 +241,8 @@ export const ServiceResponseSchema = z
     config: ServiceConfigResponseSchema,
     created_at: z.string().datetime(),
     current_deployment: DeploymentResponseSchema.optional(),
+    database_type: z.string().optional(),
+    database_version: z.string().optional(),
     description: z.string(),
     environment_id: z.string(),
     git_repository: z.string().optional(),
@@ -248,6 +253,7 @@ export const ServiceResponseSchema = z
     last_deployment: DeploymentResponseSchema.optional(),
     last_successful_deployment: DeploymentResponseSchema.optional(),
     name: z.string(),
+    type: ServiceTypeSchema,
     updated_at: z.string().datetime(),
   })
   .strip();
@@ -1091,7 +1097,7 @@ export const UpdateEnvironmentResponseBodySchema = z
   })
   .strip();
 
-export const UpdateProjectInputBodySchema = z
+export const UpdateProjectInputSchema = z
   .object({
     default_environment_id: z.string().optional(),
     description: z.string().nullable().optional(),
@@ -1111,7 +1117,7 @@ export const UpdateServiceInputSchema = z
   .object({
     auto_deploy: z.boolean().optional(),
     builder: ServiceBuilderSchema.optional(),
-    database_config: z.record(z.any()).optional(),
+    database_config: DatabaseConfigSchema.optional(),
     description: z.string().nullable().optional(),
     dockerfile_context: z.string().optional(), // Optional path to Dockerfile context, if using docker builder - set empty string to reset to default
     dockerfile_path: z.string().optional(), // Optional path to Dockerfile, if using docker builder - set empty string to reset to default
@@ -1119,10 +1125,10 @@ export const UpdateServiceInputSchema = z
     git_branch: z.string().optional(),
     hosts: z.array(HostSpecSchema).nullable().optional(),
     image: z.string().optional(),
+    is_public: z.boolean().optional(),
     name: z.string().nullable().optional(),
     ports: z.array(PortSpecSchema).nullable().optional(),
     project_id: z.string(),
-    public: z.boolean().optional(),
     replicas: z.number().optional(),
     run_command: z.string().optional(),
     service_id: z.string(),
@@ -1271,6 +1277,7 @@ export type CreateProjectInputBody = z.infer<typeof CreateProjectInputBodySchema
 export type ProjectResponse = z.infer<typeof ProjectResponseSchema>;
 export type CreateProjectResponseBody = z.infer<typeof CreateProjectResponseBodySchema>;
 export type ServiceBuilder = z.infer<typeof ServiceBuilderSchema>;
+export type DatabaseConfig = z.infer<typeof DatabaseConfigSchema>;
 export type HostSpec = z.infer<typeof HostSpecSchema>;
 export type Protocol = z.infer<typeof ProtocolSchema>;
 export type PortSpec = z.infer<typeof PortSpecSchema>;
@@ -1398,7 +1405,7 @@ export type TeamResponseBody = z.infer<typeof TeamResponseBodySchema>;
 export type UpdatServiceResponseBody = z.infer<typeof UpdatServiceResponseBodySchema>;
 export type UpdateEnvironmentInput = z.infer<typeof UpdateEnvironmentInputSchema>;
 export type UpdateEnvironmentResponseBody = z.infer<typeof UpdateEnvironmentResponseBodySchema>;
-export type UpdateProjectInputBody = z.infer<typeof UpdateProjectInputBodySchema>;
+export type UpdateProjectInput = z.infer<typeof UpdateProjectInputSchema>;
 export type UpdateProjectResponseBody = z.infer<typeof UpdateProjectResponseBodySchema>;
 export type UpdateServiceInput = z.infer<typeof UpdateServiceInputSchema>;
 export type UpdateTeamInputBody = z.infer<typeof UpdateTeamInputBodySchema>;
@@ -2909,7 +2916,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
         }
       },
       update: async (
-        params: UpdateProjectInputBody,
+        params: UpdateProjectInput,
         fetchOptions?: RequestInit,
       ): Promise<UpdateProjectResponseBody> => {
         try {
@@ -2926,7 +2933,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             },
             ...fetchOptions,
           };
-          const validatedBody = UpdateProjectInputBodySchema.parse(params);
+          const validatedBody = UpdateProjectInputSchema.parse(params);
           options.body = JSON.stringify(validatedBody);
           const response = await fetch(url.toString(), options);
           if (!response.ok) {

@@ -16,7 +16,7 @@ export default function LastDeploymentTime({ service, className }: TProps) {
   return (
     <p suppressHydrationWarning className={className}>
       {lastDeployment
-        ? `${timeDiffStr} via ${sourceToTitle[service.config.type] || "Unknown"}`
+        ? `${timeDiffStr} via ${sourceToTitle[service.type] || "Unknown"}`
         : "No deployments yet"}
     </p>
   );

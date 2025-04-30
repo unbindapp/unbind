@@ -1,3 +1,4 @@
+import { HostSpecSchema, PortSpecSchema } from "@/server/go/client.gen";
 import { AppRouterOutputs } from "@/server/trpc/api/root";
 import { z } from "zod";
 
@@ -27,9 +28,9 @@ export const CreateServiceSharedSchema = z
     teamId: z.string().uuid(),
     projectId: z.string().uuid(),
     environmentId: z.string().uuid(),
-    port: z.number().optional(),
-    host: z.string().optional(),
-    public: z.boolean(),
+    isPublic: z.boolean(),
+    ports: PortSpecSchema.array().optional(),
+    hosts: HostSpecSchema.array().optional(),
   })
   .strip();
 
@@ -83,6 +84,8 @@ export const UpdateServiceInputSchema = z
     gitBranch: z.string().optional(),
     image: z.string().optional(),
     isPublic: z.boolean().optional(),
+    ports: PortSpecSchema.array().optional(),
+    hosts: HostSpecSchema.array().optional(),
   })
   .strip();
 

@@ -70,7 +70,7 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
   const tagState = useState<string | null>(null);
   const branchState = useState<string | null>(null);
   const databaseVersionState = useState<string | null>(null);
-  const [isPrivateService, setIsPrivateService] = useState<boolean>(service.config.public);
+  const [isPrivateService, setIsPrivateService] = useState<boolean>(!service.config.is_public);
 
   const privateServiceText = "Private service";
 
@@ -122,11 +122,21 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
         serviceId: service.id,
       };
 
+      const portChanged = portInputValue && portInputValue !== port?.toString() ? true : false;
+      const currentDomain =
+        service.config.hosts && service.config.hosts.length > 0
+          ? service.config.hosts[0].host
+          : null;
+      const domainChanged = domain && domain !== currentDomain ? true : false;
+
       // Git service change
       const newBranch = branchState[0];
-      if (service.config.type === "github") {
+      if (service.type === "github") {
         const hasChange =
-          service.config.git_branch !== newBranch || service.config.public !== !isPrivateService;
+          service.config.git_branch !== newBranch ||
+          service.config.is_public !== !isPrivateService ||
+          portChanged ||
+          domainChanged;
 
         if (hasChange) {
           const props: TUpdateServiceInput = {
@@ -135,22 +145,34 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
           if (newBranch !== null && service.config.git_branch !== newBranch) {
             props.gitBranch = newBranch;
           }
-          if (service.config.public !== !isPrivateService) {
+          if (service.config.is_public !== !isPrivateService) {
             props.isPublic = !isPrivateService;
+          }
+          if (portChanged) {
+            props.ports = [{ port: parseInt(portInputValue) }];
+          } else {
+            console.log("PORT NOT CHANGED");
+          }
+          if (domainChanged) {
+            props.hosts = [{ host: domain, path: "" }];
           }
           await updateService(props);
         }
       }
 
       // Docker service change
-      if (service.config.type === "docker-image") {
+      if (service.type === "docker-image") {
         const arr = service.config.image?.split(":");
         const image = arr?.[0];
         const tag = arr && arr.length > 1 ? arr?.[1] : "latest";
 
         const newTag = tagState[0];
 
-        const hasChange = tag !== newTag || service.config.public !== !isPrivateService;
+        const hasChange =
+          tag !== newTag ||
+          service.config.is_public !== !isPrivateService ||
+          portChanged ||
+          domainChanged;
 
         if (image !== undefined && hasChange) {
           const props: TUpdateServiceInput = {
@@ -159,8 +181,14 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
           if (newTag !== null && tag !== newTag) {
             props.image = `${image}:${newTag}`;
           }
-          if (service.config.public !== !isPrivateService) {
+          if (service.config.is_public !== !isPrivateService) {
             props.isPublic = !isPrivateService;
+          }
+          if (portChanged) {
+            props.ports = [{ port: parseInt(portInputValue) }];
+          }
+          if (domainChanged) {
+            props.hosts = [{ host: domain, path: "" }];
           }
           await updateService(props);
         }
@@ -168,7 +196,7 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
 
       // Database service change
       /* if (
-        service.config.type === "database" &&
+        service.type === "database" &&
         service.config.database_version !== databaseVersionState[0]
       ) {
         await updateService({});
@@ -190,8 +218,7 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
     },
   });
 
-  const isServicePublicable =
-    service.config.type === "github" || service.config.type === "docker-image";
+  const isServicePublicable = service.type === "github" || service.type === "docker-image";
 
   return (
     <div
@@ -348,7 +375,7 @@ function Content({
   branchState: TStringOrNullState;
   databaseVersionState: TStringOrNullState;
 }) {
-  if (service.config.type === "docker-image") {
+  if (service.type === "docker-image") {
     const arr = service.config.image?.split(":");
     const image = arr?.[0];
     const tag = arr && arr.length > 1 ? arr?.[1] : "latest";
@@ -358,7 +385,7 @@ function Content({
     return <UndeployedContentDockerImage image={image} tag={tag} tagState={tagState} />;
   }
 
-  if (service.config.type === "github") {
+  if (service.type === "github") {
     if (
       !service.git_repository_owner ||
       !service.git_repository ||
@@ -381,16 +408,16 @@ function Content({
     );
   }
 
-  if (service.config.type === "database") {
-    if (!service.config.database_type || !service.config.database_version) {
+  if (service.type === "database") {
+    if (!service.database_type || !service.database_version) {
       return <ErrorLine message="Database type or version is not found." />;
     }
 
     return (
       <UndeployedContentDatabase
-        type={service.config.database_type}
+        type={service.database_type}
         versionState={databaseVersionState}
-        version={service.config.database_version}
+        version={service.database_version}
       />
     );
   }

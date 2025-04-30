@@ -83,7 +83,7 @@ function useDockerImageItem({ context }: TProps) {
         teamId: context.teamId,
         projectId,
         environmentId,
-        public: true,
+        isPublic: true,
         image,
       });
       return result;

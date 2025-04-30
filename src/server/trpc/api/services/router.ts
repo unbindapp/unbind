@@ -60,7 +60,7 @@ export const servicesRouter = createTRPCRouter({
       environment_id: input.environmentId,
       name: input.name,
       description: input.description,
-      public: input.public,
+      is_public: input.isPublic,
       builder: input.builder,
       type: input.type,
       replicas: 1,
@@ -106,6 +106,8 @@ export const servicesRouter = createTRPCRouter({
       gitBranch,
       image,
       isPublic,
+      ports,
+      hosts,
     },
     ctx: { goClient },
   }) {
@@ -118,7 +120,9 @@ export const servicesRouter = createTRPCRouter({
       description,
       git_branch: gitBranch,
       image,
-      public: isPublic,
+      is_public: isPublic,
+      ports,
+      hosts,
     });
     return {
       service: service.data,

@@ -63,7 +63,7 @@ export default function DeploymentTime({ deployment, service, isPlaceholder, cla
             <p className="text-muted-foreground group-data-placeholder/time:bg-muted-foreground group-data-placeholder/time:animate-skeleton min-w-0 shrink group-data-placeholder/time:rounded-md group-data-placeholder/time:text-transparent">
               {isPlaceholder
                 ? "1 hr. ago | 90s"
-                : `${deploymentTimeStr} via ${sourceToTitle[service.config.type] || "Unknown"}`}
+                : `${deploymentTimeStr} via ${sourceToTitle[service.type] || "Unknown"}`}
             </p>
             {durationStr && <p className="text-muted-more-foreground">|</p>}
           </>

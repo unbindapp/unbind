@@ -85,7 +85,7 @@ function useDatabaseItem({ context }: TProps) {
         teamId: context.teamId,
         projectId,
         environmentId,
-        public: false,
+        isPublic: false,
       });
       return result;
     },
