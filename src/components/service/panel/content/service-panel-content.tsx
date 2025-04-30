@@ -89,12 +89,23 @@ export default function ServicePanelContent({ service, className }: TProps) {
             serviceId={service.id}
             type="service"
           >
-            <ServicePanelContentUndeployed className={className} service={service} />
+            <ServicePanelContentUndeployed
+              data-vaul-no-drag
+              className={className}
+              service={service}
+            />
           </VariablesProvider>
         </DeploymentsProvider>
       </SystemProvider>
     );
   }
 
-  return <ServicePanelContentDeployed tabs={tabs} service={service} currentTab={currentTab} />;
+  return (
+    <ServicePanelContentDeployed
+      data-vaul-no-drag
+      tabs={tabs}
+      service={service}
+      currentTab={currentTab}
+    />
+  );
 }

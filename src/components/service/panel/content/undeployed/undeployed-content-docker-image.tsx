@@ -99,7 +99,10 @@ export function UndeployedContentDockerImage({
                 className="group/button flex w-full flex-row items-center justify-start gap-2 border px-3 text-left"
               />
             </PopoverTrigger>
-            <PopoverContent className="flex h-68 max-h-[min(30rem,var(--radix-popper-available-height))] overflow-hidden p-0">
+            <PopoverContent
+              animate={false}
+              className="flex h-68 max-h-[min(30rem,var(--radix-popper-available-height))] overflow-hidden p-0"
+            >
               <Command
                 value={commandValue}
                 onValueChange={setCommandValue}

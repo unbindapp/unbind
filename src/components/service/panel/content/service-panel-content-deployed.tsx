@@ -6,24 +6,26 @@ import { useService } from "@/components/service/service-provider";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
+import { HTMLAttributes } from "react";
 
 type TProps = {
   tabs: TServicePanelTab[];
   service: TServiceShallow;
   className?: string;
   currentTab: TServicePanelTab | undefined;
-};
+} & HTMLAttributes<HTMLDivElement>;
 
 export default function ServicePanelContentDeployed({
   currentTab,
   tabs,
   service,
   className,
+  ...rest
 }: TProps) {
   const { teamId, projectId, environmentId } = useService();
   const { currentTabId, setCurrentTabId } = useServicePanel();
   return (
-    <div className={cn("flex w-full flex-1 flex-col overflow-hidden", className)}>
+    <div className={cn("flex w-full flex-1 flex-col overflow-hidden", className)} {...rest}>
       <nav className="touch:scrollbar-hidden flex w-full justify-start overflow-auto border-b">
         <div className="flex justify-start px-2 pt-2 sm:px-4.5 sm:pt-3">
           {tabs.map((tab) => (

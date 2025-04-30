@@ -32,14 +32,14 @@ import {
 import { api } from "@/server/trpc/setup/client";
 import { useMutation } from "@tanstack/react-query";
 import { CheckCircleIcon, CircleSlashIcon, EyeOffIcon, LoaderIcon } from "lucide-react";
-import { Dispatch, SetStateAction, useRef, useState } from "react";
+import { Dispatch, HTMLAttributes, SetStateAction, useRef, useState } from "react";
 
 type TProps = {
   service: TServiceShallow;
   className?: string;
-};
+} & HTMLAttributes<HTMLDivElement>;
 
-export default function ServicePanelContentUndeployed({ service, className }: TProps) {
+export default function ServicePanelContentUndeployed({ service, className, ...rest }: TProps) {
   const {
     teamId,
     projectId,
@@ -230,9 +230,10 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
   return (
     <div
       className={cn("mt-4 flex w-full flex-1 flex-col overflow-hidden border-t sm:mt-6", className)}
+      {...rest}
     >
       <ScrollArea classNameViewport="pb-8">
-        <div className="flex w-full flex-1 flex-col gap-6 overflow-auto px-3 py-4 sm:p-6">
+        <div className="flex w-full flex-1 flex-col gap-6 px-3 py-4 sm:p-6">
           <Content
             service={service}
             tagState={tagState}
@@ -269,10 +270,10 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
                         value={isPrivateService ? privateServiceText : domain}
                         onChange={(e) => setDomain(e.currentTarget.value)}
                         placeholder="example.com"
-                        className="w-full group-data-private/input:pl-9"
+                        className="w-full group-data-private/input:pl-10"
                       />
                       {isPrivateService && (
-                        <EyeOffIcon className="text-foreground pointer-events-none absolute top-1/2 left-3 size-4.5 -translate-y-1/2 opacity-50" />
+                        <EyeOffIcon className="text-foreground pointer-events-none absolute top-1/2 left-3.5 size-4.5 -translate-y-1/2 opacity-50" />
                       )}
                     </div>
                     {!isPrivateService && (
@@ -317,10 +318,10 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
                       value={!isPrivateService ? portInputValue : privateServiceText}
                       onChange={(e) => setPortInputValue(e.target.value)}
                       placeholder="3000"
-                      className="w-full group-data-private/input:pl-9"
+                      className="w-full group-data-private/input:pl-10"
                     />
                     {isPrivateService && (
-                      <EyeOffIcon className="text-foreground pointer-events-none absolute top-1/2 left-3 size-4.5 -translate-y-1/2 opacity-50" />
+                      <EyeOffIcon className="text-foreground pointer-events-none absolute top-1/2 left-3.5 size-4.5 -translate-y-1/2 opacity-50" />
                     )}
                   </div>
                 </BlockItemContent>
