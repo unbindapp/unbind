@@ -108,6 +108,7 @@ export const servicesRouter = createTRPCRouter({
       isPublic,
       ports,
       hosts,
+      databaseConfig,
     },
     ctx: { goClient },
   }) {
@@ -123,6 +124,7 @@ export const servicesRouter = createTRPCRouter({
       is_public: isPublic,
       ports,
       hosts,
+      database_config: databaseConfig,
     });
     return {
       service: service.data,

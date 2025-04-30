@@ -1,4 +1,4 @@
-import { HostSpecSchema, PortSpecSchema } from "@/server/go/client.gen";
+import { DatabaseConfigSchema, HostSpecSchema, PortSpecSchema } from "@/server/go/client.gen";
 import { AppRouterOutputs } from "@/server/trpc/api/root";
 import { z } from "zod";
 
@@ -86,6 +86,7 @@ export const UpdateServiceInputSchema = z
     isPublic: z.boolean().optional(),
     ports: PortSpecSchema.array().optional(),
     hosts: HostSpecSchema.array().optional(),
+    databaseConfig: DatabaseConfigSchema.optional(),
   })
   .strip();
 

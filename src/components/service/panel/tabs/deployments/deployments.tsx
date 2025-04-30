@@ -42,6 +42,9 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
       );
     }, [deploymentsData, currentOrFirstDeployment]);
 
+  const hasNoDeployment =
+    deploymentsData?.deployments && deploymentsData.deployments.length === 0 ? true : false;
+
   return (
     <TabWrapper>
       <DeploymentPanelProvider
@@ -62,15 +65,17 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
             )}
           </div>
         )}
-        <div
-          data-pending={isPending ? true : undefined}
-          className="group/header flex w-full items-center justify-start px-2 pb-1"
-        >
-          <h3 className="text-muted-foreground group-data-pending/header:bg-muted-foreground group-data-pending/header:animate-skeleton leading-tight font-medium group-data-pending/header:rounded-md group-data-pending/header:text-transparent">
-            History
-          </h3>
-        </div>
-        {hasData && filteredDeployments && (
+        {(isPending || !hasNoDeployment) && (
+          <div
+            data-pending={isPending ? true : undefined}
+            className="group/header flex w-full items-center justify-start px-2 pb-1"
+          >
+            <h3 className="text-muted-foreground group-data-pending/header:bg-muted-foreground group-data-pending/header:animate-skeleton leading-tight font-medium group-data-pending/header:rounded-md group-data-pending/header:text-transparent">
+              History
+            </h3>
+          </div>
+        )}
+        {hasData && filteredDeployments && !hasNoDeployment && (
           <>
             {filteredDeployments.length > 0 && (
               <ol className="flex w-full flex-col gap-2">
@@ -91,7 +96,7 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
             )}
           </>
         )}
-        {hasData && deploymentsData?.deployments && deploymentsData.deployments.length === 0 && (
+        {hasData && hasNoDeployment && (
           <NoItemsCard
             Icon={RocketIcon}
             className="text-muted-foreground px-2 py-5 text-center leading-tight font-medium"

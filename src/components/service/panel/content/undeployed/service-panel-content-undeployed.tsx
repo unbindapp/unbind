@@ -195,12 +195,18 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
       }
 
       // Database service change
-      /* if (
-        service.type === "database" &&
-        service.config.database_version !== databaseVersionState[0]
-      ) {
-        await updateService({});
-      } */
+      const newDatabaseVersion = databaseVersionState[0];
+      if (service.type === "database" && service.database_version !== newDatabaseVersion) {
+        const props: TUpdateServiceInput = {
+          ...sharedServiceProps,
+        };
+        if (newDatabaseVersion !== null && service.database_version !== newDatabaseVersion) {
+          props.databaseConfig = {
+            version: newDatabaseVersion,
+          };
+        }
+        await updateService(props);
+      }
 
       await createDeployment({
         teamId,
@@ -209,12 +215,13 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
         serviceId: service.id,
       });
 
-      await Promise.all([
-        refetchServices(),
-        refetchService(),
-        refetchDeployments(),
-        refetchVariables(),
-      ]);
+      await refetchDeployments();
+
+      const promises = [refetchService(), refetchServices()];
+      if (parsedRegularVariables.length > 0 || parsedVariableReferences.length > 0) {
+        promises.push(refetchVariables());
+      }
+      await Promise.all(promises);
     },
   });
 
