@@ -31,7 +31,7 @@ import {
 } from "@/server/trpc/api/variables/types";
 import { api } from "@/server/trpc/setup/client";
 import { useMutation } from "@tanstack/react-query";
-import { CheckCircleIcon, CircleSlashIcon, EyeOffIcon } from "lucide-react";
+import { CheckCircleIcon, CircleSlashIcon, EyeOffIcon, LoaderIcon } from "lucide-react";
 import { Dispatch, SetStateAction, useRef, useState } from "react";
 
 type TProps = {
@@ -231,9 +231,8 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
     <div
       className={cn("mt-4 flex w-full flex-1 flex-col overflow-hidden border-t sm:mt-6", className)}
     >
-      <ScrollArea viewportClassName="pb-[calc(var(--safe-area-inset-bottom)+2rem)]">
-        <div className="flex w-full flex-1 flex-col gap-5 overflow-auto px-3 py-4 sm:p-6">
-          <h2 className="-mt-1 px-2 text-xl font-bold sm:text-2xl">Deploy Service</h2>
+      <ScrollArea classNameViewport="pb-8">
+        <div className="flex w-full flex-1 flex-col gap-6 overflow-auto px-3 py-4 sm:p-6">
           <Content
             service={service}
             tagState={tagState}
@@ -328,7 +327,6 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
               </BlockItem>
             </Block>
           )}
-
           <VariablesProvider
             teamId={teamId}
             projectId={projectId}
@@ -345,26 +343,46 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
             >
               <CreateVariablesForm
                 variant="collapsible"
+                className="sm:mt-1"
                 onValueChange={(v) => {
                   createVariablesFormResult.current = v;
                 }}
               />
             </VariableReferencesProvider>
           </VariablesProvider>
-          {createFirstDeploymentError && <ErrorLine message={createFirstDeploymentError.message} />}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (createFirstDeploymentIsPending) return;
-              createFirstDeployment();
-            }}
-          >
-            <Button className="w-full" isPending={createFirstDeploymentIsPending}>
-              Deploy
-            </Button>
-          </form>
         </div>
       </ScrollArea>
+      <div className="flex w-full flex-col gap-2 border-t px-3 pt-3 pb-[calc(var(--safe-area-inset-bottom)+0.75rem)] sm:px-6 sm:pt-6 sm:pb-[calc(var(--safe-area-inset-bottom)+1.5rem)]">
+        {createFirstDeploymentError && <ErrorLine message={createFirstDeploymentError.message} />}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (createFirstDeploymentIsPending) return;
+            createFirstDeployment();
+          }}
+        >
+          <Button
+            data-pending={createFirstDeploymentIsPending ? true : undefined}
+            className="group/button data-pending:bg-foreground/60 w-full"
+            disabled={createFirstDeploymentIsPending}
+            fadeOnDisabled={false}
+          >
+            {createFirstDeploymentIsPending && (
+              <div className="absolute top-0 left-0 h-full w-full items-center justify-center overflow-hidden rounded-lg">
+                <div className="from-foreground/0 via-foreground to-foreground/0 animate-ping-pong absolute top-1/2 left-1/2 aspect-square w-[100%] origin-center -translate-1/2 bg-gradient-to-r" />
+              </div>
+            )}
+            <div className="flex w-full items-center justify-center gap-1.5">
+              {createFirstDeploymentIsPending && (
+                <LoaderIcon className="-my-1 -ml-0.5 size-5 shrink-0 animate-spin" />
+              )}
+              <p className="relative min-w-0 shrink">
+                {createFirstDeploymentIsPending ? "Deploying" : "Deploy"}
+              </p>
+            </div>
+          </Button>
+        </form>
+      </div>
     </div>
   );
 }

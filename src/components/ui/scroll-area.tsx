@@ -10,13 +10,13 @@ function ScrollArea({
   viewportRef,
   noFocusOnViewport,
   orientation = "vertical",
-  viewportClassName,
+  classNameViewport,
   scrollBarClassName,
   children,
   ...props
 }: React.ComponentProps<typeof ScrollAreaPrimitive.Root> & {
   viewportRef?: React.Ref<HTMLDivElement>;
-  viewportClassName?: string;
+  classNameViewport?: string;
   scrollBarClassName?: string;
   orientation?: "vertical" | "horizontal";
   noFocusOnViewport?: boolean;
@@ -35,7 +35,7 @@ function ScrollArea({
         ref={viewportRef}
         className={cn(
           "focus:outline-primary/50 w-full flex-1 rounded-[inherit] focus:outline-1 [&>div]:group-data-[orientation=horizontal]/root:flex! [&>div]:group-data-[orientation=vertical]/root:flex! [&>div]:group-data-[orientation=vertical]/root:flex-col!",
-          viewportClassName,
+          classNameViewport,
         )}
         tabIndex={noFocusOnViewport ? -1 : undefined}
       >

@@ -8,5 +8,5 @@ type TProps = {
 
 export default function ConditionalScrollArea({ noArea, children }: TProps) {
   if (noArea) return children;
-  return <ScrollArea viewportClassName="pb-[var(--safe-area-inset-bottom)]">{children}</ScrollArea>;
+  return <ScrollArea classNameViewport="pb-[var(--safe-area-inset-bottom)]">{children}</ScrollArea>;
 }

@@ -235,7 +235,7 @@ function VariableEditor({
   return (
     <div className="relative -mx-3 flex w-[calc(100%+1.5rem)] flex-1 flex-col overflow-hidden sm:mx-0 sm:w-full">
       <ScrollArea
-        viewportClassName="[&>div]:group-data-[orientation=vertical]/root:flex-1"
+        classNameViewport="[&>div]:group-data-[orientation=vertical]/root:flex-1"
         className="bg-background-hover flex flex-1 flex-col overflow-auto rounded-lg border font-mono"
       >
         <div className="flex w-full flex-1 flex-col">
