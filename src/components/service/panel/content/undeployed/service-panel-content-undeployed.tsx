@@ -372,11 +372,11 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
                 <div className="from-foreground/0 via-foreground to-foreground/0 animate-ping-pong absolute top-1/2 left-1/2 aspect-square w-[100%] origin-center -translate-1/2 bg-gradient-to-r" />
               </div>
             )}
-            <div className="flex w-full items-center justify-center gap-1.5">
+            <div className="relative flex w-full items-center justify-center gap-1.5">
               {createFirstDeploymentIsPending && (
                 <LoaderIcon className="-my-1 -ml-0.5 size-5 shrink-0 animate-spin" />
               )}
-              <p className="relative min-w-0 shrink">
+              <p className="min-w-0 shrink">
                 {createFirstDeploymentIsPending ? "Deploying" : "Deploy"}
               </p>
             </div>
