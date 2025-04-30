@@ -91,7 +91,7 @@ export function BlockItemButtonLike({
       className="group/button flex w-full flex-row items-center justify-start gap-2 rounded-lg border px-3 py-2.5 text-left"
       {...props}
     >
-      <Icon className="size-5 shrink-0 scale-90" />
+      <Icon className="size-5 shrink-0" />
       <p className="min-w-0 flex-1 shrink truncate leading-tight font-medium">{text}</p>
       {open !== undefined && (
         <ChevronDownIcon className="text-muted-foreground -mr-0.75 size-5 transition group-data-open/button:rotate-180" />

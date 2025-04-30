@@ -273,7 +273,7 @@ export default function ServicePanelContentUndeployed({ service, className, ...r
                         className="w-full group-data-private/input:pl-10"
                       />
                       {isPrivateService && (
-                        <EyeOffIcon className="text-foreground pointer-events-none absolute top-1/2 left-3.5 size-4.5 -translate-y-1/2 opacity-50" />
+                        <EyeOffIcon className="text-foreground pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 scale-90 opacity-50" />
                       )}
                     </div>
                     {!isPrivateService && (
@@ -321,7 +321,7 @@ export default function ServicePanelContentUndeployed({ service, className, ...r
                       className="w-full group-data-private/input:pl-10"
                     />
                     {isPrivateService && (
-                      <EyeOffIcon className="text-foreground pointer-events-none absolute top-1/2 left-3.5 size-4.5 -translate-y-1/2 opacity-50" />
+                      <EyeOffIcon className="text-foreground pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 scale-90 opacity-50" />
                     )}
                   </div>
                 </BlockItemContent>
