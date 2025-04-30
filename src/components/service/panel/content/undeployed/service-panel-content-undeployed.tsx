@@ -22,7 +22,7 @@ import CreateVariablesForm, {
 } from "@/components/variables/create-variables-form";
 import VariableReferencesProvider from "@/components/variables/variable-references-provider";
 import VariablesProvider, { useVariablesUtils } from "@/components/variables/variables-provider";
-import { TServiceShallow } from "@/server/trpc/api/services/types";
+import { TServiceShallow, TUpdateServiceInput } from "@/server/trpc/api/services/types";
 import {
   TVariableForCreate,
   TVariableReferenceForCreate,
@@ -65,11 +65,12 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
 
   const { mutateAsync: createDeployment } = api.deployments.create.useMutation();
   const { mutateAsync: upsertVariables } = api.variables.createOrUpdate.useMutation();
+  const { mutateAsync: updateService } = api.services.update.useMutation();
 
   const tagState = useState<string | null>(null);
   const branchState = useState<string | null>(null);
   const databaseVersionState = useState<string | null>(null);
-  const [isPrivateService, setIsPrivateService] = useState<boolean>(false);
+  const [isPrivateService, setIsPrivateService] = useState<boolean>(service.config.public);
 
   const privateServiceText = "Private service";
 
@@ -113,6 +114,65 @@ export default function ServicePanelContentUndeployed({ service, className }: TP
           type: "service",
         });
       }
+
+      const sharedServiceProps = {
+        teamId,
+        projectId,
+        environmentId,
+        serviceId: service.id,
+      };
+
+      // Git service change
+      const newBranch = branchState[0];
+      if (service.config.type === "github") {
+        const hasChange =
+          service.config.git_branch !== newBranch || service.config.public !== !isPrivateService;
+
+        if (hasChange) {
+          const props: TUpdateServiceInput = {
+            ...sharedServiceProps,
+          };
+          if (newBranch !== null && service.config.git_branch !== newBranch) {
+            props.gitBranch = newBranch;
+          }
+          if (service.config.public !== !isPrivateService) {
+            props.isPublic = !isPrivateService;
+          }
+          await updateService(props);
+        }
+      }
+
+      // Docker service change
+      if (service.config.type === "docker-image") {
+        const arr = service.config.image?.split(":");
+        const image = arr?.[0];
+        const tag = arr && arr.length > 1 ? arr?.[1] : "latest";
+
+        const newTag = tagState[0];
+
+        const hasChange = tag !== newTag || service.config.public !== !isPrivateService;
+
+        if (image !== undefined && hasChange) {
+          const props: TUpdateServiceInput = {
+            ...sharedServiceProps,
+          };
+          if (newTag !== null && tag !== newTag) {
+            props.image = `${image}:${newTag}`;
+          }
+          if (service.config.public !== !isPrivateService) {
+            props.isPublic = !isPrivateService;
+          }
+          await updateService(props);
+        }
+      }
+
+      // Database service change
+      /* if (
+        service.config.type === "database" &&
+        service.config.database_version !== databaseVersionState[0]
+      ) {
+        await updateService({});
+      } */
 
       await createDeployment({
         teamId,
@@ -291,7 +351,7 @@ function Content({
   if (service.config.type === "docker-image") {
     const arr = service.config.image?.split(":");
     const image = arr?.[0];
-    const tag = arr?.[1] || "latest";
+    const tag = arr && arr.length > 1 ? arr?.[1] : "latest";
 
     if (!image || !tag) return <ErrorLine message="Image or tag is not found." />;
 

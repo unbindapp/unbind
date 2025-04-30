@@ -80,8 +80,13 @@ export const UpdateServiceInputSchema = z
     serviceId: z.string().uuid(),
     name: ServicenameSchema.optional(),
     description: ServiceDescriptionSchema.optional(),
+    gitBranch: z.string().optional(),
+    image: z.string().optional(),
+    isPublic: z.boolean().optional(),
   })
   .strip();
+
+export type TUpdateServiceInput = z.infer<typeof UpdateServiceInputSchema>;
 
 export type THost = NonNullable<
   AppRouterOutputs["services"]["get"]["service"]["config"]["hosts"]

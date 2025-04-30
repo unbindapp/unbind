@@ -96,7 +96,17 @@ export const servicesRouter = createTRPCRouter({
     };
   }),
   update: privateProcedure.input(UpdateServiceInputSchema).mutation(async function ({
-    input: { teamId, projectId, environmentId, serviceId, name, description },
+    input: {
+      teamId,
+      projectId,
+      environmentId,
+      serviceId,
+      name,
+      description,
+      gitBranch,
+      image,
+      isPublic,
+    },
     ctx: { goClient },
   }) {
     const service = await goClient.services.update({
@@ -106,6 +116,9 @@ export const servicesRouter = createTRPCRouter({
       service_id: serviceId,
       name: name,
       description,
+      git_branch: gitBranch,
+      image,
+      public: isPublic,
     });
     return {
       service: service.data,
