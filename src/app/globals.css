@@ -92,12 +92,6 @@
   --x: hsl(120 90% 5%);
   --x-foreground: hsl(0 0% 100%);
 
-  --nextjs: hsl(120 90% 5%);
-  --umami: hsl(120 90% 5%);
-  --astro: hsl(120 90% 5%);
-  --ghost: hsl(120 90% 5%);
-  --pocketbase: hsl(120 90% 5%);
-
   --go: hsl(192 93% 35%);
   --meilisearch: hsl(346 90% 60%);
   --minio: hsl(349 60% 49%);
@@ -120,6 +114,11 @@
   --slack-3: hsl(341 76% 50%);
   --slack-4: hsl(42 83% 55%);
   --cloudflare: hsl(27 100% 35%);
+  --nuxt: hsl(155 100% 33%);
+  --laravel: hsl(3 100% 56%);
+  --react: hsl(193 100% 40%);
+  --vuejs-1: hsl(153 48% 49%);
+  --vuejs-2: hsl(210 29% 29%);
 
   --barrier: hsl(120 30% 4%);
 
@@ -187,12 +186,6 @@
   --x: hsl(120 100% 97%);
   --x-foreground: hsl(120 9% 6%);
 
-  --nextjs: hsl(120 100% 97%);
-  --umami: hsl(120 100% 97%);
-  --astro: hsl(120 100% 97%);
-  --pocketbase: hsl(120 100% 97%);
-  --ghost: hsl(120 100% 97%);
-
   --go: hsl(192 93% 55%);
   --meilisearch: hsl(346 100% 67%);
   --minio: hsl(349 60% 49%);
@@ -215,6 +208,11 @@
   --slack-3: hsl(341 76% 50%);
   --slack-4: hsl(42 83% 55%);
   --cloudflare: hsl(27 90% 65%);
+  --nuxt: hsl(155 100% 43%);
+  --laravel: hsl(3 100% 56%);
+  --react: hsl(193 95% 68%);
+  --vuejs-1: hsl(153 48% 49%);
+  --vuejs-2: hsl(210 29% 29%);
 
   --barrier: hsl(120 10% 4%);
 
@@ -398,19 +396,14 @@
   --color-meilisearch: var(--meilisearch);
   --color-minio: var(--minio);
   --color-mysql: var(--mysql);
-  --color-nextjs: var(--nextjs);
   --color-postgresql: var(--postgresql);
   --color-redis: var(--redis);
   --color-rust: var(--rust);
   --color-svelte: var(--svelte);
-  --color-umami: var(--umami);
   --color-clickhouse: var(--clickhouse);
-  --color-astro: var(--astro);
   --color-docker: var(--docker);
   --color-strapi: var(--strapi);
   --color-mongodb: var(--mongodb);
-  --color-pocketbase: var(--pocketbase);
-  --color-ghost: var(--ghost);
   --color-n8n: var(--n8n);
   --color-nodejs: var(--nodejs);
   --color-python-1: var(--python-1);
@@ -421,6 +414,11 @@
   --color-slack-3: var(--slack-3);
   --color-slack-4: var(--slack-4);
   --color-cloudflare: var(--cloudflare);
+  --color-nuxt: var(--nuxt);
+  --color-laravel: var(--laravel);
+  --color-react: var(--react);
+  --color-vuejs-1: var(--vuejs-1);
+  --color-vuejs-2: var(--vuejs-2);
 
   --color-barrier: var(--barrier);
 
