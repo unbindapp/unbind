@@ -1,16 +1,5 @@
+import { TFormValues } from "@/app/(default)/sign-in/_components/types";
 import React from "react";
-
-export type TFormValues = {
-  username: string | undefined;
-  password: string | undefined;
-  redirect_uri: string | undefined;
-  client_id: string | undefined;
-  response_type: string | undefined;
-  state: string | undefined;
-  scope: string | undefined;
-  page_key: string | undefined;
-  initiating_url: string | undefined;
-};
 
 export default function HiddenSignInForm({
   formValues,

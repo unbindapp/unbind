@@ -1,24 +1,16 @@
 "use client";
 
 import { errorCodeToText } from "@/app/(default)/sign-in/_components/helpers";
-import HiddenSignInForm, {
-  TFormValues,
-} from "@/app/(default)/sign-in/_components/hidden-sign-in-form";
+import HiddenSignInForm from "@/app/(default)/sign-in/_components/hidden-sign-in-form";
+import { TSignInLikeFormProps } from "@/app/(default)/sign-in/_components/types";
+import useSignInLikeForm from "@/app/(default)/sign-in/_components/use-sign-in-like-form";
 import { oAuthSignInAction } from "@/components/auth/actions";
 import ErrorLine from "@/components/error-line";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/components/ui/utils";
 import { KeyRoundIcon, MailIcon } from "lucide-react";
-import { useActionState, useEffect, useRef, useState } from "react";
-
-type TProps = {
-  className?: string;
-  redirectPathname?: string;
-  formValues: TFormValues;
-  loginUrl: string;
-  error: string | undefined;
-};
+import { useActionState } from "react";
 
 export default function SignInForm({
   formValues,
@@ -26,36 +18,21 @@ export default function SignInForm({
   loginUrl,
   redirectPathname,
   className,
-}: TProps) {
-  const hasHiddenForm =
-    formValues.username &&
-    formValues.password &&
-    formValues.client_id &&
-    formValues.response_type &&
-    !error
-      ? true
-      : undefined;
-
-  const [email, setEmail] = useState<string>(hasHiddenForm ? formValues.username || "" : "");
-  const [password, setPassword] = useState<string>(hasHiddenForm ? formValues.password || "" : "");
+}: TSignInLikeFormProps) {
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    hasHiddenForm,
+    isHiddenFormSubmitting,
+    hiddenFormRef,
+  } = useSignInLikeForm({ formValues, error });
 
   const [state, action, isPending] = useActionState(
     () => oAuthSignInAction({ providerId: "dex", redirectPathname, email, password }),
     null,
   );
-
-  const hiddenFormRef = useRef<HTMLFormElement>(null);
-  const [isHiddenFormSubmitting, setIsHiddenFormSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (!hasHiddenForm) return;
-    if (isHiddenFormSubmitting) return;
-    if (!hiddenFormRef.current) return;
-
-    setIsHiddenFormSubmitting(true);
-    hiddenFormRef.current.submit();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasHiddenForm]);
 
   return (
     <>
