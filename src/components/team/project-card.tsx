@@ -10,7 +10,7 @@ type TProps = {
   | { project?: never; isPlaceholder: true }
 );
 
-const iconLength = 5;
+const iconLength = 4;
 
 export default function ProjectCard({ project, isPlaceholder, className }: TProps) {
   const environments = !isPlaceholder ? project.environments : [];
