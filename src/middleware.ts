@@ -36,7 +36,7 @@ export const config = {
      * - opengraph-image (Open Graph image generation)
      * - twitter-image (Twitter image generation)
      */
-    "/((?!api/auth|api-internal/auth|api-internal/auth-internal|_next/static|_next/image|favicon.ico|opengraph-image\\?|twitter-image\\?|.*\\.(?:jpg|jpeg|gif|png|svg|ico|css|js)).*)",
+    "/((?!api/auth|api-internal/auth|_next/static|_next/image|favicon.ico|opengraph-image\\?|twitter-image\\?|.*\\.(?:jpg|jpeg|gif|png|svg|ico|css|js)).*)",
   ],
 };
 

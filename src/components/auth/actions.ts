@@ -5,12 +5,12 @@ import { cookies } from "next/headers";
 
 export async function oAuthSignInAction({
   providerId,
-  callbackUrl,
+  redirectPathname,
   email,
   password,
 }: {
   providerId: string;
-  callbackUrl?: string;
+  redirectPathname?: string;
 } & ({ email?: never; password?: never } | { email: string; password: string })) {
   if (email && password) {
     const cookieStore = await cookies();
@@ -26,13 +26,13 @@ export async function oAuthSignInAction({
     });
   }
   await signIn(providerId, {
-    redirectTo: callbackUrl ?? "",
+    redirectTo: redirectPathname ?? "/",
   });
 }
 
-export async function signOutAction({ callbackUrl }: { callbackUrl?: string }) {
+export async function signOutAction({ redirectPathname }: { redirectPathname?: string }) {
   await signOut({
     redirect: true,
-    redirectTo: callbackUrl ?? "/",
+    redirectTo: redirectPathname ?? "/",
   });
 }

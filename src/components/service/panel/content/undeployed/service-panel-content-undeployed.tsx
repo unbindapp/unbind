@@ -270,7 +270,7 @@ export default function ServicePanelContentUndeployed({ service, className, ...r
                         value={isPrivateService ? privateServiceText : domain}
                         onChange={(e) => setDomain(e.currentTarget.value)}
                         placeholder="example.com"
-                        className="w-full group-data-private/input:pl-10"
+                        className="w-full group-data-private/input:pl-9.5"
                       />
                       {isPrivateService && (
                         <EyeOffIcon className="text-foreground pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 scale-90 opacity-50" />
@@ -318,7 +318,7 @@ export default function ServicePanelContentUndeployed({ service, className, ...r
                       value={!isPrivateService ? portInputValue : privateServiceText}
                       onChange={(e) => setPortInputValue(e.target.value)}
                       placeholder="3000"
-                      className="w-full group-data-private/input:pl-10"
+                      className="w-full group-data-private/input:pl-9.5"
                     />
                     {isPrivateService && (
                       <EyeOffIcon className="text-foreground pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 scale-90 opacity-50" />
