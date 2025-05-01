@@ -33,6 +33,8 @@ export default function SignInForm({
       ? true
       : undefined;
 
+  console.log(formValues, error);
+
   const [email, setEmail] = useState<string>(hasHiddenForm ? formValues.username || "" : "");
   const [password, setPassword] = useState<string>(hasHiddenForm ? formValues.password || "" : "");
 
