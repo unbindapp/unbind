@@ -135,7 +135,7 @@ export function UndeployedContentDockerImage({
                           </CommandItem>
                         ))}
                       {!data && !isPending && error && (
-                        <ErrorCard className="rounded-lg" message={error.message} />
+                        <ErrorCard className="rounded-md" message={error.message} />
                       )}
                       {data &&
                         data.tags.map((t) => (

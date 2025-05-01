@@ -75,7 +75,7 @@ export function UndeployedContentDatabase({
               <ScrollArea>
                 <DropdownMenuGroup>
                   {!data && !isPending && error && (
-                    <ErrorCard className="rounded-lg" message={error.message} />
+                    <ErrorCard className="rounded-md" message={error.message} />
                   )}
                   {data &&
                     data.database.version.options.map((v) => (
