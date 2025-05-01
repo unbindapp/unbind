@@ -39,7 +39,7 @@ function ContextCommandPanel_({ context, triggerType, title, description, childr
   const { rootPage, currentPage, setCurrentPageId, goToParentPage } =
     useContextCommandPanelData(context);
 
-  const thisPanelId = `${contextCommandPanelId}_${context.contextType}`;
+  const thisPanelId = `${contextCommandPanelId}_${context.contextType}_${triggerType}`;
 
   const open = panelId === thisPanelId;
   const setOpen = (open: boolean) => {

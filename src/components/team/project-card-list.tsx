@@ -45,9 +45,12 @@ export default function ProjectCardList({ teamId }: TProps) {
     );
   }
 
-  if (projects.length === 0) {
-    return (
-      <Wrapper>
+  return (
+    <Wrapper>
+      {projects.map((i) => (
+        <ProjectCard key={i.id} project={i} className="w-full md:w-1/2 lg:w-1/3" />
+      ))}
+      {projects.length < 3 && (
         <li className="flex w-full flex-col p-1 sm:w-1/2 lg:w-1/3">
           <ContextCommandPanel
             title="Create New Project"
@@ -64,15 +67,7 @@ export default function ProjectCardList({ teamId }: TProps) {
             </Button>
           </ContextCommandPanel>
         </li>
-      </Wrapper>
-    );
-  }
-
-  return (
-    <Wrapper>
-      {projects.map((i) => (
-        <ProjectCard key={i.id} project={i} className="w-full md:w-1/2 lg:w-1/3" />
-      ))}
+      )}
     </Wrapper>
   );
 }

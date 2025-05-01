@@ -46,9 +46,19 @@ export default function ServiceCardList() {
     );
   }
 
-  if (services.length === 0) {
-    return (
-      <Wrapper>
+  return (
+    <Wrapper>
+      {services.map((s) => (
+        <ServiceCard
+          key={s.id}
+          service={s}
+          teamId={teamId}
+          projectId={projectId}
+          environmentId={environmentId}
+          className="w-full sm:w-1/2 lg:w-1/3"
+        />
+      ))}
+      {services.length < 3 && (
         <li className="flex w-full flex-col p-1 sm:w-1/2 lg:w-1/3">
           <ContextCommandPanel
             title="Create New Service"
@@ -65,22 +75,7 @@ export default function ServiceCardList() {
             </Button>
           </ContextCommandPanel>
         </li>
-      </Wrapper>
-    );
-  }
-
-  return (
-    <Wrapper>
-      {services.map((s) => (
-        <ServiceCard
-          key={s.id}
-          service={s}
-          teamId={teamId}
-          projectId={projectId}
-          environmentId={environmentId}
-          className="w-full sm:w-1/2 lg:w-1/3"
-        />
-      ))}
+      )}
     </Wrapper>
   );
 }
