@@ -1,6 +1,9 @@
 "use client";
 
-import { TFormValues } from "@/app/(default)/sign-in/page";
+import { errorCodeToText } from "@/app/(default)/sign-in/_components/helpers";
+import HiddenSignInForm, {
+  TFormValues,
+} from "@/app/(default)/sign-in/_components/hidden-sign-in-form";
 import { oAuthSignInAction } from "@/components/auth/actions";
 import ErrorLine from "@/components/error-line";
 import { Button } from "@/components/ui/button";
@@ -81,45 +84,8 @@ export default function SignInForm({
       </form>
       {/* Hidden form */}
       {hasHiddenForm && (
-        <form
-          action={loginUrl}
-          method="POST"
-          ref={hiddenFormRef}
-          className="size-0 overflow-hidden opacity-0"
-        >
-          <input type="hidden" name="username" value={formValues.username} />
-          <input type="hidden" name="password" value={formValues.password} />
-          <input type="hidden" name="client_id" value={formValues.client_id} />
-          <input type="hidden" name="response_type" value={formValues.response_type} />
-          <input type="hidden" name="state" value={formValues.state} />
-          <input type="hidden" name="scope" value={formValues.scope} />
-          <input type="hidden" name="page_key" value={formValues.page_key} />
-          <input type="hidden" name="redirect_uri" value={formValues.redirect_uri} />
-        </form>
+        <HiddenSignInForm formValues={formValues} loginUrl={loginUrl} ref={hiddenFormRef} />
       )}
     </>
   );
-}
-
-function errorCodeToText(error: string) {
-  switch (error) {
-    case "NO_REFERER":
-      return "No referer header found.";
-    case "invalid_request":
-      return "Invalid request.";
-    case "invalid_client":
-      return "Invalid client.";
-    case "invalid_grant":
-      return "Invalid grant.";
-    case "unauthorized_client":
-      return "Unauthorized client.";
-    case "unsupported_grant_type":
-      return "Unsupported grant type.";
-    case "invalid_scope":
-      return "Invalid scope.";
-    case "invalid_credentials":
-      return "Invalid credentials.";
-    default:
-      return error;
-  }
 }
