@@ -73,7 +73,7 @@ export default function CreateAccountForm({
           layout="label-included"
           type="password"
         />
-        <Button className="mt-2" isPending={isPending || hasHiddenForm || isHiddenFormSubmitting}>
+        <Button className="mt-1.5" isPending={isPending || hasHiddenForm || isHiddenFormSubmitting}>
           Create Account
         </Button>
         {error && <ErrorLine message={errorCodeToText(error)} />}
