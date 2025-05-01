@@ -23,7 +23,7 @@ type TProps = { email: string; className?: string };
 
 export default function UserAvatar({ email, className }: TProps) {
   const [, actionSignOut, isPendingSignOut] = useActionState(
-    () => signOutAction({ callbackUrl: "/" }),
+    () => signOutAction({ redirectPathname: "/" }),
     null,
   );
   const [open, setOpen] = useState(false);

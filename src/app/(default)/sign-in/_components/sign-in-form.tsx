@@ -53,6 +53,7 @@ export default function SignInForm({
 
     setIsHiddenFormSubmitting(true);
     hiddenFormRef.current.submit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasHiddenForm]);
 
   return (

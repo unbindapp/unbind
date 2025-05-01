@@ -10,19 +10,19 @@ import { useActionState } from "react";
 type TProps = {
   providerId: string;
   providerName?: string;
-  callbackUrl?: string;
+  redirectPathname?: string;
   className?: string;
 };
 
 export default function SignInWithOAuthButton({
   providerId,
   providerName,
-  callbackUrl,
+  redirectPathname,
   className,
 }: TProps) {
   const pathname = usePathname();
   const [, action, isPending] = useActionState(
-    () => oAuthSignInAction({ providerId, callbackUrl: callbackUrl || pathname }),
+    () => oAuthSignInAction({ providerId, redirectPathname: redirectPathname || pathname }),
     null,
   );
 
