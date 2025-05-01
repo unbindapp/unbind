@@ -47,6 +47,7 @@ type TProps =
       projectId?: never;
       isSelected?: never;
       onClick?: never;
+      disableDelete?: never;
     }
   | {
       isPlaceholder?: never;
@@ -55,6 +56,7 @@ type TProps =
       projectId: string;
       isSelected: boolean;
       onClick: () => void;
+      disableDelete?: boolean;
     };
 
 export default function EnvironmentCard({
@@ -64,6 +66,7 @@ export default function EnvironmentCard({
   isPlaceholder,
   isSelected,
   onClick: onClickProp,
+  disableDelete,
 }: TProps) {
   const { asyncPush } = useAsyncPush();
 
@@ -106,6 +109,7 @@ export default function EnvironmentCard({
               environment={environment}
               teamId={teamId}
               projectId={projectId}
+              disableDelete={disableDelete}
             />
           )}
         </div>
@@ -118,11 +122,13 @@ function ThreeDotButton({
   environment,
   teamId,
   projectId,
+  disableDelete,
   className,
 }: {
   environment: TEnvironmentShallow;
   teamId: string;
   projectId: string;
+  disableDelete?: boolean;
   className?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -163,20 +169,22 @@ function ThreeDotButton({
                 <p className="min-w-0 shrink leading-tight">Rename</p>
               </DropdownMenuItem>
             </RenameTrigger>
-            <DeleteTrigger
-              environment={environment}
-              teamId={teamId}
-              projectId={projectId}
-              closeDropdown={() => setIsOpen(false)}
-            >
-              <DropdownMenuItem
-                onSelect={(e) => e.preventDefault()}
-                className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
+            {!disableDelete && (
+              <DeleteTrigger
+                environment={environment}
+                teamId={teamId}
+                projectId={projectId}
+                closeDropdown={() => setIsOpen(false)}
               >
-                <TrashIcon className="-ml-0.5 size-5" />
-                <p className="min-w-0 shrink leading-tight">Delete</p>
-              </DropdownMenuItem>
-            </DeleteTrigger>
+                <DropdownMenuItem
+                  onSelect={(e) => e.preventDefault()}
+                  className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
+                >
+                  <TrashIcon className="-ml-0.5 size-5" />
+                  <p className="min-w-0 shrink leading-tight">Delete</p>
+                </DropdownMenuItem>
+              </DeleteTrigger>
+            )}
           </DropdownMenuGroup>
         </ScrollArea>
       </DropdownMenuContent>

@@ -61,6 +61,7 @@ export default function EnvironmentsTabContent() {
     <Wrapper asElement="ol" className="-mx-1 mt-2 w-[calc(100%+0.5rem)] flex-row flex-wrap">
       {environments.map((environment) => (
         <EnvironmentCard
+          disableDelete={environments.length === 1}
           key={environment.id}
           environment={environment}
           teamId={teamId}
