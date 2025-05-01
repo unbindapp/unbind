@@ -150,8 +150,6 @@ export default function ServicePanelContentUndeployed({ service, className, ...r
           }
           if (portChanged) {
             props.ports = [{ port: parseInt(portInputValue) }];
-          } else {
-            console.log("PORT NOT CHANGED");
           }
           if (domainChanged) {
             props.hosts = [{ host: domain, path: "" }];
