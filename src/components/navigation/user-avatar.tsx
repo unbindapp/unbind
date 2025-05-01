@@ -22,10 +22,7 @@ import { useActionState, useRef, useState } from "react";
 type TProps = { email: string; className?: string };
 
 export default function UserAvatar({ email, className }: TProps) {
-  const [, actionSignOut, isPendingSignOut] = useActionState(
-    () => signOutAction({ redirectPathname: "/" }),
-    null,
-  );
+  const [, actionSignOut, isPendingSignOut] = useActionState(() => signOutAction(), null);
   const [open, setOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
