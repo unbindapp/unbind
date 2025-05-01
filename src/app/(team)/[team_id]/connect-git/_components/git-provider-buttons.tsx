@@ -11,7 +11,7 @@ import { createClient } from "@/server/go/client.gen";
 import { useMutation } from "@tanstack/react-query";
 import { CheckIcon, LoaderIcon } from "lucide-react";
 import { Session } from "next-auth";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type TProps = {
   teamId: string;
@@ -21,9 +21,15 @@ type TProps = {
 type TPopupState = "closed" | "open" | "connected";
 
 export default function GitProviderButtons({ teamId, session }: TProps) {
-  const { siteUrl, apiUrl } = useAppConfig();
-  const gitHubRedirectUrl = siteUrl + `/${teamId}/connect-git/connected/github`;
+  const { apiUrl } = useAppConfig();
+  const gitHubRedirectPathname = `/${teamId}/connect-git/connected/github`;
+
+  const [gitHubRedirectUrl, setGitHubRedirectUrl] = useState<string>("");
   const [gitHubPopupState, setGitHubPopupState] = useState<TPopupState>("closed");
+
+  useEffect(() => {
+    setGitHubRedirectUrl(window.location.origin + gitHubRedirectPathname);
+  }, [gitHubRedirectPathname]);
 
   const { mutate: onGitHubClick, isPending: isGitHubPending } = useMutation({
     mutationFn: async () =>

@@ -43,7 +43,7 @@ export default function useSignInLikeForm({ formValues, error }: TProps) {
       isHiddenFormSubmitting,
       hiddenFormRef,
     }),
-    [email, password, hasHiddenForm],
+    [email, password, hasHiddenForm, isHiddenFormSubmitting],
   );
 
   return values;

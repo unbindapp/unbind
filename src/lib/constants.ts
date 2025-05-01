@@ -37,6 +37,8 @@ export const defaultAnimationMs = 150;
 export const drawerAnimationMs = 350;
 export const defaultDebounceMs = 300;
 
+export const imagePreviewVersion = "v1";
+
 export const sourceToTitle: Record<TService["type"], string> = {
   "docker-image": "Docker Image",
   github: "GitHub",

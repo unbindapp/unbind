@@ -3,8 +3,7 @@ import TopLoader from "@/components/navigation/top-loader";
 import Providers from "@/components/providers/providers";
 import { metaTheme } from "@/components/providers/themes";
 import { Toaster } from "@/components/ui/sonner";
-import { siteDescription, siteTagline, siteTitle } from "@/lib/constants";
-import { env } from "@/lib/env";
+import { imagePreviewVersion, siteDescription, siteTagline, siteTitle } from "@/lib/constants";
 import { AlertCircleIcon, CheckCircleIcon, InfoIcon, TriangleAlertIcon, XIcon } from "lucide-react";
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
@@ -27,18 +26,27 @@ export const viewport: Viewport = {
   themeColor: metaTheme.dark,
 };
 
-export async function generateMetadata(): Promise<Metadata> {
-  return {
+export const metadata: Metadata = {
+  title,
+  description: siteDescription,
+  openGraph: {
     title,
     description: siteDescription,
-    metadataBase: new URL(env.SITE_URL || "https://unbind.app"),
-    twitter: {
-      title,
-      description: siteDescription,
-      card: "summary_large_image",
-    },
-  };
-}
+    images: [
+      {
+        url: `/previews/${imagePreviewVersion}/home.png`,
+        width: 1200,
+        height: 630,
+      },
+    ],
+  },
+  twitter: {
+    title,
+    description: siteDescription,
+    card: "summary_large_image",
+    images: [{ url: `/previews/${imagePreviewVersion}/home.png`, width: 1200, height: 630 }],
+  },
+};
 
 export default async function RootLayout({
   children,

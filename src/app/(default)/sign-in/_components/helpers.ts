@@ -1,7 +1,7 @@
 import { TFormValues, TSignInLikePageProps } from "@/app/(default)/sign-in/_components/types";
 import { env } from "@/lib/env";
 import { randomUUID } from "crypto";
-import { cookies } from "next/headers";
+import { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
 
 export function errorCodeToText(error: string) {
   switch (error) {
@@ -30,25 +30,28 @@ export function errorCodeToText(error: string) {
   }
 }
 
-export async function getSignInLikePageParams(searchParams: TSignInLikePageProps["searchParams"]) {
-  const params = await searchParams;
-
-  const cookieStore = await cookies();
-  const credentials = cookieStore.get("unbind-credentials");
+export async function getSignInLikePageParams({
+  cookies,
+  searchParams,
+}: {
+  cookies: ReadonlyRequestCookies;
+  searchParams: Awaited<TSignInLikePageProps["searchParams"]>;
+}) {
+  const credentials = cookies.get("unbind-credentials");
   const usernameBase64 = credentials?.value.split(":")[0];
   const passwordBase64 = credentials?.value.split(":")[1];
 
-  const redirectPathname = params.redirect_pathname;
+  const redirectPathname = searchParams.redirect_pathname;
   const username = usernameBase64 ? Buffer.from(usernameBase64, "base64").toString() : undefined;
   const password = passwordBase64 ? Buffer.from(passwordBase64, "base64").toString() : undefined;
-  const redirect_uri = params.redirect_uri;
-  const client_id = params.client_id;
-  const response_type = params.response_type;
-  const state = params.state;
-  const scope = params.scope;
-  const initiating_url = params.initiating_url;
+  const redirect_uri = searchParams.redirect_uri;
+  const client_id = searchParams.client_id;
+  const response_type = searchParams.response_type;
+  const state = searchParams.state;
+  const scope = searchParams.scope;
+  const initiating_url = searchParams.initiating_url;
   const page_key = randomUUID();
-  const error = params.error;
+  const error = searchParams.error;
 
   const loginUrl = `${env.UNBIND_API_AUTH_EXTERNAL_URL}/login`;
 

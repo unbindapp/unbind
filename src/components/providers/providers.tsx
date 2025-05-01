@@ -16,7 +16,7 @@ export default async function Providers({ children }: Readonly<{ children: React
   const authBasePath = new URL(authUrl || "https://unbind.app").pathname;
 
   return (
-    <AppConfigProvider apiUrl={env.UNBIND_API_EXTERNAL_URL} siteUrl={env.SITE_URL}>
+    <AppConfigProvider apiUrl={env.UNBIND_API_EXTERNAL_URL}>
       <TRPCReactProvider>
         <SessionProvider basePath={authBasePath}>
           <AsyncPushProvider>
