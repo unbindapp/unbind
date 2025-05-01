@@ -3,6 +3,7 @@
 import { signIn, signOut } from "@/server/auth/auth";
 import { apiServer } from "@/server/trpc/setup/server";
 import { cookies, headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export async function oAuthSignInAction({
   providerId,
@@ -119,9 +120,9 @@ export async function createFirstAccountAction({
   );
 }
 
-export async function signOutAction({ redirectPathname }: { redirectPathname?: string }) {
+export async function signOutAction() {
   await signOut({
     redirect: true,
-    redirectTo: redirectPathname ?? "/",
+    redirectTo: "/sign-in",
   });
 }

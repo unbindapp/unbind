@@ -7,12 +7,11 @@ import { LoaderIcon } from "lucide-react";
 import { useActionState } from "react";
 
 type TProps = {
-  redirectPathname?: string;
   className?: string;
 };
 
-export default function SignOutButton({ redirectPathname, className }: TProps) {
-  const [, action, isPending] = useActionState(() => signOutAction({ redirectPathname }), null);
+export default function SignOutButton({ className }: TProps) {
+  const [, action, isPending] = useActionState(() => signOutAction(), null);
 
   return (
     <form className={cn("w-full", className)} action={action}>
