@@ -73,7 +73,9 @@ export default function SignInForm({
           layout="label-included"
           type="password"
         />
-        <Button isPending={isPending || hasHiddenForm || isHiddenFormSubmitting}>Sign In</Button>
+        <Button className="mt-2" isPending={isPending || hasHiddenForm || isHiddenFormSubmitting}>
+          Sign In
+        </Button>
         {error && <ErrorLine message={errorCodeToText(error)} />}
       </form>
       {/* Hidden form */}

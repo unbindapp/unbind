@@ -58,13 +58,13 @@ function Input({
               variant,
               fadeOnDisabled,
             }),
-            "peer relative pt-5.75 pb-1.75",
+            "peer relative pt-5.5 pb-1.5",
             className,
           )}
           {...props}
           placeholder=" "
         />
-        <label className="text-muted-foreground pointer-events-none absolute top-1/2 left-3.25 flex w-full origin-top-left -translate-y-[calc(100%-0.25rem)] scale-75 items-center justify-start gap-2 overflow-hidden leading-tight font-medium transition peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100 peer-focus:-translate-y-[calc(100%-0.25rem)] peer-focus:scale-75">
+        <label className="text-muted-foreground pointer-events-none absolute top-1/2 left-3.25 flex w-full origin-top-left -translate-y-[calc(100%-0.1rem)] scale-75 items-center justify-start gap-2 overflow-hidden leading-tight font-medium transition peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100 peer-focus:-translate-y-[calc(100%-0.1rem)] peer-focus:scale-75">
           {Icon && <Icon className="size-4.5 shrink-0" />}
           <p className="min-w-0 shrink truncate">{inputTitle}</p>
         </label>
