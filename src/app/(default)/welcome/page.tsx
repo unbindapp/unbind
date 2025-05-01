@@ -1,4 +1,4 @@
-import SignInForm from "@/app/(default)/sign-in/_components/sign-in-form";
+import CreateAccountForm from "@/app/(default)/welcome/_components/create-account-form";
 import Logo from "@/components/icons/logo";
 import { env } from "@/lib/env";
 import { auth } from "@/server/auth/auth";
@@ -71,9 +71,11 @@ export default async function Page({ searchParams }: TProps) {
       <div className="flex w-full max-w-sm flex-col items-center justify-center">
         <div className="flex w-full flex-col items-center justify-center gap-1.5">
           <Logo variant="full" className="h-auto w-full max-w-36" />
-          <p className="text-muted-foreground w-full px-2 text-center">Sign in to continue</p>
+          <p className="text-muted-foreground w-full px-2 text-center leading-tight">
+            Create an account to start
+          </p>
         </div>
-        <SignInForm
+        <CreateAccountForm
           className="mt-5"
           redirectPathname={redirectPathname}
           formValues={formValues}

@@ -5,6 +5,7 @@ import { z } from "zod";
 
 const isRefreshingToken = new Map<string, Promise<JWT>>();
 const signInPathname = "/sign-in";
+const welcomePathname = "/welcome";
 
 const isProd = process.env.NODE_ENV === "production";
 const sessionCookieName = isProd ? "__Secure-authjs.session-token" : "authjs.session-token";
@@ -53,7 +54,10 @@ export const middleware: NextMiddleware = async (request: NextRequest) => {
   const homeUrl = new URL("/", request.url);
 
   if (!token) {
-    if (request.nextUrl.pathname === signInPathname) {
+    if (
+      request.nextUrl.pathname === signInPathname ||
+      request.nextUrl.pathname === welcomePathname
+    ) {
       return response;
     }
     return NextResponse.redirect(signInUrl);

@@ -1,6 +1,7 @@
 "use server";
 
 import { signIn, signOut } from "@/server/auth/auth";
+import { apiServer } from "@/server/trpc/setup/server";
 import { cookies } from "next/headers";
 
 export async function oAuthSignInAction({
@@ -26,6 +27,48 @@ export async function oAuthSignInAction({
       maxAge: 60 * 60 * 1,
     });
   }
+  await signIn(providerId, {
+    redirectTo: redirectPathname ?? "/",
+  });
+}
+
+export async function createAccountAction({
+  providerId,
+  redirectPathname,
+  email,
+  password,
+}: {
+  providerId: string;
+  redirectPathname?: string;
+  email: string;
+  password: string;
+}) {
+  const cookieStore = await cookies();
+  const emailBase64 = Buffer.from(email).toString("base64");
+  const passwordBase64 = Buffer.from(password).toString("base64");
+  const credentials = `${emailBase64}:${passwordBase64}`;
+
+  const { data, error } = await apiServer.setup.createUser({
+    email,
+    password,
+  });
+
+  if (error) {
+    return {
+      error,
+    };
+  }
+
+  cookieStore.set("unbind-credentials", credentials, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+    path: "/",
+    maxAge: 60 * 60 * 1,
+  });
+
+  console.log("data", data);
+
   await signIn(providerId, {
     redirectTo: redirectPathname ?? "/",
   });
