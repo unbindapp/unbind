@@ -14,7 +14,8 @@ export const env = createEnv({
     AUTH_SECRET: z.string(),
     AUTH_URL: z.string().url(),
     SITE_URL: z.string().url(),
-    UNBIND_API_PUBLIC_URL: z.string().url(),
+    UNBIND_API_EXTERNAL_URL: z.string().url(),
+    UNBIND_API_INTERNAL_URL: z.string().url(),
   },
 
   /**
@@ -36,7 +37,8 @@ export const env = createEnv({
     AUTH_SECRET: process.env.AUTH_SECRET,
     AUTH_URL: process.env.AUTH_URL,
     SITE_URL: process.env.SITE_URL,
-    UNBIND_API_PUBLIC_URL: process.env.UNBIND_API_PUBLIC_URL,
+    UNBIND_API_EXTERNAL_URL: process.env.UNBIND_API_EXTERNAL_URL,
+    UNBIND_API_INTERNAL_URL: process.env.UNBIND_API_INTERNAL_URL,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

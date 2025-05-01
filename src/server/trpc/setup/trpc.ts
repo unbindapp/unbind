@@ -34,7 +34,7 @@ export const createTRPCContext = async (opts: { headers: Headers; skipAuth?: boo
   }
 
   const goClient: ReturnType<typeof createClient> = createClient({
-    apiUrl: env.UNBIND_API_PUBLIC_URL,
+    apiUrl: env.UNBIND_API_INTERNAL_URL,
     accessToken: session?.access_token || "",
   });
 
