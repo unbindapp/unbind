@@ -13,11 +13,12 @@ export default function UserAvatarOrSignIn({ session }: TProps) {
   const pathname = usePathname();
   const isSignInPage = pathname === "/sign-in";
   const isWelcomePage = pathname === "/welcome";
+  const isApiPathname = pathname.startsWith("/api/");
 
   return (
     <>
       {session && <UserAvatar email={session.user.email} />}
-      {!session && !isSignInPage && !isWelcomePage && (
+      {!session && !isSignInPage && !isWelcomePage && !isApiPathname && (
         <div className="-mr-0.5 flex items-center justify-end">
           <LinkButton size="sm" href="/sign-in">
             Sign In
