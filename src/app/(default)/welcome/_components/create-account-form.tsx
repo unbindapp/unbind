@@ -1,7 +1,7 @@
 "use client";
 
 import { TFormValues } from "@/app/(default)/sign-in/page";
-import { createAccountAction } from "@/components/auth/actions";
+import { createFirstAccountAction } from "@/components/auth/actions";
 import ErrorLine from "@/components/error-line";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +37,7 @@ export default function CreateAccountForm({
   const [password, setPassword] = useState<string>(hasHiddenForm ? formValues.password || "" : "");
 
   const [state, action, isPending] = useActionState(
-    () => createAccountAction({ providerId: "dex", redirectPathname, email, password }),
+    () => createFirstAccountAction({ providerId: "dex", redirectPathname, email, password }),
     null,
   );
 

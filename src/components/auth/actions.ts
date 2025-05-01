@@ -2,7 +2,7 @@
 
 import { signIn, signOut } from "@/server/auth/auth";
 import { apiServer } from "@/server/trpc/setup/server";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 
 export async function oAuthSignInAction({
   providerId,
@@ -27,12 +27,31 @@ export async function oAuthSignInAction({
       maxAge: 60 * 60 * 1,
     });
   }
-  await signIn(providerId, {
-    redirectTo: redirectPathname ?? "/",
-  });
+
+  const heads = await headers();
+  const referer = heads.get("referer");
+
+  if (!referer) {
+    return {
+      error: {
+        code: "NO_REFERER",
+        message: "No referer header found.",
+      },
+    };
+  }
+
+  await signIn(
+    providerId,
+    {
+      redirectTo: redirectPathname ?? "/",
+    },
+    {
+      initiating_url: referer,
+    },
+  );
 }
 
-export async function createAccountAction({
+export async function createFirstAccountAction({
   providerId,
   redirectPathname,
   email,
@@ -43,6 +62,18 @@ export async function createAccountAction({
   email: string;
   password: string;
 }) {
+  const heads = await headers();
+  const referer = heads.get("referer");
+
+  if (!referer) {
+    return {
+      error: {
+        code: "NO_REFERER",
+        message: "No referer header found.",
+      },
+    };
+  }
+
   const cookieStore = await cookies();
   const emailBase64 = Buffer.from(email).toString("base64");
   const passwordBase64 = Buffer.from(password).toString("base64");
@@ -59,6 +90,8 @@ export async function createAccountAction({
     };
   }
 
+  console.log("data", data);
+
   cookieStore.set("unbind-credentials", credentials, {
     httpOnly: true,
     secure: true,
@@ -67,11 +100,15 @@ export async function createAccountAction({
     maxAge: 60 * 60 * 1,
   });
 
-  console.log("data", data);
-
-  await signIn(providerId, {
-    redirectTo: redirectPathname ?? "/",
-  });
+  await signIn(
+    providerId,
+    {
+      redirectTo: redirectPathname ?? "/",
+    },
+    {
+      initiating_url: referer,
+    },
+  );
 }
 
 export async function signOutAction({ redirectPathname }: { redirectPathname?: string }) {

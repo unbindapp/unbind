@@ -36,7 +36,7 @@ export default function SignInForm({
   const [email, setEmail] = useState<string>(hasHiddenForm ? formValues.username || "" : "");
   const [password, setPassword] = useState<string>(hasHiddenForm ? formValues.password || "" : "");
 
-  const [, action, isPending] = useActionState(
+  const [state, action, isPending] = useActionState(
     () => oAuthSignInAction({ providerId: "dex", redirectPathname, email, password }),
     null,
   );
@@ -77,6 +77,7 @@ export default function SignInForm({
           Sign In
         </Button>
         {error && <ErrorLine message={errorCodeToText(error)} />}
+        {state?.error && <ErrorLine message={errorCodeToText(state.error.code)} />}
       </form>
       {/* Hidden form */}
       {hasHiddenForm && (
@@ -102,6 +103,8 @@ export default function SignInForm({
 
 function errorCodeToText(error: string) {
   switch (error) {
+    case "NO_REFERER":
+      return "No referer header found.";
     case "invalid_request":
       return "Invalid request.";
     case "invalid_client":
