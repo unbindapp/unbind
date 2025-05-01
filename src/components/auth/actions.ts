@@ -79,7 +79,7 @@ export async function createFirstAccountAction({
   const passwordBase64 = Buffer.from(password).toString("base64");
   const credentials = `${emailBase64}:${passwordBase64}`;
 
-  const { data, error } = await apiServer.setup.createUser({
+  const { error } = await apiServer.setup.createUser({
     email,
     password,
   });
@@ -89,8 +89,6 @@ export async function createFirstAccountAction({
       error,
     };
   }
-
-  console.log("data", data);
 
   cookieStore.set("unbind-credentials", credentials, {
     httpOnly: true,
