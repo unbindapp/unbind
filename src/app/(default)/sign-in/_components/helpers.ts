@@ -53,7 +53,7 @@ export async function getSignInLikePageParams({
   const page_key = randomUUID();
   const error = searchParams.error;
 
-  const loginUrl = `${env.UNBIND_API_AUTH_EXTERNAL_URL}/login`;
+  const loginUrl = `${env.UNBIND_API_EXTERNAL_URL}/auth/login`;
 
   const formValues: TFormValues = {
     username,
