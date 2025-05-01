@@ -137,7 +137,7 @@ export const CreateEnvironmentResponseBodySchema = z
   })
   .strip();
 
-export const CreateProjectInputBodySchema = z
+export const CreateProjectInputSchema = z
   .object({
     description: z.string().nullable().optional(),
     name: z.string(),
@@ -165,6 +165,34 @@ export const ProjectResponseSchema = z
 export const CreateProjectResponseBodySchema = z
   .object({
     data: ProjectResponseSchema,
+  })
+  .strip();
+
+export const S3BucketSchema = z
+  .object({
+    bucket_region: z.string(),
+    created_at: z.string().datetime(),
+    name: z.string(),
+  })
+  .strip();
+
+export const S3ResponseSchema = z
+  .object({
+    access_key: z.string(),
+    buckets: z.array(S3BucketSchema),
+    created_at: z.string().datetime(),
+    endpoint: z.string(),
+    id: z.string(),
+    name: z.string(),
+    region: z.string(),
+    secret_key: z.string(),
+    updated_at: z.string().datetime(),
+  })
+  .strip();
+
+export const CreateS3OutputBodySchema = z
+  .object({
+    data: S3ResponseSchema,
   })
   .strip();
 
@@ -216,6 +244,8 @@ export const CreateServiceInputSchema = z
     repository_name: z.string().optional(),
     repository_owner: z.string().optional(),
     run_command: z.string().optional(),
+    s3_backup_bucket: z.string().optional(),
+    s3_backup_source_id: z.string().optional(),
     team_id: z.string(),
     type: ServiceTypeSchema, // Type of service, e.g. 'github', 'docker-image'
   })
@@ -320,13 +350,6 @@ export const CreateWebhookResponseBodySchema = z
   })
   .strip();
 
-export const DataStructSchema = z
-  .object({
-    deleted: z.boolean(),
-    id: z.string(),
-  })
-  .strip();
-
 export const DatabaseConfigurableSchema = z
   .object({
     default: z.string(),
@@ -348,9 +371,16 @@ export const DeleteEnvironmentInputBodySchema = z
   })
   .strip();
 
+export const DeletedResponseSchema = z
+  .object({
+    deleted: z.boolean(),
+    id: z.string(),
+  })
+  .strip();
+
 export const DeleteEnvironmentResponseBodySchema = z
   .object({
-    data: DataStructSchema,
+    data: DeletedResponseSchema,
   })
   .strip();
 
@@ -363,7 +393,20 @@ export const DeleteProjectInputBodySchema = z
 
 export const DeleteProjectResponseBodySchema = z
   .object({
-    data: DataStructSchema,
+    data: DeletedResponseSchema,
+  })
+  .strip();
+
+export const DeleteS3SourceByIDInputBodySchema = z
+  .object({
+    id: z.string(),
+    team_id: z.string(),
+  })
+  .strip();
+
+export const DeleteS3SourceByIDOutputBodySchema = z
+  .object({
+    data: DeletedResponseSchema,
   })
   .strip();
 
@@ -378,7 +421,7 @@ export const DeleteServiceInputBodySchema = z
 
 export const DeleteServiceResponseBodySchema = z
   .object({
-    data: DataStructSchema,
+    data: DeletedResponseSchema,
   })
   .strip();
 
@@ -411,7 +454,7 @@ export const DeleteWebhookInputBodySchema = z
 
 export const DeleteWebhookResponseBodySchema = z
   .object({
-    data: DataStructSchema,
+    data: DeletedResponseSchema,
   })
   .strip();
 
@@ -566,6 +609,12 @@ export const GetNodeMetricsResponseBodySchema = z
 export const GetProjectResponseBodySchema = z
   .object({
     data: ProjectResponseSchema,
+  })
+  .strip();
+
+export const GetS3SourceByIDOutputBodySchema = z
+  .object({
+    data: S3ResponseSchema,
   })
   .strip();
 
@@ -890,6 +939,12 @@ export const ListProjectResponseBodySchema = z
   })
   .strip();
 
+export const ListS3SourceOutputBodySchema = z
+  .object({
+    data: z.array(S3ResponseSchema),
+  })
+  .strip();
+
 export const ListServiceResponseBodySchema = z
   .object({
     data: z.array(ServiceResponseSchema),
@@ -1018,6 +1073,24 @@ export const RestartServicesResponseBodySchema = z
   })
   .strip();
 
+export const S3BackendCreateInputSchema = z
+  .object({
+    access_key_id: z.string(),
+    endpoint: z.string(),
+    name: z.string(),
+    region: z.string(),
+    secret_key: z.string(),
+    team_id: z.string(),
+  })
+  .strip();
+
+export const S3TestResultSchema = z
+  .object({
+    error: z.string().optional(),
+    valid: z.boolean(),
+  })
+  .strip();
+
 export const SystemSettingsResponseSchema = z
   .object({
     buildkit_settings: BuildkitSettingsSchema.optional(),
@@ -1072,6 +1145,21 @@ export const SystemSettingUpdateInputSchema = z
 export const TeamResponseBodySchema = z
   .object({
     data: z.array(TeamResponseSchema),
+  })
+  .strip();
+
+export const TestS3AccessInputBodySchema = z
+  .object({
+    access_key_id: z.string(),
+    endpoint: z.string(),
+    region: z.string(),
+    secret_key: z.string(),
+  })
+  .strip();
+
+export const TestS3OutputBodySchema = z
+  .object({
+    data: S3TestResultSchema,
   })
   .strip();
 
@@ -1131,6 +1219,8 @@ export const UpdateServiceInputSchema = z
     project_id: z.string(),
     replicas: z.number().optional(),
     run_command: z.string().optional(),
+    s3_backup_bucket: z.string().optional(),
+    s3_backup_source_id: z.string().optional(),
     service_id: z.string(),
     team_id: z.string(),
   })
@@ -1273,9 +1363,12 @@ export type CreateBuildOutputBody = z.infer<typeof CreateBuildOutputBodySchema>;
 export type CreateEnvironmentInput = z.infer<typeof CreateEnvironmentInputSchema>;
 export type EnvironmentResponse = z.infer<typeof EnvironmentResponseSchema>;
 export type CreateEnvironmentResponseBody = z.infer<typeof CreateEnvironmentResponseBodySchema>;
-export type CreateProjectInputBody = z.infer<typeof CreateProjectInputBodySchema>;
+export type CreateProjectInput = z.infer<typeof CreateProjectInputSchema>;
 export type ProjectResponse = z.infer<typeof ProjectResponseSchema>;
 export type CreateProjectResponseBody = z.infer<typeof CreateProjectResponseBodySchema>;
+export type S3Bucket = z.infer<typeof S3BucketSchema>;
+export type S3Response = z.infer<typeof S3ResponseSchema>;
+export type CreateS3OutputBody = z.infer<typeof CreateS3OutputBodySchema>;
 export type ServiceBuilder = z.infer<typeof ServiceBuilderSchema>;
 export type DatabaseConfig = z.infer<typeof DatabaseConfigSchema>;
 export type HostSpec = z.infer<typeof HostSpecSchema>;
@@ -1294,13 +1387,15 @@ export type WebhookProjectEvent = z.infer<typeof WebhookProjectEventSchema>;
 export type WebhookType = z.infer<typeof WebhookTypeSchema>;
 export type WebhookResponse = z.infer<typeof WebhookResponseSchema>;
 export type CreateWebhookResponseBody = z.infer<typeof CreateWebhookResponseBodySchema>;
-export type DataStruct = z.infer<typeof DataStructSchema>;
 export type DatabaseConfigurable = z.infer<typeof DatabaseConfigurableSchema>;
 export type DatabaseConfigurables = z.infer<typeof DatabaseConfigurablesSchema>;
 export type DeleteEnvironmentInputBody = z.infer<typeof DeleteEnvironmentInputBodySchema>;
+export type DeletedResponse = z.infer<typeof DeletedResponseSchema>;
 export type DeleteEnvironmentResponseBody = z.infer<typeof DeleteEnvironmentResponseBodySchema>;
 export type DeleteProjectInputBody = z.infer<typeof DeleteProjectInputBodySchema>;
 export type DeleteProjectResponseBody = z.infer<typeof DeleteProjectResponseBodySchema>;
+export type DeleteS3SourceByIDInputBody = z.infer<typeof DeleteS3SourceByIDInputBodySchema>;
+export type DeleteS3SourceByIDOutputBody = z.infer<typeof DeleteS3SourceByIDOutputBodySchema>;
 export type DeleteServiceInputBody = z.infer<typeof DeleteServiceInputBodySchema>;
 export type DeleteServiceResponseBody = z.infer<typeof DeleteServiceResponseBodySchema>;
 export type VariableDeleteInput = z.infer<typeof VariableDeleteInputSchema>;
@@ -1327,6 +1422,7 @@ export type NodeMetricsMapEntry = z.infer<typeof NodeMetricsMapEntrySchema>;
 export type NodeMetricsResult = z.infer<typeof NodeMetricsResultSchema>;
 export type GetNodeMetricsResponseBody = z.infer<typeof GetNodeMetricsResponseBodySchema>;
 export type GetProjectResponseBody = z.infer<typeof GetProjectResponseBodySchema>;
+export type GetS3SourceByIDOutputBody = z.infer<typeof GetS3SourceByIDOutputBodySchema>;
 export type GetServiceResponseBody = z.infer<typeof GetServiceResponseBodySchema>;
 export type TeamResponse = z.infer<typeof TeamResponseSchema>;
 export type GetTeamResponseBody = z.infer<typeof GetTeamResponseBodySchema>;
@@ -1367,6 +1463,7 @@ export type PodPhase = z.infer<typeof PodPhaseSchema>;
 export type PodContainerStatus = z.infer<typeof PodContainerStatusSchema>;
 export type ListInstancesResponseBody = z.infer<typeof ListInstancesResponseBodySchema>;
 export type ListProjectResponseBody = z.infer<typeof ListProjectResponseBodySchema>;
+export type ListS3SourceOutputBody = z.infer<typeof ListS3SourceOutputBodySchema>;
 export type ListServiceResponseBody = z.infer<typeof ListServiceResponseBodySchema>;
 export type ListWebhooksResponseBody = z.infer<typeof ListWebhooksResponseBodySchema>;
 export type LogMetadata = z.infer<typeof LogMetadataSchema>;
@@ -1392,6 +1489,8 @@ export type ResolveVariableReferenceResponseBody = z.infer<
 export type RestartInstancesInputBody = z.infer<typeof RestartInstancesInputBodySchema>;
 export type Restarted = z.infer<typeof RestartedSchema>;
 export type RestartServicesResponseBody = z.infer<typeof RestartServicesResponseBodySchema>;
+export type S3BackendCreateInput = z.infer<typeof S3BackendCreateInputSchema>;
+export type S3TestResult = z.infer<typeof S3TestResultSchema>;
 export type SystemSettingsResponse = z.infer<typeof SystemSettingsResponseSchema>;
 export type SettingsResponseBody = z.infer<typeof SettingsResponseBodySchema>;
 export type SetupData = z.infer<typeof SetupDataSchema>;
@@ -1402,6 +1501,8 @@ export type SystemMeta = z.infer<typeof SystemMetaSchema>;
 export type SystemMetaResponseBody = z.infer<typeof SystemMetaResponseBodySchema>;
 export type SystemSettingUpdateInput = z.infer<typeof SystemSettingUpdateInputSchema>;
 export type TeamResponseBody = z.infer<typeof TeamResponseBodySchema>;
+export type TestS3AccessInputBody = z.infer<typeof TestS3AccessInputBodySchema>;
+export type TestS3OutputBody = z.infer<typeof TestS3OutputBodySchema>;
 export type UpdatServiceResponseBody = z.infer<typeof UpdatServiceResponseBodySchema>;
 export type UpdateEnvironmentInput = z.infer<typeof UpdateEnvironmentInputSchema>;
 export type UpdateEnvironmentResponseBody = z.infer<typeof UpdateEnvironmentResponseBodySchema>;
@@ -1598,6 +1699,21 @@ export const list_serviceQuerySchema = z
     team_id: z.string(),
     project_id: z.string(),
     environment_id: z.string(),
+  })
+  .passthrough();
+
+export const get_s3_source_by_idQuerySchema = z
+  .object({
+    id: z.string(),
+    team_id: z.string(),
+    with_buckets: z.boolean().optional(),
+  })
+  .passthrough();
+
+export const list_s3_sourcesQuerySchema = z
+  .object({
+    team_id: z.string(),
+    with_buckets: z.boolean().optional(),
   })
   .passthrough();
 
@@ -2744,7 +2860,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
     },
     projects: {
       create: async (
-        params: CreateProjectInputBody,
+        params: CreateProjectInput,
         fetchOptions?: RequestInit,
       ): Promise<CreateProjectResponseBody> => {
         try {
@@ -2761,7 +2877,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             },
             ...fetchOptions,
           };
-          const validatedBody = CreateProjectInputBodySchema.parse(params);
+          const validatedBody = CreateProjectInputSchema.parse(params);
           options.body = JSON.stringify(validatedBody);
           const response = await fetch(url.toString(), options);
           if (!response.ok) {
@@ -3386,6 +3502,222 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           console.error('Error in API request:', error);
           throw error;
         }
+      },
+    },
+    storage: {
+      s3: {
+        create: async (
+          params: S3BackendCreateInput,
+          fetchOptions?: RequestInit,
+        ): Promise<CreateS3OutputBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/storage/s3/create`);
+
+            const options: RequestInit = {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+            const validatedBody = S3BackendCreateInputSchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+              console.log(`Request body is:`, validatedBody);
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return CreateS3OutputBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+        delete: async (
+          params: DeleteS3SourceByIDInputBody,
+          fetchOptions?: RequestInit,
+        ): Promise<DeleteS3SourceByIDOutputBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/storage/s3/delete`);
+
+            const options: RequestInit = {
+              method: 'DELETE',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+            const validatedBody = DeleteS3SourceByIDInputBodySchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+              console.log(`Request body is:`, validatedBody);
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return DeleteS3SourceByIDOutputBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+        get: async (
+          params: z.infer<typeof get_s3_source_by_idQuerySchema>,
+          fetchOptions?: RequestInit,
+        ): Promise<GetS3SourceByIDOutputBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/storage/s3/get`);
+            const validatedQuery = get_s3_source_by_idQuerySchema.parse(params);
+            const queryKeys = ['id', 'team_id', 'with_buckets'];
+            queryKeys.forEach((key) => {
+              const value = validatedQuery[key as keyof typeof validatedQuery];
+              if (value !== undefined && value !== null) {
+                url.searchParams.append(key, String(value));
+              }
+            });
+            const options: RequestInit = {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return GetS3SourceByIDOutputBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+        list: async (
+          params: z.infer<typeof list_s3_sourcesQuerySchema>,
+          fetchOptions?: RequestInit,
+        ): Promise<ListS3SourceOutputBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/storage/s3/list`);
+            const validatedQuery = list_s3_sourcesQuerySchema.parse(params);
+            const queryKeys = ['team_id', 'with_buckets'];
+            queryKeys.forEach((key) => {
+              const value = validatedQuery[key as keyof typeof validatedQuery];
+              if (value !== undefined && value !== null) {
+                url.searchParams.append(key, String(value));
+              }
+            });
+            const options: RequestInit = {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return ListS3SourceOutputBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+        test: async (
+          params: TestS3AccessInputBody,
+          fetchOptions?: RequestInit,
+        ): Promise<TestS3OutputBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/storage/s3/test`);
+
+            const options: RequestInit = {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+            const validatedBody = TestS3AccessInputBodySchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+              console.log(`Request body is:`, validatedBody);
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return TestS3OutputBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
       },
     },
     system: {
