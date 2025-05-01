@@ -13,7 +13,8 @@ export const setupRouter = createTRPCRouter({
     )
     .mutation(async function ({ input: { email, password }, ctx: { goClient } }) {
       const statusResult = await goClient.setup.status();
-      if (statusResult.data.is_setup) {
+      const isBootstrapped = statusResult.data.is_bootstrapped;
+      if (isBootstrapped) {
         return {
           error: {
             code: "SETUP_ALREADY_COMPLETED",

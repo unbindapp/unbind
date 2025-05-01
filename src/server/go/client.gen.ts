@@ -1107,7 +1107,7 @@ export const SettingsResponseBodySchema = z
 
 export const SetupDataSchema = z
   .object({
-    is_setup: z.boolean(),
+    is_bootstrapped: z.boolean(),
   })
   .strip();
 
