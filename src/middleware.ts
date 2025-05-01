@@ -1,3 +1,4 @@
+import { apiServer } from "@/server/trpc/setup/server";
 import { jwtDecode } from "jwt-decode";
 import { encode, getToken, JWT } from "next-auth/jwt";
 import { NextMiddleware, NextRequest, NextResponse } from "next/server";
@@ -51,13 +52,21 @@ export const middleware: NextMiddleware = async (request: NextRequest) => {
 
   let response = NextResponse.next();
   const signInUrl = new URL(signInPathname, request.url);
+  const welcomeUrl = new URL(welcomePathname, request.url);
   const homeUrl = new URL("/", request.url);
 
   if (!token) {
-    if (
-      request.nextUrl.pathname === signInPathname ||
-      request.nextUrl.pathname === welcomePathname
-    ) {
+    // Initial setup
+    const initialSetupResult = await apiServer.setup.status({});
+    if (initialSetupResult.data.is_setup) {
+      if (request.nextUrl.pathname === welcomePathname) {
+        return response;
+      }
+      return NextResponse.redirect(welcomeUrl);
+    }
+
+    // Normal flow
+    if (request.nextUrl.pathname === signInPathname) {
       return response;
     }
     return NextResponse.redirect(signInUrl);
