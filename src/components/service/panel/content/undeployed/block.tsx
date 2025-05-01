@@ -5,7 +5,7 @@ import { Children, cloneElement, FC, isValidElement, ReactNode } from "react";
 
 export function Block({ children }: { children: ReactNode }) {
   return (
-    <div className="-mx-2 -mt-1 flex w-[calc(100%+1rem)] flex-col gap-4 md:-mx-3 md:w-[calc(100%+1.5rem)] md:flex-row md:gap-0">
+    <div className="-mx-2 -mt-1 flex w-[calc(100%+1rem)] flex-col gap-4 md:-mx-2.5 md:w-[calc(100%+1.25rem)] md:flex-row md:gap-0">
       {children}
     </div>
   );
@@ -34,7 +34,7 @@ export function BlockItem({ className, children }: { className?: string; childre
       isValidElement(child) && typeof child.type === "function" && child.type === BlockItemContent,
   );
   return (
-    <div className={cn("flex w-full flex-col gap-1 px-2 md:w-1/2 md:px-3", className)}>
+    <div className={cn("flex w-full flex-col gap-1 px-2 md:w-1/2 md:px-2.5", className)}>
       {Header}
       {Content}
     </div>
