@@ -27,19 +27,9 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
 
   const environmentCount = !isPlaceholder ? environments.length : 1;
 
-  if (!isPlaceholder && !defaultEnvironment)
-    return (
-      <li className={cn("text-destructive flex w-full flex-col p-1", className)}>
-        <div className="bg-destructive/10 border-destructive/10 min-h-36 rounded-xl border px-5 py-3.5 font-medium">
-          {`Couldn't find default environment`}
-        </div>
-      </li>
-    );
-
-  const href =
-    !isPlaceholder && defaultEnvironment
-      ? `${project.team_id}/project/${project.id}?environment=${defaultEnvironment.id}`
-      : "";
+  const href = !isPlaceholder
+    ? `${project.team_id}/project/${project.id}?environment=${defaultEnvironment?.id || ""}`
+    : "";
 
   return (
     <li
