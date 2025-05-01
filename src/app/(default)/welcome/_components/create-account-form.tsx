@@ -105,6 +105,8 @@ function errorCodeToText(error: string) {
   switch (error) {
     case "SETUP_ALREADY_COMPLETED":
       return "Setup is already completed.";
+    case "USER_CREATION_FAILED":
+      return "Failed to create user.";
     case "invalid_request":
       return "Invalid request.";
     case "invalid_client":

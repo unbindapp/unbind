@@ -79,14 +79,24 @@ export async function createFirstAccountAction({
   const passwordBase64 = Buffer.from(password).toString("base64");
   const credentials = `${emailBase64}:${passwordBase64}`;
 
-  const { error } = await apiServer.setup.createUser({
-    email,
-    password,
-  });
+  try {
+    const { error } = await apiServer.setup.createUser({
+      email,
+      password,
+    });
 
-  if (error) {
+    if (error) {
+      return {
+        error,
+      };
+    }
+  } catch (error) {
+    console.log("Error creating user:", error);
     return {
-      error,
+      error: {
+        code: "USER_CREATION_FAILED",
+        message: "Failed to create user.",
+      },
     };
   }
 

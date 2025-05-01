@@ -58,7 +58,7 @@ export const middleware: NextMiddleware = async (request: NextRequest) => {
   if (!token) {
     // Initial setup
     const initialSetupResult = await apiServer.setup.status({});
-    if (initialSetupResult.data.is_setup) {
+    if (!initialSetupResult.data.is_setup) {
       if (request.nextUrl.pathname === welcomePathname) {
         return response;
       }
