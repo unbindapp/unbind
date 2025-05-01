@@ -13,12 +13,12 @@ export const setupRouter = createTRPCRouter({
     )
     .mutation(async function ({ input: { email, password }, ctx: { goClient } }) {
       const statusResult = await goClient.setup.status();
-      const isBootstrapped = statusResult.data.is_bootstrapped;
-      if (isBootstrapped) {
+      const is_first_user_created = statusResult.data.is_first_user_created;
+      if (is_first_user_created) {
         return {
           error: {
-            code: "SETUP_ALREADY_COMPLETED",
-            message: "Setup is already completed.",
+            code: "INITIAL_USER_ALREADY_EXISTS",
+            message: "Initial user already exists.",
           },
         };
       }

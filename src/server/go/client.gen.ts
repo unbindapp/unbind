@@ -32,16 +32,6 @@ export const BuildkitSettingsSchema = z
   })
   .strip();
 
-export const CallbackResponseBodySchema = z
-  .object({
-    access_token: z.string(),
-    expiry: z.string().datetime(),
-    id_token: z.string(),
-    refresh_token: z.string(),
-    token_type: z.string(),
-  })
-  .strip();
-
 export const ContainerStateSchema = z.enum(['Running', 'Waiting', 'Terminated']);
 
 export const ContainerStatusSchema = z
@@ -995,6 +985,20 @@ export const LogTypeSchema = z.enum([
   'build',
 ]);
 
+export const LoginFormSchema = z
+  .object({
+    client_id: z.string(),
+    initiating_url: z.string(),
+    page_key: z.string(),
+    password: z.string(),
+    redirect_uri: z.string(),
+    response_type: z.string(),
+    scope: z.string(),
+    state: z.string(),
+    username: z.string(),
+  })
+  .strip();
+
 export const LokiDirectionSchema = z.enum(['forward', 'backward']);
 
 export const UserAPIResponseSchema = z
@@ -1108,6 +1112,7 @@ export const SettingsResponseBodySchema = z
 export const SetupDataSchema = z
   .object({
     is_bootstrapped: z.boolean(),
+    is_first_user_created: z.boolean(),
   })
   .strip();
 
@@ -1352,7 +1357,6 @@ export type VariableReferenceSourceType = z.infer<typeof VariableReferenceSource
 export type VariableReferenceType = z.infer<typeof VariableReferenceTypeSchema>;
 export type AvailableVariableReference = z.infer<typeof AvailableVariableReferenceSchema>;
 export type BuildkitSettings = z.infer<typeof BuildkitSettingsSchema>;
-export type CallbackResponseBody = z.infer<typeof CallbackResponseBodySchema>;
 export type ContainerState = z.infer<typeof ContainerStateSchema>;
 export type ContainerStatus = z.infer<typeof ContainerStatusSchema>;
 export type CreateBuildInputBody = z.infer<typeof CreateBuildInputBodySchema>;
@@ -1471,6 +1475,7 @@ export type LogEvent = z.infer<typeof LogEventSchema>;
 export type LogEventsMessageType = z.infer<typeof LogEventsMessageTypeSchema>;
 export type LogEvents = z.infer<typeof LogEventsSchema>;
 export type LogType = z.infer<typeof LogTypeSchema>;
+export type LoginForm = z.infer<typeof LoginFormSchema>;
 export type LokiDirection = z.infer<typeof LokiDirectionSchema>;
 export type UserAPIResponse = z.infer<typeof UserAPIResponseSchema>;
 export type MeResponseBody = z.infer<typeof MeResponseBodySchema>;
@@ -1523,12 +1528,6 @@ export type VariablesResponseBody = z.infer<typeof VariablesResponseBodySchema>;
 export type WebhookCreateInput = z.infer<typeof WebhookCreateInputSchema>;
 export type WebhookEvent = z.infer<typeof WebhookEventSchema>;
 export type WebhookUpdateInput = z.infer<typeof WebhookUpdateInputSchema>;
-
-export const callbackQuerySchema = z
-  .object({
-    code: z.string(),
-  })
-  .passthrough();
 
 export const get_deploymentQuerySchema = z
   .object({
@@ -1797,53 +1796,7 @@ export type ClientOptions = {
 export function createClient({ accessToken, apiUrl }: ClientOptions) {
   return {
     auth: {
-      callback: async (
-        params: z.infer<typeof callbackQuerySchema>,
-        fetchOptions?: RequestInit,
-      ): Promise<CallbackResponseBody> => {
-        try {
-          if (!apiUrl || typeof apiUrl !== 'string') {
-            throw new Error('API URL is undefined or not a string');
-          }
-          const url = new URL(`${apiUrl}/auth/callback`);
-          const validatedQuery = callbackQuerySchema.parse(params);
-          const queryKeys = ['code'];
-          queryKeys.forEach((key) => {
-            const value = validatedQuery[key as keyof typeof validatedQuery];
-            if (value !== undefined && value !== null) {
-              url.searchParams.append(key, String(value));
-            }
-          });
-          const options: RequestInit = {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
-            },
-            ...fetchOptions,
-          };
-
-          const response = await fetch(url.toString(), options);
-          if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-          }
-          const data = await response.json();
-          return CallbackResponseBodySchema.parse(data);
-        } catch (error) {
-          console.error('Error in API request:', error);
-          throw error;
-        }
-      },
-      login: async (params?: undefined, fetchOptions?: RequestInit) => {
+      login: async (params: LoginForm, fetchOptions?: RequestInit) => {
         try {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
@@ -1851,14 +1804,15 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           const url = new URL(`${apiUrl}/auth/login`);
 
           const options: RequestInit = {
-            method: 'GET',
+            method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
-
+          const validatedBody = LoginFormSchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
           const response = await fetch(url.toString(), options);
           if (!response.ok) {
             console.log(
@@ -1867,7 +1821,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             const data = await response.json();
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
-
+            console.log(`Request body is:`, validatedBody);
             throw new Error(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
             );

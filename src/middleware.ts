@@ -67,10 +67,7 @@ export const middleware: NextMiddleware = async (request: NextRequest) => {
     }
 
     // Normal flow
-    if (
-      request.nextUrl.pathname === signInPathname ||
-      request.nextUrl.pathname === welcomePathname
-    ) {
+    if (request.nextUrl.pathname === signInPathname) {
       return response;
     }
     return NextResponse.redirect(signInUrl);
