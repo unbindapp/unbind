@@ -13,7 +13,7 @@ import { cn } from "@/components/ui/utils";
 import { defaultAnimationMs } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TriangleAlertIcon } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { ReactNode, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
 type TDeleteType = "team" | "project" | "service";
@@ -71,6 +71,38 @@ function DeleteButton({
   onDialogClose: () => void;
   error: { message: string } | null;
 }) {
+  const buttonText = useMemo(() => getButtonText(type), [type]);
+
+  return (
+    <DeleteProjectTrigger
+      type={type}
+      deletingEntityName={deletingEntityName}
+      onSubmit={onSubmit}
+      onDialogClose={onDialogClose}
+      error={error}
+    >
+      <Button variant="destructive">{buttonText}</Button>
+    </DeleteProjectTrigger>
+  );
+}
+
+export function DeleteProjectTrigger({
+  type,
+  deletingEntityName,
+  onSubmit,
+  onDialogClose,
+  error,
+  description: descriptionProp,
+  children,
+}: {
+  type: TDeleteType;
+  deletingEntityName?: string;
+  onSubmit: () => Promise<void>;
+  onDialogClose: () => void;
+  error: { message: string } | null;
+  description?: string;
+  children: ReactNode;
+}) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const textToConfirm = deletingEntityName
@@ -78,7 +110,10 @@ function DeleteButton({
     : "Delete this project permanently";
 
   const title = useMemo(() => getDialogTitle(type), [type]);
-  const description = useMemo(() => getDialogDescription(type), [type]);
+  const description = useMemo(
+    () => (descriptionProp ? descriptionProp : getDialogDescription(type)),
+    [type, descriptionProp],
+  );
 
   const form = useAppForm({
     defaultValues: {
@@ -116,9 +151,7 @@ function DeleteButton({
         }
       }}
     >
-      <DialogTrigger asChild>
-        <Button variant="destructive">{title}</Button>
-      </DialogTrigger>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -183,6 +216,12 @@ function DeleteButton({
 }
 
 function getDialogTitle(type: TDeleteType) {
+  if (type === "service") return "Delete Service";
+  if (type === "project") return "Delete Project";
+  return "Delete Team";
+}
+
+function getButtonText(type: TDeleteType) {
   if (type === "service") return "Delete Service";
   if (type === "project") return "Delete Project";
   return "Delete Team";

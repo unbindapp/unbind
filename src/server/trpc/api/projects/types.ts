@@ -1,3 +1,4 @@
+import { AppRouterOutputs } from "@/server/trpc/api/root";
 import { z } from "zod";
 
 export const projectNameMinLength = 2;
@@ -18,3 +19,5 @@ export const ProjectUpdateFormSchema = z
       ),
   })
   .strip();
+
+export type TProjectShallow = AppRouterOutputs["projects"]["list"]["projects"][number];

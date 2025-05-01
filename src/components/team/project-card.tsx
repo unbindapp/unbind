@@ -1,12 +1,17 @@
 import BrandIcon from "@/components/icons/brand";
-import { LinkButton } from "@/components/ui/button";
+import { useProjectsUtils } from "@/components/project/projects-provider";
+import { useAsyncPush } from "@/components/providers/async-push-provider";
+import { DeleteProjectTrigger } from "@/components/settings/delete-card";
+import { Button, LinkButton, TButtonVariants } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import { AppRouterOutputs } from "@/server/trpc/api/root";
+import { TProjectShallow } from "@/server/trpc/api/projects/types";
+import { api } from "@/server/trpc/setup/client";
+import { ReactNode } from "react";
 
 type TProps = {
   className?: string;
 } & (
-  | { project: AppRouterOutputs["projects"]["list"]["projects"][number]; isPlaceholder?: never }
+  | { project: TProjectShallow; isPlaceholder?: never }
   | { project?: never; isPlaceholder: true }
 );
 
@@ -28,7 +33,9 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
   const environmentCount = !isPlaceholder ? environments.length : 1;
 
   const href = !isPlaceholder
-    ? `${project.team_id}/project/${project.id}?environment=${defaultEnvironment?.id || ""}`
+    ? !defaultEnvironment
+      ? null
+      : `${project.team_id}/project/${project.id}?environment=${defaultEnvironment.id}`
     : "";
 
   return (
@@ -36,7 +43,8 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
       data-placeholder={isPlaceholder ? true : undefined}
       className={cn("group/item flex w-full flex-col p-1", className)}
     >
-      <LinkButton
+      <ConditionalButton
+        project={project}
         href={href}
         variant="ghost"
         className="bg-background-hover flex min-h-36 w-full flex-col items-start gap-12 rounded-xl border px-5 py-3.5 text-left"
@@ -76,7 +84,60 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
             )}
           </div>
         </div>
-      </LinkButton>
+      </ConditionalButton>
     </li>
+  );
+}
+
+function ConditionalButton({
+  href,
+  variant,
+  project,
+  className,
+  children,
+}: {
+  href: string | null;
+  variant: TButtonVariants["variant"];
+  project?: TProjectShallow;
+  className: string;
+  children: ReactNode;
+}) {
+  const { invalidate } = useProjectsUtils({ teamId: project?.team_id || "" });
+  const {
+    mutateAsync: deleteProject,
+    error,
+    reset,
+  } = api.projects.delete.useMutation({
+    onSuccess: () => {
+      invalidate();
+    },
+  });
+  const { asyncPush } = useAsyncPush();
+
+  if (href === null) {
+    return (
+      <DeleteProjectTrigger
+        type="project"
+        description="This project doesn't have any environments, please delete it."
+        deletingEntityName={project?.name || "Project"}
+        onDialogClose={reset}
+        onSubmit={async () => {
+          if (!project) return;
+          await deleteProject({ teamId: project.team_id, projectId: project.id });
+          await asyncPush(`/${project.team_id}`);
+        }}
+        error={error}
+      >
+        <Button variant={variant} className={className}>
+          {children}
+        </Button>
+      </DeleteProjectTrigger>
+    );
+  }
+
+  return (
+    <LinkButton href={href} variant={variant} className={className}>
+      {children}
+    </LinkButton>
   );
 }
