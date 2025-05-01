@@ -1,4 +1,4 @@
-import SignInWithOAuthButton from "@/components/auth/sign-in-with-oauth-button";
+import SignInForm from "@/app/(default)/sign-in/_components/sign-in-form";
 import Logo from "@/components/icons/logo";
 import { auth } from "@/server/auth/auth";
 import { redirect } from "next/navigation";
@@ -16,9 +16,7 @@ export default async function Page() {
           <Logo variant="full" className="h-auto w-full max-w-36" />
           <p className="text-muted-foreground w-full px-2 text-center">Sign in to continue</p>
         </div>
-        <div className="mt-5 flex w-full max-w-xs flex-col gap-2">
-          <SignInWithOAuthButton providerId="dex" providerName="Unbind" />
-        </div>
+        <SignInForm className="mt-5" />
       </div>
     </div>
   );

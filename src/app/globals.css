@@ -508,6 +508,16 @@
   label {
     touch-action: manipulation;
   }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 100px color-mix(in oklab, var(--success) 10%, var(--background)) inset !important;
+    -webkit-text-fill-color: var(--success) !important;
+    transition: background-color 5000s ease-in-out 0s;
+    border-color: color-mix(in oklab, var(--success) 30%, var(--background));
+  }
 }
 
 @layer base {

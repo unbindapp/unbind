@@ -24,7 +24,9 @@ const inputVariants = cva(
 
 export type InputProps = React.InputHTMLAttributes<HTMLInputElement> &
   VariantProps<typeof inputVariants> &
-  InputLayout;
+  InputLayout & {
+    Icon?: React.FC<{ className?: string }>;
+  };
 
 type InputLayout =
   | {
@@ -43,6 +45,7 @@ function Input({
   inputTitle,
   layout,
   type,
+  Icon,
   ...props
 }: InputProps) {
   if (layout === "label-included") {
@@ -61,7 +64,8 @@ function Input({
           {...props}
           placeholder=" "
         />
-        <label className="text-muted-foreground pointer-events-none absolute top-1/2 left-3.25 origin-top-left -translate-y-[calc(100%-0.25rem)] scale-75 font-medium transition peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100 peer-focus:-translate-y-[calc(100%-0.25rem)] peer-focus:scale-75">
+        <label className="text-muted-foreground pointer-events-none absolute top-1/2 left-3.25 flex origin-top-left -translate-y-[calc(100%-0.25rem)] scale-75 items-center justify-start gap-2 font-medium transition peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100 peer-focus:-translate-y-[calc(100%-0.25rem)] peer-focus:scale-75">
+          {Icon && <Icon className="size-4.5" />}
           {inputTitle}
         </label>
       </div>
