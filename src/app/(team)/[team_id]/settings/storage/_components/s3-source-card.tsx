@@ -29,9 +29,16 @@ import {
   TS3SourceShallow,
 } from "@/server/trpc/api/storage/s3/types";
 import { api } from "@/server/trpc/setup/client";
-import { EllipsisVerticalIcon, PlusIcon, TrashIcon } from "lucide-react";
+import {
+  CylinderIcon,
+  EllipsisVerticalIcon,
+  PenIcon,
+  PlusIcon,
+  TrashIcon,
+  XIcon,
+} from "lucide-react";
 import { ResultAsync } from "neverthrow";
-import { HTMLAttributes, LabelHTMLAttributes, ReactNode, useRef, useState } from "react";
+import { FC, HTMLAttributes, LabelHTMLAttributes, ReactNode, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -47,9 +54,11 @@ type TProps =
       teamId: string;
     };
 
+const bucketsPlaceholder = Array.from({ length: 3 }, (_, i) => i);
+
 export default function S3SourceCard({ s3Source, teamId, isPlaceholder }: TProps) {
   return (
-    <li className="relative w-full p-1 sm:w-1/2">
+    <li className="relative w-full p-1 md:max-w-3xl">
       <div
         data-pending={isPlaceholder ? true : undefined}
         className="group/item relative flex w-full items-center justify-start"
@@ -58,13 +67,29 @@ export default function S3SourceCard({ s3Source, teamId, isPlaceholder }: TProps
           disabled={isPlaceholder}
           fadeOnDisabled={false}
           variant="outline-muted"
-          className="has-hover:group-hover/item:bg-background-hover flex w-full flex-row items-center justify-start gap-2.5 py-3 pr-12 pl-4 font-medium"
+          className="has-hover:group-hover/item:bg-background-hover flex w-full flex-col items-start justify-start gap-2.5 py-3 pr-12 pl-4 font-medium"
         >
-          <p className="group-data-pending/item:bg-foreground group-data-pending/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-pending/item:rounded-md group-data-pending/item:text-transparent">
+          <p className="group-data-pending/item:bg-foreground group-data-pending/item:animate-skeleton min-w-0 shrink truncate leading-tight font-semibold group-data-pending/item:rounded-md group-data-pending/item:text-transparent">
             {isPlaceholder ? "Loading" : s3Source.name}
           </p>
+          <div className="-mx-1 flex w-[calc(100%+0.5rem)] flex-row flex-wrap gap-2 overflow-hidden">
+            {isPlaceholder ? (
+              bucketsPlaceholder.map((i) => (
+                <Bucket key={i} name={`Loading ${i}`} isPlaceholder={true} />
+              ))
+            ) : s3Source.buckets.length === 0 ? (
+              <Bucket
+                name="No buckets available"
+                Icon={XIcon}
+                classNameParagraph="whitespace-normal"
+                className="max-w-full px-1 sm:max-w-full"
+              />
+            ) : (
+              s3Source.buckets.map((b, i) => <Bucket key={i} name={b.name} className="px-1" />)
+            )}
+          </div>
         </Button>
-        <div className="absolute top-1/2 right-1.25 size-9 -translate-y-1/2">
+        <div className="absolute top-1.25 right-1.25 size-9">
           {isPlaceholder ? (
             <div className="flex size-full items-center justify-center">
               <div className="bg-muted-more-foreground animate-skeleton size-6 rounded-md" />
@@ -114,6 +139,16 @@ function ThreeDotButton({
       >
         <ScrollArea>
           <DropdownMenuGroup>
+            <RenameTrigger
+              s3Source={s3Source}
+              teamId={teamId}
+              closeDropdown={() => setIsOpen(false)}
+            >
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <PenIcon className="-ml-0.5 size-5" />
+                <p className="min-w-0 shrink leading-tight">Rename</p>
+              </DropdownMenuItem>
+            </RenameTrigger>
             <DeleteTrigger
               teamId={teamId}
               s3Source={s3Source}
@@ -131,6 +166,171 @@ function ThreeDotButton({
         </ScrollArea>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+function Bucket({
+  name,
+  isPlaceholder,
+  Icon = CylinderIcon,
+  classNameParagraph,
+  className,
+}: {
+  name: string;
+  isPlaceholder?: boolean;
+  Icon?: FC<{ className?: string }>;
+  classNameParagraph?: string;
+  className?: string;
+}) {
+  return (
+    <div
+      data-placeholder={isPlaceholder ? true : undefined}
+      className={cn(
+        "group/card text-muted-foreground flex max-w-1/2 items-center justify-start gap-1.25 text-left text-xs leading-tight font-medium data-placeholder:text-transparent sm:max-w-36",
+        className,
+      )}
+    >
+      <Icon className="group-data-placeholder/card:bg-muted-foreground group-data-placeholder/card:animate-skeleton size-3.5 group-data-placeholder/card:rounded-full" />
+      <p
+        className={cn(
+          "group-data-placeholder/card:bg-muted-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink truncate text-xs group-data-placeholder/card:rounded",
+          classNameParagraph,
+        )}
+      >
+        {name}
+      </p>
+    </div>
+  );
+}
+
+function RenameTrigger({
+  s3Source,
+  teamId,
+  closeDropdown,
+  children,
+}: {
+  s3Source: TS3SourceShallow;
+  teamId: string;
+  closeDropdown: () => void;
+  children: ReactNode;
+}) {
+  const {
+    mutateAsync: updateS3Source,
+    error: updateS3SourceError,
+    reset: updateS3SourceReset,
+  } = api.storage.s3.update.useMutation();
+
+  const { invalidate: invalidateS3Sources } = useS3SourcesUtils({ teamId });
+
+  const [open, setOpen] = useState(false);
+
+  const form = useAppForm({
+    defaultValues: {
+      name: s3Source.name,
+    },
+    validators: {
+      onChange: z
+        .object({
+          name: CreateS3SourceFormSchema.shape.name,
+        })
+        .strip(),
+    },
+    onSubmit: async ({ formApi, value }) => {
+      await updateS3Source({
+        id: s3Source.id,
+        name: value.name,
+        teamId,
+      });
+
+      const invalidateRes = await ResultAsync.fromPromise(
+        invalidateS3Sources(),
+        () => new Error("Failed to fetch S3 sources"),
+      );
+
+      if (invalidateRes.isErr()) {
+        toast.error("Failed to fetch S3 sources", {
+          description: invalidateRes.error.message,
+        });
+      }
+
+      setOpen(false);
+      formApi.reset();
+      closeDropdown();
+    },
+  });
+
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (!o) {
+          closeDropdown();
+          if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+          }
+          timeoutRef.current = setTimeout(() => {
+            form.reset();
+            updateS3SourceReset();
+          }, defaultAnimationMs);
+        }
+      }}
+    >
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
+        <DialogHeader>
+          <DialogTitle>Rename S3 Source</DialogTitle>
+          <DialogDescription>Give a new name to the S3 source.</DialogDescription>
+        </DialogHeader>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            form.handleSubmit();
+          }}
+          className="flex flex-col"
+        >
+          <form.AppField
+            name="name"
+            children={(field) => (
+              <field.TextField
+                autoCapitalize="none"
+                dontCheckUntilSubmit
+                field={field}
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(e) => field.handleChange(e.target.value)}
+                className="w-full"
+                placeholder={"Main S3 Source"}
+                maxLength={s3SourceNameMaxLength}
+              />
+            )}
+          />
+          {updateS3SourceError && (
+            <ErrorLine message={updateS3SourceError?.message} className="mt-4" />
+          )}
+          <div className="mt-4 flex w-full flex-wrap items-center justify-end gap-2">
+            <DialogClose asChild className="text-muted-foreground">
+              <Button type="button" variant="ghost">
+                Cancel
+              </Button>
+            </DialogClose>
+            <form.Subscribe
+              selector={(state) => [state.isSubmitting]}
+              children={([isSubmitting]) => (
+                <form.SubmitButton
+                  data-submitting={isSubmitting ? true : undefined}
+                  isPending={isSubmitting ? true : false}
+                >
+                  Rename
+                </form.SubmitButton>
+              )}
+            />
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -341,11 +541,11 @@ export function NewS3SourceCard({ teamId }: { teamId: string }) {
       }}
     >
       <DialogTrigger asChild>
-        <li className="relative w-full p-1 sm:w-1/2">
+        <li className="relative w-full p-1 md:max-w-3xl">
           <div className="group/item relative flex w-full items-center justify-start">
             <Button
               variant="outline"
-              className="text-muted-foreground flex w-full flex-row items-center justify-start px-4 py-3 font-medium"
+              className="text-muted-foreground flex min-h-14 w-full flex-row items-center justify-start px-4 py-3 font-medium"
             >
               <PlusIcon className="-my-1 -ml-1 size-4.5 shrink-0" />
               <p className="group-data-pending/item:bg-foreground group-data-pending/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-pending/item:rounded-md group-data-pending/item:text-transparent">
@@ -391,8 +591,8 @@ export function NewS3SourceCard({ teamId }: { teamId: string }) {
                 )}
               />
             </InputWrapper>
-            <div className="flex w-full flex-col sm:flex-row">
-              <InputWrapper className="w-2/3 pr-4">
+            <div className="flex w-full flex-col gap-4 sm:flex-row sm:gap-0">
+              <InputWrapper className="w-full sm:w-2/3 sm:pr-4">
                 <Label htmlFor="endpoint">Endpoint</Label>
                 <form.AppField
                   name="endpoint"
@@ -411,7 +611,7 @@ export function NewS3SourceCard({ teamId }: { teamId: string }) {
                   )}
                 />
               </InputWrapper>
-              <InputWrapper className="w-1/3">
+              <InputWrapper className="w-full sm:w-1/3">
                 <Label htmlFor="region">Region</Label>
                 <form.AppField
                   name="region"

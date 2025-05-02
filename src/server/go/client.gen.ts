@@ -32,6 +32,16 @@ export const BuildkitSettingsSchema = z
   })
   .strip();
 
+export const CallbackResponseBodySchema = z
+  .object({
+    access_token: z.string(),
+    expiry: z.string().datetime(),
+    id_token: z.string(),
+    refresh_token: z.string(),
+    token_type: z.string(),
+  })
+  .strip();
+
 export const ContainerStateSchema = z.enum(['Running', 'Waiting', 'Terminated']);
 
 export const ContainerStatusSchema = z
@@ -246,6 +256,7 @@ export const ServiceConfigResponseSchema = z
     auto_deploy: z.boolean(),
     builder: ServiceBuilderSchema,
     git_branch: z.string().optional(),
+    git_tag: z.string().optional(),
     hosts: z.array(HostSpecSchema).optional(),
     icon: z.string(),
     image: z.string().optional(),
@@ -1206,6 +1217,22 @@ export const UpdateProjectResponseBodySchema = z
   })
   .strip();
 
+export const UpdateS3SourceInputBodySchema = z
+  .object({
+    access_key_id: z.string().optional(),
+    id: z.string(),
+    name: z.string().optional(),
+    secret_key: z.string().optional(),
+    team_id: z.string(),
+  })
+  .strip();
+
+export const UpdateS3SourceResponseBodySchema = z
+  .object({
+    data: S3ResponseSchema,
+  })
+  .strip();
+
 export const UpdateServiceInputSchema = z
   .object({
     auto_deploy: z.boolean().optional(),
@@ -1216,6 +1243,7 @@ export const UpdateServiceInputSchema = z
     dockerfile_path: z.string().optional(), // Optional path to Dockerfile, if using docker builder - set empty string to reset to default
     environment_id: z.string(),
     git_branch: z.string().optional(),
+    git_tag: z.string().optional(), // Tag to build from, supports glob patterns
     hosts: z.array(HostSpecSchema).nullable().optional(),
     image: z.string().optional(),
     is_public: z.boolean().optional(),
@@ -1357,6 +1385,7 @@ export type VariableReferenceSourceType = z.infer<typeof VariableReferenceSource
 export type VariableReferenceType = z.infer<typeof VariableReferenceTypeSchema>;
 export type AvailableVariableReference = z.infer<typeof AvailableVariableReferenceSchema>;
 export type BuildkitSettings = z.infer<typeof BuildkitSettingsSchema>;
+export type CallbackResponseBody = z.infer<typeof CallbackResponseBodySchema>;
 export type ContainerState = z.infer<typeof ContainerStateSchema>;
 export type ContainerStatus = z.infer<typeof ContainerStatusSchema>;
 export type CreateBuildInputBody = z.infer<typeof CreateBuildInputBodySchema>;
@@ -1513,6 +1542,8 @@ export type UpdateEnvironmentInput = z.infer<typeof UpdateEnvironmentInputSchema
 export type UpdateEnvironmentResponseBody = z.infer<typeof UpdateEnvironmentResponseBodySchema>;
 export type UpdateProjectInput = z.infer<typeof UpdateProjectInputSchema>;
 export type UpdateProjectResponseBody = z.infer<typeof UpdateProjectResponseBodySchema>;
+export type UpdateS3SourceInputBody = z.infer<typeof UpdateS3SourceInputBodySchema>;
+export type UpdateS3SourceResponseBody = z.infer<typeof UpdateS3SourceResponseBodySchema>;
 export type UpdateServiceInput = z.infer<typeof UpdateServiceInputSchema>;
 export type UpdateTeamInputBody = z.infer<typeof UpdateTeamInputBodySchema>;
 export type UpdateTeamResponseBody = z.infer<typeof UpdateTeamResponseBodySchema>;
@@ -1528,6 +1559,12 @@ export type VariablesResponseBody = z.infer<typeof VariablesResponseBodySchema>;
 export type WebhookCreateInput = z.infer<typeof WebhookCreateInputSchema>;
 export type WebhookEvent = z.infer<typeof WebhookEventSchema>;
 export type WebhookUpdateInput = z.infer<typeof WebhookUpdateInputSchema>;
+
+export const callbackQuerySchema = z
+  .object({
+    code: z.string(),
+  })
+  .passthrough();
 
 export const get_deploymentQuerySchema = z
   .object({
@@ -1796,6 +1833,52 @@ export type ClientOptions = {
 export function createClient({ accessToken, apiUrl }: ClientOptions) {
   return {
     auth: {
+      callback: async (
+        params: z.infer<typeof callbackQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<CallbackResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/auth/callback`);
+          const validatedQuery = callbackQuerySchema.parse(params);
+          const queryKeys = ['code'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return CallbackResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
       login: async (params: LoginForm, fetchOptions?: RequestInit) => {
         try {
           if (!apiUrl || typeof apiUrl !== 'string') {
@@ -3667,6 +3750,46 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             }
             const data = await response.json();
             return TestS3OutputBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+        update: async (
+          params: UpdateS3SourceInputBody,
+          fetchOptions?: RequestInit,
+        ): Promise<UpdateS3SourceResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/storage/s3/update`);
+
+            const options: RequestInit = {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+            const validatedBody = UpdateS3SourceInputBodySchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+              console.log(`Request body is:`, validatedBody);
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return UpdateS3SourceResponseBodySchema.parse(data);
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;

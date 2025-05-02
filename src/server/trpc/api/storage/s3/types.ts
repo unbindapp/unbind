@@ -14,5 +14,5 @@ export const CreateS3SourceFormSchema = z.object({
   endpoint: z.string().url("Endpoint must be a valid URL."),
   accessKeyId: z.string().min(1, "Access Key ID is required."),
   secretKey: z.string().min(1, "Secret Access Key is required."),
-  region: z.string().min(1, "Region is required."),
+  region: z.string(),
 });

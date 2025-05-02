@@ -24,7 +24,7 @@ export const s3Router = createTRPCRouter({
       z
         .object({
           teamId: z.string().uuid(),
-          withBuckets: z.boolean().default(true).optional(),
+          withBuckets: z.boolean().optional().default(true),
         })
         .strip(),
     )
@@ -54,6 +54,26 @@ export const s3Router = createTRPCRouter({
         secret_key: secretKey,
         name,
         region,
+      });
+      return {
+        data: res.data,
+      };
+    }),
+  update: privateProcedure
+    .input(
+      z
+        .object({
+          id: z.string().uuid(),
+          teamId: z.string().uuid(),
+          name: CreateS3SourceFormSchema.shape.name,
+        })
+        .strip(),
+    )
+    .mutation(async function ({ input: { id, teamId, name }, ctx: { goClient } }) {
+      const res = await goClient.storage.s3.update({
+        id,
+        team_id: teamId,
+        name,
       });
       return {
         data: res.data,
