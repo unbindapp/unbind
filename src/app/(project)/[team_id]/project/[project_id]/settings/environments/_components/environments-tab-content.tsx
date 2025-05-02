@@ -29,7 +29,7 @@ export default function EnvironmentsTabContent() {
     setLastSelectedEnvironmentId(environmentId);
   }, [environmentId]);
 
-  if (error) {
+  if (error && !isPending && !environments) {
     return (
       <Wrapper>
         <ErrorCard message={error.message} />

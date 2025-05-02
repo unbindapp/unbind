@@ -18,7 +18,7 @@ export default function StorageTabContent() {
 
   const s3Sources = data?.sources;
 
-  if (error) {
+  if (error && !isPending && !s3Sources) {
     return (
       <Wrapper>
         <ErrorCard message={error.message} />
