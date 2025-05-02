@@ -1,3 +1,4 @@
+import { CreateS3SourceFormSchema } from "@/server/trpc/api/storage/s3/types";
 import { createTRPCRouter, privateProcedure } from "@/server/trpc/setup/trpc";
 import { z } from "zod";
 
@@ -38,12 +39,8 @@ export const s3Router = createTRPCRouter({
       z
         .object({
           teamId: z.string().uuid(),
-          endpoint: z.string(),
-          accessKeyId: z.string(),
-          secretKey: z.string(),
-          name: z.string(),
-          region: z.string(),
         })
+        .merge(CreateS3SourceFormSchema)
         .strip(),
     )
     .mutation(async function ({

@@ -630,28 +630,28 @@ export function NewEnvironmentCard({ teamId, projectId }: { teamId: string; proj
             e.preventDefault();
             form.handleSubmit();
           }}
-          className="flex flex-col"
+          className="flex w-full flex-col gap-4"
         >
-          <form.AppField
-            name="name"
-            children={(field) => (
-              <field.TextField
-                autoCapitalize="none"
-                dontCheckUntilSubmit
-                field={field}
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(e.target.value)}
-                className="w-full"
-                placeholder={"development"}
-                maxLength={environmentNameMaxLength}
-              />
-            )}
-          />
-          {createEnvironmentError && (
-            <ErrorLine message={createEnvironmentError?.message} className="mt-4" />
-          )}
-          <div className="mt-4 flex w-full flex-wrap items-center justify-end gap-2">
+          <div className="flex w-full flex-col gap-2">
+            <form.AppField
+              name="name"
+              children={(field) => (
+                <field.TextField
+                  autoCapitalize="none"
+                  dontCheckUntilSubmit
+                  field={field}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  className="w-full"
+                  placeholder={"development"}
+                  maxLength={environmentNameMaxLength}
+                />
+              )}
+            />
+          </div>
+          {createEnvironmentError && <ErrorLine message={createEnvironmentError?.message} />}
+          <div className="flex w-full flex-wrap items-center justify-end gap-2">
             <DialogClose asChild className="text-muted-foreground">
               <Button type="button" variant="ghost">
                 Cancel

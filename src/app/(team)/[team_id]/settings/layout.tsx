@@ -26,6 +26,11 @@ export default async function Layout({ params, children }: TProps) {
       icon: "variables",
     },
     {
+      label: "Storage",
+      href: `${basePath}/storage`,
+      icon: "storage",
+    },
+    {
       label: "Members",
       href: `${basePath}/members`,
       icon: "members",

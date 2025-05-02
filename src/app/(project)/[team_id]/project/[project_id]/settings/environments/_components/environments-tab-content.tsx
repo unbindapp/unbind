@@ -5,10 +5,8 @@ import EnvironmentCard, {
 } from "@/app/(project)/[team_id]/project/[project_id]/settings/environments/_components/environment-card";
 import { useEnvironments } from "@/components/environment/environments-provider";
 import ErrorCard from "@/components/error-card";
-import NoItemsCard from "@/components/no-items-card";
 import { cn } from "@/components/ui/utils";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import { BoxIcon } from "lucide-react";
 import { ReactNode, useEffect, useState } from "react";
 
 const placeholderArray = Array.from({ length: 4 }, (_, i) => i);
@@ -45,14 +43,6 @@ export default function EnvironmentsTabContent() {
         {placeholderArray.map((i) => (
           <EnvironmentCard key={i} isPlaceholder={true} />
         ))}
-      </Wrapper>
-    );
-  }
-
-  if (environments && environments.length === 0) {
-    return (
-      <Wrapper>
-        <NoItemsCard Icon={BoxIcon}>No environments yet</NoItemsCard>
       </Wrapper>
     );
   }

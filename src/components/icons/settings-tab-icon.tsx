@@ -1,5 +1,6 @@
 import { cn } from "@/components/ui/utils";
 import {
+  ArchiveIcon,
   BoxIcon,
   KeyIcon,
   SlidersHorizontalIcon,
@@ -15,7 +16,8 @@ export type TSettingsTabVariant =
   | "variables"
   | "members"
   | "webhooks"
-  | "danger-zone";
+  | "danger-zone"
+  | "storage";
 
 export default function SettingsTabIcon({
   variant,
@@ -40,6 +42,10 @@ export default function SettingsTabIcon({
 
   if (variant === "danger-zone") {
     return <TriangleAlertIcon className={cn("size-5 shrink-0", className)} {...rest} />;
+  }
+
+  if (variant === "storage") {
+    return <ArchiveIcon className={cn("size-5 shrink-0", className)} {...rest} />;
   }
 
   return <SlidersHorizontalIcon className={cn("size-5 shrink-0", className)} {...rest} />;

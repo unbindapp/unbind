@@ -5,6 +5,7 @@ import useCommandPanel from "@/components/command-panel/use-command-panel";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import {
+  ArchiveIcon,
   BoxIcon,
   ChartColumnIcon,
   CornerDownRightIcon,
@@ -224,6 +225,31 @@ export default function useGoToItem({ context }: TProps) {
                     "development",
                     ...goToKeywords,
                   ],
+                },
+              ]
+            : []),
+          ...(context.contextType === "team"
+            ? [
+                {
+                  id: `go-tos_/settings/storage`,
+                  title: "Storage",
+                  titleSuffix: ` | ${settingsTitle}`,
+                  onSelect: () => {
+                    navigateToSettings({
+                      pathname: "/storage",
+                      isPendingId: `go-tos_/settings/storage`,
+                    });
+                  },
+                  onHighlight: () => {
+                    router.prefetch(
+                      getSettingsPageHref({
+                        pathname: "/storage",
+                        context,
+                      }),
+                    );
+                  },
+                  Icon: ArchiveIcon,
+                  keywords: ["s3", "r2", "backup", "storage", ...goToKeywords],
                 },
               ]
             : []),
