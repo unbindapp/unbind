@@ -2,9 +2,11 @@ name: Build ui image for release
 on:
   repository_dispatch:
     types: [build-release]
+
 concurrency:
-  group: environment-${{ github.ref }}
+  group: ${{ github.event.client_payload.version }}
   cancel-in-progress: true
+
 jobs:
   setup_env:
     name: ⚙️ Setup environment
