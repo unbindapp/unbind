@@ -4,7 +4,7 @@ on:
     types: [build-release]
 
 concurrency:
-  group: ${{ github.event.client_payload.version }}
+  group: ui-${{ github.event.client_payload.version }}
   cancel-in-progress: true
 
 jobs:
