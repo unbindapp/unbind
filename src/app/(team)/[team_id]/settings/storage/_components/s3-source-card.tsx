@@ -31,7 +31,7 @@ import {
 import { api } from "@/server/trpc/setup/client";
 import { EllipsisVerticalIcon, PlusIcon, TrashIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
-import { ReactNode, useRef, useState } from "react";
+import { HTMLAttributes, LabelHTMLAttributes, ReactNode, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -358,7 +358,10 @@ export function NewS3SourceCard({ teamId }: { teamId: string }) {
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
           <DialogTitle>Create S3 Source</DialogTitle>
-          <DialogDescription>Give a name to the new S3 source.</DialogDescription>
+          <DialogDescription>
+            Give a name to the new S3 source. Sources can have multiple buckets in them. They can be
+            used for backups.
+          </DialogDescription>
         </DialogHeader>
         <form
           onSubmit={(e) => {
@@ -367,86 +370,110 @@ export function NewS3SourceCard({ teamId }: { teamId: string }) {
           }}
           className="flex w-full flex-col gap-4"
         >
-          <div className="flex w-full flex-col gap-2">
-            <form.AppField
-              name="name"
-              children={(field) => (
-                <field.TextField
-                  placeholder="Main S3 Source"
-                  autoCapitalize="none"
-                  dontCheckUntilSubmit
-                  field={field}
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  className="w-full"
-                  maxLength={s3SourceNameMaxLength}
+          <div className="flex w-full flex-col gap-4">
+            <InputWrapper>
+              <Label htmlFor="name">Name</Label>
+              <form.AppField
+                name="name"
+                children={(field) => (
+                  <field.TextField
+                    id="name"
+                    placeholder="Main S3 Source"
+                    autoCapitalize="none"
+                    dontCheckUntilSubmit
+                    field={field}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    className="w-full"
+                    maxLength={s3SourceNameMaxLength}
+                  />
+                )}
+              />
+            </InputWrapper>
+            <div className="flex w-full flex-col sm:flex-row">
+              <InputWrapper className="w-2/3 pr-4">
+                <Label htmlFor="endpoint">Endpoint</Label>
+                <form.AppField
+                  name="endpoint"
+                  children={(field) => (
+                    <field.TextField
+                      id="endpoint"
+                      placeholder="https://s3.amazonaws.com"
+                      autoCapitalize="none"
+                      dontCheckUntilSubmit
+                      field={field}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      className="w-full"
+                    />
+                  )}
                 />
-              )}
-            />
-            <form.AppField
-              name="endpoint"
-              children={(field) => (
-                <field.TextField
-                  placeholder="https://s3.amazonaws.com"
-                  autoCapitalize="none"
-                  dontCheckUntilSubmit
-                  field={field}
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  className="w-full"
+              </InputWrapper>
+              <InputWrapper className="w-1/3">
+                <Label htmlFor="region">Region</Label>
+                <form.AppField
+                  name="region"
+                  children={(field) => (
+                    <field.TextField
+                      id="region"
+                      placeholder="us-east-1"
+                      autoCapitalize="none"
+                      dontCheckUntilSubmit
+                      field={field}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      className="w-full"
+                    />
+                  )}
                 />
-              )}
-            />
-            <form.AppField
-              name="region"
-              children={(field) => (
-                <field.TextField
-                  placeholder="us-east-1"
-                  autoCapitalize="none"
-                  dontCheckUntilSubmit
-                  field={field}
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  className="w-full"
-                />
-              )}
-            />
-            <form.AppField
-              name="accessKeyId"
-              children={(field) => (
-                <field.TextField
-                  placeholder="YOUR_ACCESS_KEY_ID"
-                  autoCapitalize="none"
-                  dontCheckUntilSubmit
-                  field={field}
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  className="w-full"
-                />
-              )}
-            />
-            <form.AppField
-              name="secretKey"
-              children={(field) => (
-                <field.TextField
-                  placeholder="YOUR_SECRET_ACCESS_KEY"
-                  autoCapitalize="none"
-                  dontCheckUntilSubmit
-                  field={field}
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  className="w-full"
-                />
-              )}
-            />
+              </InputWrapper>
+            </div>
+            <InputWrapper>
+              <Label htmlFor="accessKeyId">Access Key ID</Label>
+              <form.AppField
+                name="accessKeyId"
+                children={(field) => (
+                  <field.TextField
+                    id="accessKeyId"
+                    placeholder="AWS_ACCESS_KEY_ID"
+                    autoCapitalize="none"
+                    dontCheckUntilSubmit
+                    field={field}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    className="w-full"
+                  />
+                )}
+              />
+            </InputWrapper>
+            <InputWrapper>
+              <Label htmlFor="secretKey">Secret Access Key</Label>
+              <form.AppField
+                name="secretKey"
+                children={(field) => (
+                  <field.TextField
+                    id="secretKey"
+                    placeholder="AWS_SECRET_ACCESS_KEY"
+                    autoCapitalize="none"
+                    dontCheckUntilSubmit
+                    field={field}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    className="w-full"
+                  />
+                )}
+              />
+            </InputWrapper>
           </div>
-          {createS3SourceError && <ErrorLine message={createS3SourceError?.message} />}
-          <div className="flex w-full flex-wrap items-center justify-end gap-2">
+          {createS3SourceError && (
+            <ErrorLine className="mt-2" message={createS3SourceError?.message} />
+          )}
+          <div className="mt-2 flex w-full flex-wrap items-center justify-end gap-2">
             <DialogClose asChild className="text-muted-foreground">
               <Button type="button" variant="ghost">
                 Cancel
@@ -467,5 +494,21 @@ export function NewS3SourceCard({ teamId }: { teamId: string }) {
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function Label({ children, className, ...rest }: LabelHTMLAttributes<HTMLLabelElement>) {
+  return (
+    <label {...rest} className={cn("max-w-full px-1.5 leading-tight font-medium", className)}>
+      {children}
+    </label>
+  );
+}
+
+function InputWrapper({ children, className, ...rest }: HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={cn("flex w-full flex-col items-start gap-2", className)} {...rest}>
+      {children}
+    </div>
   );
 }
