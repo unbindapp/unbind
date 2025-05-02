@@ -1,13 +1,10 @@
 name: Build ui image for release
-
 on:
   repository_dispatch:
     types: [build-release]
-
 concurrency:
   group: environment-${{ github.ref }}
   cancel-in-progress: true
-
 jobs:
   setup_env:
     name: ⚙️ Setup environment
@@ -15,18 +12,14 @@ jobs:
     steps:
       - name: Put commit msg in environment
         run: echo "COMMIT_MSG=${{ github.event.head_commit.message }}" >> $GITHUB_ENV
-
       - name: Escape commit message
         run: |
           echo "COMMIT_MSG=$(echo $COMMIT_MSG | tr -d \'\\\")" >> $GITHUB_ENV
-
       - name: Set build start in env variable
         run: echo "BUILD_START=$(date +%s)" >> $GITHUB_ENV
-
     outputs:
       commit_msg: ${{ env.COMMIT_MSG }}
       build_start: ${{ env.BUILD_START }}
-
   build_and_push:
     name: 🔨 Build and Push Docker Images
     needs: setup_env
@@ -45,17 +38,14 @@ jobs:
       BUILDX_CACHE_DIR: /tmp/.buildx-cache
     steps:
       - uses: actions/checkout@v4
-
       # Cache NPM dependencies
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: "npm"
-
       - name: Install dependencies
         run: npm ci
-
       # Next.js build cache
       - name: Cache Next.js build
         uses: actions/cache@v4
@@ -66,16 +56,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ matrix.arch }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
             ${{ runner.os }}-${{ matrix.arch }}-nextjs-
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
       - name: Login to registry
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
@@ -88,7 +75,6 @@ jobs:
             COMMIT_MSG=${{ needs.setup_env.outputs.commit_msg }}
             BUILD_START=${{ needs.setup_env.outputs.build_start }}
           tags: unbindapp/unbind-ui:${{ github.event.client_payload.version }}-${{ matrix.arch }}
-
   create_manifest:
     name: 📦 Create Multi-Arch Manifest
     runs-on: ubuntu-24.04
@@ -101,14 +87,26 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-
       - name: Create and push manifest
         run: |
           docker manifest create unbindapp/unbind-ui:${{ github.event.client_payload.version }} \
             --amend unbindapp/unbind-ui:${{ github.event.client_payload.version }}-amd64 \
-            --amend unbindapp/unbind-ui:${{ github.event.client_payload.version }}}-arm64
-
-          docker manifest annotate --arch amd64 --os linux unbindapp/unbind-ui:${{ github.event.client_payload.version }} unbindapp/unbind-ui:${{ github.event.client_payload.version }}}-amd64
+            --amend unbindapp/unbind-ui:${{ github.event.client_payload.version }}-arm64
+          docker manifest annotate --arch amd64 --os linux unbindapp/unbind-ui:${{ github.event.client_payload.version }} unbindapp/unbind-ui:${{ github.event.client_payload.version }}-amd64
           docker manifest annotate --arch arm64 --os linux unbindapp/unbind-ui:${{ github.event.client_payload.version }} unbindapp/unbind-ui:${{ github.event.client_payload.version }}-arm64
-
           docker manifest push unbindapp/unbind-ui:${{ github.event.client_payload.version }}
+
+      # Notify meta repo that the UI image is ready
+      - name: Notify meta repo that the UI image is ready
+        if: success()
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          repository: unbindapp/meta-release-repo
+          event-type: image-ready
+          client-payload: |
+            {
+              "component": "ui",
+              "version": "${{ github.event.client_payload.version }}",
+              "release_id": "${{ github.event.client_payload.release_id }}"
+            }
