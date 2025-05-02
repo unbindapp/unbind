@@ -1,9 +1,9 @@
 "use client";
 
-import { errorCodeToText } from "@/app/(default)/sign-in/_components/helpers";
-import HiddenSignInForm from "@/app/(default)/sign-in/_components/hidden-sign-in-form";
-import { TSignInLikeFormProps } from "@/app/(default)/sign-in/_components/types";
-import useSignInLikeForm from "@/app/(default)/sign-in/_components/use-sign-in-like-form";
+import { errorCodeToText } from "@/components/auth/helpers";
+import HiddenSignInForm from "@/components/auth/hidden-sign-in-form";
+import { TSignInLikeFormProps } from "@/components/auth/types";
+import useSignInLikeForm from "@/components/auth/use-sign-in-like-form";
 import { oAuthSignInAction } from "@/components/auth/actions";
 import ErrorLine from "@/components/error-line";
 import { Button } from "@/components/ui/button";

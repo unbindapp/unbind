@@ -1,4 +1,4 @@
-import { TFormValues, TSignInLikePageProps } from "@/app/(default)/sign-in/_components/types";
+import { TFormValues, TSignInLikePageProps } from "@/components/auth/types";
 import { env } from "@/lib/env";
 import { randomUUID } from "crypto";
 import { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";

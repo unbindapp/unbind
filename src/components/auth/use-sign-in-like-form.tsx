@@ -1,4 +1,4 @@
-import { TFormValues } from "@/app/(default)/sign-in/_components/types";
+import { TFormValues } from "@/components/auth/types";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 type TProps = {

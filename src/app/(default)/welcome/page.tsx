@@ -1,6 +1,6 @@
-import { getSignInLikePageParams } from "@/app/(default)/sign-in/_components/helpers";
-import { TSignInLikePageProps } from "@/app/(default)/sign-in/_components/types";
-import CreateAccountForm from "@/app/(default)/welcome/_components/create-account-form";
+import { getSignInLikePageParams } from "@/components/auth/helpers";
+import { TSignInLikePageProps } from "@/components/auth/types";
+import CreateAccountForm from "@/components/auth/create-account-form";
 import Logo from "@/components/icons/logo";
 import { auth } from "@/server/auth/auth";
 import { cookies } from "next/headers";
