@@ -32,9 +32,7 @@ export const setupRouter = createTRPCRouter({
         data: result.data,
       };
     }),
-  status: publicProcedure.input(z.object({}).strict()).query(async function ({
-    ctx: { goClient },
-  }) {
+  status: publicProcedure.query(async function ({ ctx: { goClient } }) {
     const result = await goClient.setup.status();
     return {
       data: result.data,

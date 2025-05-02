@@ -12,7 +12,7 @@ export const SystemProvider: React.FC<{
   initialData?: AppRouterOutputs["system"]["get"];
   children: ReactNode;
 }> = ({ initialData, children }) => {
-  const query = api.system.get.useQuery({}, { initialData });
+  const query = api.system.get.useQuery(undefined, { initialData });
   return <SystemContext.Provider value={query}>{children}</SystemContext.Provider>;
 };
 

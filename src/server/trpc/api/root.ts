@@ -8,6 +8,7 @@ import { metricsRouter } from "@/server/trpc/api/metrics/router";
 import { projectsRouter } from "@/server/trpc/api/projects/router";
 import { servicesRouter } from "@/server/trpc/api/services/router";
 import { setupRouter } from "@/server/trpc/api/setup/router";
+import { storageRouter } from "@/server/trpc/api/storage/router";
 import { systemRouter } from "@/server/trpc/api/system/router";
 import { teamsRouter } from "@/server/trpc/api/teams/router";
 import { variablesRouter } from "@/server/trpc/api/variables/router";
@@ -38,6 +39,7 @@ export const appRouter = createTRPCRouter({
   webhooks: webhooksRouter,
   system: systemRouter,
   setup: setupRouter,
+  storage: storageRouter,
 });
 
 // export type definition of API

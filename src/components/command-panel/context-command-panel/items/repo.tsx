@@ -134,7 +134,7 @@ function useRepoItem({ context }: TProps) {
         parentPageId: contextCommandPanelRootPage,
         inputPlaceholder: "Deploy from GitHub...",
         getItems: async () => {
-          const res = await utils.git.listRepositories.fetch({ teamId: context.teamId });
+          const res = await utils.git.listRepositories.fetch();
           const items: TCommandPanelItem[] = res.repositories.map((r) => {
             const id = `git_repo_${r.full_name}`;
             return {
@@ -155,7 +155,7 @@ function useRepoItem({ context }: TProps) {
         },
       },
     };
-  }, [utils.git.listRepositories, context, createService, setIsPendingId]);
+  }, [utils.git.listRepositories, createService, setIsPendingId]);
 
   const value = useMemo(
     () => ({

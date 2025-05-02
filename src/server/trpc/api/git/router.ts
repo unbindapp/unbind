@@ -2,10 +2,7 @@ import { createTRPCRouter, privateProcedure } from "@/server/trpc/setup/trpc";
 import { z } from "zod";
 
 export const gitRouter = createTRPCRouter({
-  listRepositories: privateProcedure.input(z.object({}).strip()).query(async function ({
-    input: {},
-    ctx: { goClient },
-  }) {
+  listRepositories: privateProcedure.query(async function ({ ctx: { goClient } }) {
     const { data } = await goClient.github.repositories();
     return {
       repositories: data,

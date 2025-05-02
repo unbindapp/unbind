@@ -153,7 +153,7 @@ export const servicesRouter = createTRPCRouter({
         service: service.data,
       };
     }),
-  listDatabases: privateProcedure.input(z.object({})).query(async function ({ ctx: { goClient } }) {
+  listDatabases: privateProcedure.query(async function ({ ctx: { goClient } }) {
     const result = await goClient.services.databases.installable.list();
     return {
       databases: result.data,

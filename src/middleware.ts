@@ -57,7 +57,7 @@ export const middleware: NextMiddleware = async (request: NextRequest) => {
 
   if (!token) {
     // Initial setup
-    const initialSetupResult = await apiServer.setup.status({});
+    const initialSetupResult = await apiServer.setup.status();
     const isBootstrapped = initialSetupResult.data.is_bootstrapped;
     if (!isBootstrapped) {
       if (request.nextUrl.pathname === welcomePathname) {
