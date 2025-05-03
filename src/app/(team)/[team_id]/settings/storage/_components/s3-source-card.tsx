@@ -158,7 +158,6 @@ function S3SourceDialog({
             </Button>
           </RenameTrigger>
         </DialogHeader>
-        <div className="bg-border h-px w-full" />
         <S3SourceDialogInnerContent
           s3Source={s3Source}
           teamId={teamId}
@@ -200,7 +199,7 @@ function S3SourceDialogInnerContent({
     }
     if (isPending) {
       return {
-        connectionStatusString: "Testing connection",
+        connectionStatusString: "Testing connection...",
         connectionStatus: "pending",
       };
     }
@@ -211,7 +210,7 @@ function S3SourceDialogInnerContent({
       };
     }
     return {
-      connectionStatusString: "Unknown error",
+      connectionStatusString: "Connection failed: Unknown error",
       connectionStatus: "error",
     };
   }, [data, isPending, error]);
@@ -220,14 +219,13 @@ function S3SourceDialogInnerContent({
     <>
       <div
         data-status={connectionStatus}
-        className="group/status flex w-full items-start justify-start gap-2 px-5 py-2 text-sm leading-tight font-medium"
+        className="group/status bg-foreground/6 border-foreground/6 data-[status=pending]:border-warning/8 data-[status=pending]:bg-warning/8 data-[status=connected]:bg-success/8 data-[status=connected]:border-success/8 data-[status=error]:bg-destructive/8 data-[status=error]:border-destructive/8 flex w-full items-start justify-start gap-2 border-t border-b px-5 py-2 text-sm leading-tight font-medium"
       >
-        <div className="bg-foreground group-data-[status=pending]/status:animate-skeleton group-data-[status=connected]/status:bg-success group-data-[status=error]/status:bg-destructive group-data-[status=pending]/status:bg-warning mt-[0.2rem] size-2.5 shrink-0 rounded-full" />
+        <div className="bg-foreground group-data-[status=connected]/status:bg-success group-data-[status=error]/status:bg-destructive group-data-[status=pending]/status:bg-warning mt-[0.2rem] size-2.5 shrink-0 rounded-full group-data-[status=pending]/status:animate-ping" />
         <p className="group-data-[status=connected]/status:text-success group-data-[status=error]/status:text-destructive group-data-[status=pending]/status:text-warning min-w-0 shrink">
           {connectionStatusString}
         </p>
       </div>
-      <div className="bg-border h-px w-full" />
       <div className="flex w-full flex-col gap-3 px-5 pt-3 pb-5">
         <div className="flex w-full">
           <h3 className="w-full text-lg leading-tight font-semibold">
