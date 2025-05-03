@@ -87,6 +87,8 @@ export const UpdateServiceInputSchema = z
     ports: PortSpecSchema.array().optional(),
     hosts: HostSpecSchema.array().optional(),
     databaseConfig: DatabaseConfigSchema.optional(),
+    s3BackupSourceId: z.string().uuid().optional(),
+    s3BackupBucket: z.string().optional(),
   })
   .strip();
 

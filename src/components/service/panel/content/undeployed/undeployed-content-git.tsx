@@ -97,7 +97,6 @@ export function UndeployedContentGit({
                 Icon={({ className }) => <GitBranchIcon className={cn("scale-90", className)} />}
                 variant="outline"
                 open={isDropdownOpen}
-                className="group/button flex w-full flex-row items-center justify-start gap-2 border px-3 text-left"
               />
             </PopoverTrigger>
             <PopoverContent

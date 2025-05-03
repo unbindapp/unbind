@@ -23,6 +23,7 @@ import CreateVariablesForm, {
 import VariableReferencesProvider from "@/components/variables/variable-references-provider";
 import VariablesProvider, { useVariablesUtils } from "@/components/variables/variables-provider";
 import { TServiceShallow, TUpdateServiceInput } from "@/server/trpc/api/services/types";
+import { TS3SourceShallow } from "@/server/trpc/api/storage/s3/types";
 import {
   TVariableForCreate,
   TVariableReferenceForCreate,
@@ -70,6 +71,8 @@ export default function ServicePanelContentUndeployed({ service, className, ...r
   const tagState = useState<string | null>(null);
   const branchState = useState<string | null>(null);
   const databaseVersionState = useState<string | null>(null);
+  const databaseBackupSourceState = useState<TDatabaseBackupSource | null>(null);
+
   const [isPrivateService, setIsPrivateService] = useState<boolean>(!service.config.is_public);
 
   const privateServiceText = "Private service";
@@ -203,6 +206,11 @@ export default function ServicePanelContentUndeployed({ service, className, ...r
             version: newDatabaseVersion,
           };
         }
+        const backupSource = databaseBackupSourceState[0];
+        if (backupSource !== null) {
+          props.s3BackupSourceId = backupSource.source.id;
+          props.s3BackupBucket = backupSource.bucket;
+        }
         await updateService(props);
       }
 
@@ -237,6 +245,7 @@ export default function ServicePanelContentUndeployed({ service, className, ...r
             tagState={tagState}
             branchState={branchState}
             databaseVersionState={databaseVersionState}
+            databaseBackupSourceState={databaseBackupSourceState}
           />
           {isServicePublicable && (
             <Block>
@@ -385,18 +394,18 @@ export default function ServicePanelContentUndeployed({ service, className, ...r
   );
 }
 
-type TStringOrNullState = [string | null, Dispatch<SetStateAction<string | null>>];
-
 function Content({
   service,
   tagState,
   branchState,
   databaseVersionState,
+  databaseBackupSourceState,
 }: {
   service: TServiceShallow;
   tagState: TStringOrNullState;
   branchState: TStringOrNullState;
   databaseVersionState: TStringOrNullState;
+  databaseBackupSourceState: TDatabaseBackupSourceState;
 }) {
   if (service.type === "docker-image") {
     const arr = service.config.image?.split(":");
@@ -441,9 +450,18 @@ function Content({
         type={service.database_type}
         versionState={databaseVersionState}
         version={service.database_version}
+        backupSourceState={databaseBackupSourceState}
       />
     );
   }
 
   return <ErrorLine message="Service type is not supported." />;
 }
+
+type TStringOrNullState = [string | null, Dispatch<SetStateAction<string | null>>];
+
+export type TDatabaseBackupSource = { bucket: string; source: TS3SourceShallow };
+export type TDatabaseBackupSourceState = [
+  TDatabaseBackupSource | null,
+  Dispatch<SetStateAction<TDatabaseBackupSource | null>>,
+];

@@ -69,10 +69,13 @@ export function BlockItemButtonLike({
   text,
   open,
   asElement,
+  isPending,
+  className,
   ...props
 }: {
   Icon: FC<{ className?: string }>;
-  text: string;
+  text: string | ReactNode;
+  isPending?: boolean;
   open?: boolean;
 } & (
   | ({
@@ -88,13 +91,21 @@ export function BlockItemButtonLike({
     <Element
       variant="outline"
       data-open={open ? true : undefined}
-      className="group/button flex w-full flex-row items-center justify-start gap-2 rounded-lg border px-3 py-2.5 text-left"
+      data-pending={isPending ? true : undefined}
+      className={cn(
+        "group/button flex w-full flex-row items-center justify-start gap-2 rounded-lg border px-3 py-2.5 text-left data-pending:text-transparent",
+        className,
+      )}
       {...props}
     >
-      <Icon className="size-5 shrink-0" />
-      <p className="min-w-0 flex-1 shrink truncate leading-tight font-medium">{text}</p>
+      {!isPending && (
+        <Icon className="group-data-pending/button:bg-foreground group-data-pending/button:animate-skeleton size-5 shrink-0 group-data-pending/button:rounded-full" />
+      )}
+      <p className="group-data-pending/button:bg-foreground group-data-pending/button:animate-skeleton min-w-0 shrink truncate leading-tight font-medium group-data-pending/button:rounded-md">
+        {text}
+      </p>
       {open !== undefined && (
-        <ChevronDownIcon className="text-muted-foreground -mr-0.75 size-5 transition group-data-open/button:rotate-180" />
+        <ChevronDownIcon className="text-muted-foreground -mr-0.75 ml-auto size-5 transition group-data-open/button:rotate-180" />
       )}
     </Element>
   );
