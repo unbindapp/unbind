@@ -662,6 +662,26 @@ function DeleteTrigger({
 }
 
 export function NewS3SourceCard({ teamId }: { teamId: string }) {
+  return (
+    <NewS3SourceTrigger teamId={teamId}>
+      <li className="relative w-full p-1 md:max-w-3xl">
+        <div className="group/item relative flex w-full items-center justify-start">
+          <Button
+            variant="outline"
+            className="text-muted-foreground flex min-h-14 w-full flex-row items-center justify-start px-4 py-3 font-medium"
+          >
+            <PlusIcon className="-my-1 -ml-1 size-4.5 shrink-0" />
+            <p className="group-data-pending/item:bg-foreground group-data-pending/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-pending/item:rounded-md group-data-pending/item:text-transparent">
+              New S3 Source
+            </p>
+          </Button>
+        </div>
+      </li>
+    </NewS3SourceTrigger>
+  );
+}
+
+export function NewS3SourceTrigger({ teamId, children }: { children: ReactNode; teamId: string }) {
   const { invalidate: invalidateS3Sources } = useS3SourcesUtils({ teamId });
   const {
     mutateAsync: createS3Source,
@@ -726,21 +746,7 @@ export function NewS3SourceCard({ teamId }: { teamId: string }) {
         }
       }}
     >
-      <DialogTrigger asChild>
-        <li className="relative w-full p-1 md:max-w-3xl">
-          <div className="group/item relative flex w-full items-center justify-start">
-            <Button
-              variant="outline"
-              className="text-muted-foreground flex min-h-14 w-full flex-row items-center justify-start px-4 py-3 font-medium"
-            >
-              <PlusIcon className="-my-1 -ml-1 size-4.5 shrink-0" />
-              <p className="group-data-pending/item:bg-foreground group-data-pending/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-pending/item:rounded-md group-data-pending/item:text-transparent">
-                New S3 Source
-              </p>
-            </Button>
-          </div>
-        </li>
-      </DialogTrigger>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
           <DialogTitle>Create S3 Source</DialogTitle>

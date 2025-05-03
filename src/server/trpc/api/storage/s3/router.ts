@@ -29,6 +29,7 @@ export const s3Router = createTRPCRouter({
         .strip(),
     )
     .query(async function ({ input: { teamId, withBuckets }, ctx: { goClient } }) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       const res = await goClient.storage.s3.list({ team_id: teamId, with_buckets: withBuckets });
       return {
         sources: res.data,
