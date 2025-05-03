@@ -298,6 +298,7 @@ function ThreeDotButton({
   environmentId: string;
   className?: string;
 }) {
+  const [isOpen, setIsOpen] = useState(false);
   const { closePanel } = useServicePanel();
   const { invalidate } = useServicesUtils({ teamId, projectId, environmentId });
 
@@ -307,12 +308,11 @@ function ThreeDotButton({
     reset,
   } = api.services.delete.useMutation({
     onSuccess: () => {
+      setIsOpen(false);
       closePanel();
       invalidate();
     },
   });
-
-  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
