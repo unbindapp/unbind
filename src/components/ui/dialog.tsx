@@ -169,7 +169,7 @@ function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLDivEleme
 function DialogTitle({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>) {
   return (
     <DialogPrimitive.Title
-      className={cn("pr-6 text-xl leading-tight font-bold", className)}
+      className={cn("max-w-full pr-6 text-xl leading-tight font-bold", className)}
       {...props}
     />
   );

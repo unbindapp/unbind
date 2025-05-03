@@ -38,7 +38,15 @@ import {
   XIcon,
 } from "lucide-react";
 import { ResultAsync } from "neverthrow";
-import { FC, HTMLAttributes, LabelHTMLAttributes, ReactNode, useRef, useState } from "react";
+import {
+  FC,
+  HTMLAttributes,
+  LabelHTMLAttributes,
+  ReactNode,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -63,32 +71,34 @@ export default function S3SourceCard({ s3Source, teamId, isPlaceholder }: TProps
         data-pending={isPlaceholder ? true : undefined}
         className="group/item relative flex w-full items-center justify-start"
       >
-        <Button
-          disabled={isPlaceholder}
-          fadeOnDisabled={false}
-          variant="outline-muted"
-          className="has-hover:group-hover/item:bg-background-hover flex w-full flex-col items-start justify-start gap-2.5 py-3 pr-12 pl-4 font-medium"
-        >
-          <p className="group-data-pending/item:bg-foreground group-data-pending/item:animate-skeleton min-w-0 shrink truncate leading-tight font-semibold group-data-pending/item:rounded-md group-data-pending/item:text-transparent">
-            {isPlaceholder ? "Loading" : s3Source.name}
-          </p>
-          <div className="-mx-1 flex w-[calc(100%+0.5rem)] flex-row flex-wrap gap-2 overflow-hidden">
-            {isPlaceholder ? (
-              bucketsPlaceholder.map((i) => (
-                <Bucket key={i} name={`Loading ${i}`} isPlaceholder={true} />
-              ))
-            ) : s3Source.buckets.length === 0 ? (
-              <Bucket
-                name="No buckets available"
-                Icon={XIcon}
-                classNameParagraph="whitespace-normal"
-                className="max-w-full px-1 sm:max-w-full"
-              />
-            ) : (
-              s3Source.buckets.map((b, i) => <Bucket key={i} name={b.name} className="px-1" />)
-            )}
-          </div>
-        </Button>
+        <S3SourceDialogConditional s3Source={s3Source} teamId={teamId}>
+          <Button
+            disabled={isPlaceholder}
+            fadeOnDisabled={false}
+            variant="outline-muted"
+            className="has-hover:group-hover/item:bg-background-hover flex w-full flex-col items-start justify-start gap-2.5 py-3 pr-12 pl-4 font-medium"
+          >
+            <p className="group-data-pending/item:bg-foreground group-data-pending/item:animate-skeleton min-w-0 shrink truncate leading-tight font-semibold group-data-pending/item:rounded-md group-data-pending/item:text-transparent">
+              {isPlaceholder ? "Loading" : s3Source.name}
+            </p>
+            <div className="-mx-2 -my-1 flex w-[calc(100%+1rem)] flex-row flex-wrap overflow-hidden">
+              {isPlaceholder ? (
+                bucketsPlaceholder.map((i) => (
+                  <Bucket key={i} name={`Loading ${i}`} isPlaceholder={true} />
+                ))
+              ) : s3Source.buckets.length === 0 ? (
+                <Bucket
+                  name="No buckets available"
+                  Icon={XIcon}
+                  classNameParagraph="whitespace-normal"
+                  className="max-w-full sm:max-w-full md:max-w-full lg:max-w-full"
+                />
+              ) : (
+                s3Source.buckets.map((b, i) => <Bucket key={i} name={b.name} />)
+              )}
+            </div>
+          </Button>
+        </S3SourceDialogConditional>
         <div className="absolute top-1.25 right-1.25 size-9">
           {isPlaceholder ? (
             <div className="flex size-full items-center justify-center">
@@ -100,6 +110,175 @@ export default function S3SourceCard({ s3Source, teamId, isPlaceholder }: TProps
         </div>
       </div>
     </li>
+  );
+}
+
+function S3SourceDialogConditional({
+  s3Source,
+  teamId,
+  children,
+}: {
+  children: ReactNode;
+  teamId: string | undefined;
+  s3Source: TS3SourceShallow | undefined;
+}) {
+  if (!s3Source || !teamId) {
+    return children;
+  }
+  return (
+    <S3SourceDialog s3Source={s3Source} teamId={teamId}>
+      {children}
+    </S3SourceDialog>
+  );
+}
+
+function S3SourceDialog({
+  s3Source,
+  teamId,
+  children,
+}: {
+  s3Source: TS3SourceShallow;
+  teamId: string;
+  children: ReactNode;
+} & HTMLAttributes<HTMLDivElement>) {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent hideXButton className="p-0" classNameInnerWrapper="w-128 max-w-full gap-0">
+        <DialogHeader className="px-5 py-3">
+          <DialogTitle className="sr-only">{s3Source.name}</DialogTitle>
+          <RenameTrigger s3Source={s3Source} teamId={teamId} closeDropdown={() => null}>
+            <Button
+              variant="ghost"
+              className="group/button -my-1 -ml-2.5 flex min-w-0 shrink items-center justify-start gap-1.5 rounded-md px-2.5 py-1"
+            >
+              <p className="min-w-0 shrink text-left text-xl leading-tight">{s3Source.name}</p>
+              <PenIcon className="ml-0.5 size-4 -rotate-30 opacity-0 transition group-focus-visible/button:rotate-0 group-focus-visible/button:opacity-100 group-active/button:rotate-0 group-active/button:opacity-100 has-hover:group-hover/button:rotate-0 has-hover:group-hover/button:opacity-100 sm:size-4.5" />
+            </Button>
+          </RenameTrigger>
+        </DialogHeader>
+        <div className="bg-border h-px w-full" />
+        <S3SourceDialogInnerContent
+          s3Source={s3Source}
+          teamId={teamId}
+          closeDropdown={() => setIsOpen(false)}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function S3SourceDialogInnerContent({
+  s3Source,
+  teamId,
+  closeDropdown,
+}: {
+  s3Source: TS3SourceShallow;
+  teamId: string;
+  closeDropdown: () => void;
+}) {
+  const { data, isPending, error } = api.storage.s3.test.useQuery({
+    accessKeyId: s3Source.access_key,
+    secretKey: s3Source.secret_key,
+    endpoint: s3Source.endpoint,
+    region: s3Source.region,
+  });
+
+  const { connectionStatusString, connectionStatus } = useMemo(() => {
+    if (data && data.data.valid) {
+      return {
+        connectionStatusString: "Connected successfully",
+        connectionStatus: "connected",
+      };
+    }
+    if (data && !data.data.valid) {
+      return {
+        connectionStatusString:
+          "Connection failed" + (data.data.error ? `: ${data.data.error}` : ""),
+        connectionStatus: "error",
+      };
+    }
+    if (isPending) {
+      return {
+        connectionStatusString: "Testing connection",
+        connectionStatus: "pending",
+      };
+    }
+    if (error) {
+      return {
+        connectionStatusString: "Connection failed" + (error.message ? `: ${error.message}` : ""),
+        connectionStatus: "error",
+      };
+    }
+    return {
+      connectionStatusString: "Unknown error",
+      connectionStatus: "error",
+    };
+  }, [data, isPending, error]);
+
+  return (
+    <>
+      <div
+        data-status={connectionStatus}
+        className="group/status flex w-full items-start justify-start gap-2 px-5 py-2 text-sm leading-tight font-medium"
+      >
+        <div className="bg-foreground group-data-[status=pending]/status:animate-skeleton group-data-[status=connected]/status:bg-success group-data-[status=error]/status:bg-destructive group-data-[status=pending]/status:bg-warning mt-[0.2rem] size-2.5 shrink-0 rounded-full" />
+        <p className="group-data-[status=connected]/status:text-success group-data-[status=error]/status:text-destructive group-data-[status=pending]/status:text-warning min-w-0 shrink">
+          {connectionStatusString}
+        </p>
+      </div>
+      <div className="bg-border h-px w-full" />
+      <div className="flex w-full flex-col gap-3 px-5 pt-4 pb-5">
+        <div className="flex w-full pb-1">
+          <h3 className="w-full text-lg leading-tight font-semibold">
+            Buckets{" "}
+            <span className="text-muted-foreground font-normal">
+              ({s3Source.buckets.length})
+            </span>{" "}
+          </h3>
+        </div>
+        <div className="-mx-2 -my-2 flex w-[calc(100%+1rem)] flex-wrap items-start justify-start">
+          {s3Source.buckets.length === 0 ? (
+            <Bucket
+              name="No buckets available"
+              Icon={XIcon}
+              className="w-full max-w-full items-start justify-start gap-1.75 py-2.5 text-base leading-tight sm:w-1/2 sm:max-w-1/2 md:w-1/2 md:max-w-1/2 lg:w-1/2 lg:max-w-1/2"
+              classNameParagraph="whitespace-normal -mt-0.75"
+              classNameIcon="size-4"
+            />
+          ) : (
+            s3Source.buckets.map((bucket, i) => (
+              <Bucket
+                key={i}
+                name={bucket.name}
+                className="w-full max-w-full items-start justify-start gap-1.75 py-2.5 text-base leading-tight sm:w-1/2 sm:max-w-1/2 md:w-1/2 md:max-w-1/2 lg:w-1/2 lg:max-w-1/2"
+                classNameParagraph="whitespace-normal -mt-0.75"
+                classNameIcon="size-4"
+              />
+            ))
+          )}
+        </div>
+      </div>
+      <div className="bg-border h-px w-full" />
+      <div className="flex w-full items-center justify-between px-1 py-2">
+        <div className="max-w-1/2 px-1">
+          <DeleteTrigger s3Source={s3Source} teamId={teamId} closeDropdown={closeDropdown}>
+            <Button variant="ghost-destructive" className="w-full px-4">
+              <TrashIcon className="-ml-0.75 size-4.5" />
+              <p className="min-w-0 shrink">Delete</p>
+            </Button>
+          </DeleteTrigger>
+        </div>
+        <div className="max-w-1/2 px-1">
+          <DialogClose asChild>
+            <Button variant="ghost" className="text-muted-foreground px-4">
+              Close
+            </Button>
+          </DialogClose>
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -174,26 +353,33 @@ function Bucket({
   isPlaceholder,
   Icon = CylinderIcon,
   classNameParagraph,
+  classNameIcon,
   className,
 }: {
   name: string;
   isPlaceholder?: boolean;
   Icon?: FC<{ className?: string }>;
   classNameParagraph?: string;
+  classNameIcon?: string;
   className?: string;
 }) {
   return (
     <div
       data-placeholder={isPlaceholder ? true : undefined}
       className={cn(
-        "group/card text-muted-foreground flex max-w-1/2 items-center justify-start gap-1.25 text-left text-xs leading-tight font-medium data-placeholder:text-transparent sm:max-w-36",
+        "group/card text-muted-foreground flex max-w-1/2 items-center justify-start gap-1.25 px-2 py-1 text-left text-xs leading-tight font-medium data-placeholder:text-transparent sm:max-w-1/3 md:max-w-1/2 lg:max-w-1/3",
         className,
       )}
     >
-      <Icon className="group-data-placeholder/card:bg-muted-foreground group-data-placeholder/card:animate-skeleton size-3.5 group-data-placeholder/card:rounded-full" />
+      <Icon
+        className={cn(
+          "group-data-placeholder/card:bg-muted-foreground group-data-placeholder/card:animate-skeleton size-3.5 shrink-0 group-data-placeholder/card:rounded-full",
+          classNameIcon,
+        )}
+      />
       <p
         className={cn(
-          "group-data-placeholder/card:bg-muted-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink truncate text-xs group-data-placeholder/card:rounded",
+          "group-data-placeholder/card:bg-muted-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink truncate group-data-placeholder/card:rounded",
           classNameParagraph,
         )}
       >
