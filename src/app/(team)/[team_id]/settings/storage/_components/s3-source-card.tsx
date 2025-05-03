@@ -172,7 +172,6 @@ function S3SourceDialog({
 function S3SourceDialogInnerContent({
   s3Source,
   teamId,
-  closeDropdown,
 }: {
   s3Source: TS3SourceShallow;
   teamId: string;
@@ -229,8 +228,8 @@ function S3SourceDialogInnerContent({
         </p>
       </div>
       <div className="bg-border h-px w-full" />
-      <div className="flex w-full flex-col gap-3 px-5 pt-4 pb-5">
-        <div className="flex w-full pb-1">
+      <div className="flex w-full flex-col gap-3 px-5 pt-3 pb-5">
+        <div className="flex w-full">
           <h3 className="w-full text-lg leading-tight font-semibold">
             Buckets{" "}
             <span className="text-muted-foreground font-normal">
@@ -238,32 +237,35 @@ function S3SourceDialogInnerContent({
             </span>{" "}
           </h3>
         </div>
-        <div className="-mx-2 -my-2 flex w-[calc(100%+1rem)] flex-wrap items-start justify-start">
+        <ol className="-mx-2 -my-1 flex w-[calc(100%+1rem)] flex-wrap items-start justify-start">
           {s3Source.buckets.length === 0 ? (
-            <Bucket
-              name="No buckets available"
-              Icon={XIcon}
-              className="w-full max-w-full items-start justify-start gap-1.75 py-2.5 text-base leading-tight sm:w-1/2 sm:max-w-1/2 md:w-1/2 md:max-w-1/2 lg:w-1/2 lg:max-w-1/2"
-              classNameParagraph="whitespace-normal -mt-0.75"
-              classNameIcon="size-4"
-            />
-          ) : (
-            s3Source.buckets.map((bucket, i) => (
+            <li className="w-full p-0.75 sm:w-1/2">
               <Bucket
-                key={i}
-                name={bucket.name}
-                className="w-full max-w-full items-start justify-start gap-1.75 py-2.5 text-base leading-tight sm:w-1/2 sm:max-w-1/2 md:w-1/2 md:max-w-1/2 lg:w-1/2 lg:max-w-1/2"
+                name="No buckets available"
+                Icon={XIcon}
+                className="text-foreground md:w-w-full lg:w-w-full w-full max-w-full items-start justify-start gap-1.75 rounded-md border px-3 py-2.5 text-base leading-tight sm:w-full sm:max-w-full md:max-w-full lg:max-w-full"
                 classNameParagraph="whitespace-normal -mt-0.75"
                 classNameIcon="size-4"
               />
+            </li>
+          ) : (
+            s3Source.buckets.map((bucket, i) => (
+              <li key={i} className="w-full p-0.75 sm:w-1/2">
+                <Bucket
+                  name={bucket.name}
+                  className="text-foreground md:w-w-full lg:w-w-full w-full max-w-full items-start justify-start gap-1.75 rounded-md border px-3 py-2.5 text-base leading-tight sm:w-full sm:max-w-full md:max-w-full lg:max-w-full"
+                  classNameParagraph="whitespace-normal -mt-0.75"
+                  classNameIcon="size-4"
+                />
+              </li>
             ))
           )}
-        </div>
+        </ol>
       </div>
       <div className="bg-border h-px w-full" />
       <div className="flex w-full items-center justify-between px-1 py-2">
         <div className="max-w-1/2 px-1">
-          <DeleteTrigger s3Source={s3Source} teamId={teamId} closeDropdown={closeDropdown}>
+          <DeleteTrigger s3Source={s3Source} teamId={teamId} closeDropdown={() => {}}>
             <Button variant="ghost-destructive" className="w-full px-4">
               <TrashIcon className="-ml-0.75 size-4.5" />
               <p className="min-w-0 shrink">Delete</p>
@@ -367,7 +369,7 @@ function Bucket({
     <div
       data-placeholder={isPlaceholder ? true : undefined}
       className={cn(
-        "group/card text-muted-foreground flex max-w-1/2 items-center justify-start gap-1.25 px-2 py-1 text-left text-xs leading-tight font-medium data-placeholder:text-transparent sm:max-w-1/3 md:max-w-1/2 lg:max-w-1/3",
+        "group/card text-muted-foreground flex max-w-1/2 items-center justify-start gap-1.25 px-2 py-1 text-left text-xs leading-tight font-normal data-placeholder:text-transparent sm:max-w-1/3 md:max-w-1/2 lg:max-w-1/3",
         className,
       )}
     >
