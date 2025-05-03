@@ -249,7 +249,7 @@ export default function useGoToItem({ context }: TProps) {
                     );
                   },
                   Icon: ArchiveIcon,
-                  keywords: ["s3", "r2", "backup", "storage", ...goToKeywords],
+                  keywords: ["s3", "r2", "backup", "source", "storage", ...goToKeywords],
                 },
               ]
             : []),
