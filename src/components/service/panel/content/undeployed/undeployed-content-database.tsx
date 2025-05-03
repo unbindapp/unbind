@@ -191,7 +191,7 @@ function UndeployedContentDatabase_({ type, version, versionState, backupBucketS
 }
 
 function getCommandItemValueFromBucket(bucket: TDatabaseBackupBucket) {
-  return `${bucket.source.id}:${bucket.source.name}:${bucket.name}`;
+  return `${bucket.source.name} / ${bucket.name} - ${bucket.source.id}`;
 }
 
 function BackupBucketDropdown({
