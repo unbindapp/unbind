@@ -30,6 +30,7 @@ export async function oAuthSignInAction({
 
   const heads = await headers();
   const referer = heads.get("referer");
+  let initiatingUrl: string;
 
   if (!referer) {
     return {
@@ -40,13 +41,28 @@ export async function oAuthSignInAction({
     };
   }
 
+  try {
+    const url = new URL(referer);
+    const origin = url.origin;
+    const pathname = url.pathname;
+    initiatingUrl = `${origin}${pathname}`;
+  } catch (error) {
+    console.log("Error parsing referer:", error);
+    return {
+      error: {
+        code: "MALFORMED_REFERER",
+        message: "Referer is malformed.",
+      },
+    };
+  }
+
   await signIn(
     providerId,
     {
       redirectTo: redirectPathname ?? "/",
     },
     {
-      initiating_url: referer,
+      initiating_url: initiatingUrl,
     },
   );
 }

@@ -7,6 +7,8 @@ export function errorCodeToText(error: string) {
   switch (error) {
     case "NO_REFERER":
       return "No referer header found.";
+    case "MALFORMED_REFERER":
+      return "Referer is malformed.";
     case "INITIAL_USER_ALREADY_EXISTS":
       return "Initial user already exists.";
     case "USER_CREATION_FAILED":
