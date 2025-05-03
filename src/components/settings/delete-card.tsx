@@ -74,7 +74,7 @@ function DeleteButton({
   const buttonText = useMemo(() => getButtonText(type), [type]);
 
   return (
-    <DeleteProjectTrigger
+    <DeleteEntityTrigger
       type={type}
       deletingEntityName={deletingEntityName}
       onSubmit={onSubmit}
@@ -82,11 +82,11 @@ function DeleteButton({
       error={error}
     >
       <Button variant="destructive">{buttonText}</Button>
-    </DeleteProjectTrigger>
+    </DeleteEntityTrigger>
   );
 }
 
-export function DeleteProjectTrigger({
+export function DeleteEntityTrigger({
   type,
   deletingEntityName,
   onSubmit,

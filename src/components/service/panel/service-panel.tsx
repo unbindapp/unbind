@@ -5,6 +5,7 @@ import ServicePanelContent from "@/components/service/panel/content/service-pane
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import ServiceIcon from "@/components/service/service-icon";
 import ServiceProvider, { useServiceUtils } from "@/components/service/service-provider";
+import { DeleteEntityTrigger } from "@/components/settings/delete-card";
 import { Button, LinkButton } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,6 +24,15 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/components/ui/utils";
 import { defaultAnimationMs } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import {
@@ -34,7 +44,14 @@ import {
   TServiceShallow,
 } from "@/server/trpc/api/services/types";
 import { api } from "@/server/trpc/setup/client";
-import { ExternalLinkIcon, GlobeIcon, PenIcon, XIcon } from "lucide-react";
+import {
+  EllipsisVerticalIcon,
+  ExternalLinkIcon,
+  GlobeIcon,
+  PenIcon,
+  TrashIcon,
+  XIcon,
+} from "lucide-react";
 import { ReactNode, useRef, useState } from "react";
 import { z } from "zod";
 
@@ -87,17 +104,27 @@ export default function ServicePanel({
               environmentId={environmentId}
             />
           </DrawerHeader>
-          {!isExtraSmall && (
-            <DrawerClose asChild>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="text-muted-more-foreground -mt-2.25 -mr-3 shrink-0 rounded-lg sm:-mt-3 sm:-mr-5"
-              >
-                <XIcon className="size-5" />
-              </Button>
-            </DrawerClose>
-          )}
+          <div className="-mt-2.25 -mr-3 flex items-center justify-end gap-1 sm:-mt-3 sm:-mr-5">
+            {!service.last_deployment && (
+              <ThreeDotButton
+                service={service}
+                teamId={teamId}
+                projectId={projectId}
+                environmentId={environmentId}
+              />
+            )}
+            {!isExtraSmall && (
+              <DrawerClose asChild>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="text-muted-more-foreground shrink-0 rounded-lg"
+                >
+                  <XIcon className="size-5" />
+                </Button>
+              </DrawerClose>
+            )}
+          </div>
         </div>
         {service.config.hosts && service.config.hosts.length >= 1 && (
           <ServiceUrl hostObject={service.config.hosts[0]} />
@@ -255,6 +282,92 @@ function TitleButton({
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function ThreeDotButton({
+  service,
+  teamId,
+  projectId,
+  environmentId,
+  className,
+}: {
+  service: TServiceShallow;
+  teamId: string;
+  projectId: string;
+  environmentId: string;
+  className?: string;
+}) {
+  const { closePanel } = useServicePanel();
+  const { invalidate } = useServicesUtils({ teamId, projectId, environmentId });
+
+  const {
+    mutateAsync: deleteService,
+    error,
+    reset,
+  } = api.services.delete.useMutation({
+    onSuccess: () => {
+      closePanel();
+      invalidate();
+    },
+  });
+
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          data-open={isOpen ? true : undefined}
+          fadeOnDisabled={false}
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent",
+            className,
+          )}
+        >
+          <EllipsisVerticalIcon className="size-6 rotate-90 transition-transform group-data-open/button:rotate-180" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        className="z-50 w-40"
+        sideOffset={-1}
+        data-open={isOpen ? true : undefined}
+        align="end"
+        forceMount={true}
+      >
+        <ScrollArea>
+          <DropdownMenuGroup>
+            <DeleteEntityTrigger
+              type="service"
+              onSubmit={async () => {
+                await deleteService({
+                  teamId,
+                  projectId,
+                  environmentId,
+                  serviceId: service.id,
+                });
+              }}
+              error={error}
+              deletingEntityName={service.name}
+              onDialogClose={() => {
+                setIsOpen(false);
+                reset();
+              }}
+            >
+              <DropdownMenuItem
+                onSelect={(e) => e.preventDefault()}
+                className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
+              >
+                <TrashIcon className="-ml-0.5 size-5" />
+                <p className="min-w-0 shrink leading-tight">Delete</p>
+              </DropdownMenuItem>
+            </DeleteEntityTrigger>
+          </DropdownMenuGroup>
+        </ScrollArea>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 

@@ -1,7 +1,7 @@
 import BrandIcon from "@/components/icons/brand";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
-import { DeleteProjectTrigger } from "@/components/settings/delete-card";
+import { DeleteEntityTrigger } from "@/components/settings/delete-card";
 import { Button, LinkButton, TButtonVariants } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { TProjectShallow } from "@/server/trpc/api/projects/types";
@@ -116,7 +116,7 @@ function ConditionalButton({
 
   if (href === null) {
     return (
-      <DeleteProjectTrigger
+      <DeleteEntityTrigger
         type="project"
         description="This project doesn't have any environments, please delete it."
         deletingEntityName={project?.name || "Project"}
@@ -131,7 +131,7 @@ function ConditionalButton({
         <Button variant={variant} className={className}>
           {children}
         </Button>
-      </DeleteProjectTrigger>
+      </DeleteEntityTrigger>
     );
   }
 
