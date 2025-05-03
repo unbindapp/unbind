@@ -435,7 +435,7 @@ export default function TextareaWithTokens<T>({
                     placeholderArray.map((_, index) => (
                       <CommandItem disabled className="rounded-md" key={index}>
                         <p className="bg-foreground animate-skeleton min-w-0 shrink rounded-md leading-tight">
-                          Loading {index}
+                          Loading
                         </p>
                       </CommandItem>
                     ))}

@@ -10,7 +10,10 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/service/panel/content/undeployed/block";
-import { TDatabaseBackupSourceState } from "@/components/service/panel/content/undeployed/service-panel-content-undeployed";
+import {
+  TDatabaseBackupBucket,
+  TDatabaseBackupBucketState,
+} from "@/components/service/panel/content/undeployed/service-panel-content-undeployed";
 import { TStringOrNullState } from "@/components/service/panel/content/undeployed/types";
 import { useService } from "@/components/service/service-provider";
 import S3SourcesProvider, { useS3Sources } from "@/components/storage/s3-sources-provider";
@@ -43,7 +46,7 @@ type TProps = {
   type: string;
   version: string;
   versionState: TStringOrNullState;
-  backupSourceState: TDatabaseBackupSourceState;
+  backupBucketState: TDatabaseBackupBucketState;
 };
 
 export function UndeployedContentDatabase(props: TProps) {
@@ -55,13 +58,13 @@ export function UndeployedContentDatabase(props: TProps) {
   );
 }
 
-function UndeployedContentDatabase_({ type, version, versionState, backupSourceState }: TProps) {
+function UndeployedContentDatabase_({ type, version, versionState, backupBucketState }: TProps) {
   const [isVersionDropdownOpen, setIsVersionDropdownOpen] = useState(false);
-  const [isBackupSourceDropdownOpen, setIsBackupSourceDropdownOpen] = useState(false);
+  const [isBackupBucketDropdownOpen, setIsBackupBucketDropdownOpen] = useState(false);
 
   const backupsDisabled = type === "redis";
   const [currentVersion, setCurrentVersion] = versionState;
-  const [currentBackupSource] = backupSourceState;
+  const [currentBackupBucket] = backupBucketState;
 
   const { data, isPending, error } = api.services.getDatabase.useQuery({
     type,
@@ -136,7 +139,7 @@ function UndeployedContentDatabase_({ type, version, versionState, backupSourceS
                       placeholderArray.map((_, index) => (
                         <DropdownMenuItem disabled key={index}>
                           <p className="bg-foreground animate-skeleton min-w-0 shrink rounded-md leading-tight">
-                            Loading {index}
+                            Loading
                           </p>
                         </DropdownMenuItem>
                       ))}
@@ -155,20 +158,20 @@ function UndeployedContentDatabase_({ type, version, versionState, backupSourceS
             </BlockItemHeader>
             <BlockItemContent>
               <BackupBucketDropdown
-                backupSourceState={backupSourceState}
+                backupBucketState={backupBucketState}
                 backupsDisabled={backupsDisabled}
-                isBackupSourceDropdownOpen={isBackupSourceDropdownOpen}
-                setIsBackupSourceDropdownOpen={setIsBackupSourceDropdownOpen}
+                isBackupBucketDropdownOpen={isBackupBucketDropdownOpen}
+                setIsBackupBucketDropdownOpen={setIsBackupBucketDropdownOpen}
               >
                 <BlockItemButtonLike
                   asElement="button"
                   isPending={s3SourcesIsPending}
                   text={
-                    currentBackupSource ? (
+                    currentBackupBucket ? (
                       <>
-                        {currentBackupSource.source.name}
+                        {currentBackupBucket.source.name}
                         <span className="text-muted-more-foreground">{" / "}</span>
-                        {currentBackupSource.bucket}
+                        {currentBackupBucket.name}
                       </>
                     ) : (
                       "No bucket selected"
@@ -176,7 +179,7 @@ function UndeployedContentDatabase_({ type, version, versionState, backupSourceS
                   }
                   Icon={({ className }) => <CylinderIcon className={cn("scale-90", className)} />}
                   variant="outline"
-                  open={isBackupSourceDropdownOpen}
+                  open={isBackupBucketDropdownOpen}
                 />
               </BackupBucketDropdown>
             </BlockItemContent>
@@ -187,32 +190,36 @@ function UndeployedContentDatabase_({ type, version, versionState, backupSourceS
   );
 }
 
+function getCommandItemValueFromBucket(bucket: TDatabaseBackupBucket) {
+  return `${bucket.source.id}:${bucket.source.name}:${bucket.name}`;
+}
+
 function BackupBucketDropdown({
   backupsDisabled,
-  backupSourceState,
-  isBackupSourceDropdownOpen,
-  setIsBackupSourceDropdownOpen,
+  backupBucketState,
+  isBackupBucketDropdownOpen,
+  setIsBackupBucketDropdownOpen,
   children,
 }: {
   backupsDisabled: boolean;
-  backupSourceState: TDatabaseBackupSourceState;
-  isBackupSourceDropdownOpen: boolean;
-  setIsBackupSourceDropdownOpen: (open: boolean) => void;
+  backupBucketState: TDatabaseBackupBucketState;
+  isBackupBucketDropdownOpen: boolean;
+  setIsBackupBucketDropdownOpen: (open: boolean) => void;
   children: ReactNode;
 }) {
   const { teamId } = useService();
-  const [currentBackupSource, setCurrentBackupSource] = backupSourceState;
+  const [currentBackupBucket, setCurrentBackupBucket] = backupBucketState;
   const {
     query: { data: s3SourcesData, isPending: s3SourcesIsPending, error: s3SourcesError },
   } = useS3Sources();
 
   const buckets = useMemo(() => {
     if (!s3SourcesData) return undefined;
-    const buckets: NonNullable<TDatabaseBackupSourceState[0]>[] = [];
+    const buckets: NonNullable<TDatabaseBackupBucketState[0]>[] = [];
     for (const source of s3SourcesData.sources) {
       for (const bucket of source.buckets) {
         buckets.push({
-          bucket: bucket.name,
+          name: bucket.name,
           source: source,
         });
       }
@@ -230,9 +237,10 @@ function BackupBucketDropdown({
     });
 
     if (!backupsDisabled && buckets && buckets.length > 0) {
-      setBackupSourceCommandValue(`${buckets[0].source.id}:${buckets[0].bucket}`);
-      if (!currentBackupSource) {
-        setCurrentBackupSource(buckets[0]);
+      const firstSource = buckets[0];
+      setBackupBucketCommandValue(getCommandItemValueFromBucket(firstSource));
+      if (!currentBackupBucket) {
+        setCurrentBackupBucket(firstSource);
       }
     }
 
@@ -242,11 +250,11 @@ function BackupBucketDropdown({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [buckets]);
 
-  const [backupSourceCommandValue, setBackupSourceCommandValue] = useState("");
+  const [backupSourceCommandValue, setBackupBucketCommandValue] = useState("");
 
   if (buckets && buckets.length === 0) {
     return (
-      <DropdownMenu open={isBackupSourceDropdownOpen} onOpenChange={setIsBackupSourceDropdownOpen}>
+      <DropdownMenu open={isBackupBucketDropdownOpen} onOpenChange={setIsBackupBucketDropdownOpen}>
         <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
         <DropdownMenuContent animate={false} className="w-[var(--radix-popper-anchor-width)]">
           <ScrollArea>
@@ -268,7 +276,7 @@ function BackupBucketDropdown({
   }
 
   return (
-    <Popover open={isBackupSourceDropdownOpen} onOpenChange={setIsBackupSourceDropdownOpen}>
+    <Popover open={isBackupBucketDropdownOpen} onOpenChange={setIsBackupBucketDropdownOpen}>
       <PopoverTrigger asChild>{children}</PopoverTrigger>
       <PopoverContent
         animate={false}
@@ -276,7 +284,7 @@ function BackupBucketDropdown({
       >
         <Command
           value={backupSourceCommandValue}
-          onValueChange={setBackupSourceCommandValue}
+          onValueChange={setBackupBucketCommandValue}
           shouldFilter={s3SourcesIsPending ? false : true}
           wrapper="none"
           className="flex flex-1 flex-col"
@@ -305,7 +313,7 @@ function BackupBucketDropdown({
                   placeholderArray.map((_, index) => (
                     <CommandItem disabled key={index}>
                       <p className="bg-foreground animate-skeleton min-w-0 shrink rounded-md leading-tight">
-                        Loading {index}
+                        Loading {" / "} loading
                       </p>
                     </CommandItem>
                   ))}
@@ -314,16 +322,16 @@ function BackupBucketDropdown({
                 )}
                 {buckets?.map((b) => (
                   <CommandItem
-                    key={`${b.source.id}:${b.bucket}`}
-                    value={`${b.source.id}:${b.bucket}`}
+                    key={getCommandItemValueFromBucket(b)}
+                    value={getCommandItemValueFromBucket(b)}
                     onSelect={(v) => {
-                      setBackupSourceCommandValue(v);
-                      setCurrentBackupSource(b);
-                      setIsBackupSourceDropdownOpen(false);
+                      setBackupBucketCommandValue(v);
+                      setCurrentBackupBucket(b);
+                      setIsBackupBucketDropdownOpen(false);
                     }}
                     data-checked={
-                      b.source.id === currentBackupSource?.source.id &&
-                      b.bucket === currentBackupSource?.bucket
+                      b.source.id === currentBackupBucket?.source.id &&
+                      b.name === currentBackupBucket?.name
                         ? true
                         : undefined
                     }
@@ -332,7 +340,7 @@ function BackupBucketDropdown({
                     <p className="min-w-0 shrink leading-tight">
                       {b.source.name}
                       <span className="text-muted-more-foreground">{` / `}</span>
-                      {b.bucket}
+                      {b.name}
                     </p>
                     <CheckIcon
                       strokeWidth={2.5}

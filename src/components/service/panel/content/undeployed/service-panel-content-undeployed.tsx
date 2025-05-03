@@ -71,7 +71,7 @@ export default function ServicePanelContentUndeployed({ service, className, ...r
   const tagState = useState<string | null>(null);
   const branchState = useState<string | null>(null);
   const databaseVersionState = useState<string | null>(null);
-  const databaseBackupSourceState = useState<TDatabaseBackupSource | null>(null);
+  const databaseBackupBucketState = useState<TDatabaseBackupBucket | null>(null);
 
   const [isPrivateService, setIsPrivateService] = useState<boolean>(!service.config.is_public);
 
@@ -206,10 +206,10 @@ export default function ServicePanelContentUndeployed({ service, className, ...r
             version: newDatabaseVersion,
           };
         }
-        const backupSource = databaseBackupSourceState[0];
-        if (backupSource !== null) {
-          props.s3BackupSourceId = backupSource.source.id;
-          props.s3BackupBucket = backupSource.bucket;
+        const backupBucket = databaseBackupBucketState[0];
+        if (backupBucket !== null) {
+          props.s3BackupSourceId = backupBucket.source.id;
+          props.s3BackupBucket = backupBucket.name;
         }
         await updateService(props);
       }
@@ -245,7 +245,7 @@ export default function ServicePanelContentUndeployed({ service, className, ...r
             tagState={tagState}
             branchState={branchState}
             databaseVersionState={databaseVersionState}
-            databaseBackupSourceState={databaseBackupSourceState}
+            databaseBackupBucketState={databaseBackupBucketState}
           />
           {isServicePublicable && (
             <Block>
@@ -399,13 +399,13 @@ function Content({
   tagState,
   branchState,
   databaseVersionState,
-  databaseBackupSourceState,
+  databaseBackupBucketState,
 }: {
   service: TServiceShallow;
   tagState: TStringOrNullState;
   branchState: TStringOrNullState;
   databaseVersionState: TStringOrNullState;
-  databaseBackupSourceState: TDatabaseBackupSourceState;
+  databaseBackupBucketState: TDatabaseBackupBucketState;
 }) {
   if (service.type === "docker-image") {
     const arr = service.config.image?.split(":");
@@ -450,7 +450,7 @@ function Content({
         type={service.database_type}
         versionState={databaseVersionState}
         version={service.database_version}
-        backupSourceState={databaseBackupSourceState}
+        backupBucketState={databaseBackupBucketState}
       />
     );
   }
@@ -460,8 +460,8 @@ function Content({
 
 type TStringOrNullState = [string | null, Dispatch<SetStateAction<string | null>>];
 
-export type TDatabaseBackupSource = { bucket: string; source: TS3SourceShallow };
-export type TDatabaseBackupSourceState = [
-  TDatabaseBackupSource | null,
-  Dispatch<SetStateAction<TDatabaseBackupSource | null>>,
+export type TDatabaseBackupBucket = { name: string; source: TS3SourceShallow };
+export type TDatabaseBackupBucketState = [
+  TDatabaseBackupBucket | null,
+  Dispatch<SetStateAction<TDatabaseBackupBucket | null>>,
 ];

@@ -125,7 +125,7 @@ export function UndeployedContentGit({
                         placeholderArray.map((_, index) => (
                           <CommandItem disabled key={index}>
                             <p className="bg-foreground animate-skeleton min-w-0 shrink rounded-md leading-tight">
-                              Loading {index}
+                              Loading
                             </p>
                           </CommandItem>
                         ))}

@@ -98,14 +98,14 @@ export function BlockItemButtonLike({
       )}
       {...props}
     >
-      {!isPending && (
-        <Icon className="group-data-pending/button:bg-foreground group-data-pending/button:animate-skeleton size-5 shrink-0 group-data-pending/button:rounded-full" />
-      )}
-      <p className="group-data-pending/button:bg-foreground group-data-pending/button:animate-skeleton min-w-0 shrink truncate leading-tight font-medium group-data-pending/button:rounded-md">
-        {text}
-      </p>
+      <div className="group-data-pending/button:animate-skeleton flex min-w-0 flex-1 items-center justify-start gap-2">
+        <Icon className="group-data-pending/button:bg-foreground size-5 shrink-0 group-data-pending/button:rounded-full" />
+        <p className="group-data-pending/button:bg-foreground min-w-0 shrink truncate leading-tight font-medium group-data-pending/button:rounded-md">
+          {text}
+        </p>
+      </div>
       {open !== undefined && (
-        <ChevronDownIcon className="text-muted-foreground -mr-0.75 ml-auto size-5 transition group-data-open/button:rotate-180" />
+        <ChevronDownIcon className="text-muted-foreground -mr-0.75 size-5 transition group-data-open/button:rotate-180" />
       )}
     </Element>
   );
