@@ -351,8 +351,10 @@ function ThreeDotButton({
               }}
               error={error}
               deletingEntityName={service.name}
-              onDialogClose={() => {
+              onDialogCloseImmediate={() => {
                 setIsOpen(false);
+              }}
+              onDialogClose={() => {
                 reset();
               }}
             >

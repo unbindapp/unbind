@@ -91,6 +91,7 @@ export function DeleteEntityTrigger({
   deletingEntityName,
   onSubmit,
   onDialogClose,
+  onDialogCloseImmediate,
   error,
   description: descriptionProp,
   children,
@@ -99,6 +100,7 @@ export function DeleteEntityTrigger({
   deletingEntityName?: string;
   onSubmit: () => Promise<void>;
   onDialogClose: () => void;
+  onDialogCloseImmediate?: () => void;
   error: { message: string } | null;
   description?: string;
   children: ReactNode;
@@ -143,6 +145,9 @@ export function DeleteEntityTrigger({
       onOpenChange={(o) => {
         setIsDialogOpen(o);
         if (!o) {
+          if (onDialogCloseImmediate) {
+            onDialogCloseImmediate();
+          }
           if (timeout.current) clearTimeout(timeout.current);
           timeout.current = setTimeout(() => {
             form.reset();
