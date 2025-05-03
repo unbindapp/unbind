@@ -146,7 +146,7 @@ function S3SourceDialog({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent hideXButton className="p-0" classNameInnerWrapper="w-128 max-w-full gap-0">
-        <DialogHeader className="px-5 py-3">
+        <DialogHeader className="px-5 py-3.5">
           <DialogTitle className="sr-only">{s3Source.name}</DialogTitle>
           <RenameTrigger s3Source={s3Source} teamId={teamId} closeDropdown={() => null}>
             <Button
@@ -226,7 +226,7 @@ function S3SourceDialogInnerContent({
           {connectionStatusString}
         </p>
       </div>
-      <div className="flex w-full flex-col gap-3 px-5 pt-3 pb-5">
+      <div className="flex w-full flex-col gap-3 px-5 pt-3.5 pb-5.5">
         <div className="flex w-full">
           <h3 className="w-full text-lg leading-tight font-semibold">
             Buckets{" "}
@@ -241,7 +241,7 @@ function S3SourceDialogInnerContent({
               <Bucket
                 name="No buckets available"
                 Icon={XIcon}
-                className="text-foreground md:w-w-full lg:w-w-full w-full max-w-full items-start justify-start gap-1.75 rounded-md border px-3 py-2.5 text-base leading-tight sm:w-full sm:max-w-full md:max-w-full lg:max-w-full"
+                className="text-foreground md:w-w-full lg:w-w-full w-full max-w-full items-start justify-start gap-1.75 rounded-md border px-3 py-3 text-base leading-tight sm:w-full sm:max-w-full md:max-w-full lg:max-w-full"
                 classNameParagraph="whitespace-normal -mt-0.75"
                 classNameIcon="size-4"
               />
@@ -251,7 +251,7 @@ function S3SourceDialogInnerContent({
               <li key={i} className="w-full p-0.75 sm:w-1/2">
                 <Bucket
                   name={bucket.name}
-                  className="text-foreground md:w-w-full lg:w-w-full w-full max-w-full items-start justify-start gap-1.75 rounded-md border px-3 py-2.5 text-base leading-tight sm:w-full sm:max-w-full md:max-w-full lg:max-w-full"
+                  className="text-foreground md:w-w-full lg:w-w-full w-full max-w-full items-start justify-start gap-1.75 rounded-md border px-3 py-3 text-base leading-tight sm:w-full sm:max-w-full md:max-w-full lg:max-w-full"
                   classNameParagraph="whitespace-normal -mt-0.75"
                   classNameIcon="size-4"
                 />
