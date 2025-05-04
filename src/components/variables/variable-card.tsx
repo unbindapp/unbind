@@ -79,6 +79,7 @@ type TProps = {
   asElement?: "div" | "li";
   disableDelete?: boolean;
   disableEdit?: boolean;
+  disableCopy?: boolean;
 } & TVariableOrPlaceholderProps;
 
 export default function VariableCard({
@@ -87,6 +88,7 @@ export default function VariableCard({
   isPlaceholder,
   disableDelete,
   disableEdit,
+  disableCopy,
   asElement = "div",
 }: TProps) {
   const Element = asElement === "li" ? "li" : "div";
@@ -185,7 +187,11 @@ export default function VariableCard({
       <div className="relative -ml-2 flex w-[calc(100%+1rem)] min-w-0 flex-1 items-center sm:mt-0 sm:w-auto">
         {(!variable || !isEditingVariable) && (
           <>
-            <CopyButton variable={variable} isPlaceholder={isPlaceholder} />
+            <CopyButton
+              variable={variable}
+              isPlaceholder={isPlaceholder}
+              disableCopy={disableCopy}
+            />
             <Button
               data-visible={isValueVisible ? true : undefined}
               onClick={() => setIsValueVisible((prev) => !prev)}
@@ -378,7 +384,13 @@ function ThreeDotButton({
           )}
         >
           {isLocked ? (
-            <LockIcon className="size-5 transition-transform group-data-open/button:rotate-90" />
+            <div className="relative size-5 transition-transform group-data-open/button:rotate-90">
+              <LockIcon className="size-full transition-opacity group-data-open/button:opacity-0" />
+              <XIcon
+                strokeWidth={2.25}
+                className="absolute top-0 left-0 size-full opacity-0 transition-opacity group-data-open/button:opacity-100"
+              />
+            </div>
           ) : (
             <EllipsisVerticalIcon className="size-6 transition-transform group-data-open/button:rotate-90" />
           )}
@@ -402,7 +414,7 @@ function ThreeDotButton({
                 </p>
               </div>
             )}
-            {!isLocked && variable.variable_type !== "reference" && (
+            {!isLocked && (
               <DropdownMenuItem
                 disabled={disableEdit}
                 onSelect={() => setIsEditingVariable((o) => !o)}
@@ -635,9 +647,11 @@ function DeleteTrigger({
 
 function CopyButton({
   variable,
+  disableCopy,
   isPlaceholder,
 }: {
   variable?: TVariableOrReferenceShallow;
+  disableCopy?: boolean;
   isPlaceholder?: boolean;
 }) {
   const { copyToClipboard, isRecentlyCopied } = useCopyToClipboard();
@@ -650,11 +664,11 @@ function CopyButton({
       forceMinSize="medium"
       size="icon"
       className="text-muted-more-foreground group/button rounded-lg group-data-placeholder/card:text-transparent sm:rounded-md"
-      disabled={isPlaceholder || variable?.variable_type === "reference"}
+      disabled={isPlaceholder || disableCopy}
       fadeOnDisabled={false}
     >
       <div className="relative size-4 transition-transform group-data-copied/button:rotate-90">
-        {variable?.variable_type === "reference" ? (
+        {disableCopy ? (
           <MinusIcon className="size-full" />
         ) : (
           <>

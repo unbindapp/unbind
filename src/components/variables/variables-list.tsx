@@ -72,6 +72,7 @@ export default function VariablesList({ variableTypeProps }: TProps) {
           <VariableCard
             variable={variable}
             disableDelete={
+              variable.variable_type === "regular" &&
               variableTypeProps.type === "service" &&
               variableTypeProps.service.type === "database" &&
               (variable.name === "DATABASE_URL" ||
@@ -79,10 +80,13 @@ export default function VariablesList({ variableTypeProps }: TProps) {
                 variable.name === "DATABASE_USERNAME")
             }
             disableEdit={
-              variableTypeProps.type === "service" &&
-              variableTypeProps.service.type === "database" &&
-              variable.name === "DATABASE_URL"
+              variable.variable_type === "reference" ||
+              (variable.variable_type === "regular" &&
+                variableTypeProps.type === "service" &&
+                variableTypeProps.service.type === "database" &&
+                variable.name === "DATABASE_URL")
             }
+            disableCopy={variable.variable_type === "reference"}
             variableTypeProps={variableTypeProps}
             asElement="li"
             key={i}
@@ -97,6 +101,15 @@ function variablesSort(
   b: TVariableOrReferenceShallow,
   variableTypeProps: TEntityVariableTypeProps,
 ) {
+  if (a.variable_type === "reference" && b.variable_type !== "reference") {
+    return -1;
+  }
+  if (a.variable_type !== "reference" && b.variable_type === "reference") {
+    return 1;
+  }
+  if (a.variable_type === "reference" && b.variable_type === "reference") {
+    return 0;
+  }
   if (variableTypeProps.type === "service" && variableTypeProps.service.type === "database") {
     if (a.name === "DATABASE_URL") return -1;
     if (b.name === "DATABASE_URL") return 1;
