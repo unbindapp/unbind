@@ -12,6 +12,7 @@ import { createContext, ReactNode, useContext, useMemo } from "react";
 
 type TContextCommandPanelItemsContext = {
   items: TCommandPanelItem[] | undefined;
+  itemsPinned: TCommandPanelItem[] | undefined;
   isPending: boolean;
   isError: boolean;
   error: Error | null;
@@ -58,11 +59,12 @@ export const ContextCommandPanelItemsProvider: React.FC<{
   const value: TContextCommandPanelItemsContext = useMemo(
     () => ({
       items: page.items ? page.items : data,
+      itemsPinned: page.itemsPinned,
       isError: page.items ? false : isError,
       isPending: page.items ? false : isPending,
       error: page.items ? null : error,
     }),
-    [data, error, isError, isPending, page.items],
+    [data, error, isError, isPending, page.items, page.itemsPinned],
   );
 
   return (

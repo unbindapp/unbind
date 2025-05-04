@@ -11,6 +11,7 @@ export type TCommandPanelPage = {
   id: string;
   parentPageId: string | null;
   inputPlaceholder: string;
+  itemsPinned?: TCommandPanelItem[];
 } & (
   | { items: TCommandPanelItem[]; getItems?: never; usesAsyncSearch?: never }
   | {

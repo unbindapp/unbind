@@ -6,12 +6,16 @@ import BrandIcon from "@/components/icons/brand";
 import { useProject, useProjectUtils } from "@/components/project/project-provider";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useServicesUtils } from "@/components/project/services-provider";
+import { useAppConfig } from "@/components/providers/app-config-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
+import { createClient } from "@/server/go/client.gen";
 import { AppRouterOutputs } from "@/server/trpc/api/root";
 import { api } from "@/server/trpc/setup/client";
 import { useMutation } from "@tanstack/react-query";
+import { BuildingIcon, CogIcon, UserIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
+import { useSession } from "next-auth/react";
 import { useMemo } from "react";
 import { toast } from "sonner";
 
@@ -120,7 +124,107 @@ function useRepoItem({ context }: TProps) {
     },
   });
 
+  const { apiUrl } = useAppConfig();
+  const gitHubRedirectPathname = `/${teamId}/connect-git/connected/github`;
+  const sessionData = useSession();
+
+  const { mutateAsync: createGitHubAppMutate } = useMutation({
+    mutationFn: async ({
+      accessToken,
+      redirectUrl,
+      organizationName,
+    }: {
+      accessToken: string;
+      redirectUrl: string;
+      organizationName?: string;
+    }) =>
+      createGitHubApp({
+        redirectUrl,
+        accessToken,
+        apiUrl,
+        organizationName,
+      }),
+    mutationKey: ["create-github-app", { teamId }],
+  });
+
+  const pageId = "repos";
+
   const item: TCommandPanelItem = useMemo(() => {
+    const itemsPinned: TCommandPanelItem[] = [
+      {
+        id: "git_repo_configure_github",
+        title: "Configure GitHub App",
+        keywords: ["connect", "configure", "github", "gitlab", "bitbucket"],
+        Icon: CogIcon,
+        subpage: {
+          id: "git_repo_configure_github_options",
+          title: "GitHub App",
+          inputPlaceholder: "Select account type...",
+          parentPageId: pageId,
+          items: [
+            {
+              id: "git_repo_configure_github_options_personal",
+              keywords: ["personal", "github"],
+              title: "Personal Account",
+              Icon: UserIcon,
+              onSelect: async ({ isPendingId }) => {
+                if (isPendingId !== null) return;
+                if (!sessionData.data?.access_token) {
+                  toast.error("Your current session is invalid. Please sign in again.");
+                  return;
+                }
+                setIsPendingId("git_repo_configure_github_options_personal");
+                const res = await ResultAsync.fromPromise(
+                  createGitHubAppMutate({
+                    accessToken: sessionData.data.access_token,
+                    redirectUrl: window.location.origin + gitHubRedirectPathname,
+                  }),
+                  () => new Error("Failed to create GitHub app"),
+                );
+                if (res.isErr()) {
+                  toast.error("Failed to create GitHub app", {
+                    description: res.error.message,
+                  });
+                  setIsPendingId(null);
+                  return;
+                }
+                setIsPendingId(null);
+              },
+            },
+            {
+              id: "git_repo_configure_github_options_organization",
+              keywords: ["organization", "github"],
+              title: "Organization",
+              Icon: BuildingIcon,
+              onSelect: async ({ isPendingId }) => {
+                if (isPendingId !== null) return;
+                if (!sessionData.data?.access_token) {
+                  toast.error("Your current session is invalid. Please sign in again.");
+                  return;
+                }
+                setIsPendingId("git_repo_configure_github_options_organization");
+                const res = await ResultAsync.fromPromise(
+                  createGitHubAppMutate({
+                    accessToken: sessionData.data.access_token,
+                    redirectUrl: window.location.origin + gitHubRedirectPathname,
+                  }),
+                  () => new Error("Failed to create GitHub app"),
+                );
+                if (res.isErr()) {
+                  toast.error("Failed to create GitHub app", {
+                    description: res.error.message,
+                  });
+                  setIsPendingId(null);
+                  return;
+                }
+                setIsPendingId(null);
+              },
+            },
+          ],
+        },
+      },
+    ];
+
     return {
       id: `repo`,
       title: "GitHub Repo",
@@ -129,10 +233,11 @@ function useRepoItem({ context }: TProps) {
         <BrandIcon brand="github" className={className} />
       ),
       subpage: {
-        id: `repos`,
+        id: pageId,
         title: "GitHub Repos",
         parentPageId: contextCommandPanelRootPage,
         inputPlaceholder: "Deploy from GitHub...",
+        itemsPinned,
         getItems: async () => {
           const res = await utils.git.listRepositories.fetch();
           const items: TCommandPanelItem[] = res.repositories.map((r) => {
@@ -155,7 +260,14 @@ function useRepoItem({ context }: TProps) {
         },
       },
     };
-  }, [utils.git.listRepositories, createService, setIsPendingId]);
+  }, [
+    utils.git.listRepositories,
+    createService,
+    setIsPendingId,
+    sessionData,
+    createGitHubAppMutate,
+    gitHubRedirectPathname,
+  ]);
 
   const value = useMemo(
     () => ({
@@ -165,4 +277,103 @@ function useRepoItem({ context }: TProps) {
   );
 
   return value;
+}
+
+async function createGitHubApp({
+  redirectUrl,
+  accessToken,
+  apiUrl,
+  organizationName,
+}: {
+  redirectUrl: string;
+  accessToken: string;
+  apiUrl: string;
+  organizationName?: string;
+}) {
+  const width = 800;
+  const height = 600;
+  const left = (window.screen.width - width) / 2;
+  const top = (window.screen.height - height) / 2;
+  const svg = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-loader"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>`;
+  const popup = window.open(
+    "",
+    "GitHubAuth",
+    `width=${width},height=${height},top=${top},left=${left}`,
+  );
+
+  if (!popup) {
+    toast.error("Popup was blocked. Please allow popups for this site.");
+    return;
+  }
+
+  const messageHandler = (event: MessageEvent) => {
+    if (event.origin !== window.location.origin) return;
+    if (event.data && event.data.success === true) {
+      clearInterval(interval);
+      window.removeEventListener("message", messageHandler);
+      popup.close();
+    }
+  };
+
+  window.addEventListener("message", messageHandler);
+
+  popup.document.write(`
+    <html>
+      <title>Connect GitHub</title>
+      <head>
+        <style>
+          body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+          }
+          .loader-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-bottom: calc(1rem + 4vh);
+          }
+          .loader {
+            width: 2rem;
+            height: 2rem;
+            animation: spin 1s linear infinite;
+          }
+          .icon {
+            width: 100%;
+            height: 100%;
+          }
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="loader-container">
+          <div class="loader">
+            ${svg}
+          </div>
+        </div>
+      </body>
+    </html>
+  `);
+
+  const abortController = new AbortController();
+
+  const interval = setInterval(() => {
+    if (popup.closed) {
+      clearInterval(interval);
+      abortController.abort();
+    }
+  }, 250);
+
+  const goClient = createClient({ accessToken, apiUrl });
+
+  const res = await goClient.github.app.create(
+    { redirect_url: redirectUrl, organization_name: organizationName },
+    { signal: abortController.signal },
+  );
+  popup.document.write(res.data);
 }

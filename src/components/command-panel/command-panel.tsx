@@ -88,7 +88,6 @@ export function CommandPanelTrigger({
 
   const onEscapeKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (currentPage.id === null) return;
       if (rootPage.id !== currentPage.id) {
         e.preventDefault();
       }
@@ -165,6 +164,7 @@ export function CommandPanelTrigger({
 
 type TUseCommandPanelItems = () => {
   items: TCommandPanelItem[] | undefined;
+  itemsPinned?: TCommandPanelItem[] | undefined;
   isPending: boolean;
   isError: boolean;
   error: Error | null;
@@ -301,7 +301,7 @@ function Content({
   setCurrentPageId: TSetCurrentPageId;
   scrollAreaRef: RefObject<HTMLDivElement | null>;
 }) {
-  const { items, isPending, isError, error } = useCommandPanelItems();
+  const { items, isPending, isError, error, itemsPinned } = useCommandPanelItems();
   const allItems = useMemo(() => getAllItemsFromCommandPanelPage(currentPage), [currentPage]);
 
   const allOtherItems = useMemo(() => {
@@ -319,6 +319,15 @@ function Content({
       <ScrollArea noFocusOnViewport viewportRef={scrollAreaRef}>
         <CommandList>
           <CommandGroup>
+            {items &&
+              itemsPinned?.map((item, i) => (
+                <Item
+                  key={`${item.id || item.title}-${i}`}
+                  item={item}
+                  currentPageId={currentPage.id}
+                  setCurrentPageId={setCurrentPageId}
+                />
+              ))}
             {!isPending &&
               items &&
               items.map((item, i) => (

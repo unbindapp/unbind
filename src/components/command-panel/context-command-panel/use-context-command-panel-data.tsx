@@ -126,6 +126,8 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
       if (parentPage) {
         e?.preventDefault();
         setCurrentPageId(parentPage.id);
+      } else {
+        setCurrentPageId(rootPage.id);
       }
     },
     [currentPage, rootPage, setCurrentPageId],
