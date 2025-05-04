@@ -14,11 +14,15 @@ import { TContextCommandPanelContext } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
 import { ReactNode, useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { z } from "zod";
+
+export const TriggerTypeEnum = z.enum(["layout", "button", "list"]);
+type TTriggerType = z.infer<typeof TriggerTypeEnum>;
 
 type TProps = {
   context: TContextCommandPanelContext;
   children?: ReactNode;
-  triggerType: string;
+  triggerType: TTriggerType;
   title: string;
   description: string;
 };

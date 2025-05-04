@@ -10,7 +10,7 @@ import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { useQuery } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
-type TContextCommandPanelItemsContext = {
+export type TContextCommandPanelItemsContext = {
   items: TCommandPanelItem[] | undefined;
   itemsPinned: TCommandPanelItem[] | undefined;
   isPending: boolean;
@@ -40,18 +40,23 @@ export const ContextCommandPanelItemsProvider: React.FC<{
     return null;
   }, [search, page.usesAsyncSearch]);
 
+  const queryKey = useMemo(
+    () =>
+      getContextCommandPaneItemsQueryKey({
+        teamId,
+        projectId,
+        environmentId,
+        pageId: page.id,
+        context,
+        triggerType,
+        searchKey,
+        hasItems: page.items !== undefined,
+      }),
+    [teamId, projectId, environmentId, page.id, page.items, context, triggerType, searchKey],
+  );
+
   const { data, isError, isPending, error } = useQuery({
-    queryKey: [
-      "context-aware-command-panel-items",
-      teamId,
-      projectId,
-      environmentId,
-      page.id,
-      context,
-      triggerType,
-      searchKey,
-      page.items !== undefined,
-    ],
+    queryKey: queryKey,
     queryFn: page.items ? () => page.items : () => page.getItems({ teamId, projectId, search }),
     enabled: page.items ? false : true,
   });
@@ -85,3 +90,35 @@ export const useContextCommandPanelItems = () => {
 };
 
 export default ContextCommandPanelItemsProvider;
+
+export function getContextCommandPaneItemsQueryKey({
+  teamId,
+  projectId,
+  environmentId,
+  pageId,
+  context,
+  triggerType,
+  searchKey,
+  hasItems,
+}: {
+  teamId: string;
+  projectId: string;
+  environmentId: string | null;
+  pageId: string;
+  context: TContextCommandPanelContext;
+  triggerType: string;
+  searchKey: string | null;
+  hasItems: boolean;
+}) {
+  return [
+    "context-aware-command-panel-items",
+    teamId,
+    projectId,
+    environmentId,
+    pageId,
+    context,
+    triggerType,
+    searchKey,
+    hasItems,
+  ];
+}

@@ -1,3 +1,4 @@
+import { TContextCommandPanelItemsContext } from "@/components/command-panel/context-command-panel/context-command-panel-items-provider";
 import { getAllItemsFromCommandPanelPage } from "@/components/command-panel/helpers";
 import { useCommandPanelStore } from "@/components/command-panel/store/command-panel-store-provider";
 import { TCommandPanelItem, TCommandPanelPage } from "@/components/command-panel/types";
@@ -162,20 +163,12 @@ export function CommandPanelTrigger({
   );
 }
 
-type TUseCommandPanelItems = () => {
-  items: TCommandPanelItem[] | undefined;
-  itemsPinned?: TCommandPanelItem[] | undefined;
-  isPending: boolean;
-  isError: boolean;
-  error: Error | null;
-};
-
 type TSetCurrentPageId = (id: string) => void;
 
 type TCommandPanelProps = {
   currentPage: TCommandPanelPage;
   goToParentPage: (e?: KeyboardEvent) => void;
-  useCommandPanelItems: TUseCommandPanelItems;
+  useCommandPanelItems: () => TContextCommandPanelItemsContext;
   rootPage: TCommandPanelPage;
   setCurrentPageId: TSetCurrentPageId;
   className?: string;
@@ -296,7 +289,7 @@ function Content({
   setCurrentPageId,
   scrollAreaRef,
 }: {
-  useCommandPanelItems: TUseCommandPanelItems;
+  useCommandPanelItems: () => TContextCommandPanelItemsContext;
   currentPage: TCommandPanelPage;
   setCurrentPageId: TSetCurrentPageId;
   scrollAreaRef: RefObject<HTMLDivElement | null>;
@@ -424,7 +417,7 @@ function Input({
   ref,
   scrollAreaRef,
 }: {
-  useCommandPanelItems: TUseCommandPanelItems;
+  useCommandPanelItems: () => TContextCommandPanelItemsContext;
   currentPage: TCommandPanelPage;
   placeholder: string;
   ref: RefObject<HTMLInputElement | null>;

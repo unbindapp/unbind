@@ -149,6 +149,26 @@ function useRepoItem({ context }: TProps) {
 
   const pageId = "repos";
 
+  /* const environmentId = environmentIdFromPathname || defaultEnvironmentId;
+  if (!environmentId) {
+    return;
+  }
+  const queryKeys = TriggerTypeEnum.options.map((triggerType) =>
+    getContextCommandPaneItemsQueryKey({
+      teamId,
+      projectId,
+      context,
+      hasItems: false,
+      searchKey: null,
+      pageId: pageId,
+      triggerType,
+      environmentId,
+    }),
+  );
+  queryKeys.forEach((queryKey) => {
+    queryClient.resetQueries({ queryKey });
+  }); */
+
   const item: TCommandPanelItem = useMemo(() => {
     const itemsPinned: TCommandPanelItem[] = [
       {
@@ -239,6 +259,7 @@ function useRepoItem({ context }: TProps) {
         inputPlaceholder: "Deploy from GitHub...",
         itemsPinned,
         getItems: async () => {
+          console.log("GET ITEMS");
           const res = await utils.git.listRepositories.fetch();
           const items: TCommandPanelItem[] = res.repositories.map((r) => {
             const id = `git_repo_${r.full_name}`;
