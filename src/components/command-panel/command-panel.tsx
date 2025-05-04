@@ -386,7 +386,7 @@ function ConditionalExplanationCard({
 }: {
   ExplanationCard: FC<{ className?: string }>;
 }) {
-  const search = useCommandState((state) => state.search);
+  const search = useCommandPanelStore((state) => state.search);
   if (search) return null;
   return <ExplanationCard />;
 }

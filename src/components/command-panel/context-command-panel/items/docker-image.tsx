@@ -35,7 +35,7 @@ export function useDockerImageItemHook({ context }: TProps) {
   return hook;
 }
 
-const SupportedDockerRegistriesEnum = z.enum(["ghcr.io", "registry.gitlab.com", "quay.io"]);
+const SupportedDockerRegistriesEnum = z.enum(["ghcr.io", "quay.io", "registry.gitlab.com"]);
 
 export function isNonDockerHubImage(image: string) {
   return SupportedDockerRegistriesEnum.options.some((registry) => image.startsWith(`${registry}/`));
@@ -150,23 +150,26 @@ function useDockerImageItem({ context }: TProps) {
         inputPlaceholder: "Search Docker images...",
         usesSearchAsync: true,
         ExplanationCard: ({ className }) => (
-          <div
-            className={cn(
-              "text-muted-foreground bg-background-hover mb-1 w-full rounded-md border px-3 pt-1.75 pb-3 text-sm leading-relaxed",
-              className,
-            )}
-          >
-            <p className="w-full">You can also enter images from supported registries:</p>
-            <p className="w-full">
-              {SupportedDockerRegistriesEnum.options.map((registry, i) => (
-                <span key={i}>
-                  {i !== 0 ? <span>, </span> : null}
-                  <span className="text-foreground bg-background rounded-sm border px-1.25">
-                    {registry}
-                  </span>
-                </span>
-              ))}
-            </p>
+          <div className={cn("w-full px-1 pt-1", className)}>
+            <div className="text-muted-foreground bg-background-hover mb-1 w-full rounded-md border text-sm leading-relaxed">
+              <div className="flex w-full flex-col pt-2.25 pb-2.5">
+                <p className="w-full px-3 leading-tight">
+                  You can also enter images from supported registries:
+                </p>
+                <p className="w-full px-3 pt-1.5 leading-relaxed">
+                  {SupportedDockerRegistriesEnum.options.map((registry, i) => (
+                    <span key={i} className="-ml-0.25 pr-1.25">
+                      <span className="text-foreground bg-background rounded-sm border px-1.25">
+                        {registry}
+                      </span>
+                    </span>
+                  ))}
+                </p>
+              </div>
+              <p className="w-full border-t px-3 py-1.75 leading-tight">
+                Example: <span className="text-foreground">ghcr.io/imgproxy/imgproxy</span>
+              </p>
+            </div>
           </div>
         ),
         getItemsAsync: async ({ search }) => {
