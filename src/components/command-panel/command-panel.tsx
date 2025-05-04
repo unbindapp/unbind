@@ -193,7 +193,7 @@ function CommandPanel({
   const value = useCommandPanelStore((s) => s.value);
   const setValue = useCommandPanelStore((s) => s.setValue);
 
-  const { isPending, isError } = useCommandPanelItems();
+  const { items, isPending, isError } = useCommandPanelItems();
 
   useEffect(() => {
     const isTouchScreen =
@@ -246,16 +246,19 @@ function CommandPanel({
     if (isTouchscreen) return;
     if (isPending) return;
 
-    const prevItem = currentPage.items?.find((i) => i.id === prevItemId);
-    const firstItem = scrollAreaRef.current?.querySelector("[cmdk-item]");
-    const firstItemValue = firstItem?.getAttribute("data-value");
+    requestAnimationFrame(() => {
+      const prevItem = currentPage.items?.find((i) => i.id === prevItemId);
+      const firstItem = scrollAreaRef.current?.querySelector("[cmdk-item]");
+      const firstItemValue = firstItem?.getAttribute("data-value");
 
-    const valueToSelect = prevItem?.title || firstItemValue;
-    if (prevItem) setPrevItemId(null);
-    if (valueToSelect) setValue(valueToSelect);
+      const valueToSelect = prevItem?.title || firstItemValue;
+
+      if (prevItem) setPrevItemId(null);
+      if (valueToSelect) setValue(valueToSelect);
+    });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, isPending]);
+  }, [currentPage, isPending, items]);
 
   return (
     <Command
