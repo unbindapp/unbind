@@ -323,7 +323,7 @@ function ThreeDotButton({
           variant="ghost"
           size="icon"
           className={cn(
-            "text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent",
+            "text-muted-more-foreground group/button rounded-lg group-data-placeholder/card:text-transparent",
             className,
           )}
         >
@@ -357,6 +357,7 @@ function ThreeDotButton({
               onDialogClose={() => {
                 reset();
               }}
+              disableConfirmation
             >
               <DropdownMenuItem
                 onSelect={(e) => e.preventDefault()}

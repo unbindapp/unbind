@@ -94,6 +94,7 @@ export function DeleteEntityTrigger({
   onDialogCloseImmediate,
   error,
   description: descriptionProp,
+  disableConfirmation,
   children,
 }: {
   type: TDeleteType;
@@ -103,6 +104,7 @@ export function DeleteEntityTrigger({
   onDialogCloseImmediate?: () => void;
   error: { message: string } | null;
   description?: string;
+  disableConfirmation?: boolean;
   children: ReactNode;
 }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -118,17 +120,21 @@ export function DeleteEntityTrigger({
   );
 
   const form = useAppForm({
-    defaultValues: {
-      textToConfirm: "",
-    },
+    defaultValues: disableConfirmation
+      ? undefined
+      : {
+          textToConfirm: "",
+        },
     validators: {
-      onChange: z
-        .object({
-          textToConfirm: z.string().refine((v) => v === textToConfirm, {
-            message: "Please type the correct text to confirm",
-          }),
-        })
-        .strip(),
+      onChange: disableConfirmation
+        ? undefined
+        : z
+            .object({
+              textToConfirm: z.string().refine((v) => v === textToConfirm, {
+                message: "Please type the correct text to confirm",
+              }),
+            })
+            .strip(),
     },
     onSubmit: async ({ formApi }) => {
       await onSubmit();
@@ -162,36 +168,48 @@ export function DeleteEntityTrigger({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
             {description}
-            <br />
-            <br />
-            Type {`"`}
-            <span className="text-destructive font-semibold">{textToConfirm}</span>
-            {`"`} to confirm.
+            {!disableConfirmation && (
+              <>
+                <br />
+                <br />
+                Type {`"`}
+                <span className="text-destructive font-semibold">{textToConfirm}</span>
+                {`"`} to confirm.
+              </>
+            )}
           </DialogDescription>
         </DialogHeader>
         <form
+          data-confirmation-disabled={disableConfirmation ? true : undefined}
           onSubmit={(e) => {
             e.preventDefault();
             form.handleSubmit();
           }}
-          className="flex flex-col"
+          className="group/form flex flex-col"
         >
-          <form.AppField
-            name="textToConfirm"
-            children={(field) => (
-              <field.TextField
-                hideInfo
-                field={field}
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(e.target.value)}
-                className="w-full"
-                placeholder={textToConfirm}
-              />
-            )}
-          />
-          {error && <ErrorLine message={error?.message} className="mt-4" />}
-          <div className="mt-4 flex w-full flex-wrap items-center justify-end gap-2">
+          {!disableConfirmation && (
+            <form.AppField
+              name="textToConfirm"
+              children={(field) => (
+                <field.TextField
+                  hideInfo
+                  field={field}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  className="w-full"
+                  placeholder={textToConfirm}
+                />
+              )}
+            />
+          )}
+          {error && (
+            <ErrorLine
+              message={error?.message}
+              className="mt-4 group-data-confirmation-disabled/form:mt-0"
+            />
+          )}
+          <div className="mt-4 flex w-full flex-wrap items-center justify-end gap-2 group-data-confirmation-disabled/form:mt-0">
             <DialogClose asChild className="text-muted-foreground">
               <Button type="button" variant="ghost">
                 Cancel
@@ -204,8 +222,9 @@ export function DeleteEntityTrigger({
                   data-submitting={isSubmitting ? true : undefined}
                   variant="destructive"
                   disabled={
-                    !canSubmit ||
-                    (typeof values === "object" && values.textToConfirm !== textToConfirm)
+                    !disableConfirmation &&
+                    (!canSubmit ||
+                      (typeof values === "object" && values.textToConfirm !== textToConfirm))
                   }
                   isPending={isSubmitting ? true : false}
                 >
