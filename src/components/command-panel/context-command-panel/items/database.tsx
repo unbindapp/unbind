@@ -146,7 +146,7 @@ function useDatabaseItem({ context }: TProps) {
           {
             id: `databases_redis`,
             title: "Redis",
-            keywords: ["database", "cache", "key value"],
+            keywords: ["valkey", "cache", "key value", "database"],
             onSelect: async ({ isPendingId }) => {
               if (isPendingId !== null) return;
               setIsPendingId(`databases_redis`);
@@ -154,6 +154,19 @@ function useDatabaseItem({ context }: TProps) {
             },
             Icon: ({ className }: { className?: string }) => (
               <BrandIcon brand="redis" color="brand" className={className} />
+            ),
+          },
+          {
+            id: `databases_mysql`,
+            title: "MySQL",
+            keywords: ["database", "sql", "postgresql", "MariaDB"],
+            onSelect: async ({ isPendingId }) => {
+              if (isPendingId !== null) return;
+              setIsPendingId(`databases_mysql`);
+              await createService({ databaseType: "mysql" });
+            },
+            Icon: ({ className }: { className?: string }) => (
+              <BrandIcon brand="mysql" color="brand" className={className} />
             ),
           },
         ],

@@ -35,6 +35,7 @@ type TServicePageProviderProps = {
   projectId: string;
   environmentId: string;
   serviceId: string;
+  service: TServiceShallow;
   children: ReactNode;
 };
 
@@ -87,6 +88,7 @@ export default function ServicePanelContent({ service, className }: TProps) {
             projectId={projectId}
             environmentId={environmentId}
             serviceId={service.id}
+            service={service}
             type="service"
           >
             <ServicePanelContentUndeployed

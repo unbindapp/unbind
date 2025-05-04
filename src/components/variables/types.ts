@@ -1,3 +1,5 @@
+import { TServiceShallow } from "@/server/trpc/api/services/types";
+
 export type TTeamVariableTypeProps = {
   type: "team";
   teamId: string;
@@ -20,6 +22,7 @@ export type TServiceVariableTypeProps = {
   projectId: string;
   environmentId: string;
   serviceId: string;
+  service: TServiceShallow;
 };
 
 export type TEntityVariableTypeProps =

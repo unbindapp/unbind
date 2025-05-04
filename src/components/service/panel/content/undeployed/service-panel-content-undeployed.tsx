@@ -52,11 +52,12 @@ export default function ServicePanelContentUndeployed({ service, className, ...r
     query: { refetch: refetchDeployments },
   } = useDeployments();
   const { refetch: refetchVariables } = useVariablesUtils({
+    type: "service",
     teamId,
     projectId,
     environmentId,
     serviceId: service.id,
-    type: "service",
+    service,
   });
 
   const createVariablesFormResult = useRef<TCreateVariablesFormResult>({
@@ -336,11 +337,12 @@ export default function ServicePanelContentUndeployed({ service, className, ...r
             </Block>
           )}
           <VariablesProvider
+            type="service"
             teamId={teamId}
             projectId={projectId}
             environmentId={environmentId}
             serviceId={service.id}
-            type="service"
+            service={service}
           >
             <VariableReferencesProvider
               type="service"
@@ -348,6 +350,7 @@ export default function ServicePanelContentUndeployed({ service, className, ...r
               projectId={projectId}
               environmentId={environmentId}
               serviceId={service.id}
+              service={service}
             >
               <CreateVariablesForm
                 variant="collapsible"

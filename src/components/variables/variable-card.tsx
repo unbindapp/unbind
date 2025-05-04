@@ -40,8 +40,10 @@ import {
   EllipsisVerticalIcon,
   EyeIcon,
   EyeOffIcon,
+  InfoIcon,
   KeyIcon,
   Link2Icon,
+  LockIcon,
   MinusIcon,
   PenIcon,
   TrashIcon,
@@ -59,25 +61,32 @@ export type TVariableOrReferenceShallow =
   | ({ variable_type: "regular" } & TVariableShallow)
   | ({ variable_type: "reference" } & TVariableReferenceShallow);
 
+type TPlaceholderProps = {
+  isPlaceholder: true;
+  variable?: never;
+  variableTypeProps?: never;
+};
+
+type TVariableProps = {
+  variable: TVariableOrReferenceShallow;
+  variableTypeProps: TEntityVariableTypeProps;
+  isPlaceholder?: never;
+};
+
+type TVariableOrPlaceholderProps = TVariableProps | TPlaceholderProps;
+
 type TProps = {
   asElement?: "div" | "li";
-} & (
-  | {
-      variable: TVariableOrReferenceShallow;
-      variableTypeProps: TEntityVariableTypeProps;
-      isPlaceholder?: never;
-    }
-  | {
-      isPlaceholder: true;
-      variable?: never;
-      variableTypeProps?: never;
-    }
-);
+  disableDelete?: boolean;
+  disableEdit?: boolean;
+} & TVariableOrPlaceholderProps;
 
 export default function VariableCard({
   variable,
   variableTypeProps,
   isPlaceholder,
+  disableDelete,
+  disableEdit,
   asElement = "div",
 }: TProps) {
   const Element = asElement === "li" ? "li" : "div";
@@ -139,6 +148,16 @@ export default function VariableCard({
 
   const referenceError =
     variable?.variable_type === "reference" && variable.error ? variable.error : null;
+
+  const placeholderOrVariableProps: TVariableOrPlaceholderProps = useMemo(() => {
+    if (isPlaceholder) {
+      return { isPlaceholder: true };
+    }
+    return {
+      variable,
+      variableTypeProps,
+    };
+  }, [isPlaceholder, variable, variableTypeProps]);
 
   return (
     <Element
@@ -231,39 +250,13 @@ export default function VariableCard({
               </p>
             </div>
             <div className="hidden sm:flex">
-              {isPlaceholder ? (
-                <Button
-                  disabled
-                  fadeOnDisabled={false}
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-md"
-                >
-                  <div className="bg-muted-more-foreground animate-skeleton size-6 rounded-md" />
-                </Button>
-              ) : referenceError ? (
-                <DeleteTrigger
-                  variable={variable}
-                  variableTypeProps={variableTypeProps}
-                  closeDropdown={() => setIsEditingVariable(false)}
-                >
-                  <Button
-                    aria-label="Delete"
-                    fadeOnDisabled={false}
-                    variant="ghost-destructive"
-                    size="icon"
-                    className="text-destructive/75 group/button rounded-md"
-                  >
-                    <TrashIcon className="size-5 transition-transform" />
-                  </Button>
-                </DeleteTrigger>
-              ) : (
-                <ThreeDotButton
-                  variable={variable}
-                  variableTypeProps={variableTypeProps}
-                  setIsEditingVariable={setIsEditingVariable}
-                />
-              )}
+              <ConditionalDropdownButton
+                {...placeholderOrVariableProps}
+                referenceError={referenceError}
+                disableDelete={disableDelete}
+                disableEdit={disableEdit}
+                setIsEditingVariable={setIsEditingVariable}
+              />
             </div>
           </>
         )}
@@ -277,37 +270,79 @@ export default function VariableCard({
       </div>
       {(!isEditingVariable || !variable) && (
         <div className="absolute top-0.75 right-0.75 sm:hidden">
-          {isPlaceholder ? (
-            <Button disabled fadeOnDisabled={false} variant="ghost" size="icon">
-              <div className="bg-muted-foreground animate-skeleton size-6 rounded-md" />
-            </Button>
-          ) : referenceError ? (
-            <DeleteTrigger
-              variable={variable}
-              variableTypeProps={variableTypeProps}
-              closeDropdown={() => setIsEditingVariable(false)}
-            >
-              <Button
-                aria-label="Delete"
-                fadeOnDisabled={false}
-                variant="ghost-destructive"
-                size="icon"
-                className="text-destructive/75 group/button rounded-lg"
-              >
-                <TrashIcon className="size-5 transition-transform" />
-              </Button>
-            </DeleteTrigger>
-          ) : (
-            <ThreeDotButton
-              variableTypeProps={variableTypeProps}
-              className="rounded-lg"
-              variable={variable}
-              setIsEditingVariable={setIsEditingVariable}
-            />
-          )}
+          <ConditionalDropdownButton
+            {...placeholderOrVariableProps}
+            referenceError={referenceError}
+            disableDelete={disableDelete}
+            disableEdit={disableEdit}
+            setIsEditingVariable={setIsEditingVariable}
+            className="rounded-lg"
+          />
         </div>
       )}
     </Element>
+  );
+}
+
+function ConditionalDropdownButton({
+  isPlaceholder,
+  variable,
+  variableTypeProps,
+  disableEdit,
+  disableDelete,
+  referenceError,
+  setIsEditingVariable,
+  className,
+}: TVariableOrPlaceholderProps & {
+  disableDelete?: boolean;
+  disableEdit?: boolean;
+  referenceError: string | null;
+  setIsEditingVariable: Dispatch<React.SetStateAction<boolean>>;
+  className?: string;
+}) {
+  if (isPlaceholder) {
+    return (
+      <Button
+        disabled
+        fadeOnDisabled={false}
+        variant="ghost"
+        size="icon"
+        className={cn("rounded-md", className)}
+      >
+        <div className="bg-muted-more-foreground animate-skeleton size-6 rounded-md" />
+      </Button>
+    );
+  }
+
+  if (referenceError) {
+    return (
+      <DeleteTrigger
+        variable={variable}
+        variableTypeProps={variableTypeProps}
+        closeDropdown={() => setIsEditingVariable(false)}
+      >
+        <Button
+          aria-label="Delete"
+          fadeOnDisabled={false}
+          variant="ghost-destructive"
+          size="icon"
+          className={cn("text-destructive/75 group/button rounded-md", className)}
+        >
+          <TrashIcon className="size-5 transition-transform" />
+        </Button>
+      </DeleteTrigger>
+    );
+  }
+
+  return (
+    <ThreeDotButton
+      variable={variable}
+      variableTypeProps={variableTypeProps}
+      setIsEditingVariable={setIsEditingVariable}
+      className={className}
+      disableEdit={disableEdit}
+      disableDelete={disableDelete}
+    />
   );
 }
 
@@ -315,14 +350,19 @@ function ThreeDotButton({
   variable,
   variableTypeProps,
   setIsEditingVariable,
+  disableDelete,
+  disableEdit,
   className,
 }: {
   variable: TVariableOrReferenceShallow;
   variableTypeProps: TEntityVariableTypeProps;
   setIsEditingVariable: Dispatch<React.SetStateAction<boolean>>;
+  disableDelete?: boolean;
+  disableEdit?: boolean;
   className?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const isLocked = disableDelete === true && disableEdit === true;
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -337,11 +377,16 @@ function ThreeDotButton({
             className,
           )}
         >
-          <EllipsisVerticalIcon className="size-6 transition-transform group-data-open/button:rotate-90" />
+          {isLocked ? (
+            <LockIcon className="size-5 transition-transform group-data-open/button:rotate-90" />
+          ) : (
+            <EllipsisVerticalIcon className="size-6 transition-transform group-data-open/button:rotate-90" />
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="z-50 w-40"
+        data-locked={isLocked ? true : undefined}
+        className="z-50 w-40 data-locked:w-68"
         sideOffset={-1}
         data-open={isOpen ? true : undefined}
         align="end"
@@ -349,25 +394,47 @@ function ThreeDotButton({
       >
         <ScrollArea>
           <DropdownMenuGroup>
-            {variable.variable_type !== "reference" && (
-              <DropdownMenuItem onSelect={() => setIsEditingVariable((o) => !o)}>
-                <PenIcon className="-ml-0.5 size-5" />
+            {isLocked && (
+              <div className="text-muted-foreground flex w-full items-start justify-start gap-1.5 px-3 py-1.75 text-sm">
+                <InfoIcon className="-ml-1 size-4 shrink-0" />
+                <p className="-mt-0.5 min-w-0 shrink">
+                  {"This variable is auto-generated. It can't be edited or deleted."}
+                </p>
+              </div>
+            )}
+            {!isLocked && variable.variable_type !== "reference" && (
+              <DropdownMenuItem
+                disabled={disableEdit}
+                onSelect={() => setIsEditingVariable((o) => !o)}
+              >
+                {!disableEdit ? (
+                  <PenIcon className="-ml-0.5 size-5" />
+                ) : (
+                  <LockIcon className="-ml-0.5 size-5" />
+                )}
                 <p className="min-w-0 shrink leading-tight">Edit</p>
               </DropdownMenuItem>
             )}
-            <DeleteTrigger
-              variable={variable}
-              variableTypeProps={variableTypeProps}
-              closeDropdown={() => setIsOpen(false)}
-            >
-              <DropdownMenuItem
-                onSelect={(e) => e.preventDefault()}
-                className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
+            {!isLocked && (
+              <DeleteTrigger
+                variable={variable}
+                variableTypeProps={variableTypeProps}
+                closeDropdown={() => setIsOpen(false)}
               >
-                <TrashIcon className="-ml-0.5 size-5" />
-                <p className="min-w-0 shrink leading-tight">Delete</p>
-              </DropdownMenuItem>
-            </DeleteTrigger>
+                <DropdownMenuItem
+                  disabled={disableDelete}
+                  onSelect={(e) => e.preventDefault()}
+                  className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
+                >
+                  {!disableDelete ? (
+                    <TrashIcon className="-ml-0.5 size-5" />
+                  ) : (
+                    <LockIcon className="-ml-0.5 size-5" />
+                  )}
+                  <p className="min-w-0 shrink leading-tight">Delete</p>
+                </DropdownMenuItem>
+              </DeleteTrigger>
+            )}
           </DropdownMenuGroup>
         </ScrollArea>
       </DropdownMenuContent>

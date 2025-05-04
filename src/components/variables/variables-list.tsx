@@ -66,16 +66,46 @@ export default function VariablesList({ variableTypeProps }: TProps) {
 
   return (
     <Wrapper>
-      {variables.map((variable, i) => (
-        <VariableCard
-          variable={variable}
-          variableTypeProps={variableTypeProps}
-          asElement="li"
-          key={i}
-        />
-      ))}
+      {variables
+        .sort((a, b) => variablesSort(a, b, variableTypeProps))
+        .map((variable, i) => (
+          <VariableCard
+            variable={variable}
+            disableDelete={
+              variableTypeProps.type === "service" &&
+              variableTypeProps.service.type === "database" &&
+              (variable.name === "DATABASE_URL" ||
+                variable.name === "DATABASE_PASSWORD" ||
+                variable.name === "DATABASE_USERNAME")
+            }
+            disableEdit={
+              variableTypeProps.type === "service" &&
+              variableTypeProps.service.type === "database" &&
+              variable.name === "DATABASE_URL"
+            }
+            variableTypeProps={variableTypeProps}
+            asElement="li"
+            key={i}
+          />
+        ))}
     </Wrapper>
   );
+}
+
+function variablesSort(
+  a: TVariableOrReferenceShallow,
+  b: TVariableOrReferenceShallow,
+  variableTypeProps: TEntityVariableTypeProps,
+) {
+  if (variableTypeProps.type === "service" && variableTypeProps.service.type === "database") {
+    if (a.name === "DATABASE_URL") return -1;
+    if (b.name === "DATABASE_URL") return 1;
+    if (a.name === "DATABASE_USERNAME") return -1;
+    if (b.name === "DATABASE_USERNAME") return 1;
+    if (a.name === "DATABASE_PASSWORD") return -1;
+    if (b.name === "DATABASE_PASSWORD") return 1;
+  }
+  return 0;
 }
 
 function Wrapper({ className, children }: { className?: string; children: ReactNode }) {

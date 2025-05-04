@@ -54,6 +54,7 @@ export default function ServicePanelContentDeployed({
                 projectId={projectId}
                 environmentId={environmentId}
                 serviceId={service.id}
+                service={service}
               >
                 <currentTab.Page service={service} />
               </currentTab.Provider>

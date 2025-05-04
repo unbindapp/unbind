@@ -15,8 +15,9 @@ export default function Variables({ service }: { service: TServiceShallow }) {
       projectId,
       environmentId,
       serviceId: service.id,
+      service,
     }),
-    [teamId, projectId, environmentId, service.id],
+    [teamId, projectId, environmentId, service],
   );
 
   return (

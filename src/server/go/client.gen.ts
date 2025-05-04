@@ -245,7 +245,7 @@ export const CreateServiceInputSchema = z
     repository_owner: z.string().optional(),
     run_command: z.string().optional(),
     s3_backup_bucket: z.string().optional(),
-    s3_backup_source_id: z.string().optional(),
+    s3_backup_endpoint_id: z.string().optional(),
     team_id: z.string(),
     type: ServiceTypeSchema, // Type of service, e.g. 'github', 'docker-image'
   })
@@ -264,6 +264,8 @@ export const ServiceConfigResponseSchema = z
     ports: z.array(PortSpecSchema).optional(),
     replicas: z.number(),
     run_command: z.string().optional(),
+    s3_backup_bucket: z.string().optional(),
+    s3_backup_endpoint_id: z.string().optional(),
   })
   .strip();
 
@@ -398,14 +400,14 @@ export const DeleteProjectResponseBodySchema = z
   })
   .strip();
 
-export const DeleteS3SourceByIDInputBodySchema = z
+export const DeleteS3EndpointByIDInputBodySchema = z
   .object({
     id: z.string(),
     team_id: z.string(),
   })
   .strip();
 
-export const DeleteS3SourceByIDOutputBodySchema = z
+export const DeleteS3EndpointByIDOutputBodySchema = z
   .object({
     data: DeletedResponseSchema,
   })
@@ -613,7 +615,7 @@ export const GetProjectResponseBodySchema = z
   })
   .strip();
 
-export const GetS3SourceByIDOutputBodySchema = z
+export const GetS3EndpointByIDOutputBodySchema = z
   .object({
     data: S3ResponseSchema,
   })
@@ -940,7 +942,7 @@ export const ListProjectResponseBodySchema = z
   })
   .strip();
 
-export const ListS3SourceOutputBodySchema = z
+export const ListS3EndpointOutputBodySchema = z
   .object({
     data: z.array(S3ResponseSchema),
   })
@@ -1217,7 +1219,7 @@ export const UpdateProjectResponseBodySchema = z
   })
   .strip();
 
-export const UpdateS3SourceInputBodySchema = z
+export const UpdateS3EndpointInputBodySchema = z
   .object({
     access_key_id: z.string().optional(),
     id: z.string(),
@@ -1227,7 +1229,7 @@ export const UpdateS3SourceInputBodySchema = z
   })
   .strip();
 
-export const UpdateS3SourceResponseBodySchema = z
+export const UpdateS3EndpointResponseBodySchema = z
   .object({
     data: S3ResponseSchema,
   })
@@ -1253,7 +1255,7 @@ export const UpdateServiceInputSchema = z
     replicas: z.number().optional(),
     run_command: z.string().optional(),
     s3_backup_bucket: z.string().optional(),
-    s3_backup_source_id: z.string().optional(),
+    s3_backup_endpoint_id: z.string().optional(),
     service_id: z.string(),
     team_id: z.string(),
   })
@@ -1427,8 +1429,8 @@ export type DeletedResponse = z.infer<typeof DeletedResponseSchema>;
 export type DeleteEnvironmentResponseBody = z.infer<typeof DeleteEnvironmentResponseBodySchema>;
 export type DeleteProjectInputBody = z.infer<typeof DeleteProjectInputBodySchema>;
 export type DeleteProjectResponseBody = z.infer<typeof DeleteProjectResponseBodySchema>;
-export type DeleteS3SourceByIDInputBody = z.infer<typeof DeleteS3SourceByIDInputBodySchema>;
-export type DeleteS3SourceByIDOutputBody = z.infer<typeof DeleteS3SourceByIDOutputBodySchema>;
+export type DeleteS3EndpointByIDInputBody = z.infer<typeof DeleteS3EndpointByIDInputBodySchema>;
+export type DeleteS3EndpointByIDOutputBody = z.infer<typeof DeleteS3EndpointByIDOutputBodySchema>;
 export type DeleteServiceInputBody = z.infer<typeof DeleteServiceInputBodySchema>;
 export type DeleteServiceResponseBody = z.infer<typeof DeleteServiceResponseBodySchema>;
 export type VariableDeleteInput = z.infer<typeof VariableDeleteInputSchema>;
@@ -1455,7 +1457,7 @@ export type NodeMetricsMapEntry = z.infer<typeof NodeMetricsMapEntrySchema>;
 export type NodeMetricsResult = z.infer<typeof NodeMetricsResultSchema>;
 export type GetNodeMetricsResponseBody = z.infer<typeof GetNodeMetricsResponseBodySchema>;
 export type GetProjectResponseBody = z.infer<typeof GetProjectResponseBodySchema>;
-export type GetS3SourceByIDOutputBody = z.infer<typeof GetS3SourceByIDOutputBodySchema>;
+export type GetS3EndpointByIDOutputBody = z.infer<typeof GetS3EndpointByIDOutputBodySchema>;
 export type GetServiceResponseBody = z.infer<typeof GetServiceResponseBodySchema>;
 export type TeamResponse = z.infer<typeof TeamResponseSchema>;
 export type GetTeamResponseBody = z.infer<typeof GetTeamResponseBodySchema>;
@@ -1496,7 +1498,7 @@ export type PodPhase = z.infer<typeof PodPhaseSchema>;
 export type PodContainerStatus = z.infer<typeof PodContainerStatusSchema>;
 export type ListInstancesResponseBody = z.infer<typeof ListInstancesResponseBodySchema>;
 export type ListProjectResponseBody = z.infer<typeof ListProjectResponseBodySchema>;
-export type ListS3SourceOutputBody = z.infer<typeof ListS3SourceOutputBodySchema>;
+export type ListS3EndpointOutputBody = z.infer<typeof ListS3EndpointOutputBodySchema>;
 export type ListServiceResponseBody = z.infer<typeof ListServiceResponseBodySchema>;
 export type ListWebhooksResponseBody = z.infer<typeof ListWebhooksResponseBodySchema>;
 export type LogMetadata = z.infer<typeof LogMetadataSchema>;
@@ -1542,8 +1544,8 @@ export type UpdateEnvironmentInput = z.infer<typeof UpdateEnvironmentInputSchema
 export type UpdateEnvironmentResponseBody = z.infer<typeof UpdateEnvironmentResponseBodySchema>;
 export type UpdateProjectInput = z.infer<typeof UpdateProjectInputSchema>;
 export type UpdateProjectResponseBody = z.infer<typeof UpdateProjectResponseBodySchema>;
-export type UpdateS3SourceInputBody = z.infer<typeof UpdateS3SourceInputBodySchema>;
-export type UpdateS3SourceResponseBody = z.infer<typeof UpdateS3SourceResponseBodySchema>;
+export type UpdateS3EndpointInputBody = z.infer<typeof UpdateS3EndpointInputBodySchema>;
+export type UpdateS3EndpointResponseBody = z.infer<typeof UpdateS3EndpointResponseBodySchema>;
 export type UpdateServiceInput = z.infer<typeof UpdateServiceInputSchema>;
 export type UpdateTeamInputBody = z.infer<typeof UpdateTeamInputBodySchema>;
 export type UpdateTeamResponseBody = z.infer<typeof UpdateTeamResponseBodySchema>;
@@ -1738,7 +1740,7 @@ export const list_serviceQuerySchema = z
   })
   .passthrough();
 
-export const get_s3_source_by_idQuerySchema = z
+export const get_s3_endpoint_by_idQuerySchema = z
   .object({
     id: z.string(),
     team_id: z.string(),
@@ -1746,7 +1748,7 @@ export const get_s3_source_by_idQuerySchema = z
   })
   .passthrough();
 
-export const list_s3_sourcesQuerySchema = z
+export const list_s3_endpointsQuerySchema = z
   .object({
     team_id: z.string(),
     with_buckets: z.boolean().optional(),
@@ -3584,9 +3586,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           }
         },
         delete: async (
-          params: DeleteS3SourceByIDInputBody,
+          params: DeleteS3EndpointByIDInputBody,
           fetchOptions?: RequestInit,
-        ): Promise<DeleteS3SourceByIDOutputBody> => {
+        ): Promise<DeleteS3EndpointByIDOutputBody> => {
           try {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
@@ -3601,7 +3603,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               },
               ...fetchOptions,
             };
-            const validatedBody = DeleteS3SourceByIDInputBodySchema.parse(params);
+            const validatedBody = DeleteS3EndpointByIDInputBodySchema.parse(params);
             options.body = JSON.stringify(validatedBody);
             const response = await fetch(url.toString(), options);
             if (!response.ok) {
@@ -3617,22 +3619,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return DeleteS3SourceByIDOutputBodySchema.parse(data);
+            return DeleteS3EndpointByIDOutputBodySchema.parse(data);
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
           }
         },
         get: async (
-          params: z.infer<typeof get_s3_source_by_idQuerySchema>,
+          params: z.infer<typeof get_s3_endpoint_by_idQuerySchema>,
           fetchOptions?: RequestInit,
-        ): Promise<GetS3SourceByIDOutputBody> => {
+        ): Promise<GetS3EndpointByIDOutputBody> => {
           try {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
             const url = new URL(`${apiUrl}/storage/s3/get`);
-            const validatedQuery = get_s3_source_by_idQuerySchema.parse(params);
+            const validatedQuery = get_s3_endpoint_by_idQuerySchema.parse(params);
             const queryKeys = ['id', 'team_id', 'with_buckets'];
             queryKeys.forEach((key) => {
               const value = validatedQuery[key as keyof typeof validatedQuery];
@@ -3663,22 +3665,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return GetS3SourceByIDOutputBodySchema.parse(data);
+            return GetS3EndpointByIDOutputBodySchema.parse(data);
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
           }
         },
         list: async (
-          params: z.infer<typeof list_s3_sourcesQuerySchema>,
+          params: z.infer<typeof list_s3_endpointsQuerySchema>,
           fetchOptions?: RequestInit,
-        ): Promise<ListS3SourceOutputBody> => {
+        ): Promise<ListS3EndpointOutputBody> => {
           try {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
             const url = new URL(`${apiUrl}/storage/s3/list`);
-            const validatedQuery = list_s3_sourcesQuerySchema.parse(params);
+            const validatedQuery = list_s3_endpointsQuerySchema.parse(params);
             const queryKeys = ['team_id', 'with_buckets'];
             queryKeys.forEach((key) => {
               const value = validatedQuery[key as keyof typeof validatedQuery];
@@ -3709,7 +3711,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return ListS3SourceOutputBodySchema.parse(data);
+            return ListS3EndpointOutputBodySchema.parse(data);
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -3756,9 +3758,9 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           }
         },
         update: async (
-          params: UpdateS3SourceInputBody,
+          params: UpdateS3EndpointInputBody,
           fetchOptions?: RequestInit,
-        ): Promise<UpdateS3SourceResponseBody> => {
+        ): Promise<UpdateS3EndpointResponseBody> => {
           try {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
@@ -3773,7 +3775,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               },
               ...fetchOptions,
             };
-            const validatedBody = UpdateS3SourceInputBodySchema.parse(params);
+            const validatedBody = UpdateS3EndpointInputBodySchema.parse(params);
             options.body = JSON.stringify(validatedBody);
             const response = await fetch(url.toString(), options);
             if (!response.ok) {
@@ -3789,7 +3791,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return UpdateS3SourceResponseBodySchema.parse(data);
+            return UpdateS3EndpointResponseBodySchema.parse(data);
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;

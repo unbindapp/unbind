@@ -62,7 +62,7 @@ export default function VariablesHeader({ tokensDisabled }: { tokensDisabled?: b
             {title}
           </h2>
         </div>
-        <div className="flex shrink-0 items-center justify-end gap-1.5 pt-1 sm:-mt-1.5 sm:pt-0">
+        <div className="flex shrink-0 flex-wrap items-center justify-start gap-1.5 pt-1 sm:-mt-1.5 sm:justify-end sm:pt-0">
           <RawVariableEditor>
             <Button
               disabled={isPending}
