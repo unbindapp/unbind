@@ -12,10 +12,11 @@ import { formatKMBT } from "@/lib/helpers";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { api } from "@/server/trpc/setup/client";
 import { useMutation } from "@tanstack/react-query";
-import { DownloadIcon } from "lucide-react";
+import { DownloadIcon, PackageIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 
 type TProps = {
   context: TContextCommandPanelContext;
@@ -32,6 +33,23 @@ export function useDockerImageItemHook({ context }: TProps) {
   }, [context]);
 
   return hook;
+}
+
+const SupportedDockerRegistriesEnum = z.enum(["ghcr.io", "registry.gitlab.com", "quay.io"]);
+
+export function isNonDockerHubImage(image: string) {
+  return SupportedDockerRegistriesEnum.options.some((registry) => image.startsWith(`${registry}/`));
+}
+
+function cleanSearch(search: string | undefined) {
+  if (!search) return "";
+  if (search.startsWith("https://")) {
+    return search.slice(8);
+  }
+  if (search.startsWith("http://")) {
+    return search.slice(7);
+  }
+  return search;
 }
 
 function useDockerImageItem({ context }: TProps) {
@@ -131,7 +149,43 @@ function useDockerImageItem({ context }: TProps) {
         parentPageId: contextCommandPanelRootPage,
         inputPlaceholder: "Search Docker images...",
         usesSearchAsync: true,
+        ExplanationCard: ({ className }) => (
+          <div
+            className={cn(
+              "text-muted-foreground bg-background-hover mb-1 w-full rounded-md border px-3 pt-1.75 pb-3 text-sm leading-relaxed",
+              className,
+            )}
+          >
+            <p className="w-full">You can also enter images from supported registries:</p>
+            <p className="w-full">
+              {SupportedDockerRegistriesEnum.options.map((registry, i) => (
+                <span key={i}>
+                  {i !== 0 ? <span>, </span> : null}
+                  <span className="text-foreground bg-background rounded-sm border px-1.25">
+                    {registry}
+                  </span>
+                </span>
+              ))}
+            </p>
+          </div>
+        ),
         getItemsAsync: async ({ search }) => {
+          const cleanedSearch = cleanSearch(search);
+          if (cleanedSearch && isNonDockerHubImage(cleanedSearch)) {
+            return [
+              {
+                id: `docker-images_${cleanedSearch}`,
+                title: cleanedSearch,
+                keywords: [],
+                Icon: PackageIcon,
+                onSelect: async ({ isPendingId }) => {
+                  if (isPendingId !== null) return;
+                  setIsPendingId(`docker-images_${cleanedSearch}`);
+                  await createService({ image: cleanedSearch });
+                },
+              },
+            ];
+          }
           const res = await utils.docker.searchRepositories.fetch({ search });
           return res.repositories.map((item) => {
             const id = `docker-images_${item.repo_name}`;

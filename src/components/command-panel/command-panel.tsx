@@ -34,7 +34,7 @@ import { defaultDebounceMs } from "@/lib/constants";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { useCommandState } from "cmdk";
 import { ChevronLeftIcon, ChevronRightIcon, LoaderIcon } from "lucide-react";
-import { ReactNode, RefObject, useCallback, useEffect, useMemo, useRef } from "react";
+import { FC, ReactNode, RefObject, useCallback, useEffect, useMemo, useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 type TProps = {
@@ -319,6 +319,9 @@ function Content({
       <ScrollArea noFocusOnViewport viewportRef={scrollAreaRef}>
         <CommandList>
           <CommandGroup>
+            {items && currentPage.ExplanationCard && (
+              <ConditionalExplanationCard ExplanationCard={currentPage.ExplanationCard} />
+            )}
             {items &&
               itemsPinned?.map((item, i) => (
                 <Item
@@ -376,6 +379,16 @@ function Content({
       </ScrollArea>
     </>
   );
+}
+
+function ConditionalExplanationCard({
+  ExplanationCard,
+}: {
+  ExplanationCard: FC<{ className?: string }>;
+}) {
+  const search = useCommandState((state) => state.search);
+  if (search) return null;
+  return <ExplanationCard />;
 }
 
 function Footer({

@@ -22,6 +22,7 @@ export type TCommandPanelPage = {
   commandEmptyText?: string;
   disableCommandFilter?: boolean;
   setSearchDebounceMs?: number;
+  ExplanationCard?: FC<{ className?: string }>;
 } & (
   | { items: TCommandPanelItem[]; getItemsAsync?: never; getItems?: never; usesSearchAsync?: never }
   | {
