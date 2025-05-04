@@ -259,7 +259,11 @@ function CommandPanel({
 
   return (
     <Command
-      filter={isPending || isError || currentPage.usesAsyncSearch ? () => 1 : undefined}
+      filter={
+        isPending || isError || currentPage.usesAsyncSearch || currentPage.disableSearch
+          ? () => 1
+          : undefined
+      }
       value={value}
       onValueChange={setValue}
       {...commandVariantOptions}
@@ -306,7 +310,7 @@ function Content({
     <>
       {!isError && (
         <CommandEmpty className="text-muted-foreground w-full py-6 text-center text-base">
-          No matching results
+          {currentPage.commandEmptyText || "No matching results"}
         </CommandEmpty>
       )}
       <ScrollArea noFocusOnViewport viewportRef={scrollAreaRef}>
@@ -460,6 +464,7 @@ function Input({
           scrollAreaRef.current?.scrollTo({ top: 0 });
         });
       }}
+      Icon={currentPage.InputIcon}
       className="py-3"
       placeholder={placeholder}
     />
@@ -543,8 +548,8 @@ function Item({
       keywords={item.keywords}
       className="group/item active:bg-border flex w-full flex-row items-center justify-between gap-6 px-3.5 py-3 text-left font-medium data-placeholder:text-transparent"
       onSelect={onSelect}
-      disabled={disabled}
-      fadeOnDisabled={fadeOnDisabled}
+      disabled={disabled || item.disabled}
+      fadeOnDisabled={item.disabled === true ? "default" : fadeOnDisabled}
     >
       {isItemPending && (
         <div className="bg-background border-top-loader/25 absolute top-0 left-0 h-full w-full items-center justify-center overflow-hidden rounded-lg border">

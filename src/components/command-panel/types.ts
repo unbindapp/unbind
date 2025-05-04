@@ -11,7 +11,10 @@ export type TCommandPanelPage = {
   id: string;
   parentPageId: string | null;
   inputPlaceholder: string;
+  InputIcon?: FC<{ className?: string }>;
   itemsPinned?: TCommandPanelItem[];
+  commandEmptyText?: string;
+  disableSearch?: boolean;
 } & (
   | { items: TCommandPanelItem[]; getItems?: never; usesAsyncSearch?: never }
   | {
@@ -35,6 +38,7 @@ export type TCommandPanelItem = {
   }) => void;
   onHighlight?: () => void;
   keywords: string[];
+  disabled?: boolean;
 };
 
 export type TContextCommandPanelContext =

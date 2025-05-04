@@ -15,7 +15,7 @@ import { createClient } from "@/server/go/client.gen";
 import { AppRouterOutputs } from "@/server/trpc/api/root";
 import { api } from "@/server/trpc/setup/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { BuildingIcon, CogIcon, UserIcon } from "lucide-react";
+import { BuildingIcon, CogIcon, HourglassIcon, UnplugIcon, UserIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useSession } from "next-auth/react";
 import { useMemo } from "react";
@@ -130,6 +130,7 @@ function useRepoItem({ context }: TProps) {
   const gitHubRedirectPathname = `/${teamId}/connect-git/connected/github`;
   const sessionData = useSession();
   const queryClient = useQueryClient();
+  const clearInputValue = useCommandPanelStore((s) => s.clearInputValue);
 
   const pageId = "repos";
 
@@ -165,13 +166,13 @@ function useRepoItem({ context }: TProps) {
         subpage: {
           id: "git_repo_configure_github_options",
           title: "GitHub App",
-          inputPlaceholder: "Select account type...",
+          inputPlaceholder: "Select GitHub account type...",
           parentPageId: pageId,
           items: [
             {
               id: "git_repo_configure_github_options_personal",
               keywords: ["personal", "github"],
-              title: "Personal Account",
+              title: "Personal",
               Icon: UserIcon,
               onSelect: async ({ isPendingId, setCurrentPageId }) => {
                 if (isPendingId !== null) return;
@@ -206,6 +207,11 @@ function useRepoItem({ context }: TProps) {
                         queryClient.resetQueries({ queryKey });
                       });
                       setCurrentPageId(pageId);
+                      toast.success("GitHub app connected", {
+                        description: "GitHub app has been connected successfully.",
+                        duration: 5000,
+                        closeButton: false,
+                      });
                     },
                   }),
                   () => new Error("Failed to create GitHub app"),
@@ -225,51 +231,85 @@ function useRepoItem({ context }: TProps) {
               keywords: ["organization", "github"],
               title: "Organization",
               Icon: BuildingIcon,
-              onSelect: async ({ isPendingId, setCurrentPageId }) => {
-                if (isPendingId !== null) return;
-                if (!sessionData.data?.access_token) {
-                  toast.error("Your current session is invalid. Please sign in again.");
-                  return;
-                }
-                setIsPendingId("git_repo_configure_github_options_organization");
-                const res = await ResultAsync.fromPromise(
-                  createGitHubAppMutate({
-                    accessToken: sessionData.data.access_token,
-                    redirectUrl: window.location.origin + gitHubRedirectPathname,
-                    onSuccess: () => {
-                      const environmentId = environmentIdFromPathname || defaultEnvironmentId;
-                      if (!environmentId) {
-                        return;
-                      }
-                      const queryKeys = TriggerTypeEnum.options.map((triggerType) =>
-                        getContextCommandPaneItemsQueryKey({
-                          teamId,
-                          projectId,
-                          context,
-                          hasItems: false,
-                          searchKey: null,
-                          pageId: pageId,
-                          triggerType,
-                          environmentId,
-                        }),
-                      );
-                      utils.git.listRepositories.reset();
-                      queryKeys.forEach((queryKey) => {
-                        queryClient.resetQueries({ queryKey });
-                      });
-                      setCurrentPageId(pageId);
-                    },
-                  }),
-                  () => new Error("Failed to create GitHub app"),
-                );
-                if (res.isErr()) {
-                  toast.error("Failed to create GitHub app", {
-                    description: res.error.message,
-                  });
-                  setIsPendingId(null);
-                  return;
-                }
-                setIsPendingId(null);
+              subpage: {
+                id: "git_repo_configure_github_options_organization_enter_name",
+                title: "GitHub Organization",
+                inputPlaceholder: "Organization name",
+                parentPageId: "git_repo_configure_github_options",
+                disableSearch: true,
+                usesAsyncSearch: true,
+                InputIcon: BuildingIcon,
+                commandEmptyText: "Enter the organization name",
+                getItems: async ({ search }) =>
+                  !search
+                    ? []
+                    : [
+                        {
+                          id: "git_repo_configure_github_options_organization_connect",
+                          title: search ? `Connect "${search}"` : "Enter organization name",
+                          Icon: !search ? HourglassIcon : UnplugIcon,
+                          keywords: ["connect", "organization", "github"],
+                          disabled: !search,
+                          onSelect: async ({ isPendingId, setCurrentPageId }) => {
+                            if (isPendingId !== null) return;
+                            if (!sessionData.data?.access_token) {
+                              toast.error("Your current session is invalid. Please sign in again.");
+                              return;
+                            }
+                            setIsPendingId(
+                              "git_repo_configure_github_options_organization_connect",
+                            );
+                            const res = await ResultAsync.fromPromise(
+                              createGitHubAppMutate({
+                                accessToken: sessionData.data.access_token,
+                                redirectUrl: window.location.origin + gitHubRedirectPathname,
+                                organizationName: search,
+                                onSuccess: () => {
+                                  const environmentId =
+                                    environmentIdFromPathname || defaultEnvironmentId;
+                                  if (!environmentId) {
+                                    return;
+                                  }
+                                  const queryKeys = TriggerTypeEnum.options.map((triggerType) =>
+                                    getContextCommandPaneItemsQueryKey({
+                                      teamId,
+                                      projectId,
+                                      context,
+                                      hasItems: false,
+                                      searchKey: null,
+                                      pageId: pageId,
+                                      triggerType,
+                                      environmentId,
+                                    }),
+                                  );
+                                  utils.git.listRepositories.reset();
+                                  queryKeys.forEach((queryKey) => {
+                                    queryClient.resetQueries({ queryKey });
+                                  });
+                                  clearInputValue(
+                                    "git_repo_configure_github_options_organization_enter_name",
+                                  );
+                                  setCurrentPageId(pageId);
+                                  toast.success("GitHub app connected", {
+                                    description: "GitHub app has been connected successfully.",
+                                    duration: 5000,
+                                    closeButton: false,
+                                  });
+                                },
+                              }),
+                              () => new Error("Failed to create GitHub app"),
+                            );
+                            if (res.isErr()) {
+                              toast.error("Failed to create GitHub app", {
+                                description: res.error.message,
+                              });
+                              setIsPendingId(null);
+                              return;
+                            }
+                            setIsPendingId(null);
+                          },
+                        },
+                      ],
               },
             },
           ],
@@ -325,6 +365,7 @@ function useRepoItem({ context }: TProps) {
     teamId,
     projectId,
     context,
+    clearInputValue,
   ]);
 
   const value = useMemo(
@@ -433,7 +474,7 @@ async function createGitHubApp({
   const goClient = createClient({ accessToken, apiUrl });
 
   const res = await goClient.github.app.create(
-    { redirect_url: redirectUrl, organization_name: organizationName },
+    { redirect_url: redirectUrl, organization: organizationName },
     { signal: abortController.signal },
   );
   popup.document.write(res.data);

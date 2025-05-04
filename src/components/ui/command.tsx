@@ -69,10 +69,12 @@ function CommandInput({
   className,
   classNameWrapper,
   showSpinner = false,
+  Icon,
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.Input> & {
   classNameWrapper?: string;
   showSpinner?: boolean;
+  Icon?: React.ComponentType<{ className?: string }>;
 }) {
   return (
     <div
@@ -83,7 +85,12 @@ function CommandInput({
         data-show-spinner={showSpinner ? true : undefined}
         className="text-muted-foreground group pointer-events-none absolute left-3.5 size-4 shrink-0"
       >
-        {!showSpinner && <SearchIcon className="text-muted-foreground size-full" />}
+        {!showSpinner &&
+          (Icon ? (
+            <Icon className="text-muted-foreground size-full" />
+          ) : (
+            <SearchIcon className="text-muted-foreground size-full" />
+          ))}
         {showSpinner && <LoaderIcon className="absolute size-full animate-spin" />}
       </div>
       <CommandPrimitive.Input
@@ -143,12 +150,13 @@ const commandItemVariants = cva(
         pending: "opacity-100 data-[disabled=true]:opacity-100",
       },
       fadeOnDisabled: {
-        default: "disabled:opacity-50",
+        default: "disabled:opacity-50 data-[disabled=true]:opacity-50",
         false: "",
       },
     },
     defaultVariants: {
       variant: "default",
+      fadeOnDisabled: "default",
     },
   },
 );
