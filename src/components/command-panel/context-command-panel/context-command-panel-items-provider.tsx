@@ -34,11 +34,11 @@ export const ContextCommandPanelItemsProvider: React.FC<{
   const { environmentId } = useIdsFromPathname();
 
   const searchKey = useMemo(() => {
-    if (page.usesAsyncSearch) {
+    if (page.usesSearchAsync) {
       return search;
     }
     return null;
-  }, [search, page.usesAsyncSearch]);
+  }, [search, page.usesSearchAsync]);
 
   const queryKey = useMemo(
     () =>
@@ -57,19 +57,56 @@ export const ContextCommandPanelItemsProvider: React.FC<{
 
   const { data, isError, isPending, error } = useQuery({
     queryKey: queryKey,
-    queryFn: page.items ? () => page.items : () => page.getItems({ teamId, projectId, search }),
-    enabled: page.items ? false : true,
+    queryFn: () => page.getItemsAsync?.({ teamId, projectId, search }),
+    enabled: !page.getItemsAsync ? false : true,
   });
+
+  const searchKeyForItems = useMemo(
+    () => (page.getItems && page.disableCommandFilter ? search : null),
+    [page.getItems, page.disableCommandFilter, search],
+  );
+
+  const items = useMemo(() => {
+    if (page.items) {
+      return page.items;
+    }
+    if (page.getItems) {
+      return page.getItems({ teamId, projectId, search });
+    }
+    return data;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page.items, page.getItems, data, teamId, projectId, searchKeyForItems]);
+
+  const isErrorConditional = useMemo(() => {
+    if (page.items || page.getItems) {
+      return false;
+    }
+    return isError;
+  }, [page.items, page.getItems, isError]);
+
+  const errorConditional = useMemo(() => {
+    if (page.items || page.getItems) {
+      return null;
+    }
+    return error;
+  }, [page.items, page.getItems, error]);
+
+  const isPendingConditional = useMemo(() => {
+    if (page.items || page.getItems) {
+      return false;
+    }
+    return isPending;
+  }, [page.items, page.getItems, isPending]);
 
   const value: TContextCommandPanelItemsContext = useMemo(
     () => ({
-      items: page.items ? page.items : data,
+      items,
       itemsPinned: page.itemsPinned,
-      isError: page.items ? false : isError,
-      isPending: page.items ? false : isPending,
-      error: page.items ? null : error,
+      isPending: isPendingConditional,
+      isError: isErrorConditional,
+      error: errorConditional,
     }),
-    [data, error, isError, isPending, page.items, page.itemsPinned],
+    [items, page.itemsPinned, isPendingConditional, isErrorConditional, errorConditional],
   );
 
   return (

@@ -263,7 +263,7 @@ function CommandPanel({
   return (
     <Command
       filter={
-        isPending || isError || currentPage.usesAsyncSearch || currentPage.disableSearch
+        isPending || isError || currentPage.usesSearchAsync || currentPage.disableCommandFilter
           ? () => 1
           : undefined
       }
@@ -443,17 +443,24 @@ function Input({
 
   useEffect(() => {
     if (timeout.current) clearTimeout(timeout.current);
-    if (inputValue) {
-      timeout.current = setTimeout(() => {
-        setSearch(inputValue);
-      }, defaultDebounceMs);
-    } else {
+
+    if (!inputValue || currentPage.setSearchDebounceMs === 0) {
       setSearch(inputValue);
+    } else {
+      timeout.current = setTimeout(
+        () => {
+          setSearch(inputValue);
+        },
+        currentPage.setSearchDebounceMs !== undefined
+          ? currentPage.setSearchDebounceMs
+          : defaultDebounceMs,
+      );
     }
+
     return () => {
       if (timeout.current) clearTimeout(timeout.current);
     };
-  }, [inputValue, setSearch, currentPage.usesAsyncSearch]);
+  }, [inputValue, setSearch, currentPage.usesSearchAsync, currentPage.setSearchDebounceMs]);
 
   return (
     <CommandInput

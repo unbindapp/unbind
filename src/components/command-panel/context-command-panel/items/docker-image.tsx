@@ -130,8 +130,8 @@ function useDockerImageItem({ context }: TProps) {
         title: "Docker Images",
         parentPageId: contextCommandPanelRootPage,
         inputPlaceholder: "Search Docker images...",
-        usesAsyncSearch: true,
-        getItems: async ({ search }) => {
+        usesSearchAsync: true,
+        getItemsAsync: async ({ search }) => {
           const res = await utils.docker.searchRepositories.fetch({ search });
           return res.repositories.map((item) => {
             const id = `docker-images_${item.repo_name}`;

@@ -236,11 +236,11 @@ function useRepoItem({ context }: TProps) {
                 title: "GitHub Organization",
                 inputPlaceholder: "Organization name",
                 parentPageId: "git_repo_configure_github_options",
-                disableSearch: true,
-                usesAsyncSearch: true,
+                disableCommandFilter: true,
+                setSearchDebounceMs: 50,
                 InputIcon: BuildingIcon,
                 commandEmptyText: "Enter the organization name",
-                getItems: async ({ search }) =>
+                getItems: ({ search }) =>
                   !search
                     ? []
                     : [
@@ -330,7 +330,7 @@ function useRepoItem({ context }: TProps) {
         parentPageId: contextCommandPanelRootPage,
         inputPlaceholder: "Deploy from GitHub...",
         itemsPinned,
-        getItems: async () => {
+        getItemsAsync: async () => {
           const res = await utils.git.listRepositories.fetch();
           const items: TCommandPanelItem[] = res.repositories.map((r) => {
             const id = `git_repo_${r.full_name}`;

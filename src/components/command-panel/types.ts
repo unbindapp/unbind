@@ -1,10 +1,16 @@
 import { FC } from "react";
 
-type TGetItemsFunction = (params: {
+type TGetItemsAsyncFunction = (params: {
   teamId: string;
   projectId: string;
   search?: string;
 }) => Promise<TCommandPanelItem[]>;
+
+type TGetItemsFunction = (params: {
+  teamId: string;
+  projectId: string;
+  search?: string;
+}) => TCommandPanelItem[];
 
 export type TCommandPanelPage = {
   title: string;
@@ -14,15 +20,22 @@ export type TCommandPanelPage = {
   InputIcon?: FC<{ className?: string }>;
   itemsPinned?: TCommandPanelItem[];
   commandEmptyText?: string;
-  disableSearch?: boolean;
+  disableCommandFilter?: boolean;
+  setSearchDebounceMs?: number;
 } & (
-  | { items: TCommandPanelItem[]; getItems?: never; usesAsyncSearch?: never }
+  | { items: TCommandPanelItem[]; getItemsAsync?: never; getItems?: never; usesSearchAsync?: never }
   | {
       items?: never;
-      getItems: TGetItemsFunction;
-      usesAsyncSearch?: never;
+      getItemsAsync: TGetItemsAsyncFunction;
+      getItems?: never;
+      usesSearchAsync?: boolean;
     }
-  | { usesAsyncSearch: boolean; getItems: TGetItemsFunction; items?: never }
+  | {
+      items?: never;
+      getItemsAsync?: never;
+      getItems: TGetItemsFunction;
+      usesSearchAsync?: never;
+    }
 );
 
 export type TCommandPanelItem = {
