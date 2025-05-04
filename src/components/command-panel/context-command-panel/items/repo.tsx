@@ -1,4 +1,6 @@
 import { contextCommandPanelRootPage } from "@/components/command-panel/constants";
+import { TriggerTypeEnum } from "@/components/command-panel/context-command-panel/context-command-panel";
+import { getContextCommandPaneItemsQueryKey } from "@/components/command-panel/context-command-panel/context-command-panel-items-provider";
 import { useCommandPanelStore } from "@/components/command-panel/store/command-panel-store-provider";
 import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
@@ -12,7 +14,7 @@ import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { createClient } from "@/server/go/client.gen";
 import { AppRouterOutputs } from "@/server/trpc/api/root";
 import { api } from "@/server/trpc/setup/client";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BuildingIcon, CogIcon, UserIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useSession } from "next-auth/react";
@@ -127,47 +129,31 @@ function useRepoItem({ context }: TProps) {
   const { apiUrl } = useAppConfig();
   const gitHubRedirectPathname = `/${teamId}/connect-git/connected/github`;
   const sessionData = useSession();
+  const queryClient = useQueryClient();
+
+  const pageId = "repos";
 
   const { mutateAsync: createGitHubAppMutate } = useMutation({
     mutationFn: async ({
       accessToken,
       redirectUrl,
       organizationName,
+      onSuccess,
     }: {
       accessToken: string;
       redirectUrl: string;
       organizationName?: string;
+      onSuccess: () => void;
     }) =>
       createGitHubApp({
         redirectUrl,
         accessToken,
         apiUrl,
         organizationName,
+        onSuccess,
       }),
     mutationKey: ["create-github-app", { teamId }],
   });
-
-  const pageId = "repos";
-
-  /* const environmentId = environmentIdFromPathname || defaultEnvironmentId;
-  if (!environmentId) {
-    return;
-  }
-  const queryKeys = TriggerTypeEnum.options.map((triggerType) =>
-    getContextCommandPaneItemsQueryKey({
-      teamId,
-      projectId,
-      context,
-      hasItems: false,
-      searchKey: null,
-      pageId: pageId,
-      triggerType,
-      environmentId,
-    }),
-  );
-  queryKeys.forEach((queryKey) => {
-    queryClient.resetQueries({ queryKey });
-  }); */
 
   const item: TCommandPanelItem = useMemo(() => {
     const itemsPinned: TCommandPanelItem[] = [
@@ -187,7 +173,7 @@ function useRepoItem({ context }: TProps) {
               keywords: ["personal", "github"],
               title: "Personal Account",
               Icon: UserIcon,
-              onSelect: async ({ isPendingId }) => {
+              onSelect: async ({ isPendingId, setCurrentPageId }) => {
                 if (isPendingId !== null) return;
                 if (!sessionData.data?.access_token) {
                   toast.error("Your current session is invalid. Please sign in again.");
@@ -198,6 +184,29 @@ function useRepoItem({ context }: TProps) {
                   createGitHubAppMutate({
                     accessToken: sessionData.data.access_token,
                     redirectUrl: window.location.origin + gitHubRedirectPathname,
+                    onSuccess: () => {
+                      const environmentId = environmentIdFromPathname || defaultEnvironmentId;
+                      if (!environmentId) {
+                        return;
+                      }
+                      const queryKeys = TriggerTypeEnum.options.map((triggerType) =>
+                        getContextCommandPaneItemsQueryKey({
+                          teamId,
+                          projectId,
+                          context,
+                          hasItems: false,
+                          searchKey: null,
+                          pageId: pageId,
+                          triggerType,
+                          environmentId,
+                        }),
+                      );
+                      utils.git.listRepositories.reset();
+                      queryKeys.forEach((queryKey) => {
+                        queryClient.resetQueries({ queryKey });
+                      });
+                      setCurrentPageId(pageId);
+                    },
                   }),
                   () => new Error("Failed to create GitHub app"),
                 );
@@ -216,7 +225,7 @@ function useRepoItem({ context }: TProps) {
               keywords: ["organization", "github"],
               title: "Organization",
               Icon: BuildingIcon,
-              onSelect: async ({ isPendingId }) => {
+              onSelect: async ({ isPendingId, setCurrentPageId }) => {
                 if (isPendingId !== null) return;
                 if (!sessionData.data?.access_token) {
                   toast.error("Your current session is invalid. Please sign in again.");
@@ -227,6 +236,29 @@ function useRepoItem({ context }: TProps) {
                   createGitHubAppMutate({
                     accessToken: sessionData.data.access_token,
                     redirectUrl: window.location.origin + gitHubRedirectPathname,
+                    onSuccess: () => {
+                      const environmentId = environmentIdFromPathname || defaultEnvironmentId;
+                      if (!environmentId) {
+                        return;
+                      }
+                      const queryKeys = TriggerTypeEnum.options.map((triggerType) =>
+                        getContextCommandPaneItemsQueryKey({
+                          teamId,
+                          projectId,
+                          context,
+                          hasItems: false,
+                          searchKey: null,
+                          pageId: pageId,
+                          triggerType,
+                          environmentId,
+                        }),
+                      );
+                      utils.git.listRepositories.reset();
+                      queryKeys.forEach((queryKey) => {
+                        queryClient.resetQueries({ queryKey });
+                      });
+                      setCurrentPageId(pageId);
+                    },
                   }),
                   () => new Error("Failed to create GitHub app"),
                 );
@@ -259,7 +291,6 @@ function useRepoItem({ context }: TProps) {
         inputPlaceholder: "Deploy from GitHub...",
         itemsPinned,
         getItems: async () => {
-          console.log("GET ITEMS");
           const res = await utils.git.listRepositories.fetch();
           const items: TCommandPanelItem[] = res.repositories.map((r) => {
             const id = `git_repo_${r.full_name}`;
@@ -288,6 +319,12 @@ function useRepoItem({ context }: TProps) {
     sessionData,
     createGitHubAppMutate,
     gitHubRedirectPathname,
+    defaultEnvironmentId,
+    environmentIdFromPathname,
+    queryClient,
+    teamId,
+    projectId,
+    context,
   ]);
 
   const value = useMemo(
@@ -304,11 +341,13 @@ async function createGitHubApp({
   redirectUrl,
   accessToken,
   apiUrl,
+  onSuccess,
   organizationName,
 }: {
   redirectUrl: string;
   accessToken: string;
   apiUrl: string;
+  onSuccess: () => void;
   organizationName?: string;
 }) {
   const width = 800;
@@ -331,6 +370,7 @@ async function createGitHubApp({
     if (event.origin !== window.location.origin) return;
     if (event.data && event.data.success === true) {
       clearInterval(interval);
+      onSuccess();
       window.removeEventListener("message", messageHandler);
       popup.close();
     }

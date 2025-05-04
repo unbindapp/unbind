@@ -514,7 +514,7 @@ function Item({
     if (item.subpage) {
       setPrevItemId(item.id);
     }
-    item.onSelect?.({ isPendingId });
+    item.onSelect?.({ isPendingId, setCurrentPageId });
   }, [item, setCurrentPageId, clearInputValue, currentPageId, setPrevItemId, isPendingId]);
 
   const isItemPending =
