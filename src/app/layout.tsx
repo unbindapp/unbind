@@ -7,6 +7,7 @@ import { imagePreviewVersion, siteDescription, siteTagline, siteTitle } from "@/
 import { AlertCircleIcon, CheckCircleIcon, InfoIcon, TriangleAlertIcon, XIcon } from "lucide-react";
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { headers } from "next/headers";
 /* import { ReactScan } from "@/components/providers/react-scan"; */
 
 const sans = localFont({
@@ -26,27 +27,40 @@ export const viewport: Viewport = {
   themeColor: metaTheme.dark,
 };
 
-export const metadata: Metadata = {
-  title,
-  description: siteDescription,
-  openGraph: {
+export async function generateMetadata(): Promise<Metadata> {
+  const heads = await headers();
+  const host = heads.get("host");
+  const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+
+  const previewImageUrl = `${protocol}://${host}/previews/${imagePreviewVersion}/home.png`;
+  return {
     title,
     description: siteDescription,
-    images: [
-      {
-        url: `/previews/${imagePreviewVersion}/home.png`,
-        width: 1200,
-        height: 630,
-      },
-    ],
-  },
-  twitter: {
-    title,
-    description: siteDescription,
-    card: "summary_large_image",
-    images: [{ url: `/previews/${imagePreviewVersion}/home.png`, width: 1200, height: 630 }],
-  },
-};
+    openGraph: {
+      title,
+      description: siteDescription,
+      images: [
+        {
+          url: previewImageUrl,
+          width: 1200,
+          height: 630,
+        },
+      ],
+    },
+    twitter: {
+      title,
+      description: siteDescription,
+      card: "summary_large_image",
+      images: [
+        {
+          url: previewImageUrl,
+          width: 1200,
+          height: 630,
+        },
+      ],
+    },
+  };
+}
 
 export default async function RootLayout({
   children,
