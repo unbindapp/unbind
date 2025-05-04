@@ -4,20 +4,16 @@ import { useServicesUtils } from "@/components/project/services-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useService } from "@/components/service/service-provider";
 import DeleteCard from "@/components/settings/delete-card";
+import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { api } from "@/server/trpc/setup/client";
 
 type Props = {
+  service: TServiceShallow;
   className?: string;
 };
 
-export default function DeleteServiceSection({ className }: Props) {
-  const {
-    teamId,
-    projectId,
-    serviceId,
-    environmentId,
-    query: { data },
-  } = useService();
+export default function DeleteServiceSection({ service, className }: Props) {
+  const { teamId, projectId, environmentId } = useService();
 
   const { invalidate } = useServicesUtils({ teamId, projectId, environmentId });
   const { closePanel } = useServicePanel();
@@ -37,10 +33,10 @@ export default function DeleteServiceSection({ className }: Props) {
     <DeleteCard
       type="service"
       error={error}
-      deletingEntityName={data?.service?.name}
+      deletingEntityName={service.name}
       onDialogClose={reset}
       onSubmit={async () => {
-        await deleteService({ teamId, projectId, environmentId, serviceId });
+        await deleteService({ teamId, projectId, environmentId, serviceId: service.id });
       }}
       className={className}
     />
