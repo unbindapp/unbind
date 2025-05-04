@@ -37,7 +37,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { api } from "@/server/trpc/setup/client";
-import { CheckIcon, CylinderIcon, MilestoneIcon, PlusIcon } from "lucide-react";
+import { CheckIcon, CylinderIcon, MilestoneIcon, OctagonXIcon, PlusIcon } from "lucide-react";
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
 const placeholderArray = Array.from({ length: 10 });
@@ -69,10 +69,6 @@ function UndeployedContentDatabase_({ type, version, versionState, backupBucketS
   const { data, isPending, error } = api.services.getDatabase.useQuery({
     type,
   });
-
-  const {
-    query: { isPending: s3SourcesIsPending },
-  } = useS3Sources();
 
   return (
     <>
@@ -159,13 +155,11 @@ function UndeployedContentDatabase_({ type, version, versionState, backupBucketS
             <BlockItemContent>
               <BackupBucketDropdown
                 backupBucketState={backupBucketState}
-                backupsDisabled={backupsDisabled}
                 isBackupBucketDropdownOpen={isBackupBucketDropdownOpen}
                 setIsBackupBucketDropdownOpen={setIsBackupBucketDropdownOpen}
               >
                 <BlockItemButtonLike
                   asElement="button"
-                  isPending={s3SourcesIsPending}
                   text={
                     currentBackupBucket ? (
                       <>
@@ -195,13 +189,11 @@ function getCommandItemValueFromBucket(bucket: TDatabaseBackupBucket) {
 }
 
 function BackupBucketDropdown({
-  backupsDisabled,
   backupBucketState,
   isBackupBucketDropdownOpen,
   setIsBackupBucketDropdownOpen,
   children,
 }: {
-  backupsDisabled: boolean;
   backupBucketState: TDatabaseBackupBucketState;
   isBackupBucketDropdownOpen: boolean;
   setIsBackupBucketDropdownOpen: (open: boolean) => void;
@@ -236,18 +228,9 @@ function BackupBucketDropdown({
       scrollAreaRef.current?.scrollTo({ top: 0 });
     });
 
-    if (!backupsDisabled && buckets && buckets.length > 0) {
-      const firstSource = buckets[0];
-      setBackupBucketCommandValue(getCommandItemValueFromBucket(firstSource));
-      if (!currentBackupBucket) {
-        setCurrentBackupBucket(firstSource);
-      }
-    }
-
     return () => {
       if (timeout.current) clearTimeout(timeout.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [buckets]);
 
   const [backupSourceCommandValue, setBackupBucketCommandValue] = useState("");
@@ -319,6 +302,20 @@ function BackupBucketDropdown({
                   ))}
                 {s3SourcesError && !buckets && !s3SourcesIsPending && (
                   <ErrorCard className="rounded-md" message={s3SourcesError.message} />
+                )}
+                {buckets && currentBackupBucket && (
+                  <CommandItem
+                    value={"Disable backups"}
+                    onSelect={(v) => {
+                      setBackupBucketCommandValue(v);
+                      setCurrentBackupBucket(null);
+                      setIsBackupBucketDropdownOpen(false);
+                    }}
+                    className="group/item text-warning data-[selected=true]:bg-warning/10 data-[selected=true]:text-warning px-3"
+                  >
+                    <OctagonXIcon className="-ml-0.25 size-4 shrink-0" />
+                    <p className="min-w-0 shrink leading-tight">Disable backups</p>
+                  </CommandItem>
                 )}
                 {buckets?.map((b) => (
                   <CommandItem
