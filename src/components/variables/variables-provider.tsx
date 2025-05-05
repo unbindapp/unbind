@@ -15,15 +15,21 @@ const VariablesContext = createContext<TVariablesContext | null>(null);
 
 type TProps = {
   initialData?: AppRouterOutputs["variables"]["list"];
+  refetchInterval?: number;
   children: ReactNode;
 } & TEntityVariableTypeProps;
 
-export const VariablesProvider: React.FC<TProps> = ({ initialData, children, ...typedProps }) => {
+export const VariablesProvider: React.FC<TProps> = ({
+  initialData,
+  refetchInterval,
+  children,
+  ...typedProps
+}) => {
   const list = api.variables.list.useQuery(
     {
       ...typedProps,
     },
-    { initialData },
+    { initialData, refetchInterval },
   );
 
   const createOrUpdate = api.variables.createOrUpdate.useMutation();

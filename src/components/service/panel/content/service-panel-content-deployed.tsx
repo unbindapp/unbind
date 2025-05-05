@@ -24,6 +24,7 @@ export default function ServicePanelContentDeployed({
 }: TProps) {
   const { teamId, projectId, environmentId } = useService();
   const { currentTabId, setCurrentTabId } = useServicePanel();
+
   return (
     <div className={cn("flex w-full flex-1 flex-col overflow-hidden", className)} {...rest}>
       <nav className="touch:scrollbar-hidden flex w-full justify-start overflow-auto border-b">

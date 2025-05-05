@@ -13,12 +13,14 @@ const VariableReferencesContext = createContext<TVariableReferencesContext | nul
 
 type TProps = {
   initialData?: AppRouterOutputs["variables"]["listAvailableVariableReferences"];
+  refetchInterval?: number;
   children: ReactNode;
 } & TEntityVariableTypeProps;
 
 export const VariableReferencesProvider: React.FC<TProps> = ({
   children,
   initialData: initialDataFromProps,
+  refetchInterval,
   ...typedProps
 }) => {
   const initialData: AppRouterOutputs["variables"]["listAvailableVariableReferences"] | undefined =
@@ -39,6 +41,7 @@ export const VariableReferencesProvider: React.FC<TProps> = ({
     {
       initialData: typedProps.type === "service" ? initialData : { variables: [] },
       enabled: typedProps.type === "service",
+      refetchInterval,
       trpc: { context: { skipBatch: true } },
     },
   );
