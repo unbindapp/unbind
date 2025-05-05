@@ -50,7 +50,7 @@ import {
   TriangleAlertIcon,
   XIcon,
 } from "lucide-react";
-import { Dispatch, ReactNode, useMemo, useRef, useState } from "react";
+import { Dispatch, FC, ReactNode, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
 const hiddenString = "••••••••••";
@@ -80,6 +80,8 @@ type TProps = {
   disableDelete?: boolean;
   disableEdit?: boolean;
   disableCopy?: boolean;
+  hideThreeDotButton?: boolean;
+  Icon?: FC<{ className?: string }>;
 } & TVariableOrPlaceholderProps;
 
 export default function VariableCard({
@@ -89,6 +91,8 @@ export default function VariableCard({
   disableDelete,
   disableEdit,
   disableCopy,
+  hideThreeDotButton,
+  Icon,
   asElement = "div",
 }: TProps) {
   const Element = asElement === "li" ? "li" : "div";
@@ -171,10 +175,11 @@ export default function VariableCard({
       className="data-reference-error:bg-destructive/4 group/card data-reference-error:border-destructive/12 relative flex w-full flex-col rounded-xl border px-3 py-0.75 data-placeholder:text-transparent sm:flex-row sm:items-center sm:rounded-lg sm:pr-0.75"
     >
       <div className="flex h-9 w-full shrink-0 items-center py-2 pr-8 sm:w-56 sm:pr-4 md:w-64">
-        {variable?.variable_type === "reference" && (
+        {Icon && <Icon className="text-foreground mr-2 size-3.5 shrink-0" />}
+        {!Icon && variable?.variable_type === "reference" && (
           <Link2Icon className="text-process mr-2 size-3.5 shrink-0" />
         )}
-        {variable?.variable_type === "regular" && (
+        {!Icon && variable?.variable_type === "regular" && (
           <KeyIcon className="text-foreground mr-2 size-3.5 shrink-0" />
         )}
         {isPlaceholder && (
@@ -256,13 +261,15 @@ export default function VariableCard({
               </p>
             </div>
             <div className="hidden sm:flex">
-              <ConditionalDropdownButton
-                {...placeholderOrVariableProps}
-                referenceError={referenceError}
-                disableDelete={disableDelete}
-                disableEdit={disableEdit}
-                setIsEditingVariable={setIsEditingVariable}
-              />
+              {!hideThreeDotButton && (
+                <ConditionalDropdownButton
+                  {...placeholderOrVariableProps}
+                  referenceError={referenceError}
+                  disableDelete={disableDelete}
+                  disableEdit={disableEdit}
+                  setIsEditingVariable={setIsEditingVariable}
+                />
+              )}
             </div>
           </>
         )}
@@ -276,14 +283,16 @@ export default function VariableCard({
       </div>
       {(!isEditingVariable || !variable) && (
         <div className="absolute top-0.75 right-0.75 sm:hidden">
-          <ConditionalDropdownButton
-            {...placeholderOrVariableProps}
-            referenceError={referenceError}
-            disableDelete={disableDelete}
-            disableEdit={disableEdit}
-            setIsEditingVariable={setIsEditingVariable}
-            className="rounded-lg"
-          />
+          {!hideThreeDotButton && (
+            <ConditionalDropdownButton
+              {...placeholderOrVariableProps}
+              referenceError={referenceError}
+              disableDelete={disableDelete}
+              disableEdit={disableEdit}
+              setIsEditingVariable={setIsEditingVariable}
+              className="rounded-lg"
+            />
+          )}
         </div>
       )}
     </Element>

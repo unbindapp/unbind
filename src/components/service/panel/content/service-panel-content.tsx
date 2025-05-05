@@ -11,13 +11,20 @@ import Deployments from "@/components/service/panel/tabs/deployments/deployments
 import Logs from "@/components/service/panel/tabs/logs/logs";
 import Metrics from "@/components/service/panel/tabs/metrics/metrics";
 import Settings from "@/components/service/panel/tabs/settings/settings";
-import VariableReferencesProvider from "@/components/variables/variable-references-provider";
+import VariableReferencesProvider, {
+  useVariableReferenceUtils,
+} from "@/components/variables/variable-references-provider";
 import Variables from "@/components/service/panel/tabs/variables/variables";
-import VariablesProvider from "@/components/variables/variables-provider";
+import VariablesProvider, {
+  useVariables,
+  useVariablesUtils,
+} from "@/components/variables/variables-provider";
 import { useService } from "@/components/service/service-provider";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
-import { FC, ReactNode } from "react";
+import { FC, ReactNode, useEffect } from "react";
 import SystemProvider from "@/components/system/system-provider";
+import InstancesProvider, { useInstances } from "@/components/instances/instances-provider";
+import { arrayHasAllSpecialDbVariables } from "@/components/variables/variables-list";
 
 type TServicePage = FC<{ service: TServiceShallow }>;
 type TServicePageProvider = FC<TServicePageProviderProps>;
@@ -30,14 +37,17 @@ export type TServicePanelTab = {
   noScrollArea?: boolean;
 };
 
-type TServicePageProviderProps = {
+type TServiceProps = {
   teamId: string;
   projectId: string;
   environmentId: string;
   serviceId: string;
   service: TServiceShallow;
-  children: ReactNode;
 };
+
+type TServicePageProviderProps = {
+  children: ReactNode;
+} & TServiceProps;
 
 const EmptyProvider = ({ children }: TServicePageProviderProps) => children;
 
@@ -61,7 +71,7 @@ const tabs: TServicePanelTab[] = [
     Provider: ({ children, ...rest }: TServicePageProviderProps) => (
       <VariablesProvider type="service" {...rest}>
         <VariableReferencesProvider type="service" {...rest}>
-          {children}
+          <VariablesTabWrapper {...rest}>{children}</VariablesTabWrapper>
         </VariableReferencesProvider>
       </VariablesProvider>
     ),
@@ -103,11 +113,46 @@ export default function ServicePanelContent({ service, className }: TProps) {
   }
 
   return (
-    <ServicePanelContentDeployed
-      data-vaul-no-drag
-      tabs={tabs}
-      service={service}
-      currentTab={currentTab}
-    />
+    <InstancesProvider
+      teamId={teamId}
+      projectId={projectId}
+      environmentId={environmentId}
+      serviceId={service.id}
+    >
+      <ServicePanelContentDeployed
+        data-vaul-no-drag
+        tabs={tabs}
+        service={service}
+        currentTab={currentTab}
+      />
+    </InstancesProvider>
   );
+}
+
+function VariablesTabWrapper({ children, ...props }: { children: ReactNode } & TServiceProps) {
+  const { data: instancesData } = useInstances();
+  const { invalidate: invalidateVariableReferences } = useVariableReferenceUtils({
+    type: "service",
+    ...props,
+  });
+  const { invalidate: invalidateVariables } = useVariablesUtils({ type: "service", ...props });
+  const {
+    list: { data: variablesData },
+  } = useVariables();
+
+  useEffect(() => {
+    if (!instancesData) return;
+    if (props.service.type !== "database") return;
+
+    const variableNames = variablesData?.variables.map((v) => v.name) || [];
+    const hasAllNeededVariables = arrayHasAllSpecialDbVariables(variableNames);
+
+    if (hasAllNeededVariables) return;
+
+    invalidateVariableReferences();
+    invalidateVariables();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [instancesData]);
+
+  return children;
 }
