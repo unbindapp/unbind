@@ -54,7 +54,7 @@ export const CreateServiceFromDockerImageSchema = z
   .merge(CreateServiceSharedSchema)
   .strip();
 
-const AvailableDatabaseEnum = z.enum(["postgres", "redis", "mysql"]);
+const AvailableDatabaseEnum = z.enum(["postgres", "redis", "mysql", "mongodb"]);
 
 export type TAvailableDatabase = z.infer<typeof AvailableDatabaseEnum>;
 

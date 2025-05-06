@@ -44,21 +44,6 @@ export const CallbackResponseBodySchema = z
 
 export const ContainerStateSchema = z.enum(['Running', 'Waiting', 'Terminated']);
 
-export const ContainerStatusSchema = z
-  .object({
-    crashLoopReason: z.string().optional(),
-    isCrashing: z.boolean(),
-    lastExitCode: z.number().optional(),
-    lastTermination: z.string().optional(),
-    name: z.string(),
-    ready: z.boolean(),
-    restartCount: z.number(),
-    state: ContainerStateSchema,
-    stateMessage: z.string().optional(),
-    stateReason: z.string().optional(),
-  })
-  .strip();
-
 export const CreateBuildInputBodySchema = z
   .object({
     environment_id: z.string(),
@@ -552,6 +537,29 @@ export const GetEnvironmentOutputBodySchema = z
   })
   .strip();
 
+export const InstanceHealthSchema = z.enum(['healthy', 'degraded', 'unhealthy']);
+
+export const SimpleInstanceStatusSchema = z
+  .object({
+    kubernetes_name: z.string(),
+    status: ContainerStateSchema,
+  })
+  .strip();
+
+export const SimpleHealthStatusSchema = z
+  .object({
+    expectedInstances: z.number(),
+    health: InstanceHealthSchema,
+    instances: z.array(SimpleInstanceStatusSchema).nullable(),
+  })
+  .strip();
+
+export const GetInstanceHealthResponseBodySchema = z
+  .object({
+    data: SimpleHealthStatusSchema,
+  })
+  .strip();
+
 export const MetricsTypeSchema = z.enum(['team', 'project', 'environment', 'service']);
 
 export const MetricDetailSchema = z
@@ -862,6 +870,21 @@ export const GithubRepositoryDetailResponseBodySchema = z
   })
   .strip();
 
+export const InstanceStatusSchema = z
+  .object({
+    crashLoopReason: z.string().optional(),
+    isCrashing: z.boolean(),
+    kubernetes_name: z.string(),
+    lastExitCode: z.number().optional(),
+    lastTermination: z.string().optional(),
+    ready: z.boolean(),
+    restartCount: z.number(),
+    state: ContainerStateSchema,
+    stateMessage: z.string().optional(),
+    stateReason: z.string().optional(),
+  })
+  .strip();
+
 export const InstanceTypeSchema = z.enum(['team', 'project', 'environment', 'service']);
 
 export const ItemSchema = z
@@ -915,11 +938,11 @@ export const PodPhaseSchema = z.enum(['Pending', 'Running', 'Succeeded', 'Failed
 
 export const PodContainerStatusSchema = z
   .object({
-    containers: z.array(ContainerStatusSchema),
     environment_id: z.string(),
-    hasCrashingContainers: z.boolean(),
-    initContainers: z.array(ContainerStatusSchema),
-    name: z.string(),
+    hasCrashingInstances: z.boolean(),
+    instanceDependencies: z.array(InstanceStatusSchema),
+    instances: z.array(InstanceStatusSchema),
+    kubernetes_name: z.string(),
     namespace: z.string(),
     phase: PodPhaseSchema,
     podIP: z.string().optional(),
@@ -1389,7 +1412,6 @@ export type AvailableVariableReference = z.infer<typeof AvailableVariableReferen
 export type BuildkitSettings = z.infer<typeof BuildkitSettingsSchema>;
 export type CallbackResponseBody = z.infer<typeof CallbackResponseBodySchema>;
 export type ContainerState = z.infer<typeof ContainerStateSchema>;
-export type ContainerStatus = z.infer<typeof ContainerStatusSchema>;
 export type CreateBuildInputBody = z.infer<typeof CreateBuildInputBodySchema>;
 export type GitCommitter = z.infer<typeof GitCommitterSchema>;
 export type DeploymentStatus = z.infer<typeof DeploymentStatusSchema>;
@@ -1448,6 +1470,10 @@ export type ErrorModel = z.infer<typeof ErrorModelSchema>;
 export type GetDatabaseResponseBody = z.infer<typeof GetDatabaseResponseBodySchema>;
 export type GetDeploymentResponseBody = z.infer<typeof GetDeploymentResponseBodySchema>;
 export type GetEnvironmentOutputBody = z.infer<typeof GetEnvironmentOutputBodySchema>;
+export type InstanceHealth = z.infer<typeof InstanceHealthSchema>;
+export type SimpleInstanceStatus = z.infer<typeof SimpleInstanceStatusSchema>;
+export type SimpleHealthStatus = z.infer<typeof SimpleHealthStatusSchema>;
+export type GetInstanceHealthResponseBody = z.infer<typeof GetInstanceHealthResponseBodySchema>;
 export type MetricsType = z.infer<typeof MetricsTypeSchema>;
 export type MetricDetail = z.infer<typeof MetricDetailSchema>;
 export type MetricsMapEntry = z.infer<typeof MetricsMapEntrySchema>;
@@ -1486,6 +1512,7 @@ export type GithubRepositoryDetail = z.infer<typeof GithubRepositoryDetailSchema
 export type GithubRepositoryDetailResponseBody = z.infer<
   typeof GithubRepositoryDetailResponseBodySchema
 >;
+export type InstanceStatus = z.infer<typeof InstanceStatusSchema>;
 export type InstanceType = z.infer<typeof InstanceTypeSchema>;
 export type Item = z.infer<typeof ItemSchema>;
 export type ListDatabasesResponseBody = z.infer<typeof ListDatabasesResponseBodySchema>;
@@ -1623,6 +1650,15 @@ export const repo_detailQuerySchema = z
     installation_id: z.number(),
     owner: z.string(),
     repo_name: z.string(),
+  })
+  .passthrough();
+
+export const get_instance_healthQuerySchema = z
+  .object({
+    team_id: z.string(),
+    project_id: z.string(),
+    environment_id: z.string(),
+    service_id: z.string(),
   })
   .passthrough();
 
@@ -1876,6 +1912,42 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           }
           const data = await response.json();
           return CallbackResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      dev_login: async (params?: undefined, fetchOptions?: RequestInit) => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/auth/dev_login`);
+
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return data;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -2589,6 +2661,52 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
       ),
     },
     instances: {
+      health: async (
+        params: z.infer<typeof get_instance_healthQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<GetInstanceHealthResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/instances/health`);
+          const validatedQuery = get_instance_healthQuerySchema.parse(params);
+          const queryKeys = ['team_id', 'project_id', 'environment_id', 'service_id'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return GetInstanceHealthResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
       list: async (
         params: z.infer<typeof list_instancesQuerySchema>,
         fetchOptions?: RequestInit,

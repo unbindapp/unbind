@@ -8,13 +8,21 @@ type TInstancesContext = AppRouterQueryResult<AppRouterOutputs["instances"]["lis
 
 const InstancesContext = createContext<TInstancesContext | null>(null);
 
-export const InstancesProvider: React.FC<{
+type TProps = {
   teamId: string;
   projectId: string;
   environmentId: string;
   serviceId: string;
   children: ReactNode;
-}> = ({ teamId, projectId, environmentId, serviceId, children }) => {
+};
+
+export const InstancesProvider: React.FC<TProps> = ({
+  teamId,
+  projectId,
+  environmentId,
+  serviceId,
+  children,
+}) => {
   const query = api.instances.list.useQuery(
     { teamId, projectId, environmentId, serviceId },
     { refetchInterval: 3000 },

@@ -1,8 +1,11 @@
 "use client";
 
+import DeploymentsProvider from "@/components/deployment/deployments-provider";
+import InstanceHealthProvider, {
+  useInstanceHealth,
+} from "@/components/instances/instance-health-provider";
 import MetricsProvider from "@/components/metrics/metrics-provider";
 import MetricsStateProvider from "@/components/metrics/metrics-state-provider";
-import DeploymentsProvider from "@/components/deployment/deployments-provider";
 import { TServicePanelTabEnum } from "@/components/service/panel/constants";
 import ServicePanelContentDeployed from "@/components/service/panel/content/service-panel-content-deployed";
 import ServicePanelContentUndeployed from "@/components/service/panel/content/undeployed/service-panel-content-undeployed";
@@ -11,20 +14,19 @@ import Deployments from "@/components/service/panel/tabs/deployments/deployments
 import Logs from "@/components/service/panel/tabs/logs/logs";
 import Metrics from "@/components/service/panel/tabs/metrics/metrics";
 import Settings from "@/components/service/panel/tabs/settings/settings";
+import Variables from "@/components/service/panel/tabs/variables/variables";
+import { useService } from "@/components/service/service-provider";
+import SystemProvider from "@/components/system/system-provider";
 import VariableReferencesProvider, {
   useVariableReferenceUtils,
 } from "@/components/variables/variable-references-provider";
-import Variables from "@/components/service/panel/tabs/variables/variables";
+import { arrayHasAllSpecialDbVariables } from "@/components/variables/variables-list";
 import VariablesProvider, {
   useVariables,
   useVariablesUtils,
 } from "@/components/variables/variables-provider";
-import { useService } from "@/components/service/service-provider";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { FC, ReactNode, useEffect } from "react";
-import SystemProvider from "@/components/system/system-provider";
-import InstancesProvider, { useInstances } from "@/components/instances/instances-provider";
-import { arrayHasAllSpecialDbVariables } from "@/components/variables/variables-list";
 
 type TServicePage = FC<{ service: TServiceShallow }>;
 type TServicePageProvider = FC<TServicePageProviderProps>;
@@ -113,7 +115,7 @@ export default function ServicePanelContent({ service, className }: TProps) {
   }
 
   return (
-    <InstancesProvider
+    <InstanceHealthProvider
       teamId={teamId}
       projectId={projectId}
       environmentId={environmentId}
@@ -125,12 +127,12 @@ export default function ServicePanelContent({ service, className }: TProps) {
         service={service}
         currentTab={currentTab}
       />
-    </InstancesProvider>
+    </InstanceHealthProvider>
   );
 }
 
 function VariablesTabWrapper({ children, ...props }: { children: ReactNode } & TServiceProps) {
-  const { data: instancesData } = useInstances();
+  const { data: instancesHealthData } = useInstanceHealth();
   const { invalidate: invalidateVariableReferences } = useVariableReferenceUtils({
     type: "service",
     ...props,
@@ -141,7 +143,7 @@ function VariablesTabWrapper({ children, ...props }: { children: ReactNode } & T
   } = useVariables();
 
   useEffect(() => {
-    if (!instancesData) return;
+    if (!instancesHealthData) return;
     if (props.service.type !== "database") return;
 
     const variableNames = variablesData?.variables.map((v) => v.name) || [];
@@ -152,7 +154,7 @@ function VariablesTabWrapper({ children, ...props }: { children: ReactNode } & T
     invalidateVariableReferences();
     invalidateVariables();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [instancesData]);
+  }, [instancesHealthData]);
 
   return children;
 }

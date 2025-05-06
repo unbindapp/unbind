@@ -25,6 +25,7 @@ export function databaseTypeToName(type: string) {
   if (type === "postgresql") return "PostgreSQL";
   if (type === "mysql") return "MySQL";
   if (type === "redis") return "Redis";
+  if (type === "mongodb") return "MongoDB";
   return "Unknown";
 }
 
@@ -167,6 +168,19 @@ function useDatabaseItem({ context }: TProps) {
             },
             Icon: ({ className }: { className?: string }) => (
               <BrandIcon brand="mysql" color="brand" className={className} />
+            ),
+          },
+          {
+            id: `mongodb`,
+            title: "MongoDB",
+            keywords: ["database", "nosql", "mongodb", "object database"],
+            onSelect: async ({ isPendingId }) => {
+              if (isPendingId !== null) return;
+              setIsPendingId(`mongodb`);
+              await createService({ databaseType: "mongodb" });
+            },
+            Icon: ({ className }: { className?: string }) => (
+              <BrandIcon brand="mongodb" color="brand" className={className} />
             ),
           },
         ],
