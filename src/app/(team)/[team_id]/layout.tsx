@@ -3,7 +3,7 @@ import NavbarSafeAreaInsetBottom from "@/components/navigation/navbar-safe-area-
 import TeamNavbar from "@/components/team/team-navbar";
 import TeamProvider from "@/components/team/team-provider";
 import TeamsProvider from "@/components/team/teams-provider";
-import UpdateCheckProvider from "@/components/update/update-check-provider";
+import CheckForUpdatesProvider from "@/components/update/check-for-updates-provider";
 import { apiServer } from "@/server/trpc/setup/server";
 import { ResultAsync } from "neverthrow";
 import { notFound, redirect } from "next/navigation";
@@ -37,7 +37,7 @@ export default async function Layout({ children, params }: TProps) {
   }
 
   return (
-    <UpdateCheckProvider>
+    <CheckForUpdatesProvider>
       <TeamsProvider initialData={teamsInitialData.value}>
         <TeamProvider initialData={teamInitialData.value} teamId={teamId}>
           <TeamNavbar />
@@ -51,6 +51,6 @@ export default async function Layout({ children, params }: TProps) {
           />
         </TeamProvider>
       </TeamsProvider>
-    </UpdateCheckProvider>
+    </CheckForUpdatesProvider>
   );
 }

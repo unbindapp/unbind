@@ -5,7 +5,7 @@ import ProjectNavbar from "@/components/project/project-navbar";
 import ProjectProvider from "@/components/project/project-provider";
 import ProjectsProvider from "@/components/project/projects-provider";
 import ServicePanelProvider from "@/components/service/panel/service-panel-provider";
-import UpdateCheckProvider from "@/components/update/update-check-provider";
+import CheckForUpdatesProvider from "@/components/update/check-for-updates-provider";
 import { apiServer } from "@/server/trpc/setup/server";
 import { ResultAsync } from "neverthrow";
 import { redirect } from "next/navigation";
@@ -44,7 +44,7 @@ export default async function Layout({ children, params }: TProps) {
   }
 
   return (
-    <UpdateCheckProvider>
+    <CheckForUpdatesProvider>
       <ProjectsProvider initialData={projectsInitialData.value} teamId={teamId}>
         <ProjectProvider
           initialData={projectInitialData.value}
@@ -70,6 +70,6 @@ export default async function Layout({ children, params }: TProps) {
           </DeploymentPanelIdProvider>
         </ProjectProvider>
       </ProjectsProvider>
-    </UpdateCheckProvider>
+    </CheckForUpdatesProvider>
   );
 }
