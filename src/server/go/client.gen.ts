@@ -211,6 +211,8 @@ export const ServiceTypeSchema = z.enum(['github', 'docker-image', 'database']);
 export const CreateServiceInputSchema = z
   .object({
     auto_deploy: z.boolean().optional(),
+    backup_retention: z.number().optional(), // Number of base backups to retain, e.g. 3
+    backup_schedule: z.string().optional(), // Cron expression for the backup schedule, e.g. '0 0 * * *'
     builder: ServiceBuilderSchema, // Builder of the service - docker, nixpacks, railpack
     database_config: DatabaseConfigSchema.optional(),
     database_type: z.string().optional(),
@@ -239,6 +241,8 @@ export const CreateServiceInputSchema = z
 export const ServiceConfigResponseSchema = z
   .object({
     auto_deploy: z.boolean(),
+    backup_retention_count: z.number(),
+    backup_schedule: z.string(),
     builder: ServiceBuilderSchema,
     git_branch: z.string().optional(),
     git_tag: z.string().optional(),
@@ -1210,6 +1214,26 @@ export const UpdatServiceResponseBodySchema = z
   })
   .strip();
 
+export const UpdateApplyInputBodySchema = z
+  .object({
+    target_version: z.string(),
+  })
+  .strip();
+
+export const UpdateApplyResponseBodySchema = z
+  .object({
+    started: z.boolean(),
+  })
+  .strip();
+
+export const UpdateCheckResponseBodySchema = z
+  .object({
+    available_versions: z.array(z.string()).nullable(),
+    current_version: z.string(),
+    has_update_available: z.boolean(),
+  })
+  .strip();
+
 export const UpdateEnvironmentInputSchema = z
   .object({
     description: z.string().nullable(),
@@ -1261,6 +1285,8 @@ export const UpdateS3EndpointResponseBodySchema = z
 export const UpdateServiceInputSchema = z
   .object({
     auto_deploy: z.boolean().optional(),
+    backup_retention: z.number().optional(), // Number of base backups to retain, e.g. 3
+    backup_schedule: z.string().optional(), // Cron expression for the backup schedule, e.g. '0 0 * * *'
     builder: ServiceBuilderSchema.optional(),
     database_config: DatabaseConfigSchema.optional(),
     description: z.string().nullable().optional(),
@@ -1281,6 +1307,12 @@ export const UpdateServiceInputSchema = z
     s3_backup_endpoint_id: z.string().optional(),
     service_id: z.string(),
     team_id: z.string(),
+  })
+  .strip();
+
+export const UpdateStatusResponseBodySchema = z
+  .object({
+    ready: z.boolean(),
   })
   .strip();
 
@@ -1567,6 +1599,9 @@ export type TeamResponseBody = z.infer<typeof TeamResponseBodySchema>;
 export type TestS3AccessInputBody = z.infer<typeof TestS3AccessInputBodySchema>;
 export type TestS3OutputBody = z.infer<typeof TestS3OutputBodySchema>;
 export type UpdatServiceResponseBody = z.infer<typeof UpdatServiceResponseBodySchema>;
+export type UpdateApplyInputBody = z.infer<typeof UpdateApplyInputBodySchema>;
+export type UpdateApplyResponseBody = z.infer<typeof UpdateApplyResponseBodySchema>;
+export type UpdateCheckResponseBody = z.infer<typeof UpdateCheckResponseBodySchema>;
 export type UpdateEnvironmentInput = z.infer<typeof UpdateEnvironmentInputSchema>;
 export type UpdateEnvironmentResponseBody = z.infer<typeof UpdateEnvironmentResponseBodySchema>;
 export type UpdateProjectInput = z.infer<typeof UpdateProjectInputSchema>;
@@ -1574,6 +1609,7 @@ export type UpdateProjectResponseBody = z.infer<typeof UpdateProjectResponseBody
 export type UpdateS3EndpointInputBody = z.infer<typeof UpdateS3EndpointInputBodySchema>;
 export type UpdateS3EndpointResponseBody = z.infer<typeof UpdateS3EndpointResponseBodySchema>;
 export type UpdateServiceInput = z.infer<typeof UpdateServiceInputSchema>;
+export type UpdateStatusResponseBody = z.infer<typeof UpdateStatusResponseBodySchema>;
 export type UpdateTeamInputBody = z.infer<typeof UpdateTeamInputBodySchema>;
 export type UpdateTeamResponseBody = z.infer<typeof UpdateTeamResponseBodySchema>;
 export type UpdateWebhookResponseBody = z.infer<typeof UpdateWebhookResponseBodySchema>;
@@ -1794,6 +1830,12 @@ export const list_s3_endpointsQuerySchema = z
 export const check_dns_resolutionQuerySchema = z
   .object({
     domain: z.string(),
+  })
+  .passthrough();
+
+export const get_update_statusQuerySchema = z
+  .object({
+    expected_version: z.string().optional(),
   })
   .passthrough();
 
@@ -4041,6 +4083,133 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             }
             const data = await response.json();
             return SettingsResponseBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+      },
+      update: {
+        apply: async (
+          params: UpdateApplyInputBody,
+          fetchOptions?: RequestInit,
+        ): Promise<UpdateApplyResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/system/update/apply`);
+
+            const options: RequestInit = {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+            const validatedBody = UpdateApplyInputBodySchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+              console.log(`Request body is:`, validatedBody);
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return UpdateApplyResponseBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+        check: async (
+          params?: undefined,
+          fetchOptions?: RequestInit,
+        ): Promise<UpdateCheckResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/system/update/check`);
+
+            const options: RequestInit = {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return UpdateCheckResponseBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+        status: async (
+          params: z.infer<typeof get_update_statusQuerySchema>,
+          fetchOptions?: RequestInit,
+        ): Promise<UpdateStatusResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/system/update/status`);
+            const validatedQuery = get_update_statusQuerySchema.parse(params);
+            const queryKeys = ['expected_version'];
+            queryKeys.forEach((key) => {
+              const value = validatedQuery[key as keyof typeof validatedQuery];
+              if (value !== undefined && value !== null) {
+                url.searchParams.append(key, String(value));
+              }
+            });
+            const options: RequestInit = {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return UpdateStatusResponseBodySchema.parse(data);
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
