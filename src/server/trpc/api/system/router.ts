@@ -22,14 +22,12 @@ export const systemRouter = createTRPCRouter({
       data: result,
     };
   }),
-  checkUpdateStatus: privateProcedure
-    .input(z.object({ expected_version: z.string() }))
-    .query(async function ({ ctx: { goClient }, input: { expected_version } }) {
-      const result = await goClient.system.update.status({ expected_version });
-      return {
-        data: result,
-      };
-    }),
+  checkUpdateStatus: privateProcedure.query(async function ({ ctx: { goClient } }) {
+    const result = await goClient.system.update.status();
+    return {
+      data: result,
+    };
+  }),
   applyUpdate: privateProcedure
     .input(z.object({ target_version: z.string() }))
     .query(async function ({ ctx: { goClient }, input: { target_version } }) {

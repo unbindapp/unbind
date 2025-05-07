@@ -1833,12 +1833,6 @@ export const check_dns_resolutionQuerySchema = z
   })
   .passthrough();
 
-export const get_update_statusQuerySchema = z
-  .object({
-    expected_version: z.string().optional(),
-  })
-  .passthrough();
-
 export const get_teamQuerySchema = z
   .object({
     team_id: z.string(),
@@ -4170,7 +4164,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           }
         },
         status: async (
-          params: z.infer<typeof get_update_statusQuerySchema>,
+          params?: undefined,
           fetchOptions?: RequestInit,
         ): Promise<UpdateStatusResponseBody> => {
           try {
@@ -4178,14 +4172,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               throw new Error('API URL is undefined or not a string');
             }
             const url = new URL(`${apiUrl}/system/update/status`);
-            const validatedQuery = get_update_statusQuerySchema.parse(params);
-            const queryKeys = ['expected_version'];
-            queryKeys.forEach((key) => {
-              const value = validatedQuery[key as keyof typeof validatedQuery];
-              if (value !== undefined && value !== null) {
-                url.searchParams.append(key, String(value));
-              }
-            });
+
             const options: RequestInit = {
               method: 'GET',
               headers: {

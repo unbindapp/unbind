@@ -3,6 +3,7 @@ import NavbarSafeAreaInsetBottom from "@/components/navigation/navbar-safe-area-
 import TeamNavbar from "@/components/team/team-navbar";
 import TeamProvider from "@/components/team/team-provider";
 import TeamsProvider from "@/components/team/teams-provider";
+import UpdateCheckProvider from "@/components/update/update-check-provider";
 import { apiServer } from "@/server/trpc/setup/server";
 import { ResultAsync } from "neverthrow";
 import { notFound, redirect } from "next/navigation";
@@ -36,18 +37,20 @@ export default async function Layout({ children, params }: TProps) {
   }
 
   return (
-    <TeamsProvider initialData={teamsInitialData.value}>
-      <TeamProvider initialData={teamInitialData.value} teamId={teamId}>
-        <TeamNavbar />
-        {children}
-        <NavbarSafeAreaInsetBottom className="sm:hidden" />
-        <ContextCommandPanel
-          title="Team Command Panel"
-          description="Team command panel"
-          context={{ contextType: "team", teamId }}
-          triggerType="layout"
-        />
-      </TeamProvider>
-    </TeamsProvider>
+    <UpdateCheckProvider>
+      <TeamsProvider initialData={teamsInitialData.value}>
+        <TeamProvider initialData={teamInitialData.value} teamId={teamId}>
+          <TeamNavbar />
+          {children}
+          <NavbarSafeAreaInsetBottom className="sm:hidden" />
+          <ContextCommandPanel
+            title="Team Command Panel"
+            description="Team command panel"
+            context={{ contextType: "team", teamId }}
+            triggerType="layout"
+          />
+        </TeamProvider>
+      </TeamsProvider>
+    </UpdateCheckProvider>
   );
 }
