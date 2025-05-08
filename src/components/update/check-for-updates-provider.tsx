@@ -40,7 +40,7 @@ export function UpdateToastProvider({ children }: { children: ReactNode }) {
   const availableVersions = updateData?.available_versions;
 
   const hasUpdateAvailable = updateData?.has_update_available;
-  const newestVersion =
+  const latestVersion =
     availableVersions && availableVersions.length > 0
       ? availableVersions[availableVersions.length - 1]
       : null;
@@ -51,12 +51,12 @@ export function UpdateToastProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!isMounted) return;
-    if (!hasUpdateAvailable || !newestVersion) return;
+    if (!hasUpdateAvailable || !latestVersion) return;
     if (updateShownRef.current) return;
 
     toast.success("Update available!", {
       id: "update-toast",
-      description: `Version ${newestVersion} is out!`,
+      description: `Version ${latestVersion} is out!`,
       icon: <GiftIcon />,
       action: (
         <div className="ml-auto max-w-full shrink-0 pl-4">
@@ -75,7 +75,7 @@ export function UpdateToastProvider({ children }: { children: ReactNode }) {
     updateShownRef.current = true;
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasUpdateAvailable, newestVersion, mounted]);
+  }, [hasUpdateAvailable, latestVersion, mounted]);
 
   return children;
 }

@@ -8,7 +8,7 @@ import MetricsProvider from "@/components/metrics/metrics-provider";
 import MetricsStateProvider from "@/components/metrics/metrics-state-provider";
 import { TServicePanelTabEnum } from "@/components/service/panel/constants";
 import ServicePanelContentDeployed from "@/components/service/panel/content/service-panel-content-deployed";
-import ServicePanelContentUndeployed from "@/components/service/panel/content/undeployed/service-panel-content-undeployed";
+import ServicePanelContentUndeployed from "@/components/service/panel/content/service-panel-content-undeployed";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import Deployments from "@/components/service/panel/tabs/deployments/deployments";
 import Logs from "@/components/service/panel/tabs/logs/logs";

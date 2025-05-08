@@ -1,4 +1,5 @@
-import { Button, LinkButton } from "@/components/ui/button";
+import UpdateSection from "@/app/(default)/update/_components/update-section";
+import { LinkButton } from "@/components/ui/button";
 import { auth } from "@/server/auth/auth";
 import { apiServer } from "@/server/trpc/setup/server";
 import { CircleArrowUpIcon } from "lucide-react";
@@ -77,32 +78,7 @@ export default async function Page() {
 
   return (
     <Wrapper>
-      <div className="flex w-full flex-col items-center gap-1.5 px-1">
-        <CircleArrowUpIcon className="size-8" />
-        <h1 className="w-full px-2 text-center text-2xl leading-tight font-bold">
-          Update Unbind to <span className="text-success font-bold">{latestVersion}</span>
-        </h1>
-        <p className="text-muted-foreground w-full">
-          {
-            "The process will take a few minutes. During the update your services will continue to run but Unbind's UI and API will be down."
-          }
-        </p>
-      </div>
-      <div className="flex w-full flex-wrap items-center justify-center">
-        <div className="flex w-full px-1 py-1.5 sm:w-1/2">
-          <Button variant="outline" className="text-muted-foreground w-full">
-            Do it later
-          </Button>
-        </div>
-        <div className="flex w-full px-1 py-1.5 sm:w-1/2">
-          <Button className="w-full">Update Now</Button>
-        </div>
-      </div>
-      <div className="flex w-full items-center justify-center px-1">
-        <p className="text-muted-foreground bg-background-hover max-w-full rounded-full border px-2.5 py-0.5 text-center text-sm font-medium">
-          Current version: <span className="font-bold">{currentVersion}</span>
-        </p>
-      </div>
+      <UpdateSection latestVersion={latestVersion} currentVersion={currentVersion} />
     </Wrapper>
   );
 }

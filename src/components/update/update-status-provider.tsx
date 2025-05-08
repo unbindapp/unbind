@@ -11,11 +11,13 @@ const UpdateStatusContext = createContext<TUpdateStatusContext | null>(null);
 export const UpdateStatusProvider: React.FC<{
   initialData?: AppRouterOutputs["system"]["checkUpdateStatus"];
   refetchInterval?: number;
+  enabled?: boolean;
   children: ReactNode;
-}> = ({ refetchInterval, initialData, children }) => {
+}> = ({ refetchInterval, enabled, initialData, children }) => {
   const query = api.system.checkUpdateStatus.useQuery(undefined, {
     initialData,
     refetchInterval,
+    enabled,
   });
   return <UpdateStatusContext.Provider value={query}>{children}</UpdateStatusContext.Provider>;
 };

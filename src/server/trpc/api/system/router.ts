@@ -30,7 +30,7 @@ export const systemRouter = createTRPCRouter({
   }),
   applyUpdate: privateProcedure
     .input(z.object({ target_version: z.string() }))
-    .query(async function ({ ctx: { goClient }, input: { target_version } }) {
+    .mutation(async function ({ ctx: { goClient }, input: { target_version } }) {
       const result = await goClient.system.update.apply({ target_version });
       return {
         data: result,

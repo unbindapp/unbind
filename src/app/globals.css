@@ -233,10 +233,12 @@
   --animate-pulse-scale: pulse-scale 1s ease-in-out infinite;
   --animate-ping: ping 1s ease-in-out infinite;
   --animate-spin: spin 1s linear infinite;
-  --animate-hourglass: hourglass 1.5s cubic-bezier(0.75, 0, 0.25, 1) infinite;
+  --animate-hourglass: hourglass 3s cubic-bezier(0.75, 0, 0.25, 1) infinite;
+  --animate-hourglass-long: hourglass 4s cubic-bezier(0.75, 0, 0.25, 1) infinite;
   --animate-loading-bar: loading-bar 45s linear infinite;
   --animate-line-in: line-in 0.01s step-end forwards;
   --animate-ping-pong: ping-pong 2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  --animate-ping-pong-long: ping-pong 4s cubic-bezier(0.5, 0, 0.5, 1) infinite;
 
   --radius-px: 1px;
   --radius-2px: 2px;
@@ -305,8 +307,11 @@
     0% {
       transform: rotate(0deg);
     }
-    100% {
+    50% {
       transform: rotate(180deg);
+    }
+    100% {
+      transform: rotate(360deg);
     }
   }
   @keyframes line-in {

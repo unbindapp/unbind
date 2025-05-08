@@ -13,7 +13,7 @@ import {
 import {
   TDatabaseBackupBucket,
   TDatabaseBackupBucketState,
-} from "@/components/service/panel/content/undeployed/service-panel-content-undeployed";
+} from "@/components/service/panel/content/service-panel-content-undeployed";
 import { TStringOrNullState } from "@/components/service/panel/content/undeployed/types";
 import { useService } from "@/components/service/service-provider";
 import S3SourcesProvider, { useS3Sources } from "@/components/storage/s3-sources-provider";

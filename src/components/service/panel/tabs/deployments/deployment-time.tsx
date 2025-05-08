@@ -1,5 +1,5 @@
 import AnimatedTimerIcon from "@/components/icons/animated-timer";
-import { useTime } from "@/components/providers/time-provider";
+import { useNow } from "@/components/providers/now-provider";
 import { cn } from "@/components/ui/utils";
 import { sourceToTitle } from "@/lib/constants";
 import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-difference";
@@ -23,7 +23,7 @@ type TProps = {
 );
 
 export default function DeploymentTime({ deployment, service, isPlaceholder, className }: TProps) {
-  const { now } = useTime();
+  const now = useNow();
   const { str: deploymentTimeStr } = useTimeDifference({
     timestamp: isPlaceholder ? Date.now() : new Date(deployment.created_at).getTime(),
   });

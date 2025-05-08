@@ -11,7 +11,7 @@ import AnimatedTimerIcon from "@/components/icons/animated-timer";
 import TabWrapper from "@/components/navigation/tab-wrapper";
 import NoItemsCard from "@/components/no-items-card";
 import { useDeviceSize } from "@/components/providers/device-size-provider";
-import { useTime } from "@/components/providers/time-provider";
+import { useNow } from "@/components/providers/now-provider";
 import ServiceIcon from "@/components/service/service-icon";
 import { useService } from "@/components/service/service-provider";
 import { Button } from "@/components/ui/button";
@@ -212,7 +212,7 @@ export default function DeploymentPanel({ service }: TProps) {
 }
 
 function DeploymentProgress({ deployment }: { deployment: TDeploymentShallow }) {
-  const { now } = useTime();
+  const now = useNow();
   const durationStr = getDurationStr({
     end: now,
     start: new Date(deployment.created_at).getTime(),

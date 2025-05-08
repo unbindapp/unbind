@@ -1,4 +1,4 @@
-import { useTime } from "@/components/providers/time-provider";
+import { useNow } from "@/components/providers/now-provider";
 
 const defaultRtf = new Intl.RelativeTimeFormat("en-US", {
   numeric: "auto",
@@ -14,7 +14,7 @@ export function useTimeDifference({
 }): {
   str: string | null;
 } {
-  const { now } = useTime();
+  const now = useNow();
 
   if (!timestamp) {
     return {
