@@ -69,7 +69,7 @@ function UpdateSectionInner({
 
   const updateDurationStr = useMemo(() => {
     if (!updateStartTimestamp) return "00:00";
-    const differenceMs = Math.min(0, now - updateStartTimestamp);
+    const differenceMs = Math.max(0, now - updateStartTimestamp);
     const seconds = Math.floor((differenceMs % (1000 * 60)) / 1000);
     const minutes = Math.floor((differenceMs % (1000 * 60 * 60)) / (1000 * 60));
     return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
