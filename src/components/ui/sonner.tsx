@@ -21,7 +21,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         unstyled: true,
         classNames: {
-          icon: "text-foreground group-data-[type=error]/toast:text-destructive! group-data-[type=success]/toast:text-success! group-data-[type=warning]/toast:text-warning! size-5 [&>svg]:size-full",
+          icon: "text-foreground group-data-[type=error]/toast:text-destructive! group-data-[type=success]/toast:text-success! group-data-[type=warning]/toast:text-warning! size-5! [&>svg]:size-full",
           default: "w-full group/toast shadow-lg shadow-shadow/shadow",
           title:
             "text-foreground group-data-[type=error]/toast:text-destructive! group-data-[type=success]/toast:text-success! group-data-[type=warning]/toast:text-warning! font-semibold leading-tight!",

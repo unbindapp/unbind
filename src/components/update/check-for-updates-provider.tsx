@@ -3,7 +3,7 @@
 import { LinkButton } from "@/components/ui/button";
 import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
 import { api } from "@/server/trpc/setup/client";
-import { PartyPopperIcon } from "lucide-react";
+import { GiftIcon } from "lucide-react";
 import { createContext, ReactNode, useContext, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useIsMounted } from "usehooks-ts";
@@ -57,7 +57,7 @@ export function UpdateToastProvider({ children }: { children: ReactNode }) {
     toast.success("Update available!", {
       id: "update-toast",
       description: `Version ${newestVersion} is out!`,
-      icon: <PartyPopperIcon />,
+      icon: <GiftIcon />,
       action: (
         <div className="ml-auto max-w-full shrink-0 pl-4">
           <LinkButton

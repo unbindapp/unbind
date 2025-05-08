@@ -20,12 +20,26 @@ export const SPECIAL_DB_VARIABLES_ENUM = z.enum([
   "DATABASE_URL",
   "DATABASE_USERNAME",
   "DATABASE_PASSWORD",
+  "DATABASE_HOST",
+  "DATABASE_PORT",
+  "DATABASE_DEFAULT_DB_NAME",
+]);
+
+export const SPECIAL_REDIS_VARIABLES_ENUM = z.enum([
+  "DATABASE_URL",
+  "DATABASE_USERNAME",
+  "DATABASE_PASSWORD",
+  "DATABASE_HOST",
+  "DATABASE_PORT",
 ]);
 
 type TSpecialDbVariable = z.infer<typeof SPECIAL_DB_VARIABLES_ENUM>;
+type TSpecialRedisVariable = z.infer<typeof SPECIAL_REDIS_VARIABLES_ENUM>;
 
-export function arrayHasAllSpecialDbVariables(arr: string[]) {
-  return SPECIAL_DB_VARIABLES_ENUM.options.every((val) => arr.includes(val));
+export function arrayHasAllSpecialDbVariables(arr: string[], database_type: string) {
+  return (
+    database_type === "redis" ? SPECIAL_REDIS_VARIABLES_ENUM : SPECIAL_DB_VARIABLES_ENUM
+  ).options.every((val) => arr.includes(val));
 }
 
 export default function VariablesList({ variableTypeProps }: TProps) {
@@ -70,7 +84,13 @@ export default function VariablesList({ variableTypeProps }: TProps) {
   const shouldHaveSpecialDbVariables =
     variableTypeProps.type === "service" && variableTypeProps.service.type === "database";
 
-  const hasAllSpecialDbVariables = arrayHasAllSpecialDbVariables(variables.map((v) => v.name));
+  const hasAllSpecialDbVariables =
+    variableTypeProps.type === "service" && variableTypeProps.service.type === "database"
+      ? arrayHasAllSpecialDbVariables(
+          variables.map((v) => v.name),
+          variableTypeProps.service.database_type || "",
+        )
+      : false;
 
   const showSpecialDbVariablesSection = shouldHaveSpecialDbVariables && !hasAllSpecialDbVariables;
 
@@ -78,7 +98,7 @@ export default function VariablesList({ variableTypeProps }: TProps) {
     return (
       <Wrapper>
         {showSpecialDbVariablesSection && (
-          <SpecialDbVariablesSection variableTypeProps={variableTypeProps} />
+          <SpecialDbVariablesSection variableTypeProps={variableTypeProps} variables={variables} />
         )}
         {!showSpecialDbVariablesSection && (
           <NoItemsCard asElement="li" Icon={KeyIcon}>
@@ -92,7 +112,7 @@ export default function VariablesList({ variableTypeProps }: TProps) {
   return (
     <Wrapper>
       {showSpecialDbVariablesSection && (
-        <SpecialDbVariablesSection variableTypeProps={variableTypeProps} />
+        <SpecialDbVariablesSection variableTypeProps={variableTypeProps} variables={variables} />
       )}
       {showSpecialDbVariablesSection && variables.length > 0 && (
         <div className="w-full px-0.5 py-1.5">
@@ -104,19 +124,8 @@ export default function VariablesList({ variableTypeProps }: TProps) {
         .map((variable, i) => (
           <VariableCard
             variable={variable}
-            disableDelete={
-              variable.variable_type === "regular" &&
-              variableTypeProps.type === "service" &&
-              variableTypeProps.service.type === "database" &&
-              SPECIAL_DB_VARIABLES_ENUM.options.includes(variable.name as TSpecialDbVariable)
-            }
-            disableEdit={
-              variable.variable_type === "reference" ||
-              (variable.variable_type === "regular" &&
-                variableTypeProps.type === "service" &&
-                variableTypeProps.service.type === "database" &&
-                variable.name === SPECIAL_DB_VARIABLES_ENUM.Values.DATABASE_URL)
-            }
+            disableDelete={shouldDeleteBeDisabled(variable, variableTypeProps)}
+            disableEdit={shouldEditBeDisabled(variable, variableTypeProps)}
             disableCopy={variable.variable_type === "reference"}
             variableTypeProps={variableTypeProps}
             asElement="li"
@@ -125,6 +134,41 @@ export default function VariablesList({ variableTypeProps }: TProps) {
         ))}
     </Wrapper>
   );
+}
+
+function shouldDeleteBeDisabled(
+  variable: TVariableOrReferenceShallow,
+  variableTypeProps: TEntityVariableTypeProps,
+) {
+  if (
+    variable.variable_type === "regular" &&
+    variableTypeProps.type === "service" &&
+    variableTypeProps.service.type === "database"
+  ) {
+    return variableTypeProps.service.database_type === "redis"
+      ? SPECIAL_REDIS_VARIABLES_ENUM.options.includes(variable.name as TSpecialRedisVariable)
+      : SPECIAL_DB_VARIABLES_ENUM.options.includes(variable.name as TSpecialDbVariable);
+  }
+  return false;
+}
+
+function shouldEditBeDisabled(
+  variable: TVariableOrReferenceShallow,
+  variableTypeProps: TEntityVariableTypeProps,
+) {
+  if (variable.variable_type === "reference") {
+    return true;
+  }
+  if (
+    variable.variable_type === "regular" &&
+    variableTypeProps.type === "service" &&
+    variableTypeProps.service.type === "database"
+  ) {
+    return variableTypeProps.service.database_type === "redis"
+      ? SPECIAL_REDIS_VARIABLES_ENUM.options.includes(variable.name as TSpecialRedisVariable)
+      : SPECIAL_DB_VARIABLES_ENUM.options.includes(variable.name as TSpecialDbVariable);
+  }
+  return false;
 }
 
 function variablesSort(
@@ -142,12 +186,13 @@ function variablesSort(
     return 0;
   }
   if (variableTypeProps.type === "service" && variableTypeProps.service.type === "database") {
-    if (a.name === "DATABASE_URL") return -1;
-    if (b.name === "DATABASE_URL") return 1;
-    if (a.name === "DATABASE_USERNAME") return -1;
-    if (b.name === "DATABASE_USERNAME") return 1;
-    if (a.name === "DATABASE_PASSWORD") return -1;
-    if (b.name === "DATABASE_PASSWORD") return 1;
+    const aIndex = SPECIAL_DB_VARIABLES_ENUM.options.indexOf(a.name as TSpecialDbVariable);
+    const bIndex = SPECIAL_DB_VARIABLES_ENUM.options.indexOf(b.name as TSpecialDbVariable);
+    if (aIndex !== -1 && bIndex !== -1) {
+      return aIndex - bIndex;
+    }
+    if (aIndex !== -1) return -1;
+    if (bIndex !== -1) return 1;
   }
   return 0;
 }
@@ -157,10 +202,15 @@ function Wrapper({ className, children }: { className?: string; children: ReactN
 }
 
 function SpecialDbVariablesSection({
+  variables,
   variableTypeProps,
 }: {
+  variables: TVariableOrReferenceShallow[];
   variableTypeProps: TEntityVariableTypeProps;
 }) {
+  const regularVariables = variables
+    .filter((v) => v.variable_type === "regular")
+    .map((v) => v.name);
   return (
     <>
       <div className="bg-process/8 border-process/8 text-process flex w-full items-start gap-2 rounded-lg border px-3 py-2.5">
@@ -169,21 +219,28 @@ function SpecialDbVariablesSection({
           Waiting for database variables to become available...
         </p>
       </div>
-      {SPECIAL_DB_VARIABLES_ENUM.options.map((val) => (
-        <VariableCard
-          key={val}
-          variableTypeProps={variableTypeProps}
-          asElement="li"
-          Icon={({ className }) => <HourglassIcon className={cn("animate-hourglass", className)} />}
-          variable={{
-            type: "service",
-            name: val,
-            variable_type: "regular",
-            value: "Waiting...",
-          }}
-          hideThreeDotButton
-        />
-      ))}
+      {(variableTypeProps.type === "service" && variableTypeProps.service.database_type === "redis"
+        ? SPECIAL_REDIS_VARIABLES_ENUM
+        : SPECIAL_DB_VARIABLES_ENUM
+      ).options
+        .filter((v) => !regularVariables.includes(v))
+        .map((val) => (
+          <VariableCard
+            key={val}
+            variableTypeProps={variableTypeProps}
+            asElement="li"
+            Icon={({ className }) => (
+              <HourglassIcon className={cn("animate-hourglass", className)} />
+            )}
+            variable={{
+              type: "service",
+              name: val,
+              variable_type: "regular",
+              value: "Waiting...",
+            }}
+            hideThreeDotButton
+          />
+        ))}
     </>
   );
 }

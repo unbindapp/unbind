@@ -147,7 +147,10 @@ function VariablesTabWrapper({ children, ...props }: { children: ReactNode } & T
     if (props.service.type !== "database") return;
 
     const variableNames = variablesData?.variables.map((v) => v.name) || [];
-    const hasAllNeededVariables = arrayHasAllSpecialDbVariables(variableNames);
+    const hasAllNeededVariables = arrayHasAllSpecialDbVariables(
+      variableNames,
+      props.service.database_type || "",
+    );
 
     if (hasAllNeededVariables) return;
 
