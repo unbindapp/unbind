@@ -86,6 +86,24 @@ export default function useTemplateItem({}: { context: TContextCommandPanelConte
               <BrandIcon brand="ghost" color="brand" className={className} />
             ),
           },
+          {
+            id: `wordpress`,
+            title: "WordPress",
+            keywords: [
+              "blogging",
+              "php",
+              "cms",
+              "content",
+              "publishing platform",
+              "website",
+              "ecommerce",
+              "WooCommerce",
+            ],
+            onSelect: () => onSelectPlaceholder(closePanel),
+            Icon: ({ className }: { className?: string }) => (
+              <BrandIcon brand="wordpress" color="brand" className={className} />
+            ),
+          },
         ],
       },
     };
