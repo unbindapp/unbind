@@ -49,22 +49,21 @@ function UpdateSectionInner({
     isPending: isPendingApplyUpdate,
   } = api.system.applyUpdate.useMutation({
     onSuccess: (d) => {
-      if (d.data.started) {
-        setUpdateStatusEnabled(true);
-        setUpdatePhase("updating");
-        setUpdateStartTimestamp(Date.now());
-      } else {
-        throw new Error("Update failed to start");
+      if (!d.data.started) {
+        throw new Error("Update couldn't start");
       }
+      setUpdateStatusEnabled(true);
+      setUpdatePhase("updating");
+      setUpdateStartTimestamp(Date.now());
     },
   });
 
   useEffect(() => {
     if (updatePhase !== "updating") return;
-    if (updateStatus?.data.ready) {
-      setUpdatePhase("succeeded");
-      setUpdateStatusEnabled(false);
-    }
+    if (!updateStatus?.data.ready) return;
+
+    setUpdatePhase("succeeded");
+    setUpdateStatusEnabled(false);
   }, [updatePhase, updateStatus, setUpdateStatusEnabled]);
 
   const updateDurationStr = useMemo(() => {
