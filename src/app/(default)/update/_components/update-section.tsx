@@ -69,9 +69,11 @@ function UpdateSectionInner({
 
   const updateDurationStr = useMemo(() => {
     if (!updateStartTimestamp) return "00:00";
+
     const differenceMs = Math.max(0, now - updateStartTimestamp);
     const seconds = Math.floor((differenceMs % (1000 * 60)) / 1000);
-    const minutes = Math.floor((differenceMs % (1000 * 60 * 60)) / (1000 * 60));
+    const minutes = Math.floor(differenceMs / (1000 * 60));
+
     return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
   }, [now, updateStartTimestamp]);
 
@@ -131,7 +133,7 @@ function UpdateSectionInner({
         {updatePhase === "updating" && (
           <div className="mt-1.5 flex w-full flex-col items-center gap-2">
             <div className="bg-border relative h-3 w-full items-center justify-center overflow-hidden rounded-lg border">
-              <div className="from-process/0 via-process to-process/0 animate-ping-pong-long absolute top-1/2 left-1/2 aspect-square w-[120%] origin-center -translate-1/2 bg-gradient-to-r" />
+              <div className="from-process/0 via-process to-process/0 animate-ping-pong-long absolute top-1/2 left-1/2 aspect-square w-[110%] origin-center -translate-1/2 bg-gradient-to-r" />
             </div>
             <p className="max-w-full text-center font-mono text-xl leading-tight font-semibold">
               {updateDurationStr}

@@ -236,7 +236,7 @@ function SheetItem<T>({
     >
       {isPending && (
         <div className="bg-background border-top-loader/25 absolute top-0 left-0 h-full w-full items-center justify-center overflow-hidden rounded-lg border">
-          <div className="from-top-loader/0 via-top-loader/25 to-top-loader/0 animate-ping-pong absolute top-1/2 left-1/2 aspect-square w-[100%] origin-center -translate-1/2 bg-gradient-to-r" />
+          <div className="from-top-loader/0 via-top-loader/25 to-top-loader/0 animate-ping-pong absolute top-1/2 left-1/2 aspect-square w-full origin-center -translate-1/2 bg-gradient-to-r" />
         </div>
       )}
       <div className="group-data-pending/item:text-foreground relative flex min-w-0 flex-1 items-center gap-1.5">
@@ -323,7 +323,7 @@ function DropdownItem<T>({
     >
       {isPending && (
         <div className="bg-background border-top-loader/25 absolute top-0 left-0 h-full w-full items-center justify-center overflow-hidden rounded-md border">
-          <div className="from-top-loader/0 via-top-loader/25 to-top-loader/0 animate-ping-pong absolute top-1/2 left-1/2 aspect-square w-[100%] origin-center -translate-1/2 bg-gradient-to-r" />
+          <div className="from-top-loader/0 via-top-loader/25 to-top-loader/0 animate-ping-pong absolute top-1/2 left-1/2 aspect-square w-full origin-center -translate-1/2 bg-gradient-to-r" />
         </div>
       )}
       <div className="group-data-pending/item:text-foreground relative flex min-w-0 flex-1 items-center gap-1.5">

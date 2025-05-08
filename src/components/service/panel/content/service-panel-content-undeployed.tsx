@@ -379,7 +379,7 @@ export default function ServicePanelContentUndeployed({ service, className, ...r
           >
             {createFirstDeploymentIsPending && (
               <div className="absolute top-0 left-0 h-full w-full items-center justify-center overflow-hidden rounded-lg">
-                <div className="from-foreground/0 via-foreground to-foreground/0 animate-ping-pong absolute top-1/2 left-1/2 aspect-square w-[100%] origin-center -translate-1/2 bg-gradient-to-r" />
+                <div className="from-foreground/0 via-foreground to-foreground/0 animate-ping-pong absolute top-1/2 left-1/2 aspect-square w-full origin-center -translate-1/2 bg-gradient-to-r" />
               </div>
             )}
             <div className="relative flex w-full items-center justify-center gap-1.5">
