@@ -5,7 +5,9 @@ import ProjectNavbar from "@/components/project/project-navbar";
 import ProjectProvider from "@/components/project/project-provider";
 import ProjectsProvider from "@/components/project/projects-provider";
 import ServicePanelProvider from "@/components/service/panel/service-panel-provider";
-import CheckForUpdatesProvider from "@/components/update/check-for-updates-provider";
+import CheckForUpdatesProvider, {
+  UpdateToastProvider,
+} from "@/components/update/check-for-updates-provider";
 import { apiServer } from "@/server/trpc/setup/server";
 import { ResultAsync } from "neverthrow";
 import { redirect } from "next/navigation";
@@ -45,31 +47,33 @@ export default async function Layout({ children, params }: TProps) {
 
   return (
     <CheckForUpdatesProvider>
-      <ProjectsProvider initialData={projectsInitialData.value} teamId={teamId}>
-        <ProjectProvider
-          initialData={projectInitialData.value}
-          teamId={teamId}
-          projectId={projectId}
-        >
-          <DeploymentPanelIdProvider>
-            <ServicePanelProvider>
-              <ProjectNavbar />
-              {children}
-              <NavbarSafeAreaInsetBottom className="sm:hidden" />
-              <ContextCommandPanel
-                title="Project Command Panel"
-                description="Project command panel"
-                triggerType="layout"
-                context={{
-                  contextType: "project",
-                  projectId,
-                  teamId,
-                }}
-              />
-            </ServicePanelProvider>
-          </DeploymentPanelIdProvider>
-        </ProjectProvider>
-      </ProjectsProvider>
+      <UpdateToastProvider>
+        <ProjectsProvider initialData={projectsInitialData.value} teamId={teamId}>
+          <ProjectProvider
+            initialData={projectInitialData.value}
+            teamId={teamId}
+            projectId={projectId}
+          >
+            <DeploymentPanelIdProvider>
+              <ServicePanelProvider>
+                <ProjectNavbar />
+                {children}
+                <NavbarSafeAreaInsetBottom className="sm:hidden" />
+                <ContextCommandPanel
+                  title="Project Command Panel"
+                  description="Project command panel"
+                  triggerType="layout"
+                  context={{
+                    contextType: "project",
+                    projectId,
+                    teamId,
+                  }}
+                />
+              </ServicePanelProvider>
+            </DeploymentPanelIdProvider>
+          </ProjectProvider>
+        </ProjectsProvider>
+      </UpdateToastProvider>
     </CheckForUpdatesProvider>
   );
 }

@@ -219,12 +219,12 @@ function LinkButton({
         buttonVariants({
           variant,
           size,
-          className,
           state,
           fadeOnDisabled,
           focusVariant,
           forceMinSize,
           layout: isText ? undefined : "flex",
+          className,
         }),
       )}
       href={href}

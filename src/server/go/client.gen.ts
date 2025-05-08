@@ -258,6 +258,16 @@ export const ServiceConfigResponseSchema = z
   })
   .strip();
 
+export const TemplateResponseSchema = z
+  .object({
+    created_at: z.string().datetime(),
+    id: z.string(),
+    immutable: z.boolean(),
+    name: z.string(),
+    version: z.number(),
+  })
+  .strip();
+
 export const ServiceResponseSchema = z
   .object({
     config: ServiceConfigResponseSchema,
@@ -275,6 +285,7 @@ export const ServiceResponseSchema = z
     last_deployment: DeploymentResponseSchema.optional(),
     last_successful_deployment: DeploymentResponseSchema.optional(),
     name: z.string(),
+    template: TemplateResponseSchema.optional(),
     type: ServiceTypeSchema,
     updated_at: z.string().datetime(),
   })
@@ -981,6 +992,12 @@ export const ListServiceResponseBodySchema = z
   })
   .strip();
 
+export const ListTemplatesResponseBodySchema = z
+  .object({
+    data: z.array(TemplateResponseSchema).nullable(),
+  })
+  .strip();
+
 export const ListWebhooksResponseBodySchema = z
   .object({
     data: z.array(WebhookResponseSchema),
@@ -1193,6 +1210,21 @@ export const TeamResponseBodySchema = z
   })
   .strip();
 
+export const TemplateDeployInputSchema = z
+  .object({
+    environment_id: z.string(),
+    project_id: z.string(),
+    team_id: z.string(),
+    template_id: z.string(),
+  })
+  .strip();
+
+export const TemplateDeployResponseBodySchema = z
+  .object({
+    data: z.array(ServiceResponseSchema).nullable(),
+  })
+  .strip();
+
 export const TestS3AccessInputBodySchema = z
   .object({
     access_key_id: z.string(),
@@ -1228,7 +1260,7 @@ export const UpdateApplyResponseBodySchema = z
 
 export const UpdateCheckResponseBodySchema = z
   .object({
-    available_versions: z.array(z.string()).nullable(),
+    available_versions: z.array(z.string()),
     current_version: z.string(),
     has_update_available: z.boolean(),
   })
@@ -1466,6 +1498,7 @@ export type PortSpec = z.infer<typeof PortSpecSchema>;
 export type ServiceType = z.infer<typeof ServiceTypeSchema>;
 export type CreateServiceInput = z.infer<typeof CreateServiceInputSchema>;
 export type ServiceConfigResponse = z.infer<typeof ServiceConfigResponseSchema>;
+export type TemplateResponse = z.infer<typeof TemplateResponseSchema>;
 export type ServiceResponse = z.infer<typeof ServiceResponseSchema>;
 export type CreateServiceResponseBody = z.infer<typeof CreateServiceResponseBodySchema>;
 export type CreateUserInputBody = z.infer<typeof CreateUserInputBodySchema>;
@@ -1559,6 +1592,7 @@ export type ListInstancesResponseBody = z.infer<typeof ListInstancesResponseBody
 export type ListProjectResponseBody = z.infer<typeof ListProjectResponseBodySchema>;
 export type ListS3EndpointOutputBody = z.infer<typeof ListS3EndpointOutputBodySchema>;
 export type ListServiceResponseBody = z.infer<typeof ListServiceResponseBodySchema>;
+export type ListTemplatesResponseBody = z.infer<typeof ListTemplatesResponseBodySchema>;
 export type ListWebhooksResponseBody = z.infer<typeof ListWebhooksResponseBodySchema>;
 export type LogMetadata = z.infer<typeof LogMetadataSchema>;
 export type LogEvent = z.infer<typeof LogEventSchema>;
@@ -1596,6 +1630,8 @@ export type SystemMeta = z.infer<typeof SystemMetaSchema>;
 export type SystemMetaResponseBody = z.infer<typeof SystemMetaResponseBodySchema>;
 export type SystemSettingUpdateInput = z.infer<typeof SystemSettingUpdateInputSchema>;
 export type TeamResponseBody = z.infer<typeof TeamResponseBodySchema>;
+export type TemplateDeployInput = z.infer<typeof TemplateDeployInputSchema>;
+export type TemplateDeployResponseBody = z.infer<typeof TemplateDeployResponseBodySchema>;
 export type TestS3AccessInputBody = z.infer<typeof TestS3AccessInputBodySchema>;
 export type TestS3OutputBody = z.infer<typeof TestS3OutputBodySchema>;
 export type UpdatServiceResponseBody = z.infer<typeof UpdatServiceResponseBodySchema>;
@@ -4322,6 +4358,87 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           }
           const data = await response.json();
           return UpdateTeamResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+    },
+    templates: {
+      deploy: async (
+        params: TemplateDeployInput,
+        fetchOptions?: RequestInit,
+      ): Promise<TemplateDeployResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/templates/deploy`);
+
+          const options: RequestInit = {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = TemplateDeployInputSchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return TemplateDeployResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      list: async (
+        params?: undefined,
+        fetchOptions?: RequestInit,
+      ): Promise<ListTemplatesResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/templates/list`);
+
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return ListTemplatesResponseBodySchema.parse(data);
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
