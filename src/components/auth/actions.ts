@@ -95,16 +95,29 @@ export async function createFirstAccountAction({
   const passwordBase64 = Buffer.from(password).toString("base64");
   const credentials = `${emailBase64}:${passwordBase64}`;
 
-  try {
-    const { error } = await apiServer.setup.createUser({
-      email,
-      password,
-    });
+  cookieStore.set("unbind-credentials", credentials, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+    path: "/",
+    maxAge: 60 * 60 * 1,
+  });
 
-    if (error) {
-      return {
-        error,
-      };
+  try {
+    const result = await apiServer.setup.status();
+    const isFirstUserCreated = result.data.is_first_user_created;
+
+    if (!isFirstUserCreated) {
+      const { error } = await apiServer.setup.createUser({
+        email,
+        password,
+      });
+
+      if (error) {
+        return {
+          error,
+        };
+      }
     }
   } catch (error) {
     console.log("Error creating user:", error);
@@ -115,14 +128,6 @@ export async function createFirstAccountAction({
       },
     };
   }
-
-  cookieStore.set("unbind-credentials", credentials, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "strict",
-    path: "/",
-    maxAge: 60 * 60 * 1,
-  });
 
   await signIn(
     providerId,
