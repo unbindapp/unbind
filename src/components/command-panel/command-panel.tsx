@@ -219,11 +219,12 @@ function CommandPanel({
     "arrowright",
     () => {
       if (inputRef.current?.value) return;
-      const item = currentPage.items?.find((i) => i.id === value || i.title === value);
-      if (item?.subpage) {
-        setCurrentPageId(item.subpage.id);
-        setPrevItemId(item.id);
-      }
+      const item =
+        items?.find((i) => i.id === value || i.title === value) ||
+        currentPage.itemsPinned?.find((i) => i.id === value || i.title === value);
+      if (!item?.subpage) return;
+      setCurrentPageId(item.subpage.id);
+      setPrevItemId(item.id);
     },
     {
       enableOnContentEditable: true,
