@@ -8,6 +8,15 @@ export const gitRouter = createTRPCRouter({
       repositories: data,
     };
   }),
+  getApp: privateProcedure.input(z.object({ uuid: z.string() })).query(async function ({
+    ctx: { goClient },
+    input: { uuid },
+  }) {
+    const { data } = await goClient.github.app.get({ uuid });
+    return {
+      app: data,
+    };
+  }),
   getRepository: privateProcedure
     .input(
       z

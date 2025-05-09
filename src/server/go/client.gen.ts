@@ -122,6 +122,44 @@ export const CreateEnvironmentResponseBodySchema = z
   })
   .strip();
 
+export const PvcScopeSchema = z.enum(['team', 'project', 'environment']);
+
+export const CreatePVCInputSchema = z
+  .object({
+    environment_id: z.string().optional(),
+    name: z.string(), // Name of the PVC
+    project_id: z.string().optional(),
+    size: z.string(), // Size of the PVC (e.g., '10Gi')
+    team_id: z.string(),
+    type: PvcScopeSchema,
+  })
+  .strip();
+
+export const PersistentVolumeClaimPhaseSchema = z.enum(['Pending', 'Bound', 'Lost']);
+
+export const PVCInfoSchema = z
+  .object({
+    can_delete: z.boolean(),
+    created_at: z.string().datetime(),
+    environment_id: z.string().optional(),
+    id: z.string(),
+    is_available: z.boolean(),
+    is_database: z.boolean(),
+    mounted_on_service_id: z.string().optional(),
+    name: z.string(),
+    project_id: z.string().optional(),
+    size: z.string(),
+    status: PersistentVolumeClaimPhaseSchema,
+    team_id: z.string(),
+  })
+  .strip();
+
+export const CreatePVCResponseBodySchema = z
+  .object({
+    data: PVCInfoSchema,
+  })
+  .strip();
+
 export const CreateProjectInputSchema = z
   .object({
     description: z.string().nullable().optional(),
@@ -185,6 +223,7 @@ export const ServiceBuilderSchema = z.enum(['railpack', 'docker', 'database']);
 
 export const DatabaseConfigSchema = z
   .object({
+    storage: z.string().optional(),
     version: z.string().optional(),
   })
   .strip();
@@ -227,6 +266,8 @@ export const CreateServiceInputSchema = z
     name: z.string(),
     ports: z.array(PortSpecSchema).nullable().optional(),
     project_id: z.string(),
+    pvc_id: z.string().optional(), // ID of the PVC to use for the service
+    pvc_mount_path: z.string().optional(), // Mount path for the PVC
     replicas: z.number().optional(),
     repository_name: z.string().optional(),
     repository_owner: z.string().optional(),
@@ -251,6 +292,8 @@ export const ServiceConfigResponseSchema = z
     image: z.string().optional(),
     is_public: z.boolean(),
     ports: z.array(PortSpecSchema).optional(),
+    pvc_id: z.string().optional(),
+    pvc_volume_mount_path: z.string().optional(),
     replicas: z.number(),
     run_command: z.string().optional(),
     s3_backup_bucket: z.string().optional(),
@@ -382,6 +425,22 @@ export const DeletedResponseSchema = z
   .strip();
 
 export const DeleteEnvironmentResponseBodySchema = z
+  .object({
+    data: DeletedResponseSchema,
+  })
+  .strip();
+
+export const DeletePVCInputSchema = z
+  .object({
+    environment_id: z.string().optional(),
+    id: z.string(),
+    project_id: z.string().optional(),
+    team_id: z.string(),
+    type: PvcScopeSchema,
+  })
+  .strip();
+
+export const DeletePVCResponseBodySchema = z
   .object({
     data: DeletedResponseSchema,
   })
@@ -632,6 +691,12 @@ export const GetNodeMetricsResponseBodySchema = z
   })
   .strip();
 
+export const GetPVCResponseBodySchema = z
+  .object({
+    data: PVCInfoSchema,
+  })
+  .strip();
+
 export const GetProjectResponseBodySchema = z
   .object({
     data: ProjectResponseSchema,
@@ -806,18 +871,25 @@ export const GithubInstallationAPIResponseSchema = z
 
 export const GithubAppAPIResponseSchema = z
   .object({
-    created_at: z.string().datetime().optional(),
-    created_by: z.string().optional(),
-    id: z.number().optional(),
-    installations: z.array(GithubInstallationAPIResponseSchema).nullable().optional(),
-    name: z.string().optional(),
-    updated_at: z.string().datetime().optional(),
+    created_at: z.string().datetime(),
+    created_by: z.string(),
+    id: z.number(),
+    installations: z.array(GithubInstallationAPIResponseSchema),
+    name: z.string(),
+    updated_at: z.string().datetime(),
+    uuid: z.string(),
   })
   .strip();
 
 export const GithubAppCreateResponseBodySchema = z
   .object({
     data: z.string(),
+  })
+  .strip();
+
+export const GithubAppGetResponseBodySchema = z
+  .object({
+    data: GithubAppAPIResponseSchema,
   })
   .strip();
 
@@ -971,6 +1043,12 @@ export const PodContainerStatusSchema = z
 export const ListInstancesResponseBodySchema = z
   .object({
     data: z.array(PodContainerStatusSchema),
+  })
+  .strip();
+
+export const ListPVCResponseBodySchema = z
+  .object({
+    data: z.array(PVCInfoSchema),
   })
   .strip();
 
@@ -1210,9 +1288,17 @@ export const TeamResponseBodySchema = z
   })
   .strip();
 
+export const TemplateInputSchema = z
+  .object({
+    id: z.number(),
+    value: z.string(),
+  })
+  .strip();
+
 export const TemplateDeployInputSchema = z
   .object({
     environment_id: z.string(),
+    inputs: z.array(TemplateInputSchema).nullable().optional(),
     project_id: z.string(),
     team_id: z.string(),
     template_id: z.string(),
@@ -1282,6 +1368,24 @@ export const UpdateEnvironmentResponseBodySchema = z
   })
   .strip();
 
+export const UpdatePVCInputSchema = z
+  .object({
+    environment_id: z.string().optional(),
+    id: z.string(),
+    name: z.string().nullable().optional(), // Name of the PVC
+    project_id: z.string().optional(),
+    size: z.string().nullable().optional(), // Size of the PVC (e.g., '10Gi')
+    team_id: z.string(),
+    type: PvcScopeSchema,
+  })
+  .strip();
+
+export const UpdatePVCResponseBodySchema = z
+  .object({
+    data: PVCInfoSchema,
+  })
+  .strip();
+
 export const UpdateProjectInputSchema = z
   .object({
     default_environment_id: z.string().optional(),
@@ -1333,6 +1437,8 @@ export const UpdateServiceInputSchema = z
     name: z.string().nullable().optional(),
     ports: z.array(PortSpecSchema).nullable().optional(),
     project_id: z.string(),
+    pvc_id: z.string().optional(), // ID of the PVC to attach to the service
+    pvc_mount_path: z.string().optional(), // Mount path for the PVC
     replicas: z.number().optional(),
     run_command: z.string().optional(),
     s3_backup_bucket: z.string().optional(),
@@ -1484,6 +1590,11 @@ export type CreateBuildOutputBody = z.infer<typeof CreateBuildOutputBodySchema>;
 export type CreateEnvironmentInput = z.infer<typeof CreateEnvironmentInputSchema>;
 export type EnvironmentResponse = z.infer<typeof EnvironmentResponseSchema>;
 export type CreateEnvironmentResponseBody = z.infer<typeof CreateEnvironmentResponseBodySchema>;
+export type PvcScope = z.infer<typeof PvcScopeSchema>;
+export type CreatePVCInput = z.infer<typeof CreatePVCInputSchema>;
+export type PersistentVolumeClaimPhase = z.infer<typeof PersistentVolumeClaimPhaseSchema>;
+export type PVCInfo = z.infer<typeof PVCInfoSchema>;
+export type CreatePVCResponseBody = z.infer<typeof CreatePVCResponseBodySchema>;
 export type CreateProjectInput = z.infer<typeof CreateProjectInputSchema>;
 export type ProjectResponse = z.infer<typeof ProjectResponseSchema>;
 export type CreateProjectResponseBody = z.infer<typeof CreateProjectResponseBodySchema>;
@@ -1514,6 +1625,8 @@ export type DatabaseConfigurables = z.infer<typeof DatabaseConfigurablesSchema>;
 export type DeleteEnvironmentInputBody = z.infer<typeof DeleteEnvironmentInputBodySchema>;
 export type DeletedResponse = z.infer<typeof DeletedResponseSchema>;
 export type DeleteEnvironmentResponseBody = z.infer<typeof DeleteEnvironmentResponseBodySchema>;
+export type DeletePVCInput = z.infer<typeof DeletePVCInputSchema>;
+export type DeletePVCResponseBody = z.infer<typeof DeletePVCResponseBodySchema>;
 export type DeleteProjectInputBody = z.infer<typeof DeleteProjectInputBodySchema>;
 export type DeleteProjectResponseBody = z.infer<typeof DeleteProjectResponseBodySchema>;
 export type DeleteS3EndpointByIDInputBody = z.infer<typeof DeleteS3EndpointByIDInputBodySchema>;
@@ -1547,6 +1660,7 @@ export type GetMetricsResponseBody = z.infer<typeof GetMetricsResponseBodySchema
 export type NodeMetricsMapEntry = z.infer<typeof NodeMetricsMapEntrySchema>;
 export type NodeMetricsResult = z.infer<typeof NodeMetricsResultSchema>;
 export type GetNodeMetricsResponseBody = z.infer<typeof GetNodeMetricsResponseBodySchema>;
+export type GetPVCResponseBody = z.infer<typeof GetPVCResponseBodySchema>;
 export type GetProjectResponseBody = z.infer<typeof GetProjectResponseBodySchema>;
 export type GetS3EndpointByIDOutputBody = z.infer<typeof GetS3EndpointByIDOutputBodySchema>;
 export type GetServiceResponseBody = z.infer<typeof GetServiceResponseBodySchema>;
@@ -1567,6 +1681,7 @@ export type GithubInstallationPermissions = z.infer<typeof GithubInstallationPer
 export type GithubInstallationAPIResponse = z.infer<typeof GithubInstallationAPIResponseSchema>;
 export type GithubAppAPIResponse = z.infer<typeof GithubAppAPIResponseSchema>;
 export type GithubAppCreateResponseBody = z.infer<typeof GithubAppCreateResponseBodySchema>;
+export type GithubAppGetResponseBody = z.infer<typeof GithubAppGetResponseBodySchema>;
 export type GithubAppInstallationListResponseBody = z.infer<
   typeof GithubAppInstallationListResponseBodySchema
 >;
@@ -1589,6 +1704,7 @@ export type ListEnvironmentsOutputBody = z.infer<typeof ListEnvironmentsOutputBo
 export type PodPhase = z.infer<typeof PodPhaseSchema>;
 export type PodContainerStatus = z.infer<typeof PodContainerStatusSchema>;
 export type ListInstancesResponseBody = z.infer<typeof ListInstancesResponseBodySchema>;
+export type ListPVCResponseBody = z.infer<typeof ListPVCResponseBodySchema>;
 export type ListProjectResponseBody = z.infer<typeof ListProjectResponseBodySchema>;
 export type ListS3EndpointOutputBody = z.infer<typeof ListS3EndpointOutputBodySchema>;
 export type ListServiceResponseBody = z.infer<typeof ListServiceResponseBodySchema>;
@@ -1630,6 +1746,7 @@ export type SystemMeta = z.infer<typeof SystemMetaSchema>;
 export type SystemMetaResponseBody = z.infer<typeof SystemMetaResponseBodySchema>;
 export type SystemSettingUpdateInput = z.infer<typeof SystemSettingUpdateInputSchema>;
 export type TeamResponseBody = z.infer<typeof TeamResponseBodySchema>;
+export type TemplateInput = z.infer<typeof TemplateInputSchema>;
 export type TemplateDeployInput = z.infer<typeof TemplateDeployInputSchema>;
 export type TemplateDeployResponseBody = z.infer<typeof TemplateDeployResponseBodySchema>;
 export type TestS3AccessInputBody = z.infer<typeof TestS3AccessInputBodySchema>;
@@ -1640,6 +1757,8 @@ export type UpdateApplyResponseBody = z.infer<typeof UpdateApplyResponseBodySche
 export type UpdateCheckResponseBody = z.infer<typeof UpdateCheckResponseBodySchema>;
 export type UpdateEnvironmentInput = z.infer<typeof UpdateEnvironmentInputSchema>;
 export type UpdateEnvironmentResponseBody = z.infer<typeof UpdateEnvironmentResponseBodySchema>;
+export type UpdatePVCInput = z.infer<typeof UpdatePVCInputSchema>;
+export type UpdatePVCResponseBody = z.infer<typeof UpdatePVCResponseBodySchema>;
 export type UpdateProjectInput = z.infer<typeof UpdateProjectInputSchema>;
 export type UpdateProjectResponseBody = z.infer<typeof UpdateProjectResponseBodySchema>;
 export type UpdateS3EndpointInputBody = z.infer<typeof UpdateS3EndpointInputBodySchema>;
@@ -1708,6 +1827,12 @@ export const app_createQuerySchema = z
   .object({
     redirect_url: z.string(), // The client URL to redirect to after the installation is finished
     organization: z.string().optional(), // The organization to install the app for, if any
+  })
+  .passthrough();
+
+export const get_github_appQuerySchema = z
+  .object({
+    uuid: z.string(),
   })
   .passthrough();
 
@@ -1845,6 +1970,25 @@ export const list_serviceQuerySchema = z
     team_id: z.string(),
     project_id: z.string(),
     environment_id: z.string(),
+  })
+  .passthrough();
+
+export const get_pvcQuerySchema = z
+  .object({
+    type: PvcScopeSchema,
+    team_id: z.string(),
+    project_id: z.string().optional(),
+    environment_id: z.string().optional(),
+    id: z.string(),
+  })
+  .passthrough();
+
+export const list_pvcQuerySchema = z
+  .object({
+    type: PvcScopeSchema,
+    team_id: z.string(),
+    project_id: z.string().optional(),
+    environment_id: z.string().optional(),
   })
   .passthrough();
 
@@ -2508,6 +2652,52 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             }
             const data = await response.json();
             return GithubAppCreateResponseBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+        get: async (
+          params: z.infer<typeof get_github_appQuerySchema>,
+          fetchOptions?: RequestInit,
+        ): Promise<GithubAppGetResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/github/app/get`);
+            const validatedQuery = get_github_appQuerySchema.parse(params);
+            const queryKeys = ['uuid'];
+            queryKeys.forEach((key) => {
+              const value = validatedQuery[key as keyof typeof validatedQuery];
+              if (value !== undefined && value !== null) {
+                url.searchParams.append(key, String(value));
+              }
+            });
+            const options: RequestInit = {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return GithubAppGetResponseBodySchema.parse(data);
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -3734,6 +3924,220 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
       },
     },
     storage: {
+      pvc: {
+        create: async (
+          params: CreatePVCInput,
+          fetchOptions?: RequestInit,
+        ): Promise<CreatePVCResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/storage/pvc/create`);
+
+            const options: RequestInit = {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+            const validatedBody = CreatePVCInputSchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+              console.log(`Request body is:`, validatedBody);
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return CreatePVCResponseBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+        delete: async (
+          params: DeletePVCInput,
+          fetchOptions?: RequestInit,
+        ): Promise<DeletePVCResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/storage/pvc/delete`);
+
+            const options: RequestInit = {
+              method: 'DELETE',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+            const validatedBody = DeletePVCInputSchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+              console.log(`Request body is:`, validatedBody);
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return DeletePVCResponseBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+        get: async (
+          params: z.infer<typeof get_pvcQuerySchema>,
+          fetchOptions?: RequestInit,
+        ): Promise<GetPVCResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/storage/pvc/get`);
+            const validatedQuery = get_pvcQuerySchema.parse(params);
+            const queryKeys = ['type', 'team_id', 'project_id', 'environment_id', 'id'];
+            queryKeys.forEach((key) => {
+              const value = validatedQuery[key as keyof typeof validatedQuery];
+              if (value !== undefined && value !== null) {
+                url.searchParams.append(key, String(value));
+              }
+            });
+            const options: RequestInit = {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return GetPVCResponseBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+        list: async (
+          params: z.infer<typeof list_pvcQuerySchema>,
+          fetchOptions?: RequestInit,
+        ): Promise<ListPVCResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/storage/pvc/list`);
+            const validatedQuery = list_pvcQuerySchema.parse(params);
+            const queryKeys = ['type', 'team_id', 'project_id', 'environment_id'];
+            queryKeys.forEach((key) => {
+              const value = validatedQuery[key as keyof typeof validatedQuery];
+              if (value !== undefined && value !== null) {
+                url.searchParams.append(key, String(value));
+              }
+            });
+            const options: RequestInit = {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return ListPVCResponseBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+        update: async (
+          params: UpdatePVCInput,
+          fetchOptions?: RequestInit,
+        ): Promise<UpdatePVCResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/storage/pvc/update`);
+
+            const options: RequestInit = {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+            const validatedBody = UpdatePVCInputSchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+              console.log(`Request body is:`, validatedBody);
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return UpdatePVCResponseBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+      },
       s3: {
         create: async (
           params: S3BackendCreateInput,
