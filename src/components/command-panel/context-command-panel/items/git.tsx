@@ -25,20 +25,23 @@ type TProps = {
   context: TContextCommandPanelContext;
 };
 
-export function useRepoItemHook({ context }: TProps) {
+export function useGitItemHook({ context }: TProps) {
   const hook = useMemo(() => {
     if (context.contextType !== "project" && context.contextType !== "new-service") {
       return () => ({
         item: null,
       });
     }
-    return useRepoItem;
+    return useGitItem;
   }, [context]);
 
   return hook;
 }
 
-function useRepoItem({ context }: TProps) {
+function useGitItem({ context }: TProps) {
+  const mainPageId = "git";
+  const subpageId = "git_subpage";
+
   const { closePanel: closeCommandPanel } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
   });
@@ -68,7 +71,7 @@ function useRepoItem({ context }: TProps) {
 
   const { mutateAsync: createServiceViaApi } = api.services.create.useMutation();
   const { mutateAsync: createService } = useMutation({
-    mutationKey: ["create-service", "repo"],
+    mutationKey: ["create-service", "git"],
     mutationFn: async ({
       repository,
     }: {
@@ -132,8 +135,6 @@ function useRepoItem({ context }: TProps) {
   const queryClient = useQueryClient();
   const clearInputValue = useCommandPanelStore((s) => s.clearInputValue);
 
-  const pageId = "repos";
-
   const { mutateAsync: createGitHubAppMutate } = useMutation({
     mutationFn: async ({
       accessToken,
@@ -159,18 +160,18 @@ function useRepoItem({ context }: TProps) {
   const item: TCommandPanelItem = useMemo(() => {
     const itemsPinned: TCommandPanelItem[] = [
       {
-        id: "git_repo_configure_github",
+        id: "git_configure_github",
         title: "Configure GitHub App",
         keywords: ["connect", "configure", "github", "gitlab", "bitbucket"],
         Icon: CogIcon,
         subpage: {
-          id: "git_repo_configure_github_options",
+          id: "git_configure_github_options",
           title: "GitHub App",
           inputPlaceholder: "Select GitHub account type...",
-          parentPageId: pageId,
+          parentPageId: subpageId,
           items: [
             {
-              id: "git_repo_configure_github_options_personal",
+              id: "git_configure_github_options_personal",
               keywords: ["personal", "github"],
               title: "Personal",
               Icon: UserIcon,
@@ -180,7 +181,7 @@ function useRepoItem({ context }: TProps) {
                   toast.error("Your current session is invalid. Please sign in again.");
                   return;
                 }
-                setIsPendingId("git_repo_configure_github_options_personal");
+                setIsPendingId("git_configure_github_options_personal");
                 const res = await ResultAsync.fromPromise(
                   createGitHubAppMutate({
                     accessToken: sessionData.data.access_token,
@@ -197,7 +198,7 @@ function useRepoItem({ context }: TProps) {
                           context,
                           hasItems: false,
                           searchKey: null,
-                          pageId: pageId,
+                          pageId: subpageId,
                           triggerType,
                           environmentId,
                         }),
@@ -206,7 +207,7 @@ function useRepoItem({ context }: TProps) {
                       queryKeys.forEach((queryKey) => {
                         queryClient.resetQueries({ queryKey });
                       });
-                      setCurrentPageId(pageId);
+                      setCurrentPageId(subpageId);
                       toast.success("GitHub app connected", {
                         description: "GitHub app has been connected successfully.",
                         duration: 5000,
@@ -227,15 +228,15 @@ function useRepoItem({ context }: TProps) {
               },
             },
             {
-              id: "git_repo_configure_github_options_organization",
+              id: "git_configure_github_options_organization",
               keywords: ["organization", "github"],
               title: "Organization",
               Icon: BuildingIcon,
               subpage: {
-                id: "git_repo_configure_github_options_organization_enter_name",
+                id: "git_configure_github_options_organization_enter_name",
                 title: "GitHub Organization",
                 inputPlaceholder: "Organization name",
-                parentPageId: "git_repo_configure_github_options",
+                parentPageId: "git_configure_github_options",
                 disableCommandFilter: true,
                 setSearchDebounceMs: 50,
                 InputIcon: BuildingIcon,
@@ -245,7 +246,7 @@ function useRepoItem({ context }: TProps) {
                     ? []
                     : [
                         {
-                          id: "git_repo_configure_github_options_organization_connect",
+                          id: "git_configure_github_options_organization_connect",
                           title: search ? `Connect "${search}"` : "Enter organization name",
                           Icon: !search ? HourglassIcon : UnplugIcon,
                           keywords: ["connect", "organization", "github"],
@@ -256,9 +257,7 @@ function useRepoItem({ context }: TProps) {
                               toast.error("Your current session is invalid. Please sign in again.");
                               return;
                             }
-                            setIsPendingId(
-                              "git_repo_configure_github_options_organization_connect",
-                            );
+                            setIsPendingId("git_configure_github_options_organization_connect");
                             const res = await ResultAsync.fromPromise(
                               createGitHubAppMutate({
                                 accessToken: sessionData.data.access_token,
@@ -277,7 +276,7 @@ function useRepoItem({ context }: TProps) {
                                       context,
                                       hasItems: false,
                                       searchKey: null,
-                                      pageId: pageId,
+                                      pageId: subpageId,
                                       triggerType,
                                       environmentId,
                                     }),
@@ -287,9 +286,9 @@ function useRepoItem({ context }: TProps) {
                                     queryClient.resetQueries({ queryKey });
                                   });
                                   clearInputValue(
-                                    "git_repo_configure_github_options_organization_enter_name",
+                                    "git_configure_github_options_organization_enter_name",
                                   );
-                                  setCurrentPageId(pageId);
+                                  setCurrentPageId(subpageId);
                                   toast.success("GitHub app connected", {
                                     description: "GitHub app has been connected successfully.",
                                     duration: 5000,
@@ -318,14 +317,14 @@ function useRepoItem({ context }: TProps) {
     ];
 
     return {
-      id: `repo`,
+      id: mainPageId,
       title: "GitHub Repo",
       keywords: ["deploy from github", "deploy from gitlab", "deploy from bitbucket"],
       Icon: ({ className }: { className?: string }) => (
         <BrandIcon brand="github" className={className} />
       ),
       subpage: {
-        id: pageId,
+        id: subpageId,
         title: "GitHub Repos",
         parentPageId: contextCommandPanelRootPage,
         inputPlaceholder: "Deploy from GitHub...",
@@ -333,7 +332,7 @@ function useRepoItem({ context }: TProps) {
         getItemsAsync: async () => {
           const res = await utils.git.listRepositories.fetch();
           const items: TCommandPanelItem[] = res.repositories.map((r) => {
-            const id = `git_repo_${r.full_name}`;
+            const id = `${subpageId}_${r.full_name}`;
             return {
               id,
               title: `${r.full_name}`,

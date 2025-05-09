@@ -53,6 +53,9 @@ function cleanSearch(search: string | undefined) {
 }
 
 function useDockerImageItem({ context }: TProps) {
+  const mainPageId = "docker-image";
+  const subpageId = "docker-image_subpage";
+
   const { closePanel: closeCommandPanel } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
   });
@@ -137,14 +140,14 @@ function useDockerImageItem({ context }: TProps) {
 
   const item: TCommandPanelItem = useMemo(() => {
     const item: TCommandPanelItem = {
-      id: `docker-image`,
+      id: mainPageId,
       title: "Docker Image",
       keywords: ["deploy"],
       Icon: ({ className }: { className?: string }) => (
         <BrandIcon brand="docker" className={className} />
       ),
       subpage: {
-        id: `docker-images`,
+        id: subpageId,
         title: "Docker Images",
         parentPageId: contextCommandPanelRootPage,
         inputPlaceholder: "Search Docker images...",
@@ -177,13 +180,13 @@ function useDockerImageItem({ context }: TProps) {
           if (cleanedSearch && isNonDockerHubImage(cleanedSearch)) {
             return [
               {
-                id: `docker-images_${cleanedSearch}`,
+                id: `${subpageId}_${cleanedSearch}`,
                 title: cleanedSearch,
                 keywords: [],
                 Icon: PackageIcon,
                 onSelect: async ({ isPendingId }) => {
                   if (isPendingId !== null) return;
-                  setIsPendingId(`docker-images_${cleanedSearch}`);
+                  setIsPendingId(`${subpageId}_${cleanedSearch}`);
                   await createService({ image: cleanedSearch });
                 },
               },
@@ -191,7 +194,7 @@ function useDockerImageItem({ context }: TProps) {
           }
           const res = await utils.docker.searchRepositories.fetch({ search });
           return res.repositories.map((item) => {
-            const id = `docker-images_${item.repo_name}`;
+            const id = `${subpageId}_${item.repo_name}`;
             return {
               id,
               title: item.repo_name,

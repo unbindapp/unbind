@@ -16,6 +16,9 @@ const getThemeText = (theme: string | undefined) => {
 };
 
 export default function usePreferencesItem({ context }: TProps) {
+  const mainPageId = "preferences";
+  const subpageId = "preferences_subpage";
+
   const { theme, setTheme } = useTheme();
 
   const toggleTheme = useCallback(() => {
@@ -46,12 +49,12 @@ export default function usePreferencesItem({ context }: TProps) {
       return null;
     }
     const item: TCommandPanelItem = {
-      id: `preferences`,
+      id: mainPageId,
       title: "Preferences",
       keywords: ["settings", "configuration", "options", "system", "theme"],
       Icon: SlidersHorizontalIcon,
       subpage: {
-        id: `preferences-ppage`,
+        id: subpageId,
         title: "Preferences",
         inputPlaceholder: "Search preferences...",
         parentPageId: contextCommandPanelRootPage,

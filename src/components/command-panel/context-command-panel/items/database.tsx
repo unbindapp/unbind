@@ -43,6 +43,9 @@ export function useDatabaseItemHook({ context }: TProps) {
 }
 
 function useDatabaseItem({ context }: TProps) {
+  const mainPageId = "databases";
+  const subpageId = "databases_subpage";
+
   const { closePanel: closeCommandPanel } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
   });
@@ -121,23 +124,23 @@ function useDatabaseItem({ context }: TProps) {
 
   const item: TCommandPanelItem = useMemo(() => {
     return {
-      id: `database`,
+      id: mainPageId,
       title: "Database",
       keywords: ["persistent", "persistence"],
       Icon: DatabaseIcon,
       subpage: {
-        id: `databases`,
+        id: subpageId,
         title: "Databases",
         parentPageId: contextCommandPanelRootPage,
         inputPlaceholder: "Deploy a database...",
         items: [
           {
-            id: `databases_postgresql`,
+            id: `${subpageId}_postgresql`,
             title: "PostgreSQL",
             keywords: ["database", "sql", "mysql"],
             onSelect: async ({ isPendingId }) => {
               if (isPendingId !== null) return;
-              setIsPendingId(`databases_postgresql`);
+              setIsPendingId(`${subpageId}_postgresql`);
               await createService({ databaseType: "postgres" });
             },
             Icon: ({ className }: { className?: string }) => (
@@ -145,12 +148,12 @@ function useDatabaseItem({ context }: TProps) {
             ),
           },
           {
-            id: `databases_redis`,
+            id: `${subpageId}_redis`,
             title: "Redis",
             keywords: ["valkey", "cache", "key value", "database"],
             onSelect: async ({ isPendingId }) => {
               if (isPendingId !== null) return;
-              setIsPendingId(`databases_redis`);
+              setIsPendingId(`${subpageId}_redis`);
               await createService({ databaseType: "redis" });
             },
             Icon: ({ className }: { className?: string }) => (
@@ -158,12 +161,12 @@ function useDatabaseItem({ context }: TProps) {
             ),
           },
           {
-            id: `databases_mysql`,
+            id: `${subpageId}_mysql`,
             title: "MySQL",
             keywords: ["database", "sql", "postgresql", "MariaDB"],
             onSelect: async ({ isPendingId }) => {
               if (isPendingId !== null) return;
-              setIsPendingId(`databases_mysql`);
+              setIsPendingId(`${subpageId}_mysql`);
               await createService({ databaseType: "mysql" });
             },
             Icon: ({ className }: { className?: string }) => (
@@ -171,12 +174,12 @@ function useDatabaseItem({ context }: TProps) {
             ),
           },
           {
-            id: `mongodb`,
+            id: `${subpageId}_mongodb`,
             title: "MongoDB",
             keywords: ["database", "nosql", "mongodb", "object database"],
             onSelect: async ({ isPendingId }) => {
               if (isPendingId !== null) return;
-              setIsPendingId(`mongodb`);
+              setIsPendingId(`${subpageId}_mongodb`);
               await createService({ databaseType: "mongodb" });
             },
             Icon: ({ className }: { className?: string }) => (

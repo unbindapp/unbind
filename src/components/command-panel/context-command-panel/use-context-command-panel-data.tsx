@@ -4,7 +4,7 @@ import { useDockerImageItemHook } from "@/components/command-panel/context-comma
 import useGoToItem from "@/components/command-panel/context-command-panel/items/go-to";
 import useNewProjectItem from "@/components/command-panel/context-command-panel/items/new-project";
 import usePreferencesItem from "@/components/command-panel/context-command-panel/items/preferences";
-import { useRepoItemHook } from "@/components/command-panel/context-command-panel/items/repo";
+import { useGitItemHook } from "@/components/command-panel/context-command-panel/items/git";
 import useTemplateItem from "@/components/command-panel/context-command-panel/items/template";
 import { findCommandPanelPage } from "@/components/command-panel/helpers";
 import { TCommandPanelPage, TContextCommandPanelContext } from "@/components/command-panel/types";
@@ -19,11 +19,11 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
   });
   const timeout = useRef<NodeJS.Timeout | null>(null);
 
-  const useRepoItem = useRepoItemHook({ context });
+  const useGitItem = useGitItemHook({ context });
   const useDockerImageItem = useDockerImageItemHook({ context });
   const useDatabaseItem = useDatabaseItemHook({ context });
 
-  const { item: repoItem } = useRepoItem({ context });
+  const { item: gitItem } = useGitItem({ context });
   const { item: dockerImageItem } = useDockerImageItem({ context });
   const { item: databaseItem } = useDatabaseItem({ context });
 
@@ -62,7 +62,7 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
         ...(context.contextType === "team" || context.contextType === "new-project"
           ? [newProjectItem]
           : []),
-        ...(repoItem ? [repoItem] : []),
+        ...(gitItem ? [gitItem] : []),
         ...(databaseItem ? [databaseItem] : []),
         templateItem,
         ...(dockerImageItem ? [dockerImageItem] : []),
@@ -73,7 +73,7 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       onSelectPlaceholder,
-      repoItem,
+      gitItem,
       dockerImageItem,
       databaseItem,
       templateItem,
