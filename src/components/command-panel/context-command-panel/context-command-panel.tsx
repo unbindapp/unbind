@@ -1,6 +1,7 @@
 "use client";
 
 import { CommandPanelTrigger } from "@/components/command-panel/command-panel";
+import { CommandPanelItemsProvider } from "@/components/command-panel/command-panel-items-provier";
 import {
   contextCommandPanelId,
   contextCommandPanelRootPage,
@@ -84,20 +85,21 @@ function ContextCommandPanel_({ context, triggerType, title, description, childr
       context={context}
       triggerType={triggerType}
     >
-      <CommandPanelTrigger
-        currentPage={currentPage}
-        title={title}
-        description={description}
-        goToParentPage={goToParentPage}
-        setCurrentPageId={setCurrentPageId}
-        rootPage={rootPage}
-        useCommandPanelItems={useContextCommandPanelItems}
-        dialogContentVariantOptions={dialogContentVariantOptions}
-        open={open}
-        setOpen={setOpen}
-      >
-        {children}
-      </CommandPanelTrigger>
+      <CommandPanelItemsProvider useCommandPanelItems={useContextCommandPanelItems}>
+        <CommandPanelTrigger
+          currentPage={currentPage}
+          title={title}
+          description={description}
+          goToParentPage={goToParentPage}
+          setCurrentPageId={setCurrentPageId}
+          rootPage={rootPage}
+          dialogContentVariantOptions={dialogContentVariantOptions}
+          open={open}
+          setOpen={setOpen}
+        >
+          {children}
+        </CommandPanelTrigger>
+      </CommandPanelItemsProvider>
     </ContextCommandPanelItemsProvider>
   );
 }

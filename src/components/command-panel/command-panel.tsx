@@ -1,4 +1,4 @@
-import { TContextCommandPanelItemsContext } from "@/components/command-panel/context-command-panel/context-command-panel-items-provider";
+import { useCommandPanelItems } from "@/components/command-panel/command-panel-items-provier";
 import { getAllItemsFromCommandPanelPage } from "@/components/command-panel/helpers";
 import { useCommandPanelStore } from "@/components/command-panel/store/command-panel-store-provider";
 import { TCommandPanelItem, TCommandPanelPage } from "@/components/command-panel/types";
@@ -66,7 +66,6 @@ export function CommandPanelTrigger({
   children,
   currentPage,
   goToParentPage,
-  useCommandPanelItems,
   setCurrentPageId,
   title,
   description,
@@ -116,7 +115,6 @@ export function CommandPanelTrigger({
               setCurrentPageId={setCurrentPageId}
               currentPage={currentPage}
               goToParentPage={goToParentPage}
-              useCommandPanelItems={useCommandPanelItems}
               commandVariantOptions={mergedCommandPanelVariantOptionsDrawer}
               className="rounded-2xl"
             />
@@ -154,7 +152,6 @@ export function CommandPanelTrigger({
           setCurrentPageId={setCurrentPageId}
           currentPage={currentPage}
           goToParentPage={goToParentPage}
-          useCommandPanelItems={useCommandPanelItems}
           commandVariantOptions={mergedCommandPanelVariantOptionsDialog}
           className="w-112"
         />
@@ -168,7 +165,6 @@ type TSetCurrentPageId = (id: string) => void;
 type TCommandPanelProps = {
   currentPage: TCommandPanelPage;
   goToParentPage: (e?: KeyboardEvent) => void;
-  useCommandPanelItems: () => TContextCommandPanelItemsContext;
   rootPage: TCommandPanelPage;
   setCurrentPageId: TSetCurrentPageId;
   className?: string;
@@ -178,7 +174,6 @@ type TCommandPanelProps = {
 function CommandPanel({
   currentPage,
   goToParentPage,
-  useCommandPanelItems,
   rootPage,
   setCurrentPageId,
   commandVariantOptions,
@@ -274,14 +269,12 @@ function CommandPanel({
       className={className}
     >
       <Input
-        useCommandPanelItems={useCommandPanelItems}
         placeholder={currentPage.inputPlaceholder}
         currentPage={currentPage}
         ref={inputRef}
         scrollAreaRef={scrollAreaRef}
       />
       <Content
-        useCommandPanelItems={useCommandPanelItems}
         currentPage={currentPage}
         setCurrentPageId={setCurrentPageId}
         scrollAreaRef={scrollAreaRef}
@@ -292,12 +285,10 @@ function CommandPanel({
 }
 
 function Content({
-  useCommandPanelItems,
   currentPage,
   setCurrentPageId,
   scrollAreaRef,
 }: {
-  useCommandPanelItems: () => TContextCommandPanelItemsContext;
   currentPage: TCommandPanelPage;
   setCurrentPageId: TSetCurrentPageId;
   scrollAreaRef: RefObject<HTMLDivElement | null>;
@@ -432,13 +423,11 @@ function Footer({
 }
 
 function Input({
-  useCommandPanelItems,
   currentPage,
   placeholder,
   ref,
   scrollAreaRef,
 }: {
-  useCommandPanelItems: () => TContextCommandPanelItemsContext;
   currentPage: TCommandPanelPage;
   placeholder: string;
   ref: RefObject<HTMLInputElement | null>;

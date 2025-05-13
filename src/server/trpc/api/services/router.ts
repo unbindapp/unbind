@@ -127,7 +127,7 @@ export const servicesRouter = createTRPCRouter({
       ports,
       hosts,
       database_config: databaseConfig,
-      s3_backup_endpoint_id: s3BackupSourceId,
+      s3_backup_source_id: s3BackupSourceId,
       s3_backup_bucket: s3BackupBucket,
     });
     return {

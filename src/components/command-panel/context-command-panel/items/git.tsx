@@ -240,7 +240,7 @@ function useGitItem({ context }: TProps) {
                 disableCommandFilter: true,
                 setSearchDebounceMs: 50,
                 InputIcon: BuildingIcon,
-                commandEmptyText: "Enter the organization name",
+                commandEmptyText: "Enter the organization name above",
                 getItems: ({ search }) =>
                   !search
                     ? []

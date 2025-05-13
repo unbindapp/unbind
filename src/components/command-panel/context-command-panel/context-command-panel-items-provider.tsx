@@ -1,26 +1,13 @@
 "use client";
 
+import { TCommandPanelItemsContext } from "@/components/command-panel/command-panel-items-provier";
 import { useCommandPanelStore } from "@/components/command-panel/store/command-panel-store-provider";
-import {
-  TCommandPanelItem,
-  TCommandPanelPage,
-  TContextCommandPanelContext,
-} from "@/components/command-panel/types";
+import { TCommandPanelPage, TContextCommandPanelContext } from "@/components/command-panel/types";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { useQuery } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
-export type TContextCommandPanelItemsContext = {
-  items: TCommandPanelItem[] | undefined;
-  itemsPinned: TCommandPanelItem[] | undefined;
-  isPending: boolean;
-  isError: boolean;
-  error: Error | null;
-};
-
-const ContextCommandPanelItemsContext = createContext<TContextCommandPanelItemsContext | null>(
-  null,
-);
+const ContextCommandPanelItemsContext = createContext<TCommandPanelItemsContext | null>(null);
 
 export const ContextCommandPanelItemsProvider: React.FC<{
   teamId: string;
@@ -98,7 +85,7 @@ export const ContextCommandPanelItemsProvider: React.FC<{
     return isPending;
   }, [page.items, page.getItems, isPending]);
 
-  const value: TContextCommandPanelItemsContext = useMemo(
+  const value: TCommandPanelItemsContext = useMemo(
     () => ({
       items,
       itemsPinned: page.itemsPinned,
