@@ -93,6 +93,9 @@ function useDatabaseItem({ context }: TProps) {
       });
       return result;
     },
+    onMutate: async (data) => {
+      setIsPendingId(`${subpageId}_${data.databaseType}`);
+    },
     onSuccess: async (data) => {
       closeCommandPanel();
       invalidateProject();
@@ -102,6 +105,7 @@ function useDatabaseItem({ context }: TProps) {
         refetchServices(),
         () => new Error("Failed to refetch services"),
       );
+
       if (res.isErr()) {
         toast.error("Failed to refetch services", {
           description: res.error.message,
@@ -135,12 +139,11 @@ function useDatabaseItem({ context }: TProps) {
         inputPlaceholder: "Deploy a database...",
         items: [
           {
-            id: `${subpageId}_postgresql`,
+            id: `${subpageId}_postgres`,
             title: "PostgreSQL",
             keywords: ["database", "sql", "mysql"],
             onSelect: async ({ isPendingId }) => {
               if (isPendingId !== null) return;
-              setIsPendingId(`${subpageId}_postgresql`);
               await createService({ databaseType: "postgres" });
             },
             Icon: ({ className }: { className?: string }) => (
@@ -153,7 +156,6 @@ function useDatabaseItem({ context }: TProps) {
             keywords: ["valkey", "cache", "key value", "database"],
             onSelect: async ({ isPendingId }) => {
               if (isPendingId !== null) return;
-              setIsPendingId(`${subpageId}_redis`);
               await createService({ databaseType: "redis" });
             },
             Icon: ({ className }: { className?: string }) => (
@@ -166,7 +168,6 @@ function useDatabaseItem({ context }: TProps) {
             keywords: ["database", "sql", "postgresql", "MariaDB"],
             onSelect: async ({ isPendingId }) => {
               if (isPendingId !== null) return;
-              setIsPendingId(`${subpageId}_mysql`);
               await createService({ databaseType: "mysql" });
             },
             Icon: ({ className }: { className?: string }) => (
@@ -179,7 +180,6 @@ function useDatabaseItem({ context }: TProps) {
             keywords: ["database", "nosql", "mongodb", "object database"],
             onSelect: async ({ isPendingId }) => {
               if (isPendingId !== null) return;
-              setIsPendingId(`${subpageId}_mongodb`);
               await createService({ databaseType: "mongodb" });
             },
             Icon: ({ className }: { className?: string }) => (
