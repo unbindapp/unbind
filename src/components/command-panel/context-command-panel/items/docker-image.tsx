@@ -109,6 +109,9 @@ function useDockerImageItem({ context }: TProps) {
       });
       return result;
     },
+    onMutate: async (data) => {
+      setIsPendingId(`${subpageId}_${data.image}`);
+    },
     onSuccess: async (data) => {
       closeCommandPanel();
       invalidateProject();
@@ -215,7 +218,6 @@ function useDockerImageItem({ context }: TProps) {
               ),
               onSelect: async ({ isPendingId }) => {
                 if (isPendingId !== null) return;
-                setIsPendingId(id);
                 await createService({ image: item.repo_name });
               },
             };

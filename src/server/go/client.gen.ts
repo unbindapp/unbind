@@ -42,6 +42,13 @@ export const CallbackResponseBodySchema = z
   })
   .strip();
 
+export const CapabilitiesSchema = z
+  .object({
+    add: z.array(z.string()).nullable().optional(),
+    drop: z.array(z.string()).nullable().optional(),
+  })
+  .strip();
+
 export const ContainerStateSchema = z.enum(['Running', 'Waiting', 'Terminated']);
 
 export const CreateBuildInputBodySchema = z
@@ -223,8 +230,26 @@ export const ServiceBuilderSchema = z.enum(['railpack', 'docker', 'database']);
 
 export const DatabaseConfigSchema = z
   .object({
+    defaultDatabaseName: z.string().optional(),
+    initdb: z.string().optional(),
     storage: z.string().optional(),
     version: z.string().optional(),
+  })
+  .strip();
+
+export const HealthCheckTypeSchema = z.enum(['http', 'exec', 'none']);
+
+export const HealthCheckSchema = z
+  .object({
+    command: z.string().optional(), // Command for exec health checks
+    liveness_failure_threshold: z.number(), // Number of failures before the container is considered unhealthy
+    path: z.string().optional(), // Path for http health checks
+    period_seconds: z.number(), // Period in seconds for health checks
+    port: z.number().optional(), // Port for http health checks
+    readiness_failure_threshold: z.number(), // Number of failures before the container is considered unhealthy
+    startup_failure_threshold: z.number(), // Number of failures before the container is considered unhealthy
+    timeout_seconds: z.number(), // Timeout in seconds for health checks
+    type: HealthCheckTypeSchema,
   })
   .strip();
 
@@ -240,6 +265,9 @@ export const ProtocolSchema = z.enum(['TCP', 'UDP', 'SCTP']);
 
 export const PortSpecSchema = z
   .object({
+    input_template_id: z.number().optional(), // For template port inputs
+    is_nodeport: z.boolean().optional(),
+    node_port: z.number().optional(),
     port: z.number(),
     protocol: ProtocolSchema.optional(),
   })
@@ -252,6 +280,7 @@ export const CreateServiceInputSchema = z
     auto_deploy: z.boolean().optional(),
     backup_retention: z.number().optional(), // Number of base backups to retain, e.g. 3
     backup_schedule: z.string().optional(), // Cron expression for the backup schedule, e.g. '0 0 * * *'
+    build_command: z.string().optional(),
     builder: ServiceBuilderSchema, // Builder of the service - docker, nixpacks, railpack
     database_config: DatabaseConfigSchema.optional(),
     database_type: z.string().optional(),
@@ -260,8 +289,10 @@ export const CreateServiceInputSchema = z
     dockerfile_path: z.string().optional(), // Optional path to Dockerfile, if using docker builder
     environment_id: z.string(),
     github_installation_id: z.number().optional(),
+    health_check: HealthCheckSchema.optional(), // Health check configuration for the service
     hosts: z.array(HostSpecSchema).nullable().optional(),
     image: z.string().optional(),
+    install_command: z.string().optional(),
     is_public: z.boolean().optional(),
     name: z.string(),
     ports: z.array(PortSpecSchema).nullable().optional(),
@@ -279,17 +310,34 @@ export const CreateServiceInputSchema = z
   })
   .strip();
 
+export const SecurityContextSchema = z
+  .object({
+    capabilities: CapabilitiesSchema.optional(),
+    privileged: z.boolean().optional(),
+  })
+  .strip();
+
+export const VariableMountSchema = z
+  .object({
+    name: z.string(), // Name of the variable to mount
+    path: z.string(), // Path to mount the variable (e.g. /etc/secret)
+  })
+  .strip();
+
 export const ServiceConfigResponseSchema = z
   .object({
     auto_deploy: z.boolean(),
     backup_retention_count: z.number(),
     backup_schedule: z.string(),
+    build_command: z.string().optional(),
     builder: ServiceBuilderSchema,
     git_branch: z.string().optional(),
     git_tag: z.string().optional(),
+    health_check: HealthCheckSchema.optional(),
     hosts: z.array(HostSpecSchema).optional(),
     icon: z.string(),
     image: z.string().optional(),
+    install_command: z.string().optional(),
     is_public: z.boolean(),
     ports: z.array(PortSpecSchema).optional(),
     pvc_id: z.string().optional(),
@@ -298,12 +346,121 @@ export const ServiceConfigResponseSchema = z
     run_command: z.string().optional(),
     s3_backup_bucket: z.string().optional(),
     s3_backup_endpoint_id: z.string().optional(),
+    security_context: SecurityContextSchema.optional(),
+    variable_mounts: z.array(VariableMountSchema),
   })
   .strip();
 
-export const TemplateResponseSchema = z
+export const TemplateInputTypeSchema = z.enum(['variable', 'host', 'volume_size', 'node_port']);
+
+export const TemplateInputSchema = z
+  .object({
+    default: z.string().optional(),
+    description: z.string(),
+    id: z.number(),
+    name: z.string(),
+    required: z.boolean(),
+    target_port: z.number().optional(),
+    type: TemplateInputTypeSchema,
+  })
+  .strip();
+
+export const TemplateVariableReferenceSchema = z
+  .object({
+    additional_template_sources: z.array(z.string()).nullable(),
+    is_host: z.boolean(),
+    resolve_as_normal_variable: z.boolean(),
+    source_id: z.number(),
+    source_name: z.string(),
+    target_name: z.string(),
+    template_string: z.string(),
+  })
+  .strip();
+
+export const ValueHashTypeSchema = z.enum(['sha256', 'sha512']);
+
+export const JWTParamsSchema = z
+  .object({
+    AnonOutputKey: z.string(),
+    Issuer: z.string(),
+    SecretOutputKey: z.string(),
+    ServiceOutputKey: z.string(),
+  })
+  .strip();
+
+export const GeneratorTypeSchema = z.enum(['password', 'bcrypt', 'input', 'jwt', 'string_replace']);
+
+export const ValueGeneratorSchema = z
+  .object({
+    add_prefix: z.string().optional(),
+    base_domain: z.string().optional(),
+    hash_type: ValueHashTypeSchema.optional(),
+    input_id: z.number().optional(),
+    jwt_params: JWTParamsSchema.optional(),
+    type: GeneratorTypeSchema,
+  })
+  .strip();
+
+export const TemplateVariableSchema = z
+  .object({
+    generator: ValueGeneratorSchema.optional(),
+    name: z.string(),
+    value: z.string(),
+  })
+  .strip();
+
+export const TemplateVolumeSizeSchema = z
+  .object({
+    from_input_id: z.number(),
+  })
+  .strip();
+
+export const TemplateVolumeSchema = z
+  .object({
+    mountPath: z.string(),
+    name: z.string(),
+    size: TemplateVolumeSizeSchema,
+  })
+  .strip();
+
+export const TemplateServiceSchema = z
+  .object({
+    builder: ServiceBuilderSchema,
+    database_config: DatabaseConfigSchema.optional(),
+    database_type: z.string().optional(),
+    depends_on: z.array(z.number()),
+    health_check: HealthCheckSchema.optional(),
+    host_input_ids: z.array(z.number()).nullable().optional(),
+    icon: z.string().optional(),
+    id: z.number(),
+    image: z.string().optional(),
+    is_public: z.boolean(),
+    name: z.string(),
+    ports: z.array(PortSpecSchema),
+    run_command: z.string().optional(),
+    security_context: SecurityContextSchema.optional(),
+    type: ServiceTypeSchema,
+    variable_references: z.array(TemplateVariableReferenceSchema),
+    variables: z.array(TemplateVariableSchema),
+    variables_mounts: z.array(VariableMountSchema),
+    volumes: z.array(TemplateVolumeSchema),
+  })
+  .strip();
+
+export const TemplateDefinitionSchema = z
+  .object({
+    description: z.string(),
+    inputs: z.array(TemplateInputSchema),
+    name: z.string(),
+    services: z.array(TemplateServiceSchema),
+    version: z.number(),
+  })
+  .strip();
+
+export const TemplateWithDefinitionResponseSchema = z
   .object({
     created_at: z.string().datetime(),
+    definition: TemplateDefinitionSchema,
     id: z.string(),
     immutable: z.boolean(),
     name: z.string(),
@@ -328,7 +485,7 @@ export const ServiceResponseSchema = z
     last_deployment: DeploymentResponseSchema.optional(),
     last_successful_deployment: DeploymentResponseSchema.optional(),
     name: z.string(),
-    template: TemplateResponseSchema.optional(),
+    template: TemplateWithDefinitionResponseSchema.optional(),
     type: ServiceTypeSchema,
     updated_at: z.string().datetime(),
   })
@@ -548,6 +705,7 @@ export const IngressEndpointSchema = z
   .object({
     environment_id: z.string(),
     hosts: z.array(ExtendedHostSpecSchema),
+    is_ingress: z.boolean(),
     kubernetes_name: z.string(),
     project_id: z.string(),
     service_id: z.string(),
@@ -728,6 +886,12 @@ export const TeamResponseSchema = z
 export const GetTeamResponseBodySchema = z
   .object({
     data: TeamResponseSchema,
+  })
+  .strip();
+
+export const GetTemplateResponseBodySchema = z
+  .object({
+    data: TemplateWithDefinitionResponseSchema,
   })
   .strip();
 
@@ -1070,9 +1234,19 @@ export const ListServiceResponseBodySchema = z
   })
   .strip();
 
+export const TemplateShortResponseSchema = z
+  .object({
+    created_at: z.string().datetime(),
+    id: z.string(),
+    immutable: z.boolean(),
+    name: z.string(),
+    version: z.number(),
+  })
+  .strip();
+
 export const ListTemplatesResponseBodySchema = z
   .object({
-    data: z.array(TemplateResponseSchema).nullable(),
+    data: z.array(TemplateShortResponseSchema).nullable(),
   })
   .strip();
 
@@ -1288,7 +1462,7 @@ export const TeamResponseBodySchema = z
   })
   .strip();
 
-export const TemplateInputSchema = z
+export const TemplateInputValueSchema = z
   .object({
     id: z.number(),
     value: z.string(),
@@ -1298,7 +1472,7 @@ export const TemplateInputSchema = z
 export const TemplateDeployInputSchema = z
   .object({
     environment_id: z.string(),
-    inputs: z.array(TemplateInputSchema).nullable().optional(),
+    inputs: z.array(TemplateInputValueSchema).nullable().optional(),
     project_id: z.string(),
     team_id: z.string(),
     template_id: z.string(),
@@ -1423,6 +1597,7 @@ export const UpdateServiceInputSchema = z
     auto_deploy: z.boolean().optional(),
     backup_retention: z.number().optional(), // Number of base backups to retain, e.g. 3
     backup_schedule: z.string().optional(), // Cron expression for the backup schedule, e.g. '0 0 * * *'
+    build_command: z.string().optional(),
     builder: ServiceBuilderSchema.optional(),
     database_config: DatabaseConfigSchema.optional(),
     description: z.string().nullable().optional(),
@@ -1431,8 +1606,10 @@ export const UpdateServiceInputSchema = z
     environment_id: z.string(),
     git_branch: z.string().optional(),
     git_tag: z.string().optional(), // Tag to build from, supports glob patterns
+    health_check: HealthCheckSchema.optional(),
     hosts: z.array(HostSpecSchema).nullable().optional(),
     image: z.string().optional(),
+    install_command: z.string().optional(),
     is_public: z.boolean().optional(),
     name: z.string().nullable().optional(),
     ports: z.array(PortSpecSchema).nullable().optional(),
@@ -1581,6 +1758,7 @@ export type VariableReferenceType = z.infer<typeof VariableReferenceTypeSchema>;
 export type AvailableVariableReference = z.infer<typeof AvailableVariableReferenceSchema>;
 export type BuildkitSettings = z.infer<typeof BuildkitSettingsSchema>;
 export type CallbackResponseBody = z.infer<typeof CallbackResponseBodySchema>;
+export type Capabilities = z.infer<typeof CapabilitiesSchema>;
 export type ContainerState = z.infer<typeof ContainerStateSchema>;
 export type CreateBuildInputBody = z.infer<typeof CreateBuildInputBodySchema>;
 export type GitCommitter = z.infer<typeof GitCommitterSchema>;
@@ -1603,13 +1781,29 @@ export type S3Response = z.infer<typeof S3ResponseSchema>;
 export type CreateS3OutputBody = z.infer<typeof CreateS3OutputBodySchema>;
 export type ServiceBuilder = z.infer<typeof ServiceBuilderSchema>;
 export type DatabaseConfig = z.infer<typeof DatabaseConfigSchema>;
+export type HealthCheckType = z.infer<typeof HealthCheckTypeSchema>;
+export type HealthCheck = z.infer<typeof HealthCheckSchema>;
 export type HostSpec = z.infer<typeof HostSpecSchema>;
 export type Protocol = z.infer<typeof ProtocolSchema>;
 export type PortSpec = z.infer<typeof PortSpecSchema>;
 export type ServiceType = z.infer<typeof ServiceTypeSchema>;
 export type CreateServiceInput = z.infer<typeof CreateServiceInputSchema>;
+export type SecurityContext = z.infer<typeof SecurityContextSchema>;
+export type VariableMount = z.infer<typeof VariableMountSchema>;
 export type ServiceConfigResponse = z.infer<typeof ServiceConfigResponseSchema>;
-export type TemplateResponse = z.infer<typeof TemplateResponseSchema>;
+export type TemplateInputType = z.infer<typeof TemplateInputTypeSchema>;
+export type TemplateInput = z.infer<typeof TemplateInputSchema>;
+export type TemplateVariableReference = z.infer<typeof TemplateVariableReferenceSchema>;
+export type ValueHashType = z.infer<typeof ValueHashTypeSchema>;
+export type JWTParams = z.infer<typeof JWTParamsSchema>;
+export type GeneratorType = z.infer<typeof GeneratorTypeSchema>;
+export type ValueGenerator = z.infer<typeof ValueGeneratorSchema>;
+export type TemplateVariable = z.infer<typeof TemplateVariableSchema>;
+export type TemplateVolumeSize = z.infer<typeof TemplateVolumeSizeSchema>;
+export type TemplateVolume = z.infer<typeof TemplateVolumeSchema>;
+export type TemplateService = z.infer<typeof TemplateServiceSchema>;
+export type TemplateDefinition = z.infer<typeof TemplateDefinitionSchema>;
+export type TemplateWithDefinitionResponse = z.infer<typeof TemplateWithDefinitionResponseSchema>;
 export type ServiceResponse = z.infer<typeof ServiceResponseSchema>;
 export type CreateServiceResponseBody = z.infer<typeof CreateServiceResponseBodySchema>;
 export type CreateUserInputBody = z.infer<typeof CreateUserInputBodySchema>;
@@ -1666,6 +1860,7 @@ export type GetS3EndpointByIDOutputBody = z.infer<typeof GetS3EndpointByIDOutput
 export type GetServiceResponseBody = z.infer<typeof GetServiceResponseBodySchema>;
 export type TeamResponse = z.infer<typeof TeamResponseSchema>;
 export type GetTeamResponseBody = z.infer<typeof GetTeamResponseBodySchema>;
+export type GetTemplateResponseBody = z.infer<typeof GetTemplateResponseBodySchema>;
 export type GetWebhookResponseBody = z.infer<typeof GetWebhookResponseBodySchema>;
 export type Plan = z.infer<typeof PlanSchema>;
 export type Organization = z.infer<typeof OrganizationSchema>;
@@ -1708,6 +1903,7 @@ export type ListPVCResponseBody = z.infer<typeof ListPVCResponseBodySchema>;
 export type ListProjectResponseBody = z.infer<typeof ListProjectResponseBodySchema>;
 export type ListS3EndpointOutputBody = z.infer<typeof ListS3EndpointOutputBodySchema>;
 export type ListServiceResponseBody = z.infer<typeof ListServiceResponseBodySchema>;
+export type TemplateShortResponse = z.infer<typeof TemplateShortResponseSchema>;
 export type ListTemplatesResponseBody = z.infer<typeof ListTemplatesResponseBodySchema>;
 export type ListWebhooksResponseBody = z.infer<typeof ListWebhooksResponseBodySchema>;
 export type LogMetadata = z.infer<typeof LogMetadataSchema>;
@@ -1746,7 +1942,7 @@ export type SystemMeta = z.infer<typeof SystemMetaSchema>;
 export type SystemMetaResponseBody = z.infer<typeof SystemMetaResponseBodySchema>;
 export type SystemSettingUpdateInput = z.infer<typeof SystemSettingUpdateInputSchema>;
 export type TeamResponseBody = z.infer<typeof TeamResponseBodySchema>;
-export type TemplateInput = z.infer<typeof TemplateInputSchema>;
+export type TemplateInputValue = z.infer<typeof TemplateInputValueSchema>;
 export type TemplateDeployInput = z.infer<typeof TemplateDeployInputSchema>;
 export type TemplateDeployResponseBody = z.infer<typeof TemplateDeployResponseBodySchema>;
 export type TestS3AccessInputBody = z.infer<typeof TestS3AccessInputBodySchema>;
@@ -2016,6 +2212,12 @@ export const check_dns_resolutionQuerySchema = z
 export const get_teamQuerySchema = z
   .object({
     team_id: z.string(),
+  })
+  .passthrough();
+
+export const get_templateQuerySchema = z
+  .object({
+    id: z.string(),
   })
   .passthrough();
 
@@ -4804,6 +5006,52 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           }
           const data = await response.json();
           return TemplateDeployResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      get: async (
+        params: z.infer<typeof get_templateQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<GetTemplateResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/templates/get`);
+          const validatedQuery = get_templateQuerySchema.parse(params);
+          const queryKeys = ['id'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return GetTemplateResponseBodySchema.parse(data);
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
