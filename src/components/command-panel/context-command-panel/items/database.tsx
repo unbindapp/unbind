@@ -26,6 +26,7 @@ export function databaseTypeToName(type: string) {
   if (type === "mysql") return "MySQL";
   if (type === "redis") return "Redis";
   if (type === "mongodb") return "MongoDB";
+  if (type === "clickhouse") return "ClickHouse";
   return "Unknown";
 }
 
@@ -184,6 +185,18 @@ function useDatabaseItem({ context }: TProps) {
             },
             Icon: ({ className }: { className?: string }) => (
               <BrandIcon brand="mongodb" color="brand" className={className} />
+            ),
+          },
+          {
+            id: `${subpageId}_clickhouse`,
+            title: "ClickHouse",
+            keywords: ["analytics database", "columnar database", "column-oriented"],
+            onSelect: async ({ isPendingId }) => {
+              if (isPendingId !== null) return;
+              await createService({ databaseType: "clickhouse" });
+            },
+            Icon: ({ className }: { className?: string }) => (
+              <BrandIcon brand="clickhouse" color="brand" className={className} />
             ),
           },
         ],

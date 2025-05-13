@@ -525,14 +525,14 @@ async function main(): Promise<void> {
       inlineSchemasOutput +
       "\n\n" +
       `
-export type ClientOptions = {
-  accessToken: string;
-  apiUrl: string;
-};
+        export type ClientOptions = {
+          accessToken: string;
+          apiUrl: string;
+        };
 
-export function createClient({ accessToken, apiUrl }: ClientOptions) {
-  return ${clientTreeOutput};
-}
+        export function createClient({ accessToken, apiUrl }: ClientOptions) {
+          return ${clientTreeOutput};
+        }
       `;
 
     const formattedOutput = await prettier.format(outputContent, {

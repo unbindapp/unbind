@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "gen": "bun run ./scripts/generate-go-client/main.ts -i https://api.unbind.app/openapi.yaml"
+    "gen": "bun run ./scripts/generate-go-client/main.ts -i https://api.unbind.app/openapi.yaml",
+    "gen-data": "bun run ./scripts/generate-data/main.ts"
   },
   "dependencies": {
     "@fortaine/fetch-event-source": "^3.0.6",

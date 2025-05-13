@@ -16,30 +16,45 @@ type TProps = {
 
 const placeholderArray = Array.from({ length: 10 });
 
-export const SPECIAL_DB_VARIABLES_ENUM = z.enum([
+const SHARED_SPECIAL_DB_VARIABLES = z.enum([
   "DATABASE_URL",
   "DATABASE_USERNAME",
   "DATABASE_PASSWORD",
   "DATABASE_HOST",
   "DATABASE_PORT",
+]);
+
+export const SPECIAL_DB_VARIABLES_ENUM = z.enum([
+  ...SHARED_SPECIAL_DB_VARIABLES.options,
   "DATABASE_DEFAULT_DB_NAME",
 ]);
-
-export const SPECIAL_REDIS_VARIABLES_ENUM = z.enum([
-  "DATABASE_URL",
-  "DATABASE_USERNAME",
-  "DATABASE_PASSWORD",
-  "DATABASE_HOST",
-  "DATABASE_PORT",
+export const SPECIAL_REDIS_VARIABLES_ENUM = z.enum([...SHARED_SPECIAL_DB_VARIABLES.options]);
+export const SPECIAL_CLICKHOUSE_VARIABLES_ENUM = z.enum([
+  ...SHARED_SPECIAL_DB_VARIABLES.options,
+  "DATABASE_DEFAULT_DB_NAME",
+  "DATABASE_HTTP_URL",
+  "DATABASE_HTTP_PORT",
 ]);
 
-type TSpecialDbVariable = z.infer<typeof SPECIAL_DB_VARIABLES_ENUM>;
-type TSpecialRedisVariable = z.infer<typeof SPECIAL_REDIS_VARIABLES_ENUM>;
+const ALL_SPECIAL_DB_VARIABLES: string[] = Array.from(
+  new Set([
+    ...SHARED_SPECIAL_DB_VARIABLES.options,
+    ...SPECIAL_DB_VARIABLES_ENUM.options,
+    ...SPECIAL_REDIS_VARIABLES_ENUM.options,
+    ...SPECIAL_CLICKHOUSE_VARIABLES_ENUM.options,
+  ]),
+);
 
 export function arrayHasAllSpecialDbVariables(arr: string[], database_type: string) {
-  return (
-    database_type === "redis" ? SPECIAL_REDIS_VARIABLES_ENUM : SPECIAL_DB_VARIABLES_ENUM
-  ).options.every((val) => arr.includes(val));
+  let variables: string[] = SPECIAL_DB_VARIABLES_ENUM.options;
+
+  if (database_type === "redis") {
+    variables = SPECIAL_REDIS_VARIABLES_ENUM.options;
+  } else if (database_type === "clickhouse") {
+    variables = SPECIAL_CLICKHOUSE_VARIABLES_ENUM.options;
+  }
+
+  return variables.every((val) => arr.includes(val));
 }
 
 export default function VariablesList({ variableTypeProps }: TProps) {
@@ -145,9 +160,14 @@ function shouldDeleteBeDisabled(
     variableTypeProps.type === "service" &&
     variableTypeProps.service.type === "database"
   ) {
-    return variableTypeProps.service.database_type === "redis"
-      ? SPECIAL_REDIS_VARIABLES_ENUM.options.includes(variable.name as TSpecialRedisVariable)
-      : SPECIAL_DB_VARIABLES_ENUM.options.includes(variable.name as TSpecialDbVariable);
+    let variables: string[] = SPECIAL_DB_VARIABLES_ENUM.options;
+    if (variableTypeProps.service.database_type === "redis") {
+      variables = SPECIAL_REDIS_VARIABLES_ENUM.options;
+    } else if (variableTypeProps.service.database_type === "clickhouse") {
+      variables = SPECIAL_CLICKHOUSE_VARIABLES_ENUM.options;
+    }
+
+    return variables.includes(variable.name);
   }
   return false;
 }
@@ -164,9 +184,14 @@ function shouldEditBeDisabled(
     variableTypeProps.type === "service" &&
     variableTypeProps.service.type === "database"
   ) {
-    return variableTypeProps.service.database_type === "redis"
-      ? SPECIAL_REDIS_VARIABLES_ENUM.options.includes(variable.name as TSpecialRedisVariable)
-      : SPECIAL_DB_VARIABLES_ENUM.options.includes(variable.name as TSpecialDbVariable);
+    let variables: string[] = SPECIAL_DB_VARIABLES_ENUM.options;
+    if (variableTypeProps.service.database_type === "redis") {
+      variables = SPECIAL_REDIS_VARIABLES_ENUM.options;
+    } else if (variableTypeProps.service.database_type === "clickhouse") {
+      variables = SPECIAL_CLICKHOUSE_VARIABLES_ENUM.options;
+    }
+
+    return variables.includes(variable.name);
   }
   return false;
 }
@@ -186,8 +211,8 @@ function variablesSort(
     return 0;
   }
   if (variableTypeProps.type === "service" && variableTypeProps.service.type === "database") {
-    const aIndex = SPECIAL_DB_VARIABLES_ENUM.options.indexOf(a.name as TSpecialDbVariable);
-    const bIndex = SPECIAL_DB_VARIABLES_ENUM.options.indexOf(b.name as TSpecialDbVariable);
+    const aIndex = ALL_SPECIAL_DB_VARIABLES.indexOf(a.name);
+    const bIndex = ALL_SPECIAL_DB_VARIABLES.indexOf(b.name);
     if (aIndex !== -1 && bIndex !== -1) {
       return aIndex - bIndex;
     }
@@ -211,6 +236,17 @@ function SpecialDbVariablesSection({
   const regularVariables = variables
     .filter((v) => v.variable_type === "regular")
     .map((v) => v.name);
+
+  let variablesForFilter: string[] = SPECIAL_DB_VARIABLES_ENUM.options;
+  if (variableTypeProps.type === "service" && variableTypeProps.service.database_type === "redis") {
+    variablesForFilter = SPECIAL_REDIS_VARIABLES_ENUM.options;
+  } else if (
+    variableTypeProps.type === "service" &&
+    variableTypeProps.service.database_type === "clickhouse"
+  ) {
+    variablesForFilter = SPECIAL_CLICKHOUSE_VARIABLES_ENUM.options;
+  }
+
   return (
     <>
       <div className="bg-process/8 border-process/8 text-process flex w-full items-start gap-2 rounded-lg border px-3 py-2.5">
@@ -219,10 +255,7 @@ function SpecialDbVariablesSection({
           Waiting for database variables to become available...
         </p>
       </div>
-      {(variableTypeProps.type === "service" && variableTypeProps.service.database_type === "redis"
-        ? SPECIAL_REDIS_VARIABLES_ENUM
-        : SPECIAL_DB_VARIABLES_ENUM
-      ).options
+      {variablesForFilter
         .filter((v) => !regularVariables.includes(v))
         .map((val) => (
           <VariableCard
