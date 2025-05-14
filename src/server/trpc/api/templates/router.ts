@@ -32,11 +32,12 @@ export const templatesRouter = createTRPCRouter({
           environmentId: z.string().uuid(),
           templateId: z.string().uuid(),
           inputs: TemplateInputValueSchema.array().optional(),
+          groupName: z.string(),
         })
         .strip(),
     )
     .mutation(async function ({
-      input: { teamId, projectId, environmentId, templateId, inputs },
+      input: { teamId, projectId, environmentId, templateId, inputs, groupName },
       ctx: { goClient },
     }) {
       const res = await goClient.templates.deploy({
@@ -45,6 +46,7 @@ export const templatesRouter = createTRPCRouter({
         environment_id: environmentId,
         template_id: templateId,
         inputs,
+        group_name: groupName,
       });
 
       return {

@@ -42,6 +42,7 @@ export type TCommandPanelPage = {
 export type TCommandPanelItem = {
   id: string;
   title: string;
+  description?: string | FC<{ className?: string }>;
   titleSuffix?: string;
   Icon: FC<{ className?: string }>;
   ChipComponent?: FC<{ className?: string }>;

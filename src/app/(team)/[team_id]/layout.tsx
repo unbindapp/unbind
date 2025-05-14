@@ -3,6 +3,7 @@ import NavbarSafeAreaInsetBottom from "@/components/navigation/navbar-safe-area-
 import TeamNavbar from "@/components/team/team-navbar";
 import TeamProvider from "@/components/team/team-provider";
 import TeamsProvider from "@/components/team/teams-provider";
+import TemplatesProvider from "@/components/templates/templates-provider";
 import CheckForUpdatesProvider, {
   UpdateToastProvider,
 } from "@/components/update/check-for-updates-provider";
@@ -19,12 +20,16 @@ type TProps = {
 export default async function Layout({ children, params }: TProps) {
   const { team_id: teamId } = await params;
 
-  const [teamInitialData, teamsInitialData] = await Promise.all([
+  const [teamInitialData, teamsInitialData, templatesData] = await Promise.all([
     ResultAsync.fromPromise(
       apiServer.teams.get({ teamId }),
       () => new Error("Failed to fetch team"),
     ),
     ResultAsync.fromPromise(apiServer.teams.list(), () => new Error("Failed to fetch teams")),
+    ResultAsync.fromPromise(
+      apiServer.templates.list(),
+      () => new Error("Failed to fetch templates"),
+    ),
   ]);
 
   if (teamsInitialData.isErr()) {
@@ -38,23 +43,29 @@ export default async function Layout({ children, params }: TProps) {
     return notFound();
   }
 
+  if (templatesData.isErr()) {
+    return notFound();
+  }
+
   return (
     <CheckForUpdatesProvider>
-      <UpdateToastProvider>
-        <TeamsProvider initialData={teamsInitialData.value}>
-          <TeamProvider initialData={teamInitialData.value} teamId={teamId}>
-            <TeamNavbar />
-            {children}
-            <NavbarSafeAreaInsetBottom className="sm:hidden" />
-            <ContextCommandPanel
-              title="Team Command Panel"
-              description="Team command panel"
-              context={{ contextType: "team", teamId }}
-              triggerType="layout"
-            />
-          </TeamProvider>
-        </TeamsProvider>
-      </UpdateToastProvider>
+      <TemplatesProvider data={templatesData.value}>
+        <UpdateToastProvider>
+          <TeamsProvider initialData={teamsInitialData.value}>
+            <TeamProvider initialData={teamInitialData.value} teamId={teamId}>
+              <TeamNavbar />
+              {children}
+              <NavbarSafeAreaInsetBottom className="sm:hidden" />
+              <ContextCommandPanel
+                title="Team Command Panel"
+                description="Team command panel"
+                context={{ contextType: "team", teamId }}
+                triggerType="layout"
+              />
+            </TeamProvider>
+          </TeamsProvider>
+        </UpdateToastProvider>
+      </TemplatesProvider>
     </CheckForUpdatesProvider>
   );
 }

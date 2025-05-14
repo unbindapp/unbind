@@ -557,9 +557,10 @@ function Item({
       id={item.id}
       data-placeholder={isPlaceholder ? true : undefined}
       data-pending={isItemPending ? true : undefined}
+      data-has-description={item.description ? true : undefined}
       value={item.title}
       keywords={item.keywords}
-      className="group/item active:bg-border flex w-full flex-row items-center justify-between gap-6 px-3.5 py-3 text-left font-medium data-placeholder:text-transparent"
+      className="group/item active:bg-border flex w-full flex-row items-center justify-between gap-6 px-3.5 py-3 text-left font-medium data-has-description:py-2.75 data-placeholder:text-transparent"
       onSelect={onSelect}
       disabled={disabled || item.disabled}
       fadeOnDisabled={item.disabled === true ? "default" : fadeOnDisabled}
@@ -569,12 +570,26 @@ function Item({
           <div className="from-top-loader/0 via-top-loader/25 to-top-loader/0 animate-ping-pong absolute top-1/2 left-1/2 aspect-square w-full origin-center -translate-1/2 bg-gradient-to-r" />
         </div>
       )}
-      <div className="relative flex min-w-0 flex-1 items-center justify-start gap-2.5">
-        <Icon className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton -ml-0.5 size-5 group-data-placeholder/item:rounded-full" />
-        <p className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink leading-tight group-data-placeholder/item:rounded-md">
-          {item.title}
-          {item.titleSuffix && <span className="text-muted-foreground">{item.titleSuffix}</span>}
-        </p>
+      <div className="relative flex min-w-0 flex-1 items-center justify-start gap-2.5 group-data-has-description/item:items-start">
+        <Icon className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton -ml-0.5 size-5 group-data-has-description/item:mt-0.25 group-data-placeholder/item:rounded-full" />
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <div className="flex w-full justify-start">
+            <p className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink leading-tight group-data-placeholder/item:rounded-md">
+              {item.title}
+              {item.titleSuffix && (
+                <span className="text-muted-foreground">{item.titleSuffix}</span>
+              )}
+            </p>
+          </div>
+          {item.description &&
+            (typeof item.description === "string" ? (
+              <p className="text-muted-foreground group-data-placeholder/item:bg-muted-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink text-sm leading-tight font-normal group-data-placeholder/item:rounded-md">
+                {item.description}
+              </p>
+            ) : (
+              <item.description />
+            ))}
+        </div>
         {item.ChipComponent && <item.ChipComponent className="ml-auto shrink-0" />}
       </div>
       {item.subpage && <ChevronRightIcon className="relative -mr-1.5 size-5 shrink-0" />}

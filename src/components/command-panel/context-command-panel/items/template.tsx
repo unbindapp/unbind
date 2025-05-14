@@ -3,6 +3,7 @@ import onSelectPlaceholder from "@/components/command-panel/context-command-pane
 import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
 import BrandIcon from "@/components/icons/brand";
+import { useTemplates } from "@/components/templates/templates-provider";
 import { BlocksIcon } from "lucide-react";
 import { useMemo } from "react";
 
@@ -31,103 +32,57 @@ function useTemplateItem({}: TProps) {
     defaultPageId: contextCommandPanelRootPage,
   });
 
+  const {
+    data: { templates },
+  } = useTemplates();
+
+  const templateItems: TCommandPanelItem[] = useMemo(() => {
+    return templates.map((template) => {
+      const item: TCommandPanelItem = {
+        id: `${subpageId}_${template.name.replaceAll(" ", "-").toLowerCase()}`,
+        title: template.name,
+        description: () => (
+          <div className="text-muted-foreground flex min-w-0 shrink flex-col gap-2 text-sm leading-tight font-normal">
+            <p className="min-w-0 shrink">{template.description}</p>
+            <div className="flex min-w-0 shrink flex-row flex-wrap items-start gap-1">
+              <p className="min-w-0 shrink">
+                {template.definition.services.length}{" "}
+                {`service${template.definition.services.length >= 2 ? "s" : ""}`}
+                <span className="text-muted-more-foreground pr-[0.35ch] pl-[0.75ch]">{"|"}</span>
+              </p>
+              <div className="mt-[0.07rem] inline-flex min-w-0 shrink items-center gap-1.5">
+                {[...new Set(template.definition.services.map((s) => s.icon))].map((icon, i) => (
+                  <BrandIcon key={i} brand={icon} color="monochrome" className="size-4" />
+                ))}
+              </div>
+            </div>
+          </div>
+        ),
+        keywords: template.keywords,
+        onSelect: () => onSelectPlaceholder(closePanel),
+        Icon: ({ className }: { className?: string }) => (
+          <BrandIcon brand={template.icon} color="brand" className={className} />
+        ),
+      };
+      return item;
+    });
+  }, [templates, closePanel]);
+
   const item: TCommandPanelItem = useMemo(() => {
     return {
       id: mainPageId,
       title: "Template",
-      keywords: ["blueprint", "stack", "group"],
+      keywords: ["blueprint", "stack", "group", "deploy"],
       Icon: BlocksIcon,
       subpage: {
         id: subpageId,
         title: "Templates",
         parentPageId: contextCommandPanelRootPage,
         inputPlaceholder: "Deploy a template...",
-        items: [
-          {
-            id: `${subpageId}_strapi`,
-            title: "Strapi",
-            keywords: ["cms", "content"],
-            onSelect: () => onSelectPlaceholder(closePanel),
-            Icon: ({ className }: { className?: string }) => (
-              <BrandIcon brand="strapi" color="brand" className={className} />
-            ),
-          },
-          {
-            id: `${subpageId}_umami`,
-            title: "Umami",
-            keywords: ["analytics", "privacy", "tracking"],
-            onSelect: () => onSelectPlaceholder(closePanel),
-            Icon: ({ className }: { className?: string }) => (
-              <BrandIcon brand="umami" color="brand" className={className} />
-            ),
-          },
-          {
-            id: `${subpageId}_meilisearch`,
-            title: "Meilisearch",
-            keywords: ["full text search", "elasticsearch", "ram"],
-            onSelect: () => onSelectPlaceholder(closePanel),
-            Icon: ({ className }: { className?: string }) => (
-              <BrandIcon brand="meilisearch" color="brand" className={className} />
-            ),
-          },
-          {
-            id: `${subpageId}_minio`,
-            title: "MinIO",
-            keywords: ["s3", "file storage"],
-            onSelect: () => onSelectPlaceholder(closePanel),
-            Icon: ({ className }: { className?: string }) => (
-              <BrandIcon brand="minio" color="brand" className={className} />
-            ),
-          },
-          {
-            id: `${subpageId}_pocketbase`,
-            title: "PocketBase",
-            keywords: ["paas", "backend", "authentication", "realtime database", "file storage"],
-            onSelect: () => onSelectPlaceholder(closePanel),
-            Icon: ({ className }: { className?: string }) => (
-              <BrandIcon brand="pocketbase" color="brand" className={className} />
-            ),
-          },
-          {
-            id: `${subpageId}_n8n`,
-            title: "N8N",
-            keywords: ["workflow automation", "ai", "devops", "itops"],
-            onSelect: () => onSelectPlaceholder(closePanel),
-            Icon: ({ className }: { className?: string }) => (
-              <BrandIcon brand="n8n" color="brand" className={className} />
-            ),
-          },
-          {
-            id: `${subpageId}_ghost`,
-            title: "Ghost",
-            keywords: ["blogging"],
-            onSelect: () => onSelectPlaceholder(closePanel),
-            Icon: ({ className }: { className?: string }) => (
-              <BrandIcon brand="ghost" color="brand" className={className} />
-            ),
-          },
-          {
-            id: `${subpageId}_wordpress`,
-            title: "WordPress",
-            keywords: [
-              "blogging",
-              "php",
-              "cms",
-              "content",
-              "publishing platform",
-              "website",
-              "ecommerce",
-              "WooCommerce",
-            ],
-            onSelect: () => onSelectPlaceholder(closePanel),
-            Icon: ({ className }: { className?: string }) => (
-              <BrandIcon brand="wordpress" color="brand" className={className} />
-            ),
-          },
-        ],
+        items: templateItems,
       },
     };
-  }, [closePanel]);
+  }, [templateItems]);
 
   const value = useMemo(
     () => ({

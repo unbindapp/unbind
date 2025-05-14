@@ -123,6 +123,7 @@
   --vuejs-1: hsl(153 48% 49%);
   --vuejs-2: hsl(210 29% 29%);
   --typesense: hsl(83 100% 30%);
+  --wireguard: hsl(358 71% 31%);
 
   --barrier: hsl(120 30% 4%);
 
@@ -218,6 +219,7 @@
   --vuejs-1: hsl(153 48% 49%);
   --vuejs-2: hsl(210 29% 29%);
   --typesense: hsl(83 100% 67%);
+  --wireguard: hsl(358 60% 50%);
 
   --barrier: hsl(120 10% 4%);
 
@@ -442,6 +444,7 @@
   --color-vuejs-1: var(--vuejs-1);
   --color-vuejs-2: var(--vuejs-2);
   --color-typesense: var(--typesense);
+  --color-wireguard: var(--wireguard);
 
   --color-barrier: var(--barrier);
 

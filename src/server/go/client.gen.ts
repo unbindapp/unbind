@@ -226,6 +226,30 @@ export const CreateS3OutputBodySchema = z
   })
   .strip();
 
+export const CreateServiceGroupInputSchema = z
+  .object({
+    environment_id: z.string(),
+    name: z.string(), // The name of the service group
+    project_id: z.string(),
+    team_id: z.string(),
+  })
+  .strip();
+
+export const ServiceGroupResponseSchema = z
+  .object({
+    created_at: z.string().datetime(),
+    environment_id: z.string(),
+    id: z.string(),
+    name: z.string(),
+  })
+  .strip();
+
+export const CreateServiceGroupResponseBodySchema = z
+  .object({
+    data: ServiceGroupResponseSchema,
+  })
+  .strip();
+
 export const ServiceBuilderSchema = z.enum(['railpack', 'docker', 'database']);
 
 export const DatabaseConfigSchema = z
@@ -341,6 +365,7 @@ export const ServiceConfigResponseSchema = z
     install_command: z.string().optional(),
     is_public: z.boolean(),
     ports: z.array(PortSpecSchema).optional(),
+    protected_variables: z.array(z.string()),
     pvc_id: z.string().optional(),
     pvc_volume_mount_path: z.string().optional(),
     replicas: z.number(),
@@ -355,8 +380,11 @@ export const ServiceConfigResponseSchema = z
 export const TemplateShortResponseSchema = z
   .object({
     created_at: z.string().datetime(),
+    description: z.string(),
+    icon: z.string(),
     id: z.string(),
     immutable: z.boolean(),
+    keywords: z.array(z.string()),
     name: z.string(),
     version: z.number(),
   })
@@ -379,6 +407,7 @@ export const ServiceResponseSchema = z
     last_deployment: DeploymentResponseSchema.optional(),
     last_successful_deployment: DeploymentResponseSchema.optional(),
     name: z.string(),
+    service_group: ServiceGroupResponseSchema.optional(),
     template: TemplateShortResponseSchema.optional(),
     template_instance_id: z.string().optional(),
     type: ServiceTypeSchema,
@@ -524,6 +553,21 @@ export const DeleteS3SourceByIDOutputBodySchema = z
   })
   .strip();
 
+export const DeleteServiceGroupInputSchema = z
+  .object({
+    environment_id: z.string(), // The ID of the environment
+    id: z.string(), // The ID of the service group
+    project_id: z.string(), // The ID of the project
+    team_id: z.string(), // The ID of the team
+  })
+  .strip();
+
+export const DeleteServiceGroupResponseBodySchema = z
+  .object({
+    data: DeletedResponseSchema,
+  })
+  .strip();
+
 export const DeleteServiceInputBodySchema = z
   .object({
     environment_id: z.string(),
@@ -646,7 +690,14 @@ export const ErrorModelSchema = z
   })
   .strip();
 
-export const GeneratorTypeSchema = z.enum(['password', 'bcrypt', 'input', 'jwt', 'string_replace']);
+export const GeneratorTypeSchema = z.enum([
+  'email',
+  'password',
+  'bcrypt',
+  'input',
+  'jwt',
+  'string_replace',
+]);
 
 export const GetDatabaseResponseBodySchema = z
   .object({
@@ -764,6 +815,12 @@ export const GetS3SourceByIDOutputBodySchema = z
   })
   .strip();
 
+export const GetServiceGroupResponseBodySchema = z
+  .object({
+    data: ServiceGroupResponseSchema,
+  })
+  .strip();
+
 export const GetServiceResponseBodySchema = z
   .object({
     data: ServiceResponseSchema,
@@ -877,6 +934,7 @@ export const TemplateServiceSchema = z
     is_public: z.boolean(),
     name: z.string(),
     ports: z.array(PortSpecSchema),
+    protected_variables: z.array(z.string()),
     run_command: z.string().optional(),
     security_context: SecurityContextSchema.optional(),
     type: ServiceTypeSchema,
@@ -890,7 +948,9 @@ export const TemplateServiceSchema = z
 export const TemplateDefinitionSchema = z
   .object({
     description: z.string(),
+    icon: z.string().optional(),
     inputs: z.array(TemplateInputSchema),
+    keywords: z.array(z.string()).nullable().optional(),
     name: z.string(),
     services: z.array(TemplateServiceSchema),
     version: z.number(),
@@ -901,8 +961,11 @@ export const TemplateWithDefinitionResponseSchema = z
   .object({
     created_at: z.string().datetime(),
     definition: TemplateDefinitionSchema,
+    description: z.string(),
+    icon: z.string(),
     id: z.string(),
     immutable: z.boolean(),
+    keywords: z.array(z.string()),
     name: z.string(),
     version: z.number(),
   })
@@ -1247,6 +1310,12 @@ export const ListS3SourceOutputBodySchema = z
   })
   .strip();
 
+export const ListServiceGroupResponseBodySchema = z
+  .object({
+    data: z.array(ServiceGroupResponseSchema),
+  })
+  .strip();
+
 export const ListServiceResponseBodySchema = z
   .object({
     data: z.array(ServiceResponseSchema),
@@ -1255,7 +1324,7 @@ export const ListServiceResponseBodySchema = z
 
 export const ListTemplatesResponseBodySchema = z
   .object({
-    data: z.array(TemplateShortResponseSchema).nullable(),
+    data: z.array(TemplateWithDefinitionResponseSchema),
   })
   .strip();
 
@@ -1481,6 +1550,7 @@ export const TemplateInputValueSchema = z
 export const TemplateDeployInputSchema = z
   .object({
     environment_id: z.string(),
+    group_name: z.string(),
     inputs: z.array(TemplateInputValueSchema).nullable().optional(),
     project_id: z.string(),
     team_id: z.string(),
@@ -1601,6 +1671,24 @@ export const UpdateS3SourceResponseBodySchema = z
   })
   .strip();
 
+export const UpdateServiceGroupInputSchema = z
+  .object({
+    add_service_ids: z.array(z.string()).nullable().optional(), // The IDs of the services to add to the service group
+    environment_id: z.string(),
+    id: z.string(),
+    name: z.string().nullable().optional(), // The name of the service group
+    project_id: z.string(),
+    remove_service_ids: z.array(z.string()).nullable().optional(), // The IDs of the services to remove from the service group
+    team_id: z.string(),
+  })
+  .strip();
+
+export const UpdateServiceGroupResponseBodySchema = z
+  .object({
+    data: ServiceGroupResponseSchema,
+  })
+  .strip();
+
 export const UpdateServiceInputSchema = z
   .object({
     auto_deploy: z.boolean().optional(),
@@ -1623,6 +1711,7 @@ export const UpdateServiceInputSchema = z
     name: z.string().nullable().optional(),
     ports: z.array(PortSpecSchema).nullable().optional(),
     project_id: z.string(),
+    protected_variables: z.array(z.string()).optional(), // List of protected variables
     pvc_id: z.string().optional(), // ID of the PVC to attach to the service
     pvc_mount_path: z.string().optional(), // Mount path for the PVC
     replicas: z.number().optional(),
@@ -1789,6 +1878,9 @@ export type CreateProjectResponseBody = z.infer<typeof CreateProjectResponseBody
 export type S3Bucket = z.infer<typeof S3BucketSchema>;
 export type S3Response = z.infer<typeof S3ResponseSchema>;
 export type CreateS3OutputBody = z.infer<typeof CreateS3OutputBodySchema>;
+export type CreateServiceGroupInput = z.infer<typeof CreateServiceGroupInputSchema>;
+export type ServiceGroupResponse = z.infer<typeof ServiceGroupResponseSchema>;
+export type CreateServiceGroupResponseBody = z.infer<typeof CreateServiceGroupResponseBodySchema>;
 export type ServiceBuilder = z.infer<typeof ServiceBuilderSchema>;
 export type DatabaseConfig = z.infer<typeof DatabaseConfigSchema>;
 export type HealthCheckType = z.infer<typeof HealthCheckTypeSchema>;
@@ -1823,6 +1915,8 @@ export type DeleteProjectInputBody = z.infer<typeof DeleteProjectInputBodySchema
 export type DeleteProjectResponseBody = z.infer<typeof DeleteProjectResponseBodySchema>;
 export type DeleteS3SourceByIDInputBody = z.infer<typeof DeleteS3SourceByIDInputBodySchema>;
 export type DeleteS3SourceByIDOutputBody = z.infer<typeof DeleteS3SourceByIDOutputBodySchema>;
+export type DeleteServiceGroupInput = z.infer<typeof DeleteServiceGroupInputSchema>;
+export type DeleteServiceGroupResponseBody = z.infer<typeof DeleteServiceGroupResponseBodySchema>;
 export type DeleteServiceInputBody = z.infer<typeof DeleteServiceInputBodySchema>;
 export type DeleteServiceResponseBody = z.infer<typeof DeleteServiceResponseBodySchema>;
 export type VariableDeleteInput = z.infer<typeof VariableDeleteInputSchema>;
@@ -1856,6 +1950,7 @@ export type GetNodeMetricsResponseBody = z.infer<typeof GetNodeMetricsResponseBo
 export type GetPVCResponseBody = z.infer<typeof GetPVCResponseBodySchema>;
 export type GetProjectResponseBody = z.infer<typeof GetProjectResponseBodySchema>;
 export type GetS3SourceByIDOutputBody = z.infer<typeof GetS3SourceByIDOutputBodySchema>;
+export type GetServiceGroupResponseBody = z.infer<typeof GetServiceGroupResponseBodySchema>;
 export type GetServiceResponseBody = z.infer<typeof GetServiceResponseBodySchema>;
 export type TeamResponse = z.infer<typeof TeamResponseSchema>;
 export type GetTeamResponseBody = z.infer<typeof GetTeamResponseBodySchema>;
@@ -1913,6 +2008,7 @@ export type ListInstancesResponseBody = z.infer<typeof ListInstancesResponseBody
 export type ListPVCResponseBody = z.infer<typeof ListPVCResponseBodySchema>;
 export type ListProjectResponseBody = z.infer<typeof ListProjectResponseBodySchema>;
 export type ListS3SourceOutputBody = z.infer<typeof ListS3SourceOutputBodySchema>;
+export type ListServiceGroupResponseBody = z.infer<typeof ListServiceGroupResponseBodySchema>;
 export type ListServiceResponseBody = z.infer<typeof ListServiceResponseBodySchema>;
 export type ListTemplatesResponseBody = z.infer<typeof ListTemplatesResponseBodySchema>;
 export type ListWebhooksResponseBody = z.infer<typeof ListWebhooksResponseBodySchema>;
@@ -1969,6 +2065,8 @@ export type UpdateProjectInput = z.infer<typeof UpdateProjectInputSchema>;
 export type UpdateProjectResponseBody = z.infer<typeof UpdateProjectResponseBodySchema>;
 export type UpdateS3SourceInputBody = z.infer<typeof UpdateS3SourceInputBodySchema>;
 export type UpdateS3SourceResponseBody = z.infer<typeof UpdateS3SourceResponseBodySchema>;
+export type UpdateServiceGroupInput = z.infer<typeof UpdateServiceGroupInputSchema>;
+export type UpdateServiceGroupResponseBody = z.infer<typeof UpdateServiceGroupResponseBodySchema>;
 export type UpdateServiceInput = z.infer<typeof UpdateServiceInputSchema>;
 export type UpdateStatusResponseBody = z.infer<typeof UpdateStatusResponseBodySchema>;
 export type UpdateTeamInputBody = z.infer<typeof UpdateTeamInputBodySchema>;
@@ -2143,6 +2241,23 @@ export const list_projectsQuerySchema = z
     sort_by: SortByFieldSchema.optional(),
     sort_order: SortOrderSchema.optional(),
     team_id: z.string(),
+  })
+  .passthrough();
+
+export const get_service_groupQuerySchema = z
+  .object({
+    id: z.string(), // The ID of the service group
+    team_id: z.string(), // The ID of the team
+    project_id: z.string(), // The ID of the project
+    environment_id: z.string(), // The ID of the environment
+  })
+  .passthrough();
+
+export const list_service_groupsQuerySchema = z
+  .object({
+    team_id: z.string(), // The ID of the team
+    project_id: z.string(), // The ID of the project
+    environment_id: z.string(), // The ID of the environment
   })
   .passthrough();
 
@@ -3697,6 +3812,220 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           }
           const data = await response.json();
           return UpdateProjectResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+    },
+    service_groups: {
+      create: async (
+        params: CreateServiceGroupInput,
+        fetchOptions?: RequestInit,
+      ): Promise<CreateServiceGroupResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/service_groups/create`);
+
+          const options: RequestInit = {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = CreateServiceGroupInputSchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return CreateServiceGroupResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      delete: async (
+        params: DeleteServiceGroupInput,
+        fetchOptions?: RequestInit,
+      ): Promise<DeleteServiceGroupResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/service_groups/delete`);
+
+          const options: RequestInit = {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = DeleteServiceGroupInputSchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return DeleteServiceGroupResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      get: async (
+        params: z.infer<typeof get_service_groupQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<GetServiceGroupResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/service_groups/get`);
+          const validatedQuery = get_service_groupQuerySchema.parse(params);
+          const queryKeys = ['id', 'team_id', 'project_id', 'environment_id'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return GetServiceGroupResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      list: async (
+        params: z.infer<typeof list_service_groupsQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<ListServiceGroupResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/service_groups/list`);
+          const validatedQuery = list_service_groupsQuerySchema.parse(params);
+          const queryKeys = ['team_id', 'project_id', 'environment_id'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return ListServiceGroupResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      update: async (
+        params: UpdateServiceGroupInput,
+        fetchOptions?: RequestInit,
+      ): Promise<UpdateServiceGroupResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/service_groups/update`);
+
+          const options: RequestInit = {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = UpdateServiceGroupInputSchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return UpdateServiceGroupResponseBodySchema.parse(data);
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;

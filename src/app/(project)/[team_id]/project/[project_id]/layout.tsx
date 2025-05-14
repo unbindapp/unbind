@@ -5,6 +5,7 @@ import ProjectNavbar from "@/components/project/project-navbar";
 import ProjectProvider from "@/components/project/project-provider";
 import ProjectsProvider from "@/components/project/projects-provider";
 import ServicePanelProvider from "@/components/service/panel/service-panel-provider";
+import TemplatesProvider from "@/components/templates/templates-provider";
 import CheckForUpdatesProvider, {
   UpdateToastProvider,
 } from "@/components/update/check-for-updates-provider";
@@ -21,7 +22,7 @@ type TProps = {
 export default async function Layout({ children, params }: TProps) {
   const { team_id: teamId, project_id: projectId } = await params;
 
-  const [projectInitialData, projectsInitialData] = await Promise.all([
+  const [projectInitialData, projectsInitialData, templatesData] = await Promise.all([
     ResultAsync.fromPromise(
       apiServer.projects.get({
         teamId,
@@ -35,6 +36,10 @@ export default async function Layout({ children, params }: TProps) {
       }),
       () => new Error("Failed to fetch projects"),
     ),
+    ResultAsync.fromPromise(
+      apiServer.templates.list(),
+      () => new Error("Failed to fetch templates"),
+    ),
   ]);
 
   if (projectInitialData.isErr()) {
@@ -45,35 +50,41 @@ export default async function Layout({ children, params }: TProps) {
     return redirect(`/${teamId}`);
   }
 
+  if (templatesData.isErr()) {
+    return redirect(`/${teamId}`);
+  }
+
   return (
     <CheckForUpdatesProvider>
-      <UpdateToastProvider>
-        <ProjectsProvider initialData={projectsInitialData.value} teamId={teamId}>
-          <ProjectProvider
-            initialData={projectInitialData.value}
-            teamId={teamId}
-            projectId={projectId}
-          >
-            <DeploymentPanelIdProvider>
-              <ServicePanelProvider>
-                <ProjectNavbar />
-                {children}
-                <NavbarSafeAreaInsetBottom className="sm:hidden" />
-                <ContextCommandPanel
-                  title="Project Command Panel"
-                  description="Project command panel"
-                  triggerType="layout"
-                  context={{
-                    contextType: "project",
-                    projectId,
-                    teamId,
-                  }}
-                />
-              </ServicePanelProvider>
-            </DeploymentPanelIdProvider>
-          </ProjectProvider>
-        </ProjectsProvider>
-      </UpdateToastProvider>
+      <TemplatesProvider data={templatesData.value}>
+        <UpdateToastProvider>
+          <ProjectsProvider initialData={projectsInitialData.value} teamId={teamId}>
+            <ProjectProvider
+              initialData={projectInitialData.value}
+              teamId={teamId}
+              projectId={projectId}
+            >
+              <DeploymentPanelIdProvider>
+                <ServicePanelProvider>
+                  <ProjectNavbar />
+                  {children}
+                  <NavbarSafeAreaInsetBottom className="sm:hidden" />
+                  <ContextCommandPanel
+                    title="Project Command Panel"
+                    description="Project command panel"
+                    triggerType="layout"
+                    context={{
+                      contextType: "project",
+                      projectId,
+                      teamId,
+                    }}
+                  />
+                </ServicePanelProvider>
+              </DeploymentPanelIdProvider>
+            </ProjectProvider>
+          </ProjectsProvider>
+        </UpdateToastProvider>
+      </TemplatesProvider>
     </CheckForUpdatesProvider>
   );
 }
