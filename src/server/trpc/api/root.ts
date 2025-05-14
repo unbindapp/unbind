@@ -11,6 +11,7 @@ import { setupRouter } from "@/server/trpc/api/setup/router";
 import { storageRouter } from "@/server/trpc/api/storage/router";
 import { systemRouter } from "@/server/trpc/api/system/router";
 import { teamsRouter } from "@/server/trpc/api/teams/router";
+import { templatesRouter } from "@/server/trpc/api/templates/router";
 import { variablesRouter } from "@/server/trpc/api/variables/router";
 import { webhooksRouter } from "@/server/trpc/api/webhooks/router";
 import { createTRPCRouter } from "@/server/trpc/setup/trpc";
@@ -28,6 +29,7 @@ export const appRouter = createTRPCRouter({
   teams: teamsRouter,
   projects: projectsRouter,
   services: servicesRouter,
+  templates: templatesRouter,
   instances: instancesRouter,
   deployments: deploymentsRouter,
   environments: environmentsRouter,

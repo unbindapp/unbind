@@ -5,7 +5,7 @@ import useGoToItem from "@/components/command-panel/context-command-panel/items/
 import useNewProjectItem from "@/components/command-panel/context-command-panel/items/new-project";
 import usePreferencesItem from "@/components/command-panel/context-command-panel/items/preferences";
 import { useGitItemHook } from "@/components/command-panel/context-command-panel/items/git";
-import useTemplateItem from "@/components/command-panel/context-command-panel/items/template";
+import { useTemplateItemHook } from "@/components/command-panel/context-command-panel/items/template";
 import { findCommandPanelPage } from "@/components/command-panel/helpers";
 import { TCommandPanelPage, TContextCommandPanelContext } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
@@ -22,6 +22,7 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
   const useGitItem = useGitItemHook({ context });
   const useDockerImageItem = useDockerImageItemHook({ context });
   const useDatabaseItem = useDatabaseItemHook({ context });
+  const useTemplateItem = useTemplateItemHook({ context });
 
   const { item: gitItem } = useGitItem({ context });
   const { item: dockerImageItem } = useDockerImageItem({ context });
@@ -64,7 +65,7 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
           : []),
         ...(gitItem ? [gitItem] : []),
         ...(databaseItem ? [databaseItem] : []),
-        templateItem,
+        ...(templateItem ? [templateItem] : []),
         ...(dockerImageItem ? [dockerImageItem] : []),
         ...(preferencesItem ? [preferencesItem] : []),
         ...(goToItem ? [goToItem] : []),

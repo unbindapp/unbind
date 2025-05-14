@@ -6,7 +6,24 @@ import BrandIcon from "@/components/icons/brand";
 import { BlocksIcon } from "lucide-react";
 import { useMemo } from "react";
 
-export default function useTemplateItem({}: { context: TContextCommandPanelContext }) {
+type TProps = {
+  context: TContextCommandPanelContext;
+};
+
+export function useTemplateItemHook({ context }: TProps) {
+  const hook = useMemo(() => {
+    if (context.contextType !== "project" && context.contextType !== "new-service") {
+      return () => ({
+        item: null,
+      });
+    }
+    return useTemplateItem;
+  }, [context]);
+
+  return hook;
+}
+
+function useTemplateItem({}: TProps) {
   const mainPageId = "template";
   const subpageId = "template_subpage";
 
