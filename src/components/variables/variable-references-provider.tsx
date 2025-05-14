@@ -33,10 +33,12 @@ export const VariableReferencesProvider: React.FC<TProps> = ({
       };
     }, [initialDataFromProps, typedProps.type]);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { service, ...queryProps } = typedProps;
   const list = api.variables.listAvailableVariableReferences.useQuery(
     // @ts-expect-error - this is fine for now - TODO - fix this
     {
-      ...typedProps,
+      ...queryProps,
     },
     {
       initialData: typedProps.type === "service" ? initialData : { variables: [] },

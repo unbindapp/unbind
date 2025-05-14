@@ -202,7 +202,7 @@ function useDatabaseItem({ context }: TProps) {
         ],
       },
     };
-  }, [createService, setIsPendingId]);
+  }, [createService]);
 
   const value = useMemo(
     () => ({

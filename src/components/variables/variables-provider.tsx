@@ -25,9 +25,11 @@ export const VariablesProvider: React.FC<TProps> = ({
   children,
   ...typedProps
 }) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { service, ...queryProps } = typedProps;
   const list = api.variables.list.useQuery(
     {
-      ...typedProps,
+      ...queryProps,
     },
     { initialData, refetchInterval },
   );

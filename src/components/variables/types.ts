@@ -6,6 +6,7 @@ export type TTeamVariableTypeProps = {
   projectId?: never;
   environmentId?: never;
   serviceId?: never;
+  service?: never;
 };
 
 export type TProjectVariableTypeProps = {
@@ -14,6 +15,7 @@ export type TProjectVariableTypeProps = {
   projectId: string;
   environmentId?: never;
   serviceId?: never;
+  service?: never;
 };
 
 export type TServiceVariableTypeProps = {

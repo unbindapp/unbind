@@ -81,7 +81,7 @@ export default function VariablesList({ variableTypeProps }: TProps) {
   if (!variables && !isPending && error) {
     return (
       <Wrapper>
-        <ErrorCard asElement="li" message={error.message} />;
+        <ErrorCard asElement="li" message={error.message} />
       </Wrapper>
     );
   }
