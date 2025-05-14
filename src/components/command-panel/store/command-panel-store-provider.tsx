@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  CommandPanelStore,
+  TCommandPanelStore,
   createCommandPanelStore,
 } from "@/components/command-panel/store/command-panel-store";
 import { type ReactNode, createContext, useRef, useContext } from "react";
@@ -29,7 +29,7 @@ export function CommandPanelStoreProvider({ children }: CommandPanelStoreProvide
   );
 }
 
-export function useCommandPanelStore<T>(selector: (store: CommandPanelStore) => T): T {
+export function useCommandPanelStore<T>(selector: (store: TCommandPanelStore) => T): T {
   const context = useContext(CommandPanelStoreContext);
 
   if (!context) {

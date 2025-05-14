@@ -5,6 +5,7 @@ import ProjectNavbar from "@/components/project/project-navbar";
 import ProjectProvider from "@/components/project/project-provider";
 import ProjectsProvider from "@/components/project/projects-provider";
 import ServicePanelProvider from "@/components/service/panel/service-panel-provider";
+import { TemplateDraftStoreProvider } from "@/components/templates/template-draft-store-provider";
 import TemplatesProvider from "@/components/templates/templates-provider";
 import CheckForUpdatesProvider, {
   UpdateToastProvider,
@@ -57,33 +58,35 @@ export default async function Layout({ children, params }: TProps) {
   return (
     <CheckForUpdatesProvider>
       <TemplatesProvider data={templatesData.value}>
-        <UpdateToastProvider>
-          <ProjectsProvider initialData={projectsInitialData.value} teamId={teamId}>
-            <ProjectProvider
-              initialData={projectInitialData.value}
-              teamId={teamId}
-              projectId={projectId}
-            >
-              <DeploymentPanelIdProvider>
-                <ServicePanelProvider>
-                  <ProjectNavbar />
-                  {children}
-                  <NavbarSafeAreaInsetBottom className="sm:hidden" />
-                  <ContextCommandPanel
-                    title="Project Command Panel"
-                    description="Project command panel"
-                    triggerType="layout"
-                    context={{
-                      contextType: "project",
-                      projectId,
-                      teamId,
-                    }}
-                  />
-                </ServicePanelProvider>
-              </DeploymentPanelIdProvider>
-            </ProjectProvider>
-          </ProjectsProvider>
-        </UpdateToastProvider>
+        <TemplateDraftStoreProvider>
+          <UpdateToastProvider>
+            <ProjectsProvider initialData={projectsInitialData.value} teamId={teamId}>
+              <ProjectProvider
+                initialData={projectInitialData.value}
+                teamId={teamId}
+                projectId={projectId}
+              >
+                <DeploymentPanelIdProvider>
+                  <ServicePanelProvider>
+                    <ProjectNavbar />
+                    {children}
+                    <NavbarSafeAreaInsetBottom className="sm:hidden" />
+                    <ContextCommandPanel
+                      title="Project Command Panel"
+                      description="Project command panel"
+                      triggerType="layout"
+                      context={{
+                        contextType: "project",
+                        projectId,
+                        teamId,
+                      }}
+                    />
+                  </ServicePanelProvider>
+                </DeploymentPanelIdProvider>
+              </ProjectProvider>
+            </ProjectsProvider>
+          </UpdateToastProvider>
+        </TemplateDraftStoreProvider>
       </TemplatesProvider>
     </CheckForUpdatesProvider>
   );

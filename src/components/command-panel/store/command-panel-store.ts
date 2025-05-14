@@ -1,6 +1,6 @@
 import { createStore } from "zustand/vanilla";
 
-export type State = {
+export type TState = {
   value: string;
   isPendingId: string | null;
   search: string;
@@ -8,7 +8,7 @@ export type State = {
   prevItemId: string | null;
 };
 
-export type Actions = {
+export type TActions = {
   setValue: (value: string) => void;
   setIsPendingId: (isPendingId: string | null) => void;
   setSearch: (search: string) => void;
@@ -17,9 +17,9 @@ export type Actions = {
   clearInputValue: (inputId: string) => void;
 };
 
-export type CommandPanelStore = State & Actions;
+export type TCommandPanelStore = TState & TActions;
 
-const defaultInitState: State = {
+const defaultInitState: TState = {
   value: "",
   isPendingId: null,
   prevItemId: null,
@@ -27,8 +27,8 @@ const defaultInitState: State = {
   inputValues: {},
 };
 
-export const createCommandPanelStore = (initState: State = defaultInitState) => {
-  return createStore<CommandPanelStore>()((set) => ({
+export const createCommandPanelStore = (initState: TState = defaultInitState) => {
+  return createStore<TCommandPanelStore>()((set) => ({
     ...initState,
     setIsPendingId: (id) => {
       set((state) => ({ ...state, isPendingId: id }));
