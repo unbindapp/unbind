@@ -468,7 +468,7 @@ function generateInlineInputSchemas(inlineSchemas: Record<string, JSONSchema>): 
 // CLI: Read OpenAPI spec, generate schemas + client, and write output file
 // ---------------------------------------------------------------------
 
-async function main(): Promise<void> {
+async function main() {
   const args = process.argv.slice(2);
   if (args.includes("-h") || args.includes("--help")) {
     displayHelp();

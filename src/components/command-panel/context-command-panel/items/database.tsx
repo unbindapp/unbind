@@ -8,7 +8,7 @@ import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useServicesUtils } from "@/components/project/services-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import { TAvailableDatabase } from "@/server/trpc/api/services/types";
+import { TAvailableDatabase } from "@/server/go/data.gen";
 import { api } from "@/server/trpc/setup/client";
 import { useMutation } from "@tanstack/react-query";
 import { DatabaseIcon } from "lucide-react";
@@ -22,12 +22,11 @@ type TProps = {
 
 export function databaseTypeToName(type: string) {
   if (type === "postgres") return "PostgreSQL";
-  if (type === "postgresql") return "PostgreSQL";
   if (type === "mysql") return "MySQL";
   if (type === "redis") return "Redis";
   if (type === "mongodb") return "MongoDB";
   if (type === "clickhouse") return "ClickHouse";
-  return "Unknown";
+  return type;
 }
 
 export function useDatabaseItemHook({ context }: TProps) {

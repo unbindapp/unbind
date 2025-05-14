@@ -275,6 +275,13 @@ export const PortSpecSchema = z
 
 export const ServiceTypeSchema = z.enum(['github', 'docker-image', 'database']);
 
+export const VariableMountSchema = z
+  .object({
+    name: z.string(), // Name of the variable to mount
+    path: z.string(), // Path to mount the variable (e.g. /etc/secret)
+  })
+  .strip();
+
 export const CreateServiceInputSchema = z
   .object({
     auto_deploy: z.boolean().optional(),
@@ -307,6 +314,7 @@ export const CreateServiceInputSchema = z
     s3_backup_source_id: z.string().optional(),
     team_id: z.string(),
     type: ServiceTypeSchema, // Type of service, e.g. 'github', 'docker-image'
+    variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Mount variables as volumes
   })
   .strip();
 
@@ -314,13 +322,6 @@ export const SecurityContextSchema = z
   .object({
     capabilities: CapabilitiesSchema.optional(),
     privileged: z.boolean().optional(),
-  })
-  .strip();
-
-export const VariableMountSchema = z
-  .object({
-    name: z.string(), // Name of the variable to mount
-    path: z.string(), // Path to mount the variable (e.g. /etc/secret)
   })
   .strip();
 
@@ -351,123 +352,9 @@ export const ServiceConfigResponseSchema = z
   })
   .strip();
 
-export const TemplateInputTypeSchema = z.enum([
-  'variable',
-  'host',
-  'volume_size',
-  'node_port',
-  'password',
-]);
-
-export const TemplateInputSchema = z
-  .object({
-    default: z.string().optional(),
-    description: z.string(),
-    id: z.number(),
-    name: z.string(),
-    required: z.boolean(),
-    target_port: z.number().optional(),
-    type: TemplateInputTypeSchema,
-  })
-  .strip();
-
-export const TemplateVariableReferenceSchema = z
-  .object({
-    additional_template_sources: z.array(z.string()).nullable(),
-    is_host: z.boolean(),
-    resolve_as_normal_variable: z.boolean(),
-    source_id: z.number(),
-    source_name: z.string(),
-    target_name: z.string(),
-    template_string: z.string(),
-  })
-  .strip();
-
-export const ValueHashTypeSchema = z.enum(['sha256', 'sha512']);
-
-export const JWTParamsSchema = z
-  .object({
-    AnonOutputKey: z.string(),
-    Issuer: z.string(),
-    SecretOutputKey: z.string(),
-    ServiceOutputKey: z.string(),
-  })
-  .strip();
-
-export const GeneratorTypeSchema = z.enum(['password', 'bcrypt', 'input', 'jwt', 'string_replace']);
-
-export const ValueGeneratorSchema = z
-  .object({
-    add_prefix: z.string().optional(),
-    base_domain: z.string().optional(),
-    hash_type: ValueHashTypeSchema.optional(),
-    input_id: z.number().optional(),
-    jwt_params: JWTParamsSchema.optional(),
-    type: GeneratorTypeSchema,
-  })
-  .strip();
-
-export const TemplateVariableSchema = z
-  .object({
-    generator: ValueGeneratorSchema.optional(),
-    name: z.string(),
-    value: z.string(),
-  })
-  .strip();
-
-export const TemplateVolumeSizeSchema = z
-  .object({
-    from_input_id: z.number(),
-  })
-  .strip();
-
-export const TemplateVolumeSchema = z
-  .object({
-    mountPath: z.string(),
-    name: z.string(),
-    size: TemplateVolumeSizeSchema,
-  })
-  .strip();
-
-export const TemplateServiceSchema = z
-  .object({
-    builder: ServiceBuilderSchema,
-    database_config: DatabaseConfigSchema.optional(),
-    database_type: z.string().optional(),
-    depends_on: z.array(z.number()),
-    health_check: HealthCheckSchema.optional(),
-    host_input_ids: z.array(z.number()).nullable().optional(),
-    icon: z.string().optional(),
-    id: z.number(),
-    image: z.string().optional(),
-    init_db_replacers: z.record(z.string()).optional(),
-    is_public: z.boolean(),
-    name: z.string(),
-    ports: z.array(PortSpecSchema),
-    run_command: z.string().optional(),
-    security_context: SecurityContextSchema.optional(),
-    type: ServiceTypeSchema,
-    variable_references: z.array(TemplateVariableReferenceSchema),
-    variables: z.array(TemplateVariableSchema),
-    variables_mounts: z.array(VariableMountSchema),
-    volumes: z.array(TemplateVolumeSchema),
-  })
-  .strip();
-
-export const TemplateDefinitionSchema = z
-  .object({
-    description: z.string(),
-    inputs: z.array(TemplateInputSchema),
-    name: z.string(),
-    services: z.array(TemplateServiceSchema),
-    version: z.number(),
-  })
-  .strip();
-
-export const TemplateWithDefinitionResponseSchema = z
+export const TemplateShortResponseSchema = z
   .object({
     created_at: z.string().datetime(),
-    definition: TemplateDefinitionSchema,
     id: z.string(),
     immutable: z.boolean(),
     name: z.string(),
@@ -492,7 +379,7 @@ export const ServiceResponseSchema = z
     last_deployment: DeploymentResponseSchema.optional(),
     last_successful_deployment: DeploymentResponseSchema.optional(),
     name: z.string(),
-    template: TemplateWithDefinitionResponseSchema.optional(),
+    template: TemplateShortResponseSchema.optional(),
     template_instance_id: z.string().optional(),
     type: ServiceTypeSchema,
     updated_at: z.string().datetime(),
@@ -759,6 +646,8 @@ export const ErrorModelSchema = z
   })
   .strip();
 
+export const GeneratorTypeSchema = z.enum(['password', 'bcrypt', 'input', 'jwt', 'string_replace']);
+
 export const GetDatabaseResponseBodySchema = z
   .object({
     data: DatabaseConfigurablesSchema,
@@ -894,6 +783,128 @@ export const TeamResponseSchema = z
 export const GetTeamResponseBodySchema = z
   .object({
     data: TeamResponseSchema,
+  })
+  .strip();
+
+export const TemplateInputTypeSchema = z.enum([
+  'variable',
+  'host',
+  'volume_size',
+  'node_port',
+  'password',
+]);
+
+export const TemplateInputSchema = z
+  .object({
+    default: z.string().optional(),
+    description: z.string(),
+    id: z.number(),
+    name: z.string(),
+    required: z.boolean(),
+    target_port: z.number().optional(),
+    type: TemplateInputTypeSchema,
+  })
+  .strip();
+
+export const TemplateVariableReferenceSchema = z
+  .object({
+    additional_template_sources: z.array(z.string()).nullable(),
+    is_host: z.boolean(),
+    resolve_as_normal_variable: z.boolean(),
+    source_id: z.number(),
+    source_name: z.string(),
+    target_name: z.string(),
+    template_string: z.string(),
+  })
+  .strip();
+
+export const ValueHashTypeSchema = z.enum(['sha256', 'sha512']);
+
+export const JWTParamsSchema = z
+  .object({
+    AnonOutputKey: z.string(),
+    Issuer: z.string(),
+    SecretOutputKey: z.string(),
+    ServiceOutputKey: z.string(),
+  })
+  .strip();
+
+export const ValueGeneratorSchema = z
+  .object({
+    add_prefix: z.string().optional(),
+    base_domain: z.string().optional(),
+    hash_type: ValueHashTypeSchema.optional(),
+    input_id: z.number().optional(),
+    jwt_params: JWTParamsSchema.optional(),
+    type: GeneratorTypeSchema,
+  })
+  .strip();
+
+export const TemplateVariableSchema = z
+  .object({
+    generator: ValueGeneratorSchema.optional(),
+    name: z.string(),
+    value: z.string(),
+  })
+  .strip();
+
+export const TemplateVolumeSizeSchema = z
+  .object({
+    from_input_id: z.number(),
+  })
+  .strip();
+
+export const TemplateVolumeSchema = z
+  .object({
+    mountPath: z.string(),
+    name: z.string(),
+    size: TemplateVolumeSizeSchema,
+  })
+  .strip();
+
+export const TemplateServiceSchema = z
+  .object({
+    builder: ServiceBuilderSchema,
+    database_config: DatabaseConfigSchema.optional(),
+    database_type: z.string().optional(),
+    depends_on: z.array(z.number()),
+    health_check: HealthCheckSchema.optional(),
+    host_input_ids: z.array(z.number()).nullable().optional(),
+    icon: z.string().optional(),
+    id: z.number(),
+    image: z.string().optional(),
+    init_db_replacers: z.record(z.string()).optional(),
+    is_public: z.boolean(),
+    name: z.string(),
+    ports: z.array(PortSpecSchema),
+    run_command: z.string().optional(),
+    security_context: SecurityContextSchema.optional(),
+    type: ServiceTypeSchema,
+    variable_references: z.array(TemplateVariableReferenceSchema),
+    variables: z.array(TemplateVariableSchema),
+    variables_mounts: z.array(VariableMountSchema),
+    volumes: z.array(TemplateVolumeSchema),
+  })
+  .strip();
+
+export const TemplateDefinitionSchema = z
+  .object({
+    description: z.string(),
+    inputs: z.array(TemplateInputSchema),
+    name: z.string(),
+    services: z.array(TemplateServiceSchema),
+    version: z.number(),
+  })
+  .strip();
+
+export const TemplateWithDefinitionResponseSchema = z
+  .object({
+    created_at: z.string().datetime(),
+    definition: TemplateDefinitionSchema,
+    id: z.string(),
+    immutable: z.boolean(),
+    name: z.string(),
+    version: z.number(),
   })
   .strip();
 
@@ -1239,16 +1250,6 @@ export const ListS3SourceOutputBodySchema = z
 export const ListServiceResponseBodySchema = z
   .object({
     data: z.array(ServiceResponseSchema),
-  })
-  .strip();
-
-export const TemplateShortResponseSchema = z
-  .object({
-    created_at: z.string().datetime(),
-    id: z.string(),
-    immutable: z.boolean(),
-    name: z.string(),
-    version: z.number(),
   })
   .strip();
 
@@ -1630,6 +1631,7 @@ export const UpdateServiceInputSchema = z
     s3_backup_source_id: z.string().optional(),
     service_id: z.string(),
     team_id: z.string(),
+    variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Mount variables as volumes
   })
   .strip();
 
@@ -1795,23 +1797,11 @@ export type HostSpec = z.infer<typeof HostSpecSchema>;
 export type Protocol = z.infer<typeof ProtocolSchema>;
 export type PortSpec = z.infer<typeof PortSpecSchema>;
 export type ServiceType = z.infer<typeof ServiceTypeSchema>;
+export type VariableMount = z.infer<typeof VariableMountSchema>;
 export type CreateServiceInput = z.infer<typeof CreateServiceInputSchema>;
 export type SecurityContext = z.infer<typeof SecurityContextSchema>;
-export type VariableMount = z.infer<typeof VariableMountSchema>;
 export type ServiceConfigResponse = z.infer<typeof ServiceConfigResponseSchema>;
-export type TemplateInputType = z.infer<typeof TemplateInputTypeSchema>;
-export type TemplateInput = z.infer<typeof TemplateInputSchema>;
-export type TemplateVariableReference = z.infer<typeof TemplateVariableReferenceSchema>;
-export type ValueHashType = z.infer<typeof ValueHashTypeSchema>;
-export type JWTParams = z.infer<typeof JWTParamsSchema>;
-export type GeneratorType = z.infer<typeof GeneratorTypeSchema>;
-export type ValueGenerator = z.infer<typeof ValueGeneratorSchema>;
-export type TemplateVariable = z.infer<typeof TemplateVariableSchema>;
-export type TemplateVolumeSize = z.infer<typeof TemplateVolumeSizeSchema>;
-export type TemplateVolume = z.infer<typeof TemplateVolumeSchema>;
-export type TemplateService = z.infer<typeof TemplateServiceSchema>;
-export type TemplateDefinition = z.infer<typeof TemplateDefinitionSchema>;
-export type TemplateWithDefinitionResponse = z.infer<typeof TemplateWithDefinitionResponseSchema>;
+export type TemplateShortResponse = z.infer<typeof TemplateShortResponseSchema>;
 export type ServiceResponse = z.infer<typeof ServiceResponseSchema>;
 export type CreateServiceResponseBody = z.infer<typeof CreateServiceResponseBodySchema>;
 export type CreateUserInputBody = z.infer<typeof CreateUserInputBodySchema>;
@@ -1847,6 +1837,7 @@ export type ServiceEndpoint = z.infer<typeof ServiceEndpointSchema>;
 export type EndpointDiscovery = z.infer<typeof EndpointDiscoverySchema>;
 export type ErrorDetail = z.infer<typeof ErrorDetailSchema>;
 export type ErrorModel = z.infer<typeof ErrorModelSchema>;
+export type GeneratorType = z.infer<typeof GeneratorTypeSchema>;
 export type GetDatabaseResponseBody = z.infer<typeof GetDatabaseResponseBodySchema>;
 export type GetDeploymentResponseBody = z.infer<typeof GetDeploymentResponseBodySchema>;
 export type GetEnvironmentOutputBody = z.infer<typeof GetEnvironmentOutputBodySchema>;
@@ -1868,6 +1859,18 @@ export type GetS3SourceByIDOutputBody = z.infer<typeof GetS3SourceByIDOutputBody
 export type GetServiceResponseBody = z.infer<typeof GetServiceResponseBodySchema>;
 export type TeamResponse = z.infer<typeof TeamResponseSchema>;
 export type GetTeamResponseBody = z.infer<typeof GetTeamResponseBodySchema>;
+export type TemplateInputType = z.infer<typeof TemplateInputTypeSchema>;
+export type TemplateInput = z.infer<typeof TemplateInputSchema>;
+export type TemplateVariableReference = z.infer<typeof TemplateVariableReferenceSchema>;
+export type ValueHashType = z.infer<typeof ValueHashTypeSchema>;
+export type JWTParams = z.infer<typeof JWTParamsSchema>;
+export type ValueGenerator = z.infer<typeof ValueGeneratorSchema>;
+export type TemplateVariable = z.infer<typeof TemplateVariableSchema>;
+export type TemplateVolumeSize = z.infer<typeof TemplateVolumeSizeSchema>;
+export type TemplateVolume = z.infer<typeof TemplateVolumeSchema>;
+export type TemplateService = z.infer<typeof TemplateServiceSchema>;
+export type TemplateDefinition = z.infer<typeof TemplateDefinitionSchema>;
+export type TemplateWithDefinitionResponse = z.infer<typeof TemplateWithDefinitionResponseSchema>;
 export type GetTemplateResponseBody = z.infer<typeof GetTemplateResponseBodySchema>;
 export type GetWebhookResponseBody = z.infer<typeof GetWebhookResponseBodySchema>;
 export type Plan = z.infer<typeof PlanSchema>;
@@ -1911,7 +1914,6 @@ export type ListPVCResponseBody = z.infer<typeof ListPVCResponseBodySchema>;
 export type ListProjectResponseBody = z.infer<typeof ListProjectResponseBodySchema>;
 export type ListS3SourceOutputBody = z.infer<typeof ListS3SourceOutputBodySchema>;
 export type ListServiceResponseBody = z.infer<typeof ListServiceResponseBodySchema>;
-export type TemplateShortResponse = z.infer<typeof TemplateShortResponseSchema>;
 export type ListTemplatesResponseBody = z.infer<typeof ListTemplatesResponseBodySchema>;
 export type ListWebhooksResponseBody = z.infer<typeof ListWebhooksResponseBodySchema>;
 export type LogMetadata = z.infer<typeof LogMetadataSchema>;
