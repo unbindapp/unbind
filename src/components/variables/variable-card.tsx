@@ -172,7 +172,7 @@ export default function VariableCard({
       data-not-editing={!isEditingVariable ? true : undefined}
       data-type={variable?.variable_type}
       data-reference-error={referenceError ? true : undefined}
-      className="data-reference-error:bg-destructive/4 group/card data-reference-error:border-destructive/12 relative flex w-full flex-col rounded-xl border px-3 py-0.75 data-placeholder:text-transparent sm:flex-row sm:items-center sm:rounded-lg sm:pr-0.75"
+      className="data-reference-error:bg-destructive/4 group/card data-reference-error:border-destructive/12 relative flex w-full flex-col rounded-xl border px-3 py-0.75 data-placeholder:text-transparent sm:flex-row sm:items-start sm:rounded-lg sm:pr-0.75"
     >
       <div className="flex h-9 w-full shrink-0 items-center py-2 pr-8 sm:w-56 sm:pr-4 md:w-64">
         {Icon && <Icon className="text-foreground mr-2 size-3.5 shrink-0" />}
@@ -189,7 +189,7 @@ export default function VariableCard({
           {isPlaceholder ? "Loading key" : variable.name}
         </p>
       </div>
-      <div className="relative -ml-2 flex w-[calc(100%+1rem)] min-w-0 flex-1 items-center sm:mt-0 sm:w-auto">
+      <div className="relative -ml-2 flex w-[calc(100%+1rem)] min-w-0 flex-1 items-start sm:mt-0 sm:w-auto">
         {(!variable || !isEditingVariable) && (
           <>
             <CopyButton
@@ -221,44 +221,49 @@ export default function VariableCard({
                 )}
               </div>
             </Button>
-            <div className="relative flex min-h-9 min-w-0 flex-1 items-center justify-start py-1.5 pl-2">
-              <p className="group-data-placeholder/card:bg-foreground group-data-reference-error/card:text-destructive group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden px-0.25 py-0.25 pr-2 font-mono text-xs leading-tight group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
-                {referenceError
-                  ? "The referenced value doesn't exist anymore. Consider deleting this."
-                  : isPlaceholder || !isValueVisible
-                    ? hiddenString
-                    : variable.variable_type === "reference"
-                      ? variableValueParts.map((part, index) => (
-                          <span
-                            data-token={part.token !== null ? true : undefined}
-                            key={index}
-                            className="data-token:bg-process/10 data-token:ring-process/20 data-token:text-process data-token:rounded-[2px] data-token:ring-1"
-                          >
-                            {part.token !== null ? (
-                              <>
-                                <span className="text-process/50">
-                                  {part.value.slice(0, tokenPrefix.length)}
-                                </span>
-                                <span>
-                                  {part.value.slice(
-                                    tokenPrefix.length,
-                                    part.value.length - tokenSuffix.length,
-                                  )}
-                                </span>
-                                <span className="text-process/50">
-                                  {part.value.slice(
-                                    part.value.length - tokenSuffix.length,
-                                    part.value.length,
-                                  )}
-                                </span>
-                              </>
-                            ) : (
-                              part.value
-                            )}
-                          </span>
-                        ))
-                      : variable.value}
-              </p>
+            <div className="relative flex min-h-9 min-w-0 flex-1 items-center justify-start pl-2">
+              <ScrollArea
+                className="max-h-[min(16rem,50vh)] w-full [mask-image:linear-gradient(to_bottom,transparent_0%,black_0.375rem,black_calc(100%_-_0.375rem),transparent_100%)]"
+                classNameViewport="py-1.5"
+              >
+                <p className="group-data-placeholder/card:bg-foreground group-data-reference-error/card:text-destructive group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden px-0.25 py-0.25 pr-2 font-mono text-xs leading-tight whitespace-pre-wrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
+                  {referenceError
+                    ? "The referenced value doesn't exist anymore. Consider deleting this."
+                    : isPlaceholder || !isValueVisible
+                      ? hiddenString
+                      : variable.variable_type === "reference"
+                        ? variableValueParts.map((part, index) => (
+                            <span
+                              data-token={part.token !== null ? true : undefined}
+                              key={index}
+                              className="data-token:bg-process/10 data-token:ring-process/20 data-token:text-process data-token:rounded-[2px] data-token:ring-1"
+                            >
+                              {part.token !== null ? (
+                                <>
+                                  <span className="text-process/50">
+                                    {part.value.slice(0, tokenPrefix.length)}
+                                  </span>
+                                  <span>
+                                    {part.value.slice(
+                                      tokenPrefix.length,
+                                      part.value.length - tokenSuffix.length,
+                                    )}
+                                  </span>
+                                  <span className="text-process/50">
+                                    {part.value.slice(
+                                      part.value.length - tokenSuffix.length,
+                                      part.value.length,
+                                    )}
+                                  </span>
+                                </>
+                              ) : (
+                                part.value
+                              )}
+                            </span>
+                          ))
+                        : variable.value}
+                </p>
+              </ScrollArea>
             </div>
             <div className="hidden sm:flex">
               {!hideThreeDotButton && (
