@@ -228,6 +228,7 @@ export const CreateS3OutputBodySchema = z
 
 export const CreateServiceGroupInputSchema = z
   .object({
+    description: z.string().optional(), // The description of the service group
     environment_id: z.string(),
     name: z.string(), // The name of the service group
     project_id: z.string(),
@@ -238,6 +239,7 @@ export const CreateServiceGroupInputSchema = z
 export const ServiceGroupResponseSchema = z
   .object({
     created_at: z.string().datetime(),
+    description: z.string().optional(),
     environment_id: z.string(),
     id: z.string(),
     name: z.string(),
@@ -381,6 +383,7 @@ export const TemplateShortResponseSchema = z
   .object({
     created_at: z.string().datetime(),
     description: z.string(),
+    display_rank: z.number(),
     icon: z.string(),
     id: z.string(),
     immutable: z.boolean(),
@@ -927,7 +930,7 @@ export const TemplateServiceSchema = z
     depends_on: z.array(z.number()),
     health_check: HealthCheckSchema.optional(),
     host_input_ids: z.array(z.number()).nullable().optional(),
-    icon: z.string().optional(),
+    icon: z.string(),
     id: z.number(),
     image: z.string().optional(),
     init_db_replacers: z.record(z.string()).optional(),
@@ -948,6 +951,7 @@ export const TemplateServiceSchema = z
 export const TemplateDefinitionSchema = z
   .object({
     description: z.string(),
+    display_rank: z.number(),
     icon: z.string().optional(),
     inputs: z.array(TemplateInputSchema),
     keywords: z.array(z.string()).nullable().optional(),
@@ -962,6 +966,7 @@ export const TemplateWithDefinitionResponseSchema = z
     created_at: z.string().datetime(),
     definition: TemplateDefinitionSchema,
     description: z.string(),
+    display_rank: z.number(),
     icon: z.string(),
     id: z.string(),
     immutable: z.boolean(),
@@ -1550,6 +1555,7 @@ export const TemplateInputValueSchema = z
 export const TemplateDeployInputSchema = z
   .object({
     environment_id: z.string(),
+    group_description: z.string().optional(),
     group_name: z.string(),
     inputs: z.array(TemplateInputValueSchema).nullable().optional(),
     project_id: z.string(),
@@ -1674,6 +1680,7 @@ export const UpdateS3SourceResponseBodySchema = z
 export const UpdateServiceGroupInputSchema = z
   .object({
     add_service_ids: z.array(z.string()).nullable().optional(), // The IDs of the services to add to the service group
+    description: z.string().optional(), // The description of the service group
     environment_id: z.string(),
     id: z.string(),
     name: z.string().nullable().optional(), // The name of the service group

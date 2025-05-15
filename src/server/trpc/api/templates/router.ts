@@ -1,4 +1,8 @@
 import { TemplateInputValueSchema } from "@/server/go/client.gen";
+import {
+  TemplateGroupDescriptionSchema,
+  TemplateGroupNameSchema,
+} from "@/server/trpc/api/templates/types";
 import { createTRPCRouter, privateProcedure } from "@/server/trpc/setup/trpc";
 import { z } from "zod";
 
@@ -32,12 +36,13 @@ export const templatesRouter = createTRPCRouter({
           environmentId: z.string().uuid(),
           templateId: z.string().uuid(),
           inputs: TemplateInputValueSchema.array().optional(),
-          groupName: z.string(),
+          groupName: TemplateGroupNameSchema,
+          groupDescription: TemplateGroupDescriptionSchema.optional(),
         })
         .strip(),
     )
     .mutation(async function ({
-      input: { teamId, projectId, environmentId, templateId, inputs, groupName },
+      input: { teamId, projectId, environmentId, templateId, inputs, groupName, groupDescription },
       ctx: { goClient },
     }) {
       const res = await goClient.templates.deploy({
@@ -47,6 +52,7 @@ export const templatesRouter = createTRPCRouter({
         template_id: templateId,
         inputs,
         group_name: groupName,
+        group_description: groupDescription,
       });
 
       return {

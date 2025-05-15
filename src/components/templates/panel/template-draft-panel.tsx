@@ -1,12 +1,11 @@
-import ErrorLine from "@/components/error-line";
-import { useServicesUtils } from "@/components/project/services-provider";
 import { useDeviceSize } from "@/components/providers/device-size-provider";
-import ServicePanelContent from "@/components/service/panel/content/service-panel-content";
-import { useServicePanel } from "@/components/service/panel/service-panel-provider";
-import ServiceIcon from "@/components/service/service-icon";
-import ServiceProvider, { useServiceUtils } from "@/components/service/service-provider";
 import { DeleteEntityTrigger } from "@/components/settings/delete-card";
-import { Button, LinkButton } from "@/components/ui/button";
+import TemplateDraftPanelContent from "@/components/templates/panel/template-draft-panel-content";
+import { useTemplateDraftPanel } from "@/components/templates/panel/template-draft-panel-provider";
+import TemplateDraftIcon from "@/components/templates/template-draft-icon";
+import { TTemplateDraft } from "@/components/templates/template-draft-store";
+import { useTemplateDraftStore } from "@/components/templates/template-draft-store-provider";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -38,44 +37,26 @@ import { useAppForm } from "@/lib/hooks/use-app-form";
 import {
   serviceDescriptionMaxLength,
   ServiceDescriptionSchema,
-  ServiceNameSchema,
   serviceNameMaxLength,
-  THost,
-  TServiceShallow,
+  ServiceNameSchema,
 } from "@/server/trpc/api/services/types";
-import { api } from "@/server/trpc/setup/client";
-import {
-  EllipsisVerticalIcon,
-  ExternalLinkIcon,
-  GlobeIcon,
-  PenIcon,
-  TrashIcon,
-  XIcon,
-} from "lucide-react";
-import { ReactNode, useRef, useState } from "react";
+import { EllipsisVerticalIcon, PenIcon, TrashIcon, XIcon } from "lucide-react";
+import { ReactNode, useCallback, useRef, useState } from "react";
 import { z } from "zod";
 
 type TProps = {
-  teamId: string;
-  projectId: string;
-  environmentId: string;
-  service: TServiceShallow;
+  templateDraft: TTemplateDraft;
   children: ReactNode;
 };
 
-export default function ServicePanel({
-  teamId,
-  projectId,
-  environmentId,
-  service,
-  children,
-}: TProps) {
-  const { closePanel, currentServiceId, setCurrentServiceId } = useServicePanel();
+export default function TemplateDraftPanel({ templateDraft, children }: TProps) {
+  const { closePanel, currentTemplateDraftId, openPanel } = useTemplateDraftPanel();
 
-  const open = currentServiceId === service.id;
+  const open = currentTemplateDraftId === templateDraft.id;
+
   const setOpen = (open: boolean) => {
     if (open) {
-      setCurrentServiceId(service.id);
+      openPanel(templateDraft.id);
     } else {
       closePanel();
     }
@@ -96,23 +77,11 @@ export default function ServicePanel({
       >
         <div className="flex w-full items-start justify-start px-5 pt-4 sm:px-8 sm:pt-6">
           <DrawerHeader className="flex min-w-0 flex-1 items-center justify-start p-0">
-            <DrawerTitle className="sr-only">{service.name}</DrawerTitle>
-            <TitleButton
-              service={service}
-              teamId={teamId}
-              projectId={projectId}
-              environmentId={environmentId}
-            />
+            <DrawerTitle className="sr-only">{templateDraft.name}</DrawerTitle>
+            <TitleButton templateDraft={templateDraft} />
           </DrawerHeader>
           <div className="-mt-2.25 -mr-3 flex items-center justify-end gap-1 sm:-mt-3 sm:-mr-5">
-            {!service.last_deployment && (
-              <ThreeDotButton
-                service={service}
-                teamId={teamId}
-                projectId={projectId}
-                environmentId={environmentId}
-              />
-            )}
+            <ThreeDotButton templateDraft={templateDraft} />
             {!isExtraSmall && (
               <DrawerClose asChild>
                 <Button
@@ -126,47 +95,20 @@ export default function ServicePanel({
             )}
           </div>
         </div>
-        {service.config.hosts && service.config.hosts.length >= 1 && (
-          <ServiceUrl hostObject={service.config.hosts[0]} />
-        )}
-        <ServiceProvider
-          teamId={teamId}
-          projectId={projectId}
-          environmentId={environmentId}
-          serviceId={service.id}
-        >
-          <ServicePanelContent service={service} />
-        </ServiceProvider>
+        <TemplateDraftPanelContent templateDraft={templateDraft} />
       </DrawerContent>
     </Drawer>
   );
 }
 
-function TitleButton({
-  service,
-  teamId,
-  projectId,
-  environmentId,
-}: {
-  service: TServiceShallow;
-  teamId: string;
-  projectId: string;
-  environmentId: string;
-}) {
+function TitleButton({ templateDraft }: { templateDraft: TTemplateDraft }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { mutateAsync: updateService, error, reset } = api.services.update.useMutation();
-  const { refetch: refetchService } = useServiceUtils({
-    teamId,
-    projectId,
-    environmentId,
-    serviceId: service.id,
-  });
-  const { refetch: refetchServices } = useServicesUtils({ teamId, projectId, environmentId });
+  const updateTemplateDraft = useTemplateDraftStore((s) => s.update);
 
   const form = useAppForm({
     defaultValues: {
-      name: service.name,
-      description: service.description,
+      name: templateDraft.name,
+      description: templateDraft.description,
     },
     validators: {
       onChange: z
@@ -176,17 +118,12 @@ function TitleButton({
         })
         .strip(),
     },
-    onSubmit: async ({ formApi, value }) => {
-      if (value.name !== service.name || value.description !== service.description) {
-        await updateService({
-          teamId,
-          projectId,
-          environmentId,
-          serviceId: service.id,
+    onSubmit: ({ formApi, value }) => {
+      if (value.name !== templateDraft.name || value.description !== templateDraft.description) {
+        updateTemplateDraft(templateDraft.id, {
           name: value.name,
           description: value.description,
         });
-        await Promise.all([refetchService(), refetchServices()]);
       }
       setIsDialogOpen(false);
       formApi.reset();
@@ -204,7 +141,6 @@ function TitleButton({
           if (timeout.current) clearTimeout(timeout.current);
           timeout.current = setTimeout(() => {
             form.reset();
-            reset();
           }, defaultAnimationMs);
         }
       }}
@@ -214,17 +150,23 @@ function TitleButton({
           variant="ghost"
           className="group/button -my-1 -ml-2.5 flex min-w-0 shrink items-center justify-start gap-1.5 px-2.5 py-1"
         >
-          <ServiceIcon service={service} color="brand" className="-ml-1 size-6 sm:size-7" />
+          <TemplateDraftIcon
+            templateDraft={templateDraft}
+            color="brand"
+            className="-ml-1 size-6 sm:size-7"
+          />
           <p className="min-w-0 shrink text-left text-xl leading-tight sm:text-2xl">
-            {service.name}
+            {templateDraft.name}
           </p>
           <PenIcon className="ml-0.5 size-4 -rotate-30 opacity-0 transition group-focus-visible/button:rotate-0 group-focus-visible/button:opacity-100 group-active/button:rotate-0 group-active/button:opacity-100 has-hover:group-hover/button:rotate-0 has-hover:group-hover/button:opacity-100 sm:size-4.5" />
         </Button>
       </DialogTrigger>
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
-          <DialogTitle>Rename Service</DialogTitle>
-          <DialogDescription>Set a new name and description for the service.</DialogDescription>
+          <DialogTitle>Rename Service Group</DialogTitle>
+          <DialogDescription>
+            Set a new name and description for the service group.
+          </DialogDescription>
         </DialogHeader>
         <form
           onSubmit={(e) => {
@@ -242,9 +184,9 @@ function TitleButton({
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
                 className="w-full"
-                placeholder={service.name}
+                placeholder={templateDraft.name}
                 layout="label-included"
-                inputTitle="Service Name"
+                inputTitle="Service Group Name"
                 maxLength={serviceNameMaxLength}
               />
             )}
@@ -258,14 +200,13 @@ function TitleButton({
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
                 className="w-full"
-                placeholder={service.description}
+                placeholder={templateDraft.description}
                 layout="label-included"
-                inputTitle="Service Description"
+                inputTitle="Service Group Description"
                 maxLength={serviceDescriptionMaxLength}
               />
             )}
           />
-          {error && <ErrorLine message={error.message} className="mt-2" />}
           <div className="mt-2 flex w-full flex-wrap items-center justify-end gap-2">
             <DialogClose asChild className="text-muted-foreground">
               <Button type="button" variant="ghost">
@@ -286,33 +227,25 @@ function TitleButton({
 }
 
 function ThreeDotButton({
-  service,
-  teamId,
-  projectId,
-  environmentId,
+  templateDraft,
   className,
 }: {
-  service: TServiceShallow;
-  teamId: string;
-  projectId: string;
-  environmentId: string;
+  templateDraft: TTemplateDraft;
   className?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const { closePanel } = useServicePanel();
-  const { invalidate } = useServicesUtils({ teamId, projectId, environmentId });
+  const { closePanel } = useTemplateDraftPanel();
 
-  const {
-    mutateAsync: deleteService,
-    error,
-    reset,
-  } = api.services.delete.useMutation({
-    onSuccess: () => {
-      setIsOpen(false);
-      closePanel();
-      invalidate();
-    },
-  });
+  const removeTemplateDraft = useTemplateDraftStore((s) => s.remove);
+  const timeout = useRef<NodeJS.Timeout>(undefined);
+
+  const deleteTemplateDraft = useCallback(() => {
+    closePanel();
+    if (timeout.current) clearTimeout(timeout.current);
+    timeout.current = setTimeout(() => {
+      removeTemplateDraft(templateDraft.id);
+    }, defaultAnimationMs);
+  }, [templateDraft.id, closePanel, removeTemplateDraft]);
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -340,23 +273,16 @@ function ThreeDotButton({
         <ScrollArea>
           <DropdownMenuGroup>
             <DeleteEntityTrigger
-              type="service"
+              type="template-draft"
               onSubmit={async () => {
-                await deleteService({
-                  teamId,
-                  projectId,
-                  environmentId,
-                  serviceId: service.id,
-                });
+                deleteTemplateDraft();
               }}
-              error={error}
-              deletingEntityName={service.name}
+              error={null}
+              deletingEntityName={templateDraft.name}
               onDialogCloseImmediate={() => {
                 setIsOpen(false);
               }}
-              onDialogClose={() => {
-                reset();
-              }}
+              onDialogClose={() => {}}
               disableConfirmationInput
             >
               <DropdownMenuItem
@@ -372,33 +298,4 @@ function ThreeDotButton({
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
-
-function ServiceUrl({ hostObject }: { hostObject: THost }) {
-  return (
-    <div className="-mb-0.25 flex w-full items-start justify-start px-2.75 pt-0.75 sm:px-6">
-      <LinkButton
-        className="text-muted-foreground group/button min-w-0 shrink px-2.25 py-1 text-left font-medium"
-        variant="ghost"
-        target="_blank"
-        size="sm"
-        href={getUrl(hostObject)}
-        key={getUrl(hostObject)}
-      >
-        <div className="relative -ml-0.5 size-3.5 shrink-0 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45">
-          <GlobeIcon className="size-full group-active/button:opacity-0 has-hover:group-hover/button:opacity-0" />
-          <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-active/button:opacity-100 has-hover:group-hover/button:opacity-100" />
-        </div>
-        <p className="min-w-0 shrink truncate">{getUrlDisplayStr(hostObject)}</p>
-      </LinkButton>
-    </div>
-  );
-}
-
-function getUrlDisplayStr(hostObj: THost) {
-  return hostObj.host + (hostObj.path === "/" ? "" : hostObj.path);
-}
-
-function getUrl(hostObj: THost) {
-  return "https://" + hostObj.host + hostObj.path;
 }

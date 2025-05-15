@@ -10,6 +10,7 @@ import { Provider as JotaiProvider } from "jotai";
 import { SessionProvider } from "next-auth/react";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import React from "react";
+import { TemplateDraftStoreProvider } from "@/components/templates/template-draft-store-provider";
 
 export default async function Providers({ children }: Readonly<{ children: React.ReactNode }>) {
   const authUrl = env.AUTH_URL;
@@ -25,7 +26,9 @@ export default async function Providers({ children }: Readonly<{ children: React
                 <ThemeProvider>
                   <DeviceTypeProvider>
                     <DeviceSizeProvider>
-                      <NowProvider>{children}</NowProvider>
+                      <NowProvider>
+                        <TemplateDraftStoreProvider>{children}</TemplateDraftStoreProvider>
+                      </NowProvider>
                     </DeviceSizeProvider>
                   </DeviceTypeProvider>
                 </ThemeProvider>

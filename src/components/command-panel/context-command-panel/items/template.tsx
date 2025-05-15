@@ -1,11 +1,17 @@
 import { contextCommandPanelRootPage } from "@/components/command-panel/constants";
-import onSelectPlaceholder from "@/components/command-panel/context-command-panel/items/constants";
 import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
 import BrandIcon from "@/components/icons/brand";
+import { useProject } from "@/components/project/project-provider";
+import { useTemplateDraftPanel } from "@/components/templates/panel/template-draft-panel-provider";
+import { TTemplateDraft } from "@/components/templates/template-draft-store";
+import { useTemplateDraftStore } from "@/components/templates/template-draft-store-provider";
 import { useTemplates } from "@/components/templates/templates-provider";
+import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { BlocksIcon } from "lucide-react";
 import { useMemo } from "react";
+import { toast } from "sonner";
+import { v4 as uuidv4 } from "uuid";
 
 type TProps = {
   context: TContextCommandPanelContext;
@@ -28,13 +34,27 @@ function useTemplateItem({}: TProps) {
   const mainPageId = "template";
   const subpageId = "template_subpage";
 
-  const { closePanel } = useCommandPanel({
+  const { closePanel: closeCommandPanel } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
   });
+
+  const { environmentId: environmentIdFromPathname } = useIdsFromPathname();
+
+  const {
+    teamId,
+    projectId,
+    query: { data: projectData },
+  } = useProject();
+
+  const environments = projectData?.project.environments;
+  const defaultEnvironmentId = projectData?.project.default_environment_id || environments?.[0]?.id;
 
   const {
     data: { templates },
   } = useTemplates();
+
+  const createTemplateDraft = useTemplateDraftStore((s) => s.add);
+  const { openPanel: openTemplateDraftPanel } = useTemplateDraftPanel();
 
   const templateItems: TCommandPanelItem[] = useMemo(() => {
     return templates.map((template) => {
@@ -59,14 +79,44 @@ function useTemplateItem({}: TProps) {
           </div>
         ),
         keywords: template.keywords,
-        onSelect: () => onSelectPlaceholder(closePanel),
+        onSelect: () => {
+          const id = uuidv4();
+          const environmentId = environmentIdFromPathname || defaultEnvironmentId;
+          if (!environmentId) {
+            toast.error("No environment", {
+              description: "Environment not found.",
+            });
+            return;
+          }
+          const templateDraft: TTemplateDraft = {
+            id,
+            teamId: teamId,
+            projectId: projectId,
+            environmentId: environmentId,
+            name: template.name,
+            description: template.description,
+            template: template,
+          };
+          createTemplateDraft(templateDraft);
+          closeCommandPanel();
+          openTemplateDraftPanel(id);
+        },
         Icon: ({ className }: { className?: string }) => (
           <BrandIcon brand={template.icon} color="brand" className={className} />
         ),
       };
       return item;
     });
-  }, [templates, closePanel]);
+  }, [
+    templates,
+    closeCommandPanel,
+    openTemplateDraftPanel,
+    createTemplateDraft,
+    environmentIdFromPathname,
+    defaultEnvironmentId,
+    teamId,
+    projectId,
+  ]);
 
   const item: TCommandPanelItem = useMemo(() => {
     return {

@@ -16,7 +16,7 @@ import { TriangleAlertIcon } from "lucide-react";
 import { ReactNode, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
-type TDeleteType = "team" | "project" | "service";
+type TDeleteType = "team" | "project" | "service" | "template-draft";
 
 type Props = {
   className?: string;
@@ -94,7 +94,7 @@ export function DeleteEntityTrigger({
   onDialogCloseImmediate,
   error,
   description: descriptionProp,
-  disableConfirmation,
+  disableConfirmationInput,
   children,
 }: {
   type: TDeleteType;
@@ -104,7 +104,7 @@ export function DeleteEntityTrigger({
   onDialogCloseImmediate?: () => void;
   error: { message: string } | null;
   description?: string;
-  disableConfirmation?: boolean;
+  disableConfirmationInput?: boolean;
   children: ReactNode;
 }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -120,13 +120,13 @@ export function DeleteEntityTrigger({
   );
 
   const form = useAppForm({
-    defaultValues: disableConfirmation
+    defaultValues: disableConfirmationInput
       ? undefined
       : {
           textToConfirm: "",
         },
     validators: {
-      onChange: disableConfirmation
+      onChange: disableConfirmationInput
         ? undefined
         : z
             .object({
@@ -168,7 +168,7 @@ export function DeleteEntityTrigger({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
             {description}
-            {!disableConfirmation && (
+            {!disableConfirmationInput && (
               <>
                 <br />
                 <br />
@@ -180,14 +180,14 @@ export function DeleteEntityTrigger({
           </DialogDescription>
         </DialogHeader>
         <form
-          data-confirmation-disabled={disableConfirmation ? true : undefined}
+          data-confirmation-disabled={disableConfirmationInput ? true : undefined}
           onSubmit={(e) => {
             e.preventDefault();
             form.handleSubmit();
           }}
           className="group/form flex flex-col"
         >
-          {!disableConfirmation && (
+          {!disableConfirmationInput && (
             <form.AppField
               name="textToConfirm"
               children={(field) => (
@@ -222,7 +222,7 @@ export function DeleteEntityTrigger({
                   data-submitting={isSubmitting ? true : undefined}
                   variant="destructive"
                   disabled={
-                    !disableConfirmation &&
+                    !disableConfirmationInput &&
                     (!canSubmit ||
                       (typeof values === "object" && values.textToConfirm !== textToConfirm))
                   }
@@ -242,12 +242,14 @@ export function DeleteEntityTrigger({
 function getDialogTitle(type: TDeleteType) {
   if (type === "service") return "Delete Service";
   if (type === "project") return "Delete Project";
+  if (type === "template-draft") return "Delete Template";
   return "Delete Team";
 }
 
 function getButtonText(type: TDeleteType) {
   if (type === "service") return "Delete Service";
   if (type === "project") return "Delete Project";
+  if (type === "template-draft") return "Delete Template";
   return "Delete Team";
 }
 
@@ -258,6 +260,9 @@ function getDialogDescription(type: TDeleteType) {
   if (type === "project") {
     return "Are you sure you want to delete this project? This action cannot be undone. All environments, services, and data inside this project will be permanently deleted.";
   }
+  if (type === "template-draft") {
+    return "Are you sure you want to delete this template? This action cannot be undone.";
+  }
   return "Are you sure you want to delete this team? This action cannot be undone. All the projects, environments, services, and data inside this team will be permanently deleted.";
 }
 
@@ -267,6 +272,9 @@ function getParagraph(type: TDeleteType) {
   }
   if (type === "project") {
     return "This action cannot be undone. All environments, services, and data inside this project will be permanently deleted.";
+  }
+  if (type === "template-draft") {
+    return "This action cannot be undone. All data inside the template will be permanently deleted.";
   }
   return "This action cannot be undone. All the projects, environments, services, and data inside this team will be permanently deleted.";
 }

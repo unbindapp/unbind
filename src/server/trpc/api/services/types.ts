@@ -10,7 +10,7 @@ export const serviceDescriptionMaxLength = 128;
 export type TServiceShallow = AppRouterOutputs["services"]["list"]["services"][number];
 export type TService = AppRouterOutputs["services"]["get"]["service"];
 
-export const ServicenameSchema = z
+export const ServiceNameSchema = z
   .string()
   .min(serviceNameMinLength, `Name should be at least ${serviceNameMinLength} characters.`)
   .max(serviceNameMaxLength, `Name should be at most ${serviceNameMaxLength} characters.`);
@@ -24,7 +24,7 @@ export const ServiceDescriptionSchema = z
 
 export const CreateServiceSharedSchema = z
   .object({
-    name: ServicenameSchema,
+    name: ServiceNameSchema,
     description: ServiceDescriptionSchema.optional(),
     teamId: z.string().uuid(),
     projectId: z.string().uuid(),
@@ -76,7 +76,7 @@ export const UpdateServiceInputSchema = z
     projectId: z.string().uuid(),
     environmentId: z.string().uuid(),
     serviceId: z.string().uuid(),
-    name: ServicenameSchema.optional(),
+    name: ServiceNameSchema.optional(),
     description: ServiceDescriptionSchema.optional(),
     gitBranch: z.string().optional(),
     image: z.string().optional(),

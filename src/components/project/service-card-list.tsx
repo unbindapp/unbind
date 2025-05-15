@@ -5,6 +5,8 @@ import { TContextCommandPanelContext } from "@/components/command-panel/types";
 import ErrorCard from "@/components/error-card";
 import ServiceCard from "@/components/project/service-card";
 import { useServices } from "@/components/project/services-provider";
+import TemplateDraftCard from "@/components/templates/template-draft-card";
+import { useTemplateDraftStore } from "@/components/templates/template-draft-store-provider";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { PlusIcon } from "lucide-react";
@@ -20,6 +22,8 @@ export default function ServiceCardList() {
     environmentId,
   } = useServices();
   const services = data?.services;
+
+  const templateDrafts = useTemplateDraftStore((s) => s.templateDrafts);
 
   const context: TContextCommandPanelContext = useMemo(
     () => ({ contextType: "new-service", teamId, projectId, environmentId }),
@@ -48,6 +52,18 @@ export default function ServiceCardList() {
 
   return (
     <Wrapper>
+      {templateDrafts
+        .filter(
+          (t) =>
+            t.teamId === teamId && t.projectId === projectId && t.environmentId === environmentId,
+        )
+        .map((templateDraft) => (
+          <TemplateDraftCard
+            key={templateDraft.id}
+            templateDraft={templateDraft}
+            className="w-full sm:w-1/2 lg:w-1/3"
+          />
+        ))}
       {services.map((s) => (
         <ServiceCard
           key={s.id}

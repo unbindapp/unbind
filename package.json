@@ -70,6 +70,7 @@
     "tailwindcss-animate": "^1.0.7",
     "use-debounce": "^10.0.4",
     "usehooks-ts": "^3.1.1",
+    "uuid": "^11.1.0",
     "vaul": "^1.1.2",
     "virtua": "^0.40.0",
     "yaml": "^2.7.0",
