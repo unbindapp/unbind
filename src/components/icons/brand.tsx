@@ -1,6 +1,6 @@
 import { cn } from "@/components/ui/utils";
 import { BanIcon, FolderIcon, UsersIcon, WebhookIcon } from "lucide-react";
-import { ComponentProps } from "react";
+import { ComponentProps, useId } from "react";
 
 type TProps = ComponentProps<"svg"> & {
   brand: string | unknown;
@@ -11,6 +11,21 @@ type TProps = ComponentProps<"svg"> & {
 const defaultClassName = "size-5 shrink-0";
 
 export default function BrandIcon({ color = "monochrome", brand, className, ...rest }: TProps) {
+  const gradientId1 = useId();
+  const gradientId2 = useId();
+  const gradientId3 = useId();
+  const gradientId4 = useId();
+  const gradientId5 = useId();
+  const gradientId6 = useId();
+  const gradientId7 = useId();
+  const gradientId8 = useId();
+  const gradientId9 = useId();
+  const gradientId10 = useId();
+  const gradientId11 = useId();
+  const gradientId12 = useId();
+  const gradientId13 = useId();
+  const gradientId14 = useId();
+
   if (brand === "go") {
     return (
       <svg
@@ -627,16 +642,16 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
         {color === "brand" ? (
           <>
             <path
-              fill="url(#a_vite)"
+              fill={`url(#${gradientId1})`}
               d="m22.43 4.582-9.864 17.64a.536.536 0 0 1-.934.004L1.572 4.584a.536.536 0 0 1 .56-.794l9.875 1.766a.5.5 0 0 0 .19 0l9.67-1.763a.536.536 0 0 1 .563.79"
             />
             <path
-              fill="url(#b_vite)"
+              fill={`url(#${gradientId2})`}
               d="m16.711 1.475-7.3 1.43a.27.27 0 0 0-.216.248l-.45 7.584a.268.268 0 0 0 .329.277l2.032-.469a.268.268 0 0 1 .323.315l-.604 2.957c-.04.199.146.37.34.31l1.256-.381a.268.268 0 0 1 .34.31l-.959 4.645c-.06.29.326.45.488.2l.107-.166 5.949-11.872a.268.268 0 0 0-.29-.383l-2.093.404a.268.268 0 0 1-.308-.338l1.365-4.733a.268.268 0 0 0-.309-.338"
             />
             <defs>
               <linearGradient
-                id="a_vite"
+                id={gradientId1}
                 x1="1.326"
                 x2="13.604"
                 y1="3.16"
@@ -647,7 +662,7 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
                 <stop offset="1" stopColor="#BD34FE" />
               </linearGradient>
               <linearGradient
-                id="b_vite"
+                id={gradientId2}
                 x1="11.44"
                 x2="13.661"
                 y1="1.864"
@@ -682,17 +697,17 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
         {...rest}
       >
         <path
-          fill={color === "brand" ? "url(#a_angular)" : "currentColor"}
+          fill={color === "brand" ? `url(#${gradientId3})` : "currentColor"}
           d="m21.5 5.303-.686 10.774-6.56-14.127zm-4.543 13.93L12 22.063l-4.957-2.828 1.009-2.443h7.896zM12 7.314l2.597 6.314H9.403zm-8.82 8.764L2.5 5.303 9.746 1.95z"
         />
         <path
-          fill={color === "brand" ? "url(#b_angular)" : "currentColor"}
+          fill={color === "brand" ? `url(#${gradientId4})` : "currentColor"}
           d="m21.5 5.303-.686 10.774-6.56-14.127zm-4.543 13.93L12 22.063l-4.957-2.828 1.009-2.443h7.896zM12 7.314l2.597 6.314H9.403zm-8.82 8.764L2.5 5.303 9.746 1.95z"
         />
         {color === "brand" && (
           <defs>
             <linearGradient
-              id="a_angular"
+              id={gradientId3}
               x1="6.693"
               x2="21.821"
               y1="20.238"
@@ -707,7 +722,7 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
               <stop offset="1" stopColor="#6C00F5" />
             </linearGradient>
             <linearGradient
-              id="b_angular"
+              id={gradientId4}
               x1="6.01"
               x2="15.91"
               y1="4.375"
@@ -817,7 +832,7 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
               d="M23 6.155S15.708.65 10.049 1.935l-.497.137a3.6 3.6 0 0 0-1.923 1.35q-.114.167-.208.345l-2.09 3.551 3.61.705a6.43 6.43 0 0 0 5.147 1.011l6.43 1.257z"
             />
             <path
-              fill="url(#a_solid)"
+              fill={`url(#${gradientId5})`}
               d="M23 6.155S15.708.65 10.049 1.935l-.497.137a3.6 3.6 0 0 0-1.923 1.35q-.114.167-.208.345l-2.09 3.551 3.61.705a6.43 6.43 0 0 0 5.147 1.011l6.43 1.257z"
               opacity=".3"
             />
@@ -826,21 +841,21 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
               d="m7.565 6.085-.5.14c-2.31.746-3.098 2.906-1.771 4.8a6.17 6.17 0 0 0 6.588 2.075l8.628-2.809S13.232 4.799 7.565 6.085"
             />
             <path
-              fill="url(#b_solid)"
+              fill={`url(#${gradientId6})`}
               d="m7.565 6.085-.5.14c-2.31.746-3.098 2.906-1.771 4.8a6.17 6.17 0 0 0 6.588 2.075l8.628-2.809S13.232 4.799 7.565 6.085"
               opacity=".3"
             />
             <path
-              fill="url(#c_solid)"
+              fill={`url(#${gradientId7})`}
               d="M18.931 12.314a6.17 6.17 0 0 0-6.6-2.09l-8.619 2.794L1 17.846l15.441 2.631 2.768-4.925c.553-.944.497-2.134-.278-3.238"
             />
             <path
-              fill="url(#d_solid)"
+              fill={`url(#${gradientId8})`}
               d="M16.22 17.142a6.18 6.18 0 0 0-6.586-2.09L1 17.846s7.307 5.507 12.951 4.221l.497-.137c2.312-.734 3.101-2.894 1.771-4.788"
             />
             <defs>
               <linearGradient
-                id="a_solid"
+                id={gradientId5}
                 x1="4.253"
                 x2="21.48"
                 y1="1.68"
@@ -852,7 +867,7 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
                 <stop offset="1" stopColor="#76B3E1" />
               </linearGradient>
               <linearGradient
-                id="b_solid"
+                id={gradientId6}
                 x1="13.703"
                 x2="10.686"
                 y1="5.781"
@@ -864,7 +879,7 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
                 <stop offset="1" stopColor="#1F3B77" />
               </linearGradient>
               <linearGradient
-                id="c_solid"
+                id={gradientId7}
                 x1="2.988"
                 x2="20.407"
                 y1="10.162"
@@ -876,7 +891,7 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
                 <stop offset="1" stopColor="#315AA9" />
               </linearGradient>
               <linearGradient
-                id="d_solid"
+                id={gradientId8}
                 x1="10.853"
                 x2="3.823"
                 y1="11.58"
@@ -983,16 +998,16 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
         {color === "brand" && (
           <>
             <path
-              fill="url(#a_plausible)"
+              fill={`url(#${gradientId9})`}
               d="M19.465 9.718c-.337 3.227-3.159 5.625-6.403 5.625h-1.25v2.954A2.963 2.963 0 0 1 8.85 21.26H6.537A1.037 1.037 0 0 1 5.5 20.223v-6.081l1.555-2.182a1.04 1.04 0 0 1 1.246-.355l.884.37c.446.188.962.04 1.243-.353L12.5 8.716c.28-.393.794-.539 1.239-.352l1.704.716c.445.187.96.04 1.241-.353l1.994-2.797a6.3 6.3 0 0 1 .786 3.788"
             />
             <path
-              fill="url(#b_plausible)"
+              fill={`url(#${gradientId10})`}
               d="M6.516 11.653c.254-.357.624-.631 1.054-.714.335-.064.665-.03.971.098l.884.37a.419.419 0 0 0 .5-.143L11.96 8.41c.254-.356.624-.63 1.054-.712.334-.064.662-.03.965.097l1.704.716a.41.41 0 0 0 .5-.142l2.135-2.996a6.29 6.29 0 0 0-5.119-2.632H6.537c-.573 0-1.037.465-1.037 1.037v9.3z"
             />
             <defs>
               <linearGradient
-                id="a_plausible"
+                id={gradientId9}
                 x1="10.081"
                 x2="13.979"
                 y1="9.699"
@@ -1003,7 +1018,7 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
                 <stop offset="1" stopColor="#4B38D8" />
               </linearGradient>
               <linearGradient
-                id="b_plausible"
+                id={gradientId10}
                 x1="7.964"
                 x2="11.982"
                 y1="2.322"
@@ -1040,11 +1055,11 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
         {color === "brand" && (
           <>
             <path
-              fill="url(#a_supabase)"
+              fill={`url(#${gradientId11})`}
               d="M13.688 21.932c-.525.66-1.59.298-1.602-.546l-.185-12.342h8.3c1.502 0 2.34 1.736 1.406 2.913z"
             />
             <path
-              fill="url(#b_supabase)"
+              fill={`url(#${gradientId12})`}
               fillOpacity=".2"
               d="M13.688 21.932c-.525.66-1.59.298-1.602-.546l-.185-12.342h8.3c1.502 0 2.34 1.736 1.406 2.913z"
             />
@@ -1054,7 +1069,7 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
             />
             <defs>
               <linearGradient
-                id="a_supabase"
+                id={gradientId11}
                 x1="11.901"
                 x2="19.277"
                 y1="11.78"
@@ -1065,7 +1080,7 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
                 <stop offset="1" stopColor="#3ECF8E" />
               </linearGradient>
               <linearGradient
-                id="b_supabase"
+                id={gradientId12}
                 x1="8.631"
                 x2="11.995"
                 y1="7.303"
@@ -1111,17 +1126,17 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
         viewBox="0 0 24 24"
       >
         <path
-          fill={color === "monochrome" ? "currentColor" : "url(#a_flowise)"}
+          fill={color === "monochrome" ? "currentColor" : `url(#${gradientId13})`}
           d="M18.069 16.046c-4.552 0-9.331-6.22-12.593-6.676 3.11-.53 6.54-1.034 9.331.402 2.636 1.355 5.109 4.605 8.193 4.605v.38c-1.29.744-2.58 1.29-4.931 1.29"
         />
         <path
-          fill={color === "monochrome" ? "currentColor" : "url(#b_flowise)"}
+          fill={color === "monochrome" ? "currentColor" : `url(#${gradientId14})`}
           d="M1 10.205v1.745c2.655-2.276 7.51-4.226 13.807-2.178C8.966 6.662 2.82 8.027 1 10.205"
         />
         {color === "brand" && (
           <defs>
             <linearGradient
-              id="a_flowise"
+              id={gradientId13}
               x1="8.131"
               x2="21.71"
               y1="8.861"
@@ -1132,7 +1147,7 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
               <stop offset="1" stopColor="#5A66A9" />
             </linearGradient>
             <linearGradient
-              id="b_flowise"
+              id={gradientId14}
               x1="1"
               x2="9.041"
               y1="10.33"

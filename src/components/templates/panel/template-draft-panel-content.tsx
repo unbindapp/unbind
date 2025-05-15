@@ -33,11 +33,13 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
             ))}
           </div>
           {/* Services */}
-          <div className="flex w-full flex-col gap-2">
-            <h3 className="w-full px-1 pb-1 text-xl leading-tight font-bold">Services</h3>
-            {templateDraft.template.definition.services.map((service) => (
-              <TemplateServiceCard key={service.id} service={service} />
-            ))}
+          <div className="flex w-full flex-col gap-3">
+            <h3 className="w-full px-1 text-xl leading-tight font-bold">Services</h3>
+            <ol className="-mx-1 flex w-[calc(100%+0.5rem)] flex-wrap">
+              {templateDraft.template.definition.services.map((service) => (
+                <TemplateServiceCard key={service.id} service={service} className="md:w-1/2" />
+              ))}
+            </ol>
           </div>
         </div>
       </ScrollArea>
@@ -72,8 +74,10 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
 
 function TemplateServiceCard({
   service,
+  className,
 }: {
   service: TTemplateDraft["template"]["definition"]["services"][number];
+  className?: string;
 }) {
   const descriptionText = useMemo(() => {
     if (service.type === "docker-image") {
@@ -85,16 +89,18 @@ function TemplateServiceCard({
     return "Unknown service type";
   }, [service]);
   return (
-    <div className="flex w-full flex-col rounded-xl border px-4 py-3.5">
-      <div className="flex w-full items-center justify-start gap-3">
-        <BrandIcon brand={service.icon} color="brand" className="size-6 shrink-0" />
-        <div className="-mt-0.5 flex min-w-0 flex-1 flex-col justify-start gap-0.5">
-          <p className="min-w-0 shrink leading-tight font-semibold">{service.name}</p>
-          <p className="text-muted-foreground min-w-0 shrink text-sm leading-tight">
-            {descriptionText}
-          </p>
+    <li className={cn("flex w-full p-1", className)}>
+      <div className="flex w-full flex-col rounded-xl border px-4 py-3.5">
+        <div className="flex w-full items-center justify-start gap-3">
+          <BrandIcon brand={service.icon} color="brand" className="size-6 shrink-0" />
+          <div className="-mt-0.5 flex min-w-0 flex-1 flex-col justify-start gap-0.5">
+            <p className="min-w-0 shrink truncate leading-tight font-semibold">{service.name}</p>
+            <p className="text-muted-foreground amin-w-0 shrink truncate text-sm leading-tight">
+              {descriptionText}
+            </p>
+          </div>
         </div>
       </div>
-    </div>
+    </li>
   );
 }
