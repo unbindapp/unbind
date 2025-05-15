@@ -1,5 +1,6 @@
 import { AppRouterOutputs } from "@/server/trpc/api/root";
 import { createStore } from "zustand/vanilla";
+import { persist } from "zustand/middleware";
 
 export type TTemplateDraft = {
   id: string;
@@ -28,24 +29,31 @@ const defaultInitState: TState = {
 };
 
 export const createTemplateDraftStore = (initState: TState = defaultInitState) => {
-  return createStore<TTemplateDraftStore>()((set) => ({
-    ...initState,
-    add: (draft) => {
-      set((state) => ({ ...state, templateDrafts: [draft, ...state.templateDrafts] }));
-    },
-    remove: (id) => {
-      set((state) => ({
-        ...state,
-        templateDrafts: state.templateDrafts.filter((instance) => instance.id !== id),
-      }));
-    },
-    update: (id, newProperties) => {
-      set((state) => ({
-        ...state,
-        templateDrafts: state.templateDrafts.map((draft) =>
-          draft.id === id ? { ...draft, ...newProperties } : draft,
-        ),
-      }));
-    },
-  }));
+  return createStore<TTemplateDraftStore>()(
+    persist(
+      (set) => ({
+        ...initState,
+        add: (draft) => {
+          set((state) => ({ ...state, templateDrafts: [draft, ...state.templateDrafts] }));
+        },
+        remove: (id) => {
+          set((state) => ({
+            ...state,
+            templateDrafts: state.templateDrafts.filter((instance) => instance.id !== id),
+          }));
+        },
+        update: (id, newProperties) => {
+          set((state) => ({
+            ...state,
+            templateDrafts: state.templateDrafts.map((draft) =>
+              draft.id === id ? { ...draft, ...newProperties } : draft,
+            ),
+          }));
+        },
+      }),
+      {
+        name: "template-draft-store",
+      },
+    ),
+  );
 };

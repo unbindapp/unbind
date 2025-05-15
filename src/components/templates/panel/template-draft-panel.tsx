@@ -163,10 +163,8 @@ function TitleButton({ templateDraft }: { templateDraft: TTemplateDraft }) {
       </DialogTrigger>
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
-          <DialogTitle>Rename Service Group</DialogTitle>
-          <DialogDescription>
-            Set a new name and description for the service group.
-          </DialogDescription>
+          <DialogTitle>Rename Group</DialogTitle>
+          <DialogDescription>Set a new name and description for the group.</DialogDescription>
         </DialogHeader>
         <form
           onSubmit={(e) => {
@@ -186,7 +184,7 @@ function TitleButton({ templateDraft }: { templateDraft: TTemplateDraft }) {
                 className="w-full"
                 placeholder={templateDraft.name}
                 layout="label-included"
-                inputTitle="Service Group Name"
+                inputTitle="Group Name"
                 maxLength={serviceNameMaxLength}
               />
             )}
@@ -202,7 +200,7 @@ function TitleButton({ templateDraft }: { templateDraft: TTemplateDraft }) {
                 className="w-full"
                 placeholder={templateDraft.description}
                 layout="label-included"
-                inputTitle="Service Group Description"
+                inputTitle="Group Description"
                 maxLength={serviceDescriptionMaxLength}
               />
             )}
