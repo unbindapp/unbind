@@ -224,7 +224,7 @@ function TitleButton({
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
           <DialogTitle>Rename Service</DialogTitle>
-          <DialogDescription>Set a new name and description for the service.</DialogDescription>
+          <DialogDescription>Give a new name and description for the service.</DialogDescription>
         </DialogHeader>
         <form
           onSubmit={(e) => {

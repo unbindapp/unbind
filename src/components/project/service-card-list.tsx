@@ -6,9 +6,11 @@ import ErrorCard from "@/components/error-card";
 import ServiceCard from "@/components/project/service-card";
 import { useServices } from "@/components/project/services-provider";
 import TemplateDraftCard from "@/components/templates/template-draft-card";
+import { TTemplateDraft } from "@/components/templates/template-draft-store";
 import { useTemplateDraftStore } from "@/components/templates/template-draft-store-provider";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
+import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { PlusIcon } from "lucide-react";
 import { ReactNode, useMemo } from "react";
 
@@ -24,6 +26,28 @@ export default function ServiceCardList() {
   const services = data?.services;
 
   const templateDrafts = useTemplateDraftStore((s) => s.templateDrafts);
+
+  const servicesOrTemplateDrafts = useMemo(() => {
+    const allItems: TServiceOrTemplateDraft[] = [
+      ...templateDrafts
+        .filter(
+          (t) =>
+            t.teamId === teamId && t.projectId === projectId && t.environmentId === environmentId,
+        )
+        .map((t) => ({ type: "template-draft", templateDraft: t }) as const),
+      ...(services || []).map((s) => ({ type: "service", service: s }) as const),
+    ];
+
+    return allItems.sort((a, b) => {
+      const aTimestamp = new Date(
+        a.type === "template-draft" ? a.templateDraft.createdAt : a.service.created_at,
+      ).getTime();
+      const bTimestamp = new Date(
+        b.type === "template-draft" ? b.templateDraft.createdAt : b.service.created_at,
+      ).getTime();
+      return bTimestamp - aTimestamp;
+    });
+  }, [templateDrafts, services, teamId, projectId, environmentId]);
 
   const context: TContextCommandPanelContext = useMemo(
     () => ({ contextType: "new-service", teamId, projectId, environmentId }),
@@ -52,28 +76,25 @@ export default function ServiceCardList() {
 
   return (
     <Wrapper>
-      {templateDrafts
-        .filter(
-          (t) =>
-            t.teamId === teamId && t.projectId === projectId && t.environmentId === environmentId,
-        )
-        .map((templateDraft) => (
+      {servicesOrTemplateDrafts.map((item) =>
+        item.type === "template-draft" ? (
           <TemplateDraftCard
-            key={templateDraft.id}
-            templateDraft={templateDraft}
+            key={item.templateDraft.id}
+            templateDraft={item.templateDraft}
             className="w-full sm:w-1/2 lg:w-1/3"
           />
-        ))}
-      {services.map((s) => (
-        <ServiceCard
-          key={s.id}
-          service={s}
-          teamId={teamId}
-          projectId={projectId}
-          environmentId={environmentId}
-          className="w-full sm:w-1/2 lg:w-1/3"
-        />
-      ))}
+        ) : (
+          <ServiceCard
+            key={item.service.id}
+            service={item.service}
+            teamId={teamId}
+            projectId={projectId}
+            environmentId={environmentId}
+            className="w-full sm:w-1/2 lg:w-1/3"
+          />
+        ),
+      )}
+
       {services.length < 3 && (
         <li className="flex w-full flex-col p-1 sm:w-1/2 lg:w-1/3">
           <ContextCommandPanel
@@ -99,3 +120,7 @@ export default function ServiceCardList() {
 function Wrapper({ children, className }: { children: ReactNode; className?: string }) {
   return <ol className={cn("flex w-full flex-wrap", className)}>{children}</ol>;
 }
+
+type TServiceOrTemplateDraft =
+  | { type: "template-draft"; templateDraft: TTemplateDraft; service?: never }
+  | { type: "service"; service: TServiceShallow; templateDraft?: never };

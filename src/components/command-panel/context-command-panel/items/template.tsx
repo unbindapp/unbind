@@ -96,6 +96,7 @@ function useTemplateItem({}: TProps) {
             name: template.name,
             description: template.description,
             template: template,
+            createdAt: new Date().toISOString(),
           };
           createTemplateDraft(templateDraft);
           closeCommandPanel();

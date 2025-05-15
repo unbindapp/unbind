@@ -95,7 +95,8 @@ export default function TemplateDraftPanel({ templateDraft, children }: TProps) 
             )}
           </div>
         </div>
-        <TemplateDraftPanelContent templateDraft={templateDraft} />
+        {/* Content */}
+        <TemplateDraftPanelContent data-vaul-no-drag templateDraft={templateDraft} />
       </DrawerContent>
     </Drawer>
   );
@@ -164,7 +165,7 @@ function TitleButton({ templateDraft }: { templateDraft: TTemplateDraft }) {
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
           <DialogTitle>Rename Group</DialogTitle>
-          <DialogDescription>Set a new name and description for the group.</DialogDescription>
+          <DialogDescription>Give a new name and description for the group.</DialogDescription>
         </DialogHeader>
         <form
           onSubmit={(e) => {
