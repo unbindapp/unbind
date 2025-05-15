@@ -49,6 +49,18 @@ export const CapabilitiesSchema = z
   })
   .strip();
 
+export const CollisionOutputSchema = z
+  .object({
+    is_unique: z.boolean(), // True if the domain is unique, false otherwise
+  })
+  .strip();
+
+export const CheckUniqueDomainOutputBodySchema = z
+  .object({
+    data: CollisionOutputSchema, // The generated wildcard domain
+  })
+  .strip();
+
 export const ContainerStateSchema = z.enum(['Running', 'Waiting', 'Terminated']);
 
 export const CreateBuildInputBodySchema = z
@@ -291,7 +303,6 @@ export const ProtocolSchema = z.enum(['TCP', 'UDP', 'SCTP']);
 
 export const PortSpecSchema = z
   .object({
-    input_template_id: z.number().optional(), // For template port inputs
     is_nodeport: z.boolean().optional(),
     node_port: z.number().optional(),
     port: z.number(),
@@ -693,6 +704,18 @@ export const ErrorModelSchema = z
   })
   .strip();
 
+export const GenerateWildcardDomainInputBodySchema = z
+  .object({
+    name: z.string(), // The base name of the wildcard domain
+  })
+  .strip();
+
+export const GenerateWildcardDomainOutputBodySchema = z
+  .object({
+    data: z.string(), // The generated wildcard domain
+  })
+  .strip();
+
 export const GeneratorTypeSchema = z.enum([
   'email',
   'password',
@@ -850,19 +873,31 @@ export const TemplateInputTypeSchema = z.enum([
   'variable',
   'host',
   'volume_size',
-  'node_port',
-  'password',
+  'database_size',
+  'generated_node_port',
+  'generated-password',
 ]);
+
+export const TemplateVolumeSchema = z
+  .object({
+    mountPath: z.string(),
+    name: z.string(),
+    size: z.string(),
+  })
+  .strip();
 
 export const TemplateInputSchema = z
   .object({
     default: z.string().optional(),
     description: z.string(),
+    hidden: z.boolean(),
     id: z.number(),
     name: z.string(),
+    port_protocol: ProtocolSchema.optional(),
     required: z.boolean(),
     target_port: z.number().optional(),
     type: TemplateInputTypeSchema,
+    volume: TemplateVolumeSchema.optional(),
   })
   .strip();
 
@@ -908,20 +943,6 @@ export const TemplateVariableSchema = z
   })
   .strip();
 
-export const TemplateVolumeSizeSchema = z
-  .object({
-    from_input_id: z.number(),
-  })
-  .strip();
-
-export const TemplateVolumeSchema = z
-  .object({
-    mountPath: z.string(),
-    name: z.string(),
-    size: TemplateVolumeSizeSchema,
-  })
-  .strip();
-
 export const TemplateServiceSchema = z
   .object({
     builder: ServiceBuilderSchema,
@@ -929,12 +950,11 @@ export const TemplateServiceSchema = z
     database_type: z.string().optional(),
     depends_on: z.array(z.number()),
     health_check: HealthCheckSchema.optional(),
-    host_input_ids: z.array(z.number()).nullable().optional(),
     icon: z.string(),
     id: z.number(),
     image: z.string().optional(),
     init_db_replacers: z.record(z.string()).optional(),
-    is_public: z.boolean(),
+    input_ids: z.array(z.number()).nullable().optional(),
     name: z.string(),
     ports: z.array(PortSpecSchema),
     protected_variables: z.array(z.string()),
@@ -1518,10 +1538,21 @@ export const SortByFieldSchema = z.enum(['created_at', 'updated_at']);
 
 export const SortOrderSchema = z.enum(['asc', 'desc']);
 
+export const StorageMetadataSchema = z
+  .object({
+    allocatable_bytes: z.string(),
+    minimum_storage_bytes: z.string(),
+    storage_class_name: z.string(),
+    storage_step: z.string(),
+    unable_to_detect_allocatable: z.boolean(),
+  })
+  .strip();
+
 export const SystemMetaSchema = z
   .object({
     external_ipv4: z.string(),
     external_ipv6: z.string(),
+    storage: StorageMetadataSchema,
     system_settings: SystemSettingsResponseSchema,
   })
   .strip();
@@ -1865,6 +1896,8 @@ export type AvailableVariableReference = z.infer<typeof AvailableVariableReferen
 export type BuildkitSettings = z.infer<typeof BuildkitSettingsSchema>;
 export type CallbackResponseBody = z.infer<typeof CallbackResponseBodySchema>;
 export type Capabilities = z.infer<typeof CapabilitiesSchema>;
+export type CollisionOutput = z.infer<typeof CollisionOutputSchema>;
+export type CheckUniqueDomainOutputBody = z.infer<typeof CheckUniqueDomainOutputBodySchema>;
 export type ContainerState = z.infer<typeof ContainerStateSchema>;
 export type CreateBuildInputBody = z.infer<typeof CreateBuildInputBodySchema>;
 export type GitCommitter = z.infer<typeof GitCommitterSchema>;
@@ -1938,6 +1971,10 @@ export type ServiceEndpoint = z.infer<typeof ServiceEndpointSchema>;
 export type EndpointDiscovery = z.infer<typeof EndpointDiscoverySchema>;
 export type ErrorDetail = z.infer<typeof ErrorDetailSchema>;
 export type ErrorModel = z.infer<typeof ErrorModelSchema>;
+export type GenerateWildcardDomainInputBody = z.infer<typeof GenerateWildcardDomainInputBodySchema>;
+export type GenerateWildcardDomainOutputBody = z.infer<
+  typeof GenerateWildcardDomainOutputBodySchema
+>;
 export type GeneratorType = z.infer<typeof GeneratorTypeSchema>;
 export type GetDatabaseResponseBody = z.infer<typeof GetDatabaseResponseBodySchema>;
 export type GetDeploymentResponseBody = z.infer<typeof GetDeploymentResponseBodySchema>;
@@ -1962,14 +1999,13 @@ export type GetServiceResponseBody = z.infer<typeof GetServiceResponseBodySchema
 export type TeamResponse = z.infer<typeof TeamResponseSchema>;
 export type GetTeamResponseBody = z.infer<typeof GetTeamResponseBodySchema>;
 export type TemplateInputType = z.infer<typeof TemplateInputTypeSchema>;
+export type TemplateVolume = z.infer<typeof TemplateVolumeSchema>;
 export type TemplateInput = z.infer<typeof TemplateInputSchema>;
 export type TemplateVariableReference = z.infer<typeof TemplateVariableReferenceSchema>;
 export type ValueHashType = z.infer<typeof ValueHashTypeSchema>;
 export type JWTParams = z.infer<typeof JWTParamsSchema>;
 export type ValueGenerator = z.infer<typeof ValueGeneratorSchema>;
 export type TemplateVariable = z.infer<typeof TemplateVariableSchema>;
-export type TemplateVolumeSize = z.infer<typeof TemplateVolumeSizeSchema>;
-export type TemplateVolume = z.infer<typeof TemplateVolumeSchema>;
 export type TemplateService = z.infer<typeof TemplateServiceSchema>;
 export type TemplateDefinition = z.infer<typeof TemplateDefinitionSchema>;
 export type TemplateWithDefinitionResponse = z.infer<typeof TemplateWithDefinitionResponseSchema>;
@@ -2051,6 +2087,7 @@ export type SetupData = z.infer<typeof SetupDataSchema>;
 export type SetupStatusResponseBody = z.infer<typeof SetupStatusResponseBodySchema>;
 export type SortByField = z.infer<typeof SortByFieldSchema>;
 export type SortOrder = z.infer<typeof SortOrderSchema>;
+export type StorageMetadata = z.infer<typeof StorageMetadataSchema>;
 export type SystemMeta = z.infer<typeof SystemMetaSchema>;
 export type SystemMetaResponseBody = z.infer<typeof SystemMetaResponseBodySchema>;
 export type SystemSettingUpdateInput = z.infer<typeof SystemSettingUpdateInputSchema>;
@@ -4984,6 +5021,87 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             }
             const data = await response.json();
             return DnsCheckResponseBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+      },
+      domain: {
+        check: async (
+          params?: undefined,
+          fetchOptions?: RequestInit,
+        ): Promise<CheckUniqueDomainOutputBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/system/domain/check`);
+
+            const options: RequestInit = {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return CheckUniqueDomainOutputBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+        generate: async (
+          params: GenerateWildcardDomainInputBody,
+          fetchOptions?: RequestInit,
+        ): Promise<GenerateWildcardDomainOutputBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/system/domain/generate`);
+
+            const options: RequestInit = {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+            const validatedBody = GenerateWildcardDomainInputBodySchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+              console.log(`Request body is:`, validatedBody);
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return GenerateWildcardDomainOutputBodySchema.parse(data);
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
