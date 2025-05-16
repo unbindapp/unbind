@@ -217,7 +217,7 @@ function RestartTrigger({
       }}
     >
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent hideXButton classNameInnerWrapper="max-w-md">
+      <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
           <DialogTitle>Restart</DialogTitle>
           <DialogDescription>Are you sure you want to restart this deployment?</DialogDescription>
@@ -301,7 +301,7 @@ function RedeployTrigger({
       }}
     >
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent hideXButton classNameInnerWrapper="max-w-md">
+      <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
           <DialogTitle>Redeploy</DialogTitle>
           <DialogDescription>Are you sure you want to redeploy this deployment?</DialogDescription>

@@ -241,9 +241,9 @@ function S3SourceDialogInnerContent({
               <Bucket
                 name="No buckets available"
                 Icon={XIcon}
-                className="text-foreground md:w-w-full lg:w-w-full w-full max-w-full items-start justify-start gap-1.75 rounded-md border px-3 py-3 text-base leading-tight sm:w-full sm:max-w-full md:max-w-full lg:max-w-full"
-                classNameParagraph="whitespace-normal -mt-0.75"
-                classNameIcon="size-4"
+                className="text-foreground md:w-w-full lg:w-w-full w-full max-w-full items-start justify-start gap-1.75 rounded-md border px-3 py-3 text-sm leading-tight sm:w-full sm:max-w-full md:max-w-full lg:max-w-full"
+                classNameParagraph="whitespace-normal font-medium -mt-0.75"
+                classNameIcon="size-3.5"
               />
             </li>
           ) : (
@@ -251,9 +251,9 @@ function S3SourceDialogInnerContent({
               <li key={i} className="w-full p-0.75 sm:w-1/2">
                 <Bucket
                   name={bucket.name}
-                  className="text-foreground md:w-w-full lg:w-w-full w-full max-w-full items-start justify-start gap-1.75 rounded-md border px-3 py-3 text-base leading-tight sm:w-full sm:max-w-full md:max-w-full lg:max-w-full"
-                  classNameParagraph="whitespace-normal -mt-0.75"
-                  classNameIcon="size-4"
+                  className="text-foreground md:w-w-full lg:w-w-full w-full max-w-full items-start justify-start gap-1.75 rounded-md border px-3 py-3 text-sm leading-tight sm:w-full sm:max-w-full md:max-w-full lg:max-w-full"
+                  classNameParagraph="whitespace-normal font-medium -mt-0.75"
+                  classNameIcon="size-3.5"
                 />
               </li>
             ))
