@@ -140,7 +140,7 @@ export default function ServiceCardList() {
         ),
       )}
 
-      {servicesOrGroups.length < 3 && (
+      {services && services.length < 3 && (
         <li className="flex w-full flex-col p-1 sm:w-1/2 lg:w-1/3">
           <ContextCommandPanel
             title="Create New Service"
