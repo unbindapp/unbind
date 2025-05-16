@@ -13,7 +13,7 @@ import { cn } from "@/components/ui/utils";
 import { defaultAnimationMs } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TriangleAlertIcon } from "lucide-react";
-import { ReactNode, useMemo, useRef, useState } from "react";
+import { ReactNode, useCallback, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
 type TDeleteType = "team" | "project" | "service" | "template-draft";
@@ -137,29 +137,32 @@ export function DeleteEntityTrigger({
             .strip(),
     },
     onSubmit: async ({ formApi }) => {
-      await onSubmit();
       setIsDialogOpen(false);
+      onClose();
+      await onSubmit();
       formApi.reset();
     },
   });
 
   const timeout = useRef<NodeJS.Timeout>(undefined);
 
+  const onClose = useCallback(() => {
+    if (onDialogCloseImmediate) {
+      onDialogCloseImmediate();
+    }
+    if (timeout.current) clearTimeout(timeout.current);
+    timeout.current = setTimeout(() => {
+      form.reset();
+      onDialogClose();
+    }, defaultAnimationMs);
+  }, [onDialogCloseImmediate, onDialogClose, form]);
+
   return (
     <Dialog
       open={isDialogOpen}
       onOpenChange={(o) => {
         setIsDialogOpen(o);
-        if (!o) {
-          if (onDialogCloseImmediate) {
-            onDialogCloseImmediate();
-          }
-          if (timeout.current) clearTimeout(timeout.current);
-          timeout.current = setTimeout(() => {
-            form.reset();
-            onDialogClose();
-          }, defaultAnimationMs);
-        }
+        if (!o) onClose();
       }}
     >
       <DialogTrigger asChild>{children}</DialogTrigger>
