@@ -226,43 +226,45 @@ export default function VariableCard({
                 className="max-h-[min(16rem,50vh)] w-full [mask-image:linear-gradient(to_bottom,transparent_0%,black_0.375rem,black_calc(100%_-_0.375rem),transparent_100%)]"
                 classNameViewport="py-1.5"
               >
-                <p className="group-data-placeholder/card:bg-foreground group-data-reference-error/card:text-destructive group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden px-0.25 py-0.25 pr-2 font-mono text-xs leading-tight whitespace-pre-wrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
-                  {referenceError
-                    ? "The referenced value doesn't exist anymore. Consider deleting this."
-                    : isPlaceholder || !isValueVisible
-                      ? hiddenString
-                      : variable.variable_type === "reference"
-                        ? variableValueParts.map((part, index) => (
-                            <span
-                              data-token={part.token !== null ? true : undefined}
-                              key={index}
-                              className="data-token:bg-process/10 data-token:ring-process/20 data-token:text-process data-token:rounded-[2px] data-token:ring-1"
-                            >
-                              {part.token !== null ? (
-                                <>
-                                  <span className="text-process/50">
-                                    {part.value.slice(0, tokenPrefix.length)}
-                                  </span>
-                                  <span>
-                                    {part.value.slice(
-                                      tokenPrefix.length,
-                                      part.value.length - tokenSuffix.length,
-                                    )}
-                                  </span>
-                                  <span className="text-process/50">
-                                    {part.value.slice(
-                                      part.value.length - tokenSuffix.length,
-                                      part.value.length,
-                                    )}
-                                  </span>
-                                </>
-                              ) : (
-                                part.value
-                              )}
-                            </span>
-                          ))
-                        : variable.value}
-                </p>
+                <div className="flex w-full justify-start">
+                  <p className="group-data-placeholder/card:bg-foreground group-data-reference-error/card:text-destructive group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden px-0.25 py-0.25 pr-2 font-mono text-xs leading-tight whitespace-pre-wrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
+                    {referenceError
+                      ? "The referenced value doesn't exist anymore. Consider deleting this."
+                      : isPlaceholder || !isValueVisible
+                        ? hiddenString
+                        : variable.variable_type === "reference"
+                          ? variableValueParts.map((part, index) => (
+                              <span
+                                data-token={part.token !== null ? true : undefined}
+                                key={index}
+                                className="data-token:bg-process/10 data-token:ring-process/20 data-token:text-process data-token:rounded-[2px] data-token:ring-1"
+                              >
+                                {part.token !== null ? (
+                                  <>
+                                    <span className="text-process/50">
+                                      {part.value.slice(0, tokenPrefix.length)}
+                                    </span>
+                                    <span>
+                                      {part.value.slice(
+                                        tokenPrefix.length,
+                                        part.value.length - tokenSuffix.length,
+                                      )}
+                                    </span>
+                                    <span className="text-process/50">
+                                      {part.value.slice(
+                                        part.value.length - tokenSuffix.length,
+                                        part.value.length,
+                                      )}
+                                    </span>
+                                  </>
+                                ) : (
+                                  part.value
+                                )}
+                              </span>
+                            ))
+                          : variable.value}
+                  </p>
+                </div>
               </ScrollArea>
             </div>
             <div className="hidden sm:flex">
