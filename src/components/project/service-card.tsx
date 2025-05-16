@@ -58,7 +58,7 @@ export default function ServiceCard({
             ) : (
               <div className="animate-skeleton bg-foreground -ml-1 size-6 rounded-full" />
             )}
-            <h3 className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink overflow-hidden leading-tight font-bold text-ellipsis whitespace-nowrap group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
+            <h3 className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink overflow-hidden leading-tight font-semibold text-ellipsis whitespace-nowrap group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
               {!isPlaceholder ? service.name : "Loading"}
             </h3>
           </div>

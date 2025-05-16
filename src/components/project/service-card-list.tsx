@@ -4,6 +4,7 @@ import ContextCommandPanel from "@/components/command-panel/context-command-pane
 import { TContextCommandPanelContext } from "@/components/command-panel/types";
 import ErrorCard from "@/components/error-card";
 import ServiceCard from "@/components/project/service-card";
+import ServiceGroupCard from "@/components/project/service-group-card";
 import { useServices } from "@/components/project/services-provider";
 import TemplateDraftCard from "@/components/templates/template-draft-card";
 import { TTemplateDraft } from "@/components/templates/template-draft-store";
@@ -25,6 +26,33 @@ export default function ServiceCardList() {
   } = useServices();
   const services = data?.services;
 
+  const servicesOrGroups = useMemo(() => {
+    if (!services) return undefined;
+    const items: TServiceOrServiceGroup[] = [];
+
+    for (const service of services) {
+      if (service.service_group) {
+        const currentGroup = service.service_group;
+        const existingGroupIndex = items.findIndex(
+          (item) => item.type === "service-group" && item.group.id === currentGroup.id,
+        );
+        if (existingGroupIndex === -1) {
+          items.push({
+            type: "service-group",
+            group: currentGroup,
+            services: [service],
+          });
+          continue;
+        }
+        items[existingGroupIndex].services?.push(service);
+        continue;
+      }
+      items.push({ type: "service", service });
+    }
+
+    return items;
+  }, [services]);
+
   const templateDrafts = useTemplateDraftStore((s) => s.templateDrafts);
 
   const servicesOrTemplateDrafts = useMemo(() => {
@@ -34,27 +62,35 @@ export default function ServiceCardList() {
           (t) =>
             t.teamId === teamId && t.projectId === projectId && t.environmentId === environmentId,
         )
-        .map((t) => ({ type: "template-draft", templateDraft: t }) as const),
-      ...(services || []).map((s) => ({ type: "service", service: s }) as const),
+        .map((t) => ({ type: "template-draft", obj: t }) as const),
+      ...(servicesOrGroups || []).map((s) => ({ type: "service", obj: s }) as const),
     ];
 
     return allItems.sort((a, b) => {
       const aTimestamp = new Date(
-        a.type === "template-draft" ? a.templateDraft.createdAt : a.service.created_at,
+        a.type === "template-draft"
+          ? a.obj.createdAt
+          : a.obj.type === "service-group"
+            ? a.obj.group.created_at
+            : a.obj.service.created_at,
       ).getTime();
       const bTimestamp = new Date(
-        b.type === "template-draft" ? b.templateDraft.createdAt : b.service.created_at,
+        b.type === "template-draft"
+          ? b.obj.createdAt
+          : b.obj.type === "service-group"
+            ? b.obj.group.created_at
+            : b.obj.service.created_at,
       ).getTime();
       return bTimestamp - aTimestamp;
     });
-  }, [templateDrafts, services, teamId, projectId, environmentId]);
+  }, [templateDrafts, servicesOrGroups, teamId, projectId, environmentId]);
 
   const context: TContextCommandPanelContext = useMemo(
     () => ({ contextType: "new-service", teamId, projectId, environmentId }),
     [teamId, projectId, environmentId],
   );
 
-  if (!services && !isPending && error) {
+  if (!servicesOrGroups && !isPending && error) {
     return (
       <Wrapper>
         <li className="w-full p-1">
@@ -64,7 +100,7 @@ export default function ServiceCardList() {
     );
   }
 
-  if (!services || isPending) {
+  if (!servicesOrGroups || isPending) {
     return (
       <Wrapper>
         {placeholderArray.map((_, index) => (
@@ -79,14 +115,23 @@ export default function ServiceCardList() {
       {servicesOrTemplateDrafts.map((item) =>
         item.type === "template-draft" ? (
           <TemplateDraftCard
-            key={item.templateDraft.id}
-            templateDraft={item.templateDraft}
+            key={item.obj.id}
+            templateDraft={item.obj}
             className="w-full sm:w-1/2 lg:w-1/3"
+          />
+        ) : item.obj.type === "service-group" ? (
+          <ServiceGroupCard
+            key={item.obj.group.id}
+            groupObject={item.obj}
+            teamId={teamId}
+            projectId={projectId}
+            environmentId={environmentId}
+            className="w-full"
           />
         ) : (
           <ServiceCard
-            key={item.service.id}
-            service={item.service}
+            key={item.obj.service.id}
+            service={item.obj.service}
             teamId={teamId}
             projectId={projectId}
             environmentId={environmentId}
@@ -95,7 +140,7 @@ export default function ServiceCardList() {
         ),
       )}
 
-      {services.length < 3 && (
+      {servicesOrGroups.length < 3 && (
         <li className="flex w-full flex-col p-1 sm:w-1/2 lg:w-1/3">
           <ContextCommandPanel
             title="Create New Service"
@@ -121,6 +166,18 @@ function Wrapper({ children, className }: { children: ReactNode; className?: str
   return <ol className={cn("flex w-full flex-wrap", className)}>{children}</ol>;
 }
 
+export type TServiceGroup = {
+  group: NonNullable<TServiceShallow["service_group"]>;
+  services: TServiceShallow[];
+};
+
+type TServiceOrServiceGroup =
+  | { type: "service"; service: TServiceShallow; group?: never; services?: never }
+  | ({
+      type: "service-group";
+      service?: never;
+    } & TServiceGroup);
+
 type TServiceOrTemplateDraft =
-  | { type: "template-draft"; templateDraft: TTemplateDraft; service?: never }
-  | { type: "service"; service: TServiceShallow; templateDraft?: never };
+  | { type: "template-draft"; obj: TTemplateDraft }
+  | { type: "service"; obj: TServiceOrServiceGroup };
