@@ -1,7 +1,7 @@
 import ErrorLine from "@/components/error-line";
-import { TTemplateInputType } from "@/components/templates/template-draft-store";
 import { Button } from "@/components/ui/button";
 import { Input, InputProps } from "@/components/ui/input";
+import { Slider, SliderProps } from "@/components/ui/slider";
 import TextareaWithTokens, { TTextareaWithTokensProps } from "@/components/ui/textarea-with-tokens";
 import { cn } from "@/components/ui/utils";
 import {
@@ -22,6 +22,7 @@ type TFieldProps = {
 };
 
 type TInputWithInfoProps = TFieldProps & InputProps;
+type TSliderWithInfoProps = TFieldProps & SliderProps;
 
 function InputWithInfo({
   className,
@@ -127,17 +128,17 @@ function StorageSizeInput({
   classNameInfo,
   dontCheckUntilSubmit,
   ...rest
-}: TInputWithInfoProps) {
+}: TSliderWithInfoProps) {
   const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
   const isFormSubmitted = submissionAttempts > 0;
 
   if (hideInfo) {
-    return <Input {...rest} className={cn("w-full", className, classNameInput)} />;
+    return <Slider {...rest} className={cn("w-full", className, classNameInput)} />;
   }
 
   return (
     <div className={cn("flex flex-col", className)}>
-      <Input {...rest} className={cn("w-full", classNameInput)} />
+      <Slider {...rest} className={cn("w-full", classNameInput)} />
       {(field.state.meta.isTouched || isFormSubmitted) &&
       (field.state.meta.isBlurred || isFormSubmitted) &&
       (!dontCheckUntilSubmit || isFormSubmitted) &&
@@ -151,20 +152,6 @@ function StorageSizeInput({
   );
 }
 
-export default function ConditionalInput({
-  inputType,
-  className,
-  ...rest
-}: { inputType: TTemplateInputType } & TInputWithInfoProps) {
-  if (inputType === "database-size" || inputType === "volume-size") {
-    return <StorageSizeInput className={className} {...rest} />;
-  }
-  if (inputType === "host") {
-    return <DomainInput className={className} {...rest} />;
-  }
-  return <div>Unsupported input type</div>;
-}
-
 export const { useAppForm } = createFormHook({
   fieldComponents: {
     TextField: InputWithInfo,
@@ -172,7 +159,6 @@ export const { useAppForm } = createFormHook({
     TextareaWithTokens: TextareaWithTokensWithInfo,
     DomainInput,
     StorageSizeInput,
-    ConditionalInput,
   },
   formComponents: {
     SubmitButton: Button,

@@ -57,7 +57,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                 form.validateArrayFieldsStartingFrom("inputs", 0, "submit");
                 form.handleSubmit();
               }}
-              className="-my-2.5 flex w-full flex-col"
+              className="-my-3 flex w-full flex-col"
             >
               <form.AppField
                 name="inputs"
@@ -66,7 +66,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                   field.state.value.map((_, i) => (
                     <div
                       key={`field[${i}]`}
-                      className="flex w-full flex-col gap-2 p-1 py-2.5 md:w-1/2"
+                      className="flex w-full flex-col gap-2 p-1 py-3 md:w-1/2"
                     >
                       <div className="flex w-full flex-col gap-0.5 px-1">
                         <div className="flex w-full items-start gap-1.5">
@@ -81,16 +81,32 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                       </div>
                       <form.Field key={`inputs[${i}].name`} name={`inputs[${i}].value`}>
                         {(subField) => {
+                          const input = visibleInputs[i];
+                          if (input.type === "database-size" || input.type === "volume-size") {
+                            return (
+                              <field.StorageSizeInput
+                                field={subField}
+                                className="w-full py-1.5"
+                                onBlur={subField.handleBlur}
+                                min={1}
+                                step={1}
+                                max={100}
+                                value={[Number(subField.state.value ?? 1)]}
+                                onValueChange={(value) => {
+                                  subField.handleChange(String(value[0]));
+                                }}
+                              />
+                            );
+                          }
                           return (
-                            <field.ConditionalInput
-                              inputType={visibleInputs[i].type}
+                            <field.DomainInput
                               field={subField}
                               value={subField.state.value}
                               onBlur={subField.handleBlur}
                               onChange={(e) => {
                                 subField.handleChange(e.target.value);
                               }}
-                              placeholder={visibleInputs[i].name}
+                              placeholder={input.name}
                               autoCapitalize="off"
                               autoCorrect="off"
                               autoComplete="off"
