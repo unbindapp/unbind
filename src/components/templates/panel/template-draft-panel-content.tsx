@@ -1,11 +1,17 @@
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
-import { TTemplateDraft } from "@/components/templates/template-draft-store";
+import { TTemplateDraft, TTemplateInput } from "@/components/templates/template-draft-store";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { LoaderIcon } from "lucide-react";
+import {
+  ArchiveIcon,
+  DatabaseIcon,
+  GlobeIcon,
+  LoaderIcon,
+  TextCursorInputIcon,
+} from "lucide-react";
 import { HTMLAttributes, useMemo } from "react";
 
 type TProps = {
@@ -19,13 +25,19 @@ type TInput = {
 };
 
 export default function TemplateDraftPanelContent({ templateDraft, className, ...rest }: TProps) {
+  const visibleInputs = useMemo(
+    () => templateDraft.template.definition.inputs.filter((i) => !i.hidden),
+    [templateDraft.template.definition.inputs],
+  );
+
   const form = useAppForm({
     defaultValues: {
-      inputs: templateDraft.template.definition.inputs.map(() => ({
+      inputs: visibleInputs.map(() => ({
         value: "",
       })) as TInput[],
     },
   });
+
   return (
     <div
       className={cn(
@@ -37,59 +49,64 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
       <ScrollArea classNameViewport="pb-8">
         <div className="flex w-full flex-1 flex-col gap-6 px-3 py-4 sm:p-6">
           {/* Inputs */}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              form.validateArrayFieldsStartingFrom("inputs", 0, "submit");
-              form.handleSubmit();
-            }}
-            className="-mx-1 flex w-[calc(100%+0.5rem)] flex-wrap"
-          >
-            <form.AppField
-              name="inputs"
-              mode="value"
-              children={(field) =>
-                field.state.value.map((_, i) => (
-                  <div
-                    key={`field[${i}]`}
-                    className="flex w-full flex-col gap-2 p-1 py-3 first:pt-0 last:pb-0"
-                  >
-                    <div className="flex w-full flex-col gap-0.5 px-1">
-                      <p className="w-full leading-tight font-semibold">
-                        {templateDraft.template.definition.inputs[i].name}
-                      </p>
-                      <p className="text-muted-foreground w-full">
-                        {templateDraft.template.definition.inputs[i].description}
-                      </p>
+          <div className="-m-1 flex w-[calc(100%+0.5rem)] flex-col">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                form.validateArrayFieldsStartingFrom("inputs", 0, "submit");
+                form.handleSubmit();
+              }}
+              className="-my-2.5 flex w-full flex-col"
+            >
+              <form.AppField
+                name="inputs"
+                mode="value"
+                children={(field) =>
+                  field.state.value.map((_, i) => (
+                    <div
+                      key={`field[${i}]`}
+                      className="flex w-full flex-col gap-2 p-1 py-2.5 md:w-1/2"
+                    >
+                      <div className="flex w-full flex-col gap-0.5 px-1">
+                        <div className="flex w-full items-start gap-1.5">
+                          <TemplateInputIcon input={visibleInputs[i]} />
+                          <p className="-mt-0.5 min-w-0 shrink leading-tight font-semibold">
+                            {visibleInputs[i].name}
+                          </p>
+                        </div>
+                        <p className="text-muted-foreground w-full text-sm">
+                          {visibleInputs[i].description}
+                        </p>
+                      </div>
+                      <form.Field key={`inputs[${i}].name`} name={`inputs[${i}].value`}>
+                        {(subField) => {
+                          return (
+                            <field.ConditionalInput
+                              inputType={visibleInputs[i].type}
+                              field={subField}
+                              value={subField.state.value}
+                              onBlur={subField.handleBlur}
+                              onChange={(e) => {
+                                subField.handleChange(e.target.value);
+                              }}
+                              placeholder={visibleInputs[i].name}
+                              autoCapitalize="off"
+                              autoCorrect="off"
+                              autoComplete="off"
+                              spellCheck="false"
+                            />
+                          );
+                        }}
+                      </form.Field>
                     </div>
-                    <form.Field key={`inputs[${i}].name`} name={`inputs[${i}].value`}>
-                      {(subField) => {
-                        return (
-                          <field.ConditionalInput
-                            inputType={templateDraft.template.definition.inputs[i].type}
-                            field={subField}
-                            value={subField.state.value}
-                            onBlur={subField.handleBlur}
-                            onChange={(e) => {
-                              subField.handleChange(e.target.value);
-                            }}
-                            placeholder={templateDraft.template.definition.inputs[i].name}
-                            autoCapitalize="off"
-                            autoCorrect="off"
-                            autoComplete="off"
-                            spellCheck="false"
-                          />
-                        );
-                      }}
-                    </form.Field>
-                  </div>
-                ))
-              }
-            />
-          </form>
+                  ))
+                }
+              />
+            </form>
+          </div>
           {/* Services */}
-          <div className="flex w-full flex-col gap-2">
+          <div className="flex w-full flex-col gap-2 pt-1">
             <h3 className="w-full px-1 text-xl leading-tight font-bold">Services</h3>
             <ol className="-mx-1 flex w-[calc(100%+0.5rem)] flex-wrap">
               {templateDraft.template.definition.services.map((service) => (
@@ -159,4 +176,18 @@ function TemplateServiceCard({
       </div>
     </li>
   );
+}
+
+function TemplateInputIcon({ input, className }: { input: TTemplateInput; className?: string }) {
+  const classNameDefault = "size-4 shrink-0";
+  if (input.type === "database-size") {
+    return <DatabaseIcon className={cn(classNameDefault, className)} />;
+  }
+  if (input.type === "volume-size") {
+    return <ArchiveIcon className={cn(classNameDefault, className)} />;
+  }
+  if (input.type === "host") {
+    return <GlobeIcon className={cn(classNameDefault, className)} />;
+  }
+  return <TextCursorInputIcon className={cn(classNameDefault, className)} />;
 }
