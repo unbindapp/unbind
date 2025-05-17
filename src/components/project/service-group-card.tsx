@@ -1,5 +1,6 @@
 import ServiceCard from "@/components/project/service-card";
 import { TServiceGroup } from "@/components/project/service-card-list";
+import ServiceGroupIcon from "@/components/service/service-group-icon";
 import { cn } from "@/components/ui/utils";
 
 type TProps = {
@@ -8,7 +9,8 @@ type TProps = {
   projectId: string;
   environmentId: string;
   className?: string;
-};
+  classNameServiceCard?: string;
+} & React.HTMLProps<HTMLLIElement>;
 
 export default function ServiceGroupCard({
   groupObject,
@@ -16,12 +18,15 @@ export default function ServiceGroupCard({
   projectId,
   environmentId,
   className,
+  classNameServiceCard,
+  ...rest
 }: TProps) {
   return (
-    <li className={cn("flex w-full p-1", className)}>
+    <li className={cn("flex w-full p-1", className)} {...rest}>
       <div className="flex w-full flex-col rounded-xl border border-dashed">
-        <div className="flex w-full">
-          <p className="min-w-0 shrink truncate px-4 pt-2.5 pb-1.5 leading-tight font-semibold">
+        <div className="flex w-full items-center gap-2 px-4 pt-2.5 pb-1.5">
+          <ServiceGroupIcon groupObject={groupObject} className="-ml-1 size-6" />
+          <p className="min-w-0 shrink truncate leading-tight font-semibold">
             {groupObject.group.name}
           </p>
         </div>
@@ -33,7 +38,7 @@ export default function ServiceGroupCard({
               teamId={teamId}
               projectId={projectId}
               environmentId={environmentId}
-              className="w-full sm:w-1/2 lg:w-1/3"
+              className={classNameServiceCard}
               classNameCard="rounded-lg"
             />
           ))}

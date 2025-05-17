@@ -242,6 +242,7 @@ export const CreateServiceGroupInputSchema = z
   .object({
     description: z.string().optional(), // The description of the service group
     environment_id: z.string(),
+    icon: z.string().optional(), // The icon of the service group
     name: z.string(), // The name of the service group
     project_id: z.string(),
     team_id: z.string(),
@@ -253,6 +254,7 @@ export const ServiceGroupResponseSchema = z
     created_at: z.string().datetime(),
     description: z.string().optional(),
     environment_id: z.string(),
+    icon: z.string().optional(),
     id: z.string(),
     name: z.string(),
   })
@@ -1713,6 +1715,7 @@ export const UpdateServiceGroupInputSchema = z
     add_service_ids: z.array(z.string()).nullable().optional(), // The IDs of the services to add to the service group
     description: z.string().optional(), // The description of the service group
     environment_id: z.string(),
+    icon: z.string().optional(), // The icon of the service group
     id: z.string(),
     name: z.string().nullable().optional(), // The name of the service group
     project_id: z.string(),

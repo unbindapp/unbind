@@ -1,5 +1,5 @@
 import { cn } from "@/components/ui/utils";
-import { BanIcon, FolderIcon, UsersIcon, WebhookIcon } from "lucide-react";
+import { BanIcon, FolderIcon, LayoutGridIcon, UsersIcon, WebhookIcon } from "lucide-react";
 import { ComponentProps, useId } from "react";
 
 type TProps = ComponentProps<"svg"> & {
@@ -1268,15 +1268,9 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
     );
   }
 
-  return (
-    <BanIcon
-      className={cn(
-        "scale-85",
-        defaultClassName,
-        color === "brand" && "text-foreground",
-        className,
-      )}
-      {...rest}
-    />
-  );
+  if (brand === "service-group") {
+    return <LayoutGridIcon className={cn("scale-80", defaultClassName, className)} {...rest} />;
+  }
+
+  return <BanIcon className={cn("scale-85", defaultClassName, className)} {...rest} />;
 }

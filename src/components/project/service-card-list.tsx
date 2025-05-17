@@ -121,12 +121,14 @@ export default function ServiceCardList() {
           />
         ) : item.obj.type === "service-group" ? (
           <ServiceGroupCard
+            data-count={item.obj.services.length}
             key={item.obj.group.id}
             groupObject={item.obj}
             teamId={teamId}
             projectId={projectId}
             environmentId={environmentId}
-            className="w-full"
+            className="group/service-group w-full"
+            classNameServiceCard="w-full sm:w-1/2 lg:w-1/3"
           />
         ) : (
           <ServiceCard
