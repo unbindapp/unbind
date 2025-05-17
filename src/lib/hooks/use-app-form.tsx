@@ -24,7 +24,6 @@ type TFieldProps = {
 type TInputWithInfoProps = TFieldProps & InputProps;
 type TSliderWithInfoProps = TFieldProps &
   SliderProps & {
-    minMaxSuffix?: string;
     classNameMin?: string;
     classNameMax?: string;
   };
@@ -132,7 +131,7 @@ function StorageSizeInput({
   classNameInput,
   classNameInfo,
   dontCheckUntilSubmit,
-  minMaxSuffix,
+  unitSuffix,
   classNameMin,
   classNameMax,
   ...rest
@@ -146,12 +145,12 @@ function StorageSizeInput({
       <div className={cn("flex w-full gap-3", className)}>
         <p className={cn(classNameMinMax, classNameMin)}>
           {rest.min}
-          {minMaxSuffix ? ` ${minMaxSuffix}` : ""}
+          {unitSuffix ? ` ${unitSuffix}` : ""}
         </p>
-        <Slider {...rest} className={cn("flex-1", classNameInput)} />
+        <Slider {...rest} unitSuffix={unitSuffix} className={cn("flex-1", classNameInput)} />
         <p className={cn(classNameMinMax, classNameMax)}>
           {rest.max}
-          {minMaxSuffix ? ` ${minMaxSuffix}` : ""}
+          {unitSuffix ? ` ${unitSuffix}` : ""}
         </p>
       </div>
     );
@@ -162,12 +161,12 @@ function StorageSizeInput({
       <div className="flex w-full gap-3">
         <p className={cn(classNameMinMax, classNameMin)}>
           {rest.min}
-          {minMaxSuffix ? ` ${minMaxSuffix}` : ""}
+          {unitSuffix ? ` ${unitSuffix}` : ""}
         </p>
-        <Slider {...rest} className={cn("flex-1", classNameInput)} />
+        <Slider {...rest} unitSuffix={unitSuffix} className={cn("flex-1", classNameInput)} />
         <p className={cn(classNameMinMax, classNameMax)}>
           {rest.max}
-          {minMaxSuffix ? ` ${minMaxSuffix}` : ""}
+          {unitSuffix ? ` ${unitSuffix}` : ""}
         </p>
       </div>
       {(field.state.meta.isTouched || isFormSubmitted) &&

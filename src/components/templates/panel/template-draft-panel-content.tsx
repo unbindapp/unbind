@@ -13,6 +13,7 @@ import {
   TextCursorInputIcon,
 } from "lucide-react";
 import { HTMLAttributes, useMemo } from "react";
+import { toast } from "sonner";
 
 type TProps = {
   templateDraft: TTemplateDraft;
@@ -20,9 +21,11 @@ type TProps = {
 } & HTMLAttributes<HTMLDivElement>;
 
 type TInput = {
-  name: string;
+  id: number;
   value: string;
 };
+
+const storageUnitSuffix = "GB";
 
 export default function TemplateDraftPanelContent({ templateDraft, className, ...rest }: TProps) {
   const visibleInputs = useMemo(
@@ -32,9 +35,20 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
 
   const form = useAppForm({
     defaultValues: {
-      inputs: visibleInputs.map(() => ({
+      inputs: visibleInputs.map((i) => ({
+        id: i.id,
         value: "",
       })) as TInput[],
+    },
+    onSubmit: async ({ value }) => {
+      const editedInputs = value.inputs.map((input, i) => ({
+        id: visibleInputs[i].id,
+        name: visibleInputs[i].name,
+        value: input.value !== "" ? input.value : visibleInputs[i].default,
+      }));
+      toast.info(editedInputs.map((i) => `${i.name}: ${i.value}`).join(" | "), {
+        description: "This is a test toast",
+      });
     },
   });
 
@@ -71,9 +85,24 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                       <div className="flex w-full flex-col gap-0.5 px-1.5">
                         <div className="flex w-full items-start gap-2">
                           <TemplateInputIcon input={visibleInputs[i]} />
-                          <p className="-mt-0.5 min-w-0 shrink leading-tight font-semibold">
-                            {visibleInputs[i].name}
-                          </p>
+                          <form.Subscribe
+                            selector={(state) => [state.values]}
+                            children={([values]) => (
+                              <p className="-mt-0.5 min-w-0 shrink leading-tight font-semibold">
+                                {visibleInputs[i].name}
+                                {(visibleInputs[i].type === "database-size" ||
+                                  visibleInputs[i].type === "volume-size") && (
+                                  <>
+                                    {": "}
+                                    <span className="text-process font-bold">
+                                      {values.inputs[i].value || visibleInputs[i].default}{" "}
+                                      {storageUnitSuffix}
+                                    </span>
+                                  </>
+                                )}
+                              </p>
+                            )}
+                          />
                         </div>
                         <p className="text-muted-foreground w-full text-sm">
                           {visibleInputs[i].description}
@@ -93,7 +122,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                                 max={100}
                                 classNameMin="pl-1.5"
                                 classNameMax="pr-1.5"
-                                minMaxSuffix="GB"
+                                unitSuffix="GB"
                                 defaultValue={[Number(visibleInputs[i].default || "10")]}
                                 value={
                                   subField.state.value ? [Number(subField.state.value)] : undefined
@@ -143,6 +172,9 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
         <form
           onSubmit={(e) => {
             e.preventDefault();
+            e.stopPropagation();
+            form.validateArrayFieldsStartingFrom("inputs", 0, "submit");
+            form.handleSubmit();
           }}
         >
           <Button

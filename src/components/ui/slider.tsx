@@ -5,9 +5,21 @@ import * as SliderPrimitive from "@radix-ui/react-slider";
 
 import { cn } from "@/components/ui/utils";
 
-export type SliderProps = React.ComponentProps<typeof SliderPrimitive.Root>;
+export type SliderProps = React.ComponentProps<typeof SliderPrimitive.Root> & {
+  showValue?: boolean;
+  unitSuffix?: string;
+};
 
-function Slider({ className, defaultValue, value, min = 0, max = 100, ...props }: SliderProps) {
+function Slider({
+  className,
+  defaultValue,
+  showValue,
+  unitSuffix,
+  value,
+  min = 0,
+  max = 100,
+  ...props
+}: SliderProps) {
   const _values = React.useMemo(
     () => (Array.isArray(value) ? value : Array.isArray(defaultValue) ? defaultValue : [min, max]),
     [value, defaultValue, min, max],
@@ -39,12 +51,21 @@ function Slider({ className, defaultValue, value, min = 0, max = 100, ...props }
           )}
         />
       </SliderPrimitive.Track>
-      {Array.from({ length: _values.length }, (_, index) => (
+      {_values.map((value, index) => (
         <SliderPrimitive.Thumb
           data-slot="slider-thumb"
           key={index}
           className="bg-foreground shadow-shadow/shadow group-active/slider:ring-foreground/50 active:ring-foreground/50 ring-foreground/25 block size-4 shrink-0 rounded-full shadow-md transition-[color,box-shadow] group-active/slider:ring-4 focus-visible:ring-6 focus-visible:outline-hidden active:cursor-grabbing active:ring-4 disabled:pointer-events-none disabled:opacity-50 has-hover:group-hover/slider:ring-6 has-hover:group-hover/slider:group-active/slider:ring-4"
-        />
+        >
+          {showValue !== undefined && (
+            <div className="absolute top-5 left-1/2 flex w-24 -translate-x-1/2 items-center justify-center text-center text-xs font-bold">
+              <p className="bg-foreground text-background min-w-0 shrink rounded-sm px-1 leading-tight">
+                {value}
+                {unitSuffix ? ` ${unitSuffix}` : ""}
+              </p>
+            </div>
+          )}
+        </SliderPrimitive.Thumb>
       ))}
     </SliderPrimitive.Root>
   );
