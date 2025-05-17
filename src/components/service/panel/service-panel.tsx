@@ -212,7 +212,7 @@ function TitleButton({
       <DialogTrigger asChild>
         <Button
           variant="ghost"
-          className="group/button -my-1 -ml-2.5 flex min-w-0 shrink items-center justify-start gap-1.5 px-2.5 py-1"
+          className="group/button -my-1 -ml-2.5 flex min-w-0 shrink items-center justify-start gap-2 px-2.5 py-1"
         >
           <ServiceIcon service={service} color="brand" className="-ml-1 size-6 sm:size-7" />
           <p className="min-w-0 shrink text-left text-xl leading-tight sm:text-2xl">

@@ -47,9 +47,9 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
       {...rest}
     >
       <ScrollArea classNameViewport="pb-8">
-        <div className="flex w-full flex-1 flex-col gap-6 px-3 py-4 sm:p-6">
+        <div className="flex w-full flex-1 flex-col gap-6 px-3 py-5 sm:p-6">
           {/* Inputs */}
-          <div className="-m-1 flex w-[calc(100%+0.5rem)] flex-col">
+          <div className="-mx-1 flex w-[calc(100%+0.5rem)] flex-col">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -57,7 +57,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                 form.validateArrayFieldsStartingFrom("inputs", 0, "submit");
                 form.handleSubmit();
               }}
-              className="-my-3 flex w-full flex-col"
+              className="-my-4 flex w-full flex-col"
             >
               <form.AppField
                 name="inputs"
@@ -66,10 +66,10 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                   field.state.value.map((_, i) => (
                     <div
                       key={`field[${i}]`}
-                      className="flex w-full flex-col gap-2 p-1 py-3 md:w-1/2"
+                      className="flex w-full flex-col gap-2 p-1 py-4 md:w-1/2"
                     >
-                      <div className="flex w-full flex-col gap-0.5 px-1">
-                        <div className="flex w-full items-start gap-1.5">
+                      <div className="flex w-full flex-col gap-0.5 px-1.5">
+                        <div className="flex w-full items-start gap-2">
                           <TemplateInputIcon input={visibleInputs[i]} />
                           <p className="-mt-0.5 min-w-0 shrink leading-tight font-semibold">
                             {visibleInputs[i].name}
@@ -91,7 +91,13 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                                 min={1}
                                 step={1}
                                 max={100}
-                                value={[Number(subField.state.value ?? 1)]}
+                                classNameMin="pl-1.5"
+                                classNameMax="pr-1.5"
+                                minMaxSuffix="GB"
+                                defaultValue={[Number(visibleInputs[i].default || "10")]}
+                                value={
+                                  subField.state.value ? [Number(subField.state.value)] : undefined
+                                }
                                 onValueChange={(value) => {
                                   subField.handleChange(String(value[0]));
                                 }}
@@ -123,7 +129,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
           </div>
           {/* Services */}
           <div className="flex w-full flex-col gap-2 pt-1">
-            <h3 className="w-full px-1 text-xl leading-tight font-bold">Services</h3>
+            <h3 className="w-full px-1.5 text-xl leading-tight font-bold">Services</h3>
             <ol className="-mx-1 flex w-[calc(100%+0.5rem)] flex-wrap">
               {templateDraft.template.definition.services.map((service) => (
                 <TemplateServiceCard key={service.id} service={service} className="md:w-1/2" />

@@ -148,7 +148,7 @@ export const CreatePVCInputSchema = z
     environment_id: z.string().optional(),
     name: z.string(), // Name of the PVC
     project_id: z.string().optional(),
-    size: z.string(), // Size of the PVC (e.g., '10Gi')
+    size: z.string(), // Size of the PVC (e.g., '10')
     team_id: z.string(),
     type: PvcScopeSchema,
   })
@@ -884,7 +884,7 @@ export const TemplateVolumeSchema = z
   .object({
     mountPath: z.string(),
     name: z.string(),
-    size: z.string(),
+    size_gb: z.string(),
   })
   .strip();
 
@@ -1542,10 +1542,10 @@ export const SortOrderSchema = z.enum(['asc', 'desc']);
 
 export const StorageMetadataSchema = z
   .object({
-    allocatable_bytes: z.string(),
-    minimum_storage_bytes: z.string(),
+    allocatable_bytes_gb: z.string(),
+    minimum_storage_gb: z.string(),
     storage_class_name: z.string(),
-    storage_step: z.string(),
+    storage_step_gb: z.string(),
     unable_to_detect_allocatable: z.boolean(),
   })
   .strip();
@@ -1666,7 +1666,7 @@ export const UpdatePVCInputSchema = z
     id: z.string(),
     name: z.string().nullable().optional(), // Name of the PVC
     project_id: z.string().optional(),
-    size: z.string().nullable().optional(), // Size of the PVC (e.g., '10Gi')
+    size: z.string().nullable().optional(), // Size of the PVC (e.g., '10')
     team_id: z.string(),
     type: PvcScopeSchema,
   })

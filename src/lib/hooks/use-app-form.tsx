@@ -22,7 +22,12 @@ type TFieldProps = {
 };
 
 type TInputWithInfoProps = TFieldProps & InputProps;
-type TSliderWithInfoProps = TFieldProps & SliderProps;
+type TSliderWithInfoProps = TFieldProps &
+  SliderProps & {
+    minMaxSuffix?: string;
+    classNameMin?: string;
+    classNameMax?: string;
+  };
 
 function InputWithInfo({
   className,
@@ -127,18 +132,44 @@ function StorageSizeInput({
   classNameInput,
   classNameInfo,
   dontCheckUntilSubmit,
+  minMaxSuffix,
+  classNameMin,
+  classNameMax,
   ...rest
 }: TSliderWithInfoProps) {
   const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
   const isFormSubmitted = submissionAttempts > 0;
+  const classNameMinMax = "min-w-0 text-muted-foreground shrink leading-tight text-xs font-medium";
 
   if (hideInfo) {
-    return <Slider {...rest} className={cn("w-full", className, classNameInput)} />;
+    return (
+      <div className={cn("flex w-full gap-3", className)}>
+        <p className={cn(classNameMinMax, classNameMin)}>
+          {rest.min}
+          {minMaxSuffix ? ` ${minMaxSuffix}` : ""}
+        </p>
+        <Slider {...rest} className={cn("flex-1", classNameInput)} />
+        <p className={cn(classNameMinMax, classNameMax)}>
+          {rest.max}
+          {minMaxSuffix ? ` ${minMaxSuffix}` : ""}
+        </p>
+      </div>
+    );
   }
 
   return (
     <div className={cn("flex flex-col", className)}>
-      <Slider {...rest} className={cn("w-full", classNameInput)} />
+      <div className="flex w-full gap-3">
+        <p className={cn(classNameMinMax, classNameMin)}>
+          {rest.min}
+          {minMaxSuffix ? ` ${minMaxSuffix}` : ""}
+        </p>
+        <Slider {...rest} className={cn("flex-1", classNameInput)} />
+        <p className={cn(classNameMinMax, classNameMax)}>
+          {rest.max}
+          {minMaxSuffix ? ` ${minMaxSuffix}` : ""}
+        </p>
+      </div>
       {(field.state.meta.isTouched || isFormSubmitted) &&
       (field.state.meta.isBlurred || isFormSubmitted) &&
       (!dontCheckUntilSubmit || isFormSubmitted) &&

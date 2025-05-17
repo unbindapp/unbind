@@ -149,7 +149,7 @@ function TitleButton({ templateDraft }: { templateDraft: TTemplateDraft }) {
       <DialogTrigger asChild>
         <Button
           variant="ghost"
-          className="group/button -my-1 -ml-2.5 flex min-w-0 shrink items-center justify-start gap-1.5 px-2.5 py-1"
+          className="group/button -my-1 -ml-2.5 flex min-w-0 shrink items-center justify-start gap-2 px-2.5 py-1"
         >
           <TemplateDraftIcon
             templateDraft={templateDraft}
