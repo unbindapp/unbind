@@ -1,4 +1,5 @@
 import ErrorLine from "@/components/error-line";
+import { TTemplateInputType } from "@/components/templates/template-draft-store";
 import { Button } from "@/components/ui/button";
 import { Input, InputProps } from "@/components/ui/input";
 import TextareaWithTokens, { TTextareaWithTokensProps } from "@/components/ui/textarea-with-tokens";
@@ -12,37 +13,41 @@ import {
 
 const { fieldContext, formContext } = createFormHookContexts();
 
+type TFieldProps = {
+  field: AnyFieldApi;
+  hideInfo?: boolean;
+  dontCheckUntilSubmit?: boolean;
+  classNameInput?: string;
+  classNameInfo?: string;
+};
+
+type TInputWithInfoProps = TFieldProps & InputProps;
+
 function InputWithInfo({
   className,
   hideInfo,
   field,
-  inputClassName,
-  infoClassName,
+  classNameInput,
+  classNameInfo,
   dontCheckUntilSubmit,
   ...rest
-}: InputProps & {
-  field: AnyFieldApi;
-  hideInfo?: boolean;
-  inputClassName?: string;
-  infoClassName?: string;
-  dontCheckUntilSubmit?: boolean;
-}) {
+}: TInputWithInfoProps) {
   const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
   const isFormSubmitted = submissionAttempts > 0;
 
   if (hideInfo) {
-    return <Input {...rest} className={cn("w-full", className, inputClassName)} />;
+    return <Input {...rest} className={cn("w-full", className, classNameInput)} />;
   }
 
   return (
     <div className={cn("flex flex-col", className)}>
-      <Input {...rest} className={cn("w-full", inputClassName)} />
+      <Input {...rest} className={cn("w-full", classNameInput)} />
       {(field.state.meta.isTouched || isFormSubmitted) &&
       (field.state.meta.isBlurred || isFormSubmitted) &&
       (!dontCheckUntilSubmit || isFormSubmitted) &&
       field.state.meta.errors.length ? (
         <ErrorLine
-          className={cn("bg-transparent py-1.5 pl-1.5", infoClassName)}
+          className={cn("bg-transparent py-1.5 pl-1.5", classNameInfo)}
           message={field.state.meta.errors[0].message}
         />
       ) : null}
@@ -54,33 +59,27 @@ function TextareaWithTokensWithInfo<T>({
   className,
   hideInfo,
   field,
-  textareaClassName,
-  infoClassName,
+  classNameInput,
+  classNameInfo,
   dontCheckUntilSubmit,
   ...rest
-}: TTextareaWithTokensProps<T> & {
-  field: AnyFieldApi;
-  hideInfo?: boolean;
-  textareaClassName?: string;
-  infoClassName?: string;
-  dontCheckUntilSubmit?: boolean;
-}) {
+}: TTextareaWithTokensProps<T> & TFieldProps) {
   const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
   const isFormSubmitted = submissionAttempts > 0;
 
   if (hideInfo) {
-    return <TextareaWithTokens {...rest} className={cn("w-full", className, textareaClassName)} />;
+    return <TextareaWithTokens {...rest} className={cn("w-full", className, classNameInput)} />;
   }
 
   return (
     <div className={cn("flex flex-col", className)}>
-      <TextareaWithTokens {...rest} className={cn("w-full", textareaClassName)} />
+      <TextareaWithTokens {...rest} className={cn("w-full", classNameInput)} />
       {(field.state.meta.isTouched || isFormSubmitted) &&
       (field.state.meta.isBlurred || isFormSubmitted) &&
       (!dontCheckUntilSubmit || isFormSubmitted) &&
       field.state.meta.errors.length ? (
         <ErrorLine
-          className={cn("bg-transparent py-1.5 pl-1.5", infoClassName)}
+          className={cn("bg-transparent py-1.5 pl-1.5", classNameInfo)}
           message={field.state.meta.errors[0].message}
         />
       ) : null}
@@ -88,11 +87,92 @@ function TextareaWithTokensWithInfo<T>({
   );
 }
 
+function DomainInput({
+  className,
+  hideInfo,
+  field,
+  classNameInput,
+  classNameInfo,
+  dontCheckUntilSubmit,
+  ...rest
+}: TInputWithInfoProps) {
+  const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
+  const isFormSubmitted = submissionAttempts > 0;
+
+  if (hideInfo) {
+    return <Input {...rest} className={cn("w-full", className, classNameInput)} />;
+  }
+
+  return (
+    <div className={cn("flex flex-col", className)}>
+      <Input {...rest} className={cn("w-full", classNameInput)} />
+      {(field.state.meta.isTouched || isFormSubmitted) &&
+      (field.state.meta.isBlurred || isFormSubmitted) &&
+      (!dontCheckUntilSubmit || isFormSubmitted) &&
+      field.state.meta.errors.length ? (
+        <ErrorLine
+          className={cn("bg-transparent py-1.5 pl-1.5", classNameInfo)}
+          message={field.state.meta.errors[0].message}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function StorageSizeInput({
+  className,
+  hideInfo,
+  field,
+  classNameInput,
+  classNameInfo,
+  dontCheckUntilSubmit,
+  ...rest
+}: TInputWithInfoProps) {
+  const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
+  const isFormSubmitted = submissionAttempts > 0;
+
+  if (hideInfo) {
+    return <Input {...rest} className={cn("w-full", className, classNameInput)} />;
+  }
+
+  return (
+    <div className={cn("flex flex-col", className)}>
+      <Input {...rest} className={cn("w-full", classNameInput)} />
+      {(field.state.meta.isTouched || isFormSubmitted) &&
+      (field.state.meta.isBlurred || isFormSubmitted) &&
+      (!dontCheckUntilSubmit || isFormSubmitted) &&
+      field.state.meta.errors.length ? (
+        <ErrorLine
+          className={cn("bg-transparent py-1.5 pl-1.5", classNameInfo)}
+          message={field.state.meta.errors[0].message}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+export default function ConditionalInput({
+  inputType,
+  className,
+  ...rest
+}: { inputType: TTemplateInputType } & TInputWithInfoProps) {
+  if (inputType === "database-size" || inputType === "volume-size") {
+    return <StorageSizeInput className={className} {...rest} />;
+  }
+  if (inputType === "host") {
+    return <DomainInput className={className} {...rest} />;
+  }
+  return <div>Unsupported input type</div>;
+}
+
 export const { useAppForm } = createFormHook({
   fieldComponents: {
     TextField: InputWithInfo,
     NumberField: InputWithInfo,
     TextareaWithTokens: TextareaWithTokensWithInfo,
+    DomainInput,
+    StorageSizeInput,
+    ConditionalInput,
   },
   formComponents: {
     SubmitButton: Button,

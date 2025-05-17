@@ -4,6 +4,10 @@ import { z } from "zod";
 import { persist } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
 
+export type TTemplateWithDefinition = z.infer<typeof TemplateWithDefinitionResponseSchema>;
+export type TTemplateInput = TTemplateWithDefinition["definition"]["inputs"][number];
+export type TTemplateInputType = TTemplateInput["type"];
+
 const TemplateDraftSchema = z.object({
   id: z.string(),
   teamId: z.string(),

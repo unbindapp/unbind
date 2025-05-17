@@ -265,7 +265,7 @@ export default function CreateVariablesForm({
                                     subField.handleChange(e.target.value);
                                   }}
                                   placeholder="VARIABLE_NAME"
-                                  inputClassName="font-mono"
+                                  classNameInput="font-mono"
                                   className="mr-12.5 flex-1 md:mr-0 md:max-w-64"
                                   autoCapitalize="off"
                                   autoCorrect="off"

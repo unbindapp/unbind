@@ -204,7 +204,7 @@ export default function AddWebhookForm({ className, ...rest }: TProps) {
               <field.TextField
                 dontCheckUntilSubmit
                 className="w-full"
-                inputClassName="pl-9.5"
+                classNameInput="pl-9.5"
                 field={field}
                 value={field.state.value}
                 onBlur={field.handleBlur}

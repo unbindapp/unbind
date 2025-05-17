@@ -4,6 +4,7 @@ import { TTemplateDraft } from "@/components/templates/template-draft-store";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
+import { useAppForm } from "@/lib/hooks/use-app-form";
 import { LoaderIcon } from "lucide-react";
 import { HTMLAttributes, useMemo } from "react";
 
@@ -12,7 +13,19 @@ type TProps = {
   className?: string;
 } & HTMLAttributes<HTMLDivElement>;
 
+type TInput = {
+  name: string;
+  value: string;
+};
+
 export default function TemplateDraftPanelContent({ templateDraft, className, ...rest }: TProps) {
+  const form = useAppForm({
+    defaultValues: {
+      inputs: templateDraft.template.definition.inputs.map(() => ({
+        value: "",
+      })) as TInput[],
+    },
+  });
   return (
     <div
       className={cn(
@@ -24,16 +37,59 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
       <ScrollArea classNameViewport="pb-8">
         <div className="flex w-full flex-1 flex-col gap-6 px-3 py-4 sm:p-6">
           {/* Inputs */}
-          <div className="flex w-full flex-col gap-2">
-            {templateDraft.template.definition.inputs.map((input) => (
-              <div key={input.id} className="flex w-full flex-col px-1">
-                <p className="w-full font-bold">{input.name}</p>
-                <p className="text-muted-foreground w-full">{input.description}</p>
-              </div>
-            ))}
-          </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              form.validateArrayFieldsStartingFrom("inputs", 0, "submit");
+              form.handleSubmit();
+            }}
+            className="-mx-1 flex w-[calc(100%+0.5rem)] flex-wrap"
+          >
+            <form.AppField
+              name="inputs"
+              mode="value"
+              children={(field) =>
+                field.state.value.map((_, i) => (
+                  <div
+                    key={`field[${i}]`}
+                    className="flex w-full flex-col gap-2 p-1 py-3 first:pt-0 last:pb-0"
+                  >
+                    <div className="flex w-full flex-col gap-0.5 px-1">
+                      <p className="w-full leading-tight font-semibold">
+                        {templateDraft.template.definition.inputs[i].name}
+                      </p>
+                      <p className="text-muted-foreground w-full">
+                        {templateDraft.template.definition.inputs[i].description}
+                      </p>
+                    </div>
+                    <form.Field key={`inputs[${i}].name`} name={`inputs[${i}].value`}>
+                      {(subField) => {
+                        return (
+                          <field.ConditionalInput
+                            inputType={templateDraft.template.definition.inputs[i].type}
+                            field={subField}
+                            value={subField.state.value}
+                            onBlur={subField.handleBlur}
+                            onChange={(e) => {
+                              subField.handleChange(e.target.value);
+                            }}
+                            placeholder={templateDraft.template.definition.inputs[i].name}
+                            autoCapitalize="off"
+                            autoCorrect="off"
+                            autoComplete="off"
+                            spellCheck="false"
+                          />
+                        );
+                      }}
+                    </form.Field>
+                  </div>
+                ))
+              }
+            />
+          </form>
           {/* Services */}
-          <div className="flex w-full flex-col gap-3">
+          <div className="flex w-full flex-col gap-2">
             <h3 className="w-full px-1 text-xl leading-tight font-bold">Services</h3>
             <ol className="-mx-1 flex w-[calc(100%+0.5rem)] flex-wrap">
               {templateDraft.template.definition.services.map((service) => (

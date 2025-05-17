@@ -529,8 +529,8 @@ function EditVariableForm({
               onChange={(e) => field.handleChange(e.target.value)}
               className="flex-1"
               placeholder="abc123"
-              inputClassName="rounded-lg px-2.5 py-1.5 h-9 sm:rounded-md font-mono"
-              infoClassName="pt-1 pb-0.5 text-xs"
+              classNameInput="rounded-lg px-2.5 py-1.5 h-9 sm:rounded-md font-mono"
+              classNameInfo="pt-1 pb-0.5 text-xs"
             />
           )}
         />

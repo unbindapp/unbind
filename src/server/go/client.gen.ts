@@ -874,9 +874,9 @@ export const GetTeamResponseBodySchema = z
 export const TemplateInputTypeSchema = z.enum([
   'variable',
   'host',
-  'volume_size',
-  'database_size',
-  'generated_node_port',
+  'volume-size',
+  'database-size',
+  'generated-node-port',
   'generated-password',
 ]);
 
