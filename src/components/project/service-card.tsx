@@ -48,7 +48,7 @@ export default function ServiceCard({
         <Button
           variant="ghost"
           className={cn(
-            "bg-background-hover flex min-h-36 w-full flex-col items-start gap-12 rounded-xl border px-5 py-3.5 text-left",
+            "bg-background-hover flex min-h-36 w-full flex-col items-start gap-8 rounded-xl border px-5 py-3.5 text-left",
             classNameCard,
           )}
         >

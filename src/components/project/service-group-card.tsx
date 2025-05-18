@@ -39,7 +39,7 @@ export default function ServiceGroupCard({
               projectId={projectId}
               environmentId={environmentId}
               className={classNameServiceCard}
-              classNameCard="rounded-lg"
+              classNameCard="rounded-lg min-h-32"
             />
           ))}
         </ol>
