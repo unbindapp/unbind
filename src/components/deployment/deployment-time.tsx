@@ -33,11 +33,16 @@ export default function DeploymentTime({ deployment, service, isPlaceholder, cla
     : deployment.completed_at && deployment.created_at
       ? getDurationStr({ end: deployment.completed_at, start: deployment.created_at })
       : deployment.created_at &&
-          (deployment.status === "building" || deployment.status === "queued")
+          (deployment.status === "pending" ||
+            deployment.status === "queued" ||
+            deployment.status === "building")
         ? getDurationStr({ end: now, start: deployment.created_at })
         : undefined;
 
-  const isBuilding = deployment?.status === "building" || deployment?.status === "queued";
+  const isBuilding =
+    deployment?.status === "pending" ||
+    deployment?.status === "queued" ||
+    deployment?.status === "building";
 
   return (
     <div

@@ -6,7 +6,7 @@ import Info from "@/components/deployment/panel/tabs/info/info";
 import Logs from "@/components/deployment/panel/tabs/build-logs/build-logs";
 import DeploymentStatusChip, {
   getDeploymentStatusChipColor,
-} from "@/components/deployment/status-chip";
+} from "@/components/deployment/deployment-status-chip";
 import AnimatedTimerIcon from "@/components/icons/animated-timer";
 import TabWrapper from "@/components/navigation/tab-wrapper";
 import NoItemsCard from "@/components/no-items-card";
@@ -180,8 +180,9 @@ export default function DeploymentPanel({ service }: TProps) {
                       currentDeployment={currentDeploymentOfService || undefined}
                       isPlaceholder={false}
                     />
-                    {(currentDeployment.status === "building" ||
-                      currentDeployment.status === "queued") && (
+                    {(currentDeployment.status === "pending" ||
+                      currentDeployment.status === "queued" ||
+                      currentDeployment.status === "building") && (
                       <DeploymentProgress deployment={currentDeployment} />
                     )}
                   </div>

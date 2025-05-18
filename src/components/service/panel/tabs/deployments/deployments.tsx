@@ -6,7 +6,7 @@ import ErrorCard from "@/components/error-card";
 import TabWrapper from "@/components/navigation/tab-wrapper";
 import NoItemsCard from "@/components/no-items-card";
 import { useDeployments } from "@/components/deployment/deployments-provider";
-import DeploymentCard from "@/components/service/panel/tabs/deployments/deployment-card";
+import DeploymentCard from "@/components/deployment/deployment-card";
 import { useService } from "@/components/service/service-provider";
 import { AppRouterOutputs } from "@/server/trpc/api/root";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
@@ -28,11 +28,18 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
   const error = errorDeployments || errorService;
   const hasData = deploymentsData !== undefined && serviceData !== undefined;
 
-  const currentOrFirstDeployment =
-    currentDeployment ||
-    (deploymentsData?.deployments && deploymentsData.deployments.length === 1
-      ? deploymentsData.deployments[0]
-      : undefined);
+  const currentOrFirstDeployment = useMemo(() => {
+    if (currentDeployment) return currentDeployment;
+    if (deploymentsData?.deployments && deploymentsData.deployments.length === 1) {
+      return deploymentsData.deployments[0];
+    }
+    if (deploymentsData?.deployments?.filter((d) => d.status === "succeeded").length === 0) {
+      return deploymentsData.deployments.find(
+        (d) => d.status === "pending" || d.status === "queued" || d.status === "building",
+      );
+    }
+    return undefined;
+  }, [currentDeployment, deploymentsData]);
 
   const filteredDeployments: AppRouterOutputs["deployments"]["list"]["deployments"] | undefined =
     useMemo(() => {

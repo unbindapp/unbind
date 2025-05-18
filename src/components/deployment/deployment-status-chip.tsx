@@ -21,8 +21,9 @@ export default function DeploymentStatusChip({
 }: TProps) {
   const [statusText, Icon]: [string, FC<{ className?: string }>] = useMemo(() => {
     if (isPlaceholder || !deployment) return ["LOADING", AnimatedLoaderIcon];
-    if (deployment.status === "building") return ["BUILDING", AnimatedLoaderIcon];
+    if (deployment.status === "pending") return ["PENDING", AnimatedHourglassIcon];
     if (deployment.status === "queued") return ["QUEUED", AnimatedHourglassIcon];
+    if (deployment.status === "building") return ["BUILDING", AnimatedLoaderIcon];
     if (
       deployment.status === "succeeded" &&
       currentDeployment &&
@@ -68,6 +69,7 @@ export function getDeploymentStatusChipColor({
 }) {
   if (isPlaceholder || !deployment) return "default";
   if (deployment.status === "queued") return "wait";
+  if (deployment.status === "pending") return "wait";
   if (deployment.status === "building") return "process";
   if (deployment.status === "failed") return "destructive";
   if (deployment.status === "cancelled") return "default";

@@ -1,12 +1,12 @@
 import { useDeploymentPanel } from "@/components/deployment/panel/deployment-panel-provider";
 import DeploymentStatusChip, {
   getDeploymentStatusChipColor,
-} from "@/components/deployment/status-chip";
+} from "@/components/deployment/deployment-status-chip";
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
 import { useServicesUtils } from "@/components/project/services-provider";
 import { useDeploymentsUtils } from "@/components/deployment/deployments-provider";
-import DeploymentTime from "@/components/service/panel/tabs/deployments/deployment-time";
+import DeploymentTime from "@/components/deployment/deployment-time";
 import { useService, useServiceUtils } from "@/components/service/service-provider";
 import { Button } from "@/components/ui/button";
 import {

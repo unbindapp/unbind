@@ -81,6 +81,7 @@ export const GitCommitterSchema = z
   .strip();
 
 export const DeploymentStatusSchema = z.enum([
+  'pending',
   'queued',
   'building',
   'succeeded',
@@ -100,6 +101,7 @@ export const DeploymentResponseSchema = z
     id: z.string(),
     image: z.string().optional(),
     job_name: z.string(),
+    queued_at: z.string().datetime().optional(),
     service_id: z.string(),
     started_at: z.string().datetime().optional(),
     status: DeploymentStatusSchema,
@@ -275,6 +277,7 @@ export const DatabaseConfigSchema = z
     initdb: z.string().optional(),
     storage: z.string().optional(),
     version: z.string().optional(),
+    walLevel: z.string().optional(),
   })
   .strip();
 
