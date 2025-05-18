@@ -42,6 +42,7 @@ const defaultInitState: TState = {
 };
 
 const version = 0.001;
+const maxArrayLength = 20;
 
 export const createTemplateDraftStore = (initState: TState = defaultInitState) => {
   return createStore<TTemplateDraftStore>()(
@@ -49,7 +50,10 @@ export const createTemplateDraftStore = (initState: TState = defaultInitState) =
       (set) => ({
         ...initState,
         add: async (draft) => {
-          set((state) => ({ ...state, templateDrafts: [draft, ...state.templateDrafts] }));
+          set((state) => ({
+            ...state,
+            templateDrafts: [draft, ...state.templateDrafts].slice(0, maxArrayLength),
+          }));
         },
         remove: async (id) => {
           set((state) => ({
