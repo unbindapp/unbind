@@ -241,6 +241,7 @@ export default function ServicePanelContentUndeployed({ service, className, ...r
     >
       <ScrollArea classNameViewport="pb-8">
         <div className="flex w-full flex-1 flex-col gap-6 px-3 py-4 sm:p-6">
+          {createFirstDeploymentError && <ErrorLine message={createFirstDeploymentError.message} />}
           <Content
             service={service}
             tagState={tagState}
@@ -363,7 +364,6 @@ export default function ServicePanelContentUndeployed({ service, className, ...r
         </div>
       </ScrollArea>
       <div className="flex w-full flex-col gap-2 border-t px-3 pt-3 pb-[calc(var(--safe-area-inset-bottom)+0.75rem)] sm:px-6 sm:pt-6 sm:pb-[calc(var(--safe-area-inset-bottom)+1.5rem)]">
-        {createFirstDeploymentError && <ErrorLine message={createFirstDeploymentError.message} />}
         <form
           onSubmit={(e) => {
             e.preventDefault();

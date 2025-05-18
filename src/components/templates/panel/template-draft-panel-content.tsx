@@ -26,7 +26,7 @@ type TProps = {
 } & HTMLAttributes<HTMLFormElement>;
 
 type TInput = {
-  id: number;
+  id: string;
   value: string;
 };
 
@@ -117,6 +117,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
     >
       <ScrollArea classNameViewport="pb-8">
         <div className="flex w-full flex-1 flex-col gap-6 px-3 py-5 sm:p-6">
+          {errorDeployTemplate && <ErrorLine message={errorDeployTemplate.message} />}
           {/* Inputs */}
           <div className="-mx-1 flex w-[calc(100%+0.5rem)] flex-col">
             <div className="-my-4 flex w-full flex-col">
@@ -215,7 +216,6 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
         </div>
       </ScrollArea>
       <div className="flex w-full flex-col gap-2 border-t px-3 pt-3 pb-[calc(var(--safe-area-inset-bottom)+0.75rem)] sm:px-6 sm:pt-6 sm:pb-[calc(var(--safe-area-inset-bottom)+1.5rem)]">
-        {errorDeployTemplate && <ErrorLine message={errorDeployTemplate.message} />}
         <form.Subscribe
           selector={(state) => [state.isSubmitting]}
           children={([isSubmitting]) => {

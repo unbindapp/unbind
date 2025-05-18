@@ -901,7 +901,7 @@ export const TemplateInputSchema = z
     default: z.string().optional(),
     description: z.string(),
     hidden: z.boolean(),
-    id: z.number(),
+    id: z.string(),
     name: z.string(),
     port_protocol: ProtocolSchema.optional(),
     required: z.boolean(),
@@ -916,7 +916,7 @@ export const TemplateVariableReferenceSchema = z
     additional_template_sources: z.array(z.string()).nullable(),
     is_host: z.boolean(),
     resolve_as_normal_variable: z.boolean(),
-    source_id: z.number(),
+    source_id: z.string(),
     source_name: z.string(),
     target_name: z.string(),
     template_string: z.string(),
@@ -939,7 +939,7 @@ export const ValueGeneratorSchema = z
     add_prefix: z.string().optional(),
     base_domain: z.string().optional(),
     hash_type: ValueHashTypeSchema.optional(),
-    input_id: z.number().optional(),
+    input_id: z.string().optional(),
     jwt_params: JWTParamsSchema.optional(),
     type: GeneratorTypeSchema,
   })
@@ -958,13 +958,13 @@ export const TemplateServiceSchema = z
     builder: ServiceBuilderSchema,
     database_config: DatabaseConfigSchema.optional(),
     database_type: z.string().optional(),
-    depends_on: z.array(z.number()),
+    depends_on: z.array(z.string()),
     health_check: HealthCheckSchema.optional(),
     icon: z.string(),
-    id: z.number(),
+    id: z.string(),
     image: z.string().optional(),
     init_db_replacers: z.record(z.string()).optional(),
-    input_ids: z.array(z.number()).nullable().optional(),
+    input_ids: z.array(z.string()).nullable().optional(),
     name: z.string(),
     ports: z.array(PortSpecSchema),
     protected_variables: z.array(z.string()),
@@ -1588,7 +1588,7 @@ export const TeamResponseBodySchema = z
 
 export const TemplateInputValueSchema = z
   .object({
-    id: z.number(),
+    id: z.string(),
     value: z.string(),
   })
   .strip();
