@@ -115,9 +115,10 @@ export default function ServiceCardList() {
       {servicesOrTemplateDrafts.map((item) =>
         item.type === "template-draft" ? (
           <TemplateDraftCard
+            data-hidden={item.obj.hidden}
             key={item.obj.id}
             templateDraft={item.obj}
-            className="w-full sm:w-1/2 lg:w-1/3"
+            className="w-full data-hidden:hidden sm:w-1/2 lg:w-1/3"
           />
         ) : item.obj.type === "service-group" ? (
           <ServiceGroupCard

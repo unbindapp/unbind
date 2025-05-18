@@ -1,4 +1,5 @@
 import ErrorLine from "@/components/error-line";
+import { DomainCard } from "@/components/service/panel/content/undeployed/domain-card";
 import { Button } from "@/components/ui/button";
 import { Input, InputProps } from "@/components/ui/input";
 import { Slider, SliderProps } from "@/components/ui/slider";
@@ -105,12 +106,18 @@ function DomainInput({
   const isFormSubmitted = submissionAttempts > 0;
 
   if (hideInfo) {
-    return <Input {...rest} className={cn("w-full", className, classNameInput)} />;
+    return (
+      <div className={cn("flex w-full flex-col", className)}>
+        <Input {...rest} className={cn("z-10 w-full", classNameInput)} />
+        <DomainCard domain={field.state.value} className="-mt-3 rounded-t-none pt-2.75" />
+      </div>
+    );
   }
 
   return (
     <div className={cn("flex flex-col", className)}>
-      <Input {...rest} className={cn("w-full", classNameInput)} />
+      <Input {...rest} className={cn("z-10 w-full", classNameInput)} />
+      <DomainCard domain={field.state.value} className="-mt-3 rounded-t-none pt-2.75" />
       {(field.state.meta.isTouched || isFormSubmitted) &&
       (field.state.meta.isBlurred || isFormSubmitted) &&
       (!dontCheckUntilSubmit || isFormSubmitted) &&

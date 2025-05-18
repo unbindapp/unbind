@@ -17,6 +17,7 @@ const TemplateDraftSchema = z.object({
   description: z.string().optional(),
   template: TemplateWithDefinitionResponseSchema,
   createdAt: z.string(),
+  hidden: z.boolean().optional(),
 });
 
 export type TTemplateDraft = z.infer<typeof TemplateDraftSchema>;
@@ -30,6 +31,7 @@ export type TState = z.infer<typeof TemplateDraftStoreSchema>;
 export type TActions = {
   add: (templateInstance: TTemplateDraft) => Promise<void>;
   remove: (id: string) => Promise<void>;
+  hide: (id: string) => Promise<void>;
   update: (id: string, templateInstance: Partial<TTemplateDraft>) => Promise<void>;
 };
 
@@ -53,6 +55,14 @@ export const createTemplateDraftStore = (initState: TState = defaultInitState) =
           set((state) => ({
             ...state,
             templateDrafts: state.templateDrafts.filter((instance) => instance.id !== id),
+          }));
+        },
+        hide: async (id) => {
+          set((state) => ({
+            ...state,
+            templateDrafts: state.templateDrafts.map((draft) =>
+              draft.id === id ? { ...draft, hidden: true } : draft,
+            ),
           }));
         },
         update: async (id, newProperties) => {

@@ -167,9 +167,10 @@ export const PVCInfoSchema = z
     mounted_on_service_id: z.string().optional(),
     name: z.string(),
     project_id: z.string().optional(),
-    size: z.string(),
+    size_gb: z.number(),
     status: PersistentVolumeClaimPhaseSchema,
     team_id: z.string(),
+    used_gb: z.number().optional(),
   })
   .strip();
 
@@ -321,6 +322,15 @@ export const VariableMountSchema = z
   })
   .strip();
 
+export const ServiceVolumeSchema = z
+  .object({
+    id: z.string(), // ID of the volume, pvc name in kubernetes
+    mount_path: z.string(), // Path to mount the volume (e.g. /mnt/data)
+    size_gb: z.number().optional(), // Size of the volume in GB
+    used_gb: z.number().optional(), // Used size of the volume in GB
+  })
+  .strip();
+
 export const CreateServiceInputSchema = z
   .object({
     auto_deploy: z.boolean().optional(),
@@ -343,8 +353,6 @@ export const CreateServiceInputSchema = z
     name: z.string(),
     ports: z.array(PortSpecSchema).nullable().optional(),
     project_id: z.string(),
-    pvc_id: z.string().optional(), // ID of the PVC to use for the service
-    pvc_mount_path: z.string().optional(), // Mount path for the PVC
     replicas: z.number().optional(),
     repository_name: z.string().optional(),
     repository_owner: z.string().optional(),
@@ -354,6 +362,7 @@ export const CreateServiceInputSchema = z
     team_id: z.string(),
     type: ServiceTypeSchema, // Type of service, e.g. 'github', 'docker-image'
     variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Mount variables as volumes
+    volumes: z.array(ServiceVolumeSchema).optional(), // Volumes to mount in the service
   })
   .strip();
 
@@ -381,14 +390,13 @@ export const ServiceConfigResponseSchema = z
     is_public: z.boolean(),
     ports: z.array(PortSpecSchema).optional(),
     protected_variables: z.array(z.string()),
-    pvc_id: z.string().optional(),
-    pvc_volume_mount_path: z.string().optional(),
     replicas: z.number(),
     run_command: z.string().optional(),
     s3_backup_bucket: z.string().optional(),
     s3_backup_source_id: z.string().optional(),
     security_context: SecurityContextSchema.optional(),
     variable_mounts: z.array(VariableMountSchema),
+    volumes: z.array(ServiceVolumeSchema).nullable().optional(),
   })
   .strip();
 
@@ -1542,7 +1550,7 @@ export const SortOrderSchema = z.enum(['asc', 'desc']);
 
 export const StorageMetadataSchema = z
   .object({
-    allocatable_bytes_gb: z.string(),
+    allocatable_gb: z.string(),
     minimum_storage_gb: z.string(),
     storage_class_name: z.string(),
     storage_step_gb: z.string(),
@@ -1753,8 +1761,6 @@ export const UpdateServiceInputSchema = z
     ports: z.array(PortSpecSchema).nullable().optional(),
     project_id: z.string(),
     protected_variables: z.array(z.string()).optional(), // List of protected variables
-    pvc_id: z.string().optional(), // ID of the PVC to attach to the service
-    pvc_mount_path: z.string().optional(), // Mount path for the PVC
     replicas: z.number().optional(),
     run_command: z.string().optional(),
     s3_backup_bucket: z.string().optional(),
@@ -1762,6 +1768,7 @@ export const UpdateServiceInputSchema = z
     service_id: z.string(),
     team_id: z.string(),
     variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Mount variables as volumes
+    volumes: z.array(ServiceVolumeSchema).optional(), // Volumes to attach to the service
   })
   .strip();
 
@@ -1933,6 +1940,7 @@ export type Protocol = z.infer<typeof ProtocolSchema>;
 export type PortSpec = z.infer<typeof PortSpecSchema>;
 export type ServiceType = z.infer<typeof ServiceTypeSchema>;
 export type VariableMount = z.infer<typeof VariableMountSchema>;
+export type ServiceVolume = z.infer<typeof ServiceVolumeSchema>;
 export type CreateServiceInput = z.infer<typeof CreateServiceInputSchema>;
 export type SecurityContext = z.infer<typeof SecurityContextSchema>;
 export type ServiceConfigResponse = z.infer<typeof ServiceConfigResponseSchema>;

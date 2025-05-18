@@ -1,10 +1,14 @@
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
+import { useServicesUtils } from "@/components/project/services-provider";
+import { useTemplateDraftPanel } from "@/components/templates/panel/template-draft-panel-provider";
 import { TTemplateDraft, TTemplateInput } from "@/components/templates/template-draft-store";
-import { Button } from "@/components/ui/button";
+import { useTemplateDraftStore } from "@/components/templates/template-draft-store-provider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
+import { drawerAnimationMs } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
+import { api } from "@/server/trpc/setup/client";
 import {
   ArchiveIcon,
   DatabaseIcon,
@@ -12,13 +16,14 @@ import {
   LoaderIcon,
   TextCursorInputIcon,
 } from "lucide-react";
-import { HTMLAttributes, useMemo } from "react";
+import { ResultAsync } from "neverthrow";
+import { HTMLAttributes, useMemo, useRef } from "react";
 import { toast } from "sonner";
 
 type TProps = {
   templateDraft: TTemplateDraft;
   className?: string;
-} & HTMLAttributes<HTMLDivElement>;
+} & HTMLAttributes<HTMLFormElement>;
 
 type TInput = {
   id: number;
@@ -33,6 +38,45 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
     [templateDraft.template.definition.inputs],
   );
 
+  const removeTemplateDraft = useTemplateDraftStore((s) => s.remove);
+  const hideTemplateDraft = useTemplateDraftStore((s) => s.hide);
+  const { closePanel } = useTemplateDraftPanel();
+  const { invalidate: invalidateServices } = useServicesUtils({
+    teamId: templateDraft.teamId,
+    projectId: templateDraft.projectId,
+    environmentId: templateDraft.environmentId,
+  });
+
+  const timeout = useRef<NodeJS.Timeout | null>(null);
+
+  const {
+    mutateAsync: deployTemplate,
+    error: errorDeployTemplate,
+    isPending: isPendingDeployTemplate,
+  } = api.templates.deploy.useMutation({
+    onSuccess: async () => {
+      const res = await ResultAsync.fromPromise(
+        invalidateServices(),
+        () => new Error("Failed to invalidate services"),
+      );
+      hideTemplateDraft(templateDraft.id);
+
+      if (res.isErr()) {
+        console.error("Failed to invalidate services", res.error);
+        toast.error("Failed to invalidate services", {
+          description: "Try refreshing the page to see the changes.",
+        });
+      }
+
+      closePanel();
+
+      if (timeout.current) clearTimeout(timeout.current);
+      timeout.current = setTimeout(() => {
+        removeTemplateDraft(templateDraft.id);
+      }, drawerAnimationMs);
+    },
+  });
+
   const form = useAppForm({
     defaultValues: {
       inputs: visibleInputs.map((i) => ({
@@ -43,36 +87,39 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
     onSubmit: async ({ value }) => {
       const editedInputs = value.inputs.map((input, i) => ({
         id: visibleInputs[i].id,
-        name: visibleInputs[i].name,
-        value: input.value !== "" ? input.value : visibleInputs[i].default,
+        value: input.value !== "" ? input.value : visibleInputs[i].default || "",
       }));
-      toast.info(editedInputs.map((i) => `${i.name}: ${i.value}`).join(" | "), {
-        description: "This is a test toast",
+      await deployTemplate({
+        groupName: templateDraft.name,
+        groupDescription: templateDraft.description,
+        teamId: templateDraft.teamId,
+        projectId: templateDraft.projectId,
+        environmentId: templateDraft.environmentId,
+        templateId: templateDraft.template.id,
+        inputs: editedInputs,
       });
     },
   });
 
   return (
-    <div
+    <form
       className={cn(
         "mt-4 flex w-full flex-1 flex-col overflow-hidden border-t select-text sm:mt-6",
         className,
       )}
       {...rest}
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        form.validateArrayFieldsStartingFrom("inputs", 0, "submit");
+        form.handleSubmit();
+      }}
     >
       <ScrollArea classNameViewport="pb-8">
         <div className="flex w-full flex-1 flex-col gap-6 px-3 py-5 sm:p-6">
           {/* Inputs */}
           <div className="-mx-1 flex w-[calc(100%+0.5rem)] flex-col">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                form.validateArrayFieldsStartingFrom("inputs", 0, "submit");
-                form.handleSubmit();
-              }}
-              className="-my-4 flex w-full flex-col"
-            >
+            <div className="-my-4 flex w-full flex-col">
               <form.AppField
                 name="inputs"
                 mode="value"
@@ -94,7 +141,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                                   visibleInputs[i].type === "volume-size") && (
                                   <>
                                     {": "}
-                                    <span className="text-process font-bold">
+                                    <span className="text-foreground bg-foreground/6 border-foreground/6 rounded-md border px-1.25">
                                       {values.inputs[i].value || visibleInputs[i].default}{" "}
                                       {storageUnitSuffix}
                                     </span>
@@ -154,7 +201,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                   ))
                 }
               />
-            </form>
+            </div>
           </div>
           {/* Services */}
           <div className="flex w-full flex-col gap-2 pt-1">
@@ -168,34 +215,35 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
         </div>
       </ScrollArea>
       <div className="flex w-full flex-col gap-2 border-t px-3 pt-3 pb-[calc(var(--safe-area-inset-bottom)+0.75rem)] sm:px-6 sm:pt-6 sm:pb-[calc(var(--safe-area-inset-bottom)+1.5rem)]">
-        {false && <ErrorLine />}
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            form.validateArrayFieldsStartingFrom("inputs", 0, "submit");
-            form.handleSubmit();
+        {errorDeployTemplate && <ErrorLine message={errorDeployTemplate.message} />}
+        <form.Subscribe
+          selector={(state) => [state.isSubmitting]}
+          children={([isSubmitting]) => {
+            const isPending = isPendingDeployTemplate || isSubmitting;
+            return (
+              <form.SubmitButton
+                data-pending={isPending ? true : undefined}
+                className="group/button data-pending:bg-foreground/60 w-full"
+                disabled={isPending}
+                fadeOnDisabled={false}
+              >
+                {isPending && (
+                  <div className="absolute top-0 left-0 h-full w-full items-center justify-center overflow-hidden rounded-lg">
+                    <div className="from-foreground/0 via-foreground to-foreground/0 animate-ping-pong absolute top-1/2 left-1/2 aspect-square w-full origin-center -translate-1/2 bg-gradient-to-r" />
+                  </div>
+                )}
+                <div className="relative flex w-full items-center justify-center gap-1.5">
+                  {isPending && (
+                    <LoaderIcon className="-my-1 -ml-0.5 size-5 shrink-0 animate-spin" />
+                  )}
+                  <p className="min-w-0 shrink">{isPending ? "Deploying" : "Deploy"}</p>
+                </div>
+              </form.SubmitButton>
+            );
           }}
-        >
-          <Button
-            data-pending={undefined}
-            className="group/button data-pending:bg-foreground/60 w-full"
-            disabled={false}
-            fadeOnDisabled={false}
-          >
-            {false && (
-              <div className="absolute top-0 left-0 h-full w-full items-center justify-center overflow-hidden rounded-lg">
-                <div className="from-foreground/0 via-foreground to-foreground/0 animate-ping-pong absolute top-1/2 left-1/2 aspect-square w-full origin-center -translate-1/2 bg-gradient-to-r" />
-              </div>
-            )}
-            <div className="relative flex w-full items-center justify-center gap-1.5">
-              {false && <LoaderIcon className="-my-1 -ml-0.5 size-5 shrink-0 animate-spin" />}
-              <p className="min-w-0 shrink">{false ? "Deploying" : "Deploy"}</p>
-            </div>
-          </Button>
-        </form>
+        ></form.Subscribe>
       </div>
-    </div>
+    </form>
   );
 }
 

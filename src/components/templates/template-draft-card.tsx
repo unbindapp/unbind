@@ -3,16 +3,22 @@ import TemplateDraftIcon from "@/components/templates/template-draft-icon";
 import { TTemplateDraft } from "@/components/templates/template-draft-store";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
+import { HTMLProps } from "react";
 
 type TProps = {
   templateDraft: TTemplateDraft;
   className?: string;
   classNameCard?: string;
-};
+} & HTMLProps<HTMLLIElement>;
 
-export default function TemplateDraftCard({ templateDraft, className, classNameCard }: TProps) {
+export default function TemplateDraftCard({
+  templateDraft,
+  className,
+  classNameCard,
+  ...rest
+}: TProps) {
   return (
-    <li className={cn("group/item flex w-full flex-col p-1", className)}>
+    <li {...rest} className={cn("group/item flex w-full flex-col p-1", className)}>
       <TemplateDraftPanel templateDraft={templateDraft}>
         <Button
           variant="ghost"
