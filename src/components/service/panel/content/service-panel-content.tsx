@@ -16,7 +16,6 @@ import Metrics from "@/components/service/panel/tabs/metrics/metrics";
 import Settings from "@/components/service/panel/tabs/settings/settings";
 import Variables from "@/components/service/panel/tabs/variables/variables";
 import { useService } from "@/components/service/service-provider";
-import SystemProvider from "@/components/system/system-provider";
 import VariableReferencesProvider, {
   useVariableReferenceUtils,
 } from "@/components/variables/variable-references-provider";
@@ -93,24 +92,22 @@ export default function ServicePanelContent({ service, className }: TProps) {
 
   if (!service.last_deployment) {
     return (
-      <SystemProvider>
-        <DeploymentsProvider>
-          <VariablesProvider
-            teamId={teamId}
-            projectId={projectId}
-            environmentId={environmentId}
-            serviceId={service.id}
+      <DeploymentsProvider>
+        <VariablesProvider
+          teamId={teamId}
+          projectId={projectId}
+          environmentId={environmentId}
+          serviceId={service.id}
+          service={service}
+          type="service"
+        >
+          <ServicePanelContentUndeployed
+            data-vaul-no-drag
+            className={className}
             service={service}
-            type="service"
-          >
-            <ServicePanelContentUndeployed
-              data-vaul-no-drag
-              className={className}
-              service={service}
-            />
-          </VariablesProvider>
-        </DeploymentsProvider>
-      </SystemProvider>
+          />
+        </VariablesProvider>
+      </DeploymentsProvider>
     );
   }
 

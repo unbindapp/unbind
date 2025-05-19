@@ -5,12 +5,15 @@ import { Input, InputProps } from "@/components/ui/input";
 import { Slider, SliderProps } from "@/components/ui/slider";
 import TextareaWithTokens, { TTextareaWithTokensProps } from "@/components/ui/textarea-with-tokens";
 import { cn } from "@/components/ui/utils";
+import { appLocale } from "@/lib/constants";
 import {
   AnyFieldApi,
   createFormHook,
   createFormHookContexts,
   useStore,
 } from "@tanstack/react-form";
+import { useCallback } from "react";
+import { z } from "zod";
 
 const { fieldContext, formContext } = createFormHookContexts();
 
@@ -27,6 +30,7 @@ type TSliderWithInfoProps = TFieldProps &
   SliderProps & {
     classNameMin?: string;
     classNameMax?: string;
+    minMaxFormatter?: (value: number) => string;
   };
 
 function InputWithInfo({
@@ -138,27 +142,39 @@ function StorageSizeInput({
   classNameInput,
   classNameInfo,
   dontCheckUntilSubmit,
-  unitSuffix,
   classNameMin,
   classNameMax,
+  minMaxFormatter,
   ...rest
 }: TSliderWithInfoProps) {
   const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
   const isFormSubmitted = submissionAttempts > 0;
   const classNameMinMax = "min-w-0 text-muted-foreground shrink leading-tight text-xs font-medium";
 
+  const Min = useCallback(() => {
+    if (rest.min === undefined) return null;
+    return (
+      <p className={cn(classNameMinMax, classNameMin)}>
+        {minMaxFormatter ? minMaxFormatter(rest.min) : rest.min.toLocaleString(appLocale)}
+      </p>
+    );
+  }, [classNameMinMax, classNameMin, minMaxFormatter, rest.min]);
+
+  const Max = useCallback(() => {
+    if (rest.max === undefined) return null;
+    return (
+      <p className={cn(classNameMinMax, classNameMax)}>
+        {minMaxFormatter ? minMaxFormatter(rest.max) : rest.max.toLocaleString(appLocale)}
+      </p>
+    );
+  }, [classNameMinMax, classNameMax, minMaxFormatter, rest.max]);
+
   if (hideInfo) {
     return (
       <div className={cn("flex w-full gap-3", className)}>
-        <p className={cn(classNameMinMax, classNameMin)}>
-          {rest.min}
-          {unitSuffix ? ` ${unitSuffix}` : ""}
-        </p>
-        <Slider {...rest} unitSuffix={unitSuffix} className={cn("flex-1", classNameInput)} />
-        <p className={cn(classNameMinMax, classNameMax)}>
-          {rest.max}
-          {unitSuffix ? ` ${unitSuffix}` : ""}
-        </p>
+        <Min />
+        <Slider {...rest} className={cn("flex-1", classNameInput)} />
+        <Max />
       </div>
     );
   }
@@ -166,15 +182,9 @@ function StorageSizeInput({
   return (
     <div className={cn("flex flex-col", className)}>
       <div className="flex w-full gap-3">
-        <p className={cn(classNameMinMax, classNameMin)}>
-          {rest.min}
-          {unitSuffix ? ` ${unitSuffix}` : ""}
-        </p>
-        <Slider {...rest} unitSuffix={unitSuffix} className={cn("flex-1", classNameInput)} />
-        <p className={cn(classNameMinMax, classNameMax)}>
-          {rest.max}
-          {unitSuffix ? ` ${unitSuffix}` : ""}
-        </p>
+        <Min />
+        <Slider {...rest} className={cn("flex-1", classNameInput)} />
+        <Max />
       </div>
       {(field.state.meta.isTouched || isFormSubmitted) &&
       (field.state.meta.isBlurred || isFormSubmitted) &&
@@ -203,3 +213,5 @@ export const { useAppForm } = createFormHook({
   fieldContext,
   formContext,
 });
+
+export const DomainFieldSchema = z.string().url();

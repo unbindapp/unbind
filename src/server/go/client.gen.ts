@@ -305,6 +305,13 @@ export const HostSpecSchema = z
   })
   .strip();
 
+export const InitContainerSchema = z
+  .object({
+    command: z.string(), // Command to run in the init container
+    image: z.string(), // Image of the init container
+  })
+  .strip();
+
 export const ProtocolSchema = z.enum(['TCP', 'UDP', 'SCTP']);
 
 export const PortSpecSchema = z
@@ -351,6 +358,7 @@ export const CreateServiceInputSchema = z
     health_check: HealthCheckSchema.optional(), // Health check configuration for the service
     hosts: z.array(HostSpecSchema).nullable().optional(),
     image: z.string().optional(),
+    init_containers: z.array(InitContainerSchema).nullable().optional(), // Init containers to run before the main container
     install_command: z.string().optional(),
     is_public: z.boolean().optional(),
     name: z.string(),
@@ -389,6 +397,7 @@ export const ServiceConfigResponseSchema = z
     hosts: z.array(HostSpecSchema).optional(),
     icon: z.string(),
     image: z.string().optional(),
+    init_containers: z.array(InitContainerSchema),
     install_command: z.string().optional(),
     is_public: z.boolean(),
     ports: z.array(PortSpecSchema).optional(),
@@ -399,7 +408,7 @@ export const ServiceConfigResponseSchema = z
     s3_backup_source_id: z.string().optional(),
     security_context: SecurityContextSchema.optional(),
     variable_mounts: z.array(VariableMountSchema),
-    volumes: z.array(ServiceVolumeSchema).nullable().optional(),
+    volumes: z.array(ServiceVolumeSchema),
   })
   .strip();
 
@@ -582,6 +591,7 @@ export const DeleteS3SourceByIDOutputBodySchema = z
 
 export const DeleteServiceGroupInputSchema = z
   .object({
+    delete_services: z.boolean().optional(), // Whether to delete the services in the service group
     environment_id: z.string(), // The ID of the environment
     id: z.string(), // The ID of the service group
     project_id: z.string(), // The ID of the project
@@ -966,6 +976,7 @@ export const TemplateServiceSchema = z
     icon: z.string(),
     id: z.string(),
     image: z.string().optional(),
+    init_containers: z.array(InitContainerSchema).nullable().optional(),
     init_db_replacers: z.record(z.string()).optional(),
     input_ids: z.array(z.string()).nullable().optional(),
     name: z.string(),
@@ -1553,10 +1564,10 @@ export const SortOrderSchema = z.enum(['asc', 'desc']);
 
 export const StorageMetadataSchema = z
   .object({
-    allocatable_gb: z.string(),
-    minimum_storage_gb: z.string(),
+    maximum_storage_gb: z.number(),
+    minimum_storage_gb: z.number(),
     storage_class_name: z.string(),
-    storage_step_gb: z.string(),
+    storage_step_gb: z.number(),
     unable_to_detect_allocatable: z.boolean(),
   })
   .strip();
@@ -1758,6 +1769,7 @@ export const UpdateServiceInputSchema = z
     health_check: HealthCheckSchema.optional(),
     hosts: z.array(HostSpecSchema).nullable().optional(),
     image: z.string().optional(),
+    init_containers: z.array(InitContainerSchema).nullable().optional(), // List of init containers
     install_command: z.string().optional(),
     is_public: z.boolean().optional(),
     name: z.string().nullable().optional(),
@@ -1939,6 +1951,7 @@ export type DatabaseConfig = z.infer<typeof DatabaseConfigSchema>;
 export type HealthCheckType = z.infer<typeof HealthCheckTypeSchema>;
 export type HealthCheck = z.infer<typeof HealthCheckSchema>;
 export type HostSpec = z.infer<typeof HostSpecSchema>;
+export type InitContainer = z.infer<typeof InitContainerSchema>;
 export type Protocol = z.infer<typeof ProtocolSchema>;
 export type PortSpec = z.infer<typeof PortSpecSchema>;
 export type ServiceType = z.infer<typeof ServiceTypeSchema>;

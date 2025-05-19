@@ -1,12 +1,14 @@
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
 import { useServicesUtils } from "@/components/project/services-provider";
+import { useSystem } from "@/components/system/system-provider";
 import { useTemplateDraftPanel } from "@/components/templates/panel/template-draft-panel-provider";
 import { TTemplateDraft, TTemplateInput } from "@/components/templates/template-draft-store";
 import { useTemplateDraftStore } from "@/components/templates/template-draft-store-provider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { drawerAnimationMs } from "@/lib/constants";
+import { formatGB } from "@/lib/helpers";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { api } from "@/server/trpc/setup/client";
 import {
@@ -30,13 +32,13 @@ type TInput = {
   value: string;
 };
 
-const storageUnitSuffix = "GB";
-
 export default function TemplateDraftPanelContent({ templateDraft, className, ...rest }: TProps) {
   const visibleInputs = useMemo(
     () => templateDraft.template.definition.inputs.filter((i) => !i.hidden),
     [templateDraft.template.definition.inputs],
   );
+
+  const { data: systemData } = useSystem();
 
   const removeTemplateDraft = useTemplateDraftStore((s) => s.remove);
   const hideTemplateDraft = useTemplateDraftStore((s) => s.hide);
@@ -79,12 +81,30 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
 
   const form = useAppForm({
     defaultValues: {
-      inputs: visibleInputs.map((i) => ({
-        id: i.id,
-        value: "",
-      })) as TInput[],
+      inputs: visibleInputs.map((input) => {
+        if (input.type === "database-size" || input.type === "volume-size") {
+          return {
+            id: input.id,
+            value: input.default
+              ? Math.min(
+                  Math.max(
+                    systemData?.data.storage.minimum_storage_gb || -Infinity,
+                    Number(input.default),
+                  ),
+                  systemData?.data.storage.maximum_storage_gb || Infinity,
+                )
+              : "",
+          };
+        }
+        return {
+          id: input.id,
+          value: input.default || "",
+        };
+      }) as TInput[],
     },
     onSubmit: async ({ value }) => {
+      console.log("submitted");
+      return;
       const editedInputs = value.inputs.map((input, i) => ({
         id: visibleInputs[i].id,
         value: input.value !== "" ? input.value : visibleInputs[i].default || "",
@@ -143,8 +163,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                                   <>
                                     {": "}
                                     <span className="text-foreground bg-foreground/6 border-foreground/6 rounded-md border px-1.25">
-                                      {values.inputs[i].value || visibleInputs[i].default}{" "}
-                                      {storageUnitSuffix}
+                                      {formatGB(Number(values.inputs[i].value))}
                                     </span>
                                   </>
                                 )}
@@ -165,12 +184,12 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                                 field={subField}
                                 className="w-full py-1.5"
                                 onBlur={subField.handleBlur}
-                                min={1}
-                                step={1}
-                                max={100}
+                                min={systemData?.data.storage.minimum_storage_gb || 1}
+                                step={systemData?.data.storage.storage_step_gb || 1}
+                                max={systemData?.data.storage.maximum_storage_gb || 100}
+                                minMaxFormatter={formatGB}
                                 classNameMin="pl-1.5"
                                 classNameMax="pr-1.5"
-                                unitSuffix="GB"
                                 defaultValue={[Number(visibleInputs[i].default || "10")]}
                                 value={
                                   subField.state.value ? [Number(subField.state.value)] : undefined

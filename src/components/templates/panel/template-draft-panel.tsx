@@ -1,6 +1,5 @@
 import { useDeviceSize } from "@/components/providers/device-size-provider";
 import { DeleteEntityTrigger } from "@/components/settings/delete-card";
-import SystemProvider from "@/components/system/system-provider";
 import TemplateDraftPanelContent from "@/components/templates/panel/template-draft-panel-content";
 import { useTemplateDraftPanel } from "@/components/templates/panel/template-draft-panel-provider";
 import TemplateDraftIcon from "@/components/templates/template-draft-icon";
@@ -65,43 +64,41 @@ export default function TemplateDraftPanel({ templateDraft, children }: TProps) 
   const { isExtraSmall } = useDeviceSize();
 
   return (
-    <SystemProvider>
-      <Drawer
-        open={open}
-        onOpenChange={setOpen}
-        direction={isExtraSmall ? "bottom" : "right"}
-        handleOnly={!isExtraSmall}
+    <Drawer
+      open={open}
+      onOpenChange={setOpen}
+      direction={isExtraSmall ? "bottom" : "right"}
+      handleOnly={!isExtraSmall}
+    >
+      <DrawerTrigger asChild>{children}</DrawerTrigger>
+      <DrawerContent
+        hasHandle={isExtraSmall}
+        className="flex h-[calc(100%-1.3rem)] w-full flex-col sm:top-0 sm:right-0 sm:my-0 sm:ml-auto sm:h-full sm:w-256 sm:max-w-[calc(100%-4rem)] sm:rounded-l-2xl sm:rounded-r-none"
       >
-        <DrawerTrigger asChild>{children}</DrawerTrigger>
-        <DrawerContent
-          hasHandle={isExtraSmall}
-          className="flex h-[calc(100%-1.3rem)] w-full flex-col sm:top-0 sm:right-0 sm:my-0 sm:ml-auto sm:h-full sm:w-256 sm:max-w-[calc(100%-4rem)] sm:rounded-l-2xl sm:rounded-r-none"
-        >
-          <div className="flex w-full items-start justify-start px-5 pt-4 sm:px-8 sm:pt-6">
-            <DrawerHeader className="flex min-w-0 flex-1 items-center justify-start p-0">
-              <DrawerTitle className="sr-only">{templateDraft.name}</DrawerTitle>
-              <TitleButton templateDraft={templateDraft} />
-            </DrawerHeader>
-            <div className="-mt-2.25 -mr-3 flex items-center justify-end gap-1 sm:-mt-3 sm:-mr-5">
-              <ThreeDotButton templateDraft={templateDraft} />
-              {!isExtraSmall && (
-                <DrawerClose asChild>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="text-muted-more-foreground shrink-0 rounded-lg"
-                  >
-                    <XIcon className="size-5" />
-                  </Button>
-                </DrawerClose>
-              )}
-            </div>
+        <div className="flex w-full items-start justify-start px-5 pt-4 sm:px-8 sm:pt-6">
+          <DrawerHeader className="flex min-w-0 flex-1 items-center justify-start p-0">
+            <DrawerTitle className="sr-only">{templateDraft.name}</DrawerTitle>
+            <TitleButton templateDraft={templateDraft} />
+          </DrawerHeader>
+          <div className="-mt-2.25 -mr-3 flex items-center justify-end gap-1 sm:-mt-3 sm:-mr-5">
+            <ThreeDotButton templateDraft={templateDraft} />
+            {!isExtraSmall && (
+              <DrawerClose asChild>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="text-muted-more-foreground shrink-0 rounded-lg"
+                >
+                  <XIcon className="size-5" />
+                </Button>
+              </DrawerClose>
+            )}
           </div>
-          {/* Content */}
-          <TemplateDraftPanelContent data-vaul-no-drag templateDraft={templateDraft} />
-        </DrawerContent>
-      </Drawer>
-    </SystemProvider>
+        </div>
+        {/* Content */}
+        <TemplateDraftPanelContent data-vaul-no-drag templateDraft={templateDraft} />
+      </DrawerContent>
+    </Drawer>
   );
 }
 

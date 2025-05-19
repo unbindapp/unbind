@@ -5,6 +5,7 @@ export const siteTagline = "Self-hosting done right";
 export const siteDescription = "Self-hosting done right.";
 export const staticAssetsRoute = "/static";
 
+export const appLocale = "en-US";
 export type TScOption = "x" | "github";
 
 export const sc: Record<

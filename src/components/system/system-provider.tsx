@@ -9,7 +9,7 @@ type TSystemContext = AppRouterQueryResult<AppRouterOutputs["system"]["get"]>;
 const SystemContext = createContext<TSystemContext | null>(null);
 
 export const SystemProvider: React.FC<{
-  initialData?: AppRouterOutputs["system"]["get"];
+  initialData: AppRouterOutputs["system"]["get"];
   children: ReactNode;
 }> = ({ initialData, children }) => {
   const query = api.system.get.useQuery(undefined, { initialData });
