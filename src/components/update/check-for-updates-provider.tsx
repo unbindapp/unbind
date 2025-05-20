@@ -64,7 +64,7 @@ export function UpdateToastProvider({ children }: { children: ReactNode }) {
     toast.success("Update available!", {
       id: "update_toast",
       description: `Version ${latestVersion} is out. You can update now!`,
-      icon: <GiftIcon />,
+      icon: <GiftIcon className="size-full" />,
       action: (
         <div className="ml-auto max-w-full shrink-0 pl-4">
           <LinkButton

@@ -69,10 +69,22 @@ function DrawerContent({
   transparentOverlay?: boolean;
 }) {
   const { hideHandle } = useDrawerContext();
+
   return (
     <DrawerPortal>
       <DrawerOverlay transparent={transparentOverlay} />
       <DrawerPrimitive.Content
+        onPointerDownOutside={
+          props.onPointerDownOutside
+            ? props.onPointerDownOutside
+            : (e) => {
+                const target = e.currentTarget as HTMLElement;
+                if (target && typeof target.closest === "function") {
+                  const isSonner = target.closest("[data-sonner-toast]") !== null;
+                  if (isSonner) e.preventDefault();
+                }
+              }
+        }
         className={cn(
           `bg-background ring-border fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-2xl ring-1 focus:outline-hidden focus-visible:outline-hidden`,
           className,

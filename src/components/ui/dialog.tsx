@@ -134,6 +134,17 @@ function DialogContent({
       >
         <DialogPrimitive.Content
           {...props}
+          onInteractOutside={
+            props.onInteractOutside
+              ? props.onInteractOutside
+              : (e) => {
+                  const target = e.currentTarget as HTMLElement;
+                  if (target && typeof target.closest === "function") {
+                    const isSonner = target.closest("[data-sonner-toast]") !== null;
+                    if (isSonner) e.preventDefault();
+                  }
+                }
+          }
           onCloseAutoFocus={handleCloseAutoFocus}
           onEscapeKeyDown={handleEscapeKeyDown}
           className={cn(dialogContentVariants({ variant, animate, className }))}
