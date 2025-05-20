@@ -183,6 +183,11 @@ function DeleteTrigger({
         dialogTitle="Delete Webhook"
         dialogDescription="Are you sure you want to delete this webhook? This action cannot be undone."
         disableConfirmationInput
+        EntityNameBadge={() => (
+          <p className="bg-foreground/6 border-foreground/6 -ml-0.5 max-w-[calc(100%+0.25rem)] truncate rounded-md border px-1.5 py-0.25 text-sm font-medium">
+            {webhook.url}
+          </p>
+        )}
         deletingEntityName={webhook.url}
         onDialogClose={() => {
           deleteWebhookReset();

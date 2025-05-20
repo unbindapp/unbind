@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { defaultAnimationMs } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { ReactNode, useCallback, useRef, useState } from "react";
+import { FC, ReactNode, useCallback, useRef, useState } from "react";
 import { z } from "zod";
 
 type TProps = {
@@ -23,6 +23,7 @@ type TProps = {
   onDialogCloseImmediate?: () => void;
   error: { message: string } | null;
   disableConfirmationInput?: boolean;
+  EntityNameBadge?: FC<{ className?: string }>;
   children: ReactNode;
 };
 
@@ -35,6 +36,7 @@ export function DeleteEntityTrigger({
   onDialogCloseImmediate,
   error,
   disableConfirmationInput,
+  EntityNameBadge,
   children,
 }: TProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -91,6 +93,7 @@ export function DeleteEntityTrigger({
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
           <DialogTitle>{dialogTitle}</DialogTitle>
+          {EntityNameBadge && <EntityNameBadge />}
           <DialogDescription>
             {dialogDescription}
             {!disableConfirmationInput && (

@@ -601,14 +601,19 @@ function DeleteTrigger({
       dialogTitle="Delete Variable"
       dialogDescription="Are you sure you want to delete this variable? This action cannot be undone."
       deletingEntityName={variable.name}
-      error={error}
       disableConfirmationInput
+      EntityNameBadge={() => (
+        <p className="bg-foreground/6 border-foreground/6 -ml-0.5 max-w-[calc(100%+0.25rem)] rounded-md border px-1.5 font-mono font-semibold">
+          {variable.name}
+        </p>
+      )}
       onDialogClose={() => {
         reset();
       }}
       onDialogCloseImmediate={() => {
         closeDropdown();
       }}
+      error={error}
       onSubmit={async () => {
         await deleteVariable({
           ...variableTypeProps,
