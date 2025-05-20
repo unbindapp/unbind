@@ -77,8 +77,8 @@ function TitleButton({
       type="name-and-description"
       dialogTitle="Rename Service Group"
       dialogDescription="Give a new name and description to the service group."
-      nameInputTitle="Service Name"
-      descriptionInputTitle="Service Description"
+      nameInputTitle="Service Group Name"
+      descriptionInputTitle="Service Group Description"
       name={serviceGroup.group.name}
       description={serviceGroup.group.description || ""}
       formSchema={ServiceRenameSchema}
