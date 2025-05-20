@@ -32,7 +32,7 @@ export default function TemplateDraftCard({
         <Button
           variant="ghost"
           className={cn(
-            "bg-process/8 dark:bg-process/7 dark:has-hover:hover:bg-process/15 dark:active:bg-process/15 has-hover:hover:bg-process/16 active:bg-process/16 dark:border-process/20 border-process/20 flex min-h-36 w-full flex-col items-start gap-12 rounded-xl border border-dashed bg-[radial-gradient(color-mix(in_oklab,var(--process)_8%,transparent)_1px,transparent_1px),radial-gradient(color-mix(in_oklab,var(--process)_8%,transparent)_1px,transparent_1px)] [background-size:10px_10px] [background-position:0px_0px,5px_5px] px-5 py-3.5 text-left font-semibold dark:bg-[radial-gradient(color-mix(in_oklab,var(--process)_7%,transparent)_1px,transparent_1px),radial-gradient(color-mix(in_oklab,var(--process)_7%,transparent)_1px,transparent_1px)]",
+            "bg-process/8 dark:bg-process/6 dark:has-hover:hover:bg-process/12 dark:active:bg-process/12 has-hover:hover:bg-process/16 active:bg-process/16 dark:border-process/20 border-process/24 flex min-h-36 w-full flex-col items-start gap-12 rounded-xl border border-dashed bg-[radial-gradient(color-mix(in_oklab,var(--process)_8%,transparent)_1px,transparent_1px),radial-gradient(color-mix(in_oklab,var(--process)_8%,transparent)_1px,transparent_1px)] [background-size:10px_10px] [background-position:0px_0px,5px_5px] px-5 py-3.5 text-left font-semibold dark:bg-[radial-gradient(color-mix(in_oklab,var(--process)_6%,transparent)_1px,transparent_1px),radial-gradient(color-mix(in_oklab,var(--process)_6%,transparent)_1px,transparent_1px)]",
             classNameCard,
           )}
         >
@@ -43,9 +43,9 @@ export default function TemplateDraftCard({
                 {templateDraft.name}
               </h3>
             </div>
-            <div className="bg-background -mr-1.25 max-w-1/2 shrink-0 rounded-sm">
-              <p className="text-process bg-process/12 border-process/16 truncate rounded-sm border px-1.5 py-0.5 text-xs font-medium">
-                Ready
+            <div className="bg-background -mr-1.5 max-w-1/2 shrink-0 rounded-sm">
+              <p className="text-process dark:bg-process/12 dark:border-process/16 bg-process/14 border-process/18 truncate rounded-sm border px-1.5 py-0.5 text-xs font-medium">
+                Template
               </p>
             </div>
           </div>
