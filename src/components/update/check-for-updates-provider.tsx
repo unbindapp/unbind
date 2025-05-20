@@ -1,6 +1,7 @@
 "use client";
 
 import { LinkButton } from "@/components/ui/button";
+import { UpdateStoreProvider, useUpdateStore } from "@/components/update/update-store-provider";
 import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
 import { api } from "@/server/trpc/setup/client";
 import { GiftIcon } from "lucide-react";
@@ -20,7 +21,9 @@ export const CheckForUpdatesProvider: React.FC<{
     initialData,
   });
   return (
-    <CheckForUpdatesContext.Provider value={query}>{children}</CheckForUpdatesContext.Provider>
+    <UpdateStoreProvider>
+      <CheckForUpdatesContext.Provider value={query}>{children}</CheckForUpdatesContext.Provider>
+    </UpdateStoreProvider>
   );
 };
 
@@ -35,6 +38,9 @@ export const useCheckForUpdates = () => {
 export default CheckForUpdatesProvider;
 
 export function UpdateToastProvider({ children }: { children: ReactNode }) {
+  const setLastDismissedVersion = useUpdateStore((state) => state.setLastDismissedVersion);
+  const lastDismissedVersion = useUpdateStore((state) => state.lastDismissedVersion);
+
   const { data } = useCheckForUpdates();
   const updateData = data?.data;
   const availableVersions = updateData?.available_versions;
@@ -53,15 +59,19 @@ export function UpdateToastProvider({ children }: { children: ReactNode }) {
     if (!isMounted) return;
     if (!hasUpdateAvailable || !latestVersion) return;
     if (updateShownRef.current) return;
+    if (lastDismissedVersion !== null && lastDismissedVersion === latestVersion) return;
 
     toast.success("Update available!", {
-      id: "update-toast",
-      description: `Version ${latestVersion} is out!`,
+      id: "update_toast",
+      description: `Version ${latestVersion} is out. You can update now!`,
       icon: <GiftIcon />,
       action: (
         <div className="ml-auto max-w-full shrink-0 pl-4">
           <LinkButton
-            onClick={() => toast.dismiss("update-toast")}
+            onClick={() => {
+              toast.dismiss("update_toast");
+              if (latestVersion) setLastDismissedVersion(latestVersion);
+            }}
             href="/update"
             size="sm"
             className="w-full px-3"
@@ -70,12 +80,15 @@ export function UpdateToastProvider({ children }: { children: ReactNode }) {
           </LinkButton>
         </div>
       ),
+      onDismiss: () => {
+        if (latestVersion) setLastDismissedVersion(latestVersion);
+      },
     });
 
     updateShownRef.current = true;
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasUpdateAvailable, latestVersion, mounted]);
+  }, [hasUpdateAvailable, latestVersion, mounted, lastDismissedVersion]);
 
   return children;
 }

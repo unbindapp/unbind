@@ -79,7 +79,7 @@ export const createTemplateDraftStore = (initState: TState = defaultInitState) =
         },
       }),
       {
-        name: "template-draft-store",
+        name: "template_draft_store",
         version,
         migrate: (state): TState => {
           const { error, data } = TemplateDraftStoreSchema.safeParse(state);
