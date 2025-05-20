@@ -83,28 +83,31 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
     defaultValues: {
       inputs: visibleInputs.map((input) => {
         if (input.type === "database-size" || input.type === "volume-size") {
-          return {
+          const _input: TInput = {
             id: input.id,
             value: input.default
-              ? Math.min(
-                  Math.max(
-                    systemData?.data.storage.minimum_storage_gb || -Infinity,
-                    Number(input.default),
+              ? String(
+                  Math.min(
+                    Math.max(
+                      systemData?.data.storage.minimum_storage_gb || -Infinity,
+                      Number(input.default),
+                    ),
+                    systemData?.data.storage.maximum_storage_gb || Infinity,
                   ),
-                  systemData?.data.storage.maximum_storage_gb || Infinity,
                 )
               : "",
           };
+          return _input;
         }
-        return {
+
+        const _input: TInput = {
           id: input.id,
           value: input.default || "",
         };
-      }) as TInput[],
+        return _input;
+      }),
     },
     onSubmit: async ({ value }) => {
-      console.log("submitted");
-      return;
       const editedInputs = value.inputs.map((input, i) => ({
         id: visibleInputs[i].id,
         value: input.value !== "" ? input.value : visibleInputs[i].default || "",

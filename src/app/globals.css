@@ -124,6 +124,10 @@
   --vuejs-2: hsl(210 29% 29%);
   --typesense: hsl(83 100% 30%);
   --wireguard: hsl(358 71% 31%);
+  --formbricks: hsl(174 100% 35%);
+  --listmonk: hsl(216, 100%, 42%);
+  --nocodb: hsl(240 57% 49%);
+  --appsmith: hsl(18 100% 59%);
 
   --barrier: hsl(120 30% 4%);
 
@@ -219,7 +223,11 @@
   --vuejs-1: hsl(153 48% 49%);
   --vuejs-2: hsl(210 29% 29%);
   --typesense: hsl(83 100% 67%);
-  --wireguard: hsl(358 60% 50%);
+  --wireguard: hsl(358 60% 60%);
+  --formbricks: hsl(174 100% 42%);
+  --listmonk: hsl(216, 100%, 50%);
+  --nocodb: hsl(240 100% 70%);
+  --appsmith: hsl(18 100% 59%);
 
   --barrier: hsl(120 10% 4%);
 
@@ -445,6 +453,10 @@
   --color-vuejs-2: var(--vuejs-2);
   --color-typesense: var(--typesense);
   --color-wireguard: var(--wireguard);
+  --color-formbricks: var(--formbricks);
+  --color-listmonk: var(--listmonk);
+  --color-nocodb: var(--nocodb);
+  --color-appsmith: var(--appsmith);
 
   --color-barrier: var(--barrier);
 

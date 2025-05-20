@@ -1268,6 +1268,114 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
     );
   }
 
+  if (brand === "formbricks") {
+    return (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        fill="none"
+        viewBox="0 0 24 24"
+        className={cn(defaultClassName, color === "brand" && "text-formbricks", className)}
+        {...rest}
+      >
+        <path
+          fill="currentColor"
+          d="M10.6 18.47a2.8 2.8 0 1 1-5.6 0v-2.8h5.6zm5.6-9.275a2.8 2.8 0 0 1 0 5.6H5v-5.6zm0-6.475a2.8 2.8 0 0 1 0 5.6H5V7.137A4.417 4.417 0 0 1 9.417 2.72z"
+        />
+      </svg>
+    );
+  }
+
+  if (brand === "listmonk") {
+    return (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        fill="none"
+        viewBox="0 0 24 24"
+        className={cn(defaultClassName, color === "brand" && "text-listmonk", className)}
+        {...rest}
+      >
+        <path
+          fill="currentColor"
+          d="M17.671 12a5.671 5.671 0 1 0-11.343 0 5.671 5.671 0 0 0 11.343 0M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2s10 4.477 10 10"
+        />
+      </svg>
+    );
+  }
+
+  if (brand === "nocodb") {
+    return (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        fill="none"
+        viewBox="0 0 24 24"
+        className={cn(defaultClassName, color === "brand" && "text-nocodb", className)}
+        {...rest}
+      >
+        <path
+          fill="currentColor"
+          d="m4.003 11.166 3.806 3.81v6.035H4.003zM20.002 3.06V20.39a.646.646 0 0 1-1.101.456L4.003 7.409V3.608c0-.356.286-.645.643-.645h.032c.172 0 .336.068.458.19l11.056 9.591V3.061z"
+        />
+      </svg>
+    );
+  }
+
+  if (brand === "teable") {
+    return (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        fill="none"
+        viewBox="0 0 24 24"
+        className={cn(defaultClassName, className)}
+        {...rest}
+      >
+        <path
+          fill="currentColor"
+          d="M14.695 2c1.078 0 2.114.418 2.89 1.165l3.139 3.023a4.17 4.17 0 0 1 1.276 3v8.02A4.79 4.79 0 0 1 17.208 22H9.56a4.17 4.17 0 0 1-2.947-1.22l-3.392-3.393A4.17 4.17 0 0 1 2 14.44V7.833A5.833 5.833 0 0 1 7.833 2zM8.042 3.458a4.584 4.584 0 0 0-4.584 4.584v5.904a4.16 4.16 0 0 0 1.19 2.914l2.376 2.43a4.17 4.17 0 0 0 2.978 1.252h7.206a3.334 3.334 0 0 0 3.334-3.334V9.516a3.75 3.75 0 0 0-1.129-2.682l-2.24-2.188a4.17 4.17 0 0 0-2.912-1.188zM17 7.417c1.15 0 2.084.933 2.084 2.083V17c0 1.15-.934 2.084-2.084 2.084H9.5A2.084 2.084 0 0 1 7.417 17V9.5c0-1.15.933-2.083 2.083-2.083zM12 9.5a.417.417 0 0 0-.416.417v5.417c0 .92.746 1.666 1.666 1.666h.834c.69 0 1.25-.56 1.25-1.25a.417.417 0 0 0-.417-.416h-1.25v-2.5h1.25c.23 0 .417-.187.417-.417v-.625a.42.42 0 0 0-.417-.417h-1.25v-.833c0-.575-.467-1.042-1.042-1.042z"
+        />
+      </svg>
+    );
+  }
+
+  if (brand === "appsmith") {
+    return (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        fill="none"
+        viewBox="0 0 24 24"
+        className={cn(defaultClassName, className)}
+        {...rest}
+      >
+        {color === "brand" && (
+          <>
+            <path className="text-appsmith" fill="currentColor" d="M4.125 4.125H21V21H4.125z" />
+            <path fill="currentColor" d="M3 3h16.875v16.875H3z" />
+            <path
+              className="text-background"
+              fill="currentColor"
+              d="M17.4 14.253v1.099h-5.31v-1.099zM8.344 7.368q2.48 0 2.48 1.774v3.145q0 .778.241 1.12H9.612q-.104-.182-.16-.72-.601.858-1.916.858-.98 0-1.562-.47-.583-.469-.583-1.303 0-1.614 2.284-1.841l.9-.08q.448-.057.645-.212.196-.155.196-.463 0-.377-.248-.555-.248-.177-.837-.177-.634 0-.91.212-.277.21-.323.725H5.667q.128-2.013 2.677-2.013m1.072 3.168q-.208.184-.68.24l-.785.091q-.577.069-.825.27-.248.2-.248.577 0 .378.26.589.259.212.744.212.681 0 1.107-.372.427-.371.427-1.07z"
+            />
+          </>
+        )}
+        {color === "monochrome" && (
+          <path
+            fill="currentColor"
+            d="M19.875 4.125H21V21H4.125v-1.125H3V3h16.875zM3.563 19.313h15.75V3.563H3.563zM17.4 15.352h-5.31v-1.1h5.31zM8.344 7.368q2.48 0 2.48 1.774v3.145q0 .777.241 1.12H9.612q-.104-.183-.16-.72-.601.858-1.916.858-.98 0-1.562-.47t-.583-1.303q0-1.613 2.284-1.841l.9-.08q.448-.059.645-.212.196-.155.196-.463 0-.378-.248-.555t-.837-.178q-.633 0-.91.212-.277.21-.323.726H5.667q.128-2.013 2.677-2.013m1.072 3.168q-.209.184-.68.24l-.785.091q-.577.068-.825.269-.248.2-.248.578 0 .376.26.589.259.212.744.212.681 0 1.107-.372.427-.372.427-1.07z"
+          />
+        )}
+      </svg>
+    );
+  }
+
   if (brand === "service-group") {
     return <LayoutGridIcon className={cn("scale-80", defaultClassName, className)} {...rest} />;
   }
