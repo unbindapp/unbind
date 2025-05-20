@@ -1,16 +1,8 @@
 "use client";
 
 import ErrorLine from "@/components/error-line";
+import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,7 +16,6 @@ import { cn } from "@/components/ui/utils";
 import { getReferenceVariableReadableNames } from "@/components/variables/helpers";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
 import { useVariablesUtils } from "@/components/variables/variables-provider";
-import { defaultAnimationMs } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { useCopyToClipboard } from "@/lib/hooks/use-copy";
 import {
@@ -50,7 +41,7 @@ import {
   TriangleAlertIcon,
   XIcon,
 } from "lucide-react";
-import { Dispatch, FC, ReactNode, useMemo, useRef, useState } from "react";
+import { Dispatch, FC, ReactNode, useMemo, useState } from "react";
 import { z } from "zod";
 
 const hiddenString = "••••••••••";
@@ -585,21 +576,18 @@ function DeleteTrigger({
   closeDropdown: () => void;
   children: ReactNode;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const { invalidate: invalidateVariables, optimisticRemove } = useVariablesUtils({
-    ...variableTypeProps,
-  });
+  const { invalidate: invalidateVariables, optimisticRemove: optimisticRemoveVariables } =
+    useVariablesUtils({
+      ...variableTypeProps,
+    });
 
   const {
-    mutate: deleteVariable,
-    isPending,
+    mutateAsync: deleteVariable,
     error,
     reset,
   } = api.variables.delete.useMutation({
     onSuccess: async () => {
-      setIsOpen(false);
-      optimisticRemove({
+      optimisticRemoveVariables({
         variables: variable.variable_type === "reference" ? [] : [variable],
         variableReferences: variable.variable_type === "reference" ? [variable] : [],
       });
@@ -608,56 +596,29 @@ function DeleteTrigger({
     },
   });
 
-  const timeout = useRef<NodeJS.Timeout | null>(null);
-
   return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={(open) => {
-        setIsOpen(open);
-        if (!open) {
-          closeDropdown();
-          if (timeout.current) clearTimeout(timeout.current);
-          timeout.current = setTimeout(() => {
-            reset();
-          }, defaultAnimationMs);
-        }
+    <DeleteEntityTrigger
+      dialogTitle="Delete Variable"
+      dialogDescription="Are you sure you want to delete this variable? This action cannot be undone."
+      deletingEntityName={variable.name}
+      error={error}
+      disableConfirmationInput
+      onDialogClose={() => {
+        reset();
+      }}
+      onDialogCloseImmediate={() => {
+        closeDropdown();
+      }}
+      onSubmit={async () => {
+        await deleteVariable({
+          ...variableTypeProps,
+          variables: variable.variable_type === "reference" ? [] : [{ name: variable.name }],
+          variableReferenceIds: variable.variable_type === "reference" ? [variable.id] : [],
+        });
       }}
     >
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent hideXButton classNameInnerWrapper="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Delete Variable</DialogTitle>
-          <p className="bg-border -mx-0.5 max-w-[calc(100%+0.25rem)] truncate rounded-md px-2 py-1 font-mono leading-tight font-medium">
-            {variable.name}
-          </p>
-          <DialogDescription>
-            Are you sure you want to delete this variable? This action cannot be undone.
-          </DialogDescription>
-        </DialogHeader>
-        {error && <ErrorLine message={error?.message} />}
-        <div className="flex w-full flex-wrap items-center justify-end gap-2">
-          <DialogClose asChild className="text-muted-foreground">
-            <Button type="button" variant="ghost">
-              Cancel
-            </Button>
-          </DialogClose>
-          <Button
-            onClick={() =>
-              deleteVariable({
-                ...variableTypeProps,
-                variables: variable.variable_type === "reference" ? [] : [{ name: variable.name }],
-                variableReferenceIds: variable.variable_type === "reference" ? [variable.id] : [],
-              })
-            }
-            variant="destructive"
-            isPending={isPending}
-          >
-            Delete
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+      {children}
+    </DeleteEntityTrigger>
   );
 }
 

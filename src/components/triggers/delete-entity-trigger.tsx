@@ -11,43 +11,35 @@ import {
 } from "@/components/ui/dialog";
 import { defaultAnimationMs } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { ReactNode, useCallback, useMemo, useRef, useState } from "react";
+import { ReactNode, useCallback, useRef, useState } from "react";
 import { z } from "zod";
 
-export type TDeleteType = "team" | "project" | "service" | "template-draft";
+type TProps = {
+  dialogTitle: string;
+  dialogDescription: string;
+  deletingEntityName: string;
+  onSubmit: () => Promise<void>;
+  onDialogClose?: () => void;
+  onDialogCloseImmediate?: () => void;
+  error: { message: string } | null;
+  disableConfirmationInput?: boolean;
+  children: ReactNode;
+};
 
 export function DeleteEntityTrigger({
-  type,
+  dialogTitle,
+  dialogDescription,
   deletingEntityName,
   onSubmit,
   onDialogClose,
   onDialogCloseImmediate,
   error,
-  description: descriptionProp,
   disableConfirmationInput,
   children,
-}: {
-  type: TDeleteType;
-  deletingEntityName?: string;
-  onSubmit: () => Promise<void>;
-  onDialogClose: () => void;
-  onDialogCloseImmediate?: () => void;
-  error: { message: string } | null;
-  description?: string;
-  disableConfirmationInput?: boolean;
-  children: ReactNode;
-}) {
+}: TProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const textToConfirm = deletingEntityName
-    ? `Delete ${deletingEntityName} permanently`
-    : "Delete this project permanently";
-
-  const title = useMemo(() => getDialogTitle(type), [type]);
-  const description = useMemo(
-    () => (descriptionProp ? descriptionProp : getDialogDescription(type)),
-    [type, descriptionProp],
-  );
+  const textToConfirm = `Delete ${deletingEntityName} permanently`;
 
   const form = useAppForm({
     defaultValues: disableConfirmationInput
@@ -83,7 +75,7 @@ export function DeleteEntityTrigger({
     if (timeout.current) clearTimeout(timeout.current);
     timeout.current = setTimeout(() => {
       form.reset();
-      onDialogClose();
+      onDialogClose?.();
     }, defaultAnimationMs);
   }, [onDialogCloseImmediate, onDialogClose, form]);
 
@@ -98,9 +90,9 @@ export function DeleteEntityTrigger({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle>{dialogTitle}</DialogTitle>
           <DialogDescription>
-            {description}
+            {dialogDescription}
             {!disableConfirmationInput && (
               <>
                 <br />
@@ -167,23 +159,4 @@ export function DeleteEntityTrigger({
       </DialogContent>
     </Dialog>
   );
-}
-
-function getDialogTitle(type: TDeleteType) {
-  if (type === "service") return "Delete Service";
-  if (type === "project") return "Delete Project";
-  if (type === "template-draft") return "Delete Template";
-  return "Delete Team";
-}
-function getDialogDescription(type: TDeleteType) {
-  if (type === "service") {
-    return "Are you sure you want to delete this service? This action cannot be undone.";
-  }
-  if (type === "project") {
-    return "Are you sure you want to delete this project? This action cannot be undone. All environments, services, and data inside this project will be permanently deleted.";
-  }
-  if (type === "template-draft") {
-    return "Are you sure you want to delete this template? This action cannot be undone.";
-  }
-  return "Are you sure you want to delete this team? This action cannot be undone. All the projects, environments, services, and data inside this team will be permanently deleted.";
 }

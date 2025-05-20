@@ -247,7 +247,8 @@ function ThreeDotButton({
         <ScrollArea>
           <DropdownMenuGroup>
             <DeleteEntityTrigger
-              type="service"
+              dialogTitle="Delete Service"
+              dialogDescription="Are you sure you want to delete this service? This action cannot be undone."
               onSubmit={async () => {
                 await deleteService({
                   teamId,

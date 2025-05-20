@@ -173,7 +173,8 @@ function ThreeDotButton({
         <ScrollArea>
           <DropdownMenuGroup>
             <DeleteEntityTrigger
-              type="template-draft"
+              dialogTitle="Delete Template Draft"
+              dialogDescription="Are you sure you want to delete this template draft? This action cannot be undone."
               onSubmit={async () => {
                 deleteTemplateDraft();
               }}

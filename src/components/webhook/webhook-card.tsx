@@ -1,17 +1,8 @@
 "use client";
 
-import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
+import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,12 +15,11 @@ import { cn } from "@/components/ui/utils";
 import { getWebhookIcon } from "@/components/webhook/helpers";
 import { TWebhookProjectProps, TWebhookProps, TWebhookTeamProps } from "@/components/webhook/types";
 import { useWebhooksUtils } from "@/components/webhook/webhooks-provider";
-import { defaultAnimationMs } from "@/lib/constants";
 import { TWebhookShallow } from "@/server/trpc/api/webhooks/types";
 import { api } from "@/server/trpc/setup/client";
 import { format } from "date-fns";
 import { EllipsisVerticalIcon, TrashIcon } from "lucide-react";
-import { ReactNode, useRef, useState } from "react";
+import { ReactNode, useState } from "react";
 
 const placeholderArray = Array.from({ length: 5 }, (_, i) => i);
 
@@ -166,7 +156,6 @@ function DeleteTrigger({
   closeDropdown: () => void;
   children: ReactNode;
 } & TWebhookProps) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { invalidate: invalidateWebhooks } = useWebhooksUtils(
     type === "project"
       ? { type, teamId, projectId }
@@ -177,69 +166,41 @@ function DeleteTrigger({
         },
   );
 
-  const timeout = useRef<NodeJS.Timeout | null>(null);
-
   const {
     mutateAsync: deleteWebhook,
     error: deleteWebhookError,
     reset: deleteWebhookReset,
-    isPending: deleteWebhookIsPending,
   } = api.webhooks.delete.useMutation({
     onSuccess: async () => {
       await invalidateWebhooks();
-      setIsDialogOpen(false);
       closeDropdown();
     },
   });
 
-  return (
-    <Dialog
-      open={isDialogOpen}
-      onOpenChange={(o) => {
-        setIsDialogOpen(o);
-        if (!o) {
-          if (timeout.current) clearTimeout(timeout.current);
-          timeout.current = setTimeout(() => {
-            deleteWebhookReset();
-          }, defaultAnimationMs);
+  if (true) {
+    return (
+      <DeleteEntityTrigger
+        dialogTitle="Delete Webhook"
+        dialogDescription="Are you sure you want to delete this webhook? This action cannot be undone."
+        disableConfirmationInput
+        deletingEntityName={webhook.url}
+        onDialogClose={() => {
+          deleteWebhookReset();
+        }}
+        onDialogCloseImmediate={() => {
           closeDropdown();
-        }
-      }}
-    >
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
-        <DialogHeader>
-          <DialogTitle>Delete Webhook</DialogTitle>
-          <p className="bg-border -mx-0.5 max-w-[calc(100%+0.25rem)] truncate rounded-md px-2 py-1 text-sm leading-tight font-medium">
-            {webhook.url}
-          </p>
-          <DialogDescription>
-            Are you sure you want to delete this webhook? This action cannot be undone.
-          </DialogDescription>
-        </DialogHeader>
-        {deleteWebhookError && <ErrorLine message={deleteWebhookError.message} />}
-        <div className="flex w-full flex-wrap items-center justify-end gap-2">
-          <DialogClose asChild className="text-muted-foreground">
-            <Button type="button" variant="ghost">
-              Cancel
-            </Button>
-          </DialogClose>
-          <Button
-            onClick={() =>
-              deleteWebhook(
-                type === "project"
-                  ? { id: webhook.id, type, teamId, projectId }
-                  : { id: webhook.id, type, teamId },
-              )
-            }
-            data-submitting={deleteWebhookIsPending ? true : undefined}
-            variant="destructive"
-            isPending={deleteWebhookIsPending}
-          >
-            Delete
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
+        }}
+        error={deleteWebhookError}
+        onSubmit={async () => {
+          await deleteWebhook(
+            type === "project"
+              ? { id: webhook.id, type, teamId, projectId }
+              : { id: webhook.id, type, teamId },
+          );
+        }}
+      >
+        {children}
+      </DeleteEntityTrigger>
+    );
+  }
 }

@@ -1,27 +1,31 @@
-import { DeleteEntityTrigger, TDeleteType } from "@/components/triggers/delete-entity-trigger";
+import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { TriangleAlertIcon } from "lucide-react";
-import { useMemo } from "react";
 
 type Props = {
-  className?: string;
-  deletingEntityName: string | undefined;
+  buttonText: string;
+  paragraph: string;
+  deletingEntityName: string;
+  dialogTitle: string;
+  dialogDescription: string;
   onSubmit: () => Promise<void>;
   onDialogClose: () => void;
   error: { message: string } | null;
-  type: TDeleteType;
+  className?: string;
 };
 
 export default function DeleteCard({
-  className,
+  buttonText,
+  paragraph,
   deletingEntityName,
+  dialogTitle,
+  dialogDescription,
   onSubmit,
   onDialogClose,
   error,
-  type,
+  className,
 }: Props) {
-  const paragraph = useMemo(() => getParagraph(type), [type]);
   return (
     <div
       className={cn(
@@ -34,7 +38,9 @@ export default function DeleteCard({
         <p className="min-w-0 shrink leading-snug text-balance">{paragraph}</p>
       </div>
       <DeleteButton
-        type={type}
+        dialogTitle={dialogTitle}
+        dialogDescription={dialogDescription}
+        buttonText={buttonText}
         onSubmit={onSubmit}
         onDialogClose={onDialogClose}
         deletingEntityName={deletingEntityName}
@@ -45,23 +51,26 @@ export default function DeleteCard({
 }
 
 function DeleteButton({
-  type,
+  buttonText,
+  dialogTitle,
+  dialogDescription,
   deletingEntityName,
   onSubmit,
   onDialogClose,
   error,
 }: {
-  type: TDeleteType;
-  deletingEntityName?: string;
+  buttonText: string;
+  dialogTitle: string;
+  dialogDescription: string;
+  deletingEntityName: string;
   onSubmit: () => Promise<void>;
   onDialogClose: () => void;
   error: { message: string } | null;
 }) {
-  const buttonText = useMemo(() => getButtonText(type), [type]);
-
   return (
     <DeleteEntityTrigger
-      type={type}
+      dialogTitle={dialogTitle}
+      dialogDescription={dialogDescription}
       deletingEntityName={deletingEntityName}
       onSubmit={onSubmit}
       onDialogClose={onDialogClose}
@@ -70,24 +79,4 @@ function DeleteButton({
       <Button variant="destructive">{buttonText}</Button>
     </DeleteEntityTrigger>
   );
-}
-
-function getParagraph(type: TDeleteType) {
-  if (type === "service") {
-    return "This action cannot be undone. All data inside the service will be permanently deleted.";
-  }
-  if (type === "project") {
-    return "This action cannot be undone. All environments, services, and data inside this project will be permanently deleted.";
-  }
-  if (type === "template-draft") {
-    return "This action cannot be undone. All data inside the template will be permanently deleted.";
-  }
-  return "This action cannot be undone. All the projects, environments, services, and data inside this team will be permanently deleted.";
-}
-
-function getButtonText(type: TDeleteType) {
-  if (type === "service") return "Delete Service";
-  if (type === "project") return "Delete Project";
-  if (type === "template-draft") return "Delete Template";
-  return "Delete Team";
 }

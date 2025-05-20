@@ -31,7 +31,10 @@ export default function DeleteServiceSection({ service, className }: Props) {
 
   return (
     <DeleteCard
-      type="service"
+      dialogTitle="Delete Service"
+      dialogDescription="Are you sure you want to delete this service? This action cannot be undone. All data inside the service will be permanently deleted."
+      paragraph="This action cannot be undone. All data inside the service will be permanently deleted."
+      buttonText="Delete Service"
       error={error}
       deletingEntityName={service.name}
       onDialogClose={reset}

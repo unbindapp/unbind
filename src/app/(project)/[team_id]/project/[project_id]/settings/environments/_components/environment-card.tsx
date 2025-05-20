@@ -5,6 +5,7 @@ import ErrorLine from "@/components/error-line";
 import { useProject, useProjectUtils } from "@/components/project/project-provider";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
+import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
 import { Button } from "@/components/ui/button";
 import {
@@ -207,11 +208,8 @@ function DeleteTrigger({
   closeDropdown: () => void;
   children: ReactNode;
 }) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { asyncPush } = useAsyncPush();
   const { environmentId } = useIdsFromPathname();
-
-  const textToConfirm = `Delete ${environment.name} permanently`;
 
   const {
     query: { data: projectsData },
@@ -233,148 +231,67 @@ function DeleteTrigger({
     },
   });
 
-  const form = useAppForm({
-    defaultValues: {
-      textToConfirm: "",
-    },
-    validators: {
-      onChange: z
-        .object({
-          textToConfirm: z.string().refine((v) => v === textToConfirm, {
-            message: "Please type the correct text to confirm",
-          }),
-        })
-        .strip(),
-    },
-    onSubmit: async ({ formApi }) => {
-      const deletingCurrentEnv = environmentId === environment.id;
-      const currentEnvironmentId = environment.id;
-
-      await deleteEnvironment({ id: environment.id, teamId, projectId });
-      if (deletingCurrentEnv) {
-        invalidateEnvironments();
-        const environments = projectsData?.project.environments;
-        const defaultEnvironmentId = projectsData?.project.default_environment_id;
-        const filteredEnvironments = environments?.filter((e) => e.id !== currentEnvironmentId);
-
-        const environmentIdToNavigateTo =
-          defaultEnvironmentId && currentEnvironmentId !== defaultEnvironmentId
-            ? defaultEnvironmentId
-            : filteredEnvironments && filteredEnvironments?.length >= 1
-              ? filteredEnvironments[0].id
-              : null;
-
-        const navigateRes = await ResultAsync.fromPromise(
-          asyncPush(
-            `/${teamId}/project/${projectId}/settings/environments${environmentIdToNavigateTo ? `?environment=${environmentIdToNavigateTo}` : ""}`,
-          ),
-          () => new Error("Failed to navigate to environments"),
-        );
-
-        if (navigateRes.isErr()) {
-          toast.error("Failed to navigate", {
-            description: navigateRes.error.message,
-          });
-        }
-      } else {
-        const invalidateRes = await ResultAsync.fromPromise(
-          invalidateEnvironments(),
-          () => new Error("Failed to fetch environments"),
-        );
-
-        if (invalidateRes.isErr()) {
-          toast.error("Failed to fetch environments", {
-            description: invalidateRes.error.message,
-          });
-        }
-      }
-      formApi.reset();
-      closeDropdown();
-    },
-  });
-
-  const timeout = useRef<NodeJS.Timeout>(undefined);
-
-  return (
-    <Dialog
-      open={isDialogOpen}
-      onOpenChange={(o) => {
-        setIsDialogOpen(o);
-        if (!o) {
+  if (true) {
+    return (
+      <DeleteEntityTrigger
+        dialogTitle="Delete Environment"
+        dialogDescription="Are you sure you want to delete this environment? This action cannot be undone. All the services inside this environment will be permanently deleted."
+        error={deleteEnvironmentError}
+        deletingEntityName={environment.name}
+        onDialogClose={() => {
+          deleteEnvironmentReset();
+        }}
+        onDialogCloseImmediate={() => {
           closeDropdown();
-          if (timeout.current) clearTimeout(timeout.current);
-          timeout.current = setTimeout(() => {
-            form.reset();
-            deleteEnvironmentReset();
-          }, defaultAnimationMs);
-        }
-      }}
-    >
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
-        <DialogHeader>
-          <DialogTitle>Delete Environment</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to delete this environment? This action cannot be undone. All the
-            services inside this environment will be permanently deleted.
-            <br />
-            <br />
-            Type {`"`}
-            <span className="text-destructive font-semibold">{textToConfirm}</span>
-            {`"`} to confirm.
-          </DialogDescription>
-        </DialogHeader>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            form.handleSubmit();
-          }}
-          className="flex flex-col"
-        >
-          <form.AppField
-            name="textToConfirm"
-            children={(field) => (
-              <field.TextField
-                hideInfo
-                field={field}
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(e.target.value)}
-                className="w-full"
-                placeholder={textToConfirm}
-              />
-            )}
-          />
-          {deleteEnvironmentError && (
-            <ErrorLine message={deleteEnvironmentError?.message} className="mt-4" />
-          )}
-          <div className="mt-4 flex w-full flex-wrap items-center justify-end gap-2">
-            <DialogClose asChild className="text-muted-foreground">
-              <Button type="button" variant="ghost">
-                Cancel
-              </Button>
-            </DialogClose>
-            <form.Subscribe
-              selector={(state) => [state.canSubmit, state.isSubmitting, state.values]}
-              children={([canSubmit, isSubmitting, values]) => (
-                <form.SubmitButton
-                  data-submitting={isSubmitting ? true : undefined}
-                  variant="destructive"
-                  disabled={
-                    !canSubmit ||
-                    (typeof values === "object" && values.textToConfirm !== textToConfirm)
-                  }
-                  isPending={isSubmitting ? true : false}
-                >
-                  Delete
-                </form.SubmitButton>
-              )}
-            />
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
+        }}
+        onSubmit={async () => {
+          const deletingCurrentEnv = environmentId === environment.id;
+          const currentEnvironmentId = environment.id;
+
+          await deleteEnvironment({ id: environment.id, teamId, projectId });
+          if (deletingCurrentEnv) {
+            invalidateEnvironments();
+            const environments = projectsData?.project.environments;
+            const defaultEnvironmentId = projectsData?.project.default_environment_id;
+            const filteredEnvironments = environments?.filter((e) => e.id !== currentEnvironmentId);
+
+            const environmentIdToNavigateTo =
+              defaultEnvironmentId && currentEnvironmentId !== defaultEnvironmentId
+                ? defaultEnvironmentId
+                : filteredEnvironments && filteredEnvironments?.length >= 1
+                  ? filteredEnvironments[0].id
+                  : null;
+
+            const navigateRes = await ResultAsync.fromPromise(
+              asyncPush(
+                `/${teamId}/project/${projectId}/settings/environments${environmentIdToNavigateTo ? `?environment=${environmentIdToNavigateTo}` : ""}`,
+              ),
+              () => new Error("Failed to navigate to environments"),
+            );
+
+            if (navigateRes.isErr()) {
+              toast.error("Failed to navigate", {
+                description: navigateRes.error.message,
+              });
+            }
+          } else {
+            const invalidateRes = await ResultAsync.fromPromise(
+              invalidateEnvironments(),
+              () => new Error("Failed to fetch environments"),
+            );
+
+            if (invalidateRes.isErr()) {
+              toast.error("Failed to fetch environments", {
+                description: invalidateRes.error.message,
+              });
+            }
+          }
+        }}
+      >
+        {children}
+      </DeleteEntityTrigger>
+    );
+  }
 }
 
 function RenameTrigger({

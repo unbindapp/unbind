@@ -2,6 +2,7 @@
 
 import ErrorLine from "@/components/error-line";
 import { useS3SourcesUtils } from "@/components/storage/s3-sources-provider";
+import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
 import { Button } from "@/components/ui/button";
 import {
@@ -465,10 +466,6 @@ function DeleteTrigger({
   closeDropdown: () => void;
   children: ReactNode;
 }) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const textToConfirm = `Delete ${s3Source.name} permanently`;
-
   const { invalidate: invalidateS3Sources } = useS3SourcesUtils({ teamId });
 
   const {
@@ -477,121 +474,38 @@ function DeleteTrigger({
     reset: deleteS3SourceReset,
   } = api.storage.s3.delete.useMutation();
 
-  const form = useAppForm({
-    defaultValues: {
-      textToConfirm: "",
-    },
-    validators: {
-      onChange: z
-        .object({
-          textToConfirm: z.string().refine((v) => v === textToConfirm, {
-            message: "Please type the correct text to confirm",
-          }),
-        })
-        .strip(),
-    },
-    onSubmit: async ({ formApi }) => {
-      await deleteS3Source({
-        id: s3Source.id,
-        teamId,
-      });
-
-      const invalidateRes = await ResultAsync.fromPromise(
-        invalidateS3Sources(),
-        () => new Error("Failed to fetch S3 sources"),
-      );
-
-      if (invalidateRes.isErr()) {
-        toast.error("Failed to fetch S3 sources", {
-          description: invalidateRes.error.message,
-        });
-      }
-      formApi.reset();
-      closeDropdown();
-    },
-  });
-
-  const timeout = useRef<NodeJS.Timeout>(undefined);
-
   return (
-    <Dialog
-      open={isDialogOpen}
-      onOpenChange={(o) => {
-        setIsDialogOpen(o);
-        if (!o) {
-          closeDropdown();
-          if (timeout.current) clearTimeout(timeout.current);
-          timeout.current = setTimeout(() => {
-            form.reset();
-            deleteS3SourceReset();
-          }, defaultAnimationMs);
+    <DeleteEntityTrigger
+      dialogTitle="Delete S3 Source"
+      dialogDescription="Are you sure you want to delete this S3 source? This action cannot be undone. Services depending on this S3 source will have to be reconfigured."
+      deletingEntityName={s3Source.name}
+      error={deleteS3SourceError}
+      onDialogClose={() => {
+        deleteS3SourceReset();
+      }}
+      onDialogCloseImmediate={() => {
+        closeDropdown();
+      }}
+      onSubmit={async () => {
+        await deleteS3Source({
+          id: s3Source.id,
+          teamId,
+        });
+
+        const invalidateRes = await ResultAsync.fromPromise(
+          invalidateS3Sources(),
+          () => new Error("Failed to fetch S3 sources"),
+        );
+
+        if (invalidateRes.isErr()) {
+          toast.error("Failed to fetch S3 sources", {
+            description: invalidateRes.error.message,
+          });
         }
       }}
     >
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
-        <DialogHeader>
-          <DialogTitle>Delete S3 Source</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to delete this S3 source? This action cannot be undone. Services
-            depending on this S3 source will have to be reconfigured.
-            <br />
-            <br />
-            Type {`"`}
-            <span className="text-destructive font-semibold">{textToConfirm}</span>
-            {`"`} to confirm.
-          </DialogDescription>
-        </DialogHeader>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            form.handleSubmit();
-          }}
-          className="flex flex-col"
-        >
-          <form.AppField
-            name="textToConfirm"
-            children={(field) => (
-              <field.TextField
-                hideInfo
-                field={field}
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(e.target.value)}
-                className="w-full"
-                placeholder={textToConfirm}
-              />
-            )}
-          />
-          {deleteS3SourceError && (
-            <ErrorLine message={deleteS3SourceError?.message} className="mt-4" />
-          )}
-          <div className="mt-4 flex w-full flex-wrap items-center justify-end gap-2">
-            <DialogClose asChild className="text-muted-foreground">
-              <Button type="button" variant="ghost">
-                Cancel
-              </Button>
-            </DialogClose>
-            <form.Subscribe
-              selector={(state) => [state.canSubmit, state.isSubmitting, state.values]}
-              children={([canSubmit, isSubmitting, values]) => (
-                <form.SubmitButton
-                  data-submitting={isSubmitting ? true : undefined}
-                  variant="destructive"
-                  disabled={
-                    !canSubmit ||
-                    (typeof values === "object" && values.textToConfirm !== textToConfirm)
-                  }
-                  isPending={isSubmitting ? true : false}
-                >
-                  Delete
-                </form.SubmitButton>
-              )}
-            />
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+      {children}
+    </DeleteEntityTrigger>
   );
 }
 
