@@ -20,14 +20,6 @@ type TProps = {
   classNameServiceCard?: string;
 } & React.HTMLProps<HTMLLIElement>;
 
-const cardStyle: React.HTMLProps<HTMLLIElement>["style"] = {
-  backgroundColor: "transparent",
-  backgroundImage:
-    "radial-gradient(color-mix(in oklab, var(--border) 60%, transparent) 1px, transparent 1px), radial-gradient(color-mix(in oklab, var(--border) 60%, transparent) 1px, transparent 1px)",
-  backgroundSize: "10px 10px",
-  backgroundPosition: "0px 0px, 5px 5px",
-};
-
 export default function ServiceGroupCard({
   groupObject,
   teamId,
@@ -39,10 +31,7 @@ export default function ServiceGroupCard({
 }: TProps) {
   return (
     <li className={cn("flex w-full p-1", className)} {...rest}>
-      <div
-        style={cardStyle}
-        className="relative flex w-full flex-col overflow-hidden rounded-xl border"
-      >
+      <div className="relative flex w-full flex-col overflow-hidden rounded-xl border bg-[radial-gradient(color-mix(in_oklab,var(--border)_60%,transparent)_1px,transparent_1px),radial-gradient(color-mix(in_oklab,var(--border)_60%,transparent)_1px,transparent_1px)] [background-size:10px_10px] [background-position:0px_0px,5px_5px]">
         <div className="relative flex w-full items-center gap-2 px-4 pt-2.5 pb-1.5">
           <TitleButton
             serviceGroup={groupObject}

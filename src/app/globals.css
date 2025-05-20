@@ -468,6 +468,9 @@
 
   --font-mono: var(--font-mono);
   --font-sans: var(--font-sans);
+
+  --background-size-pattern: 10px 10px;
+  --background-position-pattern: 0px 0px, 5px 5px;
 }
 
 @layer utilities {
