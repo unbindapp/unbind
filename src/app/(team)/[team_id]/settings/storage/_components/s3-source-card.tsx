@@ -2,6 +2,7 @@
 
 import ErrorLine from "@/components/error-line";
 import { useS3SourcesUtils } from "@/components/storage/s3-sources-provider";
+import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -26,6 +27,7 @@ import { useAppForm } from "@/lib/hooks/use-app-form";
 import {
   CreateS3SourceFormSchema,
   s3SourceNameMaxLength,
+  S3SourceNameSchema,
   TS3SourceShallow,
 } from "@/server/trpc/api/storage/s3/types";
 import { api } from "@/server/trpc/setup/client";
@@ -389,6 +391,11 @@ function Bucket({
   );
 }
 
+const RenameSchema = z.object({
+  name: S3SourceNameSchema,
+  description: z.string(),
+});
+
 function RenameTrigger({
   s3Source,
   teamId,
@@ -408,115 +415,42 @@ function RenameTrigger({
 
   const { invalidate: invalidateS3Sources } = useS3SourcesUtils({ teamId });
 
-  const [open, setOpen] = useState(false);
-
-  const form = useAppForm({
-    defaultValues: {
-      name: s3Source.name,
-    },
-    validators: {
-      onChange: z
-        .object({
-          name: CreateS3SourceFormSchema.shape.name,
-        })
-        .strip(),
-    },
-    onSubmit: async ({ formApi, value }) => {
-      await updateS3Source({
-        id: s3Source.id,
-        name: value.name,
-        teamId,
-      });
-
-      const invalidateRes = await ResultAsync.fromPromise(
-        invalidateS3Sources(),
-        () => new Error("Failed to fetch S3 sources"),
-      );
-
-      if (invalidateRes.isErr()) {
-        toast.error("Failed to fetch S3 sources", {
-          description: invalidateRes.error.message,
-        });
-      }
-
-      setOpen(false);
-      formApi.reset();
-      closeDropdown();
-    },
-  });
-
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(o) => {
-        setOpen(o);
-        if (!o) {
-          closeDropdown();
-          if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-          }
-          timeoutRef.current = setTimeout(() => {
-            form.reset();
-            updateS3SourceReset();
-          }, defaultAnimationMs);
+    <RenameEntityTrigger
+      type="name-only"
+      name={s3Source.name}
+      nameInputTitle="Source Name"
+      dialogTitle="Rename S3 Source"
+      dialogDescription="Give a new name to the S3 source."
+      error={updateS3SourceError}
+      formSchema={RenameSchema}
+      onDialogClose={() => {
+        updateS3SourceReset();
+      }}
+      onDialogCloseImmediate={() => {
+        closeDropdown();
+      }}
+      onSubmit={async (value) => {
+        await updateS3Source({
+          id: s3Source.id,
+          name: value.name,
+          teamId,
+        });
+
+        const invalidateRes = await ResultAsync.fromPromise(
+          invalidateS3Sources(),
+          () => new Error("Failed to fetch S3 sources"),
+        );
+
+        if (invalidateRes.isErr()) {
+          toast.error("Failed to fetch S3 sources", {
+            description: invalidateRes.error.message,
+          });
         }
       }}
     >
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
-        <DialogHeader>
-          <DialogTitle>Rename S3 Source</DialogTitle>
-          <DialogDescription>Give a new name to the S3 source.</DialogDescription>
-        </DialogHeader>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            form.handleSubmit();
-          }}
-          className="flex flex-col"
-        >
-          <form.AppField
-            name="name"
-            children={(field) => (
-              <field.TextField
-                autoCapitalize="none"
-                dontCheckUntilSubmit
-                field={field}
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(e.target.value)}
-                className="w-full"
-                placeholder={"Main S3 Source"}
-                maxLength={s3SourceNameMaxLength}
-              />
-            )}
-          />
-          {updateS3SourceError && (
-            <ErrorLine message={updateS3SourceError?.message} className="mt-4" />
-          )}
-          <div className="mt-4 flex w-full flex-wrap items-center justify-end gap-2">
-            <DialogClose asChild className="text-muted-foreground">
-              <Button type="button" variant="ghost">
-                Cancel
-              </Button>
-            </DialogClose>
-            <form.Subscribe
-              selector={(state) => [state.isSubmitting]}
-              children={([isSubmitting]) => (
-                <form.SubmitButton
-                  data-submitting={isSubmitting ? true : undefined}
-                  isPending={isSubmitting ? true : false}
-                >
-                  Rename
-                </form.SubmitButton>
-              )}
-            />
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+      {children}
+    </RenameEntityTrigger>
   );
 }
 

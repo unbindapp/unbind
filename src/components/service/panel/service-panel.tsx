@@ -1,21 +1,12 @@
-import ErrorLine from "@/components/error-line";
 import { useServicesUtils } from "@/components/project/services-provider";
 import { useDeviceSize } from "@/components/providers/device-size-provider";
 import ServicePanelContent from "@/components/service/panel/content/service-panel-content";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import ServiceIcon from "@/components/service/service-icon";
 import ServiceProvider, { useServiceUtils } from "@/components/service/service-provider";
-import { DeleteEntityTrigger } from "@/components/settings/delete-card";
+import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
+import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
 import { Button, LinkButton } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import {
   Drawer,
   DrawerClose,
@@ -33,16 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
-import { defaultAnimationMs } from "@/lib/constants";
-import { useAppForm } from "@/lib/hooks/use-app-form";
-import {
-  serviceDescriptionMaxLength,
-  ServiceDescriptionSchema,
-  ServiceNameSchema,
-  serviceNameMaxLength,
-  THost,
-  TServiceShallow,
-} from "@/server/trpc/api/services/types";
+import { ServiceRenameSchema, THost, TServiceShallow } from "@/server/trpc/api/services/types";
 import { api } from "@/server/trpc/setup/client";
 import {
   EllipsisVerticalIcon,
@@ -52,8 +34,9 @@ import {
   TrashIcon,
   XIcon,
 } from "lucide-react";
-import { ReactNode, useRef, useState } from "react";
-import { z } from "zod";
+import { ResultAsync } from "neverthrow";
+import { ReactNode, useState } from "react";
+import { toast } from "sonner";
 
 type TProps = {
   teamId: string;
@@ -153,7 +136,6 @@ function TitleButton({
   projectId: string;
   environmentId: string;
 }) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { mutateAsync: updateService, error, reset } = api.services.update.useMutation();
   const { refetch: refetchService } = useServiceUtils({
     teamId,
@@ -163,21 +145,19 @@ function TitleButton({
   });
   const { refetch: refetchServices } = useServicesUtils({ teamId, projectId, environmentId });
 
-  const form = useAppForm({
-    defaultValues: {
-      name: service.name,
-      description: service.description,
-    },
-    validators: {
-      onChange: z
-        .object({
-          name: ServiceNameSchema,
-          description: ServiceDescriptionSchema,
-        })
-        .strip(),
-    },
-    onSubmit: async ({ formApi, value }) => {
-      if (value.name !== service.name || value.description !== service.description) {
+  return (
+    <RenameEntityTrigger
+      type="name-and-description"
+      dialogTitle="Rename Service"
+      dialogDescription="Give a new name and description for the service."
+      nameInputTitle="Service Name"
+      descriptionInputTitle="Service Description"
+      name={service.name}
+      description={service.description}
+      formSchema={ServiceRenameSchema}
+      error={error}
+      onDialogClose={() => reset()}
+      onSubmit={async (value) => {
         await updateService({
           teamId,
           projectId,
@@ -186,102 +166,29 @@ function TitleButton({
           name: value.name,
           description: value.description,
         });
-        await Promise.all([refetchService(), refetchServices()]);
-      }
-      setIsDialogOpen(false);
-      formApi.reset();
-    },
-  });
 
-  const timeout = useRef<NodeJS.Timeout>(undefined);
+        const refetchRes = await ResultAsync.fromPromise(
+          Promise.all([refetchService(), refetchServices()]),
+          () => new Error("Failed to refetch services"),
+        );
 
-  return (
-    <Dialog
-      open={isDialogOpen}
-      onOpenChange={(o) => {
-        setIsDialogOpen(o);
-        if (!o) {
-          if (timeout.current) clearTimeout(timeout.current);
-          timeout.current = setTimeout(() => {
-            form.reset();
-            reset();
-          }, defaultAnimationMs);
+        if (refetchRes.isErr()) {
+          console.error(refetchRes.error);
+          toast.error("Failed to refetch services", {
+            description: refetchRes.error.message,
+          });
         }
       }}
     >
-      <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          className="group/button -my-1 -ml-2.5 flex min-w-0 shrink items-center justify-start gap-2 px-2.5 py-1"
-        >
-          <ServiceIcon service={service} color="brand" className="-ml-1 size-6 sm:size-7" />
-          <p className="min-w-0 shrink text-left text-xl leading-tight sm:text-2xl">
-            {service.name}
-          </p>
-          <PenIcon className="ml-0.5 size-4 -rotate-30 opacity-0 transition group-focus-visible/button:rotate-0 group-focus-visible/button:opacity-100 group-active/button:rotate-0 group-active/button:opacity-100 has-hover:group-hover/button:rotate-0 has-hover:group-hover/button:opacity-100 sm:size-4.5" />
-        </Button>
-      </DialogTrigger>
-      <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
-        <DialogHeader>
-          <DialogTitle>Rename Service</DialogTitle>
-          <DialogDescription>Give a new name and description for the service.</DialogDescription>
-        </DialogHeader>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            form.handleSubmit();
-          }}
-          className="flex w-full flex-col gap-2"
-        >
-          <form.AppField
-            name="name"
-            children={(field) => (
-              <field.TextField
-                field={field}
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(e.target.value)}
-                className="w-full"
-                placeholder={service.name}
-                layout="label-included"
-                inputTitle="Service Name"
-                maxLength={serviceNameMaxLength}
-              />
-            )}
-          />
-          <form.AppField
-            name="description"
-            children={(field) => (
-              <field.TextField
-                field={field}
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(e.target.value)}
-                className="w-full"
-                placeholder={service.description}
-                layout="label-included"
-                inputTitle="Service Description"
-                maxLength={serviceDescriptionMaxLength}
-              />
-            )}
-          />
-          {error && <ErrorLine message={error.message} className="mt-2" />}
-          <div className="mt-2 flex w-full flex-wrap items-center justify-end gap-2">
-            <DialogClose asChild className="text-muted-foreground">
-              <Button type="button" variant="ghost">
-                Close
-              </Button>
-            </DialogClose>
-            <form.Subscribe
-              selector={(state) => [state.isSubmitting]}
-              children={([isSubmitting]) => (
-                <form.SubmitButton isPending={isSubmitting ? true : false}>Save</form.SubmitButton>
-              )}
-            />
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+      <Button
+        variant="ghost"
+        className="group/button -my-1 -ml-2.5 flex min-w-0 shrink items-center justify-start gap-2 px-2.5 py-1"
+      >
+        <ServiceIcon service={service} color="brand" className="-ml-1 size-6 sm:size-7" />
+        <p className="min-w-0 shrink text-left text-xl leading-tight sm:text-2xl">{service.name}</p>
+        <PenIcon className="ml-0.5 size-4 -rotate-30 opacity-0 transition group-focus-visible/button:rotate-0 group-focus-visible/button:opacity-100 group-active/button:rotate-0 group-active/button:opacity-100 has-hover:group-hover/button:rotate-0 has-hover:group-hover/button:opacity-100 sm:size-4.5" />
+      </Button>
+    </RenameEntityTrigger>
   );
 }
 

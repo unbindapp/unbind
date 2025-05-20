@@ -1,4 +1,4 @@
-import { CreateEnvironmentFormNameSchema } from "@/server/trpc/api/environments/types";
+import { EnvironmentRenameSchema } from "@/server/trpc/api/environments/types";
 import { createTRPCRouter, privateProcedure } from "@/server/trpc/setup/trpc";
 import { z } from "zod";
 
@@ -40,9 +40,8 @@ export const environmentsRouter = createTRPCRouter({
         .object({
           teamId: z.string().uuid(),
           projectId: z.string().uuid(),
-          name: CreateEnvironmentFormNameSchema,
-          description: z.string().optional(),
         })
+        .merge(EnvironmentRenameSchema)
         .strip(),
     )
     .mutation(async function ({
@@ -50,10 +49,10 @@ export const environmentsRouter = createTRPCRouter({
       ctx: { goClient },
     }) {
       const res = await goClient.environments.create({
+        name,
+        description,
         team_id: teamId,
         project_id: projectId,
-        name: name,
-        description: description || null,
       });
       return {
         data: res.data,
@@ -79,8 +78,8 @@ export const environmentsRouter = createTRPCRouter({
         team_id: teamId,
         project_id: projectId,
         environment_id: id,
-        name: name || null,
-        description: description || null,
+        name: name === undefined ? null : name,
+        description: description === undefined ? null : description,
       });
 
       return {

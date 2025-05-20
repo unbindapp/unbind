@@ -32,6 +32,8 @@ type TInput = {
   value: string;
 };
 
+export const templateDraftMaxStorageGb = 100;
+
 export default function TemplateDraftPanelContent({ templateDraft, className, ...rest }: TProps) {
   const visibleInputs = useMemo(
     () => templateDraft.template.definition.inputs.filter((i) => !i.hidden),
@@ -50,6 +52,15 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
   });
 
   const timeout = useRef<NodeJS.Timeout | null>(null);
+
+  const minStorageGb = useMemo(
+    () => systemData?.data.storage.minimum_storage_gb || 1,
+    [systemData],
+  );
+  const maxStorageGb = useMemo(
+    () => Math.min(templateDraftMaxStorageGb, systemData?.data.storage.maximum_storage_gb || 100),
+    [systemData],
+  );
 
   const {
     mutateAsync: deployTemplate,
@@ -86,15 +97,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
           const _input: TInput = {
             id: input.id,
             value: input.default
-              ? String(
-                  Math.min(
-                    Math.max(
-                      systemData?.data.storage.minimum_storage_gb || -Infinity,
-                      Number(input.default),
-                    ),
-                    systemData?.data.storage.maximum_storage_gb || Infinity,
-                  ),
-                )
+              ? String(Math.min(Math.max(minStorageGb, Number(input.default)), maxStorageGb))
               : "",
           };
           return _input;
@@ -187,9 +190,9 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                                 field={subField}
                                 className="w-full py-1.5"
                                 onBlur={subField.handleBlur}
-                                min={systemData?.data.storage.minimum_storage_gb || 1}
+                                min={minStorageGb}
+                                max={maxStorageGb}
                                 step={systemData?.data.storage.storage_step_gb || 1}
-                                max={systemData?.data.storage.maximum_storage_gb || 100}
                                 minMaxFormatter={formatGB}
                                 classNameMin="pl-1.5"
                                 classNameMax="pr-1.5"

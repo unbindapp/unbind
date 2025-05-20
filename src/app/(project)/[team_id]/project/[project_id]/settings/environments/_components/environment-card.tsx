@@ -5,6 +5,7 @@ import ErrorLine from "@/components/error-line";
 import { useProject, useProjectUtils } from "@/components/project/project-provider";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
+import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -28,8 +29,9 @@ import { defaultAnimationMs } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import {
-  CreateEnvironmentFormNameSchema,
   environmentNameMaxLength,
+  EnvironmentNameSchema,
+  EnvironmentRenameSchema,
   TEnvironmentShallow,
 } from "@/server/trpc/api/environments/types";
 import { api } from "@/server/trpc/setup/client";
@@ -405,116 +407,46 @@ function RenameTrigger({
     utils: { invalidate: invalidateEnvironments },
   } = useEnvironments();
 
-  const [open, setOpen] = useState(false);
-
-  const form = useAppForm({
-    defaultValues: {
-      name: environment.name,
-    },
-    validators: {
-      onChange: z
-        .object({
-          name: CreateEnvironmentFormNameSchema,
-        })
-        .strip(),
-    },
-    onSubmit: async ({ formApi, value }) => {
-      await updateEnvironment({
-        id: environment.id,
-        name: value.name,
-        teamId,
-        projectId,
-      });
-
-      const invalidateRes = await ResultAsync.fromPromise(
-        invalidateEnvironments(),
-        () => new Error("Failed to fetch environments"),
-      );
-
-      if (invalidateRes.isErr()) {
-        toast.error("Failed to fetch environments", {
-          description: invalidateRes.error.message,
-        });
-      }
-
-      setOpen(false);
-      formApi.reset();
-      closeDropdown();
-    },
-  });
-
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(o) => {
-        setOpen(o);
-        if (!o) {
-          closeDropdown();
-          if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-          }
-          timeoutRef.current = setTimeout(() => {
-            form.reset();
-            updateEnvironmentReset();
-          }, defaultAnimationMs);
+    <RenameEntityTrigger
+      type="name-and-description"
+      name={environment.name}
+      description={environment.description}
+      nameInputTitle="Environment Name"
+      descriptionInputTitle="Environment Description"
+      dialogTitle="Rename Environment"
+      dialogDescription="Give a new name and description to the environment."
+      error={updateEnvironmentError}
+      formSchema={EnvironmentRenameSchema}
+      onDialogClose={() => {
+        updateEnvironmentReset();
+      }}
+      onDialogCloseImmediate={() => {
+        closeDropdown();
+      }}
+      onSubmit={async (value) => {
+        await updateEnvironment({
+          id: environment.id,
+          name: value.name,
+          description: value.description,
+          teamId,
+          projectId,
+        });
+
+        const invalidateRes = await ResultAsync.fromPromise(
+          invalidateEnvironments(),
+          () => new Error("Failed to fetch environments"),
+        );
+
+        if (invalidateRes.isErr()) {
+          toast.error("Failed to fetch environments", {
+            description: invalidateRes.error.message,
+          });
         }
       }}
     >
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
-        <DialogHeader>
-          <DialogTitle>Rename Environment</DialogTitle>
-          <DialogDescription>Give a new name to the environment.</DialogDescription>
-        </DialogHeader>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            form.handleSubmit();
-          }}
-          className="flex flex-col"
-        >
-          <form.AppField
-            name="name"
-            children={(field) => (
-              <field.TextField
-                autoCapitalize="none"
-                dontCheckUntilSubmit
-                field={field}
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(e.target.value)}
-                className="w-full"
-                placeholder={"development"}
-                maxLength={environmentNameMaxLength}
-              />
-            )}
-          />
-          {updateEnvironmentError && (
-            <ErrorLine message={updateEnvironmentError?.message} className="mt-4" />
-          )}
-          <div className="mt-4 flex w-full flex-wrap items-center justify-end gap-2">
-            <DialogClose asChild className="text-muted-foreground">
-              <Button type="button" variant="ghost">
-                Cancel
-              </Button>
-            </DialogClose>
-            <form.Subscribe
-              selector={(state) => [state.isSubmitting]}
-              children={([isSubmitting]) => (
-                <form.SubmitButton
-                  data-submitting={isSubmitting ? true : undefined}
-                  isPending={isSubmitting ? true : false}
-                >
-                  Rename
-                </form.SubmitButton>
-              )}
-            />
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+      {children}
+    </RenameEntityTrigger>
   );
 }
 
@@ -546,13 +478,14 @@ export function NewEnvironmentCard({ teamId, projectId }: { teamId: string; proj
     validators: {
       onChange: z
         .object({
-          name: CreateEnvironmentFormNameSchema,
+          name: EnvironmentNameSchema,
         })
         .strip(),
     },
     onSubmit: async ({ formApi, value }) => {
       const res = await createEnvironment({
         name: value.name,
+        description: "",
         teamId,
         projectId,
       });

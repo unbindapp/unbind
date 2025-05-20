@@ -1,7 +1,7 @@
 import BrandIcon from "@/components/icons/brand";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
-import { DeleteEntityTrigger } from "@/components/settings/delete-card";
+import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import { Button, LinkButton, TButtonVariants } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { TProjectShallow } from "@/server/trpc/api/projects/types";

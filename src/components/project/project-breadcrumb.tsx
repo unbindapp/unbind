@@ -1,10 +1,31 @@
 "use client";
 
-import { useProjects, useProjectsUtils } from "@/components/project/projects-provider";
+import { useEnvironmentsUtils } from "@/components/environment/environments-provider";
+import ErrorLine from "@/components/error-line";
 import { BreadcrumbItem } from "@/components/navigation/breadcrumb-item";
 import { BreadcrumbSeparator, BreadcrumbWrapper } from "@/components/navigation/breadcrumb-wrapper";
+import { useProject, useProjectUtils } from "@/components/project/project-provider";
+import { useProjects, useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { defaultAnimationMs } from "@/lib/constants";
+import { useAppForm } from "@/lib/hooks/use-app-form";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
+import {
+  environmentNameMaxLength,
+  EnvironmentNameSchema,
+} from "@/server/trpc/api/environments/types";
+import { api } from "@/server/trpc/setup/client";
+import { ResultAsync } from "neverthrow";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   ButtonHTMLAttributes,
@@ -18,28 +39,7 @@ import {
   useState,
 } from "react";
 import { toast } from "sonner";
-import { ResultAsync } from "neverthrow";
-import { api } from "@/server/trpc/setup/client";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import ErrorLine from "@/components/error-line";
-import { useAppForm } from "@/lib/hooks/use-app-form";
 import { z } from "zod";
-import {
-  CreateEnvironmentFormNameSchema,
-  environmentNameMaxLength,
-} from "@/server/trpc/api/environments/types";
-import { Button } from "@/components/ui/button";
-import { useProject, useProjectUtils } from "@/components/project/project-provider";
-import { defaultAnimationMs } from "@/lib/constants";
-import { useEnvironmentsUtils } from "@/components/environment/environments-provider";
 
 type TProps = {
   className?: string;
@@ -281,13 +281,14 @@ function CreateEnvironmentDialog({
     validators: {
       onChange: z
         .object({
-          name: CreateEnvironmentFormNameSchema,
+          name: EnvironmentNameSchema,
         })
         .strip(),
     },
     onSubmit: async ({ formApi, value }) => {
       const res = await createEnvironment({
         name: value.name,
+        description: "",
         teamId,
         projectId,
       });

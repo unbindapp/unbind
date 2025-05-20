@@ -22,6 +22,11 @@ export const ServiceDescriptionSchema = z
     `Description should be at most ${serviceDescriptionMaxLength} characters.`,
   );
 
+export const ServiceRenameSchema = z.object({
+  name: ServiceNameSchema,
+  description: ServiceDescriptionSchema,
+});
+
 export const CreateServiceSharedSchema = z
   .object({
     name: ServiceNameSchema,
