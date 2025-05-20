@@ -137,9 +137,9 @@ export function DeleteEntityTrigger({
             .strip(),
     },
     onSubmit: async ({ formApi }) => {
+      await onSubmit();
       setIsDialogOpen(false);
       onClose();
-      await onSubmit();
       formApi.reset();
     },
   });
@@ -206,35 +206,32 @@ export function DeleteEntityTrigger({
               )}
             />
           )}
-          {error && (
-            <ErrorLine
-              message={error?.message}
-              className="mt-4 group-data-confirmation-disabled/form:mt-0"
-            />
-          )}
-          <div className="mt-4 flex w-full flex-wrap items-center justify-end gap-2 group-data-confirmation-disabled/form:mt-0">
-            <DialogClose asChild className="text-muted-foreground">
-              <Button type="button" variant="ghost">
-                Cancel
-              </Button>
-            </DialogClose>
-            <form.Subscribe
-              selector={(state) => [state.canSubmit, state.isSubmitting, state.values]}
-              children={([canSubmit, isSubmitting, values]) => (
-                <form.SubmitButton
-                  data-submitting={isSubmitting ? true : undefined}
-                  variant="destructive"
-                  disabled={
-                    !disableConfirmationInput &&
-                    (!canSubmit ||
-                      (typeof values === "object" && values.textToConfirm !== textToConfirm))
-                  }
-                  isPending={isSubmitting ? true : false}
-                >
-                  Delete
-                </form.SubmitButton>
-              )}
-            />
+          <div className="mt-4 flex w-full flex-col gap-4 group-data-confirmation-disabled/form:mt-0">
+            {error && <ErrorLine message={error?.message} />}
+            <div className="flex w-full flex-wrap items-center justify-end gap-2">
+              <DialogClose asChild className="text-muted-foreground">
+                <Button type="button" variant="ghost">
+                  Cancel
+                </Button>
+              </DialogClose>
+              <form.Subscribe
+                selector={(state) => [state.canSubmit, state.isSubmitting, state.values]}
+                children={([canSubmit, isSubmitting, values]) => (
+                  <form.SubmitButton
+                    data-submitting={isSubmitting ? true : undefined}
+                    variant="destructive"
+                    disabled={
+                      !disableConfirmationInput &&
+                      (!canSubmit ||
+                        (typeof values === "object" && values.textToConfirm !== textToConfirm))
+                    }
+                    isPending={isSubmitting ? true : false}
+                  >
+                    Delete
+                  </form.SubmitButton>
+                )}
+              />
+            </div>
           </div>
         </form>
       </DialogContent>
