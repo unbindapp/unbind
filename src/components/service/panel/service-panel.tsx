@@ -149,7 +149,7 @@ function TitleButton({
     <RenameEntityTrigger
       type="name-and-description"
       dialogTitle="Rename Service"
-      dialogDescription="Give a new name and description for the service."
+      dialogDescription="Give a new name and description to the service."
       nameInputTitle="Service Name"
       descriptionInputTitle="Service Description"
       name={service.name}

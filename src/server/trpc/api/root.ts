@@ -6,6 +6,7 @@ import { instancesRouter } from "@/server/trpc/api/instances/router";
 import { logsRouter } from "@/server/trpc/api/logs/router";
 import { metricsRouter } from "@/server/trpc/api/metrics/router";
 import { projectsRouter } from "@/server/trpc/api/projects/router";
+import { serviceGroupsRouter } from "@/server/trpc/api/service-group/router";
 import { servicesRouter } from "@/server/trpc/api/services/router";
 import { setupRouter } from "@/server/trpc/api/setup/router";
 import { storageRouter } from "@/server/trpc/api/storage/router";
@@ -29,6 +30,7 @@ export const appRouter = createTRPCRouter({
   teams: teamsRouter,
   projects: projectsRouter,
   services: servicesRouter,
+  serviceGroups: serviceGroupsRouter,
   templates: templatesRouter,
   instances: instancesRouter,
   deployments: deploymentsRouter,
