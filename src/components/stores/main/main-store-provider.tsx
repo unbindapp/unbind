@@ -1,7 +1,7 @@
 "use client";
 
 import { createMainStore, TMainStore } from "@/components/stores/main/main-store";
-import { type ReactNode, createContext, useRef, useContext } from "react";
+import { type ReactNode, createContext, useContext, useRef } from "react";
 import { useStore } from "zustand";
 
 export type TMainStoreContext = ReturnType<typeof createMainStore>;
@@ -30,8 +30,8 @@ export function useMainStore<T>(selector: (store: TMainStore) => T): T {
   return useStore(context, selector);
 }
 
-export const defaultTemporaryEntityRemoveDelayMs = 1000 * 100;
-export const defaultTemporaryEntityExpiryDurationMs = 1000 * 30;
+export const defaultTemporaryEntityRemoveDelayMs = 1000 * 4;
+export const defaultTemporaryEntityExpiryDurationMs = 1000 * 5;
 
 export function useTemporarilyAddNewEntity(props?: {
   removeDelayMs?: number;

@@ -4,7 +4,7 @@ import { useEffect, useMemo } from "react";
 import { useDebounceValue } from "usehooks-ts";
 
 export function NewEntityIndicator({ id, className }: { id: string; className?: string }) {
-  const entity = useMainStore((s) => s.newlyCreatedEntities.get(id));
+  const entity = useMainStore((s) => s.newlyCreatedEntities[id]);
 
   const [debouncedMounted, setDebouncedMounted] = useDebounceValue(false, 100);
 
