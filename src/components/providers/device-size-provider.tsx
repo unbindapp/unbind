@@ -13,9 +13,9 @@ const DeviceSizeContext = createContext<TDeviceSizeContext | null>(null);
 export const DeviceSizeProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
-  const mounted = useIsMounted();
+  const isMounted = useIsMounted();
   const { width } = useWindowSize();
-  const size = mounted()
+  const size = isMounted()
     ? width < 640
       ? "xs"
       : width < 768

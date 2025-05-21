@@ -1621,7 +1621,7 @@ export const TemplateDeployInputSchema = z
 
 export const TemplateDeployResponseBodySchema = z
   .object({
-    data: z.array(ServiceResponseSchema).nullable(),
+    data: z.array(ServiceResponseSchema),
   })
   .strip();
 

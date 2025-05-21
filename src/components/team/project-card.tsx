@@ -1,4 +1,5 @@
 import BrandIcon from "@/components/icons/brand";
+import { NewlyCreatedEntityIndicator } from "@/components/newly-created-entity-indicator";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
@@ -49,6 +50,7 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
         variant="ghost"
         className="bg-background-hover flex min-h-36 w-full flex-col items-start gap-12 rounded-xl border px-5 py-3.5 text-left font-semibold"
       >
+        {project && <NewlyCreatedEntityIndicator id={project.id} />}
         <h3 className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton max-w-full overflow-hidden leading-tight text-ellipsis whitespace-nowrap group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
           {!isPlaceholder ? project.name : "Loading"}
         </h3>

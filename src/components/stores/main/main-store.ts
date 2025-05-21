@@ -4,6 +4,8 @@ import { persist } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
 
 const maxNewlyCreatedEntitiesToStore = 20;
+const newThreshold = 1000 * 60 * 5;
+const defaultRemoveDelay = 1000 * 4;
 
 const NewlyCreatedEntitySchema = z.object({
   timestamp: z.number(),
@@ -21,6 +23,7 @@ export type TActions = {
   setLastDismissedVersion: (version: string) => Promise<void>;
   addNewlyCreatedEntity: (entityId: string) => Promise<void>;
   removeNewlyCreatedEntity: (entityId: string) => Promise<void>;
+  removeNewlyCreatedEntityWithDelay: (entityId: string, delay?: number) => Promise<void>;
   onNewlyCreatedEntityOpened: (props: { entityId: string; shouldDelete: boolean }) => Promise<void>;
 };
 
@@ -47,15 +50,32 @@ export const createMainStore = (initState: TState = defaultInitState) => {
         addNewlyCreatedEntity: async (entityId) => {
           set((state) => {
             const updatedEntities = new Map(state.newlyCreatedEntities);
-            updatedEntities.set(entityId, { timestamp: Date.now(), isOpened: false });
-            if (updatedEntities.size > maxNewlyCreatedEntitiesToStore) {
+            updatedEntities.forEach((entity, key) => {
+              if (Date.now() - entity.timestamp > newThreshold) {
+                updatedEntities.delete(key);
+              }
+            });
+            const newSize = updatedEntities.size + 1;
+            if (newSize > maxNewlyCreatedEntitiesToStore) {
               const entitiesToDelete = Array.from(updatedEntities.entries())
                 .sort((a, b) => a[1].timestamp - b[1].timestamp)
-                .slice(0, updatedEntities.size - maxNewlyCreatedEntitiesToStore);
+                .slice(0, newSize - maxNewlyCreatedEntitiesToStore);
               entitiesToDelete.forEach(([key]) => {
                 updatedEntities.delete(key);
               });
             }
+            updatedEntities.set(entityId, { timestamp: Date.now(), isOpened: false });
+            return {
+              ...state,
+              newlyCreatedEntities: updatedEntities,
+            };
+          });
+        },
+        removeNewlyCreatedEntityWithDelay: async (entityId, delay = defaultRemoveDelay) => {
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          set((state) => {
+            const updatedEntities = new Map(state.newlyCreatedEntities);
+            updatedEntities.delete(entityId);
             return {
               ...state,
               newlyCreatedEntities: updatedEntities,

@@ -7,6 +7,7 @@ import { useProject, useProjectUtils } from "@/components/project/project-provid
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useServicesUtils } from "@/components/project/services-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
+import { useTemporarilyAddNewlyCreatedEntity } from "@/components/stores/main/main-store-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { TAvailableDatabase } from "@/server/go/data.gen";
 import { api } from "@/server/trpc/setup/client";
@@ -45,6 +46,8 @@ export function useDatabaseItemHook({ context }: TProps) {
 function useDatabaseItem({ context }: TProps) {
   const mainPageId = "databases";
   const subpageId = "databases_subpage";
+
+  const temporarilyAddNewlyCreatedEntity = useTemporarilyAddNewlyCreatedEntity();
 
   const { closePanel: closeCommandPanel } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
@@ -91,6 +94,9 @@ function useDatabaseItem({ context }: TProps) {
         environmentId,
         isPublic: false,
       });
+
+      temporarilyAddNewlyCreatedEntity(result.service.id);
+
       return result;
     },
     onMutate: async (data) => {

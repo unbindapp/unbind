@@ -29,3 +29,14 @@ export function useMainStore<T>(selector: (store: TMainStore) => T): T {
 
   return useStore(context, selector);
 }
+
+export function useTemporarilyAddNewlyCreatedEntity() {
+  const addNewlyCreatedEntity = useMainStore((s) => s.addNewlyCreatedEntity);
+  const removeNewlyCreatedEntityWithDelay = useMainStore(
+    (s) => s.removeNewlyCreatedEntityWithDelay,
+  );
+  return (entityId: string) => {
+    addNewlyCreatedEntity(entityId);
+    removeNewlyCreatedEntityWithDelay(entityId);
+  };
+}

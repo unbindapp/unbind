@@ -4,6 +4,7 @@ import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/com
 import useCommandPanel from "@/components/command-panel/use-command-panel";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
+import { useTemporarilyAddNewlyCreatedEntity } from "@/components/stores/main/main-store-provider";
 import { api } from "@/server/trpc/setup/client";
 import { FolderPlusIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
@@ -16,6 +17,9 @@ type TProps = {
 
 export default function useNewProjectItem({ context }: TProps) {
   const setIsPendingId = useCommandPanelStore((s) => s.setIsPendingId);
+
+  const temporarilyAddNewlyCreatedEntity = useTemporarilyAddNewlyCreatedEntity();
+
   const { asyncPush } = useAsyncPush();
   const { invalidate: invalidateProjects } = useProjectsUtils({ teamId: context.teamId });
   const { closePanel } = useCommandPanel({
@@ -24,7 +28,9 @@ export default function useNewProjectItem({ context }: TProps) {
 
   const { mutate: createProject } = api.projects.create.useMutation({
     onSuccess: async (res) => {
-      const projectId = res.data?.id;
+      const projectId = res.data.id;
+      temporarilyAddNewlyCreatedEntity(res.data.id);
+
       const environments = res.data.environments;
       if (environments.length < 1) {
         toast.error("No environments found", {

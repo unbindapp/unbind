@@ -29,7 +29,6 @@ export default function usePreferencesItem({ context }: TProps) {
   }, [setTheme, theme]);
 
   const [mounted, setMounted] = useState(false);
-
   useEffect(() => {
     if (typeof window !== "undefined") setMounted(true);
   }, []);

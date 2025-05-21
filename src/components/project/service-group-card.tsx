@@ -1,3 +1,4 @@
+import { NewlyCreatedEntityIndicator } from "@/components/newly-created-entity-indicator";
 import ServiceCard from "@/components/project/service-card";
 import { TServiceGroup } from "@/components/project/service-card-list";
 import { useServicesUtils } from "@/components/project/services-provider";
@@ -31,8 +32,9 @@ export default function ServiceGroupCard({
 }: TProps) {
   return (
     <li className={cn("flex w-full p-1", className)} {...rest}>
-      <div className="relative flex w-full flex-col overflow-hidden rounded-xl border bg-[radial-gradient(color-mix(in_oklab,var(--border)_60%,transparent)_1px,transparent_1px),radial-gradient(color-mix(in_oklab,var(--border)_60%,transparent)_1px,transparent_1px)] [background-size:10px_10px] [background-position:0px_0px,5px_5px]">
-        <div className="relative flex w-full items-center gap-2 px-4 pt-2.5 pb-1.5">
+      <div className="relative flex w-full flex-col rounded-xl border bg-[radial-gradient(color-mix(in_oklab,var(--border)_60%,transparent)_1px,transparent_1px),radial-gradient(color-mix(in_oklab,var(--border)_60%,transparent)_1px,transparent_1px)] [background-size:10px_10px] [background-position:0px_0px,5px_5px]">
+        <NewlyCreatedEntityIndicator id={groupObject.group.id} />
+        <div className="flex w-full items-center gap-2 px-4 pt-2.5 pb-1.5">
           <TitleButton
             serviceGroup={groupObject}
             teamId={teamId}
@@ -40,7 +42,7 @@ export default function ServiceGroupCard({
             projectId={projectId}
           />
         </div>
-        <ol className="relative flex w-full flex-wrap p-1">
+        <ol className="flex w-full flex-wrap p-1">
           {groupObject.services.map((service) => (
             <ServiceCard
               key={service.id}

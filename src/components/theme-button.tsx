@@ -17,8 +17,8 @@ export default function ThemeButton({
     const newThemeIndex = (availableThemes.indexOf(theme as TTheme) + 1) % availableThemes.length;
     setTheme(availableThemes[newThemeIndex]);
   };
-  const [mounted, setMounted] = useState(false);
 
+  const [mounted, setMounted] = useState(false);
   useEffect(() => {
     if (typeof window !== "undefined") setMounted(true);
   }, []);

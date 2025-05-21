@@ -13,8 +13,8 @@ export const DeviceTypeProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
   const isTouchscreen = useMediaQuery("(pointer: coarse)");
-  const [mounted, setMounted] = useState(false);
 
+  const [mounted, setMounted] = useState(false);
   useEffect(() => {
     if (typeof window !== "undefined") setMounted(true);
   }, []);

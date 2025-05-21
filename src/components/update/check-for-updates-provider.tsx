@@ -5,9 +5,8 @@ import { LinkButton } from "@/components/ui/button";
 import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
 import { api } from "@/server/trpc/setup/client";
 import { GiftIcon } from "lucide-react";
-import { createContext, ReactNode, useContext, useEffect, useRef } from "react";
+import { createContext, ReactNode, useContext, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useIsMounted } from "usehooks-ts";
 
 type TCheckForUpdatesContext = AppRouterQueryResult<AppRouterOutputs["system"]["checkForUpdates"]>;
 
@@ -50,11 +49,14 @@ export function UpdateToastProvider({ children }: { children: ReactNode }) {
       : null;
 
   const updateShownRef = useRef(false);
-  const mounted = useIsMounted();
-  const isMounted = mounted();
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    if (typeof window !== "undefined") setMounted(true);
+  }, []);
 
   useEffect(() => {
-    if (!isMounted) return;
+    if (!mounted) return;
     if (!hasUpdateAvailable || !latestVersion) return;
     if (updateShownRef.current) return;
     if (lastDismissedVersion !== null && lastDismissedVersion === latestVersion) return;
