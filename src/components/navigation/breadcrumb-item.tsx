@@ -360,7 +360,7 @@ function DropdownItem<T>({
         ) : null}
         <div className="flex min-w-0 shrink items-center justify-between gap-3">
           <p className="min-w-0 shrink">{item.name}</p>
-          {comingSoon && <ComingSoonChip className="-mr-0.75" />}
+          {comingSoon && <ComingSoonChip className="-mr-1" />}
         </div>
       </div>
       {!comingSoon && (
