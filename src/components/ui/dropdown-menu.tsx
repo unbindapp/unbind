@@ -108,8 +108,8 @@ function DropdownMenuContent({
   collisionPadding = {
     top: 16,
     bottom: 16,
-    left: 8,
-    right: 8,
+    left: 12,
+    right: 12,
   },
   onPointerDown,
   onCloseAutoFocus,

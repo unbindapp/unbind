@@ -33,7 +33,12 @@ type TPopoverContentVariants = VariantProps<typeof popoverContentVariants>;
 
 function PopoverContent({
   className,
-  collisionPadding = 16,
+  collisionPadding = {
+    top: 16,
+    bottom: 16,
+    left: 12,
+    right: 12,
+  },
   align = "center",
   sideOffset = 4,
   animate,
