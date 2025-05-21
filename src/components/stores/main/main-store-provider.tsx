@@ -30,13 +30,28 @@ export function useMainStore<T>(selector: (store: TMainStore) => T): T {
   return useStore(context, selector);
 }
 
-export function useTemporarilyAddNewEntity() {
+export const defaultTemporaryEntityRemoveDelayMs = 1000 * 100;
+export const defaultTemporaryEntityExpiryDurationMs = 1000 * 30;
+
+export function useTemporarilyAddNewEntity(props?: {
+  removeDelayMs?: number;
+  expiryDurationMs?: number;
+}) {
   const addNewlyCreatedEntity = useMainStore((s) => s.addNewlyCreatedEntity);
   const removeNewlyCreatedEntityWithDelay = useMainStore(
     (s) => s.removeNewlyCreatedEntityWithDelay,
   );
+
+  const expiresAtTimestamp =
+    props?.expiryDurationMs !== undefined
+      ? props.expiryDurationMs
+      : Date.now() + defaultTemporaryEntityExpiryDurationMs;
+
+  const removeDelayMs =
+    props?.removeDelayMs !== undefined ? props.removeDelayMs : defaultTemporaryEntityRemoveDelayMs;
+
   return (entityId: string) => {
-    addNewlyCreatedEntity(entityId);
-    removeNewlyCreatedEntityWithDelay(entityId);
+    addNewlyCreatedEntity(entityId, expiresAtTimestamp);
+    removeNewlyCreatedEntityWithDelay(entityId, removeDelayMs);
   };
 }

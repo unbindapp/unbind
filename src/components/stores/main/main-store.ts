@@ -4,11 +4,10 @@ import { persist } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
 
 const maxNewlyCreatedEntitiesToStore = 20;
-const newThreshold = 1000 * 60 * 5;
-const defaultRemoveDelay = 1000 * 4;
 
 const NewlyCreatedEntitySchema = z.object({
-  timestamp: z.number(),
+  createdAtTimestamp: z.number(),
+  expiresAtTimestamp: z.number(),
   isOpened: z.boolean(),
 });
 
@@ -21,9 +20,8 @@ export type TState = z.infer<typeof MainStoreSchema>;
 
 export type TActions = {
   setLastDismissedVersion: (version: string) => Promise<void>;
-  addNewlyCreatedEntity: (entityId: string) => Promise<void>;
-  removeNewlyCreatedEntity: (entityId: string) => Promise<void>;
-  removeNewlyCreatedEntityWithDelay: (entityId: string, delay?: number) => Promise<void>;
+  addNewlyCreatedEntity: (entityId: string, expiresAtTimestamp: number) => Promise<void>;
+  removeNewlyCreatedEntityWithDelay: (entityId: string, delayMs: number) => Promise<void>;
   onNewlyCreatedEntityOpened: (props: { entityId: string; shouldDelete: boolean }) => Promise<void>;
 };
 
@@ -47,42 +45,37 @@ export const createMainStore = (initState: TState = defaultInitState) => {
             lastDismissedVersion: lastDismissedVersion,
           }));
         },
-        addNewlyCreatedEntity: async (entityId) => {
+        addNewlyCreatedEntity: async (entityId, expiresAtTimestamp) => {
           set((state) => {
             const updatedEntities = new Map(state.newlyCreatedEntities);
+            const now = Date.now();
             updatedEntities.forEach((entity, key) => {
-              if (Date.now() - entity.timestamp > newThreshold) {
+              if (now > entity.expiresAtTimestamp) {
                 updatedEntities.delete(key);
               }
             });
             const newSize = updatedEntities.size + 1;
             if (newSize > maxNewlyCreatedEntitiesToStore) {
               const entitiesToDelete = Array.from(updatedEntities.entries())
-                .sort((a, b) => a[1].timestamp - b[1].timestamp)
+                .sort((a, b) => a[1].createdAtTimestamp - b[1].createdAtTimestamp)
                 .slice(0, newSize - maxNewlyCreatedEntitiesToStore);
               entitiesToDelete.forEach(([key]) => {
                 updatedEntities.delete(key);
               });
             }
-            updatedEntities.set(entityId, { timestamp: Date.now(), isOpened: false });
+            updatedEntities.set(entityId, {
+              createdAtTimestamp: Date.now(),
+              expiresAtTimestamp,
+              isOpened: false,
+            });
             return {
               ...state,
               newlyCreatedEntities: updatedEntities,
             };
           });
         },
-        removeNewlyCreatedEntityWithDelay: async (entityId, delay = defaultRemoveDelay) => {
+        removeNewlyCreatedEntityWithDelay: async (entityId, delay) => {
           await new Promise((resolve) => setTimeout(resolve, delay));
-          set((state) => {
-            const updatedEntities = new Map(state.newlyCreatedEntities);
-            updatedEntities.delete(entityId);
-            return {
-              ...state,
-              newlyCreatedEntities: updatedEntities,
-            };
-          });
-        },
-        removeNewlyCreatedEntity: async (entityId) => {
           set((state) => {
             const updatedEntities = new Map(state.newlyCreatedEntities);
             updatedEntities.delete(entityId);
