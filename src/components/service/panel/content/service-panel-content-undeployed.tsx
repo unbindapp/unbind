@@ -328,6 +328,8 @@ export default function ServicePanelContentUndeployed({ service, className, ...r
                       onChange={(e) => setPortInputValue(e.target.value)}
                       placeholder="3000"
                       className="w-full group-data-private/input:pl-9.5"
+                      inputMode="numeric"
+                      pattern="\d*"
                     />
                     {isPrivateService && (
                       <EyeOffIcon className="text-foreground pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 scale-90 opacity-50" />
