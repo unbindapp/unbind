@@ -2,6 +2,7 @@
 
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
+import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/components/ui/utils";
 import { getWebhookIcon } from "@/components/webhook/helpers";
@@ -77,6 +78,8 @@ export default function AddWebhookForm({ className, ...rest }: TProps) {
     ...rest,
   });
 
+  const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
+
   const { mutateAsync: createWebhook } = api.webhooks.create.useMutation({
     onSuccess: () => {
       invalidateWebhooks();
@@ -98,11 +101,13 @@ export default function AddWebhookForm({ className, ...rest }: TProps) {
     },
     onSubmit: async ({ formApi, value }) => {
       const selectedIds = value.selectedIds;
-      await createWebhook({
+      const res = await createWebhook({
         url: value.url,
         events: selectedIds,
         ...rest,
       });
+      temporarilyAddNewEntity(res.data.id);
+
       formApi.reset();
       formApi.setFieldValue("selectedIds", selectedIds);
     },

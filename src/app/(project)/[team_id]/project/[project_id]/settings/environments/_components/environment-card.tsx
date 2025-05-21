@@ -2,9 +2,11 @@
 
 import { useEnvironments } from "@/components/environment/environments-provider";
 import ErrorLine from "@/components/error-line";
+import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import { useProject, useProjectUtils } from "@/components/project/project-provider";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
+import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
 import { Button } from "@/components/ui/button";
@@ -92,6 +94,7 @@ export default function EnvironmentCard({
           }}
           className="has-hover:group-hover/item:bg-background-hover flex w-full flex-row items-center justify-start gap-2.5 py-3 pr-12 pl-4 font-medium"
         >
+          {environment && <NewEntityIndicator id={environment.id} />}
           {isSelected && (
             <div className="bg-foreground text-background -ml-0.75 flex size-4 items-center justify-center rounded-full p-0.75">
               <CheckIcon className="size-full" strokeWidth={4} />
@@ -380,6 +383,8 @@ export function NewEnvironmentCard({ teamId, projectId }: { teamId: string; proj
   });
   const { asyncPush } = useAsyncPush();
 
+  const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
+
   const { invalidate: invalidateProjects } = useProjectsUtils({ teamId });
   const { invalidate: invalidateProject } = useProjectUtils({ teamId, projectId });
   const {
@@ -406,6 +411,8 @@ export function NewEnvironmentCard({ teamId, projectId }: { teamId: string; proj
         teamId,
         projectId,
       });
+
+      temporarilyAddNewEntity(res.data.id);
 
       const newEnvironmentId = res.data.id;
 

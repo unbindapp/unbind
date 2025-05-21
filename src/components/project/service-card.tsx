@@ -1,4 +1,4 @@
-import { NewlyCreatedEntityIndicator } from "@/components/newly-created-entity-indicator";
+import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import LastDeploymentTime from "@/components/project/last-deployment-time";
 import ServicePanel from "@/components/service/panel/service-panel";
 import ServiceIcon from "@/components/service/service-icon";
@@ -53,7 +53,7 @@ export default function ServiceCard({
             classNameCard,
           )}
         >
-          {service && <NewlyCreatedEntityIndicator id={service.id} />}
+          {service && <NewEntityIndicator id={service.id} />}
           <div className="flex w-full items-center justify-start gap-2">
             {!isPlaceholder ? (
               <ServiceIcon service={service} className="-ml-1 size-6" />

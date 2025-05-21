@@ -10,7 +10,7 @@ import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useServicesUtils } from "@/components/project/services-provider";
 import { useAppConfig } from "@/components/providers/app-config-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
-import { useTemporarilyAddNewlyCreatedEntity } from "@/components/stores/main/main-store-provider";
+import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { createClient } from "@/server/go/client.gen";
 import { AppRouterOutputs } from "@/server/trpc/api/root";
@@ -43,7 +43,7 @@ function useGitItem({ context }: TProps) {
   const mainPageId = "git";
   const subpageId = "git_subpage";
 
-  const temporarilyAddNewlyCreatedEntity = useTemporarilyAddNewlyCreatedEntity();
+  const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
 
   const { closePanel: closeCommandPanel } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
@@ -102,7 +102,7 @@ function useGitItem({ context }: TProps) {
         isPublic: true,
       });
 
-      temporarilyAddNewlyCreatedEntity(result.service.id);
+      temporarilyAddNewEntity(result.service.id);
 
       return result;
     },

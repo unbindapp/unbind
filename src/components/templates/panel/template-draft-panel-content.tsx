@@ -1,7 +1,7 @@
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
 import { useServicesUtils } from "@/components/project/services-provider";
-import { useTemporarilyAddNewlyCreatedEntity } from "@/components/stores/main/main-store-provider";
+import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { useSystem } from "@/components/system/system-provider";
 import { useTemplateDraftPanel } from "@/components/templates/panel/template-draft-panel-provider";
 import { TTemplateDraft, TTemplateInput } from "@/components/templates/template-draft-store";
@@ -43,7 +43,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
 
   const { data: systemData } = useSystem();
 
-  const temporarilyAddNewlyCreatedEntity = useTemporarilyAddNewlyCreatedEntity();
+  const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
 
   const removeTemplateDraft = useTemplateDraftStore((s) => s.remove);
   const hideTemplateDraft = useTemplateDraftStore((s) => s.hide);
@@ -130,7 +130,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
 
       for (const item of res.data) {
         if (item.service_group?.id) {
-          temporarilyAddNewlyCreatedEntity(item.service_group.id);
+          temporarilyAddNewEntity(item.service_group.id);
           break;
         }
       }

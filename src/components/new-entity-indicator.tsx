@@ -3,10 +3,10 @@ import { cn } from "@/components/ui/utils";
 import { useEffect, useMemo } from "react";
 import { useDebounceValue } from "usehooks-ts";
 
-export function NewlyCreatedEntityIndicator({ id, className }: { id: string; className?: string }) {
+export function NewEntityIndicator({ id, className }: { id: string; className?: string }) {
   const entity = useMainStore((s) => s.newlyCreatedEntities.get(id));
 
-  const [debouncedMounted, setDebouncedMounted] = useDebounceValue(false, 300);
+  const [debouncedMounted, setDebouncedMounted] = useDebounceValue(false, 100);
 
   useEffect(() => {
     if (typeof window !== "undefined") setDebouncedMounted(true);

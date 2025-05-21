@@ -1,7 +1,9 @@
 "use client";
 
 import ErrorLine from "@/components/error-line";
+import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import { useS3SourcesUtils } from "@/components/storage/s3-sources-provider";
+import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
 import { Button } from "@/components/ui/button";
@@ -81,6 +83,7 @@ export default function S3SourceCard({ s3Source, teamId, isPlaceholder }: TProps
             variant="outline-muted"
             className="has-hover:group-hover/item:bg-background-hover flex w-full flex-col items-start justify-start gap-2.5 py-3 pr-12 pl-4 font-medium"
           >
+            {s3Source && <NewEntityIndicator id={s3Source.id} />}
             <p className="group-data-pending/item:bg-foreground group-data-pending/item:animate-skeleton min-w-0 shrink truncate leading-tight font-semibold group-data-pending/item:rounded-md group-data-pending/item:text-transparent">
               {isPlaceholder ? "Loading" : s3Source.name}
             </p>
@@ -537,6 +540,8 @@ export function NewS3SourceTrigger({ teamId, children }: { children: ReactNode; 
     reset: createS3SourceReset,
   } = api.storage.s3.create.useMutation({});
 
+  const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
+
   const [open, setOpen] = useState(false);
 
   const form = useAppForm({
@@ -551,7 +556,7 @@ export function NewS3SourceTrigger({ teamId, children }: { children: ReactNode; 
       onChange: CreateS3SourceFormSchema,
     },
     onSubmit: async ({ formApi, value }) => {
-      await createS3Source({
+      const res = await createS3Source({
         name: value.name,
         accessKeyId: value.accessKeyId,
         endpoint: value.endpoint,
@@ -559,6 +564,8 @@ export function NewS3SourceTrigger({ teamId, children }: { children: ReactNode; 
         secretKey: value.secretKey,
         teamId,
       });
+
+      temporarilyAddNewEntity(res.data.id);
 
       const invalidateRes = await ResultAsync.fromPromise(
         invalidateS3Sources(),

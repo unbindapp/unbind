@@ -7,7 +7,7 @@ import { useProject, useProjectUtils } from "@/components/project/project-provid
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useServicesUtils } from "@/components/project/services-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
-import { useTemporarilyAddNewlyCreatedEntity } from "@/components/stores/main/main-store-provider";
+import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { cn } from "@/components/ui/utils";
 import { formatKMBT } from "@/lib/helpers";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
@@ -57,7 +57,7 @@ function useDockerImageItem({ context }: TProps) {
   const mainPageId = "docker-image";
   const subpageId = "docker-image_subpage";
 
-  const temporarilyAddNewlyCreatedEntity = useTemporarilyAddNewlyCreatedEntity();
+  const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
 
   const { closePanel: closeCommandPanel } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
@@ -111,7 +111,7 @@ function useDockerImageItem({ context }: TProps) {
         image,
       });
 
-      temporarilyAddNewlyCreatedEntity(result.service.id);
+      temporarilyAddNewEntity(result.service.id);
 
       return result;
     },
