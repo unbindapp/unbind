@@ -10,7 +10,7 @@ import { ReactNode } from "react";
 
 const placeholderArray = Array.from({ length: 4 }, (_, i) => i);
 
-export default function StorageTabContent() {
+export default function StorageTabContent({ className }: { className?: string }) {
   const {
     teamId,
     query: { data, error, isPending },
@@ -20,7 +20,7 @@ export default function StorageTabContent() {
 
   if (error && !isPending && !s3Sources) {
     return (
-      <Wrapper>
+      <Wrapper className={className}>
         <ErrorCard message={error.message} />
       </Wrapper>
     );
@@ -28,7 +28,7 @@ export default function StorageTabContent() {
 
   if (isPending || !s3Sources) {
     return (
-      <Wrapper asElement="ol" className="-mx-1 mt-2 w-[calc(100%+0.5rem)] flex-row flex-wrap">
+      <Wrapper asElement="ol" className={className}>
         {placeholderArray.map((i) => (
           <S3SourceCard key={i} isPlaceholder={true} />
         ))}
@@ -37,7 +37,7 @@ export default function StorageTabContent() {
   }
 
   return (
-    <Wrapper asElement="ol" className="-mx-1 mt-2 w-[calc(100%+0.5rem)] flex-row flex-wrap">
+    <Wrapper asElement="ol" className={className}>
       {s3Sources.map((s3Source) => (
         <S3SourceCard key={s3Source.id} s3Source={s3Source} teamId={teamId} />
       ))}
@@ -56,5 +56,9 @@ function Wrapper({
   children: ReactNode;
 }) {
   const Element = asElement === "ol" ? "ol" : "div";
-  return <Element className={cn("mt-3 flex w-full flex-col", className)}>{children}</Element>;
+  return (
+    <Element className={cn("-mx-1 flex w-[calc(100%+0.5rem)] flex-col", className)}>
+      {children}
+    </Element>
+  );
 }

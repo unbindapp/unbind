@@ -1,3 +1,4 @@
+import { ComingSoonChip } from "@/components/coming-soon";
 import {
   DropdownOrDrawer,
   DropdownOrDrawerContentForDrawer,
@@ -41,6 +42,7 @@ type TProps<T> = {
       newItemTitle: string;
       newItemIsPending: boolean;
       newItemDontCloseMenuOnSelect?: boolean;
+      newItemComingSoon?: boolean;
       NewItemWrapper?: FC<{ children: ReactNode }>;
       onSelectNewItem: (id: string) => void;
     }
@@ -49,6 +51,7 @@ type TProps<T> = {
       newItemIsPending?: never;
       onSelectNewItem?: never;
       NewItemWrapper?: never;
+      newItemComingSoon?: never;
       newItemDontCloseMenuOnSelect?: never;
     }
 ) &
@@ -65,6 +68,7 @@ export function BreadcrumbItem<T>({
   newItemTitle,
   newItemIsPending,
   newItemDontCloseMenuOnSelect,
+  newItemComingSoon,
   NewItemWrapper,
   onSelectNewItem,
   showArrow,
@@ -134,6 +138,7 @@ export function BreadcrumbItem<T>({
                   lastHoveredItem={lastHoveredItem}
                   setLastHoveredItem={setLastHoveredItem}
                   IconItem={PlusIcon}
+                  comingSoon={newItemComingSoon}
                   className="text-muted-foreground data-highlighted:text-foreground data-last-hovered:text-foreground mr-4"
                 />
               </ConditionalNewItemWrapper>
@@ -171,6 +176,7 @@ export function BreadcrumbItem<T>({
                   dontCloseMenuOnSelect={newItemDontCloseMenuOnSelect}
                   item={newItem}
                   isPending={newItemIsPending}
+                  comingSoon={newItemComingSoon}
                   onSelect={onSelectNewItem}
                   setOpen={setOpen}
                   selectedItem={selectedItem}
@@ -200,6 +206,8 @@ function SheetItem<T>({
   IconItem,
   isPending,
   className,
+  disabled,
+  comingSoon,
   ...rest
 }: {
   item: Item<T>;
@@ -212,11 +220,13 @@ function SheetItem<T>({
   showArrow?: (i: Item<T>) => boolean;
   IconItem?: FC<{ id: string; className?: string }>;
   isPending?: boolean;
+  comingSoon?: boolean;
   className?: string;
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onSelect">) {
   return (
     <Button
       onClick={() => {
+        if (comingSoon) return;
         if (!dontCloseMenuOnSelect) {
           setOpen(false);
         }
@@ -232,6 +242,8 @@ function SheetItem<T>({
         `data-last-hovered:bg-border data-highlighted:group-has-[*[data-highlighted]]/list:bg-border group/item data-highlighted:text-foreground flex w-full cursor-default items-center justify-between gap-3 rounded-lg px-3 py-3.5 text-left font-medium group-has-[*[data-highlighted]]/list:bg-transparent`,
         className,
       )}
+      disabled={comingSoon || disabled}
+      fadeOnDisabled={comingSoon ? false : undefined}
       {...rest}
     >
       {isPending && (
@@ -247,22 +259,27 @@ function SheetItem<T>({
             <IconItem id={item.id} className="-my-1 -ml-1 size-5 shrink-0" />
           )
         ) : null}
-        <p className="min-w-0 shrink">{item.name}</p>
+        <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
+          <p className="min-w-0 shrink">{item.name}</p>
+          {comingSoon && <ComingSoonChip classNameParagraph="px-2.5 py-0.5 text-sm" />}
+        </div>
       </div>
-      <div className="group-data-pending/item:text-foreground relative -mr-0.5 size-5">
-        {selectedItem?.id === item.id && (
-          <>
-            <CheckIcon
-              className="size-full transition group-data-highlighted/item:group-data-show-arrow/item:rotate-90 group-data-highlighted/item:group-data-show-arrow/item:opacity-0"
-              strokeWidth={2.5}
-            />
-            <ArrowRightIcon
-              className="absolute top-0 left-0 size-full -rotate-90 opacity-0 transition group-data-highlighted/item:group-data-show-arrow/item:rotate-0 group-data-highlighted/item:group-data-show-arrow/item:opacity-100"
-              strokeWidth={2.5}
-            />
-          </>
-        )}
-      </div>
+      {!comingSoon && (
+        <div className="group-data-pending/item:text-foreground relative -mr-0.5 size-5">
+          {selectedItem?.id === item.id && (
+            <>
+              <CheckIcon
+                className="size-full transition group-data-highlighted/item:group-data-show-arrow/item:rotate-90 group-data-highlighted/item:group-data-show-arrow/item:opacity-0"
+                strokeWidth={2.5}
+              />
+              <ArrowRightIcon
+                className="absolute top-0 left-0 size-full -rotate-90 opacity-0 transition group-data-highlighted/item:group-data-show-arrow/item:rotate-0 group-data-highlighted/item:group-data-show-arrow/item:opacity-100"
+                strokeWidth={2.5}
+              />
+            </>
+          )}
+        </div>
+      )}
     </Button>
   );
 }
@@ -280,6 +297,8 @@ function DropdownItem<T>({
   IconItem,
   isPending,
   className,
+  comingSoon,
+  disabled,
   ...rest
 }: {
   item: Item<T>;
@@ -293,6 +312,7 @@ function DropdownItem<T>({
   showArrow?: (i: Item<T>) => boolean;
   IconItem?: FC<{ id: string; className?: string }>;
   isPending?: boolean;
+  comingSoon?: boolean;
   className?: string;
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onSelect">) {
   return (
@@ -311,14 +331,18 @@ function DropdownItem<T>({
       data-pending={isPending ? true : undefined}
       // @ts-expect-error - TODO - Check this later, fine for now
       onMouseEnter={() => {
+        if (comingSoon) return;
         onHover?.(item.id);
         setLastHoveredItem(item);
       }}
       // @ts-expect-error - TODO - Check this later, fine for now
       onTouchStart={() => {
+        if (comingSoon) return;
         onHover?.(item.id);
         setLastHoveredItem(item);
       }}
+      disabled={comingSoon || disabled}
+      fadeOnDisabled={comingSoon ? false : undefined}
       {...rest}
     >
       {isPending && (
@@ -334,22 +358,27 @@ function DropdownItem<T>({
             <IconItem id={item.id} className="-my-1 -ml-0.5 size-4.5 shrink-0" />
           )
         ) : null}
-        <p className="min-w-0 shrink">{item.name}</p>
+        <div className="flex min-w-0 shrink items-center justify-between gap-3">
+          <p className="min-w-0 shrink">{item.name}</p>
+          {comingSoon && <ComingSoonChip className="-mr-0.75" />}
+        </div>
       </div>
-      <div className="group-data-pending/item:text-foreground relative -mr-0.5 size-4.5 shrink-0 transition-transform group-data-highlighted/item:group-data-show-arrow/item:rotate-90">
-        {selectedItem?.id === item.id && (
-          <>
-            <CheckIcon
-              className="size-full transition-opacity group-data-highlighted/item:group-data-show-arrow/item:opacity-0"
-              strokeWidth={2.5}
-            />
-            <ArrowRightIcon
-              className="absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-opacity group-data-highlighted/item:group-data-show-arrow/item:opacity-100"
-              strokeWidth={2.5}
-            />
-          </>
-        )}
-      </div>
+      {!comingSoon && (
+        <div className="group-data-pending/item:text-foreground relative -mr-0.5 size-4.5 shrink-0 transition-transform group-data-highlighted/item:group-data-show-arrow/item:rotate-90">
+          {selectedItem?.id === item.id && (
+            <>
+              <CheckIcon
+                className="size-full transition-opacity group-data-highlighted/item:group-data-show-arrow/item:opacity-0"
+                strokeWidth={2.5}
+              />
+              <ArrowRightIcon
+                className="absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-opacity group-data-highlighted/item:group-data-show-arrow/item:opacity-100"
+                strokeWidth={2.5}
+              />
+            </>
+          )}
+        </div>
+      )}
     </DropdownMenuItem>
   );
 }

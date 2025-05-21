@@ -7,7 +7,6 @@ import { useTeams } from "@/components/team/teams-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
 
 type TProps = {
   className?: string;
@@ -70,13 +69,8 @@ export default function TeamBreadcrumb({ className }: TProps) {
         onHover={onTeamIdHover}
         newItemTitle="New Team"
         newItemIsPending={false}
-        onSelectNewItem={() =>
-          toast.success("New team created", {
-            description: "This is fake.",
-            duration: 3000,
-            closeButton: false,
-          })
-        }
+        newItemComingSoon={true}
+        onSelectNewItem={() => {}}
       />
     </BreadcrumbWrapper>
   );

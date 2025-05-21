@@ -24,7 +24,7 @@ export default async function Page({ params }: TProps) {
       initialData={initialData.isOk() ? initialData.value : undefined}
     >
       <SettingsTabTitle>Storage</SettingsTabTitle>
-      <StorageTabContent />
+      <StorageTabContent className="mt-2" />
     </S3SourcesProvider>
   );
 }
