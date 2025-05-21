@@ -20,15 +20,14 @@ export function NewEntityIndicator({ id, className }: { id: string; className?: 
 
   return (
     <div
+      data-show={showIndicator ? true : undefined}
       className={cn(
-        "pointer-events-none absolute -top-[1px] left-0 flex h-full w-full items-start justify-center px-2",
+        "group/indicator pointer-events-none absolute -top-[1px] left-0 flex h-full w-full items-start justify-center overflow-hidden px-2 opacity-0 transition-opacity duration-500 data-show:opacity-100",
         className,
       )}
     >
-      <div
-        data-show={showIndicator ? true : undefined}
-        className="from-success/0 via-success to-success/0 h-[1.5px] w-full bg-gradient-to-r opacity-0 transition-opacity duration-500 data-show:opacity-100"
-      ></div>
+      <div className="from-success/0 via-success to-success/0 h-[1.5px] w-full bg-gradient-to-r" />
+      <div className="from-success via-success/0 absolute top-0 left-1/2 h-3 w-1/2 -translate-x-1/2 -translate-y-1/2 bg-radial transition" />
     </div>
   );
 }
