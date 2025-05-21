@@ -1,6 +1,7 @@
 "use client";
 
 import ErrorLine from "@/components/error-line";
+import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import { Button } from "@/components/ui/button";
 import {
@@ -165,6 +166,11 @@ export default function VariableCard({
       data-reference-error={referenceError ? true : undefined}
       className="data-reference-error:bg-destructive/4 group/card data-reference-error:border-destructive/12 relative flex w-full flex-col rounded-xl border px-3 py-0.75 data-placeholder:text-transparent sm:flex-row sm:items-start sm:rounded-lg sm:pr-0.75"
     >
+      {variable && (
+        <NewEntityIndicator
+          id={getNewEntityIdForVariable({ name: variable.name, value: variable.value })}
+        />
+      )}
       <div className="flex h-9 w-full shrink-0 items-center py-2 pr-8 sm:w-56 sm:pr-4 md:w-64">
         {Icon && <Icon className="text-foreground mr-2 size-3.5 shrink-0" />}
         {!Icon && variable?.variable_type === "reference" && (
@@ -295,6 +301,10 @@ export default function VariableCard({
       )}
     </Element>
   );
+}
+
+export function getNewEntityIdForVariable({ name, value }: { name: string; value: string }) {
+  return `${name}|${value}`;
 }
 
 function ConditionalDropdownButton({

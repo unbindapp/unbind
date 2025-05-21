@@ -26,6 +26,8 @@ import { ReactNode, useEffect, useRef, useState } from "react";
 import Editor from "react-simple-code-editor";
 import { toast } from "sonner";
 import { z } from "zod";
+import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
+import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
 
 type TProps = {
   children: ReactNode;
@@ -45,6 +47,8 @@ export default function RawVariableEditor({ children }: TProps) {
 
   const variables = variablesData?.variables;
   const [editorValue, setEditorValue] = useState(variables ? getEditorValue({ variables }) : "");
+
+  const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
 
   const [open, setOpen] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -101,6 +105,11 @@ export default function RawVariableEditor({ children }: TProps) {
         variables: parsedVariables,
         variableReferences: undefined,
       });
+
+      for (const i of parsedVariables) {
+        const id = getNewEntityIdForVariable({ name: i.name, value: i.value });
+        temporarilyAddNewEntity(id);
+      }
     },
     mutationKey: ["replace-variables"],
     onSuccess: async () => {

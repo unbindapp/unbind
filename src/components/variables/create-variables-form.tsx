@@ -1,5 +1,6 @@
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
+import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { Button } from "@/components/ui/button";
 import { splitByTokens, TToken } from "@/components/ui/textarea-with-tokens";
 import { cn } from "@/components/ui/utils";
@@ -7,6 +8,7 @@ import {
   getReferenceVariableReadableNames,
   getVariablesFromRawText,
 } from "@/components/variables/helpers";
+import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
 import { useVariableReferences } from "@/components/variables/variable-references-provider";
 import { useVariables } from "@/components/variables/variables-provider";
 import { useAppForm } from "@/lib/hooks/use-app-form";
@@ -58,6 +60,8 @@ export default function CreateVariablesForm({
   const {
     list: { data: variableReferencesData, error: variableReferencesError },
   } = useVariableReferences();
+
+  const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
 
   const [isOpen, setIsOpen] = useState(false);
 
@@ -160,7 +164,17 @@ export default function CreateVariablesForm({
         variableReferences,
       });
 
+      for (const i of value.variables) {
+        const id = getNewEntityIdForVariable({ name: i.name, value: i.value });
+        temporarilyAddNewEntity(id);
+      }
+      for (const i of variableReferences) {
+        const id = getNewEntityIdForVariable({ name: i.name, value: i.value });
+        temporarilyAddNewEntity(id);
+      }
+
       await refetchVariables();
+
       formApi.reset();
       afterSuccessfulSubmit?.(variables);
     },

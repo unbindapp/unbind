@@ -519,7 +519,7 @@ export function NewS3SourceCard({ teamId }: { teamId: string }) {
         <div className="group/item relative flex w-full items-center justify-start">
           <Button
             variant="outline"
-            className="text-muted-foreground flex min-h-14 w-full flex-row items-center justify-start px-4 py-3 font-medium"
+            className="text-muted-foreground flex w-full flex-row items-center justify-start px-4 py-3.25 font-medium"
           >
             <PlusIcon className="-my-1 -ml-1 size-4.5 shrink-0" />
             <p className="group-data-pending/item:bg-foreground group-data-pending/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-pending/item:rounded-md group-data-pending/item:text-transparent">
