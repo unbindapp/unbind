@@ -1,7 +1,7 @@
 "use client";
 
+import { useMainStore } from "@/components/stores/main/main-store-provider";
 import { LinkButton } from "@/components/ui/button";
-import { UpdateStoreProvider, useUpdateStore } from "@/components/update/update-store-provider";
 import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
 import { api } from "@/server/trpc/setup/client";
 import { GiftIcon } from "lucide-react";
@@ -21,9 +21,7 @@ export const CheckForUpdatesProvider: React.FC<{
     initialData,
   });
   return (
-    <UpdateStoreProvider>
-      <CheckForUpdatesContext.Provider value={query}>{children}</CheckForUpdatesContext.Provider>
-    </UpdateStoreProvider>
+    <CheckForUpdatesContext.Provider value={query}>{children}</CheckForUpdatesContext.Provider>
   );
 };
 
@@ -38,8 +36,8 @@ export const useCheckForUpdates = () => {
 export default CheckForUpdatesProvider;
 
 export function UpdateToastProvider({ children }: { children: ReactNode }) {
-  const setLastDismissedVersion = useUpdateStore((state) => state.setLastDismissedVersion);
-  const lastDismissedVersion = useUpdateStore((state) => state.lastDismissedVersion);
+  const setLastDismissedVersion = useMainStore((state) => state.setLastDismissedVersion);
+  const lastDismissedVersion = useMainStore((state) => state.lastDismissedVersion);
 
   const { data } = useCheckForUpdates();
   const updateData = data?.data;
