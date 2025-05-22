@@ -9,7 +9,7 @@ import { useServicesUtils } from "@/components/project/services-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { cn } from "@/components/ui/utils";
-import { formatKMBT } from "@/lib/helpers";
+import { formatKMBT } from "@/lib/helpers/format-kmbt";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { api } from "@/server/trpc/setup/client";
 import { useMutation } from "@tanstack/react-query";

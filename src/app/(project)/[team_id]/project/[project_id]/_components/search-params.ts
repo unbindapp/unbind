@@ -1,4 +1,4 @@
-import { isUUID } from "@/lib/helpers";
+import { isUUID } from "@/lib/helpers/is-uuid";
 import { apiServer } from "@/server/trpc/setup/server";
 import { redirect } from "next/navigation";
 import { createSearchParamsCache, parseAsString, SearchParams } from "nuqs/server";

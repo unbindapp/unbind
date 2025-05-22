@@ -3,13 +3,11 @@ import BrandIcon from "@/components/icons/brand";
 import { useSystem } from "@/components/system/system-provider";
 import { cn } from "@/components/ui/utils";
 import { defaultDebounceMs } from "@/lib/constants";
+import { isDomain } from "@/lib/helpers/is-domain";
 import { api } from "@/server/trpc/setup/client";
 import { CheckCircleIcon, HourglassIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDebounce } from "use-debounce";
-import { z } from "zod";
-
-const UrlSchema = z.string().nonempty().url();
 
 export function DomainCard({ domain, className }: { domain: string; className?: string }) {
   const { data, isPending, error } = useSystem();
@@ -26,21 +24,13 @@ export function DomainCard({ domain, className }: { domain: string; className?: 
   );
 
   useEffect(() => {
-    let url: URL | undefined;
-    try {
-      url = new URL("https://" + debouncedDomain);
-    } catch {}
-    const { success } = UrlSchema.safeParse(url?.toString() || "");
-    setIsValidDebouncedDomain(success);
+    const isValid = isDomain(debouncedDomain);
+    setIsValidDebouncedDomain(isValid);
   }, [debouncedDomain]);
 
   useEffect(() => {
-    let url: URL | undefined;
-    try {
-      url = new URL("https://" + domain);
-    } catch {}
-    const { success } = UrlSchema.safeParse(url?.toString() || "");
-    setIsValidDomain(success);
+    const isValid = isDomain(domain);
+    setIsValidDomain(isValid);
   }, [domain]);
 
   if (!isValid) return null;

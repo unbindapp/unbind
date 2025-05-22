@@ -191,7 +191,7 @@ function StorageSizeInput({
       (!dontCheckUntilSubmit || isFormSubmitted) &&
       field.state.meta.errors.length ? (
         <ErrorLine
-          className={cn("bg-transparent py-1.5 pl-1.5", classNameInfo)}
+          className={cn("mt-1 bg-transparent py-1.5 pl-1.5", classNameInfo)}
           message={field.state.meta.errors[0].message}
         />
       ) : null}

@@ -3,14 +3,16 @@ import BrandIcon from "@/components/icons/brand";
 import { useServicesUtils } from "@/components/project/services-provider";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { useSystem } from "@/components/system/system-provider";
+import { templateInputValidator } from "@/components/templates/panel/input-validator";
 import { useTemplateDraftPanel } from "@/components/templates/panel/template-draft-panel-provider";
 import { TTemplateDraft, TTemplateInput } from "@/components/templates/template-draft-store";
 import { useTemplateDraftStore } from "@/components/templates/template-draft-store-provider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { drawerAnimationMs } from "@/lib/constants";
-import { formatGB } from "@/lib/helpers";
+import { formatGB } from "@/lib/helpers/format-gb";
 import { useAppForm } from "@/lib/hooks/use-app-form";
+import { TemplateInputTypeSchema } from "@/server/go/client.gen";
 import { api } from "@/server/trpc/setup/client";
 import {
   ArchiveIcon,
@@ -22,16 +24,19 @@ import {
 import { ResultAsync } from "neverthrow";
 import { HTMLAttributes, useMemo, useRef } from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 
 type TProps = {
   templateDraft: TTemplateDraft;
   className?: string;
 } & HTMLAttributes<HTMLFormElement>;
 
-type TInput = {
-  id: string;
-  value: string;
-};
+export const TemplateInputSchema = z.object({
+  id: z.string(),
+  value: z.string(),
+  type: TemplateInputTypeSchema,
+});
+type TInput = z.infer<typeof TemplateInputSchema>;
 
 export const templateDraftMaxStorageGb = 100;
 
@@ -99,6 +104,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
         if (input.type === "database-size" || input.type === "volume-size") {
           const _input: TInput = {
             id: input.id,
+            type: input.type,
             value: input.default
               ? String(Math.min(Math.max(minStorageGb, Number(input.default)), maxStorageGb))
               : "",
@@ -108,6 +114,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
 
         const _input: TInput = {
           id: input.id,
+          type: input.type,
           value: input.default || "",
         };
         return _input;
@@ -191,7 +198,19 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                           {visibleInputs[i].description}
                         </p>
                       </div>
-                      <form.Field key={`inputs[${i}].name`} name={`inputs[${i}].value`}>
+                      <form.Field
+                        validators={{
+                          onChange: ({ value }) =>
+                            templateInputValidator({
+                              value,
+                              type: visibleInputs[i].type,
+                              minStorageGb,
+                              maxStorageGb,
+                            }),
+                        }}
+                        key={`inputs[${i}].name`}
+                        name={`inputs[${i}].value`}
+                      >
                         {(subField) => {
                           const input = visibleInputs[i];
                           if (input.type === "database-size" || input.type === "volume-size") {
