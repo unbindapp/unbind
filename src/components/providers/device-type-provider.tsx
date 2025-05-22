@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
+import { useMounted } from "@/lib/hooks/use-mounted";
+import { createContext, ReactNode, useContext, useMemo } from "react";
 import { useMediaQuery } from "usehooks-ts";
 
 type TDeviceTypeContext = {
@@ -14,10 +15,7 @@ export const DeviceTypeProvider: React.FC<{
 }> = ({ children }) => {
   const isTouchscreen = useMediaQuery("(pointer: coarse)");
 
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    if (typeof window !== "undefined") setMounted(true);
-  }, []);
+  const mounted = useMounted();
 
   const value: TDeviceTypeContext = useMemo(
     () => ({

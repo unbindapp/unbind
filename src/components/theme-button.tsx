@@ -3,9 +3,9 @@
 import { availableThemes, TTheme } from "@/components/providers/themes";
 import { Button } from "@/components/ui/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { useMounted } from "@/lib/hooks/use-mounted";
 import { MonitorSmartphoneIcon, MoonIcon, SunIcon } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
 
 export default function ThemeButton({
   variant = "default",
@@ -18,10 +18,7 @@ export default function ThemeButton({
     setTheme(availableThemes[newThemeIndex]);
   };
 
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    if (typeof window !== "undefined") setMounted(true);
-  }, []);
+  const mounted = useMounted();
 
   const themeText = !mounted
     ? "Dark"

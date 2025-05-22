@@ -1,17 +1,12 @@
 import { useMainStore } from "@/components/stores/main/main-store-provider";
 import { cn } from "@/components/ui/utils";
-import { useEffect, useMemo } from "react";
-import { useDebounceValue } from "usehooks-ts";
+import { useDebouncedMounted } from "@/lib/hooks/use-mounted";
+import { useMemo } from "react";
 
 export function NewEntityIndicator({ id, className }: { id: string; className?: string }) {
   const entity = useMainStore((s) => s.newlyCreatedEntities[id]);
 
-  const [debouncedMounted, setDebouncedMounted] = useDebounceValue(false, 100);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") setDebouncedMounted(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const debouncedMounted = useDebouncedMounted(100);
 
   const showIndicator = useMemo(() => {
     if (!debouncedMounted || !entity || entity.isOpened) return false;

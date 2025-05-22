@@ -2,10 +2,11 @@
 
 import { useMainStore } from "@/components/stores/main/main-store-provider";
 import { LinkButton } from "@/components/ui/button";
+import { useMounted } from "@/lib/hooks/use-mounted";
 import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
 import { api } from "@/server/trpc/setup/client";
 import { GiftIcon } from "lucide-react";
-import { createContext, ReactNode, useContext, useEffect, useRef, useState } from "react";
+import { createContext, ReactNode, useContext, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 type TCheckForUpdatesContext = AppRouterQueryResult<AppRouterOutputs["system"]["checkForUpdates"]>;
@@ -59,10 +60,7 @@ export function UpdateToastProvider({ children }: { children: ReactNode }) {
 
   const updateShownRef = useRef(false);
 
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    if (typeof window !== "undefined") setMounted(true);
-  }, []);
+  const mounted = useMounted();
 
   useEffect(() => {
     if (!mounted) return;

@@ -1,9 +1,10 @@
 import { contextCommandPanelRootPage } from "@/components/command-panel/constants";
 import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/command-panel/types";
 import { availableThemes, TTheme } from "@/components/providers/themes";
+import { useMounted } from "@/lib/hooks/use-mounted";
 import { MonitorSmartphoneIcon, MoonIcon, SlidersHorizontalIcon, SunIcon } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 
 type TProps = {
   context: TContextCommandPanelContext;
@@ -28,10 +29,7 @@ export default function usePreferencesItem({ context }: TProps) {
     return newTheme;
   }, [setTheme, theme]);
 
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    if (typeof window !== "undefined") setMounted(true);
-  }, []);
+  const mounted = useMounted();
 
   const themeText = !mounted ? "Dark" : getThemeText(theme);
 
