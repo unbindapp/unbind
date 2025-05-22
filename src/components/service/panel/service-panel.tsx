@@ -110,7 +110,7 @@ export default function ServicePanel({
           </div>
         </div>
         {service.config.hosts && service.config.hosts.length >= 1 && (
-          <ServiceUrl hostObject={service.config.hosts[0]} />
+          <ServiceUrls hosts={service.config.hosts} />
         )}
         <ServiceProvider
           teamId={teamId}
@@ -282,9 +282,23 @@ function ThreeDotButton({
   );
 }
 
-function ServiceUrl({ hostObject }: { hostObject: THost }) {
+function ServiceUrls({ hosts }: { hosts: THost[] }) {
   return (
-    <div className="-mb-0.25 flex w-full items-start justify-start px-2.75 pt-0.75 sm:px-6">
+    <div className="-mb-0.25 flex w-full flex-wrap px-2.75 pt-0.75 sm:px-6">
+      {hosts.map((h) => (
+        <ServiceUrl
+          key={`${h.host}${h.path}${h.port}`}
+          hostObject={h}
+          className={hosts.length > 1 ? "max-w-1/2" : undefined}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ServiceUrl({ hostObject, className }: { hostObject: THost; className?: string }) {
+  return (
+    <div className={cn("flex max-w-full items-start justify-start sm:max-w-full", className)}>
       <LinkButton
         className="text-muted-foreground group/button min-w-0 shrink px-2.25 py-1 text-left font-medium"
         variant="ghost"
