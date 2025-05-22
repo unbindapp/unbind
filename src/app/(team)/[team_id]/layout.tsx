@@ -5,9 +5,7 @@ import TeamNavbar from "@/components/team/team-navbar";
 import TeamProvider from "@/components/team/team-provider";
 import TeamsProvider from "@/components/team/teams-provider";
 import TemplatesProvider from "@/components/templates/templates-provider";
-import CheckForUpdatesProvider, {
-  UpdateToastProvider,
-} from "@/components/update/check-for-updates-provider";
+import { UpdateToastProvider } from "@/components/update/check-for-updates-provider";
 import { apiServer } from "@/server/trpc/setup/server";
 import { ResultAsync } from "neverthrow";
 import { notFound, redirect } from "next/navigation";

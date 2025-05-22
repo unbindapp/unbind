@@ -113,7 +113,7 @@ export default function UserAvatar({ email, className }: TProps) {
           data-error={
             !updatesData && !isPendingUpdatesResult && isErrorUpdatesResult ? true : undefined
           }
-          className="group/version bg-background absolute bottom-[var(--safe-area-inset-bottom)] z-10 flex w-full items-center justify-center gap-1.25 border-t px-5 py-2.75"
+          className="group/version bg-background absolute bottom-[var(--safe-area-inset-bottom)] z-10 flex w-full items-center justify-start gap-1.25 border-t px-4.25 py-3"
         >
           {!isPendingUpdatesResult && (
             <GitBranchIcon className="text-muted-foreground -ml-0.25 size-3.75 shrink-0" />
@@ -178,7 +178,7 @@ export default function UserAvatar({ email, className }: TProps) {
           data-error={
             !updatesData && !isPendingUpdatesResult && isErrorUpdatesResult ? true : undefined
           }
-          className="group/version flex w-full items-center justify-center gap-1.25 px-4 py-2"
+          className="group/version flex w-full items-center justify-start gap-1.25 px-4 py-2.5"
         >
           {!isPendingUpdatesResult && (
             <GitBranchIcon className="text-muted-foreground -ml-0.25 size-3.75 shrink-0" />

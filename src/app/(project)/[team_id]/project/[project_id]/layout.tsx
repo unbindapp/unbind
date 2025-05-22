@@ -8,9 +8,7 @@ import ServicePanelProvider from "@/components/service/panel/service-panel-provi
 import SystemProvider from "@/components/system/system-provider";
 import TemplateDraftPanelProvider from "@/components/templates/panel/template-draft-panel-provider";
 import TemplatesProvider from "@/components/templates/templates-provider";
-import CheckForUpdatesProvider, {
-  UpdateToastProvider,
-} from "@/components/update/check-for-updates-provider";
+import { UpdateToastProvider } from "@/components/update/check-for-updates-provider";
 import { apiServer } from "@/server/trpc/setup/server";
 import { ResultAsync } from "neverthrow";
 import { redirect } from "next/navigation";
