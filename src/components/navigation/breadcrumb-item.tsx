@@ -108,7 +108,7 @@ export function BreadcrumbItem<T>({
         />
       </DropdownOrDrawerTrigger>
       <DropdownOrDrawerContentForDrawer>
-        <div className="group/list flex w-full flex-col px-2 pt-2 pb-8">
+        <div className="group/list flex w-full flex-col px-2 pt-2 pb-[calc(var(--safe-area-inset-bottom)+2rem)]">
           {items?.map((i, index) => {
             return (
               <SheetItem
