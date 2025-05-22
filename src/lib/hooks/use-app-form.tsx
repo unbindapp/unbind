@@ -23,6 +23,7 @@ type TFieldProps = {
   dontCheckUntilSubmit?: boolean;
   classNameInput?: string;
   classNameInfo?: string;
+  hideDomainCard?: boolean;
 };
 
 type TInputWithInfoProps = TFieldProps & InputProps;
@@ -104,6 +105,7 @@ function DomainInput({
   classNameInput,
   classNameInfo,
   dontCheckUntilSubmit,
+  hideDomainCard,
   ...rest
 }: TInputWithInfoProps) {
   const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
@@ -113,7 +115,9 @@ function DomainInput({
     return (
       <div className={cn("flex w-full flex-col", className)}>
         <Input {...rest} className={cn("z-10 w-full", classNameInput)} />
-        <DomainCard domain={field.state.value} className="-mt-3 rounded-t-none pt-2.75" />
+        {!hideDomainCard && (
+          <DomainCard domain={field.state.value} className="-mt-3 rounded-t-none pt-2.75" />
+        )}
       </div>
     );
   }
@@ -121,7 +125,9 @@ function DomainInput({
   return (
     <div className={cn("flex flex-col", className)}>
       <Input {...rest} className={cn("z-10 w-full", classNameInput)} />
-      <DomainCard domain={field.state.value} className="-mt-3 rounded-t-none pt-2.75" />
+      {!hideDomainCard && (
+        <DomainCard domain={field.state.value} className="-mt-3 rounded-t-none pt-2.75" />
+      )}
       {(field.state.meta.isTouched || isFormSubmitted) &&
       (field.state.meta.isBlurred || isFormSubmitted) &&
       (!dontCheckUntilSubmit || isFormSubmitted) &&
