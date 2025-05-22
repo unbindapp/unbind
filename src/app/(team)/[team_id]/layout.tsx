@@ -54,26 +54,24 @@ export default async function Layout({ children, params }: TProps) {
   }
 
   return (
-    <CheckForUpdatesProvider>
-      <SystemProvider initialData={systemData.value}>
-        <TemplatesProvider data={templatesData.value}>
-          <UpdateToastProvider>
-            <TeamsProvider initialData={teamsInitialData.value}>
-              <TeamProvider initialData={teamInitialData.value} teamId={teamId}>
-                <TeamNavbar />
-                {children}
-                <NavbarSafeAreaInsetBottom className="sm:hidden" />
-                <ContextCommandPanel
-                  title="Team Command Panel"
-                  description="Team command panel"
-                  context={{ contextType: "team", teamId }}
-                  triggerType="layout"
-                />
-              </TeamProvider>
-            </TeamsProvider>
-          </UpdateToastProvider>
-        </TemplatesProvider>
-      </SystemProvider>
-    </CheckForUpdatesProvider>
+    <SystemProvider initialData={systemData.value}>
+      <TemplatesProvider data={templatesData.value}>
+        <UpdateToastProvider>
+          <TeamsProvider initialData={teamsInitialData.value}>
+            <TeamProvider initialData={teamInitialData.value} teamId={teamId}>
+              <TeamNavbar />
+              {children}
+              <NavbarSafeAreaInsetBottom className="sm:hidden" />
+              <ContextCommandPanel
+                title="Team Command Panel"
+                description="Team command panel"
+                context={{ contextType: "team", teamId }}
+                triggerType="layout"
+              />
+            </TeamProvider>
+          </TeamsProvider>
+        </UpdateToastProvider>
+      </TemplatesProvider>
+    </SystemProvider>
   );
 }

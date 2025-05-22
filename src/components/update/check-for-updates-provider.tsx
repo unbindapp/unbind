@@ -32,21 +32,30 @@ export const useCheckForUpdates = () => {
   return context;
 };
 
+export const useCheckNewVersion = () => {
+  const { data } = useCheckForUpdates();
+  const updateData = data?.data;
+  const availableVersions = updateData?.available_versions;
+
+  const hasUpdateAvailable = updateData?.has_update_available || false;
+  const latestVersion =
+    availableVersions && availableVersions.length > 0
+      ? availableVersions[availableVersions.length - 1]
+      : null;
+
+  return {
+    hasUpdateAvailable,
+    latestVersion,
+  };
+};
+
 export default CheckForUpdatesProvider;
 
 export function UpdateToastProvider({ children }: { children: ReactNode }) {
   const setLastDismissedVersion = useMainStore((state) => state.setLastDismissedVersion);
   const lastDismissedVersion = useMainStore((state) => state.lastDismissedVersion);
 
-  const { data } = useCheckForUpdates();
-  const updateData = data?.data;
-  const availableVersions = updateData?.available_versions;
-
-  const hasUpdateAvailable = updateData?.has_update_available;
-  const latestVersion =
-    availableVersions && availableVersions.length > 0
-      ? availableVersions[availableVersions.length - 1]
-      : null;
+  const { hasUpdateAvailable, latestVersion } = useCheckNewVersion();
 
   const updateShownRef = useRef(false);
 

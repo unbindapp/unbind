@@ -2,6 +2,7 @@
 
 import ErrorLine from "@/components/error-line";
 import { useNow } from "@/components/providers/now-provider";
+import { useMainStore } from "@/components/stores/main/main-store-provider";
 import { Button, LinkButton } from "@/components/ui/button";
 import UpdateStatusProvider, { useUpdateStatus } from "@/components/update/update-status-provider";
 import { api } from "@/server/trpc/setup/client";
@@ -15,6 +16,12 @@ type TProps = {
 
 export default function UpdateSection({ latestVersion, currentVersion }: TProps) {
   const [statusEnabled, setStatusEnabled] = useState(false);
+  const setLastDismissedVersion = useMainStore((s) => s.setLastDismissedVersion);
+
+  useEffect(() => {
+    setLastDismissedVersion(latestVersion);
+  }, [latestVersion, setLastDismissedVersion]);
+
   return (
     <UpdateStatusProvider enabled={statusEnabled} refetchInterval={5000}>
       <UpdateSectionInner

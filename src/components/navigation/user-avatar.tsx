@@ -9,15 +9,18 @@ import {
   DropdownOrDrawerTrigger,
 } from "@/components/navigation/dropdown-or-drawer";
 import ThemeButton from "@/components/theme-button";
-import { Button } from "@/components/ui/button";
+import { Button, LinkButton } from "@/components/ui/button";
 import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/components/ui/utils";
-import { useCheckForUpdates } from "@/components/update/check-for-updates-provider";
-import { GitBranchIcon, LoaderIcon, LogOutIcon } from "lucide-react";
+import {
+  useCheckForUpdates,
+  useCheckNewVersion,
+} from "@/components/update/check-for-updates-provider";
+import { GiftIcon, GitBranchIcon, LoaderIcon, LogOutIcon } from "lucide-react";
 import { useActionState, useRef, useState } from "react";
 
 type TProps = { email: string; className?: string };
@@ -26,11 +29,14 @@ export default function UserAvatar({ email, className }: TProps) {
   const [, actionSignOut, isPendingSignOut] = useActionState(() => signOutAction(), null);
   const [open, setOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+
   const {
     data: updatesData,
     isPending: isPendingUpdatesResult,
     isError: isErrorUpdatesResult,
   } = useCheckForUpdates();
+
+  const { hasUpdateAvailable, latestVersion } = useCheckNewVersion();
 
   return (
     <DropdownOrDrawer
@@ -72,15 +78,13 @@ export default function UserAvatar({ email, className }: TProps) {
       </DropdownOrDrawerTrigger>
       <DropdownOrDrawerContentForDrawer>
         <div className="group/list flex w-full flex-col px-2 pt-2 pb-[calc(var(--safe-area-inset-bottom)+4rem)]">
-          <ThemeButton variant="drawer-item" />
-          <ThemeButton variant="drawer-item" />
-          <ThemeButton variant="drawer-item" />
-          <ThemeButton variant="drawer-item" />
-          <ThemeButton variant="drawer-item" />
-          <ThemeButton variant="drawer-item" />
-          <ThemeButton variant="drawer-item" />
-          <ThemeButton variant="drawer-item" />
-          <ThemeButton variant="drawer-item" />
+          {hasUpdateAvailable && latestVersion && (
+            <NewVersionCard
+              className="pt-0 pb-1.5"
+              version={latestVersion}
+              onUpdateClicked={() => setOpen(false)}
+            />
+          )}
           <ThemeButton variant="drawer-item" />
           <form
             action={actionSignOut}
@@ -137,6 +141,13 @@ export default function UserAvatar({ email, className }: TProps) {
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
+          {hasUpdateAvailable && latestVersion && (
+            <NewVersionCard
+              className="px-0.5 pt-0.5 pb-1.5"
+              version={latestVersion}
+              onUpdateClicked={() => setOpen(false)}
+            />
+          )}
           <ThemeButton variant="dropdown-menu-item" />
           <DropdownMenuItem
             disabled={isPendingSignOut}
@@ -185,5 +196,43 @@ export default function UserAvatar({ email, className }: TProps) {
         </div>
       </DropdownOrDrawerContentForDropdown>
     </DropdownOrDrawer>
+  );
+}
+
+function NewVersionCard({
+  onUpdateClicked,
+  className,
+  classNameInner,
+}: {
+  version: string;
+  onUpdateClicked: () => void;
+  className?: string;
+  classNameInner?: string;
+}) {
+  return (
+    <div className={cn("w-full", className)}>
+      <div
+        className={cn(
+          "border-success/8 bg-success/8 flex w-full flex-col gap-3 rounded-lg border px-2 py-2",
+          classNameInner,
+        )}
+      >
+        <div className="flex w-full items-start gap-2 pr-2 pl-0.5">
+          <GiftIcon className="text-success mt-0.25 size-4.5 shrink-0" />
+          <p className="text-success min-w-0 shrink leading-tight font-semibold">
+            Update available!
+          </p>
+        </div>
+        <LinkButton
+          onClick={onUpdateClicked}
+          href="/update"
+          size="sm"
+          className="rounded-sm"
+          variant="success"
+        >
+          Update
+        </LinkButton>
+      </div>
+    </div>
   );
 }

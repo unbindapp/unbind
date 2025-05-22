@@ -12,6 +12,7 @@ import { NuqsAdapter } from "nuqs/adapters/next/app";
 import React from "react";
 import { TemplateDraftStoreProvider } from "@/components/templates/template-draft-store-provider";
 import { MainStoreProvider } from "@/components/stores/main/main-store-provider";
+import CheckForUpdatesProvider from "@/components/update/check-for-updates-provider";
 
 export default async function Providers({ children }: Readonly<{ children: React.ReactNode }>) {
   const authUrl = env.AUTH_URL;
@@ -29,7 +30,9 @@ export default async function Providers({ children }: Readonly<{ children: React
                     <DeviceSizeProvider>
                       <NowProvider>
                         <MainStoreProvider>
-                          <TemplateDraftStoreProvider>{children}</TemplateDraftStoreProvider>
+                          <TemplateDraftStoreProvider>
+                            <CheckForUpdatesProvider>{children}</CheckForUpdatesProvider>
+                          </TemplateDraftStoreProvider>
                         </MainStoreProvider>
                       </NowProvider>
                     </DeviceSizeProvider>
