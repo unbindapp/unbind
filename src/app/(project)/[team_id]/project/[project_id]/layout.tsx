@@ -9,6 +9,7 @@ import SystemProvider from "@/components/system/system-provider";
 import TemplateDraftPanelProvider from "@/components/templates/panel/template-draft-panel-provider";
 import TemplatesProvider from "@/components/templates/templates-provider";
 import { UpdateToastProvider } from "@/components/update/check-for-updates-provider";
+import VolumePanelProvider from "@/components/volume/panel/volume-panel-provider";
 import { apiServer } from "@/server/trpc/setup/server";
 import { ResultAsync } from "neverthrow";
 import { redirect } from "next/navigation";
@@ -72,19 +73,21 @@ export default async function Layout({ children, params }: TProps) {
               <DeploymentPanelIdProvider>
                 <TemplateDraftPanelProvider>
                   <ServicePanelProvider>
-                    <ProjectNavbar />
-                    {children}
-                    <NavbarSafeAreaInsetBottom className="sm:hidden" />
-                    <ContextCommandPanel
-                      title="Project Command Panel"
-                      description="Project command panel"
-                      triggerType="layout"
-                      context={{
-                        contextType: "project",
-                        projectId,
-                        teamId,
-                      }}
-                    />
+                    <VolumePanelProvider>
+                      <ProjectNavbar />
+                      {children}
+                      <NavbarSafeAreaInsetBottom className="sm:hidden" />
+                      <ContextCommandPanel
+                        title="Project Command Panel"
+                        description="Project command panel"
+                        triggerType="layout"
+                        context={{
+                          contextType: "project",
+                          projectId,
+                          teamId,
+                        }}
+                      />
+                    </VolumePanelProvider>
                   </ServicePanelProvider>
                 </TemplateDraftPanelProvider>
               </DeploymentPanelIdProvider>

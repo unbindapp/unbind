@@ -9,6 +9,7 @@ export const serviceDescriptionMaxLength = 128;
 
 export type TServiceShallow = AppRouterOutputs["services"]["list"]["services"][number];
 export type TService = AppRouterOutputs["services"]["get"]["service"];
+export type TVolumeShallow = TService["config"]["volumes"][number];
 
 export const ServiceNameSchema = z
   .string()

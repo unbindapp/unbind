@@ -1,6 +1,6 @@
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import LastDeploymentTime from "@/components/project/last-deployment-time";
-import VolumeLine from "@/components/project/volume-line";
+import VolumeLine from "@/components/volume/volume-line";
 import ServicePanel from "@/components/service/panel/service-panel";
 import ServiceIcon from "@/components/service/service-icon";
 import { Button } from "@/components/ui/button";
@@ -90,12 +90,15 @@ export default function ServiceCard({
           </div>
         </Button>
       </ServicePanelOrPlaceholder>
-      {volumes && volumes.length > 0 && (
+      {volumes && volumes.length > 0 && teamId && projectId && environmentId && (
         <div className={cn("bg-background-hover rounded-b-xl text-xs", classNameVolumes)}>
           {volumes.map((volume, index) => (
             <VolumeLine
               key={volume.id}
               volume={volume}
+              teamId={teamId}
+              projectId={projectId}
+              environmentId={environmentId}
               index={index}
               className={cn(
                 classNameVolume,
