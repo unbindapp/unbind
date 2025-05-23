@@ -58,7 +58,7 @@ export default function ServiceCard({
         <Button
           variant="ghost"
           className={cn(
-            "bg-background-hover flex w-full flex-1 flex-col items-start gap-8 rounded-xl border px-5 py-3.5 text-left font-semibold",
+            "bg-background-hover flex w-full flex-1 flex-col items-start gap-6 rounded-xl border px-5 py-3.5 text-left font-semibold",
             classNameCard,
             volumes && volumes.length > 0 && "rounded-b-none border-b-0",
           )}

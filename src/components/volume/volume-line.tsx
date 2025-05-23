@@ -56,7 +56,7 @@ export default function VolumeLine({
               style={{
                 transform: `scaleX(${usagePercentage}%)`,
               }}
-              className="bg-border group-data-[usage=high]/line:bg-warning/8 h-full w-full origin-left"
+              className="bg-foreground/6 group-data-[usage=high]/line:bg-warning/8 h-full w-full origin-left"
             />
           </div>
         )}

@@ -186,7 +186,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
         form.handleSubmit();
       }}
     >
-      <ScrollArea classNameViewport="pb-8">
+      <ScrollArea classNameViewport="pb-[calc(var(--safe-area-inset-bottom)+2rem)]">
         <div className="flex w-full flex-1 flex-col gap-6 px-3 py-5 sm:p-6">
           {errorDeployTemplate && <ErrorLine message={errorDeployTemplate.message} />}
           {/* Inputs */}

@@ -101,11 +101,7 @@ export default function ServicePanelContent({ service, className }: TProps) {
           service={service}
           type="service"
         >
-          <ServicePanelContentUndeployed
-            data-vaul-no-drag
-            className={className}
-            service={service}
-          />
+          <ServicePanelContentUndeployed className={className} service={service} />
         </VariablesProvider>
       </DeploymentsProvider>
     );
@@ -118,12 +114,7 @@ export default function ServicePanelContent({ service, className }: TProps) {
       environmentId={environmentId}
       serviceId={service.id}
     >
-      <ServicePanelContentDeployed
-        data-vaul-no-drag
-        tabs={tabs}
-        service={service}
-        currentTab={currentTab}
-      />
+      <ServicePanelContentDeployed tabs={tabs} service={service} currentTab={currentTab} />
     </InstanceHealthProvider>
   );
 }
