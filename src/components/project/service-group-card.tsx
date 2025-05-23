@@ -51,7 +51,9 @@ export default function ServiceGroupCard({
               projectId={projectId}
               environmentId={environmentId}
               className={classNameServiceCard}
-              classNameCard="rounded-lg min-h-32"
+              classNameCard="rounded-lg"
+              classNameVolumes="rounded-b-lg"
+              classNameVolumeLast="rounded-b-lg"
             />
           ))}
         </ol>

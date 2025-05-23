@@ -1,5 +1,6 @@
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import LastDeploymentTime from "@/components/project/last-deployment-time";
+import VolumeLine from "@/components/project/volume-line";
 import ServicePanel from "@/components/service/panel/service-panel";
 import ServiceIcon from "@/components/service/service-icon";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,9 @@ import { ReactNode } from "react";
 type TProps = {
   className?: string;
   classNameCard?: string;
+  classNameVolumes?: string;
+  classNameVolume?: string;
+  classNameVolumeLast?: string;
 } & (
   | {
       service: TServiceShallow;
@@ -35,22 +39,28 @@ export default function ServiceCard({
   isPlaceholder,
   className,
   classNameCard,
+  classNameVolumes,
+  classNameVolume,
+  classNameVolumeLast,
 }: TProps) {
   const panelProps = isPlaceholder
     ? ({ isPlaceholder: true } as const)
     : { teamId, projectId, environmentId, service };
 
+  const volumes = service?.config.volumes;
+
   return (
     <li
       data-placeholder={isPlaceholder ? true : undefined}
-      className={cn("group/item flex w-full flex-col p-1", className)}
+      className={cn("group/item flex min-h-38 w-full flex-col p-1", className)}
     >
       <ServicePanelOrPlaceholder {...panelProps}>
         <Button
           variant="ghost"
           className={cn(
-            "bg-background-hover flex min-h-36 w-full flex-col items-start gap-8 rounded-xl border px-5 py-3.5 text-left font-semibold",
+            "bg-background-hover flex w-full flex-1 flex-col items-start gap-8 rounded-xl border px-5 py-3.5 text-left font-semibold",
             classNameCard,
+            volumes && volumes.length > 0 && "rounded-b-none border-b-0",
           )}
         >
           {service && <NewEntityIndicator id={service.id} />}
@@ -80,6 +90,22 @@ export default function ServiceCard({
           </div>
         </Button>
       </ServicePanelOrPlaceholder>
+      {volumes && volumes.length > 0 && (
+        <div className={cn("bg-background-hover rounded-b-xl text-xs", classNameVolumes)}>
+          {volumes.map((volume, index) => (
+            <VolumeLine
+              key={volume.id}
+              volume={volume}
+              index={index}
+              className={cn(
+                classNameVolume,
+                index !== 0 && "-mt-px",
+                index === volumes.length - 1 && (classNameVolumeLast || "rounded-b-xl"),
+              )}
+            />
+          ))}
+        </div>
+      )}
     </li>
   );
 }
