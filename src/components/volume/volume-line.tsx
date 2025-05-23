@@ -61,13 +61,18 @@ export default function VolumeLine({
           </div>
         )}
         <div className="text-muted-foreground group-data-[usage=high]/line:text-warning flex w-full items-center justify-between gap-4 px-4">
-          <div className="relative flex min-w-0 shrink items-center gap-2">
-            <HardDriveIcon className="size-3.5 shrink-0" />
-            <p className="min-w-0 shrink truncate leading-tight font-medium">Storage {index + 1}</p>
+          <div className="relative flex min-w-0 shrink items-center gap-1.75 leading-tight font-medium">
+            <div className="flex shrink-0 items-center justify-start gap-1.25">
+              <HardDriveIcon className="size-3.5" />
+              {volume.used_gb && volume.size_gb && <p>{usagePercentage}%</p>}
+            </div>
+            {volume.used_gb && volume.size_gb && (
+              <p className="text-muted-more-foreground group-data-[usage=high]/line:text-warning/35">
+                •
+              </p>
+            )}
+            <p className="min-w-0 shrink truncate">Storage {index + 1}</p>
           </div>
-          {volume.used_gb && volume.size_gb && (
-            <p className="-mr-1.5 shrink-0 leading-tight font-medium">{usagePercentage}%</p>
-          )}
         </div>
       </Button>
     </VolumePanel>
