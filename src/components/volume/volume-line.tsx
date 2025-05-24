@@ -63,7 +63,7 @@ export default function VolumeLine({
         )}
         <div className="text-muted-foreground group-data-[usage=high]/line:text-warning flex w-full items-center justify-between gap-4 px-4">
           <div className="relative flex w-full items-center justify-between gap-4 leading-tight font-medium">
-            <div className="flex shrink-0 items-center justify-start gap-1.5 group-data-no-percentage/line:gap-2">
+            <div className="flex shrink-0 items-center justify-start gap-1.25 group-data-no-percentage/line:gap-2">
               <HardDriveIcon className="size-3.5" />
               {usagePercentage !== undefined && <p>{usagePercentage}%</p>}
               {usagePercentage === undefined && (

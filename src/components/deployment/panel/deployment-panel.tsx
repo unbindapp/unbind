@@ -2,7 +2,6 @@ import DeploymentProvider from "@/components/deployment/deployment-provider";
 import { TDeploymentPanelTabEnum } from "@/components/deployment/panel/constants";
 import { DeploymentPanelContent } from "@/components/deployment/panel/deployment-panel-content";
 import { useDeploymentPanel } from "@/components/deployment/panel/deployment-panel-provider";
-import Info from "@/components/deployment/panel/tabs/info/info";
 import Logs from "@/components/deployment/panel/tabs/build-logs/build-logs";
 import DeploymentStatusChip, {
   getDeploymentStatusChipColor,
@@ -59,7 +58,6 @@ const tabs: TDeploymentPanelTab[] = [
     Provider: EmptyProvider,
     noScrollArea: true,
   },
-  { title: "Info", value: "info", Page: Info, Provider: EmptyProvider },
 ];
 
 type TProps = {
