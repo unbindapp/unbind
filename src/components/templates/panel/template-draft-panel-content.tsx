@@ -88,6 +88,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
     () => Math.min(templateDraftMaxStorageGb, systemData?.data.storage.maximum_storage_gb || 100),
     [systemData],
   );
+  const storageStepGb = useMemo(() => systemData?.data.storage.storage_step_gb || 1, [systemData]);
 
   const {
     mutateAsync: deployTemplate,
@@ -201,7 +202,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                       key={`field[${i}]`}
                       className="flex w-full flex-col gap-2.5 p-1 py-4 md:w-1/2"
                     >
-                      <div className="flex w-full flex-col gap-0.5 px-1.5">
+                      <div className="flex w-full flex-col gap-1 px-1.5">
                         <div className="flex w-full items-start gap-2">
                           <TemplateInputIcon input={visibleInputs[i]} />
                           <form.Subscribe
@@ -212,7 +213,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                                 {(visibleInputs[i].type === "database-size" ||
                                   visibleInputs[i].type === "volume-size") && (
                                   <>
-                                    {": "}
+                                    <span className="pr-[0.6ch]">{":"}</span>
                                     <span className="text-foreground bg-foreground/6 border-foreground/6 rounded-md border px-1.25">
                                       {formatGB(Number(values.inputs[i].value))}
                                     </span>
@@ -245,14 +246,12 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                             return (
                               <field.StorageSizeInput
                                 field={subField}
-                                className="w-full py-1.5"
+                                className="w-full px-1.5 py-1.5"
                                 onBlur={subField.handleBlur}
                                 min={minStorageGb}
                                 max={maxStorageGb}
-                                step={systemData?.data.storage.storage_step_gb || 1}
+                                step={storageStepGb}
                                 minMaxFormatter={formatGB}
-                                classNameMin="pl-1.5"
-                                classNameMax="pr-1.5"
                                 defaultValue={[Number(visibleInputs[i].default || "10")]}
                                 value={
                                   subField.state.value ? [Number(subField.state.value)] : undefined

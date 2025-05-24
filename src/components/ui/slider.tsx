@@ -39,7 +39,7 @@ function Slider({ className, defaultValue, value, min = 0, max = 100, ...props }
           )}
         />
       </SliderPrimitive.Track>
-      {_values.map((value, index) => (
+      {_values.map((_, index) => (
         <SliderPrimitive.Thumb
           data-slot="slider-thumb"
           key={index}
