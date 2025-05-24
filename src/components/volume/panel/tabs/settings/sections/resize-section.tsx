@@ -1,4 +1,5 @@
 import ErrorLine from "@/components/error-line";
+import { useServicesUtils } from "@/components/project/services-provider";
 import { useSystem } from "@/components/system/system-provider";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +18,7 @@ import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TVolumeShallow } from "@/server/trpc/api/services/types";
 import { TVolumeType } from "@/server/trpc/api/storage/volumes/types";
 import { api } from "@/server/trpc/setup/client";
-import { RotateCcwIcon } from "lucide-react";
+import { RotateCcwIcon, TriangleAlertIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { ReactNode, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -182,6 +183,8 @@ function ResizeDialogTrigger({
   children: ReactNode;
 }) {
   const { teamId, projectId, environmentId } = useVolume();
+  const { invalidate: invalidateServices } = useServicesUtils({ teamId, projectId, environmentId });
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const textToConfirm = "I want to resize this volume";
 
@@ -194,13 +197,14 @@ function ResizeDialogTrigger({
   } = api.storage.volumes.resize.useMutation({
     onSuccess: async () => {
       const result = await ResultAsync.fromPromise(
-        new Promise((r) => setTimeout(r, 1000)),
+        Promise.all([invalidateServices()]),
         () => new Error("Resize success callback failed"),
       );
+
       if (result.isErr()) {
-        toast.error("Callback failed", {
+        toast.error("Data refetch failed", {
           description:
-            "The resize was successful, but the callback failed. You might want to refresh the page.",
+            "Resize was successful, but couldn't fetch the new data. Refresh the page to see the changes.",
         });
       }
 
@@ -258,12 +262,15 @@ function ResizeDialogTrigger({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
-          <DialogTitle>
-            <span className="pr-[0.5ch]">Resize Volume to</span>
-            <span className="text-foreground bg-foreground/6 border-foreground/6 max-w-full rounded-md border px-1.5 leading-tight font-semibold">
-              {formatGB(Number(newSizeGb))}
-            </span>
-          </DialogTitle>
+          <div className="flex w-full items-start justify-start gap-2">
+            <TriangleAlertIcon className="mt-0.75 size-5 shrink-0" />
+            <DialogTitle>
+              <span className="pr-[0.5ch]">Resize to:</span>
+              <span className="text-foreground bg-foreground/6 border-foreground/6 max-w-full rounded-md border px-1.25 leading-tight font-semibold">
+                {formatGB(Number(newSizeGb))}
+              </span>
+            </DialogTitle>
+          </div>
 
           <DialogDescription>
             {"PROCEED WITH CAUTION! Volumes can't be downsized."}

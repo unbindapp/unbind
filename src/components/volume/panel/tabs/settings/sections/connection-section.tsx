@@ -3,7 +3,7 @@ import { useServices } from "@/components/project/services-provider";
 import { Input } from "@/components/ui/input";
 import { useVolume } from "@/components/volume/volume-provider";
 import { TVolumeShallow } from "@/server/trpc/api/services/types";
-import { FolderCodeIcon } from "lucide-react";
+import { FolderClosedIcon } from "lucide-react";
 
 type TProps = {
   volume: TVolumeShallow;
@@ -52,7 +52,7 @@ export default function ConnectionSection({ volume }: TProps) {
         )}
       </p>
       <div className="relative w-full">
-        <FolderCodeIcon className="text-muted-foreground group-data-pending/section:animate-skeleton group-data-pending/section:bg-muted-foreground absolute top-1/2 left-3 z-[1] size-5 -translate-y-1/2 group-data-pending/section:rounded-md" />
+        <FolderClosedIcon className="text-muted-foreground group-data-pending/section:animate-skeleton group-data-pending/section:bg-muted-foreground absolute top-1/2 left-3.25 z-[1] size-5 -translate-y-1/2 group-data-pending/section:rounded-md" />
         <Input
           disabled
           fadeOnDisabled={false}
@@ -65,10 +65,10 @@ export default function ConnectionSection({ volume }: TProps) {
                   ? volume.mount_path
                   : "Not attached"
           }
-          className="relative pl-10 group-data-pending/section:opacity-0 disabled:cursor-text"
+          className="relative pl-10.25 group-data-pending/section:opacity-0 disabled:cursor-text"
         />
         {isPending && (
-          <div className="bg-input absolute top-0 left-0 flex h-full w-full items-center justify-start rounded-lg border pr-3 pl-10">
+          <div className="bg-input absolute top-0 left-0 flex h-full w-full items-center justify-start rounded-lg border pr-3 pl-10.25">
             <p className="bg-foreground animate-skeleton max-w-full min-w-0 truncate rounded-md leading-tight">
               Loading...
             </p>
