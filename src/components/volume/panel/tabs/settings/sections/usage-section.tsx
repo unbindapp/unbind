@@ -1,8 +1,7 @@
 import ErrorLine from "@/components/error-line";
-import { getVolumeUsageLevel } from "@/components/volume/helpers";
+import { getVolumeUsageLevel, percentageFormatter } from "@/components/volume/helpers";
 import { TVolumeUsageLevel } from "@/components/volume/types";
 import { useVolume } from "@/components/volume/volume-provider";
-import { appLocale } from "@/lib/constants";
 import { formatGB } from "@/lib/helpers/format-gb";
 import { useMemo } from "react";
 
@@ -40,7 +39,7 @@ export default function UsageSection() {
 
   const percentageString = useMemo(() => {
     if (usagePercentage !== undefined && usagePercentage !== null) {
-      return `${usagePercentage.toLocaleString(appLocale, { maximumFractionDigits: 2 })}%`;
+      return `${percentageFormatter(usagePercentage)}%`;
     }
     if (isPendingVolume) return "10%";
     if (error) return "Error";

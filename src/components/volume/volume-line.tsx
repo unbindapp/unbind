@@ -1,9 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import { getVolumeUsageLevel } from "@/components/volume/helpers";
+import { getVolumeUsageLevel, percentageFormatter } from "@/components/volume/helpers";
 import VolumePanel from "@/components/volume/panel/volume-panel";
 import { TVolumeUsageLevel } from "@/components/volume/types";
-import { appLocale } from "@/lib/constants";
 import { TVolumeShallow } from "@/server/trpc/api/services/types";
 import { HardDriveIcon } from "lucide-react";
 import { useMemo } from "react";
@@ -65,9 +64,7 @@ export default function VolumeLine({
           <div className="relative flex w-full items-center justify-between gap-4 leading-tight font-medium">
             <div className="flex shrink-0 items-center justify-start gap-1.25 group-data-no-percentage/line:gap-2">
               <HardDriveIcon className="size-3.5" />
-              {usagePercentage !== undefined && (
-                <p>{usagePercentage.toLocaleString(appLocale, { maximumFractionDigits: 2 })}%</p>
-              )}
+              {usagePercentage !== undefined && <p>{percentageFormatter(usagePercentage)}%</p>}
               {usagePercentage === undefined && (
                 <p className="min-w-0 shrink truncate text-right">Storage {index + 1}</p>
               )}
