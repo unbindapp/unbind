@@ -353,7 +353,17 @@ async ${paramSignature}${responseType ? `: Promise<${responseType}>` : ""} => {
       throw new Error(\`GO API request failed with status \${response.status}: \${response.statusText}\`);
     }
     const data = await response.json();
-    return ${responseSchema ? `${responseSchema}Schema.parse(data)` : "data"};
+    ${
+      responseSchema
+        ? `const { data: parsedData, error } = ${responseSchema}Schema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;`
+        : "return data;"
+    }
   } catch (error) {
     console.error('Error in API request:', error);
     throw error;

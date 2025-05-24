@@ -63,7 +63,7 @@ export const volumesRouter = createTRPCRouter({
         .object({
           id: z.string(),
           type: PvcScopeSchema,
-          sizeGb: z.string(),
+          capacityGb: z.number(),
           teamId: z.string().uuid(),
           projectId: z.string().uuid(),
           environmentId: z.string().uuid(),
@@ -71,13 +71,13 @@ export const volumesRouter = createTRPCRouter({
         .strip(),
     )
     .mutation(async function ({
-      input: { id, type, sizeGb, teamId, projectId, environmentId },
+      input: { id, type, capacityGb, teamId, projectId, environmentId },
       ctx: { goClient },
     }) {
       const res = await goClient.storage.pvc.update({
         id,
         type,
-        size_gb: sizeGb,
+        capacity_gb: capacityGb,
         team_id: teamId,
         project_id: projectId,
         environment_id: environmentId,

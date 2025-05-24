@@ -21,6 +21,8 @@ const buttonVariants = cva(
           "bg-primary text-primary-foreground has-hover:hover:bg-primary/85 active:bg-primary/85",
         destructive:
           "bg-destructive text-destructive-foreground has-hover:hover:bg-destructive/85 active:bg-destructive/85",
+        warning:
+          "bg-warning text-warning-foreground has-hover:hover:bg-warning/85 active:bg-warning/85",
         success:
           "bg-success text-success-foreground has-hover:hover:bg-success/85 active:bg-success/85",
         outline:

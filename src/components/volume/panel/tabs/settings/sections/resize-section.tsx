@@ -1,5 +1,5 @@
 import ErrorLine from "@/components/error-line";
-import { useServicesUtils } from "@/components/project/services-provider";
+import { useServices, useServicesUtils } from "@/components/project/services-provider";
 import { useSystem } from "@/components/system/system-provider";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,16 +11,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useVolume } from "@/components/volume/volume-provider";
 import { defaultAnimationMs } from "@/lib/constants";
 import { formatGB } from "@/lib/helpers/format-gb";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TVolumeShallow } from "@/server/trpc/api/services/types";
 import { TVolumeType } from "@/server/trpc/api/storage/volumes/types";
 import { api } from "@/server/trpc/setup/client";
-import { RotateCcwIcon, TriangleAlertIcon } from "lucide-react";
+import { RotateCcwIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
-import { ReactNode, useMemo, useRef, useState } from "react";
+import { ReactNode, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -33,23 +32,24 @@ const volumeMaxStorageGb = 200;
 export default function ResizeSection({ volume }: TProps) {
   const { data: systemData, isPending: isPendingSystem, error: errorSystem } = useSystem();
 
-  const minStorageGb = useMemo(() => volume.size_gb || 1, [volume.size_gb]);
-  const maxStorageGb = useMemo(
-    () => Math.min(volumeMaxStorageGb, systemData?.data.storage.maximum_storage_gb || 100),
-    [systemData],
+  const minStorageGb = volume.capacity_gb;
+  const maxStorageGb = Math.min(
+    volumeMaxStorageGb,
+    systemData?.data.storage.maximum_storage_gb || 100,
   );
-  const storageStepGb = useMemo(() => systemData?.data.storage.storage_step_gb || 1, [systemData]);
-  const currentSizeGb = volume.size_gb?.toString() || "1";
+  const storageStepGb = systemData?.data.storage.storage_step_gb || 1;
+  const currentCapacityGb = volume.capacity_gb;
 
   const form = useAppForm({
     defaultValues: {
-      sizeGb: minStorageGb.toString(),
+      capacityGb: minStorageGb,
     },
     validators: {
       onChange: ({ value }) => {
-        if (value.sizeGb === minStorageGb.toString()) {
+        if (value.capacityGb < minStorageGb) {
           return "Volume size cannot be less than the current size.";
         }
+
         return undefined;
       },
     },
@@ -102,7 +102,7 @@ export default function ResizeSection({ volume }: TProps) {
             <p className="min-w-0 shrink leading-tight font-semibold">
               <span className="pr-[0.6ch]">Size:</span>
               <span className="text-foreground bg-foreground/6 border-foreground/6 rounded-md border px-1.25">
-                {formatGB(Number(values.sizeGb))}
+                {formatGB(Number(values.capacityGb))}
               </span>
             </p>
           </div>
@@ -111,7 +111,7 @@ export default function ResizeSection({ volume }: TProps) {
       <div className="-mt-0.5 flex w-full flex-col gap-2 lg:flex-row lg:items-center">
         <div className="flex w-full md:max-w-xl">
           <form.AppField
-            name="sizeGb"
+            name="capacityGb"
             children={(field) => (
               <field.StorageSizeInput
                 field={field}
@@ -124,7 +124,7 @@ export default function ResizeSection({ volume }: TProps) {
                 defaultValue={[minStorageGb]}
                 value={field.state.value ? [Number(field.state.value)] : undefined}
                 onValueChange={(value) => {
-                  field.handleChange(String(value[0]));
+                  field.handleChange(value[0]);
                 }}
               />
             )}
@@ -133,19 +133,19 @@ export default function ResizeSection({ volume }: TProps) {
         <form.Subscribe
           selector={(state) => ({
             canSubmit: state.canSubmit,
-            sizeGb: state.values.sizeGb,
+            capacityGb: state.values.capacityGb,
             isSubmitting: state.isSubmitting,
           })}
-          children={({ canSubmit, sizeGb }) => {
+          children={({ canSubmit, capacityGb }) => {
             return (
               <div
-                data-disabled={sizeGb === currentSizeGb ? true : undefined}
+                data-disabled={capacityGb === currentCapacityGb ? true : undefined}
                 className="flex max-w-full flex-wrap gap-2 data-disabled:hidden lg:data-disabled:flex lg:data-disabled:opacity-0"
               >
                 <Button
                   disabled={!canSubmit}
                   onClick={() => {
-                    form.setFieldValue("sizeGb", currentSizeGb);
+                    form.setFieldValue("capacityGb", currentCapacityGb);
                     form.validate("change");
                   }}
                   variant="outline"
@@ -155,7 +155,7 @@ export default function ResizeSection({ volume }: TProps) {
                   <RotateCcwIcon className="hidden size-4 lg:block" />
                   <span className="min-w-0 shrink truncate lg:hidden">Cancel</span>
                 </Button>
-                <ResizeDialogTrigger newSizeGb={sizeGb} volume={volume}>
+                <ResizeDialogTrigger newCapacityGb={capacityGb} volume={volume}>
                   <Button
                     disabled={!canSubmit}
                     className="max-w-full truncate px-3.5 py-1.75 lg:max-w-40"
@@ -174,15 +174,15 @@ export default function ResizeSection({ volume }: TProps) {
 }
 
 function ResizeDialogTrigger({
-  newSizeGb,
+  newCapacityGb,
   volume,
   children,
 }: {
-  newSizeGb: string;
+  newCapacityGb: number;
   volume: TVolumeShallow;
   children: ReactNode;
 }) {
-  const { teamId, projectId, environmentId } = useVolume();
+  const { teamId, projectId, environmentId } = useServices();
   const { invalidate: invalidateServices } = useServicesUtils({ teamId, projectId, environmentId });
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -236,7 +236,7 @@ function ResizeDialogTrigger({
     onSubmit: async () => {
       await resizeVolume({
         id: volume.id,
-        sizeGb: newSizeGb,
+        capacityGb: newCapacityGb,
         type,
         teamId,
         projectId,
@@ -262,22 +262,20 @@ function ResizeDialogTrigger({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
-          <div className="flex w-full items-start justify-start gap-2">
-            <TriangleAlertIcon className="mt-0.75 size-5 shrink-0" />
-            <DialogTitle>
-              <span className="pr-[0.5ch]">Resize to:</span>
-              <span className="text-foreground bg-foreground/6 border-foreground/6 max-w-full rounded-md border px-1.25 leading-tight font-semibold">
-                {formatGB(Number(newSizeGb))}
-              </span>
-            </DialogTitle>
-          </div>
-
+          <DialogTitle>
+            <span className="pr-[0.5ch]">Resize to:</span>
+            <span className="text-foreground bg-foreground/6 border-foreground/6 max-w-full rounded-md border px-1.25 leading-tight font-semibold">
+              {formatGB(Number(newCapacityGb))}
+            </span>
+          </DialogTitle>
           <DialogDescription>
-            {"PROCEED WITH CAUTION! Volumes can't be downsized."}
+            Proceed with caution:{" "}
+            <span className="text-warning font-semibold">{"Volumes can't be downsized!"}</span>{" "}
+            Whenever possible, increase the volume in small increments.
             <br />
             <br />
             Type {`"`}
-            <span className="text-destructive font-semibold">{textToConfirm}</span>
+            <span className="text-warning font-semibold">{textToConfirm}</span>
             {`"`} to confirm.
           </DialogDescription>
         </DialogHeader>
@@ -319,7 +317,7 @@ function ResizeDialogTrigger({
                 children={({ canSubmit, isSubmitting, values }) => (
                   <form.SubmitButton
                     data-submitting={isSubmitting ? true : undefined}
-                    variant="destructive"
+                    variant="warning"
                     disabled={!canSubmit || values.textToConfirm !== textToConfirm}
                     isPending={isSubmitting ? true : false}
                   >

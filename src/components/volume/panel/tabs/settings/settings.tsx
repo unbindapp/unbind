@@ -13,7 +13,7 @@ export default function Settings({ volume }: TProps) {
   return (
     <TabWrapper className="pt-4">
       <SettingsSection title="Usage" id="usage" Icon={ChartNoAxesColumnIcon}>
-        <UsageSection />
+        <UsageSection volume={volume} />
       </SettingsSection>
       <SettingsSection className="pt-7" title="Resize" id="resize" Icon={ScalingIcon}>
         <ResizeSection volume={volume} />

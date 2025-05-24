@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/drawer";
 import VolumePanelContent from "@/components/volume/panel/volume-panel-content";
 import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
-import VolumeProvider from "@/components/volume/volume-provider";
 import { TVolumeShallow } from "@/server/trpc/api/services/types";
 import { HardDriveIcon, XIcon } from "lucide-react";
 import { ReactNode } from "react";
@@ -75,19 +74,12 @@ export default function VolumePanel({
             )}
           </div>
         </div>
-        <VolumeProvider
-          id={volume.id}
+        <VolumePanelContent
+          volume={volume}
           teamId={teamId}
           projectId={projectId}
           environmentId={environmentId}
-        >
-          <VolumePanelContent
-            volume={volume}
-            teamId={teamId}
-            projectId={projectId}
-            environmentId={environmentId}
-          />
-        </VolumeProvider>
+        />
       </DrawerContent>
     </Drawer>
   );

@@ -147,10 +147,10 @@ export const PvcScopeSchema = z.enum(['team', 'project', 'environment']);
 
 export const CreatePVCInputSchema = z
   .object({
+    capacity_gb: z.number(),
     environment_id: z.string().optional(),
     name: z.string(), // Name of the PVC
     project_id: z.string().optional(),
-    size_gb: z.string(), // Size of the PVC in GB (e.g., '10')
     team_id: z.string(),
     type: PvcScopeSchema,
   })
@@ -161,17 +161,18 @@ export const PersistentVolumeClaimPhaseSchema = z.enum(['Pending', 'Bound', 'Los
 export const PVCInfoSchema = z
   .object({
     can_delete: z.boolean(),
+    capacity_gb: z.number(),
     created_at: z.string().datetime(),
     environment_id: z.string().optional(),
     id: z.string(),
     is_available: z.boolean(),
     is_database: z.boolean(),
+    mount_path: z.string().optional(),
     mounted_on_service_id: z.string().optional(),
-    name: z.string(),
     project_id: z.string().optional(),
-    size_gb: z.number(),
     status: PersistentVolumeClaimPhaseSchema,
     team_id: z.string(),
+    type: PvcScopeSchema,
     used_gb: z.number().optional(),
   })
   .strip();
@@ -358,8 +359,6 @@ export const ServiceVolumeSchema = z
   .object({
     id: z.string(), // ID of the volume, pvc name in kubernetes
     mount_path: z.string(), // Path to mount the volume (e.g. /mnt/data)
-    size_gb: z.number().optional(), // Size of the volume in GB
-    used_gb: z.number().optional(), // Used size of the volume in GB
   })
   .strip();
 
@@ -430,7 +429,7 @@ export const ServiceConfigResponseSchema = z
     s3_backup_source_id: z.string().optional(),
     security_context: SecurityContextSchema.optional(),
     variable_mounts: z.array(VariableMountSchema),
-    volumes: z.array(ServiceVolumeSchema),
+    volumes: z.array(PVCInfoSchema),
   })
   .strip();
 
@@ -961,9 +960,9 @@ export const TemplateInputTypeSchema = z.enum([
 
 export const TemplateVolumeSchema = z
   .object({
+    capacity_gb: z.string(),
     mountPath: z.string(),
     name: z.string(),
-    size_gb: z.string(),
   })
   .strip();
 
@@ -1783,11 +1782,10 @@ export const UpdateEnvironmentResponseBodySchema = z
 
 export const UpdatePVCInputSchema = z
   .object({
+    capacity_gb: z.number().nullable().optional(), // Size of the PVC in GB (e.g., '10')
     environment_id: z.string().optional(),
     id: z.string(),
-    name: z.string().nullable().optional(), // Name of the PVC
     project_id: z.string().optional(),
-    size_gb: z.string().nullable().optional(), // Size of the PVC in GB (e.g., '10')
     team_id: z.string(),
     type: PvcScopeSchema,
   })
@@ -2652,7 +2650,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return CallbackResponseBodySchema.parse(data);
+          const { data: parsedData, error } = CallbackResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -2767,7 +2771,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return CreateBuildOutputBodySchema.parse(data);
+          const { data: parsedData, error } = CreateBuildOutputBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -2819,7 +2829,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return GetDeploymentResponseBodySchema.parse(data);
+          const { data: parsedData, error } = GetDeploymentResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -2873,7 +2889,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return ListDeploymentsResponseBodySchema.parse(data);
+          const { data: parsedData, error } = ListDeploymentsResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -2913,7 +2935,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return RedeployOutputBodySchema.parse(data);
+          const { data: parsedData, error } = RedeployOutputBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -2955,7 +2983,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return CreateEnvironmentResponseBodySchema.parse(data);
+          const { data: parsedData, error } = CreateEnvironmentResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -2995,7 +3029,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return DeleteEnvironmentResponseBodySchema.parse(data);
+          const { data: parsedData, error } = DeleteEnvironmentResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -3041,7 +3081,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return GetEnvironmentOutputBodySchema.parse(data);
+          const { data: parsedData, error } = GetEnvironmentOutputBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -3087,7 +3133,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return ListEnvironmentsOutputBodySchema.parse(data);
+          const { data: parsedData, error } = ListEnvironmentsOutputBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -3127,7 +3179,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return UpdateEnvironmentResponseBodySchema.parse(data);
+          const { data: parsedData, error } = UpdateEnvironmentResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -3176,7 +3234,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return GithubAppCreateResponseBodySchema.parse(data);
+            const { data: parsedData, error } = GithubAppCreateResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -3222,7 +3286,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return GithubAppGetResponseBodySchema.parse(data);
+            const { data: parsedData, error } = GithubAppGetResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -3269,7 +3339,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return GithubAppListResponseBodySchema.parse(data);
+          const { data: parsedData, error } = GithubAppListResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -3310,7 +3386,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                 );
               }
               const data = await response.json();
-              return GithubAdminOrganizationListResponseBodySchema.parse(data);
+              const { data: parsedData, error } =
+                GithubAdminOrganizationListResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
             } catch (error) {
               console.error('Error in API request:', error);
               throw error;
@@ -3351,7 +3434,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return GithubAppInstallationListResponseBodySchema.parse(data);
+          const { data: parsedData, error } =
+            GithubAppInstallationListResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -3391,7 +3481,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return GithubAdminRepositoryListResponseBodySchema.parse(data);
+            const { data: parsedData, error } =
+              GithubAdminRepositoryListResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -3438,7 +3535,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                 );
               }
               const data = await response.json();
-              return GithubRepositoryDetailResponseBodySchema.parse(data);
+              const { data: parsedData, error } =
+                GithubRepositoryDetailResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
             } catch (error) {
               console.error('Error in API request:', error);
               throw error;
@@ -3488,7 +3592,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return GetInstanceHealthResponseBodySchema.parse(data);
+          const { data: parsedData, error } = GetInstanceHealthResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -3534,7 +3644,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return ListInstancesResponseBodySchema.parse(data);
+          const { data: parsedData, error } = ListInstancesResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -3574,7 +3690,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return RestartServicesResponseBodySchema.parse(data);
+          const { data: parsedData, error } = RestartServicesResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -3635,7 +3757,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return QueryLogsResponseBodySchema.parse(data);
+          const { data: parsedData, error } = QueryLogsResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -3749,7 +3877,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return GetMetricsResponseBodySchema.parse(data);
+          const { data: parsedData, error } = GetMetricsResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -3795,7 +3929,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return GetNodeMetricsResponseBodySchema.parse(data);
+          const { data: parsedData, error } = GetNodeMetricsResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -3841,7 +3981,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return GetVolumeMetricsResponseBodySchema.parse(data);
+          const { data: parsedData, error } = GetVolumeMetricsResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -3883,7 +4029,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return CreateProjectResponseBodySchema.parse(data);
+          const { data: parsedData, error } = CreateProjectResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -3923,7 +4075,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return DeleteProjectResponseBodySchema.parse(data);
+          const { data: parsedData, error } = DeleteProjectResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -3969,7 +4127,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return GetProjectResponseBodySchema.parse(data);
+          const { data: parsedData, error } = GetProjectResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -4015,7 +4179,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return ListProjectResponseBodySchema.parse(data);
+          const { data: parsedData, error } = ListProjectResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -4055,7 +4225,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return UpdateProjectResponseBodySchema.parse(data);
+          const { data: parsedData, error } = UpdateProjectResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -4097,7 +4273,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return CreateServiceGroupResponseBodySchema.parse(data);
+          const { data: parsedData, error } = CreateServiceGroupResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -4137,7 +4319,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return DeleteServiceGroupResponseBodySchema.parse(data);
+          const { data: parsedData, error } = DeleteServiceGroupResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -4183,7 +4371,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return GetServiceGroupResponseBodySchema.parse(data);
+          const { data: parsedData, error } = GetServiceGroupResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -4229,7 +4423,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return ListServiceGroupResponseBodySchema.parse(data);
+          const { data: parsedData, error } = ListServiceGroupResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -4269,7 +4469,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return UpdateServiceGroupResponseBodySchema.parse(data);
+          const { data: parsedData, error } = UpdateServiceGroupResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -4311,7 +4517,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return CreateServiceResponseBodySchema.parse(data);
+          const { data: parsedData, error } = CreateServiceResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -4359,7 +4571,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                 );
               }
               const data = await response.json();
-              return GetDatabaseResponseBodySchema.parse(data);
+              const { data: parsedData, error } = GetDatabaseResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
             } catch (error) {
               console.error('Error in API request:', error);
               throw error;
@@ -4398,7 +4616,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                 );
               }
               const data = await response.json();
-              return ListDatabasesResponseBodySchema.parse(data);
+              const { data: parsedData, error } = ListDatabasesResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
             } catch (error) {
               console.error('Error in API request:', error);
               throw error;
@@ -4440,7 +4664,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return DeleteServiceResponseBodySchema.parse(data);
+          const { data: parsedData, error } = DeleteServiceResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -4487,7 +4717,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return ListEndpointsResponseBodySchema.parse(data);
+            const { data: parsedData, error } = ListEndpointsResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -4534,7 +4770,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return GetServiceResponseBodySchema.parse(data);
+          const { data: parsedData, error } = GetServiceResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -4580,7 +4822,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return ListServiceResponseBodySchema.parse(data);
+          const { data: parsedData, error } = ListServiceResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -4620,7 +4868,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return UpdatServiceResponseBodySchema.parse(data);
+          const { data: parsedData, error } = UpdatServiceResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -4662,7 +4916,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return CreateUserResponseBodySchema.parse(data);
+          const { data: parsedData, error } = CreateUserResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -4701,7 +4961,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return SetupStatusResponseBodySchema.parse(data);
+          const { data: parsedData, error } = SetupStatusResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -4744,7 +5010,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return CreatePVCResponseBodySchema.parse(data);
+            const { data: parsedData, error } = CreatePVCResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -4784,7 +5056,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return DeletePVCResponseBodySchema.parse(data);
+            const { data: parsedData, error } = DeletePVCResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -4830,7 +5108,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return GetPVCResponseBodySchema.parse(data);
+            const { data: parsedData, error } = GetPVCResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -4876,7 +5160,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return ListPVCResponseBodySchema.parse(data);
+            const { data: parsedData, error } = ListPVCResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -4916,7 +5206,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return UpdatePVCResponseBodySchema.parse(data);
+            const { data: parsedData, error } = UpdatePVCResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -4958,7 +5254,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return CreateS3OutputBodySchema.parse(data);
+            const { data: parsedData, error } = CreateS3OutputBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -4998,7 +5300,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return DeleteS3SourceByIDOutputBodySchema.parse(data);
+            const { data: parsedData, error } = DeleteS3SourceByIDOutputBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -5044,7 +5352,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return GetS3SourceByIDOutputBodySchema.parse(data);
+            const { data: parsedData, error } = GetS3SourceByIDOutputBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -5090,7 +5404,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return ListS3SourceOutputBodySchema.parse(data);
+            const { data: parsedData, error } = ListS3SourceOutputBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -5130,7 +5450,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return TestS3OutputBodySchema.parse(data);
+            const { data: parsedData, error } = TestS3OutputBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -5170,7 +5496,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return UpdateS3SourceResponseBodySchema.parse(data);
+            const { data: parsedData, error } = UpdateS3SourceResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -5220,7 +5552,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return DnsCheckResponseBodySchema.parse(data);
+            const { data: parsedData, error } = DnsCheckResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -5261,7 +5599,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return CheckUniqueDomainOutputBodySchema.parse(data);
+            const { data: parsedData, error } = CheckUniqueDomainOutputBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -5301,7 +5645,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return GenerateWildcardDomainOutputBodySchema.parse(data);
+            const { data: parsedData, error } =
+              GenerateWildcardDomainOutputBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -5341,7 +5692,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return SystemMetaResponseBodySchema.parse(data);
+          const { data: parsedData, error } = SystemMetaResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -5382,7 +5739,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return CreateRegistryResponseBodySchema.parse(data);
+            const { data: parsedData, error } = CreateRegistryResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -5465,7 +5828,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return GetRegistryResponseBodySchema.parse(data);
+            const { data: parsedData, error } = GetRegistryResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -5504,7 +5873,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return ListRegistriesResponseBodySchema.parse(data);
+            const { data: parsedData, error } = ListRegistriesResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -5544,7 +5919,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return SetDefaultRegistryResponseBodySchema.parse(data);
+            const { data: parsedData, error } =
+              SetDefaultRegistryResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -5586,7 +5968,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return SettingsResponseBodySchema.parse(data);
+            const { data: parsedData, error } = SettingsResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -5628,7 +6016,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return UpdateApplyResponseBodySchema.parse(data);
+            const { data: parsedData, error } = UpdateApplyResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -5667,7 +6061,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return UpdateCheckResponseBodySchema.parse(data);
+            const { data: parsedData, error } = UpdateCheckResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -5706,7 +6106,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return UpdateStatusResponseBodySchema.parse(data);
+            const { data: parsedData, error } = UpdateStatusResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -5755,7 +6161,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return GetTeamResponseBodySchema.parse(data);
+          const { data: parsedData, error } = GetTeamResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -5791,7 +6203,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return TeamResponseBodySchema.parse(data);
+          const { data: parsedData, error } = TeamResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -5831,7 +6249,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return UpdateTeamResponseBodySchema.parse(data);
+          const { data: parsedData, error } = UpdateTeamResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -5873,7 +6297,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return TemplateDeployResponseBodySchema.parse(data);
+          const { data: parsedData, error } = TemplateDeployResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -5919,7 +6349,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return GetTemplateResponseBodySchema.parse(data);
+          const { data: parsedData, error } = GetTemplateResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -5958,7 +6394,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return ListTemplatesResponseBodySchema.parse(data);
+          const { data: parsedData, error } = ListTemplatesResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -6000,7 +6442,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return CreateWebhookResponseBodySchema.parse(data);
+          const { data: parsedData, error } = CreateWebhookResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -6040,7 +6488,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return DeleteWebhookResponseBodySchema.parse(data);
+          const { data: parsedData, error } = DeleteWebhookResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -6086,7 +6540,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return GetWebhookResponseBodySchema.parse(data);
+          const { data: parsedData, error } = GetWebhookResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -6132,7 +6592,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return ListWebhooksResponseBodySchema.parse(data);
+          const { data: parsedData, error } = ListWebhooksResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -6172,7 +6638,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return UpdateWebhookResponseBodySchema.parse(data);
+          const { data: parsedData, error } = UpdateWebhookResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -6210,7 +6682,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return MeResponseBodySchema.parse(data);
+          const { data: parsedData, error } = MeResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -6252,7 +6730,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return VariablesResponseBodySchema.parse(data);
+          const { data: parsedData, error } = VariablesResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -6298,7 +6782,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return VariablesResponseBodySchema.parse(data);
+          const { data: parsedData, error } = VariablesResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -6346,7 +6836,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                 );
               }
               const data = await response.json();
-              return ReferenceableVariablesResponseBodySchema.parse(data);
+              const { data: parsedData, error } =
+                ReferenceableVariablesResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
             } catch (error) {
               console.error('Error in API request:', error);
               throw error;
@@ -6393,7 +6890,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                   );
                 }
                 const data = await response.json();
-                return ResolveAvailableVariableReferenceResponseBodySchema.parse(data);
+                const { data: parsedData, error } =
+                  ResolveAvailableVariableReferenceResponseBodySchema.safeParse(data);
+                if (error) {
+                  console.error('Response validation error:', error);
+                  console.error('Response data:', data);
+                  throw new Error(error.message);
+                }
+                return parsedData;
               } catch (error) {
                 console.error('Error in API request:', error);
                 throw error;
@@ -6443,7 +6947,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               );
             }
             const data = await response.json();
-            return ResolveVariableReferenceResponseBodySchema.parse(data);
+            const { data: parsedData, error } =
+              ResolveVariableReferenceResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -6484,7 +6995,13 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             );
           }
           const data = await response.json();
-          return VariablesResponseBodySchema.parse(data);
+          const { data: parsedData, error } = VariablesResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;

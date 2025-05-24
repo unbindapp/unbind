@@ -25,8 +25,8 @@ export default function VolumeLine({
   className,
 }: TProps) {
   const usagePercentage = useMemo(() => {
-    if (!volume.used_gb || !volume.size_gb) return undefined;
-    return Math.min(Math.max(0, (volume.used_gb / volume.size_gb) * 100), 100);
+    if (!volume.used_gb || !volume.capacity_gb) return undefined;
+    return Math.min(Math.max(0, (volume.used_gb / volume.capacity_gb) * 100), 100);
   }, [volume]);
 
   const usageLevel: TVolumeUsageLevel = useMemo(() => {

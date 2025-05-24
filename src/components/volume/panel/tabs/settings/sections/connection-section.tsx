@@ -1,7 +1,6 @@
 import ErrorLine from "@/components/error-line";
 import { useServices } from "@/components/project/services-provider";
 import { Input } from "@/components/ui/input";
-import { useVolume } from "@/components/volume/volume-provider";
 import { TVolumeShallow } from "@/server/trpc/api/services/types";
 import { FolderClosedIcon } from "lucide-react";
 
@@ -12,23 +11,16 @@ type TProps = {
 
 export default function ConnectionSection({ volume }: TProps) {
   const {
-    query: { data: volumeData, isPending: isPendingVolume, error: errorVolume },
-  } = useVolume();
-
-  const {
     query: { data: servicesData, isPending: isPendingServices, error: errorServices },
   } = useServices();
 
-  const attachedService =
-    servicesData && volumeData
-      ? servicesData.services.find(
-          (service) => service.id === volumeData.volume.mounted_on_service_id,
-        )
-      : undefined;
+  const attachedService = servicesData
+    ? servicesData.services.find((service) => service.id === volume.mounted_on_service_id)
+    : undefined;
 
-  const isPending = isPendingVolume || isPendingServices;
-  const error = errorVolume || errorServices;
-  const hasData = volumeData && servicesData;
+  const isPending = isPendingServices;
+  const error = errorServices;
+  const hasData = servicesData;
 
   return (
     <div
@@ -43,7 +35,10 @@ export default function ConnectionSection({ volume }: TProps) {
         ) : attachedService ? (
           <span>
             This volume is attached to{" "}
-            <span className="text-foreground font-semibold">{attachedService.name}</span> on:
+            <span className="text-foreground bg-foreground/6 border-foreground/6 max-w-full rounded-md border px-1.25 leading-tight font-semibold">
+              {attachedService.name}
+            </span>{" "}
+            on:
           </span>
         ) : error ? (
           <span>Something went wrong.</span>
@@ -75,9 +70,6 @@ export default function ConnectionSection({ volume }: TProps) {
           </div>
         )}
       </div>
-      {!volumeData && !isPendingVolume && errorVolume && (
-        <ErrorLine message={errorVolume.message} />
-      )}
       {!servicesData && !isPendingServices && errorServices && (
         <ErrorLine message={errorServices.message} />
       )}
