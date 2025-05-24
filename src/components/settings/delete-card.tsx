@@ -29,7 +29,7 @@ export default function DeleteCard({
   return (
     <div
       className={cn(
-        "bg-destructive/8 text-destructive flex w-full max-w-xl flex-col items-start justify-start gap-4 rounded-xl px-4 py-4",
+        "bg-destructive/8 text-destructive flex w-full flex-col items-start justify-start gap-4 rounded-xl px-4 py-4 md:max-w-xl",
         className,
       )}
     >
