@@ -88,7 +88,7 @@ export default function UsageSection() {
           {percentageString}
         </p>
       </div>
-      {error && <ErrorLine message={error.message} />}
+      {!data && !isPendingVolume && error && <ErrorLine message={error.message} />}
     </div>
   );
 }

@@ -75,8 +75,12 @@ export default function ConnectionSection({ volume }: TProps) {
           </div>
         )}
       </div>
-      {errorVolume && <ErrorLine message={errorVolume.message} />}
-      {errorServices && <ErrorLine message={errorServices.message} />}
+      {!volumeData && !isPendingVolume && errorVolume && (
+        <ErrorLine message={errorVolume.message} />
+      )}
+      {!servicesData && !isPendingServices && errorServices && (
+        <ErrorLine message={errorServices.message} />
+      )}
     </div>
   );
 }

@@ -71,7 +71,7 @@ export default function DeleteSection({ volume, className }: TProps) {
     );
   }
 
-  if (!volumeData || errorVolume) {
+  if (!volumeData && !isPendingVolume && errorVolume) {
     return (
       <div className="flex w-full items-start justify-start md:max-w-xl">
         <ErrorLine message={errorVolume.message} />
