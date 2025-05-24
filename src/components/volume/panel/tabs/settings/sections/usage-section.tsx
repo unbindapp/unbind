@@ -8,24 +8,24 @@ import { useMemo } from "react";
 
 export default function UsageSection() {
   const {
-    query: { data, isPending, error },
+    query: { data, isPending: isPendingVolume, error },
   } = useVolume();
 
   const usedGBString = useMemo(() => {
     if (data && data.volume.used_gb !== undefined) return formatGB(data.volume.used_gb);
     if (data && data.volume.used_gb === undefined) return "Unknown";
-    if (isPending) return "1GB";
+    if (isPendingVolume) return "1GB";
     if (error) return "Error";
     return "Unknown";
-  }, [data, isPending, error]);
+  }, [data, isPendingVolume, error]);
 
   const sizeGBString = useMemo(() => {
     if (data && data.volume.size_gb !== undefined) return formatGB(data.volume.size_gb);
     if (data && data.volume.size_gb === undefined) return "Unknown";
-    if (isPending) return "10GB";
+    if (isPendingVolume) return "10GB";
     if (error) return "Error";
     return "Unknown";
-  }, [data, isPending, error]);
+  }, [data, isPendingVolume, error]);
 
   const usagePercentage = useMemo(() => {
     if (data && data.volume.size_gb !== undefined && data.volume.used_gb !== undefined) {
@@ -33,30 +33,30 @@ export default function UsageSection() {
     }
     if (data && data.volume.size_gb === undefined) return null;
     if (data && data.volume.used_gb === undefined) return null;
-    if (isPending) return undefined;
+    if (isPendingVolume) return undefined;
     if (error) return undefined;
     return 0;
-  }, [data, isPending, error]);
+  }, [data, isPendingVolume, error]);
 
   const percentageString = useMemo(() => {
     if (usagePercentage !== undefined && usagePercentage !== null) {
       return `${usagePercentage.toLocaleString(appLocale, { maximumFractionDigits: 2 })}%`;
     }
-    if (isPending) return "10%";
+    if (isPendingVolume) return "10%";
     if (error) return "Error";
     return "Unknown";
-  }, [usagePercentage, error, isPending]);
+  }, [usagePercentage, isPendingVolume, error]);
 
   const usageLevel: TVolumeUsageLevel = useMemo(() => {
     return getVolumeUsageLevel(usagePercentage);
   }, [usagePercentage]);
 
-  const isPendingAdjusted = isPending || (data && usagePercentage === undefined);
+  const isPending = isPendingVolume || (data && usagePercentage === undefined);
 
   return (
     <div
-      data-pending={isPendingAdjusted ? true : undefined}
-      data-error={error ? true : undefined}
+      data-pending={isPending ? true : undefined}
+      data-error={!data && !isPending && error ? true : undefined}
       data-usage={usageLevel}
       className="group/section flex w-full flex-col gap-2 text-sm leading-tight font-medium md:max-w-xl"
     >
