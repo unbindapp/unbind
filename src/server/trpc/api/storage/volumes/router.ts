@@ -77,7 +77,7 @@ export const volumesRouter = createTRPCRouter({
       const res = await goClient.storage.pvc.update({
         id,
         type,
-        size: sizeGb,
+        size_gb: sizeGb,
         team_id: teamId,
         project_id: projectId,
         environment_id: environmentId,

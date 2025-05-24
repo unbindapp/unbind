@@ -150,7 +150,7 @@ export const CreatePVCInputSchema = z
     environment_id: z.string().optional(),
     name: z.string(), // Name of the PVC
     project_id: z.string().optional(),
-    size: z.string(), // Size of the PVC (e.g., '10')
+    size_gb: z.string(), // Size of the PVC in GB (e.g., '10')
     team_id: z.string(),
     type: PvcScopeSchema,
   })
@@ -1787,7 +1787,7 @@ export const UpdatePVCInputSchema = z
     id: z.string(),
     name: z.string().nullable().optional(), // Name of the PVC
     project_id: z.string().optional(),
-    size: z.string().nullable().optional(), // Size of the PVC (e.g., '10')
+    size_gb: z.string().nullable().optional(), // Size of the PVC in GB (e.g., '10')
     team_id: z.string(),
     type: PvcScopeSchema,
   })
