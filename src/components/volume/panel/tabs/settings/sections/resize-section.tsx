@@ -149,7 +149,7 @@ export default function ResizeSection({ volume }: TProps) {
                   }}
                   variant="outline"
                   type="button"
-                  className="max-w-full px-4 py-1.75 lg:px-2.5 lg:py-1.75"
+                  className="max-w-full px-3.5 py-1.75 lg:px-2.5 lg:py-1.75"
                 >
                   <RotateCcwIcon className="hidden size-4 lg:block" />
                   <span className="min-w-0 shrink truncate lg:hidden">Cancel</span>
@@ -157,7 +157,7 @@ export default function ResizeSection({ volume }: TProps) {
                 <ResizeDialogTrigger newSizeGb={sizeGb} volume={volume}>
                   <Button
                     disabled={!canSubmit}
-                    className="max-w-full truncate px-4 py-1.75 lg:max-w-40"
+                    className="max-w-full truncate px-3.5 py-1.75 lg:max-w-40"
                     type="button"
                   >
                     Resize
