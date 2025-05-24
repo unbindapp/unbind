@@ -167,10 +167,11 @@ export default function AddWebhookForm({ className, ...rest }: TProps) {
             ))}
           </div>
           <form.Subscribe
-            selector={(state) => [state.submissionAttempts, state.errors]}
-            children={([submissionAttempts, allErrors]) => {
-              if (typeof allErrors === "number") return;
-              if (typeof submissionAttempts !== "number") return;
+            selector={(state) => ({
+              submissionAttempts: state.submissionAttempts,
+              allErrors: state.errors,
+            })}
+            children={({ submissionAttempts, allErrors }) => {
               const errors = allErrors[0]?.selectedIds;
               const message = errors && errors.length > 0 ? errors[0]?.message : undefined;
               if (submissionAttempts > 0 && message) {
@@ -216,8 +217,8 @@ export default function AddWebhookForm({ className, ...rest }: TProps) {
                 onChange={(e) => field.handleChange(e.target.value)}
                 placeholder="https://discord.com/api/webhooks/..."
               />
-              <form.Subscribe selector={(state) => [state.values.url]}>
-                {([url]) => (
+              <form.Subscribe selector={(state) => ({ url: state.values.url })}>
+                {({ url }) => (
                   <BrandIcon
                     data-placeholder={url ? undefined : true}
                     color="brand"
@@ -231,8 +232,8 @@ export default function AddWebhookForm({ className, ...rest }: TProps) {
         />
       </div>
       <div className="bg-background-hover flex w-full items-center justify-end rounded-b-xl border-t p-2 sm:p-2.5">
-        <form.Subscribe selector={(state) => [state.isSubmitting]}>
-          {([isSubmitting]) => (
+        <form.Subscribe selector={(state) => ({ isSubmitting: state.isSubmitting })}>
+          {({ isSubmitting }) => (
             <form.SubmitButton className="px-4" isPending={isSubmitting}>
               Create Webhook
             </form.SubmitButton>

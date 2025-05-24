@@ -515,8 +515,8 @@ export function NewEnvironmentCard({ teamId, projectId }: { teamId: string; proj
               </Button>
             </DialogClose>
             <form.Subscribe
-              selector={(state) => [state.isSubmitting]}
-              children={([isSubmitting]) => (
+              selector={(state) => ({ isSubmitting: state.isSubmitting })}
+              children={({ isSubmitting }) => (
                 <form.SubmitButton
                   data-submitting={isSubmitting ? true : undefined}
                   isPending={isSubmitting ? true : false}

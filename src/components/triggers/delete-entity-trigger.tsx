@@ -140,8 +140,12 @@ export function DeleteEntityTrigger({
                 </Button>
               </DialogClose>
               <form.Subscribe
-                selector={(state) => [state.canSubmit, state.isSubmitting, state.values]}
-                children={([canSubmit, isSubmitting, values]) => (
+                selector={(state) => ({
+                  canSubmit: state.canSubmit,
+                  isSubmitting: state.isSubmitting,
+                  values: state.values,
+                })}
+                children={({ canSubmit, isSubmitting, values }) => (
                   <form.SubmitButton
                     data-submitting={isSubmitting ? true : undefined}
                     variant="destructive"

@@ -312,8 +312,8 @@ export default function CreateVariablesForm({
                             }}
                           </form.Field>
                           <form.Subscribe
-                            selector={(state) => [state.values.variables[0]]}
-                            children={([firstVariable]) => (
+                            selector={(state) => ({ firstVariable: state.values.variables[0] })}
+                            children={({ firstVariable }) => (
                               <Button
                                 disabled={
                                   field.state.value.length <= 1 &&
@@ -360,8 +360,8 @@ export default function CreateVariablesForm({
               {createError && <ErrorLine message={createError.message} />}
               <div className="flex w-full flex-row items-center justify-end">
                 <form.Subscribe
-                  selector={(state) => [state.isSubmitting]}
-                  children={([isSubmitting]) => (
+                  selector={(state) => ({ isSubmitting: state.isSubmitting })}
+                  children={({ isSubmitting }) => (
                     <form.SubmitButton isPending={isSubmitting}>Save</form.SubmitButton>
                   )}
                 />

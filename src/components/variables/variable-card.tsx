@@ -536,8 +536,8 @@ function EditVariableForm({
           )}
         />
         <form.Subscribe
-          selector={(state) => [state.isSubmitting]}
-          children={([isSubmitting]) => (
+          selector={(state) => ({ isSubmitting: state.isSubmitting })}
+          children={({ isSubmitting }) => (
             <>
               <Button
                 disabled={isSubmitting}

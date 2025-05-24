@@ -159,8 +159,8 @@ export default function RenameEntityTrigger({
                 </Button>
               </DialogClose>
               <form.Subscribe
-                selector={(state) => [state.isSubmitting]}
-                children={([isSubmitting]) => (
+                selector={(state) => ({ isSubmitting: state.isSubmitting })}
+                children={({ isSubmitting }) => (
                   <form.SubmitButton isPending={isSubmitting ? true : false}>
                     Save
                   </form.SubmitButton>

@@ -104,12 +104,10 @@ export default function RenameCard({
           )}
         />
         <form.Subscribe
-          selector={(state) => [state.isSubmitting, state.values]}
-          children={([isSubmitting, values]) => {
+          selector={(state) => ({ isSubmitting: state.isSubmitting, values: state.values })}
+          children={({ isSubmitting, values }) => {
             const valuesUnchanged =
-              typeof values === "object" &&
-              values.name === name &&
-              looseMatch(values.description, description);
+              values.name === name && looseMatch(values.description, description);
             return (
               <div className="flex w-full flex-row gap-3 md:w-auto">
                 <form.SubmitButton

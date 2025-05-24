@@ -7,7 +7,9 @@ import UsageSection from "@/components/volume/panel/tabs/settings/sections/usage
 import { TVolumeShallow } from "@/server/trpc/api/services/types";
 import { ChartNoAxesColumnIcon, FlameIcon, ScalingIcon, UnplugIcon } from "lucide-react";
 
-export default function Settings({ volume }: { volume: TVolumeShallow }) {
+type TProps = { volume: TVolumeShallow };
+
+export default function Settings({ volume }: TProps) {
   return (
     <TabWrapper className="pt-4">
       <SettingsSection title="Usage" id="usage" Icon={ChartNoAxesColumnIcon}>

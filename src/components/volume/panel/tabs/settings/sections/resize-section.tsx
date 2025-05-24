@@ -1,12 +1,27 @@
 import ErrorLine from "@/components/error-line";
 import { useSystem } from "@/components/system/system-provider";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useVolume } from "@/components/volume/volume-provider";
+import { defaultAnimationMs } from "@/lib/constants";
 import { formatGB } from "@/lib/helpers/format-gb";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TVolumeShallow } from "@/server/trpc/api/services/types";
+import { TVolumeType } from "@/server/trpc/api/storage/volumes/types";
+import { api } from "@/server/trpc/setup/client";
 import { RotateCcwIcon } from "lucide-react";
-import { useMemo } from "react";
+import { ResultAsync } from "neverthrow";
+import { ReactNode, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 
 type TProps = {
   volume: TVolumeShallow;
@@ -36,9 +51,6 @@ export default function ResizeSection({ volume }: TProps) {
         }
         return undefined;
       },
-    },
-    onSubmit: async () => {
-      toast.info("Resizing volume...");
     },
   });
 
@@ -83,8 +95,8 @@ export default function ResizeSection({ volume }: TProps) {
         </p>
       </div>
       <form.Subscribe
-        selector={(state) => [state.values]}
-        children={([values]) => (
+        selector={(state) => ({ values: state.values })}
+        children={({ values }) => (
           <div className="flex w-full justify-start px-1.5">
             <p className="min-w-0 shrink leading-tight font-semibold">
               <span className="pr-[0.6ch]">Size:</span>
@@ -95,13 +107,7 @@ export default function ResizeSection({ volume }: TProps) {
           </div>
         )}
       />
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          form.handleSubmit();
-        }}
-        className="-mt-0.5 flex w-full flex-col gap-2 lg:flex-row lg:items-center"
-      >
+      <div className="-mt-0.5 flex w-full flex-col gap-2 lg:flex-row lg:items-center">
         <div className="flex w-full md:max-w-xl">
           <form.AppField
             name="sizeGb"
@@ -124,11 +130,15 @@ export default function ResizeSection({ volume }: TProps) {
           />
         </div>
         <form.Subscribe
-          selector={(state) => [state.canSubmit, state.values.sizeGb]}
-          children={([canSubmit, sizeGb]) => {
+          selector={(state) => ({
+            canSubmit: state.canSubmit,
+            sizeGb: state.values.sizeGb,
+            isSubmitting: state.isSubmitting,
+          })}
+          children={({ canSubmit, sizeGb }) => {
             return (
               <div
-                data-disabled={!canSubmit || sizeGb === currentSizeGb ? true : undefined}
+                data-disabled={sizeGb === currentSizeGb ? true : undefined}
                 className="flex max-w-full flex-wrap gap-2 data-disabled:hidden lg:data-disabled:flex lg:data-disabled:opacity-0"
               >
                 <Button
@@ -144,18 +154,176 @@ export default function ResizeSection({ volume }: TProps) {
                   <RotateCcwIcon className="hidden size-4 lg:block" />
                   <span className="min-w-0 shrink truncate lg:hidden">Cancel</span>
                 </Button>
-                <Button
-                  disabled={!canSubmit}
-                  className="max-w-full truncate px-4 py-1.75 lg:max-w-40"
-                  type="button"
-                >
-                  Resize
-                </Button>
+                <ResizeDialogTrigger newSizeGb={sizeGb} volume={volume}>
+                  <Button
+                    disabled={!canSubmit}
+                    className="max-w-full truncate px-4 py-1.75 lg:max-w-40"
+                    type="button"
+                  >
+                    Resize
+                  </Button>
+                </ResizeDialogTrigger>
               </div>
             );
           }}
-        ></form.Subscribe>
-      </form>
+        />
+      </div>
     </div>
+  );
+}
+
+function ResizeDialogTrigger({
+  newSizeGb,
+  volume,
+  children,
+}: {
+  newSizeGb: string;
+  volume: TVolumeShallow;
+  children: ReactNode;
+}) {
+  const { teamId, projectId, environmentId } = useVolume();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const textToConfirm = "I want to resize this volume";
+
+  const type: TVolumeType = "environment";
+
+  const {
+    mutateAsync: resizeVolume,
+    error,
+    reset,
+  } = api.storage.volumes.resize.useMutation({
+    onSuccess: async () => {
+      const result = await ResultAsync.fromPromise(
+        new Promise((r) => setTimeout(r, 1000)),
+        () => new Error("Resize success callback failed"),
+      );
+      if (result.isErr()) {
+        toast.error("Callback failed", {
+          description:
+            "The resize was successful, but the callback failed. You might want to refresh the page.",
+        });
+      }
+
+      setIsDialogOpen(false);
+
+      if (timeout.current) clearTimeout(timeout.current);
+      timeout.current = setTimeout(() => {
+        form.reset();
+        reset();
+      }, defaultAnimationMs);
+    },
+  });
+
+  const timeout = useRef<NodeJS.Timeout | null>(null);
+
+  const form = useAppForm({
+    defaultValues: {
+      textToConfirm: "",
+    },
+    validators: {
+      onChange: z
+        .object({
+          textToConfirm: z.string().refine((v) => v === textToConfirm, {
+            message: "Please type the correct text to confirm",
+          }),
+        })
+        .strip(),
+    },
+    onSubmit: async () => {
+      await resizeVolume({
+        id: volume.id,
+        sizeGb: newSizeGb,
+        type,
+        teamId,
+        projectId,
+        environmentId,
+      });
+    },
+  });
+
+  return (
+    <Dialog
+      open={isDialogOpen}
+      onOpenChange={(o) => {
+        setIsDialogOpen(o);
+        if (!o) {
+          if (timeout.current) clearTimeout(timeout.current);
+          timeout.current = setTimeout(() => {
+            form.reset();
+            reset();
+          }, defaultAnimationMs);
+        }
+      }}
+    >
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
+        <DialogHeader>
+          <DialogTitle>
+            <span className="pr-[0.5ch]">Resize Volume to</span>
+            <span className="text-foreground bg-foreground/6 border-foreground/6 max-w-full rounded-md border px-1.5 leading-tight font-semibold">
+              {formatGB(Number(newSizeGb))}
+            </span>
+          </DialogTitle>
+
+          <DialogDescription>
+            {"PROCEED WITH CAUTION! Volumes can't be downsized."}
+            <br />
+            <br />
+            Type {`"`}
+            <span className="text-destructive font-semibold">{textToConfirm}</span>
+            {`"`} to confirm.
+          </DialogDescription>
+        </DialogHeader>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            form.handleSubmit();
+          }}
+          className="group/form flex flex-col"
+        >
+          <form.AppField
+            name="textToConfirm"
+            children={(field) => (
+              <field.TextField
+                hideInfo
+                field={field}
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(e) => field.handleChange(e.target.value)}
+                className="w-full"
+                placeholder={textToConfirm}
+              />
+            )}
+          />
+          <div className="mt-4 flex w-full flex-col gap-4">
+            {error && <ErrorLine message={error?.message} />}
+            <div className="flex w-full flex-wrap items-center justify-end gap-2">
+              <DialogClose asChild className="text-muted-foreground">
+                <Button type="button" variant="ghost">
+                  Cancel
+                </Button>
+              </DialogClose>
+              <form.Subscribe
+                selector={(state) => ({
+                  canSubmit: state.canSubmit,
+                  isSubmitting: state.isSubmitting,
+                  values: state.values,
+                })}
+                children={({ canSubmit, isSubmitting, values }) => (
+                  <form.SubmitButton
+                    data-submitting={isSubmitting ? true : undefined}
+                    variant="destructive"
+                    disabled={!canSubmit || values.textToConfirm !== textToConfirm}
+                    isPending={isSubmitting ? true : false}
+                  >
+                    Resize
+                  </form.SubmitButton>
+                )}
+              />
+            </div>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

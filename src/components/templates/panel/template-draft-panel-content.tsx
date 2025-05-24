@@ -206,8 +206,8 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                         <div className="flex w-full items-start gap-2">
                           <TemplateInputIcon input={visibleInputs[i]} />
                           <form.Subscribe
-                            selector={(state) => [state.values]}
-                            children={([values]) => (
+                            selector={(state) => ({ values: state.values })}
+                            children={({ values }) => (
                               <p className="-mt-0.5 min-w-0 shrink leading-tight font-semibold">
                                 {visibleInputs[i].name}
                                 {(visibleInputs[i].type === "database-size" ||
@@ -299,8 +299,8 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
       </ScrollArea>
       <div className="flex w-full flex-col gap-2 border-t px-3 pt-3 pb-[calc(var(--safe-area-inset-bottom)+0.75rem)] sm:px-6 sm:pt-6 sm:pb-[calc(var(--safe-area-inset-bottom)+1.5rem)]">
         <form.Subscribe
-          selector={(state) => [state.isSubmitting]}
-          children={([isSubmitting]) => {
+          selector={(state) => ({ isSubmitting: state.isSubmitting })}
+          children={({ isSubmitting }) => {
             const isPending = isPendingDeployTemplate || isSubmitting;
             return (
               <form.SubmitButton
