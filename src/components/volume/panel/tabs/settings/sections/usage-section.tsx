@@ -57,16 +57,16 @@ export default function UsageSection() {
       data-pending={isPending ? true : undefined}
       data-error={!data && !isPending && error ? true : undefined}
       data-usage={usageLevel}
-      className="group/section flex w-full flex-col gap-2 text-sm leading-tight font-medium md:max-w-xl"
+      className="group/section flex w-full flex-col gap-2.5 leading-tight font-medium md:max-w-xl"
     >
       <div className="text-muted-foreground flex w-full items-end justify-between px-1.5">
-        <p className="group-data-pending/section:animate-skeleton group-data-pending/section:bg-foreground max-w-1/2 truncate pr-2 font-medium group-data-pending/section:rounded-sm group-data-pending/section:text-transparent">
+        <p className="group-data-pending/section:animate-skeleton group-data-pending/section:bg-foreground max-w-1/2 truncate pr-2 font-medium group-data-pending/section:rounded-md group-data-pending/section:text-transparent">
           Used:{" "}
           <span className="text-foreground group-data-error/section:text-destructive font-semibold group-data-pending/section:text-transparent">
             {usedGBString}
           </span>
         </p>
-        <p className="group-data-pending/section:animate-skeleton group-data-pending/section:bg-foreground max-w-1/2 truncate pl-2 text-right font-medium group-data-pending/section:rounded-sm group-data-pending/section:text-transparent">
+        <p className="group-data-pending/section:animate-skeleton group-data-pending/section:bg-foreground max-w-1/2 truncate pl-2 text-right font-medium group-data-pending/section:rounded-md group-data-pending/section:text-transparent">
           Total:{" "}
           <span className="text-foreground group-data-error/section:text-destructive font-semibold group-data-pending/section:text-transparent">
             {sizeGBString}
@@ -84,7 +84,7 @@ export default function UsageSection() {
             />
           </div>
         )}
-        <p className="group-data-[usage=high]/section:text-warning group-data-error/section:text-destructive group-data-pending/section:animate-skeleton group-data-pending/section:bg-foreground relative max-w-full min-w-0 truncate font-semibold group-data-pending/section:rounded-sm group-data-pending/section:text-transparent">
+        <p className="group-data-[usage=high]/section:text-warning group-data-error/section:text-destructive group-data-pending/section:animate-skeleton group-data-pending/section:bg-foreground relative max-w-full min-w-0 truncate font-semibold group-data-pending/section:rounded-md group-data-pending/section:text-transparent">
           {percentageString}
         </p>
       </div>
