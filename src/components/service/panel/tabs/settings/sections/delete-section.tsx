@@ -12,7 +12,7 @@ type Props = {
   className?: string;
 };
 
-export default function DeleteServiceSection({ service, className }: Props) {
+export default function DeleteSection({ service, className }: Props) {
   const { teamId, projectId, environmentId } = useService();
 
   const { invalidate } = useServicesUtils({ teamId, projectId, environmentId });

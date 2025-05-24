@@ -1,4 +1,4 @@
-import DeleteServiceSection from "@/components/service/panel/tabs/settings/sections/delete-service-section";
+import DeleteSection from "@/components/service/panel/tabs/settings/sections/delete-section";
 import TabWrapper from "@/components/navigation/tab-wrapper";
 import { cn } from "@/components/ui/utils";
 import { CodeIcon, FlameIcon, NetworkIcon, RocketIcon, WrenchIcon } from "lucide-react";
@@ -24,8 +24,8 @@ export default function Settings({ service }: { service: TServiceShallow }) {
       <Section className="pt-4" title="Deploy" id="deploy" Icon={RocketIcon}>
         <DeploySection service={service} />
       </Section>
-      <Section className="pt-4" title="Delete Service" id="danger-zone" Icon={FlameIcon}>
-        <DeleteServiceSection service={service} />
+      <Section className="pt-4" title="Delete Service" id="danger" Icon={FlameIcon}>
+        <DeleteSection service={service} />
       </Section>
     </TabWrapper>
   );

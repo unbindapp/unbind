@@ -12,23 +12,24 @@ import {
 } from "@/components/ui/drawer";
 import VolumePanelContent from "@/components/volume/panel/volume-panel-content";
 import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
+import VolumeProvider from "@/components/volume/volume-provider";
 import { TVolumeShallow } from "@/server/trpc/api/services/types";
 import { HardDriveIcon, XIcon } from "lucide-react";
 import { ReactNode } from "react";
 
 type TProps = {
+  volume: TVolumeShallow;
   teamId: string;
   projectId: string;
   environmentId: string;
-  volume: TVolumeShallow;
   children: ReactNode;
 };
 
 export default function VolumePanel({
+  volume,
   teamId,
   projectId,
   environmentId,
-  volume,
   children,
 }: TProps) {
   const { closePanel, currentVolumeId, setCurrentVolumeId } = useVolumePanel();
@@ -74,12 +75,19 @@ export default function VolumePanel({
             )}
           </div>
         </div>
-        <VolumePanelContent
-          volume={volume}
+        <VolumeProvider
+          id={volume.id}
           teamId={teamId}
           projectId={projectId}
           environmentId={environmentId}
-        />
+        >
+          <VolumePanelContent
+            volume={volume}
+            teamId={teamId}
+            projectId={projectId}
+            environmentId={environmentId}
+          />
+        </VolumeProvider>
       </DrawerContent>
     </Drawer>
   );

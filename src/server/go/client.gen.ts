@@ -213,6 +213,28 @@ export const CreateProjectResponseBodySchema = z
   })
   .strip();
 
+export const CreateRegistryInputSchema = z
+  .object({
+    host: z.string(),
+    password: z.string(),
+    username: z.string(),
+  })
+  .strip();
+
+export const RegistryResponseSchema = z
+  .object({
+    Host: z.string(),
+    id: z.string(),
+    username: z.string(),
+  })
+  .strip();
+
+export const CreateRegistryResponseBodySchema = z
+  .object({
+    data: RegistryResponseSchema,
+  })
+  .strip();
+
 export const S3BucketSchema = z
   .object({
     bucket_region: z.string(),
@@ -576,6 +598,12 @@ export const DeleteProjectResponseBodySchema = z
   })
   .strip();
 
+export const DeleteRegistryInputSchema = z
+  .object({
+    id: z.string(),
+  })
+  .strip();
+
 export const DeleteS3SourceByIDInputBodySchema = z
   .object({
     id: z.string(),
@@ -727,6 +755,29 @@ export const ErrorModelSchema = z
   })
   .strip();
 
+export const EventTypeSchema = z.enum([
+  'OOMKilled',
+  'CrashLoopBackOff',
+  'ContainerCreated',
+  'ContainerStarted',
+  'ContainerStopped',
+  'NodeNotReady',
+  'SchedulingFailed',
+  'Unknown',
+]);
+
+export const EventRecordSchema = z
+  .object({
+    count: z.number().optional(),
+    firstSeen: z.string().optional(),
+    lastSeen: z.string().optional(),
+    message: z.string().optional(),
+    reason: z.string().optional(),
+    timestamp: z.string(),
+    type: EventTypeSchema,
+  })
+  .strip();
+
 export const GenerateWildcardDomainInputBodySchema = z
   .object({
     name: z.string(), // The base name of the wildcard domain
@@ -770,6 +821,7 @@ export const InstanceHealthSchema = z.enum(['healthy', 'degraded', 'unhealthy'])
 
 export const SimpleInstanceStatusSchema = z
   .object({
+    events: z.array(EventRecordSchema).optional(),
     kubernetes_name: z.string(),
     status: ContainerStateSchema,
   })
@@ -855,6 +907,12 @@ export const GetPVCResponseBodySchema = z
 export const GetProjectResponseBodySchema = z
   .object({
     data: ProjectResponseSchema,
+  })
+  .strip();
+
+export const GetRegistryResponseBodySchema = z
+  .object({
+    data: RegistryResponseSchema,
   })
   .strip();
 
@@ -1023,6 +1081,28 @@ export const TemplateWithDefinitionResponseSchema = z
 export const GetTemplateResponseBodySchema = z
   .object({
     data: TemplateWithDefinitionResponseSchema,
+  })
+  .strip();
+
+export const PVCStatsSchema = z
+  .object({
+    capacity_gb: z.number().optional(),
+    used_gb: z.number().optional(),
+  })
+  .strip();
+
+export const VolumeMetricsResultSchema = z
+  .object({
+    history: z.array(MetricDetailSchema),
+    pvc_name: z.string(),
+    stats: PVCStatsSchema,
+    step: z.number(),
+  })
+  .strip();
+
+export const GetVolumeMetricsResponseBodySchema = z
+  .object({
+    data: VolumeMetricsResultSchema,
   })
   .strip();
 
@@ -1255,6 +1335,7 @@ export const GithubRepositoryDetailResponseBodySchema = z
 export const InstanceStatusSchema = z
   .object({
     crashLoopReason: z.string().optional(),
+    events: z.array(EventRecordSchema).optional(),
     isCrashing: z.boolean(),
     kubernetes_name: z.string(),
     lastExitCode: z.number().optional(),
@@ -1350,6 +1431,12 @@ export const ListPVCResponseBodySchema = z
 export const ListProjectResponseBodySchema = z
   .object({
     data: z.array(ProjectResponseSchema),
+  })
+  .strip();
+
+export const ListRegistriesResponseBodySchema = z
+  .object({
+    data: z.array(RegistryResponseSchema),
   })
   .strip();
 
@@ -1528,6 +1615,18 @@ export const S3TestResultSchema = z
   .object({
     error: z.string().optional(),
     valid: z.boolean(),
+  })
+  .strip();
+
+export const SetDefaultRegistryInputSchema = z
+  .object({
+    id: z.string(),
+  })
+  .strip();
+
+export const SetDefaultRegistryResponseBodySchema = z
+  .object({
+    data: RegistryResponseSchema,
   })
   .strip();
 
@@ -1940,6 +2039,9 @@ export type CreatePVCResponseBody = z.infer<typeof CreatePVCResponseBodySchema>;
 export type CreateProjectInput = z.infer<typeof CreateProjectInputSchema>;
 export type ProjectResponse = z.infer<typeof ProjectResponseSchema>;
 export type CreateProjectResponseBody = z.infer<typeof CreateProjectResponseBodySchema>;
+export type CreateRegistryInput = z.infer<typeof CreateRegistryInputSchema>;
+export type RegistryResponse = z.infer<typeof RegistryResponseSchema>;
+export type CreateRegistryResponseBody = z.infer<typeof CreateRegistryResponseBodySchema>;
 export type S3Bucket = z.infer<typeof S3BucketSchema>;
 export type S3Response = z.infer<typeof S3ResponseSchema>;
 export type CreateS3OutputBody = z.infer<typeof CreateS3OutputBodySchema>;
@@ -1980,6 +2082,7 @@ export type DeletePVCInput = z.infer<typeof DeletePVCInputSchema>;
 export type DeletePVCResponseBody = z.infer<typeof DeletePVCResponseBodySchema>;
 export type DeleteProjectInputBody = z.infer<typeof DeleteProjectInputBodySchema>;
 export type DeleteProjectResponseBody = z.infer<typeof DeleteProjectResponseBodySchema>;
+export type DeleteRegistryInput = z.infer<typeof DeleteRegistryInputSchema>;
 export type DeleteS3SourceByIDInputBody = z.infer<typeof DeleteS3SourceByIDInputBodySchema>;
 export type DeleteS3SourceByIDOutputBody = z.infer<typeof DeleteS3SourceByIDOutputBodySchema>;
 export type DeleteServiceGroupInput = z.infer<typeof DeleteServiceGroupInputSchema>;
@@ -1998,6 +2101,8 @@ export type ServiceEndpoint = z.infer<typeof ServiceEndpointSchema>;
 export type EndpointDiscovery = z.infer<typeof EndpointDiscoverySchema>;
 export type ErrorDetail = z.infer<typeof ErrorDetailSchema>;
 export type ErrorModel = z.infer<typeof ErrorModelSchema>;
+export type EventType = z.infer<typeof EventTypeSchema>;
+export type EventRecord = z.infer<typeof EventRecordSchema>;
 export type GenerateWildcardDomainInputBody = z.infer<typeof GenerateWildcardDomainInputBodySchema>;
 export type GenerateWildcardDomainOutputBody = z.infer<
   typeof GenerateWildcardDomainOutputBodySchema
@@ -2020,6 +2125,7 @@ export type NodeMetricsResult = z.infer<typeof NodeMetricsResultSchema>;
 export type GetNodeMetricsResponseBody = z.infer<typeof GetNodeMetricsResponseBodySchema>;
 export type GetPVCResponseBody = z.infer<typeof GetPVCResponseBodySchema>;
 export type GetProjectResponseBody = z.infer<typeof GetProjectResponseBodySchema>;
+export type GetRegistryResponseBody = z.infer<typeof GetRegistryResponseBodySchema>;
 export type GetS3SourceByIDOutputBody = z.infer<typeof GetS3SourceByIDOutputBodySchema>;
 export type GetServiceGroupResponseBody = z.infer<typeof GetServiceGroupResponseBodySchema>;
 export type GetServiceResponseBody = z.infer<typeof GetServiceResponseBodySchema>;
@@ -2037,6 +2143,9 @@ export type TemplateService = z.infer<typeof TemplateServiceSchema>;
 export type TemplateDefinition = z.infer<typeof TemplateDefinitionSchema>;
 export type TemplateWithDefinitionResponse = z.infer<typeof TemplateWithDefinitionResponseSchema>;
 export type GetTemplateResponseBody = z.infer<typeof GetTemplateResponseBodySchema>;
+export type PVCStats = z.infer<typeof PVCStatsSchema>;
+export type VolumeMetricsResult = z.infer<typeof VolumeMetricsResultSchema>;
+export type GetVolumeMetricsResponseBody = z.infer<typeof GetVolumeMetricsResponseBodySchema>;
 export type GetWebhookResponseBody = z.infer<typeof GetWebhookResponseBodySchema>;
 export type Plan = z.infer<typeof PlanSchema>;
 export type Organization = z.infer<typeof OrganizationSchema>;
@@ -2077,6 +2186,7 @@ export type PodContainerStatus = z.infer<typeof PodContainerStatusSchema>;
 export type ListInstancesResponseBody = z.infer<typeof ListInstancesResponseBodySchema>;
 export type ListPVCResponseBody = z.infer<typeof ListPVCResponseBodySchema>;
 export type ListProjectResponseBody = z.infer<typeof ListProjectResponseBodySchema>;
+export type ListRegistriesResponseBody = z.infer<typeof ListRegistriesResponseBodySchema>;
 export type ListS3SourceOutputBody = z.infer<typeof ListS3SourceOutputBodySchema>;
 export type ListServiceGroupResponseBody = z.infer<typeof ListServiceGroupResponseBodySchema>;
 export type ListServiceResponseBody = z.infer<typeof ListServiceResponseBodySchema>;
@@ -2108,6 +2218,8 @@ export type Restarted = z.infer<typeof RestartedSchema>;
 export type RestartServicesResponseBody = z.infer<typeof RestartServicesResponseBodySchema>;
 export type S3BackendCreateInput = z.infer<typeof S3BackendCreateInputSchema>;
 export type S3TestResult = z.infer<typeof S3TestResultSchema>;
+export type SetDefaultRegistryInput = z.infer<typeof SetDefaultRegistryInputSchema>;
+export type SetDefaultRegistryResponseBody = z.infer<typeof SetDefaultRegistryResponseBodySchema>;
 export type SystemSettingsResponse = z.infer<typeof SystemSettingsResponseSchema>;
 export type SettingsResponseBody = z.infer<typeof SettingsResponseBodySchema>;
 export type SetupData = z.infer<typeof SetupDataSchema>;
@@ -2289,13 +2401,22 @@ export const get_metricsQuerySchema = z
   })
   .passthrough();
 
-export const get_syste__metricsQuerySchema = z
+export const get_system_metricsQuerySchema = z
   .object({
     node_name: z.string().optional(),
     zone: z.string().optional(),
     region: z.string().optional(),
     cluster_name: z.string().optional(),
     start: z.string().datetime().optional(), // Start time for the query, defaults to 24 hours ago
+    end: z.string().datetime().optional(), // End time for the query, defaults to now
+  })
+  .passthrough();
+
+export const get_volume_metricsQuerySchema = z
+  .object({
+    team_id: z.string(),
+    pvc_id: z.string(),
+    start: z.string().datetime().optional(), // Start time for the query, defaults to 1 week ago
     end: z.string().datetime().optional(), // End time for the query, defaults to now
   })
   .passthrough();
@@ -2402,6 +2523,12 @@ export const list_s3_sourcesQuerySchema = z
 export const check_dns_resolutionQuerySchema = z
   .object({
     domain: z.string(),
+  })
+  .passthrough();
+
+export const get_registryQuerySchema = z
+  .object({
+    id: z.string(),
   })
   .passthrough();
 
@@ -3629,7 +3756,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
         }
       },
       getSystem: async (
-        params: z.infer<typeof get_syste__metricsQuerySchema>,
+        params: z.infer<typeof get_system_metricsQuerySchema>,
         fetchOptions?: RequestInit,
       ): Promise<GetNodeMetricsResponseBody> => {
         try {
@@ -3637,7 +3764,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             throw new Error('API URL is undefined or not a string');
           }
           const url = new URL(`${apiUrl}/metrics/get-system`);
-          const validatedQuery = get_syste__metricsQuerySchema.parse(params);
+          const validatedQuery = get_system_metricsQuerySchema.parse(params);
           const queryKeys = ['node_name', 'zone', 'region', 'cluster_name', 'start', 'end'];
           queryKeys.forEach((key) => {
             const value = validatedQuery[key as keyof typeof validatedQuery];
@@ -3669,6 +3796,52 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           }
           const data = await response.json();
           return GetNodeMetricsResponseBodySchema.parse(data);
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      getVolume: async (
+        params: z.infer<typeof get_volume_metricsQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<GetVolumeMetricsResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(`${apiUrl}/metrics/get-volume`);
+          const validatedQuery = get_volume_metricsQuerySchema.parse(params);
+          const queryKeys = ['team_id', 'pvc_id', 'start', 'end'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetch(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            throw new Error(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+          }
+          const data = await response.json();
+          return GetVolumeMetricsResponseBodySchema.parse(data);
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
@@ -5173,6 +5346,210 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           console.error('Error in API request:', error);
           throw error;
         }
+      },
+      registries: {
+        create: async (
+          params: CreateRegistryInput,
+          fetchOptions?: RequestInit,
+        ): Promise<CreateRegistryResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/system/registries/create`);
+
+            const options: RequestInit = {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+            const validatedBody = CreateRegistryInputSchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+              console.log(`Request body is:`, validatedBody);
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return CreateRegistryResponseBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+        delete: async (params: DeleteRegistryInput, fetchOptions?: RequestInit) => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/system/registries/delete`);
+
+            const options: RequestInit = {
+              method: 'DELETE',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+            const validatedBody = DeleteRegistryInputSchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+              console.log(`Request body is:`, validatedBody);
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return data;
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+        get: async (
+          params: z.infer<typeof get_registryQuerySchema>,
+          fetchOptions?: RequestInit,
+        ): Promise<GetRegistryResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/system/registries/get`);
+            const validatedQuery = get_registryQuerySchema.parse(params);
+            const queryKeys = ['id'];
+            queryKeys.forEach((key) => {
+              const value = validatedQuery[key as keyof typeof validatedQuery];
+              if (value !== undefined && value !== null) {
+                url.searchParams.append(key, String(value));
+              }
+            });
+            const options: RequestInit = {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return GetRegistryResponseBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+        list: async (
+          params?: undefined,
+          fetchOptions?: RequestInit,
+        ): Promise<ListRegistriesResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/system/registries/list`);
+
+            const options: RequestInit = {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return ListRegistriesResponseBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+        setDefault: async (
+          params: SetDefaultRegistryInput,
+          fetchOptions?: RequestInit,
+        ): Promise<SetDefaultRegistryResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(`${apiUrl}/system/registries/set-default`);
+
+            const options: RequestInit = {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              ...fetchOptions,
+            };
+            const validatedBody = SetDefaultRegistryInputSchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
+            const response = await fetch(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+              console.log(`Request body is:`, validatedBody);
+              throw new Error(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            return SetDefaultRegistryResponseBodySchema.parse(data);
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
       },
       settings: {
         update: async (
