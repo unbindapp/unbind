@@ -122,12 +122,6 @@ export type TButtonProps = React.ComponentProps<"button"> &
 
 export type TButtonVariants = VariantProps<typeof buttonVariants>;
 
-export interface TLinkButtonProps
-  extends React.ComponentProps<typeof Link>,
-    VariantProps<typeof buttonVariants> {
-  asChild?: boolean;
-}
-
 function Button({
   className,
   variant,
@@ -175,6 +169,12 @@ function Button({
   );
 }
 
+export interface TLinkButtonProps
+  extends React.ComponentProps<typeof LinkCustom>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean;
+}
+
 function LinkButton({
   className,
   variant,
@@ -185,15 +185,45 @@ function LinkButton({
   forceMinSize,
   children,
   asChild,
-  href,
+  ...props
+}: TLinkButtonProps) {
+  const Comp = asChild ? Slot : LinkCustom;
+  const isText = typeof children === "string";
+
+  return (
+    <Comp
+      className={cn(
+        buttonVariants({
+          variant,
+          size,
+          state,
+          fadeOnDisabled,
+          focusVariant,
+          forceMinSize,
+          layout: isText ? undefined : "flex",
+          className,
+        }),
+      )}
+      {...props}
+    >
+      {children}
+    </Comp>
+  );
+}
+
+type TPrefetch = "hover" | false;
+type TLinkCustomProps = Omit<React.ComponentProps<typeof Link>, "prefetch"> & {
+  prefetch?: TPrefetch;
+};
+
+export function LinkCustom({
   onMouseEnter: onMouseEnterProp,
   onTouchStart: onTouchStartProp,
+  href,
   prefetch = "hover",
-  ...props
-}: Omit<TLinkButtonProps, "prefetch"> & { prefetch?: "hover" | false }) {
+  ...rest
+}: TLinkCustomProps) {
   const router = useRouter();
-  const Comp = asChild ? Slot : Link;
-  const isText = typeof children === "string";
 
   const onMouseEnter = React.useCallback(
     (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
@@ -216,27 +246,13 @@ function LinkButton({
   );
 
   return (
-    <Comp
-      className={cn(
-        buttonVariants({
-          variant,
-          size,
-          state,
-          fadeOnDisabled,
-          focusVariant,
-          forceMinSize,
-          layout: isText ? undefined : "flex",
-          className,
-        }),
-      )}
+    <Link
       href={href}
       onMouseEnter={onMouseEnter}
       onTouchStart={onTouchStart}
       prefetch={false}
-      {...props}
-    >
-      {children}
-    </Comp>
+      {...rest}
+    />
   );
 }
 
