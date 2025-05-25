@@ -177,7 +177,7 @@ function SettingsButton({ logType, className }: { logType: TLogType; className?:
             >
               <RotateCcwIcon
                 data-default={isDefaultState ? true : undefined}
-                className="-my-1 size-4.5 shrink-0 rotate-90 transform transition data-default:rotate-0"
+                className="-my-1 size-4.5 shrink-0 transform transition-transform data-default:-rotate-90"
               />
               <p className="min-w-0 shrink">Reset</p>
             </DropdownMenuItem>

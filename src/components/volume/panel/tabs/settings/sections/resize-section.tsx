@@ -17,7 +17,7 @@ import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TVolumeShallow } from "@/server/trpc/api/services/types";
 import { TVolumeType } from "@/server/trpc/api/storage/volumes/types";
 import { api } from "@/server/trpc/setup/client";
-import { RotateCcwIcon } from "lucide-react";
+import { RotateCcwIcon, ScalingIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { ReactNode, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -108,7 +108,7 @@ export default function ResizeSection({ volume }: TProps) {
           </div>
         )}
       />
-      <div className="-mt-0.5 flex w-full flex-col gap-2 lg:flex-row lg:items-center">
+      <div className="-mt-0.5 flex w-full flex-col gap-2">
         <div className="flex w-full md:max-w-xl">
           <form.AppField
             name="capacityGb"
@@ -137,31 +137,33 @@ export default function ResizeSection({ volume }: TProps) {
             isSubmitting: state.isSubmitting,
           })}
           children={({ canSubmit, capacityGb }) => {
+            const isCapacityUnchanged = capacityGb === currentCapacityGb;
             return (
               <div
-                data-disabled={capacityGb === currentCapacityGb ? true : undefined}
-                className="flex max-w-full flex-wrap gap-2 data-disabled:hidden lg:data-disabled:flex lg:data-disabled:opacity-0"
+                data-disabled={isCapacityUnchanged ? true : undefined}
+                className="flex max-w-full flex-wrap gap-2"
               >
                 <Button
-                  disabled={!canSubmit}
+                  disabled={!canSubmit || isCapacityUnchanged}
                   onClick={() => {
                     form.setFieldValue("capacityGb", currentCapacityGb);
                     form.validate("change");
                   }}
                   variant="outline"
                   type="button"
-                  className="max-w-full px-3.5 py-1.75 lg:px-2.25 lg:py-1.75"
+                  className="group/button max-w-full px-3.5 py-1.75"
                 >
-                  <RotateCcwIcon className="hidden size-4 lg:block" />
-                  <span className="min-w-0 shrink truncate lg:hidden">Cancel</span>
+                  <RotateCcwIcon className="-ml-0.5 size-4 transition-transform group-disabled/button:-rotate-90" />
+                  <span className="min-w-0 shrink truncate">Undo</span>
                 </Button>
                 <ResizeDialogTrigger newCapacityGb={capacityGb} volume={volume}>
                   <Button
-                    disabled={!canSubmit}
-                    className="max-w-full truncate px-3.5 py-1.75 lg:max-w-40"
+                    disabled={!canSubmit || isCapacityUnchanged}
+                    className="max-w-full truncate px-3.5 py-1.75"
                     type="button"
                   >
-                    Resize
+                    <ScalingIcon className="-ml-0.5 size-4" />
+                    <p className="min-w-0 shrink truncate">Resize</p>
                   </Button>
                 </ResizeDialogTrigger>
               </div>

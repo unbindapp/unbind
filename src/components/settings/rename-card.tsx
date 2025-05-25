@@ -131,8 +131,8 @@ export default function RenameCard({
                   className="gap-1.5 xl:py-3.5"
                 >
                   <RotateCcwIcon
-                    data-rotated={valuesUnchanged ? true : undefined}
-                    className="-ml-1 size-5 shrink-0 transition-transform data-rotated:-rotate-135"
+                    data-unchanged={valuesUnchanged ? true : undefined}
+                    className="-ml-1 size-5 shrink-0 transition-transform data-unchanged:-rotate-90"
                   />
                   <p className="min-w-0">Undo</p>
                 </Button>
