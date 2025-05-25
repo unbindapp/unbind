@@ -151,18 +151,18 @@ export default function ResizeSection({ volume }: TProps) {
                   }}
                   variant="outline"
                   type="button"
-                  className="group/button max-w-full px-3.5 py-1.75"
+                  className="group/button max-w-full px-3.25 py-2"
                 >
-                  <RotateCcwIcon className="-ml-0.5 size-4 transition-transform group-disabled/button:-rotate-90" />
+                  <RotateCcwIcon className="-ml-0.5 size-4.5 transition-transform group-disabled/button:-rotate-90" />
                   <span className="min-w-0 shrink truncate">Undo</span>
                 </Button>
                 <ResizeDialogTrigger newCapacityGb={capacityGb} volume={volume}>
                   <Button
                     disabled={!canSubmit || isCapacityUnchanged}
-                    className="max-w-full truncate px-3.5 py-1.75"
+                    className="max-w-full truncate px-3.25 py-2"
                     type="button"
                   >
-                    <ScalingIcon className="-ml-0.5 size-4" />
+                    <ScalingIcon className="-ml-0.5 size-4.5" />
                     <p className="min-w-0 shrink truncate">Resize</p>
                   </Button>
                 </ResizeDialogTrigger>

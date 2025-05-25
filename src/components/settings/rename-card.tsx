@@ -115,7 +115,7 @@ export default function RenameCard({
                   className="group/button flex-1 md:flex-none xl:py-3.5"
                   disabled={valuesUnchanged}
                 >
-                  <div className="-ml-1 size-5 shrink-0">
+                  <div className="-ml-0.5 size-4.5 shrink-0">
                     {isSubmitting ? (
                       <LoaderIcon className="size-full animate-spin" />
                     ) : (
@@ -132,7 +132,7 @@ export default function RenameCard({
                 >
                   <RotateCcwIcon
                     data-unchanged={valuesUnchanged ? true : undefined}
-                    className="-ml-1 size-5 shrink-0 transition-transform data-unchanged:-rotate-90"
+                    className="-ml-0.5 size-4.5 shrink-0 transition-transform data-unchanged:-rotate-90"
                   />
                   <p className="min-w-0">Undo</p>
                 </Button>
