@@ -26,17 +26,18 @@ import {
   useState,
 } from "react";
 
-type Item<T> = T & { id: string; name: string };
+export type TBreadcrumbItem<T> = T & { id: string; name: string };
 
 type TProps<T> = {
   title: string;
-  selectedItem: Item<T> | undefined | null;
-  items: Item<T>[] | undefined;
+  selectedItem: TBreadcrumbItem<T> | undefined | null;
+  items: TBreadcrumbItem<T>[] | undefined;
   onSelect: (id: string) => void;
   onHover: (id: string) => void;
   IconItem?: FC<{ id: string; className?: string }>;
   flipChevronOnSm?: boolean;
   showArrow?: (i: T) => boolean;
+  children?: ReactNode;
 } & (
   | {
       newItemTitle: string;
@@ -74,6 +75,7 @@ export function BreadcrumbItem<T>({
   showArrow,
   open: openProp,
   setOpen: setOpenProp,
+  children,
 }: TProps<T>) {
   const [openLocal, setOpenLocal] = useState(false);
   const [lastHoveredItem, setLastHoveredItem] = useState(selectedItem);
@@ -86,7 +88,9 @@ export function BreadcrumbItem<T>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  const newItem = newItemTitle ? ({ id: "new", name: newItemTitle } as Item<T>) : undefined;
+  const newItem = newItemTitle
+    ? ({ id: "new", name: newItemTitle } as TBreadcrumbItem<T>)
+    : undefined;
 
   const ConditionalNewItemWrapper = useCallback(
     ({ children }: { children: ReactNode }) => {
@@ -101,11 +105,15 @@ export function BreadcrumbItem<T>({
   return (
     <DropdownOrDrawer title={title} open={open} onOpenChange={setOpen}>
       <DropdownOrDrawerTrigger>
-        <Trigger
-          item={selectedItem === null ? { name: "Not Found", id: "not-found" } : selectedItem}
-          Icon={IconItem}
-          flipChevronOnSm={flipChevronOnSm}
-        />
+        {children ? (
+          children
+        ) : (
+          <Trigger
+            item={selectedItem === null ? { name: "Not Found", id: "not-found" } : selectedItem}
+            Icon={IconItem}
+            flipChevronOnSm={flipChevronOnSm}
+          />
+        )}
       </DropdownOrDrawerTrigger>
       <DropdownOrDrawerContentForDrawer>
         <div className="group/list flex w-full flex-col px-2 pt-2 pb-[calc(var(--safe-area-inset-bottom)+2rem)]">
@@ -210,14 +218,14 @@ function SheetItem<T>({
   comingSoon,
   ...rest
 }: {
-  item: Item<T>;
-  selectedItem: Item<T> | null | undefined;
+  item: TBreadcrumbItem<T>;
+  selectedItem: TBreadcrumbItem<T> | null | undefined;
   setOpen: (open: boolean) => void;
   dontCloseMenuOnSelect?: boolean;
   onSelect: (id: string) => void;
-  lastHoveredItem: Item<T> | null | undefined;
-  setLastHoveredItem: Dispatch<SetStateAction<Item<T> | null | undefined>>;
-  showArrow?: (i: Item<T>) => boolean;
+  lastHoveredItem: TBreadcrumbItem<T> | null | undefined;
+  setLastHoveredItem: Dispatch<SetStateAction<TBreadcrumbItem<T> | null | undefined>>;
+  showArrow?: (i: TBreadcrumbItem<T>) => boolean;
   IconItem?: FC<{ id: string; className?: string }>;
   isPending?: boolean;
   comingSoon?: boolean;
@@ -301,15 +309,15 @@ function DropdownItem<T>({
   disabled,
   ...rest
 }: {
-  item: Item<T>;
-  selectedItem: Item<T> | null | undefined;
+  item: TBreadcrumbItem<T>;
+  selectedItem: TBreadcrumbItem<T> | null | undefined;
   setOpen: (open: boolean) => void;
   dontCloseMenuOnSelect?: boolean;
   onSelect: (id: string) => void;
   onHover?: (id: string) => void;
-  lastHoveredItem: Item<T> | null | undefined;
-  setLastHoveredItem: Dispatch<SetStateAction<Item<T> | null | undefined>>;
-  showArrow?: (i: Item<T>) => boolean;
+  lastHoveredItem: TBreadcrumbItem<T> | null | undefined;
+  setLastHoveredItem: Dispatch<SetStateAction<TBreadcrumbItem<T> | null | undefined>>;
+  showArrow?: (i: TBreadcrumbItem<T>) => boolean;
   IconItem?: FC<{ id: string; className?: string }>;
   isPending?: boolean;
   comingSoon?: boolean;
@@ -390,7 +398,7 @@ function Trigger<T>({
   flipChevronOnSm,
   ...rest
 }: ComponentProps<"button"> & {
-  item?: Item<T>;
+  item?: TBreadcrumbItem<T>;
   Icon?: FC<{ id: string; className: string }>;
   flipChevronOnSm?: boolean;
 }) {

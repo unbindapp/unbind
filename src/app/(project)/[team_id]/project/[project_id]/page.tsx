@@ -41,7 +41,9 @@ export default async function Page({ params, searchParams }: TProps) {
       <PageWrapper>
         <div className="flex w-full max-w-7xl flex-col">
           <div className="flex w-full flex-wrap items-center justify-between gap-4 px-1">
-            <h1 className="min-w-0 px-2 text-2xl leading-tight font-bold">Services</h1>
+            <div className="flex min-w-0 flex-wrap items-center justify-start gap-3 px-2">
+              <h1 className="min-w-0 text-2xl leading-tight font-bold">Services</h1>
+            </div>
             <NewServiceButton />
           </div>
           <div className="flex w-full items-center justify-center pt-3">
