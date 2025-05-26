@@ -30,9 +30,33 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
 
   const currentOrFirstDeployment = useMemo(() => {
     if (currentDeployment) return currentDeployment;
-    if (deploymentsData?.deployments && deploymentsData.deployments.length === 1) {
-      return deploymentsData.deployments[0];
+
+    const activeDeployment = deploymentsData?.deployments
+      ? deploymentsData.deployments.find((d) => d.status === "active")
+      : undefined;
+
+    if (activeDeployment) {
+      return activeDeployment;
     }
+
+    const lastActiveLikeDeployment = deploymentsData?.deployments
+      ? deploymentsData.deployments.find(
+          (d) =>
+            d.status === "build-pending" ||
+            d.status === "build-queued" ||
+            d.status === "build-running" ||
+            d.status === "build-succeeded" ||
+            d.status === "build-cancelled" ||
+            d.status === "build-failed" ||
+            d.status === "crashing" ||
+            d.status === "pending",
+        )
+      : undefined;
+
+    if (lastActiveLikeDeployment) {
+      return lastActiveLikeDeployment;
+    }
+
     return undefined;
   }, [currentDeployment, deploymentsData]);
 

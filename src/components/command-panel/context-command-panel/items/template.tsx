@@ -17,8 +17,6 @@ type TProps = {
   context: TContextCommandPanelContext;
 };
 
-//
-
 export function useTemplateItemHook({ context }: TProps) {
   const hook = useMemo(() => {
     if (context.contextType !== "project" && context.contextType !== "new-service") {
