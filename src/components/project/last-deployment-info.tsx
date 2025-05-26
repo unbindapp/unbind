@@ -50,6 +50,7 @@ function StatusTextWrapper({
   return (
     <p
       data-color={color}
+      suppressHydrationWarning
       className="data-[color=destructive]:text-destructive min-w-0 shrink truncate"
     >
       {children}
@@ -70,7 +71,9 @@ function StatusWithDuration({
     <StatusTextWrapper service={service}>
       {children}
       <span className="text-muted-more-foreground px-[0.75ch]">|</span>
-      <span className="font-mono">{duration}</span>
+      <span className="font-mono" suppressHydrationWarning>
+        {duration}
+      </span>
     </StatusTextWrapper>
   );
 }
@@ -148,13 +151,13 @@ function StatusIndicator({ deployment }: { deployment: NonNullable<TService["las
     return <LoaderIcon className="size-3.5 shrink-0 animate-spin" />;
   }
   if (deployment.status === "build-failed") {
-    return <TriangleAlertIcon className="text-destructive/85 size-3.5 shrink-0" />;
+    return <TriangleAlertIcon className="text-destructive size-3.5 shrink-0" />;
   }
   if (deployment.status === "build-cancelled") {
     return <XIcon className="size-3.5 shrink-0" />;
   }
   if (deployment.status === "crashing") {
-    return <TriangleAlertIcon className="text-destructive/85 size-3.5 shrink-0" />;
+    return <TriangleAlertIcon className="text-destructive size-3.5 shrink-0" />;
   }
   if (deployment.status === "removed") {
     return <XIcon className="size-3.5 shrink-0" />;
