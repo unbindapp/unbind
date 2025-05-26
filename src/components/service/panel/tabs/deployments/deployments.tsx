@@ -33,11 +33,6 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
     if (deploymentsData?.deployments && deploymentsData.deployments.length === 1) {
       return deploymentsData.deployments[0];
     }
-    if (deploymentsData?.deployments?.filter((d) => d.status === "succeeded").length === 0) {
-      return deploymentsData.deployments.find(
-        (d) => d.status === "pending" || d.status === "queued" || d.status === "building",
-      );
-    }
     return undefined;
   }, [currentDeployment, deploymentsData]);
 
@@ -54,19 +49,12 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
 
   return (
     <TabWrapper>
-      <DeploymentPanelProvider
-        currentDeploymentOfService={deploymentsData?.current_deployment || null}
-        deployments={deploymentsData?.deployments || null}
-      >
+      <DeploymentPanelProvider deployments={deploymentsData?.deployments || null}>
         <DeploymentPanel service={service} />
         {(isPending || currentOrFirstDeployment) && (
           <div className="w-full pb-3">
             {serviceData && currentOrFirstDeployment ? (
-              <DeploymentCard
-                service={service}
-                deployment={currentOrFirstDeployment}
-                currentDeployment={currentDeployment}
-              />
+              <DeploymentCard service={service} deployment={currentOrFirstDeployment} />
             ) : (
               <DeploymentCard isPlaceholder={true} />
             )}
@@ -88,12 +76,7 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
               <ol className="flex w-full flex-col gap-2">
                 {filteredDeployments.map((deployment) => (
                   <li className="w-full" key={deployment.id}>
-                    <DeploymentCard
-                      service={service}
-                      key={deployment.id}
-                      deployment={deployment}
-                      currentDeployment={currentDeployment}
-                    />
+                    <DeploymentCard service={service} key={deployment.id} deployment={deployment} />
                   </li>
                 ))}
               </ol>

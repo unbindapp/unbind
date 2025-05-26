@@ -21,7 +21,7 @@ export const DeploymentsProvider: React.FC<{
   const { teamId, projectId, environmentId, serviceId } = useService();
   const query = api.deployments.list.useQuery(
     { teamId, projectId, environmentId, serviceId },
-    { refetchInterval: 5000 },
+    { refetchInterval: 4000 },
   );
 
   const value = useMemo(

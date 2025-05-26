@@ -66,13 +66,7 @@ type TProps = {
 
 export default function DeploymentPanel({ service }: TProps) {
   const { teamId, projectId, environmentId, serviceId } = useService();
-  const {
-    closePanel,
-    currentTabId,
-    currentDeployment,
-    currentDeploymentId,
-    currentDeploymentOfService,
-  } = useDeploymentPanel();
+  const { closePanel, currentTabId, currentDeployment, currentDeploymentId } = useDeploymentPanel();
 
   const currentTab = tabs.find((tab) => tab.value === currentTabId);
 
@@ -85,6 +79,13 @@ export default function DeploymentPanel({ service }: TProps) {
   };
   const { isExtraSmall } = useDeviceSize();
 
+  const showCurrentDeploymentProgress =
+    currentDeployment?.status === "build-queued" ||
+    currentDeployment?.status === "build-pending" ||
+    currentDeployment?.status === "build-running" ||
+    currentDeployment?.status === "build-succeeded" ||
+    currentDeployment?.status === "pending";
+
   return (
     <Drawer
       open={open}
@@ -96,10 +97,9 @@ export default function DeploymentPanel({ service }: TProps) {
         transparentOverlay
         hasHandle={isExtraSmall}
         data-color={
-          currentDeployment && currentDeploymentOfService
+          currentDeployment
             ? getDeploymentStatusChipColor({
                 deployment: currentDeployment,
-                currentDeployment: currentDeploymentOfService,
               })
             : "default"
         }
@@ -175,12 +175,9 @@ export default function DeploymentPanel({ service }: TProps) {
                       className="shrink-0 px-1.75 py-0.75 sm:text-base"
                       iconClassName="sm:size-4"
                       deployment={currentDeployment}
-                      currentDeployment={currentDeploymentOfService || undefined}
                       isPlaceholder={false}
                     />
-                    {(currentDeployment.status === "pending" ||
-                      currentDeployment.status === "queued" ||
-                      currentDeployment.status === "building") && (
+                    {showCurrentDeploymentProgress && (
                       <DeploymentProgress deployment={currentDeployment} />
                     )}
                   </div>

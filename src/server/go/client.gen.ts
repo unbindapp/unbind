@@ -80,13 +80,40 @@ export const GitCommitterSchema = z
   })
   .strip();
 
+export const EventTypeSchema = z.enum([
+  'OOMKilled',
+  'CrashLoopBackOff',
+  'ContainerCreated',
+  'ContainerStarted',
+  'ContainerStopped',
+  'NodeNotReady',
+  'SchedulingFailed',
+  'Unknown',
+]);
+
+export const EventRecordSchema = z
+  .object({
+    count: z.number().optional(),
+    firstSeen: z.string().optional(),
+    lastSeen: z.string().optional(),
+    message: z.string().optional(),
+    reason: z.string().optional(),
+    timestamp: z.string(),
+    type: EventTypeSchema,
+  })
+  .strip();
+
 export const DeploymentStatusSchema = z.enum([
+  'build-pending',
+  'build-queued',
+  'build-running',
+  'build-succeeded',
+  'build-cancelled',
+  'build-failed',
+  'active',
   'pending',
-  'queued',
-  'building',
-  'succeeded',
-  'cancelled',
-  'failed',
+  'crashing',
+  'removed',
 ]);
 
 export const DeploymentResponseSchema = z
@@ -96,10 +123,13 @@ export const DeploymentResponseSchema = z
     commit_message: z.string().optional(),
     commit_sha: z.string().optional(),
     completed_at: z.string().datetime().optional(),
+    crashing_reasons: z.array(z.string()),
     created_at: z.string().datetime(),
     error: z.string().optional(),
     id: z.string(),
     image: z.string().optional(),
+    instance_events: z.array(EventRecordSchema),
+    instance_restarts: z.number(),
     job_name: z.string(),
     queued_at: z.string().datetime().optional(),
     service_id: z.string(),
@@ -148,8 +178,9 @@ export const PvcScopeSchema = z.enum(['team', 'project', 'environment']);
 export const CreatePVCInputSchema = z
   .object({
     capacity_gb: z.number(),
+    description: z.string().optional(),
     environment_id: z.string().optional(),
-    name: z.string(), // Name of the PVC
+    name: z.string(),
     project_id: z.string().optional(),
     team_id: z.string(),
     type: PvcScopeSchema,
@@ -163,12 +194,14 @@ export const PVCInfoSchema = z
     can_delete: z.boolean(),
     capacity_gb: z.number(),
     created_at: z.string().datetime(),
+    description: z.string().optional(),
     environment_id: z.string().optional(),
     id: z.string(),
     is_available: z.boolean(),
     is_database: z.boolean(),
     mount_path: z.string().optional(),
     mounted_on_service_id: z.string().optional(),
+    name: z.string(),
     project_id: z.string().optional(),
     status: PersistentVolumeClaimPhaseSchema,
     team_id: z.string(),
@@ -751,29 +784,6 @@ export const ErrorModelSchema = z
     status: z.number().optional(), // HTTP status code
     title: z.string().optional(), // A short, human-readable summary of the problem type. This value should not change between occurrences of the error.
     type: z.string().optional(), // A URI reference to human-readable documentation for the error.
-  })
-  .strip();
-
-export const EventTypeSchema = z.enum([
-  'OOMKilled',
-  'CrashLoopBackOff',
-  'ContainerCreated',
-  'ContainerStarted',
-  'ContainerStopped',
-  'NodeNotReady',
-  'SchedulingFailed',
-  'Unknown',
-]);
-
-export const EventRecordSchema = z
-  .object({
-    count: z.number().optional(),
-    firstSeen: z.string().optional(),
-    lastSeen: z.string().optional(),
-    message: z.string().optional(),
-    reason: z.string().optional(),
-    timestamp: z.string(),
-    type: EventTypeSchema,
   })
   .strip();
 
@@ -1783,8 +1793,10 @@ export const UpdateEnvironmentResponseBodySchema = z
 export const UpdatePVCInputSchema = z
   .object({
     capacity_gb: z.number().nullable().optional(), // Size of the PVC in GB (e.g., '10')
+    description: z.string().optional(),
     environment_id: z.string().optional(),
     id: z.string(),
+    name: z.string().nullable().optional(),
     project_id: z.string().optional(),
     team_id: z.string(),
     type: PvcScopeSchema,
@@ -2023,6 +2035,8 @@ export type CheckUniqueDomainOutputBody = z.infer<typeof CheckUniqueDomainOutput
 export type ContainerState = z.infer<typeof ContainerStateSchema>;
 export type CreateBuildInputBody = z.infer<typeof CreateBuildInputBodySchema>;
 export type GitCommitter = z.infer<typeof GitCommitterSchema>;
+export type EventType = z.infer<typeof EventTypeSchema>;
+export type EventRecord = z.infer<typeof EventRecordSchema>;
 export type DeploymentStatus = z.infer<typeof DeploymentStatusSchema>;
 export type DeploymentResponse = z.infer<typeof DeploymentResponseSchema>;
 export type CreateBuildOutputBody = z.infer<typeof CreateBuildOutputBodySchema>;
@@ -2099,8 +2113,6 @@ export type ServiceEndpoint = z.infer<typeof ServiceEndpointSchema>;
 export type EndpointDiscovery = z.infer<typeof EndpointDiscoverySchema>;
 export type ErrorDetail = z.infer<typeof ErrorDetailSchema>;
 export type ErrorModel = z.infer<typeof ErrorModelSchema>;
-export type EventType = z.infer<typeof EventTypeSchema>;
-export type EventRecord = z.infer<typeof EventRecordSchema>;
 export type GenerateWildcardDomainInputBody = z.infer<typeof GenerateWildcardDomainInputBodySchema>;
 export type GenerateWildcardDomainOutputBody = z.infer<
   typeof GenerateWildcardDomainOutputBodySchema

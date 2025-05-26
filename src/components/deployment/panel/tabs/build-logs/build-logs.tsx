@@ -40,6 +40,13 @@ export default function BuildLogs({ deployment }: TProps) {
     );
   }
 
+  const shouldHaveLogs =
+    deployment?.status === "build-queued" ||
+    deployment?.status === "build-pending" ||
+    deployment?.status === "build-running" ||
+    deployment?.status === "build-succeeded" ||
+    deployment?.status === "pending";
+
   return (
     <LogViewer
       containerType="sheet"
@@ -50,11 +57,7 @@ export default function BuildLogs({ deployment }: TProps) {
       deploymentId={deploymentId}
       type="build"
       hideServiceByDefault
-      shouldHaveLogs={
-        deployment.status === "pending" ||
-        deployment.status === "queued" ||
-        deployment.status === "building"
-      }
+      shouldHaveLogs={shouldHaveLogs}
       httpDefaultStartTimestamp={createdAtTimestamp ? createdAtTimestamp - hourInMs : undefined}
       httpDefaultEndTimestamp={completedAtTimestamp ? completedAtTimestamp + hourInMs : undefined}
     />
