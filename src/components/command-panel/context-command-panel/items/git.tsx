@@ -100,6 +100,7 @@ function useGitItem({ context }: TProps) {
         environmentId,
         gitHubInstallationId: installationId,
         isPublic: true,
+        autoDeploy: true,
       });
 
       temporarilyAddNewEntity(result.service.id);

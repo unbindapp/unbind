@@ -93,6 +93,7 @@ function useDatabaseItem({ context }: TProps) {
         projectId,
         environmentId,
         isPublic: false,
+        autoDeploy: false,
       });
 
       temporarilyAddNewEntity(result.service.id);

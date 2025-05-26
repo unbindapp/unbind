@@ -38,6 +38,7 @@ export const CreateServiceSharedSchema = z
     isPublic: z.boolean(),
     ports: PortSpecSchema.array().optional(),
     hosts: HostSpecSchema.array().optional(),
+    autoDeploy: z.boolean(),
   })
   .strip();
 

@@ -64,6 +64,7 @@ export const servicesRouter = createTRPCRouter({
       builder: input.builder,
       type: input.type,
       replicas: 1,
+      auto_deploy: input.autoDeploy,
     };
 
     let params: CreateServiceInput;

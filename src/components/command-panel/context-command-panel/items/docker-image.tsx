@@ -109,6 +109,7 @@ function useDockerImageItem({ context }: TProps) {
         environmentId,
         isPublic: true,
         image,
+        autoDeploy: false,
       });
 
       temporarilyAddNewEntity(result.service.id);
