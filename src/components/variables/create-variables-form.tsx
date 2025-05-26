@@ -19,7 +19,7 @@ import {
   VariableForCreateSchema,
   VariableReferenceForCreateSchema,
 } from "@/server/trpc/api/variables/types";
-import { ChevronDownIcon, Link2Icon, PlusIcon, TrashIcon } from "lucide-react";
+import { ChevronDownIcon, Link2Icon, PlusIcon, Trash2Icon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { z } from "zod";
 
@@ -332,7 +332,7 @@ export default function CreateVariablesForm({
                                   field.removeValue(i);
                                 }}
                               >
-                                <TrashIcon className="size-5" />
+                                <Trash2Icon className="size-5" />
                               </Button>
                             )}
                           />

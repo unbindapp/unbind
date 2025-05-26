@@ -29,7 +29,7 @@ type TProps = {
 
 const volumeMaxStorageGb = 200;
 
-export default function ResizeSection({ volume }: TProps) {
+export default function ExpandSection({ volume }: TProps) {
   const { data: systemData, isPending: isPendingSystem, error: errorSystem } = useSystem();
 
   const minStorageGb = volume.capacity_gb;
@@ -63,16 +63,14 @@ export default function ResizeSection({ volume }: TProps) {
     return (
       <div className="flex w-full flex-col gap-2.5 text-transparent">
         <div className="flex w-full justify-start px-1.5">
-          <p className="bg-muted-foreground animate-skeleton max-w-full rounded-md leading-tight">
+          <p className="bg-muted-foreground animate-skeleton max-w-full rounded-md">
             Loading the details of the volume...
           </p>
         </div>
         <div className="flex w-full justify-start px-1.5">
-          <p className="bg-foreground animate-skeleton max-w-full rounded-md leading-tight">
-            Size: 10GB
-          </p>
+          <p className="bg-foreground animate-skeleton max-w-full rounded-md">Size: 10GB</p>
         </div>
-        <div className="animate-skeleton -mt-0.5 flex w-full items-center gap-3 px-1.5 py-2.25 text-xs leading-tight md:max-w-xl">
+        <div className="animate-skeleton -mt-0.5 flex w-full items-center gap-3 px-1.5 py-2.25 text-xs md:max-w-xl">
           <p className="bg-muted-foreground rounded-sm">10GB</p>
           <div className="relative flex h-4 flex-1 items-center justify-center">
             <div className="bg-muted-foreground h-1.5 flex-1 rounded-full" />
@@ -89,17 +87,17 @@ export default function ResizeSection({ volume }: TProps) {
   }
 
   return (
-    <div className="flex w-full flex-col gap-2.5">
+    <div className="flex w-full flex-col gap-2 md:max-w-xl">
       <div className="flex w-full justify-start px-1.5">
-        <p className="text-muted-foreground leading-tight">
-          Resize the volume. Volumes can never be downsized.
+        <p className="text-muted-foreground">
+          Expand the size of the volume. Keep in mind that the size {"can't"} be reduced.
         </p>
       </div>
       <form.Subscribe
         selector={(state) => ({ values: state.values })}
         children={({ values }) => (
           <div className="flex w-full justify-start px-1.5">
-            <p className="min-w-0 shrink leading-tight font-semibold">
+            <p className="min-w-0 shrink font-semibold">
               <span className="pr-[0.6ch]">Size:</span>
               <span className="text-foreground bg-foreground/6 border-foreground/6 rounded-md border px-1.25">
                 {formatGB(Number(values.capacityGb))}
@@ -109,7 +107,7 @@ export default function ResizeSection({ volume }: TProps) {
         )}
       />
       <div className="-mt-0.5 flex w-full flex-col gap-2">
-        <div className="flex w-full md:max-w-xl">
+        <div className="flex w-full">
           <form.AppField
             name="capacityGb"
             children={(field) => (
@@ -151,21 +149,21 @@ export default function ResizeSection({ volume }: TProps) {
                   }}
                   variant="outline"
                   type="button"
-                  className="group/button max-w-full px-3.25 py-2"
+                  className="group/button max-w-full px-3 py-1.75"
                 >
                   <RotateCcwIcon className="-ml-0.5 size-4.5 transition-transform group-disabled/button:-rotate-90" />
                   <span className="min-w-0 shrink truncate">Undo</span>
                 </Button>
-                <ResizeDialogTrigger newCapacityGb={capacityGb} volume={volume}>
+                <ExpandDialogTrigger newCapacityGb={capacityGb} volume={volume}>
                   <Button
                     disabled={!canSubmit || isCapacityUnchanged}
-                    className="max-w-full truncate px-3.25 py-2"
+                    className="max-w-full truncate px-3 py-1.75"
                     type="button"
                   >
                     <ScalingIcon className="-ml-0.5 size-4.5" />
-                    <p className="min-w-0 shrink truncate">Resize</p>
+                    <p className="min-w-0 shrink truncate">Expand</p>
                   </Button>
-                </ResizeDialogTrigger>
+                </ExpandDialogTrigger>
               </div>
             );
           }}
@@ -175,7 +173,7 @@ export default function ResizeSection({ volume }: TProps) {
   );
 }
 
-function ResizeDialogTrigger({
+function ExpandDialogTrigger({
   newCapacityGb,
   volume,
   children,
@@ -188,7 +186,7 @@ function ResizeDialogTrigger({
   const { invalidate: invalidateServices } = useServicesUtils({ teamId, projectId, environmentId });
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const textToConfirm = "I want to resize this volume";
+  const textToConfirm = "I want to expand this volume";
 
   const type: TVolumeType = "environment";
 
@@ -200,13 +198,13 @@ function ResizeDialogTrigger({
     onSuccess: async () => {
       const result = await ResultAsync.fromPromise(
         Promise.all([invalidateServices()]),
-        () => new Error("Resize success callback failed"),
+        () => new Error("Expand success callback failed"),
       );
 
       if (result.isErr()) {
         toast.error("Data refetch failed", {
           description:
-            "Resize was successful, but couldn't fetch the new data. Refresh the page to see the changes.",
+            "Expand was successful, but couldn't fetch the new data. Refresh the page to see the changes.",
         });
       }
 
@@ -265,15 +263,17 @@ function ResizeDialogTrigger({
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
           <DialogTitle>
-            <span className="pr-[0.5ch]">Resize to:</span>
+            <span className="pr-[0.5ch]">Expand to:</span>
             <span className="text-foreground bg-foreground/6 border-foreground/6 max-w-full rounded-md border px-1.25 leading-tight font-semibold">
               {formatGB(Number(newCapacityGb))}
             </span>
           </DialogTitle>
           <DialogDescription>
             Proceed with caution:{" "}
-            <span className="text-warning font-semibold">{"Volumes can't be downsized!"}</span>{" "}
-            Whenever possible, increase the volume in small increments.
+            <span className="text-warning font-semibold">
+              The volume size can never be reduced!
+            </span>{" "}
+            Whenever possible, expand the volume in small increments.
             <br />
             <br />
             Type {`"`}
@@ -323,7 +323,7 @@ function ResizeDialogTrigger({
                     disabled={!canSubmit || values.textToConfirm !== textToConfirm}
                     isPending={isSubmitting ? true : false}
                   >
-                    Resize
+                    Expand
                   </form.SubmitButton>
                 )}
               />

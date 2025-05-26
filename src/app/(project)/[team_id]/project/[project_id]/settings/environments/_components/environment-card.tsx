@@ -38,7 +38,7 @@ import {
   TEnvironmentShallow,
 } from "@/server/trpc/api/environments/types";
 import { api } from "@/server/trpc/setup/client";
-import { CheckIcon, EllipsisVerticalIcon, PenIcon, PlusIcon, TrashIcon } from "lucide-react";
+import { CheckIcon, EllipsisVerticalIcon, PenIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { ReactNode, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -186,7 +186,7 @@ function ThreeDotButton({
                   onSelect={(e) => e.preventDefault()}
                   className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
                 >
-                  <TrashIcon className="-ml-0.5 size-5" />
+                  <Trash2Icon className="-ml-0.5 size-5" />
                   <p className="min-w-0 shrink leading-tight">Delete</p>
                 </DropdownMenuItem>
               </DeleteTrigger>

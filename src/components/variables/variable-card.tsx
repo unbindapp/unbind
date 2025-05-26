@@ -38,7 +38,7 @@ import {
   LockIcon,
   MinusIcon,
   PenIcon,
-  TrashIcon,
+  Trash2Icon,
   TriangleAlertIcon,
   XIcon,
 } from "lucide-react";
@@ -351,7 +351,7 @@ function ConditionalDropdownButton({
           size="icon"
           className={cn("text-destructive/75 group/button rounded-md", className)}
         >
-          <TrashIcon className="size-5 transition-transform" />
+          <Trash2Icon className="size-5 transition-transform" />
         </Button>
       </DeleteTrigger>
     );
@@ -456,7 +456,7 @@ function ThreeDotButton({
                   className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
                 >
                   {!disableDelete ? (
-                    <TrashIcon className="-ml-0.5 size-5" />
+                    <Trash2Icon className="-ml-0.5 size-5" />
                   ) : (
                     <LockIcon className="-ml-0.5 size-5" />
                   )}

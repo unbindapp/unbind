@@ -20,7 +20,7 @@ export default function UsageSection({ volume }: TProps) {
   return (
     <div
       data-usage={usageLevel}
-      className="group/section flex w-full flex-col gap-2.5 leading-tight font-medium md:max-w-xl"
+      className="group/section flex w-full flex-col gap-2 font-medium md:max-w-xl"
     >
       <div className="text-muted-foreground flex w-full items-end justify-between px-1.5">
         <p className="max-w-1/2 truncate pr-2 font-medium">
@@ -36,7 +36,7 @@ export default function UsageSection({ volume }: TProps) {
           </span>
         </p>
       </div>
-      <div className="relative flex w-full items-center justify-start overflow-hidden rounded-lg border px-2.5 py-2">
+      <div className="relative flex w-full items-center justify-start overflow-hidden rounded-lg border px-2.5 py-1.75">
         {usagePercentage !== undefined && usagePercentage !== null && (
           <div className="absolute top-0 left-0 h-full w-full">
             <div

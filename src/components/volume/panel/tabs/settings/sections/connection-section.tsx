@@ -27,7 +27,7 @@ export default function ConnectionSection({ volume }: TProps) {
       data-pending={isPending ? true : undefined}
       className="group/section flex w-full flex-col gap-2.5 md:max-w-xl"
     >
-      <p className="text-muted-foreground w-full px-1.5 leading-tight">
+      <p className="text-muted-foreground w-full px-1.5">
         {isPending ? (
           <span className="bg-muted-foreground animate-skeleton rounded-md text-transparent">
             Loading connection details...

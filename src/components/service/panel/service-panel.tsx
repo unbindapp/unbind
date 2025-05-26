@@ -31,7 +31,7 @@ import {
   ExternalLinkIcon,
   GlobeIcon,
   PenIcon,
-  TrashIcon,
+  Trash2Icon,
   XIcon,
 } from "lucide-react";
 import { ResultAsync } from "neverthrow";
@@ -271,7 +271,7 @@ function ThreeDotButton({
                 onSelect={(e) => e.preventDefault()}
                 className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
               >
-                <TrashIcon className="-ml-0.5 size-5" />
+                <Trash2Icon className="-ml-0.5 size-5" />
                 <p className="min-w-0 shrink leading-tight">Delete</p>
               </DropdownMenuItem>
             </DeleteEntityTrigger>

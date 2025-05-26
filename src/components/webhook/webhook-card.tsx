@@ -19,7 +19,7 @@ import { useWebhooksUtils } from "@/components/webhook/webhooks-provider";
 import { TWebhookShallow } from "@/server/trpc/api/webhooks/types";
 import { api } from "@/server/trpc/setup/client";
 import { format } from "date-fns";
-import { EllipsisVerticalIcon, TrashIcon } from "lucide-react";
+import { EllipsisVerticalIcon, Trash2Icon } from "lucide-react";
 import { ReactNode, useState } from "react";
 
 const placeholderArray = Array.from({ length: 5 }, (_, i) => i);
@@ -135,7 +135,7 @@ function ThreeDotButton({
                 onSelect={(e) => e.preventDefault()}
                 className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
               >
-                <TrashIcon className="-ml-0.5 size-5" />
+                <Trash2Icon className="-ml-0.5 size-5" />
                 <p className="min-w-0 shrink leading-tight">Delete</p>
               </DropdownMenuItem>
             </DeleteTrigger>

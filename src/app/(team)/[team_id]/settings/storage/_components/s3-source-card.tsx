@@ -39,7 +39,7 @@ import {
   EllipsisVerticalIcon,
   PenIcon,
   PlusIcon,
-  TrashIcon,
+  Trash2Icon,
   XIcon,
 } from "lucide-react";
 import { ResultAsync } from "neverthrow";
@@ -271,7 +271,7 @@ function S3SourceDialogInnerContent({
         <div className="max-w-1/2 px-1">
           <DeleteTrigger s3Source={s3Source} teamId={teamId} closeDropdown={() => {}}>
             <Button variant="ghost-destructive" className="w-full px-4">
-              <TrashIcon className="-ml-0.75 size-4.5" />
+              <Trash2Icon className="-ml-0.75 size-4.5" />
               <p className="min-w-0 shrink">Delete</p>
             </Button>
           </DeleteTrigger>
@@ -343,7 +343,7 @@ function ThreeDotButton({
                 onSelect={(e) => e.preventDefault()}
                 className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
               >
-                <TrashIcon className="-ml-0.5 size-5" />
+                <Trash2Icon className="-ml-0.5 size-5" />
                 <p className="min-w-0 shrink leading-tight">Delete</p>
               </DropdownMenuItem>
             </DeleteTrigger>

@@ -26,7 +26,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { defaultAnimationMs } from "@/lib/constants";
 import { ServiceRenameSchema } from "@/server/trpc/api/services/types";
-import { EllipsisVerticalIcon, PenIcon, TrashIcon, XIcon } from "lucide-react";
+import { EllipsisVerticalIcon, PenIcon, Trash2Icon, XIcon } from "lucide-react";
 import { ReactNode, useCallback, useRef, useState } from "react";
 
 type TProps = {
@@ -190,7 +190,7 @@ function ThreeDotButton({
                 onSelect={(e) => e.preventDefault()}
                 className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
               >
-                <TrashIcon className="-ml-0.5 size-5" />
+                <Trash2Icon className="-ml-0.5 size-5" />
                 <p className="min-w-0 shrink leading-tight">Delete</p>
               </DropdownMenuItem>
             </DeleteEntityTrigger>

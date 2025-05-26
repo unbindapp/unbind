@@ -6,7 +6,7 @@ import NetworkingSection from "@/components/service/panel/tabs/settings/sections
 import SourceSection from "@/components/service/panel/tabs/settings/sections/source-section";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
-import { CodeIcon, FlameIcon, NetworkIcon, RocketIcon, WrenchIcon } from "lucide-react";
+import { CodeIcon, NetworkIcon, RocketIcon, Trash2Icon, WrenchIcon } from "lucide-react";
 
 export default function Settings({ service }: { service: TServiceShallow }) {
   return (
@@ -23,7 +23,7 @@ export default function Settings({ service }: { service: TServiceShallow }) {
       <SettingsSection className="pt-8" title="Deploy" id="deploy" Icon={RocketIcon}>
         <DeploySection service={service} />
       </SettingsSection>
-      <SettingsSection className="pt-8" title="Delete Service" id="danger" Icon={FlameIcon}>
+      <SettingsSection className="pt-8" title="Delete Service" id="danger" Icon={Trash2Icon}>
         <DeleteSection service={service} />
       </SettingsSection>
     </TabWrapper>

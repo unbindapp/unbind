@@ -48,8 +48,8 @@ export default function DeleteSection({ volume, className }: TProps) {
   }
 
   return (
-    <div className="flex w-full items-start justify-start">
-      <p className="text-muted-foreground max-w-full px-1.5 leading-tight">
+    <div className="flex w-full items-start justify-start md:max-w-xl">
+      <p className="text-muted-foreground max-w-full px-1.5">
         This volume is attached to a service and{" "}
         <span className="text-foreground font-semibold">{"can't be deleted"}</span>.
       </p>
