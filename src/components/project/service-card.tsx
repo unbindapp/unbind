@@ -1,5 +1,5 @@
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
-import LastDeploymentTime from "@/components/project/last-deployment-time";
+import LastDeploymentInfo from "@/components/project/last-deployment-info";
 import VolumeLine from "@/components/volume/volume-line";
 import ServicePanel from "@/components/service/panel/service-panel";
 import ServiceIcon from "@/components/service/service-icon";
@@ -75,9 +75,9 @@ export default function ServiceCard({
             </h3>
           </div>
           <div className="flex w-full flex-1 flex-col justify-end">
-            <div className="text-muted-foreground flex w-full items-center justify-between">
+            <div className="flex w-full items-center justify-between">
               {!isPlaceholder ? (
-                <LastDeploymentTime
+                <LastDeploymentInfo
                   className="min-w-0 shrink overflow-hidden text-sm font-medium text-ellipsis whitespace-nowrap"
                   service={service}
                 />

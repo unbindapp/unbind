@@ -83,13 +83,17 @@ export function useTimeDifference({
 }
 
 export function getDurationStr({ start, end }: { start: string | number; end: string | number }) {
-  const startDate = new Date(start);
-  const endDate = new Date(end);
-  const duration = Math.max(endDate.getTime() - startDate.getTime(), 0);
-  const durationInSec = Math.floor(duration / 1000);
-  const durationInMin = durationInSec / 60;
-  if (durationInSec >= 120) {
-    return `${durationInMin.toLocaleString(undefined, { maximumFractionDigits: 1 })}m`;
+  const duration = Math.max(new Date(end).getTime() - new Date(start).getTime(), 0);
+  const totalSeconds = Math.floor(duration / 1000);
+
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  // h:mm:ss when an hour (or more) has elapsed
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
   }
-  return `${Math.ceil(durationInSec)}s`;
+
+  return `${minutes.toString()}:${seconds.toString().padStart(2, "0")}`;
 }
