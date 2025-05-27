@@ -36,7 +36,7 @@ export default function UsageSection({ volume }: TProps) {
           </span>
         </p>
       </div>
-      <div className="relative flex w-full items-center justify-start overflow-hidden rounded-lg border px-2.5 py-1.75">
+      <div className="relative flex w-full items-center justify-start overflow-hidden rounded-lg border px-2.5 py-2.5">
         {usagePercentage !== undefined && usagePercentage !== null && (
           <div className="absolute top-0 left-0 h-full w-full">
             <div
@@ -47,7 +47,7 @@ export default function UsageSection({ volume }: TProps) {
             />
           </div>
         )}
-        <p className="group-data-[usage=high]/section:text-warning group-data-error/section:text-destructive relative max-w-full min-w-0 truncate font-semibold">
+        <p className="group-data-[usage=high]/section:text-warning group-data-error/section:text-destructive relative max-w-full min-w-0 truncate leading-tight font-semibold">
           {percentageString}
         </p>
       </div>

@@ -57,7 +57,7 @@ export const volumesRouter = createTRPCRouter({
         data: res.data,
       };
     }),
-  resize: privateProcedure
+  expand: privateProcedure
     .input(
       z
         .object({

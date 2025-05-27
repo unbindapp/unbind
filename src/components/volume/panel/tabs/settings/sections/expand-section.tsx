@@ -17,7 +17,7 @@ import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TVolumeShallow } from "@/server/trpc/api/services/types";
 import { TVolumeType } from "@/server/trpc/api/storage/volumes/types";
 import { api } from "@/server/trpc/setup/client";
-import { RotateCcwIcon, ScalingIcon } from "lucide-react";
+import { HourglassIcon, RotateCcwIcon, ScalingIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { ReactNode, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -84,6 +84,19 @@ export default function ExpandSection({ volume }: TProps) {
 
   if (!hasData && !isPending && error) {
     return <ErrorLine message={error.message} />;
+  }
+
+  if (volume.is_pending_resize) {
+    return (
+      <div className="flex w-full flex-col gap-2 md:max-w-xl">
+        <div className="bg-warning/8 border-warning/8 text-warning flex w-full items-start justify-start gap-2 rounded-lg border px-3 py-2.5 font-medium">
+          <HourglassIcon className="animate-hourglass mt-0.5 -ml-0.5 size-4" />
+          <p className="min-w-0 shrink leading-tight">
+            Expanding the volume. This could take a couple of minutes...
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -191,10 +204,10 @@ function ExpandDialogTrigger({
   const type: TVolumeType = "environment";
 
   const {
-    mutateAsync: resizeVolume,
+    mutateAsync: expandVolume,
     error,
     reset,
-  } = api.storage.volumes.resize.useMutation({
+  } = api.storage.volumes.expand.useMutation({
     onSuccess: async () => {
       const result = await ResultAsync.fromPromise(
         Promise.all([invalidateServices()]),
@@ -234,7 +247,7 @@ function ExpandDialogTrigger({
         .strip(),
     },
     onSubmit: async () => {
-      await resizeVolume({
+      await expandVolume({
         id: volume.id,
         capacityGb: newCapacityGb,
         type,

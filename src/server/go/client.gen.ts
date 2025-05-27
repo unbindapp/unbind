@@ -199,6 +199,7 @@ export const PVCInfoSchema = z
     id: z.string(),
     is_available: z.boolean(),
     is_database: z.boolean(),
+    is_pending_resize: z.boolean(),
     mount_path: z.string().optional(),
     mounted_on_service_id: z.string().optional(),
     name: z.string(),
@@ -826,7 +827,7 @@ export const GetEnvironmentOutputBodySchema = z
   })
   .strip();
 
-export const InstanceHealthSchema = z.enum(['healthy', 'degraded', 'unhealthy']);
+export const InstanceHealthSchema = z.enum(['pending', 'crashing', 'active']);
 
 export const SimpleInstanceStatusSchema = z
   .object({

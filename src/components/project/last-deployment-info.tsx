@@ -137,7 +137,7 @@ function StatusText({ service }: { service: TServiceShallow }) {
 
 function StatusIndicator({ deployment }: { deployment: NonNullable<TService["last_deployment"]> }) {
   if (deployment.status === "build-queued" || deployment.status === "build-pending") {
-    return <HourglassIcon className="animate-hourglass-long size-3.5 shrink-0" />;
+    return <HourglassIcon className="animate-hourglass size-3.5 shrink-0" />;
   }
   if (
     deployment.status === "build-running" ||
