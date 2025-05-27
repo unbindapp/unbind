@@ -6,6 +6,7 @@ import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-differen
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
 import Image from "next/image";
+import { useMemo } from "react";
 
 type TProps = {
   className?: string;
@@ -22,25 +23,37 @@ type TProps = {
     }
 );
 
-export default function DeploymentTime({ deployment, service, isPlaceholder, className }: TProps) {
+export default function DeploymentInfo({ deployment, service, isPlaceholder, className }: TProps) {
   const now = useNow();
   const { str: deploymentTimeStr } = useTimeDifference({
     timestamp: isPlaceholder ? Date.now() : new Date(deployment.created_at).getTime(),
   });
 
-  const isBuilding =
-    deployment?.status === "build-queued" ||
-    deployment?.status === "build-pending" ||
-    deployment?.status === "build-running" ||
-    deployment?.status === "build-succeeded" ||
-    deployment?.status === "pending";
+  const isBuildingStr = useMemo(() => {
+    if (deployment?.status === "build-queued") {
+      return "Build queued";
+    }
+    if (deployment?.status === "build-pending") {
+      return "Build pending";
+    }
+    if (deployment?.status === "build-running") {
+      return "Building";
+    }
+    if (deployment?.status === "build-succeeded") {
+      return "Launching instances";
+    }
+    if (deployment?.status === "pending") {
+      return "Launching instances";
+    }
+    return undefined;
+  }, [deployment?.status]);
 
   const durationStr = isPlaceholder
     ? undefined
-    : deployment.completed_at && deployment.created_at
-      ? getDurationStr({ end: deployment.completed_at, start: deployment.created_at })
-      : deployment.created_at && isBuilding
-        ? getDurationStr({ end: now, start: deployment.created_at })
+    : deployment.created_at && isBuildingStr !== undefined
+      ? getDurationStr({ end: now, start: deployment.created_at })
+      : deployment.completed_at && deployment.created_at
+        ? getDurationStr({ end: deployment.completed_at, start: deployment.created_at })
         : undefined;
 
   return (
@@ -62,19 +75,20 @@ export default function DeploymentTime({ deployment, service, isPlaceholder, cla
         <div className="-ml-1.5 h-4.5" />
       )}
       <div className="flex min-w-0 shrink flex-wrap items-center justify-start gap-1 space-x-1 text-sm leading-tight">
-        {!isBuilding && (
-          <>
-            <p className="text-muted-foreground group-data-placeholder/time:bg-muted-foreground group-data-placeholder/time:animate-skeleton min-w-0 shrink group-data-placeholder/time:rounded-md group-data-placeholder/time:text-transparent">
-              {isPlaceholder
-                ? "1 hr. ago | 90s"
-                : `${deploymentTimeStr} via ${sourceToTitle[service.type] || "Unknown"}`}
-            </p>
-            {durationStr && <p className="text-muted-more-foreground">|</p>}
-          </>
-        )}
+        <p className="text-muted-foreground group-data-placeholder/time:bg-muted-foreground group-data-placeholder/time:animate-skeleton min-w-0 shrink group-data-placeholder/time:rounded-md group-data-placeholder/time:text-transparent">
+          {isPlaceholder
+            ? "1 hr. ago | 90s"
+            : isBuildingStr !== undefined
+              ? isBuildingStr
+              : `${deploymentTimeStr} via ${sourceToTitle[service.type] || "Unknown"}`}
+        </p>
+        {durationStr && <p className="text-muted-more-foreground">|</p>}
         {durationStr && (
           <div className="text-muted-foreground flex min-w-0 shrink items-center justify-start gap-0.75 font-mono">
-            <AnimatedTimerIcon animate={isBuilding} className="-ml-0.5 size-3.5 shrink-0" />
+            <AnimatedTimerIcon
+              animate={isBuildingStr !== undefined}
+              className="-ml-0.5 size-3.5 shrink-0"
+            />
             <p className="min-w-0 shrink">{durationStr}</p>
           </div>
         )}

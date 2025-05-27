@@ -1,12 +1,12 @@
-import { useDeploymentPanel } from "@/components/deployment/panel/deployment-panel-provider";
+import DeploymentInfo from "@/components/deployment/deployment-info";
 import DeploymentStatusChip, {
   getDeploymentStatusChipColor,
 } from "@/components/deployment/deployment-status-chip";
+import { useDeploymentsUtils } from "@/components/deployment/deployments-provider";
+import { useDeploymentPanel } from "@/components/deployment/panel/deployment-panel-provider";
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
 import { useServicesUtils } from "@/components/project/services-provider";
-import { useDeploymentsUtils } from "@/components/deployment/deployments-provider";
-import DeploymentTime from "@/components/deployment/deployment-time";
 import { useService, useServiceUtils } from "@/components/service/service-provider";
 import { Button } from "@/components/ui/button";
 import {
@@ -84,9 +84,9 @@ export default function DeploymentCard({ deployment, service, isPlaceholder, ...
             {title}
           </p>
           {isPlaceholder ? (
-            <DeploymentTime isPlaceholder={true} />
+            <DeploymentInfo isPlaceholder={true} />
           ) : (
-            <DeploymentTime deployment={deployment} service={service} />
+            <DeploymentInfo deployment={deployment} service={service} />
           )}
         </div>
       </button>
