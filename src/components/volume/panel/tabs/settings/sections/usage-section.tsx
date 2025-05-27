@@ -12,8 +12,8 @@ export default function UsageSection({ volume }: TProps) {
       ? Math.min(Math.max(0, (volume.used_gb / volume.capacity_gb) * 100), 100)
       : undefined;
 
-  const percentageString =
-    usagePercentage !== undefined ? `${percentageFormatter(usagePercentage)}%` : "Unknown";
+  const usageInfo =
+    usagePercentage !== undefined ? `${percentageFormatter(usagePercentage)}%` : "Unknown usage";
 
   const usageLevel = getVolumeUsageLevel(usagePercentage);
 
@@ -36,19 +36,24 @@ export default function UsageSection({ volume }: TProps) {
           </span>
         </p>
       </div>
-      <div className="relative flex w-full items-center justify-start overflow-hidden rounded-lg border px-2.5 py-2.5">
-        {usagePercentage !== undefined && usagePercentage !== null && (
-          <div className="absolute top-0 left-0 h-full w-full">
-            <div
-              style={{
-                transform: `scaleX(${Math.ceil(usagePercentage)}%)`,
-              }}
-              className="bg-foreground/8 group-data-[usage=high]/section:bg-warning/8 h-full w-full origin-left"
-            />
-          </div>
-        )}
+      <div className="relative flex w-full items-center justify-start overflow-hidden rounded-lg border px-3 py-2.5">
+        <div className="absolute top-0 left-0 h-full w-full">
+          <div
+            data-has-usage={
+              usagePercentage !== undefined && usagePercentage !== null ? true : undefined
+            }
+            style={
+              usagePercentage !== undefined && usagePercentage !== null
+                ? {
+                    transform: `scaleX(${Math.ceil(usagePercentage)}%)`,
+                  }
+                : undefined
+            }
+            className="data-has-usage:bg-foreground/8 group-data-[usage=high]/section:bg-warning/8 h-full w-full origin-left bg-[repeating-linear-gradient(-45deg,var(--border),var(--border)_1px,transparent_1px,transparent_6px)]"
+          />
+        </div>
         <p className="group-data-[usage=high]/section:text-warning group-data-error/section:text-destructive relative max-w-full min-w-0 truncate leading-tight font-semibold">
-          {percentageString}
+          {usageInfo}
         </p>
       </div>
     </div>

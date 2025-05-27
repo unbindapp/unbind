@@ -4,7 +4,7 @@ import { getVolumeUsageLevel, percentageFormatter } from "@/components/volume/he
 import VolumePanel from "@/components/volume/panel/volume-panel";
 import { TVolumeUsageLevel } from "@/components/volume/types";
 import { TVolumeShallow } from "@/server/trpc/api/services/types";
-import { HardDriveIcon } from "lucide-react";
+import { HardDriveIcon, HourglassIcon } from "lucide-react";
 import { useMemo } from "react";
 
 type TProps = {
@@ -43,7 +43,6 @@ export default function VolumeLine({
       <Button
         variant={"ghost"}
         data-usage={usageLevel}
-        data-no-percentage={usagePercentage === undefined ? true : undefined}
         key={volume.id}
         className={cn(
           "group/line bg-background relative w-full overflow-hidden rounded-none border px-0 py-2",
@@ -62,16 +61,24 @@ export default function VolumeLine({
         )}
         <div className="text-muted-foreground group-data-[usage=high]/line:text-warning flex w-full items-center justify-between gap-4 px-4">
           <div className="relative flex w-full items-center justify-between gap-4 leading-tight font-medium">
-            <div className="flex shrink-0 items-center justify-start gap-1.5 group-data-no-percentage/line:gap-2">
-              <HardDriveIcon className="size-3.5" />
-              {usagePercentage !== undefined && <p>{percentageFormatter(usagePercentage)}%</p>}
-              {usagePercentage === undefined && (
-                <p className="min-w-0 shrink truncate text-right">Storage {index + 1}</p>
+            <div
+              data-truncate={usagePercentage === undefined ? true : undefined}
+              className="group/line flex min-w-0 shrink items-center gap-1.5"
+            >
+              {volume.is_pending_resize ? (
+                <HourglassIcon className="animate-hourglass size-3.5 min-w-0 shrink-0 scale-90" />
+              ) : (
+                <HardDriveIcon className="size-3.5 min-w-0 shrink-0" />
               )}
+              <p className="group-data-truncate/line:min-w-0 group-data-truncate/line:shrink group-data-truncate/line:truncate">
+                {usagePercentage !== undefined
+                  ? `${percentageFormatter(usagePercentage)}%`
+                  : volume.is_pending_resize
+                    ? "Expanding"
+                    : "Unknown usage"}
+              </p>
             </div>
-            {usagePercentage !== undefined && (
-              <p className="min-w-0 shrink truncate text-right">Storage {index + 1}</p>
-            )}
+            <p className="min-w-0 shrink truncate text-right">Storage {index + 1}</p>
           </div>
         </div>
       </Button>
