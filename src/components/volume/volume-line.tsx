@@ -71,10 +71,10 @@ export default function VolumeLine({
                 <HardDriveIcon className="size-3.5 min-w-0 shrink-0" />
               )}
               <p className="group-data-truncate/line:min-w-0 group-data-truncate/line:shrink group-data-truncate/line:truncate">
-                {usagePercentage !== undefined
-                  ? `${percentageFormatter(usagePercentage)}%`
-                  : volume.is_pending_resize
-                    ? "Expanding"
+                {volume.is_pending_resize
+                  ? "Expanding"
+                  : usagePercentage !== undefined
+                    ? `${percentageFormatter(usagePercentage)}%`
                     : "Unknown usage"}
               </p>
             </div>
