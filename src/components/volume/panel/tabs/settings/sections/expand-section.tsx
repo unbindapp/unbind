@@ -92,7 +92,7 @@ export default function ExpandSection({ volume }: TProps) {
         <div className="bg-warning/8 border-warning/8 text-warning flex w-full items-start justify-start gap-2 rounded-lg border px-3 py-2.5 font-medium">
           <HourglassIcon className="animate-hourglass mt-0.5 -ml-0.5 size-4" />
           <p className="min-w-0 shrink leading-tight">
-            Expanding the volume. This could take a couple of minutes...
+            Expanding the volume. This could take a couple of minutes.
           </p>
         </div>
       </div>
