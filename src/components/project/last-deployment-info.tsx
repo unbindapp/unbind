@@ -158,5 +158,5 @@ function StatusIndicator({ deployment }: { deployment: NonNullable<TService["las
   if (deployment.status === "removed") {
     return <XIcon className="size-3.5 shrink-0" />;
   }
-  return <CircleCheckBigIcon className="text-success/85 size-3.5" />;
+  return <CircleCheckBigIcon className="text-success size-3.5" />;
 }
