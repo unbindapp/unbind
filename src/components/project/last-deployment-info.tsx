@@ -113,11 +113,7 @@ function StatusText({ service }: { service: TServiceShallow }) {
     );
   }
   if (deployment.status === "build-succeeded" || deployment.status === "pending") {
-    return (
-      <StatusWithDuration service={service} duration={durationStr}>
-        Launching
-      </StatusWithDuration>
-    );
+    return <StatusTextWrapper service={service}>Launching</StatusTextWrapper>;
   }
   if (deployment.status === "build-failed") {
     return <StatusTextWrapper service={service}>Build failed</StatusTextWrapper>;
