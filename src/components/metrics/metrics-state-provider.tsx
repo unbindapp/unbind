@@ -11,24 +11,32 @@ type TInterval = {
 
 const intervals: TInterval[] = [
   {
+    value: "5m",
+    label: "5 minutes",
+  },
+  {
+    value: "15m",
+    label: "15 minutes",
+  },
+  {
     value: "1h",
-    label: "Last 1 hour",
+    label: "1 hour",
   },
   {
     value: "6h",
-    label: "Last 6 hours",
+    label: "6 hours",
   },
   {
     value: "24h",
-    label: "Last 24 hours",
+    label: "24 hours",
   },
   {
     value: "7d",
-    label: "Last 7 days",
+    label: "7 days",
   },
   {
     value: "30d",
-    label: "Last 30 days",
+    label: "30 days",
   },
 ];
 
@@ -36,6 +44,7 @@ export const metricsIntervalEnumDefault: TMetricsIntervalEnum = "24h";
 export const metricsIntervalDefault =
   intervals.find((i) => i.value === metricsIntervalEnumDefault) ||
   intervals[Math.min(2, intervals.length - 1)];
+
 export const metricsIntervalSearchParamKey = "metrics_interval";
 
 type TMetricsStateContext = {
@@ -48,12 +57,15 @@ const MetricsStateContext = createContext<TMetricsStateContext | null>(null);
 
 type TProps = {
   children: React.ReactNode;
+  defaultIntervalEnum?: TMetricsIntervalEnum;
 };
 
-export const MetricsStateProvider: React.FC<TProps> = ({ children }) => {
+export const MetricsStateProvider: React.FC<TProps> = ({ children, defaultIntervalEnum }) => {
   const [interval, setInterval] = useQueryState(
     metricsIntervalSearchParamKey,
-    parseAsStringEnum(MetricsIntervalEnum.options).withDefault(metricsIntervalEnumDefault),
+    parseAsStringEnum(MetricsIntervalEnum.options).withDefault(
+      defaultIntervalEnum || metricsIntervalEnumDefault,
+    ),
   );
 
   const currentInterval = intervals.find((i) => i.value === interval) || metricsIntervalDefault;

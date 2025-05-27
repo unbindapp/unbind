@@ -39,14 +39,19 @@ export const MetricsProvider: React.FC<TProps> = ({
   children,
 }) => {
   const { interval } = useMetricsState();
-  const query = api.metrics.list.useQuery({
-    teamId,
-    projectId,
-    environmentId,
-    serviceId,
-    type,
-    interval: interval.value,
-  });
+  const query = api.metrics.list.useQuery(
+    {
+      teamId,
+      projectId,
+      environmentId,
+      serviceId,
+      type,
+      interval: interval.value,
+    },
+    {
+      refetchInterval: interval.value === "5m" ? 5000 : interval.value === "15m" ? 15000 : 30000,
+    },
+  );
 
   return <MetricsContext.Provider value={query}>{children}</MetricsContext.Provider>;
 };

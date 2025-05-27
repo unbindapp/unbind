@@ -3,13 +3,19 @@ import { MetricsIntervalEnum, TMetricsIntervalEnum } from "@/server/trpc/api/met
 import { createTRPCRouter, privateProcedure } from "@/server/trpc/setup/trpc";
 import { z } from "zod";
 
-const intervalToStart: Record<TMetricsIntervalEnum, () => string> = {
-  "1h": () => new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-  "6h": () => new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-  "24h": () => new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-  "7d": () => new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-  "30d": () => new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-};
+function intervalToStart(interval: TMetricsIntervalEnum): string {
+  let defaultDuration = 24 * 60 * 60 * 1000;
+
+  if (interval === "5m") defaultDuration = 5 * 60 * 1000;
+  else if (interval === "15m") defaultDuration = 15 * 60 * 1000;
+  else if (interval === "1h") defaultDuration = 60 * 60 * 1000;
+  else if (interval === "6h") defaultDuration = 6 * 60 * 60 * 1000;
+  else if (interval === "7d") defaultDuration = 7 * 24 * 60 * 60 * 1000;
+  else if (interval === "30d") defaultDuration = 30 * 24 * 60 * 60 * 1000;
+
+  const start = new Date(Date.now() - defaultDuration).toISOString();
+  return start;
+}
 
 export const metricsRouter = createTRPCRouter({
   list: privateProcedure
@@ -29,7 +35,7 @@ export const metricsRouter = createTRPCRouter({
       input: { type, teamId, projectId, environmentId, serviceId, interval },
       ctx: { goClient },
     }) {
-      const start = intervalToStart[interval]();
+      const start = intervalToStart(interval);
 
       const metricsData = await goClient.metrics.get({
         type,

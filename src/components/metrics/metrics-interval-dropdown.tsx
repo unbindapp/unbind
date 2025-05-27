@@ -21,6 +21,7 @@ type TProps = {
 export default function MetricsIntervalDropdown({ className }: TProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { interval, intervals, setInterval } = useMetricsState();
+
   return (
     <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
       <DropdownMenuTrigger asChild className="px-3">

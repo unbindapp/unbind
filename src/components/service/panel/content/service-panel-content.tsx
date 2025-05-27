@@ -24,6 +24,7 @@ import VariablesProvider, {
   useVariables,
   useVariablesUtils,
 } from "@/components/variables/variables-provider";
+import { TMetricsIntervalEnum } from "@/server/trpc/api/metrics/types";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { FC, ReactNode, useEffect } from "react";
 
@@ -59,11 +60,21 @@ const tabs: TServicePanelTab[] = [
     title: "Metrics",
     value: "metrics",
     Page: Metrics,
-    Provider: (props: TServicePageProviderProps) => (
-      <MetricsStateProvider>
-        <MetricsProvider type="service" {...props} />
-      </MetricsStateProvider>
-    ),
+    Provider: (props: TServicePageProviderProps) => {
+      let defaultIntervalEnum: TMetricsIntervalEnum | undefined = undefined;
+      const serviceCreatedAtTimestamp = new Date(props.service.created_at).getTime();
+      const now = Date.now();
+      if (now - serviceCreatedAtTimestamp <= 5 * 1000 * 60) defaultIntervalEnum = "5m";
+      else if (now - serviceCreatedAtTimestamp <= 15 * 1000 * 60) defaultIntervalEnum = "15m";
+      else if (now - serviceCreatedAtTimestamp <= 60 * 1000 * 60) defaultIntervalEnum = "1h";
+      else if (now - serviceCreatedAtTimestamp <= 6 * 60 * 1000 * 60) defaultIntervalEnum = "6h";
+
+      return (
+        <MetricsStateProvider defaultIntervalEnum={defaultIntervalEnum}>
+          <MetricsProvider type="service" {...props} />
+        </MetricsStateProvider>
+      );
+    },
   },
   {
     title: "Variables",
