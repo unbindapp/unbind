@@ -12,7 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { Children, cloneElement, FC, isValidElement, ReactNode } from "react";
 
-type TProps = {
+export type TDropdownOrDrawerProps = {
   title: string;
   TitleIcon?: FC<{ className: string }>;
   titleSize?: "sm" | "md";
@@ -34,7 +34,7 @@ export function DropdownOrDrawer({
   align = "start",
   sideOffset = -1,
   children,
-}: TProps) {
+}: TDropdownOrDrawerProps) {
   const { isExtraSmall } = useDeviceSize();
 
   const childrenArray = Children.toArray(children);

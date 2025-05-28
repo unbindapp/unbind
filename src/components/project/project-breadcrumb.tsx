@@ -121,6 +121,21 @@ export default function ProjectBreadcrumb({ className }: TProps) {
     [getHrefForEnvironmentId, router],
   );
 
+  const getHrefForEnvironmentManageItem = useCallback(() => {
+    return `/${teamIdFromPathname}/project/${selectedProjectId}/settings/environments?environment=${environmentIdFromPathname || selectedEnvironmentId}`;
+  }, [teamIdFromPathname, selectedProjectId, environmentIdFromPathname, selectedEnvironmentId]);
+
+  const onSelectEnvironmentManageItem = useCallback(
+    () => asyncPush(getHrefForEnvironmentManageItem()),
+    [getHrefForEnvironmentManageItem, asyncPush],
+  );
+
+  const onHoverEnvironmentManageItem = useCallback(() => {
+    const href = getHrefForEnvironmentManageItem();
+    if (!href) return;
+    router.prefetch(href);
+  }, [getHrefForEnvironmentManageItem, router]);
+
   const { mutate: createProject, isPending: isPendingCreateProject } =
     api.projects.create.useMutation({
       onSuccess: async (res) => {
@@ -218,6 +233,9 @@ export default function ProjectBreadcrumb({ className }: TProps) {
         NewItemWrapper={CreateEnvironmentDialogMemoized}
         newItemDontCloseMenuOnSelect={true}
         onSelectNewItem={() => null}
+        manageItemTitle="Manage Environments"
+        onSelectManageItem={onSelectEnvironmentManageItem}
+        onHoverManageItem={onHoverEnvironmentManageItem}
       />
     </BreadcrumbWrapper>
   );

@@ -88,7 +88,7 @@ export default function ExpandSection({ volume }: TProps) {
 
   if (volume.is_pending_resize) {
     return (
-      <div className="flex w-full flex-col gap-2 md:max-w-xl">
+      <div className="flex w-full flex-col gap-2 pt-1 md:max-w-xl">
         <div className="bg-warning/8 border-warning/8 text-warning flex w-full items-start justify-start gap-2 rounded-lg border px-3.5 py-2.5 font-medium">
           <HourglassIcon className="animate-hourglass mt-0.5 -ml-0.5 size-4 shrink-0" />
           <p className="min-w-0 shrink leading-tight">

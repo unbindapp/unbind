@@ -13,7 +13,14 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/components/ui/utils";
-import { ArrowRightIcon, CheckIcon, ChevronDownIcon, LoaderIcon, PlusIcon } from "lucide-react";
+import {
+  ArrowRightIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  LoaderIcon,
+  PlusIcon,
+  SettingsIcon,
+} from "lucide-react";
 import {
   ButtonHTMLAttributes,
   ComponentProps,
@@ -38,24 +45,33 @@ type TProps<T> = {
   flipChevronOnSm?: boolean;
   showArrow?: (i: T) => boolean;
   children?: ReactNode;
+  sideOffset?: number;
 } & (
+  | { manageItemTitle?: never; onSelectManageItem?: never; onHoverManageItem?: never }
   | {
-      newItemTitle: string;
-      newItemIsPending: boolean;
-      newItemDontCloseMenuOnSelect?: boolean;
-      newItemComingSoon?: boolean;
-      NewItemWrapper?: FC<{ children: ReactNode }>;
-      onSelectNewItem: (id: string) => void;
-    }
-  | {
-      newItemTitle?: never;
-      newItemIsPending?: never;
-      onSelectNewItem?: never;
-      NewItemWrapper?: never;
-      newItemComingSoon?: never;
-      newItemDontCloseMenuOnSelect?: never;
+      manageItemTitle: string;
+      onSelectManageItem: (id: string) => void;
+      onHoverManageItem?: (id: string) => void;
     }
 ) &
+  (
+    | {
+        newItemTitle: string;
+        newItemIsPending: boolean;
+        newItemDontCloseMenuOnSelect?: boolean;
+        newItemComingSoon?: boolean;
+        NewItemWrapper?: FC<{ children: ReactNode }>;
+        onSelectNewItem: (id: string) => void;
+      }
+    | {
+        newItemTitle?: never;
+        newItemIsPending?: never;
+        onSelectNewItem?: never;
+        NewItemWrapper?: never;
+        newItemComingSoon?: never;
+        newItemDontCloseMenuOnSelect?: never;
+      }
+  ) &
   ({ open: boolean; setOpen: (open: boolean) => void } | { open?: never; setOpen?: never });
 
 export function BreadcrumbItem<T>({
@@ -72,9 +88,13 @@ export function BreadcrumbItem<T>({
   newItemComingSoon,
   NewItemWrapper,
   onSelectNewItem,
+  manageItemTitle,
+  onSelectManageItem,
+  onHoverManageItem,
   showArrow,
   open: openProp,
   setOpen: setOpenProp,
+  sideOffset,
   children,
 }: TProps<T>) {
   const [openLocal, setOpenLocal] = useState(false);
@@ -92,6 +112,10 @@ export function BreadcrumbItem<T>({
     ? ({ id: "new", name: newItemTitle } as TBreadcrumbItem<T>)
     : undefined;
 
+  const manageItem = manageItemTitle
+    ? ({ id: "manage", name: manageItemTitle } as TBreadcrumbItem<T>)
+    : undefined;
+
   const ConditionalNewItemWrapper = useCallback(
     ({ children }: { children: ReactNode }) => {
       if (NewItemWrapper) {
@@ -103,7 +127,7 @@ export function BreadcrumbItem<T>({
   );
 
   return (
-    <DropdownOrDrawer title={title} open={open} onOpenChange={setOpen}>
+    <DropdownOrDrawer title={title} open={open} onOpenChange={setOpen} sideOffset={sideOffset}>
       <DropdownOrDrawerTrigger>
         {children ? (
           children
@@ -132,24 +156,39 @@ export function BreadcrumbItem<T>({
               />
             );
           })}
-          {newItemTitle && newItem && (
+          {((newItemTitle && newItem) ||
+            (onSelectManageItem && onHoverManageItem && manageItem)) && (
             <>
               <div className="bg-border pointer-events-none my-2 h-px w-full shrink-0 rounded-full" />
-              <ConditionalNewItemWrapper>
+              {newItemTitle && newItem && (
+                <ConditionalNewItemWrapper>
+                  <SheetItem
+                    dontCloseMenuOnSelect={newItemDontCloseMenuOnSelect}
+                    item={newItem}
+                    isPending={newItemIsPending}
+                    onSelect={onSelectNewItem}
+                    setOpen={setOpen}
+                    selectedItem={selectedItem}
+                    lastHoveredItem={lastHoveredItem}
+                    setLastHoveredItem={setLastHoveredItem}
+                    IconItem={PlusIcon}
+                    comingSoon={newItemComingSoon}
+                    className="text-muted-foreground data-highlighted:text-foreground data-last-hovered:text-foreground mr-4"
+                  />
+                </ConditionalNewItemWrapper>
+              )}
+              {onSelectManageItem && onHoverManageItem && manageItem && (
                 <SheetItem
-                  dontCloseMenuOnSelect={newItemDontCloseMenuOnSelect}
-                  item={newItem}
-                  isPending={newItemIsPending}
-                  onSelect={onSelectNewItem}
+                  item={manageItem}
+                  onSelect={onSelectManageItem}
                   setOpen={setOpen}
                   selectedItem={selectedItem}
                   lastHoveredItem={lastHoveredItem}
                   setLastHoveredItem={setLastHoveredItem}
-                  IconItem={PlusIcon}
-                  comingSoon={newItemComingSoon}
+                  IconItem={SettingsIcon}
                   className="text-muted-foreground data-highlighted:text-foreground data-last-hovered:text-foreground mr-4"
                 />
-              </ConditionalNewItemWrapper>
+              )}
             </>
           )}
         </div>
@@ -175,25 +214,41 @@ export function BreadcrumbItem<T>({
             );
           })}
         </DropdownMenuGroup>
-        {newItemTitle && newItem && (
+        {((newItemTitle && newItem) || (onSelectManageItem && onHoverManageItem && manageItem)) && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <ConditionalNewItemWrapper>
+              {newItemTitle && newItem && (
+                <ConditionalNewItemWrapper>
+                  <DropdownItem
+                    dontCloseMenuOnSelect={newItemDontCloseMenuOnSelect}
+                    item={newItem}
+                    isPending={newItemIsPending}
+                    comingSoon={newItemComingSoon}
+                    onSelect={onSelectNewItem}
+                    setOpen={setOpen}
+                    selectedItem={selectedItem}
+                    lastHoveredItem={lastHoveredItem}
+                    setLastHoveredItem={setLastHoveredItem}
+                    IconItem={PlusIcon}
+                    className="text-muted-foreground"
+                  />
+                </ConditionalNewItemWrapper>
+              )}
+              {onSelectManageItem && onHoverManageItem && manageItem && (
                 <DropdownItem
-                  dontCloseMenuOnSelect={newItemDontCloseMenuOnSelect}
-                  item={newItem}
-                  isPending={newItemIsPending}
-                  comingSoon={newItemComingSoon}
-                  onSelect={onSelectNewItem}
+                  onSelect={onSelectManageItem}
+                  onHover={onHoverManageItem}
+                  item={manageItem}
+                  isPending={false}
                   setOpen={setOpen}
                   selectedItem={selectedItem}
                   lastHoveredItem={lastHoveredItem}
                   setLastHoveredItem={setLastHoveredItem}
-                  IconItem={PlusIcon}
+                  IconItem={SettingsIcon}
                   className="text-muted-foreground"
                 />
-              </ConditionalNewItemWrapper>
+              )}
             </DropdownMenuGroup>
           </>
         )}
@@ -292,6 +347,23 @@ function SheetItem<T>({
   );
 }
 
+type TDropdownItemProps<T> = {
+  item: TBreadcrumbItem<T>;
+  href?: string;
+  selectedItem: TBreadcrumbItem<T> | null | undefined;
+  setOpen: (open: boolean) => void;
+  dontCloseMenuOnSelect?: boolean;
+  onSelect: (id: string) => void;
+  onHover?: (id: string) => void;
+  lastHoveredItem: TBreadcrumbItem<T> | null | undefined;
+  setLastHoveredItem: Dispatch<SetStateAction<TBreadcrumbItem<T> | null | undefined>>;
+  showArrow?: (i: TBreadcrumbItem<T>) => boolean;
+  IconItem?: FC<{ id: string; className?: string }>;
+  isPending?: boolean;
+  comingSoon?: boolean;
+  className?: string;
+} & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onSelect">;
+
 function DropdownItem<T>({
   item,
   selectedItem,
@@ -308,21 +380,7 @@ function DropdownItem<T>({
   comingSoon,
   disabled,
   ...rest
-}: {
-  item: TBreadcrumbItem<T>;
-  selectedItem: TBreadcrumbItem<T> | null | undefined;
-  setOpen: (open: boolean) => void;
-  dontCloseMenuOnSelect?: boolean;
-  onSelect: (id: string) => void;
-  onHover?: (id: string) => void;
-  lastHoveredItem: TBreadcrumbItem<T> | null | undefined;
-  setLastHoveredItem: Dispatch<SetStateAction<TBreadcrumbItem<T> | null | undefined>>;
-  showArrow?: (i: TBreadcrumbItem<T>) => boolean;
-  IconItem?: FC<{ id: string; className?: string }>;
-  isPending?: boolean;
-  comingSoon?: boolean;
-  className?: string;
-} & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onSelect">) {
+}: TDropdownItemProps<T>) {
   return (
     <DropdownMenuItem
       onSelect={(e) => {

@@ -20,8 +20,11 @@ export default function EnvironmentSelector() {
 
   const { data: projectsData } = useProjects();
 
-  const { projectId: projectIdFromPathname, environmentId: environmentIdFromPathname } =
-    useIdsFromPathname();
+  const {
+    teamId: teamIdFromPathname,
+    projectId: projectIdFromPathname,
+    environmentId: environmentIdFromPathname,
+  } = useIdsFromPathname();
 
   const [selectedProjectId, setSelectedProjectId] = useState(projectIdFromPathname);
   const [selectedEnvironmentId, setSelectedEnvironmentId] = useState(environmentIdFromPathname);
@@ -74,6 +77,21 @@ export default function EnvironmentSelector() {
     [getHrefForEnvironmentId, router],
   );
 
+  const getHrefForEnvironmentManageItem = useCallback(() => {
+    return `/${teamIdFromPathname}/project/${selectedProjectId}/settings/environments?environment=${environmentIdFromPathname || selectedEnvironmentId}`;
+  }, [teamIdFromPathname, selectedProjectId, environmentIdFromPathname, selectedEnvironmentId]);
+
+  const onSelectEnvironmentManageItem = useCallback(
+    () => asyncPush(getHrefForEnvironmentManageItem()),
+    [getHrefForEnvironmentManageItem, asyncPush],
+  );
+
+  const onHoverEnvironmentManageItem = useCallback(() => {
+    const href = getHrefForEnvironmentManageItem();
+    if (!href) return;
+    router.prefetch(href);
+  }, [getHrefForEnvironmentManageItem, router]);
+
   const CreateEnvironmentDialogMemoized: (
     props: Omit<TCreateEnvironmentDialogProps, "onFormSubmitSuccessful">,
   ) => ReactNode = useCallback(
@@ -104,6 +122,10 @@ export default function EnvironmentSelector() {
       NewItemWrapper={CreateEnvironmentDialogMemoized}
       newItemDontCloseMenuOnSelect={true}
       onSelectNewItem={() => null}
+      manageItemTitle="Manage Environments"
+      onSelectManageItem={onSelectEnvironmentManageItem}
+      onHoverManageItem={onHoverEnvironmentManageItem}
+      sideOffset={4}
     >
       <Trigger item={selectedEnvironment} isOpen={isEnvironmentsMenuOpen} />
     </BreadcrumbItem>
@@ -122,7 +144,7 @@ function Trigger<T>({
       variant="outline"
       data-open={isOpen ? true : undefined}
       className={cn(
-        "group/button text-muted-foreground gap-1 rounded-md px-2.25 py-1.25 text-sm leading-tight font-medium",
+        "group/button text-muted-foreground max-w-32 gap-1 rounded-md px-2.25 py-1.25 text-sm leading-tight font-medium",
         className,
       )}
     >

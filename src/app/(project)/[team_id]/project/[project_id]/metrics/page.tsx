@@ -1,3 +1,4 @@
+import EnvironmentSelector from "@/app/(project)/[team_id]/project/[project_id]/_components/environment-selector";
 import {
   getProjectPageParams,
   TProjectPageParams,
@@ -32,7 +33,10 @@ export default async function Page({ params, searchParams }: TProjectPageParams)
           >
             <div className="flex w-full max-w-7xl flex-col">
               <div className="flex w-full flex-wrap items-center justify-between gap-4 px-1">
-                <h1 className="min-w-0 shrink px-2 text-2xl leading-tight font-bold">Metrics</h1>
+                <div className="flex min-w-0 flex-wrap items-center justify-start gap-2">
+                  <h1 className="min-w-0 pr-1.5 pl-2 text-2xl leading-tight font-bold">Metrics</h1>
+                  <EnvironmentSelector />
+                </div>
                 <MetricsIntervalDropdown className="-my-2" />
               </div>
               <div className="flex w-full flex-row flex-wrap pt-3">

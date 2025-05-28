@@ -91,14 +91,17 @@ export default function MetricsChart({
   return (
     <div className={cn("flex w-full flex-col", className)}>
       {allDataKeysAreNull ? (
-        <div className="flex h-56 w-full flex-col overflow-auto">
+        <div className="relative z-[1] flex h-56 w-full flex-col overflow-auto">
           <div className="text-muted-foreground flex flex-1 flex-col items-center justify-center px-2 pt-2 pb-8">
             <ChartColumnIcon className="size-6" />
             <p className="mt-2 w-full text-center text-sm leading-tight">No metrics yet</p>
           </div>
         </div>
       ) : (
-        <ChartContainer className={cn("h-56 w-full", classNameChart)} config={chartConfig}>
+        <ChartContainer
+          className={cn("relative z-[1] h-56 w-full", classNameChart)}
+          config={chartConfig}
+        >
           <AreaChart accessibilityLayer data={chartData} margin={margin}>
             <CartesianGrid vertical={false} stroke="transparent" />
             <XAxis
@@ -143,7 +146,7 @@ export default function MetricsChart({
         <ol
           data-no-data-keys={allDataKeysAreNull ? true : undefined}
           data-has-active={activeDataKey ? true : undefined}
-          className="group/list -ml-1.5 flex w-[calc(100%+0.75rem)] flex-wrap pt-1.5 data-no-data-keys:pointer-events-none data-no-data-keys:opacity-0 sm:-ml-1 sm:w-[calc(100%+0.5rem)]"
+          className="group/list z-0 -ml-1.5 flex w-[calc(100%+0.75rem)] flex-wrap pt-1.5 data-no-data-keys:pointer-events-none data-no-data-keys:opacity-0 sm:-ml-1 sm:w-[calc(100%+0.5rem)]"
         >
           {dataKeys.map((dataKey) => (
             <li key={dataKey} className="max-w-full">
