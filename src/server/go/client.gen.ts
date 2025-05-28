@@ -49,6 +49,13 @@ export const CapabilitiesSchema = z
   })
   .strip();
 
+export const CertManagerConditionTypeSchema = z.enum([
+  'Ready',
+  'InvalidRequest',
+  'Approved',
+  'Denied',
+]);
+
 export const CollisionOutputSchema = z
   .object({
     is_unique: z.boolean(), // True if the domain is unique, false otherwise
@@ -359,7 +366,6 @@ export const HostSpecSchema = z
     host: z.string(),
     path: z.string(),
     port: z.number().optional(),
-    tls_issued: z.boolean(),
   })
   .strip();
 
@@ -569,6 +575,8 @@ export const CreateWebhookResponseBodySchema = z
   })
   .strip();
 
+export const DNSStatusSchema = z.enum(['unknown', 'resolved', 'unresolved']);
+
 export const DatabaseConfigurableSchema = z
   .object({
     default: z.string(),
@@ -717,8 +725,8 @@ export const DeleteWebhookResponseBodySchema = z
 
 export const DnsCheckSchema = z
   .object({
-    cloudflare: z.boolean(),
-    dns_configured: z.boolean(),
+    dns_status: DNSStatusSchema,
+    is_cloudflare: z.boolean(),
   })
   .strip();
 
@@ -728,26 +736,31 @@ export const DnsCheckResponseBodySchema = z
   })
   .strip();
 
-export const ExtendedHostSpecSchema = z
+export const TlsDetailsSchema = z
   .object({
-    cloudflare: z.boolean(),
-    dns_configured: z.boolean(),
-    host: z.string(),
-    path: z.string(),
-    port: z.number().optional(),
-    tls_issued: z.boolean(),
+    condition: CertManagerConditionTypeSchema,
+    message: z.string(),
+    reason: z.string(),
   })
   .strip();
 
+export const TlsStatusSchema = z.enum(['pending', 'attempting', 'issued', 'not_available']);
+
 export const IngressEndpointSchema = z
   .object({
+    dns_status: DNSStatusSchema,
     environment_id: z.string(),
-    hosts: z.array(ExtendedHostSpecSchema),
+    host: z.string(),
+    is_cloudflare: z.boolean(),
     is_ingress: z.boolean(),
     kubernetes_name: z.string(),
+    path: z.string(),
+    port: z.number().nullable(),
     project_id: z.string(),
     service_id: z.string(),
     team_id: z.string(),
+    tls_issuer_messages: z.array(TlsDetailsSchema).nullable().optional(),
+    tls_status: TlsStatusSchema,
   })
   .strip();
 
@@ -2032,6 +2045,7 @@ export type AvailableVariableReference = z.infer<typeof AvailableVariableReferen
 export type BuildkitSettings = z.infer<typeof BuildkitSettingsSchema>;
 export type CallbackResponseBody = z.infer<typeof CallbackResponseBodySchema>;
 export type Capabilities = z.infer<typeof CapabilitiesSchema>;
+export type CertManagerConditionType = z.infer<typeof CertManagerConditionTypeSchema>;
 export type CollisionOutput = z.infer<typeof CollisionOutputSchema>;
 export type CheckUniqueDomainOutputBody = z.infer<typeof CheckUniqueDomainOutputBodySchema>;
 export type ContainerState = z.infer<typeof ContainerStateSchema>;
@@ -2087,6 +2101,7 @@ export type WebhookProjectEvent = z.infer<typeof WebhookProjectEventSchema>;
 export type WebhookType = z.infer<typeof WebhookTypeSchema>;
 export type WebhookResponse = z.infer<typeof WebhookResponseSchema>;
 export type CreateWebhookResponseBody = z.infer<typeof CreateWebhookResponseBodySchema>;
+export type DNSStatus = z.infer<typeof DNSStatusSchema>;
 export type DatabaseConfigurable = z.infer<typeof DatabaseConfigurableSchema>;
 export type DatabaseConfigurables = z.infer<typeof DatabaseConfigurablesSchema>;
 export type DeleteEnvironmentInputBody = z.infer<typeof DeleteEnvironmentInputBodySchema>;
@@ -2109,7 +2124,8 @@ export type DeleteWebhookInputBody = z.infer<typeof DeleteWebhookInputBodySchema
 export type DeleteWebhookResponseBody = z.infer<typeof DeleteWebhookResponseBodySchema>;
 export type DnsCheck = z.infer<typeof DnsCheckSchema>;
 export type DnsCheckResponseBody = z.infer<typeof DnsCheckResponseBodySchema>;
-export type ExtendedHostSpec = z.infer<typeof ExtendedHostSpecSchema>;
+export type TlsDetails = z.infer<typeof TlsDetailsSchema>;
+export type TlsStatus = z.infer<typeof TlsStatusSchema>;
 export type IngressEndpoint = z.infer<typeof IngressEndpointSchema>;
 export type ServiceEndpoint = z.infer<typeof ServiceEndpointSchema>;
 export type EndpointDiscovery = z.infer<typeof EndpointDiscoverySchema>;

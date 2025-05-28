@@ -3,11 +3,11 @@ import { useDeviceSize } from "@/components/providers/device-size-provider";
 import ServiceUrl from "@/components/service/panel/components/service-url";
 import ServicePanelContent from "@/components/service/panel/content/service-panel-content";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
+import ServiceEndpointsProvider, {
+  useServiceEndpoints,
+} from "@/components/service/service-endpoints-provider";
 import ServiceIcon from "@/components/service/service-icon";
-import ServiceProvider, {
-  useService,
-  useServiceUtils,
-} from "@/components/service/service-provider";
+import ServiceProvider, { useServiceUtils } from "@/components/service/service-provider";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
 import { Button } from "@/components/ui/button";
@@ -117,7 +117,14 @@ export default function ServicePanel({
             </div>
           </div>
           {service.config.hosts && service.config.hosts.length >= 1 && (
-            <ServiceUrls hosts={service.config.hosts} />
+            <ServiceEndpointsProvider
+              teamId={teamId}
+              projectId={projectId}
+              environmentId={environmentId}
+              serviceId={service.id}
+            >
+              <ServiceUrls hosts={service.config.hosts} />
+            </ServiceEndpointsProvider>
           )}
           <ServicePanelContent service={service} />
         </ServiceProvider>
@@ -285,27 +292,28 @@ function ThreeDotButton({
 
 function ServiceUrls({ hosts }: { hosts: THostFromServiceList[] }) {
   const {
-    query: { data },
-  } = useService();
+    query: { data, error },
+  } = useServiceEndpoints();
 
-  const fullHosts = data?.service.config.hosts;
+  const endpoints = data?.endpoints.external;
 
   return (
     <div className="-mb-0.25 flex w-full flex-wrap px-2.75 pt-0.75 sm:px-6">
-      {!fullHosts &&
+      {!endpoints &&
         hosts.map((h) => (
           <ServiceUrl
             key={`${h.host}${h.path}${h.port}`}
             isPlaceholder={true}
+            error={error?.message}
             className={hosts.length > 1 ? "max-w-1/2" : undefined}
           />
         ))}
-      {fullHosts &&
-        fullHosts.map((h) => (
+      {endpoints &&
+        endpoints.map((e) => (
           <ServiceUrl
-            key={`${h.host}${h.path}${h.port}`}
-            hostObject={h}
-            className={fullHosts.length > 1 ? "max-w-1/2" : undefined}
+            key={`${e.host}${e.path}${e.port}`}
+            endpoint={e}
+            className={endpoints.length > 1 ? "max-w-1/2" : undefined}
           />
         ))}
     </div>

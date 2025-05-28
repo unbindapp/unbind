@@ -50,6 +50,31 @@ export const servicesRouter = createTRPCRouter({
         service: service.data,
       };
     }),
+  getServiceEndpoints: privateProcedure
+    .input(
+      z
+        .object({
+          teamId: z.string().uuid(),
+          projectId: z.string().uuid(),
+          environmentId: z.string().uuid(),
+          serviceId: z.string().uuid(),
+        })
+        .strip(),
+    )
+    .query(async function ({
+      input: { teamId, projectId, environmentId, serviceId },
+      ctx: { goClient },
+    }) {
+      const endpoints = await goClient.services.endpoints.list({
+        team_id: teamId,
+        project_id: projectId,
+        environment_id: environmentId,
+        service_id: serviceId,
+      });
+      return {
+        endpoints: endpoints.data,
+      };
+    }),
   create: privateProcedure.input(CreateServiceSchema).mutation(async function ({
     input,
     ctx: { goClient },

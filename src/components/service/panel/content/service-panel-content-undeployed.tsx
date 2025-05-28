@@ -155,9 +155,8 @@ export default function ServicePanelContentUndeployed({ service, className, ...r
           if (portChanged) {
             props.ports = [{ port: parseInt(portInputValue) }];
           }
-          // TODO: The GO API is sending the wrong type, this shouldn't have tls_issued
           if (domainChanged) {
-            props.hosts = [{ host: domain, path: "", tls_issued: false }];
+            props.hosts = [{ host: domain, path: "" }];
           }
           await updateService(props);
         }
@@ -190,9 +189,8 @@ export default function ServicePanelContentUndeployed({ service, className, ...r
           if (portChanged) {
             props.ports = [{ port: parseInt(portInputValue) }];
           }
-          // TODO: The GO API is sending the wrong type, this shouldn't have tls_issued
           if (domainChanged) {
-            props.hosts = [{ host: domain, path: "", tls_issued: false }];
+            props.hosts = [{ host: domain, path: "" }];
           }
           await updateService(props);
         }

@@ -105,3 +105,7 @@ export type THostFromServiceList = NonNullable<
 export type THostFromServiceGet = NonNullable<
   AppRouterOutputs["services"]["get"]["service"]["config"]["hosts"]
 >[0];
+
+export type TExternalEndpoint = NonNullable<
+  AppRouterOutputs["services"]["getServiceEndpoints"]["endpoints"]["external"]
+>[0];

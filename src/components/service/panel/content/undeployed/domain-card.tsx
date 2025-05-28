@@ -37,7 +37,7 @@ export function DomainCard({ domain, className }: { domain: string; className?: 
 
   return (
     <div
-      data-configured={data && dnsCheckData?.data.dns_configured ? true : undefined}
+      data-configured={data && dnsCheckData?.data.dns_status === "resolved" ? true : undefined}
       data-pending={!data && isPending ? true : undefined}
       data-error={!data && !isPending && error ? true : undefined}
       className={cn(
@@ -45,7 +45,7 @@ export function DomainCard({ domain, className }: { domain: string; className?: 
         className,
       )}
     >
-      {(!data || !dnsCheckData?.data.dns_configured) && (
+      {(!data || dnsCheckData?.data.dns_status !== "resolved") && (
         <div className="flex w-full flex-col items-start justify-start">
           <p className="w-full px-3 py-2.5 leading-tight font-medium">
             Create the DNS record below. You can also do it after deployment.
@@ -76,17 +76,19 @@ export function DomainCard({ domain, className }: { domain: string; className?: 
         <div className="group-data-configured/card:text-success text-muted-foreground flex w-full flex-row flex-wrap gap-1.5 px-3 py-2.5 group-data-configured/card:mt-0">
           <div className="flex max-w-full items-center justify-start gap-1.5 pr-4">
             <div className="-ml-0.25 size-3.5 shrink-0">
-              {dnsCheckData?.data.dns_configured ? (
+              {dnsCheckData?.data.dns_status === "resolved" ? (
                 <CheckCircleIcon className="size-full" />
               ) : (
                 <HourglassIcon className="animate-hourglass size-full" />
               )}
             </div>
             <p className="min-w-0 shrink leading-tight font-medium">
-              {dnsCheckData?.data.dns_configured ? "DNS record detected" : "Waiting for DNS record"}
+              {dnsCheckData?.data.dns_status === "resolved"
+                ? "DNS record detected"
+                : "Waiting for DNS record"}
             </p>
           </div>
-          {dnsCheckData?.data.cloudflare && (
+          {dnsCheckData?.data.is_cloudflare && (
             <div className="flex max-w-full items-center justify-start gap-1.5 pr-4">
               <div className="-ml-0.25 size-3.5 shrink-0">
                 <BrandIcon brand="cloudflare" className="size-full scale-110" />

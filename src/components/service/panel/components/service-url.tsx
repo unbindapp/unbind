@@ -1,25 +1,59 @@
+import ErrorLine from "@/components/error-line";
 import { Button, LinkButton } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/components/ui/utils";
-import { THostFromServiceGet } from "@/server/trpc/api/services/types";
+import { TExternalEndpoint } from "@/server/trpc/api/services/types";
 import { ChevronUpIcon, ExternalLinkIcon, GlobeIcon, HourglassIcon } from "lucide-react";
 import { ReactNode, useState } from "react";
 
 type TServiceUrlProps = { className?: string } & (
   | {
-      hostObject: THostFromServiceGet;
+      endpoint: TExternalEndpoint;
       isPlaceholder?: never;
+      error?: never;
     }
   | {
-      hostObject?: never;
+      endpoint?: never;
       isPlaceholder: true;
+      error: string | undefined;
     }
 );
 
-export default function ServiceUrl({ hostObject, isPlaceholder, className }: TServiceUrlProps) {
+export default function ServiceUrl({
+  endpoint,
+  isPlaceholder,
+  error,
+  className,
+}: TServiceUrlProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   if (isPlaceholder) {
+    if (error) {
+      return (
+        <Wrapper className={className}>
+          <Popover open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                data-open={isDropdownOpen ? true : undefined}
+                className="text-muted-foreground group/button min-w-0 shrink px-2.25 py-1 text-left font-medium"
+                variant="ghost"
+                size="sm"
+              >
+                <div className="text-destructive relative -ml-0.5 size-3.5 shrink-0 transition-transform group-data-open/button:rotate-90">
+                  <GlobeIcon className="size-full group-data-open/button:opacity-0" />
+                  <ChevronUpIcon className="absolute top-0 left-0 size-full scale-110 -rotate-90 opacity-0 group-data-open/button:opacity-100" />
+                </div>
+                <p className="text-destructive min-w-0 shrink truncate">Error</p>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="flex w-72 flex-col gap-0.5 p-0">
+              <ErrorLine message={error} className="bg-transparent px-3.5 py-2" />
+            </PopoverContent>
+          </Popover>
+        </Wrapper>
+      );
+    }
+
     return (
       <Wrapper className={className}>
         <div className="animate-skeleton flex min-w-0 shrink items-center gap-1.5 px-2.25 py-1 text-left text-sm font-medium text-transparent">
@@ -32,7 +66,7 @@ export default function ServiceUrl({ hostObject, isPlaceholder, className }: TSe
     );
   }
 
-  if (!hostObject.tls_issued) {
+  if (endpoint.tls_status === "pending" || endpoint.tls_status === "attempting") {
     return (
       <Wrapper className={className}>
         <Popover open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
@@ -47,7 +81,7 @@ export default function ServiceUrl({ hostObject, isPlaceholder, className }: TSe
                 <HourglassIcon className="animate-hourglass size-full group-data-open/button:animate-none group-data-open/button:opacity-0" />
                 <ChevronUpIcon className="absolute top-0 left-0 size-full scale-110 -rotate-90 opacity-0 group-data-open/button:opacity-100" />
               </div>
-              <p className="min-w-0 shrink truncate">{getUrlDisplayStr(hostObject)}</p>
+              <p className="min-w-0 shrink truncate">{getUrlDisplayStr(endpoint)}</p>
             </Button>
           </PopoverTrigger>
           <PopoverContent align="start" className="flex w-72 flex-col gap-0.5 p-2">
@@ -55,11 +89,15 @@ export default function ServiceUrl({ hostObject, isPlaceholder, className }: TSe
               <div className="text-warning flex w-full justify-start gap-1.5">
                 <HourglassIcon className="animate-hourglass mt-0.75 -ml-0.5 size-3.5 shrink-0" />
                 <p className="min-w-0 shrink text-base leading-tight font-semibold">
-                  Issuing the certificate
+                  {endpoint.tls_status === "pending"
+                    ? "Waiting for deployment"
+                    : "Issuing the certificate"}
                 </p>
               </div>
               <p className="w-full text-sm leading-snug">
-                The TLS certificate is being issued. This can take a few minutes...
+                {endpoint.tls_status === "pending"
+                  ? "The TLS certificate will be issued once the first deployment is complete."
+                  : "The TLS certificate is being issued. This can take a few minutes..."}
               </p>
             </div>
             <LinkButton
@@ -67,7 +105,7 @@ export default function ServiceUrl({ hostObject, isPlaceholder, className }: TSe
               variant="outline"
               target="_blank"
               size="sm"
-              href={getUrl(hostObject)}
+              href={getUrl(endpoint)}
             >
               <div className="relative -ml-0.5 size-3.5 shrink-0 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45">
                 <GlobeIcon className="size-full group-active/button:opacity-0 has-hover:group-hover/button:opacity-0" />
@@ -88,13 +126,13 @@ export default function ServiceUrl({ hostObject, isPlaceholder, className }: TSe
         variant="ghost"
         target="_blank"
         size="sm"
-        href={getUrl(hostObject)}
+        href={getUrl(endpoint)}
       >
         <div className="relative -ml-0.5 size-3.5 shrink-0 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45">
           <GlobeIcon className="size-full group-active/button:opacity-0 has-hover:group-hover/button:opacity-0" />
           <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-active/button:opacity-100 has-hover:group-hover/button:opacity-100" />
         </div>
-        <p className="min-w-0 shrink truncate">{getUrlDisplayStr(hostObject)}</p>
+        <p className="min-w-0 shrink truncate">{getUrlDisplayStr(endpoint)}</p>
       </LinkButton>
     </Wrapper>
   );
@@ -108,10 +146,10 @@ function Wrapper({ children, className }: { children: ReactNode; className?: str
   );
 }
 
-function getUrlDisplayStr(hostObj: THostFromServiceGet) {
-  return hostObj.host + (hostObj.path === "/" ? "" : hostObj.path);
+function getUrlDisplayStr(endpoint: TExternalEndpoint) {
+  return endpoint.host + (endpoint.path === "/" ? "" : endpoint.path);
 }
 
-function getUrl(hostObj: THostFromServiceGet) {
-  return "https://" + hostObj.host + hostObj.path;
+function getUrl(endpoint: TExternalEndpoint) {
+  return "https://" + endpoint.host + endpoint.path;
 }

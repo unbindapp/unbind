@@ -20,10 +20,7 @@ export const ServicesProvider: React.FC<{
   initialData?: AppRouterOutputs["services"]["list"];
   children: ReactNode;
 }> = ({ teamId, projectId, environmentId, initialData, children }) => {
-  const query = api.services.list.useQuery(
-    { teamId, projectId, environmentId },
-    { initialData, refetchInterval: 5000 },
-  );
+  const query = api.services.list.useQuery({ teamId, projectId, environmentId }, { initialData });
   const value = useMemo(
     () => ({ query, teamId, projectId, environmentId }),
     [query, teamId, projectId, environmentId],
