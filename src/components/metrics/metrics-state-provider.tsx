@@ -12,31 +12,31 @@ type TInterval = {
 const intervals: TInterval[] = [
   {
     value: "5m",
-    label: "5 minutes",
+    label: "5m",
   },
   {
     value: "15m",
-    label: "15 minutes",
+    label: "15m",
   },
   {
     value: "1h",
-    label: "1 hour",
+    label: "1h",
   },
   {
     value: "6h",
-    label: "6 hours",
+    label: "6h",
   },
   {
     value: "24h",
-    label: "24 hours",
+    label: "24h",
   },
   {
     value: "7d",
-    label: "7 days",
+    label: "7d",
   },
   {
     value: "30d",
-    label: "30 days",
+    label: "30d",
   },
 ];
 

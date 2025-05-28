@@ -755,7 +755,7 @@ export const IngressEndpointSchema = z
     is_ingress: z.boolean(),
     kubernetes_name: z.string(),
     path: z.string(),
-    port: z.number().nullable(),
+    port: PortSpecSchema,
     project_id: z.string(),
     service_id: z.string(),
     team_id: z.string(),

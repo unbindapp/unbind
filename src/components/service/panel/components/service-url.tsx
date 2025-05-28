@@ -1,6 +1,7 @@
 import ErrorLine from "@/components/error-line";
 import { Button, LinkButton } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { TExternalEndpoint } from "@/server/trpc/api/services/types";
 import { ChevronUpIcon, ExternalLinkIcon, GlobeIcon, HourglassIcon } from "lucide-react";
@@ -46,8 +47,10 @@ export default function ServiceUrl({
                 <p className="text-destructive min-w-0 shrink truncate">Error</p>
               </Button>
             </PopoverTrigger>
-            <PopoverContent align="start" className="flex w-72 flex-col gap-0.5 p-0">
-              <ErrorLine message={error} className="bg-transparent px-3.5 py-2" />
+            <PopoverContent align="start" className="flex w-128 flex-col gap-0.5 p-0">
+              <ScrollArea>
+                <ErrorLine message={error} className="bg-transparent px-3.5 py-2" />
+              </ScrollArea>
             </PopoverContent>
           </Popover>
         </Wrapper>
@@ -85,34 +88,36 @@ export default function ServiceUrl({
             </Button>
           </PopoverTrigger>
           <PopoverContent align="start" className="flex w-72 flex-col gap-0.5 p-2">
-            <div className="flex w-full flex-col gap-1.5 px-2 py-0.5">
-              <div className="text-warning flex w-full justify-start gap-1.5">
-                <HourglassIcon className="animate-hourglass mt-0.75 -ml-0.5 size-3.5 shrink-0" />
-                <p className="min-w-0 shrink text-base leading-tight font-semibold">
+            <ScrollArea>
+              <div className="flex w-full flex-col gap-1.5 px-2 py-0.5">
+                <div className="text-warning flex w-full justify-start gap-1.5">
+                  <HourglassIcon className="animate-hourglass mt-0.75 -ml-0.5 size-3.5 shrink-0" />
+                  <p className="min-w-0 shrink text-base leading-tight font-semibold">
+                    {endpoint.tls_status === "pending"
+                      ? "Waiting for deployment"
+                      : "Issuing the certificate"}
+                  </p>
+                </div>
+                <p className="w-full text-sm leading-snug">
                   {endpoint.tls_status === "pending"
-                    ? "Waiting for deployment"
-                    : "Issuing the certificate"}
+                    ? "The TLS certificate will be issued once the first deployment is complete."
+                    : "The TLS certificate is being issued. This can take a few minutes..."}
                 </p>
               </div>
-              <p className="w-full text-sm leading-snug">
-                {endpoint.tls_status === "pending"
-                  ? "The TLS certificate will be issued once the first deployment is complete."
-                  : "The TLS certificate is being issued. This can take a few minutes..."}
-              </p>
-            </div>
-            <LinkButton
-              className="group/button mt-2 min-w-0 shrink px-2.25 py-1.5 text-left font-medium"
-              variant="outline"
-              target="_blank"
-              size="sm"
-              href={getUrl(endpoint)}
-            >
-              <div className="relative -ml-0.5 size-3.5 shrink-0 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45">
-                <GlobeIcon className="size-full group-active/button:opacity-0 has-hover:group-hover/button:opacity-0" />
-                <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-active/button:opacity-100 has-hover:group-hover/button:opacity-100" />
-              </div>
-              <p className="min-w-0 shrink truncate">Visit</p>
-            </LinkButton>
+              <LinkButton
+                className="group/button mt-2 min-w-0 shrink px-2.25 py-1.5 text-left font-medium"
+                variant="outline"
+                target="_blank"
+                size="sm"
+                href={getUrl(endpoint)}
+              >
+                <div className="relative -ml-0.5 size-3.5 shrink-0 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45">
+                  <GlobeIcon className="size-full group-active/button:opacity-0 has-hover:group-hover/button:opacity-0" />
+                  <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-active/button:opacity-100 has-hover:group-hover/button:opacity-100" />
+                </div>
+                <p className="min-w-0 shrink truncate">Visit</p>
+              </LinkButton>
+            </ScrollArea>
           </PopoverContent>
         </Popover>
       </Wrapper>

@@ -31,7 +31,7 @@ export default function MetricsIntervalDropdown({ className }: TProps) {
           type="button"
           variant="outline"
           className={cn(
-            "group/button w-42 touch-manipulation justify-between py-2 text-left font-medium",
+            "group/button w-24 touch-manipulation justify-between py-2 text-left font-medium",
             className,
           )}
         >

@@ -14,7 +14,7 @@ const PopoverTrigger = PopoverPrimitive.Trigger;
 const PopoverAnchor = PopoverPrimitive.Anchor;
 
 export const popoverContentVariants = cva(
-  "shadow-shadow/shadow bg-popover text-popover-foreground z-50 max-w-[var(--radix-popper-available-width)] w-(--radix-popover-trigger-width) rounded-lg border p-4 shadow-lg outline-hidden",
+  "shadow-shadow/shadow bg-popover text-popover-foreground z-50 max-w-[var(--radix-popper-available-width)] max-h-[var(--radix-popper-available-height)] overflow-hidden w-(--radix-popover-trigger-width) rounded-lg border p-4 shadow-lg outline-hidden",
   {
     variants: {
       animate: {
