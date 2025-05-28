@@ -14,7 +14,7 @@ export default function NavbarScrollArea({ className, children }: TProps) {
   return (
     <div
       className={cn(
-        "flex min-w-0 shrink items-stretch justify-start self-stretch overflow-hidden",
+        "flex min-w-0 items-stretch justify-start self-stretch overflow-hidden",
         className,
       )}
     >

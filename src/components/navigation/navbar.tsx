@@ -51,12 +51,14 @@ export async function Navbar({
           <LogoLink />
           {breadcrumb && <BreadcrumbSeparator />}
           {(breadcrumb || tabsLg) && (
-            <NavbarScrollArea>
+            <>
               {breadcrumb}
               {tabsLg && <BreadcrumbSeparator className="hidden lg:flex" />}
-            </NavbarScrollArea>
+            </>
           )}
-          {tabsLg && <NavbarScrollArea className="hidden lg:flex">{tabsLg}</NavbarScrollArea>}
+          {tabsLg && (
+            <NavbarScrollArea className="hidden shrink-0 lg:flex">{tabsLg}</NavbarScrollArea>
+          )}
         </div>
         <div className="flex shrink-0 items-center justify-end">
           <UserAvatarOrSignIn session={session} />

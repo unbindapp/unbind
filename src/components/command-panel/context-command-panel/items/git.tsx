@@ -99,7 +99,7 @@ function useGitItem({ context }: TProps) {
         projectId,
         environmentId,
         gitHubInstallationId: installationId,
-        isPublic: true,
+        isPublic: false,
         autoDeploy: true,
       });
 

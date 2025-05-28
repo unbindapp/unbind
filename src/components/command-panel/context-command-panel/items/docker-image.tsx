@@ -107,7 +107,7 @@ function useDockerImageItem({ context }: TProps) {
         teamId: context.teamId,
         projectId,
         environmentId,
-        isPublic: true,
+        isPublic: false,
         image,
         autoDeploy: false,
       });
