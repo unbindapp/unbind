@@ -1,12 +1,16 @@
 import { useServicesUtils } from "@/components/project/services-provider";
 import { useDeviceSize } from "@/components/providers/device-size-provider";
+import ServiceUrl from "@/components/service/panel/components/service-url";
 import ServicePanelContent from "@/components/service/panel/content/service-panel-content";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import ServiceIcon from "@/components/service/service-icon";
-import ServiceProvider, { useServiceUtils } from "@/components/service/service-provider";
+import ServiceProvider, {
+  useService,
+  useServiceUtils,
+} from "@/components/service/service-provider";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
-import { Button, LinkButton } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Drawer,
   DrawerClose,
@@ -24,16 +28,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
-import { ServiceRenameSchema, THost, TServiceShallow } from "@/server/trpc/api/services/types";
-import { api } from "@/server/trpc/setup/client";
 import {
-  EllipsisVerticalIcon,
-  ExternalLinkIcon,
-  GlobeIcon,
-  PenIcon,
-  Trash2Icon,
-  XIcon,
-} from "lucide-react";
+  ServiceRenameSchema,
+  THostFromServiceList,
+  TServiceShallow,
+} from "@/server/trpc/api/services/types";
+import { api } from "@/server/trpc/setup/client";
+import { EllipsisVerticalIcon, PenIcon, Trash2Icon, XIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { ReactNode, useState } from "react";
 import { toast } from "sonner";
@@ -77,47 +78,47 @@ export default function ServicePanel({
         hasHandle={isExtraSmall}
         className="flex h-[calc(100%-1.3rem)] w-full flex-col sm:top-0 sm:right-0 sm:my-0 sm:ml-auto sm:h-full sm:w-256 sm:max-w-[calc(100%-4rem)] sm:rounded-l-2xl sm:rounded-r-none"
       >
-        <div className="flex w-full items-start justify-start px-5 pt-4 sm:px-8 sm:pt-6">
-          <DrawerHeader className="flex min-w-0 flex-1 items-center justify-start p-0">
-            <DrawerTitle className="sr-only">{service.name}</DrawerTitle>
-            <TitleButton
-              service={service}
-              teamId={teamId}
-              projectId={projectId}
-              environmentId={environmentId}
-            />
-          </DrawerHeader>
-          <div className="-mt-2.25 -mr-3 flex items-center justify-end gap-1 sm:-mt-3 sm:-mr-5">
-            {!service.last_deployment && (
-              <ThreeDotButton
-                service={service}
-                teamId={teamId}
-                projectId={projectId}
-                environmentId={environmentId}
-              />
-            )}
-            {!isExtraSmall && (
-              <DrawerClose asChild>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="text-muted-more-foreground shrink-0 rounded-lg"
-                >
-                  <XIcon className="size-5" />
-                </Button>
-              </DrawerClose>
-            )}
-          </div>
-        </div>
-        {service.config.hosts && service.config.hosts.length >= 1 && (
-          <ServiceUrls hosts={service.config.hosts} />
-        )}
         <ServiceProvider
           teamId={teamId}
           projectId={projectId}
           environmentId={environmentId}
           serviceId={service.id}
         >
+          <div className="flex w-full items-start justify-start px-5 pt-4 sm:px-8 sm:pt-6">
+            <DrawerHeader className="flex min-w-0 flex-1 items-center justify-start p-0">
+              <DrawerTitle className="sr-only">{service.name}</DrawerTitle>
+              <TitleButton
+                service={service}
+                teamId={teamId}
+                projectId={projectId}
+                environmentId={environmentId}
+              />
+            </DrawerHeader>
+            <div className="-mt-2.25 -mr-3 flex items-center justify-end gap-1 sm:-mt-3 sm:-mr-5">
+              {!service.last_deployment && (
+                <ThreeDotButton
+                  service={service}
+                  teamId={teamId}
+                  projectId={projectId}
+                  environmentId={environmentId}
+                />
+              )}
+              {!isExtraSmall && (
+                <DrawerClose asChild>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="text-muted-more-foreground shrink-0 rounded-lg"
+                  >
+                    <XIcon className="size-5" />
+                  </Button>
+                </DrawerClose>
+              )}
+            </div>
+          </div>
+          {service.config.hosts && service.config.hosts.length >= 1 && (
+            <ServiceUrls hosts={service.config.hosts} />
+          )}
           <ServicePanelContent service={service} />
         </ServiceProvider>
       </DrawerContent>
@@ -282,45 +283,31 @@ function ThreeDotButton({
   );
 }
 
-function ServiceUrls({ hosts }: { hosts: THost[] }) {
+function ServiceUrls({ hosts }: { hosts: THostFromServiceList[] }) {
+  const {
+    query: { data },
+  } = useService();
+
+  const fullHosts = data?.service.config.hosts;
+
   return (
     <div className="-mb-0.25 flex w-full flex-wrap px-2.75 pt-0.75 sm:px-6">
-      {hosts.map((h) => (
-        <ServiceUrl
-          key={`${h.host}${h.path}${h.port}`}
-          hostObject={h}
-          className={hosts.length > 1 ? "max-w-1/2" : undefined}
-        />
-      ))}
+      {!fullHosts &&
+        hosts.map((h) => (
+          <ServiceUrl
+            key={`${h.host}${h.path}${h.port}`}
+            isPlaceholder={true}
+            className={hosts.length > 1 ? "max-w-1/2" : undefined}
+          />
+        ))}
+      {fullHosts &&
+        fullHosts.map((h) => (
+          <ServiceUrl
+            key={`${h.host}${h.path}${h.port}`}
+            hostObject={h}
+            className={fullHosts.length > 1 ? "max-w-1/2" : undefined}
+          />
+        ))}
     </div>
   );
-}
-
-function ServiceUrl({ hostObject, className }: { hostObject: THost; className?: string }) {
-  return (
-    <div className={cn("flex max-w-full items-start justify-start sm:max-w-full", className)}>
-      <LinkButton
-        className="text-muted-foreground group/button min-w-0 shrink px-2.25 py-1 text-left font-medium"
-        variant="ghost"
-        target="_blank"
-        size="sm"
-        href={getUrl(hostObject)}
-        key={getUrl(hostObject)}
-      >
-        <div className="relative -ml-0.5 size-3.5 shrink-0 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45">
-          <GlobeIcon className="size-full group-active/button:opacity-0 has-hover:group-hover/button:opacity-0" />
-          <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-active/button:opacity-100 has-hover:group-hover/button:opacity-100" />
-        </div>
-        <p className="min-w-0 shrink truncate">{getUrlDisplayStr(hostObject)}</p>
-      </LinkButton>
-    </div>
-  );
-}
-
-function getUrlDisplayStr(hostObj: THost) {
-  return hostObj.host + (hostObj.path === "/" ? "" : hostObj.path);
-}
-
-function getUrl(hostObj: THost) {
-  return "https://" + hostObj.host + hostObj.path;
 }

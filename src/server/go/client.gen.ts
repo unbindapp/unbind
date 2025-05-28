@@ -359,6 +359,7 @@ export const HostSpecSchema = z
     host: z.string(),
     path: z.string(),
     port: z.number().optional(),
+    tls_issued: z.boolean(),
   })
   .strip();
 
@@ -732,9 +733,9 @@ export const ExtendedHostSpecSchema = z
     cloudflare: z.boolean(),
     dns_configured: z.boolean(),
     host: z.string(),
-    issued: z.boolean(),
     path: z.string(),
     port: z.number().optional(),
+    tls_issued: z.boolean(),
   })
   .strip();
 

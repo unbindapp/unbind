@@ -21,7 +21,10 @@ export const ServiceProvider: React.FC<{
   serviceId: string;
   children: ReactNode;
 }> = ({ teamId, projectId, environmentId, serviceId, children }) => {
-  const query = api.services.get.useQuery({ teamId, projectId, environmentId, serviceId });
+  const query = api.services.get.useQuery(
+    { teamId, projectId, environmentId, serviceId },
+    { refetchInterval: 5000 },
+  );
 
   const value = useMemo(
     () => ({ query, teamId, projectId, environmentId, serviceId }),

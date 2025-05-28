@@ -98,6 +98,10 @@ export const UpdateServiceInputSchema = z
 
 export type TUpdateServiceInput = z.infer<typeof UpdateServiceInputSchema>;
 
-export type THost = NonNullable<
+export type THostFromServiceList = NonNullable<
+  AppRouterOutputs["services"]["list"]["services"][number]["config"]["hosts"]
+>[0];
+
+export type THostFromServiceGet = NonNullable<
   AppRouterOutputs["services"]["get"]["service"]["config"]["hosts"]
 >[0];
