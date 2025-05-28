@@ -49,7 +49,7 @@ export default function UsageSection({ volume }: TProps) {
                   }
                 : undefined
             }
-            className="data-has-usage:bg-foreground/8 group-data-[usage=high]/section:bg-warning/8 h-full w-full origin-left bg-[repeating-linear-gradient(-45deg,var(--border),var(--border)_1px,transparent_1px,transparent_6px)]"
+            className="data-has-usage:bg-foreground/8 group-data-[usage=high]/section:bg-warning/8 h-full w-full origin-left bg-[repeating-linear-gradient(-45deg,var(--border),var(--border)_1px,transparent_1px,transparent_6px)] data-has-usage:bg-[image:none]"
           />
         </div>
         <p className="group-data-[usage=high]/section:text-warning group-data-error/section:text-destructive relative max-w-full min-w-0 truncate leading-tight font-semibold">

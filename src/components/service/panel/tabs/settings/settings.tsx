@@ -24,7 +24,7 @@ export default function Settings({ service }: { service: TServiceShallow }) {
         <DeploySection service={service} />
       </SettingsSection>
       <SettingsSection className="pt-8" title="Delete Service" id="danger" Icon={Trash2Icon}>
-        <DeleteSection service={service} />
+        <DeleteSection service={service} className="mt-1" />
       </SettingsSection>
     </TabWrapper>
   );

@@ -23,8 +23,6 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
   const gradientId10 = useId();
   const gradientId11 = useId();
   const gradientId12 = useId();
-  const gradientId13 = useId();
-  const gradientId14 = useId();
 
   if (brand === "go") {
     return (
@@ -1128,39 +1126,34 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
         {...rest}
       >
         <path
-          fill={color === "monochrome" ? "currentColor" : `url(#${gradientId13})`}
-          d="M18.069 16.046c-4.552 0-9.331-6.22-12.593-6.676 3.11-.53 6.54-1.034 9.331.402 2.636 1.355 5.109 4.605 8.193 4.605v.38c-1.29.744-2.58 1.29-4.931 1.29"
+          className="text-[#10B4C9] dark:text-[#3BC9DB]"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeWidth=".441"
+          d="M11.743 19.32c-.656-.128-3.13.052-3.939-.77s-.76-3.47-.912-4.165"
         />
         <path
-          fill={color === "monochrome" ? "currentColor" : `url(#${gradientId14})`}
-          d="M1 10.205v1.745c2.655-2.276 7.51-4.226 13.807-2.178C8.966 6.662 2.82 8.027 1 10.205"
+          className="text-[#0F5A9E] dark:text-[#1971C2]"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeWidth=".441"
+          d="M6.965 10.052c.098-.662-.197-3.125.588-3.971s3.43-.919 4.118-1.103"
         />
-        {color === "brand" && (
-          <defs>
-            <linearGradient
-              id={gradientId13}
-              x1="8.131"
-              x2="21.71"
-              y1="8.861"
-              y2="15.537"
-              gradientUnits="userSpaceOnUse"
-            >
-              <stop stopColor="#9E85D4" />
-              <stop offset="1" stopColor="#5A66A9" />
-            </linearGradient>
-            <linearGradient
-              id={gradientId14}
-              x1="1"
-              x2="9.041"
-              y1="10.33"
-              y2="8.71"
-              gradientUnits="userSpaceOnUse"
-            >
-              <stop stopColor="#A875CB" />
-              <stop offset="1" stopColor="#DAC7E8" />
-            </linearGradient>
-          </defs>
-        )}
+        <path
+          className="text-[#5656FC] dark:text-[#6E6EFD]"
+          fill="currentColor"
+          d="M13.288 2h6.323q1.544 0 1.544 1.544v3.088q.001 1.545-1.544 1.544h-6.323q-1.544 0-1.544-1.544V3.544Q11.744 2 13.288 2"
+        />
+        <path
+          className="text-[#2196F5] dark:text-[#64B5F6]"
+          fill="currentColor"
+          d="M4.244 9.059h6.323q1.544 0 1.544 1.544v3.088q0 1.545-1.544 1.544H4.244q-1.544 0-1.544-1.544v-3.088q0-1.545 1.544-1.544"
+        />
+        <path
+          className="text-[#00B7CC] dark:text-[#99E9F2]"
+          fill="currentColor"
+          d="M13.436 15.824h6.323q1.545 0 1.544 1.544v3.088q0 1.544-1.544 1.544h-6.324q-1.544 0-1.544-1.544v-3.088q0-1.544 1.544-1.544"
+        />
       </svg>
     );
   }
