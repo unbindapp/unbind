@@ -1,5 +1,5 @@
 import TabWrapper from "@/components/navigation/tab-wrapper";
-import { SettingsSection } from "@/components/settings/settings-section";
+import { SettingsSection, SettingsSectionDivider } from "@/components/settings/settings-section";
 import MountedPathSection from "@/components/volume/panel/tabs/settings/sections/connection-section";
 import DeleteSection from "@/components/volume/panel/tabs/settings/sections/delete-section";
 import ExpandSection from "@/components/volume/panel/tabs/settings/sections/expand-section";
@@ -20,13 +20,16 @@ export default function Settings({ volume }: TProps) {
       >
         <UsageSection volume={volume} />
       </SettingsSection>
-      <SettingsSection className="pt-8" title="Expand" id="expand" Icon={ScalingIcon}>
+      <SettingsSectionDivider />
+      <SettingsSection title="Expand" id="expand" Icon={ScalingIcon}>
         <ExpandSection volume={volume} />
       </SettingsSection>
-      <SettingsSection className="pt-8" title="Connection" id="connection" Icon={UnplugIcon}>
+      <SettingsSectionDivider />
+      <SettingsSection title="Connection" id="connection" Icon={UnplugIcon}>
         <MountedPathSection volume={volume} />
       </SettingsSection>
-      <SettingsSection className="pt-8" title="Delete Volume" id="danger" Icon={Trash2Icon}>
+      <SettingsSectionDivider />
+      <SettingsSection title="Delete Volume" id="danger" Icon={Trash2Icon}>
         <DeleteSection volume={volume} className="mt-1" />
       </SettingsSection>
     </TabWrapper>
