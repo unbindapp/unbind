@@ -126,6 +126,13 @@ export function BreadcrumbItem<T>({
     [NewItemWrapper],
   );
 
+  const ManageItemIcon = useCallback(
+    ({ className }: { className?: string }) => (
+      <SettingsIcon className={cn("scale-90", className)} />
+    ),
+    [],
+  );
+
   return (
     <DropdownOrDrawer title={title} open={open} onOpenChange={setOpen} sideOffset={sideOffset}>
       <DropdownOrDrawerTrigger>
@@ -185,7 +192,7 @@ export function BreadcrumbItem<T>({
                   selectedItem={selectedItem}
                   lastHoveredItem={lastHoveredItem}
                   setLastHoveredItem={setLastHoveredItem}
-                  IconItem={SettingsIcon}
+                  IconItem={ManageItemIcon}
                   className="text-muted-foreground data-highlighted:text-foreground data-last-hovered:text-foreground mr-4"
                 />
               )}
@@ -245,7 +252,7 @@ export function BreadcrumbItem<T>({
                   selectedItem={selectedItem}
                   lastHoveredItem={lastHoveredItem}
                   setLastHoveredItem={setLastHoveredItem}
-                  IconItem={SettingsIcon}
+                  IconItem={ManageItemIcon}
                   className="text-muted-foreground"
                 />
               )}

@@ -122,7 +122,7 @@ export default function EnvironmentSelector() {
       NewItemWrapper={CreateEnvironmentDialogMemoized}
       newItemDontCloseMenuOnSelect={true}
       onSelectNewItem={() => null}
-      manageItemTitle="Manage Environments"
+      manageItemTitle="Manage"
       onSelectManageItem={onSelectEnvironmentManageItem}
       onHoverManageItem={onHoverEnvironmentManageItem}
       sideOffset={4}

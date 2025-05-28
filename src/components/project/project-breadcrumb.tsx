@@ -233,7 +233,7 @@ export default function ProjectBreadcrumb({ className }: TProps) {
         NewItemWrapper={CreateEnvironmentDialogMemoized}
         newItemDontCloseMenuOnSelect={true}
         onSelectNewItem={() => null}
-        manageItemTitle="Manage Environments"
+        manageItemTitle="Manage"
         onSelectManageItem={onSelectEnvironmentManageItem}
         onHoverManageItem={onHoverEnvironmentManageItem}
       />
