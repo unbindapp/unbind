@@ -1,15 +1,12 @@
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
-import { Button } from "@/components/ui/button";
-import { splitByTokens, TToken } from "@/components/ui/textarea-with-tokens";
+import { splitByTokens, TToken, TTokenProps } from "@/components/ui/textarea-with-tokens";
 import { cn } from "@/components/ui/utils";
-import {
-  getReferenceVariableReadableNames,
-  getVariablesFromRawText,
-} from "@/components/variables/helpers";
+import { getReferenceVariableReadableNames } from "@/components/variables/helpers";
 import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
 import { useVariableReferences } from "@/components/variables/variable-references-provider";
+import { VariablesFormField } from "@/components/variables/variables-form-field";
 import { useVariables } from "@/components/variables/variables-provider";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import {
@@ -19,12 +16,11 @@ import {
   VariableForCreateSchema,
   VariableReferenceForCreateSchema,
 } from "@/server/trpc/api/variables/types";
-import { ChevronDownIcon, Link2Icon, PlusIcon, Trash2Icon } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { Link2Icon } from "lucide-react";
+import { useMemo } from "react";
 import { z } from "zod";
 
 type TProps = {
-  variant?: "default" | "collapsible";
   onValueChange?: TCreateVariablesFormOnBlur;
   className?: string;
   afterSuccessfulSubmit?: (variables: TVariableForCreate[]) => void;
@@ -44,7 +40,6 @@ type TReferenceExtended = TAvailableVariableReference & {
 };
 
 export default function CreateVariablesForm({
-  variant = "default",
   afterSuccessfulSubmit,
   className,
   tokensDisabled,
@@ -62,8 +57,6 @@ export default function CreateVariablesForm({
   } = useVariableReferences();
 
   const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
-
-  const [isOpen, setIsOpen] = useState(false);
 
   const tokens: TToken<TReferenceExtended>[] | undefined = useMemo(() => {
     if (!variableReferencesData) return undefined;
@@ -115,8 +108,8 @@ export default function CreateVariablesForm({
     return allKeys;
   }, [variableReferencesData]);
 
-  const tokenProps = useMemo(() => {
-    if (tokensDisabled) return { tokensDisabled: true } as const;
+  const tokenProps: TTokenProps<TReferenceExtended> = useMemo(() => {
+    if (tokensDisabled) return { tokensDisabled: true };
     return {
       tokenPrefix: "${",
       tokenSuffix: "}",
@@ -150,7 +143,6 @@ export default function CreateVariablesForm({
       },
     },
     onSubmit: async ({ formApi, value }) => {
-      if (variant === "collapsible") return;
       if (!tokens) return;
 
       const { variables, variableReferences } = getVariablesPair({
@@ -180,196 +172,34 @@ export default function CreateVariablesForm({
     },
   });
 
-  type TForm = typeof form;
-
-  const onPaste = useCallback(
-    (e: React.ClipboardEvent<HTMLInputElement>, form: TForm, index: number) => {
-      const clipboardData = e.clipboardData;
-      if (!clipboardData) return;
-
-      const text = clipboardData.getData("text");
-      const variables = getVariablesFromRawText(text);
-
-      if (
-        variables.length === 0 ||
-        (variables.length === 1 && (!variables[0].name || !variables[0].value))
-      ) {
-        return;
-      }
-
-      e.preventDefault();
-
-      for (let i = 0; i < variables.length; i++) {
-        const variable = variables[i];
-        if (
-          i === 0 &&
-          !form.state.values.variables[index].name &&
-          !form.state.values.variables[index].value
-        ) {
-          form.replaceFieldValue("variables", index, variable);
-          continue;
-        }
-        form.insertFieldValue("variables", index + i, variable);
-      }
-    },
-    [],
-  );
-
   if (isOpenProp === false) {
     return null;
   }
 
   return (
-    <div
-      data-open={variant !== "collapsible" || isOpen ? true : undefined}
-      data-variant={variant}
-      className={cn(
-        "group/card flex w-full flex-col rounded-xl border data-[variant=collapsible]:rounded-lg",
-        className,
-      )}
-    >
-      {variant === "collapsible" && (
-        <Button
-          onClick={() => setIsOpen((o) => !o)}
-          variant="ghost"
-          className="text-muted-foreground group-data-open/card:text-foreground z-10 justify-start gap-1 px-3 text-left font-semibold group-data-[variant=collapsible]/card:rounded-md group-data-[variant=collapsible]/card:group-data-open/card:rounded-b-none"
-        >
-          <ChevronDownIcon className="-ml-0.75 size-5 shrink-0 -rotate-90 transition-transform group-data-open/card:rotate-0" />
-          <p className="min-w-0 shrink">Environment Variables</p>
-        </Button>
-      )}
-      {(variant !== "collapsible" || isOpen) && (
-        <form
-          className="relative flex w-full flex-col group-data-[variant=collapsible]/card:-mt-2 md:pt-3.5"
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            form.validateArrayFieldsStartingFrom("variables", 0, "submit");
-            form.handleSubmit();
-          }}
-        >
-          <form.AppField
-            name="variables"
-            mode="value"
-            children={(field) => (
-              <div className="flex w-full flex-col items-start gap-2">
-                {/* All secret rows */}
-                <div className="flex w-full flex-col items-start gap-1">
-                  {field.state.value.map((_, i) => {
-                    return (
-                      <div
-                        key={`secret-wrapper-${i}`}
-                        className="flex w-full flex-col gap-1 md:gap-0"
-                      >
-                        {i !== 0 && <div className="bg-border h-px w-full md:hidden" />}
-                        <div
-                          key={`secret-${i}`}
-                          data-first={i === 0 ? true : undefined}
-                          className="relative flex w-full flex-col gap-2 p-3 md:flex-row md:items-start md:px-4 md:py-0.5"
-                        >
-                          <form.Field key={`variables[${i}].name`} name={`variables[${i}].name`}>
-                            {(subField) => {
-                              return (
-                                <field.TextField
-                                  field={subField}
-                                  value={subField.state.value}
-                                  onBlur={subField.handleBlur}
-                                  onPaste={(e) => onPaste(e, form, i)}
-                                  onChange={(e) => {
-                                    subField.handleChange(e.target.value);
-                                  }}
-                                  placeholder="VARIABLE_NAME"
-                                  classNameInput="font-mono"
-                                  className="mr-12.5 flex-1 md:mr-0 md:max-w-64"
-                                  autoCapitalize="off"
-                                  autoCorrect="off"
-                                  autoComplete="off"
-                                  spellCheck="false"
-                                />
-                              );
-                            }}
-                          </form.Field>
-                          <form.Field key={`variables[${i}].value`} name={`variables[${i}].value`}>
-                            {(subField) => {
-                              return (
-                                <field.TextareaWithTokens
-                                  {...tokenProps}
-                                  dontCheckUntilSubmit
-                                  field={subField}
-                                  value={subField.state.value}
-                                  onBlur={subField.handleBlur}
-                                  onChange={(e) => subField.handleChange(e.target.value)}
-                                  classNameTextarea="font-mono"
-                                  classNameDropdownContent="font-mono"
-                                  className="flex-1"
-                                  placeholder={tokensDisabled ? "Value" : "Value or ${Reference}"}
-                                  autoCapitalize="off"
-                                  autoCorrect="off"
-                                  autoComplete="off"
-                                  spellCheck="false"
-                                />
-                              );
-                            }}
-                          </form.Field>
-                          <form.Subscribe
-                            selector={(state) => ({ firstVariable: state.values.variables[0] })}
-                            children={({ firstVariable }) => (
-                              <Button
-                                disabled={
-                                  field.state.value.length <= 1 &&
-                                  firstVariable.name === "" &&
-                                  firstVariable.value === ""
-                                }
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="absolute top-3 right-3 h-10.5 w-10.5 md:relative md:top-auto md:right-auto"
-                                onClick={() => {
-                                  if (field.state.value.length <= 1) {
-                                    form.reset();
-                                    return;
-                                  }
-                                  field.removeValue(i);
-                                }}
-                              >
-                                <Trash2Icon className="size-5" />
-                              </Button>
-                            )}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="-mt-2 w-full p-3 pt-0 md:-mt-0.5 md:p-4 md:pt-0">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="px-4"
-                    onClick={() => field.pushValue({ name: "", value: "" })}
-                  >
-                    <PlusIcon className="-ml-1.25 size-5 shrink-0" />
-                    <p className="min-w-0 shrink">Add Another</p>
-                  </Button>
-                </div>
-              </div>
-            )}
-          />
-          {variant !== "collapsible" && (
-            <div className="bg-background-hover flex w-full flex-col gap-3 rounded-b-xl border-t p-2 md:p-2.5">
-              {createError && <ErrorLine message={createError.message} />}
-              <div className="flex w-full flex-row items-center justify-end">
-                <form.Subscribe
-                  selector={(state) => ({ isSubmitting: state.isSubmitting })}
-                  children={({ isSubmitting }) => (
-                    <form.SubmitButton isPending={isSubmitting}>Save</form.SubmitButton>
-                  )}
-                />
-              </div>
-            </div>
-          )}
-        </form>
-      )}
+    <div className={cn("group/card flex w-full flex-col rounded-xl border", className)}>
+      <form
+        className="relative flex w-full flex-col md:pt-3.5"
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          form.validateArrayFieldsStartingFrom("variables", 0, "submit");
+          form.handleSubmit();
+        }}
+      >
+        <VariablesFormField form={form} tokenProps={tokenProps} />
+        <div className="bg-background-hover flex w-full flex-col gap-3 rounded-b-xl border-t p-2 md:mt-3.5 md:p-2.5">
+          {createError && <ErrorLine message={createError.message} />}
+          <div className="flex w-full flex-row items-center justify-end">
+            <form.Subscribe
+              selector={(state) => ({ isSubmitting: state.isSubmitting })}
+              children={({ isSubmitting }) => (
+                <form.SubmitButton isPending={isSubmitting}>Save</form.SubmitButton>
+              )}
+            />
+          </div>
+        </div>
+      </form>
     </div>
   );
 }

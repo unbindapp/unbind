@@ -33,7 +33,7 @@ import {
 import { api } from "@/server/trpc/setup/client";
 import { useMutation } from "@tanstack/react-query";
 import { CheckCircleIcon, CircleSlashIcon, EyeOffIcon, LoaderIcon } from "lucide-react";
-import { Dispatch, HTMLAttributes, SetStateAction, useRef, useState } from "react";
+import { Dispatch, HTMLAttributes, ReactNode, SetStateAction, useRef, useState } from "react";
 
 type TProps = {
   service: TServiceShallow;
@@ -51,7 +51,11 @@ export default function ServicePanelContentUndeployed({ service }: TProps) {
 
     if (!image || !tag) return <ErrorLine message="Image or tag is not found." />;
 
-    return <UndeployedContentDockerImage image={image} tag={tag} port={port} />;
+    return (
+      <Providers service={service}>
+        <UndeployedContentDockerImage image={image} tag={tag} port={port} />
+      </Providers>
+    );
   }
 
   if (service.type === "github") {
@@ -67,13 +71,15 @@ export default function ServicePanelContentUndeployed({ service }: TProps) {
     }
 
     return (
-      <UndeployedContentGit
-        owner={service.git_repository_owner}
-        repo={service.git_repository}
-        branch={service.config.git_branch}
-        installationId={service.github_installation_id}
-        detectedPort={typeof port === "number" ? port.toString() : undefined}
-      />
+      <Providers service={service}>
+        <UndeployedContentGit
+          owner={service.git_repository_owner}
+          repo={service.git_repository}
+          branch={service.config.git_branch}
+          installationId={service.github_installation_id}
+          detectedPort={typeof port === "number" ? port.toString() : undefined}
+        />
+      </Providers>
     );
   }
 
@@ -83,11 +89,32 @@ export default function ServicePanelContentUndeployed({ service }: TProps) {
     }
 
     return (
-      <UndeployedContentDatabase type={service.database_type} version={service.database_version} />
+      <Providers service={service}>
+        <UndeployedContentDatabase
+          type={service.database_type}
+          version={service.database_version}
+        />
+      </Providers>
     );
   }
 
   return <ErrorLine message="Service type is not supported." />;
+}
+
+function Providers({ service, children }: { service: TServiceShallow; children: ReactNode }) {
+  const { teamId, projectId, environmentId } = useService();
+  return (
+    <VariableReferencesProvider
+      type="service"
+      teamId={teamId}
+      projectId={projectId}
+      environmentId={environmentId}
+      serviceId={service.id}
+      service={service}
+    >
+      {children}
+    </VariableReferencesProvider>
+  );
 }
 
 export function ServicePanelContentUndeployedOLD({ service, className, ...rest }: TProps) {
@@ -399,7 +426,6 @@ export function ServicePanelContentUndeployedOLD({ service, className, ...rest }
               service={service}
             >
               <CreateVariablesForm
-                variant="collapsible"
                 onValueChange={(v) => {
                   createVariablesFormResult.current = v;
                 }}

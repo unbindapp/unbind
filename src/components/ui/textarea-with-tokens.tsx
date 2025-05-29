@@ -39,7 +39,7 @@ export type TToken<T> = {
   object: T;
 };
 
-type TTokenProps<T> = TTokensEnabledProps<T> | TTokensDisabledProps;
+export type TTokenProps<T> = TTokensEnabledProps<T> | TTokensDisabledProps;
 
 export type TTextareaWithTokensProps<T> = TextareaAutosizeProps &
   RefAttributes<HTMLTextAreaElement> &
@@ -613,7 +613,7 @@ function tokensDefaultSearch<T>(tokens: TToken<T>[], search: string) {
     .sort(tokensDefaultSort);
 }
 
-type TTokensEnabledProps<T> = {
+export type TTokensEnabledProps<T> = {
   tokenPrefix: string;
   tokenSuffix: string;
   tokens: TToken<T>[] | undefined;
@@ -625,7 +625,7 @@ type TTokensEnabledProps<T> = {
   tokensDisabled?: never;
 };
 
-type TTokensDisabledProps = {
+export type TTokensDisabledProps = {
   tokenPrefix?: never;
   tokenSuffix?: never;
   tokens?: never;

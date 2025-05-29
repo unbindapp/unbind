@@ -383,7 +383,7 @@ function AsyncDropdown({
   );
 }
 
-export const { useAppForm } = createFormHook({
+export const { useAppForm, withForm } = createFormHook({
   fieldComponents: {
     TextField: InputWithInfo,
     NumberField: InputWithInfo,
