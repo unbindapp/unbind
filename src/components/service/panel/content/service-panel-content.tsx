@@ -10,11 +10,11 @@ import { TServicePanelTabEnum } from "@/components/service/panel/constants";
 import ServicePanelContentDeployed from "@/components/service/panel/content/service-panel-content-deployed";
 import ServicePanelContentUndeployed from "@/components/service/panel/content/service-panel-content-undeployed";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
-import Deployments from "@/components/service/panel/tabs/deployments/deployments";
-import Logs from "@/components/service/panel/tabs/logs/logs";
-import Metrics from "@/components/service/panel/tabs/metrics/metrics";
-import Settings from "@/components/service/panel/tabs/settings/settings";
-import Variables from "@/components/service/panel/tabs/variables/variables";
+import Deployments from "@/components/service/panel/content/deployed/deployments/deployments";
+import Logs from "@/components/service/panel/content/deployed/logs/logs";
+import Metrics from "@/components/service/panel/content/deployed/metrics/metrics";
+import Settings from "@/components/service/panel/content/deployed/settings/settings";
+import Variables from "@/components/service/panel/content/deployed/variables/variables";
 import { useService } from "@/components/service/service-provider";
 import VariableReferencesProvider, {
   useVariableReferenceUtils,

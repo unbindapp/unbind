@@ -1,9 +1,9 @@
 import TabWrapper from "@/components/navigation/tab-wrapper";
-import BuildSection from "@/components/service/panel/tabs/settings/sections/build-section";
-import DeleteSection from "@/components/service/panel/tabs/settings/sections/delete-section";
-import DeploySection from "@/components/service/panel/tabs/settings/sections/deploy-section";
-import NetworkingSection from "@/components/service/panel/tabs/settings/sections/networking-section";
-import SourceSection from "@/components/service/panel/tabs/settings/sections/source-section";
+import BuildSection from "@/components/service/panel/content/deployed/settings/sections/build-section";
+import DeleteSection from "@/components/service/panel/content/deployed/settings/sections/delete-section";
+import DeploySection from "@/components/service/panel/content/deployed/settings/sections/deploy-section";
+import NetworkingSection from "@/components/service/panel/content/deployed/settings/sections/networking-section";
+import SourceSection from "@/components/service/panel/content/deployed/settings/sections/source-section";
 import { SettingsSection, SettingsSectionDivider } from "@/components/settings/settings-section";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { CodeIcon, NetworkIcon, RocketIcon, Trash2Icon, WrenchIcon } from "lucide-react";
