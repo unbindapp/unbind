@@ -1,11 +1,11 @@
 export const generateDomain = (name: string, wildcardDomain: string) => {
-  const edited = name
+  const cleanedName = name
     .trim()
     .toLowerCase()
     .replace(/\s+/g, " ") // single-space normalize
     .replace(/[^a-z0-9 ]+/g, "") // strip invalid chars
     .replace(/ /g, "-"); // space → dash
-  return `${edited}-${randomString(6)}.${wildcardDomain}`;
+  return `${cleanedName || "service"}-${randomString(6)}.${wildcardDomain}`;
 };
 
 const ALPHANUM = "abcdefghijklmnopqrstuvwxyz0123456789";
