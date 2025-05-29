@@ -1377,7 +1377,7 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
         height="24"
         fill="none"
         viewBox="0 0 24 24"
-        className={cn(defaultClassName, className)}
+        className={cn(defaultClassName, color === "brand" && "text-flask", className)}
         {...rest}
       >
         <path
