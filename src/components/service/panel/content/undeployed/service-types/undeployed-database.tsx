@@ -3,6 +3,10 @@ import { databaseTypeToName } from "@/components/command-panel/context-command-p
 import ErrorCard from "@/components/error-card";
 import BrandIcon from "@/components/icons/brand";
 import {
+  TDatabaseBackupBucket,
+  TDatabaseBackupBucketState,
+} from "@/components/service/panel/content/service-panel-content-undeployed";
+import {
   Block,
   BlockItem,
   BlockItemButtonLike,
@@ -10,11 +14,6 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/service/panel/content/undeployed/block";
-import {
-  TDatabaseBackupBucket,
-  TDatabaseBackupBucketState,
-} from "@/components/service/panel/content/service-panel-content-undeployed";
-import { TStringOrNullState } from "@/components/service/panel/content/undeployed/types";
 import { useService } from "@/components/service/service-provider";
 import S3SourcesProvider, { useS3Sources } from "@/components/storage/s3-sources-provider";
 import {
@@ -45,8 +44,6 @@ const placeholderArray = Array.from({ length: 10 });
 type TProps = {
   type: string;
   version: string;
-  versionState: TStringOrNullState;
-  backupBucketState: TDatabaseBackupBucketState;
 };
 
 export function UndeployedContentDatabase(props: TProps) {
@@ -58,13 +55,15 @@ export function UndeployedContentDatabase(props: TProps) {
   );
 }
 
-function UndeployedContentDatabase_({ type, version, versionState, backupBucketState }: TProps) {
+function UndeployedContentDatabase_({ type, version }: TProps) {
   const [isVersionDropdownOpen, setIsVersionDropdownOpen] = useState(false);
   const [isBackupBucketDropdownOpen, setIsBackupBucketDropdownOpen] = useState(false);
 
   const backupsDisabled = type === "redis";
-  const [currentVersion, setCurrentVersion] = versionState;
-  const [currentBackupBucket] = backupBucketState;
+  const [currentVersion, setCurrentVersion] = useState(version || null);
+  const [currentBackupBucket, setCurrentBackupBucket] = useState<TDatabaseBackupBucket | null>(
+    null,
+  );
 
   const { data, isPending, error } = api.services.getDatabase.useQuery({
     type,
@@ -154,7 +153,8 @@ function UndeployedContentDatabase_({ type, version, versionState, backupBucketS
             </BlockItemHeader>
             <BlockItemContent>
               <BackupBucketDropdown
-                backupBucketState={backupBucketState}
+                currentBackupBucket={currentBackupBucket}
+                onSelect={(b) => setCurrentBackupBucket(b)}
                 isBackupBucketDropdownOpen={isBackupBucketDropdownOpen}
                 setIsBackupBucketDropdownOpen={setIsBackupBucketDropdownOpen}
               >
@@ -189,18 +189,19 @@ function getCommandItemValueFromBucket(bucket: TDatabaseBackupBucket) {
 }
 
 function BackupBucketDropdown({
-  backupBucketState,
+  currentBackupBucket,
+  onSelect,
   isBackupBucketDropdownOpen,
   setIsBackupBucketDropdownOpen,
   children,
 }: {
-  backupBucketState: TDatabaseBackupBucketState;
+  currentBackupBucket: TDatabaseBackupBucket | null;
+  onSelect: (bucket: TDatabaseBackupBucket | null) => void;
   isBackupBucketDropdownOpen: boolean;
   setIsBackupBucketDropdownOpen: (open: boolean) => void;
   children: ReactNode;
 }) {
   const { teamId } = useService();
-  const [currentBackupBucket, setCurrentBackupBucket] = backupBucketState;
   const {
     query: { data: s3SourcesData, isPending: s3SourcesIsPending, error: s3SourcesError },
   } = useS3Sources();
@@ -308,7 +309,7 @@ function BackupBucketDropdown({
                     value={"Disable backups"}
                     onSelect={(v) => {
                       setBackupBucketCommandValue(v);
-                      setCurrentBackupBucket(null);
+                      onSelect(null);
                       setIsBackupBucketDropdownOpen(false);
                     }}
                     className="group/item text-warning data-[selected=true]:bg-warning/10 data-[selected=true]:text-warning px-3"
@@ -323,7 +324,7 @@ function BackupBucketDropdown({
                     value={getCommandItemValueFromBucket(b)}
                     onSelect={(v) => {
                       setBackupBucketCommandValue(v);
-                      setCurrentBackupBucket(b);
+                      onSelect(b);
                       setIsBackupBucketDropdownOpen(false);
                     }}
                     data-checked={

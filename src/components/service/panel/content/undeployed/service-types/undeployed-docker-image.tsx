@@ -29,15 +29,11 @@ import { useDebounce } from "use-debounce";
 
 const placeholderArray = Array.from({ length: 10 });
 
-export function UndeployedContentDockerImage({
-  image,
-  tag,
-  tagState,
-}: {
-  image: string;
-  tag: string;
-  tagState: TStringOrNullState;
-}) {
+type TProps = { image: string; tag: string; port: number | null };
+
+export function UndeployedContentDockerImage({ image, tag }: TProps) {
+  const tagState = useState(tag || null);
+
   return (
     <Block>
       <BlockItem>

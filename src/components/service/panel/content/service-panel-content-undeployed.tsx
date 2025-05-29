@@ -9,9 +9,9 @@ import {
   BlockItemTitle,
 } from "@/components/service/panel/content/undeployed/block";
 import { DomainCard } from "@/components/service/panel/content/undeployed/domain-card";
-import { UndeployedContentDatabase } from "@/components/service/panel/content/undeployed/undeployed-content-database";
-import { UndeployedContentDockerImage } from "@/components/service/panel/content/undeployed/undeployed-content-docker-image";
-import { UndeployedContentGit } from "@/components/service/panel/content/undeployed/undeployed-content-git";
+import { UndeployedContentDatabase } from "@/components/service/panel/content/undeployed/service-types/undeployed-database";
+import { UndeployedContentDockerImage } from "@/components/service/panel/content/undeployed/service-types/undeployed-docker-image";
+import { UndeployedContentGit } from "@/components/service/panel/content/undeployed/service-types/undeployed-git";
 import { useService } from "@/components/service/service-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,7 +40,57 @@ type TProps = {
   className?: string;
 } & HTMLAttributes<HTMLDivElement>;
 
-export default function ServicePanelContentUndeployed({ service, className, ...rest }: TProps) {
+export default function ServicePanelContentUndeployed({ service }: TProps) {
+  const port =
+    service.config.ports && service.config.ports?.length > 0 ? service.config.ports[0].port : null;
+
+  if (service.type === "docker-image") {
+    const arr = service.config.image?.split(":");
+    const image = arr?.[0];
+    const tag = arr && arr.length > 1 ? arr?.[1] : "latest";
+
+    if (!image || !tag) return <ErrorLine message="Image or tag is not found." />;
+
+    return <UndeployedContentDockerImage image={image} tag={tag} port={port} />;
+  }
+
+  if (service.type === "github") {
+    if (
+      !service.git_repository_owner ||
+      !service.git_repository ||
+      !service.config.git_branch ||
+      service.github_installation_id === undefined
+    ) {
+      return (
+        <ErrorLine message="Git owner, repository, installation ID, or branch is not found." />
+      );
+    }
+
+    return (
+      <UndeployedContentGit
+        owner={service.git_repository_owner}
+        repo={service.git_repository}
+        branch={service.config.git_branch}
+        installationId={service.github_installation_id}
+        port={port}
+      />
+    );
+  }
+
+  if (service.type === "database") {
+    if (!service.database_type || !service.database_version) {
+      return <ErrorLine message="Database type or version is not found." />;
+    }
+
+    return (
+      <UndeployedContentDatabase type={service.database_type} version={service.database_version} />
+    );
+  }
+
+  return <ErrorLine message="Service type is not supported." />;
+}
+
+export function ServicePanelContentUndeployedOLD({ service, className, ...rest }: TProps) {
   const {
     teamId,
     projectId,
@@ -242,13 +292,6 @@ export default function ServicePanelContentUndeployed({ service, className, ...r
       <ScrollArea classNameViewport="pb-8">
         <div className="flex w-full flex-1 flex-col gap-6 px-3 py-4 sm:p-6">
           {createFirstDeploymentError && <ErrorLine message={createFirstDeploymentError.message} />}
-          <Content
-            service={service}
-            tagState={tagState}
-            branchState={branchState}
-            databaseVersionState={databaseVersionState}
-            databaseBackupBucketState={databaseBackupBucketState}
-          />
           {isServicePublicable && (
             <Block>
               <BlockItem>
@@ -398,72 +441,6 @@ export default function ServicePanelContentUndeployed({ service, className, ...r
     </div>
   );
 }
-
-function Content({
-  service,
-  tagState,
-  branchState,
-  databaseVersionState,
-  databaseBackupBucketState,
-}: {
-  service: TServiceShallow;
-  tagState: TStringOrNullState;
-  branchState: TStringOrNullState;
-  databaseVersionState: TStringOrNullState;
-  databaseBackupBucketState: TDatabaseBackupBucketState;
-}) {
-  if (service.type === "docker-image") {
-    const arr = service.config.image?.split(":");
-    const image = arr?.[0];
-    const tag = arr && arr.length > 1 ? arr?.[1] : "latest";
-
-    if (!image || !tag) return <ErrorLine message="Image or tag is not found." />;
-
-    return <UndeployedContentDockerImage image={image} tag={tag} tagState={tagState} />;
-  }
-
-  if (service.type === "github") {
-    if (
-      !service.git_repository_owner ||
-      !service.git_repository ||
-      !service.config.git_branch ||
-      service.github_installation_id === undefined
-    ) {
-      return (
-        <ErrorLine message="Git owner, repository, installation ID, or branch is not found." />
-      );
-    }
-
-    return (
-      <UndeployedContentGit
-        owner={service.git_repository_owner}
-        repo={service.git_repository}
-        branch={service.config.git_branch}
-        installationId={service.github_installation_id}
-        branchState={branchState}
-      />
-    );
-  }
-
-  if (service.type === "database") {
-    if (!service.database_type || !service.database_version) {
-      return <ErrorLine message="Database type or version is not found." />;
-    }
-
-    return (
-      <UndeployedContentDatabase
-        type={service.database_type}
-        versionState={databaseVersionState}
-        version={service.database_version}
-        backupBucketState={databaseBackupBucketState}
-      />
-    );
-  }
-
-  return <ErrorLine message="Service type is not supported." />;
-}
-
-type TStringOrNullState = [string | null, Dispatch<SetStateAction<string | null>>];
 
 export type TDatabaseBackupBucket = { name: string; source: TS3SourceShallow };
 export type TDatabaseBackupBucketState = [

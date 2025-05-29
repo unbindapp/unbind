@@ -1369,6 +1369,25 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
     );
   }
 
+  if (brand === "flask") {
+    return (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        fill="none"
+        viewBox="0 0 24 24"
+        className={cn(defaultClassName, className)}
+        {...rest}
+      >
+        <path
+          fill="currentColor"
+          d="M12.945 13.041c2.073 3.662 5.365 4.613 7.505 4.371l-.104-.354a.17.17 0 0 1 .106-.208l.661-.232a.17.17 0 0 1 .215.1l.069.185.684-.357a.34.34 0 0 1 .453.135l.423.752a.34.34 0 0 1-.152.473l-.942.44.107.264a.17.17 0 0 1-.097.222l-.786.303a.17.17 0 0 1-.219-.096l-.107-.269c-6.764 2.814-11.354.774-14.306-2.494zm-1.382-3.66c.214.92.485 1.743.8 2.48l-6.768 3.373a18 18 0 0 1-1.532-2.438zm-.985-6.853c.232-.101.49.085.48.338-.085 1.966.013 3.685.249 5.186l-7.818 3.56a21 21 0 0 1-1.06-2.941l-.216.108c-.077.039-.17.04-.235-.015-.337-.28-.876-1.103-.975-1.824a.3.3 0 0 1 .187-.31z"
+        />
+      </svg>
+    );
+  }
+
   if (brand === "service-group") {
     return <LayoutGridIcon className={cn("scale-80", defaultClassName, className)} {...rest} />;
   }

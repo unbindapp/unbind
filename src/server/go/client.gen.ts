@@ -981,6 +981,7 @@ export const TemplateInputTypeSchema = z.enum([
   'database-size',
   'generated-node-port',
   'generated-password',
+  'generated-node-ip',
 ]);
 
 export const TemplateVolumeSchema = z
