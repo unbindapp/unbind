@@ -17,7 +17,9 @@ import {
   VariableReferenceForCreateSchema,
 } from "@/server/trpc/api/variables/types";
 import { Link2Icon } from "lucide-react";
+import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
+import { toast } from "sonner";
 import { z } from "zod";
 
 type TProps = {
@@ -156,6 +158,17 @@ export default function CreateVariablesForm({
         variableReferences,
       });
 
+      const result = await ResultAsync.fromPromise(
+        refetchVariables(),
+        () => new Error("Failed to refetch variables"),
+      );
+
+      if (result.isErr()) {
+        toast.error("Failed to refetch", {
+          description: "Failed to refetch variables after creation, please refresh the page.",
+        });
+      }
+
       for (const i of value.variables) {
         const id = getNewEntityIdForVariable({ name: i.name, value: i.value });
         temporarilyAddNewEntity(id);
@@ -164,8 +177,6 @@ export default function CreateVariablesForm({
         const id = getNewEntityIdForVariable({ name: i.name, value: i.value });
         temporarilyAddNewEntity(id);
       }
-
-      await refetchVariables();
 
       formApi.reset();
       afterSuccessfulSubmit?.(variables);
