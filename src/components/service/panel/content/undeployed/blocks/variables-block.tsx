@@ -96,12 +96,12 @@ const VariablesBlock = withForm({
         className={cn("group/section mt-1 flex w-full flex-col rounded-lg border", className)}
       >
         <Button
-          className="text-muted-foreground justify-start rounded-md px-3.5 py-2.75 text-left font-semibold group-data-open/section:rounded-b-none"
+          className="text-muted-foreground justify-start gap-2 rounded-md px-3 py-2.75 text-left font-semibold group-data-open/section:rounded-b-none"
           variant="ghost"
           type="button"
           onClick={() => setIsOpen((o) => !o)}
         >
-          <ChevronDownIcon className="-ml-1 size-5 transition group-data-open/section:rotate-180" />
+          <ChevronDownIcon className="size-5 transition-transform group-data-open/section:rotate-180" />
           <p className="min-w-0 shrink truncate">Environment Variables</p>
         </Button>
         {isOpen && (
