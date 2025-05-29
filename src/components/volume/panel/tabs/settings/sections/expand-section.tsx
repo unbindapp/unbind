@@ -305,7 +305,7 @@ function ExpandDialogTrigger({
             name="textToConfirm"
             children={(field) => (
               <field.TextField
-                hideInfo
+                hideError
                 field={field}
                 value={field.state.value}
                 onBlur={field.handleBlur}

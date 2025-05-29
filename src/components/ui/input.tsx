@@ -22,7 +22,7 @@ const inputVariants = cva(
   },
 );
 
-export type InputProps = React.InputHTMLAttributes<HTMLInputElement> &
+export type InputProps = React.ComponentPropsWithRef<"input"> &
   VariantProps<typeof inputVariants> &
   InputLayout & {
     Icon?: React.FC<{ className?: string }>;
