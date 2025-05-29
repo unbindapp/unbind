@@ -105,7 +105,7 @@ const VariablesBlock = withForm({
           <p className="min-w-0 shrink truncate">Environment Variables</p>
         </Button>
         {isOpen && (
-          <div className="flex w-full flex-col md:pt-1 md:pb-3.5">
+          <div className="flex w-full flex-col pb-1 md:pt-1 md:pb-3.5">
             <VariablesFormField form={form} tokenProps={tokenProps} />
           </div>
         )}
