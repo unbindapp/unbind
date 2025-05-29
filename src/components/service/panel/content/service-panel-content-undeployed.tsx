@@ -72,7 +72,7 @@ export default function ServicePanelContentUndeployed({ service }: TProps) {
         repo={service.git_repository}
         branch={service.config.git_branch}
         installationId={service.github_installation_id}
-        port={port}
+        detectedPort={typeof port === "number" ? port.toString() : undefined}
       />
     );
   }

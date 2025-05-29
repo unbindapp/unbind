@@ -3,7 +3,7 @@ export const generateDomain = (name: string, wildcardDomain: string) => {
     .trim()
     .toLowerCase()
     .replace(/\s+/g, " ") // single-space normalize
-    .replace(/[^a-z0-9 ]+/g, "") // strip invalid chars
+    .replace(/[^a-z0-9 _-]+/g, "") // strip invalid chars
     .replace(/ /g, "-"); // space → dash
   return `${cleanedName || "service"}-${randomString(6)}.${wildcardDomain}`;
 };

@@ -18,7 +18,7 @@ const commandVariants = cva(
       },
       wrapper: {
         default:
-          "rounded-xl h-120 max-h-[min(calc(100vh-(100vh-3rem)*0.1-7rem),50vh)] sm:max-h-[calc(100vh-(100vh-3rem)*0.1-7rem)] border shadow-xl shadow-shadow/shadow",
+          "rounded-xl h-120 max-h-[min(calc(100vh-(100vh-3rem)*0.1-7rem),50vh)] sm:max-h-[calc(100vh-(100vh-3rem)*0.1-7rem)] border shadow-xl shadow-shadow-color/shadow-opacity",
         none: "",
       },
     },

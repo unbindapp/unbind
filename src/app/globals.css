@@ -62,7 +62,7 @@
   --process-foreground: hsl(120 35% 95%);
   --wait: hsl(40 100% 25%);
   --wait-foreground: hsl(120 35% 95%);
-  --shadow: hsl(120 30% 4%);
+  --shadow-color: hsl(120 30% 4%);
   --border: hsl(120 20% 85%);
   --input: hsl(120 50% 97%);
   --ring: hsl(120 90% 5%);
@@ -163,7 +163,7 @@
   --process-foreground: hsl(120 9% 6%);
   --wait: hsl(40 60% 55%);
   --wait-foreground: hsl(120 9% 6%);
-  --shadow: hsl(120 11% 3%);
+  --shadow-color: hsl(120 11% 3%);
   --border: hsl(120 5% 12%);
   --input: hsl(120 7% 8%);
   --ring: hsl(120 100% 97%);
@@ -263,7 +263,7 @@
   --shadow-underline: inset 0rem -3px 0rem 0rem;
 
   --opacity-barrier: var(--opacity-barrier);
-  --opacity-shadow: var(--opacity-shadow);
+  --opacity-shadow-opacity: var(--opacity-shadow);
 
   @keyframes skeleton {
     0% {
@@ -390,7 +390,7 @@
   --color-wait-foreground: var(--wait-foreground);
 
   --color-link-chip: var(--link-chip);
-  --color-shadow: var(--shadow);
+  --color-shadow-color: var(--shadow-color);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);

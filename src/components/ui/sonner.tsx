@@ -22,7 +22,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
         style: { pointerEvents: "auto" },
         classNames: {
           icon: "text-foreground shrink-0 group-data-[type=error]/toast:text-destructive! group-data-[type=success]/toast:text-success! group-data-[type=warning]/toast:text-warning! size-4.5! [&>svg]:size-full",
-          default: "w-full group/toast shadow-lg shadow-shadow/shadow",
+          default: "w-full group/toast shadow-lg shadow-shadow-color/shadow-opacity",
           title:
             "text-foreground -mt-0.25 group-data-[type=error]/toast:text-destructive! group-data-[type=success]/toast:text-success! group-data-[type=warning]/toast:text-warning! font-semibold leading-tight!",
           toast:
@@ -31,7 +31,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           description:
             "group-data-[type=error]/toast:text-foreground! group-data-[type=warning]/toast:text-foreground! group-data-[type=success]/toast:text-foreground! text-muted-foreground! text-sm leading-snug!",
           closeButton:
-            "absolute size-6! p-1! before:left-1/2! before:top-1/2! before:-translate-1/2! has-hover:hover:text-foreground! active:text-foreground! text-muted-foreground! shadow-md shadow-shadow/shadow border border-border before:w-full before:h-full before:min-w-[48px] before:min-h-[48px] before:z-[-1] z-10 before:bg-transparent before:absolute border-border! active:bg-border! has-hover:hover:bg-border! bg-background! -left-1.75 -top-1.75 rounded-full",
+            "absolute size-6! p-1! before:left-1/2! before:top-1/2! before:-translate-1/2! has-hover:hover:text-foreground! active:text-foreground! text-muted-foreground! shadow-md shadow-shadow-color/shadow-opacity border border-border before:w-full before:h-full before:min-w-[48px] before:min-h-[48px] before:z-[-1] z-10 before:bg-transparent before:absolute border-border! active:bg-border! has-hover:hover:bg-border! bg-background! -left-1.75 -top-1.75 rounded-full",
           actionButton: "group/toast:bg-primary! group/toast:text-primary-foreground!",
           cancelButton: "group/toast:bg-muted! group-[.toast]:text-muted-foreground!",
         },

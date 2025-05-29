@@ -84,7 +84,7 @@ function DropdownMenuSubContent({
 }
 
 export const dropdownContentVariants = cva(
-  "bg-popover text-popover-foreground shadow-shadow/shadow z-999 flex max-h-[min(30rem,var(--radix-popper-available-height))] max-w-[var(--radix-popper-available-width)] flex-col overflow-hidden rounded-lg border p-0 shadow-lg",
+  "bg-popover text-popover-foreground shadow-shadow-color/shadow-opacity z-999 flex max-h-[min(30rem,var(--radix-popper-available-height))] max-w-[var(--radix-popper-available-width)] flex-col overflow-hidden rounded-lg border p-0 shadow-lg",
   {
     variants: {
       animate: {

@@ -26,6 +26,8 @@ export type InputProps = React.InputHTMLAttributes<HTMLInputElement> &
   VariantProps<typeof inputVariants> &
   InputLayout & {
     Icon?: React.FC<{ className?: string }>;
+    showUndo?: boolean;
+    onUndo?: () => void;
   };
 
 type InputLayout =
