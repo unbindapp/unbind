@@ -64,7 +64,7 @@ export const useVariablesUtils = ({
   environmentId,
   serviceId,
   type,
-}: TEntityVariableTypeProps) => {
+}: Omit<TEntityVariableTypeProps, "service">) => {
   const utils = api.useUtils();
   return {
     invalidate: () =>

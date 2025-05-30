@@ -124,17 +124,19 @@ export function ServicePanelContentUndeployedOLD({ service, className, ...rest }
     environmentId,
     query: { refetch: refetchService },
   } = useService();
+
   const { refetch: refetchServices } = useServicesUtils({ teamId, projectId, environmentId });
+
   const {
     query: { refetch: refetchDeployments },
   } = useDeployments();
+
   const { refetch: refetchVariables } = useVariablesUtils({
     type: "service",
     teamId,
     projectId,
     environmentId,
     serviceId: service.id,
-    service,
   });
 
   const createVariablesFormResult = useRef<TCreateVariablesFormResult>({
@@ -425,11 +427,7 @@ export function ServicePanelContentUndeployedOLD({ service, className, ...rest }
               serviceId={service.id}
               service={service}
             >
-              <CreateVariablesForm
-                onValueChange={(v) => {
-                  createVariablesFormResult.current = v;
-                }}
-              />
+              <CreateVariablesForm />
             </VariableReferencesProvider>
           </VariablesProvider>
         </div>

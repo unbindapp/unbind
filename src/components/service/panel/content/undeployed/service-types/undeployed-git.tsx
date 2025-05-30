@@ -1,3 +1,4 @@
+import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
 import {
   Block,
@@ -10,15 +11,20 @@ import {
 import DomainPortBlock from "@/components/service/panel/content/undeployed/blocks/domain-port-block";
 import VariablesBlock from "@/components/service/panel/content/undeployed/blocks/variables-block";
 import DeployButtonSection from "@/components/service/panel/content/undeployed/deploy-button-section";
+import useCreateFirstDeployment from "@/components/service/panel/content/undeployed/use-create-first-deployment";
 import { softValidateVariables } from "@/components/service/panel/content/undeployed/validators";
 import { WrapperForm, WrapperInner } from "@/components/service/panel/content/undeployed/wrapper";
 import { useSystem } from "@/components/system/system-provider";
 import { cn } from "@/components/ui/utils";
+import { getVariablesPair } from "@/components/variables/helpers";
+import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
 import { generateDomain } from "@/lib/helpers/generate-domain";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TVariableForCreate } from "@/server/trpc/api/variables/types";
 import { api } from "@/server/trpc/setup/client";
+import { useMutation } from "@tanstack/react-query";
 import { GitBranchIcon } from "lucide-react";
+import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
 import { toast } from "sonner";
 
@@ -37,6 +43,100 @@ export function UndeployedContentGit({
   installationId,
   detectedPort,
 }: TProps) {
+  const {
+    teamId,
+    projectId,
+    environmentId,
+    serviceId,
+    updateService,
+    createDeployment,
+    refetchService,
+    refetchServices,
+    refetchDeployments,
+    refetchVariables,
+    createOrUpdateVariables,
+    temporarilyAddNewEntity,
+    tokensRef,
+    onTokensChanged,
+  } = useCreateFirstDeployment();
+
+  const {
+    mutateAsync: createFirstDeployment,
+    error: errorCreateFirstDeployment,
+    isPending: isPendingCreateFirstDeployment,
+  } = useMutation({
+    mutationKey: ["createFirstDeployment", teamId, projectId, environmentId, serviceId],
+    mutationFn: async (formValues: TFormValues) => {
+      const { validVariables } = softValidateVariables(formValues.variables);
+      if (validVariables.length >= 1) {
+        if (!tokensRef.current) {
+          toast.warning("Reference variables are loading", {
+            description: "Reference variables loading, please wait a bit.",
+            duration: 5000,
+          });
+          return;
+        }
+
+        const { variables, variableReferences } = getVariablesPair({
+          variables: validVariables,
+          tokens: tokensRef.current,
+        });
+
+        const { data } = await createOrUpdateVariables({
+          type: "service",
+          teamId,
+          projectId,
+          environmentId,
+          serviceId,
+          variables,
+          variableReferences,
+        });
+
+        data.variable_references.forEach((v) =>
+          temporarilyAddNewEntity(getNewEntityIdForVariable({ name: v.name, value: v.value })),
+        );
+        data.variables.forEach((v) =>
+          temporarilyAddNewEntity(getNewEntityIdForVariable({ name: v.name, value: v.value })),
+        );
+      }
+
+      await updateService({
+        teamId,
+        projectId,
+        environmentId,
+        serviceId,
+        isPublic: formValues.isPublic,
+        gitBranch: formValues.branch,
+        hosts: !formValues.isPublic
+          ? undefined
+          : [{ host: formValues.domain, port: Number(formValues.port), path: "" }],
+      });
+
+      await createDeployment({
+        teamId,
+        projectId,
+        environmentId,
+        serviceId,
+      });
+    },
+    onSuccess: async () => {
+      const result = await ResultAsync.fromPromise(
+        Promise.all([
+          refetchService(),
+          refetchServices(),
+          refetchDeployments(),
+          refetchVariables(),
+        ]),
+        () => new Error(`Failed to refetch`),
+      );
+      if (result.isErr()) {
+        toast.error(result.error.message, {
+          description: "Failed to refetch service, deployments, or variables.",
+        });
+      }
+    },
+  });
+
   const { data: systemData } = useSystem();
   const wildcardUrl = systemData?.data.system_settings.wildcard_domain;
   const wildcardDomain = wildcardUrl ? new URL(wildcardUrl).hostname : undefined;
@@ -72,11 +172,7 @@ export function UndeployedContentGit({
         return result;
       },
     },
-    onSubmit: ({ value }) => {
-      toast.info("Submitted", {
-        description: JSON.stringify(value, null, 2),
-      });
-    },
+    onSubmit: async ({ value }) => await createFirstDeployment(value),
   });
 
   const {
@@ -99,6 +195,7 @@ export function UndeployedContentGit({
       }}
     >
       <WrapperInner>
+        {errorCreateFirstDeployment && <ErrorLine message={errorCreateFirstDeployment.message} />}
         {/* Repository and Branch */}
         <Block>
           {/* Repository */}
@@ -162,9 +259,22 @@ export function UndeployedContentGit({
           autoGeneratedDomain={autoGeneratedDomain}
         />
         {/* @ts-expect-error: This type is completely fine. The form here encapculates the variable only form but it doesn't work for some reason */}
-        <VariablesBlock form={form} />
+        <VariablesBlock form={form} onTokensChanged={onTokensChanged} />
       </WrapperInner>
-      <DeployButtonSection isPending={false} />
+      <form.Subscribe
+        selector={(s) => ({ isSubmitting: s.isSubmitting })}
+        children={({ isSubmitting }) => (
+          <DeployButtonSection isPending={isSubmitting || isPendingCreateFirstDeployment} />
+        )}
+      />
     </WrapperForm>
   );
 }
+
+type TFormValues = {
+  branch: string;
+  domain: string;
+  isPublic: boolean;
+  port: string;
+  variables: TVariableForCreate[];
+};

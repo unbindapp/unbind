@@ -14,14 +14,17 @@ import { useStore } from "@tanstack/react-form";
 import { ChevronDownIcon, Link2Icon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
+type TOnTokensChanged = (tokens: TToken<TReferenceExtended>[] | undefined) => void;
+
 const VariablesBlock = withForm({
   defaultValues: {
     variables: variablesFormFieldDefaultVariables,
   },
   props: {
     className: "",
+    onTokensChanged: (() => {}) as TOnTokensChanged | undefined,
   },
-  render: function Render({ form, className }) {
+  render: function Render({ form, className, onTokensChanged }) {
     const {
       list: { data: variableReferencesData, error: variableReferencesError },
     } = useVariableReferences();
@@ -83,6 +86,10 @@ const VariablesBlock = withForm({
       }
       return allKeys;
     }, [variableReferencesData]);
+
+    useEffect(() => {
+      onTokensChanged?.(tokens);
+    }, [tokens, onTokensChanged]);
 
     const tokenProps: TTokenProps<TReferenceExtended> = useMemo(() => {
       return {

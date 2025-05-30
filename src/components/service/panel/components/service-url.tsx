@@ -4,7 +4,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { TExternalEndpoint } from "@/server/trpc/api/services/types";
-import { ChevronUpIcon, ExternalLinkIcon, GlobeIcon, HourglassIcon } from "lucide-react";
+import {
+  ChevronUpIcon,
+  ExternalLinkIcon,
+  GlobeIcon,
+  HourglassIcon,
+  LoaderIcon,
+} from "lucide-react";
 import { ReactNode, useState } from "react";
 
 type TServiceUrlProps = { className?: string } & (
@@ -81,17 +87,25 @@ export default function ServiceUrl({
               size="sm"
             >
               <div className="relative -ml-0.5 size-3.5 shrink-0 transition-transform group-data-open/button:rotate-90">
-                <HourglassIcon className="animate-hourglass size-full group-data-open/button:animate-none group-data-open/button:opacity-0" />
+                {endpoint.tls_status === "pending" ? (
+                  <HourglassIcon className="animate-hourglass size-full group-data-open/button:animate-none group-data-open/button:opacity-0" />
+                ) : (
+                  <LoaderIcon className="size-full animate-spin group-data-open/button:animate-none group-data-open/button:opacity-0" />
+                )}
                 <ChevronUpIcon className="absolute top-0 left-0 size-full scale-110 -rotate-90 opacity-0 group-data-open/button:opacity-100" />
               </div>
               <p className="min-w-0 shrink truncate">{getUrlDisplayStr(endpoint)}</p>
             </Button>
           </PopoverTrigger>
-          <PopoverContent align="start" className="flex w-72 flex-col gap-0.5 p-2">
-            <ScrollArea>
+          <PopoverContent align="start" className="flex w-72 flex-col gap-0.5 overflow-hidden p-0">
+            <ScrollArea className="flex min-h-0 w-full flex-none shrink flex-col justify-start p-2">
               <div className="flex w-full flex-col gap-1.5 px-2 py-0.5">
                 <div className="text-warning flex w-full justify-start gap-1.5">
-                  <HourglassIcon className="animate-hourglass mt-0.75 -ml-0.5 size-3.5 shrink-0" />
+                  {endpoint.tls_status === "pending" ? (
+                    <HourglassIcon className="animate-hourglass mt-0.75 -ml-0.5 size-3.5 shrink-0" />
+                  ) : (
+                    <LoaderIcon className="mt-0.75 -ml-0.5 size-3.5 shrink-0 animate-spin" />
+                  )}
                   <p className="min-w-0 shrink text-base leading-tight font-semibold">
                     {endpoint.tls_status === "pending"
                       ? "Waiting for deployment"
@@ -109,6 +123,7 @@ export default function ServiceUrl({
                 variant="outline"
                 target="_blank"
                 size="sm"
+                forceMinSize={false}
                 href={getUrl(endpoint)}
               >
                 <div className="relative -ml-0.5 size-3.5 shrink-0 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45">

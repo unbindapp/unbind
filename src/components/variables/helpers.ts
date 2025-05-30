@@ -1,4 +1,10 @@
-import { TAvailableVariableReference } from "@/server/trpc/api/variables/types";
+import { splitByTokens, TToken } from "@/components/ui/textarea-with-tokens";
+import { TReferenceExtended } from "@/components/variables/variables-form-field";
+import {
+  TAvailableVariableReference,
+  TVariableForCreate,
+  TVariableReferenceForCreate,
+} from "@/server/trpc/api/variables/types";
 
 export function unwrapQuotes(value: string) {
   let newValue = value;
@@ -48,5 +54,52 @@ export function getReferenceVariableReadableNames({
   return {
     readableKey,
     sourceName,
+  };
+}
+
+export function getVariablesPair({
+  variables,
+  tokens,
+}: {
+  variables: TVariableForCreate[];
+  tokens: TToken<TReferenceExtended>[];
+}) {
+  const variablesWithTokens = variables.map((v) => ({
+    name: v.name,
+    value: splitByTokens(v.value, tokens),
+  }));
+
+  const variablesRegular: TVariableForCreate[] = variablesWithTokens
+    .filter((v) => v.value.every((v) => v.token === null))
+    .map((v) => ({ name: v.name, value: v.value.map((i) => i.value).join("") }));
+
+  const variableReferences: TVariableReferenceForCreate[] = variablesWithTokens
+    .filter((v) => v.value.some((v) => v.token !== null))
+    .map((v) => {
+      // TODO: Filter to only unique sources
+      const sources: TVariableReferenceForCreate["sources"] = v.value
+        .filter((i) => i.token !== null)
+        .map((i) => {
+          const t = i.token!;
+          return {
+            key: t.object.key,
+            type: t.object.type,
+            source_id: t.object.source_id,
+            source_kubernetes_name: t.object.source_kubernetes_name,
+            source_type: t.object.source_type,
+            source_name: t.object.source_name,
+            source_icon: t.object.source_icon,
+          };
+        });
+
+      return {
+        name: v.name,
+        value: v.value.map((i) => (i.token !== null ? i.token.object.template : i.value)).join(""),
+        sources,
+      };
+    });
+  return {
+    variables: variablesRegular,
+    variableReferences,
   };
 }

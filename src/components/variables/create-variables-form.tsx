@@ -1,9 +1,12 @@
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
-import { splitByTokens, TToken, TTokenProps } from "@/components/ui/textarea-with-tokens";
+import { TToken, TTokenProps } from "@/components/ui/textarea-with-tokens";
 import { cn } from "@/components/ui/utils";
-import { getReferenceVariableReadableNames } from "@/components/variables/helpers";
+import {
+  getReferenceVariableReadableNames,
+  getVariablesPair,
+} from "@/components/variables/helpers";
 import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
 import { useVariableReferences } from "@/components/variables/variable-references-provider";
 import { VariablesFormField } from "@/components/variables/variables-form-field";
@@ -12,7 +15,6 @@ import { useAppForm } from "@/lib/hooks/use-app-form";
 import {
   TAvailableVariableReference,
   TVariableForCreate,
-  TVariableReferenceForCreate,
   VariableForCreateSchema,
   VariableReferenceForCreateSchema,
 } from "@/server/trpc/api/variables/types";
@@ -23,7 +25,6 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 type TProps = {
-  onValueChange?: TCreateVariablesFormOnBlur;
   className?: string;
   afterSuccessfulSubmit?: (variables: TVariableForCreate[]) => void;
   isOpen?: boolean;
@@ -45,12 +46,11 @@ export default function CreateVariablesForm({
   afterSuccessfulSubmit,
   className,
   tokensDisabled,
-  onValueChange,
   isOpen: isOpenProp,
 }: TProps) {
   const {
     list: { refetch: refetchVariables },
-    createOrUpdate: { mutateAsync: createOrUpdateVariables, error: createError },
+    createOrUpdate: { mutateAsync: createOrUpdateVariables, error: createOrUpdateVariablesError },
     ...typedProps
   } = useVariables();
 
@@ -131,21 +131,13 @@ export default function CreateVariablesForm({
     validators: {
       onChange: CreateVariablesFormSchema,
     },
-    listeners: {
-      onChange: ({ formApi }) => {
-        if (!onValueChange) return;
-        const { variables, variableReferences } = getVariablesPair({
-          variables: formApi.state.values.variables,
-          tokens: tokens || [],
-        });
-        onValueChange({
-          variables,
-          variableReferences,
-        });
-      },
-    },
     onSubmit: async ({ formApi, value }) => {
-      if (!tokens) return;
+      if (!tokens) {
+        toast.warning("Variable references unavailable", {
+          description: "Variable references are not available yet, please try again later.",
+        });
+        return;
+      }
 
       const { variables, variableReferences } = getVariablesPair({
         variables: value.variables,
@@ -200,7 +192,10 @@ export default function CreateVariablesForm({
       >
         <VariablesFormField form={form} tokenProps={tokenProps} />
         <div className="bg-background-hover flex w-full flex-col gap-3 rounded-b-xl border-t p-2 md:mt-3.5 md:p-2.5">
-          {createError && <ErrorLine message={createError.message} />}
+          {createOrUpdateVariablesError && (
+            <ErrorLine message={createOrUpdateVariablesError.message} />
+          )}
+          {variableReferencesError && <ErrorLine message={variableReferencesError.message} />}
           <div className="flex w-full flex-row items-center justify-end">
             <form.Subscribe
               selector={(state) => ({ isSubmitting: state.isSubmitting })}
@@ -223,50 +218,3 @@ export const CreateVariablesFormResultSchema = z.object({
 });
 export type TCreateVariablesFormResult = z.infer<typeof CreateVariablesFormResultSchema>;
 export type TCreateVariablesFormOnBlur = (props: TCreateVariablesFormResult) => void;
-
-function getVariablesPair({
-  variables,
-  tokens,
-}: {
-  variables: TVariableForCreate[];
-  tokens: TToken<TReferenceExtended>[];
-}) {
-  const variablesWithTokens = variables.map((v) => ({
-    name: v.name,
-    value: splitByTokens(v.value, tokens),
-  }));
-
-  const variablesRegular: TVariableForCreate[] = variablesWithTokens
-    .filter((v) => v.value.every((v) => v.token === null))
-    .map((v) => ({ name: v.name, value: v.value.map((i) => i.value).join("") }));
-
-  const variableReferences: TVariableReferenceForCreate[] = variablesWithTokens
-    .filter((v) => v.value.some((v) => v.token !== null))
-    .map((v) => {
-      // TODO: Filter to only unique sources
-      const sources: TVariableReferenceForCreate["sources"] = v.value
-        .filter((i) => i.token !== null)
-        .map((i) => {
-          const t = i.token!;
-          return {
-            key: t.object.key,
-            type: t.object.type,
-            source_id: t.object.source_id,
-            source_kubernetes_name: t.object.source_kubernetes_name,
-            source_type: t.object.source_type,
-            source_name: t.object.source_name,
-            source_icon: t.object.source_icon,
-          };
-        });
-
-      return {
-        name: v.name,
-        value: v.value.map((i) => (i.token !== null ? i.token.object.template : i.value)).join(""),
-        sources,
-      };
-    });
-  return {
-    variables: variablesRegular,
-    variableReferences,
-  };
-}
