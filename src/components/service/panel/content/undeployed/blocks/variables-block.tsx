@@ -10,8 +10,9 @@ import {
   variablesFormFieldDefaultVariables,
 } from "@/components/variables/variables-form-field";
 import { withForm } from "@/lib/hooks/use-app-form";
+import { useStore } from "@tanstack/react-form";
 import { ChevronDownIcon, Link2Icon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const VariablesBlock = withForm({
   defaultValues: {
@@ -26,6 +27,12 @@ const VariablesBlock = withForm({
     } = useVariableReferences();
 
     const [isOpen, setIsOpen] = useState(false);
+
+    const variableErrors = useStore(form.store, (s) => s.fieldMeta.variables?.errors);
+
+    useEffect(() => {
+      if (variableErrors && variableErrors.length > 0) setIsOpen(true);
+    }, [variableErrors]);
 
     const tokens: TToken<TReferenceExtended>[] | undefined = useMemo(() => {
       if (!variableReferencesData) return undefined;

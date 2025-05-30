@@ -82,6 +82,7 @@ export const VariablesFormField = withForm({
                         {(subField) => {
                           return (
                             <field.TextField
+                              dontCheckUntilSubmit
                               field={subField}
                               value={subField.state.value}
                               onBlur={subField.handleBlur}
@@ -139,7 +140,7 @@ export const VariablesFormField = withForm({
                             className="absolute top-3 right-3 h-10.5 w-10.5 md:relative md:top-auto md:right-auto"
                             onClick={() => {
                               if (field.state.value.length <= 1) {
-                                form.reset();
+                                form.resetField("variables");
                                 return;
                               }
                               field.removeValue(i);

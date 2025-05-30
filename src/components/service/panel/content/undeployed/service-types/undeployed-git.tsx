@@ -10,6 +10,7 @@ import {
 import DomainPortBlock from "@/components/service/panel/content/undeployed/blocks/domain-port-block";
 import VariablesBlock from "@/components/service/panel/content/undeployed/blocks/variables-block";
 import DeployButtonSection from "@/components/service/panel/content/undeployed/deploy-button-section";
+import { softValidateVariables } from "@/components/service/panel/content/undeployed/validators";
 import { WrapperForm, WrapperInner } from "@/components/service/panel/content/undeployed/wrapper";
 import { useSystem } from "@/components/system/system-provider";
 import { cn } from "@/components/ui/utils";
@@ -52,6 +53,24 @@ export function UndeployedContentGit({
       isPublic: true,
       port: detectedPort !== undefined ? detectedPort : "",
       variables: [{ name: "", value: "" }] as TVariableForCreate[],
+    },
+    validators: {
+      onChange: ({ value }) => {
+        let fieldsErrorMap: Record<string, { message: string }> = {};
+
+        const variables = value.variables;
+        const { errorMap: variablesErrorMap } = softValidateVariables(variables);
+        if (variablesErrorMap) {
+          fieldsErrorMap = {
+            ...fieldsErrorMap,
+            ...variablesErrorMap,
+            variables: { message: "Not all variables are valid." },
+          };
+        }
+
+        const result = Object.keys(fieldsErrorMap).length > 0 ? { fields: fieldsErrorMap } : null;
+        return result;
+      },
     },
     onSubmit: ({ value }) => {
       toast.info("Submitted", {
