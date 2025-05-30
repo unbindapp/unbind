@@ -105,8 +105,8 @@ export function UndeployedContentGit({
         projectId,
         environmentId,
         serviceId,
-        isPublic: formValues.isPublic,
         gitBranch: formValues.branch,
+        isPublic: formValues.isPublic,
         hosts: !formValues.isPublic
           ? undefined
           : [{ host: formValues.domain, port: Number(formValues.port), path: "" }],
@@ -185,6 +185,10 @@ export function UndeployedContentGit({
     installationId,
   });
 
+  const branchItems = useMemo(() => {
+    return dataRepository?.repository.branches?.map((b) => b.name);
+  }, [dataRepository]);
+
   return (
     <WrapperForm
       onSubmit={(e) => {
@@ -227,7 +231,7 @@ export function UndeployedContentGit({
                     field={field}
                     value={field.state.value}
                     onChange={(v) => field.handleChange(v)}
-                    items={dataRepository?.repository.branches?.map((b) => b.name)}
+                    items={branchItems}
                     isPending={isPendingRepository}
                     error={errorRepository?.message}
                     commandInputPlaceholder="Search branches..."

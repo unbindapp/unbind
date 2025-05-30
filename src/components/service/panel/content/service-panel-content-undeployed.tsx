@@ -41,8 +41,9 @@ type TProps = {
 } & HTMLAttributes<HTMLDivElement>;
 
 export default function ServicePanelContentUndeployed({ service }: TProps) {
-  const port =
+  const detectedPort =
     service.config.ports && service.config.ports?.length > 0 ? service.config.ports[0].port : null;
+  const detectedPortStr = typeof detectedPort === "number" ? detectedPort.toString() : undefined;
 
   if (service.type === "docker-image") {
     const arr = service.config.image?.split(":");
@@ -53,7 +54,7 @@ export default function ServicePanelContentUndeployed({ service }: TProps) {
 
     return (
       <Providers service={service}>
-        <UndeployedContentDockerImage image={image} tag={tag} port={port} />
+        <UndeployedContentDockerImage image={image} tag={tag} detectedPort={detectedPortStr} />
       </Providers>
     );
   }
@@ -77,7 +78,7 @@ export default function ServicePanelContentUndeployed({ service }: TProps) {
           repo={service.git_repository}
           branch={service.config.git_branch}
           installationId={service.github_installation_id}
-          detectedPort={typeof port === "number" ? port.toString() : undefined}
+          detectedPort={detectedPortStr}
         />
       </Providers>
     );

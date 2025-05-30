@@ -24,7 +24,7 @@ import {
   useStore,
 } from "@tanstack/react-form";
 import { CheckIcon, RotateCcwIcon } from "lucide-react";
-import { FC, ReactNode, useCallback, useRef, useState } from "react";
+import { FC, ReactNode, useCallback, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
 const { fieldContext, formContext } = createFormHookContexts();
@@ -280,6 +280,9 @@ type TAsyncDropdownProps = TFieldProps & {
   value: string;
   onChange: (value: string) => void;
   children: ({ isOpen }: { isOpen: boolean }) => ReactNode;
+  commandInputValue?: string;
+  commandInputValueOnChange?: (value: string) => void;
+  commandShouldntFilter?: boolean;
 };
 
 const placeholderArray = Array.from({ length: 10 }, (_, index) => index);
@@ -299,6 +302,9 @@ function AsyncDropdown({
   onChange,
   className,
   children,
+  commandInputValue,
+  commandInputValueOnChange,
+  commandShouldntFilter,
 }: TAsyncDropdownProps) {
   const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
   const isFormSubmitted = submissionAttempts > 0;
@@ -306,6 +312,13 @@ function AsyncDropdown({
   const [isOpen, setIsOpen] = useState(false);
   const [commandValue, setCommandValue] = useState(value);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  const { shouldFilter, filter } = useMemo(() => {
+    if (commandShouldntFilter || isPending) {
+      return { shouldFilter: false, filter: () => 1 };
+    }
+    return { shouldFilter: undefined, filter: undefined };
+  }, [isPending, commandShouldntFilter]);
 
   return (
     <div className={cn("flex flex-col", className)}>
@@ -318,11 +331,17 @@ function AsyncDropdown({
           <Command
             value={commandValue}
             onValueChange={setCommandValue}
-            shouldFilter={isPending ? false : true}
+            shouldFilter={shouldFilter}
+            filter={filter}
             wrapper="none"
             className="flex flex-1 flex-col"
           >
-            <CommandInput showSpinner={isPending} placeholder={commandInputPlaceholder} />
+            <CommandInput
+              showSpinner={isPending}
+              placeholder={commandInputPlaceholder}
+              value={commandInputValue}
+              onValueChange={commandInputValueOnChange}
+            />
             <ScrollArea viewportRef={scrollAreaRef} className="flex flex-1 flex-col">
               <CommandList>
                 {items && (

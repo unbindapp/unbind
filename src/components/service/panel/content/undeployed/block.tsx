@@ -64,19 +64,12 @@ export function BlockItemContent({
   return children;
 }
 
-export function BlockItemButtonLike({
-  Icon,
-  text,
-  open,
-  asElement,
-  isPending,
-  className,
-  ...props
-}: {
+type TBlockItemButtonLikeProps = {
   Icon: FC<{ className?: string }>;
   text: string | ReactNode;
   isPending?: boolean;
   open?: boolean;
+  hideChevron?: boolean;
 } & (
   | ({
       asElement: "button";
@@ -84,7 +77,18 @@ export function BlockItemButtonLike({
   | ({
       asElement: "div";
     } & React.HTMLAttributes<HTMLDivElement>)
-)) {
+);
+
+export function BlockItemButtonLike({
+  Icon,
+  text,
+  open,
+  asElement,
+  isPending,
+  className,
+  hideChevron,
+  ...props
+}: TBlockItemButtonLikeProps) {
   const Element = asElement === "button" ? Button : "div";
   return (
     // @ts-expect-error this is fine. Typescript isn't smart enough
@@ -104,7 +108,7 @@ export function BlockItemButtonLike({
           {text}
         </p>
       </div>
-      {open !== undefined && (
+      {open !== undefined && !hideChevron && (
         <ChevronDownIcon className="text-muted-foreground -mr-0.75 size-5 transition group-data-open/button:rotate-180" />
       )}
     </Element>
