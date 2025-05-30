@@ -367,7 +367,12 @@ function AsyncCommandDropdown({
                 showSpinner={isPending}
                 placeholder={commandInputPlaceholder}
                 value={commandInputValue}
-                onValueChange={commandInputValueOnChange}
+                onValueChange={(v) => {
+                  commandInputValueOnChange?.(v);
+                  requestAnimationFrame(() => {
+                    scrollAreaRef.current?.scrollTo({ top: 0 });
+                  });
+                }}
               />
               <ScrollArea viewportRef={scrollAreaRef} className="flex flex-1 flex-col">
                 <CommandList>
