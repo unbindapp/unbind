@@ -9,7 +9,15 @@ import { CheckCircleIcon, HourglassIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDebounce } from "use-debounce";
 
-export function DomainCard({ domain, className }: { domain: string; className?: string }) {
+export function DomainCard({
+  domain,
+  paragraph = "Create the DNS record below. You can also do it after deployment.",
+  className,
+}: {
+  domain: string;
+  paragraph?: string;
+  className?: string;
+}) {
   const { data, isPending, error } = useSystem();
   const [isValidDebouncedDomain, setIsValidDebouncedDomain] = useState(false);
   const [isValidDomain, setIsValidDomain] = useState(false);
@@ -47,9 +55,7 @@ export function DomainCard({ domain, className }: { domain: string; className?: 
     >
       {(!data || dnsCheckData?.data.dns_status !== "resolved") && (
         <div className="flex w-full flex-col items-start justify-start">
-          <p className="w-full px-3 py-2.5 leading-tight font-medium">
-            Create the DNS record below. You can also do it after deployment.
-          </p>
+          <p className="w-full px-3 py-2.5 leading-tight font-medium">{paragraph}</p>
           <div className="flex w-full items-start justify-start border-t border-b px-3 pt-2 pb-2.5">
             <div className="flex max-w-1/3 flex-col gap-0.5 pr-6">
               <p className="text-muted-foreground leading-tight">Type</p>

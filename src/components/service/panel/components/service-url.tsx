@@ -1,4 +1,5 @@
 import ErrorLine from "@/components/error-line";
+import { DomainCard } from "@/components/service/panel/content/undeployed/domain-card";
 import { Button, LinkButton } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -75,7 +76,11 @@ export default function ServiceUrl({
     );
   }
 
-  if (endpoint.tls_status === "pending" || endpoint.tls_status === "attempting") {
+  if (
+    endpoint.dns_status === "unresolved" ||
+    endpoint.tls_status === "pending" ||
+    endpoint.tls_status === "attempting"
+  ) {
     return (
       <Wrapper className={className}>
         <Popover open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
@@ -87,7 +92,7 @@ export default function ServiceUrl({
               size="sm"
             >
               <div className="relative -ml-0.5 size-3.5 shrink-0 transition-transform group-data-open/button:rotate-90">
-                {endpoint.tls_status === "pending" ? (
+                {endpoint.tls_status === "pending" || endpoint.dns_status === "unresolved" ? (
                   <HourglassIcon className="animate-hourglass size-full group-data-open/button:animate-none group-data-open/button:opacity-0" />
                 ) : (
                   <LoaderIcon className="size-full animate-spin group-data-open/button:animate-none group-data-open/button:opacity-0" />
@@ -97,27 +102,39 @@ export default function ServiceUrl({
               <p className="min-w-0 shrink truncate">{getUrlDisplayStr(endpoint)}</p>
             </Button>
           </PopoverTrigger>
-          <PopoverContent align="start" className="flex w-72 flex-col gap-0.5 overflow-hidden p-0">
+          <PopoverContent
+            data-unresolved={endpoint.dns_status === "unresolved" ? true : undefined}
+            align="start"
+            className="group/popover flex w-72 flex-col gap-0.5 overflow-hidden p-0 data-unresolved:w-90"
+          >
             <ScrollArea className="flex min-h-0 w-full flex-none shrink flex-col justify-start p-2">
-              <div className="flex w-full flex-col gap-1.5 px-2 py-0.5">
-                <div className="text-warning flex w-full justify-start gap-1.5">
-                  {endpoint.tls_status === "pending" ? (
-                    <HourglassIcon className="animate-hourglass mt-0.75 -ml-0.5 size-3.5 shrink-0" />
-                  ) : (
-                    <LoaderIcon className="mt-0.75 -ml-0.5 size-3.5 shrink-0 animate-spin" />
-                  )}
-                  <p className="min-w-0 shrink text-base leading-tight font-semibold">
+              {endpoint.dns_status === "unresolved" ? (
+                <DomainCard
+                  className="-mt-2 -mb-1 border-none"
+                  domain={endpoint.host}
+                  paragraph="Create the DNS record below."
+                />
+              ) : (
+                <div className="flex w-full flex-col gap-1.5 px-2 py-0.5">
+                  <div className="text-warning flex w-full justify-start gap-1.5">
+                    {endpoint.tls_status === "pending" ? (
+                      <HourglassIcon className="animate-hourglass mt-0.75 -ml-0.5 size-3.5 shrink-0" />
+                    ) : (
+                      <LoaderIcon className="mt-0.75 -ml-0.5 size-3.5 shrink-0 animate-spin" />
+                    )}
+                    <p className="min-w-0 shrink text-base leading-tight font-semibold">
+                      {endpoint.tls_status === "pending"
+                        ? "Waiting for deployment"
+                        : "Issuing the certificate"}
+                    </p>
+                  </div>
+                  <p className="w-full text-sm leading-snug">
                     {endpoint.tls_status === "pending"
-                      ? "Waiting for deployment"
-                      : "Issuing the certificate"}
+                      ? "The TLS certificate will be issued once the first deployment is complete."
+                      : "The TLS certificate is being issued. This can take a few minutes..."}
                   </p>
                 </div>
-                <p className="w-full text-sm leading-snug">
-                  {endpoint.tls_status === "pending"
-                    ? "The TLS certificate will be issued once the first deployment is complete."
-                    : "The TLS certificate is being issued. This can take a few minutes..."}
-                </p>
-              </div>
+              )}
               <LinkButton
                 className="group/button mt-2 min-w-0 shrink px-2.25 py-1.5 text-left font-medium"
                 variant="outline"
