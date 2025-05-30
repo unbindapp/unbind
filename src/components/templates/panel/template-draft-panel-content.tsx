@@ -227,7 +227,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                           {visibleInputs[i].description}
                         </p>
                       </div>
-                      <form.Field
+                      <form.AppField
                         validators={{
                           onChange: ({ value }) =>
                             templateInputValidator({
@@ -279,7 +279,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                             />
                           );
                         }}
-                      </form.Field>
+                      </form.AppField>
                     </div>
                   ))
                 }

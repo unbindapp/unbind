@@ -3,12 +3,13 @@ import { AppRouterOutputs } from "@/server/trpc/api/root";
 import { z } from "zod";
 
 export const VariableForCreateValueSchema = z.string().nonempty("Value is required.");
+export const VariableForCreateNameSchema = z
+  .string()
+  .nonempty("Name is required.")
+  .refine((n) => !n.includes(" "), "Name can't contain spaces.");
 
 export const VariableForCreateSchema = z.object({
-  name: z
-    .string()
-    .nonempty("Name is required.")
-    .refine((n) => !n.includes(" "), "Name can't contain spaces."),
+  name: VariableForCreateNameSchema,
   value: VariableForCreateValueSchema,
 });
 

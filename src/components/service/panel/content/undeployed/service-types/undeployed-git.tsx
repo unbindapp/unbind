@@ -74,6 +74,8 @@ export function UndeployedContentGit({
     <WrapperForm
       onSubmit={(e) => {
         e.preventDefault();
+        e.stopPropagation();
+        form.validateArrayFieldsStartingFrom("variables", 0, "submit");
         form.handleSubmit(e);
       }}
     >
