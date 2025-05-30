@@ -226,7 +226,7 @@ export function UndeployedContentGit({
               <form.AppField
                 name="branch"
                 children={(field) => (
-                  <field.AsyncDropdown
+                  <field.AsyncCommandDropdown
                     dontCheckUntilSubmit
                     field={field}
                     value={field.state.value}
@@ -250,7 +250,7 @@ export function UndeployedContentGit({
                         onBlur={field.handleBlur}
                       />
                     )}
-                  </field.AsyncDropdown>
+                  </field.AsyncCommandDropdown>
                 )}
               />
             </BlockItemContent>

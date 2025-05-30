@@ -268,13 +268,15 @@ function StorageSizeInput({
   );
 }
 
-type TAsyncDropdownProps = TFieldProps & {
+type TAsyncCommandDropdownProps = TFieldProps & {
   items: string[] | undefined;
   isPending: boolean;
   error: string | undefined;
   commandEmptyText: string;
   commandInputPlaceholder: string;
   CommandEmptyIcon: FC<{ className?: string }>;
+  CommandItemElement?: FC<{ item: string; className?: string }>;
+  CommandItemsPinned?: FC<{ setIsOpen: (isOpen: boolean) => void; commandValue: string }>;
   className?: string;
   classNameInfo?: string;
   value: string;
@@ -287,7 +289,7 @@ type TAsyncDropdownProps = TFieldProps & {
 
 const placeholderArray = Array.from({ length: 10 }, (_, index) => index);
 
-function AsyncDropdown({
+function AsyncCommandDropdown({
   field,
   items,
   isPending,
@@ -295,6 +297,8 @@ function AsyncDropdown({
   commandEmptyText,
   commandInputPlaceholder,
   CommandEmptyIcon,
+  CommandItemElement,
+  CommandItemsPinned,
   dontCheckUntilSubmit,
   hideError,
   classNameInfo,
@@ -305,7 +309,7 @@ function AsyncDropdown({
   commandInputValue,
   commandInputValueOnChange,
   commandShouldntFilter,
-}: TAsyncDropdownProps) {
+}: TAsyncCommandDropdownProps) {
   const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
   const isFormSubmitted = submissionAttempts > 0;
 
@@ -363,6 +367,9 @@ function AsyncDropdown({
                   {!items && !isPending && error && (
                     <ErrorCard className="rounded-md" message={error} />
                   )}
+                  {items && CommandItemsPinned ? (
+                    <CommandItemsPinned setIsOpen={setIsOpen} commandValue={value} />
+                  ) : null}
                   {items &&
                     items.map((item) => (
                       <CommandItem
@@ -374,7 +381,11 @@ function AsyncDropdown({
                         className="group/item px-3"
                         data-checked={field.state.value === item ? true : undefined}
                       >
-                        <p className="min-w-0 shrink leading-tight">{item}</p>
+                        {CommandItemElement ? (
+                          <CommandItemElement item={item} />
+                        ) : (
+                          <p className="min-w-0 shrink leading-tight">{item}</p>
+                        )}
                         <CheckIcon
                           strokeWidth={2.5}
                           className="-mr-0.5 ml-auto size-4.5 opacity-0 group-data-checked/item:opacity-100"
@@ -408,7 +419,7 @@ export const { useAppForm, withForm } = createFormHook({
     TextareaWithTokens: TextareaWithTokensWithInfo,
     DomainInput,
     StorageSizeInput,
-    AsyncDropdown,
+    AsyncCommandDropdown,
   },
   formComponents: {
     SubmitButton: Button,

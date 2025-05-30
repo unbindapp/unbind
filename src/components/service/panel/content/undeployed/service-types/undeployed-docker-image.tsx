@@ -232,7 +232,7 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort }: TProp
               <form.AppField
                 name="tag"
                 children={(field) => (
-                  <field.AsyncDropdown
+                  <field.AsyncCommandDropdown
                     dontCheckUntilSubmit
                     field={field}
                     value={field.state.value}
@@ -260,7 +260,7 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort }: TProp
                         fadeOnDisabled={false}
                       />
                     )}
-                  </field.AsyncDropdown>
+                  </field.AsyncCommandDropdown>
                 )}
               />
             </BlockItemContent>
