@@ -110,6 +110,7 @@ export default function RenameEntityTrigger({
         <form
           onSubmit={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             form.handleSubmit();
           }}
           className="flex w-full flex-col gap-4"

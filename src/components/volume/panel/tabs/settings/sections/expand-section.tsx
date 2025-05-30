@@ -297,6 +297,7 @@ function ExpandDialogTrigger({
         <form
           onSubmit={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             form.handleSubmit();
           }}
           className="group/form flex flex-col"

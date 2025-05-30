@@ -21,7 +21,7 @@ import { getVariablesPair } from "@/components/variables/helpers";
 import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
 import { defaultDebounceMs } from "@/lib/constants";
 import { generateDomain } from "@/lib/helpers/generate-domain";
-import { useAppForm } from "@/lib/hooks/use-app-form";
+import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
 import { TVariableForCreate } from "@/server/trpc/api/variables/types";
 import { api } from "@/server/trpc/setup/client";
 import { useMutation } from "@tanstack/react-query";
@@ -73,8 +73,12 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort }: TProp
     },
   );
 
-  const tagItems = useMemo(() => {
-    return dataTags?.tags?.map((b) => b.name);
+  const tagItems: TCommandItem[] | undefined = useMemo(() => {
+    const items: TCommandItem[] | undefined = dataTags?.tags?.map((b) => ({
+      value: b.name,
+      label: b.name,
+    }));
+    return items;
   }, [dataTags]);
 
   const {

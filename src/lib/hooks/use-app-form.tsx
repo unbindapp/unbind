@@ -275,15 +275,25 @@ function StorageSizeInput({
   );
 }
 
+export type TCommandItem = {
+  value: string;
+  label: string;
+};
+
 type TAsyncCommandDropdownProps = TFieldProps & {
-  items: string[] | undefined;
+  items: TCommandItem[] | undefined;
   isPending: boolean;
   error: string | undefined;
   commandEmptyText: string;
   commandInputPlaceholder: string;
   CommandEmptyIcon: FC<{ className?: string }>;
-  CommandItemElement?: FC<{ item: string; className?: string }>;
+  CommandItemElement?: FC<{ item: TCommandItem; className?: string }>;
   CommandItemsPinned?: FC<{ setIsOpen: (isOpen: boolean) => void; commandValue: string }>;
+  TriggerWrapper?: FC<{
+    isOpen: boolean;
+    setIsOpen: (isOpen: boolean) => void;
+    children: ReactNode;
+  }>;
   className?: string;
   classNameInfo?: string;
   value: string;
@@ -306,6 +316,7 @@ function AsyncCommandDropdown({
   CommandEmptyIcon,
   CommandItemElement,
   CommandItemsPinned,
+  TriggerWrapper,
   dontCheckUntilSubmit,
   hideError,
   classNameInfo,
@@ -333,78 +344,85 @@ function AsyncCommandDropdown({
 
   return (
     <div className={cn("flex flex-col", className)}>
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <PopoverTrigger asChild>{children({ isOpen })}</PopoverTrigger>
-        <PopoverContent
-          animate={false}
-          className="flex h-68 max-h-[min(30rem,var(--radix-popper-available-height))] overflow-hidden p-0"
-        >
-          <Command
-            value={commandValue}
-            onValueChange={setCommandValue}
-            shouldFilter={shouldFilter}
-            filter={filter}
-            wrapper="none"
-            className="flex flex-1 flex-col"
+      {TriggerWrapper ? (
+        <TriggerWrapper isOpen={isOpen} setIsOpen={setIsOpen}>
+          {children({ isOpen })}
+        </TriggerWrapper>
+      ) : (
+        <Popover open={isOpen} onOpenChange={setIsOpen}>
+          <PopoverTrigger asChild>{children({ isOpen })}</PopoverTrigger>
+          <PopoverContent
+            animate={false}
+            className="flex h-68 max-h-[min(30rem,var(--radix-popper-available-height))] overflow-hidden p-0"
           >
-            <CommandInput
-              showSpinner={isPending}
-              placeholder={commandInputPlaceholder}
-              value={commandInputValue}
-              onValueChange={commandInputValueOnChange}
-            />
-            <ScrollArea viewportRef={scrollAreaRef} className="flex flex-1 flex-col">
-              <CommandList>
-                {items && (
-                  <CommandEmpty className="text-muted-foreground flex items-center justify-start gap-2 px-2.5 py-2.5 leading-tight">
-                    <CommandEmptyIcon className="size-4.5 shrink-0" />
-                    <p className="min-w-0 shrink">{commandEmptyText}</p>
-                  </CommandEmpty>
-                )}
-                <CommandGroup>
-                  {!items &&
-                    isPending &&
-                    placeholderArray.map((_, index) => (
-                      <CommandItem disabled key={index}>
-                        <p className="bg-foreground animate-skeleton min-w-0 shrink rounded-md leading-tight">
-                          Loading
-                        </p>
-                      </CommandItem>
-                    ))}
-                  {!items && !isPending && error && (
-                    <ErrorCard className="rounded-md" message={error} />
+            <Command
+              value={commandValue}
+              onValueChange={setCommandValue}
+              shouldFilter={shouldFilter}
+              filter={filter}
+              wrapper="none"
+              className="flex flex-1 flex-col"
+            >
+              <CommandInput
+                showSpinner={isPending}
+                placeholder={commandInputPlaceholder}
+                value={commandInputValue}
+                onValueChange={commandInputValueOnChange}
+              />
+              <ScrollArea viewportRef={scrollAreaRef} className="flex flex-1 flex-col">
+                <CommandList>
+                  {items && (
+                    <CommandEmpty className="text-muted-foreground flex items-center justify-start gap-2 px-2.5 py-2.5 leading-tight">
+                      <CommandEmptyIcon className="size-4.5 shrink-0" />
+                      <p className="min-w-0 shrink">{commandEmptyText}</p>
+                    </CommandEmpty>
                   )}
-                  {items && CommandItemsPinned ? (
-                    <CommandItemsPinned setIsOpen={setIsOpen} commandValue={value} />
-                  ) : null}
-                  {items &&
-                    items.map((item) => (
-                      <CommandItem
-                        onSelect={(v) => {
-                          onChange(v);
-                          setIsOpen(false);
-                        }}
-                        key={item}
-                        className="group/item px-3"
-                        data-checked={field.state.value === item ? true : undefined}
-                      >
-                        {CommandItemElement ? (
-                          <CommandItemElement item={item} />
-                        ) : (
-                          <p className="min-w-0 shrink leading-tight">{item}</p>
-                        )}
-                        <CheckIcon
-                          strokeWidth={2.5}
-                          className="-mr-0.5 ml-auto size-4.5 opacity-0 group-data-checked/item:opacity-100"
-                        />
-                      </CommandItem>
-                    ))}
-                </CommandGroup>
-              </CommandList>
-            </ScrollArea>
-          </Command>
-        </PopoverContent>
-      </Popover>
+                  <CommandGroup>
+                    {!items &&
+                      isPending &&
+                      placeholderArray.map((_, index) => (
+                        <CommandItem disabled key={index}>
+                          <p className="bg-foreground animate-skeleton min-w-0 shrink rounded-md leading-tight">
+                            Loading
+                          </p>
+                        </CommandItem>
+                      ))}
+                    {!items && !isPending && error && (
+                      <ErrorCard className="rounded-md" message={error} />
+                    )}
+                    {items && CommandItemsPinned ? (
+                      <CommandItemsPinned setIsOpen={setIsOpen} commandValue={value} />
+                    ) : null}
+                    {items &&
+                      items.map((item) => (
+                        <CommandItem
+                          onSelect={(v) => {
+                            onChange(v);
+                            setIsOpen(false);
+                          }}
+                          value={item.value}
+                          key={item.value}
+                          className="group/item px-3"
+                          data-checked={field.state.value === item ? true : undefined}
+                        >
+                          {CommandItemElement ? (
+                            <CommandItemElement item={item} />
+                          ) : (
+                            <p className="min-w-0 shrink leading-tight">{item.label}</p>
+                          )}
+                          <CheckIcon
+                            strokeWidth={2.5}
+                            className="-mr-0.5 ml-auto size-4.5 opacity-0 group-data-checked/item:opacity-100"
+                          />
+                        </CommandItem>
+                      ))}
+                  </CommandGroup>
+                </CommandList>
+              </ScrollArea>
+            </Command>
+          </PopoverContent>
+        </Popover>
+      )}
       {!hideError &&
       (field.state.meta.isTouched || isFormSubmitted) &&
       (field.state.meta.isBlurred || isFormSubmitted) &&
@@ -420,7 +438,7 @@ function AsyncCommandDropdown({
 }
 
 type TAsyncDropdownMenuProps = TFieldProps & {
-  items: string[] | undefined;
+  items: TCommandItem[] | undefined;
   isPending: boolean;
   error: string | undefined;
   className?: string;
@@ -471,15 +489,15 @@ function AsyncDropdownMenu({
               {items &&
                 items.map((item) => (
                   <DropdownMenuItem
-                    key={item}
+                    key={item.value}
                     onSelect={() => {
-                      onChange(item);
+                      onChange(item.value);
                       setIsOpen(false);
                     }}
-                    data-checked={value === item ? true : undefined}
+                    data-checked={value === item.value ? true : undefined}
                     className="group/item"
                   >
-                    <p className="min-w-0 shrink leading-tight">{item}</p>
+                    <p className="min-w-0 shrink leading-tight">{item.label}</p>
                     <CheckIcon
                       strokeWidth={2.5}
                       className="-mr-0.5 ml-auto size-4.5 opacity-0 group-data-checked/item:opacity-100"

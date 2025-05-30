@@ -19,7 +19,7 @@ import { cn } from "@/components/ui/utils";
 import { getVariablesPair } from "@/components/variables/helpers";
 import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
 import { generateDomain } from "@/lib/helpers/generate-domain";
-import { useAppForm } from "@/lib/hooks/use-app-form";
+import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
 import { TVariableForCreate } from "@/server/trpc/api/variables/types";
 import { api } from "@/server/trpc/setup/client";
 import { useMutation } from "@tanstack/react-query";
@@ -185,8 +185,12 @@ export function UndeployedContentGit({
     installationId,
   });
 
-  const branchItems = useMemo(() => {
-    return dataRepository?.repository.branches?.map((b) => b.name);
+  const branchItems: TCommandItem[] | undefined = useMemo(() => {
+    const items: TCommandItem[] | undefined = dataRepository?.repository.branches?.map((b) => ({
+      value: b.name,
+      label: b.name,
+    }));
+    return items;
   }, [dataRepository]);
 
   return (

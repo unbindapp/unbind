@@ -1,3 +1,4 @@
+import { NewS3SourceTrigger } from "@/app/(team)/[team_id]/settings/storage/_components/s3-source-card";
 import { databaseTypeToName } from "@/components/command-panel/context-command-panel/items/database";
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
@@ -17,16 +18,25 @@ import { WrapperForm, WrapperInner } from "@/components/service/panel/content/un
 import { useService } from "@/components/service/service-provider";
 import S3SourcesProvider, { useS3Sources } from "@/components/storage/s3-sources-provider";
 import { CommandItem } from "@/components/ui/command";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { getVariablesPair } from "@/components/variables/helpers";
 import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
-import { useAppForm } from "@/lib/hooks/use-app-form";
+import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
 import { TVariableForCreate } from "@/server/trpc/api/variables/types";
 import { api } from "@/server/trpc/setup/client";
 import { useMutation } from "@tanstack/react-query";
-import { CylinderIcon, MilestoneIcon, OctagonXIcon } from "lucide-react";
+import { CylinderIcon, MilestoneIcon, OctagonXIcon, PlusIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
-import { useMemo } from "react";
+import { ReactNode, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 
 type TProps = {
@@ -42,6 +52,8 @@ export function UndeployedContentDatabase(props: TProps) {
     </S3SourcesProvider>
   );
 }
+
+const sourceAndBucketSeparator = "||||||";
 
 function UndeployedContentDatabase_({ type, version }: TProps) {
   const {
@@ -68,9 +80,17 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
   } = useS3Sources();
 
   const sourceAndBucketItems = useMemo(() => {
-    return dataS3Sources?.sources.flatMap((source) =>
-      source.buckets.map((bucket) => `${source.name}/${bucket.name}`),
+    const items: TCommandItem[] | undefined = dataS3Sources?.sources.flatMap((source) =>
+      source.buckets.map((bucket) => {
+        const value = `${source.name} / ${bucket.name}${sourceAndBucketSeparator}${source.name}${sourceAndBucketSeparator}${source.id}${sourceAndBucketSeparator}${bucket.name}`;
+        const label = getSourceAndBucketLabelFromValue(value);
+        return {
+          value,
+          label,
+        };
+      }),
     );
+    return items;
   }, [dataS3Sources]);
 
   const {
@@ -81,9 +101,19 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
     type,
   });
 
-  const versionItems = useMemo(() => {
-    return dataDatabase?.database.version.options;
+  const versionItems: TCommandItem[] | undefined = useMemo(() => {
+    const items: TCommandItem[] | undefined = dataDatabase?.database.version.options.map((v) => ({
+      value: v,
+      label: v,
+    }));
+    return items;
   }, [dataDatabase]);
+
+  const hasNoBuckets = useMemo(() => {
+    return dataS3Sources && dataS3Sources.sources.flatMap((s) => s.buckets).length === 0
+      ? true
+      : false;
+  }, [dataS3Sources]);
 
   const {
     mutateAsync: createFirstDeployment,
@@ -125,6 +155,12 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
         );
       }
 
+      const { sourceId, bucketName } = getSourceIdAndBucketNameFromValue(
+        formValues.sourceAndBucket,
+      );
+      const s3Props =
+        sourceId && bucketName ? { s3BackupSourceId: sourceId, s3BackupBucket: bucketName } : {};
+
       await updateService({
         teamId,
         projectId,
@@ -133,6 +169,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
         databaseConfig: {
           version: formValues.version,
         },
+        ...s3Props,
       });
 
       await createDeployment({
@@ -186,6 +223,13 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
     },
     onSubmit: async ({ value }) => await createFirstDeployment(value),
   });
+
+  const CreateBackupSourceTriggerMemoized = useCallback(
+    (props: Omit<TCreateBackupSourceTriggerProps, "teamId">) => (
+      <CreateBackupSourceTrigger teamId={teamId} {...props} />
+    ),
+    [teamId],
+  );
 
   return (
     <WrapperForm
@@ -273,8 +317,11 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
                       commandEmptyText="No buckets found"
                       CommandEmptyIcon={CylinderIcon}
                       CommandItemElement={SourceAndBucketCommandItemElement}
+                      TriggerWrapper={hasNoBuckets ? CreateBackupSourceTriggerMemoized : undefined}
                       CommandItemsPinned={({ setIsOpen, commandValue }) => {
-                        if (commandValue === "") return null;
+                        if (commandValue === "" || hasNoBuckets) {
+                          return null;
+                        }
                         return (
                           <CommandItem
                             onSelect={() => {
@@ -289,28 +336,31 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
                         );
                       }}
                     >
-                      {({ isOpen }) => (
-                        <BlockItemButtonLike
-                          asElement="button"
-                          text={
-                            field.state.value !== "" ? (
-                              <>
-                                {field.state.value.split("/")[0]}
-                                <span className="text-muted-more-foreground px-[0.5ch]">/</span>
-                                {field.state.value.split("/")[1]}
-                              </>
-                            ) : (
-                              "Select a bucket"
-                            )
-                          }
-                          Icon={({ className }) => (
-                            <CylinderIcon className={cn("scale-90", className)} />
-                          )}
-                          variant="outline"
-                          open={isOpen}
-                          onBlur={field.handleBlur}
-                        />
-                      )}
+                      {({ isOpen }) => {
+                        const label = getSourceAndBucketLabelFromValue(field.state.value);
+                        return (
+                          <BlockItemButtonLike
+                            asElement="button"
+                            text={
+                              field.state.value !== "" ? (
+                                <>
+                                  {label.split(sourceAndBucketSeparator)[0]}
+                                  <span className="text-muted-more-foreground px-[0.5ch]">/</span>
+                                  {label.split(sourceAndBucketSeparator)[1]}
+                                </>
+                              ) : (
+                                "Select a bucket"
+                              )
+                            }
+                            Icon={({ className }) => (
+                              <CylinderIcon className={cn("scale-90", className)} />
+                            )}
+                            variant="outline"
+                            open={isOpen}
+                            onBlur={field.handleBlur}
+                          />
+                        );
+                      }}
                     </field.AsyncCommandDropdown>
                   )}
                 />
@@ -335,16 +385,70 @@ function SourceAndBucketCommandItemElement({
   item,
   className,
 }: {
-  item: string;
+  item: TCommandItem;
   className?: string;
 }) {
   return (
     <p className={cn("min-w-0 shrink leading-tight", className)}>
-      {item.split("/")[0]}
+      {item.label.split(sourceAndBucketSeparator)[0]}
       <span className="text-muted-more-foreground px-[0.5ch]">/</span>
-      {item.split("/")[1]}
+      {item.label.split(sourceAndBucketSeparator)[1]}
     </p>
   );
+}
+
+type TCreateBackupSourceTriggerProps = {
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
+  children: ReactNode;
+  teamId: string;
+};
+
+function CreateBackupSourceTrigger({
+  teamId,
+  isOpen,
+  setIsOpen,
+  children,
+}: TCreateBackupSourceTriggerProps) {
+  return (
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+      <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
+      <DropdownMenuContent animate={false} className="w-[var(--radix-popper-anchor-width)]">
+        <ScrollArea>
+          <DropdownMenuLabel className="border-b px-3">
+            {"You don't have any buckets. Create a backup source."}
+          </DropdownMenuLabel>
+          <DropdownMenuGroup>
+            <NewS3SourceTrigger teamId={teamId}>
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="gap-1.5">
+                <PlusIcon className="-ml-1 size-5" />
+                <p className="min-w-0 shrink">Create Backup Source</p>
+              </DropdownMenuItem>
+            </NewS3SourceTrigger>
+          </DropdownMenuGroup>
+        </ScrollArea>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function getSourceAndBucketLabelFromValue(value: string): string {
+  const parts = value.split(sourceAndBucketSeparator);
+  return `${parts[1]}${sourceAndBucketSeparator}${parts[parts.length - 1]}`;
+}
+
+function getSourceIdAndBucketNameFromValue(value: string) {
+  const parts = value.split(sourceAndBucketSeparator);
+  if (parts.length < 3) {
+    return {
+      sourceId: undefined,
+      bucketName: undefined,
+    };
+  }
+  return {
+    sourceId: parts[parts.length - 2],
+    bucketName: parts[parts.length - 1],
+  };
 }
 
 type TFormValues = {
