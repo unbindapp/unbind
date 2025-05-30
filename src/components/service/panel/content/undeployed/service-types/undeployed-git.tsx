@@ -1,3 +1,4 @@
+import { builderEnumToName } from "@/components/command-panel/context-command-panel/items/git";
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
 import {
@@ -15,18 +16,25 @@ import useCreateFirstDeployment from "@/components/service/panel/content/undeplo
 import { softValidateVariables } from "@/components/service/panel/content/undeployed/validators";
 import { WrapperForm, WrapperInner } from "@/components/service/panel/content/undeployed/wrapper";
 import { useSystem } from "@/components/system/system-provider";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { getVariablesPair } from "@/components/variables/helpers";
 import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
 import { generateDomain } from "@/lib/helpers/generate-domain";
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
+import {
+  GitServiceBuilderEnum,
+  TGitServiceBuilder,
+  TServiceShallow,
+} from "@/server/trpc/api/services/types";
 import { TVariableForCreate } from "@/server/trpc/api/variables/types";
 import { api } from "@/server/trpc/setup/client";
 import { useMutation } from "@tanstack/react-query";
-import { GitBranchIcon } from "lucide-react";
+import { ChevronUpIcon, CogIcon, GitBranchIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 
 type TProps = {
   repo: string;
@@ -34,6 +42,7 @@ type TProps = {
   branch: string;
   installationId: number;
   detectedPort: string | undefined;
+  service: TServiceShallow;
 };
 
 export function UndeployedContentGit({
@@ -42,6 +51,7 @@ export function UndeployedContentGit({
   branch,
   installationId,
   detectedPort,
+  service,
 }: TProps) {
   const {
     teamId,
@@ -100,6 +110,9 @@ export function UndeployedContentGit({
         );
       }
 
+      const extraProps =
+        formValues.builder !== service.config.builder ? { builder: formValues.builder } : {};
+
       await updateService({
         teamId,
         projectId,
@@ -110,6 +123,7 @@ export function UndeployedContentGit({
         hosts: !formValues.isPublic
           ? undefined
           : [{ host: formValues.domain, port: Number(formValues.port), path: "" }],
+        ...extraProps,
       });
 
       await createDeployment({
@@ -153,6 +167,7 @@ export function UndeployedContentGit({
       isPublic: true,
       port: detectedPort !== undefined ? detectedPort : "",
       variables: [{ name: "", value: "" }] as TVariableForCreate[],
+      builder: service.config.builder as TGitServiceBuilder,
     },
     validators: {
       onChange: ({ value }) => {
@@ -192,6 +207,8 @@ export function UndeployedContentGit({
     }));
     return items;
   }, [dataRepository]);
+
+  const [isAdvancedSettingsOpen, setIsAdvancedSettingsOpen] = useState(false);
 
   return (
     <WrapperForm
@@ -268,6 +285,73 @@ export function UndeployedContentGit({
         />
         {/* @ts-expect-error: This type is completely fine. The form here encapculates the variable only form but it doesn't work for some reason */}
         <VariablesBlock form={form} onTokensChanged={onTokensChanged} />
+        <div
+          data-open={isAdvancedSettingsOpen ? true : undefined}
+          className="group/section -mt-3 flex w-full flex-col rounded-lg border"
+        >
+          <Button
+            className="text-muted-foreground justify-start gap-2 rounded-md px-3 py-2.75 text-left font-semibold group-data-open/section:rounded-b-none"
+            variant="ghost"
+            type="button"
+            onClick={() => setIsAdvancedSettingsOpen((o) => !o)}
+          >
+            <div className="relative size-5 shrink-0 transition-transform group-data-open/section:rotate-180">
+              <CogIcon className="size-full scale-90 transition-opacity group-data-open/section:opacity-0" />
+              <ChevronUpIcon className="absolute top-0 left-0 size-full -rotate-180 opacity-0 transition-opacity group-data-open/section:opacity-100" />
+            </div>
+            <p className="min-w-0 shrink truncate">Advanced Settings</p>
+          </Button>
+          {isAdvancedSettingsOpen && (
+            <div className="flex w-full flex-col px-2 py-2.5 sm:p-3">
+              <Block>
+                <BlockItem>
+                  <BlockItemHeader>
+                    <BlockItemTitle>Builder</BlockItemTitle>
+                  </BlockItemHeader>
+                  <BlockItemContent>
+                    <form.AppField
+                      name="builder"
+                      children={(field) => (
+                        <field.AsyncDropdownMenu
+                          dontCheckUntilSubmit
+                          field={field}
+                          value={field.state.value}
+                          onChange={(v) => field.handleChange(v as TGitServiceBuilder)}
+                          items={GitServiceBuilderEnum.options.map((o) => ({
+                            label: builderEnumToName(o),
+                            value: o,
+                          }))}
+                          ItemIcon={({ className, value }) => (
+                            <BrandIcon brand={value} className={className} color="brand" />
+                          )}
+                          isPending={false}
+                          error={undefined}
+                        >
+                          {({ isOpen }) => (
+                            <BlockItemButtonLike
+                              asElement="button"
+                              text={builderEnumToName(field.state.value)}
+                              Icon={({ className }) => (
+                                <BrandIcon
+                                  brand={field.state.value}
+                                  className={className}
+                                  color="brand"
+                                />
+                              )}
+                              variant="outline"
+                              open={isOpen}
+                              onBlur={field.handleBlur}
+                            />
+                          )}
+                        </field.AsyncDropdownMenu>
+                      )}
+                    />
+                  </BlockItemContent>
+                </BlockItem>
+              </Block>
+            </div>
+          )}
+        </div>
       </WrapperInner>
       <form.Subscribe
         selector={(s) => ({ isSubmitting: s.isSubmitting })}
@@ -284,5 +368,6 @@ type TFormValues = {
   domain: string;
   isPublic: boolean;
   port: string;
+  builder: z.infer<typeof GitServiceBuilderEnum>;
   variables: TVariableForCreate[];
 };

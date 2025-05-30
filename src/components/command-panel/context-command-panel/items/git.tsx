@@ -14,6 +14,7 @@ import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { createClient } from "@/server/go/client.gen";
 import { AppRouterOutputs } from "@/server/trpc/api/root";
+import { TBuilderEnum, TGitServiceBuilder } from "@/server/trpc/api/services/types";
 import { api } from "@/server/trpc/setup/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BuildingIcon, CogIcon, HourglassIcon, UnplugIcon, UserIcon } from "lucide-react";
@@ -38,6 +39,14 @@ export function useGitItemHook({ context }: TProps) {
 
   return hook;
 }
+
+export const defaultGitServiceBuilder: TGitServiceBuilder = "railpack";
+export const builderEnumToName = (builder: TBuilderEnum) => {
+  if (builder === "database") return "Database";
+  if (builder === "docker") return "Docker";
+  if (builder === "railpack") return "Railpack";
+  return "Unknown Builder";
+};
 
 function useGitItem({ context }: TProps) {
   const mainPageId = "git";
@@ -91,7 +100,7 @@ function useGitItem({ context }: TProps) {
 
       const result = await createServiceViaApi({
         type: "github",
-        builder: "railpack",
+        builder: defaultGitServiceBuilder,
         repositoryOwner: owner,
         repositoryName: repoName,
         name: repoName,

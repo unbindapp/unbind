@@ -1,4 +1,9 @@
-import { DatabaseConfigSchema, HostSpecSchema, PortSpecSchema } from "@/server/go/client.gen";
+import {
+  DatabaseConfigSchema,
+  HostSpecSchema,
+  PortSpecSchema,
+  ServiceBuilderSchema,
+} from "@/server/go/client.gen";
 import { AvailableDatabaseEnum } from "@/server/go/data.gen";
 import { AppRouterOutputs } from "@/server/trpc/api/root";
 import { z } from "zod";
@@ -42,10 +47,14 @@ export const CreateServiceSharedSchema = z
   })
   .strip();
 
+export const GitServiceBuilderEnum = ServiceBuilderSchema.exclude(["database"]);
+export type TGitServiceBuilder = z.infer<typeof GitServiceBuilderEnum>;
+export type TBuilderEnum = z.infer<typeof ServiceBuilderSchema>;
+
 export const CreateServiceFromGitSchema = z
   .object({
     type: z.enum(["github"]),
-    builder: z.enum(["railpack"]),
+    builder: GitServiceBuilderEnum,
     gitHubInstallationId: z.number(),
     repositoryName: z.string(),
     repositoryOwner: z.string(),
@@ -93,6 +102,7 @@ export const UpdateServiceInputSchema = z
     databaseConfig: DatabaseConfigSchema.optional(),
     s3BackupSourceId: z.string().uuid().optional(),
     s3BackupBucket: z.string().optional(),
+    builder: ServiceBuilderSchema.optional(),
   })
   .strip();
 

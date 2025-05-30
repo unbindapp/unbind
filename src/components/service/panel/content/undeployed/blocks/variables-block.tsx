@@ -11,7 +11,7 @@ import {
 } from "@/components/variables/variables-form-field";
 import { withForm } from "@/lib/hooks/use-app-form";
 import { useStore } from "@tanstack/react-form";
-import { ChevronDownIcon, Link2Icon } from "lucide-react";
+import { ChevronUpIcon, KeyIcon, Link2Icon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 type TOnTokensChanged = (tokens: TToken<TReferenceExtended>[] | undefined) => void;
@@ -115,7 +115,10 @@ const VariablesBlock = withForm({
           type="button"
           onClick={() => setIsOpen((o) => !o)}
         >
-          <ChevronDownIcon className="size-5 transition-transform group-data-open/section:rotate-180" />
+          <div className="relative size-5 shrink-0 transition-transform group-data-open/section:rotate-135">
+            <KeyIcon className="size-full scale-80 transition-opacity group-data-open/section:opacity-0" />
+            <ChevronUpIcon className="absolute top-0 left-0 size-full -rotate-135 opacity-0 transition-opacity group-data-open/section:opacity-100" />
+          </div>
           <p className="min-w-0 shrink truncate">Environment Variables</p>
         </Button>
         {isOpen && (

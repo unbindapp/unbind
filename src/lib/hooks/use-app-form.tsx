@@ -439,6 +439,7 @@ function AsyncCommandDropdown({
 
 type TAsyncDropdownMenuProps = TFieldProps & {
   items: TCommandItem[] | undefined;
+  ItemIcon?: FC<{ className?: string; value: string }>;
   isPending: boolean;
   error: string | undefined;
   className?: string;
@@ -451,6 +452,7 @@ type TAsyncDropdownMenuProps = TFieldProps & {
 function AsyncDropdownMenu({
   field,
   items,
+  ItemIcon,
   isPending,
   error,
   dontCheckUntilSubmit,
@@ -497,6 +499,9 @@ function AsyncDropdownMenu({
                     data-checked={value === item.value ? true : undefined}
                     className="group/item"
                   >
+                    {ItemIcon && (
+                      <ItemIcon className="-ml-0.5 size-5 shrink-0" value={item.value} />
+                    )}
                     <p className="min-w-0 shrink leading-tight">{item.label}</p>
                     <CheckIcon
                       strokeWidth={2.5}
