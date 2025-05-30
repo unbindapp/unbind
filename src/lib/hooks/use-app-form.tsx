@@ -10,6 +10,13 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input, InputProps } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -412,6 +419,91 @@ function AsyncCommandDropdown({
   );
 }
 
+type TAsyncDropdownMenuProps = TFieldProps & {
+  items: string[] | undefined;
+  isPending: boolean;
+  error: string | undefined;
+  className?: string;
+  classNameInfo?: string;
+  value: string;
+  onChange: (value: string) => void;
+  children: ({ isOpen }: { isOpen: boolean }) => ReactNode;
+};
+
+function AsyncDropdownMenu({
+  field,
+  items,
+  isPending,
+  error,
+  dontCheckUntilSubmit,
+  hideError,
+  classNameInfo,
+  value,
+  onChange,
+  className,
+  children,
+}: TAsyncDropdownMenuProps) {
+  const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
+  const isFormSubmitted = submissionAttempts > 0;
+
+  const [isOpen, setIsOpen] = useState(false);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  return (
+    <div className={cn("flex flex-col", className)}>
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+        <DropdownMenuTrigger asChild>{children({ isOpen })}</DropdownMenuTrigger>
+        <DropdownMenuContent animate={false} className="w-[var(--radix-popper-anchor-width)]">
+          <ScrollArea viewportRef={scrollAreaRef}>
+            <DropdownMenuGroup>
+              {!items && !isPending && error && (
+                <ErrorCard className="rounded-md" message={error} />
+              )}
+              {!items &&
+                isPending &&
+                placeholderArray.slice(0, 4).map((_, index) => (
+                  <DropdownMenuItem disabled key={index}>
+                    <p className="bg-foreground animate-skeleton min-w-0 shrink rounded-md leading-tight">
+                      Loading
+                    </p>
+                  </DropdownMenuItem>
+                ))}
+              {items &&
+                items.map((item) => (
+                  <DropdownMenuItem
+                    key={item}
+                    onSelect={() => {
+                      onChange(item);
+                      setIsOpen(false);
+                    }}
+                    data-checked={value === item ? true : undefined}
+                    className="group/item"
+                  >
+                    <p className="min-w-0 shrink leading-tight">{item}</p>
+                    <CheckIcon
+                      strokeWidth={2.5}
+                      className="-mr-0.5 ml-auto size-4.5 opacity-0 group-data-checked/item:opacity-100"
+                    />
+                  </DropdownMenuItem>
+                ))}
+            </DropdownMenuGroup>
+          </ScrollArea>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {!hideError &&
+      (field.state.meta.isTouched || isFormSubmitted) &&
+      (field.state.meta.isBlurred || isFormSubmitted) &&
+      (!dontCheckUntilSubmit || isFormSubmitted) &&
+      field.state.meta.errors.length ? (
+        <ErrorLine
+          className={cn("mt-1 bg-transparent py-1.5 pl-1.5", classNameInfo)}
+          message={field.state.meta.errors[0].message}
+        />
+      ) : null}
+    </div>
+  );
+}
+
 export const { useAppForm, withForm } = createFormHook({
   fieldComponents: {
     TextField: InputWithInfo,
@@ -420,6 +512,7 @@ export const { useAppForm, withForm } = createFormHook({
     DomainInput,
     StorageSizeInput,
     AsyncCommandDropdown,
+    AsyncDropdownMenu,
   },
   formComponents: {
     SubmitButton: Button,

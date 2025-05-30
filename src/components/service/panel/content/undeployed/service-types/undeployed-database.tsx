@@ -24,7 +24,7 @@ import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TVariableForCreate } from "@/server/trpc/api/variables/types";
 import { api } from "@/server/trpc/setup/client";
 import { useMutation } from "@tanstack/react-query";
-import { CylinderIcon, MilestoneIcon, OctagonXIcon, TagIcon } from "lucide-react";
+import { CylinderIcon, MilestoneIcon, OctagonXIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
 import { toast } from "sonner";
@@ -224,7 +224,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
               <form.AppField
                 name="version"
                 children={(field) => (
-                  <field.AsyncCommandDropdown
+                  <field.AsyncDropdownMenu
                     dontCheckUntilSubmit
                     field={field}
                     value={field.state.value}
@@ -232,9 +232,6 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
                     items={versionItems}
                     isPending={isPendingDatabase}
                     error={errorDatabase?.message}
-                    commandInputPlaceholder="Search versions..."
-                    commandEmptyText="No versions found"
-                    CommandEmptyIcon={TagIcon}
                   >
                     {({ isOpen }) => (
                       <BlockItemButtonLike
@@ -248,7 +245,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
                         onBlur={field.handleBlur}
                       />
                     )}
-                  </field.AsyncCommandDropdown>
+                  </field.AsyncDropdownMenu>
                 )}
               />
             </BlockItemContent>
