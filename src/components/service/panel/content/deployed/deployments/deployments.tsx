@@ -13,14 +13,10 @@ import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { HistoryIcon, RocketIcon } from "lucide-react";
 import { useMemo } from "react";
 
-// test deploy
-
 export default function Deployments({ service }: { service: TServiceShallow }) {
   const {
     query: { data: deploymentsData, isPending: isPendingDeployments, error: errorDeployments },
   } = useDeployments();
-
-  const currentDeployment = deploymentsData?.current_deployment;
 
   const {
     query: { data: serviceData, isPending: isPendingService, error: errorService },
@@ -30,45 +26,22 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
   const error = errorDeployments || errorService;
   const hasData = deploymentsData !== undefined && serviceData !== undefined;
 
-  const currentOrFirstDeployment = useMemo(() => {
-    if (currentDeployment) return currentDeployment;
-
-    const activeDeployment = deploymentsData?.deployments
-      ? deploymentsData.deployments.find((d) => d.status === "active")
-      : undefined;
-
-    if (activeDeployment) {
-      return activeDeployment;
+  const currentOrLastDeployment = useMemo(() => {
+    if (!deploymentsData) return undefined;
+    if (deploymentsData.current_deployment) return deploymentsData.current_deployment;
+    if (deploymentsData.deployments && deploymentsData.deployments.length > 0) {
+      return deploymentsData.deployments[0];
     }
-
-    const lastActiveLikeDeployment = deploymentsData?.deployments
-      ? deploymentsData.deployments.find(
-          (d) =>
-            d.status === "build-pending" ||
-            d.status === "build-queued" ||
-            d.status === "build-running" ||
-            d.status === "build-succeeded" ||
-            d.status === "build-cancelled" ||
-            d.status === "build-failed" ||
-            d.status === "crashing" ||
-            d.status === "pending",
-        )
-      : undefined;
-
-    if (lastActiveLikeDeployment) {
-      return lastActiveLikeDeployment;
-    }
-
     return undefined;
-  }, [currentDeployment, deploymentsData]);
+  }, [deploymentsData]);
 
   const filteredDeployments: AppRouterOutputs["deployments"]["list"]["deployments"] | undefined =
     useMemo(() => {
       if (!deploymentsData?.deployments) return undefined;
       return deploymentsData.deployments.filter((d) =>
-        currentOrFirstDeployment ? currentOrFirstDeployment.id !== d.id : true,
+        currentOrLastDeployment ? currentOrLastDeployment.id !== d.id : true,
       );
-    }, [deploymentsData, currentOrFirstDeployment]);
+    }, [deploymentsData, currentOrLastDeployment]);
 
   const hasNoDeployment =
     deploymentsData?.deployments && deploymentsData.deployments.length === 0 ? true : false;
@@ -77,10 +50,10 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
     <TabWrapper>
       <DeploymentPanelProvider deployments={deploymentsData?.deployments || null}>
         <DeploymentPanel service={service} />
-        {(isPending || currentOrFirstDeployment) && (
+        {(isPending || currentOrLastDeployment) && (
           <div className="w-full pb-3">
-            {serviceData && currentOrFirstDeployment ? (
-              <DeploymentCard service={service} deployment={currentOrFirstDeployment} />
+            {serviceData && currentOrLastDeployment ? (
+              <DeploymentCard service={service} deployment={currentOrLastDeployment} />
             ) : (
               <DeploymentCard isPlaceholder={true} />
             )}

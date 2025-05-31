@@ -1,6 +1,7 @@
 "use client";
 
 import ErrorCard from "@/components/error-card";
+import ErrorLine from "@/components/error-line";
 import LogLine from "@/components/logs/log-line";
 import LogViewDropdownProvider from "@/components/logs/log-view-dropdown-provider";
 import LogViewPreferencesProvider, {
@@ -17,8 +18,10 @@ import LogsProvider, {
 } from "@/components/logs/logs-provider";
 import NavigationBar from "@/components/logs/navigation-bar";
 import SearchBar from "@/components/logs/search-bar";
+import TabWrapper from "@/components/navigation/tab-wrapper";
 import NoItemsCard from "@/components/no-items-card";
 import { useServices } from "@/components/project/services-provider";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { TLogType } from "@/server/trpc/api/logs/types";
 import { HourglassIcon, SearchIcon } from "lucide-react";
@@ -36,6 +39,7 @@ type TBaseProps = {
   shouldHaveLogs?: boolean;
   httpDefaultStartTimestamp?: number;
   httpDefaultEndTimestamp?: number;
+  error?: string;
 };
 
 type TProps = TBaseProps &
@@ -53,6 +57,7 @@ export default function LogViewer({
   shouldHaveLogs,
   httpDefaultStartTimestamp,
   httpDefaultEndTimestamp,
+  error,
 }: TProps) {
   const typeAndIds:
     | TEnvironmentLogsProps
@@ -78,7 +83,12 @@ export default function LogViewer({
             httpDefaultStartTimestamp={httpDefaultStartTimestamp}
             {...typeAndIds}
           >
-            <Logs containerType={containerType} type={type} shouldHaveLogs={shouldHaveLogs} />
+            <Logs
+              error={error}
+              containerType={containerType}
+              type={type}
+              shouldHaveLogs={shouldHaveLogs}
+            />
           </LogsProvider>
         </LogViewStateProvider>
       </LogViewDropdownProvider>
@@ -93,10 +103,12 @@ function Logs({
   containerType,
   type,
   shouldHaveLogs,
+  error: errorFromProp,
 }: {
   containerType: "page" | "sheet";
   type: TLogType;
   shouldHaveLogs?: boolean;
+  error?: string;
 }) {
   const { data: logs, isPending, error } = useLogs();
 
@@ -229,6 +241,16 @@ function Logs({
       />
     ));
   }, [logs, servicesData, containerType, error, isPending, type, shouldHaveLogs]);
+
+  if (logs && logs.length === 0 && errorFromProp) {
+    return (
+      <ScrollArea>
+        <TabWrapper>
+          <ErrorLine message={errorFromProp} />
+        </TabWrapper>
+      </ScrollArea>
+    );
+  }
 
   return (
     <LogViewStateProvider>

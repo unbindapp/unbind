@@ -21,14 +21,14 @@ export default function BuildLogs({ deployment }: TProps) {
   const createdAtTimestamp = createdAt ? new Date(createdAt).getTime() : undefined;
   const completedAtTimestamp = completedAt ? new Date(completedAt).getTime() : undefined;
 
-  if (deployment.error) {
+  if (deployment.error && !deployment.job_name) {
     return (
       <ScrollArea>
         <TabWrapper>
           <div className="flex w-full flex-col gap-3">
             <div className="text-destructive flex w-full items-center justify-start gap-2 px-1.5">
               <TriangleAlertIcon className="size-4 shrink-0" />
-              <h3 className="shrink leading-tight font-semibold">Failed at pre-build stage</h3>
+              <h3 className="shrink leading-tight font-semibold">Failed before the build stage</h3>
             </div>
             <ErrorLine
               className="border-destructive/8 text-muted-foreground bg-destructive/6 border"
@@ -49,6 +49,7 @@ export default function BuildLogs({ deployment }: TProps) {
 
   return (
     <LogViewer
+      error={deployment.error}
       containerType="sheet"
       teamId={teamId}
       projectId={projectId}
