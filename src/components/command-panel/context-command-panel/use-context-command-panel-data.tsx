@@ -1,23 +1,20 @@
 import { contextCommandPanelRootPage } from "@/components/command-panel/constants";
 import { useDatabaseItemHook } from "@/components/command-panel/context-command-panel/items/database";
 import { useDockerImageItemHook } from "@/components/command-panel/context-command-panel/items/docker-image";
+import { useGitItemHook } from "@/components/command-panel/context-command-panel/items/git";
 import useGoToItem from "@/components/command-panel/context-command-panel/items/go-to";
 import useNewProjectItem from "@/components/command-panel/context-command-panel/items/new-project";
 import usePreferencesItem from "@/components/command-panel/context-command-panel/items/preferences";
-import { useGitItemHook } from "@/components/command-panel/context-command-panel/items/git";
 import { useTemplateItemHook } from "@/components/command-panel/context-command-panel/items/template";
 import { findCommandPanelPage } from "@/components/command-panel/helpers";
 import { TCommandPanelPage, TContextCommandPanelContext } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
-import { defaultAnimationMs } from "@/lib/constants";
-import { useCallback, useMemo, useRef } from "react";
-import { toast } from "sonner";
+import { useCallback, useMemo } from "react";
 
 export default function useContextCommandPanelData(context: TContextCommandPanelContext) {
-  const { panelPageId, setPanelId, setPanelPageId } = useCommandPanel({
+  const { panelPageId, setPanelPageId } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
   });
-  const timeout = useRef<NodeJS.Timeout | null>(null);
 
   const useGitItem = useGitItemHook({ context });
   const useDockerImageItem = useDockerImageItemHook({ context });
@@ -32,21 +29,6 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
   const { item: goToItem } = useGoToItem({ context });
   const { item: newProjectItem } = useNewProjectItem({ context });
   const { item: preferencesItem } = usePreferencesItem({ context });
-
-  const onSelectPlaceholder = useCallback(() => {
-    toast.success("Successful", {
-      description: "This is fake.",
-      duration: 3000,
-      closeButton: false,
-    });
-    setPanelId(null);
-    if (timeout.current) {
-      clearTimeout(timeout.current);
-    }
-    timeout.current = setTimeout(() => {
-      setPanelPageId(null);
-    }, defaultAnimationMs);
-  }, [setPanelId, setPanelPageId]);
 
   const rootPage: TCommandPanelPage = useMemo(
     () => ({
@@ -73,7 +55,6 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
-      onSelectPlaceholder,
       gitItem,
       dockerImageItem,
       databaseItem,

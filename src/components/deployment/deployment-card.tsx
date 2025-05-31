@@ -4,8 +4,10 @@ import DeploymentStatusChip, {
 import { useDeploymentsUtils } from "@/components/deployment/deployments-provider";
 import { useDeploymentPanel } from "@/components/deployment/panel/deployment-panel-provider";
 import ErrorLine from "@/components/error-line";
+import AnimatedTimerIcon from "@/components/icons/animated-timer";
 import BrandIcon from "@/components/icons/brand";
 import { useServicesUtils } from "@/components/project/services-provider";
+import { useNow } from "@/components/providers/now-provider";
 import { useService, useServiceUtils } from "@/components/service/service-provider";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,20 +27,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { defaultAnimationMs } from "@/lib/constants";
+import { cn } from "@/components/ui/utils";
+import { defaultAnimationMs, sourceToTitle } from "@/lib/constants";
+import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { api } from "@/server/trpc/setup/client";
 import { EllipsisVerticalIcon, RocketIcon, RotateCcwIcon } from "lucide-react";
-import { HTMLAttributes, ReactNode, useRef, useState } from "react";
-import AnimatedTimerIcon from "@/components/icons/animated-timer";
-import { useNow } from "@/components/providers/now-provider";
-import { cn } from "@/components/ui/utils";
-import { sourceToTitle } from "@/lib/constants";
-import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-difference";
-import Image from "next/image";
-import { toast } from "sonner";
 import { ResultAsync } from "neverthrow";
+import Image from "next/image";
+import { HTMLAttributes, ReactNode, useRef, useState } from "react";
+import { toast } from "sonner";
 
 type TProps = HTMLAttributes<HTMLDivElement> &
   (
@@ -195,10 +194,6 @@ function RestartTrigger({
       }
       setIsOpen(false);
       closeDropdown();
-      toast.success("Restarted successfully", {
-        description: "The deployment has been restarted.",
-        duration: 5000,
-      });
     },
   });
 

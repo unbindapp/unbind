@@ -149,6 +149,9 @@ function StatusIndicator({ deployment }: { deployment: NonNullable<TService["las
   ) {
     return <LoaderIcon className="size-3.5 shrink-0 animate-spin" />;
   }
+  if (deployment.status === "build-failed") {
+    return <TriangleAlertIcon className="text-destructive size-3.5 shrink-0" />;
+  }
   if (deployment.status === "build-cancelled") {
     return <XIcon className="size-3.5 shrink-0" />;
   }

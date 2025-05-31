@@ -26,7 +26,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           title:
             "text-foreground -mt-0.25 group-data-[type=error]/toast:text-destructive! group-data-[type=success]/toast:text-success! group-data-[type=warning]/toast:text-warning! font-semibold leading-tight!",
           toast:
-            "bg-background border border-border rounded-xl px-4 py-3 flex flex-row items-start gap-1.5",
+            "bg-background border border-border rounded-xl px-4 py-3 flex flex-row items-start gap-2",
           content: "shrink min-w-0 flex flex-col gap-1!",
           description:
             "group-data-[type=error]/toast:text-foreground! group-data-[type=warning]/toast:text-foreground! group-data-[type=success]/toast:text-foreground! text-muted-foreground! text-sm leading-snug!",
