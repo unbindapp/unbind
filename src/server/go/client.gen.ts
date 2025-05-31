@@ -118,7 +118,8 @@ export const DeploymentStatusSchema = z.enum([
   'build-cancelled',
   'build-failed',
   'active',
-  'pending',
+  'launching',
+  'launch-error',
   'crashing',
   'removed',
 ]);

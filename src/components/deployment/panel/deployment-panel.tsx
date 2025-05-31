@@ -92,7 +92,8 @@ export default function DeploymentPanel({ service }: TProps) {
     currentDeployment?.status === "build-pending" ||
     currentDeployment?.status === "build-running" ||
     currentDeployment?.status === "build-succeeded" ||
-    currentDeployment?.status === "pending";
+    currentDeployment?.status === "launching" ||
+    currentDeployment?.status === "launch-error";
 
   return (
     <Drawer

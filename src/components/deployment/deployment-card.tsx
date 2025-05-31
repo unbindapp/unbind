@@ -37,6 +37,8 @@ import { cn } from "@/components/ui/utils";
 import { sourceToTitle } from "@/lib/constants";
 import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-difference";
 import Image from "next/image";
+import { toast } from "sonner";
+import { ResultAsync } from "neverthrow";
 
 type TProps = HTMLAttributes<HTMLDivElement> &
   (
@@ -181,9 +183,22 @@ function RestartTrigger({
     reset,
   } = api.instances.restart.useMutation({
     onSuccess: async () => {
-      await Promise.all([refetchServices(), refetchService(), refetchDeployments()]);
+      const result = await ResultAsync.fromPromise(
+        Promise.all([refetchServices(), refetchService(), refetchDeployments()]),
+        () => new Error("Failed to refetch data"),
+      );
+      if (result.isErr()) {
+        toast.error("Failed to refetch", {
+          description: "Restarted successfuly but couldn't refetch the new data.",
+          duration: 5000,
+        });
+      }
       setIsOpen(false);
       closeDropdown();
+      toast.success("Restarted successfully", {
+        description: "The deployment has been restarted.",
+        duration: 5000,
+      });
     },
   });
 

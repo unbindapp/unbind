@@ -112,8 +112,11 @@ function StatusText({ service }: { service: TServiceShallow }) {
       </StatusWithDuration>
     );
   }
-  if (deployment.status === "build-succeeded" || deployment.status === "pending") {
+  if (deployment.status === "build-succeeded" || deployment.status === "launching") {
     return <StatusTextWrapper service={service}>Launching</StatusTextWrapper>;
+  }
+  if (deployment.status === "launch-error") {
+    return <StatusTextWrapper service={service}>Launch error</StatusTextWrapper>;
   }
   if (deployment.status === "build-failed") {
     return <StatusTextWrapper service={service}>Build failed</StatusTextWrapper>;
@@ -142,15 +145,15 @@ function StatusIndicator({ deployment }: { deployment: NonNullable<TService["las
   if (
     deployment.status === "build-running" ||
     deployment.status === "build-succeeded" ||
-    deployment.status === "pending"
+    deployment.status === "launching"
   ) {
     return <LoaderIcon className="size-3.5 shrink-0 animate-spin" />;
   }
-  if (deployment.status === "build-failed") {
-    return <TriangleAlertIcon className="text-destructive size-3.5 shrink-0" />;
-  }
   if (deployment.status === "build-cancelled") {
     return <XIcon className="size-3.5 shrink-0" />;
+  }
+  if (deployment.status === "launch-error") {
+    return <LoaderIcon className="text-destructive size-3.5 shrink-0 animate-spin" />;
   }
   if (deployment.status === "crashing") {
     return <TriangleAlertIcon className="text-destructive size-3.5 shrink-0" />;

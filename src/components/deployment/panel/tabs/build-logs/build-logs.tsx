@@ -45,7 +45,8 @@ export default function BuildLogs({ deployment }: TProps) {
     deployment?.status === "build-pending" ||
     deployment?.status === "build-running" ||
     deployment?.status === "build-succeeded" ||
-    deployment?.status === "pending";
+    deployment?.status === "launching" ||
+    deployment?.status === "launch-error";
 
   return (
     <LogViewer

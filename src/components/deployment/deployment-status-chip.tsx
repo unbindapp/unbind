@@ -25,7 +25,8 @@ export default function DeploymentStatusChip({
     if (deployment.status === "build-cancelled") return ["CANCELLED", XIcon];
     if (deployment.status === "build-failed") return ["FAILED", TriangleAlertIcon];
     if (deployment.status === "build-succeeded") return ["LAUNCHING", AnimatedLoaderIcon];
-    if (deployment.status === "pending") return ["LAUNCHING", AnimatedLoaderIcon];
+    if (deployment.status === "launching") return ["LAUNCHING", AnimatedLoaderIcon];
+    if (deployment.status === "launch-error") return ["ERROR", AnimatedLoaderIcon];
     if (deployment.status === "active") return ["ACTIVE", CircleCheckIcon];
     if (deployment.status === "crashing") return ["CRASHING", TriangleAlertIcon];
     return ["REMOVED", BroomIcon];
@@ -70,7 +71,8 @@ export function getDeploymentStatusChipColor({
   if (deployment.status === "build-failed") return "destructive";
   if (deployment.status === "build-cancelled") return "default";
   if (deployment.status === "build-succeeded") return "process";
-  if (deployment.status === "pending") return "process";
+  if (deployment.status === "launching") return "process";
+  if (deployment.status === "launch-error") return "destructive";
   if (deployment.status === "crashing") return "destructive";
   if (deployment.status === "active") return "success";
   if (deployment.status === "removed") return "default";
