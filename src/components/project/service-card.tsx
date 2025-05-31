@@ -75,7 +75,7 @@ export default function ServiceCard({
             </h3>
           </div>
           <div className="flex w-full flex-1 flex-col justify-end">
-            <div className="flex w-full items-center justify-between">
+            <div className="-mx-0.5 flex w-[calc(100%+0.25rem)] items-center justify-between">
               {!isPlaceholder ? (
                 <LastDeploymentInfo
                   className="min-w-0 shrink overflow-hidden text-sm font-medium text-ellipsis whitespace-nowrap"
