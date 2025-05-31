@@ -13,6 +13,8 @@ import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { HistoryIcon, RocketIcon } from "lucide-react";
 import { useMemo } from "react";
 
+// test deploy
+
 export default function Deployments({ service }: { service: TServiceShallow }) {
   const {
     query: { data: deploymentsData, isPending: isPendingDeployments, error: errorDeployments },
