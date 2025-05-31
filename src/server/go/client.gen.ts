@@ -1577,6 +1577,7 @@ export const RedeployInputBodySchema = z
     environment_id: z.string(),
     project_id: z.string(),
     service_id: z.string(),
+    smart_redeploy: z.boolean().optional(), // Try to intelligently redeploy without rebuilding if possible
     team_id: z.string(),
   })
   .strip();

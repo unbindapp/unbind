@@ -102,11 +102,12 @@ export const deploymentsRouter = createTRPCRouter({
           environmentId: z.string().uuid(),
           serviceId: z.string().uuid(),
           deploymentId: z.string().uuid(),
+          skipBuildIfPossible: z.boolean().optional(),
         })
         .strip(),
     )
     .mutation(async function ({
-      input: { teamId, projectId, environmentId, serviceId, deploymentId },
+      input: { teamId, projectId, environmentId, serviceId, deploymentId, skipBuildIfPossible },
       ctx: { goClient },
     }) {
       const result = await goClient.deployments.redeploy({
@@ -115,6 +116,7 @@ export const deploymentsRouter = createTRPCRouter({
         environment_id: environmentId,
         service_id: serviceId,
         deployment_id: deploymentId,
+        smart_redeploy: skipBuildIfPossible,
       });
       return {
         data: result.data,

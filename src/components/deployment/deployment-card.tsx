@@ -29,11 +29,12 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { defaultAnimationMs, sourceToTitle } from "@/lib/constants";
+import { useAppForm } from "@/lib/hooks/use-app-form";
 import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { api } from "@/server/trpc/setup/client";
-import { EllipsisVerticalIcon, RocketIcon, RotateCcwIcon } from "lucide-react";
+import { EllipsisVerticalIcon, RewindIcon, RocketIcon, RotateCcwIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import Image from "next/image";
 import { HTMLAttributes, ReactNode, useRef, useState } from "react";
@@ -141,7 +142,26 @@ function ThreeDotButton({ deployment }: { deployment: TDeploymentShallow }) {
                 </DropdownMenuItem>
               </RestartTrigger>
             )}
-            <RedeployTrigger closeDropdown={() => setIsOpen(false)} deployment={deployment}>
+            {deployment.status === "removed" && (
+              <RedeployTrigger
+                title="Rollback"
+                description="Are you sure you want to rollback this deployment?"
+                buttonText="Rollback"
+                skipBuildIfPossible={true}
+                closeDropdown={() => setIsOpen(false)}
+                deployment={deployment}
+              >
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                  <RewindIcon className="-ml-0.5 size-5" />
+                  <p className="min-w-0 shrink leading-tight">Rollback</p>
+                </DropdownMenuItem>
+              </RedeployTrigger>
+            )}
+            <RedeployTrigger
+              showSkipBuildIfPossibleToggle={isCurrentDeployment}
+              closeDropdown={() => setIsOpen(false)}
+              deployment={deployment}
+            >
               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                 <RocketIcon className="-ml-0.5 size-5" />
                 <p className="min-w-0 shrink leading-tight">Redeploy</p>
@@ -248,10 +268,20 @@ function RestartTrigger({
 function RedeployTrigger({
   deployment,
   closeDropdown,
+  title,
+  description,
+  buttonText,
+  skipBuildIfPossible,
+  showSkipBuildIfPossibleToggle,
   children,
 }: {
   deployment: TDeploymentShallow;
   closeDropdown: () => void;
+  skipBuildIfPossible?: boolean;
+  showSkipBuildIfPossibleToggle?: boolean;
+  title?: string;
+  description?: string;
+  buttonText?: string;
   children: ReactNode;
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -269,7 +299,7 @@ function RedeployTrigger({
   });
 
   const {
-    mutate: redeployDeployment,
+    mutateAsync: redeployDeployment,
     isPending,
     error,
     reset,
@@ -278,6 +308,28 @@ function RedeployTrigger({
       await Promise.all([refetchServices(), refetchService(), refetchDeployments()]);
       setIsOpen(false);
       closeDropdown();
+    },
+  });
+
+  const form = useAppForm({
+    defaultValues: {
+      skipBuildIfPossible: skipBuildIfPossible || false,
+    },
+    onSubmit: async ({ value }) => {
+      await redeployDeployment({
+        teamId,
+        projectId,
+        environmentId,
+        serviceId,
+        deploymentId: deployment.id,
+        skipBuildIfPossible: value.skipBuildIfPossible,
+      });
+      if (showSkipBuildIfPossibleToggle && value.skipBuildIfPossible) {
+        toast.success("Redeployed", {
+          description: "The deployment has been redeployed successfully.",
+          duration: 6000,
+        });
+      }
     },
   });
 
@@ -300,31 +352,59 @@ function RedeployTrigger({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
-          <DialogTitle>Redeploy</DialogTitle>
-          <DialogDescription>Are you sure you want to redeploy this deployment?</DialogDescription>
+          <DialogTitle>{title || "Redeploy"}</DialogTitle>
+          <DialogDescription>
+            {description || "Are you sure you want to redeploy this deployment?"}
+          </DialogDescription>
         </DialogHeader>
-        {error && <ErrorLine message={error?.message} />}
-        <div className="flex w-full flex-wrap items-center justify-end gap-2">
-          <DialogClose asChild className="text-muted-foreground">
-            <Button type="button" variant="ghost">
-              Cancel
-            </Button>
-          </DialogClose>
-          <Button
-            onClick={() =>
-              redeployDeployment({
-                teamId,
-                projectId,
-                environmentId,
-                serviceId,
-                deploymentId: deployment.id,
-              })
-            }
-            isPending={isPending}
-          >
-            Redeploy
-          </Button>
-        </div>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
+          }}
+          className="flex w-full flex-col gap-5"
+        >
+          {showSkipBuildIfPossibleToggle && (
+            <div className="-mx-2.5 flex w-full max-w-[calc(100%+1.25rem)] justify-start">
+              <form.AppField
+                name="skipBuildIfPossible"
+                children={(field) => (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => {
+                      field.handleChange(!field.state.value);
+                    }}
+                    data-checked={field.state.value ? true : undefined}
+                    className="group/button has-hover:hover:bg-border -my-2 flex cursor-pointer items-center justify-between gap-4 py-2 pr-2 pl-2.5 text-left font-semibold"
+                  >
+                    <p className="min-w-0 shrink">Skip build if possible</p>
+                    <div className="bg-muted-more-foreground group-data-checked/button:bg-foreground relative h-5 w-9 shrink-0 rounded-full transition">
+                      <div className="bg-background absolute top-0.5 left-0.5 size-4 rounded-full transition group-data-checked/button:translate-x-4" />
+                    </div>
+                  </Button>
+                )}
+              />
+            </div>
+          )}
+          {error && <ErrorLine message={error?.message} />}
+          <div className="flex w-full flex-wrap items-center justify-end gap-2">
+            <DialogClose asChild className="text-muted-foreground">
+              <Button type="button" variant="ghost">
+                Cancel
+              </Button>
+            </DialogClose>
+            <form.Subscribe
+              selector={(state) => ({ isSubmitting: state.isSubmitting })}
+              children={({ isSubmitting }) => (
+                <form.SubmitButton isPending={isPending || isSubmitting}>
+                  {buttonText || "Redeploy"}
+                </form.SubmitButton>
+              )}
+            />
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );
