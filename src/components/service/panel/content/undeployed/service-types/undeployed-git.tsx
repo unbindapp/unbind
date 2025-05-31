@@ -122,18 +122,18 @@ export function UndeployedContentGit({
         extraProps.builder = formValues.builder;
       }
       if (
-        formValues.installCommand !== service.config.install_command &&
+        formValues.installCommand !== (service.config.install_command || "") &&
         formValues.builder === "railpack"
       ) {
         extraProps.installCommand = formValues.installCommand;
       }
       if (
-        formValues.buildCommand !== service.config.build_command &&
+        formValues.buildCommand !== (service.config.build_command || "") &&
         formValues.builder === "railpack"
       ) {
         extraProps.buildCommand = formValues.buildCommand;
       }
-      if (formValues.startCommand !== service.config.run_command) {
+      if (formValues.startCommand !== (service.config.run_command || "")) {
         extraProps.startCommand = formValues.startCommand;
       }
 

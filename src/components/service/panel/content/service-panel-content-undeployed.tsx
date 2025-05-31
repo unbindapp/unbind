@@ -26,7 +26,12 @@ export default function ServicePanelContentUndeployed({ service }: TProps) {
 
     return (
       <Providers service={service}>
-        <UndeployedContentDockerImage image={image} tag={tag} detectedPort={detectedPortStr} />
+        <UndeployedContentDockerImage
+          image={image}
+          tag={tag}
+          detectedPort={detectedPortStr}
+          service={service}
+        />
       </Providers>
     );
   }
