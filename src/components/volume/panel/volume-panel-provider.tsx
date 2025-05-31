@@ -42,8 +42,8 @@ export const VolumePanelProvider: React.FC<{
       currentVolumeId,
       setCurrentVolumeId,
       openPanel: (serviceId: string, tabId?: TVolumePanelTabEnum) => {
-        setCurrentVolumeId(serviceId);
         setCurrentTabId(tabId ?? volumePanelDefaultTabId);
+        setCurrentVolumeId(serviceId);
       },
       closePanel: () => {
         setCurrentVolumeId(null);

@@ -49,8 +49,8 @@ export const ServicePanelProvider: React.FC<{
       currentServiceId,
       setCurrentServiceId,
       openPanel: (serviceId: string, tabId?: TServicePanelTabEnum) => {
-        setCurrentServiceId(serviceId);
         setCurrentTabId(tabId ?? servicePanelDefaultTabId);
+        setCurrentServiceId(serviceId);
       },
       closePanel: () => {
         setCurrentServiceId(null);

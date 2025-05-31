@@ -53,16 +53,16 @@ const EmptyProvider = ({ children }: TDeploymentPageProviderProps) => children;
 
 const tabs: TDeploymentPanelTab[] = [
   {
-    title: "Build Logs",
-    value: "build-logs",
-    Page: BuildLogs,
+    title: "Deploy Logs",
+    value: "deploy-logs",
+    Page: DeployLogs,
     Provider: EmptyProvider,
     noScrollArea: true,
   },
   {
-    title: "Deploy Logs",
-    value: "deploy-logs",
-    Page: DeployLogs,
+    title: "Build Logs",
+    value: "build-logs",
+    Page: BuildLogs,
     Provider: EmptyProvider,
     noScrollArea: true,
   },

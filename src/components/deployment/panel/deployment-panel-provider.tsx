@@ -66,8 +66,8 @@ export const DeploymentPanelProvider: React.FC<{
       setCurrentDeploymentId,
       currentDeployment,
       openPanel: (deploymentId: string, tabId?: TDeploymentPanelTabEnum) => {
-        setCurrentDeploymentId(deploymentId);
         setCurrentTabId(tabId ?? deploymentPanelDefaultTabId);
+        setCurrentDeploymentId(deploymentId);
       },
       closePanel: () => {
         setCurrentDeploymentId(null);

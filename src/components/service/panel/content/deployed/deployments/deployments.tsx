@@ -53,7 +53,11 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
         {(isPending || currentOrLastDeployment) && (
           <div className="w-full pb-3">
             {serviceData && currentOrLastDeployment ? (
-              <DeploymentCard service={service} deployment={currentOrLastDeployment} />
+              <DeploymentCard
+                service={service}
+                deployment={currentOrLastDeployment}
+                currentDeployment={deploymentsData?.current_deployment}
+              />
             ) : (
               <DeploymentCard isPlaceholder={true} />
             )}
@@ -75,7 +79,12 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
               <ol className="flex w-full flex-col gap-2">
                 {filteredDeployments.map((deployment) => (
                   <li className="w-full" key={deployment.id}>
-                    <DeploymentCard service={service} key={deployment.id} deployment={deployment} />
+                    <DeploymentCard
+                      service={service}
+                      key={deployment.id}
+                      deployment={deployment}
+                      currentDeployment={deploymentsData.current_deployment}
+                    />
                   </li>
                 ))}
               </ol>
