@@ -69,11 +69,13 @@ const defaultStateNormal = [
   logViewPreferenceKeys.timestamp,
   logViewPreferenceKeys.serviceId,
   logViewPreferenceKeys.autoFollow,
+  logViewPreferenceKeys.lineWrapping,
 ].sort(logViewPreferencesSort);
 
 const defaultStateWithoutService = [
   logViewPreferenceKeys.timestamp,
   logViewPreferenceKeys.autoFollow,
+  logViewPreferenceKeys.lineWrapping,
 ].sort(logViewPreferencesSort);
 
 export const logViewPreferencesKey = "log_view";

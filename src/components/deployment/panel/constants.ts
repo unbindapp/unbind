@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const DeploymentPanelTabEnum = z.enum(["build-logs", "info"]);
+export const DeploymentPanelTabEnum = z.enum(["build-logs", "deploy-logs"]);
 export type TDeploymentPanelTabEnum = z.infer<typeof DeploymentPanelTabEnum>;
 export const deploymentPanelDefaultTabId = DeploymentPanelTabEnum.options[0];
 

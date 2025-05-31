@@ -2,7 +2,8 @@ import DeploymentProvider from "@/components/deployment/deployment-provider";
 import { TDeploymentPanelTabEnum } from "@/components/deployment/panel/constants";
 import { DeploymentPanelContent } from "@/components/deployment/panel/deployment-panel-content";
 import { useDeploymentPanel } from "@/components/deployment/panel/deployment-panel-provider";
-import Logs from "@/components/deployment/panel/tabs/build-logs/build-logs";
+import BuildLogs from "@/components/deployment/panel/tabs/build-logs/build-logs";
+import DeployLogs from "@/components/deployment/panel/tabs/deploy-logs/deploy-logs";
 import DeploymentStatusChip, {
   getDeploymentStatusChipColor,
 } from "@/components/deployment/deployment-status-chip";
@@ -54,7 +55,14 @@ const tabs: TDeploymentPanelTab[] = [
   {
     title: "Build Logs",
     value: "build-logs",
-    Page: Logs,
+    Page: BuildLogs,
+    Provider: EmptyProvider,
+    noScrollArea: true,
+  },
+  {
+    title: "Deploy Logs",
+    value: "deploy-logs",
+    Page: DeployLogs,
     Provider: EmptyProvider,
     noScrollArea: true,
   },

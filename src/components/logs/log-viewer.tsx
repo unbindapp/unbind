@@ -60,7 +60,7 @@ export default function LogViewer({
     | TDeploymentLogsProps
     | TDeploymentBuildLogsProps =
     type === "service"
-      ? { type: "service", environmentId: environmentId, serviceId: serviceId }
+      ? { type: "service", environmentId: environmentId, serviceId }
       : type === "deployment"
         ? { type: "deployment", environmentId, serviceId, deploymentId }
         : type === "build"
