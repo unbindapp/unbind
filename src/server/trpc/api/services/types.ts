@@ -103,6 +103,9 @@ export const UpdateServiceInputSchema = z
     s3BackupSourceId: z.string().uuid().optional(),
     s3BackupBucket: z.string().optional(),
     builder: ServiceBuilderSchema.optional(),
+    installCommand: z.string().optional(),
+    buildCommand: z.string().optional(),
+    startCommand: z.string().optional(),
   })
   .strip();
 

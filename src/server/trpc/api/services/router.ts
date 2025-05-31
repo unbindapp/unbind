@@ -138,6 +138,9 @@ export const servicesRouter = createTRPCRouter({
       s3BackupSourceId,
       s3BackupBucket,
       builder,
+      installCommand,
+      buildCommand,
+      startCommand,
     },
     ctx: { goClient },
   }) {
@@ -157,6 +160,9 @@ export const servicesRouter = createTRPCRouter({
       s3_backup_source_id: s3BackupSourceId,
       s3_backup_bucket: s3BackupBucket,
       builder,
+      install_command: installCommand,
+      build_command: buildCommand,
+      run_command: startCommand,
     });
     return {
       service: service.data,

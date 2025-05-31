@@ -26,7 +26,9 @@ type TWrapperInnerProps = {
 export function WrapperInner({ children }: TWrapperInnerProps) {
   return (
     <ScrollArea classNameViewport="pb-8">
-      <div className="flex w-full flex-1 flex-col gap-6 px-3 py-4 sm:p-6">{children}</div>
+      <div className="-mt-1 flex w-full flex-1 flex-col gap-5 px-3 py-4 sm:p-6 md:gap-6">
+        {children}
+      </div>
     </ScrollArea>
   );
 }

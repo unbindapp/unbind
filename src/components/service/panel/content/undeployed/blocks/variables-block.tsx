@@ -119,7 +119,7 @@ const VariablesBlock = withForm({
             <KeyIcon className="size-full scale-80 transition-opacity group-data-open/section:opacity-0" />
             <ChevronUpIcon className="absolute top-0 left-0 size-full -rotate-135 opacity-0 transition-opacity group-data-open/section:opacity-100" />
           </div>
-          <p className="min-w-0 shrink truncate">Environment Variables</p>
+          <p className="min-w-0 shrink">Environment Variables</p>
         </Button>
         {isOpen && (
           <div className="flex w-full flex-col pb-1 md:pt-1 md:pb-3.5">

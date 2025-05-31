@@ -1,11 +1,16 @@
 import { Button, TButtonProps } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { ChevronDownIcon } from "lucide-react";
-import { Children, cloneElement, FC, isValidElement, ReactNode } from "react";
+import { Children, cloneElement, FC, HTMLAttributes, isValidElement, ReactNode } from "react";
 
-export function Block({ children }: { children: ReactNode }) {
+export function Block({ className, children }: { className?: string; children: ReactNode }) {
   return (
-    <div className="-mx-2 -mt-1 flex w-[calc(100%+1rem)] flex-col gap-4 md:-mx-2.5 md:w-[calc(100%+1.25rem)] md:flex-row md:gap-0">
+    <div
+      className={cn(
+        "-mx-2 flex w-[calc(100%+1rem)] flex-col gap-5 md:-mx-2.5 md:w-[calc(100%+1.25rem)] md:flex-row md:flex-wrap md:gap-0",
+        className,
+      )}
+    >
       {children}
     </div>
   );
@@ -23,7 +28,11 @@ export function BlockItemTitle({ children }: { children: ReactNode }) {
   return <p className="min-w-0 shrink truncate leading-tight font-semibold">{children}</p>;
 }
 
-export function BlockItem({ className, children }: { className?: string; children: ReactNode }) {
+export function BlockItem({
+  className,
+  children,
+  ...rest
+}: { className?: string; children: ReactNode } & HTMLAttributes<HTMLDivElement>) {
   const childrenArray = Children.toArray(children);
   const Header = childrenArray.find(
     (child) =>
@@ -34,7 +43,7 @@ export function BlockItem({ className, children }: { className?: string; childre
       isValidElement(child) && typeof child.type === "function" && child.type === BlockItemContent,
   );
   return (
-    <div className={cn("flex w-full flex-col gap-1 px-2 md:w-1/2 md:px-2.5", className)}>
+    <div className={cn("flex w-full flex-col gap-1 px-2 md:w-1/2 md:px-2.5", className)} {...rest}>
       {Header}
       {Content}
     </div>
