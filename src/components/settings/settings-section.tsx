@@ -44,11 +44,6 @@ export function SettingsSection({
 
 export function SettingsSectionDivider({ className }: { className?: string }) {
   return (
-    <div
-      className={cn(
-        "bg-border/50 -mx-3 mt-6 h-3 w-[calc(100%+1.5rem)] border-t border-b sm:hidden",
-        className,
-      )}
-    />
+    <div className={cn("bg-border -mx-3 mt-6 h-px w-[calc(100%+1.5rem)] sm:hidden", className)} />
   );
 }

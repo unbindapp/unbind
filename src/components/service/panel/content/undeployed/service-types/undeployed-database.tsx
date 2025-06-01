@@ -3,6 +3,11 @@ import { databaseTypeToName } from "@/components/command-panel/context-command-p
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
 import {
+  getSourceAndBucketLabelFromValue,
+  getSourceIdAndBucketNameFromValue,
+  sourceAndBucketSeparator,
+} from "@/components/service/helpers";
+import {
   Block,
   BlockItem,
   BlockItemButtonLike,
@@ -52,8 +57,6 @@ export function UndeployedContentDatabase(props: TProps) {
     </S3SourcesProvider>
   );
 }
-
-const sourceAndBucketSeparator = "||||||";
 
 function UndeployedContentDatabase_({ type, version }: TProps) {
   const {
@@ -242,9 +245,9 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
     >
       <WrapperInner>
         {errorCreateFirstDeployment && <ErrorLine message={errorCreateFirstDeployment.message} />}
-        {/* Repository and Branch */}
+        {/* Database and Version */}
         <Block>
-          {/* Repository */}
+          {/* Database */}
           <BlockItem>
             <BlockItemHeader>
               <BlockItemTitle>Database</BlockItemTitle>
@@ -259,7 +262,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
               />
             </BlockItemContent>
           </BlockItem>
-          {/* Branch */}
+          {/* Version */}
           <BlockItem>
             <BlockItemHeader>
               <BlockItemTitle>Version</BlockItemTitle>
@@ -430,25 +433,6 @@ function CreateBackupSourceTrigger({
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
-
-function getSourceAndBucketLabelFromValue(value: string): string {
-  const parts = value.split(sourceAndBucketSeparator);
-  return `${parts[1]}${sourceAndBucketSeparator}${parts[parts.length - 1]}`;
-}
-
-function getSourceIdAndBucketNameFromValue(value: string) {
-  const parts = value.split(sourceAndBucketSeparator);
-  if (parts.length < 3) {
-    return {
-      sourceId: undefined,
-      bucketName: undefined,
-    };
-  }
-  return {
-    sourceId: parts[parts.length - 2],
-    bucketName: parts[parts.length - 1],
-  };
 }
 
 type TFormValues = {

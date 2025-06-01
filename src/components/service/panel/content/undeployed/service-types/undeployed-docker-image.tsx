@@ -27,7 +27,7 @@ import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { TVariableForCreate } from "@/server/trpc/api/variables/types";
 import { api } from "@/server/trpc/setup/client";
 import { useMutation } from "@tanstack/react-query";
-import { ChevronUpIcon, CogIcon, TagIcon } from "lucide-react";
+import { ChevronUpIcon, CogIcon, PackageIcon, TagIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -224,24 +224,30 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort, service
     >
       <WrapperInner>
         {errorCreateFirstDeployment && <ErrorLine message={errorCreateFirstDeployment.message} />}
-        {/* Repository and Branch */}
+        {/* Image and Tag */}
         <Block>
-          {/* Repository */}
+          {/* Image */}
           <BlockItem>
             <BlockItemHeader>
               <BlockItemTitle>Image</BlockItemTitle>
             </BlockItemHeader>
             <BlockItemContent>
               <BlockItemButtonLike
-                asElement="div"
+                asElement="LinkButton"
+                href={
+                  imageIsNonDockerHub ? `https://${image}` : `https://hub.docker.com/r/${image}`
+                }
                 text={image}
-                Icon={({ className }) => (
-                  <BrandIcon brand="docker" color="brand" className={className} />
-                )}
+                Icon={({ className }) => {
+                  if (imageIsNonDockerHub) {
+                    return <PackageIcon className={cn("scale-90", className)} />;
+                  }
+                  return <BrandIcon brand="docker" color="brand" className={className} />;
+                }}
               />
             </BlockItemContent>
           </BlockItem>
-          {/* Branch */}
+          {/* Tag */}
           <BlockItem>
             <BlockItemHeader>
               <BlockItemTitle>Tag</BlockItemTitle>

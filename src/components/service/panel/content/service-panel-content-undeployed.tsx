@@ -17,25 +17,6 @@ export default function ServicePanelContentUndeployed({ service }: TProps) {
     service.config.ports && service.config.ports?.length > 0 ? service.config.ports[0].port : null;
   const detectedPortStr = typeof detectedPort === "number" ? detectedPort.toString() : undefined;
 
-  if (service.type === "docker-image") {
-    const arr = service.config.image?.split(":");
-    const image = arr?.[0];
-    const tag = arr && arr.length > 1 ? arr?.[1] : "latest";
-
-    if (!image || !tag) return <ErrorLine message="Image or tag is not found." />;
-
-    return (
-      <Providers service={service}>
-        <UndeployedContentDockerImage
-          image={image}
-          tag={tag}
-          detectedPort={detectedPortStr}
-          service={service}
-        />
-      </Providers>
-    );
-  }
-
   if (service.type === "github") {
     if (
       !service.git_repository_owner ||
@@ -72,6 +53,25 @@ export default function ServicePanelContentUndeployed({ service }: TProps) {
         <UndeployedContentDatabase
           type={service.database_type}
           version={service.database_version}
+        />
+      </Providers>
+    );
+  }
+
+  if (service.type === "docker-image") {
+    const arr = service.config.image?.split(":");
+    const image = arr?.[0];
+    const tag = arr && arr.length > 1 ? arr?.[1] : "latest";
+
+    if (!image || !tag) return <ErrorLine message="Image or tag is not found." />;
+
+    return (
+      <Providers service={service}>
+        <UndeployedContentDockerImage
+          image={image}
+          tag={tag}
+          detectedPort={detectedPortStr}
+          service={service}
         />
       </Providers>
     );
