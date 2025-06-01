@@ -4,6 +4,7 @@ import { useServicesUtils } from "@/components/project/services-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useService } from "@/components/service/service-provider";
 import DeleteCard from "@/components/settings/delete-card";
+import { cn } from "@/components/ui/utils";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { api } from "@/server/trpc/setup/client";
 
@@ -41,7 +42,7 @@ export default function DeleteSection({ service, className }: Props) {
       onSubmit={async () => {
         await deleteService({ teamId, projectId, environmentId, serviceId: service.id });
       }}
-      className={className}
+      className={cn("md:max-w-lg", className)}
     />
   );
 }

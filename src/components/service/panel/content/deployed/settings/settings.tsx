@@ -19,10 +19,14 @@ export default function Settings({ service }: { service: TServiceShallow }) {
         <NetworkingSection service={service} />
       </SettingsSection>
       <SettingsSectionDivider />
-      <SettingsSection title="Build" id="build" Icon={WrenchIcon}>
-        <BuildSection service={service} />
-      </SettingsSection>
-      <SettingsSectionDivider />
+      {service.type === "github" && (
+        <>
+          <SettingsSection title="Build" id="build" Icon={WrenchIcon}>
+            <BuildSection service={service} />
+          </SettingsSection>
+          <SettingsSectionDivider />
+        </>
+      )}
       <SettingsSection title="Deploy" id="deploy" Icon={RocketIcon}>
         <DeploySection service={service} />
       </SettingsSection>

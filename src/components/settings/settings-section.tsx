@@ -23,7 +23,7 @@ export function SettingsSection({
           <Icon className="size-5 shrink-0" />
           <div className="bg-foreground/10 min-h-0 w-px flex-1 rounded-full" />
         </div>
-        <div className="flex min-w-0 flex-1 flex-col gap-2 pb-0.5">
+        <div className="flex min-w-0 flex-1 flex-col gap-2 pb-1">
           <div className="flex w-full items-center gap-2 px-1.5 pb-1 sm:px-0 sm:pb-0">
             <Icon className="-ml-0.5 size-5 shrink-0 sm:hidden" />
             <h3
@@ -44,6 +44,6 @@ export function SettingsSection({
 
 export function SettingsSectionDivider({ className }: { className?: string }) {
   return (
-    <div className={cn("bg-border -mx-3 mt-6 h-px w-[calc(100%+1.5rem)] sm:hidden", className)} />
+    <div className={cn("bg-border -mx-3 mt-5 h-px w-[calc(100%+1.5rem)] sm:hidden", className)} />
   );
 }

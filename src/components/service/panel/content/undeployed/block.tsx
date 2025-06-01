@@ -24,8 +24,18 @@ export function BlockItemHeader({ children }: { children: ReactNode }) {
   );
 }
 
-export function BlockItemTitle({ children }: { children: ReactNode }) {
-  return <p className="min-w-0 shrink truncate leading-tight font-semibold">{children}</p>;
+export function BlockItemTitle({
+  className,
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <p className={cn("min-w-0 shrink truncate leading-tight font-semibold", className)}>
+      {children}
+    </p>
+  );
 }
 
 export function BlockItem({

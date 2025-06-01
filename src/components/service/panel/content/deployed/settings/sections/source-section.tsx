@@ -4,6 +4,11 @@ import BrandIcon from "@/components/icons/brand";
 import ErrorWithWrapper from "@/components/service/panel/content/deployed/settings/shared/error-with-wrapper";
 import SettingsSectionWrapper from "@/components/service/panel/content/deployed/settings/shared/settings-section-wrapper";
 import {
+  TDatabaseSectionContentProps,
+  TDockerImageSectionContentProps,
+  TGitSectionContentProps,
+} from "@/components/service/panel/content/deployed/settings/shared/types";
+import {
   Block,
   BlockItem,
   BlockItemButtonLike,
@@ -85,18 +90,7 @@ export default function SourceSection({ service }: TProps) {
   return <ErrorWithWrapper message="Unsupported service type" />;
 }
 
-function GitSectionContent({
-  owner,
-  repo,
-  branch,
-  installationId,
-}: {
-  owner: string;
-  repo: string;
-  branch: string;
-  installationId: number;
-  service: TServiceShallow;
-}) {
+function GitSectionContent({ owner, repo, branch, installationId }: TGitSectionContentProps) {
   const {
     data: dataRepository,
     isPending: isPendingRepository,
@@ -199,7 +193,7 @@ function GitSectionContent({
   );
 }
 
-function DatabaseSectionContent({ type, version }: { type: string; version: string }) {
+function DatabaseSectionContent({ type, version }: TDatabaseSectionContentProps) {
   return (
     <>
       <Block>
@@ -238,7 +232,7 @@ function DatabaseSectionContent({ type, version }: { type: string; version: stri
   );
 }
 
-function DockerImageSectionContent({ image, tag }: { image: string; tag: string }) {
+function DockerImageSectionContent({ image, tag }: TDockerImageSectionContentProps) {
   const [commandInputValue, setCommandInputValue] = useState("");
   const imageIsNonDockerHub = isNonDockerHubImage(image);
   const [search] = useDebounce(commandInputValue, defaultDebounceMs);
