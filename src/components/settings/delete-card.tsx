@@ -33,7 +33,7 @@ export default function DeleteCard({
         className,
       )}
     >
-      <div className="-mt-0.75 flex w-full items-start justify-start gap-2 px-1">
+      <div className="-mt-0.75 flex w-full items-start justify-start gap-2 px-0.5">
         <TriangleAlertIcon className="mt-0.5 size-4.5 shrink-0" />
         <p className="min-w-0 shrink leading-snug text-balance">{paragraph}</p>
       </div>

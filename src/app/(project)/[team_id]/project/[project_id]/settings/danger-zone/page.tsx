@@ -13,7 +13,7 @@ export default async function Page({ params, searchParams }: TProjectPageParams)
   });
   return (
     <>
-      <SettingsTabTitle>Delete Project</SettingsTabTitle>
+      <SettingsTabTitle className="text-destructive">Delete Project</SettingsTabTitle>
       <DeleteProjectSection className="mt-4" />
     </>
   );

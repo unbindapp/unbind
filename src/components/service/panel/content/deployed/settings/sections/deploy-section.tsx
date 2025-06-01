@@ -69,7 +69,8 @@ function GitOrDockerImageSectionContent({ service }: { service: TServiceShallow 
             <BlockItem className="w-full md:w-full">
               <BlockItemHeader type="column">
                 <BlockItemTitle>
-                  Instances:{" "}
+                  Instances
+                  <span className="pr-[0.6ch]">{":"}</span>
                   <span className="text-foreground bg-foreground/6 border-foreground/6 rounded-md border px-1.5">
                     {field.state.value}
                   </span>

@@ -33,7 +33,13 @@ export default function Settings({ service }: { service: TServiceShallow }) {
         </SettingsSection>
       )}
       <SettingsSectionDivider />
-      <SettingsSection title="Delete Service" id="danger" Icon={Trash2Icon}>
+      <SettingsSection
+        classNameHeader="text-destructive"
+        classNameVerticalLine="bg-destructive/20"
+        title="Delete Service"
+        id="danger"
+        Icon={Trash2Icon}
+      >
         <DeleteSection service={service} className="mt-1" />
       </SettingsSection>
     </TabWrapper>
