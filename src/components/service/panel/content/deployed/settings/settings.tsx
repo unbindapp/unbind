@@ -27,9 +27,11 @@ export default function Settings({ service }: { service: TServiceShallow }) {
           <SettingsSectionDivider />
         </>
       )}
-      <SettingsSection title="Deploy" id="deploy" Icon={RocketIcon}>
-        <DeploySection service={service} />
-      </SettingsSection>
+      {(service.type === "github" || service.type === "docker-image") && (
+        <SettingsSection title="Deploy" id="deploy" Icon={RocketIcon}>
+          <DeploySection service={service} />
+        </SettingsSection>
+      )}
       <SettingsSectionDivider />
       <SettingsSection title="Delete Service" id="danger" Icon={Trash2Icon}>
         <DeleteSection service={service} className="mt-1" />

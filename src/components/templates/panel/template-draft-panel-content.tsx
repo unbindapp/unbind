@@ -202,7 +202,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                       key={`field[${i}]`}
                       className="flex w-full flex-col gap-2.5 p-1 py-4 md:w-1/2"
                     >
-                      <div className="flex w-full flex-col gap-1 px-1.5">
+                      <div className="flex w-full flex-col gap-1.5 px-1.5">
                         <div className="flex w-full items-start gap-2">
                           <TemplateInputIcon input={visibleInputs[i]} />
                           <form.Subscribe
@@ -223,7 +223,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                             )}
                           />
                         </div>
-                        <p className="text-muted-foreground w-full text-sm">
+                        <p className="text-muted-foreground w-full leading-snug">
                           {visibleInputs[i].description}
                         </p>
                       </div>

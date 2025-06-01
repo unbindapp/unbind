@@ -16,9 +16,23 @@ export function Block({ className, children }: { className?: string; children: R
   );
 }
 
-export function BlockItemHeader({ children }: { children: ReactNode }) {
+export function BlockItemHeader({
+  className,
+  children,
+  type = "row",
+}: {
+  className?: string;
+  children: ReactNode;
+  type?: "row" | "column";
+}) {
   return (
-    <div className="flex w-full items-center justify-start gap-2.5 pb-1 pl-2 leading-tight font-semibold">
+    <div
+      className={cn(
+        "flex w-full items-center justify-start gap-2.5 px-2 pb-1.5",
+        type === "column" && "flex-col items-start gap-1 pb-2",
+        className,
+      )}
+    >
       {children}
     </div>
   );
@@ -32,9 +46,19 @@ export function BlockItemTitle({
   children: ReactNode;
 }) {
   return (
-    <p className={cn("min-w-0 shrink truncate leading-tight font-semibold", className)}>
-      {children}
-    </p>
+    <h3 className={cn("min-w-0 shrink leading-tight font-semibold", className)}>{children}</h3>
+  );
+}
+
+export function BlockItemDescription({
+  className,
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <p className={cn("text-muted-foreground min-w-0 shrink leading-snug", className)}>{children}</p>
   );
 }
 
