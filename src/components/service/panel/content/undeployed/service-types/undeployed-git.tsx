@@ -237,6 +237,13 @@ export function UndeployedContentGit({
 
   const [isAdvancedSettingsOpen, setIsAdvancedSettingsOpen] = useState(false);
 
+  const repositoryBlockProps = dataRepository?.repository.htmlUrl
+    ? ({
+        asElement: "LinkButton",
+        href: dataRepository.repository.htmlUrl,
+      } as const)
+    : ({ asElement: "div" } as const);
+
   return (
     <WrapperForm
       onSubmit={(e) => {
@@ -257,7 +264,7 @@ export function UndeployedContentGit({
             </BlockItemHeader>
             <BlockItemContent>
               <BlockItemButtonLike
-                asElement="div"
+                {...repositoryBlockProps}
                 text={`${owner}/${repo}`}
                 Icon={({ className }) => (
                   <BrandIcon brand="github" color="brand" className={className} />
@@ -322,9 +329,9 @@ export function UndeployedContentGit({
             type="button"
             onClick={() => setIsAdvancedSettingsOpen((o) => !o)}
           >
-            <div className="relative size-5 shrink-0 transition-transform group-data-open/section:rotate-180">
-              <CogIcon className="size-full scale-90 transition-opacity group-data-open/section:opacity-0" />
-              <ChevronUpIcon className="absolute top-0 left-0 size-full -rotate-180 opacity-0 transition-opacity group-data-open/section:opacity-100" />
+            <div className="relative size-5 shrink-0 transition-transform group-data-open/section:rotate-90">
+              <CogIcon className="size-full scale-90 group-data-open/section:opacity-0" />
+              <ChevronUpIcon className="absolute top-0 left-0 size-full -rotate-90 opacity-0 group-data-open/section:opacity-100" />
             </div>
             <p className="min-w-0 shrink">Advanced Settings</p>
           </Button>

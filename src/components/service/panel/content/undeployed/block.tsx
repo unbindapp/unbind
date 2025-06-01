@@ -1,6 +1,6 @@
-import { Button, TButtonProps } from "@/components/ui/button";
+import { Button, LinkButton, TButtonProps, TLinkButtonProps } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import { ChevronDownIcon } from "lucide-react";
+import { ChevronDownIcon, ExternalLinkIcon } from "lucide-react";
 import { Children, cloneElement, FC, HTMLAttributes, isValidElement, ReactNode } from "react";
 
 export function Block({ className, children }: { className?: string; children: ReactNode }) {
@@ -79,6 +79,7 @@ type TBlockItemButtonLikeProps = {
   isPending?: boolean;
   open?: boolean;
   hideChevron?: boolean;
+  href?: string;
 } & (
   | ({
       asElement: "button";
@@ -86,6 +87,9 @@ type TBlockItemButtonLikeProps = {
   | ({
       asElement: "div";
     } & React.HTMLAttributes<HTMLDivElement>)
+  | ({
+      asElement: "LinkButton";
+    } & TLinkButtonProps)
 );
 
 export function BlockItemButtonLike({
@@ -96,11 +100,12 @@ export function BlockItemButtonLike({
   isPending,
   className,
   hideChevron,
+  href,
   ...props
 }: TBlockItemButtonLikeProps) {
-  const Element = asElement === "button" ? Button : "div";
+  const Element =
+    asElement === "button" ? Button : asElement === "LinkButton" && href ? LinkButton : "div";
   return (
-    // @ts-expect-error this is fine. Typescript isn't smart enough
     <Element
       variant="outline"
       data-open={open ? true : undefined}
@@ -109,10 +114,20 @@ export function BlockItemButtonLike({
         "group/button flex w-full flex-row items-center justify-start gap-2 rounded-lg border px-3 py-2.5 text-left data-pending:text-transparent",
         className,
       )}
+      // @ts-expect-error this is fine. Typescript isn't smart enough
+      href={href}
+      target={href ? "_blank" : undefined}
       {...props}
     >
       <div className="group-data-pending/button:animate-skeleton flex min-w-0 flex-1 items-center justify-start gap-2">
-        <Icon className="group-data-pending/button:bg-foreground size-5 shrink-0 group-data-pending/button:rounded-full" />
+        {asElement === "LinkButton" && href !== undefined ? (
+          <div className="relative size-5 shrink-0 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45">
+            <Icon className="size-full group-active/button:opacity-0 has-hover:group-hover/button:opacity-0" />
+            <ExternalLinkIcon className="absolute top-0 left-0 size-full scale-90 -rotate-45 opacity-0 group-active/button:opacity-100 has-hover:group-hover/button:opacity-100" />
+          </div>
+        ) : (
+          <Icon className="group-data-pending/button:bg-foreground size-5 shrink-0 group-data-pending/button:rounded-full" />
+        )}
         <p className="group-data-pending/button:bg-foreground min-w-0 shrink truncate leading-tight font-medium select-text group-data-pending/button:rounded-md">
           {text}
         </p>

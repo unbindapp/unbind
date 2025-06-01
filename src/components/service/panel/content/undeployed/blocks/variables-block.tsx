@@ -115,9 +115,9 @@ const VariablesBlock = withForm({
           type="button"
           onClick={() => setIsOpen((o) => !o)}
         >
-          <div className="relative size-5 shrink-0 transition-transform group-data-open/section:rotate-135">
-            <KeyIcon className="size-full scale-80 transition-opacity group-data-open/section:opacity-0" />
-            <ChevronUpIcon className="absolute top-0 left-0 size-full -rotate-135 opacity-0 transition-opacity group-data-open/section:opacity-100" />
+          <div className="relative size-5 shrink-0 transition-transform group-data-open/section:rotate-90">
+            <KeyIcon className="size-full scale-80 group-data-open/section:opacity-0" />
+            <ChevronUpIcon className="absolute top-0 left-0 size-full -rotate-90 opacity-0 group-data-open/section:opacity-100" />
           </div>
           <p className="min-w-0 shrink">Environment Variables</p>
         </Button>

@@ -303,8 +303,8 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort, service
             onClick={() => setIsAdvancedSettingsOpen((o) => !o)}
           >
             <div className="relative size-5 shrink-0 transition-transform group-data-open/section:rotate-180">
-              <CogIcon className="size-full scale-90 transition-opacity group-data-open/section:opacity-0" />
-              <ChevronUpIcon className="absolute top-0 left-0 size-full -rotate-180 opacity-0 transition-opacity group-data-open/section:opacity-100" />
+              <CogIcon className="size-full scale-90 group-data-open/section:opacity-0" />
+              <ChevronUpIcon className="absolute top-0 left-0 size-full -rotate-180 opacity-0 group-data-open/section:opacity-100" />
             </div>
             <p className="min-w-0 shrink">Advanced Settings</p>
           </Button>
