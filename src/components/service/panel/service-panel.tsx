@@ -103,7 +103,10 @@ export default function ServicePanel({
               environmentId={environmentId}
               serviceId={service.id}
             >
-              <ServiceUrls hosts={service.config.hosts} />
+              <ServiceUrls
+                hosts={service.config.hosts}
+                hasCurrentDeployment={service.current_deployment !== undefined ? true : false}
+              />
             </ServiceEndpointsProvider>
           )}
           {/* Content */}
