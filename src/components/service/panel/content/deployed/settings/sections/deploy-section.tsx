@@ -53,17 +53,17 @@ export default function DeploySection({ service }: TProps) {
 }
 
 const cpuLimits = {
-  min: 500,
-  max: 32000,
-  step: 500,
-  unlimited: 32500,
+  min: 100,
+  max: 8000,
+  step: 100,
+  unlimited: 8100,
 };
 
 const memoryLimits = {
-  min: 500,
-  max: 32000,
-  step: 500,
-  unlimited: 32500,
+  min: 100,
+  max: 8000,
+  step: 100,
+  unlimited: 8100,
 };
 
 function GitOrDockerImageSectionContent({ service }: { service: TServiceShallow }) {
