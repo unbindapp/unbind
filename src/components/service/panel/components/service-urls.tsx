@@ -4,11 +4,10 @@ import { THostFromServiceList } from "@/server/trpc/api/services/types";
 
 type TProps = {
   hosts: THostFromServiceList[];
-  hasCurrentDeployment: boolean;
   className?: string;
 };
 
-export default function ServiceUrls({ hosts, hasCurrentDeployment }: TProps) {
+export default function ServiceUrls({ hosts }: TProps) {
   const {
     query: { data, error },
   } = useServiceEndpoints();
@@ -32,7 +31,6 @@ export default function ServiceUrls({ hosts, hasCurrentDeployment }: TProps) {
             key={`${e.host}${e.path}${e.port}`}
             endpoint={e}
             className={endpoints.length > 1 ? "max-w-1/2" : undefined}
-            hasCurrentDeployment={hasCurrentDeployment}
           />
         ))}
     </div>

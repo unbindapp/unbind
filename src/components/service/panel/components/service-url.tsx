@@ -17,13 +17,11 @@ import { ReactNode, useState } from "react";
 type TServiceUrlProps = { className?: string } & (
   | {
       endpoint: TExternalEndpoint;
-      hasCurrentDeployment: boolean;
       isPlaceholder?: never;
       error?: never;
     }
   | {
       endpoint?: never;
-      hasCurrentDeployment?: never;
       isPlaceholder: true;
       error: string | undefined;
     }
@@ -31,7 +29,6 @@ type TServiceUrlProps = { className?: string } & (
 
 export default function ServiceUrl({
   endpoint,
-  hasCurrentDeployment,
   isPlaceholder,
   error,
   className,
@@ -89,7 +86,6 @@ export default function ServiceUrl({
         <Popover open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
           <PopoverTrigger asChild>
             <Button
-              data-has-current-deployment={hasCurrentDeployment ? true : undefined}
               data-open={isDropdownOpen ? true : undefined}
               className="text-muted-foreground group/button min-w-0 shrink px-2.25 py-1 text-left font-medium"
               variant="ghost"
@@ -97,7 +93,7 @@ export default function ServiceUrl({
             >
               <div className="relative -ml-0.5 size-3.5 shrink-0 transition-transform group-data-open/button:rotate-90">
                 {endpoint.tls_status === "pending" || endpoint.dns_status === "unresolved" ? (
-                  <HourglassIcon className="group-data-has-current-deployment:animate-hourglass size-full group-data-open/button:animate-none group-data-open/button:opacity-0" />
+                  <HourglassIcon className="animate-hourglass size-full group-data-open/button:animate-none group-data-open/button:opacity-0" />
                 ) : (
                   <LoaderIcon className="size-full animate-spin group-data-open/button:animate-none group-data-open/button:opacity-0" />
                 )}
