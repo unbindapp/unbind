@@ -388,6 +388,15 @@ export const PortSpecSchema = z
   })
   .strip();
 
+export const ResourcesSchema = z
+  .object({
+    cpu_limits_millicores: z.number().optional(),
+    cpu_requests_millicores: z.number().optional(),
+    memory_limits_megabytes: z.number().optional(),
+    memory_requests_megabytes: z.number().optional(),
+  })
+  .strip();
+
 export const ServiceTypeSchema = z.enum(['github', 'docker-image', 'database']);
 
 export const VariableMountSchema = z
@@ -430,6 +439,7 @@ export const CreateServiceInputSchema = z
     replicas: z.number().optional(),
     repository_name: z.string().optional(),
     repository_owner: z.string().optional(),
+    resources: ResourcesSchema.optional(), // Resource limits and requests for the service containers
     run_command: z.string().optional(),
     s3_backup_bucket: z.string().optional(),
     s3_backup_source_id: z.string().optional(),
@@ -1574,6 +1584,7 @@ export const QueryLogsResponseBodySchema = z
 export const RedeployInputBodySchema = z
   .object({
     deployment_id: z.string(),
+    disable_build_cache: z.boolean().optional(), // Disable build cache for this redeployment
     environment_id: z.string(),
     project_id: z.string(),
     service_id: z.string(),
@@ -1904,6 +1915,7 @@ export const UpdateServiceInputSchema = z
     project_id: z.string(),
     protected_variables: z.array(z.string()).optional(), // List of protected variables
     replicas: z.number().optional(),
+    resources: ResourcesSchema.optional(), // Resource limits and requests for the service containers
     run_command: z.string().optional(),
     s3_backup_bucket: z.string().optional(),
     s3_backup_source_id: z.string().optional(),
@@ -2087,6 +2099,7 @@ export type HostSpec = z.infer<typeof HostSpecSchema>;
 export type InitContainer = z.infer<typeof InitContainerSchema>;
 export type Protocol = z.infer<typeof ProtocolSchema>;
 export type PortSpec = z.infer<typeof PortSpecSchema>;
+export type Resources = z.infer<typeof ResourcesSchema>;
 export type ServiceType = z.infer<typeof ServiceTypeSchema>;
 export type VariableMount = z.infer<typeof VariableMountSchema>;
 export type ServiceVolume = z.infer<typeof ServiceVolumeSchema>;

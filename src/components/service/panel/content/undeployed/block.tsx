@@ -7,7 +7,7 @@ export function Block({ className, children }: { className?: string; children: R
   return (
     <div
       className={cn(
-        "-mx-2 flex w-[calc(100%+1rem)] flex-col gap-5 md:-mx-2.5 md:w-[calc(100%+1.25rem)] md:flex-row md:flex-wrap md:gap-0",
+        "-mx-2 flex w-[calc(100%+1rem)] flex-col gap-6 md:-mx-2.5 md:w-[calc(100%+1.25rem)] md:flex-row md:flex-wrap md:gap-0",
         className,
       )}
     >

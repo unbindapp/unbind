@@ -44,7 +44,7 @@ export function SettingsSection({
               classNameHeader,
             )}
           >
-            <Icon className="-ml-0.5 size-5 shrink-0 sm:hidden" />
+            <Icon className="size-5 shrink-0 sm:hidden" />
             <h3
               className={cn(
                 "min-w-0 shrink text-lg leading-tight font-semibold sm:px-1.5",

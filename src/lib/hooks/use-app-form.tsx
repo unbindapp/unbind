@@ -218,6 +218,7 @@ type TSliderWithInfoProps = TFieldProps &
     classNameMin?: string;
     classNameMax?: string;
     minMaxFormatter?: (value: number) => string;
+    hideMinMax?: boolean;
   };
 
 function StorageSizeInput({
@@ -230,6 +231,7 @@ function StorageSizeInput({
   classNameMin,
   classNameMax,
   minMaxFormatter,
+  hideMinMax,
   ...rest
 }: TSliderWithInfoProps) {
   const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
@@ -237,22 +239,22 @@ function StorageSizeInput({
   const classNameMinMax = "min-w-0 text-muted-foreground shrink leading-tight text-xs font-medium";
 
   const Min = useCallback(() => {
-    if (rest.min === undefined) return null;
+    if (rest.min === undefined || hideMinMax) return null;
     return (
       <p className={cn(classNameMinMax, classNameMin)}>
         {minMaxFormatter ? minMaxFormatter(rest.min) : rest.min.toLocaleString(appLocale)}
       </p>
     );
-  }, [classNameMinMax, classNameMin, minMaxFormatter, rest.min]);
+  }, [classNameMinMax, classNameMin, minMaxFormatter, rest.min, hideMinMax]);
 
   const Max = useCallback(() => {
-    if (rest.max === undefined) return null;
+    if (rest.max === undefined || hideMinMax) return null;
     return (
       <p className={cn(classNameMinMax, classNameMax)}>
         {minMaxFormatter ? minMaxFormatter(rest.max) : rest.max.toLocaleString(appLocale)}
       </p>
     );
-  }, [classNameMinMax, classNameMax, minMaxFormatter, rest.max]);
+  }, [classNameMinMax, classNameMax, minMaxFormatter, rest.max, hideMinMax]);
 
   return (
     <div className={cn("flex flex-col", className)}>

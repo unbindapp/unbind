@@ -61,7 +61,7 @@ function GitSectionContent({ service }: TGitSectionContentProps) {
   });
 
   return (
-    <form className="flex w-full flex-col gap-5">
+    <form className="flex w-full flex-col gap-6">
       <Block>
         <BlockItem className="w-full md:w-full">
           <BlockItemHeader>
