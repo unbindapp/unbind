@@ -120,7 +120,7 @@ function GitOrDockerImageSectionContent({ service }: { service: TServiceShallow 
           <BlockItemHeader type="column">
             <BlockItemTitle>Resource Limits</BlockItemTitle>
             <BlockItemDescription>
-              The maximum CPU and memory allocated to each instance.
+              The maximum vCPU and memory to allocate for each instance.
             </BlockItemDescription>
           </BlockItemHeader>
           <BlockItemContent>
@@ -129,7 +129,7 @@ function GitOrDockerImageSectionContent({ service }: { service: TServiceShallow 
                 name="cpuMillicores"
                 children={(field) => (
                   <div className="flex w-full flex-col pb-1.5">
-                    <ValueTitle title="CPU" value={cpuFormatter(field.state.value)} />
+                    <ValueTitle title="vCPU" value={cpuFormatter(field.state.value)} />
                     <field.StorageSizeInput
                       field={field}
                       className="w-full px-3.5 py-3"
