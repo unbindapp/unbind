@@ -42,7 +42,7 @@ export const CreateServiceSharedSchema = z
     environmentId: z.string().uuid(),
     isPublic: z.boolean(),
     ports: PortSpecSchema.array().optional(),
-    hosts: HostSpecSchema.array().optional(),
+    overwriteHosts: HostSpecSchema.array().optional(),
     autoDeploy: z.boolean(),
   })
   .strip();
@@ -98,7 +98,9 @@ export const UpdateServiceInputSchema = z
     image: z.string().optional(),
     isPublic: z.boolean().optional(),
     ports: PortSpecSchema.array().optional(),
-    hosts: HostSpecSchema.array().optional(),
+    overwriteHosts: HostSpecSchema.array().optional(),
+    addHosts: HostSpecSchema.array().optional(),
+    removeHosts: HostSpecSchema.array().optional(),
     databaseConfig: DatabaseConfigSchema.optional(),
     s3BackupSourceId: z.string().uuid().optional(),
     s3BackupBucket: z.string().optional(),

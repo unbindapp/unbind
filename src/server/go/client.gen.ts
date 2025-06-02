@@ -476,6 +476,7 @@ export const ServiceConfigResponseSchema = z
     ports: z.array(PortSpecSchema).optional(),
     protected_variables: z.array(z.string()),
     replicas: z.number(),
+    resources: ResourcesSchema.optional(),
     run_command: z.string().optional(),
     s3_backup_bucket: z.string().optional(),
     s3_backup_source_id: z.string().optional(),
@@ -864,7 +865,7 @@ export const SimpleInstanceStatusSchema = z
 
 export const SimpleHealthStatusSchema = z
   .object({
-    expectedInstances: z.number(),
+    expected_instances: z.number(),
     health: InstanceHealthSchema,
     instances: z.array(SimpleInstanceStatusSchema).nullable(),
   })
@@ -1370,17 +1371,17 @@ export const GithubRepositoryDetailResponseBodySchema = z
 
 export const InstanceStatusSchema = z
   .object({
-    crashLoopReason: z.string().optional(),
+    crash_loop_reason: z.string().optional(),
     events: z.array(EventRecordSchema).optional(),
-    isCrashing: z.boolean(),
+    is_crashing: z.boolean(),
     kubernetes_name: z.string(),
-    lastExitCode: z.number().optional(),
-    lastTermination: z.string().optional(),
+    last_exit_code: z.number().optional(),
+    last_termination: z.string().optional(),
     ready: z.boolean(),
-    restartCount: z.number(),
+    restart_count: z.number(),
     state: ContainerStateSchema,
-    stateMessage: z.string().optional(),
-    stateReason: z.string().optional(),
+    state_message: z.string().optional(),
+    state_reason: z.string().optional(),
   })
   .strip();
 
@@ -1438,8 +1439,8 @@ export const PodPhaseSchema = z.enum(['Pending', 'Running', 'Succeeded', 'Failed
 export const PodContainerStatusSchema = z
   .object({
     environment_id: z.string(),
-    hasCrashingInstances: z.boolean(),
-    instanceDependencies: z.array(InstanceStatusSchema),
+    has_crashing_instances: z.boolean(),
+    instance_dependencies: z.array(InstanceStatusSchema),
     instances: z.array(InstanceStatusSchema),
     kubernetes_name: z.string(),
     namespace: z.string(),
@@ -1447,7 +1448,7 @@ export const PodContainerStatusSchema = z
     podIP: z.string().optional(),
     project_id: z.string(),
     service_id: z.string(),
-    startTime: z.string().optional(),
+    start_time: z.string().optional(),
     team_id: z.string(),
   })
   .strip();
@@ -1892,6 +1893,7 @@ export const UpdateServiceGroupResponseBodySchema = z
 
 export const UpdateServiceInputSchema = z
   .object({
+    add_hosts: z.array(HostSpecSchema).nullable().optional(), // Additional hosts to add, will not remove existing hosts
     auto_deploy: z.boolean().optional(),
     backup_retention: z.number().optional(), // Number of base backups to retain, e.g. 3
     backup_schedule: z.string().optional(), // Cron expression for the backup schedule, e.g. '0 0 * * *'
@@ -1905,15 +1907,16 @@ export const UpdateServiceInputSchema = z
     git_branch: z.string().optional(),
     git_tag: z.string().optional(), // Tag to build from, supports glob patterns
     health_check: HealthCheckSchema.optional(),
-    hosts: z.array(HostSpecSchema).nullable().optional(),
     image: z.string().optional(),
     init_containers: z.array(InitContainerSchema).nullable().optional(), // List of init containers
     install_command: z.string().optional(),
     is_public: z.boolean().optional(),
     name: z.string().nullable().optional(),
+    overwrite_hosts: z.array(HostSpecSchema).nullable().optional(),
     ports: z.array(PortSpecSchema).nullable().optional(),
     project_id: z.string(),
     protected_variables: z.array(z.string()).optional(), // List of protected variables
+    remove_hosts: z.array(HostSpecSchema).nullable().optional(), // Hosts to remove
     replicas: z.number().optional(),
     resources: ResourcesSchema.optional(), // Resource limits and requests for the service containers
     run_command: z.string().optional(),

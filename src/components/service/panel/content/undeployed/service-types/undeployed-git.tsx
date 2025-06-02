@@ -144,7 +144,7 @@ export function UndeployedContentGit({
         serviceId,
         gitBranch: formValues.branch,
         isPublic: formValues.isPublic,
-        hosts: !formValues.isPublic
+        overwriteHosts: !formValues.isPublic
           ? undefined
           : [{ host: formValues.domain, port: Number(formValues.port), path: "" }],
         ...extraProps,

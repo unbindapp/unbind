@@ -139,7 +139,7 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort, service
         serviceId,
         image: `${image}:${formValues.tag}`,
         isPublic: formValues.isPublic,
-        hosts: !formValues.isPublic
+        overwriteHosts: !formValues.isPublic
           ? undefined
           : [{ host: formValues.domain, port: Number(formValues.port), path: "" }],
       });
