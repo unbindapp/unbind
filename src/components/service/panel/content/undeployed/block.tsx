@@ -28,8 +28,8 @@ export function BlockItemHeader({
   return (
     <div
       className={cn(
-        "flex w-full items-center justify-start gap-2.5 px-2 pb-1.5",
-        type === "column" && "flex-col items-start gap-1 pb-2",
+        "flex w-full items-center justify-start gap-2.5 pb-1.5 pl-1.5",
+        type === "column" && "flex-col items-start gap-1 px-1.5 pb-2",
         className,
       )}
     >

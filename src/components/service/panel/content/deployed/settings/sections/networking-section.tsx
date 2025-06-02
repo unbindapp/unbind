@@ -1,5 +1,5 @@
-import ErrorWithWrapper from "@/components/service/panel/content/deployed/settings/shared/error-with-wrapper";
-import SettingsSectionWrapper from "@/components/service/panel/content/deployed/settings/shared/settings-section-wrapper";
+import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
+import SettingsSectionWrapper from "@/components/settings/settings-section-wrapper";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
 
 type TProps = {

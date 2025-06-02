@@ -4,27 +4,24 @@ import DeleteSection from "@/components/service/panel/content/deployed/settings/
 import DeploySection from "@/components/service/panel/content/deployed/settings/sections/deploy-section";
 import NetworkingSection from "@/components/service/panel/content/deployed/settings/sections/networking-section";
 import SourceSection from "@/components/service/panel/content/deployed/settings/sections/source-section";
-import { SettingsSection, SettingsSectionDivider } from "@/components/settings/settings-section";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { CodeIcon, NetworkIcon, RocketIcon, Trash2Icon, WrenchIcon } from "lucide-react";
 
 export default function Settings({ service }: { service: TServiceShallow }) {
   return (
-    <TabWrapper className="pt-0 sm:pt-0">
-      <SettingsSection className="pt-4 sm:pt-6" title="Source" id="source" Icon={CodeIcon}>
+    <TabWrapper className="gap-6">
+      <SettingsSection title="Source" id="source" Icon={CodeIcon}>
         <SourceSection service={service} />
       </SettingsSection>
-      <SettingsSectionDivider />
       <SettingsSection title="Networking" id="networking" Icon={NetworkIcon}>
         <NetworkingSection service={service} />
       </SettingsSection>
-      <SettingsSectionDivider />
       {service.type === "github" && (
         <>
           <SettingsSection title="Build" id="build" Icon={WrenchIcon}>
             <BuildSection service={service} />
           </SettingsSection>
-          <SettingsSectionDivider />
         </>
       )}
       {(service.type === "github" || service.type === "docker-image") && (
@@ -32,10 +29,9 @@ export default function Settings({ service }: { service: TServiceShallow }) {
           <DeploySection service={service} />
         </SettingsSection>
       )}
-      <SettingsSectionDivider />
       <SettingsSection
-        classNameHeader="text-destructive"
-        classNameVerticalLine="bg-destructive/20"
+        className="border-destructive/20"
+        classNameHeader="text-destructive bg-destructive/8 border-destructive/15"
         title="Delete Service"
         id="danger"
         Icon={Trash2Icon}

@@ -9,7 +9,6 @@ export function SettingsSection({
   className,
   classNameTitleDiv,
   classNameHeader,
-  classNameVerticalLine,
 }: {
   id: string;
   title: string;
@@ -18,44 +17,28 @@ export function SettingsSection({
   className?: string;
   classNameTitleDiv?: string;
   classNameHeader?: string;
-  classNameVerticalLine?: string;
 }) {
   return (
-    <div id={id} className={cn("flex w-full flex-col pt-4 sm:pt-8", className)}>
-      <div className="flex w-full gap-3">
-        <div
-          className={cn(
-            "text-muted-foreground mt-0.25 hidden flex-col items-center gap-3 sm:flex",
-            classNameHeader,
-          )}
-        >
-          <Icon className="size-5 shrink-0" />
-          <div
-            className={cn(
-              "bg-foreground/10 min-h-0 w-px flex-1 rounded-full",
-              classNameVerticalLine,
-            )}
-          />
-        </div>
-        <div className="flex min-w-0 flex-1 flex-col gap-2 pb-1">
-          <div
-            className={cn(
-              "text-muted-foreground flex w-full items-center gap-2 px-1.5 pb-1 sm:px-0 sm:pb-0",
-              classNameHeader,
-            )}
-          >
-            <Icon className="size-5 shrink-0 sm:hidden" />
-            <h3
-              className={cn(
-                "min-w-0 shrink text-lg leading-tight font-semibold sm:px-1.5",
-                classNameTitleDiv,
-              )}
-            >
-              {title}
-            </h3>
-          </div>
-          {children}
-        </div>
+    <div
+      id={id}
+      className={cn(
+        "relative z-0 flex w-full flex-col overflow-hidden rounded-xl border md:max-w-lg",
+        className,
+      )}
+    >
+      <div
+        className={cn(
+          "text-muted-foreground bg-background-hover flex w-full items-center gap-2.5 border-b px-3.5 py-2.5 sm:px-4 sm:py-3",
+          classNameHeader,
+        )}
+      >
+        <Icon className="size-5 shrink-0" />
+        <h3 className={cn("min-w-0 shrink text-lg leading-tight font-medium", classNameTitleDiv)}>
+          {title}
+        </h3>
+      </div>
+      <div className="flex w-full flex-col px-3 pt-2.5 pb-3 sm:px-4.5 sm:pt-3.5 sm:pb-4.5">
+        {children}
       </div>
     </div>
   );

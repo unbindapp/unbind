@@ -1,8 +1,8 @@
 import { builderEnumToName } from "@/components/command-panel/context-command-panel/items/git";
 import BrandIcon from "@/components/icons/brand";
-import ErrorWithWrapper from "@/components/service/panel/content/deployed/settings/shared/error-with-wrapper";
-import SettingsSectionWrapper from "@/components/service/panel/content/deployed/settings/shared/settings-section-wrapper";
-import { TGitSectionContentProps } from "@/components/service/panel/content/deployed/settings/shared/types";
+import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
+import SettingsSectionWrapper from "@/components/settings/settings-section-wrapper";
+import { TGitSectionContentProps } from "@/components/settings/types";
 import {
   Block,
   BlockItem,
@@ -36,22 +36,20 @@ export default function BuildSection({ service }: TProps) {
     }
 
     return (
-      <SettingsSectionWrapper>
-        <GitSectionContent
-          owner={service.git_repository_owner}
-          repo={service.git_repository}
-          branch={service.config.git_branch}
-          installationId={service.github_installation_id}
-          service={service}
-        />
-      </SettingsSectionWrapper>
+      <GitSection
+        owner={service.git_repository_owner}
+        repo={service.git_repository}
+        branch={service.config.git_branch}
+        installationId={service.github_installation_id}
+        service={service}
+      />
     );
   }
 
   return <ErrorWithWrapper message="Unsupported service type" />;
 }
 
-function GitSectionContent({ service }: TGitSectionContentProps) {
+function GitSection({ service }: TGitSectionContentProps) {
   const form = useAppForm({
     defaultValues: {
       builder: service.config.builder,
@@ -61,7 +59,7 @@ function GitSectionContent({ service }: TGitSectionContentProps) {
   });
 
   return (
-    <form className="flex w-full flex-col gap-6">
+    <SettingsSectionWrapper asElement="form" className="flex w-full flex-col">
       <Block>
         <BlockItem className="w-full md:w-full">
           <BlockItemHeader>
@@ -173,6 +171,6 @@ function GitSectionContent({ service }: TGitSectionContentProps) {
           );
         }}
       />
-    </form>
+    </SettingsSectionWrapper>
   );
 }

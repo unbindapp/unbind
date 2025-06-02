@@ -1,5 +1,5 @@
-import ErrorWithWrapper from "@/components/service/panel/content/deployed/settings/shared/error-with-wrapper";
-import SettingsSectionWrapper from "@/components/service/panel/content/deployed/settings/shared/settings-section-wrapper";
+import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
+import SettingsSectionWrapper from "@/components/settings/settings-section-wrapper";
 import {
   Block,
   BlockItem,
@@ -28,11 +28,7 @@ export default function DeploySection({ service }: TProps) {
       );
     }
 
-    return (
-      <SettingsSectionWrapper>
-        <GitOrDockerImageSectionContent service={service} />
-      </SettingsSectionWrapper>
-    );
+    return <GitOrDockerImageSection service={service} />;
   }
 
   if (service.type === "docker-image") {
@@ -42,11 +38,7 @@ export default function DeploySection({ service }: TProps) {
 
     if (!image || !tag) return <ErrorWithWrapper message="Image or tag is not found." />;
 
-    return (
-      <SettingsSectionWrapper>
-        <GitOrDockerImageSectionContent service={service} />
-      </SettingsSectionWrapper>
-    );
+    return <GitOrDockerImageSection service={service} />;
   }
 
   return <ErrorWithWrapper message="Unsupported service type" />;
@@ -66,7 +58,7 @@ const memoryLimits = {
   unlimited: 8100,
 };
 
-function GitOrDockerImageSectionContent({ service }: { service: TServiceShallow }) {
+function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
   const form = useAppForm({
     defaultValues: {
       instanceCount: service.config.replicas,
@@ -77,7 +69,7 @@ function GitOrDockerImageSectionContent({ service }: { service: TServiceShallow 
   });
 
   return (
-    <form className="flex w-full flex-col gap-6">
+    <SettingsSectionWrapper asElement="form" className="flex w-full flex-col">
       <form.AppField
         name="instanceCount"
         children={(field) => (
@@ -204,7 +196,7 @@ function GitOrDockerImageSectionContent({ service }: { service: TServiceShallow 
           </Block>
         )}
       />
-    </form>
+    </SettingsSectionWrapper>
   );
 }
 
@@ -221,7 +213,7 @@ function memoryFormatter(mb: number) {
 
 function ValueTitle({ title, value }: { title: string; value: string }) {
   return (
-    <p className="text-muted-foreground w-full px-3 pt-2.25 pb-1 leading-tight font-medium">
+    <p className="text-muted-foreground w-full px-3.5 pt-2.5 pb-1 leading-tight font-medium">
       {title}: <span className="text-foreground font-bold">{value}</span>
     </p>
   );

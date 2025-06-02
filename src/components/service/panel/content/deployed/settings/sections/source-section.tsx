@@ -1,13 +1,13 @@
 import { databaseTypeToName } from "@/components/command-panel/context-command-panel/items/database";
 import { isNonDockerHubImage } from "@/components/command-panel/context-command-panel/items/docker-image";
 import BrandIcon from "@/components/icons/brand";
-import ErrorWithWrapper from "@/components/service/panel/content/deployed/settings/shared/error-with-wrapper";
-import SettingsSectionWrapper from "@/components/service/panel/content/deployed/settings/shared/settings-section-wrapper";
+import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
+import SettingsSectionWrapper from "@/components/settings/settings-section-wrapper";
 import {
   TDatabaseSectionContentProps,
   TDockerImageSectionContentProps,
   TGitSectionContentProps,
-} from "@/components/service/panel/content/deployed/settings/shared/types";
+} from "@/components/settings/types";
 import {
   Block,
   BlockItem,
