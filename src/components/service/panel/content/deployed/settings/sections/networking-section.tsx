@@ -99,7 +99,10 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
           <BlockItemContent>
             <div className="flex w-full flex-col gap-2">
               {!endpointsData && !isPendingEndpoints && errorEndpoints && (
-                <ErrorLine message={errorEndpoints.message} />
+                <ErrorLine
+                  message={errorEndpoints.message}
+                  className="border-destructive/16 rounded-lg border py-2.5"
+                />
               )}
               {!endpointsData && isPendingEndpoints && (
                 <BlockItemButtonLike
