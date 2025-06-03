@@ -27,8 +27,8 @@ type TPropsCard = {
 
 export function ComingSoonCard({ className }: TPropsCard) {
   return (
-    <div className={cn("flex w-full flex-col rounded-lg", className)}>
-      <div className="bg-warning/6 border-warning/12 flex w-full flex-col gap-1 rounded-lg border px-4 py-2.5">
+    <div className={cn("flex w-full flex-col rounded-xl", className)}>
+      <div className="bg-warning/6 border-warning/12 flex w-full flex-col gap-1 rounded-xl border px-4 py-2.5">
         <div className="text-warning flex w-full items-center gap-1.5">
           <RocketIcon className="-ml-0.25 size-4 shrink-0" />
           <p className="flex min-w-0 shrink items-center gap-1 leading-tight font-semibold">
