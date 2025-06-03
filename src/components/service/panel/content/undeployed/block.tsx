@@ -89,6 +89,7 @@ export function BlockItemContent({
   ...rest
 }: {
   children: ReactNode;
+  className?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }) {
@@ -114,6 +115,7 @@ type TBlockItemButtonLikeProps = {
   open?: boolean;
   hideChevron?: boolean;
   href?: string;
+  classNameText?: string;
 } & (
   | ({
       asElement: "button";
@@ -133,6 +135,7 @@ export function BlockItemButtonLike({
   asElement,
   isPending,
   className,
+  classNameText,
   hideChevron,
   href,
   ...props
@@ -155,7 +158,7 @@ export function BlockItemButtonLike({
       {...(asElement === "button" ? { type: "button" } : {})}
       {...props}
     >
-      <div className="group-data-pending/button:animate-skeleton flex min-w-0 flex-1 items-center justify-start gap-2">
+      <div className="group-data-pending/button:animate-skeleton flex min-w-0 flex-1 items-start justify-start gap-2">
         {asElement === "LinkButton" && href !== undefined ? (
           <div className="relative size-5 shrink-0 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45">
             <Icon className="size-full group-active/button:opacity-0 has-hover:group-hover/button:opacity-0" />
@@ -164,7 +167,12 @@ export function BlockItemButtonLike({
         ) : (
           <Icon className="group-data-pending/button:bg-foreground size-5 shrink-0 group-data-pending/button:rounded-full" />
         )}
-        <p className="group-data-pending/button:bg-foreground min-w-0 shrink truncate leading-tight font-medium select-text group-data-pending/button:rounded-md">
+        <p
+          className={cn(
+            "group-data-pending/button:bg-foreground min-w-0 shrink truncate leading-tight font-medium select-text group-data-pending/button:rounded-md",
+            classNameText,
+          )}
+        >
           {text}
         </p>
       </div>
