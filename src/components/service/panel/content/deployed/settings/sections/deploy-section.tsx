@@ -238,12 +238,12 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
 function cpuFormatter(millicores: number) {
   if (millicores > cpuLimits.max) return "Unlimited";
   const cpu = Math.round((millicores / 1000) * 100) / 100;
-  return cpu.toString();
+  return cpu.toFixed(1);
 }
 
 function memoryFormatter(mb: number) {
   if (mb > memoryLimits.max) return "Unlimited";
-  return Math.round((mb / 1000) * 100) / 100 + " GB";
+  return `${(Math.round((mb / 1000) * 100) / 100).toFixed(1)} GB`;
 }
 
 function ValueTitle({ title, value }: { title: string; value: string }) {
