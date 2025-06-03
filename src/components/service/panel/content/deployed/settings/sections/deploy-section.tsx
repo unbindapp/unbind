@@ -3,6 +3,7 @@ import SettingsSectionWrapper from "@/components/settings/settings-section-wrapp
 import {
   Block,
   BlockItem,
+  BlockItemButtonLike,
   BlockItemContent,
   BlockItemDescription,
   BlockItemHeader,
@@ -10,6 +11,8 @@ import {
 } from "@/components/service/panel/content/undeployed/block";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
+import { Toggleable, Toggled, Untoggled } from "@/components/toggleable";
+import { PlusIcon } from "lucide-react";
 
 type TProps = {
   service: TServiceShallow;
@@ -183,19 +186,35 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                 </BlockItemDescription>
               </BlockItemHeader>
               <BlockItemContent>
-                <field.TextField
-                  field={field}
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => {
-                    field.handleChange(e.target.value);
-                  }}
-                  placeholder="npm run start"
-                  autoCapitalize="off"
-                  autoCorrect="off"
-                  autoComplete="off"
-                  spellCheck="false"
-                />
+                <Toggleable toggledInitial={service.config.run_command !== undefined}>
+                  <Untoggled>
+                    {({ toggle }) => (
+                      <BlockItemButtonLike
+                        asElement="button"
+                        Icon={PlusIcon}
+                        text="Add start command"
+                        onClick={() => toggle(true)}
+                      />
+                    )}
+                  </Untoggled>
+                  <Toggled>
+                    {() => (
+                      <field.TextField
+                        field={field}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => {
+                          field.handleChange(e.target.value);
+                        }}
+                        placeholder="npm run start"
+                        autoCapitalize="off"
+                        autoCorrect="off"
+                        autoComplete="off"
+                        spellCheck="false"
+                      />
+                    )}
+                  </Toggled>
+                </Toggleable>
               </BlockItemContent>
             </BlockItem>
           )}
@@ -213,19 +232,35 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                 </BlockItemDescription>
               </BlockItemHeader>
               <BlockItemContent>
-                <field.TextField
-                  field={field}
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => {
-                    field.handleChange(e.target.value);
-                  }}
-                  placeholder="/health"
-                  autoCapitalize="off"
-                  autoCorrect="off"
-                  autoComplete="off"
-                  spellCheck="false"
-                />
+                <Toggleable toggledInitial={service.config.health_check?.path !== undefined}>
+                  <Untoggled>
+                    {({ toggle }) => (
+                      <BlockItemButtonLike
+                        asElement="button"
+                        Icon={PlusIcon}
+                        text="Add endpoint"
+                        onClick={() => toggle(true)}
+                      />
+                    )}
+                  </Untoggled>
+                  <Toggled>
+                    {() => (
+                      <field.TextField
+                        field={field}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => {
+                          field.handleChange(e.target.value);
+                        }}
+                        placeholder="/health"
+                        autoCapitalize="off"
+                        autoCorrect="off"
+                        autoComplete="off"
+                        spellCheck="false"
+                      />
+                    )}
+                  </Toggled>
+                </Toggleable>
               </BlockItemContent>
             </BlockItem>
           )}

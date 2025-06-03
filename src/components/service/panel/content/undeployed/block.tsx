@@ -139,6 +139,7 @@ export function BlockItemButtonLike({
 }: TBlockItemButtonLikeProps) {
   const Element =
     asElement === "button" ? Button : asElement === "LinkButton" && href ? LinkButton : "div";
+
   return (
     <Element
       variant="outline"
@@ -151,6 +152,7 @@ export function BlockItemButtonLike({
       // @ts-expect-error this is fine. Typescript isn't smart enough
       href={href}
       target={href ? "_blank" : undefined}
+      {...(asElement === "button" ? { type: "button" } : {})}
       {...props}
     >
       <div className="group-data-pending/button:animate-skeleton flex min-w-0 flex-1 items-center justify-start gap-2">
