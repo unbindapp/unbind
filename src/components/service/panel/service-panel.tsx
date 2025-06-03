@@ -96,18 +96,18 @@ export default function ServicePanel({
               )}
             </div>
           </div>
-          {service.config.is_public && service.config.hosts && service.config.hosts.length >= 1 && (
-            <ServiceEndpointsProvider
-              teamId={teamId}
-              projectId={projectId}
-              environmentId={environmentId}
-              serviceId={service.id}
-            >
-              <ServiceUrls hosts={service.config.hosts} />
-            </ServiceEndpointsProvider>
-          )}
-          {/* Content */}
-          <ServicePanelContent service={service} />
+          <ServiceEndpointsProvider
+            teamId={teamId}
+            projectId={projectId}
+            environmentId={environmentId}
+            serviceId={service.id}
+          >
+            {service.config.is_public &&
+              service.config.hosts &&
+              service.config.hosts.length >= 1 && <ServiceUrls hosts={service.config.hosts} />}
+            {/* Content */}
+            <ServicePanelContent service={service} />
+          </ServiceEndpointsProvider>
         </ServiceProvider>
       </DrawerContent>
     </Drawer>
