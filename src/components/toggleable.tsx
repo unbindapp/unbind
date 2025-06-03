@@ -12,8 +12,9 @@ export function Toggleable({
 
   const childrenArray = Children.toArray(children);
 
-  const toggle = (toggled?: boolean) =>
+  const toggle = (toggled?: boolean) => {
     setToggled((current) => (toggled !== undefined ? toggled : !current));
+  };
 
   const UntoggledChild = childrenArray.find(
     (child) =>
@@ -24,16 +25,16 @@ export function Toggleable({
     (child) => isValidElement(child) && typeof child.type === "function" && child.type === Toggled,
   );
 
-  if (toggled && ToggledChild && isValidElement(ToggledChild)) {
+  if (!toggled && UntoggledChild && isValidElement(UntoggledChild)) {
     // TODO - Fix these types later
-    return cloneElement(ToggledChild, { toggle } as unknown as {
+    return cloneElement(UntoggledChild, { toggle } as unknown as {
       toggle: (toggled?: boolean) => void;
     });
   }
 
-  if (UntoggledChild && isValidElement(UntoggledChild)) {
+  if (toggled && ToggledChild && isValidElement(ToggledChild)) {
     // TODO - Fix these types later
-    return cloneElement(UntoggledChild, { toggle } as unknown as {
+    return cloneElement(ToggledChild, { toggle } as unknown as {
       toggle: (toggled?: boolean) => void;
     });
   }
@@ -76,7 +77,7 @@ export function Toggled({
   toggle,
   ...rest
 }: {
-  children: ({ toggle }: { toggle: (toggled?: boolean) => void }) => ReactNode;
+  children: (props: { toggle: (toggled?: boolean) => void }) => ReactNode;
   toggle?: (toggled?: boolean) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;

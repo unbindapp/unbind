@@ -19,6 +19,7 @@ import {
 } from "@/server/trpc/api/services/types";
 import { Toggleable, Toggled, Untoggled } from "@/components/toggleable";
 import { PlusIcon } from "lucide-react";
+import { useRef } from "react";
 
 type TProps = {
   service: TServiceShallow;
@@ -59,6 +60,9 @@ function GitSection({ service }: TGitSectionContentProps) {
       buildCommand: service.config.build_command,
     },
   });
+
+  const installCommandInputRef = useRef<HTMLInputElement>(null);
+  const buildCommandInputRef = useRef<HTMLInputElement>(null);
 
   return (
     <SettingsSectionWrapper asElement="form" className="flex w-full flex-col">
@@ -124,7 +128,12 @@ function GitSection({ service }: TGitSectionContentProps) {
                               asElement="button"
                               Icon={PlusIcon}
                               text="Add install command"
-                              onClick={() => toggle(true)}
+                              onClick={() => {
+                                toggle(true);
+                                setTimeout(() => {
+                                  installCommandInputRef.current?.focus();
+                                });
+                              }}
                             />
                           )}
                         </Untoggled>
@@ -134,6 +143,7 @@ function GitSection({ service }: TGitSectionContentProps) {
                               name="installCommand"
                               children={(field) => (
                                 <field.TextField
+                                  ref={installCommandInputRef}
                                   field={field}
                                   value={field.state.value}
                                   onBlur={field.handleBlur}
@@ -170,7 +180,12 @@ function GitSection({ service }: TGitSectionContentProps) {
                               asElement="button"
                               Icon={PlusIcon}
                               text="Add build command"
-                              onClick={() => toggle(true)}
+                              onClick={() => {
+                                toggle(true);
+                                setTimeout(() => {
+                                  buildCommandInputRef.current?.focus();
+                                });
+                              }}
                             />
                           )}
                         </Untoggled>
@@ -180,6 +195,7 @@ function GitSection({ service }: TGitSectionContentProps) {
                               name="buildCommand"
                               children={(field) => (
                                 <field.TextField
+                                  ref={buildCommandInputRef}
                                   field={field}
                                   value={field.state.value}
                                   onBlur={field.handleBlur}

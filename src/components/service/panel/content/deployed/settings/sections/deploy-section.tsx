@@ -13,6 +13,7 @@ import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { Toggleable, Toggled, Untoggled } from "@/components/toggleable";
 import { PlusIcon } from "lucide-react";
+import { useRef } from "react";
 
 type TProps = {
   service: TServiceShallow;
@@ -71,6 +72,9 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
       healthCheckEndpoint: service.config.health_check?.path || "",
     },
   });
+
+  const startCommandInputRef = useRef<HTMLInputElement>(null);
+  const healthCheckEndpointInputRef = useRef<HTMLInputElement>(null);
 
   return (
     <SettingsSectionWrapper asElement="form" className="flex w-full flex-col">
@@ -193,13 +197,19 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                         asElement="button"
                         Icon={PlusIcon}
                         text="Add start command"
-                        onClick={() => toggle(true)}
+                        onClick={() => {
+                          toggle(true);
+                          setTimeout(() => {
+                            startCommandInputRef.current?.focus();
+                          });
+                        }}
                       />
                     )}
                   </Untoggled>
                   <Toggled>
                     {() => (
                       <field.TextField
+                        ref={startCommandInputRef}
                         field={field}
                         value={field.state.value}
                         onBlur={field.handleBlur}
@@ -239,13 +249,19 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                         asElement="button"
                         Icon={PlusIcon}
                         text="Add endpoint"
-                        onClick={() => toggle(true)}
+                        onClick={() => {
+                          toggle(true);
+                          setTimeout(() => {
+                            healthCheckEndpointInputRef.current?.focus();
+                          });
+                        }}
                       />
                     )}
                   </Untoggled>
                   <Toggled>
                     {() => (
                       <field.TextField
+                        ref={healthCheckEndpointInputRef}
                         field={field}
                         value={field.state.value}
                         onBlur={field.handleBlur}

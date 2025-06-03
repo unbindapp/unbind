@@ -60,11 +60,12 @@ function InputWithInfo({
   const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
   const isFormSubmitted = submissionAttempts > 0;
   const ref = useRef<HTMLInputElement>(null);
+  const inputRef = rest.ref || ref;
 
   return (
     <div className={cn("relative flex flex-col", className)}>
       <Input
-        ref={ref}
+        ref={inputRef}
         {...rest}
         data-show-undo={showUndo ? true : undefined}
         className={cn("w-full data-show-undo:pr-11", classNameInput)}
