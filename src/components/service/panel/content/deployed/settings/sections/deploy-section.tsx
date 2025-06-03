@@ -10,10 +10,12 @@ import {
   BlockItemTitle,
 } from "@/components/service/panel/content/undeployed/block";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { TServiceShallow } from "@/server/trpc/api/services/types";
+import { THealthCheckType, TServiceShallow } from "@/server/trpc/api/services/types";
 import { Toggleable, Toggled, Untoggled } from "@/components/toggleable";
-import { PlusIcon } from "lucide-react";
+import { BanIcon, GlobeIcon, PlusIcon, TerminalSquareIcon } from "lucide-react";
 import { useRef } from "react";
+import { HealthCheckTypeSchema } from "@/server/go/client.gen";
+import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
 
 type TProps = {
   service: TServiceShallow;
@@ -69,12 +71,13 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
       startCommand: service.config.run_command,
       cpuMillicores: cpuLimits.unlimited,
       memoryMb: memoryLimits.unlimited,
-      healthCheckEndpoint: service.config.health_check?.path || "",
+      healthCheckEndpoint: service.config.health_check?.path,
+      healthCheckCommand: service.config.health_check?.command,
+      healthCheckType: service.config.health_check?.type || "",
     },
   });
 
   const startCommandInputRef = useRef<HTMLInputElement>(null);
-  const healthCheckEndpointInputRef = useRef<HTMLInputElement>(null);
 
   return (
     <SettingsSectionWrapper asElement="form" className="flex w-full flex-col">
@@ -231,56 +234,96 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
         />
       </Block>
       <Block>
-        <form.AppField
-          name="healthCheckEndpoint"
-          children={(field) => (
-            <BlockItem className="w-full md:w-full">
-              <BlockItemHeader type="column">
-                <BlockItemTitle>Health Check Endpoint</BlockItemTitle>
-                <BlockItemDescription>
-                  The endpoint to call to decide if a new deployment is ready.
-                </BlockItemDescription>
-              </BlockItemHeader>
-              <BlockItemContent>
-                <Toggleable toggledInitial={service.config.health_check?.path !== undefined}>
-                  <Untoggled>
-                    {({ toggle }) => (
-                      <BlockItemButtonLike
-                        asElement="button"
-                        Icon={PlusIcon}
-                        text="Add endpoint"
-                        onClick={() => {
-                          toggle(true);
-                          setTimeout(() => {
-                            healthCheckEndpointInputRef.current?.focus();
-                          });
-                        }}
-                      />
-                    )}
-                  </Untoggled>
-                  <Toggled>
-                    {() => (
-                      <field.TextField
-                        ref={healthCheckEndpointInputRef}
+        <BlockItem className="w-full md:w-full">
+          <BlockItemHeader type="column">
+            <BlockItemTitle>Health Check</BlockItemTitle>
+            <BlockItemDescription>
+              The endpoint to call or the command to execute to decide if a new deployment is ready.
+            </BlockItemDescription>
+          </BlockItemHeader>
+          <BlockItemContent>
+            <form.Subscribe
+              selector={(s) => ({ healthCheckType: s.values.healthCheckType })}
+              children={({ healthCheckType }) => (
+                <>
+                  <form.AppField
+                    name="healthCheckType"
+                    children={(field) => (
+                      <field.AsyncDropdownMenu
+                        dontCheckUntilSubmit
                         field={field}
                         value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => {
-                          field.handleChange(e.target.value);
-                        }}
-                        placeholder="/health"
-                        autoCapitalize="off"
-                        autoCorrect="off"
-                        autoComplete="off"
-                        spellCheck="false"
-                      />
+                        onChange={(v) => field.handleChange(v as THealthCheckType)}
+                        items={HealthCheckTypeSchema.options.map((o) => ({
+                          label: healthCheckTypeToName(o),
+                          value: o,
+                        }))}
+                        ItemIcon={({ className, value }) => (
+                          <HealthCheckIcon className={className} type={value} />
+                        )}
+                        isPending={false}
+                        error={undefined}
+                      >
+                        {({ isOpen }) => (
+                          <BlockItemButtonLike
+                            asElement="button"
+                            text={healthCheckTypeToName(field.state.value)}
+                            Icon={({ className }) => (
+                              <HealthCheckIcon type={field.state.value} className={className} />
+                            )}
+                            variant="outline"
+                            open={isOpen}
+                            onBlur={field.handleBlur}
+                          />
+                        )}
+                      </field.AsyncDropdownMenu>
                     )}
-                  </Toggled>
-                </Toggleable>
-              </BlockItemContent>
-            </BlockItem>
-          )}
-        />
+                  />
+                  {healthCheckType === "http" && (
+                    <form.AppField
+                      name="healthCheckEndpoint"
+                      children={(field) => (
+                        <field.TextField
+                          field={field}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => {
+                            field.handleChange(e.target.value);
+                          }}
+                          placeholder="/health"
+                          autoCapitalize="off"
+                          autoCorrect="off"
+                          autoComplete="off"
+                          spellCheck="false"
+                        />
+                      )}
+                    />
+                  )}
+                  {healthCheckType === "exec" && (
+                    <form.AppField
+                      name="healthCheckCommand"
+                      children={(field) => (
+                        <field.TextField
+                          field={field}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => {
+                            field.handleChange(e.target.value);
+                          }}
+                          placeholder="/health"
+                          autoCapitalize="off"
+                          autoCorrect="off"
+                          autoComplete="off"
+                          spellCheck="false"
+                        />
+                      )}
+                    />
+                  )}
+                </>
+              )}
+            />
+          </BlockItemContent>
+        </BlockItem>
       </Block>
     </SettingsSectionWrapper>
   );
@@ -304,4 +347,24 @@ function ValueTitle({ title, value }: { title: string; value: string }) {
       <span className="text-foreground font-mono font-bold">{value}</span>
     </p>
   );
+}
+
+function HealthCheckIcon({
+  type,
+  className,
+}: {
+  type: THealthCheckType | (string & {});
+  className?: string;
+}) {
+  if (type === "exec") return <TerminalSquareIcon className={className} />;
+  if (type === "http") return <GlobeIcon className={className} />;
+  if (type === "none") return <BanIcon className={className} />;
+  return <QuestionMarkCircledIcon className={className} />;
+}
+
+function healthCheckTypeToName(type: THealthCheckType | (string & {})) {
+  if (type === "http") return "HTTP";
+  if (type === "exec") return "Command";
+  if (type === "none") return "None";
+  return "Unknown";
 }

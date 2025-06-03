@@ -1,5 +1,6 @@
 import {
   DatabaseConfigSchema,
+  HealthCheckTypeSchema,
   HostSpecSchema,
   PortSpecSchema,
   ServiceBuilderSchema,
@@ -50,6 +51,8 @@ export const CreateServiceSharedSchema = z
 export const GitServiceBuilderEnum = ServiceBuilderSchema.exclude(["database"]);
 export type TGitServiceBuilder = z.infer<typeof GitServiceBuilderEnum>;
 export type TBuilderEnum = z.infer<typeof ServiceBuilderSchema>;
+
+export type THealthCheckType = z.infer<typeof HealthCheckTypeSchema>;
 
 export const CreateServiceFromGitSchema = z
   .object({
