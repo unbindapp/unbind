@@ -351,12 +351,6 @@ function RedeployTrigger({
         deploymentId: deployment.id,
         skipBuildIfPossible: value.skipBuildIfPossible,
       });
-      if (showSkipBuildIfPossibleToggle && value.skipBuildIfPossible) {
-        toast.success("Redeployed", {
-          description: "The deployment has been redeployed successfully.",
-          duration: 6000,
-        });
-      }
     },
   });
 
