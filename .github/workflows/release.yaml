@@ -85,6 +85,9 @@ jobs:
     env:
       GITHUB_RUN_ID: ${{ github.run_id }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch full history for changelog generation
       - name: Login to registry
         uses: docker/login-action@v3
         with:
@@ -99,6 +102,60 @@ jobs:
           docker manifest annotate --arch amd64 --os linux ghcr.io/unbindapp/unbind-ui:${{ github.event.client_payload.version }} ghcr.io/unbindapp/unbind-ui:${{ github.event.client_payload.version }}-amd64
           docker manifest annotate --arch arm64 --os linux ghcr.io/unbindapp/unbind-ui:${{ github.event.client_payload.version }} ghcr.io/unbindapp/unbind-ui:${{ github.event.client_payload.version }}-arm64
           docker manifest push ghcr.io/unbindapp/unbind-ui:${{ github.event.client_payload.version }}
+
+      # Create git tag
+      - name: Create Git Tag
+        if: success()
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a ${{ github.event.client_payload.version }} -m "Release ${{ github.event.client_payload.version }}"
+          git push origin ${{ github.event.client_payload.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Generate changelog
+      - name: Generate Changelog
+        if: success()
+        id: changelog
+        run: |
+          # Get the previous tag
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          if [ -z "$PREVIOUS_TAG" ]; then
+            echo "No previous tag found, using all commits"
+            CHANGELOG=$(git log --oneline --pretty=format:"- %s (%h)" | head -50)
+          else
+            echo "Generating changelog from $PREVIOUS_TAG to HEAD"
+            CHANGELOG=$(git log --oneline --pretty=format:"- %s (%h)" $PREVIOUS_TAG..HEAD)
+          fi
+
+          # Create the changelog with proper formatting
+          cat > CHANGELOG.md << EOF
+          ## What's Changed
+
+          $CHANGELOG
+
+          **Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREVIOUS_TAG}...${{ github.event.client_payload.version }}
+          EOF
+
+          # Set output for use in release step
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          cat CHANGELOG.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      # Create GitHub Release
+      - name: Create GitHub Release
+        if: success()
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.event.client_payload.version }}
+          release_name: Release ${{ github.event.client_payload.version }}
+          body: ${{ steps.changelog.outputs.changelog }}
+          draft: false
+          prerelease: ${{ contains(github.event.client_payload.version, '-') }}
 
       # Notify meta repo that the UI image is ready
       - name: Notify meta repo that the UI image is ready
