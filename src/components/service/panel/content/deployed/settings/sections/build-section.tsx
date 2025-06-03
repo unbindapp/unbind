@@ -8,6 +8,7 @@ import {
   BlockItem,
   BlockItemButtonLike,
   BlockItemContent,
+  BlockItemDescription,
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/service/panel/content/undeployed/block";
@@ -58,11 +59,15 @@ function GitSection({ service }: TGitSectionContentProps) {
       builder: service.config.builder,
       installCommand: service.config.install_command,
       buildCommand: service.config.build_command,
+      dockerfilePath: service.config.dockerfile_path,
+      dockerfileContext: service.config.dockerfile_context,
     },
   });
 
   const installCommandInputRef = useRef<HTMLInputElement>(null);
   const buildCommandInputRef = useRef<HTMLInputElement>(null);
+  const dockerfilePathInputRef = useRef<HTMLInputElement>(null);
+  const dockerfileContextInputRef = useRef<HTMLInputElement>(null);
 
   return (
     <SettingsSectionWrapper asElement="form" className="flex w-full flex-col">
@@ -215,6 +220,118 @@ function GitSection({ service }: TGitSectionContentProps) {
                       </Toggleable>
                     </BlockItemContent>
                   </BlockItem>
+                </Block>
+              )}
+              {/* Dockerfile Path */}
+              {builder === "docker" && (
+                <Block>
+                  <form.AppField
+                    name="dockerfilePath"
+                    children={(field) => (
+                      <BlockItem className="w-full md:w-full">
+                        <BlockItemHeader type="column">
+                          <BlockItemTitle>Dockerfile Path</BlockItemTitle>
+                          <BlockItemDescription>
+                            The path to the Dockerfile in your repository.
+                          </BlockItemDescription>
+                        </BlockItemHeader>
+                        <BlockItemContent>
+                          <Toggleable toggledInitial={service.config.dockerfile_path !== undefined}>
+                            <Untoggled>
+                              {({ toggle }) => (
+                                <BlockItemButtonLike
+                                  asElement="button"
+                                  Icon={PlusIcon}
+                                  text="Add Dockerfile path"
+                                  onClick={() => {
+                                    toggle(true);
+                                    setTimeout(() => {
+                                      dockerfilePathInputRef.current?.focus();
+                                    });
+                                  }}
+                                />
+                              )}
+                            </Untoggled>
+                            <Toggled>
+                              {() => (
+                                <field.TextField
+                                  ref={dockerfilePathInputRef}
+                                  field={field}
+                                  value={field.state.value}
+                                  onBlur={field.handleBlur}
+                                  onChange={(e) => {
+                                    field.handleChange(e.target.value);
+                                  }}
+                                  placeholder="./Dockerfile"
+                                  autoCapitalize="off"
+                                  autoCorrect="off"
+                                  autoComplete="off"
+                                  spellCheck="false"
+                                />
+                              )}
+                            </Toggled>
+                          </Toggleable>
+                        </BlockItemContent>
+                      </BlockItem>
+                    )}
+                  />
+                </Block>
+              )}
+              {/* Dockerfile context */}
+              {builder === "docker" && (
+                <Block>
+                  <form.AppField
+                    name="dockerfileContext"
+                    children={(field) => (
+                      <BlockItem className="w-full md:w-full">
+                        <BlockItemHeader type="column">
+                          <BlockItemTitle>Docker Build Context</BlockItemTitle>
+                          <BlockItemDescription>
+                            The directory that serves as the build context for Docker.
+                          </BlockItemDescription>
+                        </BlockItemHeader>
+                        <BlockItemContent>
+                          <Toggleable
+                            toggledInitial={service.config.dockerfile_context !== undefined}
+                          >
+                            <Untoggled>
+                              {({ toggle }) => (
+                                <BlockItemButtonLike
+                                  asElement="button"
+                                  Icon={PlusIcon}
+                                  text="Add build context"
+                                  onClick={() => {
+                                    toggle(true);
+                                    setTimeout(() => {
+                                      dockerfileContextInputRef.current?.focus();
+                                    });
+                                  }}
+                                />
+                              )}
+                            </Untoggled>
+                            <Toggled>
+                              {() => (
+                                <field.TextField
+                                  ref={dockerfileContextInputRef}
+                                  field={field}
+                                  value={field.state.value}
+                                  onBlur={field.handleBlur}
+                                  onChange={(e) => {
+                                    field.handleChange(e.target.value);
+                                  }}
+                                  placeholder="./"
+                                  autoCapitalize="off"
+                                  autoCorrect="off"
+                                  autoComplete="off"
+                                  spellCheck="false"
+                                />
+                              )}
+                            </Toggled>
+                          </Toggleable>
+                        </BlockItemContent>
+                      </BlockItem>
+                    )}
+                  />
                 </Block>
               )}
             </>

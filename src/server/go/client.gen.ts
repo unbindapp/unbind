@@ -101,8 +101,8 @@ export const EventTypeSchema = z.enum([
 export const EventRecordSchema = z
   .object({
     count: z.number().optional(),
-    firstSeen: z.string().optional(),
-    lastSeen: z.string().optional(),
+    first_seen: z.string().optional(),
+    last_seen: z.string().optional(),
     message: z.string().optional(),
     reason: z.string().optional(),
     timestamp: z.string(),
@@ -464,6 +464,8 @@ export const ServiceConfigResponseSchema = z
     backup_schedule: z.string(),
     build_command: z.string().optional(),
     builder: ServiceBuilderSchema,
+    dockerfile_context: z.string().optional(),
+    dockerfile_path: z.string().optional(),
     git_branch: z.string().optional(),
     git_tag: z.string().optional(),
     health_check: HealthCheckSchema.optional(),
@@ -1445,7 +1447,7 @@ export const PodContainerStatusSchema = z
     kubernetes_name: z.string(),
     namespace: z.string(),
     phase: PodPhaseSchema,
-    podIP: z.string().optional(),
+    pod_ip: z.string().optional(),
     project_id: z.string(),
     service_id: z.string(),
     start_time: z.string().optional(),
