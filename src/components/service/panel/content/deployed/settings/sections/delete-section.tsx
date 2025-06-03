@@ -44,7 +44,7 @@ export default function DeleteSection({ service, className }: Props) {
         onSubmit={async () => {
           await deleteService({ teamId, projectId, environmentId, serviceId: service.id });
         }}
-        className={cn("bg-transparent p-0", className)}
+        className={cn("border-none p-0", className)}
         classNameHeader="px-1"
       />
     </SettingsSectionWrapper>

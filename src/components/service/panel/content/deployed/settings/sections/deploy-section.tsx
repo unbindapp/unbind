@@ -45,17 +45,17 @@ export default function DeploySection({ service }: TProps) {
 }
 
 const cpuLimits = {
-  min: 100,
-  max: 8000,
-  step: 100,
-  unlimited: 8100,
+  min: 200,
+  max: 16000,
+  step: 200,
+  unlimited: 16200,
 };
 
 const memoryLimits = {
-  min: 100,
-  max: 8000,
-  step: 100,
-  unlimited: 8100,
+  min: 200,
+  max: 16000,
+  step: 200,
+  unlimited: 16200,
 };
 
 function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
@@ -65,6 +65,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
       startCommand: service.config.run_command,
       cpuMillicores: cpuLimits.unlimited,
       memoryMb: memoryLimits.unlimited,
+      healthCheckEndpoint: service.config.health_check?.path || "",
     },
   });
 
@@ -130,7 +131,9 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                       max={cpuLimits.unlimited}
                       step={cpuLimits.step}
                       hideMinMax
-                      defaultValue={[cpuLimits.unlimited]}
+                      defaultValue={[
+                        service.config.resources?.cpu_limits_millicores || cpuLimits.unlimited,
+                      ]}
                       value={field.state.value ? [field.state.value] : undefined}
                       onValueChange={(value) => {
                         field.handleChange(value[0]);
@@ -153,7 +156,9 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                       max={memoryLimits.unlimited}
                       step={memoryLimits.step}
                       hideMinMax
-                      defaultValue={[memoryLimits.unlimited]}
+                      defaultValue={[
+                        service.config.resources?.memory_limits_megabytes || memoryLimits.unlimited,
+                      ]}
                       value={field.state.value ? [field.state.value] : undefined}
                       onValueChange={(value) => {
                         field.handleChange(value[0]);
@@ -166,15 +171,15 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
           </BlockItemContent>
         </BlockItem>
       </Block>
-      <form.AppField
-        name="startCommand"
-        children={(field) => (
-          <Block>
+      <Block>
+        <form.AppField
+          name="startCommand"
+          children={(field) => (
             <BlockItem className="w-full md:w-full">
               <BlockItemHeader type="column">
                 <BlockItemTitle>Start Command</BlockItemTitle>
                 <BlockItemDescription>
-                  The command to run to start the deployment.
+                  The command to run to start the new deployment.
                 </BlockItemDescription>
               </BlockItemHeader>
               <BlockItemContent>
@@ -193,9 +198,39 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                 />
               </BlockItemContent>
             </BlockItem>
-          </Block>
-        )}
-      />
+          )}
+        />
+      </Block>
+      <Block>
+        <form.AppField
+          name="healthCheckEndpoint"
+          children={(field) => (
+            <BlockItem className="w-full md:w-full">
+              <BlockItemHeader type="column">
+                <BlockItemTitle>Health Check Endpoint</BlockItemTitle>
+                <BlockItemDescription>
+                  The endpoint to call to decide if a new deployment is ready.
+                </BlockItemDescription>
+              </BlockItemHeader>
+              <BlockItemContent>
+                <field.TextField
+                  field={field}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => {
+                    field.handleChange(e.target.value);
+                  }}
+                  placeholder="/health"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  autoComplete="off"
+                  spellCheck="false"
+                />
+              </BlockItemContent>
+            </BlockItem>
+          )}
+        />
+      </Block>
     </SettingsSectionWrapper>
   );
 }
@@ -214,7 +249,8 @@ function memoryFormatter(mb: number) {
 function ValueTitle({ title, value }: { title: string; value: string }) {
   return (
     <p className="text-muted-foreground w-full px-3.5 pt-2.5 pb-1 leading-tight font-medium">
-      {title}: <span className="text-foreground font-bold">{value}</span>
+      <span className="pr-[0.6ch]">{title}:</span>
+      <span className="text-foreground font-mono font-bold">{value}</span>
     </p>
   );
 }

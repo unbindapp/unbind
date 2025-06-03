@@ -22,7 +22,7 @@ export function SettingsSection({
     <div
       id={id}
       className={cn(
-        "relative z-0 flex w-full flex-col overflow-hidden rounded-xl border md:max-w-lg",
+        "relative z-0 flex w-full flex-col overflow-hidden rounded-xl border md:max-w-xl",
         className,
       )}
     >

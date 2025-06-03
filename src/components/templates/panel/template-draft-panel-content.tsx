@@ -214,7 +214,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                                   visibleInputs[i].type === "volume-size") && (
                                   <>
                                     <span className="pr-[0.6ch]">{":"}</span>
-                                    <span className="text-foreground bg-foreground/6 border-foreground/6 rounded-md border px-1.25">
+                                    <span className="text-foreground bg-foreground/6 border-foreground/6 rounded-md border px-1.25 py-0.5 font-mono">
                                       {formatGB(Number(values.inputs[i].value))}
                                     </span>
                                   </>
