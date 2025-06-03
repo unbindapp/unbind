@@ -14,7 +14,7 @@ import SettingsSectionWrapper from "@/components/settings/settings-section-wrapp
 import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
-import { GlobeLockIcon } from "lucide-react";
+import { GlobeIcon, GlobeLockIcon } from "lucide-react";
 
 type TProps = {
   service: TServiceShallow;
@@ -83,8 +83,44 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
               <BlockItemDescription>
                 Communicate with the service over the internet.
               </BlockItemDescription>
-              <BlockItemContent>Coming soon</BlockItemContent>
             </BlockItemHeader>
+            <BlockItemContent>
+              <div className="flex w-full flex-col gap-2">
+                {!endpointsData && !isPendingEndpoints && errorEndpoints && (
+                  <ErrorLine
+                    message={errorEndpoints.message}
+                    className="border-destructive/16 rounded-lg border py-2.5"
+                  />
+                )}
+                {!endpointsData && isPendingEndpoints && (
+                  <BlockItemButtonLike
+                    isPending={true}
+                    key="loading"
+                    asElement="div"
+                    text="loading.unbind"
+                    Icon={({ className }: { className?: string }) => (
+                      <GlobeLockIcon className={cn("scale-90", className)} />
+                    )}
+                  />
+                )}
+                {endpointsData?.endpoints.external?.map((hostObject) => (
+                  <BlockItemButtonLike
+                    classNameText="whitespace-normal overflow-auto"
+                    key={hostObject.host + hostObject.port}
+                    asElement="LinkButton"
+                    href={
+                      hostObject.port.port === 80
+                        ? `http://${hostObject.host}`
+                        : `https://${hostObject.host}${hostObject.port.port !== 443 ? `:${hostObject.port}` : ""}`
+                    }
+                    text={`${hostObject.host}${hostObject.port.port !== 443 ? `:${hostObject.port}` : ""}`}
+                    Icon={({ className }: { className?: string }) => (
+                      <GlobeIcon className={cn("scale-90", className)} />
+                    )}
+                  />
+                ))}
+              </div>
+            </BlockItemContent>
           </BlockItem>
         </Block>
       )}
@@ -99,7 +135,10 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
           <BlockItemContent>
             <div className="flex w-full flex-col gap-2">
               {!endpointsData && !isPendingEndpoints && errorEndpoints && (
-                <ErrorLine message={errorEndpoints.message} />
+                <ErrorLine
+                  message={errorEndpoints.message}
+                  className="border-destructive/16 rounded-lg border py-2.5"
+                />
               )}
               {!endpointsData && isPendingEndpoints && (
                 <BlockItemButtonLike
