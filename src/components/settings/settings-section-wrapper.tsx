@@ -12,7 +12,7 @@ export default function SettingsSectionWrapper(
   if (props.asElement === "form") {
     const { children, asElement: Element, className, ...rest } = props;
     return (
-      <Element className={cn("flex w-full flex-col gap-5", className)} {...rest}>
+      <Element className={cn("flex w-full flex-col gap-6", className)} {...rest}>
         {children}
       </Element>
     );
@@ -20,7 +20,7 @@ export default function SettingsSectionWrapper(
 
   const { children, asElement: Element = "div", className, ...rest } = props;
   return (
-    <Element className={cn("flex w-full flex-col gap-5", className)} {...rest}>
+    <Element className={cn("flex w-full flex-col gap-6", className)} {...rest}>
       {children}
     </Element>
   );

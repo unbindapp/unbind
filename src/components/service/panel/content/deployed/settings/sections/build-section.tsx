@@ -59,15 +59,15 @@ function GitSection({ service }: TGitSectionContentProps) {
       builder: service.config.builder,
       installCommand: service.config.install_command,
       buildCommand: service.config.build_command,
-      dockerfilePath: service.config.dockerfile_path,
-      dockerfileContext: service.config.dockerfile_context,
+      dockerBuilderPath: service.config.docker_builder_path,
+      dockerBuilderContext: service.config.docker_builder_context,
     },
   });
 
   const installCommandInputRef = useRef<HTMLInputElement>(null);
   const buildCommandInputRef = useRef<HTMLInputElement>(null);
-  const dockerfilePathInputRef = useRef<HTMLInputElement>(null);
-  const dockerfileContextInputRef = useRef<HTMLInputElement>(null);
+  const dockerBuilderPathInputRef = useRef<HTMLInputElement>(null);
+  const dockerBuilderContextInputRef = useRef<HTMLInputElement>(null);
 
   return (
     <SettingsSectionWrapper asElement="form" className="flex w-full flex-col">
@@ -132,7 +132,7 @@ function GitSection({ service }: TGitSectionContentProps) {
                             <BlockItemButtonLike
                               asElement="button"
                               Icon={PlusIcon}
-                              text="Add install command"
+                              text="Custom install command"
                               onClick={() => {
                                 toggle(true);
                                 setTimeout(() => {
@@ -184,7 +184,7 @@ function GitSection({ service }: TGitSectionContentProps) {
                             <BlockItemButtonLike
                               asElement="button"
                               Icon={PlusIcon}
-                              text="Add build command"
+                              text="Custom build command"
                               onClick={() => {
                                 toggle(true);
                                 setTimeout(() => {
@@ -226,7 +226,7 @@ function GitSection({ service }: TGitSectionContentProps) {
               {builder === "docker" && (
                 <Block>
                   <form.AppField
-                    name="dockerfilePath"
+                    name="dockerBuilderPath"
                     children={(field) => (
                       <BlockItem className="w-full md:w-full">
                         <BlockItemHeader type="column">
@@ -236,17 +236,19 @@ function GitSection({ service }: TGitSectionContentProps) {
                           </BlockItemDescription>
                         </BlockItemHeader>
                         <BlockItemContent>
-                          <Toggleable toggledInitial={service.config.dockerfile_path !== undefined}>
+                          <Toggleable
+                            toggledInitial={service.config.docker_builder_path !== undefined}
+                          >
                             <Untoggled>
                               {({ toggle }) => (
                                 <BlockItemButtonLike
                                   asElement="button"
                                   Icon={PlusIcon}
-                                  text="Add Dockerfile path"
+                                  text="Custom Dockerfile path"
                                   onClick={() => {
                                     toggle(true);
                                     setTimeout(() => {
-                                      dockerfilePathInputRef.current?.focus();
+                                      dockerBuilderPathInputRef.current?.focus();
                                     });
                                   }}
                                 />
@@ -255,7 +257,7 @@ function GitSection({ service }: TGitSectionContentProps) {
                             <Toggled>
                               {() => (
                                 <field.TextField
-                                  ref={dockerfilePathInputRef}
+                                  ref={dockerBuilderPathInputRef}
                                   field={field}
                                   value={field.state.value}
                                   onBlur={field.handleBlur}
@@ -281,7 +283,7 @@ function GitSection({ service }: TGitSectionContentProps) {
               {builder === "docker" && (
                 <Block>
                   <form.AppField
-                    name="dockerfileContext"
+                    name="dockerBuilderContext"
                     children={(field) => (
                       <BlockItem className="w-full md:w-full">
                         <BlockItemHeader type="column">
@@ -292,18 +294,18 @@ function GitSection({ service }: TGitSectionContentProps) {
                         </BlockItemHeader>
                         <BlockItemContent>
                           <Toggleable
-                            toggledInitial={service.config.dockerfile_context !== undefined}
+                            toggledInitial={service.config.docker_builder_context !== undefined}
                           >
                             <Untoggled>
                               {({ toggle }) => (
                                 <BlockItemButtonLike
                                   asElement="button"
                                   Icon={PlusIcon}
-                                  text="Add build context"
+                                  text="Custom build context"
                                   onClick={() => {
                                     toggle(true);
                                     setTimeout(() => {
-                                      dockerfileContextInputRef.current?.focus();
+                                      dockerBuilderContextInputRef.current?.focus();
                                     });
                                   }}
                                 />
@@ -312,7 +314,7 @@ function GitSection({ service }: TGitSectionContentProps) {
                             <Toggled>
                               {() => (
                                 <field.TextField
-                                  ref={dockerfileContextInputRef}
+                                  ref={dockerBuilderContextInputRef}
                                   field={field}
                                   value={field.state.value}
                                   onBlur={field.handleBlur}

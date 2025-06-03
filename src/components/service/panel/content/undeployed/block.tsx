@@ -3,13 +3,21 @@ import { cn } from "@/components/ui/utils";
 import { ChevronDownIcon, ExternalLinkIcon } from "lucide-react";
 import { Children, cloneElement, FC, HTMLAttributes, isValidElement, ReactNode } from "react";
 
-export function Block({ className, children }: { className?: string; children: ReactNode }) {
+export function Block({
+  className,
+  children,
+  ...rest
+}: {
+  className?: string;
+  children: ReactNode;
+} & HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={cn(
         "-mx-2 flex w-[calc(100%+1rem)] flex-col gap-6 md:-mx-2.5 md:w-[calc(100%+1.25rem)] md:flex-row md:flex-wrap md:gap-0",
         className,
       )}
+      {...rest}
     >
       {children}
     </div>
@@ -29,7 +37,7 @@ export function BlockItemHeader({
     <div
       className={cn(
         "flex w-full items-center justify-start gap-2.5 pb-1.5 pl-1.5",
-        type === "column" && "flex-col items-start gap-1 px-1.5 pb-2",
+        type === "column" && "flex-col items-start gap-1 px-1.5 pb-1.5",
         className,
       )}
     >

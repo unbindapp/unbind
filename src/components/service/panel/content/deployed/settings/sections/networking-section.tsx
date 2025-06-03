@@ -155,7 +155,7 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                 hostObject.ports.map((portObject) => (
                   <BlockItemButtonLike
                     classNameText="whitespace-normal overflow-auto"
-                    key={hostObject.dns}
+                    key={`${hostObject.dns}:${portObject.port}`}
                     asElement="div"
                     text={`${hostObject.dns}:${portObject.port}`}
                     Icon={({ className }: { className?: string }) => (

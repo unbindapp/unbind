@@ -37,7 +37,7 @@ export function SettingsSection({
           {title}
         </h3>
       </div>
-      <div className="flex w-full flex-col px-3 pt-2.5 pb-3 sm:px-4.5 sm:pt-3.5 sm:pb-4.5">
+      <div className="flex w-full flex-col px-3 pt-3 pb-3.25 sm:px-4.5 sm:pt-3.75 sm:pb-4.75">
         {children}
       </div>
     </div>

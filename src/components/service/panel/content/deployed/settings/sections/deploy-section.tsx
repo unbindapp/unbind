@@ -1,5 +1,3 @@
-import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
-import SettingsSectionWrapper from "@/components/settings/settings-section-wrapper";
 import {
   Block,
   BlockItem,
@@ -9,13 +7,16 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/service/panel/content/undeployed/block";
-import { useAppForm } from "@/lib/hooks/use-app-form";
-import { THealthCheckType, TServiceShallow } from "@/server/trpc/api/services/types";
+import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
+import SettingsSectionWrapper from "@/components/settings/settings-section-wrapper";
 import { Toggleable, Toggled, Untoggled } from "@/components/toggleable";
-import { BanIcon, GlobeIcon, PlusIcon, TerminalSquareIcon } from "lucide-react";
-import { useRef } from "react";
+import { cn } from "@/components/ui/utils";
+import { useAppForm } from "@/lib/hooks/use-app-form";
 import { HealthCheckTypeSchema } from "@/server/go/client.gen";
+import { THealthCheckType, TServiceShallow } from "@/server/trpc/api/services/types";
 import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
+import { CircleSlashIcon, GlobeIcon, PlusIcon, TerminalSquareIcon } from "lucide-react";
+import { useRef } from "react";
 
 type TProps = {
   service: TServiceShallow;
@@ -65,6 +66,8 @@ const memoryLimits = {
 };
 
 function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
+  const healthCheckTypeFromService = service.config.health_check?.type || "none";
+
   const form = useAppForm({
     defaultValues: {
       instanceCount: service.config.replicas,
@@ -73,7 +76,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
       memoryMb: memoryLimits.unlimited,
       healthCheckEndpoint: service.config.health_check?.path,
       healthCheckCommand: service.config.health_check?.command,
-      healthCheckType: service.config.health_check?.type || "",
+      healthCheckType: healthCheckTypeFromService,
     },
   });
 
@@ -81,18 +84,18 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
 
   return (
     <SettingsSectionWrapper asElement="form" className="flex w-full flex-col">
-      <form.AppField
-        name="instanceCount"
-        children={(field) => (
-          <Block>
-            <BlockItem className="w-full md:w-full">
-              <BlockItemHeader type="column">
-                <BlockItemTitle>Instances</BlockItemTitle>
-                <BlockItemDescription>
-                  The number of instances/replicas to run for this service.
-                </BlockItemDescription>
-              </BlockItemHeader>
-              <BlockItemContent>
+      <Block>
+        <BlockItem className="w-full md:w-full">
+          <BlockItemHeader type="column">
+            <BlockItemTitle>Instances</BlockItemTitle>
+            <BlockItemDescription>
+              The number of instances/replicas to run for this service.
+            </BlockItemDescription>
+          </BlockItemHeader>
+          <BlockItemContent>
+            <form.AppField
+              name="instanceCount"
+              children={(field) => (
                 <div className="flex w-full flex-col rounded-lg border pb-1.5">
                   <ValueTitle
                     title="Instances"
@@ -113,11 +116,11 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                     }}
                   />
                 </div>
-              </BlockItemContent>
-            </BlockItem>
-          </Block>
-        )}
-      />
+              )}
+            />
+          </BlockItemContent>
+        </BlockItem>
+      </Block>
       <Block>
         <BlockItem className="w-full md:w-full">
           <BlockItemHeader type="column">
@@ -199,7 +202,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                       <BlockItemButtonLike
                         asElement="button"
                         Icon={PlusIcon}
-                        text="Add start command"
+                        text="Custom start command"
                         onClick={() => {
                           toggle(true);
                           setTimeout(() => {
@@ -241,7 +244,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
               The endpoint to call or the command to execute to decide if a new deployment is ready.
             </BlockItemDescription>
           </BlockItemHeader>
-          <BlockItemContent>
+          <BlockItemContent className="gap-0">
             <form.Subscribe
               selector={(s) => ({ healthCheckType: s.values.healthCheckType })}
               children={({ healthCheckType }) => (
@@ -259,7 +262,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                           value: o,
                         }))}
                         ItemIcon={({ className, value }) => (
-                          <HealthCheckIcon className={className} type={value} />
+                          <HealthCheckIcon className={cn("scale-90", className)} type={value} />
                         )}
                         isPending={false}
                         error={undefined}
@@ -267,9 +270,14 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                         {({ isOpen }) => (
                           <BlockItemButtonLike
                             asElement="button"
+                            data-not-none={field.state.value !== "none" ? true : undefined}
+                            className="data-not-none:rounded-b-none data-not-none:border-b-0"
                             text={healthCheckTypeToName(field.state.value)}
                             Icon={({ className }) => (
-                              <HealthCheckIcon type={field.state.value} className={className} />
+                              <HealthCheckIcon
+                                type={field.state.value}
+                                className={cn("scale-90", className)}
+                              />
                             )}
                             variant="outline"
                             open={isOpen}
@@ -279,11 +287,14 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                       </field.AsyncDropdownMenu>
                     )}
                   />
+                  {healthCheckType !== "none" && <div className="bg-border -mt-1 h-px w-full" />}
                   {healthCheckType === "http" && (
                     <form.AppField
                       name="healthCheckEndpoint"
                       children={(field) => (
                         <field.TextField
+                          className="-mt-1"
+                          classNameInput="rounded-t-none border-t-0"
                           field={field}
                           value={field.state.value}
                           onBlur={field.handleBlur}
@@ -304,13 +315,15 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                       name="healthCheckCommand"
                       children={(field) => (
                         <field.TextField
+                          className="-mt-1"
+                          classNameInput="rounded-t-none border-t-0"
                           field={field}
                           value={field.state.value}
                           onBlur={field.handleBlur}
                           onChange={(e) => {
                             field.handleChange(e.target.value);
                           }}
-                          placeholder="/health"
+                          placeholder="test -f /app/ready.txt"
                           autoCapitalize="off"
                           autoCorrect="off"
                           autoComplete="off"
@@ -358,12 +371,12 @@ function HealthCheckIcon({
 }) {
   if (type === "exec") return <TerminalSquareIcon className={className} />;
   if (type === "http") return <GlobeIcon className={className} />;
-  if (type === "none") return <BanIcon className={className} />;
+  if (type === "none") return <CircleSlashIcon className={className} />;
   return <QuestionMarkCircledIcon className={className} />;
 }
 
 function healthCheckTypeToName(type: THealthCheckType | (string & {})) {
-  if (type === "http") return "HTTP";
+  if (type === "http") return "Endpoint";
   if (type === "exec") return "Command";
   if (type === "none") return "None";
   return "Unknown";

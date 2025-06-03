@@ -423,8 +423,8 @@ export const CreateServiceInputSchema = z
     database_config: DatabaseConfigSchema.optional(),
     database_type: z.string().optional(),
     description: z.string().optional(),
-    dockerfile_context: z.string().optional(), // Optional path to Dockerfile context, if using docker builder
-    dockerfile_path: z.string().optional(), // Optional path to Dockerfile, if using docker builder
+    docker_builder_context: z.string().optional(), // Optional path to Dockerfile context, if using docker builder
+    docker_builder_path: z.string().optional(), // Optional path to Dockerfile, if using docker builder
     environment_id: z.string(),
     github_installation_id: z.number().optional(),
     health_check: HealthCheckSchema.optional(), // Health check configuration for the service
@@ -464,8 +464,8 @@ export const ServiceConfigResponseSchema = z
     backup_schedule: z.string(),
     build_command: z.string().optional(),
     builder: ServiceBuilderSchema,
-    dockerfile_context: z.string().optional(),
-    dockerfile_path: z.string().optional(),
+    docker_builder_context: z.string().optional(),
+    docker_builder_path: z.string().optional(),
     git_branch: z.string().optional(),
     git_tag: z.string().optional(),
     health_check: HealthCheckSchema.optional(),
@@ -1903,8 +1903,8 @@ export const UpdateServiceInputSchema = z
     builder: ServiceBuilderSchema.optional(),
     database_config: DatabaseConfigSchema.optional(),
     description: z.string().nullable().optional(),
-    dockerfile_context: z.string().optional(), // Optional path to Dockerfile context, if using docker builder - set empty string to reset to default
-    dockerfile_path: z.string().optional(), // Optional path to Dockerfile, if using docker builder - set empty string to reset to default
+    docker_builder_context: z.string().optional(), // Optional path to Dockerfile context, if using docker builder - set empty string to reset to default
+    docker_builder_path: z.string().optional(), // Optional path to Dockerfile, if using docker builder - set empty string to reset to default
     environment_id: z.string(),
     git_branch: z.string().optional(),
     git_tag: z.string().optional(), // Tag to build from, supports glob patterns
