@@ -19,6 +19,7 @@ import {
   TGitServiceBuilder,
   TServiceShallow,
 } from "@/server/trpc/api/services/types";
+import { useStore } from "@tanstack/react-form";
 import { PlusIcon, WrenchIcon } from "lucide-react";
 import { useRef } from "react";
 
@@ -57,12 +58,27 @@ function GitSection({ service }: TGitSectionProps) {
   const form = useAppForm({
     defaultValues: {
       builder: service.config.builder,
-      railpackBuilderInstallCommand: service.config.railpack_builder_install_command,
-      railpackBuilderBuildCommand: service.config.railpack_builder_build_command,
-      dockerBuilderDockerfilePath: service.config.docker_builder_dockerfile_path,
-      dockerBuilderBuildContext: service.config.docker_builder_build_context,
-      startCommand: service.config.run_command,
+      railpackBuilderInstallCommand: service.config.railpack_builder_install_command || "",
+      railpackBuilderBuildCommand: service.config.railpack_builder_build_command || "",
+      dockerBuilderDockerfilePath: service.config.docker_builder_dockerfile_path || "",
+      dockerBuilderBuildContext: service.config.docker_builder_build_context || "",
+      startCommand: service.config.run_command || "",
     },
+  });
+
+  const changeCount = useStore(form.store, (s) => {
+    let count = 0;
+    if (s.values.builder === "railpack") {
+      if (s.fieldMeta.railpackBuilderInstallCommand?.isDefaultValue === false) count++;
+      if (s.fieldMeta.railpackBuilderBuildCommand?.isDefaultValue === false) count++;
+    }
+    if (s.values.builder === "docker") {
+      if (s.fieldMeta.dockerBuilderDockerfilePath?.isDefaultValue === false) count++;
+      if (s.fieldMeta.dockerBuilderBuildContext?.isDefaultValue === false) count++;
+    }
+    if (s.fieldMeta.builder?.isDefaultValue === false) count++;
+    if (s.fieldMeta.startCommand?.isDefaultValue === false) count++;
+    return count;
   });
 
   const installCommandInputRef = useRef<HTMLInputElement>(null);
@@ -82,6 +98,7 @@ function GitSection({ service }: TGitSectionProps) {
       title="Build"
       id="build"
       Icon={WrenchIcon}
+      changeCount={changeCount}
     >
       <Block>
         <BlockItem className="w-full md:w-full">
@@ -144,31 +161,32 @@ function GitSection({ service }: TGitSectionProps) {
                       </BlockItemDescription>
                     </BlockItemHeader>
                     <BlockItemContent>
-                      <Toggleable
-                        toggledInitial={
-                          service.config.railpack_builder_install_command !== undefined
-                        }
-                      >
-                        <Untoggled>
-                          {({ toggle }) => (
-                            <BlockItemButtonLike
-                              asElement="button"
-                              Icon={PlusIcon}
-                              text="Custom install command"
-                              onClick={() => {
-                                toggle(true);
-                                setTimeout(() => {
-                                  installCommandInputRef.current?.focus();
-                                });
-                              }}
-                            />
-                          )}
-                        </Untoggled>
-                        <Toggled>
-                          {() => (
-                            <form.AppField
-                              name="railpackBuilderInstallCommand"
-                              children={(field) => (
+                      <form.AppField
+                        name="railpackBuilderInstallCommand"
+                        children={(field) => (
+                          <Toggleable
+                            toggledInitial={
+                              service.config.railpack_builder_install_command !== undefined ||
+                              field.state.value !== ""
+                            }
+                          >
+                            <Untoggled>
+                              {({ toggle }) => (
+                                <BlockItemButtonLike
+                                  asElement="button"
+                                  Icon={PlusIcon}
+                                  text="Custom install command"
+                                  onClick={() => {
+                                    toggle(true);
+                                    setTimeout(() => {
+                                      installCommandInputRef.current?.focus();
+                                    });
+                                  }}
+                                />
+                              )}
+                            </Untoggled>
+                            <Toggled>
+                              {() => (
                                 <field.TextField
                                   ref={installCommandInputRef}
                                   field={field}
@@ -184,10 +202,10 @@ function GitSection({ service }: TGitSectionProps) {
                                   spellCheck="false"
                                 />
                               )}
-                            />
-                          )}
-                        </Toggled>
-                      </Toggleable>
+                            </Toggled>
+                          </Toggleable>
+                        )}
+                      />
                     </BlockItemContent>
                   </BlockItem>
                 </Block>
@@ -203,29 +221,32 @@ function GitSection({ service }: TGitSectionProps) {
                       </BlockItemDescription>
                     </BlockItemHeader>
                     <BlockItemContent>
-                      <Toggleable
-                        toggledInitial={service.config.railpack_builder_build_command !== undefined}
-                      >
-                        <Untoggled>
-                          {({ toggle }) => (
-                            <BlockItemButtonLike
-                              asElement="button"
-                              Icon={PlusIcon}
-                              text="Custom build command"
-                              onClick={() => {
-                                toggle(true);
-                                setTimeout(() => {
-                                  buildCommandInputRef.current?.focus();
-                                });
-                              }}
-                            />
-                          )}
-                        </Untoggled>
-                        <Toggled>
-                          {() => (
-                            <form.AppField
-                              name="railpackBuilderBuildCommand"
-                              children={(field) => (
+                      <form.AppField
+                        name="railpackBuilderBuildCommand"
+                        children={(field) => (
+                          <Toggleable
+                            toggledInitial={
+                              service.config.railpack_builder_build_command !== undefined ||
+                              field.state.value !== ""
+                            }
+                          >
+                            <Untoggled>
+                              {({ toggle }) => (
+                                <BlockItemButtonLike
+                                  asElement="button"
+                                  Icon={PlusIcon}
+                                  text="Custom build command"
+                                  onClick={() => {
+                                    toggle(true);
+                                    setTimeout(() => {
+                                      buildCommandInputRef.current?.focus();
+                                    });
+                                  }}
+                                />
+                              )}
+                            </Untoggled>
+                            <Toggled>
+                              {() => (
                                 <field.TextField
                                   ref={buildCommandInputRef}
                                   field={field}
@@ -241,10 +262,10 @@ function GitSection({ service }: TGitSectionProps) {
                                   spellCheck="false"
                                 />
                               )}
-                            />
-                          )}
-                        </Toggled>
-                      </Toggleable>
+                            </Toggled>
+                          </Toggleable>
+                        )}
+                      />
                     </BlockItemContent>
                   </BlockItem>
                 </Block>
@@ -252,20 +273,21 @@ function GitSection({ service }: TGitSectionProps) {
               {/* Docker builder Dockerfile path */}
               {builder === "docker" && (
                 <Block>
-                  <form.AppField
-                    name="dockerBuilderDockerfilePath"
-                    children={(field) => (
-                      <BlockItem className="w-full md:w-full">
-                        <BlockItemHeader type="column">
-                          <BlockItemTitle>Dockerfile Path</BlockItemTitle>
-                          <BlockItemDescription>
-                            The path to the Dockerfile in your repository.
-                          </BlockItemDescription>
-                        </BlockItemHeader>
-                        <BlockItemContent>
+                  <BlockItem className="w-full md:w-full">
+                    <BlockItemHeader type="column">
+                      <BlockItemTitle>Dockerfile Path</BlockItemTitle>
+                      <BlockItemDescription>
+                        The path to the Dockerfile in your repository.
+                      </BlockItemDescription>
+                    </BlockItemHeader>
+                    <BlockItemContent>
+                      <form.AppField
+                        name="dockerBuilderDockerfilePath"
+                        children={(field) => (
                           <Toggleable
                             toggledInitial={
-                              service.config.docker_builder_dockerfile_path !== undefined
+                              service.config.docker_builder_dockerfile_path !== undefined ||
+                              field.state.value !== ""
                             }
                           >
                             <Untoggled>
@@ -302,29 +324,30 @@ function GitSection({ service }: TGitSectionProps) {
                               )}
                             </Toggled>
                           </Toggleable>
-                        </BlockItemContent>
-                      </BlockItem>
-                    )}
-                  />
+                        )}
+                      />
+                    </BlockItemContent>
+                  </BlockItem>
                 </Block>
               )}
               {/* Docker builder build context */}
               {builder === "docker" && (
                 <Block>
-                  <form.AppField
-                    name="dockerBuilderBuildContext"
-                    children={(field) => (
-                      <BlockItem className="w-full md:w-full">
-                        <BlockItemHeader type="column">
-                          <BlockItemTitle>Build Context</BlockItemTitle>
-                          <BlockItemDescription>
-                            The directory that serves as the build context for Docker.
-                          </BlockItemDescription>
-                        </BlockItemHeader>
-                        <BlockItemContent>
+                  <BlockItem className="w-full md:w-full">
+                    <BlockItemHeader type="column">
+                      <BlockItemTitle>Build Context</BlockItemTitle>
+                      <BlockItemDescription>
+                        The directory that serves as the build context for Docker.
+                      </BlockItemDescription>
+                    </BlockItemHeader>
+                    <BlockItemContent>
+                      <form.AppField
+                        name="dockerBuilderBuildContext"
+                        children={(field) => (
                           <Toggleable
                             toggledInitial={
-                              service.config.docker_builder_build_context !== undefined
+                              service.config.docker_builder_build_context !== undefined ||
+                              field.state.value !== ""
                             }
                           >
                             <Untoggled>
@@ -361,25 +384,29 @@ function GitSection({ service }: TGitSectionProps) {
                               )}
                             </Toggled>
                           </Toggleable>
-                        </BlockItemContent>
-                      </BlockItem>
-                    )}
-                  />
+                        )}
+                      />
+                    </BlockItemContent>
+                  </BlockItem>
                 </Block>
               )}
               <Block>
-                <form.AppField
-                  name="startCommand"
-                  children={(field) => (
-                    <BlockItem className="w-full md:w-full">
-                      <BlockItemHeader type="column">
-                        <BlockItemTitle>Start Command</BlockItemTitle>
-                        <BlockItemDescription>
-                          The command to run to start the new deployment.
-                        </BlockItemDescription>
-                      </BlockItemHeader>
-                      <BlockItemContent>
-                        <Toggleable toggledInitial={service.config.run_command !== undefined}>
+                <BlockItem className="w-full md:w-full">
+                  <BlockItemHeader type="column">
+                    <BlockItemTitle>Start Command</BlockItemTitle>
+                    <BlockItemDescription>
+                      The command to run to start the new deployment.
+                    </BlockItemDescription>
+                  </BlockItemHeader>
+                  <BlockItemContent>
+                    <form.AppField
+                      name="startCommand"
+                      children={(field) => (
+                        <Toggleable
+                          toggledInitial={
+                            service.config.run_command !== undefined || field.state.value !== ""
+                          }
+                        >
                           <Untoggled>
                             {({ toggle }) => (
                               <BlockItemButtonLike
@@ -414,10 +441,10 @@ function GitSection({ service }: TGitSectionProps) {
                             )}
                           </Toggled>
                         </Toggleable>
-                      </BlockItemContent>
-                    </BlockItem>
-                  )}
-                />
+                      )}
+                    />
+                  </BlockItemContent>
+                </BlockItem>
               </Block>
             </>
           );

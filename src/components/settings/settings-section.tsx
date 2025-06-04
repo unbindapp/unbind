@@ -8,6 +8,8 @@ export function SettingsSection({
   classNameTitleDiv,
   classNameHeader,
   classNameContent,
+  changeCount,
+  className,
   ...rest
 }: {
   title: string;
@@ -16,12 +18,17 @@ export function SettingsSection({
   classNameTitleDiv?: string;
   classNameHeader?: string;
   classNameContent?: string;
+  changeCount?: number;
 } & TWrapperProps) {
   return (
-    <Wrapper {...rest}>
+    <Wrapper
+      data-changed={changeCount !== undefined && changeCount > 0 ? true : undefined}
+      className={cn("group/wrapper data-changed:border-process/20", className)}
+      {...rest}
+    >
       <div
         className={cn(
-          "text-muted-foreground bg-background-hover flex w-full items-center gap-2.5 border-b px-3.5 py-2.5 sm:px-4 sm:py-3",
+          "text-muted-foreground group-data-changed/wrapper:text-process bg-background-hover group-data-changed/wrapper:border-process/15 group-data-changed/wrapper:bg-process/8 flex w-full items-start justify-between gap-4 border-b px-3.5 py-2.5 sm:px-4 sm:py-3",
           classNameHeader,
         )}
       >
@@ -31,6 +38,11 @@ export function SettingsSection({
             {title}
           </h3>
         </div>
+        {changeCount !== undefined && changeCount > 0 && (
+          <p className="bg-process text-background -mr-1.5 max-w-28 shrink-0 truncate rounded-full px-2 py-[0.15625rem] text-sm leading-tight font-semibold">
+            {changeCount} change{changeCount > 1 ? "s" : ""}
+          </p>
+        )}
       </div>
       <div
         className={cn(
