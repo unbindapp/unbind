@@ -22,6 +22,7 @@ export function SettingsSection({
   changeCount,
   className,
   onClickResetChanges,
+  SubmitButton,
   ...rest
 }: {
   title: string;
@@ -31,8 +32,10 @@ export function SettingsSection({
   classNameHeader?: string;
   classNameContent?: string;
   changeCount?: number;
+  SubmitButton?: FC<{ className?: string; children?: ReactNode }>;
   onClickResetChanges?: () => void;
 } & TWrapperProps) {
+  const SubmitButtonElement = SubmitButton || Button;
   return (
     <Wrapper
       data-changed={changeCount !== undefined && changeCount > 0 ? true : undefined}
@@ -52,7 +55,7 @@ export function SettingsSection({
           </h3>
         </div>
         {changeCount !== undefined && changeCount > 0 && (
-          <div className="-mr-2.25 flex shrink-0 items-center justify-end gap-1.5 py-1.25 sm:-mr-2.75">
+          <div className="-mr-2.25 flex shrink-0 items-center justify-end gap-1.25 py-1.25 sm:-mr-2.75">
             <ResetTrigger changeCount={changeCount} onClickResetChanges={onClickResetChanges}>
               <Button
                 type="button"
@@ -64,14 +67,9 @@ export function SettingsSection({
                 <RotateCcwIcon className="size-5 scale-90" />
               </Button>
             </ResetTrigger>
-            <div className="relative">
-              <Button aria-label="Apply changes" variant="outline-process" size="icon">
-                <CheckIcon className="size-5" />
-              </Button>
-              <p className="bg-process text-background pointer-events-none absolute -top-0.25 -left-0.25 flex items-center justify-center rounded-sm px-0.75 py-0.25 font-mono text-xs leading-none font-bold">
-                {changeCount}
-              </p>
-            </div>
+            <SubmitButtonElement aria-label="Apply changes" variant="outline-process" size="icon">
+              <CheckIcon className="size-5" />
+            </SubmitButtonElement>
           </div>
         )}
       </div>
@@ -99,10 +97,10 @@ export function SettingsSection({
             </ResetTrigger>
           </div>
           <div className="w-1/2 p-1.5">
-            <Button className="w-full" variant="process">
+            <SubmitButtonElement className="w-full" variant="process">
               <CheckIcon className="size-5" />
               <p className="min-w-0 shrink truncate">Apply ({changeCount})</p>
-            </Button>
+            </SubmitButtonElement>
           </div>
         </div>
       )}
@@ -162,18 +160,16 @@ function ResetTrigger({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent hideXButton className="w-128 max-w-full">
         <DialogHeader>
-          <DialogTitle className="text-warning">Revert Changes: {changeCount}</DialogTitle>
+          <DialogTitle>Revert Changes: {changeCount}</DialogTitle>
           <DialogDescription>Are you sure you want to revert the changes?</DialogDescription>
         </DialogHeader>
         <div className="flex w-full flex-wrap items-center justify-end gap-2">
           <DialogClose asChild className="text-muted-foreground">
-            <Button type="button" variant="ghost-warning">
+            <Button type="button" variant="ghost">
               Cancel
             </Button>
           </DialogClose>
-          <Button variant="warning" onClick={onClickResetChanges}>
-            Confirm
-          </Button>
+          <Button onClick={onClickResetChanges}>Confirm</Button>
         </div>
       </DialogContent>
     </Dialog>

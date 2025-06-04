@@ -47,14 +47,24 @@ export function BlockItemHeader({
 }
 
 export function BlockItemTitle({
+  hasChanges,
   className,
   children,
 }: {
+  hasChanges?: boolean;
   className?: string;
   children: ReactNode;
 }) {
   return (
-    <h3 className={cn("min-w-0 shrink leading-tight font-semibold", className)}>{children}</h3>
+    <h3
+      className={cn(
+        "min-w-0 shrink leading-tight font-semibold",
+        hasChanges && "text-process",
+        className,
+      )}
+    >
+      {children}
+    </h3>
   );
 }
 

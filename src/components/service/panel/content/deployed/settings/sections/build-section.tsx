@@ -107,19 +107,22 @@ function GitSection({ service }: TGitSectionProps) {
       Icon={WrenchIcon}
       changeCount={changeCount}
       onClickResetChanges={() => form.reset()}
+      SubmitButton={form.SubmitButton}
     >
       <Block>
-        <BlockItem className="w-full md:w-full">
-          <BlockItemHeader type="column">
-            <BlockItemTitle>Builder</BlockItemTitle>
-            <BlockItemDescription>
-              The builder for building the service to be deployed.
-            </BlockItemDescription>
-          </BlockItemHeader>
-          <BlockItemContent>
-            <form.AppField
-              name="builder"
-              children={(field) => (
+        <form.AppField
+          name="builder"
+          children={(field) => (
+            <BlockItem className="group/item w-full md:w-full">
+              <BlockItemHeader type="column">
+                <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
+                  Builder
+                </BlockItemTitle>
+                <BlockItemDescription>
+                  The builder for building the service to be deployed.
+                </BlockItemDescription>
+              </BlockItemHeader>
+              <BlockItemContent>
                 <field.AsyncDropdownMenu
                   dontCheckUntilSubmit
                   field={field}
@@ -148,10 +151,10 @@ function GitSection({ service }: TGitSectionProps) {
                     />
                   )}
                 </field.AsyncDropdownMenu>
-              )}
-            />
-          </BlockItemContent>
-        </BlockItem>
+              </BlockItemContent>
+            </BlockItem>
+          )}
+        />
       </Block>
       <form.Subscribe
         selector={(s) => ({ builder: s.values.builder })}
@@ -161,17 +164,19 @@ function GitSection({ service }: TGitSectionProps) {
               {/* Railpack builder build command */}
               {builder === "railpack" && (
                 <Block>
-                  <BlockItem className="w-full md:w-full">
-                    <BlockItemHeader type="column">
-                      <BlockItemTitle>Install Command</BlockItemTitle>
-                      <BlockItemDescription>
-                        The command for installing the dependencies for the service.
-                      </BlockItemDescription>
-                    </BlockItemHeader>
-                    <BlockItemContent>
-                      <form.AppField
-                        name="railpackBuilderInstallCommand"
-                        children={(field) => (
+                  <form.AppField
+                    name="railpackBuilderInstallCommand"
+                    children={(field) => (
+                      <BlockItem className="group/item w-full md:w-full">
+                        <BlockItemHeader type="column">
+                          <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
+                            Install Command
+                          </BlockItemTitle>
+                          <BlockItemDescription>
+                            The command for installing the dependencies for the service.
+                          </BlockItemDescription>
+                        </BlockItemHeader>
+                        <BlockItemContent>
                           <Toggleable
                             toggledInitial={
                               service.config.railpack_builder_install_command !== undefined ||
@@ -212,26 +217,28 @@ function GitSection({ service }: TGitSectionProps) {
                               )}
                             </Toggled>
                           </Toggleable>
-                        )}
-                      />
-                    </BlockItemContent>
-                  </BlockItem>
+                        </BlockItemContent>
+                      </BlockItem>
+                    )}
+                  />
                 </Block>
               )}
               {/* Railpack builder build command */}
               {builder === "railpack" && (
                 <Block>
-                  <BlockItem className="w-full md:w-full">
-                    <BlockItemHeader type="column">
-                      <BlockItemTitle>Build Command</BlockItemTitle>
-                      <BlockItemDescription>
-                        The command for building the service.
-                      </BlockItemDescription>
-                    </BlockItemHeader>
-                    <BlockItemContent>
-                      <form.AppField
-                        name="railpackBuilderBuildCommand"
-                        children={(field) => (
+                  <form.AppField
+                    name="railpackBuilderBuildCommand"
+                    children={(field) => (
+                      <BlockItem className="group/item w-full md:w-full">
+                        <BlockItemHeader type="column">
+                          <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
+                            Build Command
+                          </BlockItemTitle>
+                          <BlockItemDescription>
+                            The command for building the service.
+                          </BlockItemDescription>
+                        </BlockItemHeader>
+                        <BlockItemContent>
                           <Toggleable
                             toggledInitial={
                               service.config.railpack_builder_build_command !== undefined ||
@@ -272,26 +279,28 @@ function GitSection({ service }: TGitSectionProps) {
                               )}
                             </Toggled>
                           </Toggleable>
-                        )}
-                      />
-                    </BlockItemContent>
-                  </BlockItem>
+                        </BlockItemContent>
+                      </BlockItem>
+                    )}
+                  />
                 </Block>
               )}
               {/* Docker builder Dockerfile path */}
               {builder === "docker" && (
                 <Block>
-                  <BlockItem className="w-full md:w-full">
-                    <BlockItemHeader type="column">
-                      <BlockItemTitle>Dockerfile Path</BlockItemTitle>
-                      <BlockItemDescription>
-                        The path to the Dockerfile in your repository.
-                      </BlockItemDescription>
-                    </BlockItemHeader>
-                    <BlockItemContent>
-                      <form.AppField
-                        name="dockerBuilderDockerfilePath"
-                        children={(field) => (
+                  <form.AppField
+                    name="dockerBuilderDockerfilePath"
+                    children={(field) => (
+                      <BlockItem className="group/item w-full md:w-full">
+                        <BlockItemHeader type="column">
+                          <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
+                            Dockerfile Path
+                          </BlockItemTitle>
+                          <BlockItemDescription>
+                            The path to the Dockerfile in your repository.
+                          </BlockItemDescription>
+                        </BlockItemHeader>
+                        <BlockItemContent>
                           <Toggleable
                             toggledInitial={
                               service.config.docker_builder_dockerfile_path !== undefined ||
@@ -332,26 +341,28 @@ function GitSection({ service }: TGitSectionProps) {
                               )}
                             </Toggled>
                           </Toggleable>
-                        )}
-                      />
-                    </BlockItemContent>
-                  </BlockItem>
+                        </BlockItemContent>
+                      </BlockItem>
+                    )}
+                  />
                 </Block>
               )}
               {/* Docker builder build context */}
               {builder === "docker" && (
                 <Block>
-                  <BlockItem className="w-full md:w-full">
-                    <BlockItemHeader type="column">
-                      <BlockItemTitle>Build Context</BlockItemTitle>
-                      <BlockItemDescription>
-                        The directory that serves as the build context for Docker.
-                      </BlockItemDescription>
-                    </BlockItemHeader>
-                    <BlockItemContent>
-                      <form.AppField
-                        name="dockerBuilderBuildContext"
-                        children={(field) => (
+                  <form.AppField
+                    name="dockerBuilderBuildContext"
+                    children={(field) => (
+                      <BlockItem className="group/item w-full md:w-full">
+                        <BlockItemHeader type="column">
+                          <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
+                            Build Context
+                          </BlockItemTitle>
+                          <BlockItemDescription>
+                            The directory that serves as the build context for Docker.
+                          </BlockItemDescription>
+                        </BlockItemHeader>
+                        <BlockItemContent>
                           <Toggleable
                             toggledInitial={
                               service.config.docker_builder_build_context !== undefined ||
@@ -392,24 +403,26 @@ function GitSection({ service }: TGitSectionProps) {
                               )}
                             </Toggled>
                           </Toggleable>
-                        )}
-                      />
-                    </BlockItemContent>
-                  </BlockItem>
+                        </BlockItemContent>
+                      </BlockItem>
+                    )}
+                  />
                 </Block>
               )}
               <Block>
-                <BlockItem className="w-full md:w-full">
-                  <BlockItemHeader type="column">
-                    <BlockItemTitle>Start Command</BlockItemTitle>
-                    <BlockItemDescription>
-                      The command to run to start the new deployment.
-                    </BlockItemDescription>
-                  </BlockItemHeader>
-                  <BlockItemContent>
-                    <form.AppField
-                      name="startCommand"
-                      children={(field) => (
+                <form.AppField
+                  name="startCommand"
+                  children={(field) => (
+                    <BlockItem className="group/item w-full md:w-full">
+                      <BlockItemHeader type="column">
+                        <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
+                          Start Command
+                        </BlockItemTitle>
+                        <BlockItemDescription>
+                          The command to run to start the new deployment.
+                        </BlockItemDescription>
+                      </BlockItemHeader>
+                      <BlockItemContent>
                         <Toggleable
                           toggledInitial={
                             service.config.run_command !== undefined || field.state.value !== ""
@@ -449,10 +462,10 @@ function GitSection({ service }: TGitSectionProps) {
                             )}
                           </Toggled>
                         </Toggleable>
-                      )}
-                    />
-                  </BlockItemContent>
-                </BlockItem>
+                      </BlockItemContent>
+                    </BlockItem>
+                  )}
+                />
               </Block>
             </>
           );

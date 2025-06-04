@@ -16,6 +16,7 @@ import { THealthCheckType, TServiceShallow } from "@/server/trpc/api/services/ty
 import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
 import { useStore } from "@tanstack/react-form";
 import { CircleSlashIcon, GlobeIcon, RocketIcon, TerminalSquareIcon } from "lucide-react";
+import { toast } from "sonner";
 
 type TProps = {
   service: TServiceShallow;
@@ -76,6 +77,12 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
       healthCheckCommand: service.config.health_check?.command || "",
       healthCheckType: healthCheckTypeFromService,
     },
+    onSubmit: () => {
+      toast.success("Changes saved successfully.", {
+        description: "This is fake",
+        duration: 5000,
+      });
+    },
   });
 
   const changeCount = useStore(form.store, (s) => {
@@ -110,19 +117,22 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
       Icon={RocketIcon}
       changeCount={changeCount}
       onClickResetChanges={() => form.reset()}
+      SubmitButton={form.SubmitButton}
     >
       <Block>
-        <BlockItem className="w-full md:w-full">
-          <BlockItemHeader type="column">
-            <BlockItemTitle>Instances</BlockItemTitle>
-            <BlockItemDescription>
-              The number of instances/replicas to run for this service.
-            </BlockItemDescription>
-          </BlockItemHeader>
-          <BlockItemContent>
-            <form.AppField
-              name="instanceCount"
-              children={(field) => (
+        <form.AppField
+          name="instanceCount"
+          children={(field) => (
+            <BlockItem className="group/item w-full md:w-full">
+              <BlockItemHeader className="group-data-changed/item:text-process" type="column">
+                <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
+                  Instances
+                </BlockItemTitle>
+                <BlockItemDescription>
+                  The number of instances/replicas to run for this service.
+                </BlockItemDescription>
+              </BlockItemHeader>
+              <BlockItemContent>
                 <div className="flex w-full flex-col rounded-lg border pb-1.5">
                   <ValueTitle
                     title="Instances"
@@ -143,175 +153,192 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                     }}
                   />
                 </div>
-              )}
-            />
-          </BlockItemContent>
-        </BlockItem>
+              </BlockItemContent>
+            </BlockItem>
+          )}
+        />
       </Block>
       <Block>
-        <BlockItem className="w-full md:w-full">
-          <BlockItemHeader type="column">
-            <BlockItemTitle>Resource Limits</BlockItemTitle>
-            <BlockItemDescription>
-              The maximum vCPU and memory to allocate for each instance.
-            </BlockItemDescription>
-          </BlockItemHeader>
-          <BlockItemContent>
-            <div className="flex w-full flex-col rounded-lg border">
-              <form.AppField
-                name="cpuMillicores"
-                children={(field) => (
-                  <div className="flex w-full flex-col pb-1.5">
-                    <ValueTitle title="vCPU" value={cpuFormatter(field.state.value)} />
-                    <field.StorageSizeInput
-                      field={field}
-                      className="w-full px-3.5 py-3"
-                      onBlur={field.handleBlur}
-                      min={cpuLimits.min}
-                      max={cpuLimits.unlimited}
-                      step={cpuLimits.step}
-                      hideMinMax
-                      defaultValue={[
-                        service.config.resources?.cpu_limits_millicores || cpuLimits.unlimited,
-                      ]}
-                      value={field.state.value ? [field.state.value] : undefined}
-                      onValueChange={(value) => {
-                        field.handleChange(value[0]);
-                      }}
-                    />
-                  </div>
-                )}
-              />
-              <div className="bg-border h-px w-full" />
-              <form.AppField
-                name="memoryMb"
-                children={(field) => (
-                  <div className="flex w-full flex-col pb-1.5">
-                    <ValueTitle title="Memory" value={memoryFormatter(field.state.value)} />
-                    <field.StorageSizeInput
-                      field={field}
-                      className="w-full px-3.5 py-3"
-                      onBlur={field.handleBlur}
-                      min={memoryLimits.min}
-                      max={memoryLimits.unlimited}
-                      step={memoryLimits.step}
-                      hideMinMax
-                      defaultValue={[
-                        service.config.resources?.memory_limits_megabytes || memoryLimits.unlimited,
-                      ]}
-                      value={field.state.value ? [field.state.value] : undefined}
-                      onValueChange={(value) => {
-                        field.handleChange(value[0]);
-                      }}
-                    />
-                  </div>
-                )}
-              />
-            </div>
-          </BlockItemContent>
-        </BlockItem>
-      </Block>
-      <Block>
-        <BlockItem className="w-full md:w-full">
-          <BlockItemHeader type="column">
-            <BlockItemTitle>Health Check</BlockItemTitle>
-            <BlockItemDescription>
-              The endpoint to call or the command to execute to decide if a new deployment is ready.
-            </BlockItemDescription>
-          </BlockItemHeader>
-          <BlockItemContent className="gap-0">
-            <form.Subscribe
-              selector={(s) => ({ healthCheckType: s.values.healthCheckType })}
-              children={({ healthCheckType }) => (
-                <>
+        <form.Subscribe
+          selector={(s) => ({
+            hasChanges:
+              s.fieldMeta.cpuMillicores?.isDefaultValue === false ||
+              s.fieldMeta.memoryMb?.isDefaultValue === false,
+          })}
+          children={({ hasChanges }) => (
+            <BlockItem className="w-full md:w-full">
+              <BlockItemHeader type="column">
+                <BlockItemTitle hasChanges={hasChanges}>Resource Limits</BlockItemTitle>
+                <BlockItemDescription>
+                  The maximum vCPU and memory to allocate for each instance.
+                </BlockItemDescription>
+              </BlockItemHeader>
+              <BlockItemContent>
+                <div className="flex w-full flex-col rounded-lg border">
                   <form.AppField
-                    name="healthCheckType"
+                    name="cpuMillicores"
                     children={(field) => (
-                      <field.AsyncDropdownMenu
-                        dontCheckUntilSubmit
-                        field={field}
-                        value={field.state.value}
-                        onChange={(v) => field.handleChange(v as THealthCheckType)}
-                        items={HealthCheckTypeSchema.options.map((o) => ({
-                          label: healthCheckTypeToName(o),
-                          value: o,
-                        }))}
-                        ItemIcon={({ className, value }) => (
-                          <HealthCheckIcon className={cn("scale-90", className)} type={value} />
-                        )}
-                        isPending={false}
-                        error={undefined}
-                      >
-                        {({ isOpen }) => (
-                          <BlockItemButtonLike
-                            asElement="button"
-                            data-not-none={field.state.value !== "none" ? true : undefined}
-                            className="data-not-none:rounded-b-none data-not-none:border-b-0"
-                            text={healthCheckTypeToName(field.state.value)}
-                            Icon={({ className }) => (
-                              <HealthCheckIcon
-                                type={field.state.value}
-                                className={cn("scale-90", className)}
-                              />
-                            )}
-                            variant="outline"
-                            open={isOpen}
-                            onBlur={field.handleBlur}
-                          />
-                        )}
-                      </field.AsyncDropdownMenu>
+                      <div className="flex w-full flex-col pb-1.5">
+                        <ValueTitle title="vCPU" value={cpuFormatter(field.state.value)} />
+                        <field.StorageSizeInput
+                          field={field}
+                          className="w-full px-3.5 py-3"
+                          onBlur={field.handleBlur}
+                          min={cpuLimits.min}
+                          max={cpuLimits.unlimited}
+                          step={cpuLimits.step}
+                          hideMinMax
+                          defaultValue={[
+                            service.config.resources?.cpu_limits_millicores || cpuLimits.unlimited,
+                          ]}
+                          value={field.state.value ? [field.state.value] : undefined}
+                          onValueChange={(value) => {
+                            field.handleChange(value[0]);
+                          }}
+                        />
+                      </div>
                     )}
                   />
-                  {healthCheckType !== "none" && <div className="bg-border -mt-1 h-px w-full" />}
-                  {healthCheckType === "http" && (
-                    <form.AppField
-                      name="healthCheckEndpoint"
-                      children={(field) => (
-                        <field.TextField
-                          className="-mt-1"
-                          classNameInput="rounded-t-none border-t-0"
+                  <div className="bg-border h-px w-full" />
+                  <form.AppField
+                    name="memoryMb"
+                    children={(field) => (
+                      <div className="flex w-full flex-col pb-1.5">
+                        <ValueTitle title="Memory" value={memoryFormatter(field.state.value)} />
+                        <field.StorageSizeInput
                           field={field}
-                          value={field.state.value}
+                          className="w-full px-3.5 py-3"
                           onBlur={field.handleBlur}
-                          onChange={(e) => {
-                            field.handleChange(e.target.value);
+                          min={memoryLimits.min}
+                          max={memoryLimits.unlimited}
+                          step={memoryLimits.step}
+                          hideMinMax
+                          defaultValue={[
+                            service.config.resources?.memory_limits_megabytes ||
+                              memoryLimits.unlimited,
+                          ]}
+                          value={field.state.value ? [field.state.value] : undefined}
+                          onValueChange={(value) => {
+                            field.handleChange(value[0]);
                           }}
-                          placeholder="/health"
-                          autoCapitalize="off"
-                          autoCorrect="off"
-                          autoComplete="off"
-                          spellCheck="false"
+                        />
+                      </div>
+                    )}
+                  />
+                </div>
+              </BlockItemContent>
+            </BlockItem>
+          )}
+        />
+      </Block>
+      <Block>
+        <form.Subscribe
+          selector={(s) => ({
+            healthCheckType: s.values.healthCheckType,
+            hasChanges:
+              s.fieldMeta.healthCheckType?.isDefaultValue === false ||
+              (s.values.healthCheckType === "exec" &&
+                s.fieldMeta.healthCheckCommand?.isDefaultValue === false) ||
+              (s.values.healthCheckType === "http" &&
+                s.fieldMeta.healthCheckEndpoint?.isDefaultValue === false),
+          })}
+          children={({ healthCheckType, hasChanges }) => (
+            <BlockItem className="w-full md:w-full">
+              <BlockItemHeader type="column">
+                <BlockItemTitle hasChanges={hasChanges}>Health Check</BlockItemTitle>
+                <BlockItemDescription>
+                  The endpoint to call or the command to execute to decide if a new deployment is
+                  ready.
+                </BlockItemDescription>
+              </BlockItemHeader>
+              <BlockItemContent className="gap-0">
+                <form.AppField
+                  name="healthCheckType"
+                  children={(field) => (
+                    <field.AsyncDropdownMenu
+                      dontCheckUntilSubmit
+                      field={field}
+                      value={field.state.value}
+                      onChange={(v) => field.handleChange(v as THealthCheckType)}
+                      items={HealthCheckTypeSchema.options.map((o) => ({
+                        label: healthCheckTypeToName(o),
+                        value: o,
+                      }))}
+                      ItemIcon={({ className, value }) => (
+                        <HealthCheckIcon className={cn("scale-90", className)} type={value} />
+                      )}
+                      isPending={false}
+                      error={undefined}
+                    >
+                      {({ isOpen }) => (
+                        <BlockItemButtonLike
+                          asElement="button"
+                          data-not-none={field.state.value !== "none" ? true : undefined}
+                          className="data-not-none:rounded-b-none data-not-none:border-b-0"
+                          text={healthCheckTypeToName(field.state.value)}
+                          Icon={({ className }) => (
+                            <HealthCheckIcon
+                              type={field.state.value}
+                              className={cn("scale-90", className)}
+                            />
+                          )}
+                          variant="outline"
+                          open={isOpen}
+                          onBlur={field.handleBlur}
                         />
                       )}
-                    />
+                    </field.AsyncDropdownMenu>
                   )}
-                  {healthCheckType === "exec" && (
-                    <form.AppField
-                      name="healthCheckCommand"
-                      children={(field) => (
-                        <field.TextField
-                          className="-mt-1"
-                          classNameInput="rounded-t-none border-t-0"
-                          field={field}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(e) => {
-                            field.handleChange(e.target.value);
-                          }}
-                          placeholder="test -f /app/ready.txt"
-                          autoCapitalize="off"
-                          autoCorrect="off"
-                          autoComplete="off"
-                          spellCheck="false"
-                        />
-                      )}
-                    />
-                  )}
-                </>
-              )}
-            />
-          </BlockItemContent>
-        </BlockItem>
+                />
+                {healthCheckType !== "none" && <div className="bg-border -mt-1 h-px w-full" />}
+                {healthCheckType === "http" && (
+                  <form.AppField
+                    name="healthCheckEndpoint"
+                    children={(field) => (
+                      <field.TextField
+                        className="-mt-1"
+                        classNameInput="rounded-t-none border-t-0"
+                        field={field}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => {
+                          field.handleChange(e.target.value);
+                        }}
+                        placeholder="/health"
+                        autoCapitalize="off"
+                        autoCorrect="off"
+                        autoComplete="off"
+                        spellCheck="false"
+                      />
+                    )}
+                  />
+                )}
+                {healthCheckType === "exec" && (
+                  <form.AppField
+                    name="healthCheckCommand"
+                    children={(field) => (
+                      <field.TextField
+                        className="-mt-1"
+                        classNameInput="rounded-t-none border-t-0"
+                        field={field}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => {
+                          field.handleChange(e.target.value);
+                        }}
+                        placeholder="test -f /app/ready.txt"
+                        autoCapitalize="off"
+                        autoCorrect="off"
+                        autoComplete="off"
+                        spellCheck="false"
+                      />
+                    )}
+                  />
+                )}
+              </BlockItemContent>
+            </BlockItem>
+          )}
+        />
       </Block>
     </SettingsSection>
   );
@@ -328,9 +355,22 @@ function memoryFormatter(mb: number) {
   return `${(Math.round((mb / 1000) * 100) / 100).toFixed(1)} GB`;
 }
 
-function ValueTitle({ title, value }: { title: string; value: string }) {
+function ValueTitle({
+  title,
+  value,
+  className,
+}: {
+  title: string;
+  value: string;
+  className?: string;
+}) {
   return (
-    <p className="text-muted-foreground w-full px-3.5 pt-2.5 pb-1 leading-tight font-medium">
+    <p
+      className={cn(
+        "text-muted-foreground w-full px-3.5 pt-2.5 pb-1 leading-tight font-medium",
+        className,
+      )}
+    >
       <span className="pr-[0.6ch]">{title}:</span>
       <span className="text-foreground font-mono font-bold">{value}</span>
     </p>

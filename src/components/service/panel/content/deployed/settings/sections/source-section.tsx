@@ -26,6 +26,7 @@ import { api } from "@/server/trpc/setup/client";
 import { useStore } from "@tanstack/react-form";
 import { CodeIcon, GitBranchIcon, MilestoneIcon, PackageIcon, TagIcon } from "lucide-react";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { useDebounce } from "use-debounce";
 
 type TProps = {
@@ -113,7 +114,12 @@ function GitSection({ owner, repo, branch, installationId }: TGitSectionProps) {
     defaultValues: {
       branch,
     },
-    onSubmit: async () => {},
+    onSubmit: async () => {
+      toast.success("Changes saved successfully.", {
+        description: "This is fake",
+        duration: 5000,
+      });
+    },
   });
 
   const changeCount = useStore(form.store, (s) => {
@@ -136,6 +142,7 @@ function GitSection({ owner, repo, branch, installationId }: TGitSectionProps) {
       changeCount={changeCount}
       onClickResetChanges={() => form.reset()}
       classNameContent="gap-5"
+      SubmitButton={form.SubmitButton}
     >
       <Block>
         <BlockItem className="w-full md:w-full">
@@ -154,14 +161,16 @@ function GitSection({ owner, repo, branch, installationId }: TGitSectionProps) {
         </BlockItem>
       </Block>
       <Block>
-        <BlockItem className="w-full md:w-full">
-          <BlockItemHeader>
-            <BlockItemTitle>Branch</BlockItemTitle>
-          </BlockItemHeader>
-          <BlockItemContent>
-            <form.AppField
-              name="branch"
-              children={(field) => (
+        <form.AppField
+          name="branch"
+          children={(field) => (
+            <BlockItem className="w-full md:w-full">
+              <BlockItemHeader>
+                <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
+                  Branch
+                </BlockItemTitle>
+              </BlockItemHeader>
+              <BlockItemContent>
                 <field.AsyncCommandDropdown
                   dontCheckUntilSubmit
                   field={field}
@@ -187,10 +196,10 @@ function GitSection({ owner, repo, branch, installationId }: TGitSectionProps) {
                     />
                   )}
                 </field.AsyncCommandDropdown>
-              )}
-            />
-          </BlockItemContent>
-        </BlockItem>
+              </BlockItemContent>
+            </BlockItem>
+          )}
+        />
       </Block>
     </SettingsSection>
   );
@@ -227,7 +236,12 @@ function DockerImageSection({ image, tag }: TDockerImageSectionProps) {
     defaultValues: {
       tag,
     },
-    onSubmit: async () => {},
+    onSubmit: async () => {
+      toast.success("Changes saved successfully.", {
+        description: "This is fake",
+        duration: 5000,
+      });
+    },
   });
 
   const changeCount = useStore(form.store, (s) => {
@@ -250,6 +264,7 @@ function DockerImageSection({ image, tag }: TDockerImageSectionProps) {
       changeCount={changeCount}
       onClickResetChanges={() => form.reset()}
       classNameContent="gap-5"
+      SubmitButton={form.SubmitButton}
     >
       <Block>
         <BlockItem className="w-full md:w-full">
@@ -272,14 +287,14 @@ function DockerImageSection({ image, tag }: TDockerImageSectionProps) {
         </BlockItem>
       </Block>
       <Block>
-        <BlockItem className="w-full md:w-full">
-          <BlockItemHeader>
-            <BlockItemTitle>Tag</BlockItemTitle>
-          </BlockItemHeader>
-          <BlockItemContent>
-            <form.AppField
-              name="tag"
-              children={(field) => (
+        <form.AppField
+          name="tag"
+          children={(field) => (
+            <BlockItem className="w-full md:w-full">
+              <BlockItemHeader>
+                <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>Tag</BlockItemTitle>
+              </BlockItemHeader>
+              <BlockItemContent>
                 <field.AsyncCommandDropdown
                   dontCheckUntilSubmit
                   field={field}
@@ -309,10 +324,10 @@ function DockerImageSection({ image, tag }: TDockerImageSectionProps) {
                     />
                   )}
                 </field.AsyncCommandDropdown>
-              )}
-            />
-          </BlockItemContent>
-        </BlockItem>
+              </BlockItemContent>
+            </BlockItem>
+          )}
+        />
       </Block>
     </SettingsSection>
   );
