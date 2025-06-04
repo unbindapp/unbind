@@ -14,6 +14,7 @@ import { useAppForm } from "@/lib/hooks/use-app-form";
 import { HealthCheckTypeSchema } from "@/server/go/client.gen";
 import { THealthCheckType, TServiceShallow } from "@/server/trpc/api/services/types";
 import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
+import { useStore } from "@tanstack/react-form";
 import { CircleSlashIcon, GlobeIcon, RocketIcon, TerminalSquareIcon } from "lucide-react";
 
 type TProps = {
@@ -71,10 +72,29 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
       instanceCount: service.config.replicas,
       cpuMillicores: cpuLimits.unlimited,
       memoryMb: memoryLimits.unlimited,
-      healthCheckEndpoint: service.config.health_check?.path,
-      healthCheckCommand: service.config.health_check?.command,
+      healthCheckEndpoint: service.config.health_check?.path || "",
+      healthCheckCommand: service.config.health_check?.command || "",
       healthCheckType: healthCheckTypeFromService,
     },
+  });
+
+  const changeCount = useStore(form.store, (s) => {
+    let count = 0;
+    if (s.values.healthCheckType === "exec") {
+      if (s.fieldMeta.healthCheckCommand?.isDefaultValue === false) {
+        count++;
+      }
+    }
+    if (s.values.healthCheckType === "http") {
+      if (s.fieldMeta.healthCheckEndpoint?.isDefaultValue === false) {
+        count++;
+      }
+    }
+    if (s.fieldMeta.instanceCount?.isDefaultValue === false) count++;
+    if (s.fieldMeta.cpuMillicores?.isDefaultValue === false) count++;
+    if (s.fieldMeta.memoryMb?.isDefaultValue === false) count++;
+    if (s.fieldMeta.healthCheckType?.isDefaultValue === false) count++;
+    return count;
   });
 
   return (
@@ -88,6 +108,8 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
       title="Deploy"
       id="deploy"
       Icon={RocketIcon}
+      changeCount={changeCount}
+      onClickResetChanges={() => form.reset()}
     >
       <Block>
         <BlockItem className="w-full md:w-full">

@@ -84,8 +84,8 @@ export function SettingsSection({
         {children}
       </div>
       {changeCount !== undefined && changeCount > 0 && (
-        <div className="border-process/20 flex w-full border-t px-2 py-2.25 sm:px-3 sm:py-3.25">
-          <div className="w-1/2 p-1">
+        <div className="border-process/20 flex w-full border-t px-1.5 py-1.5 sm:px-3 sm:py-3">
+          <div className="w-1/2 p-1.5">
             <ResetTrigger changeCount={changeCount} onClickResetChanges={onClickResetChanges}>
               <Button className="w-full" type="button" aria-label="Reset changes" variant="outline">
                 <RotateCcwIcon className="size-5 scale-90" />
@@ -93,7 +93,7 @@ export function SettingsSection({
               </Button>
             </ResetTrigger>
           </div>
-          <div className="w-1/2 p-1">
+          <div className="w-1/2 p-1.5">
             <Button className="w-full" variant="process">
               <CheckIcon className="size-5" />
               <p className="min-w-0 shrink truncate">Apply ({changeCount})</p>

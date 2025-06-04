@@ -23,6 +23,7 @@ import { defaultDebounceMs } from "@/lib/constants";
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { api } from "@/server/trpc/setup/client";
+import { useStore } from "@tanstack/react-form";
 import { CodeIcon, GitBranchIcon, MilestoneIcon, PackageIcon, TagIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
@@ -115,6 +116,12 @@ function GitSection({ owner, repo, branch, installationId }: TGitSectionProps) {
     onSubmit: async () => {},
   });
 
+  const changeCount = useStore(form.store, (s) => {
+    let count = 0;
+    if (s.fieldMeta.branch?.isDefaultValue === false) count++;
+    return count;
+  });
+
   return (
     <SettingsSection
       onSubmit={(e) => {
@@ -126,6 +133,9 @@ function GitSection({ owner, repo, branch, installationId }: TGitSectionProps) {
       title="Source"
       id="source"
       Icon={CodeIcon}
+      changeCount={changeCount}
+      onClickResetChanges={() => form.reset()}
+      classNameContent="gap-5"
     >
       <Block>
         <BlockItem className="w-full md:w-full">
@@ -186,45 +196,6 @@ function GitSection({ owner, repo, branch, installationId }: TGitSectionProps) {
   );
 }
 
-function DatabaseSection({ type, version }: TDatabaseSectionProps) {
-  return (
-    <SettingsSection title="Source" id="source" Icon={CodeIcon}>
-      <Block>
-        {/* Database */}
-        <BlockItem className="w-full md:w-full">
-          <BlockItemHeader>
-            <BlockItemTitle>Database</BlockItemTitle>
-          </BlockItemHeader>
-          <BlockItemContent>
-            <BlockItemButtonLike
-              asElement="div"
-              text={databaseTypeToName(type)}
-              Icon={({ className }) => (
-                <BrandIcon brand={type} color="brand" className={className} />
-              )}
-            />
-          </BlockItemContent>
-        </BlockItem>
-      </Block>
-      <Block>
-        {/* Version */}
-        <BlockItem className="w-full md:w-full">
-          <BlockItemHeader>
-            <BlockItemTitle>Version</BlockItemTitle>
-          </BlockItemHeader>
-          <BlockItemContent>
-            <BlockItemButtonLike
-              asElement="div"
-              text={version}
-              Icon={({ className }) => <MilestoneIcon className={cn("scale-90", className)} />}
-            />
-          </BlockItemContent>
-        </BlockItem>
-      </Block>
-    </SettingsSection>
-  );
-}
-
 function DockerImageSection({ image, tag }: TDockerImageSectionProps) {
   const [commandInputValue, setCommandInputValue] = useState("");
   const imageIsNonDockerHub = isNonDockerHubImage(image);
@@ -259,6 +230,12 @@ function DockerImageSection({ image, tag }: TDockerImageSectionProps) {
     onSubmit: async () => {},
   });
 
+  const changeCount = useStore(form.store, (s) => {
+    let count = 0;
+    if (s.fieldMeta.tag?.isDefaultValue === false) count++;
+    return count;
+  });
+
   return (
     <SettingsSection
       asElement="form"
@@ -270,6 +247,9 @@ function DockerImageSection({ image, tag }: TDockerImageSectionProps) {
       title="Source"
       id="source"
       Icon={CodeIcon}
+      changeCount={changeCount}
+      onClickResetChanges={() => form.reset()}
+      classNameContent="gap-5"
     >
       <Block>
         <BlockItem className="w-full md:w-full">
@@ -291,58 +271,88 @@ function DockerImageSection({ image, tag }: TDockerImageSectionProps) {
           </BlockItemContent>
         </BlockItem>
       </Block>
-      <form
-        className="flex w-full flex-col"
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          form.handleSubmit(e);
-        }}
-      >
-        <Block>
-          <BlockItem className="w-full md:w-full">
-            <BlockItemHeader>
-              <BlockItemTitle>Tag</BlockItemTitle>
-            </BlockItemHeader>
-            <BlockItemContent>
-              <form.AppField
-                name="tag"
-                children={(field) => (
-                  <field.AsyncCommandDropdown
-                    dontCheckUntilSubmit
-                    field={field}
-                    value={field.state.value}
-                    onChange={(v) => field.handleChange(v)}
-                    items={tagItems}
-                    isPending={isPendingTags}
-                    error={errorTags?.message}
-                    commandInputPlaceholder="Search tags..."
-                    commandEmptyText="No tags found"
-                    CommandEmptyIcon={TagIcon}
-                    commandShouldntFilter={true}
-                    commandInputValue={commandInputValue}
-                    commandInputValueOnChange={(v) => setCommandInputValue(v)}
-                  >
-                    {({ isOpen }) => (
-                      <BlockItemButtonLike
-                        asElement="button"
-                        text={field.state.value}
-                        Icon={({ className }) => <TagIcon className={cn("scale-90", className)} />}
-                        variant="outline"
-                        open={isOpen}
-                        onBlur={field.handleBlur}
-                        disabled={imageIsNonDockerHub}
-                        hideChevron={imageIsNonDockerHub}
-                        fadeOnDisabled={false}
-                      />
-                    )}
-                  </field.AsyncCommandDropdown>
-                )}
-              />
-            </BlockItemContent>
-          </BlockItem>
-        </Block>
-      </form>
+      <Block>
+        <BlockItem className="w-full md:w-full">
+          <BlockItemHeader>
+            <BlockItemTitle>Tag</BlockItemTitle>
+          </BlockItemHeader>
+          <BlockItemContent>
+            <form.AppField
+              name="tag"
+              children={(field) => (
+                <field.AsyncCommandDropdown
+                  dontCheckUntilSubmit
+                  field={field}
+                  value={field.state.value}
+                  onChange={(v) => field.handleChange(v)}
+                  items={tagItems}
+                  isPending={isPendingTags}
+                  error={errorTags?.message}
+                  commandInputPlaceholder="Search tags..."
+                  commandEmptyText="No tags found"
+                  CommandEmptyIcon={TagIcon}
+                  commandShouldntFilter={true}
+                  commandInputValue={commandInputValue}
+                  commandInputValueOnChange={(v) => setCommandInputValue(v)}
+                >
+                  {({ isOpen }) => (
+                    <BlockItemButtonLike
+                      asElement="button"
+                      text={field.state.value}
+                      Icon={({ className }) => <TagIcon className={cn("scale-90", className)} />}
+                      variant="outline"
+                      open={isOpen}
+                      onBlur={field.handleBlur}
+                      disabled={imageIsNonDockerHub}
+                      hideChevron={imageIsNonDockerHub}
+                      fadeOnDisabled={false}
+                    />
+                  )}
+                </field.AsyncCommandDropdown>
+              )}
+            />
+          </BlockItemContent>
+        </BlockItem>
+      </Block>
+    </SettingsSection>
+  );
+}
+
+function DatabaseSection({ type, version }: TDatabaseSectionProps) {
+  return (
+    <SettingsSection title="Source" id="source" Icon={CodeIcon} classNameContent="gap-5">
+      <Block>
+        {/* Database */}
+        <BlockItem className="w-full md:w-full">
+          <BlockItemHeader>
+            <BlockItemTitle>Database</BlockItemTitle>
+          </BlockItemHeader>
+          <BlockItemContent>
+            <BlockItemButtonLike
+              asElement="div"
+              text={databaseTypeToName(type)}
+              Icon={({ className }) => (
+                <BrandIcon brand={type} color="brand" className={className} />
+              )}
+            />
+          </BlockItemContent>
+        </BlockItem>
+      </Block>
+      <Block>
+        {/* Version */}
+        <BlockItem className="w-full md:w-full">
+          <BlockItemHeader>
+            <BlockItemTitle>Version</BlockItemTitle>
+          </BlockItemHeader>
+          <BlockItemContent>
+            <BlockItemButtonLike
+              asElement="div"
+              text={version}
+              Icon={({ className }) => <MilestoneIcon className={cn("scale-90", className)} />}
+            />
+          </BlockItemContent>
+        </BlockItem>
+      </Block>
     </SettingsSection>
   );
 }
