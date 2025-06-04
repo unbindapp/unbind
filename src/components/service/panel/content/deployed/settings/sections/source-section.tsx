@@ -59,20 +59,6 @@ export default function SourceSection({ service }: TProps) {
     );
   }
 
-  if (service.type === "database") {
-    if (!service.database_type || !service.database_version) {
-      return <ErrorWithWrapper message="Database type or version is not found." />;
-    }
-
-    return (
-      <SettingsSectionWrapper>
-        <S3SourcesProvider teamId={teamId}>
-          <DatabaseSectionContent type={service.database_type} version={service.database_version} />
-        </S3SourcesProvider>
-      </SettingsSectionWrapper>
-    );
-  }
-
   if (service.type === "docker-image") {
     const arr = service.config.image?.split(":");
     const image = arr?.[0];
@@ -83,6 +69,20 @@ export default function SourceSection({ service }: TProps) {
     return (
       <SettingsSectionWrapper>
         <DockerImageSectionContent image={image} tag={tag} />
+      </SettingsSectionWrapper>
+    );
+  }
+
+  if (service.type === "database") {
+    if (!service.database_type || !service.database_version) {
+      return <ErrorWithWrapper message="Database type or version is not found." />;
+    }
+
+    return (
+      <SettingsSectionWrapper>
+        <S3SourcesProvider teamId={teamId}>
+          <DatabaseSectionContent type={service.database_type} version={service.database_version} />
+        </S3SourcesProvider>
       </SettingsSectionWrapper>
     );
   }

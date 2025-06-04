@@ -122,16 +122,18 @@ export function UndeployedContentGit({
         extraProps.builder = formValues.builder;
       }
       if (
-        formValues.installCommand !== (service.config.install_command || "") &&
-        formValues.builder === "railpack"
+        formValues.builder === "railpack" &&
+        formValues.railpackBuilderInstallCommand !==
+          (service.config.railpack_builder_install_command || "")
       ) {
-        extraProps.installCommand = formValues.installCommand;
+        extraProps.installCommand = formValues.railpackBuilderInstallCommand;
       }
       if (
-        formValues.buildCommand !== (service.config.build_command || "") &&
-        formValues.builder === "railpack"
+        formValues.builder === "railpack" &&
+        formValues.railpackBuilderBuildCommand !==
+          (service.config.railpack_builder_build_command || "")
       ) {
-        extraProps.buildCommand = formValues.buildCommand;
+        extraProps.buildCommand = formValues.railpackBuilderBuildCommand;
       }
       if (formValues.startCommand !== (service.config.run_command || "")) {
         extraProps.startCommand = formValues.startCommand;
@@ -192,8 +194,10 @@ export function UndeployedContentGit({
       port: detectedPort !== undefined ? detectedPort : "",
       variables: [{ name: "", value: "" }] as TVariableForCreate[],
       builder: service.config.builder as TGitServiceBuilder,
-      installCommand: service.config.install_command || "",
-      buildCommand: service.config.build_command || "",
+      railpackBuilderInstallCommand: service.config.railpack_builder_install_command || "",
+      railpackBuilderBuildCommand: service.config.railpack_builder_build_command || "",
+      dockerBuilderDockerfilePath: service.config.docker_builder_dockerfile_path || "",
+      dockerBuilderBuildContext: service.config.docker_builder_build_context || "",
       startCommand: service.config.run_command || "",
     },
     validators: {
@@ -388,7 +392,7 @@ export function UndeployedContentGit({
                   children={({ builder }) => {
                     return (
                       <>
-                        {/* Install Command */}
+                        {/* Railpack Install Command */}
                         {builder === "railpack" && (
                           <BlockItem>
                             <BlockItemHeader>
@@ -396,7 +400,7 @@ export function UndeployedContentGit({
                             </BlockItemHeader>
                             <BlockItemContent>
                               <form.AppField
-                                name="installCommand"
+                                name="railpackBuilderInstallCommand"
                                 children={(field) => (
                                   <field.TextField
                                     field={field}
@@ -416,7 +420,7 @@ export function UndeployedContentGit({
                             </BlockItemContent>
                           </BlockItem>
                         )}
-                        {/* Build Command */}
+                        {/* Railpack Build Command */}
                         {builder === "railpack" && (
                           <BlockItem className="md:mt-6">
                             <BlockItemHeader>
@@ -424,7 +428,7 @@ export function UndeployedContentGit({
                             </BlockItemHeader>
                             <BlockItemContent>
                               <form.AppField
-                                name="buildCommand"
+                                name="railpackBuilderBuildCommand"
                                 children={(field) => (
                                   <field.TextField
                                     field={field}
@@ -444,11 +448,64 @@ export function UndeployedContentGit({
                             </BlockItemContent>
                           </BlockItem>
                         )}
+                        {/* Docker Builder Dockerfile Path */}
+                        {builder === "docker" && (
+                          <BlockItem>
+                            <BlockItemHeader>
+                              <BlockItemTitle>Dockerfile Path</BlockItemTitle>
+                            </BlockItemHeader>
+                            <BlockItemContent>
+                              <form.AppField
+                                name="dockerBuilderDockerfilePath"
+                                children={(field) => (
+                                  <field.TextField
+                                    field={field}
+                                    value={field.state.value}
+                                    onBlur={field.handleBlur}
+                                    onChange={(e) => {
+                                      field.handleChange(e.target.value);
+                                    }}
+                                    placeholder="./Dockerfile"
+                                    autoCapitalize="off"
+                                    autoCorrect="off"
+                                    autoComplete="off"
+                                    spellCheck="false"
+                                  />
+                                )}
+                              />
+                            </BlockItemContent>
+                          </BlockItem>
+                        )}
+                        {/* Docker Builder Docker Context */}
+                        {builder === "docker" && (
+                          <BlockItem className="md:mt-6">
+                            <BlockItemHeader>
+                              <BlockItemTitle>Build Context</BlockItemTitle>
+                            </BlockItemHeader>
+                            <BlockItemContent>
+                              <form.AppField
+                                name="dockerBuilderBuildContext"
+                                children={(field) => (
+                                  <field.TextField
+                                    field={field}
+                                    value={field.state.value}
+                                    onBlur={field.handleBlur}
+                                    onChange={(e) => {
+                                      field.handleChange(e.target.value);
+                                    }}
+                                    placeholder="./"
+                                    autoCapitalize="off"
+                                    autoCorrect="off"
+                                    autoComplete="off"
+                                    spellCheck="false"
+                                  />
+                                )}
+                              />
+                            </BlockItemContent>
+                          </BlockItem>
+                        )}
                         {/* Start Command */}
-                        <BlockItem
-                          data-builder={builder}
-                          className="md:mt-6 data-[builder=docker]:md:mt-0"
-                        >
+                        <BlockItem data-builder={builder} className="md:mt-6">
                           <BlockItemHeader>
                             <BlockItemTitle>Start Command</BlockItemTitle>
                           </BlockItemHeader>
@@ -499,7 +556,9 @@ type TFormValues = {
   port: string;
   builder: z.infer<typeof GitServiceBuilderEnum>;
   variables: TVariableForCreate[];
-  installCommand: string;
-  buildCommand: string;
+  railpackBuilderInstallCommand: string;
+  railpackBuilderBuildCommand: string;
+  dockerBuilderDockerfilePath: string;
+  dockerBuilderBuildContext: string;
   startCommand: string;
 };

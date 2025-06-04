@@ -36,20 +36,20 @@ export default function NetworkingSection({ service }: TProps) {
     return <AllServiceTypesSection service={service} />;
   }
 
-  if (service.type === "database") {
-    if (!service.database_type || !service.database_version) {
-      return <ErrorWithWrapper message="Database type or version is not found." />;
-    }
-
-    return <AllServiceTypesSection service={service} />;
-  }
-
   if (service.type === "docker-image") {
     const arr = service.config.image?.split(":");
     const image = arr?.[0];
     const tag = arr && arr.length > 1 ? arr?.[1] : "latest";
 
     if (!image || !tag) return <ErrorWithWrapper message="Image or tag is not found." />;
+
+    return <AllServiceTypesSection service={service} />;
+  }
+
+  if (service.type === "database") {
+    if (!service.database_type || !service.database_version) {
+      return <ErrorWithWrapper message="Database type or version is not found." />;
+    }
 
     return <AllServiceTypesSection service={service} />;
   }

@@ -9,14 +9,12 @@ import {
 } from "@/components/service/panel/content/undeployed/block";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import SettingsSectionWrapper from "@/components/settings/settings-section-wrapper";
-import { Toggleable, Toggled, Untoggled } from "@/components/toggleable";
 import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { HealthCheckTypeSchema } from "@/server/go/client.gen";
 import { THealthCheckType, TServiceShallow } from "@/server/trpc/api/services/types";
 import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
-import { CircleSlashIcon, GlobeIcon, PlusIcon, TerminalSquareIcon } from "lucide-react";
-import { useRef } from "react";
+import { CircleSlashIcon, GlobeIcon, TerminalSquareIcon } from "lucide-react";
 
 type TProps = {
   service: TServiceShallow;
@@ -71,7 +69,6 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
   const form = useAppForm({
     defaultValues: {
       instanceCount: service.config.replicas,
-      startCommand: service.config.run_command,
       cpuMillicores: cpuLimits.unlimited,
       memoryMb: memoryLimits.unlimited,
       healthCheckEndpoint: service.config.health_check?.path,
@@ -79,8 +76,6 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
       healthCheckType: healthCheckTypeFromService,
     },
   });
-
-  const startCommandInputRef = useRef<HTMLInputElement>(null);
 
   return (
     <SettingsSectionWrapper asElement="form" className="flex w-full flex-col">
@@ -183,58 +178,6 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
             </div>
           </BlockItemContent>
         </BlockItem>
-      </Block>
-      <Block>
-        <form.AppField
-          name="startCommand"
-          children={(field) => (
-            <BlockItem className="w-full md:w-full">
-              <BlockItemHeader type="column">
-                <BlockItemTitle>Start Command</BlockItemTitle>
-                <BlockItemDescription>
-                  The command to run to start the new deployment.
-                </BlockItemDescription>
-              </BlockItemHeader>
-              <BlockItemContent>
-                <Toggleable toggledInitial={service.config.run_command !== undefined}>
-                  <Untoggled>
-                    {({ toggle }) => (
-                      <BlockItemButtonLike
-                        asElement="button"
-                        Icon={PlusIcon}
-                        text="Custom start command"
-                        onClick={() => {
-                          toggle(true);
-                          setTimeout(() => {
-                            startCommandInputRef.current?.focus();
-                          });
-                        }}
-                      />
-                    )}
-                  </Untoggled>
-                  <Toggled>
-                    {() => (
-                      <field.TextField
-                        ref={startCommandInputRef}
-                        field={field}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => {
-                          field.handleChange(e.target.value);
-                        }}
-                        placeholder="npm run start"
-                        autoCapitalize="off"
-                        autoCorrect="off"
-                        autoComplete="off"
-                        spellCheck="false"
-                      />
-                    )}
-                  </Toggled>
-                </Toggleable>
-              </BlockItemContent>
-            </BlockItem>
-          )}
-        />
       </Block>
       <Block>
         <BlockItem className="w-full md:w-full">

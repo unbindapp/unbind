@@ -418,24 +418,24 @@ export const CreateServiceInputSchema = z
     auto_deploy: z.boolean().optional(),
     backup_retention: z.number().optional(), // Number of base backups to retain, e.g. 3
     backup_schedule: z.string().optional(), // Cron expression for the backup schedule, e.g. '0 0 * * *'
-    build_command: z.string().optional(),
     builder: ServiceBuilderSchema, // Builder of the service - docker, nixpacks, railpack
     database_config: DatabaseConfigSchema.optional(),
     database_type: z.string().optional(),
     description: z.string().optional(),
-    docker_builder_context: z.string().optional(), // Optional path to Dockerfile context, if using docker builder
-    docker_builder_path: z.string().optional(), // Optional path to Dockerfile, if using docker builder
+    docker_builder_build_context: z.string().optional(), // Optional path to Dockerfile context, if using docker builder
+    docker_builder_dockerfile_path: z.string().optional(), // Optional path to Dockerfile, if using docker builder
     environment_id: z.string(),
     github_installation_id: z.number().optional(),
     health_check: HealthCheckSchema.optional(), // Health check configuration for the service
     hosts: z.array(HostSpecSchema).nullable().optional(),
     image: z.string().optional(),
     init_containers: z.array(InitContainerSchema).nullable().optional(), // Init containers to run before the main container
-    install_command: z.string().optional(),
     is_public: z.boolean().optional(),
     name: z.string(),
     ports: z.array(PortSpecSchema).nullable().optional(),
     project_id: z.string(),
+    railpack_builder_build_command: z.string().optional(),
+    railpack_builder_install_command: z.string().optional(),
     replicas: z.number().optional(),
     repository_name: z.string().optional(),
     repository_owner: z.string().optional(),
@@ -462,10 +462,9 @@ export const ServiceConfigResponseSchema = z
     auto_deploy: z.boolean(),
     backup_retention_count: z.number(),
     backup_schedule: z.string(),
-    build_command: z.string().optional(),
     builder: ServiceBuilderSchema,
-    docker_builder_context: z.string().optional(),
-    docker_builder_path: z.string().optional(),
+    docker_builder_build_context: z.string().optional(),
+    docker_builder_dockerfile_path: z.string().optional(),
     git_branch: z.string().optional(),
     git_tag: z.string().optional(),
     health_check: HealthCheckSchema.optional(),
@@ -473,10 +472,11 @@ export const ServiceConfigResponseSchema = z
     icon: z.string(),
     image: z.string().optional(),
     init_containers: z.array(InitContainerSchema),
-    install_command: z.string().optional(),
     is_public: z.boolean(),
     ports: z.array(PortSpecSchema).optional(),
     protected_variables: z.array(z.string()),
+    railpack_builder_build_command: z.string().optional(),
+    railpack_builder_install_command: z.string().optional(),
     replicas: z.number(),
     resources: ResourcesSchema.optional(),
     run_command: z.string().optional(),
@@ -1899,25 +1899,25 @@ export const UpdateServiceInputSchema = z
     auto_deploy: z.boolean().optional(),
     backup_retention: z.number().optional(), // Number of base backups to retain, e.g. 3
     backup_schedule: z.string().optional(), // Cron expression for the backup schedule, e.g. '0 0 * * *'
-    build_command: z.string().optional(),
     builder: ServiceBuilderSchema.optional(),
     database_config: DatabaseConfigSchema.optional(),
     description: z.string().nullable().optional(),
-    docker_builder_context: z.string().optional(), // Optional path to Dockerfile context, if using docker builder - set empty string to reset to default
-    docker_builder_path: z.string().optional(), // Optional path to Dockerfile, if using docker builder - set empty string to reset to default
+    docker_builder_build_context: z.string().optional(), // Optional path to Dockerfile context, if using docker builder - set empty string to reset to default
+    docker_builder_dockerfile_path: z.string().optional(), // Optional path to Dockerfile, if using docker builder - set empty string to reset to default
     environment_id: z.string(),
     git_branch: z.string().optional(),
     git_tag: z.string().optional(), // Tag to build from, supports glob patterns
     health_check: HealthCheckSchema.optional(),
     image: z.string().optional(),
     init_containers: z.array(InitContainerSchema).nullable().optional(), // List of init containers
-    install_command: z.string().optional(),
     is_public: z.boolean().optional(),
     name: z.string().nullable().optional(),
     overwrite_hosts: z.array(HostSpecSchema).nullable().optional(),
     ports: z.array(PortSpecSchema).nullable().optional(),
     project_id: z.string(),
     protected_variables: z.array(z.string()).optional(), // List of protected variables
+    railpack_builder_build_command: z.string().optional(),
+    railpack_builder_install_command: z.string().optional(),
     remove_hosts: z.array(HostSpecSchema).nullable().optional(), // Hosts to remove
     replicas: z.number().optional(),
     resources: ResourcesSchema.optional(), // Resource limits and requests for the service containers

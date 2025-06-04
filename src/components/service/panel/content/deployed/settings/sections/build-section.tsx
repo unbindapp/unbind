@@ -57,10 +57,11 @@ function GitSection({ service }: TGitSectionContentProps) {
   const form = useAppForm({
     defaultValues: {
       builder: service.config.builder,
-      installCommand: service.config.install_command,
-      buildCommand: service.config.build_command,
-      dockerBuilderPath: service.config.docker_builder_path,
-      dockerBuilderContext: service.config.docker_builder_context,
+      railpackBuilderInstallCommand: service.config.railpack_builder_install_command,
+      railpackBuilderBuildCommand: service.config.railpack_builder_build_command,
+      dockerBuilderDockerfilePath: service.config.docker_builder_dockerfile_path,
+      dockerBuilderBuildContext: service.config.docker_builder_build_context,
+      startCommand: service.config.run_command,
     },
   });
 
@@ -68,13 +69,17 @@ function GitSection({ service }: TGitSectionContentProps) {
   const buildCommandInputRef = useRef<HTMLInputElement>(null);
   const dockerBuilderPathInputRef = useRef<HTMLInputElement>(null);
   const dockerBuilderContextInputRef = useRef<HTMLInputElement>(null);
+  const startCommandInputRef = useRef<HTMLInputElement>(null);
 
   return (
     <SettingsSectionWrapper asElement="form" className="flex w-full flex-col">
       <Block>
         <BlockItem className="w-full md:w-full">
-          <BlockItemHeader>
+          <BlockItemHeader type="column">
             <BlockItemTitle>Builder</BlockItemTitle>
+            <BlockItemDescription>
+              The builder for building the service to be deployed.
+            </BlockItemDescription>
           </BlockItemHeader>
           <BlockItemContent>
             <form.AppField
@@ -118,15 +123,22 @@ function GitSection({ service }: TGitSectionContentProps) {
         children={({ builder }) => {
           return (
             <>
-              {/* Install Command */}
+              {/* Railpack builder build command */}
               {builder === "railpack" && (
                 <Block>
                   <BlockItem className="w-full md:w-full">
-                    <BlockItemHeader>
+                    <BlockItemHeader type="column">
                       <BlockItemTitle>Install Command</BlockItemTitle>
+                      <BlockItemDescription>
+                        The command for installing the dependencies for the service.
+                      </BlockItemDescription>
                     </BlockItemHeader>
                     <BlockItemContent>
-                      <Toggleable toggledInitial={service.config.install_command !== undefined}>
+                      <Toggleable
+                        toggledInitial={
+                          service.config.railpack_builder_install_command !== undefined
+                        }
+                      >
                         <Untoggled>
                           {({ toggle }) => (
                             <BlockItemButtonLike
@@ -145,7 +157,7 @@ function GitSection({ service }: TGitSectionContentProps) {
                         <Toggled>
                           {() => (
                             <form.AppField
-                              name="installCommand"
+                              name="railpackBuilderInstallCommand"
                               children={(field) => (
                                 <field.TextField
                                   ref={installCommandInputRef}
@@ -170,15 +182,20 @@ function GitSection({ service }: TGitSectionContentProps) {
                   </BlockItem>
                 </Block>
               )}
-              {/* Build Command */}
+              {/* Railpack builder build command */}
               {builder === "railpack" && (
                 <Block>
                   <BlockItem className="w-full md:w-full">
-                    <BlockItemHeader>
+                    <BlockItemHeader type="column">
                       <BlockItemTitle>Build Command</BlockItemTitle>
+                      <BlockItemDescription>
+                        The command for building the service.
+                      </BlockItemDescription>
                     </BlockItemHeader>
                     <BlockItemContent>
-                      <Toggleable toggledInitial={service.config.build_command !== undefined}>
+                      <Toggleable
+                        toggledInitial={service.config.railpack_builder_build_command !== undefined}
+                      >
                         <Untoggled>
                           {({ toggle }) => (
                             <BlockItemButtonLike
@@ -197,7 +214,7 @@ function GitSection({ service }: TGitSectionContentProps) {
                         <Toggled>
                           {() => (
                             <form.AppField
-                              name="buildCommand"
+                              name="railpackBuilderBuildCommand"
                               children={(field) => (
                                 <field.TextField
                                   ref={buildCommandInputRef}
@@ -222,11 +239,11 @@ function GitSection({ service }: TGitSectionContentProps) {
                   </BlockItem>
                 </Block>
               )}
-              {/* Dockerfile Path */}
+              {/* Docker builder Dockerfile path */}
               {builder === "docker" && (
                 <Block>
                   <form.AppField
-                    name="dockerBuilderPath"
+                    name="dockerBuilderDockerfilePath"
                     children={(field) => (
                       <BlockItem className="w-full md:w-full">
                         <BlockItemHeader type="column">
@@ -237,7 +254,9 @@ function GitSection({ service }: TGitSectionContentProps) {
                         </BlockItemHeader>
                         <BlockItemContent>
                           <Toggleable
-                            toggledInitial={service.config.docker_builder_path !== undefined}
+                            toggledInitial={
+                              service.config.docker_builder_dockerfile_path !== undefined
+                            }
                           >
                             <Untoggled>
                               {({ toggle }) => (
@@ -279,22 +298,24 @@ function GitSection({ service }: TGitSectionContentProps) {
                   />
                 </Block>
               )}
-              {/* Dockerfile context */}
+              {/* Docker builder build context */}
               {builder === "docker" && (
                 <Block>
                   <form.AppField
-                    name="dockerBuilderContext"
+                    name="dockerBuilderBuildContext"
                     children={(field) => (
                       <BlockItem className="w-full md:w-full">
                         <BlockItemHeader type="column">
-                          <BlockItemTitle>Docker Build Context</BlockItemTitle>
+                          <BlockItemTitle>Build Context</BlockItemTitle>
                           <BlockItemDescription>
                             The directory that serves as the build context for Docker.
                           </BlockItemDescription>
                         </BlockItemHeader>
                         <BlockItemContent>
                           <Toggleable
-                            toggledInitial={service.config.docker_builder_context !== undefined}
+                            toggledInitial={
+                              service.config.docker_builder_build_context !== undefined
+                            }
                           >
                             <Untoggled>
                               {({ toggle }) => (
@@ -336,6 +357,58 @@ function GitSection({ service }: TGitSectionContentProps) {
                   />
                 </Block>
               )}
+              <Block>
+                <form.AppField
+                  name="startCommand"
+                  children={(field) => (
+                    <BlockItem className="w-full md:w-full">
+                      <BlockItemHeader type="column">
+                        <BlockItemTitle>Start Command</BlockItemTitle>
+                        <BlockItemDescription>
+                          The command to run to start the new deployment.
+                        </BlockItemDescription>
+                      </BlockItemHeader>
+                      <BlockItemContent>
+                        <Toggleable toggledInitial={service.config.run_command !== undefined}>
+                          <Untoggled>
+                            {({ toggle }) => (
+                              <BlockItemButtonLike
+                                asElement="button"
+                                Icon={PlusIcon}
+                                text="Custom start command"
+                                onClick={() => {
+                                  toggle(true);
+                                  setTimeout(() => {
+                                    startCommandInputRef.current?.focus();
+                                  });
+                                }}
+                              />
+                            )}
+                          </Untoggled>
+                          <Toggled>
+                            {() => (
+                              <field.TextField
+                                ref={startCommandInputRef}
+                                field={field}
+                                value={field.state.value}
+                                onBlur={field.handleBlur}
+                                onChange={(e) => {
+                                  field.handleChange(e.target.value);
+                                }}
+                                placeholder="npm run start"
+                                autoCapitalize="off"
+                                autoCorrect="off"
+                                autoComplete="off"
+                                spellCheck="false"
+                              />
+                            )}
+                          </Toggled>
+                        </Toggleable>
+                      </BlockItemContent>
+                    </BlockItem>
+                  )}
+                />
+              </Block>
             </>
           );
         }}
