@@ -1,6 +1,6 @@
 import { TServiceShallow } from "@/server/trpc/api/services/types";
 
-export type TGitSectionContentProps = {
+export type TGitSectionProps = {
   owner: string;
   repo: string;
   branch: string;
@@ -8,9 +8,9 @@ export type TGitSectionContentProps = {
   service: TServiceShallow;
 };
 
-export type TDatabaseSectionContentProps = { type: string; version: string };
+export type TDatabaseSectionProps = { type: string; version: string };
 
-export type TDockerImageSectionContentProps = {
+export type TDockerImageSectionProps = {
   image: string;
   tag: string;
 };

@@ -1,13 +1,6 @@
 import { databaseTypeToName } from "@/components/command-panel/context-command-panel/items/database";
 import { isNonDockerHubImage } from "@/components/command-panel/context-command-panel/items/docker-image";
 import BrandIcon from "@/components/icons/brand";
-import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
-import SettingsSectionWrapper from "@/components/settings/settings-section-wrapper";
-import {
-  TDatabaseSectionContentProps,
-  TDockerImageSectionContentProps,
-  TGitSectionContentProps,
-} from "@/components/settings/types";
 import {
   Block,
   BlockItem,
@@ -17,13 +10,20 @@ import {
   BlockItemTitle,
 } from "@/components/service/panel/content/undeployed/block";
 import { useService } from "@/components/service/service-provider";
+import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
+import { SettingsSection } from "@/components/settings/settings-section";
+import {
+  TDatabaseSectionProps,
+  TDockerImageSectionProps,
+  TGitSectionProps,
+} from "@/components/settings/types";
 import S3SourcesProvider from "@/components/storage/s3-sources-provider";
 import { cn } from "@/components/ui/utils";
 import { defaultDebounceMs } from "@/lib/constants";
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { api } from "@/server/trpc/setup/client";
-import { GitBranchIcon, MilestoneIcon, PackageIcon, TagIcon } from "lucide-react";
+import { CodeIcon, GitBranchIcon, MilestoneIcon, PackageIcon, TagIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
 
@@ -47,15 +47,13 @@ export default function SourceSection({ service }: TProps) {
     }
 
     return (
-      <SettingsSectionWrapper>
-        <GitSectionContent
-          owner={service.git_repository_owner}
-          repo={service.git_repository}
-          branch={service.config.git_branch}
-          installationId={service.github_installation_id}
-          service={service}
-        />
-      </SettingsSectionWrapper>
+      <GitSection
+        owner={service.git_repository_owner}
+        repo={service.git_repository}
+        branch={service.config.git_branch}
+        installationId={service.github_installation_id}
+        service={service}
+      />
     );
   }
 
@@ -66,11 +64,7 @@ export default function SourceSection({ service }: TProps) {
 
     if (!image || !tag) return <ErrorWithWrapper message="Image or tag is not found." />;
 
-    return (
-      <SettingsSectionWrapper>
-        <DockerImageSectionContent image={image} tag={tag} />
-      </SettingsSectionWrapper>
-    );
+    return <DockerImageSection image={image} tag={tag} />;
   }
 
   if (service.type === "database") {
@@ -79,18 +73,16 @@ export default function SourceSection({ service }: TProps) {
     }
 
     return (
-      <SettingsSectionWrapper>
-        <S3SourcesProvider teamId={teamId}>
-          <DatabaseSectionContent type={service.database_type} version={service.database_version} />
-        </S3SourcesProvider>
-      </SettingsSectionWrapper>
+      <S3SourcesProvider teamId={teamId}>
+        <DatabaseSection type={service.database_type} version={service.database_version} />
+      </S3SourcesProvider>
     );
   }
 
   return <ErrorWithWrapper message="Unsupported service type" />;
 }
 
-function GitSectionContent({ owner, repo, branch, installationId }: TGitSectionContentProps) {
+function GitSection({ owner, repo, branch, installationId }: TGitSectionProps) {
   const {
     data: dataRepository,
     isPending: isPendingRepository,
@@ -124,7 +116,17 @@ function GitSectionContent({ owner, repo, branch, installationId }: TGitSectionC
   });
 
   return (
-    <>
+    <SettingsSection
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        form.handleSubmit();
+      }}
+      asElement="form"
+      title="Source"
+      id="source"
+      Icon={CodeIcon}
+    >
       <Block>
         <BlockItem className="w-full md:w-full">
           <BlockItemHeader>
@@ -141,61 +143,52 @@ function GitSectionContent({ owner, repo, branch, installationId }: TGitSectionC
           </BlockItemContent>
         </BlockItem>
       </Block>
-      <form
-        className="flex w-full flex-col"
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          form.handleSubmit(e);
-        }}
-      >
-        <Block>
-          <BlockItem className="w-full md:w-full">
-            <BlockItemHeader>
-              <BlockItemTitle>Branch</BlockItemTitle>
-            </BlockItemHeader>
-            <BlockItemContent>
-              <form.AppField
-                name="branch"
-                children={(field) => (
-                  <field.AsyncCommandDropdown
-                    dontCheckUntilSubmit
-                    field={field}
-                    value={field.state.value}
-                    onChange={(v) => field.handleChange(v)}
-                    items={branchItems}
-                    isPending={isPendingRepository}
-                    error={errorRepository?.message}
-                    commandInputPlaceholder="Search branches..."
-                    commandEmptyText="No branches found"
-                    CommandEmptyIcon={GitBranchIcon}
-                  >
-                    {({ isOpen }) => (
-                      <BlockItemButtonLike
-                        asElement="button"
-                        text={field.state.value}
-                        Icon={({ className }) => (
-                          <GitBranchIcon className={cn("scale-90", className)} />
-                        )}
-                        variant="outline"
-                        open={isOpen}
-                        onBlur={field.handleBlur}
-                      />
-                    )}
-                  </field.AsyncCommandDropdown>
-                )}
-              />
-            </BlockItemContent>
-          </BlockItem>
-        </Block>
-      </form>
-    </>
+      <Block>
+        <BlockItem className="w-full md:w-full">
+          <BlockItemHeader>
+            <BlockItemTitle>Branch</BlockItemTitle>
+          </BlockItemHeader>
+          <BlockItemContent>
+            <form.AppField
+              name="branch"
+              children={(field) => (
+                <field.AsyncCommandDropdown
+                  dontCheckUntilSubmit
+                  field={field}
+                  value={field.state.value}
+                  onChange={(v) => field.handleChange(v)}
+                  items={branchItems}
+                  isPending={isPendingRepository}
+                  error={errorRepository?.message}
+                  commandInputPlaceholder="Search branches..."
+                  commandEmptyText="No branches found"
+                  CommandEmptyIcon={GitBranchIcon}
+                >
+                  {({ isOpen }) => (
+                    <BlockItemButtonLike
+                      asElement="button"
+                      text={field.state.value}
+                      Icon={({ className }) => (
+                        <GitBranchIcon className={cn("scale-90", className)} />
+                      )}
+                      variant="outline"
+                      open={isOpen}
+                      onBlur={field.handleBlur}
+                    />
+                  )}
+                </field.AsyncCommandDropdown>
+              )}
+            />
+          </BlockItemContent>
+        </BlockItem>
+      </Block>
+    </SettingsSection>
   );
 }
 
-function DatabaseSectionContent({ type, version }: TDatabaseSectionContentProps) {
+function DatabaseSection({ type, version }: TDatabaseSectionProps) {
   return (
-    <>
+    <SettingsSection title="Source" id="source" Icon={CodeIcon}>
       <Block>
         {/* Database */}
         <BlockItem className="w-full md:w-full">
@@ -228,11 +221,11 @@ function DatabaseSectionContent({ type, version }: TDatabaseSectionContentProps)
           </BlockItemContent>
         </BlockItem>
       </Block>
-    </>
+    </SettingsSection>
   );
 }
 
-function DockerImageSectionContent({ image, tag }: TDockerImageSectionContentProps) {
+function DockerImageSection({ image, tag }: TDockerImageSectionProps) {
   const [commandInputValue, setCommandInputValue] = useState("");
   const imageIsNonDockerHub = isNonDockerHubImage(image);
   const [search] = useDebounce(commandInputValue, defaultDebounceMs);
@@ -267,7 +260,17 @@ function DockerImageSectionContent({ image, tag }: TDockerImageSectionContentPro
   });
 
   return (
-    <>
+    <SettingsSection
+      asElement="form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        form.handleSubmit();
+      }}
+      title="Source"
+      id="source"
+      Icon={CodeIcon}
+    >
       <Block>
         <BlockItem className="w-full md:w-full">
           <BlockItemHeader>
@@ -340,6 +343,6 @@ function DockerImageSectionContent({ image, tag }: TDockerImageSectionContentPro
           </BlockItem>
         </Block>
       </form>
-    </>
+    </SettingsSection>
   );
 }

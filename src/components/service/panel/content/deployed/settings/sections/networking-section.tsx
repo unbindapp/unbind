@@ -10,11 +10,10 @@ import {
 } from "@/components/service/panel/content/undeployed/block";
 import { useServiceEndpoints } from "@/components/service/service-endpoints-provider";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
-import SettingsSectionWrapper from "@/components/settings/settings-section-wrapper";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { cn } from "@/components/ui/utils";
-import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
-import { GlobeIcon, GlobeLockIcon } from "lucide-react";
+import { GlobeIcon, GlobeLockIcon, NetworkIcon } from "lucide-react";
 
 type TProps = {
   service: TServiceShallow;
@@ -58,23 +57,12 @@ export default function NetworkingSection({ service }: TProps) {
 }
 
 function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
-  const form = useAppForm({
-    defaultValues: {},
-  });
-
   const {
     query: { data: endpointsData, isPending: isPendingEndpoints, error: errorEndpoints },
   } = useServiceEndpoints();
 
   return (
-    <SettingsSectionWrapper
-      asElement="form"
-      onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        form.handleSubmit(e);
-      }}
-    >
+    <SettingsSection title="Networking" id="networking" Icon={NetworkIcon}>
       {(service.type === "github" || service.type === "docker-image") && (
         <Block>
           <BlockItem className="w-full md:w-full">
@@ -168,6 +156,6 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
           </BlockItemContent>
         </BlockItem>
       </Block>
-    </SettingsSectionWrapper>
+    </SettingsSection>
   );
 }

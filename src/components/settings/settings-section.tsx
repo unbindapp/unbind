@@ -1,51 +1,83 @@
 import { cn } from "@/components/ui/utils";
-import { FC, ReactNode } from "react";
+import { FC, HTMLAttributes, ReactNode } from "react";
 
 export function SettingsSection({
-  id,
   title,
   Icon,
   children,
-  className,
   classNameTitleDiv,
   classNameHeader,
+  classNameContent,
+  ...rest
 }: {
-  id: string;
   title: string;
   Icon: FC<{ className?: string }>;
   children: ReactNode;
-  className?: string;
   classNameTitleDiv?: string;
   classNameHeader?: string;
-}) {
+  classNameContent?: string;
+} & TWrapperProps) {
   return (
-    <div
-      id={id}
-      className={cn(
-        "relative z-0 flex w-full flex-col overflow-hidden rounded-xl border md:max-w-xl",
-        className,
-      )}
-    >
+    <Wrapper {...rest}>
       <div
         className={cn(
           "text-muted-foreground bg-background-hover flex w-full items-center gap-2.5 border-b px-3.5 py-2.5 sm:px-4 sm:py-3",
           classNameHeader,
         )}
       >
-        <Icon className="size-5 shrink-0" />
-        <h3 className={cn("min-w-0 shrink text-lg leading-tight font-medium", classNameTitleDiv)}>
-          {title}
-        </h3>
+        <div className="flex min-w-0 shrink items-center gap-2.5">
+          <Icon className="size-5 shrink-0" />
+          <h3 className={cn("min-w-0 shrink text-lg leading-tight font-medium", classNameTitleDiv)}>
+            {title}
+          </h3>
+        </div>
       </div>
-      <div className="flex w-full flex-col px-3 pt-3 pb-3.25 sm:px-4.5 sm:pt-3.75 sm:pb-4.75">
+      <div
+        className={cn(
+          "flex w-full flex-col gap-6 px-3 pt-3 pb-3.25 sm:px-4.5 sm:pt-3.75 sm:pb-4.75",
+          classNameContent,
+        )}
+      >
         {children}
       </div>
-    </div>
+    </Wrapper>
   );
 }
 
-export function SettingsSectionDivider({ className }: { className?: string }) {
+type TWrapperProps =
+  | ({
+      asElement?: "div";
+    } & HTMLAttributes<HTMLDivElement>)
+  | ({
+      asElement: "form";
+    } & HTMLAttributes<HTMLFormElement>);
+
+function Wrapper(props: TWrapperProps) {
+  if (props.asElement === "form") {
+    const { asElement: Element = "form", className, children, ...rest } = props;
+    return (
+      <Element
+        className={cn(
+          "relative z-0 flex w-full flex-col overflow-hidden rounded-xl border md:max-w-xl",
+          className,
+        )}
+        {...rest}
+      >
+        {children}
+      </Element>
+    );
+  }
+
+  const { asElement: Element = "div", className, children, ...rest } = props;
   return (
-    <div className={cn("bg-border -mx-3 mt-5 h-px w-[calc(100%+1.5rem)] sm:hidden", className)} />
+    <Element
+      className={cn(
+        "relative z-0 flex w-full flex-col overflow-hidden rounded-xl border md:max-w-xl",
+        className,
+      )}
+      {...rest}
+    >
+      {children}
+    </Element>
   );
 }

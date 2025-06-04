@@ -1,8 +1,5 @@
 import { builderEnumToName } from "@/components/command-panel/context-command-panel/items/git";
 import BrandIcon from "@/components/icons/brand";
-import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
-import SettingsSectionWrapper from "@/components/settings/settings-section-wrapper";
-import { TGitSectionContentProps } from "@/components/settings/types";
 import {
   Block,
   BlockItem,
@@ -12,14 +9,17 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/service/panel/content/undeployed/block";
+import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
+import { SettingsSection } from "@/components/settings/settings-section";
+import { TGitSectionProps } from "@/components/settings/types";
+import { Toggleable, Toggled, Untoggled } from "@/components/toggleable";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import {
   GitServiceBuilderEnum,
   TGitServiceBuilder,
   TServiceShallow,
 } from "@/server/trpc/api/services/types";
-import { Toggleable, Toggled, Untoggled } from "@/components/toggleable";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, WrenchIcon } from "lucide-react";
 import { useRef } from "react";
 
 type TProps = {
@@ -53,7 +53,7 @@ export default function BuildSection({ service }: TProps) {
   return <ErrorWithWrapper message="Unsupported service type" />;
 }
 
-function GitSection({ service }: TGitSectionContentProps) {
+function GitSection({ service }: TGitSectionProps) {
   const form = useAppForm({
     defaultValues: {
       builder: service.config.builder,
@@ -72,7 +72,17 @@ function GitSection({ service }: TGitSectionContentProps) {
   const startCommandInputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <SettingsSectionWrapper asElement="form" className="flex w-full flex-col">
+    <SettingsSection
+      asElement="form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        form.handleSubmit();
+      }}
+      title="Build"
+      id="build"
+      Icon={WrenchIcon}
+    >
       <Block>
         <BlockItem className="w-full md:w-full">
           <BlockItemHeader type="column">
@@ -413,6 +423,6 @@ function GitSection({ service }: TGitSectionContentProps) {
           );
         }}
       />
-    </SettingsSectionWrapper>
+    </SettingsSection>
   );
 }

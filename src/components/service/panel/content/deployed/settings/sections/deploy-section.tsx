@@ -8,13 +8,13 @@ import {
   BlockItemTitle,
 } from "@/components/service/panel/content/undeployed/block";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
-import SettingsSectionWrapper from "@/components/settings/settings-section-wrapper";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { HealthCheckTypeSchema } from "@/server/go/client.gen";
 import { THealthCheckType, TServiceShallow } from "@/server/trpc/api/services/types";
 import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
-import { CircleSlashIcon, GlobeIcon, TerminalSquareIcon } from "lucide-react";
+import { CircleSlashIcon, GlobeIcon, RocketIcon, TerminalSquareIcon } from "lucide-react";
 
 type TProps = {
   service: TServiceShallow;
@@ -78,7 +78,17 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
   });
 
   return (
-    <SettingsSectionWrapper asElement="form" className="flex w-full flex-col">
+    <SettingsSection
+      asElement="form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        form.handleSubmit();
+      }}
+      title="Deploy"
+      id="deploy"
+      Icon={RocketIcon}
+    >
       <Block>
         <BlockItem className="w-full md:w-full">
           <BlockItemHeader type="column">
@@ -281,7 +291,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
           </BlockItemContent>
         </BlockItem>
       </Block>
-    </SettingsSectionWrapper>
+    </SettingsSection>
   );
 }
 
