@@ -134,6 +134,7 @@ type TBlockItemButtonLikeProps = {
   hideChevron?: boolean;
   href?: string;
   classNameText?: string;
+  SuffixComponent?: FC<{ className?: string }>;
 } & (
   | ({
       asElement: "button";
@@ -156,6 +157,7 @@ export function BlockItemButtonLike({
   classNameText,
   hideChevron,
   href,
+  SuffixComponent,
   ...props
 }: TBlockItemButtonLikeProps) {
   const Element =
@@ -194,6 +196,7 @@ export function BlockItemButtonLike({
           {text}
         </p>
       </div>
+      {!isPending && SuffixComponent && <SuffixComponent className="ml-auto" />}
       {open !== undefined && !hideChevron && (
         <ChevronDownIcon className="text-muted-foreground -mr-0.75 size-5 transition group-data-open/button:rotate-180" />
       )}

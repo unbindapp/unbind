@@ -1,3 +1,4 @@
+import CopyButton from "@/components/copy-button";
 import ErrorLine from "@/components/error-line";
 import {
   Block,
@@ -148,6 +149,16 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                     text={`${hostObject.dns}:${portObject.port}`}
                     Icon={({ className }: { className?: string }) => (
                       <GlobeLockIcon className={cn("scale-90", className)} />
+                    )}
+                    SuffixComponent={({ className }) => (
+                      <div
+                        className={cn(
+                          "-my-2.5 -mr-3 flex flex-col items-end justify-start self-stretch p-0.5",
+                          className,
+                        )}
+                      >
+                        <CopyButton valueToCopy={`${hostObject.dns}:${portObject.port}`} />
+                      </div>
                     )}
                   />
                 )),

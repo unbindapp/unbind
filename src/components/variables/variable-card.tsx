@@ -1,5 +1,6 @@
 "use client";
 
+import CopyButton from "@/components/copy-button";
 import ErrorLine from "@/components/error-line";
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
@@ -18,7 +19,6 @@ import { getReferenceVariableReadableNames } from "@/components/variables/helper
 import { TEntityVariableTypeProps } from "@/components/variables/types";
 import { useVariablesUtils } from "@/components/variables/variables-provider";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { useCopyToClipboard } from "@/lib/hooks/use-copy";
 import {
   TVariableReferenceShallow,
   TVariableReferenceShallowSource,
@@ -28,7 +28,6 @@ import {
 import { api } from "@/server/trpc/setup/client";
 import {
   CheckIcon,
-  CopyIcon,
   EllipsisVerticalIcon,
   EyeIcon,
   EyeOffIcon,
@@ -36,7 +35,6 @@ import {
   KeyIcon,
   Link2Icon,
   LockIcon,
-  MinusIcon,
   PenIcon,
   Trash2Icon,
   TriangleAlertIcon,
@@ -190,9 +188,10 @@ export default function VariableCard({
         {(!variable || !isEditingVariable) && (
           <>
             <CopyButton
-              variable={variable}
+              valueToCopy={variable?.value}
               isPlaceholder={isPlaceholder}
               disableCopy={disableCopy}
+              classNameIcon="size-4"
             />
             <Button
               data-visible={isValueVisible ? true : undefined}
@@ -634,47 +633,5 @@ function DeleteTrigger({
     >
       {children}
     </DeleteEntityTrigger>
-  );
-}
-
-function CopyButton({
-  variable,
-  disableCopy,
-  isPlaceholder,
-}: {
-  variable?: TVariableOrReferenceShallow;
-  disableCopy?: boolean;
-  isPlaceholder?: boolean;
-}) {
-  const { copyToClipboard, isRecentlyCopied } = useCopyToClipboard();
-  return (
-    <Button
-      data-variable-type={variable?.variable_type}
-      data-copied={isRecentlyCopied ? true : undefined}
-      onClick={isPlaceholder || !variable ? () => null : () => copyToClipboard(variable.value)}
-      variant="ghost"
-      forceMinSize="medium"
-      size="icon"
-      className="text-muted-more-foreground group/button rounded-lg group-data-placeholder/card:text-transparent sm:rounded-md"
-      disabled={isPlaceholder || disableCopy}
-      fadeOnDisabled={false}
-    >
-      <div className="relative size-4 transition-transform group-data-copied/button:rotate-90">
-        {disableCopy ? (
-          <MinusIcon className="size-full" />
-        ) : (
-          <>
-            <CopyIcon className="group-data-copied/button:text-success size-full transition-opacity group-data-copied/button:opacity-0" />
-            <CheckIcon
-              strokeWidth={3}
-              className="group-data-copied/button:text-success absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-opacity group-data-copied/button:opacity-100"
-            />
-            {isPlaceholder && (
-              <div className="bg-muted-more-foreground animate-skeleton absolute top-0 left-0 size-full rounded-sm" />
-            )}
-          </>
-        )}
-      </div>
-    </Button>
   );
 }

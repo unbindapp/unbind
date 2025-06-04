@@ -1,5 +1,6 @@
+import CopyButton from "@/components/copy-button";
 import ErrorLine from "@/components/error-line";
-import { useVariables } from "@/components/variables/variables-provider";
+import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,14 +12,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/components/ui/utils";
 import { getVariablesFromRawText } from "@/components/variables/helpers";
+import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
+import { useVariables } from "@/components/variables/variables-provider";
 import { defaultAnimationMs } from "@/lib/constants";
-import { useCopyToClipboard } from "@/lib/hooks/use-copy";
 import useTemporaryValue from "@/lib/hooks/use-temporary-value";
 import { TVariableShallow, VariableForCreateSchema } from "@/server/trpc/api/variables/types";
 import { useMutation } from "@tanstack/react-query";
-import { CheckCircleIcon, CheckIcon, CopyIcon } from "lucide-react";
+import { CheckCircleIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import Prism, { highlight } from "prismjs";
 import "prismjs/components/prism-ini";
@@ -26,8 +27,6 @@ import { ReactNode, useEffect, useRef, useState } from "react";
 import Editor from "react-simple-code-editor";
 import { toast } from "sonner";
 import { z } from "zod";
-import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
-import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
 
 type TProps = {
   children: ReactNode;
@@ -155,7 +154,10 @@ export default function RawVariableEditor({ children }: TProps) {
             <DialogDescription className="min-w-0 shrink">
               Add, edit, or remove variables.
             </DialogDescription>
-            <CopyButton editorValue={editorValue} className="-my-2.5 -mr-3.5 sm:-mr-1.5" />
+            <CopyButton
+              valueToCopy={editorValue}
+              className="text-muted-foreground -my-2.5 -mr-3.5 rounded-lg sm:-mr-1.5"
+            />
           </div>
         </DialogHeader>
         <VariableEditorOrPlaceholder
@@ -291,33 +293,4 @@ function getEditorValue({
   return variables
     .map((variable) => `${variable.name}=${hidden ? "••••••••••" : variable.value}`)
     .join("\n");
-}
-
-function CopyButton({
-  editorValue,
-  className,
-}: {
-  editorValue: string | null;
-  className?: string;
-}) {
-  const { copyToClipboard, isRecentlyCopied } = useCopyToClipboard();
-  return (
-    <Button
-      data-copied={isRecentlyCopied ? true : undefined}
-      onClick={() => (editorValue !== null ? copyToClipboard(editorValue) : null)}
-      variant="ghost"
-      forceMinSize="medium"
-      size="icon"
-      className={cn("text-muted-foreground group/button rounded-lg", className)}
-      fadeOnDisabled={false}
-    >
-      <div className="relative size-4.5 transition-transform group-data-copied/button:rotate-90">
-        <CopyIcon className="group-data-copied/button:text-success size-full transition-opacity group-data-copied/button:opacity-0" />
-        <CheckIcon
-          strokeWidth={3}
-          className="group-data-copied/button:text-success absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-opacity group-data-copied/button:opacity-100"
-        />
-      </div>
-    </Button>
-  );
 }
