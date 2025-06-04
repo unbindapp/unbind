@@ -25,12 +25,16 @@ const buttonVariants = cva(
           "bg-warning text-warning-foreground has-hover:hover:bg-warning/85 active:bg-warning/85",
         success:
           "bg-success text-success-foreground has-hover:hover:bg-success/85 active:bg-success/85",
+        process:
+          "bg-process text-process-foreground has-hover:hover:bg-process/85 active:bg-process/85",
         outline:
           "border border-border bg-background has-hover:hover:bg-border active:bg-border has-hover:hover:text-foreground active:text-foreground",
         "outline-muted":
           "border border-border bg-background has-hover:hover:bg-background-hover active:bg-background-hover has-hover:hover:text-foreground active:text-foreground",
         "outline-foreground":
           "border border-foreground bg-background has-hover:hover:bg-foreground/8 active:bg-foreground/8 has-hover:hover:text-foreground active:text-foreground",
+        "outline-process":
+          "border text-process border-process/20 bg-background has-hover:hover:bg-process/8 active:bg-process/8 has-hover:hover:text-process active:text-process",
         "warning-outline":
           "border border-warning/25 bg-background has-hover:hover:bg-warning/20 active:bg-warning/20 has-hover:hover:border-warning/0 active:border-warning/0 text-warning has-hover:hover:text-warning active:text-warning",
         secondary:
@@ -40,7 +44,9 @@ const buttonVariants = cva(
         "ghost-destructive":
           "text-destructive has-hover:hover:bg-destructive/10 has-hover:hover:text-destructive active:bg-destructive/10 active:text-destructive",
         "ghost-warning":
-          "text-warning has-hover:hover:bg-warning/20 has-hover:hover:text-warning active:bg-warning/20 active:text-warning",
+          "text-warning has-hover:hover:bg-warning/10 has-hover:hover:text-warning active:bg-warning/10 active:text-warning",
+        "ghost-process":
+          "text-process has-hover:hover:bg-process/8 has-hover:hover:text-process active:bg-process/8 active:text-process",
         "ghost-foreground":
           "text-foreground has-hover:hover:bg-foreground/8 has-hover:hover:text-foreground active:bg-foreground/8 active:text-foreground",
         link: "text-primary underline-offset-4 has-hover:hover:underline active:underline",

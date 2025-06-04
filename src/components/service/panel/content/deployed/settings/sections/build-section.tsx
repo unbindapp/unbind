@@ -22,6 +22,7 @@ import {
 import { useStore } from "@tanstack/react-form";
 import { PlusIcon, WrenchIcon } from "lucide-react";
 import { useRef } from "react";
+import { toast } from "sonner";
 
 type TProps = {
   service: TServiceShallow;
@@ -64,6 +65,12 @@ function GitSection({ service }: TGitSectionProps) {
       dockerBuilderBuildContext: service.config.docker_builder_build_context || "",
       startCommand: service.config.run_command || "",
     },
+    onSubmit: ({}) => {
+      toast.success("Changes saved successfully.", {
+        description: "This is fake",
+        duration: 5000,
+      });
+    },
   });
 
   const changeCount = useStore(form.store, (s) => {
@@ -99,6 +106,7 @@ function GitSection({ service }: TGitSectionProps) {
       id="build"
       Icon={WrenchIcon}
       changeCount={changeCount}
+      onClickResetChanges={() => form.reset()}
     >
       <Block>
         <BlockItem className="w-full md:w-full">

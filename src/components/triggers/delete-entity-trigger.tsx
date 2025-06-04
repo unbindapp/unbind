@@ -92,7 +92,7 @@ export function DeleteEntityTrigger({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
-          <DialogTitle>{dialogTitle}</DialogTitle>
+          <DialogTitle className="text-destructive">{dialogTitle}</DialogTitle>
           {EntityNameBadge && <EntityNameBadge />}
           <DialogDescription>
             {dialogDescription}
