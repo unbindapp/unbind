@@ -36,17 +36,17 @@ const buttonVariants = cva(
         "outline-process":
           "border text-process border-process/20 bg-background has-hover:hover:bg-process/8 active:bg-process/8 has-hover:hover:text-process active:text-process",
         "warning-outline":
-          "border border-warning/25 bg-background has-hover:hover:bg-warning/20 active:bg-warning/20 has-hover:hover:border-warning/0 active:border-warning/0 text-warning has-hover:hover:text-warning active:text-warning",
+          "border border-warning/20 bg-background has-hover:hover:bg-warning/8 active:bg-warning/8 has-hover:hover:border-warning/0 active:border-warning/0 text-warning has-hover:hover:text-warning active:text-warning",
         secondary:
           "bg-secondary text-secondary-foreground has-hover:hover:bg-secondary/85 active:bg-secondary/85",
         ghost:
           "has-hover:hover:bg-border has-hover:hover:text-foreground active:bg-border active:text-foreground",
         "ghost-destructive":
-          "text-destructive has-hover:hover:bg-destructive/10 has-hover:hover:text-destructive active:bg-destructive/10 active:text-destructive",
+          "text-destructive has-hover:hover:bg-destructive/12 has-hover:hover:text-destructive active:bg-destructive/12 active:text-destructive",
         "ghost-warning":
-          "text-warning has-hover:hover:bg-warning/10 has-hover:hover:text-warning active:bg-warning/10 active:text-warning",
+          "text-warning has-hover:hover:bg-warning/12 has-hover:hover:text-warning active:bg-warning/12 active:text-warning",
         "ghost-process":
-          "text-process has-hover:hover:bg-process/8 has-hover:hover:text-process active:bg-process/8 active:text-process",
+          "text-process has-hover:hover:bg-process/12 has-hover:hover:text-process active:bg-process/12 active:text-process",
         "ghost-foreground":
           "text-foreground has-hover:hover:bg-foreground/8 has-hover:hover:text-foreground active:bg-foreground/8 active:text-foreground",
         link: "text-primary underline-offset-4 has-hover:hover:underline active:underline",

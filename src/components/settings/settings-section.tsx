@@ -68,7 +68,7 @@ export function SettingsSection({
               <Button aria-label="Apply changes" variant="outline-process" size="icon">
                 <CheckIcon className="size-5" />
               </Button>
-              <p className="bg-process text-background pointer-events-none absolute -top-0.5 -left-0.5 flex items-center justify-center rounded-sm px-0.75 py-0.25 font-mono text-xs leading-none font-bold">
+              <p className="bg-process text-background pointer-events-none absolute -top-0.25 -left-0.25 flex items-center justify-center rounded-sm px-0.75 py-0.25 font-mono text-xs leading-none font-bold">
                 {changeCount}
               </p>
             </div>
@@ -84,10 +84,15 @@ export function SettingsSection({
         {children}
       </div>
       {changeCount !== undefined && changeCount > 0 && (
-        <div className="border-process/20 flex w-full border-t px-1.5 py-1.5 sm:px-3 sm:py-3">
+        <div className="border-process/20 bg-process/8 flex w-full border-t p-1.5">
           <div className="w-1/2 p-1.5">
             <ResetTrigger changeCount={changeCount} onClickResetChanges={onClickResetChanges}>
-              <Button className="w-full" type="button" aria-label="Reset changes" variant="outline">
+              <Button
+                className="text-foreground has-hover:hover:text-foreground active:text-foreground w-full"
+                type="button"
+                aria-label="Reset changes"
+                variant="outline-process"
+              >
                 <RotateCcwIcon className="size-5 scale-90" />
                 <p className="min-w-0 shrink truncate">Revert</p>
               </Button>
