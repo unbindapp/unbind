@@ -9,7 +9,6 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/service/panel/content/undeployed/block";
-import { useService } from "@/components/service/service-provider";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { SettingsSection } from "@/components/settings/settings-section";
 import {
@@ -17,7 +16,6 @@ import {
   TDockerImageSectionProps,
   TGitSectionProps,
 } from "@/components/settings/types";
-import S3SourcesProvider from "@/components/storage/s3-sources-provider";
 import { cn } from "@/components/ui/utils";
 import { defaultDebounceMs } from "@/lib/constants";
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
@@ -34,8 +32,6 @@ type TProps = {
 };
 
 export default function SourceSection({ service }: TProps) {
-  const { teamId } = useService();
-
   if (service.type === "github") {
     if (
       !service.git_repository_owner ||
@@ -66,7 +62,7 @@ export default function SourceSection({ service }: TProps) {
 
     if (!image || !tag) return <ErrorWithWrapper message="Image or tag is not found." />;
 
-    return <DockerImageSection image={image} tag={tag} />;
+    return <DockerImageSection image={image} tag={tag} service={service} />;
   }
 
   if (service.type === "database") {
@@ -75,9 +71,11 @@ export default function SourceSection({ service }: TProps) {
     }
 
     return (
-      <S3SourcesProvider teamId={teamId}>
-        <DatabaseSection type={service.database_type} version={service.database_version} />
-      </S3SourcesProvider>
+      <DatabaseSection
+        type={service.database_type}
+        version={service.database_version}
+        service={service}
+      />
     );
   }
 

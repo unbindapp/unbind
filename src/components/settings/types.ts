@@ -8,9 +8,10 @@ export type TGitSectionProps = {
   service: TServiceShallow;
 };
 
-export type TDatabaseSectionProps = { type: string; version: string };
+export type TDatabaseSectionProps = { type: string; version: string; service: TServiceShallow };
 
 export type TDockerImageSectionProps = {
   image: string;
   tag: string;
+  service: TServiceShallow;
 };

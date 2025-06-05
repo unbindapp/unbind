@@ -1,4 +1,3 @@
-import { NewS3SourceTrigger } from "@/app/(team)/[team_id]/settings/storage/_components/s3-source-card";
 import { databaseTypeToName } from "@/components/command-panel/context-command-panel/items/database";
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
@@ -21,17 +20,13 @@ import useCreateFirstDeployment from "@/components/service/panel/content/undeplo
 import { softValidateVariables } from "@/components/service/panel/content/undeployed/validators";
 import { WrapperForm, WrapperInner } from "@/components/service/panel/content/undeployed/wrapper";
 import { useService } from "@/components/service/service-provider";
+import {
+  CreateBackupSourceTrigger,
+  SourceAndBucketCommandItemElement,
+  TCreateBackupSourceTriggerProps,
+} from "@/components/storage/create-backup-source-trigger";
 import S3SourcesProvider, { useS3Sources } from "@/components/storage/s3-sources-provider";
 import { CommandItem } from "@/components/ui/command";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { getVariablesPair } from "@/components/variables/helpers";
 import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
@@ -39,9 +34,9 @@ import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
 import { TVariableForCreate } from "@/server/trpc/api/variables/types";
 import { api } from "@/server/trpc/setup/client";
 import { useMutation } from "@tanstack/react-query";
-import { CylinderIcon, MilestoneIcon, OctagonXIcon, PlusIcon } from "lucide-react";
+import { CylinderIcon, MilestoneIcon, OctagonXIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
-import { ReactNode, useCallback, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 
 type TProps = {
@@ -381,57 +376,6 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
         )}
       />
     </WrapperForm>
-  );
-}
-
-function SourceAndBucketCommandItemElement({
-  item,
-  className,
-}: {
-  item: TCommandItem;
-  className?: string;
-}) {
-  return (
-    <p className={cn("min-w-0 shrink leading-tight", className)}>
-      {item.label.split(sourceAndBucketSeparator)[0]}
-      <span className="text-muted-more-foreground px-[0.5ch]">/</span>
-      {item.label.split(sourceAndBucketSeparator)[1]}
-    </p>
-  );
-}
-
-type TCreateBackupSourceTriggerProps = {
-  isOpen: boolean;
-  setIsOpen: (isOpen: boolean) => void;
-  children: ReactNode;
-  teamId: string;
-};
-
-function CreateBackupSourceTrigger({
-  teamId,
-  isOpen,
-  setIsOpen,
-  children,
-}: TCreateBackupSourceTriggerProps) {
-  return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
-      <DropdownMenuContent animate={false} className="w-[var(--radix-popper-anchor-width)]">
-        <ScrollArea>
-          <DropdownMenuLabel className="border-b px-3">
-            {"You don't have any buckets. Create a backup source."}
-          </DropdownMenuLabel>
-          <DropdownMenuGroup>
-            <NewS3SourceTrigger teamId={teamId}>
-              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="gap-1.5">
-                <PlusIcon className="-ml-1 size-5" />
-                <p className="min-w-0 shrink">Create Backup Source</p>
-              </DropdownMenuItem>
-            </NewS3SourceTrigger>
-          </DropdownMenuGroup>
-        </ScrollArea>
-      </DropdownMenuContent>
-    </DropdownMenu>
   );
 }
 
