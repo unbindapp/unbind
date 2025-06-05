@@ -64,7 +64,7 @@ export const VariablesFormField = withForm({
     return (
       <form.AppField
         name="variables"
-        mode="value"
+        mode="array"
         children={(field) => (
           <div className="flex w-full flex-col items-start gap-2">
             {/* All secret rows */}
@@ -101,7 +101,7 @@ export const VariablesFormField = withForm({
                           );
                         }}
                       </form.AppField>
-                      <form.Field key={`variables[${i}].value`} name={`variables[${i}].value`}>
+                      <form.AppField key={`variables[${i}].value`} name={`variables[${i}].value`}>
                         {(subField) => {
                           return (
                             <field.TextareaWithTokens
@@ -124,7 +124,7 @@ export const VariablesFormField = withForm({
                             />
                           );
                         }}
-                      </form.Field>
+                      </form.AppField>
                       <form.Subscribe
                         selector={(state) => ({ firstVariable: state.values.variables[0] })}
                         children={({ firstVariable }) => (

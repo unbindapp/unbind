@@ -240,35 +240,33 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                         key={`inputs[${i}].name`}
                         name={`inputs[${i}].value`}
                       >
-                        {(subField) => {
+                        {(field) => {
                           const input = visibleInputs[i];
                           if (input.type === "database-size" || input.type === "volume-size") {
                             return (
                               <field.StorageSizeInput
-                                field={subField}
+                                field={field}
                                 className="w-full px-1.5 py-1.5"
-                                onBlur={subField.handleBlur}
+                                onBlur={field.handleBlur}
                                 min={minStorageGb}
                                 max={maxStorageGb}
                                 step={storageStepGb}
                                 minMaxFormatter={formatGB}
                                 defaultValue={[Number(visibleInputs[i].default || "10")]}
-                                value={
-                                  subField.state.value ? [Number(subField.state.value)] : undefined
-                                }
+                                value={field.state.value ? [Number(field.state.value)] : undefined}
                                 onValueChange={(value) => {
-                                  subField.handleChange(String(value[0]));
+                                  field.handleChange(String(value[0]));
                                 }}
                               />
                             );
                           }
                           return (
                             <field.DomainInput
-                              field={subField}
-                              value={subField.state.value}
-                              onBlur={subField.handleBlur}
+                              field={field}
+                              value={field.state.value}
+                              onBlur={field.handleBlur}
                               onChange={(e) => {
-                                subField.handleChange(e.target.value);
+                                field.handleChange(e.target.value);
                               }}
                               placeholder={input.name}
                               autoCapitalize="off"
