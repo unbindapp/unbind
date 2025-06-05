@@ -134,7 +134,7 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                                     <BlockItemButtonLike
                                       asElement="div"
                                       classNameText="whitespace-normal"
-                                      className="group-data-editing/field:bg-process/8 border-none group-data-editing/field:rounded-b-none"
+                                      className="group-data-editing/field:bg-process/8 group-data-editing/field:text-process border-none group-data-editing/field:rounded-b-none"
                                       key={
                                         endpointsData.endpoints.external[index].host +
                                         endpointsData.endpoints.external[index].port.port
