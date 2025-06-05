@@ -12,9 +12,11 @@ import {
 import { useServiceEndpoints } from "@/components/service/service-endpoints-provider";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { SettingsSection } from "@/components/settings/settings-section";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import { TServiceShallow } from "@/server/trpc/api/services/types";
-import { GlobeIcon, GlobeLockIcon, NetworkIcon } from "lucide-react";
+import { useAppForm } from "@/lib/hooks/use-app-form";
+import { TExternalEndpoint, TServiceShallow } from "@/server/trpc/api/services/types";
+import { GlobeIcon, GlobeLockIcon, NetworkIcon, PenIcon, PlusIcon, Trash2Icon } from "lucide-react";
 
 type TProps = {
   service: TServiceShallow;
@@ -62,8 +64,25 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
     query: { data: endpointsData, isPending: isPendingEndpoints, error: errorEndpoints },
   } = useServiceEndpoints();
 
+  const form = useAppForm({
+    defaultValues: {
+      externalEndpoints:
+        endpointsData?.endpoints.external.map((e) => ({ host: e.host, port: e.port.port })) || [],
+    },
+  });
+
   return (
-    <SettingsSection title="Networking" id="networking" Icon={NetworkIcon}>
+    <SettingsSection
+      asElement="form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        form.handleSubmit(e);
+      }}
+      title="Networking"
+      id="networking"
+      Icon={NetworkIcon}
+    >
       {(service.type === "github" || service.type === "docker-image") && (
         <Block>
           <BlockItem className="w-full md:w-full">
@@ -92,22 +111,55 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                     )}
                   />
                 )}
-                {endpointsData?.endpoints.external?.map((hostObject) => (
+                {endpointsData?.endpoints.external?.map((endpointObject) => (
                   <BlockItemButtonLike
-                    classNameText="whitespace-normal overflow-auto"
-                    key={hostObject.host + hostObject.port}
-                    asElement="LinkButton"
-                    href={
-                      hostObject.port.port === 80
-                        ? `http://${hostObject.host}`
-                        : `https://${hostObject.host}${hostObject.port.port !== 443 ? `:${hostObject.port}` : ""}`
-                    }
-                    text={`${hostObject.host}${hostObject.port.port !== 443 ? `:${hostObject.port}` : ""}`}
+                    asElement="div"
+                    classNameText="whitespace-normal"
+                    key={endpointObject.host + endpointObject.port}
+                    text={getDisplayUrlExternal(endpointObject)}
                     Icon={({ className }: { className?: string }) => (
                       <GlobeIcon className={cn("scale-90", className)} />
                     )}
+                    SuffixComponent={({ className }) => (
+                      <div
+                        className={cn(
+                          "-my-2.5 -mr-3 flex items-start justify-end self-stretch p-1",
+                          className,
+                        )}
+                      >
+                        <CopyButton
+                          className="size-8"
+                          classNameIcon="size-4"
+                          valueToCopy={getDisplayUrlExternal(endpointObject)}
+                        />
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          className="text-muted-more-foreground size-8 rounded-md"
+                        >
+                          <PenIcon className="size-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost-destructive"
+                          className="text-muted-more-foreground size-8 rounded-md"
+                        >
+                          <Trash2Icon className="size-4" />
+                        </Button>
+                      </div>
+                    )}
                   />
                 ))}
+                <BlockItemButtonLike
+                  type="button"
+                  isPending={isPendingEndpoints}
+                  key="add-external-endpoint"
+                  asElement="button"
+                  text="Add domain"
+                  Icon={PlusIcon}
+                />
               </div>
             </BlockItemContent>
           </BlockItem>
@@ -143,7 +195,7 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
               {endpointsData?.endpoints.internal?.flatMap((hostObject) =>
                 hostObject.ports.map((portObject) => (
                   <BlockItemButtonLike
-                    classNameText="whitespace-normal overflow-auto"
+                    classNameText="whitespace-normal"
                     key={`${hostObject.dns}:${portObject.port}`}
                     asElement="div"
                     text={`${hostObject.dns}:${portObject.port}`}
@@ -153,11 +205,15 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                     SuffixComponent={({ className }) => (
                       <div
                         className={cn(
-                          "-my-2.5 -mr-3 flex flex-col items-end justify-start self-stretch p-0.5",
+                          "-my-2.5 -mr-3 flex items-start justify-end self-stretch p-1",
                           className,
                         )}
                       >
-                        <CopyButton valueToCopy={`${hostObject.dns}:${portObject.port}`} />
+                        <CopyButton
+                          className="size-8"
+                          classNameIcon="size-4"
+                          valueToCopy={`${hostObject.dns}:${portObject.port}`}
+                        />
                       </div>
                     )}
                   />
@@ -169,4 +225,8 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
       </Block>
     </SettingsSection>
   );
+}
+
+function getDisplayUrlExternal(endpoint: TExternalEndpoint) {
+  return `${endpoint.host}${endpoint.port.port !== 443 ? `:${endpoint.port}` : ""}`;
 }

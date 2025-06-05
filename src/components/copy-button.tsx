@@ -21,6 +21,7 @@ export default function CopyButton({
   const { copyToClipboard, isRecentlyCopied } = useCopyToClipboard();
   return (
     <Button
+      type="button"
       aria-label="Copy to clipboard"
       data-copied={isRecentlyCopied ? true : undefined}
       onClick={isPlaceholder || !valueToCopy ? () => null : () => copyToClipboard(valueToCopy)}
