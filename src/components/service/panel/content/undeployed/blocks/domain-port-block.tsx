@@ -7,7 +7,8 @@ import {
 } from "@/components/service/panel/content/undeployed/block";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import { isDomain } from "@/lib/helpers/is-domain";
+import { validateDomain } from "@/lib/helpers/validate-domain";
+import { validatePort } from "@/lib/helpers/validate-port";
 import { withForm } from "@/lib/hooks/use-app-form";
 import { CheckCircleIcon, CircleSlashIcon, EyeOffIcon } from "lucide-react";
 
@@ -177,31 +178,4 @@ function PrivateServiceField() {
       <p className="min-w-0 shrink truncate leading-tight">Private service</p>
     </div>
   );
-}
-
-function validatePort({ value, isPublic }: { value: string; isPublic: boolean }) {
-  if (!isPublic) return undefined;
-  if (!value) return { message: "Port is required on public services." };
-  // check if the value contains only digits
-  if (!/^\d+$/.test(value)) {
-    return { message: "Port must be a positive integer." };
-  }
-  const portNumber = parseInt(value, 10);
-  if (isNaN(portNumber)) {
-    return { message: "Port must be a positive integer." };
-  }
-  if (portNumber < 1 || portNumber > 65535) {
-    return { message: "Port must be between 1 and 65535." };
-  }
-  return undefined;
-}
-
-function validateDomain({ value, isPublic }: { value: string; isPublic: boolean }) {
-  if (!isPublic) return undefined;
-  if (!value) return { message: "Domain is required on public services." };
-  const isValidDomain = isDomain(value);
-  if (!isValidDomain) {
-    return { message: "Invalid domain." };
-  }
-  return undefined;
 }

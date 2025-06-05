@@ -6,6 +6,7 @@ import { CheckIcon, CopyIcon, MinusIcon } from "lucide-react";
 type TProps = {
   valueToCopy?: string;
   disableCopy?: boolean;
+  disabled?: boolean;
   isPlaceholder?: boolean;
   className?: string;
   classNameIcon?: string;
@@ -14,6 +15,7 @@ type TProps = {
 export default function CopyButton({
   valueToCopy,
   disableCopy,
+  disabled,
   isPlaceholder,
   className,
   classNameIcon,
@@ -32,7 +34,7 @@ export default function CopyButton({
         "text-muted-more-foreground group/button rounded-lg group-data-placeholder/card:text-transparent sm:rounded-md",
         className,
       )}
-      disabled={isPlaceholder || disableCopy}
+      disabled={isPlaceholder || disableCopy || disabled}
       fadeOnDisabled={false}
     >
       <div

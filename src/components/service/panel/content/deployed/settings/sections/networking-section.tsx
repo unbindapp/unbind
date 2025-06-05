@@ -14,8 +14,10 @@ import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
+import { validateDomain } from "@/lib/helpers/validate-domain";
+import { validatePort } from "@/lib/helpers/validate-port";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { TExternalEndpoint, TServiceShallow } from "@/server/trpc/api/services/types";
+import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { GlobeIcon, GlobeLockIcon, NetworkIcon, PenIcon, PlusIcon, Trash2Icon } from "lucide-react";
 
 type TProps = {
@@ -67,22 +69,16 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
   const form = useAppForm({
     defaultValues: {
       externalEndpoints:
-        endpointsData?.endpoints.external.map((e) => ({ host: e.host, port: e.port.port })) || [],
+        endpointsData?.endpoints.external.map((e) => ({
+          host: e.host,
+          port: e.port.port.toString(),
+          isEditing: false,
+        })) || [],
     },
   });
 
   return (
-    <SettingsSection
-      asElement="form"
-      onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        form.handleSubmit(e);
-      }}
-      title="Networking"
-      id="networking"
-      Icon={NetworkIcon}
-    >
+    <SettingsSection title="Networking" id="networking" Icon={NetworkIcon}>
       {(service.type === "github" || service.type === "docker-image") && (
         <Block>
           <BlockItem className="w-full md:w-full">
@@ -111,47 +107,195 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                     )}
                   />
                 )}
-                {endpointsData?.endpoints.external?.map((endpointObject) => (
-                  <BlockItemButtonLike
-                    asElement="div"
-                    classNameText="whitespace-normal"
-                    key={endpointObject.host + endpointObject.port}
-                    text={getDisplayUrlExternal(endpointObject)}
-                    Icon={({ className }: { className?: string }) => (
-                      <GlobeIcon className={cn("scale-90", className)} />
-                    )}
-                    SuffixComponent={({ className }) => (
-                      <div
-                        className={cn(
-                          "-my-2.5 -mr-3 flex items-start justify-end self-stretch p-1",
-                          className,
-                        )}
-                      >
-                        <CopyButton
-                          className="size-8"
-                          classNameIcon="size-4"
-                          valueToCopy={getDisplayUrlExternal(endpointObject)}
-                        />
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="ghost"
-                          className="text-muted-more-foreground size-8 rounded-md"
-                        >
-                          <PenIcon className="size-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="ghost-destructive"
-                          className="text-muted-more-foreground size-8 rounded-md"
-                        >
-                          <Trash2Icon className="size-4" />
-                        </Button>
-                      </div>
-                    )}
-                  />
-                ))}
+                {endpointsData?.endpoints && (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      form.handleSubmit();
+                    }}
+                    className="flex w-full flex-col gap-2"
+                  >
+                    <form.AppField name="externalEndpoints" mode="array">
+                      {(field) =>
+                        field.state.value.map((value, index) => (
+                          <div
+                            data-editing={value.isEditing ? true : undefined}
+                            key={value.host + value.port}
+                            className="data-editing:border-process/25 group/field flex w-full flex-col rounded-lg border"
+                          >
+                            <form.Subscribe
+                              selector={(s) => ({
+                                isEditing: s.values.externalEndpoints[index].isEditing,
+                              })}
+                              children={({ isEditing }) => (
+                                <>
+                                  {endpointsData.endpoints.external[index] && (
+                                    <BlockItemButtonLike
+                                      asElement="div"
+                                      classNameText="whitespace-normal"
+                                      className="group-data-editing/field:bg-process/8 border-none group-data-editing/field:rounded-b-none"
+                                      key={
+                                        endpointsData.endpoints.external[index].host +
+                                        endpointsData.endpoints.external[index].port.port
+                                      }
+                                      text={getDisplayUrlExternal({
+                                        host: endpointsData.endpoints.external[index].host,
+                                        port: "",
+                                      })}
+                                      Icon={({ className }: { className?: string }) => (
+                                        <GlobeIcon className={cn("scale-90", className)} />
+                                      )}
+                                      SuffixComponent={({ className }) => (
+                                        <div
+                                          className={cn(
+                                            "-my-2.5 -mr-3 flex items-start justify-end self-stretch p-1",
+                                            isEditing && "opacity-0",
+                                            className,
+                                          )}
+                                        >
+                                          <CopyButton
+                                            disabled={isEditing}
+                                            className="size-8"
+                                            classNameIcon="size-4"
+                                            valueToCopy={getDisplayUrlExternal({
+                                              host: endpointsData.endpoints.external[index].host,
+                                              port: endpointsData.endpoints.external[
+                                                index
+                                              ].port.port.toString(),
+                                            })}
+                                          />
+                                          <Button
+                                            disabled={isEditing}
+                                            type="button"
+                                            size="icon"
+                                            variant="ghost"
+                                            className="text-muted-more-foreground size-8 rounded-md"
+                                            onClick={() => {
+                                              field.state.value.forEach((_, i) =>
+                                                form.setFieldValue(
+                                                  `externalEndpoints[${i}].isEditing`,
+                                                  false,
+                                                ),
+                                              );
+                                              form.setFieldValue(
+                                                `externalEndpoints[${index}].isEditing`,
+                                                true,
+                                              );
+                                            }}
+                                          >
+                                            <PenIcon className="size-4" />
+                                          </Button>
+                                          <Button
+                                            disabled={isEditing}
+                                            type="button"
+                                            size="icon"
+                                            variant="ghost-destructive"
+                                            className="text-muted-more-foreground size-8 rounded-md"
+                                          >
+                                            <Trash2Icon className="size-4" />
+                                          </Button>
+                                        </div>
+                                      )}
+                                    />
+                                  )}
+                                  {isEditing && (
+                                    <div className="border-process/25 flex w-full flex-col gap-4 border-t px-3 pt-2.5 pb-3 sm:px-4 sm:pt-3 sm:pb-4">
+                                      <div className="flex w-full flex-col gap-1.5">
+                                        <h4 className="max-w-full px-1.5 font-semibold">Domain</h4>
+                                        <form.AppField
+                                          name={`externalEndpoints[${index}].host`}
+                                          validators={{
+                                            onChange: ({ value }) =>
+                                              validateDomain({ value, isPublic: true }),
+                                          }}
+                                        >
+                                          {(subField) => (
+                                            <field.DomainInput
+                                              field={subField}
+                                              value={subField.state.value}
+                                              onBlur={subField.handleBlur}
+                                              onChange={(e) => {
+                                                subField.handleChange(e.target.value);
+                                              }}
+                                              placeholder="example.com"
+                                              autoCapitalize="off"
+                                              autoCorrect="off"
+                                              autoComplete="off"
+                                              spellCheck="false"
+                                              hideCard={
+                                                endpointsData.endpoints.external[index].host ===
+                                                  field.state.value[index].host &&
+                                                endpointsData.endpoints.external[
+                                                  index
+                                                ].port.port.toString() ===
+                                                  field.state.value[index].port
+                                              }
+                                            />
+                                          )}
+                                        </form.AppField>
+                                      </div>
+                                      <div className="flex w-full flex-col gap-1.5">
+                                        <h4 className="max-w-full px-1.5 font-semibold">Port</h4>
+                                        <form.AppField
+                                          name={`externalEndpoints[${index}].port`}
+                                          validators={{
+                                            onChange: ({ value }) =>
+                                              validatePort({ value, isPublic: false }),
+                                          }}
+                                        >
+                                          {(subField) => (
+                                            <field.TextField
+                                              field={subField}
+                                              value={subField.state.value}
+                                              onBlur={subField.handleBlur}
+                                              onChange={(e) => {
+                                                subField.handleChange(e.target.value);
+                                              }}
+                                              placeholder="3000"
+                                              autoCapitalize="off"
+                                              autoCorrect="off"
+                                              autoComplete="off"
+                                              spellCheck="false"
+                                              inputMode="numeric"
+                                            />
+                                          )}
+                                        </form.AppField>
+                                      </div>
+                                      <div className="mt-1 flex w-full">
+                                        <div className="w-1/2 pr-1.5">
+                                          <Button
+                                            variant="outline-process"
+                                            className="text-foreground has-hover:hover:text-foreground active:text-foreground w-full"
+                                            onClick={() => {
+                                              field.state.value.forEach((_, i) =>
+                                                form.setFieldValue(
+                                                  `externalEndpoints[${i}].isEditing`,
+                                                  false,
+                                                ),
+                                              );
+                                            }}
+                                          >
+                                            Cancel
+                                          </Button>
+                                        </div>
+                                        <div className="w-1/2 pl-1.5">
+                                          <Button variant="process" className="w-full">
+                                            Save
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+                                </>
+                              )}
+                            />
+                          </div>
+                        ))
+                      }
+                    </form.AppField>
+                  </form>
+                )}
                 <BlockItemButtonLike
                   type="button"
                   isPending={isPendingEndpoints}
@@ -227,6 +371,6 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
   );
 }
 
-function getDisplayUrlExternal(endpoint: TExternalEndpoint) {
-  return `${endpoint.host}${endpoint.port.port !== 443 ? `:${endpoint.port}` : ""}`;
+function getDisplayUrlExternal(endpoint: { host: string; port: string }) {
+  return `${endpoint.host}${endpoint.port !== "443" && endpoint.port ? `:${endpoint.port}` : ""}`;
 }
