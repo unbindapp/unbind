@@ -18,9 +18,10 @@ import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TVolumeShallow } from "@/server/trpc/api/services/types";
 import { TVolumeType } from "@/server/trpc/api/storage/volumes/types";
 import { api } from "@/server/trpc/setup/client";
-import { HourglassIcon, RotateCcwIcon, ScalingIcon } from "lucide-react";
+import { useStore } from "@tanstack/react-form";
+import { HourglassIcon, ScalingIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
-import { ReactNode, useRef, useState } from "react";
+import { ReactNode, useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -39,7 +40,6 @@ export default function ExpandSection({ volume }: TProps) {
     systemData?.data.storage.maximum_storage_gb || 100,
   );
   const storageStepGb = systemData?.data.storage.storage_step_gb || 1;
-  const currentCapacityGb = volume.capacity_gb;
 
   const form = useAppForm({
     defaultValues: {
@@ -50,7 +50,6 @@ export default function ExpandSection({ volume }: TProps) {
         if (value.capacityGb < minStorageGb) {
           return "Volume size cannot be less than the current size.";
         }
-
         return undefined;
       },
     },
@@ -59,6 +58,30 @@ export default function ExpandSection({ volume }: TProps) {
   const isPending = isPendingSystem;
   const error = errorSystem;
   const hasData = systemData !== undefined;
+
+  const changeCount = useStore(form.store, (s) => {
+    let count = 0;
+    if (s.fieldMeta.capacityGb?.isDefaultValue === false) count++;
+    return count;
+  });
+
+  const SubmitTrigger = useCallback(
+    ({ children }: { children: ReactNode }) => (
+      <form.Subscribe
+        selector={(s) => ({ newCapacityGb: s.values.capacityGb })}
+        children={({ newCapacityGb }) => (
+          <ExpandDialogTrigger
+            newCapacityGb={newCapacityGb}
+            volume={volume}
+            onSuccess={() => form.reset()}
+          >
+            {children}
+          </ExpandDialogTrigger>
+        )}
+      />
+    ),
+    [volume, form],
+  );
 
   if (!hasData && isPending) {
     return (
@@ -109,7 +132,20 @@ export default function ExpandSection({ volume }: TProps) {
   }
 
   return (
-    <SettingsSection title="Expand" id="expand" Icon={ScalingIcon}>
+    <SettingsSection
+      asElement="form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        form.handleSubmit(e);
+      }}
+      title="Expand"
+      id="expand"
+      Icon={ScalingIcon}
+      changeCount={changeCount}
+      onClickResetChanges={() => form.reset()}
+      SubmitTrigger={SubmitTrigger}
+    >
       <div className="flex w-full flex-col gap-2">
         <div className="flex w-full justify-start px-1.5">
           <p className="text-muted-foreground">
@@ -130,66 +166,24 @@ export default function ExpandSection({ volume }: TProps) {
           )}
         />
         <div className="-mt-0.5 flex w-full flex-col gap-2">
-          <div className="flex w-full">
-            <form.AppField
-              name="capacityGb"
-              children={(field) => (
-                <field.StorageSizeInput
-                  field={field}
-                  className="w-full px-1.5 py-2.25"
-                  onBlur={field.handleBlur}
-                  min={minStorageGb}
-                  max={maxStorageGb}
-                  step={storageStepGb}
-                  minMaxFormatter={formatGB}
-                  defaultValue={[minStorageGb]}
-                  value={field.state.value ? [Number(field.state.value)] : undefined}
-                  onValueChange={(value) => {
-                    field.handleChange(value[0]);
-                  }}
-                />
-              )}
-            />
-          </div>
-          <form.Subscribe
-            selector={(state) => ({
-              canSubmit: state.canSubmit,
-              capacityGb: state.values.capacityGb,
-              isSubmitting: state.isSubmitting,
-            })}
-            children={({ canSubmit, capacityGb }) => {
-              const isCapacityUnchanged = capacityGb === currentCapacityGb;
-              return (
-                <div
-                  data-disabled={isCapacityUnchanged ? true : undefined}
-                  className="flex max-w-full flex-wrap gap-2"
-                >
-                  <Button
-                    disabled={!canSubmit || isCapacityUnchanged}
-                    onClick={() => {
-                      form.setFieldValue("capacityGb", currentCapacityGb);
-                      form.validate("change");
-                    }}
-                    variant="outline"
-                    type="button"
-                    className="group/button max-w-full px-3 py-1.75"
-                  >
-                    <RotateCcwIcon className="-ml-0.5 size-4.5 transition-transform group-disabled/button:-rotate-90" />
-                    <span className="min-w-0 shrink truncate">Undo</span>
-                  </Button>
-                  <ExpandDialogTrigger newCapacityGb={capacityGb} volume={volume}>
-                    <Button
-                      disabled={!canSubmit || isCapacityUnchanged}
-                      className="max-w-full truncate px-3 py-1.75"
-                      type="button"
-                    >
-                      <ScalingIcon className="-ml-0.5 size-4.5" />
-                      <p className="min-w-0 shrink truncate">Expand</p>
-                    </Button>
-                  </ExpandDialogTrigger>
-                </div>
-              );
-            }}
+          <form.AppField
+            name="capacityGb"
+            children={(field) => (
+              <field.StorageSizeInput
+                field={field}
+                className="w-full px-1.5 py-2.25"
+                onBlur={field.handleBlur}
+                min={minStorageGb}
+                max={maxStorageGb}
+                step={storageStepGb}
+                minMaxFormatter={formatGB}
+                defaultValue={[minStorageGb]}
+                value={field.state.value ? [Number(field.state.value)] : undefined}
+                onValueChange={(value) => {
+                  field.handleChange(value[0]);
+                }}
+              />
+            )}
           />
         </div>
       </div>
@@ -200,10 +194,12 @@ export default function ExpandSection({ volume }: TProps) {
 function ExpandDialogTrigger({
   newCapacityGb,
   volume,
+  onSuccess,
   children,
 }: {
   newCapacityGb: number;
   volume: TVolumeShallow;
+  onSuccess: () => void;
   children: ReactNode;
 }) {
   const { teamId, projectId, environmentId } = useServices();
@@ -216,6 +212,7 @@ function ExpandDialogTrigger({
 
   const {
     mutateAsync: expandVolume,
+    isPending,
     error,
     reset,
   } = api.storage.volumes.expand.useMutation({
@@ -238,6 +235,7 @@ function ExpandDialogTrigger({
       timeout.current = setTimeout(() => {
         form.reset();
         reset();
+        onSuccess();
       }, defaultAnimationMs);
     },
   });
@@ -306,12 +304,12 @@ function ExpandDialogTrigger({
           </DialogDescription>
         </DialogHeader>
         <form
+          className="flex w-full flex-col"
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            form.handleSubmit();
+            form.handleSubmit(e);
           }}
-          className="group/form flex flex-col"
         >
           <form.AppField
             name="textToConfirm"
@@ -336,18 +334,9 @@ function ExpandDialogTrigger({
                 </Button>
               </DialogClose>
               <form.Subscribe
-                selector={(state) => ({
-                  canSubmit: state.canSubmit,
-                  isSubmitting: state.isSubmitting,
-                  values: state.values,
-                })}
-                children={({ canSubmit, isSubmitting, values }) => (
-                  <form.SubmitButton
-                    data-submitting={isSubmitting ? true : undefined}
-                    variant="warning"
-                    disabled={!canSubmit || values.textToConfirm !== textToConfirm}
-                    isPending={isSubmitting ? true : false}
-                  >
+                selector={(s) => ({ isSubmitting: s.isSubmitting })}
+                children={({ isSubmitting }) => (
+                  <form.SubmitButton isPending={isSubmitting || isPending} variant="warning">
                     Expand
                   </form.SubmitButton>
                 )}

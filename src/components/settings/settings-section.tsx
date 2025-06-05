@@ -23,6 +23,7 @@ export function SettingsSection({
   className,
   onClickResetChanges,
   SubmitButton,
+  SubmitTrigger,
   ...rest
 }: {
   title: string;
@@ -33,9 +34,13 @@ export function SettingsSection({
   classNameContent?: string;
   changeCount?: number;
   SubmitButton?: FC<{ className?: string; children?: ReactNode }>;
+  SubmitTrigger?: FC<{ children: ReactNode }>;
   onClickResetChanges?: () => void;
 } & TWrapperProps) {
   const SubmitButtonElement = SubmitButton || Button;
+  const SubmitTriggerElement =
+    SubmitTrigger || (({ children }: { children: ReactNode }) => children);
+
   return (
     <Wrapper
       data-changed={changeCount !== undefined && changeCount > 0 ? true : undefined}
@@ -67,9 +72,11 @@ export function SettingsSection({
                 <RotateCcwIcon className="size-5 scale-90" />
               </Button>
             </ResetTrigger>
-            <SubmitButtonElement aria-label="Apply changes" variant="outline-process" size="icon">
-              <CheckIcon className="size-5" />
-            </SubmitButtonElement>
+            <SubmitTriggerElement>
+              <SubmitButtonElement aria-label="Apply changes" variant="outline-process" size="icon">
+                <CheckIcon className="size-5" />
+              </SubmitButtonElement>
+            </SubmitTriggerElement>
           </div>
         )}
       </div>
@@ -97,10 +104,12 @@ export function SettingsSection({
             </ResetTrigger>
           </div>
           <div className="w-1/2 p-1.5">
-            <SubmitButtonElement className="w-full" variant="process">
-              <CheckIcon className="size-5" />
-              <p className="min-w-0 shrink truncate">Apply ({changeCount})</p>
-            </SubmitButtonElement>
+            <SubmitTriggerElement>
+              <SubmitButtonElement className="w-full" variant="process">
+                <CheckIcon className="size-5" />
+                <p className="min-w-0 shrink truncate">Apply ({changeCount})</p>
+              </SubmitButtonElement>
+            </SubmitTriggerElement>
           </div>
         </div>
       )}
