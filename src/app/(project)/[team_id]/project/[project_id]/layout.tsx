@@ -12,7 +12,6 @@ import { UpdateToastProvider } from "@/components/update/check-for-updates-provi
 import VolumePanelProvider from "@/components/volume/panel/volume-panel-provider";
 import { apiServer } from "@/server/trpc/setup/server";
 import { ResultAsync } from "neverthrow";
-import { redirect } from "next/navigation";
 import { ReactNode } from "react";
 
 type TProps = {
@@ -45,19 +44,19 @@ export default async function Layout({ children, params }: TProps) {
   ]);
 
   if (projectInitialData.isErr()) {
-    return redirect(`/${teamId}`);
+    throw new Error(projectInitialData.error.message);
   }
 
   if (projectsInitialData.isErr()) {
-    return redirect(`/${teamId}`);
+    throw new Error(projectsInitialData.error.message);
   }
 
   if (templatesData.isErr()) {
-    return redirect(`/${teamId}`);
+    throw new Error(templatesData.error.message);
   }
 
   if (systemData.isErr()) {
-    return redirect(`/${teamId}`);
+    throw new Error(systemData.error.message);
   }
 
   return (

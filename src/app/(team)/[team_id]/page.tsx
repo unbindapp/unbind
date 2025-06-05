@@ -5,7 +5,6 @@ import ProjectCardList from "@/components/team/project-card-list";
 import { apiServer } from "@/server/trpc/setup/server";
 import { Metadata } from "next";
 import { ResultAsync } from "neverthrow";
-import { notFound } from "next/navigation";
 
 type TProps = {
   params: Promise<{ team_id: string }>;
@@ -24,7 +23,7 @@ export default async function Page({ params }: TProps) {
   );
 
   if (initialData.isErr()) {
-    return notFound();
+    throw new Error(initialData.error.message);
   }
 
   return (

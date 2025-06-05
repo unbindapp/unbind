@@ -8,7 +8,7 @@ import TemplatesProvider from "@/components/templates/templates-provider";
 import { UpdateToastProvider } from "@/components/update/check-for-updates-provider";
 import { apiServer } from "@/server/trpc/setup/server";
 import { ResultAsync } from "neverthrow";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { ReactNode } from "react";
 
 type TProps = {
@@ -33,22 +33,22 @@ export default async function Layout({ children, params }: TProps) {
   ]);
 
   if (teamsInitialData.isErr()) {
-    return notFound();
+    throw new Error(teamsInitialData.error.message);
   }
 
   if (teamInitialData.isErr()) {
-    if (teamsInitialData.value.teams.length >= 1) {
+    if (teamsInitialData.value.teams.length >= 1 && teamsInitialData.value.teams[0].id !== teamId) {
       return redirect(`/${teamsInitialData.value.teams[0].id}`);
     }
-    return notFound();
+    throw new Error(teamInitialData.error.message);
   }
 
   if (templatesData.isErr()) {
-    return notFound();
+    throw new Error(templatesData.error.message);
   }
 
   if (systemData.isErr()) {
-    return notFound();
+    throw new Error(systemData.error.message);
   }
 
   return (
