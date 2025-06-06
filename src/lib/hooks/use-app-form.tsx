@@ -413,7 +413,7 @@ function AsyncCommandDropdown({
                           value={item.value}
                           key={item.value}
                           className="group/item px-3"
-                          data-checked={field.state.value === item ? true : undefined}
+                          data-checked={field.state.value === item.value ? true : undefined}
                         >
                           {CommandItemElement ? (
                             <CommandItemElement item={item} />

@@ -18,6 +18,7 @@ import { validateDomain } from "@/lib/helpers/validate-domain";
 import { validatePort } from "@/lib/helpers/validate-port";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
+import { useStore } from "@tanstack/react-form";
 import { GlobeIcon, GlobeLockIcon, NetworkIcon, PenIcon, PlusIcon, Trash2Icon } from "lucide-react";
 
 type TProps = {
@@ -75,6 +76,19 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
           isEditing: false,
         })) || [],
     },
+  });
+
+  const changeCount = useStore(form.store, (s) => {
+    let count = 0;
+    s.values.externalEndpoints.forEach((endpoint, index) => {
+      if (endpoint.host !== endpointsData?.endpoints.external[index]?.host) {
+        count++;
+      }
+      if (endpoint.port !== endpointsData?.endpoints.external[index]?.port.port.toString()) {
+        count++;
+      }
+    });
+    return count;
   });
 
   return (
@@ -268,20 +282,19 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                                             variant="outline-process"
                                             className="text-foreground has-hover:hover:text-foreground active:text-foreground w-full"
                                             onClick={() => {
-                                              field.state.value.forEach((_, i) =>
-                                                form.setFieldValue(
-                                                  `externalEndpoints[${i}].isEditing`,
-                                                  false,
-                                                ),
-                                              );
+                                              form.reset();
                                             }}
                                           >
                                             Cancel
                                           </Button>
                                         </div>
                                         <div className="w-1/2 pl-1.5">
-                                          <Button variant="process" className="w-full">
-                                            Save
+                                          <Button
+                                            disabled={changeCount < 1}
+                                            variant="process"
+                                            className="w-full"
+                                          >
+                                            Apply{changeCount > 0 ? ` (${changeCount})` : ""}
                                           </Button>
                                         </div>
                                       </div>

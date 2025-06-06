@@ -9,7 +9,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/components/ui/utils";
-import { CheckIcon, RotateCcwIcon } from "lucide-react";
 import { FC, HTMLAttributes, ReactNode } from "react";
 
 export function SettingsSection({
@@ -59,7 +58,7 @@ export function SettingsSection({
             {title}
           </h3>
         </div>
-        {changeCount !== undefined && changeCount > 0 && (
+        {/* {changeCount !== undefined && changeCount > 0 && (
           <div className="-mr-2.25 flex shrink-0 items-center justify-end gap-1.25 py-1.25 sm:-mr-2.75">
             <ResetTrigger changeCount={changeCount} onClickResetChanges={onClickResetChanges}>
               <Button
@@ -78,7 +77,7 @@ export function SettingsSection({
               </SubmitButtonElement>
             </SubmitTriggerElement>
           </div>
-        )}
+        )} */}
       </div>
       <div
         className={cn(
@@ -98,16 +97,14 @@ export function SettingsSection({
                 aria-label="Reset changes"
                 variant="outline-process"
               >
-                <RotateCcwIcon className="size-5 scale-90" />
-                <p className="min-w-0 shrink truncate">Revert</p>
+                Cancel
               </Button>
             </ResetTrigger>
           </div>
           <div className="w-1/2 p-1.5">
             <SubmitTriggerElement>
               <SubmitButtonElement className="w-full" variant="process">
-                <CheckIcon className="size-5" />
-                <p className="min-w-0 shrink truncate">Apply ({changeCount})</p>
+                Apply ({changeCount})
               </SubmitButtonElement>
             </SubmitTriggerElement>
           </div>
