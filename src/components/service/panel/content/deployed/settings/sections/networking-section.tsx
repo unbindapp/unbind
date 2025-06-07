@@ -216,7 +216,17 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                                   {isEditing && (
                                     <div className="border-process/25 flex w-full flex-col gap-4 border-t px-3 pt-2.5 pb-3 sm:px-4 sm:pt-3 sm:pb-4">
                                       <div className="flex w-full flex-col gap-1.5">
-                                        <h4 className="max-w-full px-1.5 font-semibold">Domain</h4>
+                                        <h4
+                                          data-changed={
+                                            field.state.value[index].host !==
+                                            endpointsData.endpoints.external[index]?.host
+                                              ? true
+                                              : undefined
+                                          }
+                                          className="data-changed:text-process max-w-full px-1.5 font-semibold"
+                                        >
+                                          Domain
+                                        </h4>
                                         <form.AppField
                                           name={`externalEndpoints[${index}].host`}
                                           validators={{
@@ -250,7 +260,19 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                                         </form.AppField>
                                       </div>
                                       <div className="flex w-full flex-col gap-1.5">
-                                        <h4 className="max-w-full px-1.5 font-semibold">Port</h4>
+                                        <h4
+                                          data-changed={
+                                            field.state.value[index].port !==
+                                            endpointsData.endpoints.external[
+                                              index
+                                            ]?.port.port.toString()
+                                              ? true
+                                              : undefined
+                                          }
+                                          className="data-changed:text-process max-w-full px-1.5 font-semibold"
+                                        >
+                                          Port
+                                        </h4>
                                         <form.AppField
                                           name={`externalEndpoints[${index}].port`}
                                           validators={{
