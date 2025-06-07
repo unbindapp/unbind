@@ -17,7 +17,7 @@ import { cn } from "@/components/ui/utils";
 import { validateDomain } from "@/lib/helpers/validate-domain";
 import { validatePort } from "@/lib/helpers/validate-port";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { TServiceShallow } from "@/server/trpc/api/services/types";
+import { TExternalEndpoint, TServiceShallow } from "@/server/trpc/api/services/types";
 import { useStore } from "@tanstack/react-form";
 import { GlobeIcon, GlobeLockIcon, NetworkIcon, PenIcon, PlusIcon, Trash2Icon } from "lucide-react";
 
@@ -67,30 +67,6 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
     query: { data: endpointsData, isPending: isPendingEndpoints, error: errorEndpoints },
   } = useServiceEndpoints();
 
-  const form = useAppForm({
-    defaultValues: {
-      externalEndpoints:
-        endpointsData?.endpoints.external.map((e) => ({
-          host: e.host,
-          port: e.port.port.toString(),
-          isEditing: false,
-        })) || [],
-    },
-  });
-
-  const changeCount = useStore(form.store, (s) => {
-    let count = 0;
-    s.values.externalEndpoints.forEach((endpoint, index) => {
-      if (endpoint.host !== endpointsData?.endpoints.external[index]?.host) {
-        count++;
-      }
-      if (endpoint.port !== endpointsData?.endpoints.external[index]?.port.port.toString()) {
-        count++;
-      }
-    });
-    return count;
-  });
-
   return (
     <SettingsSection title="Networking" id="networking" Icon={NetworkIcon}>
       {(service.type === "github" || service.type === "docker-image") && (
@@ -121,216 +97,13 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                     )}
                   />
                 )}
-                {endpointsData?.endpoints && (
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      form.handleSubmit();
-                    }}
-                    className="flex w-full flex-col gap-2"
-                  >
-                    <form.AppField name="externalEndpoints" mode="array">
-                      {(field) =>
-                        field.state.value.map((value, index) => (
-                          <div
-                            data-editing={value.isEditing ? true : undefined}
-                            key={value.host + value.port}
-                            className="data-editing:border-process/25 group/field flex w-full flex-col rounded-lg border"
-                          >
-                            <form.Subscribe
-                              selector={(s) => ({
-                                isEditing: s.values.externalEndpoints[index].isEditing,
-                              })}
-                              children={({ isEditing }) => (
-                                <>
-                                  {endpointsData.endpoints.external[index] && (
-                                    <BlockItemButtonLike
-                                      asElement="div"
-                                      classNameText="whitespace-normal"
-                                      className="group-data-editing/field:bg-process/8 group-data-editing/field:text-process border-none group-data-editing/field:rounded-b-none"
-                                      key={
-                                        endpointsData.endpoints.external[index].host +
-                                        endpointsData.endpoints.external[index].port.port
-                                      }
-                                      text={getDisplayUrlExternal({
-                                        host: endpointsData.endpoints.external[index].host,
-                                        port: "",
-                                      })}
-                                      Icon={({ className }: { className?: string }) => (
-                                        <GlobeIcon className={cn("scale-90", className)} />
-                                      )}
-                                      SuffixComponent={({ className }) => (
-                                        <div
-                                          className={cn(
-                                            "-my-2.5 -mr-3 flex items-start justify-end self-stretch p-1",
-                                            isEditing && "opacity-0",
-                                            className,
-                                          )}
-                                        >
-                                          <CopyButton
-                                            disabled={isEditing}
-                                            className="size-8"
-                                            classNameIcon="size-4"
-                                            valueToCopy={getDisplayUrlExternal({
-                                              host: endpointsData.endpoints.external[index].host,
-                                              port: endpointsData.endpoints.external[
-                                                index
-                                              ].port.port.toString(),
-                                            })}
-                                          />
-                                          <Button
-                                            disabled={isEditing}
-                                            type="button"
-                                            size="icon"
-                                            variant="ghost"
-                                            className="text-muted-more-foreground size-8 rounded-md"
-                                            onClick={() => {
-                                              field.state.value.forEach((_, i) =>
-                                                form.setFieldValue(
-                                                  `externalEndpoints[${i}].isEditing`,
-                                                  false,
-                                                ),
-                                              );
-                                              form.setFieldValue(
-                                                `externalEndpoints[${index}].isEditing`,
-                                                true,
-                                              );
-                                            }}
-                                          >
-                                            <PenIcon className="size-4" />
-                                          </Button>
-                                          <Button
-                                            disabled={isEditing}
-                                            type="button"
-                                            size="icon"
-                                            variant="ghost-destructive"
-                                            className="text-muted-more-foreground size-8 rounded-md"
-                                          >
-                                            <Trash2Icon className="size-4" />
-                                          </Button>
-                                        </div>
-                                      )}
-                                    />
-                                  )}
-                                  {isEditing && (
-                                    <div className="border-process/25 flex w-full flex-col gap-4 border-t px-3 pt-2.5 pb-3 sm:px-4 sm:pt-3 sm:pb-4">
-                                      <div className="flex w-full flex-col gap-1.5">
-                                        <h4
-                                          data-changed={
-                                            field.state.value[index].host !==
-                                            endpointsData.endpoints.external[index]?.host
-                                              ? true
-                                              : undefined
-                                          }
-                                          className="data-changed:text-process max-w-full px-1.5 font-semibold"
-                                        >
-                                          Domain
-                                        </h4>
-                                        <form.AppField
-                                          name={`externalEndpoints[${index}].host`}
-                                          validators={{
-                                            onChange: ({ value }) =>
-                                              validateDomain({ value, isPublic: true }),
-                                          }}
-                                        >
-                                          {(subField) => (
-                                            <field.DomainInput
-                                              field={subField}
-                                              value={subField.state.value}
-                                              onBlur={subField.handleBlur}
-                                              onChange={(e) => {
-                                                subField.handleChange(e.target.value);
-                                              }}
-                                              placeholder="example.com"
-                                              autoCapitalize="off"
-                                              autoCorrect="off"
-                                              autoComplete="off"
-                                              spellCheck="false"
-                                              hideCard={
-                                                endpointsData.endpoints.external[index].host ===
-                                                  field.state.value[index].host &&
-                                                endpointsData.endpoints.external[
-                                                  index
-                                                ].port.port.toString() ===
-                                                  field.state.value[index].port
-                                              }
-                                            />
-                                          )}
-                                        </form.AppField>
-                                      </div>
-                                      <div className="flex w-full flex-col gap-1.5">
-                                        <h4
-                                          data-changed={
-                                            field.state.value[index].port !==
-                                            endpointsData.endpoints.external[
-                                              index
-                                            ]?.port.port.toString()
-                                              ? true
-                                              : undefined
-                                          }
-                                          className="data-changed:text-process max-w-full px-1.5 font-semibold"
-                                        >
-                                          Port
-                                        </h4>
-                                        <form.AppField
-                                          name={`externalEndpoints[${index}].port`}
-                                          validators={{
-                                            onChange: ({ value }) =>
-                                              validatePort({ value, isPublic: false }),
-                                          }}
-                                        >
-                                          {(subField) => (
-                                            <field.TextField
-                                              field={subField}
-                                              value={subField.state.value}
-                                              onBlur={subField.handleBlur}
-                                              onChange={(e) => {
-                                                subField.handleChange(e.target.value);
-                                              }}
-                                              placeholder="3000"
-                                              autoCapitalize="off"
-                                              autoCorrect="off"
-                                              autoComplete="off"
-                                              spellCheck="false"
-                                              inputMode="numeric"
-                                            />
-                                          )}
-                                        </form.AppField>
-                                      </div>
-                                      <div className="mt-1 flex w-full">
-                                        <div className="w-1/2 pr-1.5">
-                                          <Button
-                                            variant="outline-process"
-                                            className="text-foreground has-hover:hover:text-foreground active:text-foreground w-full"
-                                            onClick={() => {
-                                              form.reset();
-                                            }}
-                                          >
-                                            Cancel
-                                          </Button>
-                                        </div>
-                                        <div className="w-1/2 pl-1.5">
-                                          <Button
-                                            disabled={changeCount < 1}
-                                            variant="process"
-                                            className="w-full"
-                                          >
-                                            Apply{changeCount > 0 ? ` (${changeCount})` : ""}
-                                          </Button>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-                                </>
-                              )}
-                            />
-                          </div>
-                        ))
-                      }
-                    </form.AppField>
-                  </form>
-                )}
+                {endpointsData?.endpoints &&
+                  endpointsData.endpoints.external.map((endpoint) => (
+                    <DomainPortCard
+                      key={`${endpoint.host}:${endpoint.port.port}`}
+                      endpoint={endpoint}
+                    />
+                  ))}
                 <BlockItemButtonLike
                   type="button"
                   isPending={isPendingEndpoints}
@@ -408,4 +181,187 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
 
 function getDisplayUrlExternal(endpoint: { host: string; port: string }) {
   return `${endpoint.host}${endpoint.port !== "443" && endpoint.port ? `:${endpoint.port}` : ""}`;
+}
+
+function DomainPortCard({ endpoint }: { endpoint: TExternalEndpoint }) {
+  const form = useAppForm({
+    defaultValues: {
+      host: endpoint.host,
+      port: endpoint.port.port.toString(),
+      isEditing: false,
+    },
+  });
+
+  const changeCount = useStore(form.store, (s) => {
+    let count = 0;
+    if (!s.fieldMeta.host?.isDefaultValue) count++;
+    if (!s.fieldMeta.port?.isDefaultValue) count++;
+    return count;
+  });
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        form.handleSubmit();
+      }}
+      className="flex w-full flex-col gap-2"
+    >
+      <form.Subscribe
+        selector={(s) => ({
+          isEditing: s.values.isEditing,
+        })}
+        children={({ isEditing }) => (
+          <div
+            data-editing={isEditing ? true : undefined}
+            className="data-editing:border-process/25 group/field flex w-full flex-col rounded-lg border"
+          >
+            <>
+              <BlockItemButtonLike
+                asElement="div"
+                classNameText="whitespace-normal"
+                className="group-data-editing/field:bg-process/8 group-data-editing/field:text-process border-none group-data-editing/field:rounded-b-none"
+                text={getDisplayUrlExternal({
+                  host: endpoint.host,
+                  port: "",
+                })}
+                Icon={({ className }: { className?: string }) => (
+                  <GlobeIcon className={cn("scale-90", className)} />
+                )}
+                SuffixComponent={({ className }) => (
+                  <div
+                    className={cn(
+                      "-my-2.5 -mr-3 flex items-start justify-end self-stretch p-1",
+                      isEditing && "opacity-0",
+                      className,
+                    )}
+                  >
+                    <CopyButton
+                      disabled={isEditing}
+                      className="size-8"
+                      classNameIcon="size-4"
+                      valueToCopy={getDisplayUrlExternal({
+                        host: endpoint.host,
+                        port: "",
+                      })}
+                    />
+                    <Button
+                      disabled={isEditing}
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      className="text-muted-more-foreground size-8 rounded-md"
+                      onClick={() => {
+                        form.setFieldValue("isEditing", true);
+                      }}
+                    >
+                      <PenIcon className="size-4" />
+                    </Button>
+                    <Button
+                      disabled={isEditing}
+                      type="button"
+                      size="icon"
+                      variant="ghost-destructive"
+                      className="text-muted-more-foreground size-8 rounded-md"
+                    >
+                      <Trash2Icon className="size-4" />
+                    </Button>
+                  </div>
+                )}
+              />
+              {isEditing && (
+                <div className="border-process/25 flex w-full flex-col gap-4 border-t px-3 pt-2.5 pb-3 sm:px-4 sm:pt-3 sm:pb-4">
+                  <div className="flex w-full flex-col gap-1.5">
+                    <form.AppField
+                      name="host"
+                      validators={{
+                        onChange: ({ value }) => validateDomain({ value, isPublic: true }),
+                      }}
+                    >
+                      {(field) => (
+                        <>
+                          <h4
+                            data-changed={!field.state.meta.isDefaultValue ? true : undefined}
+                            className="data-changed:text-process max-w-full px-1.5 font-semibold"
+                          >
+                            Domain
+                          </h4>
+                          <field.DomainInput
+                            field={field}
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => {
+                              field.handleChange(e.target.value);
+                            }}
+                            placeholder="example.com"
+                            autoCapitalize="off"
+                            autoCorrect="off"
+                            autoComplete="off"
+                            spellCheck="false"
+                            hideCard={field.state.meta.isDefaultValue}
+                          />
+                        </>
+                      )}
+                    </form.AppField>
+                  </div>
+                  <div className="flex w-full flex-col gap-1.5">
+                    <form.AppField
+                      name="port"
+                      validators={{
+                        onChange: ({ value }) => validatePort({ value, isPublic: false }),
+                      }}
+                    >
+                      {(field) => (
+                        <>
+                          <h4
+                            data-changed={!field.state.meta.isDefaultValue ? true : undefined}
+                            className="data-changed:text-process max-w-full px-1.5 font-semibold"
+                          >
+                            Port
+                          </h4>
+                          <field.TextField
+                            field={field}
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => {
+                              field.handleChange(e.target.value);
+                            }}
+                            placeholder="3000"
+                            autoCapitalize="off"
+                            autoCorrect="off"
+                            autoComplete="off"
+                            spellCheck="false"
+                            inputMode="numeric"
+                          />
+                        </>
+                      )}
+                    </form.AppField>
+                  </div>
+                  <div className="mt-1 flex w-full">
+                    <div className="w-1/2 pr-1.5">
+                      <Button
+                        variant="outline-process"
+                        className="text-foreground has-hover:hover:text-foreground active:text-foreground w-full"
+                        onClick={() => {
+                          form.reset();
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                    <div className="w-1/2 pl-1.5">
+                      <Button disabled={changeCount < 1} variant="process" className="w-full">
+                        Apply{changeCount > 0 ? ` (${changeCount})` : ""}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          </div>
+        )}
+      />
+    </form>
+  );
 }
