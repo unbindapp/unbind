@@ -215,7 +215,7 @@ function DomainPortCard({ endpoint }: { endpoint: TExternalEndpoint }) {
         children={({ isEditing }) => (
           <div
             data-editing={isEditing ? true : undefined}
-            className="data-editing:border-process/25 group/field flex w-full flex-col rounded-lg border"
+            className="data-editing:border-process/25 group/field flex w-full flex-col overflow-hidden rounded-lg border"
           >
             <>
               <BlockItemButtonLike
@@ -271,75 +271,79 @@ function DomainPortCard({ endpoint }: { endpoint: TExternalEndpoint }) {
                 )}
               />
               {isEditing && (
-                <div className="border-process/25 flex w-full flex-col gap-4 border-t px-3 pt-2.5 pb-3 sm:px-4 sm:pt-3 sm:pb-4">
-                  <div className="flex w-full flex-col gap-1.5">
-                    <form.AppField
-                      name="host"
-                      validators={{
-                        onChange: ({ value }) => validateDomain({ value, isPublic: true }),
-                      }}
-                    >
-                      {(field) => (
-                        <>
-                          <h4
-                            data-changed={!field.state.meta.isDefaultValue ? true : undefined}
-                            className="data-changed:text-process max-w-full px-1.5 font-semibold"
-                          >
-                            Domain
-                          </h4>
-                          <field.DomainInput
-                            field={field}
-                            value={field.state.value}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => {
-                              field.handleChange(e.target.value);
-                            }}
-                            placeholder="example.com"
-                            autoCapitalize="off"
-                            autoCorrect="off"
-                            autoComplete="off"
-                            spellCheck="false"
-                            hideCard={field.state.meta.isDefaultValue}
-                          />
-                        </>
-                      )}
-                    </form.AppField>
+                <div className="border-process/25 flex w-full flex-col border-t">
+                  <div className="flex w-full flex-col gap-4 px-3 pt-3 pb-3.25 sm:px-4.5 sm:pt-3.75 sm:pb-4.75">
+                    <Block>
+                      <form.AppField
+                        name="host"
+                        validators={{
+                          onChange: ({ value }) => validateDomain({ value, isPublic: true }),
+                        }}
+                      >
+                        {(field) => (
+                          <BlockItem className="w-full md:w-full">
+                            <BlockItemHeader type="column">
+                              <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
+                                Domain
+                              </BlockItemTitle>
+                            </BlockItemHeader>
+                            <BlockItemContent>
+                              <field.DomainInput
+                                field={field}
+                                value={field.state.value}
+                                onBlur={field.handleBlur}
+                                onChange={(e) => {
+                                  field.handleChange(e.target.value);
+                                }}
+                                placeholder="example.com"
+                                autoCapitalize="off"
+                                autoCorrect="off"
+                                autoComplete="off"
+                                spellCheck="false"
+                                hideCard={field.state.meta.isDefaultValue}
+                              />
+                            </BlockItemContent>
+                          </BlockItem>
+                        )}
+                      </form.AppField>
+                    </Block>
+                    <Block>
+                      <form.AppField
+                        name="port"
+                        validators={{
+                          onChange: ({ value }) => validatePort({ value, isPublic: false }),
+                        }}
+                      >
+                        {(field) => (
+                          <BlockItem className="w-full md:w-full">
+                            <BlockItemHeader type="column">
+                              <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
+                                Port
+                              </BlockItemTitle>
+                            </BlockItemHeader>
+                            <BlockItemContent>
+                              <field.TextField
+                                field={field}
+                                value={field.state.value}
+                                onBlur={field.handleBlur}
+                                onChange={(e) => {
+                                  field.handleChange(e.target.value);
+                                }}
+                                placeholder="3000"
+                                autoCapitalize="off"
+                                autoCorrect="off"
+                                autoComplete="off"
+                                spellCheck="false"
+                                inputMode="numeric"
+                              />
+                            </BlockItemContent>
+                          </BlockItem>
+                        )}
+                      </form.AppField>
+                    </Block>
                   </div>
-                  <div className="flex w-full flex-col gap-1.5">
-                    <form.AppField
-                      name="port"
-                      validators={{
-                        onChange: ({ value }) => validatePort({ value, isPublic: false }),
-                      }}
-                    >
-                      {(field) => (
-                        <>
-                          <h4
-                            data-changed={!field.state.meta.isDefaultValue ? true : undefined}
-                            className="data-changed:text-process max-w-full px-1.5 font-semibold"
-                          >
-                            Port
-                          </h4>
-                          <field.TextField
-                            field={field}
-                            value={field.state.value}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => {
-                              field.handleChange(e.target.value);
-                            }}
-                            placeholder="3000"
-                            autoCapitalize="off"
-                            autoCorrect="off"
-                            autoComplete="off"
-                            spellCheck="false"
-                            inputMode="numeric"
-                          />
-                        </>
-                      )}
-                    </form.AppField>
-                  </div>
-                  <div className="mt-1 flex w-full">
-                    <div className="w-1/2 pr-1.5">
+                  <div className="bg-process/8 border-process/20 mt-1 flex w-full border-t p-1.5">
+                    <div className="w-1/2 p-1.5">
                       <Button
                         variant="outline-process"
                         className="text-foreground has-hover:hover:text-foreground active:text-foreground w-full"
@@ -350,8 +354,8 @@ function DomainPortCard({ endpoint }: { endpoint: TExternalEndpoint }) {
                         Cancel
                       </Button>
                     </div>
-                    <div className="w-1/2 pl-1.5">
-                      <Button disabled={changeCount < 1} variant="process" className="w-full">
+                    <div className="w-1/2 p-1.5">
+                      <Button variant="process" className="w-full">
                         Apply{changeCount > 0 ? ` (${changeCount})` : ""}
                       </Button>
                     </div>

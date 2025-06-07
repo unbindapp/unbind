@@ -43,12 +43,12 @@ export function SettingsSection({
   return (
     <Wrapper
       data-changed={changeCount !== undefined && changeCount > 0 ? true : undefined}
-      className={cn("group/wrapper data-changed:border-process/20", className)}
+      className={cn("group/wrapper data-changed:border-process/25", className)}
       {...rest}
     >
       <div
         className={cn(
-          "text-muted-foreground group-data-changed/wrapper:text-process bg-background-hover group-data-changed/wrapper:border-process/15 group-data-changed/wrapper:bg-process/8 flex w-full items-start justify-between gap-4 border-b px-3.5 sm:px-4",
+          "text-muted-foreground group-data-changed/wrapper:text-process bg-background-hover group-data-changed/wrapper:border-process/20 group-data-changed/wrapper:bg-process/8 flex w-full items-start justify-between gap-4 border-b px-3.5 sm:px-4",
           classNameHeader,
         )}
       >
