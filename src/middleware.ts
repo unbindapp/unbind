@@ -43,6 +43,22 @@ export const config = {
 };
 
 export const middleware: NextMiddleware = async (request: NextRequest) => {
+  // Handle simple health check endpoint
+  if (request.nextUrl.pathname === "/health") {
+    return new NextResponse(
+      JSON.stringify({
+        status: "ok",
+        timestamp: new Date().toISOString(),
+      }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+  }
+
   const token = await getToken({
     cookieName: sessionCookieName,
     req: request,
