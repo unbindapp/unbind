@@ -9,12 +9,21 @@ export function getSourceIdAndBucketNameFromValue(value: string) {
   const parts = value.split(sourceAndBucketSeparator);
   if (parts.length < 3) {
     return {
-      sourceId: undefined,
-      bucketName: undefined,
+      sourceId: "",
+      bucketName: "",
     };
   }
   return {
     sourceId: parts[parts.length - 2],
     bucketName: parts[parts.length - 1],
   };
+}
+
+export function getValueFromSourceAndBucket(
+  sourceId: string | undefined,
+  sourceName: string | undefined,
+  bucketName: string | undefined,
+): string {
+  if (!sourceId || !sourceName || !bucketName) return "";
+  return `${sourceName} / ${bucketName}${sourceAndBucketSeparator}${sourceName}${sourceAndBucketSeparator}${sourceId}${sourceAndBucketSeparator}${bucketName}`;
 }

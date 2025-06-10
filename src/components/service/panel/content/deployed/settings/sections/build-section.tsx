@@ -9,6 +9,9 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/service/panel/content/undeployed/block";
+import useUpdateService, {
+  TUpdateServiceInputSimple,
+} from "@/components/service/use-update-service";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { TGitSectionProps } from "@/components/settings/types";
@@ -21,8 +24,7 @@ import {
 } from "@/server/trpc/api/services/types";
 import { useStore } from "@tanstack/react-form";
 import { PlusIcon, WrenchIcon } from "lucide-react";
-import { useRef } from "react";
-import { toast } from "sonner";
+import { useMemo, useRef } from "react";
 
 type TProps = {
   service: TServiceShallow;
@@ -56,6 +58,20 @@ export default function BuildSection({ service }: TProps) {
 }
 
 function GitSection({ service }: TGitSectionProps) {
+  const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
+
+  const {
+    mutateAsync: updateService,
+    isPending: isPendingUpdate,
+    error: errorUpdate,
+    reset: resetUpdate,
+  } = useUpdateService({
+    onSuccess: () => {
+      form.reset();
+    },
+    idToHighlight: sectionHighlightId,
+  });
+
   const form = useAppForm({
     defaultValues: {
       builder: service.config.builder,
@@ -65,11 +81,52 @@ function GitSection({ service }: TGitSectionProps) {
       dockerBuilderBuildContext: service.config.docker_builder_build_context || "",
       startCommand: service.config.run_command || "",
     },
-    onSubmit: ({}) => {
-      toast.success("Changes saved successfully.", {
-        description: "This is fake",
-        duration: 5000,
-      });
+    onSubmit: async ({ formApi, value }) => {
+      let hasChanged = false;
+      const changes: TUpdateServiceInputSimple = {};
+
+      if (formApi.getFieldMeta("builder")?.isDefaultValue === false) {
+        changes.builder = value.builder as TGitServiceBuilder;
+        hasChanged = true;
+      }
+      if (
+        value.builder === "railpack" &&
+        formApi.getFieldMeta("railpackBuilderInstallCommand")?.isDefaultValue === false
+      ) {
+        changes.railpackBuilderInstallCommand = value.railpackBuilderInstallCommand;
+        hasChanged = true;
+      }
+      if (
+        value.builder === "railpack" &&
+        formApi.getFieldMeta("railpackBuilderBuildCommand")?.isDefaultValue === false
+      ) {
+        changes.railpackBuilderBuildCommand = value.railpackBuilderBuildCommand;
+        hasChanged = true;
+      }
+      if (
+        value.builder === "docker" &&
+        formApi.getFieldMeta("dockerBuilderDockerfilePath")?.isDefaultValue === false
+      ) {
+        changes.dockerBuilderDockerfilePath = value.dockerBuilderDockerfilePath;
+        hasChanged = true;
+      }
+      if (
+        value.builder === "docker" &&
+        formApi.getFieldMeta("dockerBuilderBuildContext")?.isDefaultValue === false
+      ) {
+        changes.dockerBuilderBuildContext = value.dockerBuilderBuildContext;
+        hasChanged = true;
+      }
+      if (formApi.getFieldMeta("startCommand")?.isDefaultValue === false) {
+        changes.startCommand = value.startCommand;
+        hasChanged = true;
+      }
+
+      if (hasChanged) {
+        await updateService(changes);
+      } else {
+        form.reset();
+      }
     },
   });
 
@@ -106,8 +163,14 @@ function GitSection({ service }: TGitSectionProps) {
       id="build"
       Icon={WrenchIcon}
       changeCount={changeCount}
-      onClickResetChanges={() => form.reset()}
-      /* SubmitButton={form.SubmitButton} */
+      onClickResetChanges={() => {
+        form.reset();
+        resetUpdate();
+      }}
+      SubmitButton={form.SubmitButton}
+      isPending={isPendingUpdate}
+      error={errorUpdate?.message}
+      entityId={sectionHighlightId}
     >
       <Block>
         <form.AppField
@@ -473,4 +536,8 @@ function GitSection({ service }: TGitSectionProps) {
       />
     </SettingsSection>
   );
+}
+
+function getEntityId(service: TServiceShallow): string {
+  return `build-${service.id}`;
 }

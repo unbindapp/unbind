@@ -351,14 +351,14 @@ export const HealthCheckTypeSchema = z.enum(['http', 'exec', 'none']);
 export const HealthCheckSchema = z
   .object({
     command: z.string().optional(), // Command for exec health checks
-    liveness_failure_threshold: z.number(), // Number of failures before the container is considered unhealthy
+    liveness_failure_threshold: z.number().nullable().optional(), // Number of failures before the container is considered unhealthy
     path: z.string().optional(), // Path for http health checks
-    period_seconds: z.number(), // Period in seconds for health checks
+    period_seconds: z.number().nullable().optional(), // Period in seconds for health checks
     port: z.number().optional(), // Port for http health checks
-    readiness_failure_threshold: z.number(), // Number of failures before the container is considered unhealthy
-    startup_failure_threshold: z.number(), // Number of failures before the container is considered unhealthy
-    timeout_seconds: z.number(), // Timeout in seconds for health checks
-    type: HealthCheckTypeSchema,
+    readiness_failure_threshold: z.number().nullable().optional(), // Number of failures before the container is considered unhealthy
+    startup_failure_threshold: z.number().nullable().optional(), // Number of failures before the container is considered unhealthy
+    timeout_seconds: z.number().nullable().optional(), // Timeout in seconds for health checks
+    type: HealthCheckTypeSchema.optional(),
   })
   .strip();
 

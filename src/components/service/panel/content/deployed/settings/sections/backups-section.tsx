@@ -1,5 +1,7 @@
 import {
   getSourceAndBucketLabelFromValue,
+  getSourceIdAndBucketNameFromValue,
+  getValueFromSourceAndBucket,
   sourceAndBucketSeparator,
 } from "@/components/service/helpers";
 import {
@@ -12,6 +14,9 @@ import {
   BlockItemTitle,
 } from "@/components/service/panel/content/undeployed/block";
 import { useService } from "@/components/service/service-provider";
+import useUpdateService, {
+  TUpdateServiceInputSimple,
+} from "@/components/service/use-update-service";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { TDatabaseSectionProps } from "@/components/settings/types";
@@ -28,7 +33,6 @@ import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { useStore } from "@tanstack/react-form";
 import { CylinderIcon, DatabaseBackupIcon, OctagonXIcon } from "lucide-react";
 import { useCallback, useMemo } from "react";
-import { toast } from "sonner";
 
 type TProps = {
   service: TServiceShallow;
@@ -57,15 +61,62 @@ export default function BackupsSection({ service }: TProps) {
 }
 
 function DatabaseSection({ service }: TDatabaseSectionProps) {
-  const { teamId } = useService();
   const {
     query: { data: dataS3Sources, isPending: isPendingS3Sources, error: errorS3Sources },
   } = useS3Sources();
 
+  const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
+
+  const {
+    mutateAsync: updateService,
+    isPending: isPendingUpdate,
+    error: errorUpdate,
+    reset: resetUpdate,
+    teamId,
+  } = useUpdateService({
+    onSuccess: () => {
+      form.reset();
+    },
+    idToHighlight: sectionHighlightId,
+  });
+
+  const form = useAppForm({
+    defaultValues: {
+      sourceAndBucket:
+        service.config.s3_backup_source_id && service.config.s3_backup_bucket
+          ? getValueFromSourceAndBucket(
+              service.config.s3_backup_source_id,
+              dataS3Sources?.sources.find(
+                (source) => source.id === service.config.s3_backup_source_id,
+              )?.name,
+              service.config.s3_backup_bucket,
+            )
+          : "",
+    },
+    onSubmit: async ({ formApi, value }) => {
+      let hasChanged = false;
+      const changes: TUpdateServiceInputSimple = {};
+
+      if (formApi.getFieldMeta("sourceAndBucket")?.isDefaultValue === false) {
+        const { sourceId, bucketName } = getSourceIdAndBucketNameFromValue(value.sourceAndBucket);
+        changes.s3BackupSourceId =
+          sourceId === "" ? "00000000-0000-0000-0000-000000000000" : sourceId;
+        changes.s3BackupBucket = bucketName;
+        hasChanged = true;
+      }
+
+      if (hasChanged) {
+        await updateService(changes);
+      } else {
+        form.reset();
+      }
+    },
+  });
+
   const sourceAndBucketItems = useMemo(() => {
     const items: TCommandItem[] | undefined = dataS3Sources?.sources.flatMap((source) =>
       source.buckets.map((bucket) => {
-        const value = `${source.name} / ${bucket.name}${sourceAndBucketSeparator}${source.name}${sourceAndBucketSeparator}${source.id}${sourceAndBucketSeparator}${bucket.name}`;
+        const value = getValueFromSourceAndBucket(source.id, source.name, bucket.name);
         const label = getSourceAndBucketLabelFromValue(value);
         return {
           value,
@@ -75,21 +126,6 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
     );
     return items;
   }, [dataS3Sources]);
-
-  const form = useAppForm({
-    defaultValues: {
-      sourceAndBucket:
-        service.config.s3_backup_source_id && service.config.s3_backup_bucket
-          ? `${service.config.s3_backup_source_id}${sourceAndBucketSeparator}${service.config.s3_backup_bucket}`
-          : "",
-    },
-    onSubmit: async () => {
-      toast.success("Changes saved successfully.", {
-        description: "This is fake",
-        duration: 5000,
-      });
-    },
-  });
 
   const changeCount = useStore(form.store, (s) => {
     let count = 0;
@@ -122,9 +158,15 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
       id="backups"
       Icon={DatabaseBackupIcon}
       changeCount={changeCount}
-      onClickResetChanges={() => form.reset()}
+      onClickResetChanges={() => {
+        form.reset();
+        resetUpdate();
+      }}
       classNameContent="gap-5"
-      /* SubmitButton={form.SubmitButton} */
+      SubmitButton={form.SubmitButton}
+      isPending={isPendingUpdate}
+      error={errorUpdate?.message}
+      entityId={sectionHighlightId}
     >
       <Block>
         <form.AppField
@@ -204,4 +246,8 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
       </Block>
     </SettingsSection>
   );
+}
+
+function getEntityId(service: TServiceShallow): string {
+  return `backups-${service.id}`;
 }

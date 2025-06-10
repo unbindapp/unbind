@@ -139,7 +139,7 @@ export const servicesRouter = createTRPCRouter({
       s3BackupBucket,
       builder,
       railpackBuilderBuildCommand,
-      railpackBuilderStartCommand,
+      railpackBuilderInstallCommand,
       dockerBuilderDockerfilePath,
       dockerBuilderBuildContext,
       startCommand,
@@ -189,8 +189,8 @@ export const servicesRouter = createTRPCRouter({
       s3_backup_source_id: s3BackupSourceId,
       s3_backup_bucket: s3BackupBucket,
       builder,
-      railpack_builder_build_command: railpackBuilderStartCommand,
-      railpack_builder_install_command: railpackBuilderBuildCommand,
+      railpack_builder_install_command: railpackBuilderInstallCommand,
+      railpack_builder_build_command: railpackBuilderBuildCommand,
       docker_builder_dockerfile_path: dockerBuilderDockerfilePath,
       docker_builder_build_context: dockerBuilderBuildContext,
       run_command: startCommand,
@@ -198,6 +198,7 @@ export const servicesRouter = createTRPCRouter({
       resources,
       health_check: healthCheck,
     });
+
     return {
       service: service.data,
     };
