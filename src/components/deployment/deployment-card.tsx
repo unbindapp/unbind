@@ -6,9 +6,9 @@ import { useDeploymentPanel } from "@/components/deployment/panel/deployment-pan
 import ErrorLine from "@/components/error-line";
 import AnimatedTimerIcon from "@/components/icons/animated-timer";
 import BrandIcon from "@/components/icons/brand";
-import { useServicesUtils } from "@/components/service/services-provider";
 import { useNow } from "@/components/providers/now-provider";
 import { useService, useServiceUtils } from "@/components/service/service-provider";
+import { useServicesUtils } from "@/components/service/services-provider";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -67,7 +67,7 @@ export default function DeploymentCard({
 }: TProps) {
   const { openPanel } = useDeploymentPanel();
 
-  const { title, titleNotFound } = getTitle(deployment, service, isPlaceholder);
+  const { title, titleNotFound, TitleSuffix } = getTitle(deployment, service, isPlaceholder);
   const brand = getBrand(service, isPlaceholder);
 
   const isCurrentDeployment = isPlaceholder ? false : currentDeployment?.id === deployment.id;
@@ -111,6 +111,7 @@ export default function DeploymentCard({
             className="data-no-title:bg-border data-no-title:text-muted-foreground group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton max-w-full min-w-0 shrink leading-tight group-data-placeholder/card:rounded-md group-data-placeholder/card:text-transparent data-no-title:-my-0.25 data-no-title:rounded data-no-title:px-1.5 data-no-title:py-0.25"
           >
             {title}
+            {TitleSuffix}
           </p>
           {isPlaceholder ? (
             <DeploymentInfo isPlaceholder={true} />
@@ -435,19 +436,28 @@ function getTitle(
   deployment?: TDeploymentShallow,
   service?: TServiceShallow,
   isPlaceholder?: boolean,
-) {
+): {
+  title: string;
+  titleNotFound: boolean;
+  TitleSuffix?: ReactNode;
+} {
   if (isPlaceholder || !service || !deployment)
     return { title: "Loading title...", titleNotFound: false };
-  if (service.type === "docker-image")
+  if (service.type === "docker-image" && deployment.image) {
+    const title = deployment.image.endsWith(":latest")
+      ? deployment.image.slice(0, -7) // Remove ":latest"
+      : deployment.image;
     return {
-      title: service.config.image || "Image unavailable",
-      titleNotFound: !service.config.image,
+      title: title || "Image unavailable",
+      titleNotFound: !deployment.image,
     };
-  if (service.type === "github")
+  }
+  if (service.type === "github") {
     return {
       title: deployment.commit_message || "Commit message unavailable",
       titleNotFound: !deployment.commit_message,
     };
+  }
   if (service.type === "database") {
     return {
       title: service.database_type
