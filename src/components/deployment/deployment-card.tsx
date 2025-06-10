@@ -34,7 +34,14 @@ import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-differen
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { api } from "@/server/trpc/setup/client";
-import { EllipsisVerticalIcon, RewindIcon, RocketIcon, RotateCcwIcon } from "lucide-react";
+import {
+  EllipsisVerticalIcon,
+  GitBranchIcon,
+  GitCommitVerticalIcon,
+  RewindIcon,
+  RocketIcon,
+  RotateCcwIcon,
+} from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import Image from "next/image";
 import { HTMLAttributes, ReactNode, useRef, useState } from "react";
@@ -45,18 +52,17 @@ type TProps = HTMLAttributes<HTMLDivElement> &
     | {
         deployment: TDeploymentShallow;
         currentDeployment: TDeploymentShallow | undefined;
-        service: TServiceShallow;
+
         isPlaceholder?: never;
         withCurrentTag?: boolean;
       }
     | {
         deployment?: never;
         currentDeployment?: never;
-        service?: never;
         isPlaceholder: true;
         withCurrentTag?: never;
       }
-  );
+  ) & { service: TServiceShallow };
 
 export default function DeploymentCard({
   deployment,
@@ -67,7 +73,7 @@ export default function DeploymentCard({
 }: TProps) {
   const { openPanel } = useDeploymentPanel();
 
-  const { title, titleNotFound, TitleSuffix } = getTitle(deployment, service, isPlaceholder);
+  const { title, titleNotFound } = getTitle({ deployment, service, isPlaceholder });
   const brand = getBrand(service, isPlaceholder);
 
   const isCurrentDeployment = isPlaceholder ? false : currentDeployment?.id === deployment.id;
@@ -106,13 +112,14 @@ export default function DeploymentCard({
           />
         </div>
         <div className="mt-1.5 flex min-w-0 flex-1 flex-col items-start gap-1.25 pr-2 pb-0.5 sm:mt-0 sm:pl-3">
-          <p
-            data-no-title={titleNotFound ? true : undefined}
-            className="data-no-title:bg-border data-no-title:text-muted-foreground group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton max-w-full min-w-0 shrink leading-tight group-data-placeholder/card:rounded-md group-data-placeholder/card:text-transparent data-no-title:-my-0.25 data-no-title:rounded data-no-title:px-1.5 data-no-title:py-0.25"
-          >
-            {title}
-            {TitleSuffix}
-          </p>
+          <div className="flex w-full flex-col items-start justify-start gap-0.5">
+            <p
+              data-no-title={titleNotFound ? true : undefined}
+              className="data-no-title:bg-border data-no-title:text-muted-foreground group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton max-w-full min-w-0 shrink leading-tight group-data-placeholder/card:rounded-md group-data-placeholder/card:text-transparent data-no-title:-my-0.25 data-no-title:rounded data-no-title:px-1.5 data-no-title:py-0.25"
+            >
+              {title}
+            </p>
+          </div>
           {isPlaceholder ? (
             <DeploymentInfo isPlaceholder={true} />
           ) : (
@@ -432,17 +439,21 @@ function RedeployTrigger({
   );
 }
 
-function getTitle(
-  deployment?: TDeploymentShallow,
-  service?: TServiceShallow,
-  isPlaceholder?: boolean,
-): {
+function getTitle({
+  deployment,
+  service,
+  isPlaceholder,
+}: {
+  deployment?: TDeploymentShallow;
+  service: TServiceShallow;
+  isPlaceholder?: boolean;
+}): {
   title: string;
   titleNotFound: boolean;
-  TitleSuffix?: ReactNode;
 } {
-  if (isPlaceholder || !service || !deployment)
+  if (isPlaceholder || !service || !deployment) {
     return { title: "Loading title...", titleNotFound: false };
+  }
   if (service.type === "docker-image" && deployment.image) {
     const title = deployment.image.endsWith(":latest")
       ? deployment.image.slice(0, -7) // Remove ":latest"
@@ -532,18 +543,39 @@ function DeploymentInfo({ deployment, service, isPlaceholder, className }: TDepl
       ) : (
         <div className="-ml-1.5 h-4.5" />
       )}
-      <div className="flex min-w-0 shrink flex-wrap items-center justify-start gap-1 space-x-1 text-sm leading-tight">
-        <p className="text-muted-foreground group-data-placeholder/time:bg-muted-foreground group-data-placeholder/time:animate-skeleton min-w-0 shrink group-data-placeholder/time:rounded-md group-data-placeholder/time:text-transparent">
+      <div className="flex min-w-0 shrink flex-wrap items-center justify-start gap-0.5 space-x-1.5 text-sm leading-tight">
+        <p className="text-muted-foreground group-data-placeholder/time:bg-muted-foreground group-data-placeholder/time:animate-skeleton max-w-full min-w-0 shrink leading-tight group-data-placeholder/time:rounded-md group-data-placeholder/time:text-transparent">
           {isPlaceholder
-            ? "1 hr. ago | 90s"
+            ? "1 hr. ago via GitHub | 90s"
             : `${deploymentTimeStr} via ${sourceToTitle[service.type] || "Unknown"}`}
         </p>
-        {durationStr && <p className="text-muted-more-foreground">|</p>}
+        {deployment?.git_branch && (
+          <span className="text-muted-more-foreground leading-tight">|</span>
+        )}
+        {deployment?.git_branch && (
+          <p className="text-muted-foreground leading-tigh max-w-full min-w-0 shrink">
+            <GitBranchIcon className="mr-[0.5ch] inline-block size-3.5" />
+            {deployment.git_branch}
+          </p>
+        )}
+        {deployment?.commit_sha && (
+          <span className="text-muted-more-foreground leading-tigh">|</span>
+        )}
+        {deployment?.commit_sha && (
+          <p className="text-muted-foreground leading-tigh -ml-0.5 max-w-full min-w-0 shrink">
+            <GitCommitVerticalIcon className="mr-[0.1ch] inline-block size-3.5" />
+            {deployment.commit_sha.slice(0, 6)}
+          </p>
+        )}
+        {durationStr && <span className="text-muted-more-foreground leading-tigh">|</span>}
         {durationStr && (
-          <div className="text-muted-foreground flex min-w-0 shrink items-center justify-start gap-0.75 font-mono">
-            <AnimatedTimerIcon animate={isBuilding} className="-ml-0.5 size-3.5 shrink-0" />
-            <p className="min-w-0 shrink">{durationStr}</p>
-          </div>
+          <p className="text-muted-foreground leading-tigh max-w-full min-w-0 shrink font-mono leading-tight">
+            <AnimatedTimerIcon
+              animate={isBuilding}
+              className="-mt-0.5 mr-[0.4ch] inline-block size-3.5 shrink-0"
+            />
+            {durationStr}
+          </p>
         )}
       </div>
     </div>

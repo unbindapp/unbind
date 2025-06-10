@@ -59,7 +59,7 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
                 currentDeployment={deploymentsData?.current_deployment}
               />
             ) : (
-              <DeploymentCard isPlaceholder={true} />
+              <DeploymentCard isPlaceholder={true} service={service} />
             )}
           </div>
         )}
@@ -104,7 +104,9 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
         )}
         {!hasData &&
           isPending &&
-          Array.from({ length: 10 }).map((_, i) => <DeploymentCard key={i} isPlaceholder />)}
+          Array.from({ length: 10 }).map((_, i) => (
+            <DeploymentCard key={i} isPlaceholder service={service} />
+          ))}
         {!hasData && !isPending && error && <ErrorCard message={error.message} />}
       </DeploymentPanelProvider>
     </TabWrapper>

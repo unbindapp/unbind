@@ -129,6 +129,7 @@ export const DeploymentResponseSchema = z
     crashing_reasons: z.array(z.string()),
     created_at: z.string().datetime(),
     error: z.string().optional(),
+    git_branch: z.string().optional(),
     id: z.string(),
     image: z.string().optional(),
     instance_events: z.array(EventRecordSchema),
