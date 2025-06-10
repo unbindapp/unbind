@@ -3,7 +3,7 @@
 import ContextCommandPanel from "@/components/command-panel/context-command-panel/context-command-panel";
 import { TContextCommandPanelContext } from "@/components/command-panel/types";
 import { useProject } from "@/components/project/project-provider";
-import { useServices } from "@/components/project/services-provider";
+import { useServices } from "@/components/service/services-provider";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";

@@ -1,4 +1,4 @@
-import { useServicesUtils } from "@/components/project/services-provider";
+import { useServicesUtils } from "@/components/service/services-provider";
 import ServiceIcon from "@/components/service/service-icon";
 import { useServiceUtils } from "@/components/service/service-provider";
 import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";

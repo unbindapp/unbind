@@ -5,7 +5,7 @@ import useCommandPanel from "@/components/command-panel/use-command-panel";
 import BrandIcon from "@/components/icons/brand";
 import { useProject, useProjectUtils } from "@/components/project/project-provider";
 import { useProjectsUtils } from "@/components/project/projects-provider";
-import { useServicesUtils } from "@/components/project/services-provider";
+import { useServicesUtils } from "@/components/service/services-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { cn } from "@/components/ui/utils";

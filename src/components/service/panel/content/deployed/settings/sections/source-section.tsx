@@ -9,6 +9,8 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/service/panel/content/undeployed/block";
+import { useService } from "@/components/service/service-provider";
+import useUpdateService from "@/components/service/use-update-service";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { SettingsSection } from "@/components/settings/settings-section";
 import {
@@ -19,12 +21,11 @@ import {
 import { cn } from "@/components/ui/utils";
 import { defaultDebounceMs } from "@/lib/constants";
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
-import { TServiceShallow } from "@/server/trpc/api/services/types";
+import { TServiceShallow, TUpdateServiceInput } from "@/server/trpc/api/services/types";
 import { api } from "@/server/trpc/setup/client";
 import { useStore } from "@tanstack/react-form";
 import { CodeIcon, GitBranchIcon, MilestoneIcon, PackageIcon, TagIcon } from "lucide-react";
 import { useMemo, useState } from "react";
-import { toast } from "sonner";
 import { useDebounce } from "use-debounce";
 
 type TProps = {
@@ -82,7 +83,25 @@ export default function SourceSection({ service }: TProps) {
   return <ErrorWithWrapper message="Unsupported service type" />;
 }
 
-function GitSection({ owner, repo, branch, installationId }: TGitSectionProps) {
+function GitSection({ owner, repo, branch, installationId, service }: TGitSectionProps) {
+  const { teamId, projectId, environmentId, serviceId } = useService();
+  const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
+
+  const {
+    mutateAsync: updateService,
+    isPending: isPendingUpdate,
+    error: errorUpdate,
+  } = useUpdateService({
+    teamId,
+    projectId,
+    environmentId,
+    serviceId,
+    onSuccess: () => {
+      form.reset();
+    },
+    idToHighlight: sectionHighlightId,
+  });
+
   const {
     data: dataRepository,
     isPending: isPendingRepository,
@@ -91,6 +110,32 @@ function GitSection({ owner, repo, branch, installationId }: TGitSectionProps) {
     owner,
     repoName: repo,
     installationId,
+  });
+
+  const form = useAppForm({
+    defaultValues: {
+      branch,
+    },
+    onSubmit: async ({ value, formApi }) => {
+      let hasChanged = false;
+      const changes: TUpdateServiceInput = {
+        teamId,
+        projectId,
+        environmentId,
+        serviceId,
+      };
+
+      if (formApi.getFieldMeta("branch")?.isDefaultValue === false) {
+        hasChanged = true;
+        changes.gitBranch = value.branch;
+      }
+
+      if (hasChanged) {
+        await updateService(changes);
+      } else {
+        form.reset();
+      }
+    },
   });
 
   const branchItems: TCommandItem[] | undefined = useMemo(() => {
@@ -108,18 +153,6 @@ function GitSection({ owner, repo, branch, installationId }: TGitSectionProps) {
       } as const)
     : ({ asElement: "div" } as const);
 
-  const form = useAppForm({
-    defaultValues: {
-      branch,
-    },
-    onSubmit: async () => {
-      toast.success("Changes saved successfully.", {
-        description: "This is fake",
-        duration: 5000,
-      });
-    },
-  });
-
   const changeCount = useStore(form.store, (s) => {
     let count = 0;
     if (s.fieldMeta.branch?.isDefaultValue === false) count++;
@@ -128,19 +161,22 @@ function GitSection({ owner, repo, branch, installationId }: TGitSectionProps) {
 
   return (
     <SettingsSection
+      asElement="form"
+      title="Source"
+      id="source"
+      entityId={`source-${service.id}`}
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
         form.handleSubmit();
       }}
-      asElement="form"
-      title="Source"
-      id="source"
+      SubmitButton={form.SubmitButton}
+      error={errorUpdate?.message}
+      isPending={isPendingUpdate}
       Icon={CodeIcon}
       changeCount={changeCount}
       onClickResetChanges={() => form.reset()}
       classNameContent="gap-5"
-      SubmitButton={form.SubmitButton}
     >
       <Block>
         <BlockItem className="w-full md:w-full">
@@ -203,10 +239,55 @@ function GitSection({ owner, repo, branch, installationId }: TGitSectionProps) {
   );
 }
 
-function DockerImageSection({ image, tag }: TDockerImageSectionProps) {
+function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
+  const { teamId, projectId, environmentId, serviceId } = useService();
+
   const [commandInputValue, setCommandInputValue] = useState("");
   const imageIsNonDockerHub = isNonDockerHubImage(image);
   const [search] = useDebounce(commandInputValue, defaultDebounceMs);
+
+  const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
+
+  const {
+    mutateAsync: updateService,
+    isPending: isPendingUpdate,
+    error: errorUpdate,
+  } = useUpdateService({
+    teamId,
+    projectId,
+    environmentId,
+    serviceId,
+    onSuccess: () => {
+      form.reset();
+    },
+    idToHighlight: sectionHighlightId,
+  });
+
+  const form = useAppForm({
+    defaultValues: {
+      tag,
+    },
+    onSubmit: async ({ formApi, value }) => {
+      let hasChanged = false;
+      const changes: TUpdateServiceInput = {
+        teamId,
+        projectId,
+        environmentId,
+        serviceId,
+      };
+
+      if (formApi.getFieldMeta("tag")?.isDefaultValue === false) {
+        hasChanged = true;
+        changes.image = `${image}:${value.tag}`;
+      }
+
+      if (hasChanged) {
+        await updateService(changes);
+      } else {
+        form.reset();
+      }
+    },
+  });
 
   const {
     data: dataTags,
@@ -230,18 +311,6 @@ function DockerImageSection({ image, tag }: TDockerImageSectionProps) {
     return items;
   }, [dataTags]);
 
-  const form = useAppForm({
-    defaultValues: {
-      tag,
-    },
-    onSubmit: async () => {
-      toast.success("Changes saved successfully.", {
-        description: "This is fake",
-        duration: 5000,
-      });
-    },
-  });
-
   const changeCount = useStore(form.store, (s) => {
     let count = 0;
     if (s.fieldMeta.tag?.isDefaultValue === false) count++;
@@ -251,18 +320,21 @@ function DockerImageSection({ image, tag }: TDockerImageSectionProps) {
   return (
     <SettingsSection
       asElement="form"
+      title="Source"
+      id="source"
+      entityId={`source-${service.id}`}
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
         form.handleSubmit();
       }}
-      title="Source"
-      id="source"
+      SubmitButton={form.SubmitButton}
+      isPending={isPendingUpdate}
+      error={errorUpdate?.message}
       Icon={CodeIcon}
       changeCount={changeCount}
       onClickResetChanges={() => form.reset()}
       classNameContent="gap-5"
-      SubmitButton={form.SubmitButton}
     >
       <Block>
         <BlockItem className="w-full md:w-full">
@@ -368,4 +440,8 @@ function DatabaseSection({ type, version }: TDatabaseSectionProps) {
       </Block>
     </SettingsSection>
   );
+}
+
+function getEntityId(service: TServiceShallow): string {
+  return `source-${service.id}`;
 }

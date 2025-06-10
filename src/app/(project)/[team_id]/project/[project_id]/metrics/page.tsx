@@ -9,7 +9,7 @@ import MetricsProvider from "@/components/metrics/metrics-provider";
 import MetricsStateProvider from "@/components/metrics/metrics-state-provider";
 import { metricsSearchParams } from "@/components/metrics/search-params";
 import PageWrapper from "@/components/page-wrapper";
-import ServicesProvider from "@/components/project/services-provider";
+import ServicesProvider from "@/components/service/services-provider";
 
 export default async function Page({ params, searchParams }: TProjectPageParams) {
   const [{ teamId, projectId, environmentId }] = await Promise.all([

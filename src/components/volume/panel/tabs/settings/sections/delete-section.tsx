@@ -1,6 +1,6 @@
 "use client";
 
-import { useServices } from "@/components/project/services-provider";
+import { useServices } from "@/components/service/services-provider";
 import DeleteCard from "@/components/settings/delete-card";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { cn } from "@/components/ui/utils";

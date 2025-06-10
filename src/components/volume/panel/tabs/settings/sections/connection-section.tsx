@@ -1,5 +1,5 @@
 import ErrorLine from "@/components/error-line";
-import { useServices } from "@/components/project/services-provider";
+import { useServices } from "@/components/service/services-provider";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { Input } from "@/components/ui/input";
 import { TVolumeShallow } from "@/server/trpc/api/services/types";

@@ -100,7 +100,7 @@ export const UpdateServiceInputSchema = z
     gitBranch: z.string().optional(),
     image: z.string().optional(),
     isPublic: z.boolean().optional(),
-    ports: PortSpecSchema.array().optional(),
+    overwritePorts: PortSpecSchema.array().optional(),
     overwriteHosts: HostSpecSchema.array().optional(),
     addHosts: HostSpecSchema.array().optional(),
     removeHosts: HostSpecSchema.array().optional(),

@@ -20,7 +20,7 @@ import NavigationBar from "@/components/logs/navigation-bar";
 import SearchBar from "@/components/logs/search-bar";
 import TabWrapper from "@/components/navigation/tab-wrapper";
 import NoItemsCard from "@/components/no-items-card";
-import { useServices } from "@/components/project/services-provider";
+import { useServices } from "@/components/service/services-provider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { TLogType } from "@/server/trpc/api/logs/types";

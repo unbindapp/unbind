@@ -1,7 +1,7 @@
 "use client";
 
 import MetricsChartList from "@/components/metrics/metrics-chart-list";
-import { useServices } from "@/components/project/services-provider";
+import { useServices } from "@/components/service/services-provider";
 import { useMemo } from "react";
 
 export default function Charts() {

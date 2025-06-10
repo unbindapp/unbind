@@ -1,6 +1,6 @@
 "use client";
 
-import { useServicesUtils } from "@/components/project/services-provider";
+import { useServicesUtils } from "@/components/service/services-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useService } from "@/components/service/service-provider";
 import DeleteCard from "@/components/settings/delete-card";

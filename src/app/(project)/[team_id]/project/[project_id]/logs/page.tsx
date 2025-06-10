@@ -3,7 +3,7 @@ import {
   TProjectPageParams,
 } from "@/app/(project)/[team_id]/project/[project_id]/_components/search-params";
 import LogViewer from "@/components/logs/log-viewer";
-import ServicesProvider from "@/components/project/services-provider";
+import ServicesProvider from "@/components/service/services-provider";
 import { apiServer } from "@/server/trpc/setup/server";
 import { ResultAsync } from "neverthrow";
 

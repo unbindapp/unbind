@@ -1,4 +1,4 @@
-import { useServicesUtils } from "@/components/project/services-provider";
+import { useServicesUtils } from "@/components/service/services-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { api } from "@/server/trpc/setup/client";

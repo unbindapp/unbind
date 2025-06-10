@@ -1,5 +1,5 @@
 import ErrorLine from "@/components/error-line";
-import { useServices, useServicesUtils } from "@/components/project/services-provider";
+import { useServices, useServicesUtils } from "@/components/service/services-provider";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { useSystem } from "@/components/system/system-provider";
 import { Button } from "@/components/ui/button";

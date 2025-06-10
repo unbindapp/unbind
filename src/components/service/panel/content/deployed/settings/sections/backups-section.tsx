@@ -124,7 +124,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
       changeCount={changeCount}
       onClickResetChanges={() => form.reset()}
       classNameContent="gap-5"
-      SubmitButton={form.SubmitButton}
+      /* SubmitButton={form.SubmitButton} */
     >
       <Block>
         <form.AppField

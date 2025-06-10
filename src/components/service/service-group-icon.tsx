@@ -1,5 +1,5 @@
 import BrandIcon from "@/components/icons/brand";
-import { TServiceGroup } from "@/components/project/service-card-list";
+import { TServiceGroup } from "@/components/service/service-card-list";
 import { cn } from "@/components/ui/utils";
 
 type TProps = {

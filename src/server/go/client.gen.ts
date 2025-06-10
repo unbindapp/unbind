@@ -366,7 +366,7 @@ export const HostSpecSchema = z
   .object({
     host: z.string(),
     path: z.string(),
-    port: z.number().optional(),
+    target_port: z.number().optional(),
   })
   .strip();
 
@@ -446,7 +446,7 @@ export const CreateServiceInputSchema = z
     team_id: z.string(),
     type: ServiceTypeSchema, // Type of service, e.g. 'github', 'docker-image'
     variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Mount variables as volumes
-    volumes: z.array(ServiceVolumeSchema).optional(), // Volumes to mount in the service
+    volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Volumes to mount in the service
   })
   .strip();
 
@@ -488,6 +488,13 @@ export const ServiceConfigResponseSchema = z
   })
   .strip();
 
+export const TemplateResourceRecommendationsSchema = z
+  .object({
+    minimum_cpus: z.number(),
+    minimum_ram_gb: z.number(),
+  })
+  .strip();
+
 export const TemplateShortResponseSchema = z
   .object({
     created_at: z.string().datetime(),
@@ -498,6 +505,7 @@ export const TemplateShortResponseSchema = z
     immutable: z.boolean(),
     keywords: z.array(z.string()),
     name: z.string(),
+    resource_recommendations: TemplateResourceRecommendationsSchema.optional(),
     version: z.number(),
   })
   .strip();
@@ -510,6 +518,7 @@ export const ServiceResponseSchema = z
     database_type: z.string().optional(),
     database_version: z.string().optional(),
     description: z.string(),
+    detected_ports: z.array(PortSpecSchema),
     environment_id: z.string(),
     git_repository: z.string().optional(),
     git_repository_owner: z.string().optional(),
@@ -1079,6 +1088,7 @@ export const TemplateServiceSchema = z
     name: z.string(),
     ports: z.array(PortSpecSchema),
     protected_variables: z.array(z.string()),
+    resources: ResourcesSchema.optional(),
     run_command: z.string().optional(),
     security_context: SecurityContextSchema.optional(),
     type: ServiceTypeSchema,
@@ -1097,6 +1107,7 @@ export const TemplateDefinitionSchema = z
     inputs: z.array(TemplateInputSchema),
     keywords: z.array(z.string()).nullable().optional(),
     name: z.string(),
+    resource_recommendations: TemplateResourceRecommendationsSchema.optional(),
     services: z.array(TemplateServiceSchema),
     version: z.number(),
   })
@@ -1113,6 +1124,7 @@ export const TemplateWithDefinitionResponseSchema = z
     immutable: z.boolean(),
     keywords: z.array(z.string()),
     name: z.string(),
+    resource_recommendations: TemplateResourceRecommendationsSchema.optional(),
     version: z.number(),
   })
   .strip();
@@ -1896,6 +1908,9 @@ export const UpdateServiceGroupResponseBodySchema = z
 export const UpdateServiceInputSchema = z
   .object({
     add_hosts: z.array(HostSpecSchema).nullable().optional(), // Additional hosts to add, will not remove existing hosts
+    add_ports: z.array(PortSpecSchema).nullable().optional(), // Additional ports to add, will not remove existing ports
+    add_variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Additional variable mounts to add, will not remove existing mounts
+    add_volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Additional volumes to add, will not remove existing volumes
     auto_deploy: z.boolean().optional(),
     backup_retention: z.number().optional(), // Number of base backups to retain, e.g. 3
     backup_schedule: z.string().optional(), // Cron expression for the backup schedule, e.g. '0 0 * * *'
@@ -1913,12 +1928,17 @@ export const UpdateServiceInputSchema = z
     is_public: z.boolean().optional(),
     name: z.string().nullable().optional(),
     overwrite_hosts: z.array(HostSpecSchema).nullable().optional(),
-    ports: z.array(PortSpecSchema).nullable().optional(),
+    overwrite_ports: z.array(PortSpecSchema).nullable().optional(),
+    overwrite_variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Mount variables as volumes
+    overwrite_volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Volumes to attach to the service
     project_id: z.string(),
     protected_variables: z.array(z.string()).optional(), // List of protected variables
     railpack_builder_build_command: z.string().optional(),
     railpack_builder_install_command: z.string().optional(),
     remove_hosts: z.array(HostSpecSchema).nullable().optional(), // Hosts to remove
+    remove_ports: z.array(PortSpecSchema).nullable().optional(), // Ports to remove
+    remove_variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Variable mounts to remove
+    remove_volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Volumes to remove from the service
     replicas: z.number().optional(),
     resources: ResourcesSchema.optional(), // Resource limits and requests for the service containers
     run_command: z.string().optional(),
@@ -1926,8 +1946,6 @@ export const UpdateServiceInputSchema = z
     s3_backup_source_id: z.string().optional(),
     service_id: z.string(),
     team_id: z.string(),
-    variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Mount variables as volumes
-    volumes: z.array(ServiceVolumeSchema).optional(), // Volumes to attach to the service
   })
   .strip();
 
@@ -2111,6 +2129,7 @@ export type ServiceVolume = z.infer<typeof ServiceVolumeSchema>;
 export type CreateServiceInput = z.infer<typeof CreateServiceInputSchema>;
 export type SecurityContext = z.infer<typeof SecurityContextSchema>;
 export type ServiceConfigResponse = z.infer<typeof ServiceConfigResponseSchema>;
+export type TemplateResourceRecommendations = z.infer<typeof TemplateResourceRecommendationsSchema>;
 export type TemplateShortResponse = z.infer<typeof TemplateShortResponseSchema>;
 export type ServiceResponse = z.infer<typeof ServiceResponseSchema>;
 export type CreateServiceResponseBody = z.infer<typeof CreateServiceResponseBodySchema>;

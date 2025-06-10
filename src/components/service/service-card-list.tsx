@@ -3,9 +3,9 @@
 import ContextCommandPanel from "@/components/command-panel/context-command-panel/context-command-panel";
 import { TContextCommandPanelContext } from "@/components/command-panel/types";
 import ErrorCard from "@/components/error-card";
-import ServiceCard from "@/components/project/service-card";
-import ServiceGroupCard from "@/components/project/service-group-card";
-import { useServices } from "@/components/project/services-provider";
+import ServiceCard from "@/components/service/service-card";
+import ServiceGroupCard from "@/components/service/service-group-card";
+import { useServices } from "@/components/service/services-provider";
 import TemplateDraftCard from "@/components/templates/template-draft-card";
 import { TTemplateDraft } from "@/components/templates/template-draft-store";
 import { useTemplateDraftStore } from "@/components/templates/template-draft-store-provider";

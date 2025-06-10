@@ -117,7 +117,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
       Icon={RocketIcon}
       changeCount={changeCount}
       onClickResetChanges={() => form.reset()}
-      SubmitButton={form.SubmitButton}
+      /* SubmitButton={form.SubmitButton} */
     >
       <Block>
         <form.AppField

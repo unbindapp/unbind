@@ -19,7 +19,7 @@ export default function ServiceUrls({ hosts }: TProps) {
       {!endpoints &&
         hosts.map((h) => (
           <ServiceUrl
-            key={`${h.host}${h.path}${h.port}`}
+            key={`${h.host}${h.path}${h.target_port}`}
             isPlaceholder={true}
             error={error?.message}
             className={hosts.length > 1 ? "max-w-1/2" : undefined}

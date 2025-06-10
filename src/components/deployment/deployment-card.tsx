@@ -6,7 +6,7 @@ import { useDeploymentPanel } from "@/components/deployment/panel/deployment-pan
 import ErrorLine from "@/components/error-line";
 import AnimatedTimerIcon from "@/components/icons/animated-timer";
 import BrandIcon from "@/components/icons/brand";
-import { useServicesUtils } from "@/components/project/services-provider";
+import { useServicesUtils } from "@/components/service/services-provider";
 import { useNow } from "@/components/providers/now-provider";
 import { useService, useServiceUtils } from "@/components/service/service-provider";
 import { Button } from "@/components/ui/button";

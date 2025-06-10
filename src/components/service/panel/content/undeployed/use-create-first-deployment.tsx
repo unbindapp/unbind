@@ -1,5 +1,5 @@
 import { useDeploymentsUtils } from "@/components/deployment/deployments-provider";
-import { useServicesUtils } from "@/components/project/services-provider";
+import { useServicesUtils } from "@/components/service/services-provider";
 import { useService } from "@/components/service/service-provider";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { TToken } from "@/components/ui/textarea-with-tokens";

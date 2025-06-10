@@ -1,6 +1,6 @@
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
-import { useServicesUtils } from "@/components/project/services-provider";
+import { useServicesUtils } from "@/components/service/services-provider";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { useSystem } from "@/components/system/system-provider";
 import { templateInputValidator } from "@/components/templates/panel/input-validator";

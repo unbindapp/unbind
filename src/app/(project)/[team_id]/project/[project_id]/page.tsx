@@ -2,8 +2,8 @@ import EnvironmentSelector from "@/app/(project)/[team_id]/project/[project_id]/
 import { getProjectPageParams } from "@/app/(project)/[team_id]/project/[project_id]/_components/search-params";
 import PageWrapper from "@/components/page-wrapper";
 import NewServiceButton from "@/components/project/new-service-button";
-import ServiceCardList from "@/components/project/service-card-list";
-import ServicesProvider from "@/components/project/services-provider";
+import ServiceCardList from "@/components/service/service-card-list";
+import ServicesProvider from "@/components/service/services-provider";
 import { apiServer } from "@/server/trpc/setup/server";
 import { ResultAsync } from "neverthrow";
 import { type SearchParams } from "nuqs/server";
