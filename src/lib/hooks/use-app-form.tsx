@@ -15,6 +15,8 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input, InputProps } from "@/components/ui/input";
@@ -472,8 +474,10 @@ type TAsyncDropdownMenuProps = TFieldProps & {
   error: string | undefined;
   className?: string;
   classNameInfo?: string;
+  classNameDropdownContent?: string;
   value: string;
   onChange: (value: string) => void;
+  dropdownTitle?: string;
   children: ({ isOpen }: { isOpen: boolean }) => ReactNode;
 };
 
@@ -485,10 +489,12 @@ function AsyncDropdownMenu({
   error,
   dontCheckUntilSubmit,
   hideError,
-  classNameInfo,
   value,
   onChange,
   className,
+  classNameInfo,
+  classNameDropdownContent,
+  dropdownTitle,
   children,
 }: TAsyncDropdownMenuProps) {
   const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
@@ -501,8 +507,17 @@ function AsyncDropdownMenu({
     <div className={cn("flex flex-col", className)}>
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>{children({ isOpen })}</DropdownMenuTrigger>
-        <DropdownMenuContent animate={false} className="w-[var(--radix-popper-anchor-width)]">
+        <DropdownMenuContent
+          animate={false}
+          className={cn("w-[var(--radix-popper-anchor-width)]", classNameDropdownContent)}
+        >
           <ScrollArea viewportRef={scrollAreaRef}>
+            {dropdownTitle && (
+              <>
+                <DropdownMenuLabel>{dropdownTitle}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+              </>
+            )}
             <DropdownMenuGroup>
               {!items && !isPending && error && (
                 <ErrorCard className="rounded-md" message={error} />

@@ -18,7 +18,13 @@ import { HealthCheckTypeSchema } from "@/server/go/client.gen";
 import { THealthCheckType, TServiceShallow } from "@/server/trpc/api/services/types";
 import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
 import { useStore } from "@tanstack/react-form";
-import { CircleSlashIcon, GlobeIcon, RocketIcon, TerminalSquareIcon } from "lucide-react";
+import {
+  CircleSlashIcon,
+  EthernetPortIcon,
+  GlobeIcon,
+  RocketIcon,
+  TerminalSquareIcon,
+} from "lucide-react";
 import { useMemo } from "react";
 
 type TProps = {
@@ -91,6 +97,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
       cpuLimitMillicores: service.config.resources?.cpu_limits_millicores || cpuLimits.unlimited,
       memoryLimitMb: service.config.resources?.memory_limits_megabytes || memoryLimits.unlimited,
       healthCheckEndpoint: service.config.health_check?.path || "",
+      healthCheckEndpointPort: service.config.ports?.[0]?.port?.toString() || "",
       healthCheckCommand: service.config.health_check?.command || "",
       healthCheckType: healthCheckTypeFromService,
     },
@@ -124,6 +131,16 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
         hasChanged = true;
       }
       if (
+        formApi.getFieldMeta("healthCheckEndpointPort")?.isDefaultValue === false &&
+        changes.healthCheckType === "http"
+      ) {
+        changes.healthCheckEndpointPort =
+          value.healthCheckEndpointPort === ""
+            ? undefined
+            : parseInt(value.healthCheckEndpointPort);
+        hasChanged = true;
+      }
+      if (
         formApi.getFieldMeta("healthCheckCommand")?.isDefaultValue === false &&
         changes.healthCheckType === "exec"
       ) {
@@ -139,6 +156,22 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
     },
   });
 
+  const portItems = useMemo(() => {
+    return service.config.ports?.map((port) => ({
+      label: port.port.toString(),
+      value: port.port.toString(),
+    }));
+  }, [service]);
+
+  const healthCheckItems = useMemo(() => {
+    return HealthCheckTypeSchema.options
+      .filter((o) => (portItems === undefined || portItems.length < 1 ? o !== "http" : true))
+      .map((o) => ({
+        label: healthCheckTypeToName(o),
+        value: o,
+      }));
+  }, [portItems]);
+
   const changeCount = useStore(form.store, (s) => {
     let count = 0;
     if (s.values.healthCheckType === "exec") {
@@ -150,6 +183,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
       if (s.fieldMeta.healthCheckEndpoint?.isDefaultValue === false) {
         count++;
       }
+      if (s.fieldMeta.healthCheckEndpointPort?.isDefaultValue === false) count++;
     }
     if (s.fieldMeta.instanceCount?.isDefaultValue === false) count++;
     if (s.fieldMeta.cpuLimitMillicores?.isDefaultValue === false) count++;
@@ -329,10 +363,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                       field={field}
                       value={field.state.value}
                       onChange={(v) => field.handleChange(v as THealthCheckType)}
-                      items={HealthCheckTypeSchema.options.map((o) => ({
-                        label: healthCheckTypeToName(o),
-                        value: o,
-                      }))}
+                      items={healthCheckItems}
                       ItemIcon={({ className, value }) => (
                         <HealthCheckIcon className={cn("scale-90", className)} type={value} />
                       )}
@@ -360,27 +391,59 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                   )}
                 />
                 {healthCheckType !== "none" && <div className="bg-border -mt-1 h-px w-full" />}
-                {healthCheckType === "http" && (
-                  <form.AppField
-                    name="healthCheckEndpoint"
-                    children={(field) => (
-                      <field.TextField
-                        className="-mt-1"
-                        classNameInput="rounded-t-none border-t-0"
-                        field={field}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => {
-                          field.handleChange(e.target.value);
-                        }}
-                        placeholder="/health"
-                        autoCapitalize="off"
-                        autoCorrect="off"
-                        autoComplete="off"
-                        spellCheck="false"
-                      />
-                    )}
-                  />
+                {healthCheckType === "http" && portItems && (
+                  <div className="relative -mt-1 w-full">
+                    <form.AppField
+                      name="healthCheckEndpoint"
+                      children={(field) => (
+                        <field.TextField
+                          classNameInput="rounded-t-none border-t-0 pr-27"
+                          field={field}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => {
+                            field.handleChange(e.target.value);
+                          }}
+                          placeholder="/health"
+                          autoCapitalize="off"
+                          autoCorrect="off"
+                          autoComplete="off"
+                          spellCheck="false"
+                        />
+                      )}
+                    />
+                    <form.AppField
+                      name="healthCheckEndpointPort"
+                      children={(field) => (
+                        <field.AsyncDropdownMenu
+                          dontCheckUntilSubmit
+                          field={field}
+                          value={field.state.value}
+                          onChange={(v) => field.handleChange(v)}
+                          items={portItems}
+                          isPending={false}
+                          error={undefined}
+                          classNameDropdownContent="w-auto"
+                          dropdownTitle="Port"
+                        >
+                          {({ isOpen }) => (
+                            <BlockItemButtonLike
+                              className="absolute top-1 right-1.25 z-10 w-24 gap-1 rounded-md px-2 py-1.5 font-mono text-sm"
+                              asElement="button"
+                              text={field.state.value}
+                              Icon={({ className }) => (
+                                <EthernetPortIcon className={cn(className, "size-4.5 scale-90")} />
+                              )}
+                              variant="outline"
+                              open={isOpen}
+                              onBlur={field.handleBlur}
+                              classNameChevron="size-4"
+                            />
+                          )}
+                        </field.AsyncDropdownMenu>
+                      )}
+                    />
+                  </div>
                 )}
                 {healthCheckType === "exec" && (
                   <form.AppField

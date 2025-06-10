@@ -119,6 +119,7 @@ export const UpdateServiceInputSchema = z
     memoryLimitMb: z.number().int().optional(),
     healthCheckType: HealthCheckTypeSchema.optional(),
     healthCheckEndpoint: z.string().optional(),
+    healthCheckEndpointPort: z.number().int().optional(),
     healthCheckCommand: z.string().optional(),
   })
   .strip();

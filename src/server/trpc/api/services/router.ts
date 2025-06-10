@@ -148,6 +148,7 @@ export const servicesRouter = createTRPCRouter({
       memoryLimitMb,
       healthCheckType,
       healthCheckEndpoint,
+      healthCheckEndpointPort,
       healthCheckCommand,
     },
     ctx: { goClient },
@@ -168,6 +169,9 @@ export const servicesRouter = createTRPCRouter({
     }
     if (healthCheckEndpoint !== undefined && healthCheck) {
       healthCheck.path = healthCheckEndpoint;
+    }
+    if (healthCheckEndpointPort !== undefined && healthCheck) {
+      healthCheck.port = healthCheckEndpointPort;
     }
     if (healthCheckCommand !== undefined && healthCheck) {
       healthCheck.command = healthCheckCommand;
