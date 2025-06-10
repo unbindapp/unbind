@@ -114,6 +114,12 @@ export const UpdateServiceInputSchema = z
     dockerBuilderDockerfilePath: z.string().optional(),
     dockerBuilderBuildContext: z.string().optional(),
     startCommand: z.string().optional(),
+    instanceCount: z.number().int().min(1).optional(),
+    cpuLimitMillicores: z.number().int().optional(),
+    memoryLimitMb: z.number().int().optional(),
+    healthCheckType: HealthCheckTypeSchema.optional(),
+    healthCheckEndpoint: z.string().optional(),
+    healthCheckCommand: z.string().optional(),
   })
   .strip();
 

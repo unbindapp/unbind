@@ -9,8 +9,9 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/service/panel/content/undeployed/block";
-import { useService } from "@/components/service/service-provider";
-import useUpdateService from "@/components/service/use-update-service";
+import useUpdateService, {
+  TUpdateServiceInputSimple,
+} from "@/components/service/use-update-service";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { SettingsSection } from "@/components/settings/settings-section";
 import {
@@ -21,7 +22,7 @@ import {
 import { cn } from "@/components/ui/utils";
 import { defaultDebounceMs } from "@/lib/constants";
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
-import { TServiceShallow, TUpdateServiceInput } from "@/server/trpc/api/services/types";
+import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { api } from "@/server/trpc/setup/client";
 import { useStore } from "@tanstack/react-form";
 import { CodeIcon, GitBranchIcon, MilestoneIcon, PackageIcon, TagIcon } from "lucide-react";
@@ -84,18 +85,14 @@ export default function SourceSection({ service }: TProps) {
 }
 
 function GitSection({ owner, repo, branch, installationId, service }: TGitSectionProps) {
-  const { teamId, projectId, environmentId, serviceId } = useService();
   const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
 
   const {
     mutateAsync: updateService,
     isPending: isPendingUpdate,
     error: errorUpdate,
+    reset: resetUpdate,
   } = useUpdateService({
-    teamId,
-    projectId,
-    environmentId,
-    serviceId,
     onSuccess: () => {
       form.reset();
     },
@@ -118,12 +115,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
     },
     onSubmit: async ({ value, formApi }) => {
       let hasChanged = false;
-      const changes: TUpdateServiceInput = {
-        teamId,
-        projectId,
-        environmentId,
-        serviceId,
-      };
+      const changes: TUpdateServiceInputSimple = {};
 
       if (formApi.getFieldMeta("branch")?.isDefaultValue === false) {
         hasChanged = true;
@@ -175,7 +167,10 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
       isPending={isPendingUpdate}
       Icon={CodeIcon}
       changeCount={changeCount}
-      onClickResetChanges={() => form.reset()}
+      onClickResetChanges={() => {
+        form.reset();
+        resetUpdate();
+      }}
       classNameContent="gap-5"
     >
       <Block>
@@ -240,8 +235,6 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
 }
 
 function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
-  const { teamId, projectId, environmentId, serviceId } = useService();
-
   const [commandInputValue, setCommandInputValue] = useState("");
   const imageIsNonDockerHub = isNonDockerHubImage(image);
   const [search] = useDebounce(commandInputValue, defaultDebounceMs);
@@ -252,11 +245,8 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
     mutateAsync: updateService,
     isPending: isPendingUpdate,
     error: errorUpdate,
+    reset: resetUpdate,
   } = useUpdateService({
-    teamId,
-    projectId,
-    environmentId,
-    serviceId,
     onSuccess: () => {
       form.reset();
     },
@@ -269,12 +259,7 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
     },
     onSubmit: async ({ formApi, value }) => {
       let hasChanged = false;
-      const changes: TUpdateServiceInput = {
-        teamId,
-        projectId,
-        environmentId,
-        serviceId,
-      };
+      const changes: TUpdateServiceInputSimple = {};
 
       if (formApi.getFieldMeta("tag")?.isDefaultValue === false) {
         hasChanged = true;
@@ -333,7 +318,10 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
       error={errorUpdate?.message}
       Icon={CodeIcon}
       changeCount={changeCount}
-      onClickResetChanges={() => form.reset()}
+      onClickResetChanges={() => {
+        form.reset();
+        resetUpdate();
+      }}
       classNameContent="gap-5"
     >
       <Block>

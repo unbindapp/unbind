@@ -7,6 +7,9 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/service/panel/content/undeployed/block";
+import useUpdateService, {
+  TUpdateServiceInputSimple,
+} from "@/components/service/use-update-service";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { cn } from "@/components/ui/utils";
@@ -16,7 +19,7 @@ import { THealthCheckType, TServiceShallow } from "@/server/trpc/api/services/ty
 import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
 import { useStore } from "@tanstack/react-form";
 import { CircleSlashIcon, GlobeIcon, RocketIcon, TerminalSquareIcon } from "lucide-react";
-import { toast } from "sonner";
+import { useMemo } from "react";
 
 type TProps = {
   service: TServiceShallow;
@@ -68,20 +71,71 @@ const memoryLimits = {
 function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
   const healthCheckTypeFromService = service.config.health_check?.type || "none";
 
+  const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
+
+  const {
+    mutateAsync: updateService,
+    isPending: isPendingUpdate,
+    error: errorUpdate,
+    reset: resetUpdate,
+  } = useUpdateService({
+    onSuccess: () => {
+      form.reset();
+    },
+    idToHighlight: sectionHighlightId,
+  });
+
   const form = useAppForm({
     defaultValues: {
       instanceCount: service.config.replicas,
-      cpuMillicores: cpuLimits.unlimited,
-      memoryMb: memoryLimits.unlimited,
+      cpuLimitMillicores: service.config.resources?.cpu_limits_millicores || cpuLimits.unlimited,
+      memoryLimitMb: service.config.resources?.memory_limits_megabytes || memoryLimits.unlimited,
       healthCheckEndpoint: service.config.health_check?.path || "",
       healthCheckCommand: service.config.health_check?.command || "",
       healthCheckType: healthCheckTypeFromService,
     },
-    onSubmit: () => {
-      toast.success("Changes saved successfully.", {
-        description: "This is fake",
-        duration: 5000,
-      });
+    onSubmit: async ({ formApi, value }) => {
+      let hasChanged = false;
+      const changes: TUpdateServiceInputSimple = {};
+
+      if (formApi.getFieldMeta("instanceCount")?.isDefaultValue === false) {
+        changes.instanceCount = value.instanceCount || 1;
+        hasChanged = true;
+      }
+      if (formApi.getFieldMeta("cpuLimitMillicores")?.isDefaultValue === false) {
+        changes.cpuLimitMillicores =
+          value.cpuLimitMillicores === cpuLimits.unlimited ? -1 : value.cpuLimitMillicores;
+        hasChanged = true;
+      }
+      if (formApi.getFieldMeta("memoryLimitMb")?.isDefaultValue === false) {
+        changes.memoryLimitMb =
+          value.memoryLimitMb === memoryLimits.unlimited ? -1 : value.memoryLimitMb;
+        hasChanged = true;
+      }
+      if (formApi.getFieldMeta("healthCheckType")?.isDefaultValue === false) {
+        changes.healthCheckType = value.healthCheckType;
+        hasChanged = true;
+      }
+      if (
+        formApi.getFieldMeta("healthCheckEndpoint")?.isDefaultValue === false &&
+        changes.healthCheckType === "http"
+      ) {
+        changes.healthCheckEndpoint = value.healthCheckEndpoint;
+        hasChanged = true;
+      }
+      if (
+        formApi.getFieldMeta("healthCheckCommand")?.isDefaultValue === false &&
+        changes.healthCheckType === "exec"
+      ) {
+        changes.healthCheckCommand = value.healthCheckCommand;
+        hasChanged = true;
+      }
+
+      if (hasChanged) {
+        await updateService(changes);
+      } else {
+        form.reset();
+      }
     },
   });
 
@@ -98,8 +152,8 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
       }
     }
     if (s.fieldMeta.instanceCount?.isDefaultValue === false) count++;
-    if (s.fieldMeta.cpuMillicores?.isDefaultValue === false) count++;
-    if (s.fieldMeta.memoryMb?.isDefaultValue === false) count++;
+    if (s.fieldMeta.cpuLimitMillicores?.isDefaultValue === false) count++;
+    if (s.fieldMeta.memoryLimitMb?.isDefaultValue === false) count++;
     if (s.fieldMeta.healthCheckType?.isDefaultValue === false) count++;
     return count;
   });
@@ -116,8 +170,14 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
       id="deploy"
       Icon={RocketIcon}
       changeCount={changeCount}
-      onClickResetChanges={() => form.reset()}
-      /* SubmitButton={form.SubmitButton} */
+      onClickResetChanges={() => {
+        form.reset();
+        resetUpdate();
+      }}
+      SubmitButton={form.SubmitButton}
+      isPending={isPendingUpdate}
+      error={errorUpdate?.message}
+      entityId={sectionHighlightId}
     >
       <Block>
         <form.AppField
@@ -137,6 +197,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                   <ValueTitle
                     title="Instances"
                     value={field.state.value ? field.state.value.toString() : "1"}
+                    hasChanges={!field.state.meta.isDefaultValue}
                   />
                   <field.StorageSizeInput
                     field={field}
@@ -162,8 +223,8 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
         <form.Subscribe
           selector={(s) => ({
             hasChanges:
-              s.fieldMeta.cpuMillicores?.isDefaultValue === false ||
-              s.fieldMeta.memoryMb?.isDefaultValue === false,
+              s.fieldMeta.cpuLimitMillicores?.isDefaultValue === false ||
+              s.fieldMeta.memoryLimitMb?.isDefaultValue === false,
           })}
           children={({ hasChanges }) => (
             <BlockItem className="w-full md:w-full">
@@ -176,10 +237,14 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
               <BlockItemContent>
                 <div className="flex w-full flex-col rounded-lg border">
                   <form.AppField
-                    name="cpuMillicores"
+                    name="cpuLimitMillicores"
                     children={(field) => (
                       <div className="flex w-full flex-col pb-1.5">
-                        <ValueTitle title="vCPU" value={cpuFormatter(field.state.value)} />
+                        <ValueTitle
+                          title="vCPU"
+                          value={cpuFormatter(field.state.value)}
+                          hasChanges={!field.state.meta.isDefaultValue}
+                        />
                         <field.StorageSizeInput
                           field={field}
                           className="w-full px-3.5 py-3"
@@ -201,10 +266,14 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                   />
                   <div className="bg-border h-px w-full" />
                   <form.AppField
-                    name="memoryMb"
+                    name="memoryLimitMb"
                     children={(field) => (
                       <div className="flex w-full flex-col pb-1.5">
-                        <ValueTitle title="Memory" value={memoryFormatter(field.state.value)} />
+                        <ValueTitle
+                          title="Memory"
+                          value={memoryFormatter(field.state.value)}
+                          hasChanges={!field.state.meta.isDefaultValue}
+                        />
                         <field.StorageSizeInput
                           field={field}
                           className="w-full px-3.5 py-3"
@@ -358,16 +427,19 @@ function memoryFormatter(mb: number) {
 function ValueTitle({
   title,
   value,
+  hasChanges,
   className,
 }: {
   title: string;
   value: string;
+  hasChanges?: boolean;
   className?: string;
 }) {
   return (
     <p
+      data-changed={hasChanges ? true : undefined}
       className={cn(
-        "text-muted-foreground w-full px-3.5 pt-2.5 pb-1 leading-tight font-medium",
+        "text-muted-foreground data-changed:text-process w-full px-3.5 pt-2.5 pb-1 leading-tight font-medium",
         className,
       )}
     >
@@ -395,4 +467,8 @@ function healthCheckTypeToName(type: THealthCheckType | (string & {})) {
   if (type === "exec") return "Command";
   if (type === "none") return "None";
   return "Unknown";
+}
+
+function getEntityId(service: TServiceShallow): string {
+  return `deploy-${service.id}`;
 }

@@ -1,4 +1,4 @@
-import { CreateServiceInput } from "@/server/go/client.gen";
+import { CreateServiceInput, UpdateServiceInput } from "@/server/go/client.gen";
 import { CreateServiceSchema, UpdateServiceInputSchema } from "@/server/trpc/api/services/types";
 import { createTRPCRouter, privateProcedure } from "@/server/trpc/setup/trpc";
 import { z } from "zod";
@@ -143,9 +143,36 @@ export const servicesRouter = createTRPCRouter({
       dockerBuilderDockerfilePath,
       dockerBuilderBuildContext,
       startCommand,
+      instanceCount,
+      cpuLimitMillicores,
+      memoryLimitMb,
+      healthCheckType,
+      healthCheckEndpoint,
+      healthCheckCommand,
     },
     ctx: { goClient },
   }) {
+    const resources: UpdateServiceInput["resources"] | undefined =
+      cpuLimitMillicores !== undefined || memoryLimitMb !== undefined ? {} : undefined;
+    if (cpuLimitMillicores !== undefined && resources) {
+      resources.cpu_limits_millicores = cpuLimitMillicores;
+    }
+    if (memoryLimitMb !== undefined && resources) {
+      resources.memory_limits_megabytes = memoryLimitMb;
+    }
+
+    const healthCheck: UpdateServiceInput["health_check"] | undefined =
+      healthCheckType || healthCheckEndpoint || healthCheckCommand ? {} : undefined;
+    if (healthCheckType !== undefined && healthCheck) {
+      healthCheck.type = healthCheckType;
+    }
+    if (healthCheckEndpoint !== undefined && healthCheck) {
+      healthCheck.path = healthCheckEndpoint;
+    }
+    if (healthCheckCommand !== undefined && healthCheck) {
+      healthCheck.command = healthCheckCommand;
+    }
+
     const service = await goClient.services.update({
       team_id: teamId,
       project_id: projectId,
@@ -167,6 +194,9 @@ export const servicesRouter = createTRPCRouter({
       docker_builder_dockerfile_path: dockerBuilderDockerfilePath,
       docker_builder_build_context: dockerBuilderBuildContext,
       run_command: startCommand,
+      replicas: instanceCount,
+      resources,
+      health_check: healthCheck,
     });
     return {
       service: service.data,
