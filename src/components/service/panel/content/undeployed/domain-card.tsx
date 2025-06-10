@@ -11,7 +11,7 @@ import { useDebounce } from "use-debounce";
 
 export function DomainCard({
   domain,
-  paragraph = "Create the DNS record below. You can also do it after deployment.",
+  paragraph = "Create the DNS record below. You can also do it later.",
   className,
 }: {
   domain: string;

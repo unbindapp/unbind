@@ -49,12 +49,7 @@ export const CapabilitiesSchema = z
   })
   .strip();
 
-export const CertManagerConditionTypeSchema = z.enum([
-  'Ready',
-  'InvalidRequest',
-  'Approved',
-  'Denied',
-]);
+export const CertManagerConditionSchema = z.enum(['Ready', 'InvalidRequest', 'Approved', 'Denied']);
 
 export const CollisionOutputSchema = z
   .object({
@@ -761,7 +756,7 @@ export const DnsCheckResponseBodySchema = z
 
 export const TlsDetailsSchema = z
   .object({
-    condition: CertManagerConditionTypeSchema,
+    condition: CertManagerConditionSchema,
     message: z.string(),
     reason: z.string(),
   })
@@ -2072,7 +2067,7 @@ export type AvailableVariableReference = z.infer<typeof AvailableVariableReferen
 export type BuildkitSettings = z.infer<typeof BuildkitSettingsSchema>;
 export type CallbackResponseBody = z.infer<typeof CallbackResponseBodySchema>;
 export type Capabilities = z.infer<typeof CapabilitiesSchema>;
-export type CertManagerConditionType = z.infer<typeof CertManagerConditionTypeSchema>;
+export type CertManagerCondition = z.infer<typeof CertManagerConditionSchema>;
 export type CollisionOutput = z.infer<typeof CollisionOutputSchema>;
 export type CheckUniqueDomainOutputBody = z.infer<typeof CheckUniqueDomainOutputBodySchema>;
 export type ContainerState = z.infer<typeof ContainerStateSchema>;

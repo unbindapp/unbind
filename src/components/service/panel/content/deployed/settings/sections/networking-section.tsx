@@ -19,7 +19,15 @@ import { validatePort } from "@/lib/helpers/validate-port";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TExternalEndpoint, TServiceShallow } from "@/server/trpc/api/services/types";
 import { useStore } from "@tanstack/react-form";
-import { GlobeIcon, GlobeLockIcon, NetworkIcon, PenIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import {
+  GlobeIcon,
+  GlobeLockIcon,
+  HourglassIcon,
+  NetworkIcon,
+  PenIcon,
+  PlusIcon,
+  Trash2Icon,
+} from "lucide-react";
 
 type TProps = {
   service: TServiceShallow;
@@ -104,14 +112,7 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                       endpoint={endpoint}
                     />
                   ))}
-                <BlockItemButtonLike
-                  type="button"
-                  isPending={isPendingEndpoints}
-                  key="add-external-endpoint"
-                  asElement="button"
-                  text="Add domain"
-                  Icon={PlusIcon}
-                />
+                <AddDomainPortCard service={service} isPending={isPendingEndpoints} />
               </div>
             </BlockItemContent>
           </BlockItem>
@@ -170,6 +171,19 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                     )}
                   />
                 )),
+              )}
+              {endpointsData?.endpoints.internal?.flatMap((hostObject) => hostObject.ports)
+                .length === 0 && (
+                <BlockItemButtonLike
+                  classNameText="whitespace-normal text-muted-foreground"
+                  asElement="div"
+                  text={`Waiting for deployment...`}
+                  Icon={({ className }: { className?: string }) => (
+                    <HourglassIcon
+                      className={cn("animate-hourglass text-muted-foreground scale-90", className)}
+                    />
+                  )}
+                />
               )}
             </div>
           </BlockItemContent>
@@ -311,7 +325,7 @@ function DomainPortCard({ endpoint }: { endpoint: TExternalEndpoint }) {
                       <form.AppField
                         name="port"
                         validators={{
-                          onChange: ({ value }) => validatePort({ value, isPublic: false }),
+                          onChange: ({ value }) => validatePort({ value, isPublic: true }),
                         }}
                       >
                         {(field) => (
@@ -367,5 +381,148 @@ function DomainPortCard({ endpoint }: { endpoint: TExternalEndpoint }) {
         )}
       />
     </form>
+  );
+}
+
+function AddDomainPortCard({
+  service,
+  isPending,
+}: {
+  isPending: boolean;
+  service: TServiceShallow;
+}) {
+  const form = useAppForm({
+    defaultValues: {
+      host: "",
+      port: "",
+      isEditing: false,
+    },
+  });
+  console.log("service", service);
+  return (
+    <div className="flex w-full flex-col">
+      <form.Subscribe
+        selector={(s) => ({
+          isEditing: s.values.isEditing,
+        })}
+        children={({ isEditing }) => (
+          <>
+            {!isEditing && (
+              <form.AppField
+                name="isEditing"
+                children={(field) => (
+                  <BlockItemButtonLike
+                    type="button"
+                    isPending={isPending}
+                    key="add-external-endpoint"
+                    asElement="button"
+                    text="Add domain"
+                    Icon={PlusIcon}
+                    onClick={() => field.handleChange(true)}
+                  />
+                )}
+              />
+            )}
+            {isEditing && (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  form.handleSubmit();
+                }}
+                className="flex w-full flex-col rounded-lg border"
+              >
+                <div className="flex w-full flex-col gap-4 px-3 pt-3 pb-3.25 sm:px-4.5 sm:pt-3.5 sm:pb-4.75">
+                  <Block>
+                    <form.AppField
+                      name="host"
+                      validators={{
+                        onChange: ({ value }) => validateDomain({ value, isPublic: true }),
+                      }}
+                    >
+                      {(field) => (
+                        <BlockItem className="w-full md:w-full">
+                          <BlockItemHeader type="column">
+                            <BlockItemTitle>Domain</BlockItemTitle>
+                          </BlockItemHeader>
+                          <BlockItemContent>
+                            <field.DomainInput
+                              field={field}
+                              value={field.state.value}
+                              onBlur={field.handleBlur}
+                              onChange={(e) => {
+                                field.handleChange(e.target.value);
+                              }}
+                              placeholder="example.com"
+                              autoCapitalize="off"
+                              autoCorrect="off"
+                              autoComplete="off"
+                              spellCheck="false"
+                              hideCard={field.state.meta.isDefaultValue}
+                            />
+                          </BlockItemContent>
+                        </BlockItem>
+                      )}
+                    </form.AppField>
+                  </Block>
+                  <Block>
+                    <form.AppField
+                      name="port"
+                      validators={{
+                        onChange: ({ value }) => validatePort({ value, isPublic: true }),
+                      }}
+                    >
+                      {(field) => (
+                        <BlockItem className="w-full md:w-full">
+                          <BlockItemHeader type="column">
+                            <BlockItemTitle>Port</BlockItemTitle>
+                          </BlockItemHeader>
+                          <BlockItemContent>
+                            <field.TextField
+                              field={field}
+                              value={field.state.value}
+                              onBlur={field.handleBlur}
+                              onChange={(e) => {
+                                field.handleChange(e.target.value);
+                              }}
+                              placeholder="3000"
+                              autoCapitalize="off"
+                              autoCorrect="off"
+                              autoComplete="off"
+                              spellCheck="false"
+                              inputMode="numeric"
+                            />
+                          </BlockItemContent>
+                        </BlockItem>
+                      )}
+                    </form.AppField>
+                  </Block>
+                </div>
+                <div className="flex w-full flex-col border-t p-1.5">
+                  <div className="flex w-full">
+                    <div className="w-1/2 p-1.5">
+                      <Button
+                        className="w-full"
+                        type="button"
+                        aria-label="Cancel"
+                        variant="outline"
+                        onClick={() => form.reset()}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                    <div className="w-1/2 p-1.5">
+                      <form.SubmitButton isPending={isPending} className="w-full">
+                        Add
+                      </form.SubmitButton>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            )}
+          </>
+        )}
+      />
+    </div>
   );
 }

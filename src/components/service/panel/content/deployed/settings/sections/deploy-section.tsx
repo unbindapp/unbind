@@ -425,6 +425,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                           error={undefined}
                           classNameDropdownContent="w-auto"
                           dropdownTitle="Port"
+                          dropdownMenuContentAlign="end"
                         >
                           {({ isOpen }) => (
                             <BlockItemButtonLike

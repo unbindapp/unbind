@@ -478,6 +478,7 @@ type TAsyncDropdownMenuProps = TFieldProps & {
   value: string;
   onChange: (value: string) => void;
   dropdownTitle?: string;
+  dropdownMenuContentAlign?: Parameters<typeof DropdownMenuContent>["0"]["align"];
   children: ({ isOpen }: { isOpen: boolean }) => ReactNode;
 };
 
@@ -495,6 +496,7 @@ function AsyncDropdownMenu({
   classNameInfo,
   classNameDropdownContent,
   dropdownTitle,
+  dropdownMenuContentAlign,
   children,
 }: TAsyncDropdownMenuProps) {
   const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
@@ -510,6 +512,7 @@ function AsyncDropdownMenu({
         <DropdownMenuContent
           animate={false}
           className={cn("w-[var(--radix-popper-anchor-width)]", classNameDropdownContent)}
+          align={dropdownMenuContentAlign}
         >
           <ScrollArea viewportRef={scrollAreaRef}>
             {dropdownTitle && (

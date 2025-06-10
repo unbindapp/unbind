@@ -1,6 +1,6 @@
 export function validatePort({ value, isPublic }: { value: string; isPublic: boolean }) {
   if (!isPublic) return undefined;
-  if (!value) return { message: "Port is required on public services." };
+  if (!value) return { message: "Port is required." };
   // check if the value contains only digits
   if (!/^\d+$/.test(value)) {
     return { message: "Port must be a positive integer." };
