@@ -175,7 +175,9 @@ export function BlockItemButtonLike({
       // @ts-expect-error this is fine. Typescript isn't smart enough
       href={href}
       target={href ? "_blank" : undefined}
-      {...(asElement === "button" ? { type: "button" } : {})}
+      {...(asElement === "button"
+        ? { type: "button", disabled: isPending, fadeOnDisabled: !isPending }
+        : {})}
       {...props}
     >
       <div className="group-data-pending/button:animate-skeleton flex min-w-0 flex-1 items-start justify-start gap-2">
@@ -197,7 +199,7 @@ export function BlockItemButtonLike({
         </p>
       </div>
       {!isPending && SuffixComponent && <SuffixComponent className="ml-auto" />}
-      {open !== undefined && !hideChevron && (
+      {open !== undefined && !hideChevron && !isPending && (
         <ChevronDownIcon className="text-muted-foreground -mr-0.75 size-5 transition group-data-open/button:rotate-180" />
       )}
     </Element>

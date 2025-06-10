@@ -235,6 +235,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
                         variant="outline"
                         open={isOpen}
                         onBlur={field.handleBlur}
+                        isPending={isPendingS3Sources}
                       />
                     );
                   }}
