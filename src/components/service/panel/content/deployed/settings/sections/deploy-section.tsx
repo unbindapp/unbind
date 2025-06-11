@@ -85,7 +85,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
     error: errorUpdate,
     reset: resetUpdate,
   } = useUpdateService({
-    onSuccess: () => {
+    onSuccess: async () => {
       form.reset();
     },
     idToHighlight: sectionHighlightId,

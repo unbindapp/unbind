@@ -9,7 +9,12 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/service/panel/content/undeployed/block";
-import { useServiceEndpoints } from "@/components/service/service-endpoints-provider";
+import {
+  useServiceEndpoints,
+  useServiceEndpointsUtils,
+} from "@/components/service/service-endpoints-provider";
+import { useService } from "@/components/service/service-provider";
+import useUpdateService from "@/components/service/use-update-service";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { Button } from "@/components/ui/button";
@@ -29,7 +34,9 @@ import {
   PlusIcon,
   Trash2Icon,
 } from "lucide-react";
+import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
+import { toast } from "sonner";
 
 type TProps = {
   service: TServiceShallow;
@@ -112,6 +119,7 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                     <DomainPortCard
                       key={`${endpoint.host}:${endpoint.port.port}`}
                       endpoint={endpoint}
+                      service={service}
                     />
                   ))}
                 <AddDomainPortCard service={service} isPending={isPendingEndpoints} />
@@ -199,7 +207,21 @@ function getDisplayUrlExternal(endpoint: { host: string; port: string }) {
   return `${endpoint.host}${endpoint.port !== "443" && endpoint.port ? `:${endpoint.port}` : ""}`;
 }
 
-function DomainPortCard({ endpoint }: { endpoint: TExternalEndpoint }) {
+function DomainPortCard({ endpoint }: { endpoint: TExternalEndpoint; service: TServiceShallow }) {
+  /*  const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
+
+  const {
+    mutateAsync: updateService,
+    isPending: isPendingUpdate,
+    error: errorUpdate,
+    reset: resetUpdate,
+  } = useUpdateService({
+    onSuccess: async () => {
+      form.reset();
+    },
+    idToHighlight: sectionHighlightId,
+  }); */
+
   const form = useAppForm({
     defaultValues: {
       host: endpoint.host,
@@ -393,6 +415,37 @@ function AddDomainPortCard({
   isPending: boolean;
   service: TServiceShallow;
 }) {
+  const { teamId, projectId, environmentId, serviceId } = useService();
+  const { refetch: refetchServiceEndpoints } = useServiceEndpointsUtils({
+    teamId,
+    projectId,
+    environmentId,
+    serviceId,
+  });
+  const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
+
+  const {
+    mutateAsync: updateService,
+    isPending: isPendingUpdate,
+    error: errorUpdate,
+    reset: resetUpdate,
+  } = useUpdateService({
+    onSuccess: async () => {
+      const result = await ResultAsync.fromPromise(
+        refetchServiceEndpoints(),
+        () => new Error("Failed to refetch service endpoints"),
+      );
+      if (result.isErr()) {
+        toast.error("Failed to refetch service endpoints", {
+          description:
+            "Update was successful, but failed to refetch service endpoints. Please refresh the page.",
+        });
+      }
+      form.reset();
+    },
+    idToHighlight: sectionHighlightId,
+  });
+
   const customPortText = "Custom Port";
 
   const form = useAppForm({
@@ -401,6 +454,15 @@ function AddDomainPortCard({
       portType: service.config.ports?.[0]?.port.toString() || "",
       port: "",
       isEditing: false,
+    },
+    onSubmit: async ({ value }) => {
+      const port = value.portType !== customPortText ? value.portType : value.port;
+      await updateService({
+        addHosts: [{ host: value.host, path: "", target_port: Number(port) }],
+        addPorts: service.config.ports?.map((p) => p.port).includes(Number(port))
+          ? undefined
+          : [{ port: Number(port) }],
+      });
     },
   });
 
@@ -521,7 +583,7 @@ function AddDomainPortCard({
                                     data-is-custom={
                                       field.state.value === customPortText ? true : undefined
                                     }
-                                    className="data-is-custom:rounded-b-none"
+                                    className="data-is-custom:rounded-b-none data-is-custom:border-b-0"
                                     asElement="button"
                                     text={field.state.value}
                                     Icon={({ className }) => (
@@ -549,20 +611,22 @@ function AddDomainPortCard({
                               onChange: ({ value }) => validatePort({ value, isPublic: true }),
                             }}
                             children={(field) => (
-                              <field.TextField
-                                field={field}
-                                value={field.state.value}
-                                onBlur={field.handleBlur}
-                                className="-mt-px"
-                                classNameInput="rounded-t-none"
-                                onChange={(e) => field.handleChange(e.target.value)}
-                                placeholder="3000"
-                                autoCapitalize="off"
-                                autoCorrect="off"
-                                autoComplete="off"
-                                spellCheck="false"
-                                inputMode="numeric"
-                              />
+                              <>
+                                <div className="bg-border h-px w-full" />
+                                <field.TextField
+                                  field={field}
+                                  value={field.state.value}
+                                  onBlur={field.handleBlur}
+                                  classNameInput="rounded-t-none border-t-0"
+                                  onChange={(e) => field.handleChange(e.target.value)}
+                                  placeholder="3000"
+                                  autoCapitalize="off"
+                                  autoCorrect="off"
+                                  autoComplete="off"
+                                  spellCheck="false"
+                                  inputMode="numeric"
+                                />
+                              </>
                             )}
                           />
                         );
@@ -571,6 +635,11 @@ function AddDomainPortCard({
                   </div>
                 </div>
                 <div className="flex w-full flex-col border-t p-1.5">
+                  {errorUpdate && (
+                    <div className="w-full p-1.5">
+                      <ErrorLine message={errorUpdate.message} />
+                    </div>
+                  )}
                   <div className="flex w-full">
                     <div className="w-1/2 p-1.5">
                       <Button
@@ -578,13 +647,19 @@ function AddDomainPortCard({
                         type="button"
                         aria-label="Cancel"
                         variant="outline"
-                        onClick={() => form.reset()}
+                        onClick={() => {
+                          form.reset();
+                          resetUpdate();
+                        }}
                       >
                         Cancel
                       </Button>
                     </div>
                     <div className="w-1/2 p-1.5">
-                      <form.SubmitButton isPending={isPending} className="w-full">
+                      <form.SubmitButton
+                        isPending={isPending || isPendingUpdate}
+                        className="w-full"
+                      >
                         Add
                       </form.SubmitButton>
                     </div>
@@ -597,4 +672,8 @@ function AddDomainPortCard({
       />
     </div>
   );
+}
+
+function getEntityId(service: TServiceShallow): string {
+  return `build-${service.id}`;
 }

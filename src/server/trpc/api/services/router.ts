@@ -150,6 +150,10 @@ export const servicesRouter = createTRPCRouter({
       healthCheckEndpoint,
       healthCheckEndpointPort,
       healthCheckCommand,
+      addHosts,
+      removeHosts,
+      addPorts,
+      removePorts,
     },
     ctx: { goClient },
   }) {
@@ -201,6 +205,10 @@ export const servicesRouter = createTRPCRouter({
       replicas: instanceCount,
       resources,
       health_check: healthCheck,
+      add_hosts: addHosts,
+      remove_hosts: removeHosts,
+      add_ports: addPorts,
+      remove_ports: removePorts,
     });
 
     return {

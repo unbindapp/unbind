@@ -66,7 +66,7 @@ function GitSection({ service }: TGitSectionProps) {
     error: errorUpdate,
     reset: resetUpdate,
   } = useUpdateService({
-    onSuccess: () => {
+    onSuccess: async () => {
       form.reset();
     },
     idToHighlight: sectionHighlightId,
@@ -159,14 +159,14 @@ function GitSection({ service }: TGitSectionProps) {
         e.stopPropagation();
         form.handleSubmit();
       }}
-      title="Build"
-      id="build"
-      Icon={WrenchIcon}
-      changeCount={changeCount}
       onClickResetChanges={() => {
         form.reset();
         resetUpdate();
       }}
+      title="Build"
+      id="build"
+      Icon={WrenchIcon}
+      changeCount={changeCount}
       SubmitButton={form.SubmitButton}
       isPending={isPendingUpdate}
       error={errorUpdate?.message}

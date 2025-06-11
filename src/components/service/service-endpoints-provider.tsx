@@ -44,4 +44,31 @@ export const useServiceEndpoints = () => {
   return context;
 };
 
+export const useServiceEndpointsUtils = ({
+  teamId,
+  projectId,
+  environmentId,
+  serviceId,
+}: {
+  teamId: string;
+  projectId: string;
+  environmentId: string;
+  serviceId: string;
+}) => {
+  const utils = api.useUtils();
+  return {
+    invalidate: () =>
+      utils.services.getServiceEndpoints.invalidate({
+        teamId,
+        projectId,
+        environmentId,
+        serviceId,
+      }),
+    refetch: () =>
+      utils.services.getServiceEndpoints.refetch({ teamId, projectId, environmentId, serviceId }),
+    cancel: () =>
+      utils.services.getServiceEndpoints.cancel({ teamId, projectId, environmentId, serviceId }),
+  };
+};
+
 export default ServiceEndpointsProvider;

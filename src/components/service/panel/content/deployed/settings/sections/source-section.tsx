@@ -93,7 +93,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
     error: errorUpdate,
     reset: resetUpdate,
   } = useUpdateService({
-    onSuccess: () => {
+    onSuccess: async () => {
       form.reset();
     },
     idToHighlight: sectionHighlightId,
@@ -247,7 +247,7 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
     error: errorUpdate,
     reset: resetUpdate,
   } = useUpdateService({
-    onSuccess: () => {
+    onSuccess: async () => {
       form.reset();
     },
     idToHighlight: sectionHighlightId,

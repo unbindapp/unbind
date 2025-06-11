@@ -9,7 +9,7 @@ import { toast } from "sonner";
 
 type TProps = {
   idToHighlight?: string;
-  onSuccess?: () => void;
+  onSuccess?: () => Promise<void>;
 };
 
 export default function useUpdateService({ onSuccess, idToHighlight }: TProps) {
@@ -45,7 +45,7 @@ export default function useUpdateService({ onSuccess, idToHighlight }: TProps) {
         });
       }
 
-      onSuccess?.();
+      await onSuccess?.();
       if (idToHighlight) {
         temporarilyAddNewEntity(idToHighlight);
       }

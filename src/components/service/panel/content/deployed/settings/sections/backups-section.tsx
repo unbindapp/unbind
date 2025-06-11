@@ -74,7 +74,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
     reset: resetUpdate,
     teamId,
   } = useUpdateService({
-    onSuccess: () => {
+    onSuccess: async () => {
       form.reset();
     },
     idToHighlight: sectionHighlightId,

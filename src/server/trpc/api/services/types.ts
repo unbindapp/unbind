@@ -104,6 +104,8 @@ export const UpdateServiceInputSchema = z
     overwriteHosts: HostSpecSchema.array().optional(),
     addHosts: HostSpecSchema.array().optional(),
     removeHosts: HostSpecSchema.array().optional(),
+    addPorts: PortSpecSchema.array().optional(),
+    removePorts: PortSpecSchema.array().optional(),
     databaseConfig: DatabaseConfigSchema.optional(),
     s3BackupSourceId: z.string().uuid().optional(),
     s3BackupBucket: z.string().optional(),
