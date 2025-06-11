@@ -205,8 +205,8 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
   );
 }
 
-function getDisplayUrlExternal(endpoint: { host: string; port: string }) {
-  return `${endpoint.host}${endpoint.port !== "443" && endpoint.port ? `:${endpoint.port}` : ""}`;
+function getDisplayUrl({ host, port }: { host: string; port: string }) {
+  return `${host}${port ? `:${port}` : ""}`;
 }
 
 function DomainPortCard({
@@ -268,7 +268,7 @@ function DomainPortCard({
                 asElement="div"
                 classNameText="whitespace-normal"
                 className="group-data-editing/field:bg-process/8 group-data-editing/field:text-process border-none group-data-editing/field:rounded-b-none"
-                text={getDisplayUrlExternal({
+                text={getDisplayUrl({
                   host: endpoint.host,
                   port: "",
                 })}
@@ -287,7 +287,7 @@ function DomainPortCard({
                       disabled={isEditing}
                       className="size-8"
                       classNameIcon="size-4"
-                      valueToCopy={getDisplayUrlExternal({
+                      valueToCopy={getDisplayUrl({
                         host: endpoint.host,
                         port: "",
                       })}
@@ -797,14 +797,14 @@ function DeleteButton({
     <DeleteEntityTrigger
       EntityNameBadge={() => (
         <p className="bg-foreground/6 border-foreground/6 -ml-0.5 max-w-[calc(100%+0.25rem)] rounded-md border px-1.5 font-mono font-semibold">
-          {domain}
+          {getDisplayUrl({ host: domain, port: mode === "public" ? "" : port.toString() })}
         </p>
       )}
       deletingEntityName={domain}
       dialogTitle={mode === "private" ? "Delete Private Domain" : "Delete Domain"}
       dialogDescription={
         mode === "private"
-          ? "The port and any public domains using to that port will be deleted. This action cannot be undone."
+          ? "The port and all public domains using that port will be deleted. This action cannot be undone."
           : "Are you sure you want to delete this domain? This action cannot be undone."
       }
       onSubmit={deleteDomainOrPort}
