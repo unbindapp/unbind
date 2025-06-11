@@ -4,6 +4,7 @@ import { SettingsSection } from "@/components/settings/settings-section";
 import { Input } from "@/components/ui/input";
 import { TVolumeShallow } from "@/server/trpc/api/services/types";
 import { FolderClosedIcon, UnplugIcon } from "lucide-react";
+import { useMemo } from "react";
 
 type TProps = {
   volume: TVolumeShallow;
@@ -23,8 +24,15 @@ export default function ConnectionSection({ volume }: TProps) {
   const error = errorServices;
   const hasData = servicesData;
 
+  const sectionHighlightId = useMemo(() => getEntityId(volume), [volume]);
+
   return (
-    <SettingsSection title="Connection" id="connection" Icon={UnplugIcon}>
+    <SettingsSection
+      title="Connection"
+      id="connection"
+      entityId={sectionHighlightId}
+      Icon={UnplugIcon}
+    >
       <div
         data-pending={isPending ? true : undefined}
         className="group/section flex w-full flex-col gap-2.5"
@@ -78,4 +86,8 @@ export default function ConnectionSection({ volume }: TProps) {
       </div>
     </SettingsSection>
   );
+}
+
+function getEntityId(volume: TVolumeShallow): string {
+  return `connection-${volume.id}`;
 }

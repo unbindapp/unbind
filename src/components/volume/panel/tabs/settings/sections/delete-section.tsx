@@ -8,6 +8,7 @@ import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider"
 import { TVolumeShallow } from "@/server/trpc/api/services/types";
 import { api } from "@/server/trpc/setup/client";
 import { Trash2Icon } from "lucide-react";
+import { useMemo } from "react";
 
 type TProps = {
   volume: TVolumeShallow;
@@ -17,6 +18,8 @@ type TProps = {
 export default function DeleteSection({ volume, className }: TProps) {
   const { teamId, projectId, environmentId } = useServices();
   const { closePanel } = useVolumePanel();
+
+  const sectionHighlightId = useMemo(() => getEntityId(volume), [volume]);
 
   const {
     mutateAsync: deleteVolume,
@@ -28,9 +31,10 @@ export default function DeleteSection({ volume, className }: TProps) {
     },
   });
 
-  if (volume.can_delete || true) {
+  if (volume.can_delete) {
     return (
       <SettingsSection
+        entityId={sectionHighlightId}
         className="border-destructive/20"
         classNameHeader="text-destructive bg-destructive/8 border-destructive/15"
         title="Delete Volume"
@@ -61,7 +65,12 @@ export default function DeleteSection({ volume, className }: TProps) {
   }
 
   return (
-    <SettingsSection title="Delete Volume" id="danger" Icon={Trash2Icon}>
+    <SettingsSection
+      entityId={sectionHighlightId}
+      title="Delete Volume"
+      id="danger"
+      Icon={Trash2Icon}
+    >
       <div className="flex w-full items-start justify-start">
         <p className="text-muted-foreground max-w-full px-1.5">
           This volume is attached to a service and{" "}
@@ -70,4 +79,8 @@ export default function DeleteSection({ volume, className }: TProps) {
       </div>
     </SettingsSection>
   );
+}
+
+function getEntityId(volume: TVolumeShallow): string {
+  return `danger-${volume.id}`;
 }

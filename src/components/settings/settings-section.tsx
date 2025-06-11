@@ -208,5 +208,5 @@ type TSubmitButtonProps =
       SubmitButton?: never;
       error?: never;
       isPending?: never;
-      entityId?: never;
+      entityId: string;
     };

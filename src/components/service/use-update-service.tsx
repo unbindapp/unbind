@@ -10,9 +10,10 @@ import { toast } from "sonner";
 type TProps = {
   idToHighlight?: string;
   onSuccess?: () => Promise<void>;
+  manualRefetch?: boolean;
 };
 
-export default function useUpdateService({ onSuccess, idToHighlight }: TProps) {
+export default function useUpdateService({ onSuccess, idToHighlight, manualRefetch }: TProps) {
   const { teamId, projectId, environmentId, serviceId } = useService();
 
   const { refetch: refetchServices } = useServiceUtils({
@@ -31,18 +32,19 @@ export default function useUpdateService({ onSuccess, idToHighlight }: TProps) {
   const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
 
   const { mutateAsync, isPending, error, reset } = api.services.update.useMutation({
-    onMutate: async () => {},
     onSuccess: async () => {
-      const result = await ResultAsync.fromPromise(
-        Promise.all([refetchServices(), refetchService()]),
-        () => new Error("Failed to refetch services"),
-      );
+      if (!manualRefetch) {
+        const result = await ResultAsync.fromPromise(
+          Promise.all([refetchServices(), refetchService()]),
+          () => new Error("Failed to refetch services"),
+        );
 
-      if (result.isErr()) {
-        toast.error("Failed to refetch services", {
-          description:
-            "Update was successful, but failed to refetch services. Please refresh the page.",
-        });
+        if (result.isErr()) {
+          toast.error("Failed to refetch services", {
+            description:
+              "Update was successful, but failed to refetch services. Please refresh the page.",
+          });
+        }
       }
 
       await onSuccess?.();
@@ -58,6 +60,11 @@ export default function useUpdateService({ onSuccess, idToHighlight }: TProps) {
     [mutateAsync, teamId, projectId, environmentId, serviceId],
   );
 
+  const refetch = useCallback(
+    async () => await Promise.all([refetchService(), refetchServices()]),
+    [refetchService, refetchServices],
+  );
+
   return {
     teamId,
     projectId,
@@ -67,6 +74,7 @@ export default function useUpdateService({ onSuccess, idToHighlight }: TProps) {
     isPending,
     error,
     reset,
+    refetch,
   };
 }
 

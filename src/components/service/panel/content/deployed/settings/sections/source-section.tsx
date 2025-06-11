@@ -391,9 +391,17 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
   );
 }
 
-function DatabaseSection({ type, version }: TDatabaseSectionProps) {
+function DatabaseSection({ type, version, service }: TDatabaseSectionProps) {
+  const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
+
   return (
-    <SettingsSection title="Source" id="source" Icon={CodeIcon} classNameContent="gap-5">
+    <SettingsSection
+      title="Source"
+      id="source"
+      entityId={sectionHighlightId}
+      Icon={CodeIcon}
+      classNameContent="gap-5"
+    >
       <Block>
         {/* Database */}
         <BlockItem className="w-full md:w-full">

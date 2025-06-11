@@ -111,6 +111,7 @@ export function DeleteEntityTrigger({
           data-confirmation-disabled={disableConfirmationInput ? true : undefined}
           onSubmit={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             form.handleSubmit();
           }}
           className="group/form flex flex-col"

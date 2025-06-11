@@ -3,12 +3,15 @@ import { getVolumeUsageLevel, percentageFormatter } from "@/components/volume/he
 import { formatGB } from "@/lib/helpers/format-gb";
 import { TVolumeShallow } from "@/server/trpc/api/services/types";
 import { ChartNoAxesColumnIcon } from "lucide-react";
+import { useMemo } from "react";
 
 type TProps = {
   volume: TVolumeShallow;
 };
 
 export default function UsageSection({ volume }: TProps) {
+  const sectionHighlightId = useMemo(() => getEntityId(volume), [volume]);
+
   const usagePercentage =
     volume.used_gb !== undefined && volume.capacity_gb !== undefined
       ? Math.min(Math.max(0, (volume.used_gb / volume.capacity_gb) * 100), 100)
@@ -20,7 +23,12 @@ export default function UsageSection({ volume }: TProps) {
   const usageLevel = getVolumeUsageLevel(usagePercentage);
 
   return (
-    <SettingsSection title="Usage" id="usage" Icon={ChartNoAxesColumnIcon}>
+    <SettingsSection
+      title="Usage"
+      id="usage"
+      entityId={sectionHighlightId}
+      Icon={ChartNoAxesColumnIcon}
+    >
       <div data-usage={usageLevel} className="group/section flex w-full flex-col gap-2 font-medium">
         <div className="text-muted-foreground flex w-full items-end justify-between px-1.5">
           <p className="max-w-1/2 truncate pr-2 font-medium">
@@ -59,4 +67,8 @@ export default function UsageSection({ volume }: TProps) {
       </div>
     </SettingsSection>
   );
+}
+
+function getEntityId(volume: TVolumeShallow): string {
+  return `usage-${volume.id}`;
 }

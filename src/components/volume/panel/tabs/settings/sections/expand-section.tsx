@@ -21,7 +21,7 @@ import { api } from "@/server/trpc/setup/client";
 import { useStore } from "@tanstack/react-form";
 import { HourglassIcon, ScalingIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
-import { ReactNode, useCallback, useRef, useState } from "react";
+import { ReactNode, useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -33,6 +33,8 @@ const volumeMaxStorageGb = 200;
 
 export default function ExpandSection({ volume }: TProps) {
   const { data: systemData, isPending: isPendingSystem, error: errorSystem } = useSystem();
+
+  const sectionHighlightId = useMemo(() => getEntityId(volume), [volume]);
 
   const minStorageGb = volume.capacity_gb;
   const maxStorageGb = Math.min(
@@ -85,7 +87,7 @@ export default function ExpandSection({ volume }: TProps) {
 
   if (!hasData && isPending) {
     return (
-      <SettingsSection title="Expand" id="expand" Icon={ScalingIcon}>
+      <SettingsSection title="Expand" id="expand" entityId={sectionHighlightId} Icon={ScalingIcon}>
         <div className="flex w-full flex-col gap-2.5 text-transparent">
           <div className="flex w-full justify-start px-1.5">
             <p className="bg-muted-foreground animate-skeleton max-w-full rounded-md">
@@ -110,7 +112,7 @@ export default function ExpandSection({ volume }: TProps) {
 
   if (!hasData && !isPending && error) {
     return (
-      <SettingsSection title="Expand" id="expand" Icon={ScalingIcon}>
+      <SettingsSection title="Expand" id="expand" entityId={sectionHighlightId} Icon={ScalingIcon}>
         <ErrorLine message={error.message} />
       </SettingsSection>
     );
@@ -118,7 +120,7 @@ export default function ExpandSection({ volume }: TProps) {
 
   if (volume.is_pending_resize) {
     return (
-      <SettingsSection title="Expand" id="expand" Icon={ScalingIcon}>
+      <SettingsSection title="Expand" id="expand" entityId={sectionHighlightId} Icon={ScalingIcon}>
         <div className="flex w-full flex-col gap-2 pt-1">
           <div className="bg-warning/8 border-warning/8 text-warning flex w-full items-start justify-start gap-2 rounded-lg border px-3.5 py-2.5 font-medium">
             <HourglassIcon className="animate-hourglass mt-0.5 -ml-0.5 size-4 shrink-0" />
@@ -133,14 +135,15 @@ export default function ExpandSection({ volume }: TProps) {
 
   return (
     <SettingsSection
+      title="Expand"
+      id="expand"
+      entityId={sectionHighlightId}
       asElement="form"
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
         form.handleSubmit(e);
       }}
-      title="Expand"
-      id="expand"
       Icon={ScalingIcon}
       changeCount={changeCount}
       onClickResetChanges={() => form.reset()}
@@ -347,4 +350,8 @@ function ExpandDialogTrigger({
       </DialogContent>
     </Dialog>
   );
+}
+
+function getEntityId(volume: TVolumeShallow): string {
+  return `expand-${volume.id}`;
 }

@@ -9,6 +9,7 @@ import { cn } from "@/components/ui/utils";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { api } from "@/server/trpc/setup/client";
 import { Trash2Icon } from "lucide-react";
+import { useMemo } from "react";
 
 type Props = {
   service: TServiceShallow;
@@ -20,6 +21,8 @@ export default function DeleteSection({ service, className }: Props) {
 
   const { invalidate } = useServicesUtils({ teamId, projectId, environmentId });
   const { closePanel } = useServicePanel();
+
+  const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
 
   const {
     mutateAsync: deleteService,
@@ -34,10 +37,11 @@ export default function DeleteSection({ service, className }: Props) {
 
   return (
     <SettingsSection
+      entityId={sectionHighlightId}
+      id="danger"
       className="border-destructive/20"
       classNameHeader="text-destructive bg-destructive/8 border-destructive/15"
       title="Delete Service"
-      id="danger"
       Icon={Trash2Icon}
     >
       <DeleteCard
@@ -56,4 +60,8 @@ export default function DeleteSection({ service, className }: Props) {
       />
     </SettingsSection>
   );
+}
+
+function getEntityId(service: TServiceShallow): string {
+  return `danger-${service.id}`;
 }

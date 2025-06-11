@@ -17,6 +17,7 @@ import { useService } from "@/components/service/service-provider";
 import useUpdateService from "@/components/service/use-update-service";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { SettingsSection } from "@/components/settings/settings-section";
+import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { validateDomain } from "@/lib/helpers/validate-domain";
@@ -24,11 +25,11 @@ import { validatePort } from "@/lib/helpers/validate-port";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TExternalEndpoint, TServiceShallow } from "@/server/trpc/api/services/types";
 import { useStore } from "@tanstack/react-form";
+import { useMutation } from "@tanstack/react-query";
 import {
   EthernetPortIcon,
   GlobeIcon,
   GlobeLockIcon,
-  HourglassIcon,
   NetworkIcon,
   PenIcon,
   PlusIcon,
@@ -84,8 +85,15 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
     query: { data: endpointsData, isPending: isPendingEndpoints, error: errorEndpoints },
   } = useServiceEndpoints();
 
+  const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
+
   return (
-    <SettingsSection title="Networking" id="networking" Icon={NetworkIcon}>
+    <SettingsSection
+      title="Networking"
+      id="networking"
+      Icon={NetworkIcon}
+      entityId={sectionHighlightId}
+    >
       {(service.type === "github" || service.type === "docker-image") && (
         <Block>
           <BlockItem className="w-full md:w-full">
@@ -177,24 +185,18 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                           classNameIcon="size-4"
                           valueToCopy={`${hostObject.dns}:${portObject.port}`}
                         />
+                        <DeleteButton
+                          mode="private"
+                          domain={hostObject.dns}
+                          port={portObject.port}
+                          service={service}
+                        />
                       </div>
                     )}
                   />
                 )),
               )}
-              {endpointsData?.endpoints.internal?.flatMap((hostObject) => hostObject.ports)
-                .length === 0 && (
-                <BlockItemButtonLike
-                  classNameText="whitespace-normal text-muted-foreground"
-                  asElement="div"
-                  text={`Waiting for deployment...`}
-                  Icon={({ className }: { className?: string }) => (
-                    <HourglassIcon
-                      className={cn("animate-hourglass text-muted-foreground scale-90", className)}
-                    />
-                  )}
-                />
-              )}
+              <AddDomainPortCard service={service} isPending={isPendingEndpoints} mode="private" />
             </div>
           </BlockItemContent>
         </BlockItem>
@@ -207,7 +209,13 @@ function getDisplayUrlExternal(endpoint: { host: string; port: string }) {
   return `${endpoint.host}${endpoint.port !== "443" && endpoint.port ? `:${endpoint.port}` : ""}`;
 }
 
-function DomainPortCard({ endpoint }: { endpoint: TExternalEndpoint; service: TServiceShallow }) {
+function DomainPortCard({
+  endpoint,
+  service,
+}: {
+  endpoint: TExternalEndpoint;
+  service: TServiceShallow;
+}) {
   /*  const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
 
   const {
@@ -296,15 +304,13 @@ function DomainPortCard({ endpoint }: { endpoint: TExternalEndpoint; service: TS
                     >
                       <PenIcon className="size-4" />
                     </Button>
-                    <Button
+                    <DeleteButton
+                      mode="public"
                       disabled={isEditing}
-                      type="button"
-                      size="icon"
-                      variant="ghost-destructive"
-                      className="text-muted-more-foreground size-8 rounded-md"
-                    >
-                      <Trash2Icon className="size-4" />
-                    </Button>
+                      domain={endpoint.host}
+                      port={endpoint.port.port}
+                      service={service}
+                    />
                   </div>
                 )}
               />
@@ -411,9 +417,11 @@ function DomainPortCard({ endpoint }: { endpoint: TExternalEndpoint; service: TS
 function AddDomainPortCard({
   service,
   isPending,
+  mode = "public",
 }: {
   isPending: boolean;
   service: TServiceShallow;
+  mode?: "public" | "private";
 }) {
   const { teamId, projectId, environmentId, serviceId } = useService();
   const { refetch: refetchServiceEndpoints } = useServiceEndpointsUtils({
@@ -451,15 +459,23 @@ function AddDomainPortCard({
   const form = useAppForm({
     defaultValues: {
       host: "",
-      portType: service.config.ports?.[0]?.port.toString() || "",
+      portType: service.config.ports.length >= 1 ? service.config.ports[0].port.toString() : "",
       port: "",
       isEditing: false,
     },
     onSubmit: async ({ value }) => {
-      const port = value.portType !== customPortText ? value.portType : value.port;
+      const port =
+        mode === "public"
+          ? value.portType !== customPortText
+            ? value.portType
+            : value.port
+          : value.port;
       await updateService({
-        addHosts: [{ host: value.host, path: "", target_port: Number(port) }],
-        addPorts: service.config.ports?.map((p) => p.port).includes(Number(port))
+        addHosts:
+          mode === "public"
+            ? [{ host: value.host, path: "", target_port: Number(port) }]
+            : undefined,
+        addPorts: service.config.ports.map((p) => p.port).includes(Number(port))
           ? undefined
           : [{ port: Number(port) }],
       });
@@ -467,7 +483,7 @@ function AddDomainPortCard({
   });
 
   const currentPorts = useMemo(() => {
-    return service.config.ports?.map((portObject) => portObject.port.toString());
+    return service.config.ports.map((portObject) => portObject.port.toString());
   }, [service.config.ports]);
 
   const portItems = useMemo(() => {
@@ -499,7 +515,7 @@ function AddDomainPortCard({
                     isPending={isPending}
                     key="add-external-endpoint"
                     asElement="button"
-                    text="Add domain"
+                    text={mode === "private" ? "Add private domain" : "Add domain"}
                     Icon={PlusIcon}
                     onClick={() => field.handleChange(true)}
                   />
@@ -516,108 +532,63 @@ function AddDomainPortCard({
                 className="flex w-full flex-col rounded-lg border"
               >
                 <div className="flex w-full flex-col gap-4 px-3 pt-3 pb-3.25 sm:px-4.5 sm:pt-3.5 sm:pb-4.75">
-                  <Block>
-                    <form.AppField
-                      name="host"
-                      validators={{
-                        onChange: ({ value }) => validateDomain({ value, isPublic: true }),
-                      }}
-                    >
-                      {(field) => (
-                        <BlockItem className="w-full md:w-full">
-                          <BlockItemHeader type="column">
-                            <BlockItemTitle>Domain</BlockItemTitle>
-                          </BlockItemHeader>
-                          <BlockItemContent>
-                            <field.DomainInput
-                              field={field}
-                              value={field.state.value}
-                              onBlur={field.handleBlur}
-                              onChange={(e) => {
-                                field.handleChange(e.target.value);
-                              }}
-                              placeholder="example.com"
-                              autoCapitalize="off"
-                              autoCorrect="off"
-                              autoComplete="off"
-                              spellCheck="false"
-                              hideCard={field.state.meta.isDefaultValue}
-                            />
-                          </BlockItemContent>
-                        </BlockItem>
-                      )}
-                    </form.AppField>
-                  </Block>
-                  <div className="flex w-full flex-col">
+                  {mode === "public" && (
                     <Block>
-                      <form.AppField name="portType">
+                      <form.AppField
+                        name="host"
+                        validators={{
+                          onChange: ({ value }) => validateDomain({ value, isPublic: true }),
+                        }}
+                      >
                         {(field) => (
                           <BlockItem className="w-full md:w-full">
                             <BlockItemHeader type="column">
-                              <BlockItemTitle>Port</BlockItemTitle>
+                              <BlockItemTitle>Domain</BlockItemTitle>
                             </BlockItemHeader>
                             <BlockItemContent>
-                              <field.AsyncDropdownMenu
-                                dontCheckUntilSubmit
+                              <field.DomainInput
                                 field={field}
                                 value={field.state.value}
-                                onChange={(v) => field.handleChange(v)}
-                                items={portItems}
-                                isPending={false}
-                                error={undefined}
-                                classNameItem={({ value }) => {
-                                  if (value === customPortText) {
-                                    return "gap-1.5 text-muted-foreground";
-                                  }
-                                  return "gap-1.5";
+                                onBlur={field.handleBlur}
+                                onChange={(e) => {
+                                  field.handleChange(e.target.value);
                                 }}
-                                ItemIcon={({ value, className }) => {
-                                  if (value === customPortText) {
-                                    return <PlusIcon className={className} />;
-                                  }
-                                  return null;
-                                }}
-                              >
-                                {({ isOpen }) => (
-                                  <BlockItemButtonLike
-                                    data-is-custom={
-                                      field.state.value === customPortText ? true : undefined
-                                    }
-                                    className="data-is-custom:rounded-b-none data-is-custom:border-b-0"
-                                    asElement="button"
-                                    text={field.state.value}
-                                    Icon={({ className }) => (
-                                      <EthernetPortIcon className={cn("scale-90", className)} />
-                                    )}
-                                    variant="outline"
-                                    open={isOpen}
-                                    onBlur={field.handleBlur}
-                                  />
-                                )}
-                              </field.AsyncDropdownMenu>
+                                placeholder="example.com"
+                                autoCapitalize="off"
+                                autoCorrect="off"
+                                autoComplete="off"
+                                spellCheck="false"
+                                hideCard={field.state.meta.isDefaultValue}
+                              />
                             </BlockItemContent>
                           </BlockItem>
                         )}
                       </form.AppField>
                     </Block>
-                    <form.Subscribe
-                      selector={(s) => ({ isCustom: s.values.portType === customPortText })}
-                      children={({ isCustom }) => {
-                        if (!isCustom) return null;
-                        return (
-                          <form.AppField
-                            name="port"
-                            validators={{
-                              onChange: ({ value }) => validatePort({ value, isPublic: true }),
-                            }}
-                            children={(field) => (
-                              <>
-                                <div className="bg-border h-px w-full" />
+                  )}
+                  <div className="flex w-full flex-col">
+                    {(mode === "private" || currentPorts.length === 0) && (
+                      <Block>
+                        <form.AppField
+                          name="port"
+                          validators={{
+                            onChange: ({ value }) => {
+                              if (currentPorts.includes(value)) {
+                                return { message: "This port already exists." };
+                              }
+                              return validatePort({ value, isPublic: true });
+                            },
+                          }}
+                          children={(field) => (
+                            <BlockItem className="w-full md:w-full">
+                              <BlockItemHeader type="column">
+                                <BlockItemTitle>Port</BlockItemTitle>
+                              </BlockItemHeader>
+                              <BlockItemContent>
                                 <field.TextField
                                   field={field}
                                   value={field.state.value}
                                   onBlur={field.handleBlur}
-                                  classNameInput="rounded-t-none border-t-0"
                                   onChange={(e) => field.handleChange(e.target.value)}
                                   placeholder="3000"
                                   autoCapitalize="off"
@@ -626,12 +597,107 @@ function AddDomainPortCard({
                                   spellCheck="false"
                                   inputMode="numeric"
                                 />
-                              </>
-                            )}
-                          />
-                        );
-                      }}
-                    />
+                              </BlockItemContent>
+                            </BlockItem>
+                          )}
+                        />
+                      </Block>
+                    )}
+                    {mode === "public" && currentPorts.length !== 0 && (
+                      <Block>
+                        <form.AppField name="portType">
+                          {(field) => (
+                            <BlockItem className="w-full md:w-full">
+                              <BlockItemHeader type="column">
+                                <BlockItemTitle>Port</BlockItemTitle>
+                              </BlockItemHeader>
+                              <BlockItemContent>
+                                <field.AsyncDropdownMenu
+                                  dontCheckUntilSubmit
+                                  field={field}
+                                  value={field.state.value}
+                                  onChange={(v) => field.handleChange(v)}
+                                  items={portItems}
+                                  isPending={false}
+                                  error={undefined}
+                                  classNameItem={({ value }) => {
+                                    if (value === customPortText) {
+                                      return "gap-1.5 text-muted-foreground";
+                                    }
+                                    return "gap-1.5";
+                                  }}
+                                  ItemIcon={({ value, className }) => {
+                                    if (value === customPortText) {
+                                      return <PlusIcon className={className} />;
+                                    }
+                                    return null;
+                                  }}
+                                >
+                                  {({ isOpen }) => (
+                                    <BlockItemButtonLike
+                                      data-is-custom={
+                                        field.state.value === customPortText ? true : undefined
+                                      }
+                                      className="data-is-custom:rounded-b-none data-is-custom:border-b-0"
+                                      asElement="button"
+                                      text={field.state.value}
+                                      Icon={({ className }) => (
+                                        <EthernetPortIcon className={cn("scale-90", className)} />
+                                      )}
+                                      variant="outline"
+                                      open={isOpen}
+                                      onBlur={field.handleBlur}
+                                    />
+                                  )}
+                                </field.AsyncDropdownMenu>
+                              </BlockItemContent>
+                            </BlockItem>
+                          )}
+                        </form.AppField>
+                      </Block>
+                    )}
+                    {mode === "private" && (
+                      <div className="text-success bg-success/8 mt-2 flex justify-start gap-1.5 rounded-md px-3 py-2 text-sm">
+                        <GlobeLockIcon className="mt-0.5 -ml-0.5 size-3.5 shrink-0" />
+                        <p className="min-w-0 shrink leading-tight">
+                          Private domain will be auto-generated.
+                        </p>
+                      </div>
+                    )}
+                    {mode === "public" && currentPorts.length !== 0 && (
+                      <form.Subscribe
+                        selector={(s) => ({ isCustom: s.values.portType === customPortText })}
+                        children={({ isCustom }) => {
+                          if (!isCustom) return null;
+                          return (
+                            <form.AppField
+                              name="port"
+                              validators={{
+                                onChange: ({ value }) => validatePort({ value, isPublic: true }),
+                              }}
+                              children={(field) => (
+                                <>
+                                  <div className="bg-border h-px w-full" />
+                                  <field.TextField
+                                    field={field}
+                                    value={field.state.value}
+                                    onBlur={field.handleBlur}
+                                    classNameInput="rounded-t-none border-t-0"
+                                    onChange={(e) => field.handleChange(e.target.value)}
+                                    placeholder="3000"
+                                    autoCapitalize="off"
+                                    autoCorrect="off"
+                                    autoComplete="off"
+                                    spellCheck="false"
+                                    inputMode="numeric"
+                                  />
+                                </>
+                              )}
+                            />
+                          );
+                        }}
+                      />
+                    )}
                   </div>
                 </div>
                 <div className="flex w-full flex-col border-t p-1.5">
@@ -674,6 +740,90 @@ function AddDomainPortCard({
   );
 }
 
+function DeleteButton({
+  domain,
+  port,
+  mode,
+  disabled,
+  service,
+}: {
+  domain: string;
+  port: number;
+  mode: "private" | "public";
+  disabled?: boolean;
+  service: TServiceShallow;
+}) {
+  const { teamId, projectId, environmentId, serviceId } = useService();
+  const { refetch: refetchEndpoints } = useServiceEndpointsUtils({
+    teamId,
+    projectId,
+    environmentId,
+    serviceId,
+  });
+
+  const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
+  const { mutateAsync: updateService, refetch: refetchServices } = useUpdateService({
+    idToHighlight: sectionHighlightId,
+    manualRefetch: true,
+  });
+
+  const { mutateAsync: deleteDomainOrPort, error: errorDeleteDomainOrPort } = useMutation({
+    mutationFn: async () => {
+      if (mode === "public") {
+        await updateService({
+          removeHosts: [{ host: domain, path: "", target_port: port }],
+        });
+      } else if (mode === "private") {
+        await updateService({
+          removePorts: [{ port }],
+        });
+      }
+
+      const result = await ResultAsync.fromPromise(
+        Promise.all([refetchEndpoints(), refetchServices()]),
+        () => new Error("Failed to refetch"),
+      );
+
+      if (result.isErr()) {
+        toast.error("Failed to refetch", {
+          description:
+            "Update was successful, but failed to refetch service endpoints. Please refresh the page.",
+        });
+      }
+    },
+  });
+
+  return (
+    <DeleteEntityTrigger
+      EntityNameBadge={() => (
+        <p className="bg-foreground/6 border-foreground/6 -ml-0.5 max-w-[calc(100%+0.25rem)] rounded-md border px-1.5 font-mono font-semibold">
+          {domain}
+        </p>
+      )}
+      deletingEntityName={domain}
+      dialogTitle={mode === "private" ? "Delete Private Domain" : "Delete Domain"}
+      dialogDescription={
+        mode === "private"
+          ? "The port and any public domains using to that port will be deleted. This action cannot be undone."
+          : "Are you sure you want to delete this domain? This action cannot be undone."
+      }
+      onSubmit={deleteDomainOrPort}
+      error={errorDeleteDomainOrPort}
+      disableConfirmationInput
+    >
+      <Button
+        type="button"
+        size="icon"
+        variant="ghost-destructive"
+        className="text-muted-more-foreground size-8 rounded-md"
+        disabled={disabled}
+      >
+        <Trash2Icon className="size-4" />
+      </Button>
+    </DeleteEntityTrigger>
+  );
+}
+
 function getEntityId(service: TServiceShallow): string {
-  return `build-${service.id}`;
+  return `networking-${service.id}`;
 }
