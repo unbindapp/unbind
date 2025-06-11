@@ -37,7 +37,7 @@ import { api } from "@/server/trpc/setup/client";
 import {
   EllipsisVerticalIcon,
   GitBranchIcon,
-  GitCommitVerticalIcon,
+  GitCommitHorizontalIcon,
   RewindIcon,
   RocketIcon,
   RotateCcwIcon,
@@ -543,7 +543,7 @@ function DeploymentInfo({ deployment, service, isPlaceholder, className }: TDepl
       ) : (
         <div className="-ml-1.5 h-4.5" />
       )}
-      <div className="flex min-w-0 shrink flex-wrap items-center justify-start gap-0.5 space-x-1.5 text-sm leading-tight">
+      <div className="flex min-w-0 shrink flex-wrap items-center justify-start gap-0.5 space-x-1.5 font-mono text-sm leading-tight">
         <p className="text-muted-foreground group-data-placeholder/time:bg-muted-foreground group-data-placeholder/time:animate-skeleton max-w-full min-w-0 shrink leading-tight group-data-placeholder/time:rounded-md group-data-placeholder/time:text-transparent">
           {isPlaceholder
             ? "1 hr. ago via GitHub | 90s"
@@ -553,7 +553,7 @@ function DeploymentInfo({ deployment, service, isPlaceholder, className }: TDepl
           <span className="text-muted-more-foreground leading-tight">|</span>
         )}
         {deployment?.git_branch && (
-          <p className="text-muted-foreground leading-tigh max-w-full min-w-0 shrink">
+          <p className="text-muted-foreground max-w-full min-w-0 shrink leading-tight">
             <GitBranchIcon className="mr-[0.5ch] inline-block size-3.5" />
             {deployment.git_branch}
           </p>
@@ -562,14 +562,14 @@ function DeploymentInfo({ deployment, service, isPlaceholder, className }: TDepl
           <span className="text-muted-more-foreground leading-tigh">|</span>
         )}
         {deployment?.commit_sha && (
-          <p className="text-muted-foreground leading-tigh -ml-0.5 max-w-full min-w-0 shrink">
-            <GitCommitVerticalIcon className="mr-[0.1ch] inline-block size-3.5" />
+          <p className="text-muted-foreground max-w-full min-w-0 shrink leading-tight">
+            <GitCommitHorizontalIcon className="mr-[0.5ch] inline-block size-3.5" />
             {deployment.commit_sha.slice(0, 6)}
           </p>
         )}
         {durationStr && <span className="text-muted-more-foreground leading-tigh">|</span>}
         {durationStr && (
-          <p className="text-muted-foreground leading-tigh max-w-full min-w-0 shrink font-mono leading-tight">
+          <p className="text-muted-foreground max-w-full min-w-0 shrink leading-tight">
             <AnimatedTimerIcon
               animate={isBuilding}
               className="-mt-0.5 mr-[0.4ch] inline-block size-3.5 shrink-0"

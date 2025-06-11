@@ -43,7 +43,11 @@ export default function DeployLogs({ deployment }: TProps) {
       deploymentId={deploymentId}
       type="deployment"
       hideServiceByDefault
-      shouldHaveLogs={true}
+      shouldHaveLogs={
+        deployment.status !== "removed" &&
+        deployment.status !== "build-cancelled" &&
+        deployment.status !== "build-failed"
+      }
       httpDefaultStartTimestamp={undefined}
       httpDefaultEndTimestamp={undefined}
     />
