@@ -1,20 +1,10 @@
 ---
-name: Bug Report / Feature Request / Support
-about: Report bugs, request features, or get support for Unbind
-title: "[COMPONENT] Brief description of issue"
-labels: "needs-triage"
+name: Bug Report
+about: Report bugs with Unbind
+title: ""
+labels: "bug"
 assignees: ""
 ---
-
-## Issue Type
-
-<!-- Please check one -->
-
-- [ ] Bug Report
-- [ ] Feature Request
-- [ ] Documentation Issue
-- [ ] Question / Support
-- [ ] Configuration Issue
 
 ## Component/Service Affected
 
@@ -32,11 +22,11 @@ assignees: ""
 - **Cloud Provider**: <!-- (if applicable) e.g., hetzner, aws, digital ocean -->
 - **Operating System**: <!-- (if applicable) e.g. ubuntu 24.04, opensuse 15 -->
 - **Unbind Version**:
-- **Application Stack**: <!-- (if applicablee) e.g., Node, Python, GO -->
+- **Application Stack**: <!-- (if applicable) e.g., Node, Python, GO -->
 
-## Current Behavior
+## Description
 
-<!-- Describe what is currently happening -->
+<!-- Brief description of the issue -->
 
 ## Expected Behavior
 
@@ -72,31 +62,6 @@ Paste error messages or logs here
 - [ ] High - Major functionality affected
 - [ ] Medium - Minor functionality affected
 - [ ] Low - Enhancement or minor issue
-
-### Workarounds Tried
-
-<!-- List any workarounds you've attempted -->
-
--
-- ***
-
-  **For Feature Requests:**
-
-## Feature Description
-
-<!-- Describe the feature you'd like to see -->
-
-## Use Case
-
-<!-- Explain why this feature would be valuable -->
-
-## Proposed Solution
-
-<!-- If you have ideas on how this could be implemented -->
-
-## Alternatives Considered
-
-<!-- What alternatives have you considered? -->
 
 ---
 
