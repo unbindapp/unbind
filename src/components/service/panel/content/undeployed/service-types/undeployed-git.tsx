@@ -293,7 +293,7 @@ export function UndeployedContentGit({
                     isPending={isPendingRepository}
                     error={errorRepository?.message}
                     commandInputPlaceholder="Search branches..."
-                    commandEmptyText="No branches found"
+                    CommandEmptyText="No branches found"
                     CommandEmptyIcon={GitBranchIcon}
                   >
                     {({ isOpen }) => (

@@ -209,7 +209,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
                   isPending={isPendingRepository}
                   error={errorRepository?.message}
                   commandInputPlaceholder="Search branches..."
-                  commandEmptyText="No branches found"
+                  CommandEmptyText="No branches found"
                   CommandEmptyIcon={GitBranchIcon}
                 >
                   {({ isOpen }) => (
@@ -362,7 +362,7 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
                   isPending={isPendingTags}
                   error={errorTags?.message}
                   commandInputPlaceholder="Search tags..."
-                  commandEmptyText="No tags found"
+                  CommandEmptyText="No tags found"
                   CommandEmptyIcon={TagIcon}
                   commandShouldntFilter={true}
                   commandInputValue={commandInputValue}

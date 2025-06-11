@@ -29,6 +29,7 @@ import {
   PlusIcon,
   Trash2Icon,
 } from "lucide-react";
+import { useMemo } from "react";
 
 type TProps = {
   service: TServiceShallow;
@@ -392,13 +393,33 @@ function AddDomainPortCard({
   isPending: boolean;
   service: TServiceShallow;
 }) {
+  const customPortText = "Custom Port";
+
   const form = useAppForm({
     defaultValues: {
       host: "",
-      port: service.config.ports?.[0]?.port.toString() || "",
+      portType: service.config.ports?.[0]?.port.toString() || "",
+      port: "",
       isEditing: false,
     },
   });
+
+  const currentPorts = useMemo(() => {
+    return service.config.ports?.map((portObject) => portObject.port.toString());
+  }, [service.config.ports]);
+
+  const portItems = useMemo(() => {
+    return currentPorts
+      ? [
+          ...currentPorts.map((port) => ({
+            value: port,
+            label: port,
+          })),
+          { value: customPortText, label: customPortText },
+        ]
+      : undefined;
+  }, [currentPorts]);
+
   return (
     <div className="flex w-full flex-col">
       <form.Subscribe
@@ -465,44 +486,89 @@ function AddDomainPortCard({
                       )}
                     </form.AppField>
                   </Block>
-                  <Block>
-                    <form.AppField
-                      name="port"
-                      validators={{
-                        onChange: ({ value }) => validatePort({ value, isPublic: true }),
+                  <div className="flex w-full flex-col">
+                    <Block>
+                      <form.AppField name="portType">
+                        {(field) => (
+                          <BlockItem className="w-full md:w-full">
+                            <BlockItemHeader type="column">
+                              <BlockItemTitle>Port</BlockItemTitle>
+                            </BlockItemHeader>
+                            <BlockItemContent>
+                              <field.AsyncDropdownMenu
+                                dontCheckUntilSubmit
+                                field={field}
+                                value={field.state.value}
+                                onChange={(v) => field.handleChange(v)}
+                                items={portItems}
+                                isPending={false}
+                                error={undefined}
+                                classNameItem={({ value }) => {
+                                  if (value === customPortText) {
+                                    return "gap-1.5 text-muted-foreground";
+                                  }
+                                  return "gap-1.5";
+                                }}
+                                ItemIcon={({ value, className }) => {
+                                  if (value === customPortText) {
+                                    return <PlusIcon className={className} />;
+                                  }
+                                  return null;
+                                }}
+                              >
+                                {({ isOpen }) => (
+                                  <BlockItemButtonLike
+                                    data-is-custom={
+                                      field.state.value === customPortText ? true : undefined
+                                    }
+                                    className="data-is-custom:rounded-b-none"
+                                    asElement="button"
+                                    text={field.state.value}
+                                    Icon={({ className }) => (
+                                      <EthernetPortIcon className={cn("scale-90", className)} />
+                                    )}
+                                    variant="outline"
+                                    open={isOpen}
+                                    onBlur={field.handleBlur}
+                                  />
+                                )}
+                              </field.AsyncDropdownMenu>
+                            </BlockItemContent>
+                          </BlockItem>
+                        )}
+                      </form.AppField>
+                    </Block>
+                    <form.Subscribe
+                      selector={(s) => ({ isCustom: s.values.portType === customPortText })}
+                      children={({ isCustom }) => {
+                        if (!isCustom) return null;
+                        return (
+                          <form.AppField
+                            name="port"
+                            validators={{
+                              onChange: ({ value }) => validatePort({ value, isPublic: true }),
+                            }}
+                            children={(field) => (
+                              <field.TextField
+                                field={field}
+                                value={field.state.value}
+                                onBlur={field.handleBlur}
+                                className="-mt-px"
+                                classNameInput="rounded-t-none"
+                                onChange={(e) => field.handleChange(e.target.value)}
+                                placeholder="3000"
+                                autoCapitalize="off"
+                                autoCorrect="off"
+                                autoComplete="off"
+                                spellCheck="false"
+                                inputMode="numeric"
+                              />
+                            )}
+                          />
+                        );
                       }}
-                    >
-                      {(field) => (
-                        <BlockItem className="w-full md:w-full">
-                          <BlockItemHeader type="column">
-                            <BlockItemTitle>Port</BlockItemTitle>
-                          </BlockItemHeader>
-                          <BlockItemContent>
-                            <field.AsyncInputWithItems
-                              dontCheckUntilSubmit
-                              onChange={(e) => field.handleChange(e.target.value)}
-                              onBlur={field.handleBlur}
-                              field={field}
-                              value={field.state.value}
-                              items={
-                                service.config.ports?.map((portObject) => ({
-                                  value: portObject.port.toString(),
-                                  label: portObject.port.toString(),
-                                })) || []
-                              }
-                              isPending={false}
-                              error={undefined}
-                              placeholder="3000"
-                              commandInputPlaceholder="3000"
-                              commandEmptyText="No ports found"
-                              CommandEmptyIcon={EthernetPortIcon}
-                              classNamePopoverContent="h-48"
-                            />
-                          </BlockItemContent>
-                        </BlockItem>
-                      )}
-                    </form.AppField>
-                  </Block>
+                    />
+                  </div>
                 </div>
                 <div className="flex w-full flex-col border-t p-1.5">
                   <div className="flex w-full">

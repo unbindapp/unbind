@@ -309,7 +309,7 @@ type TAsyncCommandDropdownProps = TFieldProps & {
   items: TCommandItem[] | undefined;
   isPending: boolean;
   error: string | undefined;
-  commandEmptyText: string;
+  CommandEmptyText: string;
   commandInputPlaceholder: string;
   CommandEmptyIcon: FC<{ className?: string }>;
   CommandItemElement?: FC<{ item: TCommandItem; className?: string }>;
@@ -336,7 +336,7 @@ function AsyncCommandDropdown({
   items,
   isPending,
   error,
-  commandEmptyText,
+  CommandEmptyText,
   commandInputPlaceholder,
   CommandEmptyIcon,
   CommandItemElement,
@@ -404,7 +404,7 @@ function AsyncCommandDropdown({
                   {items && (
                     <CommandEmpty className="text-muted-foreground flex items-center justify-start gap-2 px-2.5 py-2.5 leading-tight">
                       <CommandEmptyIcon className="size-4.5 shrink-0" />
-                      <p className="min-w-0 shrink">{commandEmptyText}</p>
+                      <p className="min-w-0 shrink">{CommandEmptyText}</p>
                     </CommandEmpty>
                   )}
                   <CommandGroup>
@@ -471,14 +471,21 @@ type TAsyncInputWithItemsProps = TFieldProps & {
   items: TCommandItem[] | undefined;
   isPending: boolean;
   error: string | undefined;
-  commandEmptyText: string;
   commandInputPlaceholder: string;
-  CommandEmptyIcon: FC<{ className?: string }>;
   CommandItemElement?: FC<{ item: TCommandItem; className?: string }>;
-  CommandItemsPinned?: FC<{ setIsOpen: (isOpen: boolean) => void; commandValue: string }>;
+  CommandItemsPinned?: FC<{
+    setIsOpen: (isOpen: boolean) => void;
+    value: string;
+    commandValue: string;
+    inputValue: string;
+  }>;
   className?: string;
   classNameInfo?: string;
   classNamePopoverContent?: string;
+  classNameCommandEmpty?: string | (({ inputValue }: { inputValue: string }) => string);
+  CommandEmptyText: string | FC<{ className?: string; inputValue: string }>;
+  CommandEmptyIcon: FC<{ className?: string }>;
+  commandFilter?: (value: string, search: string) => number;
 } & InputProps;
 
 function AsyncInputWithItems({
@@ -486,17 +493,20 @@ function AsyncInputWithItems({
   items,
   isPending,
   error,
-  commandEmptyText,
+  CommandEmptyText,
   commandInputPlaceholder,
   CommandEmptyIcon,
   CommandItemElement,
+  CommandItemsPinned,
   dontCheckUntilSubmit,
   hideError,
   classNameInfo,
   value,
   className,
   classNamePopoverContent,
+  classNameCommandEmpty,
   placeholder,
+  commandFilter,
 }: TAsyncInputWithItemsProps) {
   const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
   const isFormSubmitted = submissionAttempts > 0;
@@ -504,7 +514,7 @@ function AsyncInputWithItems({
   const [isOpen, setIsOpen] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  const [commandInputValue, setCommandInputValue] = useState("");
+  const [commandInputValue, setCommandInputValue] = useState(String(value));
 
   return (
     <div className={cn("flex flex-col", className)}>
@@ -512,10 +522,18 @@ function AsyncInputWithItems({
         open={isOpen}
         onOpenChange={(o) => {
           setIsOpen(o);
-          setCommandInputValue(value as string);
+          if (o) {
+            setCommandInputValue(String(value));
+          } else {
+            field.handleChange(commandInputValue);
+          }
         }}
       >
-        <Command wrapper="none" className="flex flex-1 flex-col overflow-visible">
+        <Command
+          filter={commandFilter ? commandFilter : undefined}
+          wrapper="none"
+          className="flex flex-1 flex-col overflow-visible"
+        >
           <PopoverTrigger asChild>
             <Button
               variant="outline"
@@ -554,9 +572,22 @@ function AsyncInputWithItems({
                 <ScrollArea viewportRef={scrollAreaRef} className="flex flex-1 flex-col">
                   <CommandList>
                     {items && (
-                      <CommandEmpty className="text-muted-foreground flex items-center justify-start gap-2 px-2.5 py-2.5 leading-tight">
+                      <CommandEmpty
+                        className={cn(
+                          "text-muted-foreground flex items-center justify-start gap-2 px-2.5 py-2.5 leading-tight",
+                          typeof classNameCommandEmpty === "function"
+                            ? classNameCommandEmpty?.({
+                                inputValue: commandInputValue,
+                              })
+                            : classNameCommandEmpty,
+                        )}
+                      >
                         <CommandEmptyIcon className="size-4.5 shrink-0" />
-                        <p className="min-w-0 shrink">{commandEmptyText}</p>
+                        {typeof CommandEmptyText === "string" ? (
+                          <p className="min-w-0 shrink">{CommandEmptyText}</p>
+                        ) : (
+                          <CommandEmptyText inputValue={commandInputValue} />
+                        )}
                       </CommandEmpty>
                     )}
                     <CommandGroup>
@@ -572,6 +603,14 @@ function AsyncInputWithItems({
                       {!items && !isPending && error && (
                         <ErrorCard className="rounded-md" message={error} />
                       )}
+                      {items && CommandItemsPinned ? (
+                        <CommandItemsPinned
+                          value={String(value)}
+                          setIsOpen={setIsOpen}
+                          inputValue={commandInputValue}
+                          commandValue=""
+                        />
+                      ) : null}
                       {items &&
                         items.map((item) => (
                           <CommandItem
@@ -625,6 +664,7 @@ type TAsyncDropdownMenuProps = TFieldProps & {
   className?: string;
   classNameInfo?: string;
   classNameDropdownContent?: string;
+  classNameItem?: string | (({ value }: { value: string }) => string);
   value: string;
   onChange: (value: string) => void;
   dropdownTitle?: string;
@@ -645,6 +685,7 @@ function AsyncDropdownMenu({
   className,
   classNameInfo,
   classNameDropdownContent,
+  classNameItem,
   dropdownTitle,
   dropdownMenuContentAlign,
   children,
@@ -693,7 +734,12 @@ function AsyncDropdownMenu({
                       setIsOpen(false);
                     }}
                     data-checked={value === item.value ? true : undefined}
-                    className="group/item"
+                    className={cn(
+                      "group/item",
+                      typeof classNameItem === "function"
+                        ? classNameItem({ value: item.value })
+                        : classNameItem,
+                    )}
                   >
                     {ItemIcon && (
                       <ItemIcon className="-ml-0.5 size-5 shrink-0" value={item.value} />

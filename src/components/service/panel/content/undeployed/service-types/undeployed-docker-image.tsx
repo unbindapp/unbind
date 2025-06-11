@@ -265,7 +265,7 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort, service
                     isPending={isPendingTags}
                     error={errorTags?.message}
                     commandInputPlaceholder="Search tags..."
-                    commandEmptyText="No tags found"
+                    CommandEmptyText="No tags found"
                     CommandEmptyIcon={TagIcon}
                     commandShouldntFilter={true}
                     commandInputValue={commandInputValue}

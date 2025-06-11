@@ -191,7 +191,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
                   isPending={isPendingS3Sources}
                   error={errorS3Sources?.message}
                   commandInputPlaceholder="Search buckets..."
-                  commandEmptyText="No buckets found"
+                  CommandEmptyText="No buckets found"
                   CommandEmptyIcon={CylinderIcon}
                   CommandItemElement={SourceAndBucketCommandItemElement}
                   TriggerWrapper={hasNoBuckets ? CreateBackupSourceTriggerMemoized : undefined}
