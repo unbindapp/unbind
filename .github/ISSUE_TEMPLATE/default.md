@@ -1,6 +1,6 @@
 ---
 name: Bug Report / Feature Request / Support
-about: Report bugs, request features, or get support for our PaaS platform
+about: Report bugs, request features, or get support for Unbind
 title: "[COMPONENT] Brief description of issue"
 labels: "needs-triage"
 assignees: ""
