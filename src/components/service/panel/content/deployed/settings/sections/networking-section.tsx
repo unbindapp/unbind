@@ -395,7 +395,7 @@ function AddDomainPortCard({
   const form = useAppForm({
     defaultValues: {
       host: "",
-      port: "",
+      port: service.config.ports?.[0]?.port.toString() || "",
       isEditing: false,
     },
   });
@@ -496,6 +496,7 @@ function AddDomainPortCard({
                               commandInputPlaceholder="3000"
                               commandEmptyText="No ports found"
                               CommandEmptyIcon={EthernetPortIcon}
+                              classNamePopoverContent="h-48"
                             />
                           </BlockItemContent>
                         </BlockItem>

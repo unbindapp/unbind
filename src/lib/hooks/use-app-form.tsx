@@ -33,7 +33,7 @@ import {
   useStore,
 } from "@tanstack/react-form";
 import { CheckIcon, RotateCcwIcon } from "lucide-react";
-import { FC, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FC, ReactNode, useCallback, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
 const { fieldContext, formContext } = createFormHookContexts();
@@ -478,6 +478,7 @@ type TAsyncInputWithItemsProps = TFieldProps & {
   CommandItemsPinned?: FC<{ setIsOpen: (isOpen: boolean) => void; commandValue: string }>;
   className?: string;
   classNameInfo?: string;
+  classNamePopoverContent?: string;
 } & InputProps;
 
 function AsyncInputWithItems({
@@ -494,37 +495,33 @@ function AsyncInputWithItems({
   classNameInfo,
   value,
   className,
+  classNamePopoverContent,
   placeholder,
 }: TAsyncInputWithItemsProps) {
   const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
   const isFormSubmitted = submissionAttempts > 0;
 
   const [isOpen, setIsOpen] = useState(false);
-  const [, setCommandValue] = useState(value);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const [commandInputValue, setCommandInputValue] = useState("");
 
-  useEffect(() => {
-    if (commandInputValue) {
-      setIsOpen(true);
-    }
-  }, [commandInputValue]);
-
   return (
     <div className={cn("flex flex-col", className)}>
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <Command
-          value={value as string}
-          onValueChange={setCommandValue}
-          wrapper="none"
-          className="flex flex-1 flex-col overflow-auto"
-        >
+      <Popover
+        open={isOpen}
+        onOpenChange={(o) => {
+          setIsOpen(o);
+          setCommandInputValue(value as string);
+        }}
+      >
+        <Command wrapper="none" className="flex flex-1 flex-col overflow-visible">
           <PopoverTrigger asChild>
             <Button
               variant="outline"
+              forceMinSize={false}
               data-placeholder={value ? undefined : true}
-              className="bg-input focus-visible:ring-primary/50 has-hover:hover:bg-input has-hover:hover:data-placeholder:text-muted-foreground/75 data-placeholder:text-muted-foreground/75 cursor-text justify-start px-3 text-left font-medium focus-visible:ring-1"
+              className="bg-input focus-visible:ring-primary/50 has-hover:hover:bg-input has-hover:hover:data-placeholder:text-muted-foreground/75 data-placeholder:text-muted-foreground/75 cursor-text justify-start px-3 text-left font-medium focus-visible:ring-1 focus-visible:ring-offset-0"
             >
               {value || placeholder}
             </Button>
@@ -533,7 +530,10 @@ function AsyncInputWithItems({
             animate={false}
             autoFocus={false}
             sideOffset={-42}
-            className="flex h-68 max-h-[min(30rem,var(--radix-popper-available-height))] overflow-hidden border-none bg-transparent p-0 shadow-none"
+            className={cn(
+              "group/content flex h-68 max-h-[min(30rem,var(--radix-popper-available-height))] overflow-visible border-none bg-transparent p-0 shadow-none",
+              classNamePopoverContent,
+            )}
           >
             <div className="flex w-full flex-col gap-1">
               <CommandInput
@@ -546,11 +546,11 @@ function AsyncInputWithItems({
                     scrollAreaRef.current?.scrollTo({ top: 0 });
                   });
                 }}
-                className="bg-input focus-visible:ring-primary/50 placeholder:text-muted-foreground/75 rounded-lg border px-3 py-2.5 font-medium"
+                className="bg-input focus-visible:ring-primary/50 placeholder:text-muted-foreground/75 rounded-lg border px-3 py-2.5 font-medium focus-visible:ring-1"
                 classNameWrapper="border-none"
                 hideIcon
               />
-              <div className="bg-popover shadow-shadow-color/shadow-opacity flex w-full flex-1 flex-col rounded-lg border shadow-lg">
+              <div className="bg-popover shadow-shadow-color/shadow-opacity flex w-full flex-1 flex-col overflow-hidden rounded-lg border shadow-lg group-data-[side=top]/content:order-first">
                 <ScrollArea viewportRef={scrollAreaRef} className="flex flex-1 flex-col">
                   <CommandList>
                     {items && (
@@ -577,11 +577,12 @@ function AsyncInputWithItems({
                           <CommandItem
                             onSelect={() => {
                               setIsOpen(false);
+                              field.handleChange(item.value);
                             }}
                             value={item.value}
                             key={item.value}
                             className="group/item px-3"
-                            data-checked={field.state.value === item.value ? true : undefined}
+                            data-checked={value === item.value ? true : undefined}
                           >
                             {CommandItemElement ? (
                               <CommandItemElement item={item} />
