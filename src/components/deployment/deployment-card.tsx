@@ -527,55 +527,66 @@ function DeploymentInfo({ deployment, service, isPlaceholder, className }: TDepl
   return (
     <div
       data-placeholder={isPlaceholder ? true : undefined}
-      className={cn("group/time flex min-w-0 shrink items-center justify-start gap-1.5", className)}
+      className={cn("group/time flex min-w-0 shrink items-start justify-start gap-1.5", className)}
     >
       {isPlaceholder && service.type === "github" ? (
-        <div className="bg-muted-foreground animate-skeleton size-4.5 rounded-full" />
+        <div className="bg-muted-foreground animate-skeleton -mt-[0.5px] size-4.5 rounded-full" />
       ) : deployment?.commit_author?.avatar_url ? (
         <Image
           alt="Avatar"
           width={24}
           height={24}
-          className="bg-border size-4.5 rounded-full border"
+          className="bg-border -mt-[0.5px] size-4.5 rounded-full border"
           src={deployment.commit_author.avatar_url}
         />
       ) : (
-        <div className="-ml-1.5 h-4.5" />
+        <div className="-mt-[0.5px] -ml-1.5 h-4.5" />
       )}
-      <div className="flex min-w-0 shrink flex-wrap items-center justify-start gap-0.5 space-x-1.5 font-mono text-sm leading-tight">
+      <div className="flex min-w-0 shrink flex-col flex-wrap justify-start gap-0.5 font-mono text-sm leading-tight lg:flex-row lg:items-center lg:space-x-1.5">
         <p className="text-muted-foreground group-data-placeholder/time:bg-muted-foreground group-data-placeholder/time:animate-skeleton max-w-full min-w-0 shrink leading-tight group-data-placeholder/time:rounded-md group-data-placeholder/time:text-transparent">
           {isPlaceholder
             ? "1 hr. ago via GitHub | 90s"
             : `${deploymentTimeStr} via ${sourceToTitle[service.type] || "Unknown"}`}
         </p>
-        {deployment?.git_branch && (
-          <span className="text-muted-more-foreground leading-tight">|</span>
-        )}
-        {deployment?.git_branch && (
-          <p className="text-muted-foreground max-w-full min-w-0 shrink leading-tight">
-            <GitBranchIcon className="mr-[0.5ch] inline-block size-3.5" />
-            {deployment.git_branch}
-          </p>
-        )}
-        {deployment?.commit_sha && (
-          <span className="text-muted-more-foreground leading-tigh">|</span>
-        )}
-        {deployment?.commit_sha && (
-          <p className="text-muted-foreground max-w-full min-w-0 shrink leading-tight">
-            <GitCommitHorizontalIcon className="mr-[0.5ch] inline-block size-3.5" />
-            {deployment.commit_sha.slice(0, 6)}
-          </p>
-        )}
-        {durationStr && <span className="text-muted-more-foreground leading-tigh">|</span>}
-        {durationStr && (
-          <p className="text-muted-foreground max-w-full min-w-0 shrink leading-tight">
-            <AnimatedTimerIcon
-              animate={isBuilding}
-              className="-mt-0.5 mr-[0.4ch] inline-block size-3.5 shrink-0"
-            />
-            {durationStr}
-          </p>
-        )}
+        <div className="flex max-w-full min-w-0 shrink gap-0.5 space-x-1.5">
+          {deployment?.git_branch && (
+            <span className="text-muted-more-foreground hidden leading-tight lg:inline-block">
+              |
+            </span>
+          )}
+          {deployment?.git_branch && (
+            <p className="text-muted-foreground max-w-full min-w-0 shrink leading-tight">
+              <GitBranchIcon className="mr-[0.5ch] inline-block size-3.5" />
+              {deployment.git_branch}
+            </p>
+          )}
+          {deployment?.commit_sha && (
+            <span className="text-muted-more-foreground leading-tight">|</span>
+          )}
+          {deployment?.commit_sha && (
+            <p className="text-muted-foreground max-w-full min-w-0 shrink leading-tight">
+              <GitCommitHorizontalIcon className="mr-[0.5ch] inline-block size-3.5" />
+              {deployment.commit_sha.slice(0, 6)}
+            </p>
+          )}
+          {durationStr && (
+            <span
+              data-has-prev={deployment?.commit_sha || deployment?.git_branch ? true : undefined}
+              className="text-muted-more-foreground hidden leading-tight data-has-prev:inline-block lg:inline-block data-has-prev:lg:inline-block"
+            >
+              |
+            </span>
+          )}
+          {durationStr && (
+            <p className="text-muted-foreground max-w-full min-w-0 shrink leading-tight">
+              <AnimatedTimerIcon
+                animate={isBuilding}
+                className="-mt-0.75 mr-[0.4ch] inline-block size-3.5 shrink-0"
+              />
+              {durationStr}
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
