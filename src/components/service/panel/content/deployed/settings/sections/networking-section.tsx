@@ -20,6 +20,7 @@ import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TExternalEndpoint, TServiceShallow } from "@/server/trpc/api/services/types";
 import { useStore } from "@tanstack/react-form";
 import {
+  EthernetPortIcon,
   GlobeIcon,
   GlobeLockIcon,
   HourglassIcon,
@@ -398,7 +399,6 @@ function AddDomainPortCard({
       isEditing: false,
     },
   });
-  console.log("service", service);
   return (
     <div className="flex w-full flex-col">
       <form.Subscribe
@@ -478,19 +478,24 @@ function AddDomainPortCard({
                             <BlockItemTitle>Port</BlockItemTitle>
                           </BlockItemHeader>
                           <BlockItemContent>
-                            <field.TextField
+                            <field.AsyncInputWithItems
+                              dontCheckUntilSubmit
+                              onChange={(e) => field.handleChange(e.target.value)}
+                              onBlur={field.handleBlur}
                               field={field}
                               value={field.state.value}
-                              onBlur={field.handleBlur}
-                              onChange={(e) => {
-                                field.handleChange(e.target.value);
-                              }}
+                              items={
+                                service.config.ports?.map((portObject) => ({
+                                  value: portObject.port.toString(),
+                                  label: portObject.port.toString(),
+                                })) || []
+                              }
+                              isPending={false}
+                              error={undefined}
                               placeholder="3000"
-                              autoCapitalize="off"
-                              autoCorrect="off"
-                              autoComplete="off"
-                              spellCheck="false"
-                              inputMode="numeric"
+                              commandInputPlaceholder="3000"
+                              commandEmptyText="No ports found"
+                              CommandEmptyIcon={EthernetPortIcon}
                             />
                           </BlockItemContent>
                         </BlockItem>

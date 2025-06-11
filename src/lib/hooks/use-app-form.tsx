@@ -33,7 +33,7 @@ import {
   useStore,
 } from "@tanstack/react-form";
 import { CheckIcon, RotateCcwIcon } from "lucide-react";
-import { FC, ReactNode, useCallback, useMemo, useRef, useState } from "react";
+import { FC, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
 const { fieldContext, formContext } = createFormHookContexts();
@@ -467,6 +467,155 @@ function AsyncCommandDropdown({
   );
 }
 
+type TAsyncInputWithItemsProps = TFieldProps & {
+  items: TCommandItem[] | undefined;
+  isPending: boolean;
+  error: string | undefined;
+  commandEmptyText: string;
+  commandInputPlaceholder: string;
+  CommandEmptyIcon: FC<{ className?: string }>;
+  CommandItemElement?: FC<{ item: TCommandItem; className?: string }>;
+  CommandItemsPinned?: FC<{ setIsOpen: (isOpen: boolean) => void; commandValue: string }>;
+  className?: string;
+  classNameInfo?: string;
+} & InputProps;
+
+function AsyncInputWithItems({
+  field,
+  items,
+  isPending,
+  error,
+  commandEmptyText,
+  commandInputPlaceholder,
+  CommandEmptyIcon,
+  CommandItemElement,
+  dontCheckUntilSubmit,
+  hideError,
+  classNameInfo,
+  value,
+  className,
+  placeholder,
+}: TAsyncInputWithItemsProps) {
+  const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
+  const isFormSubmitted = submissionAttempts > 0;
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [, setCommandValue] = useState(value);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  const [commandInputValue, setCommandInputValue] = useState("");
+
+  useEffect(() => {
+    if (commandInputValue) {
+      setIsOpen(true);
+    }
+  }, [commandInputValue]);
+
+  return (
+    <div className={cn("flex flex-col", className)}>
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <Command
+          value={value as string}
+          onValueChange={setCommandValue}
+          wrapper="none"
+          className="flex flex-1 flex-col overflow-auto"
+        >
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              data-placeholder={value ? undefined : true}
+              className="bg-input focus-visible:ring-primary/50 has-hover:hover:bg-input has-hover:hover:data-placeholder:text-muted-foreground/75 data-placeholder:text-muted-foreground/75 cursor-text justify-start px-3 text-left font-medium focus-visible:ring-1"
+            >
+              {value || placeholder}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            animate={false}
+            autoFocus={false}
+            sideOffset={-42}
+            className="flex h-68 max-h-[min(30rem,var(--radix-popper-available-height))] overflow-hidden border-none bg-transparent p-0 shadow-none"
+          >
+            <div className="flex w-full flex-col gap-1">
+              <CommandInput
+                showSpinner={isPending}
+                placeholder={commandInputPlaceholder}
+                value={commandInputValue}
+                onValueChange={(v) => {
+                  setCommandInputValue(v);
+                  requestAnimationFrame(() => {
+                    scrollAreaRef.current?.scrollTo({ top: 0 });
+                  });
+                }}
+                className="bg-input focus-visible:ring-primary/50 placeholder:text-muted-foreground/75 rounded-lg border px-3 py-2.5 font-medium"
+                classNameWrapper="border-none"
+                hideIcon
+              />
+              <div className="bg-popover shadow-shadow-color/shadow-opacity flex w-full flex-1 flex-col rounded-lg border shadow-lg">
+                <ScrollArea viewportRef={scrollAreaRef} className="flex flex-1 flex-col">
+                  <CommandList>
+                    {items && (
+                      <CommandEmpty className="text-muted-foreground flex items-center justify-start gap-2 px-2.5 py-2.5 leading-tight">
+                        <CommandEmptyIcon className="size-4.5 shrink-0" />
+                        <p className="min-w-0 shrink">{commandEmptyText}</p>
+                      </CommandEmpty>
+                    )}
+                    <CommandGroup>
+                      {!items &&
+                        isPending &&
+                        placeholderArray.map((_, index) => (
+                          <CommandItem disabled key={index}>
+                            <p className="bg-foreground animate-skeleton min-w-0 shrink rounded-md leading-tight">
+                              Loading
+                            </p>
+                          </CommandItem>
+                        ))}
+                      {!items && !isPending && error && (
+                        <ErrorCard className="rounded-md" message={error} />
+                      )}
+                      {items &&
+                        items.map((item) => (
+                          <CommandItem
+                            onSelect={() => {
+                              setIsOpen(false);
+                            }}
+                            value={item.value}
+                            key={item.value}
+                            className="group/item px-3"
+                            data-checked={field.state.value === item.value ? true : undefined}
+                          >
+                            {CommandItemElement ? (
+                              <CommandItemElement item={item} />
+                            ) : (
+                              <p className="min-w-0 shrink leading-tight">{item.label}</p>
+                            )}
+                            <CheckIcon
+                              strokeWidth={2.5}
+                              className="-mr-0.5 ml-auto size-4.5 opacity-0 group-data-checked/item:opacity-100"
+                            />
+                          </CommandItem>
+                        ))}
+                    </CommandGroup>
+                  </CommandList>
+                </ScrollArea>
+              </div>
+            </div>
+          </PopoverContent>
+        </Command>
+      </Popover>
+      {!hideError &&
+      (field.state.meta.isTouched || isFormSubmitted) &&
+      (field.state.meta.isBlurred || isFormSubmitted) &&
+      (!dontCheckUntilSubmit || isFormSubmitted) &&
+      field.state.meta.errors.length ? (
+        <ErrorLine
+          className={cn("mt-1 bg-transparent py-1.5 pl-1.5", classNameInfo)}
+          message={field.state.meta.errors[0].message}
+        />
+      ) : null}
+    </div>
+  );
+}
+
 type TAsyncDropdownMenuProps = TFieldProps & {
   items: TCommandItem[] | undefined;
   ItemIcon?: FC<{ className?: string; value: string }>;
@@ -576,7 +725,7 @@ function AsyncDropdownMenu({
 export const { useAppForm, withForm } = createFormHook({
   fieldComponents: {
     TextField: InputWithInfo,
-    NumberField: InputWithInfo,
+    AsyncInputWithItems,
     TextareaWithTokens: TextareaWithTokensWithInfo,
     DomainInput,
     StorageSizeInput,

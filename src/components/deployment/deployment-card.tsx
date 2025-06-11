@@ -121,7 +121,7 @@ export default function DeploymentCard({
             </p>
           </div>
           {isPlaceholder ? (
-            <DeploymentInfo isPlaceholder={true} />
+            <DeploymentInfo isPlaceholder={true} service={service} />
           ) : (
             <DeploymentInfo deployment={deployment} service={service} />
           )}
@@ -492,15 +492,14 @@ function getBrand(service?: TServiceShallow, isPlaceholder?: boolean) {
 
 type TDeploymentInfoProps = {
   className?: string;
+  service: TServiceShallow;
 } & (
   | {
       deployment: TDeploymentShallow;
-      service: TServiceShallow;
       isPlaceholder?: never;
     }
   | {
       deployment?: never;
-      service?: never;
       isPlaceholder: true;
     }
 );
@@ -530,7 +529,7 @@ function DeploymentInfo({ deployment, service, isPlaceholder, className }: TDepl
       data-placeholder={isPlaceholder ? true : undefined}
       className={cn("group/time flex min-w-0 shrink items-center justify-start gap-1.5", className)}
     >
-      {isPlaceholder ? (
+      {isPlaceholder && service.type === "github" ? (
         <div className="bg-muted-foreground animate-skeleton size-4.5 rounded-full" />
       ) : deployment?.commit_author?.avatar_url ? (
         <Image

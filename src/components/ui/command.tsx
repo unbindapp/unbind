@@ -70,11 +70,13 @@ function CommandInput({
   classNameWrapper,
   showSpinner = false,
   Icon,
+  hideIcon,
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.Input> & {
   classNameWrapper?: string;
   showSpinner?: boolean;
   Icon?: React.ComponentType<{ className?: string }>;
+  hideIcon?: boolean;
 }) {
   return (
     <div
@@ -89,13 +91,13 @@ function CommandInput({
           (Icon ? (
             <Icon className="text-muted-foreground size-full" />
           ) : (
-            <SearchIcon className="text-muted-foreground size-full" />
+            !hideIcon && <SearchIcon className="text-muted-foreground size-full" />
           ))}
         {showSpinner && <LoaderIcon className="absolute size-full animate-spin" />}
       </div>
       <CommandPrimitive.Input
         className={cn(
-          "placeholder:text-muted-foreground flex w-full rounded-md bg-transparent py-2.5 pr-4 pl-9.5 leading-none outline-hidden disabled:cursor-not-allowed disabled:opacity-50",
+          "placeholder:text-muted-foreground flex w-full rounded-md bg-transparent py-2.5 pr-4 pl-9.5 leading-tight outline-hidden disabled:cursor-not-allowed disabled:opacity-50",
           className,
         )}
         {...props}

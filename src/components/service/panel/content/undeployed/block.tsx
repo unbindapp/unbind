@@ -127,7 +127,7 @@ export function BlockItemContent({
 }
 
 type TBlockItemButtonLikeProps = {
-  Icon: FC<{ className?: string }>;
+  Icon?: FC<{ className?: string }>;
   text: string | ReactNode;
   isPending?: boolean;
   open?: boolean;
@@ -183,13 +183,15 @@ export function BlockItemButtonLike({
       {...props}
     >
       <div className="group-data-pending/button:animate-skeleton flex min-w-0 flex-1 items-start justify-start gap-2">
-        {asElement === "LinkButton" && href !== undefined ? (
+        {asElement === "LinkButton" && href !== undefined && Icon ? (
           <div className="relative size-5 shrink-0 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45">
             <Icon className="size-full group-active/button:opacity-0 has-hover:group-hover/button:opacity-0" />
             <ExternalLinkIcon className="absolute top-0 left-0 size-full scale-90 -rotate-45 opacity-0 group-active/button:opacity-100 has-hover:group-hover/button:opacity-100" />
           </div>
         ) : (
-          <Icon className="group-data-pending/button:bg-foreground size-5 shrink-0 group-data-pending/button:rounded-full" />
+          Icon && (
+            <Icon className="group-data-pending/button:bg-foreground size-5 shrink-0 group-data-pending/button:rounded-full" />
+          )
         )}
         <p
           className={cn(
