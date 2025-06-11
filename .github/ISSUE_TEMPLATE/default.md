@@ -25,7 +25,7 @@ assignees: ""
 - [ ] Database
 - [ ] Metrics
 - [ ] Logs
-- [ ] Other (please specify): \***\*\_\_\_\*\***
+- [ ] Other (please specify):
 
 ## Environment
 
