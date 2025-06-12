@@ -78,41 +78,6 @@ export default function DomainPortCard({
 
   const customPortText = "Custom Port";
 
-  const form = useAppForm({
-    defaultValues: {
-      host: domain,
-      targetPortType:
-        service.config.ports.length >= 1
-          ? service.config.ports[0].port.toString()
-          : service.detected_ports.length >= 1
-            ? service.detected_ports[0].port.toString()
-            : "",
-      targetPort: "",
-      isEditing: false,
-    },
-    onSubmit: async ({ value }) => {
-      if (changeCount === 0) {
-        form.reset();
-        resetUpdate();
-        return;
-      }
-      const port =
-        mode === "public" && value.targetPortType !== customPortText
-          ? value.targetPortType
-          : value.targetPort;
-
-      await updateService({
-        upsertHosts:
-          mode === "public"
-            ? [{ host: value.host, path: "", target_port: Number(port) }]
-            : undefined,
-        addPorts: service.config.ports.map((p) => p.port).includes(Number(port))
-          ? undefined
-          : [{ port: Number(port) }],
-      });
-    },
-  });
-
   const currentPorts = useMemo(() => {
     return service.config.ports.map((portObject) => portObject.port.toString());
   }, [service.config.ports]);
@@ -145,6 +110,36 @@ export default function DomainPortCard({
         ]
       : undefined;
   }, [allPortOptions]);
+
+  const form = useAppForm({
+    defaultValues: {
+      host: domain,
+      targetPortType: port && currentPorts.includes(port.toString()) ? port.toString() : "",
+      targetPort: "",
+      isEditing: false,
+    },
+    onSubmit: async ({ value }) => {
+      if (changeCount === 0) {
+        form.reset();
+        resetUpdate();
+        return;
+      }
+      const port =
+        mode === "public" && value.targetPortType !== customPortText
+          ? value.targetPortType
+          : value.targetPort;
+
+      await updateService({
+        upsertHosts:
+          mode === "public"
+            ? [{ host: value.host, path: "", target_port: Number(port) }]
+            : undefined,
+        addPorts: service.config.ports.map((p) => p.port).includes(Number(port))
+          ? undefined
+          : [{ port: Number(port) }],
+      });
+    },
+  });
 
   const changeCount = useStore(form.store, (s) => {
     let count = 0;
