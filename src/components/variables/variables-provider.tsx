@@ -9,7 +9,7 @@ import { createContext, ReactNode, useContext, useMemo } from "react";
 type TVariablesContext = {
   list: AppRouterQueryResult<AppRouterOutputs["variables"]["list"]>;
   createOrUpdate: ReturnType<typeof api.variables.createOrUpdate.useMutation>;
-} & TEntityVariableTypeProps;
+} & Omit<TEntityVariableTypeProps, "service">;
 
 const VariablesContext = createContext<TVariablesContext | null>(null);
 
@@ -17,7 +17,7 @@ type TProps = {
   initialData?: AppRouterOutputs["variables"]["list"];
   refetchInterval?: number;
   children: ReactNode;
-} & TEntityVariableTypeProps;
+} & Omit<TEntityVariableTypeProps, "service">;
 
 export const VariablesProvider: React.FC<TProps> = ({
   initialData,
@@ -25,11 +25,9 @@ export const VariablesProvider: React.FC<TProps> = ({
   children,
   ...typedProps
 }) => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { service, ...queryProps } = typedProps;
   const list = api.variables.list.useQuery(
     {
-      ...queryProps,
+      ...typedProps,
     },
     { initialData, refetchInterval },
   );

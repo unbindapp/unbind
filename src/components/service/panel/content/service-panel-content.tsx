@@ -109,7 +109,6 @@ export default function ServicePanelContent({ service, className }: TProps) {
           projectId={projectId}
           environmentId={environmentId}
           serviceId={service.id}
-          service={service}
           type="service"
         >
           <ServicePanelContentUndeployed className={className} service={service} />
