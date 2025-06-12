@@ -253,7 +253,15 @@ export default function AddDomainPortCard({
                     )}
                     {mode === "public" && allPortOptions.length >= 1 && (
                       <Block>
-                        <form.AppField name="targetPortType">
+                        <form.AppField
+                          name="targetPortType"
+                          validators={{
+                            onChange: ({ value }) => {
+                              if (value === customPortText) return undefined;
+                              return validatePort({ value, isPublic: true });
+                            },
+                          }}
+                        >
                           {(field) => (
                             <BlockItem className="w-full md:w-full">
                               <BlockItemHeader type="column">

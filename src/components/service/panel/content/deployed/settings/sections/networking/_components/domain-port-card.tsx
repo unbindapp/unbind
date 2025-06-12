@@ -26,6 +26,7 @@ import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { useStore } from "@tanstack/react-form";
 import {
   CheckCircleIcon,
+  CircleAlertIcon,
   EthernetPortIcon,
   GlobeIcon,
   GlobeLockIcon,
@@ -114,7 +115,8 @@ export default function DomainPortCard({
   const form = useAppForm({
     defaultValues: {
       host: domain,
-      targetPortType: port && currentPorts.includes(port.toString()) ? port.toString() : "",
+      targetPortType:
+        port !== undefined && currentPorts.includes(port.toString()) ? port.toString() : "",
       targetPort: "",
       isEditing: false,
     },
@@ -171,7 +173,9 @@ export default function DomainPortCard({
             port: mode === "public" ? "" : port.toString(),
           })}
           Icon={({ className }: { className?: string }) =>
-            mode === "private" ? (
+            port === undefined && !isEditing ? (
+              <CircleAlertIcon className={cn("text-warning scale-90", className)} />
+            ) : mode === "private" ? (
               <GlobeLockIcon className={cn("scale-90", className)} />
             ) : (
               <GlobeIcon className={cn("scale-90", className)} />
@@ -297,7 +301,15 @@ export default function DomainPortCard({
                 )}
                 {allPortOptions.length !== 0 && (
                   <Block>
-                    <form.AppField name="targetPortType">
+                    <form.AppField
+                      name="targetPortType"
+                      validators={{
+                        onChange: ({ value }) => {
+                          if (value === customPortText) return undefined;
+                          return validatePort({ value, isPublic: true });
+                        },
+                      }}
+                    >
                       {(field) => (
                         <BlockItem className="w-full md:w-full">
                           <BlockItemHeader type="column">
@@ -348,7 +360,9 @@ export default function DomainPortCard({
                                   }
                                   className="data-is-custom:rounded-b-none data-is-custom:border-b-0"
                                   asElement="button"
-                                  text={field.state.value}
+                                  text={
+                                    field.state.value === "" ? "Select Port" : field.state.value
+                                  }
                                   Icon={({ className }) => (
                                     <EthernetPortIcon className={cn("scale-90", className)} />
                                   )}
