@@ -18,7 +18,7 @@ import { validateDomain } from "@/lib/helpers/validate-domain";
 import { validatePort } from "@/lib/helpers/validate-port";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
-import { EthernetPortIcon, GlobeLockIcon, PlusIcon } from "lucide-react";
+import { CheckCircleIcon, EthernetPortIcon, GlobeLockIcon, PlusIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
 import { toast } from "sonner";
@@ -69,7 +69,11 @@ export default function AddDomainPortCard({
     defaultValues: {
       host: "",
       targetPortType:
-        service.config.ports.length >= 1 ? service.config.ports[0].port.toString() : "",
+        service.config.ports.length >= 1
+          ? service.config.ports[0].port.toString()
+          : service.detected_ports.length >= 1
+            ? service.detected_ports[0].port.toString()
+            : "",
       targetPort: "",
       isEditing: false,
     },
@@ -95,17 +99,34 @@ export default function AddDomainPortCard({
     return service.config.ports.map((portObject) => portObject.port.toString());
   }, [service.config.ports]);
 
-  const portItems = useMemo(() => {
-    return currentPorts
+  const allPortOptions = useMemo(() => {
+    const allPorts = new Set([
+      ...currentPorts,
+      ...service.detected_ports.map((p) => p.port.toString()),
+    ]);
+
+    return Array.from(allPorts);
+  }, [service.detected_ports, currentPorts]);
+
+  const detectedPortsMap = useMemo(() => {
+    const obj: Record<string, number> = {};
+    service.detected_ports.forEach((p) => {
+      obj[p.port.toString()] = p.port;
+    });
+    return obj;
+  }, [service.detected_ports]);
+
+  const portItems: { value: string; label: string }[] | undefined = useMemo(() => {
+    return allPortOptions.length > 0
       ? [
-          ...currentPorts.map((port) => ({
-            value: port,
-            label: port,
+          ...allPortOptions.map((p) => ({
+            value: p,
+            label: p,
           })),
           { value: customPortText, label: customPortText },
         ]
       : undefined;
-  }, [currentPorts]);
+  }, [allPortOptions]);
 
   return (
     <div className="flex w-full flex-col">
@@ -176,7 +197,7 @@ export default function AddDomainPortCard({
                     </Block>
                   )}
                   <div className="flex w-full flex-col">
-                    {(mode === "private" || currentPorts.length === 0) && (
+                    {(mode === "private" || allPortOptions.length === 0) && (
                       <Block>
                         <form.AppField
                           name="targetPort"
@@ -212,7 +233,7 @@ export default function AddDomainPortCard({
                         />
                       </Block>
                     )}
-                    {mode === "public" && currentPorts.length !== 0 && (
+                    {mode === "public" && allPortOptions.length !== 0 && (
                       <Block>
                         <form.AppField name="targetPortType">
                           {(field) => (
@@ -240,6 +261,22 @@ export default function AddDomainPortCard({
                                       return <PlusIcon className={className} />;
                                     }
                                     return null;
+                                  }}
+                                  ItemSuffix={({ value, className }) => {
+                                    if (detectedPortsMap[value] === undefined) {
+                                      return null;
+                                    }
+                                    return (
+                                      <div
+                                        className={cn(
+                                          "text-success bg-success/8 border-success/12 py-0.375 -my-0.5 flex min-w-0 shrink items-center gap-1.5 rounded-full border px-1.75 text-sm leading-tight",
+                                          className,
+                                        )}
+                                      >
+                                        <CheckCircleIcon className="-ml-0.75 size-3.5 shrink-0" />
+                                        <p className="min-w-0 shrink">Detected</p>
+                                      </div>
+                                    );
                                   }}
                                 >
                                   {({ isOpen }) => (
@@ -273,7 +310,7 @@ export default function AddDomainPortCard({
                         </p>
                       </div>
                     )}
-                    {mode === "public" && currentPorts.length !== 0 && (
+                    {mode === "public" && allPortOptions.length !== 0 && (
                       <form.Subscribe
                         selector={(s) => ({ isCustom: s.values.targetPortType === customPortText })}
                         children={({ isCustom }) => {

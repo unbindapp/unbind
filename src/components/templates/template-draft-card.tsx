@@ -51,7 +51,7 @@ export default function TemplateDraftCard({
           </div>
           <div className="flex w-full flex-1 flex-col justify-end">
             <div className="text-muted-foreground flex w-full items-end justify-between gap-6">
-              <div className="flex min-w-0 shrink flex-col gap-0.75 py-[0.09375rem] text-sm font-medium">
+              <div className="py-0.375 flex min-w-0 shrink flex-col gap-0.75 text-sm font-medium">
                 <p className="group-data-placeholder/item:bg-muted-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
                   {serviceCount !== undefined && serviceCount > 0
                     ? `${serviceCount} service${serviceCount > 1 ? "s" : ""}`

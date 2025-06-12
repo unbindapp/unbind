@@ -659,6 +659,7 @@ function AsyncInputWithItems({
 type TAsyncDropdownMenuProps = TFieldProps & {
   items: TCommandItem[] | undefined;
   ItemIcon?: FC<{ className?: string; value: string }>;
+  ItemSuffix?: FC<{ className?: string; value: string }>;
   isPending: boolean;
   error: string | undefined;
   className?: string;
@@ -676,6 +677,7 @@ function AsyncDropdownMenu({
   field,
   items,
   ItemIcon,
+  ItemSuffix,
   isPending,
   error,
   dontCheckUntilSubmit,
@@ -744,7 +746,10 @@ function AsyncDropdownMenu({
                     {ItemIcon && (
                       <ItemIcon className="-ml-0.5 size-5 shrink-0" value={item.value} />
                     )}
-                    <p className="min-w-0 shrink leading-tight">{item.label}</p>
+                    <div className="flex min-w-0 flex-wrap items-center gap-2.5 pr-1">
+                      <p className="min-w-0 shrink leading-tight">{item.label}</p>
+                      {ItemSuffix && <ItemSuffix value={item.value} />}
+                    </div>
                     <CheckIcon
                       strokeWidth={2.5}
                       className="-mr-0.5 ml-auto size-4.5 opacity-0 group-data-checked/item:opacity-100"
