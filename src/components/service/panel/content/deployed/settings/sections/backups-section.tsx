@@ -151,7 +151,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        form.handleSubmit();
+        form.handleSubmit(e);
       }}
       asElement="form"
       title="Backups"

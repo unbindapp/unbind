@@ -18,7 +18,13 @@ import { validateDomain } from "@/lib/helpers/validate-domain";
 import { validatePort } from "@/lib/helpers/validate-port";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
-import { CheckCircleIcon, EthernetPortIcon, GlobeLockIcon, PlusIcon } from "lucide-react";
+import {
+  CheckCircleIcon,
+  ChevronUpIcon,
+  EthernetPortIcon,
+  GlobeLockIcon,
+  PlusIcon,
+} from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
 import { toast } from "sonner";
@@ -84,7 +90,7 @@ export default function AddDomainPortCard({
           : value.targetPort;
 
       await updateService({
-        addHosts:
+        upsertHosts:
           mode === "public"
             ? [{ host: value.host, path: "", target_port: Number(port) }]
             : undefined,
@@ -136,30 +142,34 @@ export default function AddDomainPortCard({
         })}
         children={({ isEditing }) => (
           <>
-            {!isEditing && (
-              <form.AppField
-                name="isEditing"
-                children={(field) => (
-                  <BlockItemButtonLike
-                    type="button"
-                    isPending={isPending}
-                    key="add-external-endpoint"
-                    asElement="button"
-                    text={mode === "private" ? "Add private domain" : "Add domain"}
-                    Icon={PlusIcon}
-                    onClick={() => field.handleChange(true)}
-                  />
-                )}
-              />
-            )}
+            <form.AppField
+              name="isEditing"
+              children={(field) => (
+                <BlockItemButtonLike
+                  type="button"
+                  data-editing={isEditing ? true : undefined}
+                  isPending={isPending}
+                  asElement="button"
+                  text={mode === "private" ? "Add private domain" : "Add domain"}
+                  Icon={({ className }) => (
+                    <>
+                      {isEditing && <ChevronUpIcon className={cn(className, "size-5 shrink-0")} />}
+                      {!isEditing && <PlusIcon className={cn(className, "size-5 shrink-0")} />}
+                    </>
+                  )}
+                  className="touch-manipulation data-editing:rounded-b-none"
+                  onClick={() => field.handleChange(!field.state.value)}
+                />
+              )}
+            />
             {isEditing && (
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  form.handleSubmit();
+                  form.handleSubmit(e);
                 }}
-                className="flex w-full flex-col rounded-lg border"
+                className="flex w-full flex-col rounded-lg rounded-t-none border border-t-0"
               >
                 <div className="flex w-full flex-col gap-4 px-3 pt-3 pb-3.25 sm:px-4.5 sm:pt-3.5 sm:pb-4.75">
                   {mode === "public" && (
@@ -349,14 +359,17 @@ export default function AddDomainPortCard({
                 <div className="flex w-full flex-col border-t p-1.5">
                   {errorUpdate && (
                     <div className="w-full p-1.5">
-                      <ErrorLine message={errorUpdate.message} />
+                      <ErrorLine
+                        message={errorUpdate.message}
+                        className="border-destructive/20 border"
+                      />
                     </div>
                   )}
                   <div className="flex w-full">
                     <div className="w-1/2 p-1.5">
                       <Button
-                        className="w-full"
                         type="button"
+                        className="w-full"
                         aria-label="Cancel"
                         variant="outline"
                         onClick={() => {

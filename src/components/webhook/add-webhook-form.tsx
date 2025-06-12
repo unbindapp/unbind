@@ -117,7 +117,7 @@ export default function AddWebhookForm({ className, ...rest }: TProps) {
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        form.handleSubmit();
+        form.handleSubmit(e);
       }}
       className={cn("flex w-full flex-col rounded-xl border", className)}
     >

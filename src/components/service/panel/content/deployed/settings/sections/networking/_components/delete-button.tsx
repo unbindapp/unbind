@@ -80,7 +80,7 @@ export default function DeleteButton({
       dialogTitle={mode === "private" ? "Delete Private Domain" : "Delete Domain"}
       dialogDescription={
         mode === "private"
-          ? "The port will be deleted. All public domains using the port will be disconnected. This action cannot be undone."
+          ? "The domain and the port will be deleted. All public domains using the port will be disconnected. This action cannot be undone."
           : "Are you sure you want to delete this domain? This action cannot be undone."
       }
       onSubmit={deleteDomainOrPort}

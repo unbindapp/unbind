@@ -160,7 +160,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        form.handleSubmit();
+        form.handleSubmit(e);
       }}
       SubmitButton={form.SubmitButton}
       error={errorUpdate?.message}
@@ -311,7 +311,7 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        form.handleSubmit();
+        form.handleSubmit(e);
       }}
       SubmitButton={form.SubmitButton}
       isPending={isPendingUpdate}

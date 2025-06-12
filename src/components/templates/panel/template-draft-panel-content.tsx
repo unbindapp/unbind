@@ -184,7 +184,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
         e.preventDefault();
         e.stopPropagation();
         form.validateArrayFieldsStartingFrom("inputs", 0, "submit");
-        form.handleSubmit();
+        form.handleSubmit(e);
       }}
     >
       <ScrollArea classNameViewport="pb-[calc(var(--safe-area-inset-bottom)+2rem)]">

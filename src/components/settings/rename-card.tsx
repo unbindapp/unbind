@@ -69,7 +69,7 @@ export default function RenameCard({
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          form.handleSubmit();
+          form.handleSubmit(e);
         }}
         className="flex w-full flex-col gap-3 xl:flex-row xl:items-start"
       >

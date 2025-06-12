@@ -112,7 +112,7 @@ export function DeleteEntityTrigger({
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            form.handleSubmit();
+            form.handleSubmit(e);
           }}
           className="group/form flex flex-col"
         >

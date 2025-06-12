@@ -614,7 +614,7 @@ export function NewS3SourceTrigger({ teamId, children }: { children: ReactNode; 
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            form.handleSubmit();
+            form.handleSubmit(e);
           }}
           className="flex w-full flex-col gap-4"
         >

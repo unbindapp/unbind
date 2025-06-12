@@ -198,7 +198,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        form.handleSubmit();
+        form.handleSubmit(e);
       }}
       title="Deploy"
       id="deploy"

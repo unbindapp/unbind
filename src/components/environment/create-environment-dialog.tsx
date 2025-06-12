@@ -136,7 +136,7 @@ export function CreateEnvironmentDialog({
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            form.handleSubmit();
+            form.handleSubmit(e);
           }}
           className="flex flex-col"
         >

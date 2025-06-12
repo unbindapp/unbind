@@ -102,7 +102,7 @@ export const UpdateServiceInputSchema = z
     isPublic: z.boolean().optional(),
     overwritePorts: PortSpecSchema.array().optional(),
     overwriteHosts: HostSpecSchema.array().optional(),
-    addHosts: HostSpecSchema.array().optional(),
+    upsertHosts: HostSpecSchema.array().optional(),
     removeHosts: HostSpecSchema.array().optional(),
     addPorts: PortSpecSchema.array().optional(),
     removePorts: PortSpecSchema.array().optional(),

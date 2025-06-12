@@ -187,7 +187,7 @@ export default function CreateVariablesForm({
           e.preventDefault();
           e.stopPropagation();
           form.validateArrayFieldsStartingFrom("variables", 0, "submit");
-          form.handleSubmit();
+          form.handleSubmit(e);
         }}
       >
         <VariablesFormField form={form} tokenProps={tokenProps} />

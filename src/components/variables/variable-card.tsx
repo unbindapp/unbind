@@ -515,7 +515,7 @@ function EditVariableForm({
         onSubmit={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          form.handleSubmit();
+          form.handleSubmit(e);
         }}
         className="bg-background flex flex-1 items-start justify-start gap-1 rounded-lg"
       >

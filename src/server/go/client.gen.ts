@@ -1892,7 +1892,6 @@ export const UpdateServiceGroupResponseBodySchema = z
 
 export const UpdateServiceInputSchema = z
   .object({
-    add_hosts: z.array(HostSpecSchema).nullable().optional(), // Additional hosts to add, will not remove existing hosts
     add_ports: z.array(PortSpecSchema).nullable().optional(), // Additional ports to add, will not remove existing ports
     add_variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Additional variable mounts to add, will not remove existing mounts
     add_volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Additional volumes to add, will not remove existing volumes
@@ -1931,6 +1930,7 @@ export const UpdateServiceInputSchema = z
     s3_backup_source_id: z.string().optional(),
     service_id: z.string(),
     team_id: z.string(),
+    upsert_hosts: z.array(HostSpecSchema).nullable().optional(), // Additional hosts to add, will not remove existing hosts
   })
   .strip();
 
