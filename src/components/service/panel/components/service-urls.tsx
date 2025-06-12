@@ -26,13 +26,15 @@ export default function ServiceUrls({ hosts }: TProps) {
           />
         ))}
       {endpoints &&
-        endpoints.map((e) => (
-          <ServiceUrl
-            key={`${e.host}${e.path}${e.port}`}
-            endpoint={e}
-            className={endpoints.length > 1 ? "max-w-1/2" : undefined}
-          />
-        ))}
+        endpoints
+          .filter((e) => e.target_port !== undefined)
+          .map((e) => (
+            <ServiceUrl
+              key={`${e.host}${e.path}${e.target_port}`}
+              endpoint={e}
+              className={endpoints.length > 1 ? "max-w-1/2" : undefined}
+            />
+          ))}
     </div>
   );
 }

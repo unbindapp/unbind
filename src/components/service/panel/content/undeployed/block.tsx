@@ -129,6 +129,7 @@ export function BlockItemContent({
 type TBlockItemButtonLikeProps = {
   Icon?: FC<{ className?: string }>;
   text: string | ReactNode;
+  description?: string | ReactNode;
   isPending?: boolean;
   open?: boolean;
   hideChevron?: boolean;
@@ -151,6 +152,7 @@ type TBlockItemButtonLikeProps = {
 export function BlockItemButtonLike({
   Icon,
   text,
+  description,
   open,
   asElement,
   isPending,
@@ -193,14 +195,23 @@ export function BlockItemButtonLike({
             <Icon className="group-data-pending/button:bg-foreground size-5 shrink-0 group-data-pending/button:rounded-full" />
           )
         )}
-        <p
-          className={cn(
-            "group-data-pending/button:bg-foreground min-w-0 shrink truncate leading-tight font-medium select-text group-data-pending/button:rounded-md",
-            classNameText,
+        <div className="flex w-full min-w-0 shrink flex-col items-start gap-1">
+          <p
+            className={cn(
+              "group-data-pending/button:bg-foreground min-w-0 shrink truncate leading-tight font-medium select-text group-data-pending/button:rounded-md",
+              classNameText,
+            )}
+          >
+            {text}
+          </p>
+          {typeof description === "string" ? (
+            <p className="text-muted-foreground group-data-pending/button:bg-muted-foreground min-w-0 shrink text-sm leading-tight group-data-pending/button:rounded-md">
+              {description}
+            </p>
+          ) : (
+            description
           )}
-        >
-          {text}
-        </p>
+        </div>
       </div>
       {!isPending && SuffixComponent && <SuffixComponent className="ml-auto" />}
       {open !== undefined && !hideChevron && !isPending && (

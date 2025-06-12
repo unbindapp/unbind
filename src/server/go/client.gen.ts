@@ -774,9 +774,9 @@ export const IngressEndpointSchema = z
     is_ingress: z.boolean(),
     kubernetes_name: z.string(),
     path: z.string(),
-    port: PortSpecSchema,
     project_id: z.string(),
     service_id: z.string(),
+    target_port: PortSpecSchema.optional(),
     team_id: z.string(),
     tls_issuer_messages: z.array(TlsDetailsSchema).nullable().optional(),
     tls_status: TlsStatusSchema,
@@ -2699,9 +2699,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = CallbackResponseBodySchema.safeParse(data);
@@ -2741,9 +2749,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = ResponseErrorSchema.safeParse(data);
@@ -2784,9 +2800,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
             console.log(`Request body is:`, validatedBody);
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = ResponseErrorSchema.safeParse(data);
@@ -2832,9 +2856,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
             console.log(`Request body is:`, validatedBody);
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = CreateBuildOutputBodySchema.safeParse(data);
@@ -2890,9 +2922,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = GetDeploymentResponseBodySchema.safeParse(data);
@@ -2950,9 +2990,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = ListDeploymentsResponseBodySchema.safeParse(data);
@@ -2996,9 +3044,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
             console.log(`Request body is:`, validatedBody);
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = RedeployOutputBodySchema.safeParse(data);
@@ -3044,9 +3100,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
             console.log(`Request body is:`, validatedBody);
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = CreateEnvironmentResponseBodySchema.safeParse(data);
@@ -3090,9 +3154,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
             console.log(`Request body is:`, validatedBody);
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = DeleteEnvironmentResponseBodySchema.safeParse(data);
@@ -3142,9 +3214,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = GetEnvironmentOutputBodySchema.safeParse(data);
@@ -3194,9 +3274,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = ListEnvironmentsOutputBodySchema.safeParse(data);
@@ -3240,9 +3328,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
             console.log(`Request body is:`, validatedBody);
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = UpdateEnvironmentResponseBodySchema.safeParse(data);
@@ -3295,9 +3391,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
 
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } = GithubAppCreateResponseBodySchema.safeParse(data);
@@ -3347,9 +3451,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
 
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } = GithubAppGetResponseBodySchema.safeParse(data);
@@ -3400,9 +3512,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = GithubAppListResponseBodySchema.safeParse(data);
@@ -3447,9 +3567,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                 console.log(`GO API request error`, data);
                 console.log(`Request URL is:`, url.toString());
 
-                throw new Error(
-                  `GO API request failed with status ${response.status}: ${response.statusText}`,
-                );
+                let errorMessage =
+                  '`GO API request failed with status ${response.status}: ${response.statusText}`';
+                if (
+                  data &&
+                  Array.isArray(data.details) &&
+                  data.details.length > 0 &&
+                  typeof data.details[0] === 'string'
+                ) {
+                  errorMessage = data.details[0];
+                }
+                throw new Error(errorMessage);
               }
               const data = await response.json();
               const { data: parsedData, error } =
@@ -3495,9 +3623,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } =
@@ -3542,9 +3678,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
 
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } =
@@ -3596,9 +3740,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                 console.log(`GO API request error`, data);
                 console.log(`Request URL is:`, url.toString());
 
-                throw new Error(
-                  `GO API request failed with status ${response.status}: ${response.statusText}`,
-                );
+                let errorMessage =
+                  '`GO API request failed with status ${response.status}: ${response.statusText}`';
+                if (
+                  data &&
+                  Array.isArray(data.details) &&
+                  data.details.length > 0 &&
+                  typeof data.details[0] === 'string'
+                ) {
+                  errorMessage = data.details[0];
+                }
+                throw new Error(errorMessage);
               }
               const data = await response.json();
               const { data: parsedData, error } =
@@ -3653,9 +3805,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = GetInstanceHealthResponseBodySchema.safeParse(data);
@@ -3705,9 +3865,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = ListInstancesResponseBodySchema.safeParse(data);
@@ -3751,9 +3919,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
             console.log(`Request body is:`, validatedBody);
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = RestartServicesResponseBodySchema.safeParse(data);
@@ -3818,9 +3994,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = QueryLogsResponseBodySchema.safeParse(data);
@@ -3882,9 +4066,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           return data;
@@ -3938,9 +4130,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = GetMetricsResponseBodySchema.safeParse(data);
@@ -3990,9 +4190,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = GetNodeMetricsResponseBodySchema.safeParse(data);
@@ -4042,9 +4250,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = GetVolumeMetricsResponseBodySchema.safeParse(data);
@@ -4090,9 +4306,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
             console.log(`Request body is:`, validatedBody);
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = CreateProjectResponseBodySchema.safeParse(data);
@@ -4136,9 +4360,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
             console.log(`Request body is:`, validatedBody);
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = DeleteProjectResponseBodySchema.safeParse(data);
@@ -4188,9 +4420,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = GetProjectResponseBodySchema.safeParse(data);
@@ -4240,9 +4480,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = ListProjectResponseBodySchema.safeParse(data);
@@ -4286,9 +4534,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
             console.log(`Request body is:`, validatedBody);
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = UpdateProjectResponseBodySchema.safeParse(data);
@@ -4334,9 +4590,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
             console.log(`Request body is:`, validatedBody);
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = CreateServiceGroupResponseBodySchema.safeParse(data);
@@ -4380,9 +4644,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
             console.log(`Request body is:`, validatedBody);
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = DeleteServiceGroupResponseBodySchema.safeParse(data);
@@ -4432,9 +4704,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = GetServiceGroupResponseBodySchema.safeParse(data);
@@ -4484,9 +4764,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = ListServiceGroupResponseBodySchema.safeParse(data);
@@ -4530,9 +4818,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
             console.log(`Request body is:`, validatedBody);
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = UpdateServiceGroupResponseBodySchema.safeParse(data);
@@ -4578,9 +4874,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
             console.log(`Request body is:`, validatedBody);
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = CreateServiceResponseBodySchema.safeParse(data);
@@ -4632,9 +4936,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                 console.log(`GO API request error`, data);
                 console.log(`Request URL is:`, url.toString());
 
-                throw new Error(
-                  `GO API request failed with status ${response.status}: ${response.statusText}`,
-                );
+                let errorMessage =
+                  '`GO API request failed with status ${response.status}: ${response.statusText}`';
+                if (
+                  data &&
+                  Array.isArray(data.details) &&
+                  data.details.length > 0 &&
+                  typeof data.details[0] === 'string'
+                ) {
+                  errorMessage = data.details[0];
+                }
+                throw new Error(errorMessage);
               }
               const data = await response.json();
               const { data: parsedData, error } = GetDatabaseResponseBodySchema.safeParse(data);
@@ -4677,9 +4989,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                 console.log(`GO API request error`, data);
                 console.log(`Request URL is:`, url.toString());
 
-                throw new Error(
-                  `GO API request failed with status ${response.status}: ${response.statusText}`,
-                );
+                let errorMessage =
+                  '`GO API request failed with status ${response.status}: ${response.statusText}`';
+                if (
+                  data &&
+                  Array.isArray(data.details) &&
+                  data.details.length > 0 &&
+                  typeof data.details[0] === 'string'
+                ) {
+                  errorMessage = data.details[0];
+                }
+                throw new Error(errorMessage);
               }
               const data = await response.json();
               const { data: parsedData, error } = ListDatabasesResponseBodySchema.safeParse(data);
@@ -4725,9 +5045,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
             console.log(`Request body is:`, validatedBody);
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = DeleteServiceResponseBodySchema.safeParse(data);
@@ -4778,9 +5106,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
 
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } = ListEndpointsResponseBodySchema.safeParse(data);
@@ -4831,9 +5167,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = GetServiceResponseBodySchema.safeParse(data);
@@ -4883,9 +5227,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = ListServiceResponseBodySchema.safeParse(data);
@@ -4929,9 +5281,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
             console.log(`Request body is:`, validatedBody);
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = UpdatServiceResponseBodySchema.safeParse(data);
@@ -4977,9 +5337,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
             console.log(`Request body is:`, validatedBody);
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = CreateUserResponseBodySchema.safeParse(data);
@@ -5022,9 +5390,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = SetupStatusResponseBodySchema.safeParse(data);
@@ -5071,9 +5447,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
               console.log(`Request body is:`, validatedBody);
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } = CreatePVCResponseBodySchema.safeParse(data);
@@ -5117,9 +5501,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
               console.log(`Request body is:`, validatedBody);
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } = DeletePVCResponseBodySchema.safeParse(data);
@@ -5169,9 +5561,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
 
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } = GetPVCResponseBodySchema.safeParse(data);
@@ -5221,9 +5621,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
 
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } = ListPVCResponseBodySchema.safeParse(data);
@@ -5267,9 +5675,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
               console.log(`Request body is:`, validatedBody);
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } = UpdatePVCResponseBodySchema.safeParse(data);
@@ -5315,9 +5731,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
               console.log(`Request body is:`, validatedBody);
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } = CreateS3OutputBodySchema.safeParse(data);
@@ -5361,9 +5785,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
               console.log(`Request body is:`, validatedBody);
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } = DeleteS3SourceByIDOutputBodySchema.safeParse(data);
@@ -5413,9 +5845,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
 
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } = GetS3SourceByIDOutputBodySchema.safeParse(data);
@@ -5465,9 +5905,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
 
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } = ListS3SourceOutputBodySchema.safeParse(data);
@@ -5511,9 +5959,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
               console.log(`Request body is:`, validatedBody);
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } = TestS3OutputBodySchema.safeParse(data);
@@ -5557,9 +6013,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
               console.log(`Request body is:`, validatedBody);
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } = UpdateS3SourceResponseBodySchema.safeParse(data);
@@ -5613,9 +6077,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
 
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } = DnsCheckResponseBodySchema.safeParse(data);
@@ -5660,9 +6132,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
 
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } = CheckUniqueDomainOutputBodySchema.safeParse(data);
@@ -5706,9 +6186,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
               console.log(`Request body is:`, validatedBody);
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } =
@@ -5753,9 +6241,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = SystemMetaResponseBodySchema.safeParse(data);
@@ -5800,9 +6296,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
               console.log(`Request body is:`, validatedBody);
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } = CreateRegistryResponseBodySchema.safeParse(data);
@@ -5846,9 +6350,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
               console.log(`Request body is:`, validatedBody);
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } = ResponseErrorSchema.safeParse(data);
@@ -5898,9 +6410,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
 
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } = GetRegistryResponseBodySchema.safeParse(data);
@@ -5943,9 +6463,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
 
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } = ListRegistriesResponseBodySchema.safeParse(data);
@@ -5989,9 +6517,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
               console.log(`Request body is:`, validatedBody);
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } =
@@ -6038,9 +6574,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
               console.log(`Request body is:`, validatedBody);
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } = SettingsResponseBodySchema.safeParse(data);
@@ -6086,9 +6630,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
               console.log(`Request body is:`, validatedBody);
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } = UpdateApplyResponseBodySchema.safeParse(data);
@@ -6131,9 +6683,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
 
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } = UpdateCheckResponseBodySchema.safeParse(data);
@@ -6176,9 +6736,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
 
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } = UpdateStatusResponseBodySchema.safeParse(data);
@@ -6231,9 +6799,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = GetTeamResponseBodySchema.safeParse(data);
@@ -6273,9 +6849,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = TeamResponseBodySchema.safeParse(data);
@@ -6319,9 +6903,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
             console.log(`Request body is:`, validatedBody);
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = UpdateTeamResponseBodySchema.safeParse(data);
@@ -6367,9 +6959,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
             console.log(`Request body is:`, validatedBody);
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = TemplateDeployResponseBodySchema.safeParse(data);
@@ -6419,9 +7019,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = GetTemplateResponseBodySchema.safeParse(data);
@@ -6464,9 +7072,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = ListTemplatesResponseBodySchema.safeParse(data);
@@ -6512,9 +7128,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
             console.log(`Request body is:`, validatedBody);
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = CreateWebhookResponseBodySchema.safeParse(data);
@@ -6558,9 +7182,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
             console.log(`Request body is:`, validatedBody);
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = DeleteWebhookResponseBodySchema.safeParse(data);
@@ -6610,9 +7242,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = GetWebhookResponseBodySchema.safeParse(data);
@@ -6662,9 +7302,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = ListWebhooksResponseBodySchema.safeParse(data);
@@ -6708,9 +7356,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
             console.log(`Request body is:`, validatedBody);
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = UpdateWebhookResponseBodySchema.safeParse(data);
@@ -6752,9 +7408,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = MeResponseBodySchema.safeParse(data);
@@ -6800,9 +7464,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
             console.log(`Request body is:`, validatedBody);
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = VariablesResponseBodySchema.safeParse(data);
@@ -6852,9 +7524,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
 
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = VariablesResponseBodySchema.safeParse(data);
@@ -6906,9 +7586,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                 console.log(`GO API request error`, data);
                 console.log(`Request URL is:`, url.toString());
 
-                throw new Error(
-                  `GO API request failed with status ${response.status}: ${response.statusText}`,
-                );
+                let errorMessage =
+                  '`GO API request failed with status ${response.status}: ${response.statusText}`';
+                if (
+                  data &&
+                  Array.isArray(data.details) &&
+                  data.details.length > 0 &&
+                  typeof data.details[0] === 'string'
+                ) {
+                  errorMessage = data.details[0];
+                }
+                throw new Error(errorMessage);
               }
               const data = await response.json();
               const { data: parsedData, error } =
@@ -6960,9 +7648,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                   console.log(`GO API request error`, data);
                   console.log(`Request URL is:`, url.toString());
 
-                  throw new Error(
-                    `GO API request failed with status ${response.status}: ${response.statusText}`,
-                  );
+                  let errorMessage =
+                    '`GO API request failed with status ${response.status}: ${response.statusText}`';
+                  if (
+                    data &&
+                    Array.isArray(data.details) &&
+                    data.details.length > 0 &&
+                    typeof data.details[0] === 'string'
+                  ) {
+                    errorMessage = data.details[0];
+                  }
+                  throw new Error(errorMessage);
                 }
                 const data = await response.json();
                 const { data: parsedData, error } =
@@ -7017,9 +7713,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
 
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } =
@@ -7065,9 +7769,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             console.log(`GO API request error`, data);
             console.log(`Request URL is:`, url.toString());
             console.log(`Request body is:`, validatedBody);
-            throw new Error(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
           }
           const data = await response.json();
           const { data: parsedData, error } = VariablesResponseBodySchema.safeParse(data);
@@ -7110,9 +7822,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               console.log(`GO API request error`, data);
               console.log(`Request URL is:`, url.toString());
 
-              throw new Error(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
             }
             const data = await response.json();
             const { data: parsedData, error } = ResponseErrorSchema.safeParse(data);
@@ -7164,9 +7884,17 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                   console.log(`GO API request error`, data);
                   console.log(`Request URL is:`, url.toString());
 
-                  throw new Error(
-                    `GO API request failed with status ${response.status}: ${response.statusText}`,
-                  );
+                  let errorMessage =
+                    '`GO API request failed with status ${response.status}: ${response.statusText}`';
+                  if (
+                    data &&
+                    Array.isArray(data.details) &&
+                    data.details.length > 0 &&
+                    typeof data.details[0] === 'string'
+                  ) {
+                    errorMessage = data.details[0];
+                  }
+                  throw new Error(errorMessage);
                 }
                 const data = await response.json();
                 const { data: parsedData, error } = ResponseErrorSchema.safeParse(data);

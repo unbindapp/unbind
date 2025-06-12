@@ -350,7 +350,11 @@ async ${paramSignature}${responseType ? `: Promise<${responseType}>` : ""} => {
       console.log(\`GO API request error\`, data);
       console.log(\`Request URL is:\`, url.toString());
       ${requestType ? `console.log(\`Request body is:\`, validatedBody);` : ""}
-      throw new Error(\`GO API request failed with status \${response.status}: \${response.statusText}\`);
+      let errorMessage = "\`GO API request failed with status \${response.status}: \${response.statusText}\`";
+      if (data && Array.isArray(data.details) && data.details.length > 0 && typeof data.details[0] === "string") {
+        errorMessage = data.details[0]
+      }
+      throw new Error(errorMessage);
     }
     const data = await response.json();
     ${
