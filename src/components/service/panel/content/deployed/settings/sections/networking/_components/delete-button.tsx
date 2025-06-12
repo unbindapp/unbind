@@ -76,16 +76,16 @@ export default function DeleteButton({
           })}
         </p>
       )}
-      deletingEntityName={domain}
+      deletingEntityName="the domain and the port"
       dialogTitle={mode === "private" ? "Delete Private Domain" : "Delete Domain"}
       dialogDescription={
         mode === "private"
-          ? "The port will be deleted. All public domains using that port will be broken. This action cannot be undone."
+          ? "The port will be deleted. All public domains using the port will be disconnected. This action cannot be undone."
           : "Are you sure you want to delete this domain? This action cannot be undone."
       }
       onSubmit={deleteDomainOrPort}
       error={errorDeleteDomainOrPort}
-      disableConfirmationInput
+      disableConfirmationInput={mode === "private" ? false : true}
     >
       <Button
         type="button"

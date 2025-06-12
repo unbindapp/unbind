@@ -117,7 +117,7 @@ export default function AddDomainPortCard({
   }, [service.detected_ports]);
 
   const portItems: { value: string; label: string }[] | undefined = useMemo(() => {
-    return allPortOptions.length > 0
+    return allPortOptions.length >= 1
       ? [
           ...allPortOptions.map((p) => ({
             value: p,
@@ -233,7 +233,15 @@ export default function AddDomainPortCard({
                         />
                       </Block>
                     )}
-                    {mode === "public" && allPortOptions.length !== 0 && (
+                    {mode === "private" && (
+                      <div className="text-success bg-success/8 mt-2 flex justify-start gap-1.5 rounded-md px-3 py-2 text-sm">
+                        <GlobeLockIcon className="mt-0.5 -ml-0.5 size-3.5 shrink-0" />
+                        <p className="min-w-0 shrink leading-tight">
+                          Private domain will be auto-generated.
+                        </p>
+                      </div>
+                    )}
+                    {mode === "public" && allPortOptions.length >= 1 && (
                       <Block>
                         <form.AppField name="targetPortType">
                           {(field) => (
@@ -302,15 +310,7 @@ export default function AddDomainPortCard({
                         </form.AppField>
                       </Block>
                     )}
-                    {mode === "private" && (
-                      <div className="text-success bg-success/8 mt-2 flex justify-start gap-1.5 rounded-md px-3 py-2 text-sm">
-                        <GlobeLockIcon className="mt-0.5 -ml-0.5 size-3.5 shrink-0" />
-                        <p className="min-w-0 shrink leading-tight">
-                          Private domain will be auto-generated.
-                        </p>
-                      </div>
-                    )}
-                    {mode === "public" && allPortOptions.length !== 0 && (
+                    {mode === "public" && allPortOptions.length >= 1 && (
                       <form.Subscribe
                         selector={(s) => ({ isCustom: s.values.targetPortType === customPortText })}
                         children={({ isCustom }) => {
