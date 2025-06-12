@@ -149,6 +149,11 @@ export function UndeployedContentGit({
         overwriteHosts: !formValues.isPublic
           ? undefined
           : [{ host: formValues.domain, target_port: Number(formValues.targetPort), path: "" }],
+        overwritePorts:
+          !formValues.isPublic &&
+          service.config.ports.map((p) => p.port).includes(Number(formValues.targetPort))
+            ? undefined
+            : [{ port: Number(formValues.targetPort) }],
         ...extraProps,
       });
 
