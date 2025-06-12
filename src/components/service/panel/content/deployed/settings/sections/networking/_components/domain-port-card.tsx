@@ -134,7 +134,7 @@ export default function DomainPortCard({
       await updateService({
         upsertHosts:
           mode === "public"
-            ? [{ host: value.host, path: "", target_port: Number(port) }]
+            ? [{ host: value.host, path: "", target_port: Number(port), prev_host: domain }]
             : undefined,
         addPorts: service.config.ports.map((p) => p.port).includes(Number(port))
           ? undefined

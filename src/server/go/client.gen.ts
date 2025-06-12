@@ -362,6 +362,7 @@ export const HostSpecSchema = z
   .object({
     host: z.string(),
     path: z.string(),
+    prev_host: z.string().optional(), // Previous host for the service, used for upserting key
     target_port: z.number().optional(),
   })
   .strip();
