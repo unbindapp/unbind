@@ -8,7 +8,7 @@ import {
   BlockItemContent,
   BlockItemHeader,
   BlockItemTitle,
-} from "@/components/service/panel/content/undeployed/block";
+} from "@/components/block";
 import DomainPortBlock from "@/components/service/panel/content/undeployed/blocks/domain-port-block";
 import VariablesBlock from "@/components/service/panel/content/undeployed/blocks/variables-block";
 import DeployButtonSection from "@/components/service/panel/content/undeployed/deploy-button-section";

@@ -10,7 +10,7 @@ import {
   BlockItemDescription,
   BlockItemHeader,
   BlockItemTitle,
-} from "@/components/service/panel/content/undeployed/block";
+} from "@/components/block";
 import { useServiceEndpoints } from "@/components/service/service-endpoints-provider";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { SettingsSection } from "@/components/settings/settings-section";

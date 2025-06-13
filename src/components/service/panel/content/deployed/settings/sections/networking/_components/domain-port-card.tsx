@@ -13,7 +13,7 @@ import {
   BlockItemContent,
   BlockItemHeader,
   BlockItemTitle,
-} from "@/components/service/panel/content/undeployed/block";
+} from "@/components/block";
 import { useServiceEndpointsUtils } from "@/components/service/service-endpoints-provider";
 import { useService } from "@/components/service/service-provider";
 import useUpdateService from "@/components/service/use-update-service";

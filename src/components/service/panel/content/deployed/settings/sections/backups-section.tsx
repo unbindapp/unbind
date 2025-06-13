@@ -12,7 +12,7 @@ import {
   BlockItemDescription,
   BlockItemHeader,
   BlockItemTitle,
-} from "@/components/service/panel/content/undeployed/block";
+} from "@/components/block";
 import { useService } from "@/components/service/service-provider";
 import useUpdateService, {
   TUpdateServiceInputSimple,

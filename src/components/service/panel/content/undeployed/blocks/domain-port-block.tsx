@@ -4,7 +4,7 @@ import {
   BlockItemContent,
   BlockItemHeader,
   BlockItemTitle,
-} from "@/components/service/panel/content/undeployed/block";
+} from "@/components/block";
 import { Button } from "@/components/ui/button";
 import { validateDomain } from "@/lib/helpers/validate-domain";
 import { validatePort } from "@/lib/helpers/validate-port";

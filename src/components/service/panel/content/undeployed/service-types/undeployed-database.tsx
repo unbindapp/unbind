@@ -13,7 +13,7 @@ import {
   BlockItemContent,
   BlockItemHeader,
   BlockItemTitle,
-} from "@/components/service/panel/content/undeployed/block";
+} from "@/components/block";
 import VariablesBlock from "@/components/service/panel/content/undeployed/blocks/variables-block";
 import DeployButtonSection from "@/components/service/panel/content/undeployed/deploy-button-section";
 import useCreateFirstDeployment from "@/components/service/panel/content/undeployed/use-create-first-deployment";

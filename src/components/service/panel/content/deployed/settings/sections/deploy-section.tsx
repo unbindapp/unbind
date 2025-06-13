@@ -6,7 +6,7 @@ import {
   BlockItemDescription,
   BlockItemHeader,
   BlockItemTitle,
-} from "@/components/service/panel/content/undeployed/block";
+} from "@/components/block";
 import useUpdateService, {
   TUpdateServiceInputSimple,
 } from "@/components/service/use-update-service";
@@ -395,6 +395,14 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                   <div className="relative -mt-1 w-full">
                     <form.AppField
                       name="healthCheckEndpoint"
+                      validators={{
+                        onChange: ({ value }) => {
+                          if (healthCheckType === "http") {
+                            return validateHealthCheckEndpoint(value);
+                          }
+                          return undefined;
+                        },
+                      }}
                       children={(field) => (
                         <field.TextField
                           classNameInput="rounded-t-none border-t-0 pr-27"
@@ -449,6 +457,14 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                 {healthCheckType === "exec" && (
                   <form.AppField
                     name="healthCheckCommand"
+                    validators={{
+                      onChange: ({ value }) => {
+                        if (healthCheckType === "exec") {
+                          return validateHealthCheckCommand(value);
+                        }
+                        return undefined;
+                      },
+                    }}
                     children={(field) => (
                       <field.TextField
                         className="-mt-1"
@@ -535,4 +551,32 @@ function healthCheckTypeToName(type: THealthCheckType | (string & {})) {
 
 function getEntityId(service: TServiceShallow): string {
   return `deploy-${service.id}`;
+}
+
+function validateHealthCheckEndpoint(value: string) {
+  if (value === undefined || value.trim() === "") {
+    return {
+      message: "Endpoint is required.",
+    };
+  }
+  if (typeof value !== "string") {
+    return {
+      message: "Endpoint must be a string.",
+    };
+  }
+  return undefined;
+}
+
+function validateHealthCheckCommand(value: string) {
+  if (value === undefined || value.trim() === "") {
+    return {
+      message: "Command is required.",
+    };
+  }
+  if (typeof value !== "string") {
+    return {
+      message: "Command must be a string.",
+    };
+  }
+  return undefined;
 }

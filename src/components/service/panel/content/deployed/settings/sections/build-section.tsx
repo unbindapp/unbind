@@ -8,7 +8,7 @@ import {
   BlockItemDescription,
   BlockItemHeader,
   BlockItemTitle,
-} from "@/components/service/panel/content/undeployed/block";
+} from "@/components/block";
 import useUpdateService, {
   TUpdateServiceInputSimple,
 } from "@/components/service/use-update-service";
@@ -250,7 +250,7 @@ function GitSection({ service }: TGitSectionProps) {
                               {({ toggle }) => (
                                 <BlockItemButtonLike
                                   asElement="button"
-                                  Icon={PlusIcon}
+                                  Icon={({ className }) => <PlusIcon className={className} />}
                                   text="Custom install command"
                                   onClick={() => {
                                     toggle(true);
@@ -312,7 +312,7 @@ function GitSection({ service }: TGitSectionProps) {
                               {({ toggle }) => (
                                 <BlockItemButtonLike
                                   asElement="button"
-                                  Icon={PlusIcon}
+                                  Icon={({ className }) => <PlusIcon className={className} />}
                                   text="Custom build command"
                                   onClick={() => {
                                     toggle(true);
@@ -374,7 +374,7 @@ function GitSection({ service }: TGitSectionProps) {
                               {({ toggle }) => (
                                 <BlockItemButtonLike
                                   asElement="button"
-                                  Icon={PlusIcon}
+                                  Icon={({ className }) => <PlusIcon className={className} />}
                                   text="Custom Dockerfile path"
                                   onClick={() => {
                                     toggle(true);
@@ -436,7 +436,7 @@ function GitSection({ service }: TGitSectionProps) {
                               {({ toggle }) => (
                                 <BlockItemButtonLike
                                   asElement="button"
-                                  Icon={PlusIcon}
+                                  Icon={({ className }) => <PlusIcon className={className} />}
                                   text="Custom build context"
                                   onClick={() => {
                                     toggle(true);
@@ -495,7 +495,7 @@ function GitSection({ service }: TGitSectionProps) {
                             {({ toggle }) => (
                               <BlockItemButtonLike
                                 asElement="button"
-                                Icon={PlusIcon}
+                                Icon={({ className }) => <PlusIcon className={className} />}
                                 text="Custom start command"
                                 onClick={() => {
                                   toggle(true);

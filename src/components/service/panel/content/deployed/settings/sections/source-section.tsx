@@ -8,7 +8,7 @@ import {
   BlockItemContent,
   BlockItemHeader,
   BlockItemTitle,
-} from "@/components/service/panel/content/undeployed/block";
+} from "@/components/block";
 import useUpdateService, {
   TUpdateServiceInputSimple,
 } from "@/components/service/use-update-service";
