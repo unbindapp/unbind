@@ -147,16 +147,11 @@ export default function AddDomainPortCard({
               children={(field) => (
                 <BlockItemButtonLike
                   type="button"
-                  data-editing={isEditing ? true : undefined}
+                  isEditing={isEditing}
                   isPending={isPending}
                   asElement="button"
                   text={mode === "private" ? "Add private domain" : "Add domain"}
-                  Icon={({ className }) => (
-                    <>
-                      {isEditing && <ChevronUpIcon className={cn(className, "size-5 shrink-0")} />}
-                      {!isEditing && <PlusIcon className={cn(className, "size-5 shrink-0")} />}
-                    </>
-                  )}
+                  Icon={PlusOrChevron}
                   className="touch-manipulation data-editing:rounded-b-none"
                   onClick={() => field.handleChange(!field.state.value)}
                 />
@@ -403,6 +398,21 @@ export default function AddDomainPortCard({
           </>
         )}
       />
+    </div>
+  );
+}
+
+function PlusOrChevron({ className, isEditing }: { className?: string; isEditing?: boolean }) {
+  return (
+    <div
+      data-editing={isEditing ? true : undefined}
+      className={cn(
+        className,
+        "group/div relative size-5 shrink-0 transition data-editing:rotate-90",
+      )}
+    >
+      <ChevronUpIcon className="size-full -rotate-90 opacity-0 group-data-editing/div:opacity-100" />
+      <PlusIcon className="absolute top-0 left-0 size-full group-data-editing/div:opacity-0" />
     </div>
   );
 }

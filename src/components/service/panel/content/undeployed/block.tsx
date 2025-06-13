@@ -1,7 +1,7 @@
 import { Button, LinkButton, TButtonProps, TLinkButtonProps } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { ChevronDownIcon, ExternalLinkIcon } from "lucide-react";
-import { Children, cloneElement, FC, HTMLAttributes, isValidElement, ReactNode } from "react";
+import { Children, cloneElement, FC, HTMLAttributes, isValidElement, memo, ReactNode } from "react";
 
 export function Block({
   className,
@@ -127,10 +127,11 @@ export function BlockItemContent({
 }
 
 type TBlockItemButtonLikeProps = {
-  Icon?: FC<{ className?: string }>;
+  Icon?: FC<{ className?: string; isEditing?: boolean }>;
   text: string | ReactNode;
   description?: string | ReactNode;
   isPending?: boolean;
+  isEditing?: boolean;
   open?: boolean;
   hideChevron?: boolean;
   href?: string;
@@ -162,6 +163,7 @@ export function BlockItemButtonLike({
   hideChevron,
   href,
   SuffixComponent,
+  isEditing,
   ...props
 }: TBlockItemButtonLikeProps) {
   const Element =
@@ -172,6 +174,7 @@ export function BlockItemButtonLike({
       variant="outline"
       data-open={open ? true : undefined}
       data-pending={isPending ? true : undefined}
+      data-editing={isEditing ? true : undefined}
       className={cn(
         "group/button flex w-full flex-row items-center justify-start gap-2 rounded-lg border px-3 py-2.5 text-left data-pending:text-transparent",
         className,
@@ -192,7 +195,10 @@ export function BlockItemButtonLike({
           </div>
         ) : (
           Icon && (
-            <Icon className="group-data-pending/button:bg-foreground size-5 shrink-0 group-data-pending/button:rounded-full" />
+            <Icon
+              className="group-data-pending/button:bg-foreground size-5 shrink-0 group-data-pending/button:rounded-full"
+              isEditing={isEditing}
+            />
           )
         )}
         <div className="flex w-full min-w-0 shrink flex-col items-start gap-1">
