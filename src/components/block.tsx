@@ -129,7 +129,7 @@ export function BlockItemContent({
 type TBlockItemButtonLikeProps = {
   Icon?: FC<{ className?: string; isEditing?: boolean }>;
   text: string | ReactNode;
-  description?: string | ReactNode;
+  description?: string | FC<{ className?: string }>;
   isPending?: boolean;
   isEditing?: boolean;
   open?: boolean;
@@ -153,7 +153,7 @@ type TBlockItemButtonLikeProps = {
 export function BlockItemButtonLike({
   Icon,
   text,
-  description,
+  description: Description,
   open,
   asElement,
   isPending,
@@ -210,12 +210,14 @@ export function BlockItemButtonLike({
           >
             {text}
           </p>
-          {typeof description === "string" ? (
-            <p className="text-muted-foreground group-data-pending/button:bg-muted-foreground min-w-0 shrink text-sm leading-tight group-data-pending/button:rounded-md">
-              {description}
-            </p>
+          {typeof Description === "function" ? (
+            <Description />
           ) : (
-            description
+            Description && (
+              <p className="text-muted-foreground group-data-pending/button:bg-muted-foreground min-w-0 shrink text-sm leading-tight group-data-pending/button:rounded-md">
+                {Description}
+              </p>
+            )
           )}
         </div>
       </div>

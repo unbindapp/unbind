@@ -217,7 +217,7 @@ export default function AddDomainPortCard({
                           children={(field) => (
                             <BlockItem className="w-full md:w-full">
                               <BlockItemHeader type="column">
-                                <BlockItemTitle>Target Port</BlockItemTitle>
+                                <BlockItemTitle>Port</BlockItemTitle>
                               </BlockItemHeader>
                               <BlockItemContent>
                                 <field.TextField
@@ -260,7 +260,7 @@ export default function AddDomainPortCard({
                           {(field) => (
                             <BlockItem className="w-full md:w-full">
                               <BlockItemHeader type="column">
-                                <BlockItemTitle>Target Port</BlockItemTitle>
+                                <BlockItemTitle>Port</BlockItemTitle>
                               </BlockItemHeader>
                               <BlockItemContent>
                                 <field.AsyncDropdownMenu
@@ -408,7 +408,7 @@ function PlusOrChevron({ className, isEditing }: { className?: string; isEditing
       data-editing={isEditing ? true : undefined}
       className={cn(
         className,
-        "group/div relative size-5 shrink-0 transition data-editing:rotate-45",
+        "group/div relative size-5 shrink-0 transition-transform data-editing:rotate-45",
       )}
     >
       <ChevronUpIcon className="size-full -rotate-45 opacity-0 group-data-editing/div:opacity-100" />

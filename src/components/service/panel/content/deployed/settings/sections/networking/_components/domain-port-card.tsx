@@ -170,8 +170,22 @@ export default function DomainPortCard({
           className="group-data-editing/field:bg-process/8 group-data-editing/field:text-process border-none group-data-editing/field:rounded-b-none"
           text={getNetworkingDisplayUrl({
             host: domain,
-            port: mode === "public" ? "" : port.toString(),
+            port: mode === "public" ? "" : port?.toString(),
           })}
+          description={({ className }) => {
+            if (port === undefined || mode !== "public") return null;
+            return (
+              <div
+                className={cn(
+                  "text-muted-foreground group-data-editing/field:text-process/85 flex w-full items-start gap-1.5 text-sm leading-tight font-medium",
+                  className,
+                )}
+              >
+                <EthernetPortIcon className="mt-0.375 size-3.5 shrink-0" />
+                <p className="min-w-0 shrink">{port}</p>
+              </div>
+            );
+          }}
           Icon={({ className }: { className?: string }) =>
             port === undefined && !isEditing ? (
               <CircleAlertIcon className={cn("text-warning scale-90", className)} />
@@ -278,7 +292,7 @@ export default function DomainPortCard({
                       children={(field) => (
                         <BlockItem className="w-full md:w-full">
                           <BlockItemHeader type="column">
-                            <BlockItemTitle>Target Port</BlockItemTitle>
+                            <BlockItemTitle>Port</BlockItemTitle>
                           </BlockItemHeader>
                           <BlockItemContent>
                             <field.TextField
@@ -313,7 +327,7 @@ export default function DomainPortCard({
                       {(field) => (
                         <BlockItem className="w-full md:w-full">
                           <BlockItemHeader type="column">
-                            <BlockItemTitle>Target Port</BlockItemTitle>
+                            <BlockItemTitle>Port</BlockItemTitle>
                           </BlockItemHeader>
                           <BlockItemContent>
                             <field.AsyncDropdownMenu

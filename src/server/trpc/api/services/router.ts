@@ -65,6 +65,7 @@ export const servicesRouter = createTRPCRouter({
       input: { teamId, projectId, environmentId, serviceId },
       ctx: { goClient },
     }) {
+      await new Promise((resolve) => setTimeout(resolve, 5000)); // Simulate delay for demonstration purposes
       const endpoints = await goClient.services.endpoints.list({
         team_id: teamId,
         project_id: projectId,
