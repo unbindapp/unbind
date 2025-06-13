@@ -408,10 +408,10 @@ function PlusOrChevron({ className, isEditing }: { className?: string; isEditing
       data-editing={isEditing ? true : undefined}
       className={cn(
         className,
-        "group/div relative size-5 shrink-0 transition data-editing:rotate-90",
+        "group/div relative size-5 shrink-0 transition data-editing:rotate-45",
       )}
     >
-      <ChevronUpIcon className="size-full -rotate-90 opacity-0 group-data-editing/div:opacity-100" />
+      <ChevronUpIcon className="size-full -rotate-45 opacity-0 group-data-editing/div:opacity-100" />
       <PlusIcon className="absolute top-0 left-0 size-full group-data-editing/div:opacity-0" />
     </div>
   );

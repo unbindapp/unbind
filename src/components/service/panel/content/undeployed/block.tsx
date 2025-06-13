@@ -1,7 +1,7 @@
 import { Button, LinkButton, TButtonProps, TLinkButtonProps } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { ChevronDownIcon, ExternalLinkIcon } from "lucide-react";
-import { Children, cloneElement, FC, HTMLAttributes, isValidElement, memo, ReactNode } from "react";
+import { Children, cloneElement, FC, HTMLAttributes, isValidElement, ReactNode } from "react";
 
 export function Block({
   className,
