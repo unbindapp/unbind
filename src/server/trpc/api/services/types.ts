@@ -123,6 +123,10 @@ export const UpdateServiceInputSchema = z
     healthCheckEndpoint: z.string().optional(),
     healthCheckEndpointPort: z.number().int().optional(),
     healthCheckCommand: z.string().optional(),
+    healthCheckIntervalSeconds: z.number().int().min(1).optional(),
+    healthCheckFailureThreshold: z.number().int().min(1).optional(),
+    startupCheckIntervalSeconds: z.number().int().min(1).optional(),
+    startupCheckFailureThreshold: z.number().int().min(1).optional(),
   })
   .strip();
 

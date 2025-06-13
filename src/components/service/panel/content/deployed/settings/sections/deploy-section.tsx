@@ -1,7 +1,6 @@
 import {
   Block,
   BlockItem,
-  BlockItemButtonLike,
   BlockItemContent,
   BlockItemDescription,
   BlockItemHeader,
@@ -14,17 +13,9 @@ import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { HealthCheckTypeSchema } from "@/server/go/client.gen";
-import { THealthCheckType, TServiceShallow } from "@/server/trpc/api/services/types";
-import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
+import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { useStore } from "@tanstack/react-form";
-import {
-  CircleSlashIcon,
-  EthernetPortIcon,
-  GlobeIcon,
-  RocketIcon,
-  TerminalSquareIcon,
-} from "lucide-react";
+import { RocketIcon } from "lucide-react";
 import { useMemo } from "react";
 
 type TProps = {
@@ -75,8 +66,6 @@ const memoryLimits = {
 };
 
 function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
-  const healthCheckTypeFromService = service.config.health_check?.type || "none";
-
   const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
 
   const {
@@ -96,10 +85,6 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
       instanceCount: service.config.replicas,
       cpuLimitMillicores: service.config.resources?.cpu_limits_millicores || cpuLimits.unlimited,
       memoryLimitMb: service.config.resources?.memory_limits_megabytes || memoryLimits.unlimited,
-      healthCheckEndpoint: service.config.health_check?.path || "",
-      healthCheckEndpointPort: service.config.ports?.[0]?.port?.toString() || "",
-      healthCheckCommand: service.config.health_check?.command || "",
-      healthCheckType: healthCheckTypeFromService,
     },
     onSubmit: async ({ formApi, value }) => {
       let hasChanged = false;
@@ -119,34 +104,6 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
           value.memoryLimitMb === memoryLimits.unlimited ? -1 : value.memoryLimitMb;
         hasChanged = true;
       }
-      if (formApi.getFieldMeta("healthCheckType")?.isDefaultValue === false) {
-        changes.healthCheckType = value.healthCheckType;
-        hasChanged = true;
-      }
-      if (
-        formApi.getFieldMeta("healthCheckEndpoint")?.isDefaultValue === false &&
-        changes.healthCheckType === "http"
-      ) {
-        changes.healthCheckEndpoint = value.healthCheckEndpoint;
-        hasChanged = true;
-      }
-      if (
-        formApi.getFieldMeta("healthCheckEndpointPort")?.isDefaultValue === false &&
-        changes.healthCheckType === "http"
-      ) {
-        changes.healthCheckEndpointPort =
-          value.healthCheckEndpointPort === ""
-            ? undefined
-            : parseInt(value.healthCheckEndpointPort);
-        hasChanged = true;
-      }
-      if (
-        formApi.getFieldMeta("healthCheckCommand")?.isDefaultValue === false &&
-        changes.healthCheckType === "exec"
-      ) {
-        changes.healthCheckCommand = value.healthCheckCommand;
-        hasChanged = true;
-      }
 
       if (hasChanged) {
         await updateService(changes);
@@ -156,39 +113,11 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
     },
   });
 
-  const portItems = useMemo(() => {
-    return service.config.ports?.map((port) => ({
-      label: port.port.toString(),
-      value: port.port.toString(),
-    }));
-  }, [service]);
-
-  const healthCheckItems = useMemo(() => {
-    return HealthCheckTypeSchema.options
-      .filter((o) => (portItems === undefined || portItems.length < 1 ? o !== "http" : true))
-      .map((o) => ({
-        label: healthCheckTypeToName(o),
-        value: o,
-      }));
-  }, [portItems]);
-
   const changeCount = useStore(form.store, (s) => {
     let count = 0;
-    if (s.values.healthCheckType === "exec") {
-      if (s.fieldMeta.healthCheckCommand?.isDefaultValue === false) {
-        count++;
-      }
-    }
-    if (s.values.healthCheckType === "http") {
-      if (s.fieldMeta.healthCheckEndpoint?.isDefaultValue === false) {
-        count++;
-      }
-      if (s.fieldMeta.healthCheckEndpointPort?.isDefaultValue === false) count++;
-    }
     if (s.fieldMeta.instanceCount?.isDefaultValue === false) count++;
     if (s.fieldMeta.cpuLimitMillicores?.isDefaultValue === false) count++;
     if (s.fieldMeta.memoryLimitMb?.isDefaultValue === false) count++;
-    if (s.fieldMeta.healthCheckType?.isDefaultValue === false) count++;
     return count;
   });
 
@@ -334,161 +263,6 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
           )}
         />
       </Block>
-      <Block>
-        <form.Subscribe
-          selector={(s) => ({
-            healthCheckType: s.values.healthCheckType,
-            hasChanges:
-              s.fieldMeta.healthCheckType?.isDefaultValue === false ||
-              (s.values.healthCheckType === "exec" &&
-                s.fieldMeta.healthCheckCommand?.isDefaultValue === false) ||
-              (s.values.healthCheckType === "http" &&
-                s.fieldMeta.healthCheckEndpoint?.isDefaultValue === false),
-          })}
-          children={({ healthCheckType, hasChanges }) => (
-            <BlockItem className="w-full md:w-full">
-              <BlockItemHeader type="column">
-                <BlockItemTitle hasChanges={hasChanges}>Health Check</BlockItemTitle>
-                <BlockItemDescription>
-                  The endpoint to call or the command to execute to decide if a new deployment is
-                  ready.
-                </BlockItemDescription>
-              </BlockItemHeader>
-              <BlockItemContent className="gap-0">
-                <form.AppField
-                  name="healthCheckType"
-                  children={(field) => (
-                    <field.AsyncDropdownMenu
-                      dontCheckUntilSubmit
-                      field={field}
-                      value={field.state.value}
-                      onChange={(v) => field.handleChange(v as THealthCheckType)}
-                      items={healthCheckItems}
-                      ItemIcon={({ className, value }) => (
-                        <HealthCheckIcon className={cn("scale-90", className)} type={value} />
-                      )}
-                      isPending={false}
-                      error={undefined}
-                    >
-                      {({ isOpen }) => (
-                        <BlockItemButtonLike
-                          asElement="button"
-                          data-not-none={field.state.value !== "none" ? true : undefined}
-                          className="data-not-none:rounded-b-none data-not-none:border-b-0"
-                          text={healthCheckTypeToName(field.state.value)}
-                          Icon={({ className }) => (
-                            <HealthCheckIcon
-                              type={field.state.value}
-                              className={cn("scale-90", className)}
-                            />
-                          )}
-                          variant="outline"
-                          open={isOpen}
-                          onBlur={field.handleBlur}
-                        />
-                      )}
-                    </field.AsyncDropdownMenu>
-                  )}
-                />
-                {healthCheckType !== "none" && <div className="bg-border -mt-1 h-px w-full" />}
-                {healthCheckType === "http" && portItems && (
-                  <div className="relative -mt-1 w-full">
-                    <form.AppField
-                      name="healthCheckEndpoint"
-                      validators={{
-                        onChange: ({ value }) => {
-                          if (healthCheckType === "http") {
-                            return validateHealthCheckEndpoint(value);
-                          }
-                          return undefined;
-                        },
-                      }}
-                      children={(field) => (
-                        <field.TextField
-                          classNameInput="rounded-t-none border-t-0 pr-27"
-                          field={field}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(e) => {
-                            field.handleChange(e.target.value);
-                          }}
-                          placeholder="/health"
-                          autoCapitalize="off"
-                          autoCorrect="off"
-                          autoComplete="off"
-                          spellCheck="false"
-                        />
-                      )}
-                    />
-                    <form.AppField
-                      name="healthCheckEndpointPort"
-                      children={(field) => (
-                        <field.AsyncDropdownMenu
-                          dontCheckUntilSubmit
-                          field={field}
-                          value={field.state.value}
-                          onChange={(v) => field.handleChange(v)}
-                          items={portItems}
-                          isPending={false}
-                          error={undefined}
-                          classNameDropdownContent="w-auto"
-                          dropdownTitle="Port"
-                          dropdownMenuContentAlign="end"
-                        >
-                          {({ isOpen }) => (
-                            <BlockItemButtonLike
-                              className="absolute top-1 right-1.25 z-10 w-24 gap-1 rounded-md px-2 py-1.5 font-mono text-sm"
-                              asElement="button"
-                              text={field.state.value}
-                              Icon={({ className }) => (
-                                <EthernetPortIcon className={cn(className, "size-4.5 scale-90")} />
-                              )}
-                              variant="outline"
-                              open={isOpen}
-                              onBlur={field.handleBlur}
-                              classNameChevron="size-4"
-                            />
-                          )}
-                        </field.AsyncDropdownMenu>
-                      )}
-                    />
-                  </div>
-                )}
-                {healthCheckType === "exec" && (
-                  <form.AppField
-                    name="healthCheckCommand"
-                    validators={{
-                      onChange: ({ value }) => {
-                        if (healthCheckType === "exec") {
-                          return validateHealthCheckCommand(value);
-                        }
-                        return undefined;
-                      },
-                    }}
-                    children={(field) => (
-                      <field.TextField
-                        className="-mt-1"
-                        classNameInput="rounded-t-none border-t-0"
-                        field={field}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => {
-                          field.handleChange(e.target.value);
-                        }}
-                        placeholder="test -f /app/ready.txt"
-                        autoCapitalize="off"
-                        autoCorrect="off"
-                        autoComplete="off"
-                        spellCheck="false"
-                      />
-                    )}
-                  />
-                )}
-              </BlockItemContent>
-            </BlockItem>
-          )}
-        />
-      </Block>
     </SettingsSection>
   );
 }
@@ -529,54 +303,6 @@ function ValueTitle({
   );
 }
 
-function HealthCheckIcon({
-  type,
-  className,
-}: {
-  type: THealthCheckType | (string & {});
-  className?: string;
-}) {
-  if (type === "exec") return <TerminalSquareIcon className={className} />;
-  if (type === "http") return <GlobeIcon className={className} />;
-  if (type === "none") return <CircleSlashIcon className={className} />;
-  return <QuestionMarkCircledIcon className={className} />;
-}
-
-function healthCheckTypeToName(type: THealthCheckType | (string & {})) {
-  if (type === "http") return "Endpoint";
-  if (type === "exec") return "Command";
-  if (type === "none") return "None";
-  return "Unknown";
-}
-
 function getEntityId(service: TServiceShallow): string {
   return `deploy-${service.id}`;
-}
-
-function validateHealthCheckEndpoint(value: string) {
-  if (value === undefined || value.trim() === "") {
-    return {
-      message: "Endpoint is required.",
-    };
-  }
-  if (typeof value !== "string") {
-    return {
-      message: "Endpoint must be a string.",
-    };
-  }
-  return undefined;
-}
-
-function validateHealthCheckCommand(value: string) {
-  if (value === undefined || value.trim() === "") {
-    return {
-      message: "Command is required.",
-    };
-  }
-  if (typeof value !== "string") {
-    return {
-      message: "Command must be a string.",
-    };
-  }
-  return undefined;
 }

@@ -347,13 +347,14 @@ export const HealthCheckTypeSchema = z.enum(['http', 'exec', 'none']);
 export const HealthCheckSchema = z
   .object({
     command: z.string().optional(), // Command for exec health checks
-    liveness_failure_threshold: z.number().nullable().optional(), // Number of failures before the container is considered unhealthy
+    health_failure_threshold: z.number().optional(), // Failure threshold for health probes
+    health_period_seconds: z.number().optional(), // How often to perform the health probe
+    health_timeout_seconds: z.number().optional(), // How long to wait before marking the health probe as failed
     path: z.string().optional(), // Path for http health checks
-    period_seconds: z.number().nullable().optional(), // Period in seconds for health checks
     port: z.number().optional(), // Port for http health checks
-    readiness_failure_threshold: z.number().nullable().optional(), // Number of failures before the container is considered unhealthy
-    startup_failure_threshold: z.number().nullable().optional(), // Number of failures before the container is considered unhealthy
-    timeout_seconds: z.number().nullable().optional(), // Timeout in seconds for health checks
+    startup_failure_threshold: z.number().optional(), // Failure threshold for startup probes
+    startup_period_seconds: z.number().optional(), // How often to perform the startup probe
+    startup_timeout_seconds: z.number().optional(), // How long to wait before marking the startup probe as failed
     type: HealthCheckTypeSchema.optional(),
   })
   .strip();
