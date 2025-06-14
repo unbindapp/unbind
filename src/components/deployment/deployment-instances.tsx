@@ -3,6 +3,7 @@ import { useInstanceHealth } from "@/components/instances/instance-health-provid
 import { cn } from "@/components/ui/utils";
 import { TInstanceFromHealth } from "@/server/trpc/api/instances/types";
 import {
+  CircleHelpIcon,
   CircleSlashIcon,
   HeartIcon,
   HourglassIcon,
@@ -69,21 +70,28 @@ function Instance({ instance }: { instance: TInstanceFromHealth }) {
       <div className="bg-border group-data-[status=waiting]/div:bg-warning/16 group-data-[status=starting]/div:bg-process/16 group-data-[status=not_ready]/div:bg-process/16 group-data-[status=running]/div:bg-success/16 group-data-[status=crashing]/div:bg-destructive/16 w-px self-stretch" />
       <div className="group-data-[status=waiting]/div:bg-warning/8 group-data-[status=starting]/div:bg-process/8 group-data-[status=not_ready]/div:bg-process/8 group-data-[status=running]/div:bg-success/8 group-data-[status=crashing]/div:bg-destructive/8 p-1">
         <div className="size-3.5 shrink-0">
-          {instance?.status === "waiting" && (
-            <HourglassIcon className="text-warning animate-hourglass size-full" />
-          )}
-          {(instance?.status === "starting" || instance?.status === "not_ready") && (
-            <LoaderIcon className="text-process size-full animate-spin" />
-          )}
-          {instance?.status === "running" && <HeartIcon className="text-success size-full" />}
-          {instance?.status === "crashing" && (
-            <TriangleAlertIcon className="text-destructive size-full" />
-          )}
-          {instance?.status === "terminated" && (
-            <CircleSlashIcon className="text-muted-foreground size-full" />
-          )}
+          <Indicator instance={instance} />
         </div>
       </div>
     </div>
   );
+}
+
+function Indicator({ instance }: { instance: TInstanceFromHealth }) {
+  if (instance.status === "waiting") {
+    return <HourglassIcon className="text-warning animate-hourglass size-full" />;
+  }
+  if (instance.status === "starting" || instance.status === "not_ready") {
+    return <LoaderIcon className="text-process size-full animate-spin" />;
+  }
+  if (instance.status === "running") {
+    return <HeartIcon className="text-success size-full" />;
+  }
+  if (instance.status === "crashing") {
+    return <TriangleAlertIcon className="text-destructive size-full" />;
+  }
+  if (instance.status === "terminated") {
+    return <CircleSlashIcon className="text-muted-foreground size-full" />;
+  }
+  return <CircleHelpIcon className="text-foreground size-full" />;
 }
