@@ -136,7 +136,7 @@ export default function VariablesList({ variableTypeProps }: TProps) {
       )}
       {variables
         .sort((a, b) => variablesSort(a, b, variableTypeProps))
-        .map((variable, i) => (
+        .map((variable) => (
           <VariableCard
             variable={variable}
             disableDelete={shouldDeleteBeDisabled(variable, variableTypeProps)}
@@ -144,7 +144,7 @@ export default function VariablesList({ variableTypeProps }: TProps) {
             disableCopy={variable.variable_type === "reference"}
             variableTypeProps={variableTypeProps}
             asElement="li"
-            key={i}
+            key={`${variable.variable_type}:${variable.name}:${variable.value}`}
           />
         ))}
     </Wrapper>

@@ -148,11 +148,11 @@ export function BreadcrumbItem<T>({
       </DropdownOrDrawerTrigger>
       <DropdownOrDrawerContentForDrawer>
         <div className="group/list flex w-full flex-col px-2 pt-2 pb-[calc(var(--safe-area-inset-bottom)+2rem)]">
-          {items?.map((i, index) => {
+          {items?.map((i) => {
             return (
               <SheetItem
                 item={i}
-                key={i.id + index}
+                key={i.id}
                 onSelect={onSelect}
                 setOpen={setOpen}
                 selectedItem={selectedItem}
@@ -204,11 +204,11 @@ export function BreadcrumbItem<T>({
         <DropdownMenuLabel>{title}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          {items?.map((i, index) => {
+          {items?.map((i) => {
             return (
               <DropdownItem
                 item={i}
-                key={i.id + index}
+                key={i.id}
                 onSelect={onSelect}
                 onHover={onHover}
                 setOpen={setOpen}

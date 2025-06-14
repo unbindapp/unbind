@@ -71,8 +71,8 @@ function useTemplateItem({}: TProps) {
                 <span className="text-muted-more-foreground pr-[0.35ch] pl-[0.75ch]">{"|"}</span>
               </p>
               <div className="mt-[0.07rem] inline-flex min-w-0 shrink items-center gap-1.5">
-                {[...new Set(template.definition.services.map((s) => s.icon))].map((icon, i) => (
-                  <BrandIcon key={i} brand={icon} color="monochrome" className="size-4" />
+                {[...new Set(template.definition.services.map((s) => s.icon))].map((icon) => (
+                  <BrandIcon key={icon} brand={icon} color="monochrome" className="size-4" />
                 ))}
               </div>
             </div>

@@ -26,6 +26,8 @@ export default function ServiceCardList() {
   } = useServices();
   const services = data?.services;
 
+  console.log("🟡");
+
   const servicesOrGroups = useMemo(() => {
     if (!services) return undefined;
     const items: TServiceOrServiceGroup[] = [];

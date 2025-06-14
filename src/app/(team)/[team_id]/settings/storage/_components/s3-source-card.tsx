@@ -100,7 +100,9 @@ export default function S3SourceCard({ s3Source, teamId, isPlaceholder }: TProps
                   className="max-w-full sm:max-w-full md:max-w-full lg:max-w-full"
                 />
               ) : (
-                s3Source.buckets.map((b, i) => <Bucket key={i} name={b.name} />)
+                s3Source.buckets.map((b) => (
+                  <Bucket key={`${s3Source.id}/${b.name}`} name={b.name} />
+                ))
               )}
             </div>
           </Button>
@@ -253,8 +255,8 @@ function S3SourceDialogInnerContent({
               />
             </li>
           ) : (
-            s3Source.buckets.map((bucket, i) => (
-              <li key={i} className="w-full p-0.75 sm:w-1/2">
+            s3Source.buckets.map((bucket) => (
+              <li key={`${s3Source.id}/${bucket.name}`} className="w-full p-0.75 sm:w-1/2">
                 <Bucket
                   name={bucket.name}
                   className="text-foreground md:w-w-full lg:w-w-full w-full max-w-full items-start justify-start gap-1.75 rounded-md border px-3 py-3 text-sm leading-tight sm:w-full sm:max-w-full md:max-w-full lg:max-w-full"

@@ -170,8 +170,8 @@ function useDockerImageItem({ context }: TProps) {
                   You can also enter images from supported registries:
                 </p>
                 <p className="w-full px-3 pt-1.5 leading-relaxed">
-                  {SupportedDockerRegistriesEnum.options.map((registry, i) => (
-                    <span key={i} className="-ml-0.25 pr-1.25">
+                  {SupportedDockerRegistriesEnum.options.map((registry) => (
+                    <span key={registry} className="-ml-0.25 pr-1.25">
                       <span className="text-foreground bg-background rounded-sm border px-1.25">
                         {registry}
                       </span>
