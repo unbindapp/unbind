@@ -45,7 +45,7 @@ export default function AddDomainPortCard({
     environmentId,
     serviceId,
   });
-  const sectionHighlightId = useMemo(() => getNetworkingEntityId(service), [service]);
+  const sectionHighlightId = useMemo(() => getNetworkingEntityId(service.id), [service.id]);
 
   const {
     mutateAsync: updateService,

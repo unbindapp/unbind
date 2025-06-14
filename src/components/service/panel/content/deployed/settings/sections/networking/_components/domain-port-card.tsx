@@ -34,7 +34,7 @@ import {
   PlusIcon,
 } from "lucide-react";
 import { ResultAsync } from "neverthrow";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 
 export default function DomainPortCard({
@@ -53,7 +53,7 @@ export default function DomainPortCard({
     environmentId,
     serviceId,
   });
-  const sectionHighlightId = useMemo(() => getNetworkingEntityId(service), [service]);
+  const sectionHighlightId = useMemo(() => getNetworkingEntityId(service.id), [service.id]);
 
   const {
     mutateAsync: updateService,
@@ -153,10 +153,51 @@ export default function DomainPortCard({
     return count;
   });
 
-  const deleteButtonExtraProps: TModeAndPort =
-    mode === "private" ? { mode: "private", port } : { mode: "public", port };
-
   const isEditing = useStore(form.store, (s) => s.values.isEditing);
+
+  const SuffixComponent = useCallback(
+    ({ className }: { className?: string }) => {
+      const deleteButtonExtraProps: TModeAndPort =
+        mode === "private" ? { mode: "private", port } : { mode: "public", port };
+      return (
+        <div
+          className={cn(
+            "-my-2.5 -mr-3 flex items-start justify-end self-stretch p-1",
+            isEditing && "opacity-0",
+            className,
+          )}
+        >
+          <CopyButton
+            disabled={isEditing}
+            className="size-8"
+            classNameIcon="size-4"
+            valueToCopy={getNetworkingDisplayUrl({
+              host: domain,
+              port: mode === "public" ? "" : port.toString(),
+            })}
+          />
+          {mode === "public" && (
+            <Button
+              disabled={isEditing}
+              type="button"
+              size="icon"
+              variant="ghost"
+              className="text-muted-more-foreground size-8 rounded-md"
+              onClick={() => {
+                form.setFieldValue("isEditing", true);
+              }}
+            >
+              <PenIcon className="size-4" />
+            </Button>
+          )}
+          {service.type !== "database" && (
+            <DeleteButton {...deleteButtonExtraProps} disabled={isEditing} domain={domain} />
+          )}
+        </div>
+      );
+    },
+    [isEditing, mode, port, domain, service.type, form],
+  );
 
   return (
     <div className="flex w-full flex-col gap-2">
@@ -195,47 +236,7 @@ export default function DomainPortCard({
               <GlobeIcon className={cn("scale-90", className)} />
             )
           }
-          SuffixComponent={({ className }) => (
-            <div
-              className={cn(
-                "-my-2.5 -mr-3 flex items-start justify-end self-stretch p-1",
-                isEditing && "opacity-0",
-                className,
-              )}
-            >
-              <CopyButton
-                disabled={isEditing}
-                className="size-8"
-                classNameIcon="size-4"
-                valueToCopy={getNetworkingDisplayUrl({
-                  host: domain,
-                  port: mode === "public" ? "" : port.toString(),
-                })}
-              />
-              {mode === "public" && (
-                <Button
-                  disabled={isEditing}
-                  type="button"
-                  size="icon"
-                  variant="ghost"
-                  className="text-muted-more-foreground size-8 rounded-md"
-                  onClick={() => {
-                    form.setFieldValue("isEditing", true);
-                  }}
-                >
-                  <PenIcon className="size-4" />
-                </Button>
-              )}
-              {service.type !== "database" && (
-                <DeleteButton
-                  {...deleteButtonExtraProps}
-                  disabled={isEditing}
-                  domain={domain}
-                  service={service}
-                />
-              )}
-            </div>
-          )}
+          SuffixComponent={SuffixComponent}
         />
         {isEditing && (
           <form

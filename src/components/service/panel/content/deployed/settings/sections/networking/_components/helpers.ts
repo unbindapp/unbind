@@ -1,7 +1,5 @@
-import { TServiceShallow } from "@/server/trpc/api/services/types";
-
-export function getNetworkingEntityId(service: TServiceShallow): string {
-  return `networking-${service.id}`;
+export function getNetworkingEntityId(serviceId: string): string {
+  return `networking-${serviceId}`;
 }
 
 export function getDomainPortEntityId(domain: string, port?: number) {

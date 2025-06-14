@@ -549,27 +549,27 @@ function DeploymentInfo({ deployment, service, isPlaceholder, className }: TDepl
             : `${deploymentTimeStr} via ${sourceToTitle[service.type] || "Unknown"}`}
         </p>
         <div className="flex max-w-full min-w-0 shrink gap-0.5 space-x-1.5">
-          {deployment?.git_branch && (
+          {deployment?.git_branch !== undefined && deployment.git_branch !== "" && (
             <span className="text-muted-more-foreground hidden leading-tight lg:inline-block">
               |
             </span>
           )}
-          {deployment?.git_branch && (
+          {deployment?.git_branch !== undefined && deployment.git_branch !== "" && (
             <p className="text-muted-foreground max-w-full min-w-0 shrink leading-tight">
               <GitBranchIcon className="mr-[0.5ch] inline-block size-3.5" />
               {deployment.git_branch}
             </p>
           )}
-          {deployment?.commit_sha && (
+          {deployment?.commit_sha !== undefined && deployment.commit_sha !== "" && (
             <span className="text-muted-more-foreground leading-tight">|</span>
           )}
-          {deployment?.commit_sha && (
+          {deployment?.commit_sha !== undefined && deployment.commit_sha !== "" && (
             <p className="text-muted-foreground max-w-full min-w-0 shrink leading-tight">
               <GitCommitHorizontalIcon className="mr-[0.5ch] inline-block size-3.5" />
               {deployment.commit_sha.slice(0, 6)}
             </p>
           )}
-          {durationStr && (
+          {durationStr !== undefined && durationStr !== "" && (
             <span
               data-has-prev={deployment?.commit_sha || deployment?.git_branch ? true : undefined}
               className="text-muted-more-foreground hidden leading-tight data-has-prev:inline-block lg:inline-block data-has-prev:lg:inline-block"
@@ -577,7 +577,7 @@ function DeploymentInfo({ deployment, service, isPlaceholder, className }: TDepl
               |
             </span>
           )}
-          {durationStr && (
+          {durationStr !== undefined && durationStr !== "" && (
             <p className="text-muted-foreground max-w-full min-w-0 shrink leading-tight">
               <AnimatedTimerIcon
                 animate={isBuilding}

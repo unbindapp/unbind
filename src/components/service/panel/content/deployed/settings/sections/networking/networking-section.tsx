@@ -65,7 +65,7 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
     query: { data: endpointsData, isPending: isPendingEndpoints, error: errorEndpoints },
   } = useServiceEndpoints();
 
-  const sectionHighlightId = useMemo(() => getNetworkingEntityId(service), [service]);
+  const sectionHighlightId = useMemo(() => getNetworkingEntityId(service.id), [service.id]);
 
   return (
     <SettingsSection

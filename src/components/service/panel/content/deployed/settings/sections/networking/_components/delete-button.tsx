@@ -8,7 +8,6 @@ import { useService } from "@/components/service/service-provider";
 import useUpdateService from "@/components/service/use-update-service";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import { Button } from "@/components/ui/button";
-import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { useMutation } from "@tanstack/react-query";
 import { Trash2Icon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
@@ -20,11 +19,9 @@ export default function DeleteButton({
   port,
   mode,
   disabled,
-  service,
 }: {
   domain: string;
   disabled?: boolean;
-  service: TServiceShallow;
 } & TModeAndPort) {
   const { teamId, projectId, environmentId, serviceId } = useService();
   const { refetch: refetchEndpoints } = useServiceEndpointsUtils({
@@ -34,7 +31,7 @@ export default function DeleteButton({
     serviceId,
   });
 
-  const sectionHighlightId = useMemo(() => getNetworkingEntityId(service), [service]);
+  const sectionHighlightId = useMemo(() => getNetworkingEntityId(serviceId), [serviceId]);
   const { mutateAsync: updateService, refetch: refetchServices } = useUpdateService({
     idToHighlight: sectionHighlightId,
     manualRefetch: true,
