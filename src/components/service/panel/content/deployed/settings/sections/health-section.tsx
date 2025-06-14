@@ -467,7 +467,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
             <BlockItemHeader type="column">
               <BlockItemTitle>Health Check</BlockItemTitle>
               <BlockItemDescription>
-                Monitor active instances and restart if needed.
+                Monitor active instances and restart them if they are unhealthy.
               </BlockItemDescription>
             </BlockItemHeader>
             <BlockItemContent>
