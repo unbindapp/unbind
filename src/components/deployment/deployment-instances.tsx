@@ -23,7 +23,7 @@ export default function DeploymentInstances({ forcePending, className }: TProps)
   if (isPending || forcePending)
     return (
       <div className={cn("flex w-full flex-wrap gap-1", className)}>
-        <div className="bg-background border-muted-foreground/12 flex overflow-hidden rounded-md border">
+        <div className="bg-background border-muted-foreground/12 relative z-0 flex overflow-hidden rounded-md border">
           <div className="p-1">
             <div className="bg-muted-foreground animate-skeleton size-3.5 rounded-full" />
           </div>
@@ -62,7 +62,7 @@ function Instance({ instance }: { instance: TInstanceFromHealth }) {
   return (
     <div
       data-status={instance?.status}
-      className="bg-background data-[status=waiting]:border-warning/16 data-[status=starting]:border-process/16 data-[status=not_ready]:border-process/16 data-[status=running]:border-success/16 data-[status=crashing]:border-destructive/16 group/div flex overflow-hidden rounded-md border"
+      className="bg-background data-[status=waiting]:border-warning/16 data-[status=starting]:border-process/16 data-[status=not_ready]:border-process/16 data-[status=running]:border-success/16 data-[status=crashing]:border-destructive/16 group/div relative z-0 flex overflow-hidden rounded-md border"
     >
       <div className="p-1">
         <ServerIcon className="text-muted-foreground size-3.5" />
