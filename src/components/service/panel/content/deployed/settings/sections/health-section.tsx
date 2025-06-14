@@ -389,91 +389,13 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
         <Block>
           <BlockItem className="group/item w-full md:w-full">
             <BlockItemHeader type="column">
-              <BlockItemTitle>Health Check</BlockItemTitle>
-              <BlockItemDescription>
-                The health check interval in seconds and the number of tries before considering the
-                service unhealthy.
-              </BlockItemDescription>
-            </BlockItemHeader>
-            <BlockItemContent>
-              <div className="flex w-full gap-3">
-                <form.AppField
-                  name="healthCheckIntervalSeconds"
-                  validators={{
-                    onChange: ({ value }) => validateInterval(value),
-                  }}
-                  children={(field) => (
-                    <MiniSection
-                      title="Interval"
-                      unit="sec"
-                      hasChanges={field.state.meta.isDefaultValue === false}
-                    >
-                      <field.TextField
-                        field={field}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => {
-                          field.handleChange(e.target.value);
-                        }}
-                        placeholder="10"
-                        autoCapitalize="off"
-                        autoCorrect="off"
-                        autoComplete="off"
-                        spellCheck="false"
-                        inputMode="numeric"
-                        className="min-w-0 flex-1"
-                        classNameInput="rounded-r-none"
-                      />
-                    </MiniSection>
-                  )}
-                />
-                <form.AppField
-                  name="healthCheckFailureThreshold"
-                  validators={{
-                    onChange: ({ value }) => validateFailureThreshold(value),
-                  }}
-                  children={(field) => (
-                    <MiniSection
-                      title="Try"
-                      unit="times"
-                      hasChanges={field.state.meta.isDefaultValue === false}
-                    >
-                      <field.TextField
-                        field={field}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => {
-                          field.handleChange(e.target.value);
-                        }}
-                        placeholder="3"
-                        autoCapitalize="off"
-                        autoCorrect="off"
-                        autoComplete="off"
-                        spellCheck="false"
-                        inputMode="numeric"
-                        className="min-w-0 flex-1"
-                        classNameInput="rounded-r-none"
-                      />
-                    </MiniSection>
-                  )}
-                />
-              </div>
-            </BlockItemContent>
-          </BlockItem>
-        </Block>
-      )}
-      {healthCheckType !== "none" && (
-        <Block>
-          <BlockItem className="group/item w-full md:w-full">
-            <BlockItemHeader type="column">
               <BlockItemTitle>Startup Check</BlockItemTitle>
               <BlockItemDescription>
-                The startup check interval in seconds and the number of tries before considering the
-                service unhealthy during startup.
+                Instances are activated after one successful check.
               </BlockItemDescription>
             </BlockItemHeader>
             <BlockItemContent>
-              <div className="flex w-full gap-3">
+              <div className="flex w-full gap-3 pt-0.5">
                 <form.AppField
                   name="startupCheckIntervalSeconds"
                   validators={{
@@ -481,8 +403,8 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                   }}
                   children={(field) => (
                     <MiniSection
-                      title="Interval"
-                      unit="sec"
+                      title="Try every"
+                      unit="seconds"
                       hasChanges={field.state.meta.isDefaultValue === false}
                     >
                       <field.TextField
@@ -511,8 +433,8 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                   }}
                   children={(field) => (
                     <MiniSection
-                      title="Try"
-                      unit="times"
+                      title="Restart after"
+                      unit="errors"
                       hasChanges={field.state.meta.isDefaultValue === false}
                     >
                       <field.TextField
@@ -523,6 +445,82 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                           field.handleChange(e.target.value);
                         }}
                         placeholder="30"
+                        autoCapitalize="off"
+                        autoCorrect="off"
+                        autoComplete="off"
+                        spellCheck="false"
+                        inputMode="numeric"
+                        className="min-w-0 flex-1"
+                        classNameInput="rounded-r-none"
+                      />
+                    </MiniSection>
+                  )}
+                />
+              </div>
+            </BlockItemContent>
+          </BlockItem>
+        </Block>
+      )}
+      {healthCheckType !== "none" && (
+        <Block>
+          <BlockItem className="group/item w-full md:w-full">
+            <BlockItemHeader type="column">
+              <BlockItemTitle>Health Check</BlockItemTitle>
+              <BlockItemDescription>
+                Monitor active instances and restart if needed.
+              </BlockItemDescription>
+            </BlockItemHeader>
+            <BlockItemContent>
+              <div className="flex w-full gap-3 pt-0.5">
+                <form.AppField
+                  name="healthCheckIntervalSeconds"
+                  validators={{
+                    onChange: ({ value }) => validateInterval(value),
+                  }}
+                  children={(field) => (
+                    <MiniSection
+                      title="Check every"
+                      unit="seconds"
+                      hasChanges={field.state.meta.isDefaultValue === false}
+                    >
+                      <field.TextField
+                        field={field}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => {
+                          field.handleChange(e.target.value);
+                        }}
+                        placeholder="10"
+                        autoCapitalize="off"
+                        autoCorrect="off"
+                        autoComplete="off"
+                        spellCheck="false"
+                        inputMode="numeric"
+                        className="min-w-0 flex-1"
+                        classNameInput="rounded-r-none"
+                      />
+                    </MiniSection>
+                  )}
+                />
+                <form.AppField
+                  name="healthCheckFailureThreshold"
+                  validators={{
+                    onChange: ({ value }) => validateFailureThreshold(value),
+                  }}
+                  children={(field) => (
+                    <MiniSection
+                      title="Restart after"
+                      unit="errors"
+                      hasChanges={field.state.meta.isDefaultValue === false}
+                    >
+                      <field.TextField
+                        field={field}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => {
+                          field.handleChange(e.target.value);
+                        }}
+                        placeholder="3"
                         autoCapitalize="off"
                         autoCorrect="off"
                         autoComplete="off"
@@ -564,7 +562,7 @@ function MiniSection({
       </p>
       <div className="flex w-full items-start">
         {children}
-        <div className="bg-background-hover text-muted-foreground flex h-10.5 min-w-0 shrink items-center justify-end rounded-r-lg border border-l-0 px-2.5 text-right text-sm leading-tight font-medium">
+        <div className="bg-input text-muted-foreground flex h-10.5 min-w-0 shrink items-center justify-end rounded-r-lg border border-l-0 px-2.5 text-right text-sm leading-tight font-medium">
           <p className="min-w-0 shrink">{unit}</p>
         </div>
       </div>
