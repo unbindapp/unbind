@@ -89,6 +89,10 @@ export default function DeploymentCard({
       deployment.status === "active" ||
       deployment.status === "removed";
 
+  const temporarilyHideInstances =
+    showInstances &&
+    (deployment?.status === "build-pending" || deployment?.status === "build-queued");
+
   return (
     <div
       {...rest}
@@ -114,21 +118,25 @@ export default function DeploymentCard({
             className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton size-6 group-data-placeholder/card:rounded-full group-data-placeholder/card:text-transparent"
           />
         </div>
-        <div className="mt-1.5 flex min-w-0 flex-1 flex-col items-start gap-1.25 pr-2 pb-0.5 sm:mt-0 sm:pl-3">
-          <div className="flex w-full flex-col items-start justify-start gap-0.5">
-            <p
-              data-no-title={titleNotFound ? true : undefined}
-              className="data-no-title:bg-border data-no-title:text-muted-foreground group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton max-w-full min-w-0 shrink leading-tight group-data-placeholder/card:rounded-md group-data-placeholder/card:text-transparent data-no-title:-my-0.25 data-no-title:rounded data-no-title:px-1.5 data-no-title:py-0.25"
-            >
-              {title}
-            </p>
+        <div className="mt-1.5 flex min-w-0 flex-1 flex-col items-start gap-2 pr-2 pb-0.5 sm:mt-0 sm:pl-3">
+          <div className="flex w-full flex-col gap-1 pb-0.5">
+            <div className="flex w-full flex-col items-start justify-start">
+              <p
+                data-no-title={titleNotFound ? true : undefined}
+                className="data-no-title:bg-border data-no-title:text-muted-foreground group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton max-w-full min-w-0 shrink leading-tight group-data-placeholder/card:rounded-md group-data-placeholder/card:text-transparent data-no-title:-my-0.25 data-no-title:rounded data-no-title:px-1.5 data-no-title:py-0.25"
+              >
+                {title}
+              </p>
+            </div>
+            {isPlaceholder ? (
+              <DeploymentInfo isPlaceholder={true} service={service} />
+            ) : (
+              <DeploymentInfo deployment={deployment} service={service} />
+            )}
           </div>
-          {isPlaceholder ? (
-            <DeploymentInfo isPlaceholder={true} service={service} />
-          ) : (
-            <DeploymentInfo deployment={deployment} service={service} />
+          {!temporarilyHideInstances && showInstances && (
+            <DeploymentInstances isPending={isPlaceholder} />
           )}
-          {showInstances && <DeploymentInstances className="mt-1" forcePending={isPlaceholder} />}
         </div>
       </button>
       <div className="absolute top-1 right-1 shrink-0 sm:top-1/2 sm:right-2 sm:-translate-y-1/2">
@@ -554,7 +562,7 @@ function DeploymentInfo({ deployment, service, isPlaceholder, className }: TDepl
         </p>
         <div className="flex max-w-full min-w-0 shrink gap-0.5 space-x-1.5">
           {deployment?.git_branch !== undefined && deployment.git_branch !== "" && (
-            <span className="text-muted-more-foreground hidden leading-tight lg:inline-block">
+            <span className="text-muted-more-foreground hidden leading-tight first:hidden lg:inline-block lg:first:inline-block">
               |
             </span>
           )}
@@ -565,7 +573,9 @@ function DeploymentInfo({ deployment, service, isPlaceholder, className }: TDepl
             </p>
           )}
           {deployment?.commit_sha !== undefined && deployment.commit_sha !== "" && (
-            <span className="text-muted-more-foreground leading-tight">|</span>
+            <span className="text-muted-more-foreground leading-tight first:hidden lg:first:inline-block">
+              |
+            </span>
           )}
           {deployment?.commit_sha !== undefined && deployment.commit_sha !== "" && (
             <p className="text-muted-foreground max-w-full min-w-0 shrink leading-tight">
@@ -574,10 +584,7 @@ function DeploymentInfo({ deployment, service, isPlaceholder, className }: TDepl
             </p>
           )}
           {durationStr !== undefined && durationStr !== "" && (
-            <span
-              data-has-prev={deployment?.commit_sha || deployment?.git_branch ? true : undefined}
-              className="text-muted-more-foreground hidden leading-tight data-has-prev:inline-block lg:inline-block data-has-prev:lg:inline-block"
-            >
+            <span className="text-muted-more-foreground leading-tight first:hidden lg:inline-block lg:first:inline-block">
               |
             </span>
           )}

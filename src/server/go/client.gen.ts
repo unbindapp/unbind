@@ -67,9 +67,9 @@ export const ContainerStateSchema = z.enum([
   'running',
   'waiting',
   'terminated',
+  'terminating',
   'crashing',
   'not_ready',
-  'oom_killed',
   'image_pull_error',
   'starting',
 ]);
@@ -852,12 +852,13 @@ export const GetEnvironmentOutputBodySchema = z
   })
   .strip();
 
-export const InstanceHealthSchema = z.enum(['pending', 'crashing', 'active']);
+export const InstanceHealthSchema = z.enum(['pending', 'crashing', 'active', 'terminating']);
 
 export const SimpleInstanceStatusSchema = z
   .object({
     events: z.array(EventRecordSchema).optional(),
     kubernetes_name: z.string(),
+    restart_count: z.number(),
     status: ContainerStateSchema,
   })
   .strip();
@@ -1444,6 +1445,7 @@ export const PodContainerStatusSchema = z
     has_crashing_instances: z.boolean(),
     instance_dependencies: z.array(InstanceStatusSchema),
     instances: z.array(InstanceStatusSchema),
+    is_terminating: z.boolean(),
     kubernetes_name: z.string(),
     namespace: z.string(),
     phase: PodPhaseSchema,
