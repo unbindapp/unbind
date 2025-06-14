@@ -57,9 +57,10 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
                 service={service}
                 deployment={currentOrLastDeployment}
                 currentDeployment={deploymentsData?.current_deployment}
+                showInstances={true}
               />
             ) : (
-              <DeploymentCard isPlaceholder={true} service={service} />
+              <DeploymentCard showInstances={true} isPlaceholder={true} service={service} />
             )}
           </div>
         )}

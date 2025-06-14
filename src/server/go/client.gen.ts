@@ -63,7 +63,16 @@ export const CheckUniqueDomainOutputBodySchema = z
   })
   .strip();
 
-export const ContainerStateSchema = z.enum(['Running', 'Waiting', 'Terminated']);
+export const ContainerStateSchema = z.enum([
+  'running',
+  'waiting',
+  'terminated',
+  'crashing',
+  'not_ready',
+  'oom_killed',
+  'image_pull_error',
+  'starting',
+]);
 
 export const CreateBuildInputBodySchema = z
   .object({
@@ -83,14 +92,14 @@ export const GitCommitterSchema = z
   .strip();
 
 export const EventTypeSchema = z.enum([
-  'OOMKilled',
-  'CrashLoopBackOff',
-  'ContainerCreated',
-  'ContainerStarted',
-  'ContainerStopped',
-  'NodeNotReady',
-  'SchedulingFailed',
-  'Unknown',
+  'oom_killed',
+  'crash_loop_back_off',
+  'container_created',
+  'container_started',
+  'container_stopped',
+  'node_not_ready',
+  'scheduling_failed',
+  'unknown',
 ]);
 
 export const EventRecordSchema = z
@@ -857,7 +866,7 @@ export const SimpleHealthStatusSchema = z
   .object({
     expected_instances: z.number(),
     health: InstanceHealthSchema,
-    instances: z.array(SimpleInstanceStatusSchema).nullable(),
+    instances: z.array(SimpleInstanceStatusSchema),
   })
   .strip();
 
