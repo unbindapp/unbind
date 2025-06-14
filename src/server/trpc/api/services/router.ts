@@ -150,6 +150,10 @@ export const servicesRouter = createTRPCRouter({
       healthCheckEndpoint,
       healthCheckEndpointPort,
       healthCheckCommand,
+      healthCheckIntervalSeconds,
+      healthCheckFailureThreshold,
+      startupCheckIntervalSeconds,
+      startupCheckFailureThreshold,
       upsertHosts,
       removeHosts,
       addPorts,
@@ -168,6 +172,7 @@ export const servicesRouter = createTRPCRouter({
 
     const healthCheck: UpdateServiceInput["health_check"] | undefined =
       healthCheckType || healthCheckEndpoint || healthCheckCommand ? {} : undefined;
+
     if (healthCheckType !== undefined && healthCheck) {
       healthCheck.type = healthCheckType;
     }
@@ -179,6 +184,20 @@ export const servicesRouter = createTRPCRouter({
     }
     if (healthCheckCommand !== undefined && healthCheck) {
       healthCheck.command = healthCheckCommand;
+    }
+    if (healthCheckType !== "none") {
+      if (healthCheckIntervalSeconds !== undefined && healthCheck) {
+        healthCheck.health_period_seconds = healthCheckIntervalSeconds;
+      }
+      if (healthCheckFailureThreshold !== undefined && healthCheck) {
+        healthCheck.health_failure_threshold = healthCheckFailureThreshold;
+      }
+      if (startupCheckIntervalSeconds !== undefined && healthCheck) {
+        healthCheck.startup_period_seconds = startupCheckIntervalSeconds;
+      }
+      if (startupCheckFailureThreshold !== undefined && healthCheck) {
+        healthCheck.startup_failure_threshold = startupCheckFailureThreshold;
+      }
     }
 
     const service = await goClient.services.update({

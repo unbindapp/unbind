@@ -25,7 +25,7 @@ import {
   HeartIcon,
   TerminalSquareIcon,
 } from "lucide-react";
-import { useMemo } from "react";
+import { ReactNode, useMemo } from "react";
 
 type TProps = {
   service: TServiceShallow;
@@ -83,10 +83,14 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
       healthCheckEndpoint: service.config.health_check?.path || "",
       healthCheckEndpointPort: service.config.ports?.[0]?.port?.toString() || "",
       healthCheckCommand: service.config.health_check?.command || "",
-      healthCheckIntervalSeconds: service.config.health_check?.health_period_seconds || "",
-      healthCheckFailureThreshold: service.config.health_check?.health_failure_threshold || "",
-      startupCheckIntervalSeconds: service.config.health_check?.startup_period_seconds || "",
-      startupCheckFailureThreshold: service.config.health_check?.startup_failure_threshold || "",
+      healthCheckIntervalSeconds:
+        service.config.health_check?.health_period_seconds?.toString() || "",
+      healthCheckFailureThreshold:
+        service.config.health_check?.health_failure_threshold?.toString() || "",
+      startupCheckIntervalSeconds:
+        service.config.health_check?.startup_period_seconds?.toString() || "",
+      startupCheckFailureThreshold:
+        service.config.health_check?.startup_failure_threshold?.toString() || "",
     },
     onSubmit: async ({ formApi, value }) => {
       let hasChanged = false;
@@ -121,19 +125,29 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
         hasChanged = true;
       }
       if (formApi.getFieldMeta("healthCheckIntervalSeconds")?.isDefaultValue === false) {
-        changes.healthCheckIntervalSeconds = Number(value.healthCheckIntervalSeconds);
+        changes.healthCheckIntervalSeconds =
+          value.healthCheckIntervalSeconds === "" ? -1 : Number(value.healthCheckIntervalSeconds);
+        changes.healthCheckType = value.healthCheckType;
         hasChanged = true;
       }
       if (formApi.getFieldMeta("healthCheckFailureThreshold")?.isDefaultValue === false) {
-        changes.healthCheckFailureThreshold = Number(value.healthCheckFailureThreshold);
+        changes.healthCheckFailureThreshold =
+          value.healthCheckFailureThreshold === "" ? -1 : Number(value.healthCheckFailureThreshold);
+        changes.healthCheckType = value.healthCheckType;
         hasChanged = true;
       }
       if (formApi.getFieldMeta("startupCheckIntervalSeconds")?.isDefaultValue === false) {
-        changes.startupCheckIntervalSeconds = Number(value.startupCheckIntervalSeconds);
+        changes.startupCheckIntervalSeconds =
+          value.startupCheckIntervalSeconds === "" ? -1 : Number(value.startupCheckIntervalSeconds);
+        changes.healthCheckType = value.healthCheckType;
         hasChanged = true;
       }
       if (formApi.getFieldMeta("startupCheckFailureThreshold")?.isDefaultValue === false) {
-        changes.startupCheckFailureThreshold = Number(value.startupCheckFailureThreshold);
+        changes.startupCheckFailureThreshold =
+          value.startupCheckIntervalSeconds === ""
+            ? -1
+            : Number(value.startupCheckFailureThreshold);
+        changes.healthCheckType = value.healthCheckType;
         hasChanged = true;
       }
 
@@ -373,145 +387,188 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
       </Block>
       {healthCheckType !== "none" && (
         <Block>
-          <form.AppField
-            name="healthCheckIntervalSeconds"
-            children={(field) => (
-              <BlockItem className="group/item w-full md:w-full">
-                <BlockItemHeader type="column">
-                  <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
-                    Health Check Interval
-                  </BlockItemTitle>
-                  <BlockItemDescription>
-                    The interval in seconds between health checks.
-                  </BlockItemDescription>
-                </BlockItemHeader>
-                <BlockItemContent>
-                  <field.TextField
-                    field={field}
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => {
-                      field.handleChange(e.target.value);
-                    }}
-                    placeholder="10"
-                    autoCapitalize="off"
-                    autoCorrect="off"
-                    autoComplete="off"
-                    spellCheck="false"
-                    inputMode="numeric"
-                  />
-                </BlockItemContent>
-              </BlockItem>
-            )}
-          />
+          <BlockItem className="group/item w-full md:w-full">
+            <BlockItemHeader type="column">
+              <BlockItemTitle>Health Check</BlockItemTitle>
+              <BlockItemDescription>
+                The health check interval in seconds and the number of tries before considering the
+                service unhealthy.
+              </BlockItemDescription>
+            </BlockItemHeader>
+            <BlockItemContent>
+              <div className="flex w-full gap-3">
+                <form.AppField
+                  name="healthCheckIntervalSeconds"
+                  validators={{
+                    onChange: ({ value }) => validateInterval(value),
+                  }}
+                  children={(field) => (
+                    <MiniSection
+                      title="Interval"
+                      unit="sec"
+                      hasChanges={field.state.meta.isDefaultValue === false}
+                    >
+                      <field.TextField
+                        field={field}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => {
+                          field.handleChange(e.target.value);
+                        }}
+                        placeholder="10"
+                        autoCapitalize="off"
+                        autoCorrect="off"
+                        autoComplete="off"
+                        spellCheck="false"
+                        inputMode="numeric"
+                        className="min-w-0 flex-1"
+                        classNameInput="rounded-r-none"
+                      />
+                    </MiniSection>
+                  )}
+                />
+                <form.AppField
+                  name="healthCheckFailureThreshold"
+                  validators={{
+                    onChange: ({ value }) => validateFailureThreshold(value),
+                  }}
+                  children={(field) => (
+                    <MiniSection
+                      title="Try"
+                      unit="times"
+                      hasChanges={field.state.meta.isDefaultValue === false}
+                    >
+                      <field.TextField
+                        field={field}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => {
+                          field.handleChange(e.target.value);
+                        }}
+                        placeholder="3"
+                        autoCapitalize="off"
+                        autoCorrect="off"
+                        autoComplete="off"
+                        spellCheck="false"
+                        inputMode="numeric"
+                        className="min-w-0 flex-1"
+                        classNameInput="rounded-r-none"
+                      />
+                    </MiniSection>
+                  )}
+                />
+              </div>
+            </BlockItemContent>
+          </BlockItem>
         </Block>
       )}
       {healthCheckType !== "none" && (
         <Block>
-          <form.AppField
-            name="healthCheckFailureThreshold"
-            children={(field) => (
-              <BlockItem className="group/item w-full md:w-full">
-                <BlockItemHeader type="column">
-                  <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
-                    Health Failure Threshold
-                  </BlockItemTitle>
-                  <BlockItemDescription>
-                    The number of failures to consider the service unhealthy.
-                  </BlockItemDescription>
-                </BlockItemHeader>
-                <BlockItemContent>
-                  <field.TextField
-                    field={field}
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => {
-                      field.handleChange(e.target.value);
-                    }}
-                    placeholder="3"
-                    autoCapitalize="off"
-                    autoCorrect="off"
-                    autoComplete="off"
-                    spellCheck="false"
-                    inputMode="numeric"
-                  />
-                </BlockItemContent>
-              </BlockItem>
-            )}
-          />
-        </Block>
-      )}
-      {healthCheckType !== "none" && (
-        <Block>
-          <form.AppField
-            name="startupCheckIntervalSeconds"
-            children={(field) => (
-              <BlockItem className="group/item w-full md:w-full">
-                <BlockItemHeader type="column">
-                  <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
-                    Startup Check Interval
-                  </BlockItemTitle>
-                  <BlockItemDescription>
-                    The interval in seconds between startup checks.
-                  </BlockItemDescription>
-                </BlockItemHeader>
-                <BlockItemContent>
-                  <field.TextField
-                    field={field}
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => {
-                      field.handleChange(e.target.value);
-                    }}
-                    placeholder="10"
-                    autoCapitalize="off"
-                    autoCorrect="off"
-                    autoComplete="off"
-                    spellCheck="false"
-                    inputMode="numeric"
-                  />
-                </BlockItemContent>
-              </BlockItem>
-            )}
-          />
-        </Block>
-      )}
-      {healthCheckType !== "none" && (
-        <Block>
-          <form.AppField
-            name="startupCheckFailureThreshold"
-            children={(field) => (
-              <BlockItem className="group/item w-full md:w-full">
-                <BlockItemHeader type="column">
-                  <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
-                    Startup Failure Threshold
-                  </BlockItemTitle>
-                  <BlockItemDescription>
-                    The number of failures to consider the service unhealthy during startup.
-                  </BlockItemDescription>
-                </BlockItemHeader>
-                <BlockItemContent>
-                  <field.TextField
-                    field={field}
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => {
-                      field.handleChange(e.target.value);
-                    }}
-                    placeholder="3"
-                    autoCapitalize="off"
-                    autoCorrect="off"
-                    autoComplete="off"
-                    spellCheck="false"
-                    inputMode="numeric"
-                  />
-                </BlockItemContent>
-              </BlockItem>
-            )}
-          />
+          <BlockItem className="group/item w-full md:w-full">
+            <BlockItemHeader type="column">
+              <BlockItemTitle>Startup Check</BlockItemTitle>
+              <BlockItemDescription>
+                The startup check interval in seconds and the number of tries before considering the
+                service unhealthy during startup.
+              </BlockItemDescription>
+            </BlockItemHeader>
+            <BlockItemContent>
+              <div className="flex w-full gap-3">
+                <form.AppField
+                  name="startupCheckIntervalSeconds"
+                  validators={{
+                    onChange: ({ value }) => validateInterval(value),
+                  }}
+                  children={(field) => (
+                    <MiniSection
+                      title="Interval"
+                      unit="sec"
+                      hasChanges={field.state.meta.isDefaultValue === false}
+                    >
+                      <field.TextField
+                        field={field}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => {
+                          field.handleChange(e.target.value);
+                        }}
+                        placeholder="3"
+                        autoCapitalize="off"
+                        autoCorrect="off"
+                        autoComplete="off"
+                        spellCheck="false"
+                        inputMode="numeric"
+                        className="min-w-0 flex-1"
+                        classNameInput="rounded-r-none"
+                      />
+                    </MiniSection>
+                  )}
+                />
+                <form.AppField
+                  name="startupCheckFailureThreshold"
+                  validators={{
+                    onChange: ({ value }) => validateFailureThreshold(value),
+                  }}
+                  children={(field) => (
+                    <MiniSection
+                      title="Try"
+                      unit="times"
+                      hasChanges={field.state.meta.isDefaultValue === false}
+                    >
+                      <field.TextField
+                        field={field}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => {
+                          field.handleChange(e.target.value);
+                        }}
+                        placeholder="30"
+                        autoCapitalize="off"
+                        autoCorrect="off"
+                        autoComplete="off"
+                        spellCheck="false"
+                        inputMode="numeric"
+                        className="min-w-0 flex-1"
+                        classNameInput="rounded-r-none"
+                      />
+                    </MiniSection>
+                  )}
+                />
+              </div>
+            </BlockItemContent>
+          </BlockItem>
         </Block>
       )}
     </SettingsSection>
+  );
+}
+
+function MiniSection({
+  title,
+  unit,
+  hasChanges,
+  children,
+}: {
+  title: string;
+  unit: string;
+  hasChanges?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      data-changed={hasChanges ? true : undefined}
+      className="group/div flex flex-1 flex-col gap-2"
+    >
+      <p className="group-data-changed/div:text-process px-1.5 leading-tight font-medium">
+        {title}
+      </p>
+      <div className="flex w-full items-start">
+        {children}
+        <div className="bg-background-hover text-muted-foreground flex h-10.5 min-w-0 shrink items-center justify-end rounded-r-lg border border-l-0 px-2.5 text-right text-sm leading-tight font-medium">
+          <p className="min-w-0 shrink">{unit}</p>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -562,6 +619,32 @@ function validateHealthCheckCommand(value: string) {
   if (typeof value !== "string") {
     return {
       message: "Command must be a string.",
+    };
+  }
+  return undefined;
+}
+
+function validateInterval(value: string) {
+  if (value === undefined || value === "") {
+    return undefined;
+  }
+  const num = Number(value);
+  if (isNaN(num) || num <= 0 || !Number.isInteger(num)) {
+    return {
+      message: "Must be a positive integer.",
+    };
+  }
+  return undefined;
+}
+
+function validateFailureThreshold(value: string) {
+  if (value === undefined || value === "") {
+    return undefined;
+  }
+  const num = Number(value);
+  if (isNaN(num) || num <= 0 || !Number.isInteger(num)) {
+    return {
+      message: "Must be a positive integer.",
     };
   }
   return undefined;
