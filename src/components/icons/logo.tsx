@@ -9,7 +9,7 @@ export default function Logo({
   if (variant === "full") {
     return (
       <svg
-        className={cn("size-5 shrink-0", className)}
+        className={cn("h-auto w-24 shrink-0", className)}
         style={style}
         xmlns="http://www.w3.org/2000/svg"
         width="99"
@@ -28,7 +28,7 @@ export default function Logo({
   }
   return (
     <svg
-      className={cn("size-5 shrink-0", className)}
+      className={cn("h-5 w-5 shrink-0", className)}
       style={style}
       xmlns="http://www.w3.org/2000/svg"
       width="24"
