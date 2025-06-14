@@ -119,7 +119,7 @@ export default function DeploymentCard({
           />
         </div>
         <div className="mt-1.5 flex min-w-0 flex-1 flex-col items-start gap-2 pr-2 pb-0.5 sm:mt-0 sm:pl-3">
-          <div className="flex w-full flex-col gap-1 pb-0.5">
+          <div className="flex w-full flex-col gap-1.25 pb-0.5">
             <div className="flex w-full flex-col items-start justify-start">
               <p
                 data-no-title={titleNotFound ? true : undefined}
@@ -561,6 +561,19 @@ function DeploymentInfo({ deployment, service, isPlaceholder, className }: TDepl
             : `${deploymentTimeStr} via ${sourceToTitle[service.type] || "Unknown"}`}
         </p>
         <div className="flex max-w-full min-w-0 shrink gap-0.5 space-x-1.5">
+          {isPlaceholder && (
+            <>
+              <p className="bg-muted-foreground animate-skeleton min-w-0 shrink rounded-md text-transparent">
+                | master
+              </p>
+              <p className="bg-muted-foreground animate-skeleton min-w-0 shrink rounded-md text-transparent">
+                | abcdef
+              </p>
+              <p className="bg-muted-foreground animate-skeleton min-w-0 shrink rounded-md text-transparent">
+                | 00:00
+              </p>
+            </>
+          )}
           {deployment?.git_branch !== undefined && deployment.git_branch !== "" && (
             <span className="text-muted-more-foreground hidden leading-tight first:hidden lg:inline-block lg:first:inline-block">
               |
