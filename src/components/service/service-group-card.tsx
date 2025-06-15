@@ -205,16 +205,28 @@ function RenameTrigger({
   onSuccess,
   children,
 }: TRenameTriggerProps) {
+  const { refetch: refetchServices } = useServicesUtils({ teamId, projectId, environmentId });
+
   const {
     mutateAsync: updateServiceGroup,
     error,
     reset,
   } = api.serviceGroups.update.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
+      const refetchRes = await ResultAsync.fromPromise(
+        refetchServices(),
+        () => new Error("Failed to refetch services"),
+      );
+
+      if (refetchRes.isErr()) {
+        console.error(refetchRes.error);
+        toast.error("Failed to refetch services", {
+          description: refetchRes.error.message,
+        });
+      }
       onSuccess?.();
     },
   });
-  const { refetch: refetchServices } = useServicesUtils({ teamId, projectId, environmentId });
 
   return (
     <RenameEntityTrigger
@@ -240,18 +252,6 @@ function RenameTrigger({
           name: value.name,
           description: value.description,
         });
-
-        const refetchRes = await ResultAsync.fromPromise(
-          refetchServices(),
-          () => new Error("Failed to refetch services"),
-        );
-
-        if (refetchRes.isErr()) {
-          console.error(refetchRes.error);
-          toast.error("Failed to refetch services", {
-            description: refetchRes.error.message,
-          });
-        }
       }}
     >
       {children}
