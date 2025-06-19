@@ -539,78 +539,81 @@ function DeploymentInfo({ deployment, service, isPlaceholder, className }: TDepl
   return (
     <div
       data-placeholder={isPlaceholder ? true : undefined}
-      className={cn("group/time flex min-w-0 shrink items-start justify-start gap-1.5", className)}
-    >
-      {isPlaceholder && service.type === "github" ? (
-        <div className="bg-muted-foreground animate-skeleton -mt-[0.5px] size-4.5 rounded-full" />
-      ) : deployment?.commit_author?.avatar_url ? (
-        <Image
-          alt="Avatar"
-          width={24}
-          height={24}
-          className="bg-border -mt-[0.5px] size-4.5 rounded-full border"
-          src={deployment.commit_author.avatar_url}
-        />
-      ) : (
-        <div className="-mt-[0.5px] -ml-1.5 h-4.5" />
+      className={cn(
+        "group/div flex min-w-0 shrink flex-col flex-wrap justify-start gap-0.5 font-mono text-sm leading-tight lg:flex-row lg:items-center lg:space-x-1.5",
+        className,
       )}
-      <div className="flex min-w-0 shrink flex-col flex-wrap justify-start gap-0.5 font-mono text-sm leading-tight lg:flex-row lg:items-center lg:space-x-1.5">
-        <p className="text-muted-foreground group-data-placeholder/time:bg-muted-foreground group-data-placeholder/time:animate-skeleton max-w-full min-w-0 shrink leading-tight group-data-placeholder/time:rounded-md group-data-placeholder/time:text-transparent">
+    >
+      <div className="flex min-w-0 shrink items-center gap-1.5">
+        {isPlaceholder && service.type === "github" ? (
+          <div className="bg-muted-foreground animate-skeleton -mt-[0.5px] size-4.5 rounded-full" />
+        ) : deployment?.commit_author?.avatar_url ? (
+          <Image
+            alt="Avatar"
+            width={24}
+            height={24}
+            className="bg-border -mt-[0.5px] size-4.5 rounded-full border"
+            src={deployment.commit_author.avatar_url}
+          />
+        ) : (
+          <div className="-mt-[0.5px] -ml-1.5 h-4.5" />
+        )}
+        <p className="text-muted-foreground group-data-placeholder/div:bg-muted-foreground group-data-placeholder/div:animate-skeleton max-w-full min-w-0 shrink leading-tight group-data-placeholder/div:rounded-md group-data-placeholder/div:text-transparent">
           {isPlaceholder
             ? "1 hr. ago via GitHub | 90s"
             : `${deploymentTimeStr} via ${sourceToTitle[service.type] || "Unknown"}`}
         </p>
-        <div className="flex max-w-full min-w-0 shrink gap-0.5 space-x-1.5">
-          {isPlaceholder && (
-            <>
-              <p className="bg-muted-foreground animate-skeleton min-w-0 shrink rounded-md text-transparent">
-                | master
-              </p>
-              <p className="bg-muted-foreground animate-skeleton min-w-0 shrink rounded-md text-transparent">
-                | abcdef
-              </p>
-              <p className="bg-muted-foreground animate-skeleton min-w-0 shrink rounded-md text-transparent">
-                | 00:00
-              </p>
-            </>
-          )}
-          {deployment?.git_branch !== undefined && deployment.git_branch !== "" && (
-            <span className="text-muted-more-foreground hidden leading-tight first:hidden lg:inline-block lg:first:inline-block">
-              |
-            </span>
-          )}
-          {deployment?.git_branch !== undefined && deployment.git_branch !== "" && (
-            <p className="text-muted-foreground max-w-full min-w-0 shrink leading-tight">
-              <GitBranchIcon className="mr-[0.5ch] inline-block size-3.5" />
-              {deployment.git_branch}
+      </div>
+      <div className="flex max-w-full min-w-0 shrink gap-0.5 space-x-1.5">
+        {isPlaceholder && (
+          <>
+            <p className="bg-muted-foreground animate-skeleton min-w-0 shrink rounded-md text-transparent">
+              | master
             </p>
-          )}
-          {deployment?.commit_sha !== undefined && deployment.commit_sha !== "" && (
-            <span className="text-muted-more-foreground leading-tight first:hidden lg:first:inline-block">
-              |
-            </span>
-          )}
-          {deployment?.commit_sha !== undefined && deployment.commit_sha !== "" && (
-            <p className="text-muted-foreground max-w-full min-w-0 shrink leading-tight">
-              <GitCommitHorizontalIcon className="mr-[0.5ch] inline-block size-3.5" />
-              {deployment.commit_sha.slice(0, 6)}
+            <p className="bg-muted-foreground animate-skeleton min-w-0 shrink rounded-md text-transparent">
+              | abcdef
             </p>
-          )}
-          {durationStr !== undefined && durationStr !== "" && (
-            <span className="text-muted-more-foreground leading-tight first:hidden lg:inline-block lg:first:inline-block">
-              |
-            </span>
-          )}
-          {durationStr !== undefined && durationStr !== "" && (
-            <p className="text-muted-foreground max-w-full min-w-0 shrink leading-tight">
-              <AnimatedTimerIcon
-                animate={isBuilding}
-                className="-mt-0.75 mr-[0.4ch] inline-block size-3.5 shrink-0"
-              />
-              {durationStr}
+            <p className="bg-muted-foreground animate-skeleton min-w-0 shrink rounded-md text-transparent">
+              | 00:00
             </p>
-          )}
-        </div>
+          </>
+        )}
+        {deployment?.git_branch !== undefined && deployment.git_branch !== "" && (
+          <span className="text-muted-more-foreground hidden leading-tight first:hidden lg:inline-block lg:first:inline-block">
+            |
+          </span>
+        )}
+        {deployment?.git_branch !== undefined && deployment.git_branch !== "" && (
+          <p className="text-muted-foreground max-w-full min-w-0 shrink leading-tight">
+            <GitBranchIcon className="mr-[0.5ch] inline-block size-3.5" />
+            {deployment.git_branch}
+          </p>
+        )}
+        {deployment?.commit_sha !== undefined && deployment.commit_sha !== "" && (
+          <span className="text-muted-more-foreground leading-tight first:hidden lg:first:inline-block">
+            |
+          </span>
+        )}
+        {deployment?.commit_sha !== undefined && deployment.commit_sha !== "" && (
+          <p className="text-muted-foreground max-w-full min-w-0 shrink leading-tight">
+            <GitCommitHorizontalIcon className="mr-[0.5ch] inline-block size-3.5" />
+            {deployment.commit_sha.slice(0, 6)}
+          </p>
+        )}
+        {durationStr !== undefined && durationStr !== "" && (
+          <span className="text-muted-more-foreground leading-tight first:hidden lg:inline-block lg:first:inline-block">
+            |
+          </span>
+        )}
+        {durationStr !== undefined && durationStr !== "" && (
+          <p className="text-muted-foreground max-w-full min-w-0 shrink leading-tight">
+            <AnimatedTimerIcon
+              animate={isBuilding}
+              className="-mt-0.75 mr-[0.4ch] inline-block size-3.5 shrink-0"
+            />
+            {durationStr}
+          </p>
+        )}
       </div>
     </div>
   );
