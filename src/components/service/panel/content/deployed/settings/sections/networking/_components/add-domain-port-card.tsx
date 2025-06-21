@@ -242,7 +242,7 @@ export default function AddDomainPortCard({
                       <div className="text-success bg-success/8 mt-2 flex justify-start gap-1.5 rounded-md px-3 py-2 text-sm">
                         <GlobeLockIcon className="mt-0.5 -ml-0.5 size-3.5 shrink-0" />
                         <p className="min-w-0 shrink leading-tight">
-                          Private domain will be auto-generated.
+                          The private domain will be automatically generated.
                         </p>
                       </div>
                     )}
