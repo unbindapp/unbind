@@ -6,6 +6,7 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useMounted } from "@/lib/hooks/use-mounted";
 import { MonitorSmartphoneIcon, MoonIcon, SunIcon } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useCallback, useMemo } from "react";
 
 export default function ThemeButton({
   variant = "default",
@@ -13,28 +14,27 @@ export default function ThemeButton({
   variant?: "default" | "dropdown-menu-item" | "drawer-item";
 }) {
   const { theme, setTheme } = useTheme();
-  const toggleTheme = () => {
-    const newThemeIndex = (availableThemes.indexOf(theme as TTheme) + 1) % availableThemes.length;
-    setTheme(availableThemes[newThemeIndex]);
-  };
-
   const mounted = useMounted();
 
-  const themeText = !mounted
-    ? "Dark"
-    : theme === "system"
-      ? "System"
-      : theme === "light"
-        ? "Light"
-        : "Dark";
+  const toggleTheme = useCallback(() => {
+    const currentTheme = availableThemes.indexOf(theme as TTheme);
+    const newThemeIndex = (currentTheme + 1) % availableThemes.length;
+    setTheme(availableThemes[newThemeIndex]);
+  }, [setTheme, theme]);
 
-  const Icon = !mounted
-    ? MoonIcon
-    : theme === "system"
-      ? MonitorSmartphoneIcon
-      : theme === "light"
-        ? SunIcon
-        : MoonIcon;
+  const themeText = useMemo(() => {
+    if (!mounted) return "Dark";
+    if (theme === "system") return "System";
+    if (theme === "light") return "Light";
+    return "Dark";
+  }, [theme, mounted]);
+
+  const Icon = useMemo(() => {
+    if (!mounted) return MoonIcon;
+    if (theme === "system") return MonitorSmartphoneIcon;
+    if (theme === "light") return SunIcon;
+    return MoonIcon;
+  }, [mounted, theme]);
 
   if (variant === "drawer-item") {
     return (
