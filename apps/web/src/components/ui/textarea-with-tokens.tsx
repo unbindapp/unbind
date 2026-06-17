@@ -260,7 +260,7 @@ export default function TextareaWithTokens<T>({
     }
 
     const filtered: TToken<T>[] =
-      fuse?.search<TFuseItem<T>>(search).map((i) => ({
+      fuse?.search(search).map((i) => ({
         value: i.item.value,
         Icon: i.item.Icon,
         object: i.item.object,

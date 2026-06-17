@@ -9,6 +9,10 @@ concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 
+permissions:
+  contents: write # create the release, push the git tag, upload installer assets
+  packages: write # push images to ghcr.io
+
 jobs:
   version:
     name: Resolve version

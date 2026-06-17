@@ -11,6 +11,10 @@ concurrency:
   group: build-operator-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  packages: write # push images to ghcr.io
+
 jobs:
   setup_env:
     name: ⚙️ Setup environment
