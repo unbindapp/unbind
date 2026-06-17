@@ -75,8 +75,6 @@ import (
 	"github.com/unbindapp/unbind-api/internal/web"
 	"github.com/unbindapp/unbind-api/pkg/databases"
 	_ "go.uber.org/automaxprocs"
-	"golang.org/x/net/http2"
-	"golang.org/x/net/http2/h2c"
 )
 
 var Version = "development"
@@ -116,7 +114,7 @@ var urlEncodedFormat = huma.Format{
 	},
 }
 
-func NewHumaConfig(title, version string) huma.Config {
+func NewHumaConfig(title, version string, cookieSecure bool) huma.Config {
 	schemaPrefix := "#/components/schemas/"
 	schemasPath := "/schemas"
 
@@ -135,7 +133,7 @@ func NewHumaConfig(title, version string) huma.Config {
 					"cookieAuth": {
 						Type:        "apiKey",
 						In:          "cookie",
-						Name:        auth.AccessTokenCookie,
+						Name:        auth.AccessTokenCookieName(cookieSecure),
 						Description: "Session cookie set by /auth/login. Sent automatically by browsers.",
 					},
 					"bearerAuth": {
@@ -344,7 +342,7 @@ func startAPI(cfg *config.Config) {
 		AllowedOrigins: allowedOrigins,
 		// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"*"},
+		AllowedHeaders:   []string{"*", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: true,
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
@@ -373,7 +371,7 @@ func startAPI(cfg *config.Config) {
 		// Register huma error function
 		huma.NewError = errdefs.HumaErrorFunc
 
-		config := NewHumaConfig("Unbind API", "1.0.0")
+		config := NewHumaConfig("Unbind API", "1.0.0", cfg.CookieSecure)
 		config.DocsPath = ""
 		config.Servers = []*huma.Server{
 			{
@@ -383,7 +381,7 @@ func startAPI(cfg *config.Config) {
 		api := humachi.New(r, config)
 
 		// Create middleware
-		mw := middleware.NewMiddleware(cfg, repo, api, tokenManager)
+		mw := middleware.NewMiddleware(cfg, repo, api, tokenManager, allowedOrigins)
 
 		api.UseMiddleware(mw.Recoverer)
 
@@ -417,6 +415,7 @@ func startAPI(cfg *config.Config) {
 			grp := huma.NewGroup(api, prefix)
 			if authed {
 				grp.UseMiddleware(mw.Authenticate)
+				grp.UseMiddleware(mw.CSRF)
 			}
 			grp.UseModifier(func(op *huma.Operation, next func(*huma.Operation)) {
 				op.Tags = []string{tag}
@@ -458,11 +457,16 @@ func startAPI(cfg *config.Config) {
 	addr := ":8089"
 	log.Infof("Starting server on %s\n", addr)
 
-	h2s := &http2.Server{}
+	// Serve HTTP/1.1 and cleartext HTTP/2 (h2c) so a TLS-terminating ingress can
+	// reach the backend over HTTP/2 without TLS.
+	protocols := new(http.Protocols)
+	protocols.SetHTTP1(true)
+	protocols.SetUnencryptedHTTP2(true)
 
 	server := &http.Server{
-		Addr:    addr,
-		Handler: h2c.NewHandler(r, h2s),
+		Addr:      addr,
+		Handler:   r,
+		Protocols: protocols,
 	}
 
 	// Start deployment queue processeor

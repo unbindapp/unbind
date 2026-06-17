@@ -1,5 +1,8 @@
+import { readCsrfToken } from "@/api/csrf";
 import { getConfig } from "@/lib/config";
 import { createClient } from "@/server/go/client.gen";
+
+const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
 /**
  * Cookie-session transport for unbind-api.
@@ -11,7 +14,15 @@ import { createClient } from "@/server/go/client.gen";
  * "signed out" (e.g. the root route guard redirects to `/sign-in`).
  */
 export const apiFetch: typeof fetch = async (input, init) => {
-  return fetch(input, { ...init, credentials: "include" });
+  const method = (init?.method ?? "GET").toUpperCase();
+  const headers = new Headers(init?.headers);
+
+  if (!SAFE_METHODS.has(method)) {
+    const csrf = readCsrfToken();
+    if (csrf) headers.set("X-CSRF-Token", csrf);
+  }
+
+  return fetch(input, { ...init, credentials: "include", headers });
 };
 
 let client: ReturnType<typeof createClient> | null = null;

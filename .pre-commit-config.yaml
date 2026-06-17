@@ -65,16 +65,17 @@ repos:
         files: ^apps/installer/.*\.go$
         pass_filenames: false
 
-      # --- apps/web ---
+      # --- apps/web (staged files only; paths are repo-relative so strip the
+      #     apps/web/ prefix before running from inside apps/web) ---
       - id: web-eslint
         name: "web: eslint"
-        entry: bash -c 'cd apps/web && npx --no-install eslint .'
+        entry: bash -c 'cd apps/web && exec npx --no-install eslint "${@#apps/web/}"' --
         language: system
         files: ^apps/web/.*\.(t|j)sx?$
-        pass_filenames: false
+        pass_filenames: true
       - id: web-prettier
         name: "web: prettier --check"
-        entry: bash -c 'cd apps/web && npx --no-install prettier --check .'
+        entry: bash -c 'cd apps/web && exec npx --no-install prettier --check --ignore-unknown "${@#apps/web/}"' --
         language: system
-        files: ^apps/web/.*\.(t|j)sx?$|^apps/web/.*\.(css|json|md)$
-        pass_filenames: false
+        files: ^apps/web/.*\.(tsx?|jsx?|css|json|md)$
+        pass_filenames: true

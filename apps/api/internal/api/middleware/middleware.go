@@ -8,17 +8,19 @@ import (
 )
 
 type Middleware struct {
-	tokenManager *auth.TokenManager
-	repository   repositories.RepositoriesInterface
-	api          huma.API
-	cfg          *config.Config
+	tokenManager   *auth.TokenManager
+	repository     repositories.RepositoriesInterface
+	api            huma.API
+	cfg            *config.Config
+	allowedOrigins []string
 }
 
-func NewMiddleware(cfg *config.Config, repository repositories.RepositoriesInterface, api huma.API, tokenManager *auth.TokenManager) *Middleware {
+func NewMiddleware(cfg *config.Config, repository repositories.RepositoriesInterface, api huma.API, tokenManager *auth.TokenManager, allowedOrigins []string) *Middleware {
 	return &Middleware{
-		tokenManager: tokenManager,
-		repository:   repository,
-		api:          api,
-		cfg:          cfg,
+		tokenManager:   tokenManager,
+		repository:     repository,
+		api:            api,
+		cfg:            cfg,
+		allowedOrigins: allowedOrigins,
 	}
 }

@@ -22,6 +22,10 @@ COPY apps/api/go.mod apps/api/go.sum ./
 RUN --mount=type=cache,target=/go/pkg/mod go mod download
 COPY apps/api/ ./
 COPY --from=web /web/dist ./internal/web/dist
+# Capture the exact mise version railpack pins, so the runtime stage pre-seeds the
+# build railpack expects — no drift, no runtime re-download when railpack is bumped.
+RUN --mount=type=cache,target=/go/pkg/mod \
+    cp "$(go list -m -f '{{.Dir}}' github.com/railwayapp/railpack)/core/mise/version.txt" /mise-version
 RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build \
     CGO_ENABLED=0 GOARCH=${TARGETARCH} go build -trimpath \
     -ldflags "-s -w -X main.Version=${VERSION} -X main.BuildImage=${BUILD_IMAGE}" \
@@ -31,18 +35,23 @@ RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache
     -ldflags "-s -w -X main.Version=${VERSION}" \
     -o /out/cli ./cmd/cli
 
-# 3. Runtime. Slim Debian (glibc) base; mise is installed for railpack version
-#    resolution (railpack execs it and otherwise auto-downloads it to this path).
+# 3. Runtime. Slim Debian (glibc) base. mise is pre-installed because the API's
+#    source analyzer runs railpack provider plans (Plan -> InstallMisePackages ->
+#    GetMisePackageVersions -> mise.New), which constructs and execs mise. Baking it
+#    in avoids a ~90MB download on the first analysis of each pod and keeps source
+#    detection working even when the pod can't reach GitHub at runtime.
+#    The version is taken from railpack's own version.txt (captured in the build
+#    stage), so it always matches the railpack compiled into the binary — railpack
+#    finds the pre-seeded binary at /tmp/railpack/mise/mise-<version> and skips its
+#    download. Pre-seed path mirrors railpack's getBinaryPath().
 FROM debian:bookworm-slim AS runtime
 
-# Must match the version railpack pins (apps/api: railpack core/mise/version.txt),
-# or railpack rejects this binary and re-downloads its expected version at runtime.
-ARG MISE_VERSION=2026.6.10
 ARG MISE_DIR=/tmp/railpack/mise
-ARG MISE_BIN=${MISE_DIR}/mise-${MISE_VERSION}
+COPY --from=build /mise-version /tmp/mise-version
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends curl ca-certificates && \
+    MISE_VERSION="$(tr -d '[:space:]' < /tmp/mise-version)" && \
     mkdir -p "${MISE_DIR}" && \
     ARCH="$(uname -m)"; \
     case "${ARCH}" in \
@@ -51,10 +60,11 @@ RUN apt-get update && \
       armv7l)   MISE_ASSET="linux-armv7" ;; \
       *) echo "Unsupported architecture: ${ARCH}" && exit 1 ;; \
     esac && \
-    curl -L -o "${MISE_BIN}" \
+    curl -fL -o "${MISE_DIR}/mise-${MISE_VERSION}" \
       "https://github.com/jdx/mise/releases/download/v${MISE_VERSION}/mise-v${MISE_VERSION}-${MISE_ASSET}" && \
-    chmod +x "${MISE_BIN}" && \
-    ln -sf "${MISE_BIN}" /usr/local/bin/mise && \
+    chmod +x "${MISE_DIR}/mise-${MISE_VERSION}" && \
+    ln -sf "${MISE_DIR}/mise-${MISE_VERSION}" /usr/local/bin/mise && \
+    rm -f /tmp/mise-version && \
     apt-get purge -y --auto-remove curl && \
     rm -rf /var/lib/apt/lists/*
 

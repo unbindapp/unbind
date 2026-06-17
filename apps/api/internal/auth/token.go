@@ -26,6 +26,7 @@ type TokenManager struct {
 	privateKey *rsa.PrivateKey
 	issuer     string
 	audience   string
+	csrfSecret []byte
 }
 
 func NewTokenManager(privateKey *rsa.PrivateKey, issuer, audience string) *TokenManager {
@@ -33,7 +34,12 @@ func NewTokenManager(privateKey *rsa.PrivateKey, issuer, audience string) *Token
 		privateKey: privateKey,
 		issuer:     issuer,
 		audience:   audience,
+		csrfSecret: CSRFSecret(privateKey),
 	}
+}
+
+func (self *TokenManager) CSRFSecret() []byte {
+	return self.csrfSecret
 }
 
 type VerifiedClaims struct {

@@ -7,8 +7,11 @@ import (
 	"github.com/unbindapp/unbind-api/internal/auth"
 )
 
+// Read both names: __Host-refresh_token for secure cookies, refresh_token for an
+// insecure local API (or a session predating the prefix).
 type LogoutInput struct {
-	RefreshToken http.Cookie `cookie:"refresh_token"`
+	RefreshTokenSecure http.Cookie `cookie:"__Host-refresh_token"`
+	RefreshToken       http.Cookie `cookie:"refresh_token"`
 }
 
 type LogoutResponse struct {
@@ -21,8 +24,12 @@ type LogoutResponse struct {
 }
 
 func (self *HandlerGroup) Logout(ctx context.Context, input *LogoutInput) (*LogoutResponse, error) {
-	if input.RefreshToken.Value != "" {
-		_ = self.srv.Repository.Oauth().RevokeRefreshToken(ctx, input.RefreshToken.Value)
+	refreshToken := input.RefreshTokenSecure.Value
+	if refreshToken == "" {
+		refreshToken = input.RefreshToken.Value
+	}
+	if refreshToken != "" {
+		_ = self.srv.Repository.Oauth().RevokeRefreshToken(ctx, refreshToken)
 	}
 
 	resp := &LogoutResponse{SetCookie: auth.ClearedSessionCookies(self.srv.Cfg.CookieSecure)}

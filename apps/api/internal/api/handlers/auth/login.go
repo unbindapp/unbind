@@ -65,8 +65,9 @@ func (self *HandlerGroup) issueSession(ctx context.Context, user *ent.User) (*Se
 		return nil, huma.Error500InternalServerError("Failed to persist session", err)
 	}
 
+	csrfToken := auth.MintCSRFToken(self.srv.TokenManager.CSRFSecret(), refreshToken)
 	resp := &SessionResponse{
-		SetCookie: auth.SessionCookies(accessToken, accessExpiresAt, refreshToken, self.srv.Cfg.CookieSecure),
+		SetCookie: auth.SessionCookies(accessToken, accessExpiresAt, refreshToken, csrfToken, self.srv.Cfg.CookieSecure),
 	}
 	resp.Body.Data = SessionUser{ID: user.ID.String(), Email: user.Email}
 	return resp, nil

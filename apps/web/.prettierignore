@@ -59,3 +59,7 @@ next-env.d.ts
 # Generated files
 public/sitemap*.xml
 public/robots.txt
+
+# Generated code (do not format)
+**/*.gen.ts
+src/routeTree.gen.ts

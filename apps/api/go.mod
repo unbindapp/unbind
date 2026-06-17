@@ -36,7 +36,7 @@ require (
 	github.com/ncruces/go-sqlite3 v0.35.1
 	github.com/opencontainers/image-spec v1.1.1
 	github.com/pressly/goose/v3 v3.27.1
-	github.com/prometheus/common v0.68.1
+	github.com/prometheus/common v0.69.0
 	github.com/redis/go-redis/v9 v9.20.1
 	github.com/stretchr/testify v1.11.1
 	github.com/tonistiigi/fsutil v0.0.0-20260609174605-b61e79c0c046
@@ -237,8 +237,8 @@ require (
 	github.com/charmbracelet/x/ansi v0.11.7 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/fluxcd/helm-controller/api v1.5.5
-	github.com/fluxcd/source-controller/api v1.8.5
+	github.com/fluxcd/helm-controller/api v1.6.0
+	github.com/fluxcd/source-controller/api v1.9.0
 	github.com/fxamacker/cbor/v2 v2.9.2 // indirect
 	github.com/go-chi/cors v1.2.2
 	github.com/go-logfmt/logfmt v0.6.1 // indirect
@@ -278,7 +278,7 @@ require (
 	golang.org/x/crypto v0.53.0
 	golang.org/x/exp v0.0.0-20260611194520-c48552f49976 // indirect
 	golang.org/x/mod v0.37.0
-	golang.org/x/net v0.56.0
+	golang.org/x/net v0.56.0 // indirect
 	golang.org/x/sync v0.21.0
 	golang.org/x/sys v0.46.0 // indirect
 	golang.org/x/term v0.44.0 // indirect
