@@ -16,6 +16,7 @@ apps/web/src/routeTree.gen.ts
 .tanstack
 .vercel
 
+
 # --- Compiled Go binaries / build output ---
 apps/*/bin/
 apps/api/cmd/api/api

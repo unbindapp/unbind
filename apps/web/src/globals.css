@@ -601,4 +601,7 @@
   body {
     @apply bg-background text-foreground;
   }
+  #root {
+    @apply bg-background text-foreground flex min-h-svh flex-col;
+  }
 }
