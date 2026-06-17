@@ -1,11 +1,12 @@
 "use client";
 
-import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
-import { api } from "@/server/trpc/setup/client";
+import { queryKeys } from "@/api/query-keys";
+import { deploymentQuery, type TDeployment } from "@/api/queries/deployments";
+import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
 type TDeploymentContext = {
-  query: AppRouterQueryResult<AppRouterOutputs["deployments"]["get"]>;
+  query: UseQueryResult<{ deployment: TDeployment }, Error>;
   teamId: string;
   projectId: string;
   environmentId: string;
@@ -23,13 +24,9 @@ export const DeploymentProvider: React.FC<{
   deploymentId: string;
   children: ReactNode;
 }> = ({ teamId, projectId, environmentId, serviceId, deploymentId, children }) => {
-  const query = api.deployments.get.useQuery({
-    teamId,
-    projectId,
-    environmentId,
-    serviceId,
-    deploymentId,
-  });
+  const query = useQuery(
+    deploymentQuery(teamId, projectId, environmentId, serviceId, deploymentId),
+  );
 
   const value = useMemo(
     () => ({ query, teamId, projectId, environmentId, serviceId, deploymentId }),
@@ -62,17 +59,16 @@ export const useDeploymentUtils = ({
   serviceId: string;
   deploymentId: string;
 }) => {
-  const utils = api.useUtils();
+  const queryClient = useQueryClient();
+  const queryKey = queryKeys.deployments.detail(
+    teamId,
+    projectId,
+    environmentId,
+    serviceId,
+    deploymentId,
+  );
   return {
-    invalidate: () =>
-      utils.deployments.get.invalidate({
-        teamId,
-        projectId,
-        environmentId,
-        serviceId,
-        deploymentId,
-      }),
-    refetch: () =>
-      utils.deployments.get.refetch({ teamId, projectId, environmentId, serviceId, deploymentId }),
+    invalidate: () => queryClient.invalidateQueries({ queryKey }),
+    refetch: () => queryClient.refetchQueries({ queryKey }),
   };
 };

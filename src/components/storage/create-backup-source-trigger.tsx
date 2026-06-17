@@ -1,4 +1,4 @@
-import { NewS3SourceTrigger } from "@/app/(team)/[team_id]/settings/storage/_components/s3-source-card";
+import { NewS3SourceTrigger } from "@/components/storage/s3-source-card";
 import { sourceAndBucketSeparator } from "@/components/service/helpers";
 import {
   DropdownMenu,
@@ -30,7 +30,7 @@ export function CreateBackupSourceTrigger({
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
-      <DropdownMenuContent animate={false} className="w-[var(--radix-popper-anchor-width)]">
+      <DropdownMenuContent animate={false} className="w-(--radix-popper-anchor-width)">
         <ScrollArea>
           <DropdownMenuLabel className="border-b px-3">
             {"You don't have any buckets. Create a backup source."}

@@ -5,7 +5,7 @@ import { BreadcrumbWrapper } from "@/components/navigation/breadcrumb-wrapper";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { useTeams } from "@/components/team/teams-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 
 type TProps = {
@@ -53,7 +53,7 @@ export default function TeamBreadcrumb({ className }: TProps) {
     (id: string) => {
       const href = getHrefForTeamId(id);
       if (!href) return;
-      router.prefetch(href);
+      void router.preloadRoute({ to: href } as Parameters<typeof router.preloadRoute>[0]);
     },
     [getHrefForTeamId, router],
   );

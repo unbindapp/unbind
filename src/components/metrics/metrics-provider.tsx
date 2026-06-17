@@ -1,12 +1,12 @@
 "use client";
 
+import { metricsListQuery, type TMetrics } from "@/api/queries/metrics";
 import { useMetricsState } from "@/components/metrics/metrics-state-provider";
-import { TLogType } from "@/server/trpc/api/logs/types";
-import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
-import { api } from "@/server/trpc/setup/client";
+import { TLogType } from "@/server/types/logs";
+import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext } from "react";
 
-type TMetricsContext = AppRouterQueryResult<AppRouterOutputs["metrics"]["list"]> & {};
+type TMetricsContext = UseQueryResult<TMetrics, Error>;
 
 const MetricsContext = createContext<TMetricsContext | null>(null);
 
@@ -39,19 +39,17 @@ export const MetricsProvider: React.FC<TProps> = ({
   children,
 }) => {
   const { interval } = useMetricsState();
-  const query = api.metrics.list.useQuery(
-    {
+  const query = useQuery({
+    ...metricsListQuery({
       teamId,
       projectId,
       environmentId,
       serviceId,
       type,
       interval: interval.value,
-    },
-    {
-      refetchInterval: interval.value === "5m" ? 5000 : interval.value === "15m" ? 15000 : 30000,
-    },
-  );
+    }),
+    refetchInterval: interval.value === "5m" ? 5000 : interval.value === "15m" ? 15000 : 30000,
+  });
 
   return <MetricsContext.Provider value={query}>{children}</MetricsContext.Provider>;
 };

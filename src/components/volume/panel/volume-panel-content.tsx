@@ -4,7 +4,7 @@ import PanelTabWrapper from "@/components/panel/panel-tab-wrapper";
 import { TVolumePanelTabEnum } from "@/components/volume/panel/constants";
 import Settings from "@/components/volume/panel/tabs/settings/settings";
 import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
-import { TVolumeShallow } from "@/server/trpc/api/services/types";
+import { TVolumeShallow } from "@/server/types/services";
 import { FC, HTMLAttributes, ReactNode } from "react";
 
 type TProps = {

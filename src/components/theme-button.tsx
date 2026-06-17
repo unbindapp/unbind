@@ -47,7 +47,7 @@ export default function ThemeButton({
         className="flex w-full cursor-default items-center justify-start gap-2.5 rounded-lg px-3 py-2.5 text-left leading-tight font-medium"
       >
         <Icon suppressHydrationWarning className="-my-1 -ml-0.5 size-5 shrink-0" />
-        <div className="-mt-0.25 flex min-w-0 shrink flex-col">
+        <div className="-mt-px flex min-w-0 shrink flex-col">
           <p className="text-muted-foreground text-xs leading-tight font-medium">Theme</p>
           <p suppressHydrationWarning className="min-w-0 shrink leading-tight">
             {themeText}
@@ -67,7 +67,7 @@ export default function ThemeButton({
         className="flex w-full items-center justify-start text-left leading-tight"
       >
         <Icon suppressHydrationWarning className="-my-1 -ml-0.5 size-5 shrink-0" />
-        <div className="-mt-0.25 flex min-w-0 shrink flex-col">
+        <div className="-mt-px flex min-w-0 shrink flex-col">
           <p className="text-muted-foreground text-xs leading-tight font-medium">Theme</p>
           <p suppressHydrationWarning className="min-w-0 shrink leading-tight">
             {themeText}

@@ -213,7 +213,7 @@ function DropdownMenuCheckboxItem({
       }
       {...props}
     >
-      <span className="border-muted-more-foreground group-data-checked/checkbox:bg-foreground group-data-checked/checkbox:text-background group-data-checked/checkbox:border-foreground absolute left-2.5 flex size-4.5 shrink-0 items-center justify-center rounded-sm border p-0.25">
+      <span className="border-muted-more-foreground group-data-checked/checkbox:bg-foreground group-data-checked/checkbox:text-background group-data-checked/checkbox:border-foreground absolute left-2.5 flex size-4.5 shrink-0 items-center justify-center rounded-sm border p-px">
         <DropdownMenuPrimitive.ItemIndicator className="size-full">
           <CheckIcon strokeWidth={3} className="size-full" />
         </DropdownMenuPrimitive.ItemIndicator>

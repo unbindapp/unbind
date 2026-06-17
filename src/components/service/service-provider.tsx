@@ -1,11 +1,15 @@
 "use client";
 
-import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
-import { api } from "@/server/trpc/setup/client";
+import { queryKeys } from "@/api/query-keys";
+import { serviceQuery } from "@/api/queries/services";
+import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
+import type { TService } from "@/api/queries/services";
+
+export type TServiceResult = { service: TService };
 
 type TServiceContext = {
-  query: AppRouterQueryResult<AppRouterOutputs["services"]["get"]>;
+  query: UseQueryResult<TServiceResult, Error>;
   teamId: string;
   projectId: string;
   environmentId: string;
@@ -21,10 +25,10 @@ export const ServiceProvider: React.FC<{
   serviceId: string;
   children: ReactNode;
 }> = ({ teamId, projectId, environmentId, serviceId, children }) => {
-  const query = api.services.get.useQuery(
-    { teamId, projectId, environmentId, serviceId },
-    { staleTime: 5 * 1000 },
-  );
+  const query = useQuery({
+    ...serviceQuery(teamId, projectId, environmentId, serviceId),
+    staleTime: 5 * 1000,
+  });
 
   const value = useMemo(
     () => ({ query, teamId, projectId, environmentId, serviceId }),
@@ -55,11 +59,11 @@ export const useServiceUtils = ({
   environmentId: string;
   serviceId: string;
 }) => {
-  const utils = api.useUtils();
+  const queryClient = useQueryClient();
+  const queryKey = queryKeys.services.detail(teamId, projectId, environmentId, serviceId);
   return {
-    invalidate: () =>
-      utils.services.get.invalidate({ teamId, projectId, environmentId, serviceId }),
-    refetch: () => utils.services.get.refetch({ teamId, projectId, environmentId, serviceId }),
-    cancel: () => utils.services.get.cancel({ teamId, projectId, environmentId, serviceId }),
+    invalidate: () => queryClient.invalidateQueries({ queryKey }),
+    refetch: () => queryClient.refetchQueries({ queryKey }),
+    cancel: () => queryClient.cancelQueries({ queryKey }),
   };
 };

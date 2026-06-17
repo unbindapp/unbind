@@ -1,11 +1,14 @@
 "use client";
 
-import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
-import { api } from "@/server/trpc/setup/client";
+import { queryKeys } from "@/api/query-keys";
+import { environmentsListQuery, type TEnvironmentShallow } from "@/api/queries/environments";
+import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
+export type TEnvironmentsResult = { environments: TEnvironmentShallow[] };
+
 type TEnvironmentsContext = {
-  query: AppRouterQueryResult<AppRouterOutputs["environments"]["list"]>;
+  query: UseQueryResult<TEnvironmentsResult, Error>;
   utils: ReturnType<typeof useEnvironmentsUtils>;
   teamId: string;
   projectId: string;
@@ -16,10 +19,10 @@ const EnvironmentsContext = createContext<TEnvironmentsContext | null>(null);
 export const EnvironmentsProvider: React.FC<{
   teamId: string;
   projectId: string;
-  initialData?: AppRouterOutputs["environments"]["list"];
+  initialData?: TEnvironmentsResult;
   children: ReactNode;
 }> = ({ teamId, projectId, initialData, children }) => {
-  const query = api.environments.list.useQuery({ teamId, projectId }, { initialData });
+  const query = useQuery({ ...environmentsListQuery(teamId, projectId), initialData });
   const utils = useEnvironmentsUtils({ teamId, projectId });
   const value = useMemo(
     () => ({ query, utils, teamId, projectId }),
@@ -46,8 +49,9 @@ export const useEnvironmentsUtils = ({
   teamId: string;
   projectId: string;
 }) => {
-  const utils = api.useUtils();
+  const queryClient = useQueryClient();
   return {
-    invalidate: () => utils.environments.list.invalidate({ teamId, projectId }),
+    invalidate: () =>
+      queryClient.invalidateQueries({ queryKey: queryKeys.environments.list(teamId, projectId) }),
   };
 };

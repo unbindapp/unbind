@@ -4,7 +4,7 @@ import {
   TAvailableVariableReference,
   TVariableForCreate,
   TVariableReferenceForCreate,
-} from "@/server/trpc/api/variables/types";
+} from "@/server/types/variables";
 
 export function unwrapQuotes(value: string) {
   let newValue = value;

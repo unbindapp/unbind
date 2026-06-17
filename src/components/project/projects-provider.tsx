@@ -1,19 +1,21 @@
 "use client";
 
-import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
-import { api } from "@/server/trpc/setup/client";
+import { queryKeys } from "@/api/query-keys";
+import { projectsListQuery, type TProjectShallow } from "@/api/queries/projects";
+import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext } from "react";
 
-type TProjectsContext = AppRouterQueryResult<AppRouterOutputs["projects"]["list"]>;
+export type TProjectsResult = { projects: TProjectShallow[] };
+type TProjectsContext = UseQueryResult<TProjectsResult, Error>;
 
 const ProjectsContext = createContext<TProjectsContext | null>(null);
 
 export const ProjectsProvider: React.FC<{
   teamId: string;
-  initialData?: AppRouterOutputs["projects"]["list"];
+  initialData?: TProjectsResult;
   children: ReactNode;
 }> = ({ teamId, initialData, children }) => {
-  const query = api.projects.list.useQuery({ teamId }, { initialData });
+  const query = useQuery({ ...projectsListQuery(teamId), initialData });
 
   return <ProjectsContext.Provider value={query}>{children}</ProjectsContext.Provider>;
 };
@@ -29,8 +31,8 @@ export const useProjects = () => {
 export default ProjectsProvider;
 
 export const useProjectsUtils = ({ teamId }: { teamId: string }) => {
-  const utils = api.useUtils();
+  const queryClient = useQueryClient();
   return {
-    invalidate: () => utils.projects.list.invalidate({ teamId }),
+    invalidate: () => queryClient.invalidateQueries({ queryKey: queryKeys.projects.list(teamId) }),
   };
 };

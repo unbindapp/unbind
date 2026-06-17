@@ -3,7 +3,7 @@ import { useService } from "@/components/service/service-provider";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
 import VariablesHeader from "@/components/variables/variables-header";
 import VariablesList from "@/components/variables/variables-list";
-import { TServiceShallow } from "@/server/trpc/api/services/types";
+import { TServiceShallow } from "@/server/types/services";
 import { useMemo } from "react";
 
 export default function Variables({ service }: { service: TServiceShallow }) {

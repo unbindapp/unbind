@@ -1,11 +1,13 @@
 "use client";
 
-import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
-import { api } from "@/server/trpc/setup/client";
+import { teamQuery, type TTeam } from "@/api/queries/teams";
+import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
+export type TTeamResult = { team: TTeam };
+
 type TTeamContext = {
-  query: AppRouterQueryResult<AppRouterOutputs["teams"]["get"]>;
+  query: UseQueryResult<TTeamResult, Error>;
   teamId: string;
 };
 
@@ -13,10 +15,10 @@ const TeamContext = createContext<TTeamContext | null>(null);
 
 export const TeamProvider: React.FC<{
   teamId: string;
-  initialData?: AppRouterOutputs["teams"]["get"];
+  initialData?: TTeamResult;
   children: ReactNode;
 }> = ({ teamId, initialData, children }) => {
-  const query = api.teams.get.useQuery({ teamId }, { initialData });
+  const query = useQuery({ ...teamQuery(teamId), initialData });
   const value = useMemo(() => ({ query, teamId }), [query, teamId]);
 
   return <TeamContext.Provider value={value}>{children}</TeamContext.Provider>;

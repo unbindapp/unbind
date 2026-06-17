@@ -1,11 +1,14 @@
 "use client";
 
-import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
-import { api } from "@/server/trpc/setup/client";
+import { queryKeys } from "@/api/query-keys";
+import { serviceEndpointsQuery, type TServiceEndpoints } from "@/api/queries/services";
+import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
+type TServiceEndpointsResult = { endpoints: TServiceEndpoints };
+
 type TServiceEndpointsContext = {
-  query: AppRouterQueryResult<AppRouterOutputs["services"]["getServiceEndpoints"]>;
+  query: UseQueryResult<TServiceEndpointsResult, Error>;
   teamId: string;
   projectId: string;
   environmentId: string;
@@ -21,10 +24,10 @@ export const ServiceEndpointsProvider: React.FC<{
   serviceId: string;
   children: ReactNode;
 }> = ({ teamId, projectId, environmentId, serviceId, children }) => {
-  const query = api.services.getServiceEndpoints.useQuery(
-    { teamId, projectId, environmentId, serviceId },
-    { refetchInterval: 5000 },
-  );
+  const query = useQuery({
+    ...serviceEndpointsQuery(teamId, projectId, environmentId, serviceId),
+    refetchInterval: 5000,
+  });
 
   const value = useMemo(
     () => ({ query, teamId, projectId, environmentId, serviceId }),
@@ -55,19 +58,12 @@ export const useServiceEndpointsUtils = ({
   environmentId: string;
   serviceId: string;
 }) => {
-  const utils = api.useUtils();
+  const queryClient = useQueryClient();
+  const queryKey = queryKeys.services.endpoints(teamId, projectId, environmentId, serviceId);
   return {
-    invalidate: () =>
-      utils.services.getServiceEndpoints.invalidate({
-        teamId,
-        projectId,
-        environmentId,
-        serviceId,
-      }),
-    refetch: () =>
-      utils.services.getServiceEndpoints.refetch({ teamId, projectId, environmentId, serviceId }),
-    cancel: () =>
-      utils.services.getServiceEndpoints.cancel({ teamId, projectId, environmentId, serviceId }),
+    invalidate: () => queryClient.invalidateQueries({ queryKey }),
+    refetch: () => queryClient.refetchQueries({ queryKey }),
+    cancel: () => queryClient.cancelQueries({ queryKey }),
   };
 };
 

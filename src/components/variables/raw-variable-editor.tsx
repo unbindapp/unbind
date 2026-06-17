@@ -17,7 +17,7 @@ import { getNewEntityIdForVariable } from "@/components/variables/variable-card"
 import { useVariables } from "@/components/variables/variables-provider";
 import { defaultAnimationMs } from "@/lib/constants";
 import useTemporaryValue from "@/lib/hooks/use-temporary-value";
-import { TVariableShallow, VariableForCreateSchema } from "@/server/trpc/api/variables/types";
+import { TVariableShallow, VariableForCreateSchema } from "@/server/types/variables";
 import { useMutation } from "@tanstack/react-query";
 import { CheckCircleIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";

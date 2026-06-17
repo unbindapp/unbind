@@ -1,4 +1,4 @@
-import { TServiceShallow } from "@/server/trpc/api/services/types";
+import { TServiceShallow } from "@/server/types/services";
 
 export type TGitSectionProps = {
   owner: string;

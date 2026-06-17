@@ -1,4 +1,4 @@
-import { TServiceShallow } from "@/server/trpc/api/services/types";
+import type { TServiceShallow } from "@/api/queries/services";
 
 export type TTeamVariableTypeProps = {
   type: "team";

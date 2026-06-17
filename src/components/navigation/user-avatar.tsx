@@ -1,6 +1,6 @@
 "use client";
 
-import { signOutAction } from "@/components/auth/actions";
+import { logout, meQuery } from "@/api/auth";
 import Blockies from "@/components/blockies/blockies";
 import {
   DropdownOrDrawer,
@@ -20,15 +20,24 @@ import {
   useCheckForUpdates,
   useCheckNewVersion,
 } from "@/components/update/check-for-updates-provider";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import { GiftIcon, GitBranchIcon, LoaderIcon, LogOutIcon } from "lucide-react";
-import { useActionState, useRef, useState } from "react";
+import { useState } from "react";
 
 type TProps = { email: string; className?: string };
 
 export default function UserAvatar({ email, className }: TProps) {
-  const [, actionSignOut, isPendingSignOut] = useActionState(() => signOutAction(), null);
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  const { mutate: signOut, isPending: isPendingSignOut } = useMutation({
+    mutationFn: logout,
+    onSuccess: () => {
+      queryClient.setQueryData(meQuery.queryKey, null);
+      router.history.push("/sign-in");
+    },
+  });
   const [open, setOpen] = useState(false);
-  const formRef = useRef<HTMLFormElement>(null);
 
   const {
     data: updatesData,
@@ -86,37 +95,34 @@ export default function UserAvatar({ email, className }: TProps) {
             />
           )}
           <ThemeButton variant="drawer-item" />
-          <form
-            action={actionSignOut}
-            onSubmit={() => setOpen(false)}
-            className="flex w-full items-center justify-start"
+          <Button
+            disabled={isPendingSignOut}
+            onClick={() => {
+              setOpen(false);
+              signOut();
+            }}
+            className="w-full cursor-default items-center justify-start gap-2.5 rounded-lg px-3 py-3.5 text-left font-medium"
+            variant="ghost"
           >
-            <Button
-              disabled={isPendingSignOut}
-              type="submit"
-              className="w-full cursor-default items-center justify-start gap-2.5 rounded-lg px-3 py-3.5 text-left font-medium"
-              variant="ghost"
-            >
-              <div className="-my-1 -ml-0.5 size-5 shrink-0">
-                {isPendingSignOut ? (
-                  <LoaderIcon className="size-full animate-spin" />
-                ) : (
-                  <LogOutIcon className="size-full" />
-                )}
-              </div>
-              <p className="min-w-0 shrink leading-tight">Sign Out</p>
-            </Button>
-          </form>
+            <div className="-my-1 -ml-0.5 size-5 shrink-0">
+              {isPendingSignOut ? (
+                <LoaderIcon className="size-full animate-spin" />
+              ) : (
+                <LogOutIcon className="size-full" />
+              )}
+            </div>
+            <p className="min-w-0 shrink leading-tight">Sign Out</p>
+          </Button>
         </div>
         <div
           data-pending={isPendingUpdatesResult ? true : undefined}
           data-error={
             !updatesData && !isPendingUpdatesResult && isErrorUpdatesResult ? true : undefined
           }
-          className="group/version bg-background absolute bottom-[var(--safe-area-inset-bottom)] z-10 flex w-full items-center justify-start gap-1.25 border-t px-4.25 py-3"
+          className="group/version bg-background absolute bottom-(--safe-area-inset-bottom) z-10 flex w-full items-center justify-start gap-1.25 border-t px-4.25 py-3"
         >
           {!isPendingUpdatesResult && (
-            <GitBranchIcon className="text-muted-foreground -ml-0.25 size-3.75 shrink-0" />
+            <GitBranchIcon className="text-muted-foreground -ml-px size-3.75 shrink-0" />
           )}
           <p className="group-data-pending/version:bg-muted-foreground group-data-pending/version:animate-skeleton text-muted-foreground min-w-0 shrink text-center text-sm leading-tight group-data-pending/version:rounded-sm group-data-pending/version:text-transparent">
             Version:{" "}
@@ -154,22 +160,16 @@ export default function UserAvatar({ email, className }: TProps) {
             className="p-0"
             onSelect={() => {
               if (isPendingSignOut) return;
-              formRef.current?.requestSubmit();
+              signOut();
             }}
           >
-            <form
-              ref={formRef}
-              action={actionSignOut}
-              className="flex w-full items-center justify-start"
+            <button
+              className="flex w-full cursor-default items-center gap-2.5 px-3 py-2.25 text-left leading-tight"
+              type="button"
             >
-              <button
-                className="flex w-full cursor-default items-center gap-2.5 px-3 py-2.25 text-left leading-tight"
-                type="submit"
-              >
-                <LogOutIcon className="-my-1 -ml-0.5 size-5 shrink-0" />
-                <p className="min-w-0 shrink leading-tight">Sign Out</p>
-              </button>
-            </form>
+              <LogOutIcon className="-my-1 -ml-0.5 size-5 shrink-0" />
+              <p className="min-w-0 shrink leading-tight">Sign Out</p>
+            </button>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
@@ -181,7 +181,7 @@ export default function UserAvatar({ email, className }: TProps) {
           className="group/version flex w-full items-center justify-start gap-1.25 px-4 py-2.5"
         >
           {!isPendingUpdatesResult && (
-            <GitBranchIcon className="text-muted-foreground -ml-0.25 size-3.75 shrink-0" />
+            <GitBranchIcon className="text-muted-foreground -ml-px size-3.75 shrink-0" />
           )}
           <p className="group-data-pending/version:bg-muted-foreground group-data-pending/version:animate-skeleton text-muted-foreground min-w-0 shrink text-center text-sm leading-tight group-data-pending/version:rounded-sm group-data-pending/version:text-transparent">
             Version:{" "}
@@ -218,14 +218,14 @@ function NewVersionCard({
         )}
       >
         <div className="flex w-full items-start gap-2 pr-2 pl-0.5">
-          <GiftIcon className="text-success mt-0.25 size-4.5 shrink-0" />
+          <GiftIcon className="text-success mt-px size-4.5 shrink-0" />
           <p className="text-success min-w-0 shrink leading-tight font-semibold">
             Update available!
           </p>
         </div>
         <LinkButton
           onClick={onUpdateClicked}
-          href="/update"
+          to="/update"
           size="sm"
           className="rounded-sm"
           variant="success"

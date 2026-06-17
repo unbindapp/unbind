@@ -7,7 +7,7 @@ import {
   ChevronsRightIcon,
   EllipsisIcon,
 } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 import * as React from "react";
 
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {

@@ -1,26 +1,23 @@
 "use client";
 
+import { meQuery } from "@/api/auth";
 import UserAvatar from "@/components/navigation/user-avatar";
 import { LinkButton } from "@/components/ui/button";
-import { Session } from "next-auth";
-import { usePathname } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "@tanstack/react-router";
 
-type TProps = {
-  session: Session | null;
-};
-
-export default function UserAvatarOrSignIn({ session }: TProps) {
-  const pathname = usePathname();
+export default function UserAvatarOrSignIn() {
+  const { data: me } = useQuery(meQuery);
+  const pathname = useLocation({ select: (l) => l.pathname });
   const isSignInPage = pathname === "/sign-in";
   const isWelcomePage = pathname === "/welcome";
-  const isApiPathname = pathname.startsWith("/api/");
 
   return (
     <>
-      {session && <UserAvatar email={session.user.email} />}
-      {!session && !isSignInPage && !isWelcomePage && !isApiPathname && (
+      {me && <UserAvatar email={me.email ?? ""} />}
+      {!me && !isSignInPage && !isWelcomePage && (
         <div className="-mr-0.5 flex items-center justify-end">
-          <LinkButton size="sm" href="/sign-in">
+          <LinkButton size="sm" to="/sign-in">
             Sign In
           </LinkButton>
         </div>

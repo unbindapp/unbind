@@ -23,9 +23,10 @@ import { getNewEntityIdForVariable } from "@/components/variables/variable-card"
 import { defaultDebounceMs } from "@/lib/constants";
 import { generateDomain } from "@/lib/helpers/generate-domain";
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
-import { TServiceShallow } from "@/server/trpc/api/services/types";
-import { TVariableForCreate } from "@/server/trpc/api/variables/types";
-import { api } from "@/server/trpc/setup/client";
+import { TServiceShallow } from "@/server/types/services";
+import { TVariableForCreate } from "@/server/types/variables";
+import { dockerTagsQuery } from "@/api/queries/docker";
+import { useQuery } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
 import { ChevronUpIcon, CogIcon, PackageIcon, TagIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
@@ -66,15 +67,10 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort, service
     data: dataTags,
     isPending: isPendingTags,
     error: errorTags,
-  } = api.docker.listTags.useQuery(
-    {
-      repository: image,
-      search: commandInputValue ? search : commandInputValue,
-    },
-    {
-      enabled: !imageIsNonDockerHub,
-    },
-  );
+  } = useQuery({
+    ...dockerTagsQuery(image, commandInputValue ? search : commandInputValue),
+    enabled: !imageIsNonDockerHub,
+  });
 
   const tagItems: TCommandItem[] | undefined = useMemo(() => {
     const items: TCommandItem[] | undefined = dataTags?.tags?.map((b) => ({

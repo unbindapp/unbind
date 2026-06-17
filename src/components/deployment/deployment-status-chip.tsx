@@ -1,6 +1,6 @@
 import BroomIcon from "@/components/icons/broom";
 import { cn } from "@/components/ui/utils";
-import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
+import { TDeploymentShallow } from "@/server/types/deployments";
 import { CircleCheckIcon, HourglassIcon, LoaderIcon, TriangleAlertIcon, XIcon } from "lucide-react";
 import { FC, useMemo } from "react";
 
@@ -41,7 +41,7 @@ export default function DeploymentStatusChip({
         className,
       )}
     >
-      <Icon className={cn("-ml-0.25 size-3.5 shrink-0", iconClassName)} />
+      <Icon className={cn("-ml-px size-3.5 shrink-0", iconClassName)} />
       <p className="min-w-0 shrink leading-tight">{statusText}</p>
     </div>
   );

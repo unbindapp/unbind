@@ -21,7 +21,7 @@ import {
   GitServiceBuilderEnum,
   TGitServiceBuilder,
   TServiceShallow,
-} from "@/server/trpc/api/services/types";
+} from "@/server/types/services";
 import { useStore } from "@tanstack/react-form";
 import { PlusIcon, WrenchIcon } from "lucide-react";
 import { useMemo, useRef } from "react";

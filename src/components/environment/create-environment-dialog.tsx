@@ -17,11 +17,9 @@ import {
 } from "@/components/ui/dialog";
 import { defaultAnimationMs } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import {
-  environmentNameMaxLength,
-  EnvironmentNameSchema,
-} from "@/server/trpc/api/environments/types";
-import { api } from "@/server/trpc/setup/client";
+import { environmentNameMaxLength, EnvironmentNameSchema } from "@/server/types/environments";
+import { createEnvironment as createEnvironmentFn } from "@/api/queries/environments";
+import { useMutation } from "@tanstack/react-query";
 import { ResultAsync } from "neverthrow";
 import {
   ButtonHTMLAttributes,
@@ -52,7 +50,7 @@ export function CreateEnvironmentDialog({
     mutateAsync: createEnvironment,
     error: createEnvironmentError,
     reset: createEnvironmentReset,
-  } = api.environments.create.useMutation();
+  } = useMutation({ mutationFn: createEnvironmentFn });
   const { asyncPush } = useAsyncPush();
   const { invalidate: invalidateProjects } = useProjectsUtils({ teamId });
   const { invalidate: invalidateProject } = useProjectUtils({ teamId, projectId });

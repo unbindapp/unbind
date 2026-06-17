@@ -17,7 +17,7 @@ import {
   TVariableForCreate,
   VariableForCreateSchema,
   VariableReferenceForCreateSchema,
-} from "@/server/trpc/api/variables/types";
+} from "@/server/types/variables";
 import { Link2Icon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";

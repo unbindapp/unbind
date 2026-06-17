@@ -1,18 +1,18 @@
 "use client";
 
-import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
-import { api } from "@/server/trpc/setup/client";
+import { systemQuery, type TSystem } from "@/api/queries/system";
+import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext } from "react";
 
-type TSystemContext = AppRouterQueryResult<AppRouterOutputs["system"]["get"]>;
+type TSystemContext = UseQueryResult<TSystem, Error>;
 
 const SystemContext = createContext<TSystemContext | null>(null);
 
 export const SystemProvider: React.FC<{
-  initialData: AppRouterOutputs["system"]["get"];
+  initialData?: TSystem;
   children: ReactNode;
 }> = ({ initialData, children }) => {
-  const query = api.system.get.useQuery(undefined, { initialData });
+  const query = useQuery({ ...systemQuery(), initialData });
   return <SystemContext.Provider value={query}>{children}</SystemContext.Provider>;
 };
 

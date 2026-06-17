@@ -2,10 +2,10 @@
 
 import Logo from "@/components/icons/logo";
 import { LinkButton } from "@/components/ui/button";
-import { usePathname } from "next/navigation";
+import { useLocation } from "@tanstack/react-router";
 
 export default function LogoLink() {
-  const pathname = usePathname();
+  const pathname = useLocation({ select: (l) => l.pathname });
   const pathnameArr = pathname.split("/");
   const teamIdFromPathname = pathnameArr.length > 1 ? pathnameArr[1] : undefined;
   const projectIdFromPathname = pathnameArr.length > 3 ? pathnameArr[3] : undefined;
@@ -17,7 +17,9 @@ export default function LogoLink() {
           size="icon"
           className="group/button h-full min-h-11.5 w-11.5 rounded-lg focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent"
           variant="ghost"
-          href={projectIdFromPathname ? `/${teamIdFromPathname}` : "/"}
+          {...(projectIdFromPathname && teamIdFromPathname
+            ? { to: "/$team_id", params: { team_id: teamIdFromPathname } }
+            : { to: "/" })}
         >
           <div className="pointer-events-none absolute top-0 left-0 h-full w-full p-1">
             <div className="has-hover:group-hover/button:bg-border group-active/button:bg-border group-focus-visible/button:ring-primary/50 h-full w-full rounded-lg group-focus-visible/button:ring-1" />

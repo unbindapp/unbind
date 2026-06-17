@@ -1,12 +1,13 @@
 "use client";
 
+import { queryKeys } from "@/api/query-keys";
+import { deploymentsListQuery, type TDeploymentsList } from "@/api/queries/deployments";
 import { useService } from "@/components/service/service-provider";
-import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
-import { api } from "@/server/trpc/setup/client";
+import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
 type TDeploymentsContext = {
-  query: AppRouterQueryResult<AppRouterOutputs["deployments"]["list"]>;
+  query: UseQueryResult<TDeploymentsList, Error>;
   teamId: string;
   projectId: string;
   environmentId: string;
@@ -19,10 +20,11 @@ export const DeploymentsProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
   const { teamId, projectId, environmentId, serviceId } = useService();
-  const query = api.deployments.list.useQuery(
-    { teamId, projectId, environmentId, serviceId },
-    { refetchInterval: 5000, staleTime: 0 },
-  );
+  const query = useQuery({
+    ...deploymentsListQuery(teamId, projectId, environmentId, serviceId),
+    refetchInterval: 5000,
+    staleTime: 0,
+  });
 
   const value = useMemo(
     () => ({ query, teamId, projectId, environmentId, serviceId }),
@@ -53,11 +55,14 @@ export const useDeploymentsUtils = ({
   environmentId: string;
   serviceId: string;
 }) => {
-  const utils = api.useUtils();
+  const queryClient = useQueryClient();
+  const queryKey = queryKeys.deployments.list(teamId, projectId, environmentId, serviceId);
   return {
-    invalidate: () =>
-      utils.deployments.list.invalidate({ teamId, projectId, environmentId, serviceId }),
-    fetch: () => utils.deployments.list.fetch({ teamId, projectId, environmentId, serviceId }),
-    refetch: () => utils.deployments.list.refetch({ teamId, projectId, environmentId, serviceId }),
+    invalidate: () => queryClient.invalidateQueries({ queryKey }),
+    fetch: () =>
+      queryClient.ensureQueryData(
+        deploymentsListQuery(teamId, projectId, environmentId, serviceId),
+      ),
+    refetch: () => queryClient.refetchQueries({ queryKey }),
   };
 };

@@ -3,7 +3,7 @@ import { cn } from "@/components/ui/utils";
 import { getVolumeUsageLevel, percentageFormatter } from "@/components/volume/helpers";
 import VolumePanel from "@/components/volume/panel/volume-panel";
 import { TVolumeUsageLevel } from "@/components/volume/types";
-import { TVolumeShallow } from "@/server/trpc/api/services/types";
+import { TVolumeShallow } from "@/server/types/services";
 import { HardDriveIcon, HourglassIcon } from "lucide-react";
 import { useMemo } from "react";
 

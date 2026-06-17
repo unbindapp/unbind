@@ -27,9 +27,10 @@ import {
   TBuilderEnum,
   TGitServiceBuilder,
   TServiceShallow,
-} from "@/server/trpc/api/services/types";
-import { TVariableForCreate } from "@/server/trpc/api/variables/types";
-import { api } from "@/server/trpc/setup/client";
+} from "@/server/types/services";
+import { TVariableForCreate } from "@/server/types/variables";
+import { gitRepositoryQuery } from "@/api/queries/git";
+import { useQuery } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
 import { ChevronUpIcon, CogIcon, GitBranchIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
@@ -229,11 +230,7 @@ export function UndeployedContentGit({
     data: dataRepository,
     isPending: isPendingRepository,
     error: errorRepository,
-  } = api.git.getRepository.useQuery({
-    owner,
-    repoName: repo,
-    installationId,
-  });
+  } = useQuery(gitRepositoryQuery(installationId, owner, repo));
 
   const branchItems: TCommandItem[] | undefined = useMemo(() => {
     const items: TCommandItem[] | undefined = dataRepository?.repository.branches?.map((b) => ({

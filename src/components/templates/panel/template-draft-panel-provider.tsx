@@ -1,7 +1,7 @@
 "use client";
 
 import { templateDraftPanelTemplateDraftIdKey } from "@/components/templates/panel/constants";
-import { useQueryState } from "nuqs";
+import { useSearchParam } from "@/lib/hooks/use-search-param";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
 type TTemplateDraftPanelContext = {
@@ -15,7 +15,7 @@ const TemplateDraftPanelContext = createContext<TTemplateDraftPanelContext | nul
 export const TemplateDraftPanelProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
-  const [currentTemplateDraftId, setCurrentTemplateDraftId] = useQueryState(
+  const [currentTemplateDraftId, setCurrentTemplateDraftId] = useSearchParam(
     templateDraftPanelTemplateDraftIdKey,
   );
 

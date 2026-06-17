@@ -1,13 +1,12 @@
 "use client";
 
 import { Slot } from "@radix-ui/react-slot";
+import { createLink, type LinkComponent } from "@tanstack/react-router";
 import { cva, type VariantProps } from "class-variance-authority";
-import Link from "next/link";
 import * as React from "react";
 
 import { cn } from "@/components/ui/utils";
 import { LoaderIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 export const minButtonSizeEnforcerClassName =
   "before:w-full before:h-full before:min-w-[44px] before:min-h-[44px] before:z-[-1] before:bg-transparent before:absolute before:-translate-y-1/2 before:top-1/2 before:-translate-x-1/2 before:left-1/2";
@@ -66,7 +65,7 @@ const buttonVariants = cva(
         lg: "px-9 py-2.5",
         icon: "size-9 shrink-0 flex items-center justify-center",
       },
-      state: {
+      loadingState: {
         default: "",
         loading: "opacity-75 disabled:opacity-75",
       },
@@ -92,7 +91,7 @@ const buttonVariants = cva(
     defaultVariants: {
       variant: "default",
       size: "default",
-      state: "default",
+      loadingState: "default",
       fadeOnDisabled: "default",
       focusVariant: "default",
       forceMinSize: "default",
@@ -136,7 +135,7 @@ function Button({
   fadeOnDisabled,
   focusVariant,
   forceMinSize,
-  state,
+  loadingState,
   isPending,
   asChild = false,
   spinnerVariants: spinnerVariantProps,
@@ -152,7 +151,7 @@ function Button({
         buttonVariants({
           variant,
           size,
-          state,
+          loadingState,
           fadeOnDisabled,
           focusVariant,
           forceMinSize,
@@ -160,7 +159,7 @@ function Button({
           className,
         }),
       )}
-      disabled={state === "loading" || isPending ? true : disabled}
+      disabled={loadingState === "loading" || isPending ? true : disabled}
       {...props}
     >
       {isPending ? (
@@ -175,91 +174,64 @@ function Button({
   );
 }
 
-export interface TLinkButtonProps
-  extends React.ComponentProps<typeof LinkCustom>,
-    VariantProps<typeof buttonVariants> {
-  asChild?: boolean;
-}
+type TLinkButtonBaseProps = Omit<React.ComponentPropsWithoutRef<"a">, "color"> &
+  VariantProps<typeof buttonVariants>;
 
-function LinkButton({
-  className,
-  variant,
-  size,
-  state,
-  fadeOnDisabled,
-  focusVariant,
-  forceMinSize,
-  children,
-  asChild,
-  ...props
-}: TLinkButtonProps) {
-  const Comp = asChild ? Slot : LinkCustom;
-  const isText = typeof children === "string";
-
-  return (
-    <Comp
-      className={cn(
-        buttonVariants({
-          variant,
-          size,
-          state,
-          fadeOnDisabled,
-          focusVariant,
-          forceMinSize,
-          layout: isText ? undefined : "flex",
-          className,
-        }),
-      )}
-      {...props}
-    >
-      {children}
-    </Comp>
-  );
-}
-
-type TPrefetch = "hover" | false;
-type TLinkCustomProps = Omit<React.ComponentProps<typeof Link>, "prefetch"> & {
-  prefetch?: TPrefetch;
-};
-
-export function LinkCustom({
-  onMouseEnter: onMouseEnterProp,
-  onTouchStart: onTouchStartProp,
-  href,
-  prefetch = "hover",
-  ...rest
-}: TLinkCustomProps) {
-  const router = useRouter();
-
-  const onMouseEnter = React.useCallback(
-    (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
-      onMouseEnterProp?.(e);
-      if (prefetch === "hover") {
-        router.prefetch(href.toString());
-      }
+// Styled anchor wired into TanStack Router via `createLink`. This is the part
+// that matters: `createLink` gives us *typed* navigation (`to`/`params`/`search`)
+// and, crucially, intercepts clicks to do client-side navigation. The old
+// approach wrapped `<Link>` and typed props as `ComponentProps<typeof Link>`,
+// which collapsed the router generics — so call sites passed `href`, it landed
+// on the anchor as a plain attribute, and every click was a full page reload
+// (the blank flash). With `createLink`, `href` isn't a navigation prop; you must
+// use `to`, and the route/params/search are all type-checked.
+const LinkButtonBase = React.forwardRef<HTMLAnchorElement, TLinkButtonBaseProps>(
+  (
+    {
+      className,
+      variant,
+      size,
+      loadingState,
+      fadeOnDisabled,
+      focusVariant,
+      forceMinSize,
+      children,
+      ...props
     },
-    [onMouseEnterProp, href, router, prefetch],
-  );
+    ref,
+  ) => {
+    const isText = typeof children === "string";
+    return (
+      <a
+        ref={ref}
+        className={cn(
+          buttonVariants({
+            variant,
+            size,
+            loadingState,
+            fadeOnDisabled,
+            focusVariant,
+            forceMinSize,
+            layout: isText ? undefined : "flex",
+            className,
+          }),
+        )}
+        {...props}
+      >
+        {children}
+      </a>
+    );
+  },
+);
+LinkButtonBase.displayName = "LinkButtonBase";
 
-  const onTouchStart = React.useCallback(
-    (e: React.TouchEvent<HTMLAnchorElement>) => {
-      onTouchStartProp?.(e);
-      if (prefetch === "hover") {
-        router.prefetch(href.toString());
-      }
-    },
-    [onTouchStartProp, href, router, prefetch],
-  );
+const CreatedLinkButton = createLink(LinkButtonBase);
 
-  return (
-    <Link
-      href={href}
-      onMouseEnter={onMouseEnter}
-      onTouchStart={onTouchStart}
-      prefetch={false}
-      {...rest}
-    />
-  );
-}
+// Router default is `preload: "intent"`, so hover/touch prefetching is automatic.
+const LinkButton: LinkComponent<typeof LinkButtonBase> = (props) => (
+  <CreatedLinkButton {...props} />
+);
+
+export type TLinkButtonProps = React.ComponentProps<typeof LinkButton>;
 
 export { Button, buttonVariants, LinkButton };

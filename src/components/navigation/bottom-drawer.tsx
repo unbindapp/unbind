@@ -99,7 +99,7 @@ function ConditionalScrollWrapper({
   return (
     <div className="flex min-h-0 w-full flex-1 flex-col">
       <div className="flex min-h-0 flex-1 flex-col">
-        <ScrollArea className="pb-[var(--safe-area-inset-bottom)]">{children}</ScrollArea>
+        <ScrollArea className="pb-(--safe-area-inset-bottom)">{children}</ScrollArea>
       </div>
     </div>
   );

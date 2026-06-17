@@ -1,20 +1,36 @@
 "use client";
 
+import { queryKeys } from "@/api/query-keys";
+import {
+  createOrUpdateVariables,
+  variablesListQuery,
+  type TCreateOrUpdateVariablesInput,
+  type TVariablesList,
+} from "@/api/queries/variables";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
-import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
-import { TVariableReferenceShallow, TVariableShallow } from "@/server/trpc/api/variables/types";
-import { api } from "@/server/trpc/setup/client";
+import { TVariableReferenceShallow, TVariableShallow } from "@/server/types/variables";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type UseMutationResult,
+  type UseQueryResult,
+} from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
 type TVariablesContext = {
-  list: AppRouterQueryResult<AppRouterOutputs["variables"]["list"]>;
-  createOrUpdate: ReturnType<typeof api.variables.createOrUpdate.useMutation>;
+  list: UseQueryResult<TVariablesList, Error>;
+  createOrUpdate: UseMutationResult<
+    Awaited<ReturnType<typeof createOrUpdateVariables>>,
+    Error,
+    TCreateOrUpdateVariablesInput
+  >;
 } & Omit<TEntityVariableTypeProps, "service">;
 
 const VariablesContext = createContext<TVariablesContext | null>(null);
 
 type TProps = {
-  initialData?: AppRouterOutputs["variables"]["list"];
+  initialData?: TVariablesList;
   refetchInterval?: number;
   children: ReactNode;
 } & Omit<TEntityVariableTypeProps, "service">;
@@ -25,14 +41,13 @@ export const VariablesProvider: React.FC<TProps> = ({
   children,
   ...typedProps
 }) => {
-  const list = api.variables.list.useQuery(
-    {
-      ...typedProps,
-    },
-    { initialData, refetchInterval },
-  );
+  const list = useQuery({
+    ...variablesListQuery(typedProps),
+    initialData,
+    refetchInterval,
+  });
 
-  const createOrUpdate = api.variables.createOrUpdate.useMutation();
+  const createOrUpdate = useMutation({ mutationFn: createOrUpdateVariables });
 
   const value: TVariablesContext = useMemo(
     () => ({
@@ -63,24 +78,11 @@ export const useVariablesUtils = ({
   serviceId,
   type,
 }: Omit<TEntityVariableTypeProps, "service">) => {
-  const utils = api.useUtils();
+  const queryClient = useQueryClient();
+  const queryKey = queryKeys.variables.list({ teamId, projectId, environmentId, serviceId, type });
   return {
-    invalidate: () =>
-      utils.variables.list.invalidate({
-        teamId,
-        projectId,
-        environmentId,
-        serviceId,
-        type,
-      }),
-    refetch: () =>
-      utils.variables.list.refetch({
-        teamId,
-        projectId,
-        environmentId,
-        serviceId,
-        type,
-      }),
+    invalidate: () => queryClient.invalidateQueries({ queryKey }),
+    refetch: () => queryClient.refetchQueries({ queryKey }),
     optimisticRemove: ({
       variables,
       variableReferences,
@@ -88,35 +90,28 @@ export const useVariablesUtils = ({
       variables: TVariableShallow[];
       variableReferences: TVariableReferenceShallow[];
     }) => {
-      utils.variables.list.setData(
-        { teamId, projectId, environmentId, serviceId, type },
-        (data) => {
-          if (!data) return data;
-          const newData: AppRouterOutputs["variables"]["list"] = {
-            ...data,
-            variables: data.variables.filter((v1) => {
-              const shouldRemove = variables.some((v2) =>
-                areVariablesMatching({ variable1: v1, variable2: v2 }),
-              );
-              return !shouldRemove;
-            }),
-            variable_references: data.variable_references.filter((v1) => {
-              const shouldRemove = variableReferences.some((v2) => v1.id === v2.id);
-              return !shouldRemove;
-            }),
-          };
-          return newData;
-        },
-      );
+      queryClient.setQueryData<TVariablesList>(queryKey, (data) => {
+        if (!data) return data;
+        return {
+          ...data,
+          variables: data.variables.filter((v1) => {
+            const shouldRemove = variables.some((v2) =>
+              areVariablesMatching({ variable1: v1, variable2: v2 }),
+            );
+            return !shouldRemove;
+          }),
+          variable_references: data.variable_references.filter((v1) => {
+            const shouldRemove = variableReferences.some((v2) => v1.id === v2.id);
+            return !shouldRemove;
+          }),
+        };
+      });
     },
     setVariables: (variables: TVariableShallow[]) => {
-      utils.variables.list.setData(
-        { teamId, projectId, environmentId, serviceId, type },
-        (old) => ({
-          variables,
-          variable_references: old?.variable_references || [],
-        }),
-      );
+      queryClient.setQueryData<TVariablesList>(queryKey, (old) => ({
+        variables,
+        variable_references: old?.variable_references || [],
+      }));
     },
   };
 };

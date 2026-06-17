@@ -3,18 +3,9 @@ import LogoLink from "@/components/navigation/logo-link";
 import NavbarScrollArea from "@/components/navigation/navbar-scroll-area";
 import UserAvatarOrSignIn from "@/components/navigation/user-avatar-or-sign-in";
 import { cn } from "@/components/ui/utils";
-import { auth } from "@/server/auth/auth";
 import { Children, isValidElement, ReactNode } from "react";
 
-export async function Navbar({
-  children,
-  className,
-}: {
-  className?: string;
-  children?: ReactNode;
-}) {
-  const session = await auth();
-
+export function Navbar({ children, className }: { className?: string; children?: ReactNode }) {
   // Filter children by component type
   const childrenArray = Children.toArray(children);
   const breadcrumb = childrenArray.find(
@@ -37,7 +28,7 @@ export async function Navbar({
   return (
     <nav
       className={cn(
-        `bg-background fixed bottom-0 left-0 z-40 flex w-full flex-col items-stretch justify-between border-t pb-[var(--safe-area-inset-bottom)] sm:sticky sm:top-0 sm:border-t-0 sm:border-b sm:pb-0`,
+        `bg-background fixed bottom-0 left-0 z-40 flex w-full flex-col items-stretch justify-between border-t pb-(--safe-area-inset-bottom) sm:sticky sm:top-0 sm:border-t-0 sm:border-b sm:pb-0`,
         className,
       )}
     >
@@ -61,7 +52,7 @@ export async function Navbar({
           )}
         </div>
         <div className="flex shrink-0 items-center justify-end">
-          <UserAvatarOrSignIn session={session} />
+          <UserAvatarOrSignIn />
         </div>
       </div>
       {tabsMd && (

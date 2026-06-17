@@ -4,7 +4,7 @@ import { UndeployedContentDockerImage } from "@/components/service/panel/content
 import { UndeployedContentGit } from "@/components/service/panel/content/undeployed/service-types/undeployed-git";
 import { useService } from "@/components/service/service-provider";
 import VariableReferencesProvider from "@/components/variables/variable-references-provider";
-import { TServiceShallow } from "@/server/trpc/api/services/types";
+import { TServiceShallow } from "@/server/types/services";
 import { HTMLAttributes, ReactNode } from "react";
 
 type TProps = {

@@ -3,43 +3,21 @@ FROM node:22 AS builder
 
 WORKDIR /app
 
-# Copy package files
+# Install dependencies
 COPY package.json package-lock.json* ./
-
-# Install dependencies with exact versions and clean cache to reduce size
 RUN npm ci && npm cache clean --force
 
 COPY . .
 
-# Set environment variable for Next.js to build in production mode
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-
-# Run build
+# Build the static SPA to /app/dist
 RUN npm run build
 
-# 2. Runner stage
-FROM node:22-slim AS runner
+# 2. Static serve stage — no Node at runtime, just nginx serving static files.
+FROM nginx:1.27-alpine AS runner
 
-WORKDIR /app
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-RUN groupadd --system --gid 1001 nodejs
-RUN useradd --system --uid 1001 --gid 1001 nextjs
+EXPOSE 80
 
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-
-COPY --from=builder /app/next.config.ts ./
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/package.json ./package.json
-
-# Requires output: standalone in next.config.ts
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-# Switch to non-root user
-USER nextjs
-
-EXPOSE 3000
-
-CMD ["node", "server.js"]
+CMD ["nginx", "-g", "daemon off;"]

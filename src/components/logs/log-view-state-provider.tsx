@@ -1,11 +1,11 @@
 "use client";
 
-import { parseAsString, useQueryState } from "nuqs";
-import { createContext, Dispatch, ReactNode, useContext, useMemo } from "react";
+import { useSearchParam } from "@/lib/hooks/use-search-param";
+import { createContext, ReactNode, useContext, useMemo } from "react";
 
 type TLogViewStateContext = {
   search: string;
-  setSearch: Dispatch<React.SetStateAction<string>>;
+  setSearch: (value: string | null) => void;
 };
 
 const LogViewStateContext = createContext<TLogViewStateContext | null>(null);
@@ -13,7 +13,7 @@ const LogViewStateContext = createContext<TLogViewStateContext | null>(null);
 export const LogViewStateProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
-  const [search, setSearch] = useQueryState("q", parseAsString.withDefault(""));
+  const [search, setSearch] = useSearchParam<string>("q", "");
 
   const value = useMemo(
     () => ({

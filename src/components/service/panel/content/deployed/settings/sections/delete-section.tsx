@@ -6,8 +6,9 @@ import { useService } from "@/components/service/service-provider";
 import DeleteCard from "@/components/settings/delete-card";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { cn } from "@/components/ui/utils";
-import { TServiceShallow } from "@/server/trpc/api/services/types";
-import { api } from "@/server/trpc/setup/client";
+import { TServiceShallow } from "@/server/types/services";
+import { deleteService as deleteServiceFn } from "@/api/queries/services";
+import { useMutation } from "@tanstack/react-query";
 import { Trash2Icon } from "lucide-react";
 import { useMemo } from "react";
 
@@ -28,7 +29,8 @@ export default function DeleteSection({ service, className }: Props) {
     mutateAsync: deleteService,
     error,
     reset,
-  } = api.services.delete.useMutation({
+  } = useMutation({
+    mutationFn: deleteServiceFn,
     onSuccess: () => {
       closePanel();
       invalidate();

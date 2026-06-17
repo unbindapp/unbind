@@ -1,15 +1,12 @@
 import { commandPanelKey, commandPanelPageKey } from "@/components/command-panel/constants";
 import { useCommandPanelStore } from "@/components/command-panel/store/command-panel-store-provider";
 import { defaultAnimationMs } from "@/lib/constants";
-import { parseAsString, useQueryState } from "nuqs";
+import { useSearchParam } from "@/lib/hooks/use-search-param";
 import { useMemo, useRef } from "react";
 
 export default function useCommandPanel({ defaultPageId }: { defaultPageId: string }) {
-  const [panelId, setPanelId] = useQueryState(commandPanelKey);
-  const [panelPageId, setPanelPageId] = useQueryState(
-    commandPanelPageKey,
-    parseAsString.withDefault(defaultPageId),
-  );
+  const [panelId, setPanelId] = useSearchParam(commandPanelKey);
+  const [panelPageId, setPanelPageId] = useSearchParam(commandPanelPageKey, defaultPageId);
   const timeout = useRef<NodeJS.Timeout | null>(null);
   const clearInputValue = useCommandPanelStore((s) => s.clearInputValue);
 

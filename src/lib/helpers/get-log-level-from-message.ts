@@ -1,0 +1,11 @@
+import { TLogLineWithLevel } from "@/server/types/logs";
+
+export function getLogLevelFromMessage(message: string): TLogLineWithLevel["level"] {
+  if (/(\s|^|[^a-zA-Z0-9])(error|fatal|fail|failed)(\s|$|[^a-zA-Z0-9])/i.test(message)) {
+    return "error";
+  }
+  if (/(\s|^|[^a-zA-Z0-9])(warn|warning)(\s|$|[^a-zA-Z0-9])/i.test(message)) {
+    return "warn";
+  }
+  return "info";
+}

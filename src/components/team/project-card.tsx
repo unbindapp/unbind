@@ -5,8 +5,9 @@ import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import { Button, LinkButton, TButtonVariants } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import { TProjectShallow } from "@/server/trpc/api/projects/types";
-import { api } from "@/server/trpc/setup/client";
+import { deleteProject as deleteProjectFn } from "@/api/queries/projects";
+import { TProjectShallow } from "@/server/types/projects";
+import { useMutation } from "@tanstack/react-query";
 import { ReactNode } from "react";
 
 type TProps = {
@@ -33,11 +34,17 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
 
   const environmentCount = !isPlaceholder ? environments.length : 1;
 
-  const href = !isPlaceholder
-    ? !defaultEnvironment
+  // undefined = placeholder (no navigation), null = real project missing a
+  // default environment (delete trigger instead), object = typed navigation.
+  const linkProps = isPlaceholder
+    ? undefined
+    : !defaultEnvironment
       ? null
-      : `${project.team_id}/project/${project.id}?environment=${defaultEnvironment.id}`
-    : "";
+      : ({
+          to: "/$team_id/project/$project_id",
+          params: { team_id: project.team_id, project_id: project.id },
+          search: { environment: defaultEnvironment.id },
+        } as const);
 
   return (
     <li
@@ -46,7 +53,7 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
     >
       <ConditionalButton
         project={project}
-        href={href}
+        linkProps={linkProps}
         variant="ghost"
         className="bg-background-hover flex min-h-36 w-full flex-col items-start gap-12 rounded-xl border px-5 py-3.5 text-left font-semibold"
       >
@@ -91,14 +98,20 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
   );
 }
 
+type TCardLinkProps = {
+  to: "/$team_id/project/$project_id";
+  params: { team_id: string; project_id: string };
+  search: { environment: string };
+};
+
 function ConditionalButton({
-  href,
+  linkProps,
   variant,
   project,
   className,
   children,
 }: {
-  href: string | null;
+  linkProps: TCardLinkProps | null | undefined;
   variant: TButtonVariants["variant"];
   project?: TProjectShallow;
   className: string;
@@ -109,14 +122,23 @@ function ConditionalButton({
     mutateAsync: deleteProject,
     error,
     reset,
-  } = api.projects.delete.useMutation({
+  } = useMutation({
+    mutationFn: deleteProjectFn,
     onSuccess: () => {
       invalidate();
     },
   });
   const { asyncPush } = useAsyncPush();
 
-  if (href === null) {
+  if (linkProps === undefined) {
+    return (
+      <Button variant={variant} className={className}>
+        {children}
+      </Button>
+    );
+  }
+
+  if (linkProps === null) {
     return (
       <DeleteEntityTrigger
         dialogTitle="Delete Project"
@@ -138,7 +160,7 @@ function ConditionalButton({
   }
 
   return (
-    <LinkButton href={href} variant={variant} className={className}>
+    <LinkButton {...linkProps} variant={variant} className={className}>
       {children}
     </LinkButton>
   );

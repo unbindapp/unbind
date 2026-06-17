@@ -24,8 +24,8 @@ import {
 } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getDurationStr } from "@/lib/hooks/use-time-difference";
-import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
-import { TServiceShallow } from "@/server/trpc/api/services/types";
+import { TDeploymentShallow } from "@/server/types/deployments";
+import { TServiceShallow } from "@/server/types/services";
 import { RocketIcon, XIcon } from "lucide-react";
 import { FC, ReactNode } from "react";
 
@@ -123,7 +123,7 @@ export default function DeploymentPanel({ service }: TProps) {
                     <ServiceIcon
                       service={service}
                       color="monochrome"
-                      className="-ml-0.25 size-4 sm:size-4.5"
+                      className="-ml-px size-4 sm:size-4.5"
                     />
                     <p className="min-w-0 shrink truncate">
                       {service.name} <span className="text-muted-more-foreground">/</span>{" "}
@@ -169,7 +169,7 @@ export default function DeploymentPanel({ service }: TProps) {
                     <ServiceIcon
                       service={service}
                       color="monochrome"
-                      className="-ml-0.25 size-4 sm:size-4.5"
+                      className="-ml-px size-4 sm:size-4.5"
                     />
                     <p className="min-w-0 shrink truncate">
                       {service.name} <span className="text-muted-more-foreground">/</span>{" "}

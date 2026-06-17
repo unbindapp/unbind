@@ -287,6 +287,7 @@ export function setDateByType(date: Date, value: string, type: TimePickerType, p
 }
 
 export function getDateByType(date: Date, type: TimePickerType) {
+  const hours = display12HourValue(date.getHours());
   switch (type) {
     case "minutes":
       return getValidMinuteOrSecond(String(date.getMinutes()));
@@ -295,7 +296,6 @@ export function getDateByType(date: Date, type: TimePickerType) {
     case "hours":
       return getValidHour(String(date.getHours()));
     case "12hours":
-      const hours = display12HourValue(date.getHours());
       return getValid12Hour(String(hours));
     default:
       return "00";

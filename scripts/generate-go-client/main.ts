@@ -316,7 +316,7 @@ async ${paramSignature}${responseType ? `: Promise<${responseType}>` : ""} => {
     if (!apiUrl || typeof apiUrl !== 'string') {
       throw new Error('API URL is undefined or not a string');
     }
-    const url = new URL(\`\${apiUrl}${urlTemplate}\`);
+    const url = new URL(\`\${apiUrl}${urlTemplate}\`, typeof window !== 'undefined' ? window.location.origin : undefined);
     ${
       queryType
         ? `const validatedQuery = ${queryParse};
@@ -331,9 +331,9 @@ async ${paramSignature}${responseType ? `: Promise<${responseType}>` : ""} => {
     }
     const options: RequestInit = {
       method: "${method.toUpperCase()}",
+      credentials: "include",
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": \`Bearer \${accessToken}\`
+        "Content-Type": "application/json"
       },
       ...fetchOptions
     };
@@ -343,7 +343,7 @@ async ${paramSignature}${responseType ? `: Promise<${responseType}>` : ""} => {
     options.body = JSON.stringify(validatedBody);`
         : ""
     }
-    const response = await fetch(url.toString(), options);
+    const response = await fetchFn(url.toString(), options);
     if (!response.ok) {
       console.log(\`GO API request failed with status \${response.status}: \${response.statusText}\`);
       const data = await response.json();
@@ -540,11 +540,11 @@ async function main() {
       "\n\n" +
       `
         export type ClientOptions = {
-          accessToken: string;
           apiUrl: string;
+          fetchFn?: typeof fetch;
         };
 
-        export function createClient({ accessToken, apiUrl }: ClientOptions) {
+        export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           return ${clientTreeOutput};
         }
       `;

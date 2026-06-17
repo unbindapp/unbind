@@ -14,7 +14,8 @@ import { formatGB } from "@/lib/helpers/format-gb";
 import { generateDomain } from "@/lib/helpers/generate-domain";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TemplateInputTypeSchema } from "@/server/go/client.gen";
-import { api } from "@/server/trpc/setup/client";
+import { deployTemplate as deployTemplateFn } from "@/api/queries/templates";
+import { useMutation } from "@tanstack/react-query";
 import {
   ArchiveIcon,
   DatabaseIcon,
@@ -93,7 +94,8 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
     mutateAsync: deployTemplate,
     error: errorDeployTemplate,
     isPending: isPendingDeployTemplate,
-  } = api.templates.deploy.useMutation({
+  } = useMutation({
+    mutationFn: deployTemplateFn,
     onSuccess: async () => {
       const res = await ResultAsync.fromPromise(
         invalidateServices(),
@@ -308,7 +310,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
               >
                 {isPending && (
                   <div className="absolute top-0 left-0 h-full w-full items-center justify-center overflow-hidden rounded-lg">
-                    <div className="from-foreground/0 via-foreground to-foreground/0 animate-ping-pong absolute top-1/2 left-1/2 aspect-square w-full origin-center -translate-1/2 bg-gradient-to-r" />
+                    <div className="from-foreground/0 via-foreground to-foreground/0 animate-ping-pong absolute top-1/2 left-1/2 aspect-square w-full origin-center -translate-1/2 bg-linear-to-r" />
                   </div>
                 )}
                 <div className="relative flex w-full items-center justify-center gap-1.5">

@@ -3,7 +3,7 @@ import ErrorLine from "@/components/error-line";
 import LogViewer from "@/components/logs/log-viewer";
 import TabWrapper from "@/components/navigation/tab-wrapper";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
+import { TDeploymentShallow } from "@/server/types/deployments";
 import { TriangleAlertIcon } from "lucide-react";
 
 type TProps = {

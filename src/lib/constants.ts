@@ -1,4 +1,4 @@
-import { TService } from "@/server/trpc/api/services/types";
+import { TService } from "@/server/types/services";
 
 export const siteTitle = "Unbind";
 export const siteTagline = "Self-hosting done right";

@@ -20,6 +20,10 @@
 # production
 /build
 
+# vite / tanstack router
+/dist
+src/routeTree.gen.ts
+
 # misc
 .DS_Store
 *.pem
@@ -41,3 +45,7 @@ yarn-error.log*
 next-env.d.ts
 
 go-openapi.yaml
+
+.tanstack
+.claude
+MIGRATION_PLAN.md

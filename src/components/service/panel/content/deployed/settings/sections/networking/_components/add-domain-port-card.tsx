@@ -17,7 +17,7 @@ import { cn } from "@/components/ui/utils";
 import { validateDomain } from "@/lib/helpers/validate-domain";
 import { validatePort } from "@/lib/helpers/validate-port";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { TServiceShallow } from "@/server/trpc/api/services/types";
+import { TServiceShallow } from "@/server/types/services";
 import {
   CheckCircleIcon,
   ChevronUpIcon,
