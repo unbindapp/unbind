@@ -1,0 +1,31 @@
+# We need these rbac rules so our builder can create, update, and delete apps
+# Gotta figure out how to make this more flexible
+# clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: app-crd-creator
+rules:
+- apiGroups: ["unbind.unbind.app"]
+  resources: ["services"]
+  verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
+---
+# clusterrolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: app-crd-creator-binding
+subjects:
+- kind: ServiceAccount
+  name: builder-serviceaccount 
+  namespace: unbind-system   
+roleRef:
+  kind: ClusterRole
+  name: app-crd-creator
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: builder-serviceaccount
+  namespace: unbind-system

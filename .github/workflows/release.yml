@@ -1,0 +1,203 @@
+name: 🚀 Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  version:
+    name: Resolve version
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - id: v
+        run: echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+
+  images:
+    name: 🔨 Build images
+    needs: version
+    strategy:
+      matrix:
+        include:
+          - platform: linux/amd64
+            runs-on: ubuntu-24.04
+            arch: amd64
+          - platform: linux/arm64
+            runs-on: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.runs-on }}
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: App image (SPA + API)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: ${{ matrix.platform }}
+          provenance: false
+          push: true
+          build-args: |
+            VERSION=${{ env.VERSION }}
+            BUILD_IMAGE=ghcr.io/unbindapp/unbind-builder:${{ env.VERSION }}
+          tags: ghcr.io/unbindapp/unbind:${{ env.VERSION }}-${{ matrix.arch }}
+          cache-from: type=gha,scope=app-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=app-${{ matrix.arch }}
+
+      - name: Builder image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile.builder
+          platforms: ${{ matrix.platform }}
+          provenance: false
+          push: true
+          build-args: |
+            VERSION=${{ env.VERSION }}
+          tags: ghcr.io/unbindapp/unbind-builder:${{ env.VERSION }}-${{ matrix.arch }}
+          cache-from: type=gha,scope=builder-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=builder-${{ matrix.arch }}
+
+      - name: Operator image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./apps/operator
+          file: ./apps/operator/Dockerfile
+          platforms: ${{ matrix.platform }}
+          provenance: false
+          push: true
+          tags: ghcr.io/unbindapp/unbind-operator:${{ env.VERSION }}-${{ matrix.arch }}
+          cache-from: type=gha,scope=operator-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=operator-${{ matrix.arch }}
+
+  manifests:
+    name: 📦 Multi-arch manifests
+    needs: [version, images]
+    runs-on: ubuntu-24.04
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create and push manifests
+        run: |
+          for IMAGE in \
+            ghcr.io/unbindapp/unbind \
+            ghcr.io/unbindapp/unbind-builder \
+            ghcr.io/unbindapp/unbind-operator; do
+            docker manifest create "$IMAGE:$VERSION" \
+              --amend "$IMAGE:$VERSION-amd64" \
+              --amend "$IMAGE:$VERSION-arm64"
+            docker manifest annotate --arch amd64 --os linux "$IMAGE:$VERSION" "$IMAGE:$VERSION-amd64"
+            docker manifest annotate --arch arm64 --os linux "$IMAGE:$VERSION" "$IMAGE:$VERSION-arm64"
+            docker manifest push "$IMAGE:$VERSION"
+          done
+
+  installer:
+    name: 🧰 Build installer binaries
+    needs: version
+    runs-on: ubuntu-24.04
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    defaults:
+      run:
+        working-directory: ./apps/installer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: ./apps/installer/go.mod
+      - name: Build, compress, checksum
+        run: |
+          for ARCH in amd64 arm64; do
+            GOOS=linux CGO_ENABLED=0 GOARCH="$ARCH" \
+              go build -trimpath -ldflags "-s -w -X main.Version=${VERSION}" \
+              -o "unbind-installer-$ARCH" ./cmd
+            gzip -9 -f "unbind-installer-$ARCH"
+            sha256sum "unbind-installer-$ARCH.gz" > "unbind-installer-$ARCH.gz.sha256"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installer-binaries
+          path: |
+            apps/installer/unbind-installer-*.gz
+            apps/installer/unbind-installer-*.gz.sha256
+
+  release:
+    name: 📝 GitHub Release
+    needs: [version, manifests, installer]
+    runs-on: ubuntu-24.04
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: installer-binaries
+          path: dist
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -z "$PREVIOUS_TAG" ]; then
+            CHANGELOG=$(git log --oneline --pretty=format:"- %s (%h)" | head -50)
+          else
+            CHANGELOG=$(git log --oneline --pretty=format:"- %s (%h)" "$PREVIOUS_TAG"..HEAD)
+          fi
+          {
+            echo "body<<EOF"
+            echo "## 🚀 Unbind ${VERSION}"
+            echo ""
+            echo "### 📦 Container Images"
+            echo ""
+            echo "| Component | Image |"
+            echo "|-----------|-------|"
+            echo "| App (SPA + API) | \`ghcr.io/unbindapp/unbind:${VERSION}\` |"
+            echo "| Builder | \`ghcr.io/unbindapp/unbind-builder:${VERSION}\` |"
+            echo "| Operator | \`ghcr.io/unbindapp/unbind-operator:${VERSION}\` |"
+            echo ""
+            echo "### 🧰 Installer"
+            echo ""
+            echo '```bash'
+            echo "curl -fsSL https://raw.githubusercontent.com/unbindapp/unbind/main/apps/installer/install.sh | sh"
+            echo '```'
+            echo ""
+            echo "### 📝 What's Changed"
+            echo ""
+            echo "${CHANGELOG}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.VERSION }}
+          name: Unbind ${{ env.VERSION }}
+          body: ${{ steps.changelog.outputs.body }}
+          prerelease: ${{ contains(env.VERSION, '-') }}
+          files: |
+            dist/unbind-installer-amd64.gz
+            dist/unbind-installer-amd64.gz.sha256
+            dist/unbind-installer-arm64.gz
+            dist/unbind-installer-arm64.gz.sha256

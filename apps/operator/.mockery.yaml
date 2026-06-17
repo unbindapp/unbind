@@ -1,0 +1,11 @@
+with-expecter: true
+packages:
+  github.com/unbindapp/unbind-operator/internal/resourcebuilder:
+    config:
+      dir: ./mocks/resourcebuilder
+    interfaces:
+      ResourceBuilderInterface:
+        config:
+          filename: resourcebuilder_mock.go
+          mockName: ResourceBuilderMock
+          outpkg: mocks_resource_builder

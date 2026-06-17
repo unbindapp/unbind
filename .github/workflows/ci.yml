@@ -1,0 +1,95 @@
+name: 🧪 CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-24.04
+    outputs:
+      api: ${{ steps.filter.outputs.api }}
+      web: ${{ steps.filter.outputs.web }}
+      operator: ${{ steps.filter.outputs.operator }}
+      installer: ${{ steps.filter.outputs.installer }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            api:
+              - 'apps/api/**'
+            web:
+              - 'apps/web/**'
+            operator:
+              - 'apps/operator/**'
+            installer:
+              - 'apps/installer/**'
+
+  api:
+    name: Go API
+    needs: changes
+    if: ${{ needs.changes.outputs.api == 'true' }}
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: ./apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: ./apps/api/go.mod
+      - run: go test ./...
+
+  web:
+    name: Web
+    needs: changes
+    if: ${{ needs.changes.outputs.web == 'true' }}
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: ./apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: apps/web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+
+  operator:
+    name: Operator
+    needs: changes
+    if: ${{ needs.changes.outputs.operator == 'true' }}
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: ./apps/operator
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: ./apps/operator/go.mod
+      - run: go build ./...
+      - run: go test ./...
+
+  installer:
+    name: Installer
+    needs: changes
+    if: ${{ needs.changes.outputs.installer == 'true' }}
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: ./apps/installer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: ./apps/installer/go.mod
+      - run: go build ./...

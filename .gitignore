@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
-/node_modules
+# --- Web (apps/web) ---
+node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -9,43 +9,47 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
-
-# testing
 /coverage
+apps/web/dist
+apps/web/src/routeTree.gen.ts
+*.tsbuildinfo
+.tanstack
+.vercel
 
-# next.js
-/.next/
-/out/
+# --- Compiled Go binaries / build output ---
+apps/*/bin/
+apps/api/cmd/api/api
+apps/api/cmd/cli/cli
+apps/api/cmd/builder/builder
+apps/installer/unbind-installer-*
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+go.work.sum
+# Embedded SPA build, copied in at image build time (keep the stub)
+apps/api/internal/web/dist/*
+!apps/api/internal/web/dist/index.html
+# Local dev infra state (docker-compose volumes)
+deploy/compose/.data/*/**
+!deploy/compose/.data/*/.gitkeep
+apps/api/.data/*/**
+!apps/api/.data/*/.gitkeep
 
-# production
-/build
+# --- Generated / shared ---
+go-openapi.yaml
 
-# vite / tanstack router
-/dist
-src/routeTree.gen.ts
-
-# misc
+# --- Misc ---
 .DS_Store
 *.pem
-
-# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
 .env*
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-go-openapi.yaml
-
-.tanstack
 .claude
 MIGRATION_PLAN.md

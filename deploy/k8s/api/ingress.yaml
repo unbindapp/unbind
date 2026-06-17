@@ -1,0 +1,104 @@
+# Root: serves the embedded SPA (and root API routes, for legacy/cross-origin clients).
+# Both hosts point at the merged unbind-api service.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: unbind-api-ingress
+  namespace: unbind
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      real_ip_header CF-Connecting-IP;
+    nginx.ingress.kubernetes.io/eventsource: "true"
+    nginx.ingress.kubernetes.io/add-base-url: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/websocket-services: "unbind-api"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "1800"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "21600"
+    nginx.ingress.kubernetes.io/proxy-body-size: 10m
+    nginx.ingress.kubernetes.io/upstream-hash-by: $realip_remote_addr
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-name: "unbind-api-server"
+    nginx.ingress.kubernetes.io/session-cookie-expires: "172800"
+    nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
+spec:
+  tls:
+    - hosts:
+        - api.unbind.app
+      secretName: api-unbind-app-tls
+    - hosts:
+        - app.unbind.app
+      secretName: app-unbind-app-tls
+  rules:
+    - host: api.unbind.app
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: unbind-api
+                port:
+                  number: 8089
+    - host: app.unbind.app
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: unbind-api
+                port:
+                  number: 8089
+---
+# Same-origin API paths for the embedded SPA. The merged image serves API routes
+# at root, so strip /api/go and /api/oauth2 before they reach the service — this
+# mirrors the charts/self-hosted ingress and lets the SPA (apiUrl=/api/go) work.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: unbind-api-go-ingress
+  namespace: unbind
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/eventsource: "true"
+    nginx.ingress.kubernetes.io/websocket-services: "unbind-api"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "1800"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "21600"
+    nginx.ingress.kubernetes.io/proxy-body-size: 10m
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-name: "unbind-api-server"
+    nginx.ingress.kubernetes.io/upstream-hash-by: $realip_remote_addr
+spec:
+  tls:
+    - hosts:
+        - api.unbind.app
+      secretName: api-unbind-app-tls
+    - hosts:
+        - app.unbind.app
+      secretName: app-unbind-app-tls
+  rules:
+    - host: api.unbind.app
+      http: &go_paths
+        paths:
+          - path: /api/go(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: unbind-api
+                port:
+                  number: 8089
+          - path: /api/oauth2(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: unbind-api
+                port:
+                  number: 8089
+    - host: app.unbind.app
+      http: *go_paths
