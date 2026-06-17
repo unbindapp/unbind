@@ -8,7 +8,7 @@ import {
 import TeamBreadcrumb from "@/components/team/team-breadcrumb";
 import TeamTabs from "@/components/team/team-tabs";
 
-export default async function TeamNavbar() {
+export default function TeamNavbar() {
   return (
     <Navbar>
       <NavbarBreadcrumb>

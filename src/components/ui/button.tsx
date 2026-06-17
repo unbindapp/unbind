@@ -1,7 +1,7 @@
 "use client";
 
 import { Slot } from "@radix-ui/react-slot";
-import { Link } from "@tanstack/react-router";
+import { createLink, type LinkComponent } from "@tanstack/react-router";
 import { cva, type VariantProps } from "class-variance-authority";
 import * as React from "react";
 
@@ -174,44 +174,64 @@ function Button({
   );
 }
 
-export type TLinkButtonProps = React.ComponentProps<typeof Link> &
+type TLinkButtonBaseProps = Omit<React.ComponentPropsWithoutRef<"a">, "color"> &
   VariantProps<typeof buttonVariants>;
 
-function LinkButton({
-  className,
-  variant,
-  size,
-  loadingState,
-  fadeOnDisabled,
-  focusVariant,
-  forceMinSize,
-  children,
-  ...props
-}: TLinkButtonProps) {
-  // TanStack Router preloads on intent by default (router `defaultPreload: "intent"`),
-  // so no manual hover/touch prefetching is needed. The button's `loadingState` style
-  // variant is named so it doesn't collide with TanStack Link's own `state` prop.
-  const isText = typeof children === "string";
+// Styled anchor wired into TanStack Router via `createLink`. This is the part
+// that matters: `createLink` gives us *typed* navigation (`to`/`params`/`search`)
+// and, crucially, intercepts clicks to do client-side navigation. The old
+// approach wrapped `<Link>` and typed props as `ComponentProps<typeof Link>`,
+// which collapsed the router generics — so call sites passed `href`, it landed
+// on the anchor as a plain attribute, and every click was a full page reload
+// (the blank flash). With `createLink`, `href` isn't a navigation prop; you must
+// use `to`, and the route/params/search are all type-checked.
+const LinkButtonBase = React.forwardRef<HTMLAnchorElement, TLinkButtonBaseProps>(
+  (
+    {
+      className,
+      variant,
+      size,
+      loadingState,
+      fadeOnDisabled,
+      focusVariant,
+      forceMinSize,
+      children,
+      ...props
+    },
+    ref,
+  ) => {
+    const isText = typeof children === "string";
+    return (
+      <a
+        ref={ref}
+        className={cn(
+          buttonVariants({
+            variant,
+            size,
+            loadingState,
+            fadeOnDisabled,
+            focusVariant,
+            forceMinSize,
+            layout: isText ? undefined : "flex",
+            className,
+          }),
+        )}
+        {...props}
+      >
+        {children}
+      </a>
+    );
+  },
+);
+LinkButtonBase.displayName = "LinkButtonBase";
 
-  return (
-    <Link
-      className={cn(
-        buttonVariants({
-          variant,
-          size,
-          loadingState,
-          fadeOnDisabled,
-          focusVariant,
-          forceMinSize,
-          layout: isText ? undefined : "flex",
-          className,
-        }),
-      )}
-      {...props}
-    >
-      {children}
-    </Link>
-  );
-}
+const CreatedLinkButton = createLink(LinkButtonBase);
+
+// Router default is `preload: "intent"`, so hover/touch prefetching is automatic.
+const LinkButton: LinkComponent<typeof LinkButtonBase> = (props) => (
+  <CreatedLinkButton {...props} />
+);
+
+export type TLinkButtonProps = React.ComponentProps<typeof LinkButton>;
 
 export { Button, buttonVariants, LinkButton };

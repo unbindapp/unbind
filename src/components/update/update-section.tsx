@@ -123,7 +123,7 @@ function UpdateSectionInner({
         {updatePhase === "idle" && (
           <>
             <div className="flex w-full px-1 py-1.5 sm:w-1/2">
-              <LinkButton href="/" variant="outline" className="text-muted-foreground w-full">
+              <LinkButton to="/" variant="outline" className="text-muted-foreground w-full">
                 Do it later
               </LinkButton>
             </div>
@@ -150,7 +150,7 @@ function UpdateSectionInner({
         )}
         {updatePhase === "succeeded" && (
           <div className="flex w-full px-1 py-1.5 sm:w-1/2">
-            <LinkButton href="/" className="w-full">
+            <LinkButton to="/" className="w-full">
               Go Home
             </LinkButton>
           </div>

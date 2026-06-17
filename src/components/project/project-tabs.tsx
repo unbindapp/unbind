@@ -9,9 +9,14 @@ import { useEffect, useMemo, useState } from "react";
 
 type TTab = {
   title: string;
-  href: string;
+  to:
+    | "/$team_id/project/$project_id"
+    | "/$team_id/project/$project_id/logs"
+    | "/$team_id/project/$project_id/metrics"
+    | "/$team_id/project/$project_id/settings";
+  // Resolved pathname used only for active-tab matching (navigation uses `to`).
+  matchPath: string;
   strictMatch?: boolean;
-  searchParamStr: string;
 };
 
 export default function ProjectTabs({
@@ -28,32 +33,27 @@ export default function ProjectTabs({
 
   const tabs: TTab[] = useMemo(() => {
     const baseTabUrl = `/${teamId}/project/${projectId}`;
-    const environment = `?environment=${environmentId}`;
     const t: TTab[] = [
       {
         title: "Services",
-        href: baseTabUrl,
+        to: "/$team_id/project/$project_id",
+        matchPath: baseTabUrl,
         strictMatch: true,
-        searchParamStr: environment,
       },
-      {
-        title: "Logs",
-        href: `${baseTabUrl}/logs`,
-        searchParamStr: environment,
-      },
+      { title: "Logs", to: "/$team_id/project/$project_id/logs", matchPath: `${baseTabUrl}/logs` },
       {
         title: "Metrics",
-        href: `${baseTabUrl}/metrics`,
-        searchParamStr: environment,
+        to: "/$team_id/project/$project_id/metrics",
+        matchPath: `${baseTabUrl}/metrics`,
       },
       {
         title: "Settings",
-        href: `${baseTabUrl}/settings`,
-        searchParamStr: environment,
+        to: "/$team_id/project/$project_id/settings",
+        matchPath: `${baseTabUrl}/settings`,
       },
     ];
     return t;
-  }, [teamId, projectId, environmentId]);
+  }, [teamId, projectId]);
 
   const [activeTabPath, setActiveTabPath] = useState<string | undefined>(pathname);
 
@@ -61,19 +61,23 @@ export default function ProjectTabs({
     setActiveTabPath(pathname);
   }, [pathname]);
 
+  if (!teamId || !projectId) return null;
+
   return (
     <div className={cn("flex items-stretch justify-start px-0 sm:px-3 lg:px-0", className)}>
       {tabs.map((tab) => (
         <LinkButton
           data-active={isActive(tab, activeTabPath) ? true : undefined}
-          key={tab.href}
+          key={tab.title}
           className={cn(
             `text-muted-foreground group/button data-active:text-foreground max-w-36 rounded px-3 py-3.5 text-sm leading-none font-medium focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent`,
             classNameButton,
           )}
           variant="ghost"
-          href={tab.href + tab.searchParamStr}
-          onClick={() => setActiveTabPath(tab.href)}
+          to={tab.to}
+          params={{ team_id: teamId, project_id: projectId }}
+          search={{ environment: environmentId ?? undefined }}
+          onClick={() => setActiveTabPath(tab.matchPath)}
         >
           {isActive(tab, activeTabPath) && (
             <TabIndicator
@@ -93,6 +97,7 @@ export default function ProjectTabs({
 
 function isActive(tab: TTab, activePath: string | undefined) {
   return activePath
-    ? tab.href === activePath || (!tab.strictMatch && activePath.startsWith(tab.href + "/"))
+    ? tab.matchPath === activePath ||
+        (!tab.strictMatch && activePath.startsWith(tab.matchPath + "/"))
     : false;
 }

@@ -225,7 +225,7 @@ function NewVersionCard({
         </div>
         <LinkButton
           onClick={onUpdateClicked}
-          href="/update"
+          to="/update"
           size="sm"
           className="rounded-sm"
           variant="success"

@@ -9,7 +9,9 @@ import { useEffect, useMemo, useState } from "react";
 
 type TTab = {
   title: string;
-  href: string;
+  to: "/$team_id" | "/$team_id/settings";
+  // Resolved pathname used only for active-tab matching (navigation uses `to`).
+  matchPath: string;
   strictMatch?: boolean;
 };
 
@@ -28,15 +30,8 @@ export default function TeamTabs({
   const tabs: TTab[] = useMemo(() => {
     const baseTabUrl = `/${teamId}`;
     const t: TTab[] = [
-      {
-        title: "Projects",
-        href: `${baseTabUrl}`,
-        strictMatch: true,
-      },
-      {
-        title: "Settings",
-        href: `${baseTabUrl}/settings`,
-      },
+      { title: "Projects", to: "/$team_id", matchPath: baseTabUrl, strictMatch: true },
+      { title: "Settings", to: "/$team_id/settings", matchPath: `${baseTabUrl}/settings` },
     ];
     return t;
   }, [teamId]);
@@ -47,19 +42,22 @@ export default function TeamTabs({
     setActiveTabPath(pathname);
   }, [pathname]);
 
+  if (!teamId) return null;
+
   return (
     <div className={cn("flex items-stretch justify-start px-0 sm:px-3 lg:px-0", className)}>
       {tabs.map((tab) => (
         <LinkButton
           data-active={isActive(tab, activeTabPath) ? true : undefined}
-          key={tab.href}
+          key={tab.title}
           className={cn(
             `text-muted-foreground group/button data-active:text-foreground max-w-36 rounded px-3 py-3.5 text-sm leading-none font-medium focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent`,
             classNameButton,
           )}
           variant="ghost"
-          href={tab.href || ""}
-          onClick={() => setActiveTabPath(tab.href)}
+          to={tab.to}
+          params={{ team_id: teamId }}
+          onClick={() => setActiveTabPath(tab.matchPath)}
         >
           {isActive(tab, activeTabPath) && (
             <TabIndicator
@@ -79,6 +77,7 @@ export default function TeamTabs({
 
 function isActive(tab: TTab, activePath: string | undefined) {
   return activePath
-    ? tab.href === activePath || (!tab.strictMatch && activePath.startsWith(tab.href + "/"))
+    ? tab.matchPath === activePath ||
+        (!tab.strictMatch && activePath.startsWith(tab.matchPath + "/"))
     : false;
 }

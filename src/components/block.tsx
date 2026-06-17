@@ -1,4 +1,4 @@
-import { Button, LinkButton, TButtonProps, TLinkButtonProps } from "@/components/ui/button";
+import { Button, buttonVariants, TButtonProps } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { ChevronDownIcon, ExternalLinkIcon } from "lucide-react";
 import { Children, cloneElement, FC, HTMLAttributes, isValidElement, ReactNode } from "react";
@@ -146,8 +146,10 @@ type TBlockItemButtonLikeProps = {
       asElement: "div";
     } & React.HTMLAttributes<HTMLDivElement>)
   | ({
+      // External link (opens in a new tab) — a plain styled anchor, not a
+      // router Link, so it keeps a real `href`.
       asElement: "LinkButton";
-    } & TLinkButtonProps)
+    } & Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, "color">)
 );
 
 export function BlockItemButtonLike({
@@ -166,22 +168,23 @@ export function BlockItemButtonLike({
   isEditing,
   ...props
 }: TBlockItemButtonLikeProps) {
-  const Element = (
-    asElement === "button" ? Button : asElement === "LinkButton" && href ? LinkButton : "div"
-  ) as React.ElementType;
+  const isLink = asElement === "LinkButton" && !!href;
+  const Element = (asElement === "button" ? Button : isLink ? "a" : "div") as React.ElementType;
 
   return (
     <Element
-      variant="outline"
+      {...(asElement === "button" ? { variant: "outline" } : {})}
       data-open={open ? true : undefined}
       data-pending={isPending ? true : undefined}
       data-editing={isEditing ? true : undefined}
       className={cn(
+        // External anchors apply the button styling here since a plain <a> can't
+        // take the `variant` prop.
+        isLink && buttonVariants({ variant: "outline" }),
         "group/button flex w-full flex-row items-center justify-start gap-2 rounded-lg border px-3 py-2.5 text-left data-pending:text-transparent",
         className,
       )}
-      href={href}
-      target={href ? "_blank" : undefined}
+      {...(isLink ? { href, target: "_blank", rel: "noopener noreferrer" } : {})}
       {...(asElement === "button"
         ? { type: "button", disabled: isPending, fadeOnDisabled: !isPending }
         : {})}

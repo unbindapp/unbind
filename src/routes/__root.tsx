@@ -22,7 +22,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       code={404}
       description="Not found."
       buttonText="Go Home"
-      buttonHref="/"
+      buttonTo="/"
       Icon={TriangleAlertIcon}
     />
   ),
@@ -31,7 +31,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       code={500}
       description={error instanceof Error ? error.message : "Something went wrong."}
       buttonText="Go Home"
-      buttonHref="/"
+      buttonTo="/"
       Icon={TriangleAlertIcon}
     />
   ),

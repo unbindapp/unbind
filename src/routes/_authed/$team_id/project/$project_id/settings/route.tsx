@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute, linkOptions, Outlet } from "@tanstack/react-router";
 
 import SettingsLayout from "@/components/settings/settings-layout";
 import { TSettingsTab } from "@/components/settings/settings-tabs";
@@ -10,14 +10,46 @@ export const Route = createFileRoute("/_authed/$team_id/project/$project_id/sett
 function ProjectSettingsLayout() {
   const { team_id: teamId, project_id: projectId } = Route.useParams();
   const basePath = `/${teamId}/project/${projectId}/settings`;
+  const params = { team_id: teamId, project_id: projectId };
 
   const tabs: TSettingsTab[] = [
-    { label: "General", href: basePath, icon: "general", strictMatch: true },
-    { label: "Environments", href: `${basePath}/environments`, icon: "environments" },
-    { label: "Project Variables", href: `${basePath}/variables`, icon: "variables" },
-    { label: "Members", href: `${basePath}/members`, icon: "members" },
-    { label: "Webhooks", href: `${basePath}/webhooks`, icon: "webhooks" },
-    { label: "Danger Zone", href: `${basePath}/danger-zone`, icon: "danger-zone" },
+    {
+      label: "General",
+      icon: "general",
+      strictMatch: true,
+      matchPath: basePath,
+      link: linkOptions({ to: "/$team_id/project/$project_id/settings", params }),
+    },
+    {
+      label: "Environments",
+      icon: "environments",
+      matchPath: `${basePath}/environments`,
+      link: linkOptions({ to: "/$team_id/project/$project_id/settings/environments", params }),
+    },
+    {
+      label: "Project Variables",
+      icon: "variables",
+      matchPath: `${basePath}/variables`,
+      link: linkOptions({ to: "/$team_id/project/$project_id/settings/variables", params }),
+    },
+    {
+      label: "Members",
+      icon: "members",
+      matchPath: `${basePath}/members`,
+      link: linkOptions({ to: "/$team_id/project/$project_id/settings/members", params }),
+    },
+    {
+      label: "Webhooks",
+      icon: "webhooks",
+      matchPath: `${basePath}/webhooks`,
+      link: linkOptions({ to: "/$team_id/project/$project_id/settings/webhooks", params }),
+    },
+    {
+      label: "Danger Zone",
+      icon: "danger-zone",
+      matchPath: `${basePath}/danger-zone`,
+      link: linkOptions({ to: "/$team_id/project/$project_id/settings/danger-zone", params }),
+    },
   ];
 
   return (

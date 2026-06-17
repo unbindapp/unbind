@@ -3,14 +3,17 @@
 import SettingsTabIcon, { TSettingsTabVariant } from "@/components/icons/settings-tab-icon";
 import TabIndicator from "@/components/navigation/tab-indicator";
 import { LinkButton } from "@/components/ui/button";
-import { useLocation } from "@tanstack/react-router";
+import { useLocation, type LinkProps } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 export type TSettingsTab = {
   label: string;
-  href: string;
   icon: TSettingsTabVariant;
   strictMatch?: boolean;
+  // Resolved pathname used only for active-tab matching (navigation uses `link`,
+  // built with TanStack's `linkOptions` helper at the call site for type safety).
+  matchPath: string;
+  link: LinkProps;
 };
 
 type TProps = {
@@ -19,7 +22,6 @@ type TProps = {
 
 export default function SettingsTabs({ tabs }: TProps) {
   const pathname = useLocation({ select: (l) => l.pathname });
-  const searchParamsStr = useLocation({ select: (l) => l.searchStr }).replace(/^\?/, "");
   const [activeTabPath, setActiveTabPath] = useState<string | undefined>(pathname);
 
   useEffect(() => {
@@ -31,11 +33,12 @@ export default function SettingsTabs({ tabs }: TProps) {
       <div className="flex w-full flex-row sm:px-3 md:flex-col md:p-1 md:pb-12">
         {tabs.map((tab) => (
           <LinkButton
+            {...tab.link}
+            search={(prev) => prev}
             forceMinSize={false}
-            key={tab.href}
+            key={tab.matchPath}
             data-active={isActive(tab, activeTabPath) ? true : undefined}
-            onClick={() => setActiveTabPath(tab.href)}
-            href={tab.href + (searchParamsStr ? `?${searchParamsStr}` : "")}
+            onClick={() => setActiveTabPath(tab.matchPath)}
             variant="ghost"
             className="text-muted-foreground data-active:text-foreground group/button shrink-0 justify-start gap-1.5 rounded-lg px-3 py-4.25 text-left text-sm font-medium focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent sm:py-4 md:w-full md:gap-2.5 md:px-4 md:py-4 md:text-base"
           >
@@ -64,6 +67,7 @@ export default function SettingsTabs({ tabs }: TProps) {
 
 function isActive(tab: TSettingsTab, activePath: string | undefined) {
   return activePath
-    ? tab.href === activePath || (!tab.strictMatch && activePath.startsWith(tab.href + "/"))
+    ? tab.matchPath === activePath ||
+        (!tab.strictMatch && activePath.startsWith(tab.matchPath + "/"))
     : false;
 }

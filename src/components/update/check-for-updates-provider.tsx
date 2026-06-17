@@ -77,7 +77,7 @@ export function UpdateToastProvider({ children }: { children: ReactNode }) {
               toast.dismiss("update_toast");
               if (latestVersion) setLastDismissedVersion(latestVersion);
             }}
-            href="/update"
+            to="/update"
             size="sm"
             className="w-full px-3"
           >

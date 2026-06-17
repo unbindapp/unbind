@@ -1,6 +1,6 @@
 import ErrorLine from "@/components/error-line";
 import { DomainCard } from "@/components/service/panel/content/undeployed/domain-card";
-import { Button, LinkButton } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
@@ -54,7 +54,7 @@ export default function ServiceUrl({
                 <p className="text-destructive min-w-0 shrink truncate">Error</p>
               </Button>
             </PopoverTrigger>
-            <PopoverContent align="start" className="flex w-128 flex-col gap-0.5 p-0">
+            <PopoverContent align="start" className="flex w-lg flex-col gap-0.5 p-0">
               <ScrollArea>
                 <ErrorLine message={error} className="bg-transparent px-3.5 py-2" />
               </ScrollArea>
@@ -135,20 +135,21 @@ export default function ServiceUrl({
                   </p>
                 </div>
               )}
-              <LinkButton
+              <Button
+                asChild
                 className="group/button mt-2 min-w-0 shrink px-2.25 py-1.5 text-left font-medium"
                 variant="outline"
-                target="_blank"
                 size="sm"
                 forceMinSize={false}
-                href={getUrl(endpoint)}
               >
-                <div className="relative -ml-0.5 size-3.5 shrink-0 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45">
-                  <GlobeIcon className="size-full group-active/button:opacity-0 has-hover:group-hover/button:opacity-0" />
-                  <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-active/button:opacity-100 has-hover:group-hover/button:opacity-100" />
-                </div>
-                <p className="min-w-0 shrink truncate">Visit</p>
-              </LinkButton>
+                <a href={getUrl(endpoint)} target="_blank" rel="noopener noreferrer">
+                  <div className="relative -ml-0.5 size-3.5 shrink-0 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45">
+                    <GlobeIcon className="size-full group-active/button:opacity-0 has-hover:group-hover/button:opacity-0" />
+                    <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-active/button:opacity-100 has-hover:group-hover/button:opacity-100" />
+                  </div>
+                  <p className="min-w-0 shrink truncate">Visit</p>
+                </a>
+              </Button>
             </ScrollArea>
           </PopoverContent>
         </Popover>
@@ -158,19 +159,20 @@ export default function ServiceUrl({
 
   return (
     <Wrapper className={className}>
-      <LinkButton
+      <Button
+        asChild
         className="text-muted-foreground group/button min-w-0 shrink px-2.25 py-1 text-left font-medium"
         variant="ghost"
-        target="_blank"
         size="sm"
-        href={getUrl(endpoint)}
       >
-        <div className="relative -ml-0.5 size-3.5 shrink-0 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45">
-          <GlobeIcon className="size-full group-active/button:opacity-0 has-hover:group-hover/button:opacity-0" />
-          <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-active/button:opacity-100 has-hover:group-hover/button:opacity-100" />
-        </div>
-        <p className="min-w-0 shrink truncate">{getUrlDisplayStr(endpoint)}</p>
-      </LinkButton>
+        <a href={getUrl(endpoint)} target="_blank" rel="noopener noreferrer">
+          <div className="relative -ml-0.5 size-3.5 shrink-0 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45">
+            <GlobeIcon className="size-full group-active/button:opacity-0 has-hover:group-hover/button:opacity-0" />
+            <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-active/button:opacity-100 has-hover:group-hover/button:opacity-100" />
+          </div>
+          <p className="min-w-0 shrink truncate">{getUrlDisplayStr(endpoint)}</p>
+        </a>
+      </Button>
     </Wrapper>
   );
 }

@@ -1,10 +1,10 @@
 import { LinkButton } from "@/components/ui/button";
-import { FC } from "react";
+import { ComponentProps, FC } from "react";
 
 type TProps = {
   code: number;
   description: string;
-  buttonHref: string;
+  buttonTo: ComponentProps<typeof LinkButton>["to"];
   buttonText: string;
   Icon: FC<{ className?: string }>;
 };
@@ -12,7 +12,7 @@ type TProps = {
 export default function NotFoundTemplate({
   code,
   description,
-  buttonHref,
+  buttonTo,
   buttonText,
   Icon,
 }: TProps) {
@@ -24,7 +24,7 @@ export default function NotFoundTemplate({
           <p className="min-w-0 shrink text-6xl font-bold">{code}</p>
         </div>
         <h1 className="text-muted-foreground mt-1 text-lg leading-tight">{description}</h1>
-        <LinkButton href={buttonHref} className="mt-4">
+        <LinkButton to={buttonTo} className="mt-4">
           {buttonText}
         </LinkButton>
       </div>
