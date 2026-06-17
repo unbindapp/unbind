@@ -11,7 +11,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/servicegroup"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/models"
-	repository "github.com/unbindapp/unbind-api/internal/repositories"
+	repository "github.com/unbindapp/unbind-api/internal/repositories/repositorytest"
 	"golang.org/x/crypto/bcrypt"
 )
 

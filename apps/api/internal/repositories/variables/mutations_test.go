@@ -10,7 +10,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/ent/variablereference"
 	"github.com/unbindapp/unbind-api/internal/models"
-	repository "github.com/unbindapp/unbind-api/internal/repositories"
+	repository "github.com/unbindapp/unbind-api/internal/repositories/repositorytest"
 	"golang.org/x/crypto/bcrypt"
 )
 

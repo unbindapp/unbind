@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	repository "github.com/unbindapp/unbind-api/internal/repositories"
+	repository "github.com/unbindapp/unbind-api/internal/repositories/repositorytest"
 )
 
 type JWTKeySuite struct {

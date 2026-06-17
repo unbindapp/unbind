@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/unbindapp/unbind-api/ent/user"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
-	repository "github.com/unbindapp/unbind-api/internal/repositories"
+	repository "github.com/unbindapp/unbind-api/internal/repositories/repositorytest"
 )
 
 type BSCreateUserSuite struct {

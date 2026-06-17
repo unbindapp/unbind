@@ -120,11 +120,9 @@ You do **not** need Docker to run the app itself (only Postgres + Redis).
 make dev-infra     # Postgres + Redis via deploy/compose/docker-compose.yaml
 ```
 
-Configure `apps/api/.env` (see `apps/api/config/config.go` for all keys), then run migrations:
-
-```bash
-cd apps/api && go run ./cmd/cli migrate
-```
+Configure `apps/api/.env` (see `apps/api/config/config.go` for all keys). Migrations are
+embedded in the binary (`ent/migrate/embed.go`) and applied automatically on API startup —
+no separate migrate step.
 
 ### 2a. Two-process dev loop (recommended — hot reload for the UI)
 

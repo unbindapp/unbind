@@ -8,7 +8,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/githubinstallation"
 	"github.com/unbindapp/unbind-api/ent/schema"
-	repository "github.com/unbindapp/unbind-api/internal/repositories"
+	repository "github.com/unbindapp/unbind-api/internal/repositories/repositorytest"
 	"golang.org/x/crypto/bcrypt"
 )
 

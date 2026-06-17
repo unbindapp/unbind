@@ -23,18 +23,21 @@ RUN --mount=type=cache,target=/go/pkg/mod go mod download
 COPY apps/api/ ./
 COPY --from=web /web/dist ./internal/web/dist
 RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build \
-    CGO_ENABLED=0 GOARCH=${TARGETARCH} go build \
+    CGO_ENABLED=0 GOARCH=${TARGETARCH} go build -trimpath \
     -ldflags "-s -w -X main.Version=${VERSION} -X main.BuildImage=${BUILD_IMAGE}" \
     -o /out/api ./cmd/api
 RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build \
-    CGO_ENABLED=0 GOARCH=${TARGETARCH} go build \
+    CGO_ENABLED=0 GOARCH=${TARGETARCH} go build -trimpath \
     -ldflags "-s -w -X main.Version=${VERSION}" \
     -o /out/cli ./cmd/cli
 
-# 3. Runtime. Matches the original API image: mise is installed for railpack.
-FROM stablecog/ubuntu:22.04 AS runtime
+# 3. Runtime. Slim Debian (glibc) base; mise is installed for railpack version
+#    resolution (railpack execs it and otherwise auto-downloads it to this path).
+FROM debian:bookworm-slim AS runtime
 
-ARG MISE_VERSION=2025.6.1
+# Must match the version railpack pins (apps/api: railpack core/mise/version.txt),
+# or railpack rejects this binary and re-downloads its expected version at runtime.
+ARG MISE_VERSION=2026.6.10
 ARG MISE_DIR=/tmp/railpack/mise
 ARG MISE_BIN=${MISE_DIR}/mise-${MISE_VERSION}
 
@@ -55,7 +58,6 @@ RUN apt-get update && \
     apt-get purge -y --auto-remove curl && \
     rm -rf /var/lib/apt/lists/*
 
-COPY --from=build /src/ent/migrate/migrations/ /app/migrations/
 COPY --from=build /out/api /app/api
 COPY --from=build /out/cli /app/cli
 

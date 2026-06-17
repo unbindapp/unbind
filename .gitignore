@@ -22,6 +22,12 @@ apps/*/bin/
 apps/api/cmd/api/api
 apps/api/cmd/cli/cli
 apps/api/cmd/builder/builder
+# Binaries built from a module root, e.g. `cd apps/api && go build ./cmd/api`
+apps/api/api
+apps/api/cli
+apps/api/builder
+apps/operator/manager
+apps/installer/installer
 apps/installer/unbind-installer-*
 *.exe
 *.exe~

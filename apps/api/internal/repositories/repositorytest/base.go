@@ -1,10 +1,12 @@
-package repository
+// Package repositorytest holds shared test scaffolding for the repository
+// packages. It lives in its own package (imported only by _test.go files) so its
+// SQLite/enttest dependencies never end up in the production binary.
+package repositorytest
 
 import (
 	"context"
 
 	_ "github.com/ncruces/go-sqlite3/driver"
-	_ "github.com/ncruces/go-sqlite3/embed"
 	"github.com/stretchr/testify/suite"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/enttest"

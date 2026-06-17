@@ -10,8 +10,8 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/ent/serviceconfig"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
-	repository "github.com/unbindapp/unbind-api/internal/repositories"
 	deployment_repo "github.com/unbindapp/unbind-api/internal/repositories/deployment"
+	repository "github.com/unbindapp/unbind-api/internal/repositories/repositorytest"
 	"github.com/unbindapp/unbind-api/internal/sourceanalyzer/enum"
 	"golang.org/x/crypto/bcrypt"
 )

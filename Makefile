@@ -41,7 +41,7 @@ embed: web
 	cp -r $(WEB_DIR)/dist $(EMBED_DIR)
 
 app: embed
-	cd $(API_DIR) && go build -o bin/unbind ./cmd/api
+	cd $(API_DIR) && CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o bin/unbind ./cmd/api
 
 run: app
 	cd $(API_DIR) && ./bin/unbind

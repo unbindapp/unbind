@@ -7,8 +7,6 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
-	"path/filepath"
-	"runtime"
 	"syscall"
 	"time"
 
@@ -23,6 +21,7 @@ import (
 	"github.com/pressly/goose/v3"
 	"github.com/redis/go-redis/v9"
 	"github.com/unbindapp/unbind-api/config"
+	entmigrate "github.com/unbindapp/unbind-api/ent/migrate"
 	auth_handler "github.com/unbindapp/unbind-api/internal/api/handlers/auth"
 	deployments_handler "github.com/unbindapp/unbind-api/internal/api/handlers/deployments"
 	environments_handler "github.com/unbindapp/unbind-api/internal/api/handlers/environments"
@@ -208,22 +207,14 @@ func startAPI(cfg *config.Config) {
 	}
 	log.Info("🪿 Running migrations...")
 
-	// Auto-apply migrations from migrations directory
-	migrationDir := "/app/migrations"
-	if _, err := os.Stat(migrationDir); err != nil {
-		_, thisFile, _, _ := runtime.Caller(0)
-		migrationDir = filepath.Join(filepath.Dir(thisFile), "../../ent/migrate/migrations")
-		if _, err := os.Stat(migrationDir); err != nil {
-			log.Fatalf("Migrations directory not found: %v", err)
-		}
-	}
-
+	// Migrations are embedded in the binary (see ent/migrate/embed.go).
 	goose.SetLogger(log.GetLogger())
+	goose.SetBaseFS(entmigrate.MigrationsFS)
 	if err := goose.SetDialect("postgres"); err != nil {
 		log.Fatalf("🪿 goose dialect error: %v", err)
 	}
 
-	if err := goose.Up(sqlDB, migrationDir, goose.WithAllowMissing()); err != nil {
+	if err := goose.Up(sqlDB, "migrations", goose.WithAllowMissing()); err != nil {
 		log.Fatalf("🪿 goose up err: %v", err)
 	}
 	log.Info("🪿 Migrations applied successfully")

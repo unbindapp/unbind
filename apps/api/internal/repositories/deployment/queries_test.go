@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
-	repository "github.com/unbindapp/unbind-api/internal/repositories"
+	repository "github.com/unbindapp/unbind-api/internal/repositories/repositorytest"
 )
 
 type DeploymentQueriesSuite struct {
