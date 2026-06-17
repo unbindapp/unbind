@@ -10,7 +10,7 @@ import {
   deleteServiceGroup as deleteServiceGroupFn,
   updateServiceGroup as updateServiceGroupFn,
 } from "@/api/services/service-groups";
-import { ServiceRenameSchema } from "@/server/trpc/api/services/types";
+import { ServiceRenameSchema } from "@/server/types/services";
 import { useMutation } from "@tanstack/react-query";
 import { EllipsisVerticalIcon, PenIcon, Trash2Icon } from "lucide-react";
 import { ResultAsync } from "neverthrow";

@@ -2,8 +2,8 @@ import { queryOptions } from "@tanstack/react-query";
 
 import { getGoClient } from "@/api/client";
 import { queryKeys } from "@/api/query-keys";
-import { getLogLevelFromMessage } from "@/server/trpc/api/logs/helpers";
-import type { TLogLineWithLevel, TLogType } from "@/server/trpc/api/logs/types";
+import { getLogLevelFromMessage } from "@/lib/helpers/get-log-level-from-message";
+import type { TLogLineWithLevel, TLogType } from "@/server/types/logs";
 
 export type TLogsListInput = {
   type: TLogType;

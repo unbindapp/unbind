@@ -274,9 +274,7 @@ export default function useGoToItem({ context }: TProps) {
               });
             },
             onHighlight: () => {
-              prefetch(
-                getSettingsPageHref({ pathname: "/variables", context, environmentId }),
-              );
+              prefetch(getSettingsPageHref({ pathname: "/variables", context, environmentId }));
             },
             Icon: KeyIcon,
             keywords: [
@@ -299,9 +297,7 @@ export default function useGoToItem({ context }: TProps) {
               });
             },
             onHighlight: () => {
-              prefetch(
-                getSettingsPageHref({ pathname: "/members", context, environmentId }),
-              );
+              prefetch(getSettingsPageHref({ pathname: "/members", context, environmentId }));
             },
             Icon: UsersIcon,
             keywords: ["person", "people", "group", ...goToKeywords],
@@ -317,9 +313,7 @@ export default function useGoToItem({ context }: TProps) {
               });
             },
             onHighlight: () => {
-              prefetch(
-                getSettingsPageHref({ pathname: "/webhooks", context, environmentId }),
-              );
+              prefetch(getSettingsPageHref({ pathname: "/webhooks", context, environmentId }));
             },
             Icon: WebhookIcon,
             keywords: [
@@ -344,9 +338,7 @@ export default function useGoToItem({ context }: TProps) {
               });
             },
             onHighlight: () => {
-              prefetch(
-                getSettingsPageHref({ pathname: "/danger-zone", context, environmentId }),
-              );
+              prefetch(getSettingsPageHref({ pathname: "/danger-zone", context, environmentId }));
             },
             Icon: TriangleAlertIcon,
             keywords: ["delete", "danger", ...goToKeywords],
@@ -354,7 +346,8 @@ export default function useGoToItem({ context }: TProps) {
         ],
       },
     };
-  }, [navigateToSettings, context, settingsTitle, goToKeywords, environmentId, navigateTo, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigateToSettings, context, settingsTitle, goToKeywords, environmentId, navigateTo]);
 
   const value = useMemo(
     () => ({

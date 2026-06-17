@@ -3,9 +3,8 @@
 import {
   TVolumePanelTabEnum,
   volumePanelDefaultTabId,
-  volumePanelVolumeIdKey,
-  VolumePanelTabEnum,
   volumePanelTabKey,
+  volumePanelVolumeIdKey,
 } from "@/components/volume/panel/constants";
 import { drawerAnimationMs } from "@/lib/constants";
 import { useSearchParam } from "@/lib/hooks/use-search-param";

@@ -3,7 +3,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { getGoClient } from "@/api/client";
 import { queryKeys } from "@/api/query-keys";
 import type { GetMetricsResponseBody, MetricsType } from "@/server/go/client.gen";
-import type { TMetricsIntervalEnum } from "@/server/trpc/api/metrics/types";
+import type { TMetricsIntervalEnum } from "@/server/types/metrics";
 
 export type TMetrics = GetMetricsResponseBody["data"];
 

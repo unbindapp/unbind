@@ -64,6 +64,25 @@ export const ContainerStateSchema = z.enum([
   'starting',
 ]);
 
+export const CookieSchema = z
+  .object({
+    Domain: z.string(),
+    Expires: z.string().datetime(),
+    HttpOnly: z.boolean(),
+    MaxAge: z.number(),
+    Name: z.string(),
+    Partitioned: z.boolean(),
+    Path: z.string(),
+    Quoted: z.boolean(),
+    Raw: z.string(),
+    RawExpires: z.string(),
+    SameSite: z.number(),
+    Secure: z.boolean(),
+    Unparsed: z.array(z.string()).nullable(),
+    Value: z.string(),
+  })
+  .strip();
+
 export const CreateBuildInputBodySchema = z
   .object({
     environment_id: z.string(),
@@ -2112,6 +2131,7 @@ export type CertManagerCondition = z.infer<typeof CertManagerConditionSchema>;
 export type CollisionOutput = z.infer<typeof CollisionOutputSchema>;
 export type CheckUniqueDomainOutputBody = z.infer<typeof CheckUniqueDomainOutputBodySchema>;
 export type ContainerState = z.infer<typeof ContainerStateSchema>;
+export type Cookie = z.infer<typeof CookieSchema>;
 export type CreateBuildInputBody = z.infer<typeof CreateBuildInputBodySchema>;
 export type ServiceBuilder = z.infer<typeof ServiceBuilderSchema>;
 export type GitCommitter = z.infer<typeof GitCommitterSchema>;

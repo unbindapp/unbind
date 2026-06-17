@@ -4,7 +4,7 @@ import {
 } from "@/components/logs/log-view-preferences-provider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
-import { TLogLineWithLevel, TLogType } from "@/server/trpc/api/logs/types";
+import { TLogLineWithLevel, TLogType } from "@/server/types/logs";
 import { format } from "date-fns";
 import { ComponentProps, ReactNode } from "react";
 

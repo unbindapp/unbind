@@ -2,7 +2,7 @@ import { useService, useServiceUtils } from "@/components/service/service-provid
 import { useServicesUtils } from "@/components/service/services-provider";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { updateService } from "@/api/services/services";
-import { TUpdateServiceInput } from "@/server/trpc/api/services/types";
+import { TUpdateServiceInput } from "@/server/types/services";
 import { useMutation } from "@tanstack/react-query";
 import { ResultAsync } from "neverthrow";
 import { useCallback } from "react";

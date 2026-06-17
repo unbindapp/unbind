@@ -11,7 +11,7 @@ import { TTemplateDraft } from "@/components/templates/template-draft-store";
 import { useTemplateDraftStore } from "@/components/templates/template-draft-store-provider";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import { TServiceShallow } from "@/server/trpc/api/services/types";
+import { TServiceShallow } from "@/server/types/services";
 import { PlusIcon } from "lucide-react";
 import { ReactNode, useMemo } from "react";
 
@@ -25,8 +25,6 @@ export default function ServiceCardList() {
     environmentId,
   } = useServices();
   const services = data?.services;
-
-  console.log("🟡");
 
   const servicesOrGroups = useMemo(() => {
     if (!services) return undefined;

@@ -3,7 +3,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { getGoClient } from "@/api/client";
 import { queryKeys } from "@/api/query-keys";
 import type { ProjectResponse } from "@/server/go/client.gen";
-import { generateProjectName } from "@/server/trpc/api/projects/helpers";
+import { generateProjectName } from "@/lib/helpers/generate-project-name";
 
 export type TProjectShallow = ProjectResponse;
 

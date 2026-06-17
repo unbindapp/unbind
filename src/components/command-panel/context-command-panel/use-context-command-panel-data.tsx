@@ -25,7 +25,7 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
   const { item: dockerImageItem } = useDockerImageItem({ context });
   const { item: databaseItem } = useDatabaseItem({ context });
 
-  const { item: templateItem } = useTemplateItem({ context });
+  const { item: templateItem } = useTemplateItem();
   const { item: goToItem } = useGoToItem({ context });
   const { item: newProjectItem } = useNewProjectItem({ context });
   const { item: preferencesItem } = usePreferencesItem({ context });

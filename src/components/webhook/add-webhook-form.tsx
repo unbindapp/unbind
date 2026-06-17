@@ -15,7 +15,7 @@ import {
   TWebhookIdTeamEnum,
   WebhookIdProjectEnum,
   WebhookIdTeamEnum,
-} from "@/server/trpc/api/webhooks/types";
+} from "@/server/types/webhooks";
 import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
 

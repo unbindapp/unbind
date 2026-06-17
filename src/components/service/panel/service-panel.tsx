@@ -15,7 +15,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { TServiceShallow } from "@/server/trpc/api/services/types";
+import { TServiceShallow } from "@/server/types/services";
 import { XIcon } from "lucide-react";
 import { ReactNode } from "react";
 

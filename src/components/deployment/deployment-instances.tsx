@@ -1,7 +1,7 @@
 import ErrorLine from "@/components/error-line";
 import { useInstanceHealth } from "@/components/instances/instance-health-provider";
 import { cn } from "@/components/ui/utils";
-import { TInstanceFromHealth } from "@/server/trpc/api/instances/types";
+import { TInstanceFromHealth } from "@/server/types/instances";
 import {
   CircleHelpIcon,
   CircleSlashIcon,

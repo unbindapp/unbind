@@ -1,7 +1,7 @@
 "use client";
 
-import { MetricsIntervalEnum, TMetricsIntervalEnum } from "@/server/trpc/api/metrics/types";
 import { useSearchParam } from "@/lib/hooks/use-search-param";
+import { TMetricsIntervalEnum } from "@/server/types/metrics";
 import { createContext, useContext, useMemo } from "react";
 
 type TInterval = {

@@ -22,7 +22,7 @@ import {
 import { cn } from "@/components/ui/utils";
 import { defaultDebounceMs } from "@/lib/constants";
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
-import { TServiceShallow } from "@/server/trpc/api/services/types";
+import { TServiceShallow } from "@/server/types/services";
 import { dockerTagsQuery } from "@/api/services/docker";
 import { gitRepositoryQuery } from "@/api/services/git";
 import { useQuery } from "@tanstack/react-query";

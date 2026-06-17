@@ -2,7 +2,7 @@
 
 import { metricsListQuery, type TMetrics } from "@/api/services/metrics";
 import { useMetricsState } from "@/components/metrics/metrics-state-provider";
-import { TLogType } from "@/server/trpc/api/logs/types";
+import { TLogType } from "@/server/types/logs";
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext } from "react";
 

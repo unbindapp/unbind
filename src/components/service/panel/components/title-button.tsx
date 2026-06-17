@@ -3,7 +3,7 @@ import ServiceIcon from "@/components/service/service-icon";
 import { useServiceUtils } from "@/components/service/service-provider";
 import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
 import { Button } from "@/components/ui/button";
-import { ServiceRenameSchema, TServiceShallow } from "@/server/trpc/api/services/types";
+import { ServiceRenameSchema, TServiceShallow } from "@/server/types/services";
 import { updateService as updateServiceFn } from "@/api/services/services";
 import { useMutation } from "@tanstack/react-query";
 import { PenIcon } from "lucide-react";

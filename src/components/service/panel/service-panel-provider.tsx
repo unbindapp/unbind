@@ -4,7 +4,6 @@ import { useDeploymentPanelId } from "@/components/deployment/panel/deployment-p
 import {
   servicePanelDefaultTabId,
   servicePanelServiceIdKey,
-  ServicePanelTabEnum,
   servicePanelTabKey,
   TServicePanelTabEnum,
 } from "@/components/service/panel/constants";

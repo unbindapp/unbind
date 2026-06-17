@@ -3,13 +3,12 @@
 import {
   deploymentPanelDefaultTabId,
   deploymentPanelDeploymentIdKey,
-  DeploymentPanelTabEnum,
   deploymentPanelTabKey,
   TDeploymentPanelTabEnum,
 } from "@/components/deployment/panel/constants";
 import { drawerAnimationMs } from "@/lib/constants";
-import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
 import { useSearchParam } from "@/lib/hooks/use-search-param";
+import { TDeploymentShallow } from "@/server/types/deployments";
 import { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 type TDeploymentPanelContext = {

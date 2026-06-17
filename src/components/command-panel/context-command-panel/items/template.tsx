@@ -30,7 +30,7 @@ export function useTemplateItemHook({ context }: TProps) {
   return hook;
 }
 
-function useTemplateItem({}: TProps) {
+function useTemplateItem() {
   const mainPageId = "template";
   const subpageId = "template_subpage";
 

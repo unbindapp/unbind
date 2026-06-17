@@ -8,7 +8,7 @@ import type {
   ServiceResponse,
   UpdateServiceInput,
 } from "@/server/go/client.gen";
-import type { TUpdateServiceInput } from "@/server/trpc/api/services/types";
+import type { TUpdateServiceInput } from "@/server/types/services";
 
 export type TServiceShallow = ServiceResponse;
 export type TService = ServiceResponse;

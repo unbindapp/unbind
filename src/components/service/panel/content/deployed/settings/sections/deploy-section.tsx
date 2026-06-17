@@ -13,7 +13,7 @@ import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { TServiceShallow } from "@/server/trpc/api/services/types";
+import { TServiceShallow } from "@/server/types/services";
 import { useStore } from "@tanstack/react-form";
 import { RocketIcon } from "lucide-react";
 import { useMemo } from "react";

@@ -20,7 +20,7 @@ import { useAppForm } from "@/lib/hooks/use-app-form";
 import {
   environmentNameMaxLength,
   EnvironmentNameSchema,
-} from "@/server/trpc/api/environments/types";
+} from "@/server/types/environments";
 import { createEnvironment as createEnvironmentFn } from "@/api/services/environments";
 import { useMutation } from "@tanstack/react-query";
 import { ResultAsync } from "neverthrow";

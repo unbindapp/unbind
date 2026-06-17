@@ -36,7 +36,7 @@ import {
   EnvironmentNameSchema,
   EnvironmentRenameSchema,
   TEnvironmentShallow,
-} from "@/server/trpc/api/environments/types";
+} from "@/server/types/environments";
 import {
   createEnvironment as createEnvironmentFn,
   deleteEnvironment as deleteEnvironmentFn,
@@ -240,67 +240,65 @@ function DeleteTrigger({
     },
   });
 
-  if (true) {
-    return (
-      <DeleteEntityTrigger
-        dialogTitle="Delete Environment"
-        dialogDescription="Are you sure you want to delete this environment? This action cannot be undone. All the services inside this environment will be permanently deleted."
-        error={deleteEnvironmentError}
-        deletingEntityName={environment.name}
-        onDialogClose={() => {
-          deleteEnvironmentReset();
-        }}
-        onDialogCloseImmediate={() => {
-          closeDropdown();
-        }}
-        onSubmit={async () => {
-          const deletingCurrentEnv = environmentId === environment.id;
-          const currentEnvironmentId = environment.id;
+  return (
+    <DeleteEntityTrigger
+      dialogTitle="Delete Environment"
+      dialogDescription="Are you sure you want to delete this environment? This action cannot be undone. All the services inside this environment will be permanently deleted."
+      error={deleteEnvironmentError}
+      deletingEntityName={environment.name}
+      onDialogClose={() => {
+        deleteEnvironmentReset();
+      }}
+      onDialogCloseImmediate={() => {
+        closeDropdown();
+      }}
+      onSubmit={async () => {
+        const deletingCurrentEnv = environmentId === environment.id;
+        const currentEnvironmentId = environment.id;
 
-          await deleteEnvironment({ id: environment.id, teamId, projectId });
-          if (deletingCurrentEnv) {
-            invalidateEnvironments();
-            const environments = projectsData?.project.environments;
-            const defaultEnvironmentId = projectsData?.project.default_environment_id;
-            const filteredEnvironments = environments?.filter((e) => e.id !== currentEnvironmentId);
+        await deleteEnvironment({ id: environment.id, teamId, projectId });
+        if (deletingCurrentEnv) {
+          invalidateEnvironments();
+          const environments = projectsData?.project.environments;
+          const defaultEnvironmentId = projectsData?.project.default_environment_id;
+          const filteredEnvironments = environments?.filter((e) => e.id !== currentEnvironmentId);
 
-            const environmentIdToNavigateTo =
-              defaultEnvironmentId && currentEnvironmentId !== defaultEnvironmentId
-                ? defaultEnvironmentId
-                : filteredEnvironments && filteredEnvironments?.length >= 1
-                  ? filteredEnvironments[0].id
-                  : null;
+          const environmentIdToNavigateTo =
+            defaultEnvironmentId && currentEnvironmentId !== defaultEnvironmentId
+              ? defaultEnvironmentId
+              : filteredEnvironments && filteredEnvironments?.length >= 1
+                ? filteredEnvironments[0].id
+                : null;
 
-            const navigateRes = await ResultAsync.fromPromise(
-              asyncPush(
-                `/${teamId}/project/${projectId}/settings/environments${environmentIdToNavigateTo ? `?environment=${environmentIdToNavigateTo}` : ""}`,
-              ),
-              () => new Error("Failed to navigate to environments"),
-            );
+          const navigateRes = await ResultAsync.fromPromise(
+            asyncPush(
+              `/${teamId}/project/${projectId}/settings/environments${environmentIdToNavigateTo ? `?environment=${environmentIdToNavigateTo}` : ""}`,
+            ),
+            () => new Error("Failed to navigate to environments"),
+          );
 
-            if (navigateRes.isErr()) {
-              toast.error("Failed to navigate", {
-                description: navigateRes.error.message,
-              });
-            }
-          } else {
-            const invalidateRes = await ResultAsync.fromPromise(
-              invalidateEnvironments(),
-              () => new Error("Failed to fetch environments"),
-            );
-
-            if (invalidateRes.isErr()) {
-              toast.error("Failed to fetch environments", {
-                description: invalidateRes.error.message,
-              });
-            }
+          if (navigateRes.isErr()) {
+            toast.error("Failed to navigate", {
+              description: navigateRes.error.message,
+            });
           }
-        }}
-      >
-        {children}
-      </DeleteEntityTrigger>
-    );
-  }
+        } else {
+          const invalidateRes = await ResultAsync.fromPromise(
+            invalidateEnvironments(),
+            () => new Error("Failed to fetch environments"),
+          );
+
+          if (invalidateRes.isErr()) {
+            toast.error("Failed to fetch environments", {
+              description: invalidateRes.error.message,
+            });
+          }
+        }
+      }}
+    >
+      {children}
+    </DeleteEntityTrigger>
+  );
 }
 
 function RenameTrigger({

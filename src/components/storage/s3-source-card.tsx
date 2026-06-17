@@ -32,7 +32,7 @@ import {
   s3SourceNameMaxLength,
   S3SourceNameSchema,
   TS3SourceShallow,
-} from "@/server/trpc/api/storage/s3/types";
+} from "@/server/types/s3";
 import {
   createS3Source as createS3SourceFn,
   deleteS3Source as deleteS3SourceFn,

@@ -24,7 +24,7 @@ import {
   TVariableReferenceShallowSource,
   TVariableShallow,
   VariableForCreateValueSchema,
-} from "@/server/trpc/api/variables/types";
+} from "@/server/types/variables";
 import { createOrUpdateVariables, deleteVariables } from "@/api/services/variables";
 import { useMutation } from "@tanstack/react-query";
 import {

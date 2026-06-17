@@ -14,7 +14,7 @@ import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { getGoClient } from "@/api/client";
 import { gitRepositoriesQuery, type TGitRepository } from "@/api/services/git";
 import { createService as createServiceFn } from "@/api/services/services";
-import { TBuilderEnum, TGitServiceBuilder } from "@/server/trpc/api/services/types";
+import { TBuilderEnum, TGitServiceBuilder } from "@/server/types/services";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BuildingIcon, CogIcon, HourglassIcon, UnplugIcon, UserIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
@@ -354,7 +354,6 @@ function useGitItem({ context }: TProps) {
     gitHubRedirectPathname,
     defaultEnvironmentId,
     environmentIdFromPathname,
-    queryClient,
     teamId,
     projectId,
     context,

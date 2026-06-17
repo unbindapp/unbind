@@ -6,7 +6,7 @@ import { SettingsSection } from "@/components/settings/settings-section";
 import { cn } from "@/components/ui/utils";
 import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
 import { deleteVolume as deleteVolumeFn } from "@/api/services/storage";
-import { TVolumeShallow } from "@/server/trpc/api/services/types";
+import { TVolumeShallow } from "@/server/types/services";
 import { useMutation } from "@tanstack/react-query";
 import { Trash2Icon } from "lucide-react";
 import { useMemo } from "react";

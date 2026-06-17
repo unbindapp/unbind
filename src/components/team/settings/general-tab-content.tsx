@@ -7,7 +7,7 @@ import {
   teamDescriptionMaxLength,
   teamNameMaxLength,
   TeamUpdateFormSchema,
-} from "@/server/trpc/api/teams/types";
+} from "@/server/types/teams";
 import { updateTeam as updateTeamFn } from "@/api/services/teams";
 import { useMutation } from "@tanstack/react-query";
 

@@ -7,7 +7,7 @@ import {
   projectDescriptionMaxLength,
   projectNameMaxLength,
   ProjectUpdateFormSchema,
-} from "@/server/trpc/api/projects/types";
+} from "@/server/types/projects";
 import { updateProject as updateProjectFn } from "@/api/services/projects";
 import { useMutation } from "@tanstack/react-query";
 

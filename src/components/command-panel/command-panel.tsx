@@ -153,7 +153,7 @@ export function CommandPanelTrigger({
           currentPage={currentPage}
           goToParentPage={goToParentPage}
           commandVariantOptions={mergedCommandPanelVariantOptionsDialog}
-          className="w-112"
+          className="w-md"
         />
       </DialogContent>
     </Dialog>
@@ -567,11 +567,11 @@ function Item({
     >
       {isItemPending && (
         <div className="bg-background border-top-loader/25 absolute top-0 left-0 h-full w-full items-center justify-center overflow-hidden rounded-lg border">
-          <div className="from-top-loader/0 via-top-loader/25 to-top-loader/0 animate-ping-pong absolute top-1/2 left-1/2 aspect-square w-full origin-center -translate-1/2 bg-gradient-to-r" />
+          <div className="from-top-loader/0 via-top-loader/25 to-top-loader/0 animate-ping-pong absolute top-1/2 left-1/2 aspect-square w-full origin-center -translate-1/2 bg-linear-to-r" />
         </div>
       )}
       <div className="relative flex min-w-0 flex-1 items-center justify-start gap-2.5 group-data-has-description/item:items-start">
-        <Icon className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton -ml-0.5 size-5 group-data-has-description/item:mt-0.25 group-data-placeholder/item:rounded-full" />
+        <Icon className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton -ml-0.5 size-5 group-data-has-description/item:mt-px group-data-placeholder/item:rounded-full" />
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <div className="flex w-full justify-start">
             <p className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink leading-tight group-data-placeholder/item:rounded-md">

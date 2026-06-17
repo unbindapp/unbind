@@ -2,7 +2,7 @@
 
 import { queryKeys } from "@/api/query-keys";
 import { webhooksListQuery, type TWebhookShallow } from "@/api/services/webhooks";
-import { TWebhookTypeProject, TWebhookTypeTeam } from "@/server/trpc/api/webhooks/types";
+import { TWebhookTypeProject, TWebhookTypeTeam } from "@/server/types/webhooks";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext } from "react";
 

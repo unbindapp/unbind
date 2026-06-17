@@ -34,8 +34,8 @@ import { useAppForm } from "@/lib/hooks/use-app-form";
 import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { redeployDeployment as redeployDeploymentFn } from "@/api/services/deployments";
 import { restartInstances } from "@/api/services/instances";
-import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
-import { TServiceShallow } from "@/server/trpc/api/services/types";
+import { TDeploymentShallow } from "@/server/types/deployments";
+import { TServiceShallow } from "@/server/types/services";
 import { useMutation } from "@tanstack/react-query";
 import {
   EllipsisVerticalIcon,

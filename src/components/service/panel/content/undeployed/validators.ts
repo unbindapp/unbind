@@ -2,7 +2,7 @@ import {
   TVariableForCreate,
   VariableForCreateNameSchema,
   VariableForCreateValueSchema,
-} from "@/server/trpc/api/variables/types";
+} from "@/server/types/variables";
 
 export function softValidateVariables(variables: TVariableForCreate[]) {
   const cleanedVariables = variables

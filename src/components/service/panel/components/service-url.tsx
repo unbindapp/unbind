@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
-import { TExternalEndpoint } from "@/server/trpc/api/services/types";
+import { TExternalEndpoint } from "@/server/types/services";
 import {
   ChevronUpIcon,
   ExternalLinkIcon,

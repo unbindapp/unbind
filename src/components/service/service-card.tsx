@@ -5,7 +5,7 @@ import ServicePanel from "@/components/service/panel/service-panel";
 import ServiceIcon from "@/components/service/service-icon";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import { TServiceShallow } from "@/server/trpc/api/services/types";
+import { TServiceShallow } from "@/server/types/services";
 import { ReactNode } from "react";
 
 type TProps = {

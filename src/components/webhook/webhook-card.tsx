@@ -17,7 +17,7 @@ import { getWebhookIcon } from "@/components/webhook/helpers";
 import { TWebhookProjectProps, TWebhookProps, TWebhookTeamProps } from "@/components/webhook/types";
 import { useWebhooksUtils } from "@/components/webhook/webhooks-provider";
 import { deleteWebhook as deleteWebhookFn } from "@/api/services/webhooks";
-import { TWebhookShallow } from "@/server/trpc/api/webhooks/types";
+import { TWebhookShallow } from "@/server/types/webhooks";
 import { useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { EllipsisVerticalIcon, Trash2Icon } from "lucide-react";
@@ -181,35 +181,33 @@ function DeleteTrigger({
     },
   });
 
-  if (true) {
-    return (
-      <DeleteEntityTrigger
-        dialogTitle="Delete Webhook"
-        dialogDescription="Are you sure you want to delete this webhook? This action cannot be undone."
-        disableConfirmationInput
-        EntityNameBadge={() => (
-          <p className="bg-foreground/6 border-foreground/6 -ml-0.5 max-w-[calc(100%+0.25rem)] truncate rounded-md border px-1.5 py-px text-sm font-medium">
-            {webhook.url}
-          </p>
-        )}
-        deletingEntityName={webhook.url}
-        onDialogClose={() => {
-          deleteWebhookReset();
-        }}
-        onDialogCloseImmediate={() => {
-          closeDropdown();
-        }}
-        error={deleteWebhookError}
-        onSubmit={async () => {
-          await deleteWebhook(
-            type === "project"
-              ? { id: webhook.id, type, teamId, projectId }
-              : { id: webhook.id, type, teamId },
-          );
-        }}
-      >
-        {children}
-      </DeleteEntityTrigger>
-    );
-  }
+  return (
+    <DeleteEntityTrigger
+      dialogTitle="Delete Webhook"
+      dialogDescription="Are you sure you want to delete this webhook? This action cannot be undone."
+      disableConfirmationInput
+      EntityNameBadge={() => (
+        <p className="bg-foreground/6 border-foreground/6 -ml-0.5 max-w-[calc(100%+0.25rem)] truncate rounded-md border px-1.5 py-px text-sm font-medium">
+          {webhook.url}
+        </p>
+      )}
+      deletingEntityName={webhook.url}
+      onDialogClose={() => {
+        deleteWebhookReset();
+      }}
+      onDialogCloseImmediate={() => {
+        closeDropdown();
+      }}
+      error={deleteWebhookError}
+      onSubmit={async () => {
+        await deleteWebhook(
+          type === "project"
+            ? { id: webhook.id, type, teamId, projectId }
+            : { id: webhook.id, type, teamId },
+        );
+      }}
+    >
+      {children}
+    </DeleteEntityTrigger>
+  );
 }

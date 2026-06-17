@@ -1,6 +1,6 @@
 import { useServicesUtils } from "@/components/service/services-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
-import { TServiceShallow } from "@/server/trpc/api/services/types";
+import { TServiceShallow } from "@/server/types/services";
 import { deleteService as deleteServiceFn } from "@/api/services/services";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";

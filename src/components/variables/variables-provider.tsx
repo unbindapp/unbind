@@ -8,7 +8,7 @@ import {
   type TVariablesList,
 } from "@/api/services/variables";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
-import { TVariableReferenceShallow, TVariableShallow } from "@/server/trpc/api/variables/types";
+import { TVariableReferenceShallow, TVariableShallow } from "@/server/types/variables";
 import {
   useMutation,
   useQuery,
