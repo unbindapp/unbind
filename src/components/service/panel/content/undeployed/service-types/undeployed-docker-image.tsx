@@ -25,7 +25,7 @@ import { generateDomain } from "@/lib/helpers/generate-domain";
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
 import { TServiceShallow } from "@/server/types/services";
 import { TVariableForCreate } from "@/server/types/variables";
-import { dockerTagsQuery } from "@/api/services/docker";
+import { dockerTagsQuery } from "@/api/queries/docker";
 import { useQuery } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
 import { ChevronUpIcon, CogIcon, PackageIcon, TagIcon } from "lucide-react";

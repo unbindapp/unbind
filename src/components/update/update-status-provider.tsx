@@ -1,6 +1,6 @@
 "use client";
 
-import { checkUpdateStatusQuery, type TUpdateStatus } from "@/api/services/system";
+import { checkUpdateStatusQuery, type TUpdateStatus } from "@/api/queries/system";
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext } from "react";
 

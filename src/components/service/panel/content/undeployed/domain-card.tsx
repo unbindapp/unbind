@@ -4,7 +4,7 @@ import { useSystem } from "@/components/system/system-provider";
 import { cn } from "@/components/ui/utils";
 import { defaultDebounceMs } from "@/lib/constants";
 import { isDomain } from "@/lib/helpers/is-domain";
-import { dnsCheckQuery } from "@/api/services/system";
+import { dnsCheckQuery } from "@/api/queries/system";
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircleIcon, HourglassIcon } from "lucide-react";
 import { useEffect, useState } from "react";

@@ -1,6 +1,6 @@
 "use client";
 
-import { logsListQuery } from "@/api/services/logs";
+import { logsListQuery } from "@/api/queries/logs";
 import { useLogViewState } from "@/components/logs/log-view-state-provider";
 import { createSearchFilter } from "@/components/logs/search-filter";
 import { useAppConfig } from "@/components/providers/app-config-provider";

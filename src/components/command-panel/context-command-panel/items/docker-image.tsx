@@ -11,8 +11,8 @@ import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-
 import { cn } from "@/components/ui/utils";
 import { formatKMBT } from "@/lib/helpers/format-kmbt";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import { dockerSearchQuery } from "@/api/services/docker";
-import { createService as createServiceFn } from "@/api/services/services";
+import { dockerSearchQuery } from "@/api/queries/docker";
+import { createService as createServiceFn } from "@/api/queries/services";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { DownloadIcon, PackageIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";

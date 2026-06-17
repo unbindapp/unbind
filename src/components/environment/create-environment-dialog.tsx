@@ -17,11 +17,8 @@ import {
 } from "@/components/ui/dialog";
 import { defaultAnimationMs } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import {
-  environmentNameMaxLength,
-  EnvironmentNameSchema,
-} from "@/server/types/environments";
-import { createEnvironment as createEnvironmentFn } from "@/api/services/environments";
+import { environmentNameMaxLength, EnvironmentNameSchema } from "@/server/types/environments";
+import { createEnvironment as createEnvironmentFn } from "@/api/queries/environments";
 import { useMutation } from "@tanstack/react-query";
 import { ResultAsync } from "neverthrow";
 import {

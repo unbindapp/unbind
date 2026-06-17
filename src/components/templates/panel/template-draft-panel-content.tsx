@@ -14,7 +14,7 @@ import { formatGB } from "@/lib/helpers/format-gb";
 import { generateDomain } from "@/lib/helpers/generate-domain";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TemplateInputTypeSchema } from "@/server/go/client.gen";
-import { deployTemplate as deployTemplateFn } from "@/api/services/templates";
+import { deployTemplate as deployTemplateFn } from "@/api/queries/templates";
 import { useMutation } from "@tanstack/react-query";
 import {
   ArchiveIcon,

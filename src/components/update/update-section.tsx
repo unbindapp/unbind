@@ -5,7 +5,7 @@ import { useNow } from "@/components/providers/now-provider";
 import { useMainStore } from "@/components/stores/main/main-store-provider";
 import { Button, LinkButton } from "@/components/ui/button";
 import UpdateStatusProvider, { useUpdateStatus } from "@/components/update/update-status-provider";
-import { applyUpdate as applyUpdateFn } from "@/api/services/system";
+import { applyUpdate as applyUpdateFn } from "@/api/queries/system";
 import { useMutation } from "@tanstack/react-query";
 import { CircleArrowUpIcon, CircleCheckBigIcon, HourglassIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";

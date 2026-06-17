@@ -10,7 +10,7 @@ import { useServicePanel } from "@/components/service/panel/service-panel-provid
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { TAvailableDatabase } from "@/server/go/data.gen";
-import { createService as createServiceFn } from "@/api/services/services";
+import { createService as createServiceFn } from "@/api/queries/services";
 import { useMutation } from "@tanstack/react-query";
 import { DatabaseIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";

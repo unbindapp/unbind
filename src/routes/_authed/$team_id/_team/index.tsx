@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { projectsListQuery } from "@/api/services/projects";
+import { projectsListQuery } from "@/api/queries/projects";
 import PageWrapper from "@/components/page-wrapper";
 import ProjectsProvider from "@/components/project/projects-provider";
 import NewProjectButton from "@/components/team/new-project-button";

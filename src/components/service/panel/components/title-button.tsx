@@ -4,7 +4,7 @@ import { useServiceUtils } from "@/components/service/service-provider";
 import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
 import { Button } from "@/components/ui/button";
 import { ServiceRenameSchema, TServiceShallow } from "@/server/types/services";
-import { updateService as updateServiceFn } from "@/api/services/services";
+import { updateService as updateServiceFn } from "@/api/queries/services";
 import { useMutation } from "@tanstack/react-query";
 import { PenIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
@@ -18,11 +18,7 @@ type TProps = {
 };
 
 export default function TitleButton({ service, teamId, projectId, environmentId }: TProps) {
-  const {
-    mutateAsync: updateService,
-    error,
-    reset,
-  } = useMutation({ mutationFn: updateServiceFn });
+  const { mutateAsync: updateService, error, reset } = useMutation({ mutationFn: updateServiceFn });
   const { refetch: refetchService } = useServiceUtils({
     teamId,
     projectId,

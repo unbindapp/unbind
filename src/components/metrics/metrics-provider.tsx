@@ -1,6 +1,6 @@
 "use client";
 
-import { metricsListQuery, type TMetrics } from "@/api/services/metrics";
+import { metricsListQuery, type TMetrics } from "@/api/queries/metrics";
 import { useMetricsState } from "@/components/metrics/metrics-state-provider";
 import { TLogType } from "@/server/types/logs";
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";

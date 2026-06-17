@@ -41,7 +41,7 @@ import {
   createEnvironment as createEnvironmentFn,
   deleteEnvironment as deleteEnvironmentFn,
   updateEnvironment as updateEnvironmentFn,
-} from "@/api/services/environments";
+} from "@/api/queries/environments";
 import { useMutation } from "@tanstack/react-query";
 import { CheckIcon, EllipsisVerticalIcon, PenIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { ResultAsync } from "neverthrow";

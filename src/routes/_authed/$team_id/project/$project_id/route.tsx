@@ -3,9 +3,9 @@ import { createFileRoute, Navigate, Outlet } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { z } from "zod";
 
-import { projectQuery, projectsListQuery } from "@/api/services/projects";
-import { systemQuery } from "@/api/services/system";
-import { templatesListQuery } from "@/api/services/templates";
+import { projectQuery, projectsListQuery } from "@/api/queries/projects";
+import { systemQuery } from "@/api/queries/system";
+import { templatesListQuery } from "@/api/queries/templates";
 import ContextCommandPanel from "@/components/command-panel/context-command-panel/context-command-panel";
 import DeploymentPanelIdProvider from "@/components/deployment/panel/deployment-panel-id-provider";
 import NavbarSafeAreaInsetBottom from "@/components/navigation/navbar-safe-area-inset-bottom";

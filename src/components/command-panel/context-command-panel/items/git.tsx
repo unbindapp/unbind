@@ -12,8 +12,8 @@ import { useServicePanel } from "@/components/service/panel/service-panel-provid
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { getGoClient } from "@/api/client";
-import { gitRepositoriesQuery, type TGitRepository } from "@/api/services/git";
-import { createService as createServiceFn } from "@/api/services/services";
+import { gitRepositoriesQuery, type TGitRepository } from "@/api/queries/git";
+import { createService as createServiceFn } from "@/api/queries/services";
 import { TBuilderEnum, TGitServiceBuilder } from "@/server/types/services";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BuildingIcon, CogIcon, HourglassIcon, UnplugIcon, UserIcon } from "lucide-react";

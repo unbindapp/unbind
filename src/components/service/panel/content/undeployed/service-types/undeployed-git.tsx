@@ -29,7 +29,7 @@ import {
   TServiceShallow,
 } from "@/server/types/services";
 import { TVariableForCreate } from "@/server/types/variables";
-import { gitRepositoryQuery } from "@/api/services/git";
+import { gitRepositoryQuery } from "@/api/queries/git";
 import { useQuery } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
 import { ChevronUpIcon, CogIcon, GitBranchIcon } from "lucide-react";

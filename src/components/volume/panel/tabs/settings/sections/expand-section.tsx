@@ -15,7 +15,7 @@ import {
 import { defaultAnimationMs } from "@/lib/constants";
 import { formatGB } from "@/lib/helpers/format-gb";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { expandVolume as expandVolumeFn } from "@/api/services/storage";
+import { expandVolume as expandVolumeFn } from "@/api/queries/storage";
 import { TVolumeShallow } from "@/server/types/services";
 import { TVolumeType } from "@/server/types/volumes";
 import { useStore } from "@tanstack/react-form";

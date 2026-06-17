@@ -1,7 +1,7 @@
 "use client";
 
 import { queryKeys } from "@/api/query-keys";
-import { deploymentsListQuery, type TDeploymentsList } from "@/api/services/deployments";
+import { deploymentsListQuery, type TDeploymentsList } from "@/api/queries/deployments";
 import { useService } from "@/components/service/service-provider";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
@@ -60,7 +60,9 @@ export const useDeploymentsUtils = ({
   return {
     invalidate: () => queryClient.invalidateQueries({ queryKey }),
     fetch: () =>
-      queryClient.ensureQueryData(deploymentsListQuery(teamId, projectId, environmentId, serviceId)),
+      queryClient.ensureQueryData(
+        deploymentsListQuery(teamId, projectId, environmentId, serviceId),
+      ),
     refetch: () => queryClient.refetchQueries({ queryKey }),
   };
 };

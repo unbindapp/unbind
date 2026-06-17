@@ -1,7 +1,7 @@
 "use client";
 
 import { queryKeys } from "@/api/query-keys";
-import { instanceHealthQuery, type TInstanceHealth } from "@/api/services/instances";
+import { instanceHealthQuery, type TInstanceHealth } from "@/api/queries/instances";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext } from "react";
 

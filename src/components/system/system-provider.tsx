@@ -1,6 +1,6 @@
 "use client";
 
-import { systemQuery, type TSystem } from "@/api/services/system";
+import { systemQuery, type TSystem } from "@/api/queries/system";
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext } from "react";
 

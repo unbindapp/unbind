@@ -5,7 +5,7 @@ import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import { Button, LinkButton, TButtonVariants } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import { deleteProject as deleteProjectFn } from "@/api/services/projects";
+import { deleteProject as deleteProjectFn } from "@/api/queries/projects";
 import { TProjectShallow } from "@/server/types/projects";
 import { useMutation } from "@tanstack/react-query";
 import { ReactNode } from "react";

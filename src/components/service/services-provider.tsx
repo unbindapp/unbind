@@ -1,7 +1,7 @@
 "use client";
 
 import { queryKeys } from "@/api/query-keys";
-import { servicesListQuery, type TServiceShallow } from "@/api/services/services";
+import { servicesListQuery, type TServiceShallow } from "@/api/queries/services";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 

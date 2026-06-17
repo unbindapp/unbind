@@ -6,7 +6,7 @@ import {
   variablesListQuery,
   type TCreateOrUpdateVariablesInput,
   type TVariablesList,
-} from "@/api/services/variables";
+} from "@/api/queries/variables";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
 import { TVariableReferenceShallow, TVariableShallow } from "@/server/types/variables";
 import {

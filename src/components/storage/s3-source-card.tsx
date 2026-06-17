@@ -38,7 +38,7 @@ import {
   deleteS3Source as deleteS3SourceFn,
   testS3Query,
   updateS3Source as updateS3SourceFn,
-} from "@/api/services/storage";
+} from "@/api/queries/storage";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   CylinderIcon,

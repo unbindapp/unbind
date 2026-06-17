@@ -5,9 +5,9 @@ import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-
 import { TToken } from "@/components/ui/textarea-with-tokens";
 import { TReferenceExtended } from "@/components/variables/variables-form-field";
 import { useVariablesUtils } from "@/components/variables/variables-provider";
-import { createDeployment as createDeploymentFn } from "@/api/services/deployments";
-import { updateService as updateServiceFn } from "@/api/services/services";
-import { createOrUpdateVariables as createOrUpdateVariablesFn } from "@/api/services/variables";
+import { createDeployment as createDeploymentFn } from "@/api/queries/deployments";
+import { updateService as updateServiceFn } from "@/api/queries/services";
+import { createOrUpdateVariables as createOrUpdateVariablesFn } from "@/api/queries/variables";
 import { useMutation } from "@tanstack/react-query";
 import { useCallback, useMemo, useRef } from "react";
 

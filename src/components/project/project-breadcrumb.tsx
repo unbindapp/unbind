@@ -9,7 +9,7 @@ import { BreadcrumbSeparator, BreadcrumbWrapper } from "@/components/navigation/
 import { useProjects, useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import { createProject as createProjectFn } from "@/api/services/projects";
+import { createProject as createProjectFn } from "@/api/queries/projects";
 import { useMutation } from "@tanstack/react-query";
 import { ResultAsync } from "neverthrow";
 import { useLocation, useRouter } from "@tanstack/react-router";
@@ -140,42 +140,42 @@ export default function ProjectBreadcrumb({ className }: TProps) {
   const { mutate: createProject, isPending: isPendingCreateProject } = useMutation({
     mutationFn: createProjectFn,
     onSuccess: async (res) => {
-        const projectId = res.data?.id;
-        const environments = res.data.environments;
-        if (environments.length < 1) {
-          toast.error("No environments found", {
-            description: "There is no environment in this project",
-          });
-          return;
-        }
-        const environmentId = res.data.default_environment_id || environments[0].id;
-        if (!projectId || !environmentId) {
-          toast.error("Project or environment ID is missing", {
-            description: "Project ID or Environment ID is missing",
-          });
-          return;
-        }
-
-        setIsProjectsMenuOpen(false);
-        invalidateProjects();
-
-        const asyncPushRes = await ResultAsync.fromPromise(
-          asyncPush(`/${teamIdFromPathname}/project/${projectId}?environment=${environmentId}`),
-          () => new Error("Failed to navigate to project"),
-        );
-
-        if (asyncPushRes.isErr()) {
-          toast.error("Failed to navigate to project", {
-            description: asyncPushRes.error.message,
-          });
-        }
-      },
-      onError: (error) => {
-        toast.error("Failed to create project", {
-          description: error.message,
+      const projectId = res.data?.id;
+      const environments = res.data.environments;
+      if (environments.length < 1) {
+        toast.error("No environments found", {
+          description: "There is no environment in this project",
         });
-      },
-    });
+        return;
+      }
+      const environmentId = res.data.default_environment_id || environments[0].id;
+      if (!projectId || !environmentId) {
+        toast.error("Project or environment ID is missing", {
+          description: "Project ID or Environment ID is missing",
+        });
+        return;
+      }
+
+      setIsProjectsMenuOpen(false);
+      invalidateProjects();
+
+      const asyncPushRes = await ResultAsync.fromPromise(
+        asyncPush(`/${teamIdFromPathname}/project/${projectId}?environment=${environmentId}`),
+        () => new Error("Failed to navigate to project"),
+      );
+
+      if (asyncPushRes.isErr()) {
+        toast.error("Failed to navigate to project", {
+          description: asyncPushRes.error.message,
+        });
+      }
+    },
+    onError: (error) => {
+      toast.error("Failed to create project", {
+        description: error.message,
+      });
+    },
+  });
 
   const CreateEnvironmentDialogMemoized: (
     props: Omit<TCreateEnvironmentDialogProps, "onFormSubmitSuccessful">,

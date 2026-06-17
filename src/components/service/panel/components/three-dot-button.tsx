@@ -1,7 +1,7 @@
 import { useServicesUtils } from "@/components/service/services-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { TServiceShallow } from "@/server/types/services";
-import { deleteService as deleteServiceFn } from "@/api/services/services";
+import { deleteService as deleteServiceFn } from "@/api/queries/services";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import {

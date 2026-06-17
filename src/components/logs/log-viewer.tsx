@@ -268,7 +268,7 @@ function Logs({
         </div>
         {/* List */}
         <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden">
-          <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_0.75rem,black_calc(100%-0.75rem),transparent)]">
+          <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden mask-[linear-gradient(to_bottom,transparent,black_0.75rem,black_calc(100%-0.75rem),transparent)]">
             <VList
               overscan={20}
               style={{ height: undefined }}

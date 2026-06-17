@@ -1,6 +1,6 @@
 "use client";
 
-import { teamQuery, type TTeam } from "@/api/services/teams";
+import { teamQuery, type TTeam } from "@/api/queries/teams";
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 

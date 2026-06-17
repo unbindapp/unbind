@@ -4,7 +4,7 @@ import { queryKeys } from "@/api/query-keys";
 import {
   availableVariableReferencesQuery,
   type TAvailableVariableReferences,
-} from "@/api/services/variables";
+} from "@/api/queries/variables";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
