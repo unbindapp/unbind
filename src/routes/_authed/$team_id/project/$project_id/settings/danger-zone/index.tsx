@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import DeleteProjectSection from "@/components/project/settings/delete-project-section";
 import SettingsTabTitle from "@/components/settings/settings-tab-title";
 
-export const Route = createFileRoute("/_authed/$team_id/project/$project_id/settings/danger-zone")({
+export const Route = createFileRoute("/_authed/$team_id/project/$project_id/settings/danger-zone/")({
   component: ProjectDangerZoneSettings,
 });
 

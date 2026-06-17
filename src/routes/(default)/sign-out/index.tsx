@@ -4,9 +4,9 @@ import { useState } from "react";
 
 import { logout, meQuery } from "@/api/auth";
 import { Button } from "@/components/ui/button";
-import { AuthShell } from "./-components/auth-shell";
+import { AuthShell } from "../-components/auth-shell";
 
-export const Route = createFileRoute("/(default)/sign-out")({
+export const Route = createFileRoute("/(default)/sign-out/")({
   component: SignOut,
 });
 

@@ -4,7 +4,7 @@ import SettingsTabTitle from "@/components/settings/settings-tab-title";
 import S3SourcesProvider from "@/components/storage/s3-sources-provider";
 import StorageTabContent from "@/components/storage/storage-tab-content";
 
-export const Route = createFileRoute("/_authed/$team_id/_team/settings/storage")({
+export const Route = createFileRoute("/_authed/$team_id/_team/settings/storage/")({
   component: TeamStorageSettings,
 });
 

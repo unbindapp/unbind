@@ -6,7 +6,7 @@ import { LinkButton } from "@/components/ui/button";
 import { useCheckForUpdates } from "@/components/update/check-for-updates-provider";
 import UpdateSection from "@/components/update/update-section";
 
-export const Route = createFileRoute("/_authed/update")({
+export const Route = createFileRoute("/_authed/update/")({
   component: UpdatePage,
 });
 

@@ -15,7 +15,7 @@ import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { PlusIcon } from "lucide-react";
 import { ReactNode, useMemo } from "react";
 
-const placeholderArray = Array.from({ length: 3 });
+const placeholderArray = Array.from({ length: 6 });
 
 export default function ServiceCardList() {
   const {

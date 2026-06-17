@@ -23,7 +23,7 @@ import { format } from "date-fns";
 import { EllipsisVerticalIcon, Trash2Icon } from "lucide-react";
 import { ReactNode, useState } from "react";
 
-const placeholderArray = Array.from({ length: 5 }, (_, i) => i);
+const placeholderArray = Array.from({ length: 6 }, (_, i) => i);
 
 type TProps =
   | ({

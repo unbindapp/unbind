@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import GithubConnectedContent from "@/components/git/github-connected-content";
 
-export const Route = createFileRoute("/_authed/$team_id/connect-git/connected/github")({
+export const Route = createFileRoute("/_authed/$team_id/connect-git/connected/github/")({
   validateSearch: zodValidator(z.object({ id: z.string().optional() })),
   component: GithubCallbackPage,
 });

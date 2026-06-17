@@ -4,7 +4,7 @@ import EnvironmentsProvider from "@/components/environment/environments-provider
 import EnvironmentsTabContent from "@/components/environment/environments-tab-content";
 import SettingsTabTitle from "@/components/settings/settings-tab-title";
 
-export const Route = createFileRoute("/_authed/$team_id/project/$project_id/settings/environments")(
+export const Route = createFileRoute("/_authed/$team_id/project/$project_id/settings/environments/")(
   {
     component: ProjectEnvironmentsSettings,
   },

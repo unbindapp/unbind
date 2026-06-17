@@ -5,7 +5,7 @@ import AddWebhookForm from "@/components/webhook/add-webhook-form";
 import WebhooksList from "@/components/webhook/webhooks-list";
 import WebhooksProvider from "@/components/webhook/webhooks-provider";
 
-export const Route = createFileRoute("/_authed/$team_id/project/$project_id/settings/webhooks")({
+export const Route = createFileRoute("/_authed/$team_id/project/$project_id/settings/webhooks/")({
   component: ProjectWebhooksSettings,
 });
 

@@ -1,5 +1,6 @@
 import { createFileRoute, useSearch } from "@tanstack/react-router";
 
+import { servicesListQuery } from "@/api/services/services";
 import EnvironmentSelector from "@/components/environment/environment-selector";
 import PageWrapper from "@/components/page-wrapper";
 import NewServiceButton from "@/components/project/new-service-button";
@@ -9,6 +10,18 @@ import ServicesProvider from "@/components/service/services-provider";
 const projectRouteId = "/_authed/$team_id/project/$project_id";
 
 export const Route = createFileRoute("/_authed/$team_id/project/$project_id/")({
+  // Expose the environment search param to the loader so it can key the query.
+  loaderDeps: ({ search: { environment } }) => ({ environment }),
+  loader: ({ context: { queryClient }, params, deps }) => {
+    // Runs on intent preload (hover) too, so hovering a project card on the
+    // team page warms the services cache before navigation. Non-blocking;
+    // ServiceCardList shows skeletons meanwhile. Skip until the environment is
+    // resolved into the URL (matches ServicesProvider's `enabled` guard).
+    if (!deps.environment) return;
+    void queryClient.prefetchQuery(
+      servicesListQuery(params.team_id, params.project_id, deps.environment),
+    );
+  },
   component: ProjectServicesPage,
 });
 

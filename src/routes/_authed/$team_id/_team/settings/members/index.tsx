@@ -3,11 +3,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ComingSoonCard } from "@/components/coming-soon";
 import SettingsTabTitle from "@/components/settings/settings-tab-title";
 
-export const Route = createFileRoute("/_authed/$team_id/project/$project_id/settings/members")({
-  component: ProjectMembersSettings,
+export const Route = createFileRoute("/_authed/$team_id/_team/settings/members/")({
+  component: TeamMembersSettings,
 });
 
-function ProjectMembersSettings() {
+function TeamMembersSettings() {
   return (
     <>
       <SettingsTabTitle>Members</SettingsTabTitle>

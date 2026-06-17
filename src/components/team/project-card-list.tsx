@@ -14,7 +14,7 @@ type TProps = {
   teamId: string;
 };
 
-const placeholderArray = Array.from({ length: 3 });
+const placeholderArray = Array.from({ length: 6 });
 
 export default function ProjectCardList({ teamId }: TProps) {
   const { data, isPending, error } = useProjects();

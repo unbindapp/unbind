@@ -10,7 +10,7 @@ import ServicesProvider from "@/components/service/services-provider";
 
 const projectRouteId = "/_authed/$team_id/project/$project_id";
 
-export const Route = createFileRoute("/_authed/$team_id/project/$project_id/metrics")({
+export const Route = createFileRoute("/_authed/$team_id/project/$project_id/metrics/")({
   component: MetricsPage,
 });
 
