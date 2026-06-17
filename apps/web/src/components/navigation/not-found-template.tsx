@@ -1,10 +1,11 @@
 import { LinkButton } from "@/components/ui/button";
-import { ComponentProps, FC } from "react";
+import type { LinkProps } from "@tanstack/react-router";
+import { FC } from "react";
 
 type TProps = {
   code: number;
   description: string;
-  buttonTo: ComponentProps<typeof LinkButton>["to"];
+  buttonTo: LinkProps["to"];
   buttonText: string;
   Icon: FC<{ className?: string }>;
 };
