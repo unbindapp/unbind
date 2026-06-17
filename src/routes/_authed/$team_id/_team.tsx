@@ -1,5 +1,5 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, Navigate, Outlet } from "@tanstack/react-router";
 
 import { systemQuery } from "@/api/services/system";
 import { teamQuery, teamsListQuery } from "@/api/services/teams";
@@ -14,30 +14,30 @@ import TemplatesProvider from "@/components/templates/templates-provider";
 import { UpdateToastProvider } from "@/components/update/check-for-updates-provider";
 
 export const Route = createFileRoute("/_authed/$team_id/_team")({
-  loader: async ({ context: { queryClient }, params }) => {
-    const [{ teams }] = await Promise.all([
-      queryClient.ensureQueryData(teamsListQuery()),
-      queryClient.ensureQueryData(systemQuery()),
-      queryClient.ensureQueryData(templatesListQuery()),
-    ]);
-    // Redirect to the first team if the requested team isn't one of the user's.
-    if (teams.length >= 1 && !teams.some((t) => t.id === params.team_id)) {
-      throw redirect({ to: "/$team_id", params: { team_id: teams[0].id } });
-    }
-    await queryClient.ensureQueryData(teamQuery(params.team_id));
+  loader: ({ context: { queryClient }, params }) => {
+    // Warm the cache (this also runs on intent preload) without blocking the
+    // navigation — the components below render immediately and show skeletons.
+    void queryClient.prefetchQuery(teamsListQuery());
+    void queryClient.prefetchQuery(systemQuery());
+    void queryClient.prefetchQuery(templatesListQuery());
+    void queryClient.prefetchQuery(teamQuery(params.team_id));
   },
   component: TeamLayout,
 });
 
 function TeamLayout() {
   const { team_id: teamId } = Route.useParams();
-  const { data: teamsData } = useSuspenseQuery(teamsListQuery());
-  const { data: templatesData } = useSuspenseQuery(templatesListQuery());
-  const { data: systemData } = useSuspenseQuery(systemQuery());
+  const { data: teamsData } = useQuery(teamsListQuery());
+
+  // Redirect to the first team if the requested team isn't one of the user's.
+  // Moved out of the loader so navigation isn't blocked on the teams list.
+  if (teamsData && teamsData.teams.length >= 1 && !teamsData.teams.some((t) => t.id === teamId)) {
+    return <Navigate to="/$team_id" params={{ team_id: teamsData.teams[0].id }} replace />;
+  }
 
   return (
-    <SystemProvider initialData={systemData}>
-      <TemplatesProvider data={templatesData}>
+    <SystemProvider>
+      <TemplatesProvider>
         <UpdateToastProvider>
           <TeamsProvider initialData={teamsData}>
             <TeamProvider teamId={teamId}>

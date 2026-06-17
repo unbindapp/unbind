@@ -10,7 +10,7 @@ type TTeamsContext = UseQueryResult<TTeamsResult, Error>;
 const TeamsContext = createContext<TTeamsContext | null>(null);
 
 export const TeamsProvider: React.FC<{
-  initialData: TTeamsResult;
+  initialData?: TTeamsResult;
   children: ReactNode;
 }> = ({ initialData, children }) => {
   const query = useQuery({ ...teamsListQuery(), initialData });

@@ -7,8 +7,10 @@ import NewProjectButton from "@/components/team/new-project-button";
 import ProjectCardList from "@/components/team/project-card-list";
 
 export const Route = createFileRoute("/_authed/$team_id/_team/")({
-  loader: ({ context: { queryClient }, params }) =>
-    queryClient.ensureQueryData(projectsListQuery(params.team_id)),
+  loader: ({ context: { queryClient }, params }) => {
+    // Warm the cache without blocking; ProjectCardList shows skeletons meanwhile.
+    void queryClient.prefetchQuery(projectsListQuery(params.team_id));
+  },
   component: TeamProjectsPage,
 });
 

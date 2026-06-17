@@ -12,7 +12,7 @@ type TProps = {
   className?: string;
 };
 
-export default async function ProjectNavbar({ className }: TProps) {
+export default function ProjectNavbar({ className }: TProps) {
   return (
     <Navbar className={className}>
       <NavbarBreadcrumb>

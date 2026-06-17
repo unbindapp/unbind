@@ -9,7 +9,7 @@ type TSystemContext = UseQueryResult<TSystem, Error>;
 const SystemContext = createContext<TSystemContext | null>(null);
 
 export const SystemProvider: React.FC<{
-  initialData: TSystem;
+  initialData?: TSystem;
   children: ReactNode;
 }> = ({ initialData, children }) => {
   const query = useQuery({ ...systemQuery(), initialData });

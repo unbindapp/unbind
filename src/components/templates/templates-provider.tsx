@@ -1,6 +1,7 @@
 "use client";
 
-import { type TTemplatesList } from "@/api/services/templates";
+import { templatesListQuery, type TTemplatesList } from "@/api/services/templates";
+import { useQuery } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
 type TTemplatesContext = { data: TTemplatesList };
@@ -8,12 +9,15 @@ type TTemplatesContext = { data: TTemplatesList };
 const TemplatesContext = createContext<TTemplatesContext | null>(null);
 
 type TProps = {
-  data: TTemplatesList;
+  initialData?: TTemplatesList;
   children: ReactNode;
 };
 
-export const TemplatesProvider: React.FC<TProps> = ({ data, children }) => {
-  const value: TTemplatesContext = useMemo(() => ({ data }), [data]);
+export const TemplatesProvider: React.FC<TProps> = ({ initialData, children }) => {
+  // Self-fetches so the layout can mount without blocking on this query; the
+  // command panel that consumes it just shows nothing until templates arrive.
+  const { data } = useQuery({ ...templatesListQuery(), initialData });
+  const value: TTemplatesContext = useMemo(() => ({ data: data ?? { templates: [] } }), [data]);
 
   return <TemplatesContext.Provider value={value}>{children}</TemplatesContext.Provider>;
 };

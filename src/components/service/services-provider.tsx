@@ -27,6 +27,9 @@ export const ServicesProvider: React.FC<{
     ...servicesListQuery(teamId, projectId, environmentId),
     initialData,
     refetchInterval: 5000,
+    // Skip the request during the brief window before the environment is
+    // resolved into the URL (the project layout redirects to add it).
+    enabled: environmentId !== "",
   });
   const value = useMemo(
     () => ({ query, teamId, projectId, environmentId }),
