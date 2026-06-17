@@ -53,7 +53,7 @@ function TeamSettingsLayout() {
   ];
 
   return (
-    <SettingsLayout tabs={tabs}>
+    <SettingsLayout title="Team Settings" tabs={tabs}>
       <Outlet />
     </SettingsLayout>
   );

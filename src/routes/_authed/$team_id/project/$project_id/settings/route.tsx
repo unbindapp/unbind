@@ -53,7 +53,7 @@ function ProjectSettingsLayout() {
   ];
 
   return (
-    <SettingsLayout tabs={tabs}>
+    <SettingsLayout title="Project Settings" tabs={tabs}>
       <Outlet />
     </SettingsLayout>
   );
