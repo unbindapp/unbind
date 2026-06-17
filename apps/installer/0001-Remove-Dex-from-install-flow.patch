@@ -1,0 +1,83 @@
+From edeb648b7019d4f582e0f0cd3b5263da828177da Mon Sep 17 00:00:00 2001
+From: bbedward <bbedward@gmail.com>
+Date: Tue, 16 Jun 2026 11:09:26 -0400
+Subject: [PATCH] Remove Dex from install flow
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Drop the dex deploy-wait and the unbind-auth deployment restart; remove dex
+from the welcome screen. (app.go change left untouched — pre-existing.)
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+---
+ internal/installer/helmfile.go | 28 ++--------------------------
+ internal/tui/view_welcome.go   |  1 -
+ 2 files changed, 2 insertions(+), 27 deletions(-)
+
+diff --git a/internal/installer/helmfile.go b/internal/installer/helmfile.go
+index 47f12b0..6d8258f 100644
+--- a/internal/installer/helmfile.go
++++ b/internal/installer/helmfile.go
+@@ -454,13 +454,13 @@ func (self *UnbindInstaller) SyncHelmfileWithSteps(ctx context.Context, opts Syn
+ 			},
+ 		},
+ 		{
+-			Description: "Waiting for authentication services and restarting auth deployment",
++			Description: "Waiting for authentication services",
+ 			Progress:    0.98,
+ 			Action: func(ctx context.Context) error {
+ 				namespace := "unbind-system"
+ 
+ 				// Wait for kube-oidc-proxy deployment to be ready
+-				self.logProgress(dependencyName, 0.96, "Waiting for kube-oidc-proxy to be ready...", nil, StatusInstalling)
++				self.logProgress(dependencyName, 0.97, "Waiting for kube-oidc-proxy to be ready...", nil, StatusInstalling)
+ 				cmd1 := exec.CommandContext(ctx, "kubectl", "wait", "--for=condition=available",
+ 					"deployment/kube-oidc-proxy", "-n", namespace, "--timeout=300s")
+ 				cmd1.Env = append(os.Environ(), fmt.Sprintf("KUBECONFIG=%s", self.kubeConfigPath))
+@@ -471,30 +471,6 @@ func (self *UnbindInstaller) SyncHelmfileWithSteps(ctx context.Context, opts Syn
+ 				}
+ 				self.sendLog("kube-oidc-proxy deployment is ready")
+ 
+-				// Wait for dex deployment to be ready
+-				self.logProgress(dependencyName, 0.97, "Waiting for dex to be ready...", nil, StatusInstalling)
+-				cmd2 := exec.CommandContext(ctx, "kubectl", "wait", "--for=condition=available",
+-					"deployment/dex", "-n", namespace, "--timeout=300s")
+-				cmd2.Env = append(os.Environ(), fmt.Sprintf("KUBECONFIG=%s", self.kubeConfigPath))
+-
+-				if output, err := cmd2.CombinedOutput(); err != nil {
+-					self.sendLog(fmt.Sprintf("kubectl wait dex output: %s", string(output)))
+-					return fmt.Errorf("failed waiting for dex deployment: %w", err)
+-				}
+-				self.sendLog("dex deployment is ready")
+-
+-				// Restart unbind-auth-deployment
+-				self.logProgress(dependencyName, 0.98, "Restarting unbind-auth-deployment...", nil, StatusInstalling)
+-				cmd3 := exec.CommandContext(ctx, "kubectl", "rollout", "restart",
+-					"deployment/unbind-auth-deployment", "-n", namespace)
+-				cmd3.Env = append(os.Environ(), fmt.Sprintf("KUBECONFIG=%s", self.kubeConfigPath))
+-
+-				if output, err := cmd3.CombinedOutput(); err != nil {
+-					self.sendLog(fmt.Sprintf("kubectl rollout restart output: %s", string(output)))
+-					return fmt.Errorf("failed to restart unbind-auth-deployment: %w", err)
+-				}
+-				self.sendLog("unbind-auth-deployment restarted successfully")
+-
+ 				return nil
+ 			},
+ 		},
+diff --git a/internal/tui/view_welcome.go b/internal/tui/view_welcome.go
+index f2d668f..378e621 100644
+--- a/internal/tui/view_welcome.go
++++ b/internal/tui/view_welcome.go
+@@ -76,7 +76,6 @@ func viewWelcome(m Model) string {
+ 		"registry - Private Docker registry",
+ 		"monitoring - Monitoring stack (Prometheus, Metrics Exporters)",
+ 		"logging - Indexed logging (Alloy, Loki)",
+-		"dex - OpenID Connect provider",
+ 		"buildkitd - Docker BuildKit daemon",
+ 		"unbind - All unbind components",
+ 	}
+-- 
+2.54.0
+

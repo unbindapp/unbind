@@ -1,0 +1,135 @@
+name: 💫 Build App
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "apps/web/**"
+      - "apps/api/**"
+      - "Dockerfile"
+      - "Dockerfile.builder"
+      - ".github/workflows/build-app.yml"
+      - ".github/actions/k8s-deploy/**"
+      - "deploy/k8s/**"
+
+concurrency:
+  group: build-app-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  setup_env:
+    name: ⚙️ Setup environment
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Add SHORT_SHA env property
+        run: echo "SHORT_SHA=`echo ${GITHUB_SHA::7}`" >> $GITHUB_ENV
+
+      - name: Get branch name
+        shell: bash
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
+
+    outputs:
+      short_sha: ${{ env.SHORT_SHA }}
+      branch_name: ${{ env.BRANCH_NAME }}
+
+  build:
+    name: 🔨 Build and Push Images
+    needs: setup_env
+    strategy:
+      matrix:
+        include:
+          - platform: linux/amd64
+            runs-on: ubuntu-24.04
+            arch: amd64
+          - platform: linux/arm64
+            runs-on: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.runs-on }}
+    env:
+      GITHUB_RUN_ID: ${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push app image (SPA + API)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: ${{ matrix.platform }}
+          provenance: false
+          push: true
+          build-args: |
+            VERSION=${{ needs.setup_env.outputs.short_sha }}
+          tags: ghcr.io/unbindapp/unbind:${{ needs.setup_env.outputs.branch_name }}-${{ env.GITHUB_RUN_ID }}-${{ matrix.arch }}
+          cache-from: type=gha,scope=app-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=app-${{ matrix.arch }}
+
+      - name: Build and push builder image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile.builder
+          platforms: ${{ matrix.platform }}
+          provenance: false
+          push: true
+          build-args: |
+            VERSION=${{ needs.setup_env.outputs.short_sha }}
+          tags: ghcr.io/unbindapp/unbind-builder:${{ needs.setup_env.outputs.branch_name }}-${{ env.GITHUB_RUN_ID }}-${{ matrix.arch }}
+          cache-from: type=gha,scope=builder-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=builder-${{ matrix.arch }}
+
+  create_manifest:
+    name: 📦 Create Multi-Arch Manifest
+    runs-on: ubuntu-24.04
+    needs: [setup_env, build]
+    env:
+      GITHUB_RUN_ID: ${{ github.run_id }}
+    steps:
+      - name: Login to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create and push manifests
+        env:
+          REF: ${{ needs.setup_env.outputs.branch_name }}-${{ env.GITHUB_RUN_ID }}
+        run: |
+          for IMAGE in ghcr.io/unbindapp/unbind ghcr.io/unbindapp/unbind-builder; do
+            for TAG in "$REF" latest; do
+              docker manifest create "$IMAGE:$TAG" \
+                --amend "$IMAGE:$REF-amd64" \
+                --amend "$IMAGE:$REF-arm64"
+              docker manifest annotate --arch amd64 --os linux "$IMAGE:$TAG" "$IMAGE:$REF-amd64"
+              docker manifest annotate --arch arm64 --os linux "$IMAGE:$TAG" "$IMAGE:$REF-arm64"
+              docker manifest push "$IMAGE:$TAG"
+            done
+          done
+
+  deploy_prod:
+    name: 🚀 Deploy App (PROD)
+    runs-on: ubuntu-24.04
+    needs:
+      - setup_env
+      - create_manifest
+    env:
+      GITHUB_RUN_ID: ${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy
+        uses: ./.github/actions/k8s-deploy
+        with:
+          image: ghcr.io/unbindapp/unbind:${{ needs.setup_env.outputs.branch_name }}-${{ env.GITHUB_RUN_ID }}
+          kube_config: ${{ secrets.K3S_KUBE_CONFIG }}

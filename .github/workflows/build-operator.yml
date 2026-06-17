@@ -1,0 +1,91 @@
+name: 🤖 Build Operator
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "apps/operator/**"
+      - ".github/workflows/build-operator.yml"
+
+concurrency:
+  group: build-operator-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  setup_env:
+    name: ⚙️ Setup environment
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Get branch name
+        shell: bash
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
+    outputs:
+      branch_name: ${{ env.BRANCH_NAME }}
+
+  build:
+    name: 🔨 Build and Push Operator
+    needs: setup_env
+    strategy:
+      matrix:
+        include:
+          - platform: linux/amd64
+            runs-on: ubuntu-24.04
+            arch: amd64
+          - platform: linux/arm64
+            runs-on: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.runs-on }}
+    env:
+      GITHUB_RUN_ID: ${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push operator image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./apps/operator
+          file: ./apps/operator/Dockerfile
+          platforms: ${{ matrix.platform }}
+          provenance: false
+          push: true
+          tags: ghcr.io/unbindapp/unbind-operator:${{ needs.setup_env.outputs.branch_name }}-${{ env.GITHUB_RUN_ID }}-${{ matrix.arch }}
+          cache-from: type=gha,scope=operator-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=operator-${{ matrix.arch }}
+
+  create_manifest:
+    name: 📦 Create Multi-Arch Manifest
+    runs-on: ubuntu-24.04
+    needs: [setup_env, build]
+    env:
+      GITHUB_RUN_ID: ${{ github.run_id }}
+    steps:
+      - name: Login to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create and push manifest
+        env:
+          IMAGE: ghcr.io/unbindapp/unbind-operator
+          REF: ${{ needs.setup_env.outputs.branch_name }}-${{ env.GITHUB_RUN_ID }}
+        run: |
+          for TAG in "$REF" latest; do
+            docker manifest create "$IMAGE:$TAG" \
+              --amend "$IMAGE:$REF-amd64" \
+              --amend "$IMAGE:$REF-arm64"
+            docker manifest annotate --arch amd64 --os linux "$IMAGE:$TAG" "$IMAGE:$REF-amd64"
+            docker manifest annotate --arch arm64 --os linux "$IMAGE:$TAG" "$IMAGE:$REF-arm64"
+            docker manifest push "$IMAGE:$TAG"
+          done

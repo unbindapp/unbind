@@ -1,0 +1,69 @@
+version: "2"
+
+linters:
+  enable:
+    - revive
+
+  settings:
+    revive:
+      rules:
+        - name: use-any
+          severity: error
+    errcheck:
+      check-type-assertions: false
+      check-blank: false
+      exclude-functions:
+        - (io.Closer).Close
+        - (*os.File).Close
+        - (net.Conn).Close
+        - (*net.Conn).Close
+        - (*os.Process).Signal
+        - (*os.Process).Kill
+        - syscall.Kill
+        - (*encoding/json.Encoder).Encode
+        - (net.Conn).Write
+        - (*os/exec.Cmd).Run
+        - (*os/exec.Cmd).Start
+        - (*bufio.Writer).Flush
+        - fmt.Fprintln
+        - fmt.Fprintf
+        - fmt.Fprint
+        - (*io.PipeWriter).Write
+        - (*os.File).Write
+        - os.Remove
+        - os.RemoveAll
+
+  exclusions:
+    rules:
+      - path: ent/
+        linters:
+          - errcheck
+          - govet
+          - unused
+          - ineffassign
+          - staticcheck
+          - gosimple
+          - revive
+      - path: internal/mocks/
+        linters:
+          - errcheck
+          - govet
+          - unused
+          - ineffassign
+          - staticcheck
+          - gosimple
+          - revive
+      - path: _test\.go
+        linters:
+          - errcheck
+          - govet
+          - unused
+          - ineffassign
+          - staticcheck
+          - gosimple
+      - linters:
+          - errcheck
+        text: "Error return value of `.+\\.(Destroy|Release|Stop|Close|Roundtrip|Store)` is not checked"
+      - linters:
+          - staticcheck
+        text: "ST1006:"

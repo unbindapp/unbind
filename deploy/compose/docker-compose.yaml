@@ -1,0 +1,30 @@
+version: '3.9'
+services:
+  db:
+    container_name: unbind_postgres
+    image: postgres:15
+    user: '1000:20'
+    ports:
+      - '127.0.0.1:53337:5432'
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - PGDATA=/var/lib/postgresql/data/dev
+    volumes:
+      - ./.data/postgres:/var/lib/postgresql/data:delegated
+      - ../../apps/api/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app-network
+
+  redis:
+    container_name: unbind_redis
+    image: redis:8
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:63234:6379'
+    networks: ['app-network']
+
+networks:
+  app-network:
+    driver: bridge

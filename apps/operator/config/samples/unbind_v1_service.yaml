@@ -1,0 +1,9 @@
+apiVersion: unbind.unbind.app/v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: unbind-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: service-sample
+spec:
+  # TODO(user): Add fields here

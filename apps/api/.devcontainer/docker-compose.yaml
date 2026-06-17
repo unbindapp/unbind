@@ -1,0 +1,79 @@
+version: '3.9'
+services:
+  db:
+    container_name: unbind_postgres
+    image: postgres:15
+    user: '1000:20'
+    ports:
+      - '127.0.0.1:53337:5432'
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - PGDATA=/var/lib/postgresql/data/dev
+    volumes:
+      - ../.data/postgres:/var/lib/postgresql/data:delegated
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app-network
+
+  redis:
+    container_name: unbind_redis
+    image: redis:8
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:63234:6379'
+    networks: ['app-network']
+
+  dex:
+    container_name: unbind_dex
+    image: ghcr.io/dexidp/dex:v2.41.1
+    restart: unless-stopped
+    networks:
+      - app-network
+    volumes:
+      - ./dex.yaml:/etc/dex/config.yaml:ro
+    ports:
+      - '5556:5556' # Expose Dex on localhost:5556
+    command: ['dex', 'serve', '/etc/dex/config.yaml']
+
+  app:
+    container_name: unbind_go_dev
+    image: appditto/go-vscode-dev:latest
+    security_opt:
+      - 'seccomp:unconfined'
+    environment:
+      - GOPRIVATE=github.com/unbindapp
+      - PORT=8089
+      - KUBECONFIG=./.data/kubernetes/kubeconfig.yaml
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=unbind
+      - DEX_ISSUER_URL=http://localhost:5556
+      # Really this is for our dev container junk
+      - DEX_ISSUER_URL_EXTERNAL=http://localhost:5556
+      - DEX_CLIENT_ID=unbind-dev
+      - DEX_CLIENT_SECRET=supersecret
+      - REDIS_URL=redis:6379
+    ports:
+      - '127.0.0.1:8089:8089'
+    volumes:
+      - ../.:/home/go/app
+      - ${HOME}/.gitconfig:/home/go/.gitconfig
+      - ${HOME}/.ssh:/home/go/.ssh
+    restart: on-failure
+    entrypoint: /bin/zsh
+    stdin_open: true
+    tty: true
+    user: go
+    depends_on:
+      - db
+      - dex
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

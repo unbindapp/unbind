@@ -1,0 +1,51 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: unbind-api-deployment
+  namespace: unbind
+  labels:
+    app: unbind-api
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: unbind-api
+  template:
+    metadata:
+      labels:
+        app: unbind-api
+    spec:
+      serviceAccountName: unbind-api-sa
+      containers:
+        - name: unbind-api
+          image: replaceme
+          command: ["/app/api"]
+          resources:
+            requests:
+              cpu: 100m
+              memory: 200Mi
+            limits:
+              memory: 2Gi
+              cpu: 500m
+          ports:
+            - containerPort: 8089
+          imagePullPolicy: "Always"
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: unbind-db-credentials
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: unbind-db-credentials
+                  key: password
+          envFrom:
+            - secretRef:
+                name: unbind-api

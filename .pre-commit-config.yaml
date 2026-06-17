@@ -1,0 +1,80 @@
+# Monorepo pre-commit hooks. Each app's hooks are scoped via `files:` so they only
+# run when that app's folder changes, and `cd` into the app so module-relative tools
+# (go.mod, .golangci.yml, eslint/prettier config) resolve correctly.
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: check-yaml
+      - id: end-of-file-fixer
+
+  - repo: local
+    hooks:
+      # --- apps/api ---
+      - id: api-go-mod-tidy
+        name: "api: go mod tidy"
+        entry: bash -c 'cd apps/api && go mod tidy'
+        language: system
+        files: ^apps/api/.*\.(go|mod|sum)$
+        pass_filenames: false
+      - id: api-gofmt
+        name: "api: gofmt -s"
+        entry: bash -c 'cd apps/api && out=$(gofmt -s -l .) && [ -z "$out" ] || { echo "$out"; exit 1; }'
+        language: system
+        files: ^apps/api/.*\.go$
+        pass_filenames: false
+      - id: api-golangci-lint
+        name: "api: golangci-lint"
+        entry: bash -c 'cd apps/api && golangci-lint run'
+        language: system
+        files: ^apps/api/.*\.go$
+        pass_filenames: false
+
+      # --- apps/operator ---
+      - id: operator-go-mod-tidy
+        name: "operator: go mod tidy"
+        entry: bash -c 'cd apps/operator && go mod tidy'
+        language: system
+        files: ^apps/operator/.*\.(go|mod|sum)$
+        pass_filenames: false
+      - id: operator-gofmt
+        name: "operator: gofmt -s"
+        entry: bash -c 'cd apps/operator && out=$(gofmt -s -l .) && [ -z "$out" ] || { echo "$out"; exit 1; }'
+        language: system
+        files: ^apps/operator/.*\.go$
+        pass_filenames: false
+      - id: operator-golangci-lint
+        name: "operator: golangci-lint"
+        entry: bash -c 'cd apps/operator && golangci-lint run'
+        language: system
+        files: ^apps/operator/.*\.go$
+        pass_filenames: false
+
+      # --- apps/installer ---
+      - id: installer-go-mod-tidy
+        name: "installer: go mod tidy"
+        entry: bash -c 'cd apps/installer && go mod tidy'
+        language: system
+        files: ^apps/installer/.*\.(go|mod|sum)$
+        pass_filenames: false
+      - id: installer-gofmt
+        name: "installer: gofmt -s"
+        entry: bash -c 'cd apps/installer && out=$(gofmt -s -l .) && [ -z "$out" ] || { echo "$out"; exit 1; }'
+        language: system
+        files: ^apps/installer/.*\.go$
+        pass_filenames: false
+
+      # --- apps/web ---
+      - id: web-eslint
+        name: "web: eslint"
+        entry: bash -c 'cd apps/web && npx --no-install eslint .'
+        language: system
+        files: ^apps/web/.*\.(t|j)sx?$
+        pass_filenames: false
+      - id: web-prettier
+        name: "web: prettier --check"
+        entry: bash -c 'cd apps/web && npx --no-install prettier --check .'
+        language: system
+        files: ^apps/web/.*\.(t|j)sx?$|^apps/web/.*\.(css|json|md)$
+        pass_filenames: false
