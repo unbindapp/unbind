@@ -1,0 +1,46 @@
+# Static values for kube-prometheus-stack chart
+prometheus:
+  prometheusSpec:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 1Gi
+
+kube-state-metrics:
+  extraArgs:
+  - --metric-labels-allowlist=pods=[*]
+
+# Disable non-essential components
+grafana:
+  enabled: false
+alertmanager:
+  enabled: false
+kubeStateMetrics:
+  enabled: true  # Enabled for pod metrics
+nodeExporter:
+  enabled: true  # Enabled for node metrics
+prometheusOperator:
+  resources:
+    limits:
+      cpu: 100m
+      memory: 512Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+kubeEtcd:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeProxy:
+  enabled: false
+kubeApiServer:
+  enabled: false
+coreDns:
+  enabled: false
+kubeDns:
+  enabled: false

@@ -1,0 +1,48 @@
+type: "object"
+description: "S3 configuration"
+properties:
+  enabled:
+    type: "boolean"
+    description: "Enable S3 backups"
+    default: false
+  bucket:
+    type: "string"
+    description: "S3 bucket name"
+  endpoint:
+    type: "string"
+    description: "S3 endpoint URL"
+    default: "https://s3.amazonaws.com"
+  region:
+    type: "string"
+    description: "S3 region"
+    default: ""
+  secretName:
+    type: "string"
+    description: "Name of the secret that contains the S3 credentials"
+    default: ""
+  accessKey:
+    type: "string"
+    description: "S3 access key from the secret"
+    default: "access_key_id"
+  secretKey:
+    type: "string"
+    description: "S3 secret key from the secret"
+    default: "secret_key"
+  backupRetention:
+    type: "integer"
+    description: "Number of backups to retain"
+    default: 2
+  backupSchedule:
+    type: "string"
+    description: "Cron schedule for backups"
+    default: "5 5 * * *"
+  backupPrefix:
+    type: "string"
+    description: "Optional prefix for backup files"
+    default: ""
+required:
+  - enabled
+  - bucket
+  - endpoint
+  - region
+  - secretName

@@ -15,8 +15,6 @@ const (
 	StateRootDetection
 	StateOSInfo
 	StateCheckingSwap
-	StateConfirmCreateSwap
-	StateEnterSwapSize
 	StateCreatingSwap
 	StateSwapCreated
 	StateInstallingPackages

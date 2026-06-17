@@ -1,0 +1,284 @@
+# definitions/databases/mongodb/definition.yaml
+# Helm values for CloudPirates MongoDB chart
+
+# Apply common labels to all resources created by the chart
+commonLabels:
+  unbind/usd-type: {{ .Definition.Type | quote }}
+  unbind/usd-version: {{ .Definition.Version | quote }}
+  unbind/usd-category: databases
+  {{- range $key, $value := .Parameters.labels }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+
+# Image configuration - CloudPirates uses official mongo image
+image:
+  registry: docker.io
+  repository: mongo
+  tag: {{ if eq (.Parameters.version | default "8.2") "8.2" }}8.2{{ else if eq .Parameters.version "7.0" }}7.0{{ else }}8.2{{ end }}
+  extraArgs:
+    - "--wiredTigerCacheSizeGB=0.25"
+    - "--maxConns=100"
+    - "--wiredTigerCollectionBlockCompressor=zstd"
+
+# Authentication - Requires a pre-existing secret
+auth:
+  enabled: true
+  existingSecret: {{ .Parameters.existingSecretName }}
+  existingSecretPasswordKey: mongodb-root-password
+
+# Persistence configuration
+persistence:
+  enabled: true
+  size: {{ .Parameters.common.storage | default "1Gi" | quote }}
+
+# Resource configuration
+resources:
+  requests:
+    cpu: {{ .Parameters.common.resources.requests.cpu | default "100m" | quote }}
+    memory: {{ .Parameters.common.resources.requests.memory | default "128Mi" | quote }}
+  limits:
+    cpu: {{ .Parameters.common.resources.limits.cpu | default "500m" | quote }}
+    memory: {{ .Parameters.common.resources.limits.memory | default "256Mi" | quote }}
+
+# Optional: Inject environment variables from parameters
+{{- if .Parameters.environment }}
+extraEnvVars:
+{{- range $k, $v := .Parameters.environment }}
+  - name: {{ $k | quote }}
+    value: {{ $v | quote }}
+{{- end }}
+{{- end }}
+
+# Service configuration for external access
+{{- if .Parameters.exposeExternal }}
+service:
+  type: LoadBalancer
+{{- end }}
+
+# Disable metrics exporter unless explicitly configured via parameters
+metrics:
+  enabled: false
+
+{{- if or .Parameters.s3.enabled .Parameters.restore.enabled }}
+extraObjects:
+{{- if .Parameters.s3.enabled }}
+  - apiVersion: batch/v1
+    kind: CronJob
+    metadata:
+      name: {{ .Name }}-s3-backup
+      namespace: {{ .Namespace }}
+      labels:
+        unbind/usd-type: {{ .Definition.Type | quote }}
+        unbind/usd-version: {{ .Definition.Version | quote }}
+        unbind/usd-category: databases
+        app.kubernetes.io/instance: {{ .Name }}
+        app.kubernetes.io/managed-by: Helm
+        {{- range $key, $value := .Parameters.labels }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+    spec:
+      schedule: {{ .Parameters.s3.backupSchedule | default "5 5 * * *" | quote }}
+      concurrencyPolicy: Forbid
+      jobTemplate:
+        spec:
+          ttlSecondsAfterFinished: 300
+          template:
+            spec:
+              containers:
+              - name: mongodump-s3
+                image: {{ if eq (.Parameters.version | default "8.0") "8.0" }}mongo:8.2{{ else if eq .Parameters.version "7.0" }}mongo:7.0{{ else if eq .Parameters.version "6.0" }}mongo:6.0{{ else }}mongo:8.2{{ end }}
+                command:
+                - /bin/sh
+                - -c
+                - |
+                  # Install AWS CLI
+                  apt-get update && apt-get install -y curl unzip
+                  ARCH=$(uname -m)
+                  if [ "$ARCH" = "x86_64" ]; then
+                    ARCH="x86_64"
+                  elif [ "$ARCH" = "aarch64" ]; then
+                    ARCH="aarch64"
+                  else
+                    echo "Unsupported architecture: $ARCH"
+                    exit 1
+                  fi
+                  curl "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}.zip" -o "awscliv2.zip"
+                  unzip awscliv2.zip
+                  ./aws/install
+                  rm -rf aws awscliv2.zip
+
+                  echo "Starting backup..."
+                  mongodump --host={{ .Name }}.{{ .Namespace }}.svc.cluster.local \
+                            --username=root \
+                            --password=$MONGODB_ROOT_PASSWORD \
+                            --authenticationDatabase=admin \
+                            --out=/backup/$(date +%Y%m%d_%H%M%S)
+
+                  echo "Syncing to S3..."
+                  aws s3 sync /backup s3://{{ .Parameters.s3.bucket }}/{{ .Parameters.s3.backupPrefix | default "mongodb" }}/backups/{{ .Name }} \
+                    --endpoint-url={{ .Parameters.s3.endpoint }} --checksum-algorithm CRC32
+
+                  echo "Managing retention..."
+                  BACKUP_DIRS=$(aws s3 ls s3://{{ .Parameters.s3.bucket }}/{{ .Parameters.s3.backupPrefix | default "mongodb" }}/backups/{{ .Name }}/ \
+                    --endpoint-url={{ .Parameters.s3.endpoint }} \
+                    | grep -E '[0-9]{8}_[0-9]{6}' \
+                    | awk '{print $2}' \
+                    | sort)
+
+                  # Count the number of backups
+                  BACKUP_COUNT=$(echo "$BACKUP_DIRS" | wc -l)
+                  RETENTION={{ .Parameters.s3.backupRetention | default "7" }}
+
+                  # Delete oldest backups if we have more than retention limit
+                  if [ "$BACKUP_COUNT" -gt "$RETENTION" ]; then
+                    # Calculate how many to delete
+                    TO_DELETE=$((BACKUP_COUNT - RETENTION))
+
+                    # Get the oldest backups to delete
+                    DIRS_TO_DELETE=$(echo "$BACKUP_DIRS" | head -n "$TO_DELETE")
+
+                    # Delete each old backup
+                    echo "$DIRS_TO_DELETE" | while read -r dir; do
+                      if [ -n "$dir" ]; then
+                        echo "Deleting old backup: $dir"
+                        aws s3 rm "s3://{{ .Parameters.s3.bucket }}/{{ .Parameters.s3.backupPrefix | default "mongodb" }}/backups/{{ .Name }}/$dir" \
+                          --recursive \
+                          --endpoint-url={{ .Parameters.s3.endpoint }}
+                      fi
+                    done
+
+                    echo "Deleted $TO_DELETE old backups, keeping $RETENTION latest backups."
+                  else
+                    echo "Only have $BACKUP_COUNT backups, below retention limit of $RETENTION. Nothing to delete."
+                  fi
+                  echo "Backup complete."
+                env:
+                - name: MONGODB_ROOT_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Parameters.existingSecretName }}
+                      key: mongodb-root-password
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Parameters.s3.secretName }}
+                      key: {{ .Parameters.s3.accessKey | default "access_key_id" }}
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Parameters.s3.secretName }}
+                      key: {{ .Parameters.s3.secretKey | default "secret_key" }}
+                {{- if .Parameters.s3.region }}
+                - name: AWS_DEFAULT_REGION
+                  value: {{ .Parameters.s3.region | quote }}
+                {{- end }}
+                - name: AWS_S3_FORCE_PATH_STYLE
+                  value: "true"
+                - name: AWS_S3_ENDPOINT_URL
+                  value: {{ .Parameters.s3.endpoint | quote }}
+                volumeMounts:
+                - name: backup-storage
+                  mountPath: /backup
+              volumes:
+              - name: backup-storage
+                emptyDir: {}
+              restartPolicy: OnFailure
+{{- end }}
+{{- if .Parameters.restore.enabled }}
+  - apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: {{ .Name }}-s3-restore
+      namespace: {{ .Namespace }}
+      annotations:
+        "helm.sh/hook": post-install,post-upgrade
+        "helm.sh/hook-weight": "1"
+        "helm.sh/hook-delete-policy": before-hook-creation
+      labels:
+        unbind/usd-type: {{ .Definition.Type | quote }}
+        unbind/usd-version: {{ .Definition.Version | quote }}
+        unbind/usd-category: databases
+        app.kubernetes.io/instance: {{ .Name }}
+        app.kubernetes.io/managed-by: Helm
+        {{- range $key, $value := .Parameters.labels }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+    spec:
+      ttlSecondsAfterFinished: 300
+      template:
+        spec:
+          containers:
+          - name: mongorestore-s3
+            image: {{ if eq (.Parameters.version | default "8.0") "8.0" }}mongo:8.0{{ else if eq .Parameters.version "7.0" }}mongo:7.0{{ else if eq .Parameters.version "6.0" }}mongo:6.0{{ else }}mongo:8.0{{ end }}
+            command:
+            - /bin/sh
+            - -c
+            - |
+              # Install AWS CLI
+              apt-get update && apt-get install -y curl unzip
+              ARCH=$(uname -m)
+              if [ "$ARCH" = "x86_64" ]; then
+                ARCH="x86_64"
+              elif [ "$ARCH" = "aarch64" ]; then
+                ARCH="aarch64"
+              else
+                echo "Unsupported architecture: $ARCH"
+                exit 1
+              fi
+              curl "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}.zip" -o "awscliv2.zip"
+              unzip awscliv2.zip
+              ./aws/install
+              rm -rf aws awscliv2.zip
+
+              echo "Verifying S3 connection..."
+              aws s3 ls s3://{{ .Parameters.restore.bucket }} --endpoint-url={{ .Parameters.restore.endpoint }} --debug
+
+              echo "Downloading restore data from S3..."
+              aws s3 sync s3://{{ .Parameters.restore.bucket }}/{{ .Parameters.restore.backupPrefix | default "mongodb" }}/backups/{{ .Parameters.restore.cluster }} /restore \
+                --endpoint-url={{ .Parameters.restore.endpoint }} --checksum-algorithm CRC32
+
+              RESTORE_DIR=$(ls -t /restore | head -n1)
+              if [ -z "$RESTORE_DIR" ]; then
+                echo "Error: No backup directory found in /restore"
+                exit 1
+              fi
+              echo "Restoring from directory: $RESTORE_DIR ..."
+              mongorestore --host={{ .Name }}.{{ .Namespace }}.svc.cluster.local \
+                         --username=root \
+                         --password=$MONGODB_ROOT_PASSWORD \
+                         --authenticationDatabase=admin \
+                         /restore/$RESTORE_DIR
+              echo "Restore complete."
+            env:
+            - name: MONGODB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Parameters.existingSecretName }}
+                  key: mongodb-root-password
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Parameters.restore.secretName }}
+                  key: {{ .Parameters.restore.accessKey | default "access_key_id" }}
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Parameters.restore.secretName }}
+                  key: {{ .Parameters.restore.secretKey | default "secret_key" }}
+            {{- if .Parameters.restore.region }}
+            - name: AWS_DEFAULT_REGION
+              value: {{ .Parameters.restore.region | quote }}
+            {{- end }}
+            - name: AWS_S3_FORCE_PATH_STYLE
+              value: "true"
+            - name: AWS_S3_ENDPOINT_URL
+              value: {{ .Parameters.restore.endpoint | quote }}
+            volumeMounts:
+            - name: restore-storage
+              mountPath: /restore
+          volumes:
+          - name: restore-storage
+            emptyDir: {}
+          restartPolicy: Never
+{{- end }}
+{{- end }}

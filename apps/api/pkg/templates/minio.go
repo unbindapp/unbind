@@ -55,7 +55,7 @@ func minioTemplate() *schema.TemplateDefinition {
 				Type:     schema.ServiceTypeDockerimage,
 				Builder:  schema.ServiceBuilderDocker,
 				InputIDs: []string{"input_domain_api", "input_domain_ui", "input_storage_size"},
-				Image:    utils.ToPtr("minio/minio:latest"),
+				Image:    utils.ToPtr("minio/minio:RELEASE.2025-10-15T17-29-55Z"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
 					CPULimitsMillicores:   400,

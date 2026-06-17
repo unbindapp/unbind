@@ -7,6 +7,12 @@ repos:
     hooks:
       - id: trailing-whitespace
       - id: check-yaml
+        # k8s manifests use multi-document streams.
+        args: [--allow-multiple-documents]
+        # Go-templated YAML isn't plain YAML: helm charts/helmfile are validated by
+        # helm/helmfile, and the embedded service-definition templates by the
+        # databases renderer tests. Their metadata/schema YAML stays checked here.
+        exclude: ^(deploy/charts/|apps/operator/dist/|apps/api/pkg/databases/assets/.*definition\.yaml$)
       - id: end-of-file-fixer
 
   - repo: local
@@ -63,6 +69,20 @@ repos:
         entry: bash -c 'cd apps/installer && out=$(gofmt -s -l .) && [ -z "$out" ] || { echo "$out"; exit 1; }'
         language: system
         files: ^apps/installer/.*\.go$
+        pass_filenames: false
+
+      # --- deploy/charts ---
+      - id: charts-helm-lint
+        name: "charts: helm lint"
+        entry: bash -c 'command -v helm >/dev/null || { echo "helm not installed, skipping"; exit 0; }; helm lint deploy/charts/charts/*'
+        language: system
+        files: ^deploy/charts/charts/
+        pass_filenames: false
+      - id: charts-helmfile-build
+        name: "charts: helmfile build"
+        entry: bash -c 'command -v helmfile >/dev/null || { echo "helmfile not installed, skipping"; exit 0; }; helmfile --file deploy/charts/helmfile.yaml.gotmpl build >/dev/null'
+        language: system
+        files: ^deploy/charts/
         pass_filenames: false
 
       # --- apps/web (staged files only; paths are repo-relative so strip the

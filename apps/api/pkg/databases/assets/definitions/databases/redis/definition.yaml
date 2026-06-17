@@ -1,0 +1,60 @@
+# definitions/databases/redis/definition.yaml
+# Helm values for CloudPirates Redis chart
+
+# Set a variable for the total requested nodes, applying the default from base.yaml (which is 1)
+{{- $requestedReplicas := .Parameters.common.replicas | default 1 -}}
+
+# Apply common labels to all resources created by the chart
+commonLabels:
+  unbind/usd-type: {{ .Definition.Type | quote }}
+  unbind/usd-version: {{ .Definition.Version | quote }}
+  unbind/usd-category: databases
+  {{- range $key, $value := .Parameters.labels }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+
+# Image configuration - Redis 8.8
+image:
+  registry: docker.io
+  repository: redis
+  tag: "8.8"
+
+# Authentication
+auth:
+  enabled: true
+  existingSecret: {{ .Parameters.secretName | quote }}
+  existingSecretPasswordKey: {{ .Parameters.secretKey | quote }}
+
+{{- if gt $requestedReplicas 1 }}
+# --- Replication Mode ---
+# Triggered if .Parameters.common.replicas >= 2
+# replicaCount is total nodes (1 master + N-1 replicas)
+
+architecture: replication
+replicaCount: {{ $requestedReplicas }}
+
+{{- else }}
+# --- Standalone Mode ---
+# Triggered if .Parameters.common.replicas = 1 (or omitted, as default is 1)
+
+architecture: standalone
+
+{{- end }}
+
+# Persistence configuration
+persistence:
+  enabled: true
+  size: {{ .Parameters.common.storage | default "1Gi" }}
+
+# Resource configuration
+resources:
+  requests:
+    cpu: {{ .Parameters.common.resources.requests.cpu | default "100m" }}
+    memory: {{ .Parameters.common.resources.requests.memory | default "128Mi" }}
+  limits:
+    cpu: {{ .Parameters.common.resources.limits.cpu | default "500m" }}
+    memory: {{ .Parameters.common.resources.limits.memory | default "256Mi" }}
+
+# Disable metrics
+metrics:
+  enabled: false

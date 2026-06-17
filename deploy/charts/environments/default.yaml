@@ -1,0 +1,140 @@
+# environments/default.yaml
+# Default environment settings
+
+components:
+  longhorn:
+    enabled: false
+  victoriaMetricsStack:
+    enabled: true
+  buildkitd:
+    enabled: true
+  postgresOperator:
+    enabled: true
+  database:
+    enabled: true
+  redis:
+    enabled: true
+  alloy:
+    enabled: true
+  loki:
+    enabled: true
+  registry:
+    enabled: true
+  ingressNginx:
+    enabled: true
+  certManager:
+    enabled: true
+  kubeOidcProxy:
+    enabled: true
+
+overrides:
+  longhorn:
+    persistence:
+      defaultClass: true
+      defaultClassReplicaCount: 1
+      reclaimPolicy: Retain
+    defaultSettings:
+      defaultReplicaCount: 1
+  victoriaMetricsStack:
+    # Configurable retention period
+    retention: "7d"
+    # Configurable storage size
+    storage: "3Gi"
+  buildkitd:
+    image: moby/buildkit:v0.22.0-rootless
+    replicas: 1
+    maxParallism: 2
+  postgresOperator:
+    spiloImage: ghcr.io/unbindapp/spilo:18-27713048842
+  database:
+    replicaCount: 1
+    storage: "2Gi"
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+  alloy:
+    loki:
+      endpoint:
+        host: loki-gateway
+        port: 80
+        # namespace: // Defaults to global.namespace
+  loki:
+    retentionPeriod: 72h
+    lokiStorageSize: 2Gi
+
+  registry:
+    replicaCount: 1
+    persistence:
+      size: 4Gi
+    service:
+      nodePort: 31571
+    cleanup:
+      threshold: 3Gi # This should be around 80% of the total size, this is for the auto cleanup job
+
+  certManager:
+    replicaCount: 2
+
+  kubeOidcProxy:
+    replicaCount: 1
+    image:
+      repository: unbindapp/kube-oidc-proxy
+      tag: master-13812109543
+      pullPolicy: Always
+    oidc:
+      clientId: unbind-api
+      usernameClaim: email
+      groupsClaim: groups
+    service:
+      type: ClusterIP
+      port: 443
+      targetPort: 443
+    resources:
+      limits:
+        cpu: 300m
+        memory: 256Mi
+    rbac:
+      create: true
+      viewerCreate: true
+      viewerGroupName: oidc:users
+
+  unbind:
+    # Unbind operator settings
+    operator:
+      repository: ghcr.io/unbindapp/unbind-operator
+
+    # App Configuration (merged image: the API serves the SPA)
+    api:
+      repository: ghcr.io/unbindapp/unbind
+      pullPolicy: Always
+      replicaCount: 1
+      # Database configuration for API
+      database:
+        # host: pg-unbind
+        port: 5432
+        name: unbind
+        user: unbind
+        secretName: unbind.pg-unbind.credentials.postgresql.acid.zalan.do
+      # Redis Redis configuration
+      redis:
+        url: redis-headless.unbind-system:6379
+      # Kube proxy configuration
+      kubeProxyUrl: https://kube-oidc-proxy.unbind-system.svc.cluster.local:443
+      # Builder configuration
+      buildImager: unbindapp/unbind-builder:latest
+      # Registry configuration
+      registry:
+        # host: docker-registry.unbind-system:5000
+        password: "TODO"
+      # Buildkit configuration
+      buildkit:
+        host:
+      # Logging and monitoring
+      loki:
+        endpoint: http://loki-gateway.unbind-system.svc.cluster.local
+      prometheus:
+        endpoint: http://vmsingle-victoria-metrics-k8s-stack.unbind-system:8429
+      resources:
+        limits:
+          cpu: 250m
+          memory: 512Mi

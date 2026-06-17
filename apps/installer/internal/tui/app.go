@@ -1,8 +1,6 @@
 package tui
 
 import (
-	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/spinner"
@@ -27,9 +25,9 @@ type Model struct {
 	osInfo                 *osinfo.OSInfo
 	err                    error
 	k3sUninstallScriptPath string
-	availableDiskSpaceGB   float64
-	swapSizeInput          textinput.Model
-	swapSizeInputErr       error
+	swapSizeGB             int
+	uninstallCountdown     int
+	registryCountdown      int
 
 	// UI components
 	spinner   spinner.Model
@@ -106,23 +104,6 @@ func NewModel(version string) Model {
 	registryHostInput.Width = 30
 	registryHostInput.Prompt = ""
 
-	// Initialize swap input
-	swapInput := textinput.New()
-	swapInput.Placeholder = "e.g., 4"
-	swapInput.CharLimit = 4
-	swapInput.Width = 10
-	swapInput.Prompt = "Enter Swap Size (GB): "
-	swapInput.Validate = func(s string) error {
-		if s == "" {
-			return nil // Allow empty initially
-		}
-		_, err := strconv.Atoi(s)
-		if err != nil {
-			return fmt.Errorf("must be a number")
-		}
-		return nil
-	}
-
 	// Initialize channels
 	model := Model{
 		version:            version,
@@ -157,7 +138,6 @@ func NewModel(version string) Model {
 		passwordInput:       passwordInput,
 		registryHostInput:   registryHostInput,
 		selectedRegistry:    0, // Default to Docker Hub
-		swapSizeInput:       swapInput,
 		packageProgressChan: packageProgressChan,
 		factChan:            make(chan string, 10),
 	}
@@ -253,10 +233,6 @@ func (self Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		model, cmd = self.updateOSInfoState(msg)
 	case StateCheckingSwap:
 		model, cmd = self.updateCheckingSwapState(msg)
-	case StateConfirmCreateSwap:
-		model, cmd = self.updateConfirmCreateSwapState(msg)
-	case StateEnterSwapSize:
-		model, cmd = self.updateEnterSwapSizeState(msg)
 	case StateCreatingSwap:
 		model, cmd = self.updateCreatingSwapState(msg)
 	case StateSwapCreated:
@@ -358,10 +334,6 @@ func (self Model) View() string {
 			content = viewOSInfo(self)
 		case StateCheckingSwap:
 			content = viewCheckingSwap(self)
-		case StateConfirmCreateSwap:
-			content = viewConfirmCreateSwap(self)
-		case StateEnterSwapSize:
-			content = viewEnterSwapSize(self)
 		case StateCreatingSwap:
 			content = viewCreatingSwap(self)
 		case StateSwapCreated:

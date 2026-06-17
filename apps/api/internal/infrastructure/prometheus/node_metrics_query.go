@@ -46,12 +46,12 @@ func (self *PrometheusClient) GetNodeMetrics(
 	)`, nodeSelector)
 
 	networkQuery := fmt.Sprintf(`sum by (nodename) (
-		(rate(node_network_receive_bytes_total[%s]) + 
+		(rate(node_network_receive_bytes_total[%s]) +
 		 rate(node_network_transmit_bytes_total[%s])%s) * on(instance) group_left(nodename) node_uname_info
 	)`, networkWindow, networkWindow, nodeSelector)
 
 	diskQuery := fmt.Sprintf(`sum by (nodename) (
-		(rate(node_disk_read_bytes_total[%s]) + 
+		(rate(node_disk_read_bytes_total[%s]) +
 		 rate(node_disk_written_bytes_total[%s])%s) * on(instance) group_left(nodename) node_uname_info
 	)`, diskWindow, diskWindow, nodeSelector)
 

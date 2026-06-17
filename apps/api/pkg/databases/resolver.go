@@ -12,28 +12,25 @@ import (
 // FetchDatabaseDefinition downloads the metadata/definition for the requested
 // database, resolves $ref imports, converts every YAML map to
 // map[string]any, and returns a Definition ready for Huma to marshal.
+// The version argument is retained for call-site compatibility; definitions now
+// ship embedded in the binary rather than being fetched per tag.
 func (p *DatabaseProvider) FetchDatabaseDefinition(
-	ctx context.Context,
-	tagVersion, dbType string,
+	_ context.Context,
+	_, dbType string,
 ) (*Definition, error) {
 	//----------------------------------------------------------------------
-	// 1. Download metadata + definition files
+	// 1. Read metadata + definition files
 	//----------------------------------------------------------------------
-	baseURL := fmt.Sprintf(BaseDatabaseURL, tagVersion)
+	dbBasePath := fmt.Sprintf("definitions/%s/%s", DB_CATEGORY, dbType)
 
-	metadataURL := fmt.Sprintf("%s/definitions/%s/%s/metadata.yaml",
-		baseURL, DB_CATEGORY, dbType)
-	defURL := fmt.Sprintf("%s/definitions/%s/%s/definition.yaml",
-		baseURL, DB_CATEGORY, dbType)
-
-	metadataBytes, err := p.fetchURL(ctx, metadataURL)
+	metadataBytes, err := p.readAsset(fmt.Sprintf("%s/metadata.yaml", dbBasePath))
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch metadata: %w", err)
+		return nil, fmt.Errorf("failed to read metadata: %w", err)
 	}
 
-	defBytes, err := p.fetchURL(ctx, defURL)
+	defBytes, err := p.readAsset(fmt.Sprintf("%s/definition.yaml", dbBasePath))
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch database definition: %w", err)
+		return nil, fmt.Errorf("failed to read database definition: %w", err)
 	}
 
 	//----------------------------------------------------------------------
@@ -49,13 +46,11 @@ func (p *DatabaseProvider) FetchDatabaseDefinition(
 	// 3. Pull in declared imports
 	//----------------------------------------------------------------------
 	for _, imp := range metadata.Imports {
-		dbBasePath := fmt.Sprintf("definitions/%s/%s", DB_CATEGORY, dbType)
 		importPath := resolveRelativePath(dbBasePath, imp.Path)
-		importURL := fmt.Sprintf("%s/%s", baseURL, importPath)
 
-		importBytes, err := p.fetchURL(ctx, importURL)
+		importBytes, err := p.readAsset(importPath)
 		if err != nil {
-			return nil, fmt.Errorf("failed to fetch import %s: %w", imp.Path, err)
+			return nil, fmt.Errorf("failed to read import %s: %w", imp.Path, err)
 		}
 
 		var importYAML any

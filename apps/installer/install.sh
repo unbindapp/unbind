@@ -84,4 +84,4 @@ printf "%bRunning installer...%b\n" "$GREEN" "$NC"
 
 # Cleanup
 cd - > /dev/null
-rm -rf "$TEMP_DIR" 
+rm -rf "$TEMP_DIR"

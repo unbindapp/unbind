@@ -1,0 +1,39 @@
+name: "MySQL Database"
+description: "Standard MySQL database using Oracle MySQL Operator"
+type: "mysql-operator"
+version: "1.0.0"
+port: 3306
+imports:
+  - path: "../../common/base.yaml"
+    as: base
+  - path: "../../common/s3-schema.yaml"
+    as: s3Schema
+  - path: "../../common/s3-restore-schema.yaml"
+    as: restoreSchema
+  - path: "../../common/labels.yaml"
+    as: labelsSchema
+schema:
+  properties:
+    common:
+      $ref: "#/imports/base"
+    labels:
+      $ref: "#/imports/labelsSchema"
+    secretName:
+      type: "string"
+      description: "Name of the secret to store MySQL credentials, should contain rootUser, rootPassword, maybe rootHost"
+      required: true
+    version:
+      type: "string"
+      description: "MySQL version"
+      default: "8.4.8"
+      enum: ["8.0.45", "8.4.8"]
+    s3:
+      $ref: "#/imports/s3Schema"
+    restore:
+      $ref: "#/imports/restoreSchema"
+    environment:
+      type: "object"
+      description: "Environment variables to be set in the MySQL container"
+      additionalProperties:
+        type: "string"
+      default: {}

@@ -1,0 +1,60 @@
+kind: "postgresql"
+apiVersion: "acid.zalan.do/v1"
+
+metadata:
+  name: "pg-unbind"
+  namespace: {{ .Release.Namespace }}
+  labels:
+    unbind-is-system-db: "true"
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+
+spec:
+  env:
+  - name: ALLOW_NOSSL
+    value: "true"
+
+  teamId: "acid"
+  postgresql:
+    version: "18"
+    parameters:
+      wal_level: replica
+      shared_buffers: "128MB"
+      effective_cache_size: "512MB"
+      work_mem: "4MB"
+      maintenance_work_mem: "64MB"
+      wal_buffers: "4MB"
+      max_worker_processes: "4"
+      max_parallel_workers_per_gather: "0"
+      max_parallel_workers: "0"
+      autovacuum_max_workers: "2"
+      autovacuum_naptime: "30s"
+      max_wal_size: "256MB"
+      min_wal_size: "64MB"
+  numberOfInstances: {{ .Values.replicaCount }}
+  volume:
+    size: {{ .Values.storage }}
+
+
+  allowedSourceRanges:
+    - 0.0.0.0/0
+
+  podPriorityClassName: unbind-high-priority
+
+  databases:
+    unbind: unbind
+
+  users:
+    unbind:
+      - SUPERUSER
+
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "50m"
+    limits:
+      cpu: {{ .Values.resources.limits.cpu  }}
+      memory: {{ .Values.resources.limits.memory  }}

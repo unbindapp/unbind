@@ -15,17 +15,12 @@ type IndexResponse struct {
 	} `json:"categories"`
 }
 
-// ListDatabases lists all available databases
-func (self *DatabaseProvider) ListDatabases(ctx context.Context, tagVersion string) ([]string, error) {
-	// Base version URL
-	baseURL := fmt.Sprintf(BaseDatabaseURL, tagVersion)
-
-	// Fetch the index file that contains all categories and definitions
-	indexURL := fmt.Sprintf("%s/index.json", baseURL)
-
-	indexBytes, err := self.fetchURL(ctx, indexURL)
+// ListDatabases lists all available databases. The version argument is retained
+// for call-site compatibility; definitions now ship embedded in the binary.
+func (self *DatabaseProvider) ListDatabases(_ context.Context, _ string) ([]string, error) {
+	indexBytes, err := self.readAsset("index.json")
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch template index: %w", err)
+		return nil, fmt.Errorf("failed to read template index: %w", err)
 	}
 
 	// Parse the index

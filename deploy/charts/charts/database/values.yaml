@@ -1,0 +1,6 @@
+replicaCount: 1
+storage: "5Gi"
+resources:
+  limits:
+    cpu: 512m
+    memory: 1Gi

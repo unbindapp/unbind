@@ -3,6 +3,8 @@ package databases
 import (
 	"context"
 	"fmt"
+	"io"
+	"io/fs"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -13,20 +15,44 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// mockServerFS adapts a definitions httptest.Server to the fs.FS the provider
+// now reads from, so the existing YAML fixtures keep serving the tests. Requests
+// mirror the historical layout: <server>/v0.1/<relative-asset-path>.
+type mockServerFS struct {
+	server *httptest.Server
+}
+
+func (m mockServerFS) Open(string) (fs.File, error) {
+	return nil, fs.ErrInvalid
+}
+
+func (m mockServerFS) ReadFile(name string) ([]byte, error) {
+	rel := strings.TrimPrefix(name, assetsRoot+"/")
+	resp, err := http.Get(m.server.URL + "/v0.1/" + rel)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	switch resp.StatusCode {
+	case http.StatusOK:
+		return io.ReadAll(resp.Body)
+	case http.StatusNotFound:
+		return nil, fs.ErrNotExist
+	default:
+		return nil, fmt.Errorf("mock server status %d", resp.StatusCode)
+	}
+}
+
 func TestFetchDatabase(t *testing.T) {
 	// Setup mock server
 	server := setupMockServer() // Ensure setupMockServer includes Postgres paths
 	defer server.Close()
 
 	// Override the base URL constant for testing
-	originalBaseURL := BaseDatabaseURL
-	BaseDatabaseURL = server.URL + "/%s"
-	defer func() {
-		BaseDatabaseURL = originalBaseURL
-	}()
 
 	// Create provider
-	provider := NewDatabaseProvider()
+	provider := &DatabaseProvider{fs: mockServerFS{server: server}}
 
 	// Test FetchDatabase for Postgres
 	ctx := context.Background()
@@ -135,14 +161,9 @@ func TestFetchDatabase_Redis(t *testing.T) {
 	defer server.Close()
 
 	// Override the base URL constant for testing
-	originalBaseURL := BaseDatabaseURL
-	BaseDatabaseURL = server.URL + "/%s"
-	defer func() {
-		BaseDatabaseURL = originalBaseURL
-	}()
 
 	// Create provider
-	provider := NewDatabaseProvider()
+	provider := &DatabaseProvider{fs: mockServerFS{server: server}}
 
 	// Test FetchDatabase for Redis
 	ctx := context.Background()
@@ -233,14 +254,9 @@ func TestPostgresRestoreSchema(t *testing.T) {
 	defer server.Close()
 
 	// Override the base URL constant for testing
-	originalBaseURL := BaseDatabaseURL
-	BaseDatabaseURL = server.URL + "/%s"
-	defer func() {
-		BaseDatabaseURL = originalBaseURL
-	}()
 
 	// Create provider
-	provider := NewDatabaseProvider()
+	provider := &DatabaseProvider{fs: mockServerFS{server: server}}
 
 	// Test FetchDatabase for Postgres
 	ctx := context.Background()
@@ -302,14 +318,9 @@ func TestFetchDatabase_MySQL(t *testing.T) {
 	defer server.Close()
 
 	// Override the base URL constant for testing
-	originalBaseURL := BaseDatabaseURL
-	BaseDatabaseURL = server.URL + "/%s"
-	defer func() {
-		BaseDatabaseURL = originalBaseURL
-	}()
 
 	// Create provider
-	provider := NewDatabaseProvider()
+	provider := &DatabaseProvider{fs: mockServerFS{server: server}}
 
 	// Test FetchDatabase for MySQL
 	ctx := context.Background()
@@ -416,14 +427,9 @@ func TestFetchDatabase_MongoDB(t *testing.T) {
 	defer server.Close()
 
 	// Override the base URL constant for testing
-	originalBaseURL := BaseDatabaseURL
-	BaseDatabaseURL = server.URL + "/%s"
-	defer func() {
-		BaseDatabaseURL = originalBaseURL
-	}()
 
 	// Create provider
-	provider := NewDatabaseProvider()
+	provider := &DatabaseProvider{fs: mockServerFS{server: server}}
 
 	// Test FetchDatabase for MongoDB
 	ctx := context.Background()
@@ -526,21 +532,16 @@ func TestFetchDatabaseErrors(t *testing.T) {
 	defer server.Close()
 
 	// Override the base URL constant for testing
-	originalBaseURL := BaseDatabaseURL
-	BaseDatabaseURL = server.URL + "/%s"
-	defer func() {
-		BaseDatabaseURL = originalBaseURL
-	}()
 
 	// Create provider
-	provider := NewDatabaseProvider()
+	provider := &DatabaseProvider{fs: mockServerFS{server: server}}
 	ctx := context.Background()
 
 	t.Run("Metadata not found", func(t *testing.T) {
 		_, err := provider.FetchDatabaseDefinition(ctx, "v0.1", "not-found")
 		t.Logf("Error: %v", err)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to fetch metadata")
+		assert.Contains(t, err.Error(), "failed to read metadata")
 	})
 
 	t.Run("Invalid metadata", func(t *testing.T) {
@@ -554,14 +555,14 @@ func TestFetchDatabaseErrors(t *testing.T) {
 		_, err := provider.FetchDatabaseDefinition(ctx, "v0.1", "missing-database")
 		t.Logf("Error: %v", err)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to fetch database definition")
+		assert.Contains(t, err.Error(), "failed to read database definition")
 	})
 
 	t.Run("Import not found", func(t *testing.T) {
 		_, err := provider.FetchDatabaseDefinition(ctx, "v0.1", "missing-import")
 		t.Logf("Import not found error: %v", err)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to fetch import")
+		assert.Contains(t, err.Error(), "failed to read import")
 	})
 
 	t.Run("Invalid import", func(t *testing.T) {
@@ -1028,7 +1029,7 @@ spec:
   # Automatically select Standalone vs ReplicaSet based on replica count
   type: {{ if gt (.Parameters.common.replicas | default 1) 1 }}ReplicaSet{{ else }}Standalone{{ end }}
   version: {{ .Parameters.version | default "7.0" | quote }}
-  
+
   security:
     authentication:
       modes: ["SCRAM"]
@@ -1067,7 +1068,7 @@ spec:
     wiredTiger:
       engineConfig:
         cacheSizeGB: 0.25
-    
+
   # Set persistent storage options
   persistent: true
   podSpec:
@@ -1528,14 +1529,9 @@ func TestHelmChartValidation(t *testing.T) {
 	defer server.Close()
 
 	// Override the base URL constant for testing
-	originalBaseURL := BaseDatabaseURL
-	BaseDatabaseURL = server.URL + "/%s"
-	defer func() {
-		BaseDatabaseURL = originalBaseURL
-	}()
 
 	// Create provider
-	provider := NewDatabaseProvider()
+	provider := &DatabaseProvider{fs: mockServerFS{server: server}}
 	ctx := context.Background()
 
 	t.Run("Missing Chart Info", func(t *testing.T) {

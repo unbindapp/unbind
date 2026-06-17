@@ -30,14 +30,17 @@ type swapCheckResultMsg struct {
 	err       error
 }
 
-type diskSpaceResultMsg struct {
-	availableGB float64
-	err         error
+type swapDecisionMsg struct {
+	sizeGB int
+	err    error
 }
 
 type swapCreateResultMsg struct {
 	err error
 }
+
+// countdownTickMsg drives the one-second auto-advance countdowns.
+type countdownTickMsg struct{}
 
 // Package manager messages
 type installPackagesMsg struct{}

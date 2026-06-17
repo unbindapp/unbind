@@ -1,0 +1,337 @@
+{{- /* convenience helpers */ -}}
+{{- $common := .Parameters.common -}}
+{{- $s3     := .Parameters.s3 -}}
+{{- $restore:= .Parameters.restore -}}
+{{- $labels := .Parameters.labels | default dict -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Name }}-custom-mycnf
+  namespace: {{ .Namespace }}
+  labels:
+    unbind/usd-type: {{ .Definition.Type | quote }}
+    unbind/usd-version: {{ .Definition.Version | quote }}
+    unbind/usd-category: databases
+{{- range $k, $v := $labels }}
+    {{ $k }}: {{ $v | quote }}
+{{- end }}
+data:
+  innodb-dedicated-server: "OFF"
+  innodb_redo_log_capacity: "67108864"
+  innodb_log_file_size: "16777216"
+  innodb_buffer_pool_size: "67108864"
+  key_buffer_size: "4194304"
+  max_connections: "50"
+  performance_schema: "OFF"
+  performance_schema_instrument: "'%=OFF'"
+  innodb_stats_persistent: "0"
+
+  # Additional memory optimizations
+  table_open_cache: "64"
+  table_definition_cache: "64"
+  thread_cache_size: "8"
+  sort_buffer_size: "1048576"
+  read_buffer_size: "1048576"
+  read_rnd_buffer_size: "1048576"
+  join_buffer_size: "1048576"
+  tmp_table_size: "16777216"
+  max_heap_table_size: "16777216"
+  innodb_log_buffer_size: "8388608"
+  innodb_flush_log_at_trx_commit: "2"
+  innodb_flush_method: "O_DIRECT"
+  innodb_fast_shutdown: "1"
+  innodb_doublewrite: "OFF"
+  sync_binlog: "0"
+  skip_name_resolve: "ON"
+---
+apiVersion: moco.cybozu.com/v1beta2
+kind: MySQLCluster
+metadata:
+  name: {{ .Name }}
+  namespace: {{ .Namespace }}
+  labels:
+    # operator labels
+    app.kubernetes.io/name:  mysql
+    app.kubernetes.io/instance: {{ .Name }}
+    # usd-specific labels
+    unbind/usd-type: {{ .Definition.Type | quote }}
+    unbind/usd-version: {{ .Definition.Version | quote }}
+    unbind/usd-category: databases
+{{- range $k, $v := $labels }}
+    {{ $k }}: {{ $v | quote }}
+{{- end }}
+
+spec:
+  replicas: {{ $common.replicas | default 1 }}
+  mysqlConfigMapName: {{ .Name }}-custom-mycnf
+
+  # drop the slow-log sidecar entirely
+  disableSlowQueryLogContainer: true
+
+  # labels for the Services MOCO creates
+  primaryServiceTemplate:
+    metadata:
+      labels:
+        # usd-specific labels
+        unbind/usd-type: {{ .Definition.Type | quote }}
+        unbind/usd-version: {{ .Definition.Version | quote }}
+        unbind/usd-category: databases
+{{- range $k, $v := $labels }}
+        {{ $k }}: {{ $v | quote }}
+{{- end }}
+
+  replicaServiceTemplate:
+    metadata:
+      labels:
+        # usd-specific labels
+        unbind/usd-type: {{ .Definition.Type | quote }}
+        unbind/usd-version: {{ .Definition.Version | quote }}
+        unbind/usd-category: databases
+{{- range $k, $v := $labels }}
+        {{ $k }}: {{ $v | quote }}
+{{- end }}
+
+
+  podTemplate:
+    metadata:
+      labels:
+        # usd-specific labels
+        unbind/usd-type: {{ .Definition.Type | quote }}
+        unbind/usd-version: {{ .Definition.Version | quote }}
+        unbind/usd-category: databases
+        # Propagate custom labels to pods
+{{- range $k, $v := $labels }}
+        {{ $k }}: {{ $v | quote }}
+{{- end }}
+    spec:
+      containers:
+        - name: mysqld
+          image: {{ printf "ghcr.io/cybozu-go/moco/mysql:%s" (.Parameters.version | default "8.4.8") | quote }}
+          resources:
+            requests:
+              cpu:    {{ $common.resources.requests.cpu    | default "10m"   | quote }}
+              memory: {{ $common.resources.requests.memory | default "10Mi"  | quote }}
+            limits:
+              cpu:    {{ $common.resources.limits.cpu      | default "500m"  | quote }}
+              memory: {{ $common.resources.limits.memory   | default "512Mi" | quote }}
+{{- if .Parameters.environment }}
+          env:
+{{- range $k, $v := .Parameters.environment }}
+            - name: {{ $k }}
+              value: {{ $v | quote }}
+{{- end }}
+{{- end }}
+    # cut the default system containers down to size
+    overwriteContainers:
+      # moco-agent sidecar (runs the probes & user management)
+      - name: agent
+        resources:
+          requests:
+            cpu: {{ $common.resources.requests.cpu | default "10m" | quote }}
+            memory: {{ $common.resources.requests.memory | default "32Mi" | quote }}
+          limits:
+            cpu: {{ $common.resources.limits.cpu | default "50m" | quote }}
+            memory: {{ $common.resources.limits.memory | default "64Mi" | quote }}
+      # moco-init (only runs once at first boot, but still needs to schedule)
+      - name: moco-init
+        resources:
+          requests:
+            cpu: {{ $common.resources.requests.cpu | default "20m" | quote }}
+            memory: {{ $common.resources.requests.memory | default "64Mi" | quote }}
+          limits:
+            cpu: {{ $common.resources.limits.cpu | default "40m" | quote }}
+            memory: {{ $common.resources.limits.memory | default "128Mi" | quote }}
+  volumeClaimTemplates:
+    - metadata:
+        name: mysql-data
+        labels:
+          app.kubernetes.io/name:  mysql
+          app.kubernetes.io/instance: {{ .Name }}
+          # usd-specific labels
+          unbind/usd-type: {{ .Definition.Type | quote }}
+          unbind/usd-version: {{ .Definition.Version | quote }}
+          unbind/usd-category: databases
+    {{- range $k, $v := $labels }}
+          {{ $k }}: {{ $v | quote }}
+    {{- end }}
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: {{ $common.storage | default "1Gi" | quote }}
+{{- if $s3.enabled }}
+  backupPolicyName: {{ .Name }}-backup
+{{- end }}
+
+{{- if $restore.enabled }}
+  restore:
+    sourceName:      {{ $restore.cluster }}
+    sourceNamespace: {{ .Namespace }}
+    restorePoint: {{ $restore.restorePoint | default (timeFormat .RFC3339 now) | quote }}
+    jobConfig:
+      serviceAccountName: default
+      bucketConfig:
+        bucketName:   {{ $restore.bucket | default $s3.bucket | quote }}
+        endpointURL:  {{ $restore.endpoint | default $s3.endpoint | quote }}
+        region:       {{ $restore.region   | default $s3.region   | quote }}
+        usePathStyle: true
+      env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: {{ $restore.secretName }}
+              key:  {{ $restore.accessKey | default "access_key_id" }}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ $restore.secretName }}
+              key:  {{ $restore.secretKey | default "secret_key" }}
+      workVolume:
+        emptyDir: {}
+{{- end }}
+---
+{{- if $s3.enabled }}
+apiVersion: moco.cybozu.com/v1beta2
+kind: BackupPolicy
+metadata:
+  name: {{ .Name }}-backup
+  namespace: {{ .Namespace }}
+  labels:
+    unbind/usd-type: {{ .Definition.Type | quote }}
+    unbind/usd-version: {{ .Definition.Version | quote }}
+    unbind/usd-category: databases
+{{- range $k, $v := $labels }}
+    {{ $k }}: {{ $v | quote }}
+{{- end }}
+
+spec:
+  schedule: {{ $s3.backupSchedule | default "5 5 * * *" | quote }}
+  jobConfig:
+    serviceAccountName: default
+    env:
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: {{ $s3.secretName }}
+            key:  {{ $s3.accessKey | default "access_key_id" }}
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: {{ $s3.secretName }}
+            key:  {{ $s3.secretKey | default "secret_key" }}
+    bucketConfig:
+      bucketName:  {{ $s3.bucket | quote }}
+      endpointURL: {{ $s3.endpoint | quote }}
+      region:      {{ $s3.region   | quote }}
+      usePathStyle: true
+    workVolume:
+      emptyDir: {}
+{{- end }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Name }}-createdb-moco
+  namespace: {{ .Namespace }}
+  labels:
+    unbind/usd-type: {{ .Definition.Type | quote }}
+    unbind/usd-version: {{ .Definition.Version | quote }}
+    unbind/usd-category: databases
+{{- range $k, $v := $labels }}
+    {{ $k }}: {{ $v | quote }}
+{{- end }}
+spec:
+  backoffLimit: 10
+  ttlSecondsAfterFinished: 300  # 5 minutes timeout
+  completions: 1                  # Only need to complete once
+  parallelism: 1                  # Only run one pod at a time
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: mysql-client
+        image: mysql:8.4
+        env:
+        - name: MYSQL_PWD
+          valueFrom:
+            secretKeyRef:
+              name: moco-{{ .Name }}
+              key: WRITABLE_PASSWORD
+        # More robust command with comprehensive health checks
+        command: ["sh", "-c"]
+        args:
+          - |
+            set -e
+
+            # Wait for service to be ready
+            echo "Waiting for MySQL service to be available..."
+            timeout=300  # 5 minutes timeout
+            interval=5
+            elapsed=0
+
+            while [ $elapsed -lt $timeout ]; do
+              if mysqladmin -h moco-{{ .Name }}-primary.{{ .Namespace }}.svc -u moco-writable ping 2>/dev/null; then
+                echo "MySQL service is available!"
+                break
+              fi
+              echo "Waiting for MySQL service... ($elapsed/$timeout seconds)"
+              sleep $interval
+              elapsed=$((elapsed + interval))
+            done
+
+            if [ $elapsed -ge $timeout ]; then
+              echo "Timeout waiting for MySQL service"
+              exit 1
+            fi
+
+            # Wait for MySQL to be ready to accept connections
+            echo "Waiting for MySQL to be ready..."
+            retries=30
+            count=0
+
+            while [ $count -lt $retries ]; do
+              if mysqladmin -h moco-{{ .Name }}-primary.{{ .Namespace }}.svc -u moco-writable ping 2>/dev/null; then
+                echo "MySQL is ready!"
+                break
+              fi
+              count=$((count+1))
+              echo "MySQL is not ready yet, retrying... ($count/$retries)"
+              sleep 5
+            done
+
+            if [ $count -eq $retries ]; then
+              echo "Timeout waiting for MySQL to be ready"
+              exit 1
+            fi
+
+            # Check if database already exists
+            if mysql -h moco-{{ .Name }}-primary.{{ .Namespace }}.svc -u moco-writable -e "SELECT schema_name FROM information_schema.schemata WHERE schema_name = 'moco';" | grep -q moco; then
+              echo "Database 'moco' already exists."
+              exit 0
+            fi
+
+            # Create the database
+            echo "Creating database 'moco'..."
+            mysql -h moco-{{ .Name }}-primary.{{ .Namespace }}.svc -u moco-writable -e "CREATE DATABASE moco CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+            # Verify database creation
+            if mysql -h moco-{{ .Name }}-primary.{{ .Namespace }}.svc -u moco-writable -e "SELECT schema_name FROM information_schema.schemata WHERE schema_name = 'moco';" | grep -q moco; then
+              echo "Database 'moco' created successfully!"
+              exit 0
+            else
+              echo "Failed to verify database creation"
+              exit 1
+            fi
+        # Readiness probe to ensure script is running properly
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - "pgrep mysql || pgrep mysqladmin"
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+      # Ensure pod uses appropriate service account
+      serviceAccountName: default

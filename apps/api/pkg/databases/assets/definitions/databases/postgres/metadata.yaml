@@ -1,0 +1,106 @@
+name: "PostgreSQL"
+description: "Standard PostgreSQL database using zalando postgres-operator"
+type: "postgres-operator"
+version: "1.0.0"
+port: 5432
+imports:
+  - path: "../../common/base.yaml"
+    as: base
+  - path: "../../common/s3-schema.yaml"
+    as: s3Schema
+  - path: "../../common/s3-restore-schema.yaml"
+    as: restoreSchema
+  - path: "../../common/labels.yaml"
+    as: labelsSchema
+schema:
+  properties:
+    common:
+      $ref: "#/imports/base"
+    labels:
+      $ref: "#/imports/labelsSchema"
+    dockerImage:
+      type: "string"
+      description: "Spilo image version"
+      default: "ghcr.io/unbindapp/spilo:18-27713048842"
+    defaultDatabaseName:
+      type: "string"
+      description: "The default database used to generate secrets (DATABASE_URL, etc.)"
+      default: "primarydb"
+      required: true
+    version:
+      type: "string"
+      description: "PostgreSQL version"
+      default: "18"
+      enum: ["14", "15", "16", "17", "18"]
+    s3:
+      $ref: "#/imports/s3Schema"
+    restore:
+      $ref: "#/imports/restoreSchema"
+    environment:
+      type: "object"
+      description: "Environment variables to be set in the PostgreSQL container"
+      additionalProperties:
+        type: "string"
+      default: {}
+    initdb:
+      type: "string"
+      description: "PostgreSQL initialization script to run on first startup"
+      default: ""
+    walLevel:
+      type: "string"
+      description: "PostgreSQL WAL level"
+      default: "replica"
+      enum: ["minimal", "replica", "logical"]
+    postgresql:
+      type: "object"
+      description: "PostgreSQL configuration parameters"
+      properties:
+        sharedBuffers:
+          type: "string"
+          description: "Amount of memory used for shared memory buffers"
+          default: "128MB"
+        effectiveCacheSize:
+          type: "string"
+          description: "Planner's assumption about effective size of disk cache"
+          default: "512MB"
+        workMem:
+          type: "string"
+          description: "Amount of memory to be used by internal sort operations and hash tables"
+          default: "4MB"
+        maintenanceWorkMem:
+          type: "string"
+          description: "Maximum amount of memory to be used by maintenance operations"
+          default: "64MB"
+        walBuffers:
+          type: "string"
+          description: "Amount of shared memory used for WAL data"
+          default: "4MB"
+        maxWorkerProcesses:
+          type: "string"
+          description: "Maximum number of background processes"
+          default: "4"
+        maxParallelWorkersPerGather:
+          type: "string"
+          description: "Maximum number of parallel workers per executor node"
+          default: "0"
+        maxParallelWorkers:
+          type: "string"
+          description: "Maximum number of parallel workers that can be active at one time"
+          default: "0"
+        autovacuumMaxWorkers:
+          type: "string"
+          description: "Maximum number of autovacuum processes"
+          default: "2"
+        autovacuumNaptime:
+          type: "string"
+          description: "Time delay between autovacuum runs on any given database"
+          default: "30s"
+        maxWalSize:
+          type: "string"
+          description: "Maximum size to let the WAL grow between checkpoints"
+          default: "256MB"
+        minWalSize:
+          type: "string"
+          description: "Minimum size of WAL files to recycle"
+          default: "64MB"
+      default: {}

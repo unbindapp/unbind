@@ -1,0 +1,5 @@
+type: "object"
+description: "Custom labels to add to the resource"
+additionalProperties:
+  type: "string"
+default: {}

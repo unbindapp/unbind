@@ -1,0 +1,29 @@
+name: "Redis"
+description: "Standard Redis installation using CloudPirates Redis chart"
+type: "helm"
+version: "1.0.0"
+chart:
+  name: "redis"
+  version: "0.30.4"
+  repository: "oci://registry-1.docker.io/cloudpirates"
+  repositoryName: "redis"
+port: 6379
+imports:
+  - path: "../../common/base.yaml"
+    as: base
+  - path: "../../common/labels.yaml"
+    as: labelsSchema
+schema:
+  properties:
+    secretName:
+      type: "string"
+      description: "Name of the secret to store Redis password"
+      required: true
+    secretKey:
+      type: "string"
+      description: "Key in the secret that contains the redis password"
+      required: true
+    common:
+      $ref: "#/imports/base"
+    labels:
+      $ref: "#/imports/labelsSchema"

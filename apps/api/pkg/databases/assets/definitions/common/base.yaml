@@ -1,0 +1,49 @@
+type: "object"
+description: "Common base configuration for databases"
+properties:
+  namespace:
+    type: "string"
+    description: "Namespace for the database deployment"
+    required: true
+  replicas:
+    type: "integer"
+    description: "Number of replicas"
+    default: 1
+    minimum: 1
+    maximum: 5
+  storage:
+    type: "string"
+    description: "Storage size"
+    default: "1Gi"
+  exposeExternal:
+    type: "boolean"
+    description: "Expose external service"
+    default: false
+  resources:
+    type: "object"
+    description: "Resource requirements"
+    properties:
+      requests:
+        type: "object"
+        properties:
+          cpu:
+            type: "string"
+            description: "CPU request"
+            default: "100m"
+          memory:
+            type: "string"
+            description: "Memory request"
+            default: "128Mi"
+      limits:
+        type: "object"
+        properties:
+          cpu:
+            type: "string"
+            description: "CPU limit"
+            default: "500m"
+          memory:
+            type: "string"
+            description: "Memory limit"
+            default: "1024Mi"
+required:
+  - replicas

@@ -57,11 +57,11 @@ func TestGetOSInfo_SupportedUbuntu(t *testing.T) {
 	getOoosFunc = func() string { return "linux" }
 	getArchFunc = func() string { return "amd64" }
 
-	// Create a mock OS release file with valid Ubuntu 22.04 data
+	// Create a mock OS release file with valid Ubuntu 26.04 data
 	content := `ID=ubuntu
-VERSION_ID="22.04"
-VERSION="22.04 LTS (Jammy Jellyfish)"
-PRETTY_NAME="Ubuntu 22.04 LTS"
+VERSION_ID="26.04"
+VERSION="26.04 LTS (Resolute Raccoon)"
+PRETTY_NAME="Ubuntu 26.04 LTS"
 `
 	tmpFile := createMockOSReleaseFile(t, content)
 	defer os.Remove(tmpFile.Name())
@@ -81,9 +81,9 @@ PRETTY_NAME="Ubuntu 22.04 LTS"
 	assert.NoError(t, err, "Expected no error for supported Ubuntu distribution")
 	require.NotNil(t, info, "Expected non-nil info")
 	assert.Equal(t, "ubuntu", info.Distribution)
-	assert.Equal(t, "22.04 LTS (Jammy Jellyfish)", info.Version)
-	assert.Equal(t, "22.04", info.VersionID)
-	assert.Equal(t, "Ubuntu 22.04 LTS", info.PrettyName)
+	assert.Equal(t, "26.04 LTS (Resolute Raccoon)", info.Version)
+	assert.Equal(t, "26.04", info.VersionID)
+	assert.Equal(t, "Ubuntu 26.04 LTS", info.PrettyName)
 	assert.Equal(t, "amd64", info.Architecture)
 }
 
@@ -147,11 +147,11 @@ func TestGetOSInfo_UnsupportedDistribution(t *testing.T) {
 	getOoosFunc = func() string { return "linux" }
 	getArchFunc = func() string { return "amd64" }
 
-	// Create a mock OS release file with unsupported distribution
-	content := `ID=fedora
-VERSION_ID="38"
-VERSION="38 (Workstation Edition)"
-PRETTY_NAME="Fedora Linux 38 (Workstation Edition)"
+	// Create a mock OS release file with an unsupported distribution
+	content := `ID=gentoo
+VERSION_ID="2.17"
+VERSION="2.17"
+PRETTY_NAME="Gentoo Linux"
 `
 	tmpFile := createMockOSReleaseFile(t, content)
 	defer os.Remove(tmpFile.Name())
@@ -174,7 +174,7 @@ PRETTY_NAME="Fedora Linux 38 (Workstation Edition)"
 	customErr, ok := err.(*errdefs.CustomError)
 	assert.True(t, ok, "Expected CustomError type")
 	assert.Equal(t, errdefs.ErrTypeUnsupportedDistribution, customErr.Type, "Wrong error type")
-	assert.Contains(t, err.Error(), "Unsupported distribution: fedora")
+	assert.Contains(t, err.Error(), "Unsupported distribution: gentoo")
 }
 
 func TestGetOSInfo_UnsupportedVersion(t *testing.T) {

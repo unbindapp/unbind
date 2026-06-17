@@ -1,0 +1,589 @@
+apiVersion: clickhouse.altinity.com/v1
+kind: ClickHouseInstallation
+metadata:
+  name: {{ .Name }}
+  namespace: {{ .Namespace }}
+  labels:
+    # Standard USD labels
+    unbind/usd-type: {{ .Definition.Type | quote }}
+    unbind/usd-version: {{ .Definition.Version | quote }}
+    unbind/usd-category: databases
+    {{- range $key, $value := .Parameters.labels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  configuration:
+    files:
+      config.d/99-listen-ipv4-only.xml: |
+        <clickhouse>
+          <!-- Delete the "::" listen_host that the base image ships
+               so only the operator's 0.0.0.0 entry remains -->
+          <listen_host remove="remove">::</listen_host>
+        </clickhouse>
+      config.d/99-logging.xml: |
+        <clickhouse>
+          <logger>
+            <level>warning</level>
+            <console>true</console>
+          </logger>
+
+          <query_log replace="1">
+            <database>system</database>
+            <table>query_log</table>
+            <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+            <engine>
+              ENGINE = MergeTree
+              PARTITION BY event_date
+              ORDER BY (event_time)
+              TTL event_date + interval 30 day
+              SETTINGS ttl_only_drop_parts = 1
+            </engine>
+          </query_log>
+
+          <!-- Stops unnecessary logging -->
+          <metric_log          remove="remove"/>
+          <asynchronous_metric_log remove="remove"/>
+          <query_thread_log    remove="remove"/>
+          <text_log            remove="remove"/>
+          <trace_log           remove="remove"/>
+          <session_log         remove="remove"/>
+          <part_log            remove="remove"/>
+        </clickhouse>
+
+      config.d/99-low-resources.xml: |
+        <clickhouse>
+          <!-- 500 MB mark-cache -->
+          <mark_cache_size>524288000</mark_cache_size>
+
+          <profile>
+            <default>
+              <!-- Conservative single thread usage -->
+              <max_threads>1</max_threads>
+              <!-- Small block sizes to reduce memory pressure -->
+              <max_block_size>4096</max_block_size>
+              <!-- Single download thread -->
+              <max_download_threads>1</max_download_threads>
+              <!-- Longer timeouts for slower operations -->
+              <connect_timeout>30</connect_timeout>
+              <receive_timeout>600</receive_timeout>
+              <send_timeout>600</send_timeout>
+            </default>
+          </profile>
+
+          <!-- Conservative merge tree settings -->
+          <merge_tree>
+            <!-- Fewer parts to reduce overhead -->
+            <max_suspicious_broken_parts>3</max_suspicious_broken_parts>
+            <parts_to_delay_insert>100</parts_to_delay_insert>
+            <parts_to_throw_insert>200</parts_to_throw_insert>
+            <!-- Small merge sizes to reduce memory usage -->
+            <max_bytes_to_merge_at_max_space_in_pool>268435456</max_bytes_to_merge_at_max_space_in_pool>
+            <max_bytes_to_merge_at_min_space_in_pool>67108864</max_bytes_to_merge_at_min_space_in_pool>
+          </merge_tree>
+        </clickhouse>
+    users:
+      default/password:
+        valueFrom:
+          secretKeyRef:
+            name: {{ .Parameters.existingSecretName }}
+            key: password
+      default/networks/ip: 0.0.0.0/0
+      # Add backup user for clickhouse-backup
+      backup/networks/ip: 0.0.0.0/0
+      backup/password:
+        valueFrom:
+          secretKeyRef:
+            name: {{ .Parameters.existingSecretName }}
+            key: backup-password
+    settings:
+      # Reduce concurrent queries for low resource usage
+      default/max_concurrent_queries: 25
+
+    {{- if gt (.Parameters.common.replicas | default 1) 1 }}
+    # Auto-configure ZooKeeper when replicas > 1
+    zookeeper:
+      nodes:
+        - host: zookeeper
+          port: 2181
+    {{- end }}
+
+    clusters:
+      - name: {{ .Parameters.clusterName }}
+        layout:
+          shardsCount: {{ .Parameters.shardsCount | default 1 }}
+          replicasCount: {{ .Parameters.common.replicas | default 1 }}
+
+  templates:
+    podTemplates:
+      - name: clickhouse-pod-template
+        metadata:
+          labels:
+            # Standard USD labels
+            unbind/usd-type: {{ .Definition.Type | quote }}
+            unbind/usd-version: {{ .Definition.Version | quote }}
+            unbind/usd-category: databases
+            {{- range $key, $value := .Parameters.labels }}
+            {{ $key }}: {{ $value | quote }}
+            {{- end }}
+        spec:
+          containers:
+            - name: clickhouse-pod
+              image: clickhouse/clickhouse-server:{{ .Parameters.version | default "26.3" }}
+              command:
+                - clickhouse-server
+                - --config-file=/etc/clickhouse-server/config.xml
+              resources:
+                requests:
+                  cpu: {{ .Parameters.common.resources.requests.cpu | default "50m" }}
+                  memory: {{ .Parameters.common.resources.requests.memory | default "256Mi" }}
+                limits:
+                  cpu: {{ .Parameters.common.resources.limits.cpu | default "500m" }}
+                  memory: {{ .Parameters.common.resources.limits.memory | default "1Gi" }}
+              {{- if .Parameters.environment }}
+              env:
+                {{- range $k, $v := .Parameters.environment }}
+                - name: {{ $k }}
+                  value: {{ $v | quote }}
+                {{- end }}
+              {{- end }}
+              ports:
+                - name: http
+                  containerPort: 8123
+                - name: tcp
+                  containerPort: 9000
+                - name: interserver
+                  containerPort: 9009
+              volumeMounts:
+                - name: clickhouse-data
+                  mountPath: /var/lib/clickhouse
+            {{- if .Parameters.s3.enabled }}
+            - name: clickhouse-backup
+              image: altinity/clickhouse-backup:latest
+              imagePullPolicy: Always
+              args: [ "server" ]
+              env:
+                - name: LOG_LEVEL
+                  value: "info"
+                - name: ALLOW_EMPTY_BACKUPS
+                  value: "true"
+                - name: API_LISTEN
+                  value: "0.0.0.0:7171"
+                - name: API_CREATE_INTEGRATION_TABLES
+                  value: "true"
+                - name: BACKUPS_TO_KEEP_REMOTE
+                  value: "{{ .Parameters.s3.backupRetention | default "3" }}"
+                - name: REMOTE_STORAGE
+                  value: "s3"
+                - name: S3_ACL
+                  value: "private"
+                - name: S3_ENDPOINT
+                  value: "{{ .Parameters.s3.endpoint }}"
+                - name: S3_REGION
+                  value: "{{ .Parameters.s3.region }}"
+                - name: S3_BUCKET
+                  value: "{{ .Parameters.s3.bucket }}"
+                - name: S3_PATH
+                  value: "{{ .Parameters.s3.backupPrefix | default "backup" }}/shard-{shard}"
+                {{- if .Parameters.s3.secretName }}
+                - name: S3_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Parameters.s3.secretName }}
+                      key: {{ .Parameters.s3.accessKey | default "access_key_id" }}
+                - name: S3_SECRET_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Parameters.s3.secretName }}
+                      key: {{ .Parameters.s3.secretKey | default "secret_key" }}
+                {{- else }}
+                - name: S3_ACCESS_KEY
+                  value: "{{ .Parameters.s3.accessKey }}"
+                - name: S3_SECRET_KEY
+                  value: "{{ .Parameters.s3.secretKey }}"
+                {{- end }}
+                - name: S3_FORCE_PATH_STYLE
+                  value: "true"
+                - name: S3_DISABLE_SSL
+                  value: "false"
+                # ClickHouse connection settings for backup
+                - name: CLICKHOUSE_USERNAME
+                  value: "backup"
+                - name: CLICKHOUSE_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Parameters.existingSecretName }}
+                      key: backup-password
+              ports:
+                - name: backup-rest
+                  containerPort: 7171
+              volumeMounts:
+                - name: clickhouse-data
+                  mountPath: /var/lib/clickhouse
+            {{- end }}
+
+    volumeClaimTemplates:
+      - name: clickhouse-data
+        metadata:
+          labels:
+            # Standard USD labels
+            unbind/usd-type: {{ .Definition.Type | quote }}
+            unbind/usd-version: {{ .Definition.Version | quote }}
+            unbind/usd-category: databases
+            {{- range $key, $value := .Parameters.labels }}
+            {{ $key }}: {{ $value | quote }}
+            {{- end }}
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: {{ .Parameters.common.storage | default "1Gi" }}
+
+    serviceTemplates:
+      - name: service-template
+        metadata:
+          labels:
+            # Standard USD labels
+            unbind/usd-type: {{ .Definition.Type | quote }}
+            unbind/usd-version: {{ .Definition.Version | quote }}
+            unbind/usd-category: databases
+            {{- range $key, $value := .Parameters.labels }}
+            {{ $key }}: {{ $value | quote }}
+            {{- end }}
+        spec:
+          ports:
+            - name: http
+              port: 8123
+              targetPort: 8123
+            - name: tcp
+              port: 9000
+              targetPort: 9000
+            - name: interserver
+              port: 9009
+              targetPort: 9009
+          type: {{ if .Parameters.common.exposeExternal }}LoadBalancer{{ else }}ClusterIP{{ end }}
+
+  defaults:
+    templates:
+      podTemplate: clickhouse-pod-template
+      volumeClaimTemplate: clickhouse-data
+      serviceTemplate: service-template
+{{- if .Parameters.s3.enabled }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: "{{ .Name }}-backup"
+  namespace: "{{ .Namespace }}"
+  labels:
+    # Standard USD labels
+    unbind/usd-type: {{ .Definition.Type | quote }}
+    unbind/usd-version: {{ .Definition.Version | quote }}
+    unbind/usd-category: databases
+    {{- range $key, $value := .Parameters.labels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  schedule: "{{ .Parameters.s3.backupSchedule | default "0 2 * * *" }}"
+  concurrencyPolicy: "Forbid"
+  ttlSecondsAfterFinished: 300  # 5 minutes timeout
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      completions: 1
+      parallelism: 1
+      template:
+        metadata:
+          labels:
+            app: "{{ .Name }}-backup"
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: clickhouse-backup
+              image: clickhouse/clickhouse-server:{{ .Parameters.version | default "26.3" }}
+              imagePullPolicy: Always
+              env:
+                - name: LOG_LEVEL
+                  value: "info"
+                - name: ALLOW_EMPTY_BACKUPS
+                  value: "true"
+                - name: BACKUPS_TO_KEEP_REMOTE
+                  value: "{{ .Parameters.s3.backupRetention | default "3" }}"
+                - name: REMOTE_STORAGE
+                  value: "s3"
+                - name: S3_ACL
+                  value: "private"
+                - name: S3_ENDPOINT
+                  value: "{{ .Parameters.s3.endpoint }}"
+                - name: S3_REGION
+                  value: "{{ .Parameters.s3.region }}"
+                - name: S3_BUCKET
+                  value: "{{ .Parameters.s3.bucket }}"
+                - name: S3_PATH
+                  value: "{{ .Parameters.s3.backupPrefix | default "backup" }}/{{ .Parameters.clusterName }}"
+                {{- if .Parameters.s3.secretName }}
+                - name: S3_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Parameters.s3.secretName }}
+                      key: {{ .Parameters.s3.accessKey | default "access_key_id" }}
+                - name: S3_SECRET_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Parameters.s3.secretName }}
+                      key: {{ .Parameters.s3.secretKey | default "secret_key" }}
+                {{- else }}
+                - name: S3_ACCESS_KEY
+                  value: "{{ .Parameters.s3.accessKey }}"
+                - name: S3_SECRET_KEY
+                  value: "{{ .Parameters.s3.secretKey }}"
+                {{- end }}
+                - name: S3_FORCE_PATH_STYLE
+                  value: "true"
+                - name: S3_DISABLE_SSL
+                  value: "false"
+                # ClickHouse connection settings for backup
+                - name: CLICKHOUSE_SERVICES
+                  value: "chi-{{ .Name }}-{{ .Parameters.clusterName }}-0-0"
+                - name: CLICKHOUSE_PORT
+                  value: "9000"
+                - name: BACKUP_USER
+                  value: "backup"
+                - name: BACKUP_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Parameters.existingSecretName }}
+                      key: backup-password
+                # Enable incremental backups
+                - name: MAKE_INCREMENT_BACKUP
+                  value: "{{ .Parameters.s3.incrementalBackups | default "1" }}"
+                - name: FULL_BACKUP_WEEKDAY
+                  value: "{{ .Parameters.s3.fullBackupWeekday | default "1" }}"
+              command:
+                - bash
+                - -ec
+                - |
+                  CLICKHOUSE_SERVICES=$(echo $CLICKHOUSE_SERVICES | tr "," " ")
+                  BACKUP_DATE=$(date +%Y-%m-%d-%H-%M-%S)
+                  declare -A BACKUP_NAMES
+                  declare -A DIFF_FROM
+
+                  if [[ "" != "$BACKUP_PASSWORD" ]]; then
+                    BACKUP_PASSWORD="--password=$BACKUP_PASSWORD"
+                  fi
+
+                  # Determine backup names and types for each server
+                  for SERVER in $CLICKHOUSE_SERVICES; do
+                    if [[ "1" == "$MAKE_INCREMENT_BACKUP" ]]; then
+                      LAST_FULL_BACKUP=$(clickhouse-client -q "SELECT name FROM system.backup_list WHERE location='remote' AND name LIKE '%${SERVER}%' AND name LIKE '%full%' AND desc NOT LIKE 'broken%' ORDER BY created DESC LIMIT 1 FORMAT TabSeparatedRaw" --host="$SERVER" --port="$CLICKHOUSE_PORT" --user="$BACKUP_USER" $BACKUP_PASSWORD)
+                      TODAY_FULL_BACKUP=$(clickhouse-client -q "SELECT name FROM system.backup_list WHERE location='remote' AND name LIKE '%${SERVER}%' AND name LIKE '%full%' AND desc NOT LIKE 'broken%' AND toDate(created) = today() ORDER BY created DESC LIMIT 1 FORMAT TabSeparatedRaw" --host="$SERVER" --port="$CLICKHOUSE_PORT" --user="$BACKUP_USER" $BACKUP_PASSWORD)
+                      PREV_BACKUP_NAME=$(clickhouse-client -q "SELECT name FROM system.backup_list WHERE location='remote' AND desc NOT LIKE 'broken%' ORDER BY created DESC LIMIT 1 FORMAT TabSeparatedRaw" --host="$SERVER" --port="$CLICKHOUSE_PORT" --user="$BACKUP_USER" $BACKUP_PASSWORD)
+
+                      DIFF_FROM[$SERVER]=""
+                      if [[ ("$FULL_BACKUP_WEEKDAY" == "$(date +%u)" && "" == "$TODAY_FULL_BACKUP") || "" == "$PREV_BACKUP_NAME" || "" == "$LAST_FULL_BACKUP" ]]; then
+                        BACKUP_NAMES[$SERVER]="full-$BACKUP_DATE"
+                      else
+                        BACKUP_NAMES[$SERVER]="increment-$BACKUP_DATE"
+                        DIFF_FROM[$SERVER]="--diff-from-remote=$PREV_BACKUP_NAME"
+                      fi
+                    else
+                      BACKUP_NAMES[$SERVER]="full-$BACKUP_DATE"
+                    fi
+                    echo "set backup name on $SERVER = ${BACKUP_NAMES[$SERVER]}"
+                  done
+
+                  # Create backups
+                  for SERVER in $CLICKHOUSE_SERVICES; do
+                    echo "create ${BACKUP_NAMES[$SERVER]} on $SERVER"
+                    clickhouse-client --echo -mn -q "INSERT INTO system.backup_actions(command) VALUES('create ${SERVER}-${BACKUP_NAMES[$SERVER]}')" --host="$SERVER" --port="$CLICKHOUSE_PORT" --user="$BACKUP_USER" $BACKUP_PASSWORD
+                  done
+
+                  # Wait for backup creation to complete
+                  for SERVER in $CLICKHOUSE_SERVICES; do
+                    while [[ "in progress" == $(clickhouse-client -mn -q "SELECT status FROM system.backup_actions WHERE command='create ${SERVER}-${BACKUP_NAMES[$SERVER]}' FORMAT TabSeparatedRaw" --host="$SERVER" --port="$CLICKHOUSE_PORT" --user="$BACKUP_USER" $BACKUP_PASSWORD) ]]; do
+                      echo "still in progress ${BACKUP_NAMES[$SERVER]} on $SERVER"
+                      sleep 1
+                    done
+
+                    if [[ "success" != $(clickhouse-client -mn -q "SELECT status FROM system.backup_actions WHERE command='create ${SERVER}-${BACKUP_NAMES[$SERVER]}' FORMAT TabSeparatedRaw" --host="$SERVER" --port="$CLICKHOUSE_PORT" --user="$BACKUP_USER" $BACKUP_PASSWORD) ]]; then
+                      echo "error create ${BACKUP_NAMES[$SERVER]} on $SERVER"
+                      clickhouse-client -mn --echo -q "SELECT status,error FROM system.backup_actions WHERE command='create ${SERVER}-${BACKUP_NAMES[$SERVER]}'" --host="$SERVER" --port="$CLICKHOUSE_PORT" --user="$BACKUP_USER" $BACKUP_PASSWORD
+                      exit 1
+                    fi
+                  done
+
+                  # Upload backups
+                  for SERVER in $CLICKHOUSE_SERVICES; do
+                    echo "upload ${DIFF_FROM[$SERVER]} ${BACKUP_NAMES[$SERVER]} on $SERVER"
+                    clickhouse-client --echo -mn -q "INSERT INTO system.backup_actions(command) VALUES('upload ${DIFF_FROM[$SERVER]} ${SERVER}-${BACKUP_NAMES[$SERVER]}')" --host="$SERVER" --port="$CLICKHOUSE_PORT" --user="$BACKUP_USER" $BACKUP_PASSWORD
+                  done
+
+                  # Wait for upload to complete and cleanup
+                  for SERVER in $CLICKHOUSE_SERVICES; do
+                    while [[ "in progress" == $(clickhouse-client -mn -q "SELECT status FROM system.backup_actions WHERE command='upload ${DIFF_FROM[$SERVER]} ${SERVER}-${BACKUP_NAMES[$SERVER]}'" --host="$SERVER" --port="$CLICKHOUSE_PORT" --user="$BACKUP_USER" $BACKUP_PASSWORD) ]]; do
+                      echo "upload still in progress ${BACKUP_NAMES[$SERVER]} on $SERVER"
+                      sleep 5
+                    done
+
+                    if [[ "success" != $(clickhouse-client -mn -q "SELECT status FROM system.backup_actions WHERE command='upload ${DIFF_FROM[$SERVER]} ${SERVER}-${BACKUP_NAMES[$SERVER]}'" --host="$SERVER" --port="$CLICKHOUSE_PORT" --user="$BACKUP_USER" $BACKUP_PASSWORD) ]]; then
+                      echo "error ${BACKUP_NAMES[$SERVER]} on $SERVER"
+                      clickhouse-client -mn --echo -q "SELECT status,error FROM system.backup_actions WHERE command='upload ${DIFF_FROM[$SERVER]} ${SERVER}-${BACKUP_NAMES[$SERVER]}'" --host="$SERVER" --port="$CLICKHOUSE_PORT" --user="$BACKUP_USER" $BACKUP_PASSWORD
+                      exit 1
+                    fi
+
+                    clickhouse-client --echo -mn -q "INSERT INTO system.backup_actions(command) VALUES('delete local ${SERVER}-${BACKUP_NAMES[$SERVER]}')" --host="$SERVER" --port="$CLICKHOUSE_PORT" --user="$BACKUP_USER" $BACKUP_PASSWORD
+                  done
+
+                  echo "BACKUP COMPLETED SUCCESSFULLY"
+{{- end }}
+{{- if .Parameters.restore.enabled }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Name }}-restore"
+  namespace: "{{ .Namespace }}"
+  labels:
+    # Standard USD labels
+    unbind/usd-type: {{ .Definition.Type | quote }}
+    unbind/usd-version: {{ .Definition.Version | quote }}
+    unbind/usd-category: databases
+    {{- range $key, $value := .Parameters.labels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 300  # 5 minutes timeout
+  template:
+    metadata:
+      name: "{{ .Name }}-restore"
+      labels:
+        app: "{{ .Name }}-restore"
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: clickhouse-restore
+          image: clickhouse/clickhouse-client:{{ .Parameters.version | default "26.3" }}
+          imagePullPolicy: Always
+          env:
+            - name: LOG_LEVEL
+              value: "info"
+            - name: REMOTE_STORAGE
+              value: "s3"
+            - name: S3_ACL
+              value: "private"
+            - name: S3_ENDPOINT
+              value: "{{ .Parameters.s3.endpoint }}"
+            - name: S3_REGION
+              value: "{{ .Parameters.s3.region }}"
+            - name: S3_BUCKET
+              value: "{{ .Parameters.s3.bucket }}"
+            - name: S3_PATH
+              value: "{{ .Parameters.s3.backupPrefix | default "backup" }}/{{ .Parameters.clusterName }}"
+            {{- if .Parameters.s3.secretName }}
+            - name: S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Parameters.s3.secretName }}
+                  key: {{ .Parameters.s3.accessKey | default "access_key_id" }}
+            - name: S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Parameters.s3.secretName }}
+                  key: {{ .Parameters.s3.secretKey | default "secret_key" }}
+            {{- else }}
+            - name: S3_ACCESS_KEY
+              value: "{{ .Parameters.s3.accessKey }}"
+            - name: S3_SECRET_KEY
+              value: "{{ .Parameters.s3.secretKey }}"
+            {{- end }}
+            - name: S3_FORCE_PATH_STYLE
+              value: "true"
+            - name: S3_DISABLE_SSL
+              value: "false"
+            # Use all replicas for schema restore, first replica for data restore
+            - name: CLICKHOUSE_SCHEMA_RESTORE_SERVICES
+              value: "chi-{{ .Name }}-{{ .Parameters.clusterName }}-0-0"
+            - name: CLICKHOUSE_DATA_RESTORE_SERVICES
+              value: "chi-{{ .Name }}-{{ .Parameters.clusterName }}-0-0"
+            - name: CLICKHOUSE_PORT
+              value: "9000"
+            - name: BACKUP_USER
+              value: "backup"
+            - name: BACKUP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Parameters.existingSecretName }}
+                  key: backup-password
+          command:
+            - bash
+            - -ec
+            - |
+              if [[ "" != "$BACKUP_PASSWORD" ]]; then
+                BACKUP_PASSWORD="--password=$BACKUP_PASSWORD"
+              fi
+
+              declare -A BACKUP_NAMES
+              CLICKHOUSE_SCHEMA_RESTORE_SERVICES=$(echo $CLICKHOUSE_SCHEMA_RESTORE_SERVICES | tr "," " ")
+              CLICKHOUSE_DATA_RESTORE_SERVICES=$(echo $CLICKHOUSE_DATA_RESTORE_SERVICES | tr "," " ")
+
+              # Restore schema on all specified replicas
+              for SERVER in $CLICKHOUSE_SCHEMA_RESTORE_SERVICES; do
+                SHARDED_PREFIX=${SERVER%-*}
+                LATEST_BACKUP_NAME=$(clickhouse-client -q "SELECT name FROM system.backup_list WHERE location='remote' AND desc NOT LIKE 'broken%' AND name LIKE '%${SHARDED_PREFIX}%' ORDER BY created DESC LIMIT 1 FORMAT TabSeparatedRaw" --host="$SERVER" --port="$CLICKHOUSE_PORT" --user="$BACKUP_USER" $BACKUP_PASSWORD)
+
+                if [[ "" == "$LATEST_BACKUP_NAME" ]]; then
+                  echo "Remote backup not found for $SERVER"
+                  exit 1
+                fi
+
+                BACKUP_NAMES[$SERVER]="$LATEST_BACKUP_NAME"
+                clickhouse-client -mn --echo -q "INSERT INTO system.backup_actions(command) VALUES('restore_remote --schema --rm ${BACKUP_NAMES[$SERVER]}')" --host="$SERVER" --port="$CLICKHOUSE_PORT" --user="$BACKUP_USER" $BACKUP_PASSWORD
+
+                while [[ "in progress" == $(clickhouse-client -mn -q "SELECT status FROM system.backup_actions WHERE command='restore_remote --schema --rm ${BACKUP_NAMES[$SERVER]}' ORDER BY start DESC LIMIT 1 FORMAT TabSeparatedRaw" --host="$SERVER" --port="$CLICKHOUSE_PORT" --user="$BACKUP_USER" $BACKUP_PASSWORD) ]]; do
+                  echo "still in progress ${BACKUP_NAMES[$SERVER]} on $SERVER"
+                  sleep 1
+                done
+
+                RESTORE_STATUS=$(clickhouse-client -mn -q "SELECT status FROM system.backup_actions WHERE command='restore_remote --schema --rm ${BACKUP_NAMES[$SERVER]}'  ORDER BY start DESC LIMIT 1 FORMAT TabSeparatedRaw" --host="$SERVER" --port="$CLICKHOUSE_PORT" --user="$BACKUP_USER" $BACKUP_PASSWORD)
+
+                if [[ "success" != "${RESTORE_STATUS}" ]]; then
+                  echo "error restore_remote --schema --rm ${BACKUP_NAMES[$SERVER]} on $SERVER"
+                  clickhouse-client -mn --echo -q "SELECT start,finish,status,error FROM system.backup_actions WHERE command='restore_remote --schema --rm ${BACKUP_NAMES[$SERVER]}'" --host="$SERVER" --port="$CLICKHOUSE_PORT" --user="$BACKUP_USER" $BACKUP_PASSWORD
+                  exit 1
+                fi
+
+                if [[ "success" == "${RESTORE_STATUS}" ]]; then
+                  echo "schema ${BACKUP_NAMES[$SERVER]} on $SERVER RESTORED"
+                  clickhouse-client -q "INSERT INTO system.backup_actions(command) VALUES('delete local ${BACKUP_NAMES[$SERVER]}')" --host="$SERVER" --port="$CLICKHOUSE_PORT" --user="$BACKUP_USER" $BACKUP_PASSWORD
+                fi
+              done
+
+              # Restore data on specified replicas
+              for SERVER in $CLICKHOUSE_DATA_RESTORE_SERVICES; do
+                clickhouse-client -mn --echo -q "INSERT INTO system.backup_actions(command) VALUES('restore_remote --data ${BACKUP_NAMES[$SERVER]}')" --host="$SERVER" --port="$CLICKHOUSE_PORT" --user="$BACKUP_USER" $BACKUP_PASSWORD
+              done
+
+              for SERVER in $CLICKHOUSE_DATA_RESTORE_SERVICES; do
+                while [[ "in progress" == $(clickhouse-client -mn -q "SELECT status FROM system.backup_actions WHERE command='restore_remote --data ${BACKUP_NAMES[$SERVER]}' ORDER BY start DESC LIMIT 1 FORMAT TabSeparatedRaw" --host="$SERVER" --port="$CLICKHOUSE_PORT" --user="$BACKUP_USER" $BACKUP_PASSWORD) ]]; do
+                  echo "still in progress ${BACKUP_NAMES[$SERVER]} on $SERVER"
+                  sleep 1
+                done
+
+                RESTORE_STATUS=$(clickhouse-client -mn -q "SELECT status FROM system.backup_actions WHERE command='restore_remote --data ${BACKUP_NAMES[$SERVER]}'  ORDER BY start DESC LIMIT 1 FORMAT TabSeparatedRaw" --host="$SERVER" --port="$CLICKHOUSE_PORT" --user="$BACKUP_USER" $BACKUP_PASSWORD)
+
+                if [[ "success" != "${RESTORE_STATUS}" ]]; then
+                  echo "error restore_remote --data ${BACKUP_NAMES[$SERVER]} on $SERVER"
+                  clickhouse-client -mn --echo -q "SELECT start,finish,status,error FROM system.backup_actions WHERE command='restore_remote --data ${BACKUP_NAMES[$SERVER]}'" --host="$SERVER" --port="$CLICKHOUSE_PORT" --user="$BACKUP_USER" $BACKUP_PASSWORD
+                  exit 1
+                fi
+
+                echo "data ${BACKUP_NAMES[$SERVER]} on $SERVER RESTORED"
+
+                if [[ "success" == "${RESTORE_STATUS}" ]]; then
+                  clickhouse-client -q "INSERT INTO system.backup_actions(command) VALUES('delete local ${BACKUP_NAMES[$SERVER]}')" --host="$SERVER" --port="$CLICKHOUSE_PORT" --user="$BACKUP_USER" $BACKUP_PASSWORD
+                fi
+              done
+
+              echo "RESTORE COMPLETED SUCCESSFULLY"
+{{- end }}

@@ -1,0 +1,121 @@
+# victoria-metrics-k8s-stack/values.yaml
+vmsingle:
+  enabled: true
+  spec:
+    replicaCount: 1
+    retentionPeriod: "7d"
+    resources:
+      requests:
+        cpu: 10m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 1Gi
+    storage:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 3Gi
+
+vmagent:
+  enabled: true
+  spec:
+    scrapeInterval: 20s
+    externalLabels: { cluster: "local" }
+    resources:
+      requests:
+        cpu: 20m
+        memory: 64Mi
+      limits:
+        cpu: 150m
+        memory: 256Mi
+    extraArgs:
+      promscrape.streamParse: "true"
+      promscrape.dropOriginalLabels: "true"  # shrink label set in RAM
+  podScrape:
+    metricRelabelConfigs:
+      - action: labeldrop
+        regex: '(container_id|pod_uid)'
+
+victoria-metrics-operator:
+  admissionWebhooks:
+    enabled: false
+  operator:
+    operator:
+      disable_prometheus_converter: true
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 512Mi
+
+# -- Component scraping the kubelets
+kubelet:
+  enabled: true
+  vmScrapes:
+    probes:
+      enabled: false
+  vmScrape:
+    spec:
+      scrapeTimeout: "15s"
+
+# Enable metrics exporters
+kube-state-metrics:
+  enabled: true
+  extraArgs:
+    - --metric-labels-allowlist=pods=[*]
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
+  vmScrape:
+    enabled: true
+
+prometheus-node-exporter:
+  enabled: true
+  extraArgs:
+    - --collector.disable-defaults
+    - --collector.cpu
+    - --collector.meminfo
+    - --collector.netdev
+    - --collector.diskstats
+    - --collector.loadavg
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
+
+# Disable non-essential components
+grafana:
+  enabled: false
+  forceDeployDatasource: false    # don’t leave orphaned ConfigMaps
+
+alertmanager:
+  enabled: false                  # matches your previous toggle
+vmalert:
+  enabled: false                  # alert-rule engine; turn off if AM is off
+vmauth:
+  enabled: false
+defaultDashboards:
+  enabled: false                  # nothing consumes them without Grafana
+
+# Turn off un-needed scrapers
+kubeEtcd:              { enabled: false }
+kubeScheduler:         { enabled: false }
+kubeControllerManager: { enabled: false }
+kubeProxy:             { enabled: false }
+kubeApiServer:         { enabled: false }
+coreDns:               { enabled: false }
+kubeDns:               { enabled: false }
+
+# Enable default rules
+defaultRules:
+  create: true

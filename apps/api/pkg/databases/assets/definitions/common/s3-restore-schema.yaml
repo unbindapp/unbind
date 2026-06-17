@@ -1,0 +1,46 @@
+type: "object"
+description: "Options for seeding a fresh database from an existing backup"
+properties:
+  enabled:
+    type: "boolean"
+    description: "Turn *on* clone/restore logic"
+    default: false
+  bucket:
+    type: "string"
+    description: "S3 bucket that holds the base-backups/WAL to restore from"
+  endpoint:
+    type: "string"
+    description: "S3 endpoint URL"
+    default: "https://s3.amazonaws.com"
+  region:
+    type: "string"
+    description: "S3 region"
+    default: ""
+  secretName:
+    type: "string"
+    description: "Name of the secret that contains the S3 credentials"
+    default: ""
+  accessKey:
+    type: "string"
+    description: "S3 access key from the secret"
+    default: "access_key_id"
+  secretKey:
+    type: "string"
+    description: "S3 secret key from the secret"
+    default: "secret_key"
+  backupPrefix:
+    type: "string"
+    description: "Optional prefix for backup files"
+    default: ""
+  cluster:
+    type: "string"
+    description: "Name of the cluster to restore from"
+  restorePoint:
+    type: "string"
+    description: "Point-in-time (RFC3339) to restore to. Leave blank to restore the latest backup."
+required:
+  - enabled
+  - bucket
+  - endpoint
+  - region
+  - secretName

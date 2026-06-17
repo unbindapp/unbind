@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: docker-registry
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app: registry
+  ports:
+    - port: 5000
+      targetPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: docker-registry-nodeport
+  namespace: {{ .Release.Namespace }}
+spec:
+  type: NodePort
+  selector:
+    app: registry
+  ports:
+  - port: 5000
+    targetPort: 5000
+    nodePort: {{ .Values.service.nodePort }}

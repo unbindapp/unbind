@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-const K3S_VERSION = "v1.33.1+k3s1"
+const K3S_VERSION = "v1.36.1+k3s1"
 
 // Educational facts about the platform being installed
 var platformFacts = []string{
@@ -588,7 +588,7 @@ LimitNPROC=65536
 						helmArch = "arm64"
 					}
 
-					version := "3.17.3"
+					version := "3.21.1"
 
 					// Construct the download URL for Helm
 					url := fmt.Sprintf("https://get.helm.sh/helm-v%s-%s-%s.tar.gz",
@@ -688,7 +688,7 @@ LimitNPROC=65536
 						helmArch = "arm64"
 					}
 
-					version := "0.171.0"
+					version := "1.5.5"
 					url := fmt.Sprintf("https://github.com/helmfile/helmfile/releases/download/v%s/helmfile_%s_%s_%s.tar.gz",
 						version, version, "linux", helmArch)
 
@@ -835,7 +835,7 @@ LimitNPROC=65536
 				installCmd := exec.CommandContext(ctx, "helm", "install", "longhorn", "longhorn/longhorn",
 					"--namespace", "longhorn-system",
 					"--create-namespace",
-					"--version", "1.9.0",
+					"--version", "1.12.0",
 					"--set", "defaultSettings.admissionWebhookTimeout=30",
 					"--set", "defaultSettings.conversionWebhookTimeout=30",
 					"--set", "defaultSettings.defaultReplicaCount=1",

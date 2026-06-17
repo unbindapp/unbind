@@ -22,7 +22,6 @@ require (
 	github.com/go-chi/chi/v5 v5.3.0
 	github.com/go-co-op/gocron/v2 v2.21.2
 	github.com/go-git/go-git/v5 v5.19.1
-	github.com/go-oauth2/oauth2/v4 v4.5.4
 	github.com/go-redis/redismock/v9 v9.2.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/go-containerregistry v0.21.6

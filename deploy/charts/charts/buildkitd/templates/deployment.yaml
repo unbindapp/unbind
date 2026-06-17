@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: buildkitd
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: buildkitd
+  template:
+    metadata:
+      labels:
+        app: buildkitd
+    spec:
+      # Don't allow running multiple replicas on the same node
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - buildkitd
+              topologyKey: "kubernetes.io/hostname"
+      containers:
+        - name: buildkitd
+          image: {{ .Values.image }}
+          args:
+            - --addr
+            - tcp://0.0.0.0:1234
+            - --config
+            - /etc/buildkit/buildkitd.toml
+            - --oci-worker-no-process-sandbox
+          readinessProbe:
+            exec:
+              command:
+                - buildctl
+                - --addr
+                - tcp://localhost:1234
+                - debug
+                - workers
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          livenessProbe:
+            exec:
+              command:
+                - buildctl
+                - --addr
+                - tcp://localhost:1234
+                - debug
+                - workers
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          securityContext:
+            privileged: true
+            seccompProfile:
+              type: Unconfined
+            runAsUser: 1000
+            runAsGroup: 1000
+          ports:
+            - containerPort: 1234
+              name: buildkit
+          env:
+            - name: BUILDKIT_STEP_LOG_MAX_SIZE
+              value: "-1" # Disable truncating logs
+          volumeMounts:
+            - name: buildkit-storage
+              mountPath: /var/lib/buildkit
+            - name: buildkit-config
+              mountPath: /etc/buildkit
+              readOnly: true
+      volumes:
+        - name: buildkit-storage
+          emptyDir: {}
+        - name: buildkit-config
+          configMap:
+            name: buildkit-config
+            items:
+              - key: buildkitd.toml
+                path: buildkitd.toml

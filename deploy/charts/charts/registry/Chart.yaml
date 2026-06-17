@@ -1,0 +1,6 @@
+apiVersion: v2
+name: docker-registry
+description: A simple chart to deploy the docker-registry using the official docker-registry image
+type: application
+version: 0.1.0
+appVersion: "1.0"

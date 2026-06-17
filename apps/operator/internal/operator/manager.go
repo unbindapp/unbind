@@ -38,7 +38,7 @@ var operatorSpecs = map[string]operatorSpec{
 		name:         "moco-operator",
 		repoURL:      "https://cybozu-go.github.io/moco/",
 		chart:        "moco",
-		chartVersion: "0.23.0",
+		chartVersion: "0.25.0",
 		values: `{
 			"replicaCount": 1,
 			"resources": {
@@ -55,7 +55,7 @@ var operatorSpecs = map[string]operatorSpec{
 		name:         "clickhouse-operator",
 		repoURL:      "https://docs.altinity.com/clickhouse-operator/",
 		chart:        "altinity-clickhouse-operator",
-		chartVersion: "0.25.6",
+		chartVersion: "0.27.1",
 		values: `{
 			"operator": {
 				"image": {

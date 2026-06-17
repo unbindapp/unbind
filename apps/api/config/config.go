@@ -32,8 +32,9 @@ type Config struct {
 	// This is for generating subdomains
 	BootstrapWildcardBaseURL string `env:"BOOTSTRAP_WILDCARD_BASE_URL" envDefault:"http://localhost:8089"`
 	ExternalOauth2URL        string `env:"EXTERNAL_OAUTH2_URL" envDefault:"http://localhost:8090"`
-	// For unbind custom service definitions
-	UnbindServiceDefVersion string `env:"UNBIND_SERVICE_DEF_VERSION" envDefault:"v0.1.53"`
+	// Records which embedded service-definition set shipped with this build.
+	// Definitions are no longer fetched per tag; this is informational only.
+	UnbindServiceDefVersion string `env:"UNBIND_SERVICE_DEF_VERSION" envDefault:"embedded"`
 	// Github Specific
 	GithubURL        string `env:"GITHUB_URL" envDefault:"https://github.com"` // Override for github enterprise
 	GithubWebhookURL string

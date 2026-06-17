@@ -83,13 +83,13 @@ handle_uninstall() {
     echo ""
     read -p "Are you sure you want to continue? (y/N) " -n 1 -r
     echo ""
-    
+
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         echo -e "${YELLOW}Uninstalling Unbind...${NC}"
         export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
         kubectl -n longhorn-system patch settings.longhorn.io deleting-confirmation-flag -p '{"value":"true"}' --type=merge || true
-        kubectl create -f https://raw.githubusercontent.com/longhorn/longhorn/v1.9.0/uninstall/uninstall.yaml || true
-        
+        kubectl create -f https://raw.githubusercontent.com/longhorn/longhorn/v1.12.0/uninstall/uninstall.yaml || true
+
         # Wait for uninstall job with timeout
         timeout=300
         while [ $timeout -gt 0 ]; do
@@ -177,7 +177,7 @@ handle_add_node() {
     print_box "Add Node Instructions" "$BLUE"
     echo -e "${BOLD}To add a new node to your Unbind cluster, run the following command on the new server:${NC}"
     echo ""
-    
+
     # Build the command with version if available
     if [ -n "$k3s_version" ]; then
         echo -e "${CYAN}curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=$k3s_version K3S_URL=$server_url K3S_TOKEN=$token sh -${NC}"
@@ -186,7 +186,7 @@ handle_add_node() {
     else
         echo -e "${CYAN}curl -sfL https://get.k3s.io | K3S_URL=$server_url K3S_TOKEN=$token sh -${NC}"
     fi
-    
+
     echo ""
     echo -e "${YELLOW}Note:${NC} Make sure the new server can reach this server on port 6443"
 }

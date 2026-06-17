@@ -1,0 +1,6 @@
+apiVersion: v2
+name: unbind-database
+description: A simple chart to deploy the unbind-database using postgres operator
+type: application
+version: 0.1.0
+appVersion: "1.0"

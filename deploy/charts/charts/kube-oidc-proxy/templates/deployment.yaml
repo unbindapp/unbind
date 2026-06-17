@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "kube-oidc-proxy.fullname" . }}
+  labels:
+    {{- include "kube-oidc-proxy.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "kube-oidc-proxy.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "kube-oidc-proxy.selectorLabels" . | nindent 8 }}
+    spec:
+      priorityClassName: unbind-high-priority
+      serviceAccountName: {{ include "kube-oidc-proxy.serviceAccountName" . }}
+      containers:
+      - name: kube-oidc-proxy
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: 443
+        - containerPort: 8080
+        command: ["kube-oidc-proxy"]
+        args:
+          - "--secure-port=443"
+          - "--tls-cert-file=/etc/oidc/tls/tls.crt"
+          - "--tls-private-key-file=/etc/oidc/tls/tls.key"
+          - "--oidc-client-id=$(OIDC_CLIENT_ID)"
+          - "--oidc-issuer-url=$(OIDC_ISSUER_URL)"
+          - "--oidc-username-claim=$(OIDC_USERNAME_CLAIM)"
+          - "--oidc-groups-claim={{ .Values.oidc.groupsClaim }}"
+          - "--oidc-ca-file=/etc/ssl/certs/ca-certificates.crt"
+        env:
+        - name: OIDC_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "kube-oidc-proxy.fullname" . }}-config
+              key: oidc.client-id
+        - name: OIDC_ISSUER_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "kube-oidc-proxy.fullname" . }}-config
+              key: oidc.issuer-url
+        - name: OIDC_USERNAME_CLAIM
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "kube-oidc-proxy.fullname" . }}-config
+              key: oidc.username-claim
+        volumeMounts:
+          - name: config
+            mountPath: /etc/oidc
+            readOnly: true
+          - name: tls
+            mountPath: /etc/oidc/tls
+            readOnly: true
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: config
+          secret:
+            secretName: {{ include "kube-oidc-proxy.fullname" . }}-config
+        - name: tls
+          secret:
+            secretName: {{ .Values.oidc.tlsSecretName }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

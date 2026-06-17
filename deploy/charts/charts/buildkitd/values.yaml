@@ -1,0 +1,8 @@
+replicaCount: 1
+image: moby/buildkit:v0.22.0-rootless
+maxParallelism: 2
+registries: []
+# registries:
+#   - url: "docker-registry.default:5000"
+#     http: true
+#     insecure: true

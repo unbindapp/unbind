@@ -47,7 +47,7 @@ func meiliSearchTemplate() *schema.TemplateDefinition {
 				Type:     schema.ServiceTypeDockerimage,
 				Builder:  schema.ServiceBuilderDocker,
 				InputIDs: []string{"input_domain", "input_storage_size"},
-				Image:    utils.ToPtr("getmeili/meilisearch:v1"),
+				Image:    utils.ToPtr("getmeili/meilisearch:v1.47.0"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 40,
 					CPULimitsMillicores:   300,

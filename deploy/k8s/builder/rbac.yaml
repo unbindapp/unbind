@@ -17,8 +17,8 @@ metadata:
   name: app-crd-creator-binding
 subjects:
 - kind: ServiceAccount
-  name: builder-serviceaccount 
-  namespace: unbind-system   
+  name: builder-serviceaccount
+  namespace: unbind-system
 roleRef:
   kind: ClusterRole
   name: app-crd-creator

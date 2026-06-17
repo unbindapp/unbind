@@ -1,0 +1,14 @@
+{
+  "categories": [
+    {
+      "name": "databases",
+      "templates": [
+        "postgres",
+        "redis",
+        "mysql",
+        "mongodb",
+        "clickhouse"
+      ]
+    }
+  ]
+}

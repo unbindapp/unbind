@@ -1,0 +1,869 @@
+repositories:
+  - name: prometheus-community
+    url: https://prometheus-community.github.io/helm-charts
+  - name: postgres-operator
+    url: https://opensource.zalando.com/postgres-operator/charts/postgres-operator
+  - name: grafana
+    url: https://grafana.github.io/helm-charts
+  - name: ingress-nginx
+    url: https://kubernetes.github.io/ingress-nginx
+  - name: jetstack
+    url: https://charts.jetstack.io
+  - name: bitnami
+    url: https://charts.bitnami.com/bitnami
+  - name: fluxcd-community
+    url: https://fluxcd-community.github.io/helm-charts
+  - name: vm
+    url: https://victoriametrics.github.io/helm-charts/
+
+values:
+ - unbindDomain: unbind.example.com
+ - unbindRegistryDomain: unbind-registry.example.com
+ - wildcardBaseDomain: ""
+ - namespace: unbind-system
+ - tlsSecretName: unbind-domain-tls
+ - registryTlsSecretName: unbind-registry-domain-tls
+ - unbindVersion: v0.0.21
+ - externalRegistry:
+     enabled: false
+     host: docker.io
+     username: ""
+     password: ""
+
+environments:
+  default:
+    values:
+      - environments/default.yaml
+
+helmDefaults:
+  wait: false
+  atomic: false
+  timeout: 300
+  createNamespace: true
+
+hooks:
+  - events: ["prepare"]
+    showlogs: true
+    command: "/bin/sh"
+    args:
+      - "-c"
+      - |
+        echo "Creating custom PriorityClass..."
+        cat <<EOF | kubectl apply -f -
+        apiVersion: scheduling.k8s.io/v1
+        kind: PriorityClass
+        metadata:
+          name: unbind-high-priority
+        value: 10000000
+        globalDefault: false
+        description: "High priority class for critical Unbind system components"
+        EOF
+        echo "PriorityClass 'unbind-high-priority' created successfully"
+
+---
+releases:
+  - name: flux
+    namespace: {{ .Values.namespace }}
+    chart: fluxcd-community/flux2
+    version: 2.18.4
+    values:
+      -
+        policies:
+          create: false
+        helmController:
+          create: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 10Mi
+        sourceController:
+          create: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 10Mi
+        kustomizeController:
+          create: false
+        notificationController:
+          create: false
+        imageReflectionController:
+          create: false
+        imageAutomationController:
+          create: false
+    labels:
+      component: flux
+    installed: true
+
+  - name: victoria-metrics-k8s-stack
+    namespace: {{ .Values.namespace }}
+    chart: vm/victoria-metrics-k8s-stack
+    version: 0.52.0
+    values:
+      - values/victoria-metrics-k8s-stack.yaml
+      - vmsingle:
+          spec:
+            retentionPeriod: {{ .Values | get "overrides.victoriaMetricsStack.retention" }}
+            storage:
+              accessModes: ["ReadWriteOnce"]
+              resources:
+                requests:
+                  storage: {{ .Values | get "overrides.victoriaMetricsStack.storage" }}
+    labels:
+      component: monitoring
+    installed: {{ .Values | get "components.victoriaMetricsStack.enabled" true }}
+
+  - name: alloy
+    namespace: {{ .Values.namespace }}
+    chart: grafana/alloy
+    version: 1.1.1
+    values:
+      -
+        alloy:
+          mounts:
+            varlog: true
+          configMap:
+            content: |
+              logging {
+                level  = "info"
+                format = "logfmt"
+              }
+              discovery.kubernetes "pods" {
+                role = "pod"
+                selectors {
+                  role = "pod"
+                  label = "unbind-team,unbind-project,unbind-environment,unbind-service,unbind-deployment"
+                }
+              }
+              discovery.kubernetes "deployment_pods" {
+                role = "pod"
+                selectors {
+                  role = "pod"
+                  label = "unbind-deployment-build"
+                }
+              }
+              discovery.relabel "pods" {
+                targets = discovery.kubernetes.pods.targets
+                rule {
+                  action        = "replace"
+                  source_labels = ["__meta_kubernetes_pod_label_unbind_team"]
+                  target_label  = "unbind_team"
+                }
+                rule {
+                  action        = "replace"
+                  source_labels = ["__meta_kubernetes_pod_label_unbind_project"]
+                  target_label  = "unbind_project"
+                }
+                rule {
+                  action        = "replace"
+                  source_labels = ["__meta_kubernetes_pod_label_unbind_environment"]
+                  target_label  = "unbind_environment"
+                }
+                rule {
+                  action        = "replace"
+                  source_labels = ["__meta_kubernetes_pod_label_unbind_service"]
+                  target_label  = "unbind_service"
+                }
+                rule {
+                  action        = "replace"
+                  source_labels = ["__meta_kubernetes_pod_label_unbind_deployment"]
+                  target_label  = "unbind_deployment"
+                }
+              }
+              discovery.relabel "deployment_pods" {
+                targets = discovery.kubernetes.deployment_pods.targets
+                rule {
+                  action        = "replace"
+                  source_labels = ["__meta_kubernetes_pod_label_unbind_deployment_build"]
+                  target_label  = "unbind_deployment_build"
+                }
+              }
+              loki.source.kubernetes "pods" {
+                targets = discovery.relabel.pods.output
+                forward_to = [loki.write.endpoint.receiver]
+              }
+              loki.source.kubernetes "deployment_pods" {
+                targets = discovery.relabel.deployment_pods.output
+                forward_to = [loki.write.endpoint.receiver]
+              }
+              loki.write "endpoint" {
+                endpoint {
+                  url = "http://{{ .Values | get "overrides.alloy.loki.endpoint.host" "loki-gateway" }}.{{ .Values | get "overrides.alloy.loki.namespace" .Values.namespace }}.svc.cluster.local:{{ .Values | get "overrides.alloy.loki.endpoint.port" "80" }}/loki/api/v1/push"
+                  tenant_id = "local"
+                }
+              }
+
+    labels:
+      component: alloy
+    installed: {{ .Values | get "components.alloy.enabled" true }}
+
+  - name: loki
+    namespace: {{ .Values.namespace }}
+    chart: grafana/loki
+    version: 6.30.1
+    values:
+      -
+        loki:
+          auth_enabled: false
+          commonConfig:
+            replication_factor: 1
+          storage:
+            type: filesystem
+            bucketNames:
+              chunks: chunks
+              ruler: ruler
+              admin: admin
+          schemaConfig:
+            configs:
+              - from: "2024-04-01"
+                store: tsdb
+                object_store: filesystem
+                schema: v13
+                index:
+                  prefix: loki_index_
+                  period: 24h
+          storage_config:
+            filesystem:
+              directory: /var/loki
+          pattern_ingester:
+            enabled: true
+          limits_config:
+            # Reduce concurrent tail requests to save memory
+            max_concurrent_tail_requests: 50
+            allow_structured_metadata: true
+            volume_enabled: true
+            retention_period: {{ .Values | get "overrides.loki.retentionPeriod" }}
+          compactor:
+            working_directory: /var/loki
+            retention_enabled: true
+            retention_delete_delay: 2h
+            retention_delete_worker_count: 1
+            delete_request_store: filesystem
+          ruler:
+            enable_api: true
+          tableManager:
+            retention_deletes_enabled: true
+            retention_period: {{ .Values | get "overrides.loki.retentionPeriod" }}
+
+        resultsCache:
+          enabled: false
+
+        chunksCache:
+          enabled: false
+
+        lokiCanary:
+          enabled: false
+
+        test:
+          enabled: false
+
+        minio:
+          enabled: false
+
+        deploymentMode: SingleBinary
+        singleBinary:
+          replicas: 1
+          persistence:
+            enabled: true
+            size: {{ .Values | get "overrides.loki.lokiStorageSize" }}
+
+        backend:
+          replicas: 0
+        read:
+          replicas: 0
+        write:
+          replicas: 0
+        ingester:
+          replicas: 0
+        querier:
+          replicas: 0
+        queryFrontend:
+          replicas: 0
+        queryScheduler:
+          replicas: 0
+        distributor:
+          replicas: 0
+        compactor:
+          replicas: 0
+        indexGateway:
+          replicas: 0
+        bloomCompactor:
+          replicas: 0
+        bloomGateway:
+          replicas: 0
+
+    labels:
+      component: loki
+    installed: {{ .Values | get "components.loki.enabled" true }}
+
+  - name: buildkit
+    namespace: {{ .Values.namespace }}
+    chart: ./charts/buildkitd
+    values:
+      -
+        resources: {}
+        replicaCount: {{ .Values | get "overrides.buildkitd.replicas" }}
+        image: {{ .Values | get "overrides.buildkitd.image" }}
+
+    labels:
+      component: build
+    installed: {{ .Values | get "components.buildkitd.enabled" true }}
+
+  - name: postgres-operator
+    namespace: {{ .Values.namespace }}
+    chart: postgres-operator/postgres-operator
+    version: 1.15.1
+    hooks:
+      - events: ["presync"]
+        showlogs: true
+        command: "/bin/sh"
+        args:
+          - "-c"
+          - |
+            echo "Installing Postgres Operator CRDs..."
+            kubectl apply -f https://raw.githubusercontent.com/zalando/postgres-operator/refs/tags/v1.15.1/manifests/operatorconfiguration.crd.yaml
+            kubectl apply -f https://raw.githubusercontent.com/zalando/postgres-operator/refs/tags/v1.15.1/manifests/postgresql.crd.yaml
+            # The upstream postgresql CRD caps spec.postgresql.version at "17". The custom
+            # unbind spilo ships PG18, so widen the enum to allow version "18".
+            kubectl get crd postgresqls.acid.zalan.do -o jsonpath='{.spec.versions[0].schema.openAPIV3Schema.properties.spec.properties.postgresql.properties.version.enum}' | grep -q '"18"' || \
+              kubectl patch crd postgresqls.acid.zalan.do --type=json \
+                -p '[{"op":"add","path":"/spec/versions/0/schema/openAPIV3Schema/properties/spec/properties/postgresql/properties/version/enum/-","value":"18"}]'
+            echo "Postgres Operator CRDs installed"
+    values:
+      -
+        configGeneral:
+          docker_image: {{ .Values | get "overrides.postgresOperator.spiloImage" }}
+        resources:
+          limits:
+            cpu: 500m
+            memory: 500Mi
+          requests:
+            cpu: 10m
+            memory: 50Mi
+        configKubernetes:
+          inherited_labels:
+            - unbind-team
+            - unbind-project
+            - unbind-environment
+            - unbind-service
+            - unbind-deployment
+            - unbind-is-system-db
+            - app.kubernetes.io/managed-by
+            - app.kubernetes.io/name
+            - app.kubernetes.io/instance
+            - app.kubernetes.io/version
+            - helm.sh/chart
+            - unbind/usd-name
+            - unbind/usd-version
+            - unbind/usd-category
+
+    labels:
+      component: postgres-operator
+    installed: {{ .Values | get "components.postgresOperator.enabled" true }}
+
+  - name: database
+    namespace: {{ .Values.namespace }}
+    chart: ./charts/database
+    needs:
+      - postgres-operator
+    values:
+      -
+        replicaCount: {{ .Values | get "overrides.database.replicaCount" }}
+        storage: {{ .Values | get "overrides.database.storage" }}
+        resources:
+          requests:
+            memory: "10Mi"
+            cpu: "10m"
+          limits:
+            cpu: {{ .Values | get "overrides.database.resources.limits.cpu" }}
+            memory: {{ .Values | get "overrides.database.resources.limits.memory" }}
+    labels:
+      component: database
+    installed: {{ .Values | get "components.database.enabled" true }}
+
+  - name: redis
+    namespace: {{ .Values.namespace }}
+    chart: bitnami/redis
+    version: 21.2.1
+    values:
+      - architecture: standalone
+        auth:
+          enabled: false
+        commonConfiguration: |-
+          appendonly yes
+          protected-mode no
+        master:
+          replicaCount: 1
+          persistence:
+            enabled: true
+            size: 512Mi
+          resourcesPreset: "none"
+          resources:
+            requests:
+              memory: 10Mi
+              cpu: 10m
+            limits:
+              memory: 192Mi
+              cpu: 150m
+        replica:
+          replicaCount: 0
+    labels:
+      component: redis
+    installed: {{ .Values | get "components.redis.enabled" true }}
+
+  - name: registry
+    namespace: {{ .Values.namespace }}
+    chart: ./charts/registry
+    hooks:
+      - events: ["presync"]
+        showlogs: true
+        command: "/bin/sh"
+        args:
+          - "-c"
+          - |
+            set -eu
+            NAMESPACE="{{ .Values.namespace }}"
+            GREEN='\033[0;32m'
+            NC='\033[0m'
+            YELLOW='\033[0;33m'
+            RED='\033[0;31m'
+
+            retry_command() {
+              local max_attempts=30
+              local attempt=1
+              local timeout=3
+              local command="$@"
+
+              while true; do
+                echo -e "${YELLOW}Attempt $attempt/$max_attempts: Running command...${NC}"
+                if eval "$command"; then
+                  return 0
+                fi
+
+                attempt=$((attempt + 1))
+                if [ $attempt -gt $max_attempts ]; then
+                  echo -e "${RED}Command failed after $max_attempts attempts${NC}"
+                  return 1
+                fi
+
+                echo -e "${YELLOW}Command failed. Retrying in $timeout seconds...${NC}"
+                sleep $timeout
+                timeout=$((timeout + 2))
+              done
+            }
+
+            echo "Checking for namespace '$NAMESPACE'..."
+            if ! kubectl get namespace "$NAMESPACE" &>/dev/null; then
+              echo -e "${YELLOW}Namespace '$NAMESPACE' not found. Waiting for it to be created (up to 5 minutes)...${NC}"
+              if ! retry_command "kubectl get namespace \"$NAMESPACE\" &>/dev/null"; then
+                echo -e "${RED}Namespace '$NAMESPACE' was never created. Exiting.${NC}"
+                exit 1
+              fi
+            fi
+            echo -e "${GREEN}✓ Namespace '$NAMESPACE' exists${NC}"
+
+            echo "Checking for existing secret 'registry-basic-auth' in namespace '$NAMESPACE'..."
+            if ! kubectl get secret registry-basic-auth -n "$NAMESPACE" &> /dev/null; then
+              echo "Creating basic auth secret for Docker Registry..."
+              TMPFILE=$(mktemp)
+              trap 'rm -f -- "$TMPFILE"' EXIT
+
+              USERNAME={{ .Values | get "overrides.registry.auth.username" "admin" }}
+              PASSWORD=$(openssl rand -base64 48 | tr -d '\n')
+
+              htpasswd -Bbn "$USERNAME" "$PASSWORD" > "$TMPFILE"
+
+              echo "Creating registry-basic-auth secret..."
+              if ! retry_command "kubectl create secret generic registry-basic-auth --namespace=\"$NAMESPACE\" --from-file=auth=\"$TMPFILE\""; then
+                echo -e "${RED}Failed to create registry-basic-auth secret after multiple attempts${NC}"
+                exit 1
+              fi
+
+              echo "Creating registry-credentials secret..."
+              if ! retry_command "kubectl create secret generic registry-credentials --namespace=\"$NAMESPACE\" --from-literal=username=\"${USERNAME}\" --from-literal=password=\"${PASSWORD}\""; then
+                echo -e "${RED}Failed to create registry-credentials secret after multiple attempts${NC}"
+                exit 1
+              fi
+
+              echo -e "${GREEN}✓ Registry secrets created.${NC}"
+            else
+              echo "Secret registry-basic-auth already exists in namespace $NAMESPACE."
+            fi
+    values:
+      -
+        ingress:
+          enabled: true
+          host: {{ .Values.unbindRegistryDomain }}
+          authSecret: registry-basic-auth
+          tls:
+            secretName: {{ .Values.registryTlsSecretName }}
+        replicaCount: {{ .Values | get "overrides.registry.replicaCount" }}
+        persistence:
+          size: {{ .Values | get "overrides.registry.persistence.size" }}
+        cleanup:
+          threshold: {{ .Values | get "overrides.registry.cleanup.threshold" }}
+
+    # Update the labels in registry component
+    labels:
+      component: registry
+    installed: {{ if .Values | get "externalRegistry.enabled" false }}false{{ else }}{{ .Values | get "components.registry.enabled" true }}{{ end }}
+
+  # NOTE: upstream kubernetes/ingress-nginx was archived in March 2026; plan a migration to its successor (InGate). We ship our own controller image fork below.
+  - name: ingress-nginx
+    namespace: {{ .Values.namespace }}
+    chart: ingress-nginx/ingress-nginx
+    version: 4.12.3
+    values:
+      -
+        controller:
+          priorityClassName: unbind-high-priority
+          kind: Deployment
+          allowSnippetAnnotations: true
+          image:
+            # ! Overriding this because, have had issues with 403 from the default registry (they may block some hetzner IPs)
+            registry: ghcr.io
+            image: unbindapp/ingress-nginx/controller
+            tag: "v1.12.3"
+          replicaCount: 2
+          ingressClassResource:
+            name: nginx
+            default: true
+          admissionWebhooks:
+            enabled: false
+          service:
+            enabled: true
+            type: LoadBalancer
+            externalTrafficPolicy: Local
+          config:
+            use-forwarded-headers: "true"
+            compute-full-forwarded-for: "true"
+            use-proxy-protocol: "false"
+            annotations-risk-level: "Critical"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 50Mi
+        rbac:
+          create: true
+          scope: false
+        serviceAccount:
+          create: true
+    labels:
+      component: ingress
+    installed: {{ .Values | get "components.ingressNginx.enabled" true }}
+
+  - name: cert-manager
+    namespace: {{ .Values.namespace }}
+    chart: jetstack/cert-manager
+    version: 1.20.2
+    hooks:
+      - events: ["presync"]
+        showlogs: true
+        command: "/bin/sh"
+        args:
+          - "-c"
+          - |
+            echo "Installing cert-manager CRDs..."
+            kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.20.2/cert-manager.crds.yaml
+            echo "Cert-manager CRDs installed"
+      - events: ["postsync"]
+        showlogs: true
+        command: "/bin/sh"
+        args:
+          - "-c"
+          - |
+            cat <<EOF | kubectl apply -f -
+            apiVersion: cert-manager.io/v1
+            kind: ClusterIssuer
+            metadata:
+              name: letsencrypt-prod
+            spec:
+              acme:
+                server: https://acme-v02.api.letsencrypt.org/directory
+                email: "admin@{{ .Values.unbindDomain }}"
+                privateKeySecretRef:
+                  name: letsencrypt-prod
+                solvers:
+                - http01:
+                    ingress:
+                      class: nginx
+            EOF
+    values:
+      -
+        crds:
+          enabled: false
+        replicaCount: {{ .Values | get "overrides.certManager.replicaCount" 1 }}
+        ingressShim:
+          defaultIssuerName: letsencrypt-prod
+          defaultIssuerKind: ClusterIssuer
+          defaultIssuerGroup: cert-manager.io
+    labels:
+      component: cert-manager
+    installed: {{ .Values | get "components.certManager.enabled" true }}
+
+  - name: kube-oidc-proxy
+    namespace: {{ .Values.namespace }}
+    chart: ./charts/kube-oidc-proxy
+    needs:
+      - unbind-app
+    hooks:
+      - events: ["presync"]
+        showlogs: true
+        command: "/bin/sh"
+        args:
+          - "-c"
+          - |
+            set -eu
+            NAMESPACE="{{ .Values.namespace }}"
+
+            # Self-signed serving cert for the proxy's :443. The API connects with
+            # InsecureSkipVerify, so this only needs to exist, not be publicly trusted.
+            if kubectl get secret kube-oidc-proxy-tls -n "$NAMESPACE" >/dev/null 2>&1; then
+              echo "kube-oidc-proxy-tls already exists. Skipping."
+              exit 0
+            fi
+
+            CERT_DIR=$(mktemp -d)
+            trap 'rm -rf -- "$CERT_DIR"' EXIT
+            SVC_FQDN="kube-oidc-proxy.${NAMESPACE}.svc.cluster.local"
+
+            openssl req -x509 -newkey rsa:2048 -nodes -days 3650 -sha256 \
+              -keyout "$CERT_DIR/tls.key" -out "$CERT_DIR/tls.crt" \
+              -subj "/CN=${SVC_FQDN}" \
+              -addext "subjectAltName=DNS:kube-oidc-proxy,DNS:${SVC_FQDN}"
+
+            kubectl create secret tls kube-oidc-proxy-tls \
+              --namespace="$NAMESPACE" \
+              --cert="$CERT_DIR/tls.crt" \
+              --key="$CERT_DIR/tls.key"
+    values:
+      -
+        replicaCount: {{ .Values | get "overrides.kubeOidcProxy.replicaCount" 2 }}
+        image:
+          repository: {{ .Values | get "overrides.kubeOidcProxy.image.repository" "ghcr.io/unbindapp/kube-oidc-proxy" }}
+          tag: {{ .Values | get "overrides.kubeOidcProxy.image.tag" "master-14884925050" }}
+          pullPolicy: {{ .Values | get "overrides.kubeOidcProxy.image.pullPolicy" "IfNotPresent" }}
+
+        oidc:
+          issuerUrl: {{ .Values | get "overrides.kubeOidcProxy.oidc.issuerUrl" (printf "https://%s/api/oauth2" .Values.unbindDomain) }}
+          clientId: {{ .Values | get "overrides.kubeOidcProxy.oidc.clientId" "unbind-api" }}
+          usernameClaim: {{ .Values | get "overrides.kubeOidcProxy.oidc.usernameClaim" "email" }}
+          groupsClaim: {{ .Values | get "overrides.kubeOidcProxy.oidc.groupsClaim" "groups" }}
+          tlsSecretName: {{ .Values | get "overrides.kubeOidcProxy.oidc.tlsSecretName" "kube-oidc-proxy-tls" }}
+
+        service:
+          type: {{ .Values | get "overrides.kubeOidcProxy.service.type" "ClusterIP" }}
+          port: {{ .Values | get "overrides.kubeOidcProxy.service.port" 443 }}
+          targetPort: {{ .Values | get "overrides.kubeOidcProxy.service.targetPort" 443 }}
+
+        resources:
+          requests:
+            memory: "10Mi"
+            cpu: "10m"
+          limits:
+            cpu: {{ .Values | get "overrides.kubeOidcProxy.resources.limits.cpu" "300m" }}
+            memory: {{ .Values | get "overrides.kubeOidcProxy.resources.limits.memory" "256Mi" }}
+
+        rbac:
+          create: {{ .Values | get "overrides.kubeOidcProxy.rbac.create" true }}
+          viewerCreate: {{ .Values | get "overrides.kubeOidcProxy.rbac.viewerCreate" true }}
+          viewerGroupName: {{ .Values | get "overrides.kubeOidcProxy.rbac.viewerGroupName" "oidc:users" }}
+
+    labels:
+      component: auth
+    installed: {{ .Values | get "components.kubeOidcProxy.enabled" true }}
+
+  - name: unbind-operator
+    namespace: {{ .Values.namespace }}
+    chart: ./charts/unbind-operator
+    values:
+      -
+        controllerManager:
+          container:
+            image:
+              repository: {{ .Values | get "overrides.unbind.operator.repository" "ghcr.io/unbindapp/unbind-operator" }}
+              tag: {{ .Values.unbindVersion }}
+    labels:
+      component: unbind-operator
+    installed: true
+
+  - name: unbind-app
+    namespace: '{{ .Values.namespace }}'
+    chart: ./charts/unbind
+    wait: true
+    atomic: true
+    timeout: 900
+    needs:
+      - redis
+      - database
+      - cert-manager
+    hooks:
+      - events: ["presync"]
+        showlogs: true
+        command: "/bin/sh"
+        args:
+          - "-c"
+          - |
+            set -eu
+
+            NAMESPACE="{{ .Values.namespace }}"
+            GREEN='\033[0;32m'
+            NC='\033[0m'
+            YELLOW='\033[0;33m'
+            EXTERNAL_REGISTRY_ENABLED="{{ .Values | get "externalRegistry.enabled" false }}"
+
+            safe_create_secret() {
+              local name="$1"
+              shift
+
+              echo "Ensuring $name secret exists..."
+              if kubectl create secret "$@" >/dev/null 2>&1; then
+                echo -e "${GREEN}✓ Created $name secret${NC}"
+                return 0
+              else
+                if kubectl get secret "$name" -n "$NAMESPACE" &>/dev/null; then
+                  echo -e "${YELLOW}$name secret already exists. Skipping creation.${NC}"
+                  return 0
+                else
+                  echo "Error: Failed to create $name secret and it does not exist. Check permissions or kubectl logs." >&2
+                  return 1
+                fi
+              fi
+            }
+
+            if [ "$EXTERNAL_REGISTRY_ENABLED" = "true" ]; then
+              echo "Using external registry. Creating registry credentials..."
+
+              # Get external registry credentials
+              REGISTRY_HOST="{{ .Values | get "externalRegistry.host" "docker.io" }}"
+              REGISTRY_USERNAME="{{ .Values | get "externalRegistry.username" "" }}"
+              REGISTRY_PASSWORD="{{ .Values | get "externalRegistry.password" "" }}"
+
+              # Create registry credentials for external registry using retry logic
+              echo "Creating registry-credentials secret for external registry..."
+              if ! safe_create_secret "registry-credentials" generic registry-credentials \
+                --namespace="$NAMESPACE" \
+                --from-literal=username="${REGISTRY_USERNAME}" \
+                --from-literal=password="${REGISTRY_PASSWORD}"; then
+                echo "Error: Failed to ensure registry-credentials exists for external registry. Halting hook." >&2
+                exit 1
+              fi
+
+              echo -e "${GREEN}Registry credentials created for external registry: $REGISTRY_HOST${NC}"
+              exit 0
+            fi
+
+            echo "Secret checks/creation complete."
+    values:
+      - global:
+          namespace: '{{ .Values.namespace }}'
+
+      - ingress:
+          enabled: true
+          host: {{ .Values.unbindDomain }}
+          className: {{ .Values | get "overrides.ingress.className" "nginx" }}
+          annotations:
+             kubernetes.io/tls-acme: "true"
+             nginx.ingress.kubernetes.io/ssl-redirect: "true"
+          tls:
+            secretName: {{ .Values.tlsSecretName }}
+
+      - api:
+          enabled: true
+          name: unbind-api
+          image:
+            repository: {{ .Values | get "overrides.unbind.api.repository" "ghcr.io/unbindapp/unbind" }}
+            tag: {{ .Values.unbindVersion }}
+            pullPolicy: {{ .Values | get "overrides.unbind.api.pullPolicy" "Always" }}
+          replicaCount: {{ .Values | get "overrides.unbind.api.replicaCount" 2 }}
+          resources:
+            requests:
+              memory: "10Mi"
+              cpu: "50m"
+            limits:
+              cpu: {{ .Values | get "overrides.unbind.api.resources.limits.cpu" "500m" }}
+              memory: {{ .Values | get "overrides.unbind.api.resources.limits.memory" "2Gi" }}
+          containerPort: 8089
+          service:
+            type: ClusterIP
+            port: 8089
+          ingress:
+            enabled: true
+          command: ["/app/api"]
+          env:
+            - name: SYSTEM_NAMESPACE
+              value: {{ .Values.namespace }}
+            - name: EXTERNAL_UI_URL
+              value: {{ printf "https://%s" .Values.unbindDomain }}
+            - name: EXTERNAL_API_URL
+              value: {{ printf "https://%s/api/go" .Values.unbindDomain }}
+            - name: EXTERNAL_OAUTH2_URL
+              value: {{ printf "https://%s/api/oauth2" .Values.unbindDomain }}
+            {{- if ne .Values.wildcardBaseDomain "" }}
+            - name: BOOTSTRAP_WILDCARD_BASE_URL
+              value: {{ printf "https://%s" .Values.wildcardBaseDomain }}
+            {{- end }}
+            - name: POSTGRES_HOST
+              value: {{ .Values | get "overrides.unbind.api.database.host" (printf "pg-unbind.%s" .Values.namespace) }}
+            - name: POSTGRES_PORT
+              value: {{ .Values | get "overrides.unbind.api.database.port" "5432" | quote }}
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values | get "overrides.unbind.api.database.secretName" "unbind.pg-unbind.credentials.postgresql.acid.zalan.do" }}
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values | get "overrides.unbind.api.database.secretName" "unbind.pg-unbind.credentials.postgresql.acid.zalan.do" }}
+                  key: password
+            - name: POSTGRES_DB
+              value: {{ .Values | get "overrides.unbind.api.database.name" "unbind" }}
+            - name: REDIS_URL
+              value: {{ .Values | get "overrides.unbind.api.redis.url" (printf "redis-headless.%s:6379" .Values.namespace) }}
+            - name: KUBE_PROXY_URL
+              value: {{ .Values | get "overrides.unbind.api.kubeProxyUrl" (printf "https://kube-oidc-proxy.%s.svc.cluster.local:443" .Values.namespace) }}
+            - name: BUILDER_NAMESPACE
+              value: {{ .Values.namespace }}
+            - name: BOOTSTRAP_CONTAINER_REGISTRY_HOST
+              value: {{ if .Values | get "externalRegistry.enabled" false }}{{ .Values | get "externalRegistry.host" "docker.io" }}{{ else }}{{ .Values | get "overrides.unbind.api.registry.host" .Values.unbindRegistryDomain }}{{ end }}
+            - name: BOOTSTRAP_CONTAINER_REGISTRY_USER
+              valueFrom:
+                secretKeyRef:
+                  name: registry-credentials
+                  key: username
+            - name: BOOTSTRAP_CONTAINER_REGISTRY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: registry-credentials
+                  key: password
+            - name: BUILDKIT_HOST
+              value: {{ $hostValue := .Values | get "overrides.unbind.api.buildkit.host" "" }}
+                    {{- if $hostValue }}
+                    {{- $hostValue }}
+                    {{- else }}
+                    {{- printf "tcp://buildkit.%s:1234" .Values.namespace }}
+                    {{- end }}
+            - name: LOKI_ENDPOINT
+              value: {{ .Values | get "overrides.unbind.api.loki.endpoint" (printf "http://loki-gateway.%s.svc.cluster.local" .Values.namespace) }}
+            - name: PROMETHEUS_ENDPOINT
+              value: {{ .Values | get "overrides.unbind.api.prometheus.endpoint" (printf "http://vmsingle-victoria-metrics-k8s-stack.%s:8429" .Values.namespace) }}
+
+      - serviceAccount:
+          create: true
+          name: unbind-api-sa
+          annotations: {}
+      - rbac:
+          create: true
+      - builder:
+          rbac:
+            create: true
+            clusterRoleName: "app-crd-creator"
+            clusterRoleBindingName: "app-crd-creator-binding"
+          serviceAccount:
+            create: true
+            name: "builder-serviceaccount"
+            annotations: {}
+
+    labels:
+      component: unbind-app
+    installed: true

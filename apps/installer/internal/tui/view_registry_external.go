@@ -63,12 +63,17 @@ func viewRegistryTypeSelection(m Model) string {
 	}
 	s.WriteString("\n")
 
+	// Default + countdown
+	defaultText := fmt.Sprintf("Defaulting to self-hosted in %d seconds...", m.registryCountdown)
+	s.WriteString(m.styles.Bold.Render(defaultText))
+	s.WriteString("\n\n")
+
 	// Navigation hints
 	s.WriteString(m.styles.Bold.Render("Navigation:"))
 	s.WriteString("\n")
 	s.WriteString(m.styles.Normal.Render("• Press "))
 	s.WriteString(m.styles.Key.Render("1"))
-	s.WriteString(m.styles.Normal.Render(" for Self-hosted Registry"))
+	s.WriteString(m.styles.Normal.Render(" for Self-hosted Registry (default)"))
 	s.WriteString("\n")
 	s.WriteString(m.styles.Normal.Render("• Press "))
 	s.WriteString(m.styles.Key.Render("2"))
@@ -85,23 +90,53 @@ func viewRegistryTypeSelection(m Model) string {
 	return renderWithLayout(m, s.String())
 }
 
+// selectSelfHostedRegistry configures a self-hosted registry. For wildcard domains the
+// registry domain is derived and validated automatically; otherwise the user is prompted.
+func (m Model) selectSelfHostedRegistry() (tea.Model, tea.Cmd) {
+	if m.dnsInfo == nil {
+		m.dnsInfo = &dnsInfo{}
+	}
+	m.dnsInfo.RegistryType = RegistrySelfHosted
+	m.dnsInfo.DisableLocalRegistry = false
+
+	if !m.dnsInfo.IsWildcard {
+		m.state = StateRegistryDomainInput
+		m.registryInput.Focus()
+		return m, m.listenForLogs()
+	}
+
+	base := strings.TrimPrefix(m.dnsInfo.Domain, "*.")
+	m.dnsInfo.RegistryDomain = "unbind-registry." + base
+	m.registryInput.SetValue(m.dnsInfo.RegistryDomain)
+	m.state = StateRegistryDNSValidation
+	m.isLoading = true
+	m.dnsInfo.ValidationStarted = true
+	m.dnsInfo.TestingStartTime = time.Now()
+	m.log(fmt.Sprintf("Using derived registry domain %s", m.dnsInfo.RegistryDomain))
+	return m, tea.Batch(
+		m.spinner.Tick,
+		m.startRegistryDNSValidation(),
+		dnsValidationTimeout(30*time.Second),
+		m.listenForLogs(),
+	)
+}
+
 // updateRegistryTypeSelectionState handles selection of registry type
 func (m Model) updateRegistryTypeSelectionState(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if keyMsg, ok := msg.(tea.KeyMsg); ok {
-		switch keyMsg.String() {
+	switch msg := msg.(type) {
+	case countdownTickMsg:
+		m.registryCountdown--
+		if m.registryCountdown <= 0 {
+			return m.selectSelfHostedRegistry()
+		}
+		return m, countdownTick()
+
+	case tea.KeyMsg:
+		switch msg.String() {
 		case "1":
-			// Self-hosted registry selected
-			if m.dnsInfo == nil {
-				m.dnsInfo = &dnsInfo{}
-			}
-			m.dnsInfo.RegistryType = RegistrySelfHosted
-			m.dnsInfo.DisableLocalRegistry = false
-			m.state = StateRegistryDomainInput
-			m.registryInput.Focus()
-			return m, m.listenForLogs()
+			return m.selectSelfHostedRegistry()
 
 		case "2":
-			// External registry selected
 			if m.dnsInfo == nil {
 				m.dnsInfo = &dnsInfo{}
 			}
@@ -112,16 +147,11 @@ func (m Model) updateRegistryTypeSelectionState(msg tea.Msg) (tea.Model, tea.Cmd
 			return m, m.listenForLogs()
 
 		case "ctrl+b":
-			// Go back to DNS configuration
+			// Go back to DNS configuration; cancels the auto-default countdown
 			m.state = StateDNSConfig
 			m.domainInput.Focus()
 			return m, m.listenForLogs()
 		}
-	}
-
-	if _, ok := msg.(tea.WindowSizeMsg); ok {
-		// Handle window size changes
-		return m, m.listenForLogs()
 	}
 
 	return m, m.listenForLogs()

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: buildkitd
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  ports:
+    - port: 1234
+      protocol: TCP
+      targetPort: buildkit
+  selector:
+    app: buildkitd

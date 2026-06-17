@@ -1,0 +1,344 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: registry-cleanup
+  namespace: {{ .Release.Namespace }}
+spec:
+  schedule: "0 * * * *"  # Run hourly
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: registry-cleanup-sa
+          containers:
+          - name: registry-cleanup
+            image: ubuntu:24.04
+            imagePullPolicy: IfNotPresent
+            env:
+            - name: REGISTRY_URL
+              value: "http://docker-registry:5000"
+            - name: MAX_STORAGE
+              value: "{{ .Values.cleanup.threshold }}"  # Use dynamic threshold from values
+            command:
+            - /bin/bash
+            - -c
+            - |
+              #!/bin/bash
+              set -e
+
+              echo "Installing required packages..."
+              apt-get update
+              apt-get install -y curl jq wget unzip apt-transport-https ca-certificates gnupg
+
+              # Install kubectl
+              curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+              chmod 644 /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+              echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /' | tee /etc/apt/sources.list.d/kubernetes.list
+              chmod 644 /etc/apt/sources.list.d/kubernetes.list
+              apt-get update
+              apt-get install -y kubectl
+
+              echo "Starting registry cleanup job..."
+
+              # Parse MAX_STORAGE value to handle Gi/Mi/Ki units
+              MAX_STORAGE="${MAX_STORAGE}"
+
+              # Function to convert values with units to bytes
+              function convert_to_bytes() {
+                local value=$1
+                # Extract number and unit (if any)
+                local number=$(echo $value | sed -E 's/([0-9\.]+).*/\1/')
+                local unit=$(echo $value | sed -E 's/[0-9\.]+//')
+
+                # Convert to bytes based on unit
+                case $unit in
+                  "Ki"|"KiB")
+                    echo $(awk "BEGIN {print $number * 1024}")
+                    ;;
+                  "Mi"|"MiB")
+                    echo $(awk "BEGIN {print $number * 1024 * 1024}")
+                    ;;
+                  "Gi"|"GiB")
+                    echo $(awk "BEGIN {print $number * 1024 * 1024 * 1024}")
+                    ;;
+                  "Ti"|"TiB")
+                    echo $(awk "BEGIN {print $number * 1024 * 1024 * 1024 * 1024}")
+                    ;;
+                  "K"|"KB")
+                    echo $(awk "BEGIN {print $number * 1000}")
+                    ;;
+                  "M"|"MB")
+                    echo $(awk "BEGIN {print $number * 1000 * 1000}")
+                    ;;
+                  "G"|"GB")
+                    echo $(awk "BEGIN {print $number * 1000 * 1000 * 1000}")
+                    ;;
+                  "T"|"TB")
+                    echo $(awk "BEGIN {print $number * 1000 * 1000 * 1000 * 1000}")
+                    ;;
+                  *)
+                    # No unit or unrecognized unit, assume it's already in bytes
+                    echo $number
+                    ;;
+                esac
+              }
+
+              # Convert MAX_STORAGE to bytes
+              # Convert MAX_STORAGE (e.g. "3Gi" or "500M") to a plain-integer byte count
+              # Two-letter suffix (Gi/Mi/Ki)?  use “iec-i”.  Otherwise assume one-letter.
+              if [[ "$MAX_STORAGE" =~ [0-9]+[KMGTP]i$ ]]; then
+                  MAX_SIZE_BYTES=$(numfmt --from=iec-i "$MAX_STORAGE")
+              else
+                  MAX_SIZE_BYTES=$(numfmt --from=iec    "$MAX_STORAGE")
+              fi
+
+              # Fallback for very old coreutils that lack --from=iec
+              if ! [[ "$MAX_SIZE_BYTES" =~ ^[0-9]+$ ]]; then
+                MAX_SIZE_BYTES=$(convert_to_bytes "$MAX_STORAGE")
+                MAX_SIZE_BYTES=$(printf "%.0f" "$MAX_SIZE_BYTES")   # strip any sci-notation
+              fi
+              echo "Threshold value $MAX_STORAGE converted to $MAX_SIZE_BYTES bytes"
+
+              # Get catalog of repositories
+              CATALOG_RESPONSE=$(curl -s $REGISTRY_URL/v2/_catalog)
+              echo "Raw catalog response: $CATALOG_RESPONSE"
+
+              # Check if response is valid JSON with repositories field
+              if echo "$CATALOG_RESPONSE" | jq -e '.repositories' > /dev/null 2>&1; then
+                REPOSITORIES=$(echo "$CATALOG_RESPONSE" | jq -r '.repositories[]')
+              else
+                echo "Error: Invalid or empty response from registry catalog API"
+                echo "Please verify the registry URL ($REGISTRY_URL) is correct and the registry is operational"
+                exit 1
+              fi
+
+              # Calculate total size of registry usage
+              TOTAL_SIZE=0
+              declare -a REPO_SIZES
+              declare -a REPO_NAMES
+
+              for repo in $REPOSITORIES; do
+                echo "Processing repository: $repo"
+
+                # Get all tags for this repository
+                TAGS=$(curl -s $REGISTRY_URL/v2/$repo/tags/list | jq -r '.tags[]')
+
+                # Skip if there are no tags
+                if [ -z "$TAGS" ]; then
+                  echo "No tags found for $repo, skipping"
+                  continue
+                fi
+
+                # Calculate repository size
+                REPO_SIZE=0
+
+                for tag in $TAGS; do
+                  # Get manifest digest
+                  MANIFEST=$(curl -s -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+                    $REGISTRY_URL/v2/$repo/manifests/$tag)
+
+                  # Extract all layer digests to calculate size
+                  if echo "$MANIFEST" | jq -e '.layers' >/dev/null 2>&1; then
+                    # Get all layers and add their sizes
+                    LAYER_SIZES=$(echo "$MANIFEST" | jq '[.layers[].size] | add')
+
+                    # Add config blob size if available
+                    CONFIG_DIGEST=$(echo "$MANIFEST" | jq -r '.config.digest')
+                    if [ "$CONFIG_DIGEST" != "null" ] && [ -n "$CONFIG_DIGEST" ]; then
+                      CONFIG_SIZE=$(curl -s $REGISTRY_URL/v2/$repo/blobs/$CONFIG_DIGEST | jq -r '.size')
+                      if [ "$CONFIG_SIZE" != "null" ] && [ -n "$CONFIG_SIZE" ]; then
+                        LAYER_SIZES=$((LAYER_SIZES + CONFIG_SIZE))
+                      fi
+                    fi
+
+                    # Add to repository size
+                    REPO_SIZE=$((REPO_SIZE + LAYER_SIZES))
+
+                    # Debug output
+                    echo "Tag $tag size: $((LAYER_SIZES / 1024 / 1024)) MB"
+                  else
+                    echo "Warning: Could not parse manifest for $repo:$tag"
+                  fi
+                done
+
+                # Convert bytes to MB
+                REPO_SIZE_MB=$((REPO_SIZE / 1024 / 1024))
+
+                echo "Repository $repo size: $REPO_SIZE_MB MB"
+
+                REPO_SIZES+=("$REPO_SIZE")
+                REPO_NAMES+=("$repo")
+                TOTAL_SIZE=$((TOTAL_SIZE + REPO_SIZE))
+              done
+
+              # Alternative size calculation using kubectl
+              echo "Running alternative size calculation via kubectl exec..."
+
+              REGISTRY_POD=$(kubectl -n unbind-system get pod -l app=registry -o jsonpath='{.items[0].metadata.name}')
+
+              if [ -n "$REGISTRY_POD" ]; then
+                DISK_USAGE=$(kubectl -n unbind-system exec $REGISTRY_POD -- du -sb /var/lib/registry)
+
+                # Handle potential scientific notation by using awk to convert to numeric value
+                TOTAL_SIZE=$(echo "$DISK_USAGE" | awk '{
+                  # Check if first column contains scientific notation
+                  if ($1 ~ /e\+/) {
+                    # Convert scientific notation to a regular number
+                    printf "%.0f", $1
+                  } else {
+                    # Return the regular number as is
+                    print $1
+                  }
+                }')
+
+                # Verify TOTAL_SIZE is a valid number
+                if ! [[ "$TOTAL_SIZE" =~ ^[0-9]+$ ]]; then
+                  echo "Warning: Could not parse disk usage correctly: $DISK_USAGE"
+                  echo "Extracted size: $TOTAL_SIZE"
+                  # Fallback method using perl to handle scientific notation
+                  TOTAL_SIZE=$(echo "$DISK_USAGE" | perl -ne 'if(/^(\S+)/) {printf "%.0f", $1}')
+                  echo "Using perl fallback method, size: $TOTAL_SIZE"
+                fi
+
+                TOTAL_SIZE_MB=$(awk "BEGIN {printf \"%.2f\", $TOTAL_SIZE / 1024 / 1024}")
+                TOTAL_SIZE_GB=$(awk "BEGIN {printf \"%.2f\", $TOTAL_SIZE / 1024 / 1024 / 1024}")
+
+                echo "Total registry size from disk: $TOTAL_SIZE_MB MB ($TOTAL_SIZE_GB GB)"
+
+                # Override API-based calculation with actual disk usage
+                if [ "$TOTAL_SIZE" -gt 0 ]; then
+                  echo "Using disk-based size calculation instead of API-based calculation"
+                fi
+              else
+                echo "Could not find registry pod for disk-based size calculation"
+              fi
+
+              # Check if we need cleanup
+              # Using the converted MAX_SIZE_BYTES value directly
+
+              # Use disk-based size if available and greater than API-based size
+              if [ -n "$REGISTRY_POD" ] && [ $TOTAL_SIZE -gt 0 ]; then
+                TOTAL_SIZE_HUMAN_READABLE=$(numfmt --to=iec-i --suffix=B --format="%.2f" $TOTAL_SIZE)
+                MAX_SIZE_HUMAN_READABLE=$(numfmt --to=iec-i --suffix=B --format="%.2f" $MAX_SIZE_BYTES)
+
+                if [ $TOTAL_SIZE -lt $MAX_SIZE_BYTES ]; then
+                  echo "Registry size $TOTAL_SIZE_HUMAN_READABLE is below threshold of $MAX_SIZE_HUMAN_READABLE. No cleanup needed."
+                  exit 0
+                fi
+              else
+                # Fall back to API-based calculation
+                API_TOTAL_SIZE_GB=$((TOTAL_SIZE / 1024 / 1024 / 1024))
+                echo "Using API-based size calculation: $API_TOTAL_SIZE_GB GB"
+
+                if [ $TOTAL_SIZE -lt $MAX_SIZE_BYTES ]; then
+                  echo "Registry size $API_TOTAL_SIZE_GB GB is below threshold of $((MAX_SIZE_BYTES / 1024 / 1024 / 1024)) GB. No cleanup needed."
+                  exit 0
+                fi
+              fi
+
+              echo "Starting cleanup to reduce registry size..."
+
+              # Sort repositories by size (bubble sort)
+              REPO_COUNT=${#REPO_NAMES[@]}
+              for ((i=0; i<$REPO_COUNT; i++)); do
+                for ((j=0; j<$REPO_COUNT-i-1; j++)); do
+                  if [ ${REPO_SIZES[$j]} -lt ${REPO_SIZES[$j+1]} ]; then
+                    # Swap sizes
+                    TEMP_SIZE=${REPO_SIZES[$j]}
+                    REPO_SIZES[$j]=${REPO_SIZES[$j+1]}
+                    REPO_SIZES[$j+1]=$TEMP_SIZE
+
+                    # Swap names
+                    TEMP_NAME=${REPO_NAMES[$j]}
+                    REPO_NAMES[$j]=${REPO_NAMES[$j+1]}
+                    REPO_NAMES[$j+1]=$TEMP_NAME
+                  fi
+                done
+              done
+
+              # Space to free
+              SPACE_TO_FREE=$((TOTAL_SIZE - MAX_SIZE_BYTES))
+              SPACE_FREED=0
+
+              # Iterate through repos, from largest to smallest
+              for ((i=0; i<$REPO_COUNT; i++)); do
+                REPO=${REPO_NAMES[$i]}
+                echo "Checking repository: $REPO for cleanup"
+
+                # Get all tags
+                TAGS=$(curl -s $REGISTRY_URL/v2/$REPO/tags/list | jq -r '.tags[]')
+
+                # Save the latest tag based on timestamp if we can determine it
+                LATEST_TAG=$(echo "$TAGS" | grep -E '^latest$' || echo "")
+                if [ -z "$LATEST_TAG" ]; then
+                  # Try to determine latest by tag name (assuming semantic versioning or date-like tags)
+                  LATEST_TAG=$(echo "$TAGS" | sort -V | tail -n 1)
+                fi
+
+                echo "Preserving latest tag: $LATEST_TAG for $REPO"
+
+                # Filter out the latest tag
+                TAGS_TO_CHECK=$(echo "$TAGS" | grep -v "^$LATEST_TAG$" || echo "")
+
+                # Skip if there's only one tag (the latest one)
+                if [ -z "$TAGS_TO_CHECK" ]; then
+                  echo "Only one tag for $REPO, skipping cleanup"
+                  continue
+                fi
+
+                # Sort tags by age (if possible) or by name
+                # We're assuming sorting by name gives a reasonable order
+                SORTED_TAGS=$(echo "$TAGS_TO_CHECK" | sort -V)
+
+                # Delete oldest tags first until we free enough space
+                for tag in $SORTED_TAGS; do
+                  if [ $SPACE_FREED -ge $SPACE_TO_FREE ]; then
+                    break
+                  fi
+
+                  echo "Deleting tag: $tag from repository: $REPO"
+
+                  # Get manifest digest
+                  MANIFEST_DIGEST=$(curl -s -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+                    -I $REGISTRY_URL/v2/$REPO/manifests/$tag | grep Docker-Content-Digest | awk '{print $2}' | tr -d '\r')
+
+                  if [ -n "$MANIFEST_DIGEST" ]; then
+                    curl -s -X DELETE $REGISTRY_URL/v2/$REPO/manifests/$MANIFEST_DIGEST
+                    echo "Deleted tag $tag from $REPO"
+
+                    # We don't have an easy way to know how much space was freed
+                    # So we'll estimate based on repo size / number of tags
+                    TAG_COUNT=$(echo "$TAGS" | wc -l)
+                    ESTIMATED_TAG_SIZE=$((REPO_SIZE / TAG_COUNT))
+                    SPACE_FREED=$((SPACE_FREED + ESTIMATED_TAG_SIZE))
+                    SPACE_FREED_MB=$((SPACE_FREED / 1024 / 1024))
+                    echo "Estimated freed $SPACE_FREED_MB MB so far"
+                  else
+                    echo "Could not get manifest digest for $tag, skipping deletion"
+                  fi
+                done
+              done
+
+              # Run garbage collection to reclaim space
+              echo "Running registry garbage collection..."
+
+              # Find the registry pod
+              REGISTRY_POD=$(kubectl -n unbind-system get pod -l app=registry -o jsonpath='{.items[0].metadata.name}')
+
+              if [ -n "$REGISTRY_POD" ]; then
+                echo "Found registry pod: $REGISTRY_POD"
+
+                # Run garbage collection in the registry container
+                kubectl -n unbind-system exec $REGISTRY_POD -- /bin/registry garbage-collect \
+                  /etc/docker/registry/config.yml --delete-untagged=true
+
+                echo "Garbage collection completed on pod $REGISTRY_POD"
+              else
+                echo "ERROR: Could not find registry pod to run garbage collection"
+              fi
+
+              echo "Cleanup completed. Estimated space freed: $((SPACE_FREED / 1024 / 1024)) MB"
+          restartPolicy: OnFailure

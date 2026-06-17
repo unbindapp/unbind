@@ -1,0 +1,83 @@
+{{- if .Values.api.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.api.name }}-deployment
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: {{ .Values.api.name }}
+    {{- include "unbind.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.api.replicaCount }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.api.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.api.name }}
+        {{- include "unbind.api.selectorLabels" . | nindent 8 }}
+    spec:
+      priorityClassName: unbind-high-priority
+      serviceAccountName: {{ include "unbind.serviceAccountName" . }}
+      initContainers:
+        - name: wait-for-db
+          image: busybox:1.37
+          command: ['sh', '-c']
+          args:
+            - |
+              echo "Waiting for database at $POSTGRES_HOST:$POSTGRES_PORT..."
+              until nc -z $POSTGRES_HOST $POSTGRES_PORT; do
+                echo "Database not ready, waiting..."
+                sleep 2
+              done
+              echo "Database is ready!"
+          {{- if .Values.api.env }}
+          env:
+            {{- toYaml .Values.api.env | nindent 12 }}
+          {{- end }}
+      containers:
+        - name: {{ .Values.api.name }}
+          image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
+          imagePullPolicy: {{ .Values.api.image.pullPolicy }}
+          {{- if .Values.api.command }}
+          command: {{ .Values.api.command }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.api.resources | nindent 12 }}
+          ports:
+            - containerPort: {{ .Values.api.containerPort }}
+          {{- if .Values.api.env }}
+          env:
+            {{- toYaml .Values.api.env | nindent 12 }}
+          {{- end }}
+          {{- if .Values.api.startupProbe.enabled }}
+          startupProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.api.containerPort }}
+            failureThreshold: {{ .Values.api.startupProbe.failureThreshold }}
+            periodSeconds: {{ .Values.api.startupProbe.periodSeconds }}
+          {{- end }}
+          {{- if .Values.api.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.api.containerPort }}
+            initialDelaySeconds: {{ .Values.api.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.api.livenessProbe.periodSeconds }}
+          {{- end }}
+          {{- if .Values.api.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.api.containerPort }}
+            initialDelaySeconds: {{ .Values.api.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.api.readinessProbe.periodSeconds }}
+          {{- end }}
+{{- end }}

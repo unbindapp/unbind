@@ -47,7 +47,7 @@ func runCommand(logChan chan<- string, name string, args ...string) (string, err
 		if logChan != nil {
 			logChan <- fmt.Sprintf("Error executing '%s': %v", cmdStr, err)
 		}
-		return stdoutStr, fmt.Errorf(errMsg)
+		return stdoutStr, fmt.Errorf("%s", errMsg)
 	}
 
 	if logChan != nil {
@@ -485,4 +485,58 @@ func calculateMinFreeKbytes(logChan chan<- string) (string, error) {
 	}
 
 	return strconv.FormatUint(minFreeKB, 10), nil
+}
+
+// GetTotalRAMGB returns the total system memory in gigabytes.
+func GetTotalRAMGB(logChan chan<- string) (float64, error) {
+	file, err := os.Open("/proc/meminfo")
+	if err != nil {
+		return 0, fmt.Errorf("failed to open /proc/meminfo: %w", err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if !strings.HasPrefix(line, "MemTotal:") {
+			continue
+		}
+		fields := strings.Fields(line)
+		if len(fields) < 2 {
+			return 0, fmt.Errorf("malformed MemTotal line: %q", line)
+		}
+		totalKB, err := strconv.ParseUint(fields[1], 10, 64)
+		if err != nil {
+			return 0, fmt.Errorf("failed to parse MemTotal: %w", err)
+		}
+		return float64(totalKB) / (1024 * 1024), nil
+	}
+
+	return 0, fmt.Errorf("could not find MemTotal in /proc/meminfo")
+}
+
+// diskHeadroomGB is the free disk space to preserve for the cluster after carving out swap.
+const diskHeadroomGB = 15.0
+
+// RecommendSwapSizeGB picks a conservative swap size for a container host based on RAM,
+// clamped to leave disk headroom. Returns 0 when swap should be skipped.
+func RecommendSwapSizeGB(ramGB, availableDiskGB float64) int {
+	if availableDiskGB <= 0 {
+		return 0
+	}
+
+	var size int
+	switch {
+	case ramGB >= 8:
+		return 0
+	case ramGB >= 4:
+		size = 2
+	default:
+		size = 4
+	}
+
+	for size > 0 && availableDiskGB-float64(size) < diskHeadroomGB {
+		size--
+	}
+	return size
 }

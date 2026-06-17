@@ -1,0 +1,69 @@
+{{- if .Values.rbac.create }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "kube-oidc-proxy.serviceAccountName" . }}
+  labels:
+    {{- include "kube-oidc-proxy.labels" . | nindent 4 }}
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ include "kube-oidc-proxy.fullname" . }}
+  labels:
+    {{- include "kube-oidc-proxy.labels" . | nindent 4 }}
+rules:
+- apiGroups: [""]
+  resources: ["users", "groups", "serviceaccounts"]
+  verbs: ["impersonate"]
+- apiGroups: ["authentication.k8s.io"]
+  resources: ["userextras/scopes", "tokenreviews", "userextras/groups"]
+  verbs: ["create", "impersonate"]
+- apiGroups: ["authorization.k8s.io"]
+  resources: ["subjectaccessreviews"]
+  verbs: ["create"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ include "kube-oidc-proxy.fullname" . }}
+  labels:
+    {{- include "kube-oidc-proxy.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "kube-oidc-proxy.fullname" . }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "kube-oidc-proxy.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}
+
+{{- if .Values.rbac.viewerCreate }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: unbind-team-namespace-viewer
+  labels:
+    {{- include "kube-oidc-proxy.labels" . | nindent 4 }}
+rules:
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: users-namespace-list
+  labels:
+    {{- include "kube-oidc-proxy.labels" . | nindent 4 }}
+subjects:
+- kind: Group
+  name: {{ .Values.rbac.viewerGroupName }}
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: unbind-team-namespace-viewer
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}

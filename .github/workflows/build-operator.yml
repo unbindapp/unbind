@@ -5,6 +5,8 @@ on:
     branches: [master]
     paths:
       - "apps/operator/**"
+      - "apps/api/**"
+      - "go.work"
       - ".github/workflows/build-operator.yml"
 
 concurrency:
@@ -57,7 +59,7 @@ jobs:
       - name: Build and push operator image
         uses: docker/build-push-action@v6
         with:
-          context: ./apps/operator
+          context: .
           file: ./apps/operator/Dockerfile
           platforms: ${{ matrix.platform }}
           provenance: false

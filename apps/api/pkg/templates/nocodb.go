@@ -63,7 +63,7 @@ func nocodbTemplate() *schema.TemplateDefinition {
 				Name:      "NocoDB",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     utils.ToPtr("nocodb/nocodb:latest"),
+				Image:     utils.ToPtr("nocodb/nocodb:2026.06.1"),
 				DependsOn: []string{"service_postgresql"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 40,

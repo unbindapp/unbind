@@ -1462,7 +1462,7 @@ spec:
   # Automatically select Standalone vs ReplicaSet based on replica count
   type: {{ if gt ($common.replicas | default 1) 1 }}ReplicaSet{{ else }}Standalone{{ end }}
   version: {{ .Parameters.version | default "8.4.4" | quote }}
-  
+
   security:
     authentication:
       modes: ["SCRAM"]
@@ -1501,7 +1501,7 @@ spec:
     wiredTiger:
       engineConfig:
         cacheSizeGB: 0.25
-    
+
   # Set persistent storage options
   persistent: true
   podSpec:

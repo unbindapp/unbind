@@ -81,6 +81,8 @@ type SyncHelmfileOptions struct {
 	UnbindRegistryDomain string
 	AdditionalValues     map[string]interface{}
 	RepoURL              string
+	HelmfilePath         string // path to the helmfile within the repo
+	SparseDir            string // checkout only this subtree (empty = full checkout)
 
 	// Registry configuration
 	DisableRegistry  bool   // Whether to disable the local registry component
@@ -89,14 +91,20 @@ type SyncHelmfileOptions struct {
 	RegistryHost     string // External registry host
 }
 
-// SyncHelmfileWithSteps performs a helmfile sync operation using the unbind-charts repository
+// SyncHelmfileWithSteps performs a helmfile sync operation using the charts in the unbind monorepo (deploy/charts)
 func (self *UnbindInstaller) SyncHelmfileWithSteps(ctx context.Context, opts SyncHelmfileOptions) error {
 	var repoDir string
 	dependencyName := "helmfile-sync"
 
 	// Set defaults if not provided
 	if opts.RepoURL == "" {
-		opts.RepoURL = "https://github.com/unbindapp/unbind-charts.git"
+		opts.RepoURL = "https://github.com/unbindapp/unbind.git"
+	}
+	if opts.HelmfilePath == "" {
+		opts.HelmfilePath = "deploy/charts/helmfile.yaml.gotmpl"
+	}
+	if opts.SparseDir == "" {
+		opts.SparseDir = "deploy/charts"
 	}
 
 	// Initialize state for this dependency
@@ -176,7 +184,12 @@ func (self *UnbindInstaller) SyncHelmfileWithSteps(ctx context.Context, opts Syn
 				cloneCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 				defer cancel()
 
-				cmd := exec.CommandContext(cloneCtx, "git", "clone", "--depth=1", opts.RepoURL, repoDir)
+				cloneArgs := []string{"clone", "--depth=1"}
+				if opts.SparseDir != "" {
+					cloneArgs = append(cloneArgs, "--filter=blob:none", "--sparse")
+				}
+				cloneArgs = append(cloneArgs, opts.RepoURL, repoDir)
+				cmd := exec.CommandContext(cloneCtx, "git", cloneArgs...)
 
 				// Stream the output
 				stdoutPipe, err := cmd.StdoutPipe()
@@ -238,6 +251,13 @@ func (self *UnbindInstaller) SyncHelmfileWithSteps(ctx context.Context, opts Syn
 					return fmt.Errorf("failed to clone repository: %w", err)
 				}
 
+				if opts.SparseDir != "" {
+					sparseCmd := exec.CommandContext(cloneCtx, "git", "-C", repoDir, "sparse-checkout", "set", opts.SparseDir)
+					if out, err := sparseCmd.CombinedOutput(); err != nil {
+						return fmt.Errorf("failed to sparse-checkout %s: %w: %s", opts.SparseDir, err, out)
+					}
+				}
+
 				// Signal cloning is complete with another explicit update
 				self.logProgress(dependencyName, 0.08, "Repository cloned successfully", nil, StatusInstalling)
 
@@ -253,7 +273,7 @@ func (self *UnbindInstaller) SyncHelmfileWithSteps(ctx context.Context, opts Syn
 			Action: func(ctx context.Context) error {
 				// Construct arguments for helmfile command
 				args := []string{
-					"--file", filepath.Join(repoDir, "helmfile.yaml"),
+					"--file", filepath.Join(repoDir, opts.HelmfilePath),
 					"--state-values-set", "unbindDomain=" + opts.UnbindDomain,
 					"--state-values-set", "unbindRegistryDomain=" + opts.UnbindRegistryDomain,
 					"--state-values-set", "wildcardBaseDomain=" + opts.BaseDomain,

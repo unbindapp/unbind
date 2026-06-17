@@ -7,12 +7,13 @@ godebug default=go1.24
 replace (
 	github.com/google/cel-go => github.com/google/cel-go v0.22.1
 	github.com/imdario/mergo => github.com/sunsingerus/mergo v0.0.0-20230507185449-fc6fffa94450
+	github.com/unbindapp/unbind-api => ../api
 )
 
 require (
 	github.com/altinity/clickhouse-operator v0.0.0-20260604165232-866e19f7820f
-	github.com/fluxcd/helm-controller/api v1.5.5
-	github.com/fluxcd/source-controller/api v1.8.5
+	github.com/fluxcd/helm-controller/api v1.6.0
+	github.com/fluxcd/source-controller/api v1.9.0
 	github.com/onsi/ginkgo/v2 v2.31.0
 	github.com/onsi/gomega v1.40.0
 	github.com/stretchr/testify v1.11.1
@@ -31,7 +32,6 @@ require (
 	github.com/fluxcd/pkg/apis/acl v0.10.0 // indirect
 	github.com/fluxcd/pkg/apis/kustomize v1.19.0 // indirect
 	github.com/fluxcd/pkg/apis/meta v1.30.0 // indirect
-	github.com/go-oauth2/oauth2/v4 v4.5.4 // indirect
 	github.com/go-openapi/swag/cmdutils v0.26.1 // indirect
 	github.com/go-openapi/swag/conv v0.26.1 // indirect
 	github.com/go-openapi/swag/fileutils v0.26.1 // indirect
@@ -102,7 +102,7 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/prometheus/client_golang v1.23.2 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
-	github.com/prometheus/common v0.68.1 // indirect
+	github.com/prometheus/common v0.69.0 // indirect
 	github.com/prometheus/procfs v0.20.1 // indirect
 	github.com/spf13/cobra v1.10.2 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect

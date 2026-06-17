@@ -1,0 +1,263 @@
+apiVersion: acid.zalan.do/v1
+kind: postgresql
+metadata:
+  name: {{ .Name }}
+  namespace: {{ .Namespace }}
+  labels:
+    # Zalando labels
+    team: {{ .TeamID }}
+    # usd-specific labels
+    unbind/usd-type: {{ .Definition.Type }}
+    unbind/usd-version: {{ .Definition.Version }}
+    unbind/usd-category: databases
+    {{- range $key, $value := .Parameters.labels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+
+spec:
+  teamId: {{ .TeamID }}
+  dockerImage: {{ if .Parameters.dockerImage }}{{ .Parameters.dockerImage }}{{ else }}{{ printf "ghcr.io/unbindapp/spilo:%s-27713048842" (.Parameters.version | default "18") }}{{ end }}
+  enableMasterLoadBalancer: {{ .Parameters.common.exposeExternal | default false }}
+  postgresql:
+    version: {{ .Parameters.version | default "18" | quote }}
+    parameters:
+      wal_level: {{ .Parameters.walLevel | default "replica" | quote }}
+      shared_buffers: {{ .Parameters.postgresql.sharedBuffers | default "128MB" | quote }}
+      effective_cache_size: {{ .Parameters.postgresql.effectiveCacheSize | default "512MB" | quote }}
+      work_mem: {{ .Parameters.postgresql.workMem | default "4MB" | quote }}
+      maintenance_work_mem: {{ .Parameters.postgresql.maintenanceWorkMem | default "64MB" | quote }}
+      wal_buffers: {{ .Parameters.postgresql.walBuffers | default "4MB" | quote }}
+      max_worker_processes: {{ .Parameters.postgresql.maxWorkerProcesses | default "4" | quote }}
+      max_parallel_workers_per_gather: {{ .Parameters.postgresql.maxParallelWorkersPerGather | default "0" | quote }}
+      max_parallel_workers: {{ .Parameters.postgresql.maxParallelWorkers | default "0" | quote }}
+      autovacuum_max_workers: {{ .Parameters.postgresql.autovacuumMaxWorkers | default "2" | quote }}
+      autovacuum_naptime: {{ .Parameters.postgresql.autovacuumNaptime | default "30s" | quote }}
+      max_wal_size: {{ .Parameters.postgresql.maxWalSize | default "256MB" | quote }}
+      min_wal_size: {{ .Parameters.postgresql.minWalSize | default "64MB" | quote }}
+  numberOfInstances: {{ .Parameters.common.replicas | default 1 }}
+  allowedSourceRanges:
+    - 0.0.0.0/0
+
+  patroni:
+    pg_hba:
+      - "local all all trust"
+      - "hostssl all +pamrole all pam"           # keep for pam auth
+      - "hostssl all all 0.0.0.0/0 md5"          # force SSL for external
+      - "host all all 10.42.0.0/16 md5"          # non-SSL inside k3s pod net
+      - "host all all 10.1.0.0/16 md5"           # non-SSL inside microk8s
+      - "host all all 10.0.0.0/8 md5"            # non-SSL generic k8s
+      - "host all all 127.0.0.1/32 trust"        # local loopback
+
+  volume:
+    size: {{ .Parameters.common.storage | default "1Gi" }}
+
+  resources:
+    requests:
+      cpu:    {{ .Parameters.common.resources.requests.cpu    | default "100m" }}
+      memory: {{ .Parameters.common.resources.requests.memory | default "128Mi" }}
+    limits:
+      cpu:    {{ .Parameters.common.resources.limits.cpu    | default "500m" }}
+      memory: {{ .Parameters.common.resources.limits.memory | default "256Mi" }}
+
+  {{- if ne .Parameters.defaultDatabaseName "postgres" }}
+  databases:
+    {{ .Parameters.defaultDatabaseName }}: {{ .Parameters.defaultDatabaseName }}
+  users:
+    {{ .Parameters.defaultDatabaseName }}:
+      - SUPERUSER
+  {{- end }}
+
+  {{- if .Parameters.restore.enabled }}
+  clone:
+    # use latest backup unless you supply your own timestamp
+    timestamp: {{ .Parameters.restore.restorePoint | default (timeFormat .RFC3339 now) | quote }}
+    cluster:   {{ .Parameters.restore.cluster }}
+  {{- end }}
+
+  env:
+    # always present
+    - name: ALLOW_NOSSL
+      value: "true"
+
+    # common WAL-G toggles – only when backup *or* restore is enabled
+    {{- if or .Parameters.s3.enabled .Parameters.restore.enabled }}
+    - name: USE_WALG_BACKUP
+      value: "true"
+    - name: USE_WALG_RESTORE
+      value: "true"
+    - name: WALG_DISABLE_S3_SSE
+      value: "true"
+    {{- end }}
+
+    # backup-only block
+    {{- if .Parameters.s3.enabled }}
+    - name: WAL_BUCKET_SCOPE_PREFIX
+      value: {{ .Parameters.s3.backupPrefix | default "" | quote }}
+    - name: WAL_S3_BUCKET
+      value: {{ .Parameters.s3.bucket }}
+
+    - name: AWS_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: {{ .Parameters.s3.secretName }}
+          key:  {{ .Parameters.s3.accessKey }}
+    - name: AWS_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: {{ .Parameters.s3.secretName }}
+          key:  {{ .Parameters.s3.secretKey }}
+    - name: AWS_ENDPOINT
+      value: {{ .Parameters.s3.endpoint }}
+    - name: AWS_REGION
+      value: {{ .Parameters.s3.region }}
+    - name: AWS_S3_FORCE_PATH_STYLE
+      value: "true"
+
+    - name: BACKUP_NUM_TO_RETAIN
+      value: {{ .Parameters.s3.backupRetention | default 2 | quote }}
+    - name: BACKUP_SCHEDULE
+      value: {{ .Parameters.s3.backupSchedule  | default "5 5 * * *" }}
+    {{- end }}
+
+    # restore-only block
+    {{- if .Parameters.restore.enabled }}
+    - name: CLONE_AWS_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: {{ .Parameters.restore.secretName }}
+          key:  {{ .Parameters.restore.accessKey }}
+    - name: CLONE_AWS_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: {{ .Parameters.restore.secretName }}
+          key:  {{ .Parameters.restore.secretKey }}
+    - name: CLONE_AWS_ENDPOINT
+      value: {{ .Parameters.restore.endpoint }}
+    - name: CLONE_AWS_REGION
+      value: {{ .Parameters.restore.region }}
+    - name: CLONE_AWS_S3_FORCE_PATH_STYLE
+      value: "true"
+
+    - name: CLONE_METHOD
+      value: "CLONE_WITH_WALE"
+    - name: CLONE_USE_WALG_RESTORE
+      value: "true"
+    - name: CLONE_WAL_BUCKET_SCOPE_PREFIX
+      value: {{ .Parameters.restore.backupPrefix | default "" | quote }}
+    - name: CLONE_WAL_S3_BUCKET
+      value: {{ .Parameters.restore.bucket | default .Parameters.s3.bucket }}
+    - name: CLONE_WALG_DISABLE_S3_SSE
+      value: "true"
+    {{- end }}
+
+    # user-supplied extras
+    {{- if .Parameters.environment }}
+    {{- range $key, $value := .Parameters.environment }}
+    - name: {{ $key }}
+      value: {{ $value | quote }}
+    {{- end }}
+    {{- end }}
+{{- if .Parameters.initdb }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Name }}-initdb
+  namespace: {{ .Namespace }}
+  labels:
+    team: {{ .TeamID }}
+    unbind/usd-type: {{ .Definition.Type }}
+    unbind/usd-version: {{ .Definition.Version }}
+    unbind/usd-category: databases
+data:
+  init.sql: |
+{{ .Parameters.initdb | indent 4 }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Name }}-initdb
+  namespace: {{ .Namespace }}
+  labels:
+    team: {{ .TeamID }}
+    unbind/usd-type: {{ .Definition.Type }}
+    unbind/usd-version: {{ .Definition.Version }}
+    unbind/usd-category: databases
+spec:
+  backoffLimit: 10
+  activeDeadlineSeconds: 300  # 5 minutes timeout
+  ttlSecondsAfterFinished: 300  # 5 minutes timeout
+  template:
+    spec:
+      containers:
+      - name: initdb
+        image: {{ if .Parameters.dockerImage }}{{ .Parameters.dockerImage }}{{ else }}{{ printf "ghcr.io/unbindapp/spilo:%s-27713048842" (.Parameters.version | default "18") }}{{ end }}
+        env:
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Parameters.defaultDatabaseName }}.{{ .Name }}.credentials.postgresql.acid.zalan.do
+              key: password
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Parameters.defaultDatabaseName }}.{{ .Name }}.credentials.postgresql.acid.zalan.do
+              key: username
+        command:
+        - /bin/bash
+        - -c
+        - |
+          # Wait for database to be ready with timeout
+          MAX_RETRIES=60  # 5 minutes total (60 * 5 seconds)
+          RETRY_COUNT=0
+          until psql -h {{ .Name }}.{{ .Namespace }} -U $PGUSER -d {{ .Parameters.defaultDatabaseName }} -c '\q'; do
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
+              echo "Failed to connect to database after $MAX_RETRIES attempts"
+              exit 1
+            fi
+            echo "Waiting for database to be ready... (attempt $RETRY_COUNT/$MAX_RETRIES)"
+            sleep 5
+          done
+
+          # Check if initialization has been done
+          if psql -h {{ .Name }}.{{ .Namespace }} -U $PGUSER -d {{ .Parameters.defaultDatabaseName }} -c "SELECT 1 FROM pg_tables WHERE tablename = 'unbind_initdb_completed';" | grep -q 1; then
+            echo "Database already initialized"
+            exit 0
+          fi
+
+          # Run initialization script with retries
+          echo "Running initialization script..."
+          MAX_SCRIPT_RETRIES=3
+          SCRIPT_RETRY_COUNT=0
+          while [ $SCRIPT_RETRY_COUNT -lt $MAX_SCRIPT_RETRIES ]; do
+            if psql -h {{ .Name }}.{{ .Namespace }} -U $PGUSER -d {{ .Parameters.defaultDatabaseName }} -f /init.sql; then
+              break
+            fi
+            SCRIPT_RETRY_COUNT=$((SCRIPT_RETRY_COUNT + 1))
+            if [ $SCRIPT_RETRY_COUNT -ge $MAX_SCRIPT_RETRIES ]; then
+              echo "Failed to run initialization script after $MAX_SCRIPT_RETRIES attempts"
+              exit 1
+            fi
+            echo "Retrying initialization script... (attempt $SCRIPT_RETRY_COUNT/$MAX_SCRIPT_RETRIES)"
+            sleep 10
+          done
+
+          # Mark initialization as complete
+          psql -h {{ .Name }}.{{ .Namespace }} -U $PGUSER -d {{ .Parameters.defaultDatabaseName }} -c "
+            CREATE TABLE unbind_initdb_completed (id serial PRIMARY KEY, completed_at timestamp DEFAULT CURRENT_TIMESTAMP);
+            INSERT INTO unbind_initdb_completed (id, completed_at) VALUES (1, CURRENT_TIMESTAMP);
+            ALTER TABLE unbind_initdb_completed ENABLE ROW LEVEL SECURITY;
+          "
+          echo "Initialization completed successfully"
+          exit 0
+        volumeMounts:
+        - name: init-script
+          mountPath: /init.sql
+          subPath: init.sql
+      volumes:
+      - name: init-script
+        configMap:
+          name: {{ .Name }}-initdb
+      restartPolicy: OnFailure
+{{- end }}

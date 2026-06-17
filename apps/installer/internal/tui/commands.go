@@ -60,12 +60,30 @@ func (self Model) checkSwapCommand() tea.Cmd {
 	}
 }
 
-// getDiskSpaceCommand gets available disk space.
-func (self Model) getDiskSpaceCommand() tea.Cmd {
+// decideSwapCommand picks a swap size automatically from RAM and free disk space.
+func (self Model) decideSwapCommand() tea.Cmd {
 	return func() tea.Msg {
-		gb, err := system.GetAvailableDiskSpaceGB(self.logChan)
-		return diskSpaceResultMsg{availableGB: gb, err: err}
+		diskGB, err := system.GetAvailableDiskSpaceGB(self.logChan)
+		if err != nil {
+			return swapDecisionMsg{err: err}
+		}
+
+		ramGB, err := system.GetTotalRAMGB(self.logChan)
+		if err != nil {
+			return swapDecisionMsg{err: err}
+		}
+
+		size := system.RecommendSwapSizeGB(ramGB, diskGB)
+		self.log(fmt.Sprintf("Detected %.1f GB RAM and %.1f GB free disk; recommended swap: %d GB", ramGB, diskGB, size))
+		return swapDecisionMsg{sizeGB: size}
 	}
+}
+
+// countdownTick fires a countdownTickMsg once per second to drive auto-advance prompts.
+func countdownTick() tea.Cmd {
+	return tea.Tick(time.Second, func(time.Time) tea.Msg {
+		return countdownTickMsg{}
+	})
 }
 
 // createSwapCommand creates the swap file.

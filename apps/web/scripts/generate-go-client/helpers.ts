@@ -69,7 +69,7 @@ Options:
 Description:
   This CLI tool reads an OpenAPI YAML file, generates Zod schemas for both components and inline request/query inputs,
   and creates a fluent, fully typed API client based on your spec.
-  
+
   Features:
   - Path parameters become function calls in the client chain
   - e.g., /github/installation/{installation_id}/organizations becomes client.github.installation.installationId("123").organizations()

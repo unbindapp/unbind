@@ -1,0 +1,141 @@
+# Global settings
+global:
+  namespace: "unbind-system"
+
+# ServiceAccount
+serviceAccount:
+  create: true
+  name: unbind-api-sa
+  annotations: {}
+
+# RBAC
+rbac:
+  create: true
+
+# Builder configuration
+builder:
+  rbac:
+    create: true
+    clusterRoleName: "app-crd-creator"
+    clusterRoleBindingName: "app-crd-creator-binding"
+  serviceAccount:
+    create: true
+    name: "builder-serviceaccount"
+    annotations: {}
+
+# Database configuration
+database:
+  host: "pg-unbind"
+  port: 5432
+  database: "unbind"
+  existingSecret: "unbind-db-credentials"
+  userKey: "username"
+  passwordKey: "password"
+
+# Ingress common configuration
+ingress:
+  className: "nginx"
+  host: "unbind.example.com"
+  tls:
+    enabled: true
+    secretName: "unbind-app-tls"
+
+# App Configuration (merged image: the API serves the SPA)
+api:
+  enabled: true
+  name: unbind-api
+  image:
+    repository: "ghcr.io/unbindapp/unbind"
+    tag: "latest"
+    pullPolicy: "Always"
+  replicaCount: 2
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+  containerPort: 8089
+  service:
+    type: ClusterIP
+    port: 8089
+  ingress:
+    enabled: true  # Enable this for separate ingress
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+      nginx.ingress.kubernetes.io/use-regex: "true"
+      nginx.ingress.kubernetes.io/affinity: cookie
+      nginx.ingress.kubernetes.io/eventsource: "true"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/websocket-services: unbind-api
+  command: ["/app/api"]
+  env:
+    - name: SYSTEM_NAMESPACE
+      value: "unbind-system"
+    - name: EXTERNAL_UI_URL
+      value: "https://unbind.example.com"
+    - name: EXTERNAL_API_URL
+      value: "https://unbind.example.com/api"
+    - name: EXTERNAL_OAUTH2_URL
+      value: "https://unbind.example.com/api/oauth2"
+    - name: BOOTSTRAP_WILDCARD_BASE_URL
+      value: "https://example.com"
+    - name: POSTGRES_HOST
+      value: "pg-unbind"
+    - name: POSTGRES_PORT
+      value: "5432"
+    - name: POSTGRES_USER
+      valueFrom:
+        secretKeyRef:
+          name: unbind.pg-unbind.credentials.postgresql.acid.zalan.do
+          key: username
+    - name: POSTGRES_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: unbind.pg-unbind.credentials.postgresql.acid.zalan.do
+          key: password
+    - name: POSTGRES_DB
+      value: "unbind"
+    - name: REDIS_URL
+      value: redis-headless.unbind-system:6379
+    - name: KUBE_PROXY_URL
+      value: "https://kube-oidc-proxy.unbind-system.svc.cluster.local:443"
+    - name: BUILD_IMAGER
+      value: unbindapp/unbind-builder:latest
+    - name: BUILDER_NAMESPACE
+      value: unbind-system
+    - name: BOOTSTRAP_CONTAINER_REGISTRY_HOST
+      value: docker-registry.unbind-system:5000
+    - name: BOOTSTRAP_CONTAINER_REGISTRY_USER
+      valueFrom:
+        secretKeyRef:
+          name: registry-credentials
+          key: username
+    - name: BOOTSTRAP_CONTAINER_REGISTRY_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: registry-credentials
+          key: password
+    - name: BUILDKIT_HOST
+      value: tcp://buildkit.unbind-system:1234
+    - name: LOKI_ENDPOINT
+      value: http://loki-gateway.unbind-system.svc.cluster.local
+    - name: PROMETHEUS_ENDPOINT
+      value: http://kube-prometheus-stack-prometheus.unbind-system:9090
+  startupProbe:
+    enabled: true
+    failureThreshold: 30
+    periodSeconds: 10
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 15
+    failureThreshold:  10
+    periodSeconds: 10
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 10
+    failureThreshold:  20
+    periodSeconds: 3

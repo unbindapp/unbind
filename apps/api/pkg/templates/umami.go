@@ -51,7 +51,7 @@ func umamiTemplate() *schema.TemplateDefinition {
 				Name:      "Umami",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     utils.ToPtr("ghcr.io/umami-software/umami:postgresql-v2"),
+				Image:     utils.ToPtr("ghcr.io/umami-software/umami:3.1.0"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
 					CPULimitsMillicores:   400,

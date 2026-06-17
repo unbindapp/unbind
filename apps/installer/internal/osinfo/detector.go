@@ -28,20 +28,17 @@ var AllSupportedDistrosVersions = map[string][]string{
 		"9",
 	},
 	"ubuntu": {
-		"22.04",
 		"24.04",
-		"24.10",
-		"25.04",
+		"25.10",
+		"26.04",
 	},
 	"debian": {
-		"11",
 		"12",
 		"13",
 	},
 	"fedora": {
-		"40",
-		"41",
-		"42",
+		"43",
+		"44",
 	},
 	"opensuse": {
 		"15",

@@ -1,0 +1,55 @@
+name: "ClickHouse"
+description: "Standard ClickHouse database using Altinity ClickHouse Operator"
+type: "clickhouse-operator"
+version: "1.0.0"
+port: 8123
+imports:
+  - path: "../../common/base.yaml"
+    as: base
+  - path: "../../common/s3-schema.yaml"
+    as: s3Schema
+  - path: "../../common/s3-restore-schema.yaml"
+    as: restoreSchema
+  - path: "../../common/labels.yaml"
+    as: labelsSchema
+schema:
+  properties:
+    common:
+      $ref: "#/imports/base"
+    labels:
+      $ref: "#/imports/labelsSchema"
+    clusterName:
+      type: "string"
+      description: "Name of the ClickHouse cluster"
+      default: "clickhouse"
+      required: true
+    version:
+      type: "string"
+      description: "ClickHouse version"
+      default: "26.3"
+      enum: ["24.12", "25.5", "26.3"]
+    shardsCount:
+      type: "integer"
+      description: "Number of shards"
+      default: 1
+      minimum: 1
+      maximum: 5
+    exposeExternal:
+      type: "boolean"
+      description: "Expose external service"
+      default: false
+    existingSecretName:
+      type: "string"
+      description: "Name of the existing secret containing ClickHouse credentials"
+    s3:
+      $ref: "#/imports/s3Schema"
+      description: "S3 configuration for backups via sidecar (optional)"
+    restore:
+      $ref: "#/imports/restoreSchema"
+      description: "Restore configuration for restoring from backups (optional)"
+    environment:
+      type: "object"
+      description: "Environment variables to be set in the ClickHouse container"
+      additionalProperties:
+        type: "string"
+      default: {}

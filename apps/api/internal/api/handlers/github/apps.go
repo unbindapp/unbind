@@ -55,12 +55,12 @@ func (self *HandlerGroup) HandleGithubAppCreate(ctx context.Context, input *GitH
         form.method = "post";
         form.action = data.post_url;
         form.style.display = "none";
-        
+
         const input = document.createElement("input");
         input.name = "manifest";
         input.type = "text";
         input.value = JSON.stringify(data.manifest);
-        
+
         form.appendChild(input);
         document.body.appendChild(form);
         form.submit();

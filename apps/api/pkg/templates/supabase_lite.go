@@ -91,7 +91,7 @@ create schema if not exists extensions;
 create extension if not exists "uuid-ossp" with schema extensions;
 create extension if not exists pgcrypto with schema extensions;
 do $$
-begin 
+begin
     if exists (select 1 from pg_available_extensions where name = 'pgjwt') then
         if not exists (select 1 from pg_extension where extname = 'pgjwt') then
             if current_setting('server_version_num')::int / 10000 = 15 then
@@ -490,23 +490,23 @@ $$;
 BEGIN;
   -- Create pg_net extension
   CREATE EXTENSION IF NOT EXISTS pg_net SCHEMA extensions;
-  
+
   -- Create supabase_functions schema
   CREATE SCHEMA supabase_functions AUTHORIZATION postgres;
   GRANT USAGE ON SCHEMA supabase_functions TO postgres, anon, authenticated, service_role;
   ALTER DEFAULT PRIVILEGES IN SCHEMA supabase_functions GRANT ALL ON TABLES TO postgres, anon, authenticated, service_role;
   ALTER DEFAULT PRIVILEGES IN SCHEMA supabase_functions GRANT ALL ON FUNCTIONS TO postgres, anon, authenticated, service_role;
   ALTER DEFAULT PRIVILEGES IN SCHEMA supabase_functions GRANT ALL ON SEQUENCES TO postgres, anon, authenticated, service_role;
-  
+
   -- supabase_functions.migrations definition
   CREATE TABLE supabase_functions.migrations (
     version text PRIMARY KEY,
     inserted_at timestamptz NOT NULL DEFAULT NOW()
   );
-  
+
   -- Initial supabase_functions migration
   INSERT INTO supabase_functions.migrations (version) VALUES ('initial');
-  
+
   -- supabase_functions.hooks definition
   CREATE TABLE supabase_functions.hooks (
     id bigserial PRIMARY KEY,
@@ -518,7 +518,7 @@ BEGIN;
   CREATE INDEX supabase_functions_hooks_request_id_idx ON supabase_functions.hooks USING btree (request_id);
   CREATE INDEX supabase_functions_hooks_h_table_id_h_name_idx ON supabase_functions.hooks USING btree (hook_table_id, hook_name);
   COMMENT ON TABLE supabase_functions.hooks IS 'Supabase Functions Hooks: Audit trail for triggered hooks.';
-  
+
   CREATE FUNCTION supabase_functions.http_request()
     RETURNS trigger
     LANGUAGE plpgsql
@@ -594,7 +594,7 @@ BEGIN;
       RETURN NEW;
     END
   $function$;
-  
+
   -- Supabase super admin
   DO
   $$
@@ -609,7 +609,7 @@ BEGIN;
     END IF;
   END
   $$;
-  
+
   GRANT ALL PRIVILEGES ON SCHEMA supabase_functions TO supabase_functions_admin;
   GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA supabase_functions TO supabase_functions_admin;
   GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA supabase_functions TO supabase_functions_admin;
@@ -618,7 +618,7 @@ BEGIN;
   ALTER table "supabase_functions".hooks OWNER TO supabase_functions_admin;
   ALTER function "supabase_functions".http_request() OWNER TO supabase_functions_admin;
   GRANT supabase_functions_admin TO postgres;
-  
+
   -- Remove unused supabase_pg_net_admin role
   DO
   $$
@@ -635,7 +635,7 @@ BEGIN;
     END IF;
   END
   $$;
-  
+
   -- pg_net grants when extension is already enabled
   DO
   $$
@@ -658,7 +658,7 @@ BEGIN;
     END IF;
   END
   $$;
-  
+
   INSERT INTO supabase_functions.migrations (version) VALUES ('20210809183423_update_grants');
   ALTER function supabase_functions.http_request() SECURITY DEFINER;
   ALTER function supabase_functions.http_request() SET search_path = supabase_functions;
@@ -1014,10 +1014,10 @@ DO $$
 DECLARE
   pg_cron_installed boolean;
 BEGIN
-  -- checks if pg_cron is enabled   
+  -- checks if pg_cron is enabled
   pg_cron_installed = (
-    select count(*) = 1 
-    from pg_available_extensions 
+    select count(*) = 1
+    from pg_available_extensions
     where name = 'pg_cron'
     and installed_version is not null
   );
@@ -1053,13 +1053,13 @@ DECLARE
 BEGIN
   -- checks if pg_net is enabled
   pg_net_installed = (
-    select count(*) = 1 
-    from pg_available_extensions 
+    select count(*) = 1
+    from pg_available_extensions
     where name = 'pg_net'
     and installed_version is not null
   );
 
-  IF pg_net_installed 
+  IF pg_net_installed
   THEN
     IF NOT EXISTS (
       SELECT 1
@@ -1129,37 +1129,37 @@ BEGIN
     grant execute on function vault.create_secret, vault.update_secret, vault._crypto_aead_det_decrypt to service_role;
   ELSE
     pgsodium_exists = (
-      select count(*) = 1 
-      from pg_available_extensions 
+      select count(*) = 1
+      from pg_available_extensions
       where name = 'pgsodium'
       and default_version in ('3.1.6', '3.1.7', '3.1.8', '3.1.9')
     );
-    
+
     vault_exists = (
-        select count(*) = 1 
-        from pg_available_extensions 
+        select count(*) = 1
+        from pg_available_extensions
         where name = 'supabase_vault'
     );
-  
-    IF pgsodium_exists 
+
+    IF pgsodium_exists
     THEN
       create extension if not exists pgsodium;
-  
+
       grant pgsodium_keyiduser to postgres with admin option;
       grant pgsodium_keyholder to postgres with admin option;
       grant pgsodium_keymaker to postgres with admin option;
-  
+
       grant execute on function pgsodium.crypto_aead_det_decrypt(bytea, bytea, uuid, bytea) to service_role;
       grant execute on function pgsodium.crypto_aead_det_encrypt(bytea, bytea, uuid, bytea) to service_role;
       grant execute on function pgsodium.crypto_aead_det_keygen to service_role;
-  
+
       IF vault_exists
       THEN
         create extension if not exists supabase_vault;
       END IF;
     END IF;
   END IF;
-  
+
   -- Service role access to pgsodium if available
   IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'pgsodium_keyholder') THEN
     GRANT pgsodium_keyholder to service_role;
@@ -1200,8 +1200,8 @@ BEGIN
 END $$;
 
 -- Orioledb extension if available
-do $$ 
-begin 
+do $$
+begin
     if exists (select 1 from pg_available_extensions where name = 'orioledb') then
         if not exists (select 1 from pg_extension where extname = 'orioledb') then
             create extension if not exists orioledb;
@@ -1254,7 +1254,7 @@ begin
                 from pg_catalog.pg_attribute a
                 where
                 a.attnum > 0
-                and a.attrelid = c.oid 
+                and a.attrelid = c.oid
             ) = array['created_at', 'is_partitioned', 'is_unlogged', 'queue_name']::text[]
     ) then
         -- Insert data into pgmq.meta for all tables matching the naming pattern 'pgmq.q_<queue_name>'
@@ -1342,7 +1342,7 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				Name:      "Studio",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     utils.ToPtr("supabase/studio:2025.06.30-sha-6f5982d"),
+				Image:     utils.ToPtr("supabase/studio:2026.06.03-sha-0bca601"),
 				DependsOn: []string{"service_postgresql", "service_kong"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 50,
@@ -1429,7 +1429,7 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				Name:      "Storage",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     utils.ToPtr("supabase/storage-api:v1.24.7"),
+				Image:     utils.ToPtr("supabase/storage-api:v1.60.4"),
 				DependsOn: []string{"service_postgresql", "service_minio"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
@@ -1510,7 +1510,7 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				InputIDs:   []string{"input_storage_size"},
 				Type:       schema.ServiceTypeDockerimage,
 				Builder:    schema.ServiceBuilderDocker,
-				Image:      utils.ToPtr("minio/minio"),
+				Image:      utils.ToPtr("minio/minio:RELEASE.2025-10-15T17-29-55Z"),
 				RunCommand: utils.ToPtr("bash -c '/usr/bin/mc alias set supabase-minio http://localhost:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} 2>/dev/null || true && /usr/bin/mc mb --ignore-existing supabase-minio/stub 2>/dev/null || true && exec minio server /data --console-address \":9001\"'"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 50,
@@ -1554,7 +1554,7 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				Name:      "PostgREST",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     utils.ToPtr("postgrest/postgrest:v12.2.12"),
+				Image:     utils.ToPtr("postgrest/postgrest:v14.12"),
 				DependsOn: []string{"service_postgresql"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
@@ -1604,7 +1604,7 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				Name:      "Auth",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     utils.ToPtr("supabase/gotrue:v2.176.1"),
+				Image:     utils.ToPtr("supabase/gotrue:v2.189.0"),
 				DependsOn: []string{"service_postgresql"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 20,
@@ -1676,7 +1676,7 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				Name:      "Postgres Meta",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     utils.ToPtr("supabase/postgres-meta:v0.89.3"),
+				Image:     utils.ToPtr("supabase/postgres-meta:v0.96.6"),
 				DependsOn: []string{"service_postgresql"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 20,
@@ -1725,7 +1725,7 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				Name:      "Functions",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     utils.ToPtr("supabase/edge-runtime:v1.67.4"),
+				Image:     utils.ToPtr("supabase/edge-runtime:v1.74.0"),
 				DependsOn: []string{"service_postgresql", "service_kong"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 20,
@@ -1910,7 +1910,7 @@ serve(async () => {
 				Name:     "Kong",
 				Type:     schema.ServiceTypeDockerimage,
 				Builder:  schema.ServiceBuilderDocker,
-				Image:    utils.ToPtr("kong:3.4.2"),
+				Image:    utils.ToPtr("kong:3.9.1"),
 				InputIDs: []string{"input_domain"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 50,
@@ -2089,7 +2089,7 @@ services:
       - name: dashboard-all
         strip_path: true
         paths:
-          - / 
+          - /
     plugins:
       - name: cors
       - name: basic-auth

@@ -25,4 +25,3 @@ resources:
 - service_admin_role.yaml
 - service_editor_role.yaml
 - service_viewer_role.yaml
-

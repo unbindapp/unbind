@@ -94,7 +94,7 @@ func Uninstall(uninstallScriptPath string, logChan chan<- string) error {
 	}
 
 	// Create Longhorn uninstall job
-	err = runCommand(logChan, "kubectl", "create", "-f", "https://raw.githubusercontent.com/longhorn/longhorn/v1.9.0/uninstall/uninstall.yaml")
+	err = runCommand(logChan, "kubectl", "create", "-f", "https://raw.githubusercontent.com/longhorn/longhorn/v1.12.0/uninstall/uninstall.yaml")
 	if err != nil {
 		logChan <- "Warning: Failed to create Longhorn uninstall job, continuing anyway"
 	}

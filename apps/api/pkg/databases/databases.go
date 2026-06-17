@@ -1,52 +1,34 @@
 package databases
 
 import (
-	"context"
-	"fmt"
-	"io"
-	"net/http"
-
-	"github.com/go-oauth2/oauth2/v4/errors"
+	"errors"
+	"io/fs"
+	"path"
 )
 
-var (
-	BaseDatabaseURL = "https://raw.githubusercontent.com/unbindapp/unbind-custom-service-definitions/refs/tags/%s"
-)
+const assetsRoot = "assets"
 
-var (
-	ErrDatabaseNotFound = errors.New("database not found")
-)
+var ErrDatabaseNotFound = errors.New("database not found")
 
-// DatabaseProvider fetches database definitions from GitHub
+// DatabaseProvider serves database definitions embedded in the binary.
 type DatabaseProvider struct {
-	client *http.Client
+	fs fs.FS
 }
 
 func NewDatabaseProvider() *DatabaseProvider {
 	return &DatabaseProvider{
-		client: http.DefaultClient,
+		fs: assetsFS,
 	}
 }
 
-// fetchURL fetches a URL
-func (self *DatabaseProvider) fetchURL(ctx context.Context, url string) ([]byte, error) {
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+// readAsset reads a definition file relative to the embedded assets root.
+func (self *DatabaseProvider) readAsset(relPath string) ([]byte, error) {
+	data, err := fs.ReadFile(self.fs, path.Join(assetsRoot, relPath))
 	if err != nil {
-		return nil, err
-	}
-
-	resp, err := self.client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		if resp.StatusCode == http.StatusNotFound {
+		if errors.Is(err, fs.ErrNotExist) {
 			return nil, ErrDatabaseNotFound
 		}
-		return nil, fmt.Errorf("HTTP error: %s", resp.Status)
+		return nil, err
 	}
-
-	return io.ReadAll(resp.Body)
+	return data, nil
 }

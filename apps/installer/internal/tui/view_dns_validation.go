@@ -124,11 +124,12 @@ func (m Model) updateDNSValidationState(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.dnsInfo.ValidationDuration = time.Since(m.dnsInfo.TestingStartTime)
 
 		if msg.success {
-			// Always go to registry type selection upon successful DNS validation
+			// Go to registry type selection; default to self-hosted after a countdown
 			m.state = StateRegistryTypeSelection
 			m.isLoading = false
-			m.logChan <- "DNS validation successful. Please configure your registry."
-			return m, m.listenForLogs()
+			m.registryCountdown = 8
+			m.logChan <- "DNS validation successful."
+			return m, tea.Batch(countdownTick(), m.listenForLogs())
 		} else {
 			m.state = StateDNSFailed
 			m.isLoading = false

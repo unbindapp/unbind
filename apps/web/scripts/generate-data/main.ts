@@ -53,7 +53,7 @@ async function main() {
 
     const outputContent = `
       import { z } from "zod";
-      
+
       ${databasesEnum}
     `;
 

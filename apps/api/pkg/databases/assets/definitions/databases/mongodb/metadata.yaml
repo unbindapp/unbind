@@ -1,0 +1,47 @@
+name: "MongoDB"
+description: "Standard MongoDB database using CloudPirates MongoDB chart"
+type: "helm"
+chart:
+  name: "mongodb"
+  version: "0.18.0"
+  repository: "oci://registry-1.docker.io/cloudpirates"
+  repositoryName: "mongodb"
+version: "1.0.0"
+port: 27017
+imports:
+  - path: "../../common/base.yaml"
+    as: base
+  - path: "../../common/s3-schema.yaml"
+    as: s3Schema
+  - path: "../../common/s3-restore-schema.yaml"
+    as: restoreSchema
+  - path: "../../common/labels.yaml"
+    as: labelsSchema
+schema:
+  properties:
+    common:
+      $ref: "#/imports/base"
+    labels:
+      $ref: "#/imports/labelsSchema"
+    version:
+      type: "string"
+      description: "MongoDB version"
+      default: "8.2"
+      enum: ["7.0", "8.2"]
+    exposeExternal:
+      type: "boolean"
+      description: "Expose external service"
+      default: false
+    existingSecretName:
+      type: "string"
+      description: "Name of the existing secret containing MongoDB credentials"
+    s3:
+      $ref: "#/imports/s3Schema"
+    restore:
+      $ref: "#/imports/restoreSchema"
+    environment:
+      type: "object"
+      description: "Environment variables to be set in the MongoDB container"
+      additionalProperties:
+        type: "string"
+      default: {}

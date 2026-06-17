@@ -63,7 +63,7 @@ func n8nTemplate() *schema.TemplateDefinition {
 				Name:       "n8n Worker",
 				Type:       schema.ServiceTypeDockerimage,
 				Builder:    schema.ServiceBuilderDocker,
-				Image:      utils.ToPtr("n8nio/n8n:1.102.0"),
+				Image:      utils.ToPtr("n8nio/n8n:2.26.6"),
 				RunCommand: utils.ToPtr("n8n worker"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
@@ -176,7 +176,7 @@ func n8nTemplate() *schema.TemplateDefinition {
 				Name:      "n8n",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     utils.ToPtr("n8nio/n8n:1.102.0"),
+				Image:     utils.ToPtr("n8nio/n8n:2.26.6"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 40,
 					CPULimitsMillicores:   400,

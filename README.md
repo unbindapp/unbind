@@ -38,7 +38,8 @@ unbind/
 │   └── installer/  # Bubble Tea TUI + install.sh      module: github.com/unbindapp/unbind-installer
 ├── deploy/
 │   ├── compose/    # Local Postgres + Redis for development
-│   └── k8s/        # Kustomize manifests used by the deploy CI step
+│   ├── k8s/        # Kustomize manifests used by the deploy CI step
+│   └── charts/     # Helmfile + Helm charts for the full install.   published: oci://ghcr.io/unbindapp/charts
 ├── Dockerfile          # App image (SPA + API)  -> ghcr.io/unbindapp/unbind
 ├── Dockerfile.builder  # Builder image          -> ghcr.io/unbindapp/unbind-builder
 ├── Makefile            # Local dev / build orchestration
