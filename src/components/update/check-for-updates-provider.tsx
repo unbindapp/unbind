@@ -1,25 +1,23 @@
 "use client";
 
+import { checkForUpdatesQuery, type TCheckForUpdates } from "@/api/services/system";
 import { useMainStore } from "@/components/stores/main/main-store-provider";
 import { LinkButton } from "@/components/ui/button";
 import { useMounted } from "@/lib/hooks/use-mounted";
-import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
-import { api } from "@/server/trpc/setup/client";
+import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { GiftIcon } from "lucide-react";
 import { createContext, ReactNode, useContext, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
-type TCheckForUpdatesContext = AppRouterQueryResult<AppRouterOutputs["system"]["checkForUpdates"]>;
+type TCheckForUpdatesContext = UseQueryResult<TCheckForUpdates, Error>;
 
 const CheckForUpdatesContext = createContext<TCheckForUpdatesContext | null>(null);
 
 export const CheckForUpdatesProvider: React.FC<{
-  initialData?: AppRouterOutputs["system"]["checkForUpdates"];
+  initialData?: TCheckForUpdates;
   children: ReactNode;
 }> = ({ initialData, children }) => {
-  const query = api.system.checkForUpdates.useQuery(undefined, {
-    initialData,
-  });
+  const query = useQuery({ ...checkForUpdatesQuery(), initialData });
   return (
     <CheckForUpdatesContext.Provider value={query}>{children}</CheckForUpdatesContext.Provider>
   );

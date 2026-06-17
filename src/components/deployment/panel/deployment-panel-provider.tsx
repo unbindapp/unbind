@@ -9,14 +9,14 @@ import {
 } from "@/components/deployment/panel/constants";
 import { drawerAnimationMs } from "@/lib/constants";
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
-import { parseAsStringEnum, useQueryState, UseQueryStateReturn } from "nuqs";
+import { useSearchParam } from "@/lib/hooks/use-search-param";
 import { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 type TDeploymentPanelContext = {
   currentTabId: TDeploymentPanelTabEnum;
-  setCurrentTabId: UseQueryStateReturn<TDeploymentPanelTabEnum, TDeploymentPanelTabEnum>["1"];
+  setCurrentTabId: (value: TDeploymentPanelTabEnum | null) => void;
   currentDeploymentId: string | null;
-  setCurrentDeploymentId: UseQueryStateReturn<string | null, string | null>["1"];
+  setCurrentDeploymentId: (value: string | null) => void;
   currentDeployment: TDeploymentShallow | null;
   resetCurrentTabId: () => void;
   closePanel: () => void;
@@ -30,12 +30,12 @@ export const DeploymentPanelProvider: React.FC<{
   deployments: TDeploymentShallow[] | null;
 }> = ({ deployments, children }) => {
   const [currentDeployment, setCurrentDeployment] = useState<TDeploymentShallow | null>(null);
-  const [currentTabId, setCurrentTabId] = useQueryState(
+  const [currentTabId, setCurrentTabId] = useSearchParam<TDeploymentPanelTabEnum>(
     deploymentPanelTabKey,
-    parseAsStringEnum(DeploymentPanelTabEnum.options).withDefault(deploymentPanelDefaultTabId),
+    deploymentPanelDefaultTabId,
   );
 
-  const [currentDeploymentId, setCurrentDeploymentId] = useQueryState(
+  const [currentDeploymentId, setCurrentDeploymentId] = useSearchParam(
     deploymentPanelDeploymentIdKey,
   );
 

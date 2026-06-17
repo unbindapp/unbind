@@ -9,9 +9,10 @@ import { BreadcrumbSeparator, BreadcrumbWrapper } from "@/components/navigation/
 import { useProjects, useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import { api } from "@/server/trpc/setup/client";
+import { createProject as createProjectFn } from "@/api/services/projects";
+import { useMutation } from "@tanstack/react-query";
 import { ResultAsync } from "neverthrow";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useLocation, useRouter } from "@tanstack/react-router";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -22,8 +23,8 @@ type TProps = {
 export default function ProjectBreadcrumb({ className }: TProps) {
   const { asyncPush } = useAsyncPush();
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const pathname = useLocation({ select: (l) => l.pathname });
+  const searchStr = useLocation({ select: (l) => l.searchStr }).replace(/^\?/, "");
 
   const {
     teamId: teamIdFromPathname,
@@ -85,7 +86,7 @@ export default function ProjectBreadcrumb({ className }: TProps) {
       const href = getHrefForProjectId(id);
       if (!href) return;
       console.log("prefetching", href);
-      router.prefetch(href);
+      void router.preloadRoute({ to: href } as Parameters<typeof router.preloadRoute>[0]);
     },
     [getHrefForProjectId, router],
   );
@@ -116,7 +117,7 @@ export default function ProjectBreadcrumb({ className }: TProps) {
     (id: string) => {
       const href = getHrefForEnvironmentId(id);
       if (!href) return;
-      router.prefetch(href);
+      void router.preloadRoute({ to: href } as Parameters<typeof router.preloadRoute>[0]);
     },
     [getHrefForEnvironmentId, router],
   );
@@ -133,12 +134,12 @@ export default function ProjectBreadcrumb({ className }: TProps) {
   const onHoverEnvironmentManageItem = useCallback(() => {
     const href = getHrefForEnvironmentManageItem();
     if (!href) return;
-    router.prefetch(href);
+    void router.preloadRoute({ to: href } as Parameters<typeof router.preloadRoute>[0]);
   }, [getHrefForEnvironmentManageItem, router]);
 
-  const { mutate: createProject, isPending: isPendingCreateProject } =
-    api.projects.create.useMutation({
-      onSuccess: async (res) => {
+  const { mutate: createProject, isPending: isPendingCreateProject } = useMutation({
+    mutationFn: createProjectFn,
+    onSuccess: async (res) => {
         const projectId = res.data?.id;
         const environments = res.data.environments;
         if (environments.length < 1) {
@@ -213,8 +214,7 @@ export default function ProjectBreadcrumb({ className }: TProps) {
         }}
         showArrow={(project) => {
           const href = getHrefForProjectId(project.id);
-          const params = searchParams.toString();
-          const searchParamsStr = params ? `?${params}` : "";
+          const searchParamsStr = searchStr ? `?${searchStr}` : "";
           return href !== null && href !== pathname + searchParamsStr;
         }}
       />

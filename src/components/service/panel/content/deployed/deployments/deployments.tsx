@@ -8,7 +8,7 @@ import NoItemsCard from "@/components/no-items-card";
 import { useDeployments } from "@/components/deployment/deployments-provider";
 import DeploymentCard from "@/components/deployment/deployment-card";
 import { useService } from "@/components/service/service-provider";
-import { AppRouterOutputs } from "@/server/trpc/api/root";
+import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
 import { HistoryIcon, RocketIcon } from "lucide-react";
 import { useMemo } from "react";
@@ -35,7 +35,7 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
     return undefined;
   }, [deploymentsData]);
 
-  const filteredDeployments: AppRouterOutputs["deployments"]["list"]["deployments"] | undefined =
+  const filteredDeployments: TDeploymentShallow[] | undefined =
     useMemo(() => {
       if (!deploymentsData?.deployments) return undefined;
       return deploymentsData.deployments.filter((d) =>

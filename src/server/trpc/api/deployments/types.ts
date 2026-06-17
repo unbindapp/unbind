@@ -1,5 +1,5 @@
-import { AppRouterOutputs } from "@/server/trpc/api/root";
+import type { ListDeploymentsResponseBody } from "@/server/go/client.gen";
 
 export type TDeploymentShallow = NonNullable<
-  AppRouterOutputs["deployments"]["list"]["deployments"]
+  ListDeploymentsResponseBody["data"]["deployments"]
 >[number];

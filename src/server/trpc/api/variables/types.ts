@@ -1,5 +1,9 @@
 import { VariableReferenceInputItemSchema } from "@/server/go/client.gen";
-import { AppRouterOutputs } from "@/server/trpc/api/root";
+import type {
+  AvailableVariableReference,
+  VariableReferenceResponse,
+  VariableResponseItem,
+} from "@/server/go/client.gen";
 import { z } from "zod";
 
 export const VariableForCreateValueSchema = z.string().nonempty("Value is required.");
@@ -18,10 +22,8 @@ export type TVariableForCreate = z.infer<typeof VariableForCreateSchema>;
 export const VariableReferenceForCreateSchema = VariableReferenceInputItemSchema;
 export type TVariableReferenceForCreate = z.infer<typeof VariableReferenceForCreateSchema>;
 
-export type TVariableShallow = AppRouterOutputs["variables"]["list"]["variables"][number];
-export type TVariableReferenceShallow =
-  AppRouterOutputs["variables"]["list"]["variable_references"][number];
+export type TVariableShallow = VariableResponseItem;
+export type TVariableReferenceShallow = VariableReferenceResponse;
 export type TVariableReferenceShallowSource = TVariableReferenceShallow["sources"][number];
 
-export type TAvailableVariableReference =
-  AppRouterOutputs["variables"]["listAvailableVariableReferences"]["variables"][number];
+export type TAvailableVariableReference = AvailableVariableReference;

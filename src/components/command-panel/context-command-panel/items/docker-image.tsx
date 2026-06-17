@@ -11,8 +11,9 @@ import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-
 import { cn } from "@/components/ui/utils";
 import { formatKMBT } from "@/lib/helpers/format-kmbt";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import { api } from "@/server/trpc/setup/client";
-import { useMutation } from "@tanstack/react-query";
+import { dockerSearchQuery } from "@/api/services/docker";
+import { createService as createServiceFn } from "@/api/services/services";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { DownloadIcon, PackageIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
@@ -64,7 +65,7 @@ function useDockerImageItem({ context }: TProps) {
   });
   const { environmentId: environmentIdFromPathname } = useIdsFromPathname();
 
-  const utils = api.useUtils();
+  const queryClient = useQueryClient();
   const setIsPendingId = useCommandPanelStore((s) => s.setIsPendingId);
   const {
     teamId,
@@ -86,7 +87,7 @@ function useDockerImageItem({ context }: TProps) {
     environmentId: environmentIdFromPathname || defaultEnvironmentId || "",
   });
 
-  const { mutateAsync: createServiceViaApi } = api.services.create.useMutation();
+  const { mutateAsync: createServiceViaApi } = useMutation({ mutationFn: createServiceFn });
   const { mutateAsync: createService } = useMutation({
     mutationKey: ["create-service", "docker-image"],
     mutationFn: async ({ image }: { image: string }) => {
@@ -104,12 +105,13 @@ function useDockerImageItem({ context }: TProps) {
         type: "docker-image",
         builder: "docker",
         name: imageNameWithoutTag,
-        teamId: context.teamId,
-        projectId,
-        environmentId,
-        isPublic: false,
+        team_id: context.teamId,
+        project_id: projectId,
+        environment_id: environmentId,
+        is_public: false,
         image,
-        autoDeploy: false,
+        auto_deploy: false,
+        replicas: 1,
       });
 
       temporarilyAddNewEntity(result.service.id);
@@ -171,7 +173,7 @@ function useDockerImageItem({ context }: TProps) {
                 </p>
                 <p className="w-full px-3 pt-1.5 leading-relaxed">
                   {SupportedDockerRegistriesEnum.options.map((registry) => (
-                    <span key={registry} className="-ml-0.25 pr-1.25">
+                    <span key={registry} className="-ml-px pr-1.25">
                       <span className="text-foreground bg-background rounded-sm border px-1.25">
                         {registry}
                       </span>
@@ -202,7 +204,7 @@ function useDockerImageItem({ context }: TProps) {
               },
             ];
           }
-          const res = await utils.docker.searchRepositories.fetch({ search });
+          const res = await queryClient.fetchQuery(dockerSearchQuery(search));
           return res.repositories.map((item) => {
             const id = `${subpageId}_${item.repo_name}`;
             return {
@@ -233,7 +235,7 @@ function useDockerImageItem({ context }: TProps) {
       },
     };
     return item;
-  }, [utils.docker.searchRepositories, createService, setIsPendingId]);
+  }, [queryClient, createService, setIsPendingId]);
 
   const value = useMemo(
     () => ({

@@ -32,7 +32,7 @@ export default function TemplateDraftCard({
         <Button
           variant="ghost"
           className={cn(
-            "bg-process/8 dark:bg-process/6 dark:has-hover:hover:bg-process/12 dark:active:bg-process/12 has-hover:hover:bg-process/16 active:bg-process/16 dark:border-process/20 border-process/24 flex min-h-36 w-full flex-col items-start gap-12 rounded-xl border border-dashed bg-[radial-gradient(color-mix(in_oklab,var(--process)_8%,transparent)_1px,transparent_1px),radial-gradient(color-mix(in_oklab,var(--process)_8%,transparent)_1px,transparent_1px)] [background-size:10px_10px] [background-position:0px_0px,5px_5px] px-5 py-3.5 text-left font-semibold dark:bg-[radial-gradient(color-mix(in_oklab,var(--process)_6%,transparent)_1px,transparent_1px),radial-gradient(color-mix(in_oklab,var(--process)_6%,transparent)_1px,transparent_1px)]",
+            "bg-process/8 dark:bg-process/6 dark:has-hover:hover:bg-process/12 dark:active:bg-process/12 has-hover:hover:bg-process/16 active:bg-process/16 dark:border-process/20 border-process/24 flex min-h-36 w-full flex-col items-start gap-12 rounded-xl border border-dashed bg-[radial-gradient(color-mix(in_oklab,var(--process)_8%,transparent)_1px,transparent_1px),radial-gradient(color-mix(in_oklab,var(--process)_8%,transparent)_1px,transparent_1px)] bg-size-[10px_10px] bg-position-[0px_0px,5px_5px] px-5 py-3.5 text-left font-semibold dark:bg-[radial-gradient(color-mix(in_oklab,var(--process)_6%,transparent)_1px,transparent_1px),radial-gradient(color-mix(in_oklab,var(--process)_6%,transparent)_1px,transparent_1px)]",
             classNameCard,
           )}
         >

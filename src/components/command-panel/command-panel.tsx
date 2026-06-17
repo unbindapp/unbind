@@ -109,7 +109,7 @@ export function CommandPanelTrigger({
       >
         {children && <BottomDrawerTrigger>{children}</BottomDrawerTrigger>}
         <BottomDrawerContent>
-          <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden pb-[var(--safe-area-inset-bottom)]">
+          <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden pb-(--safe-area-inset-bottom)">
             <CommandPanel
               rootPage={rootPage}
               setCurrentPageId={setCurrentPageId}

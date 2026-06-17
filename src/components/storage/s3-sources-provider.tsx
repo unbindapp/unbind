@@ -1,13 +1,14 @@
 "use client";
 
-import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
-import { api } from "@/server/trpc/setup/client";
+import { queryKeys } from "@/api/query-keys";
+import { s3SourcesListQuery, type TS3SourceShallow } from "@/api/services/storage";
+import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
-type TS3SourcesOutput = AppRouterOutputs["storage"]["s3"]["list"];
+export type TS3SourcesResult = { sources: TS3SourceShallow[] };
 
 type TS3SourcesContext = {
-  query: AppRouterQueryResult<TS3SourcesOutput>;
+  query: UseQueryResult<TS3SourcesResult, Error>;
   teamId: string;
 };
 
@@ -15,10 +16,10 @@ const S3SourcesContext = createContext<TS3SourcesContext | null>(null);
 
 export const S3SourcesProvider: React.FC<{
   teamId: string;
-  initialData?: TS3SourcesOutput;
+  initialData?: TS3SourcesResult;
   children: ReactNode;
 }> = ({ teamId, initialData, children }) => {
-  const query = api.storage.s3.list.useQuery({ teamId }, { initialData });
+  const query = useQuery({ ...s3SourcesListQuery(teamId), initialData });
   const value = useMemo(() => ({ query, teamId }), [query, teamId]);
 
   return <S3SourcesContext.Provider value={value}>{children}</S3SourcesContext.Provider>;
@@ -35,8 +36,8 @@ export const useS3Sources = () => {
 export default S3SourcesProvider;
 
 export const useS3SourcesUtils = ({ teamId }: { teamId: string }) => {
-  const utils = api.useUtils();
+  const queryClient = useQueryClient();
   return {
-    invalidate: () => utils.storage.s3.list.invalidate({ teamId }),
+    invalidate: () => queryClient.invalidateQueries({ queryKey: queryKeys.storage.s3List(teamId) }),
   };
 };

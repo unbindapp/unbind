@@ -8,18 +8,16 @@ import BrandIcon from "@/components/icons/brand";
 import { useProject, useProjectUtils } from "@/components/project/project-provider";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useServicesUtils } from "@/components/service/services-provider";
-import { useAppConfig } from "@/components/providers/app-config-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import { createClient } from "@/server/go/client.gen";
-import { AppRouterOutputs } from "@/server/trpc/api/root";
+import { getGoClient } from "@/api/client";
+import { gitRepositoriesQuery, type TGitRepository } from "@/api/services/git";
+import { createService as createServiceFn } from "@/api/services/services";
 import { TBuilderEnum, TGitServiceBuilder } from "@/server/trpc/api/services/types";
-import { api } from "@/server/trpc/setup/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BuildingIcon, CogIcon, HourglassIcon, UnplugIcon, UserIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
-import { useSession } from "next-auth/react";
 import { useMemo } from "react";
 import { toast } from "sonner";
 
@@ -60,7 +58,6 @@ function useGitItem({ context }: TProps) {
   const setIsPendingId = useCommandPanelStore((s) => s.setIsPendingId);
   const { environmentId: environmentIdFromPathname } = useIdsFromPathname();
 
-  const utils = api.useUtils();
   const {
     teamId,
     projectId,
@@ -81,14 +78,9 @@ function useGitItem({ context }: TProps) {
     environmentId: environmentIdFromPathname || defaultEnvironmentId || "",
   });
 
-  const { mutateAsync: createServiceViaApi } = api.services.create.useMutation();
   const { mutateAsync: createService } = useMutation({
     mutationKey: ["create-service", "git"],
-    mutationFn: async ({
-      repository,
-    }: {
-      repository: AppRouterOutputs["git"]["listRepositories"]["repositories"][number];
-    }) => {
+    mutationFn: async ({ repository }: { repository: TGitRepository }) => {
       const owner = repository.full_name.split("/")[0];
       const repoName = repository.full_name.split("/")[1];
       const installationId = repository.installation_id;
@@ -98,18 +90,19 @@ function useGitItem({ context }: TProps) {
         throw new Error("Environment ID is missing");
       }
 
-      const result = await createServiceViaApi({
+      const result = await createServiceFn({
         type: "github",
         builder: defaultGitServiceBuilder,
-        repositoryOwner: owner,
-        repositoryName: repoName,
+        repository_owner: owner,
+        repository_name: repoName,
         name: repoName,
-        teamId: context.teamId,
-        projectId,
-        environmentId,
-        gitHubInstallationId: installationId,
-        isPublic: false,
-        autoDeploy: true,
+        team_id: context.teamId,
+        project_id: projectId,
+        environment_id: environmentId,
+        github_installation_id: installationId,
+        is_public: false,
+        auto_deploy: true,
+        replicas: 1,
       });
 
       temporarilyAddNewEntity(result.service.id);
@@ -145,28 +138,22 @@ function useGitItem({ context }: TProps) {
     },
   });
 
-  const { apiUrl } = useAppConfig();
   const gitHubRedirectPathname = `/${teamId}/connect-git/connected/github`;
-  const sessionData = useSession();
   const queryClient = useQueryClient();
   const clearInputValue = useCommandPanelStore((s) => s.clearInputValue);
 
   const { mutateAsync: createGitHubAppMutate } = useMutation({
     mutationFn: async ({
-      accessToken,
       redirectUrl,
       organizationName,
       onSuccess,
     }: {
-      accessToken: string;
       redirectUrl: string;
       organizationName?: string;
       onSuccess: () => void;
     }) =>
       createGitHubApp({
         redirectUrl,
-        accessToken,
-        apiUrl,
         organizationName,
         onSuccess,
       }),
@@ -193,14 +180,9 @@ function useGitItem({ context }: TProps) {
               Icon: UserIcon,
               onSelect: async ({ isPendingId, setCurrentPageId }) => {
                 if (isPendingId !== null) return;
-                if (!sessionData.data?.access_token) {
-                  toast.error("Your current session is invalid. Please sign in again.");
-                  return;
-                }
                 setIsPendingId("git_configure_github_options_personal");
                 const res = await ResultAsync.fromPromise(
                   createGitHubAppMutate({
-                    accessToken: sessionData.data.access_token,
                     redirectUrl: window.location.origin + gitHubRedirectPathname,
                     onSuccess: () => {
                       const environmentId = environmentIdFromPathname || defaultEnvironmentId;
@@ -219,7 +201,7 @@ function useGitItem({ context }: TProps) {
                           environmentId,
                         }),
                       );
-                      utils.git.listRepositories.reset();
+                      queryClient.resetQueries({ queryKey: gitRepositoriesQuery().queryKey });
                       queryKeys.forEach((queryKey) => {
                         queryClient.resetQueries({ queryKey });
                       });
@@ -269,14 +251,9 @@ function useGitItem({ context }: TProps) {
                           disabled: !search,
                           onSelect: async ({ isPendingId, setCurrentPageId }) => {
                             if (isPendingId !== null) return;
-                            if (!sessionData.data?.access_token) {
-                              toast.error("Your current session is invalid. Please sign in again.");
-                              return;
-                            }
                             setIsPendingId("git_configure_github_options_organization_connect");
                             const res = await ResultAsync.fromPromise(
                               createGitHubAppMutate({
-                                accessToken: sessionData.data.access_token,
                                 redirectUrl: window.location.origin + gitHubRedirectPathname,
                                 organizationName: search,
                                 onSuccess: () => {
@@ -297,7 +274,9 @@ function useGitItem({ context }: TProps) {
                                       environmentId,
                                     }),
                                   );
-                                  utils.git.listRepositories.reset();
+                                  queryClient.resetQueries({
+                                    queryKey: gitRepositoriesQuery().queryKey,
+                                  });
                                   queryKeys.forEach((queryKey) => {
                                     queryClient.resetQueries({ queryKey });
                                   });
@@ -346,7 +325,7 @@ function useGitItem({ context }: TProps) {
         inputPlaceholder: "Deploy from GitHub...",
         itemsPinned,
         getItemsAsync: async () => {
-          const res = await utils.git.listRepositories.fetch();
+          const res = await queryClient.fetchQuery(gitRepositoriesQuery());
           const items: TCommandPanelItem[] = res.repositories.map((r) => {
             const id = `${subpageId}_${r.full_name}`;
             return {
@@ -368,10 +347,9 @@ function useGitItem({ context }: TProps) {
       },
     };
   }, [
-    utils.git.listRepositories,
+    queryClient,
     createService,
     setIsPendingId,
-    sessionData,
     createGitHubAppMutate,
     gitHubRedirectPathname,
     defaultEnvironmentId,
@@ -395,14 +373,10 @@ function useGitItem({ context }: TProps) {
 
 async function createGitHubApp({
   redirectUrl,
-  accessToken,
-  apiUrl,
   onSuccess,
   organizationName,
 }: {
   redirectUrl: string;
-  accessToken: string;
-  apiUrl: string;
   onSuccess: () => void;
   organizationName?: string;
 }) {
@@ -486,7 +460,7 @@ async function createGitHubApp({
     }
   }, 250);
 
-  const goClient = createClient({ accessToken, apiUrl });
+  const goClient = getGoClient();
 
   const res = await goClient.github.app.create(
     { redirect_url: redirectUrl, organization: organizationName },

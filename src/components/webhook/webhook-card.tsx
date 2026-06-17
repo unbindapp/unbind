@@ -16,8 +16,9 @@ import { cn } from "@/components/ui/utils";
 import { getWebhookIcon } from "@/components/webhook/helpers";
 import { TWebhookProjectProps, TWebhookProps, TWebhookTeamProps } from "@/components/webhook/types";
 import { useWebhooksUtils } from "@/components/webhook/webhooks-provider";
+import { deleteWebhook as deleteWebhookFn } from "@/api/services/webhooks";
 import { TWebhookShallow } from "@/server/trpc/api/webhooks/types";
-import { api } from "@/server/trpc/setup/client";
+import { useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { EllipsisVerticalIcon, Trash2Icon } from "lucide-react";
 import { ReactNode, useState } from "react";
@@ -51,7 +52,7 @@ export default function WebhookCard({ type, webhook, teamId, projectId }: TProps
         <BrandIcon
           color="brand"
           brand={type === "placeholder" ? "webhook" : getWebhookIcon(webhook.url)}
-          className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground -mt-0.25 size-5 group-data-placeholder/item:rounded-full"
+          className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground -mt-px size-5 group-data-placeholder/item:rounded-full"
         />
         <p className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground min-w-0 shrink text-sm leading-tight group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">
           {type === "placeholder" ? "https://unbind.app/webhook" : webhook.url}
@@ -172,7 +173,8 @@ function DeleteTrigger({
     mutateAsync: deleteWebhook,
     error: deleteWebhookError,
     reset: deleteWebhookReset,
-  } = api.webhooks.delete.useMutation({
+  } = useMutation({
+    mutationFn: deleteWebhookFn,
     onSuccess: async () => {
       await invalidateWebhooks();
       closeDropdown();
@@ -186,7 +188,7 @@ function DeleteTrigger({
         dialogDescription="Are you sure you want to delete this webhook? This action cannot be undone."
         disableConfirmationInput
         EntityNameBadge={() => (
-          <p className="bg-foreground/6 border-foreground/6 -ml-0.5 max-w-[calc(100%+0.25rem)] truncate rounded-md border px-1.5 py-0.25 text-sm font-medium">
+          <p className="bg-foreground/6 border-foreground/6 -ml-0.5 max-w-[calc(100%+0.25rem)] truncate rounded-md border px-1.5 py-px text-sm font-medium">
             {webhook.url}
           </p>
         )}

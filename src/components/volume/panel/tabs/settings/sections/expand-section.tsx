@@ -15,10 +15,11 @@ import {
 import { defaultAnimationMs } from "@/lib/constants";
 import { formatGB } from "@/lib/helpers/format-gb";
 import { useAppForm } from "@/lib/hooks/use-app-form";
+import { expandVolume as expandVolumeFn } from "@/api/services/storage";
 import { TVolumeShallow } from "@/server/trpc/api/services/types";
 import { TVolumeType } from "@/server/trpc/api/storage/volumes/types";
-import { api } from "@/server/trpc/setup/client";
 import { useStore } from "@tanstack/react-form";
+import { useMutation } from "@tanstack/react-query";
 import { HourglassIcon, ScalingIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { ReactNode, useCallback, useMemo, useRef, useState } from "react";
@@ -218,7 +219,8 @@ function ExpandDialogTrigger({
     isPending,
     error,
     reset,
-  } = api.storage.volumes.expand.useMutation({
+  } = useMutation({
+    mutationFn: expandVolumeFn,
     onSuccess: async () => {
       const result = await ResultAsync.fromPromise(
         Promise.all([invalidateServices()]),

@@ -1,20 +1,21 @@
 "use client";
 
-import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
-import { api } from "@/server/trpc/setup/client";
+import { checkUpdateStatusQuery, type TUpdateStatus } from "@/api/services/system";
+import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext } from "react";
 
-type TUpdateStatusContext = AppRouterQueryResult<AppRouterOutputs["system"]["checkUpdateStatus"]>;
+type TUpdateStatusContext = UseQueryResult<TUpdateStatus, Error>;
 
 const UpdateStatusContext = createContext<TUpdateStatusContext | null>(null);
 
 export const UpdateStatusProvider: React.FC<{
-  initialData?: AppRouterOutputs["system"]["checkUpdateStatus"];
+  initialData?: TUpdateStatus;
   refetchInterval?: number;
   enabled?: boolean;
   children: ReactNode;
 }> = ({ refetchInterval, enabled, initialData, children }) => {
-  const query = api.system.checkUpdateStatus.useQuery(undefined, {
+  const query = useQuery({
+    ...checkUpdateStatusQuery(),
     initialData,
     refetchInterval,
     enabled,

@@ -1,12 +1,12 @@
 "use client";
 
 import { deploymentPanelDeploymentIdKey } from "@/components/deployment/panel/constants";
-import { useQueryState, UseQueryStateReturn } from "nuqs";
+import { useSearchParam } from "@/lib/hooks/use-search-param";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
 type TDeploymentPanelIdContext = {
   deploymentPanelId: string | null;
-  setDeploymentPanelId: UseQueryStateReturn<string | null, string | null>["1"];
+  setDeploymentPanelId: (value: string | null) => void;
 };
 
 const DeploymentPanelIdContext = createContext<TDeploymentPanelIdContext | null>(null);
@@ -14,7 +14,7 @@ const DeploymentPanelIdContext = createContext<TDeploymentPanelIdContext | null>
 export const DeploymentPanelIdProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
-  const [deploymentPanelId, setDeploymentPanelId] = useQueryState(deploymentPanelDeploymentIdKey);
+  const [deploymentPanelId, setDeploymentPanelId] = useSearchParam(deploymentPanelDeploymentIdKey);
 
   const value: TDeploymentPanelIdContext = useMemo(
     () => ({

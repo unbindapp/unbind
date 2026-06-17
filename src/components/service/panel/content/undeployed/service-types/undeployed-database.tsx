@@ -32,7 +32,8 @@ import { getVariablesPair } from "@/components/variables/helpers";
 import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
 import { TVariableForCreate } from "@/server/trpc/api/variables/types";
-import { api } from "@/server/trpc/setup/client";
+import { databaseQuery } from "@/api/services/services";
+import { useQuery } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
 import { CylinderIcon, MilestoneIcon, OctagonXIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
@@ -95,9 +96,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
     data: dataDatabase,
     isPending: isPendingDatabase,
     error: errorDatabase,
-  } = api.services.getDatabase.useQuery({
-    type,
-  });
+  } = useQuery(databaseQuery(type));
 
   const versionItems: TCommandItem[] | undefined = useMemo(() => {
     const items: TCommandItem[] | undefined = dataDatabase?.database.version.options.map((v) => ({

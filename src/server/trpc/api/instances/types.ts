@@ -1,4 +1,4 @@
-import { AppRouterOutputs } from "@/server/trpc/api/root";
+import type { GetInstanceHealthResponseBody } from "@/server/go/client.gen";
 
 export type TInstanceFromHealth =
-  AppRouterOutputs["instances"]["health"]["data"]["instances"][number];
+  GetInstanceHealthResponseBody["data"]["instances"][number];

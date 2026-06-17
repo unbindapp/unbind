@@ -1,4 +1,4 @@
-import { AppRouterOutputs } from "@/server/trpc/api/root";
+import type { EnvironmentResponse } from "@/server/go/client.gen";
 import { z } from "zod";
 
 export const environmentNameMinLength = 2;
@@ -22,4 +22,4 @@ export const EnvironmentRenameSchema = z.object({
   description: EnvironmentDescriptionSchema,
 });
 
-export type TEnvironmentShallow = AppRouterOutputs["environments"]["list"]["environments"][number];
+export type TEnvironmentShallow = EnvironmentResponse;

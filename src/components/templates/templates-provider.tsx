@@ -1,14 +1,14 @@
 "use client";
 
-import { AppRouterOutputs } from "@/server/trpc/api/root";
+import { type TTemplatesList } from "@/api/services/templates";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
-type TTemplatesContext = { data: AppRouterOutputs["templates"]["list"] };
+type TTemplatesContext = { data: TTemplatesList };
 
 const TemplatesContext = createContext<TTemplatesContext | null>(null);
 
 type TProps = {
-  data: AppRouterOutputs["templates"]["list"];
+  data: TTemplatesList;
   children: ReactNode;
 };
 

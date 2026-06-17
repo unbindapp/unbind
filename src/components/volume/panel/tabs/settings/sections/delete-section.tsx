@@ -5,8 +5,9 @@ import DeleteCard from "@/components/settings/delete-card";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { cn } from "@/components/ui/utils";
 import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
+import { deleteVolume as deleteVolumeFn } from "@/api/services/storage";
 import { TVolumeShallow } from "@/server/trpc/api/services/types";
-import { api } from "@/server/trpc/setup/client";
+import { useMutation } from "@tanstack/react-query";
 import { Trash2Icon } from "lucide-react";
 import { useMemo } from "react";
 
@@ -25,7 +26,8 @@ export default function DeleteSection({ volume, className }: TProps) {
     mutateAsync: deleteVolume,
     error,
     reset,
-  } = api.storage.volumes.delete.useMutation({
+  } = useMutation({
+    mutationFn: deleteVolumeFn,
     onSuccess: () => {
       closePanel();
     },

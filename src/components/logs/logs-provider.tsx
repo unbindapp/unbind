@@ -1,5 +1,6 @@
 "use client";
 
+import { logsListQuery } from "@/api/services/logs";
 import { useLogViewState } from "@/components/logs/log-view-state-provider";
 import { createSearchFilter } from "@/components/logs/search-filter";
 import { useAppConfig } from "@/components/providers/app-config-provider";
@@ -7,16 +8,14 @@ import useSSEQuery from "@/lib/hooks/use-sse-query";
 import { LogEventSchema } from "@/server/go/client.gen";
 import { getLogLevelFromMessage } from "@/server/trpc/api/logs/helpers";
 import { TLogLineWithLevel, TLogType } from "@/server/trpc/api/logs/types";
-import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
-import { api } from "@/server/trpc/setup/client";
-import { useSession } from "next-auth/react";
+import { useQuery } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo, useState } from "react";
 import { z } from "zod";
 
 type TLogsContext = {
   data: TLogLineWithLevel[] | null;
   isPending: boolean;
-  error: Error | AppRouterQueryResult<AppRouterOutputs["logs"]["list"]>["error"] | null;
+  error: Error | null;
 };
 
 const LogsContext = createContext<TLogsContext | null>(null);
@@ -75,7 +74,6 @@ export const LogsProvider: React.FC<TProps> = ({
   httpDefaultEndTimestamp,
   children,
 }) => {
-  const { data: session } = useSession();
   const { search } = useLogViewState();
   const [start] = useState(
     new Date(httpDefaultStartTimestamp || Date.now() - 1000 * 60 * 60 * 24).toISOString(),
@@ -92,8 +90,8 @@ export const LogsProvider: React.FC<TProps> = ({
     data: httpData,
     isPending: httpIsPending,
     error: httpError,
-  } = api.logs.list.useQuery(
-    {
+  } = useQuery({
+    ...logsListQuery({
       type,
       teamId,
       projectId,
@@ -104,11 +102,9 @@ export const LogsProvider: React.FC<TProps> = ({
       limit,
       start,
       end: end!,
-    },
-    {
-      enabled: isFiniteQuery,
-    },
-  );
+    }),
+    enabled: isFiniteQuery,
+  });
 
   const { apiUrl } = useAppConfig();
   const sseUrl = useMemo(() => {
@@ -135,9 +131,8 @@ export const LogsProvider: React.FC<TProps> = ({
   const { data: streamDataRaw, error: streamError } = useSSEQuery({
     url: sseUrl,
     parser: MessageSchema,
-    disabled: !session || isFiniteQuery,
+    disabled: isFiniteQuery,
     filter: (obj) => obj.type === "log",
-    accessToken: session?.access_token || "",
   });
 
   const streamData = useMemo(() => {

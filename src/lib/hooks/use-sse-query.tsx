@@ -6,7 +6,6 @@ import pRetry from "p-retry";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TProps<T extends z.ZodType<any>> = {
   url: string;
-  accessToken: string;
   disabled?: boolean;
   filter?: (obj: z.infer<T>) => boolean;
   parser: T;
@@ -14,7 +13,7 @@ type TProps<T extends z.ZodType<any>> = {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function useSSEQuery<T extends z.ZodType<any>>(props: TProps<T>) {
-  const { url, accessToken, disabled } = props;
+  const { url, disabled } = props;
 
   const [data, setData] = useState<z.infer<T>[] | null>(null);
   const [error, setError] = useState<Error | null>(null);
@@ -74,15 +73,15 @@ export default function useSSEQuery<T extends z.ZodType<any>>(props: TProps<T>) 
       controllerRef.current = controller;
 
       // Get the latest props.
-      const { url, accessToken, filter, parser } = propsRef.current;
+      const { url, filter, parser } = propsRef.current;
 
       return new Promise((resolve, reject) => {
         fetchEventSource(url, {
           headers: {
             Accept: "text/event-stream",
-            Authorization: `Bearer ${accessToken}`,
             "Cache-Control": "no-cache",
           },
+          credentials: "include",
           signal: controller.signal,
           onopen: async () => {
             if (isMountedRef.current) {
@@ -147,7 +146,7 @@ export default function useSSEQuery<T extends z.ZodType<any>>(props: TProps<T>) 
   useEffect(() => {
     initConnection();
     return cleanup;
-  }, [url, accessToken, disabled, initConnection, cleanup]);
+  }, [url, disabled, initConnection, cleanup]);
 
   return {
     data,

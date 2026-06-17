@@ -10,7 +10,7 @@ import { useServicePanel } from "@/components/service/panel/service-panel-provid
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { TAvailableDatabase } from "@/server/go/data.gen";
-import { api } from "@/server/trpc/setup/client";
+import { createService as createServiceFn } from "@/api/services/services";
 import { useMutation } from "@tanstack/react-query";
 import { DatabaseIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
@@ -75,7 +75,7 @@ function useDatabaseItem({ context }: TProps) {
     environmentId: environmentIdFromPathname || defaultEnvironmentId || "",
   });
 
-  const { mutateAsync: createServiceViaApi } = api.services.create.useMutation();
+  const { mutateAsync: createServiceViaApi } = useMutation({ mutationFn: createServiceFn });
   const { mutateAsync: createService } = useMutation({
     mutationKey: ["create-service", "database"],
     mutationFn: async ({ databaseType }: { databaseType: TAvailableDatabase }) => {
@@ -89,11 +89,12 @@ function useDatabaseItem({ context }: TProps) {
         builder: "database",
         database_type: databaseType,
         name: databaseTypeToName(databaseType),
-        teamId: context.teamId,
-        projectId,
-        environmentId,
-        isPublic: false,
-        autoDeploy: false,
+        team_id: context.teamId,
+        project_id: projectId,
+        environment_id: environmentId,
+        is_public: false,
+        auto_deploy: false,
+        replicas: 1,
       });
 
       temporarilyAddNewEntity(result.service.id);

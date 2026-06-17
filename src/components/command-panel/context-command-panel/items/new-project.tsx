@@ -5,7 +5,8 @@ import useCommandPanel from "@/components/command-panel/use-command-panel";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
-import { api } from "@/server/trpc/setup/client";
+import { createProject as createProjectFn } from "@/api/services/projects";
+import { useMutation } from "@tanstack/react-query";
 import { FolderPlusIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
@@ -26,7 +27,8 @@ export default function useNewProjectItem({ context }: TProps) {
     defaultPageId: contextCommandPanelRootPage,
   });
 
-  const { mutate: createProject } = api.projects.create.useMutation({
+  const { mutate: createProject } = useMutation({
+    mutationFn: createProjectFn,
     onSuccess: async (res) => {
       const projectId = res.data.id;
       temporarilyAddNewEntity(res.data.id);

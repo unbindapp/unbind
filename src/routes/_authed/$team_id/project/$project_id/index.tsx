@@ -1,0 +1,37 @@
+import { createFileRoute, useSearch } from "@tanstack/react-router";
+
+import EnvironmentSelector from "@/components/environment/environment-selector";
+import PageWrapper from "@/components/page-wrapper";
+import NewServiceButton from "@/components/project/new-service-button";
+import ServiceCardList from "@/components/service/service-card-list";
+import ServicesProvider from "@/components/service/services-provider";
+
+const projectRouteId = "/_authed/$team_id/project/$project_id";
+
+export const Route = createFileRoute("/_authed/$team_id/project/$project_id/")({
+  component: ProjectServicesPage,
+});
+
+function ProjectServicesPage() {
+  const { team_id: teamId, project_id: projectId } = Route.useParams();
+  const { environment } = useSearch({ from: projectRouteId });
+
+  return (
+    <ServicesProvider teamId={teamId} projectId={projectId} environmentId={environment ?? ""}>
+      <PageWrapper>
+        <div className="flex w-full max-w-7xl flex-col">
+          <div className="flex w-full flex-wrap items-center justify-between gap-4 px-1">
+            <div className="flex min-w-0 flex-wrap items-center justify-start gap-2">
+              <h1 className="min-w-0 pr-1.5 pl-2 text-2xl leading-tight font-bold">Services</h1>
+              <EnvironmentSelector />
+            </div>
+            <NewServiceButton className="-my-2" />
+          </div>
+          <div className="flex w-full items-center justify-center pt-3">
+            <ServiceCardList />
+          </div>
+        </div>
+      </PageWrapper>
+    </ServicesProvider>
+  );
+}

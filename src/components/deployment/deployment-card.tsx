@@ -32,9 +32,11 @@ import { cn } from "@/components/ui/utils";
 import { defaultAnimationMs, sourceToTitle } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-difference";
+import { redeployDeployment as redeployDeploymentFn } from "@/api/services/deployments";
+import { restartInstances } from "@/api/services/instances";
 import { TDeploymentShallow } from "@/server/trpc/api/deployments/types";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
-import { api } from "@/server/trpc/setup/client";
+import { useMutation } from "@tanstack/react-query";
 import {
   EllipsisVerticalIcon,
   GitBranchIcon,
@@ -44,7 +46,6 @@ import {
   RotateCcwIcon,
 } from "lucide-react";
 import { ResultAsync } from "neverthrow";
-import Image from "next/image";
 import { HTMLAttributes, ReactNode, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -123,7 +124,7 @@ export default function DeploymentCard({
             <div className="flex w-full flex-col items-start justify-start">
               <p
                 data-no-title={titleNotFound ? true : undefined}
-                className="data-no-title:bg-border data-no-title:text-muted-foreground group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton max-w-full min-w-0 shrink leading-tight group-data-placeholder/card:rounded-md group-data-placeholder/card:text-transparent data-no-title:-my-0.25 data-no-title:rounded data-no-title:px-1.5 data-no-title:py-0.25"
+                className="data-no-title:bg-border data-no-title:text-muted-foreground group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton max-w-full min-w-0 shrink leading-tight group-data-placeholder/card:rounded-md group-data-placeholder/card:text-transparent data-no-title:-my-px data-no-title:rounded data-no-title:px-1.5 data-no-title:py-px"
               >
                 {title}
               </p>
@@ -247,7 +248,8 @@ function RestartTrigger({
     isPending,
     error,
     reset,
-  } = api.instances.restart.useMutation({
+  } = useMutation({
+    mutationFn: restartInstances,
     onSuccess: async () => {
       const result = await ResultAsync.fromPromise(
         Promise.all([refetchServices(), refetchService(), refetchDeployments()]),
@@ -350,7 +352,8 @@ function RedeployTrigger({
     isPending,
     error,
     reset,
-  } = api.deployments.redeploy.useMutation({
+  } = useMutation({
+    mutationFn: redeployDeploymentFn,
     onSuccess: async () => {
       await Promise.all([refetchServices(), refetchService(), refetchDeployments()]);
       setIsOpen(false);
@@ -548,7 +551,7 @@ function DeploymentInfo({ deployment, service, isPlaceholder, className }: TDepl
         {isPlaceholder && service.type === "github" ? (
           <div className="bg-muted-foreground animate-skeleton -mt-[0.5px] size-4.5 rounded-full" />
         ) : deployment?.commit_author?.avatar_url ? (
-          <Image
+          <img
             alt="Avatar"
             width={24}
             height={24}

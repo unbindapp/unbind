@@ -1,11 +1,14 @@
 "use client";
 
-import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
-import { api } from "@/server/trpc/setup/client";
+import { queryKeys } from "@/api/query-keys";
+import { servicesListQuery, type TServiceShallow } from "@/api/services/services";
+import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
+export type TServicesResult = { services: TServiceShallow[] };
+
 type TServicesContext = {
-  query: AppRouterQueryResult<AppRouterOutputs["services"]["list"]>;
+  query: UseQueryResult<TServicesResult, Error>;
   teamId: string;
   projectId: string;
   environmentId: string;
@@ -17,13 +20,14 @@ export const ServicesProvider: React.FC<{
   teamId: string;
   projectId: string;
   environmentId: string;
-  initialData?: AppRouterOutputs["services"]["list"];
+  initialData?: TServicesResult;
   children: ReactNode;
 }> = ({ teamId, projectId, environmentId, initialData, children }) => {
-  const query = api.services.list.useQuery(
-    { teamId, projectId, environmentId },
-    { initialData, refetchInterval: 5000 },
-  );
+  const query = useQuery({
+    ...servicesListQuery(teamId, projectId, environmentId),
+    initialData,
+    refetchInterval: 5000,
+  });
   const value = useMemo(
     () => ({ query, teamId, projectId, environmentId }),
     [query, teamId, projectId, environmentId],
@@ -51,9 +55,10 @@ export const useServicesUtils = ({
   projectId: string;
   environmentId: string;
 }) => {
-  const utils = api.useUtils();
+  const queryClient = useQueryClient();
+  const queryKey = queryKeys.services.list(teamId, projectId, environmentId);
   return {
-    invalidate: () => utils.services.list.invalidate({ teamId, projectId, environmentId }),
-    refetch: () => utils.services.list.refetch({ teamId, projectId, environmentId }),
+    invalidate: () => queryClient.invalidateQueries({ queryKey }),
+    refetch: () => queryClient.refetchQueries({ queryKey }),
   };
 };

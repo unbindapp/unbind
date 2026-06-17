@@ -1,7 +1,7 @@
-import { AppRouterOutputs } from "@/server/trpc/api/root";
+import type { S3Response } from "@/server/go/client.gen";
 import { z } from "zod";
 
-export type TS3SourceShallow = AppRouterOutputs["storage"]["s3"]["list"]["sources"][number];
+export type TS3SourceShallow = S3Response;
 
 export const s3SourceNameMinLength = 2;
 export const s3SourceNameMaxLength = 32;

@@ -1,8 +1,9 @@
 import { useService, useServiceUtils } from "@/components/service/service-provider";
 import { useServicesUtils } from "@/components/service/services-provider";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
+import { updateService } from "@/api/services/services";
 import { TUpdateServiceInput } from "@/server/trpc/api/services/types";
-import { api } from "@/server/trpc/setup/client";
+import { useMutation } from "@tanstack/react-query";
 import { ResultAsync } from "neverthrow";
 import { useCallback } from "react";
 import { toast } from "sonner";
@@ -31,7 +32,8 @@ export default function useUpdateService({ onSuccess, idToHighlight, manualRefet
 
   const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
 
-  const { mutateAsync, isPending, error, reset } = api.services.update.useMutation({
+  const { mutateAsync, isPending, error, reset } = useMutation({
+    mutationFn: updateService,
     onSuccess: async () => {
       if (!manualRefetch) {
         const result = await ResultAsync.fromPromise(

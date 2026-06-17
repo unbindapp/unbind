@@ -56,7 +56,7 @@ export default function LogLine({
         </div>
         <div className="flex min-w-0 flex-1 [mask-image:linear-gradient(to_left,transparent,black_1rem)]">
           <ConditionalScrollArea>
-            <div className="flex flex-col items-start gap-0.5 py-0.5 group-data-wrap/line:w-full lg:flex-row lg:py-0.25">
+            <div className="flex flex-col items-start gap-0.5 py-0.5 group-data-wrap/line:w-full lg:flex-row lg:py-px">
               {/* Timestamp and service name */}
               {hasExtraColumns && (
                 <div className="sticky left-0 z-10 flex items-center justify-start py-1 group-data-wrap/line:relative group-data-wrap/line:left-auto group-data-wrap/line:w-full md:group-data-wrap/line:w-auto">
@@ -92,7 +92,7 @@ export default function LogLine({
                 </div>
               )}
               {/* Message itself */}
-              <div className="flex max-w-full py-1 pr-4 pl-1 group-data-wrap/line:max-w-auto group-data-wrap/line:min-w-0 group-data-wrap/line:shrink sm:pr-18 data-[container=page]:min-[87rem]:pr-4">
+              <div className="group-data-wrap/line:max-w-auto flex max-w-full py-1 pr-4 pl-1 group-data-wrap/line:min-w-0 group-data-wrap/line:shrink sm:pr-18 data-[container=page]:min-[87rem]:pr-4">
                 <p className="group-data-placeholder/line:bg-foreground group-data-placeholder/line:animate-skeleton leading-tight whitespace-pre select-text group-data-extra-columns/line:-mt-2 group-data-placeholder/line:rounded group-data-placeholder/line:text-transparent group-data-wrap/line:min-w-0 group-data-wrap/line:shrink group-data-wrap/line:whitespace-pre-wrap lg:group-data-extra-columns/line:mt-0">
                   {isPlaceholder ? "Loading the messages..." : logLine.message}
                 </p>

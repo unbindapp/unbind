@@ -10,14 +10,14 @@ import {
 } from "@/components/service/panel/constants";
 import { drawerAnimationMs } from "@/lib/constants";
 import useEffectAfterMount from "@/lib/hooks/use-effect-after-mount";
-import { parseAsStringEnum, useQueryState, UseQueryStateReturn } from "nuqs";
+import { useSearchParam } from "@/lib/hooks/use-search-param";
 import { createContext, ReactNode, useContext, useMemo, useRef } from "react";
 
 type TServicePanelContext = {
   currentTabId: TServicePanelTabEnum;
-  setCurrentTabId: UseQueryStateReturn<TServicePanelTabEnum, TServicePanelTabEnum>["1"];
+  setCurrentTabId: (value: TServicePanelTabEnum | null) => void;
   currentServiceId: string | null;
-  setCurrentServiceId: UseQueryStateReturn<string | null, string | null>["1"];
+  setCurrentServiceId: (value: string | null) => void;
   resetCurrentTabId: () => void;
   closePanel: () => void;
   openPanel: (serviceId: string, tabId?: TServicePanelTabEnum) => void;
@@ -29,12 +29,12 @@ export const ServicePanelProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
   const { setDeploymentPanelId } = useDeploymentPanelId();
-  const [currentTabId, setCurrentTabId] = useQueryState(
+  const [currentTabId, setCurrentTabId] = useSearchParam<TServicePanelTabEnum>(
     servicePanelTabKey,
-    parseAsStringEnum(ServicePanelTabEnum.options).withDefault(servicePanelDefaultTabId),
+    servicePanelDefaultTabId,
   );
 
-  const [currentServiceId, setCurrentServiceId] = useQueryState(servicePanelServiceIdKey);
+  const [currentServiceId, setCurrentServiceId] = useSearchParam(servicePanelServiceIdKey);
 
   useEffectAfterMount(() => {
     setDeploymentPanelId(null);

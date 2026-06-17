@@ -1,7 +1,7 @@
 "use client";
 
 import { MetricsIntervalEnum, TMetricsIntervalEnum } from "@/server/trpc/api/metrics/types";
-import { parseAsStringEnum, useQueryState, UseQueryStateReturn } from "nuqs";
+import { useSearchParam } from "@/lib/hooks/use-search-param";
 import { createContext, useContext, useMemo } from "react";
 
 type TInterval = {
@@ -49,7 +49,7 @@ export const metricsIntervalSearchParamKey = "metrics_interval";
 
 type TMetricsStateContext = {
   intervals: TInterval[];
-  setInterval: UseQueryStateReturn<TMetricsIntervalEnum, TMetricsIntervalEnum>["1"];
+  setInterval: (value: TMetricsIntervalEnum | null) => void;
   interval: TInterval;
 };
 
@@ -61,11 +61,9 @@ type TProps = {
 };
 
 export const MetricsStateProvider: React.FC<TProps> = ({ children, defaultIntervalEnum }) => {
-  const [interval, setInterval] = useQueryState(
+  const [interval, setInterval] = useSearchParam<TMetricsIntervalEnum>(
     metricsIntervalSearchParamKey,
-    parseAsStringEnum(MetricsIntervalEnum.options).withDefault(
-      defaultIntervalEnum || metricsIntervalEnumDefault,
-    ),
+    defaultIntervalEnum || metricsIntervalEnumDefault,
   );
 
   const currentInterval = intervals.find((i) => i.value === interval) || metricsIntervalDefault;

@@ -1,6 +1,6 @@
 "use client";
 
-import { parseAsArrayOf, parseAsString, useQueryState } from "nuqs";
+import { useSearchParam } from "@/lib/hooks/use-search-param";
 import { createContext, ReactNode, useCallback, useContext, useMemo } from "react";
 
 type TLogViewPreferencesContext = {
@@ -86,33 +86,34 @@ export const LogViewPreferencesProvider: React.FC<{
 }> = ({ hideServiceByDefault, children }) => {
   const defaultState = hideServiceByDefault ? defaultStateWithoutService : defaultStateNormal;
 
-  const [preferences, setPreferences] = useQueryState(
+  // Stored in the URL as a comma-joined string (array semantics preserved here).
+  const [preferencesStr, setPreferencesStr] = useSearchParam(
     logViewPreferencesKey,
-    parseAsArrayOf(parseAsString).withDefault(defaultState),
+    defaultState.join(","),
+  );
+  const preferences = preferencesStr ? preferencesStr.split(",") : [];
+  const setPreferences = useCallback(
+    (next: string[] | null) => setPreferencesStr(next === null ? null : next.join(",")),
+    [setPreferencesStr],
   );
 
   const isDefaultState =
     preferences.sort(logViewPreferencesSort).join(",") === defaultState.join(",");
 
   const _setPreferences: (
-    preferences: ((old: string[]) => string[] | null) | string[] | null,
+    next: ((old: string[]) => string[] | null) | string[] | null,
   ) => void = useCallback(
-    (preferences) => {
-      if (preferences === null) {
+    (next) => {
+      if (next === null) {
         return setPreferences(null);
       }
-      if (typeof preferences === "function") {
-        return setPreferences((old) => {
-          const pref = preferences(old);
-          if (pref === null) {
-            return null;
-          }
-          return pref.sort(logViewPreferencesSort);
-        });
+      if (typeof next === "function") {
+        const pref = next(preferences);
+        return setPreferences(pref === null ? null : pref.sort(logViewPreferencesSort));
       }
-      return setPreferences(preferences.sort(logViewPreferencesSort));
+      return setPreferences(next.sort(logViewPreferencesSort));
     },
-    [setPreferences],
+    [setPreferences, preferences],
   );
 
   const resetPreferences = useCallback(() => {

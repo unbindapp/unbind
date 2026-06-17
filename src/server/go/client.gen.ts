@@ -32,16 +32,6 @@ export const BuildkitSettingsSchema = z
   })
   .strip();
 
-export const CallbackResponseBodySchema = z
-  .object({
-    access_token: z.string(),
-    expiry: z.string().datetime(),
-    id_token: z.string(),
-    refresh_token: z.string(),
-    token_type: z.string(),
-  })
-  .strip();
-
 export const CapabilitiesSchema = z
   .object({
     add: z.array(z.string()).nullable().optional(),
@@ -83,6 +73,8 @@ export const CreateBuildInputBodySchema = z
     team_id: z.string(),
   })
   .strip();
+
+export const ServiceBuilderSchema = z.enum(['railpack', 'docker', 'database']);
 
 export const GitCommitterSchema = z
   .object({
@@ -131,12 +123,15 @@ export const DeploymentStatusSchema = z.enum([
 export const DeploymentResponseSchema = z
   .object({
     attempts: z.number(),
+    builder: ServiceBuilderSchema,
     commit_author: GitCommitterSchema.optional(),
     commit_message: z.string().optional(),
     commit_sha: z.string().optional(),
     completed_at: z.string().datetime().optional(),
     crashing_reasons: z.array(z.string()),
     created_at: z.string().datetime(),
+    docker_builder_build_context: z.string().optional(),
+    docker_builder_dockerfile_path: z.string().optional(),
     error: z.string().optional(),
     git_branch: z.string().optional(),
     id: z.string(),
@@ -145,6 +140,9 @@ export const DeploymentResponseSchema = z
     instance_restarts: z.number(),
     job_name: z.string(),
     queued_at: z.string().datetime().optional(),
+    railpack_builder_build_command: z.string().optional(),
+    railpack_builder_install_command: z.string().optional(),
+    run_command: z.string().optional(),
     service_id: z.string(),
     started_at: z.string().datetime().optional(),
     status: DeploymentStatusSchema,
@@ -338,8 +336,6 @@ export const CreateServiceGroupResponseBodySchema = z
     data: ServiceGroupResponseSchema,
   })
   .strip();
-
-export const ServiceBuilderSchema = z.enum(['railpack', 'docker', 'database']);
 
 export const DatabaseConfigSchema = z
   .object({
@@ -607,6 +603,12 @@ export const CreateWebhookResponseBodySchema = z
 
 export const DNSStatusSchema = z.enum(['unknown', 'resolved', 'unresolved']);
 
+export const DataStructSchema = z
+  .object({
+    success: z.boolean(),
+  })
+  .strip();
+
 export const DatabaseConfigurableSchema = z
   .object({
     default: z.string(),
@@ -858,6 +860,7 @@ export const SimpleInstanceStatusSchema = z
   .object({
     events: z.array(EventRecordSchema).optional(),
     kubernetes_name: z.string(),
+    pod_created_at: z.string().datetime().optional(),
     restart_count: z.number(),
     status: ContainerStateSchema,
   })
@@ -1380,6 +1383,7 @@ export const InstanceStatusSchema = z
     kubernetes_name: z.string(),
     last_exit_code: z.number().optional(),
     last_termination: z.string().optional(),
+    pod_created_at: z.string().datetime().optional(),
     ready: z.boolean(),
     restart_count: z.number(),
     state: ContainerStateSchema,
@@ -1441,6 +1445,7 @@ export const PodPhaseSchema = z.enum(['Pending', 'Running', 'Succeeded', 'Failed
 
 export const PodContainerStatusSchema = z
   .object({
+    created_at: z.string().datetime().optional(),
     environment_id: z.string(),
     has_crashing_instances: z.boolean(),
     instance_dependencies: z.array(InstanceStatusSchema),
@@ -1549,17 +1554,16 @@ export const LogTypeSchema = z.enum([
   'build',
 ]);
 
-export const LoginFormSchema = z
+export const LoginInputBodySchema = z
   .object({
-    client_id: z.string(),
-    initiating_url: z.string(),
-    page_key: z.string(),
+    email: z.string(),
     password: z.string(),
-    redirect_uri: z.string(),
-    response_type: z.string(),
-    scope: z.string(),
-    state: z.string(),
-    username: z.string(),
+  })
+  .strip();
+
+export const LogoutResponseBodySchema = z
+  .object({
+    data: DataStructSchema,
   })
   .strip();
 
@@ -1624,9 +1628,20 @@ export const ResolveVariableReferenceResponseBodySchema = z
 
 export const ResponseErrorSchema = z
   .object({
-    details: z.array(z.string()).nullable().optional(),
-    message: z.string(),
-    status: z.number(),
+    details: z.array(z.string()).nullable().optional(), // Optional actionable details, e.g. which field failed validation
+    message: z.string(), // Human-readable summary of what went wrong
+    status: z.number(), // HTTP status code
+    type: z.enum([
+      'bad_request',
+      'unauthorized',
+      'forbidden',
+      'not_found',
+      'conflict',
+      'validation_error',
+      'rate_limited',
+      'internal_error',
+      'error',
+    ]), // Stable, machine-readable error code
   })
   .strip();
 
@@ -1666,6 +1681,19 @@ export const S3TestResultSchema = z
   .object({
     error: z.string().optional(),
     valid: z.boolean(),
+  })
+  .strip();
+
+export const SessionUserSchema = z
+  .object({
+    email: z.string(),
+    id: z.string(),
+  })
+  .strip();
+
+export const SessionResponseBodySchema = z
+  .object({
+    data: SessionUserSchema,
   })
   .strip();
 
@@ -2079,13 +2107,13 @@ export type VariableReferenceSourceType = z.infer<typeof VariableReferenceSource
 export type VariableReferenceType = z.infer<typeof VariableReferenceTypeSchema>;
 export type AvailableVariableReference = z.infer<typeof AvailableVariableReferenceSchema>;
 export type BuildkitSettings = z.infer<typeof BuildkitSettingsSchema>;
-export type CallbackResponseBody = z.infer<typeof CallbackResponseBodySchema>;
 export type Capabilities = z.infer<typeof CapabilitiesSchema>;
 export type CertManagerCondition = z.infer<typeof CertManagerConditionSchema>;
 export type CollisionOutput = z.infer<typeof CollisionOutputSchema>;
 export type CheckUniqueDomainOutputBody = z.infer<typeof CheckUniqueDomainOutputBodySchema>;
 export type ContainerState = z.infer<typeof ContainerStateSchema>;
 export type CreateBuildInputBody = z.infer<typeof CreateBuildInputBodySchema>;
+export type ServiceBuilder = z.infer<typeof ServiceBuilderSchema>;
 export type GitCommitter = z.infer<typeof GitCommitterSchema>;
 export type EventType = z.infer<typeof EventTypeSchema>;
 export type EventRecord = z.infer<typeof EventRecordSchema>;
@@ -2112,7 +2140,6 @@ export type CreateS3OutputBody = z.infer<typeof CreateS3OutputBodySchema>;
 export type CreateServiceGroupInput = z.infer<typeof CreateServiceGroupInputSchema>;
 export type ServiceGroupResponse = z.infer<typeof ServiceGroupResponseSchema>;
 export type CreateServiceGroupResponseBody = z.infer<typeof CreateServiceGroupResponseBodySchema>;
-export type ServiceBuilder = z.infer<typeof ServiceBuilderSchema>;
 export type DatabaseConfig = z.infer<typeof DatabaseConfigSchema>;
 export type HealthCheckType = z.infer<typeof HealthCheckTypeSchema>;
 export type HealthCheck = z.infer<typeof HealthCheckSchema>;
@@ -2140,6 +2167,7 @@ export type WebhookType = z.infer<typeof WebhookTypeSchema>;
 export type WebhookResponse = z.infer<typeof WebhookResponseSchema>;
 export type CreateWebhookResponseBody = z.infer<typeof CreateWebhookResponseBodySchema>;
 export type DNSStatus = z.infer<typeof DNSStatusSchema>;
+export type DataStruct = z.infer<typeof DataStructSchema>;
 export type DatabaseConfigurable = z.infer<typeof DatabaseConfigurableSchema>;
 export type DatabaseConfigurables = z.infer<typeof DatabaseConfigurablesSchema>;
 export type DeleteEnvironmentInputBody = z.infer<typeof DeleteEnvironmentInputBodySchema>;
@@ -2261,7 +2289,8 @@ export type LogEvent = z.infer<typeof LogEventSchema>;
 export type LogEventsMessageType = z.infer<typeof LogEventsMessageTypeSchema>;
 export type LogEvents = z.infer<typeof LogEventsSchema>;
 export type LogType = z.infer<typeof LogTypeSchema>;
-export type LoginForm = z.infer<typeof LoginFormSchema>;
+export type LoginInputBody = z.infer<typeof LoginInputBodySchema>;
+export type LogoutResponseBody = z.infer<typeof LogoutResponseBodySchema>;
 export type LokiDirection = z.infer<typeof LokiDirectionSchema>;
 export type UserAPIResponse = z.infer<typeof UserAPIResponseSchema>;
 export type MeResponseBody = z.infer<typeof MeResponseBodySchema>;
@@ -2283,6 +2312,8 @@ export type Restarted = z.infer<typeof RestartedSchema>;
 export type RestartServicesResponseBody = z.infer<typeof RestartServicesResponseBodySchema>;
 export type S3BackendCreateInput = z.infer<typeof S3BackendCreateInputSchema>;
 export type S3TestResult = z.infer<typeof S3TestResultSchema>;
+export type SessionUser = z.infer<typeof SessionUserSchema>;
+export type SessionResponseBody = z.infer<typeof SessionResponseBodySchema>;
 export type SetDefaultRegistryInput = z.infer<typeof SetDefaultRegistryInputSchema>;
 export type SetDefaultRegistryResponseBody = z.infer<typeof SetDefaultRegistryResponseBodySchema>;
 export type SystemSettingsResponse = z.infer<typeof SystemSettingsResponseSchema>;
@@ -2331,12 +2362,6 @@ export type VariablesResponseBody = z.infer<typeof VariablesResponseBodySchema>;
 export type WebhookCreateInput = z.infer<typeof WebhookCreateInputSchema>;
 export type WebhookEvent = z.infer<typeof WebhookEventSchema>;
 export type WebhookUpdateInput = z.infer<typeof WebhookUpdateInputSchema>;
-
-export const callbackQuerySchema = z
-  .object({
-    code: z.string(),
-  })
-  .passthrough();
 
 export const get_deploymentQuerySchema = z
   .object({
@@ -2670,141 +2695,37 @@ export const app_saveQuerySchema = z
   .passthrough();
 
 export type ClientOptions = {
-  accessToken: string;
   apiUrl: string;
+  fetchFn?: typeof fetch;
 };
 
-export function createClient({ accessToken, apiUrl }: ClientOptions) {
+export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
   return {
     auth: {
-      callback: async (
-        params: z.infer<typeof callbackQuerySchema>,
+      login: async (
+        params: LoginInputBody,
         fetchOptions?: RequestInit,
-      ): Promise<CallbackResponseBody> => {
+      ): Promise<SessionResponseBody> => {
         try {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/auth/callback`);
-          const validatedQuery = callbackQuerySchema.parse(params);
-          const queryKeys = ['code'];
-          queryKeys.forEach((key) => {
-            const value = validatedQuery[key as keyof typeof validatedQuery];
-            if (value !== undefined && value !== null) {
-              url.searchParams.append(key, String(value));
-            }
-          });
-          const options: RequestInit = {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
-            },
-            ...fetchOptions,
-          };
-
-          const response = await fetch(url.toString(), options);
-          if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
-          }
-          const data = await response.json();
-          const { data: parsedData, error } = CallbackResponseBodySchema.safeParse(data);
-          if (error) {
-            console.error('Response validation error:', error);
-            console.error('Response data:', data);
-            throw new Error(error.message);
-          }
-          return parsedData;
-        } catch (error) {
-          console.error('Error in API request:', error);
-          throw error;
-        }
-      },
-      dev_login: async (params?: undefined, fetchOptions?: RequestInit): Promise<ResponseError> => {
-        try {
-          if (!apiUrl || typeof apiUrl !== 'string') {
-            throw new Error('API URL is undefined or not a string');
-          }
-          const url = new URL(`${apiUrl}/auth/dev_login`);
-
-          const options: RequestInit = {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
-            },
-            ...fetchOptions,
-          };
-
-          const response = await fetch(url.toString(), options);
-          if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
-          }
-          const data = await response.json();
-          const { data: parsedData, error } = ResponseErrorSchema.safeParse(data);
-          if (error) {
-            console.error('Response validation error:', error);
-            console.error('Response data:', data);
-            throw new Error(error.message);
-          }
-          return parsedData;
-        } catch (error) {
-          console.error('Error in API request:', error);
-          throw error;
-        }
-      },
-      login: async (params: LoginForm, fetchOptions?: RequestInit): Promise<ResponseError> => {
-        try {
-          if (!apiUrl || typeof apiUrl !== 'string') {
-            throw new Error('API URL is undefined or not a string');
-          }
-          const url = new URL(`${apiUrl}/auth/login`);
+          const url = new URL(
+            `${apiUrl}/auth/login`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'POST',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
-          const validatedBody = LoginFormSchema.parse(params);
+          const validatedBody = LoginInputBodySchema.parse(params);
           options.body = JSON.stringify(validatedBody);
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -2826,7 +2747,63 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             throw new Error(errorMessage);
           }
           const data = await response.json();
-          const { data: parsedData, error } = ResponseErrorSchema.safeParse(data);
+          const { data: parsedData, error } = SessionResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      logout: async (
+        params?: undefined,
+        fetchOptions?: RequestInit,
+      ): Promise<LogoutResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/auth/logout`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = LogoutResponseBodySchema.safeParse(data);
           if (error) {
             console.error('Response validation error:', error);
             console.error('Response data:', data);
@@ -2848,19 +2825,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/deployments/create`);
+          const url = new URL(
+            `${apiUrl}/deployments/create`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'POST',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
           const validatedBody = CreateBuildInputBodySchema.parse(params);
           options.body = JSON.stringify(validatedBody);
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -2902,7 +2882,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/deployments/get`);
+          const url = new URL(
+            `${apiUrl}/deployments/get`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
           const validatedQuery = get_deploymentQuerySchema.parse(params);
           const queryKeys = [
             'team_id',
@@ -2919,14 +2902,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           });
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -2968,7 +2951,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/deployments/list`);
+          const url = new URL(
+            `${apiUrl}/deployments/list`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
           const validatedQuery = list_deploymentsQuerySchema.parse(params);
           const queryKeys = [
             'cursor',
@@ -2987,14 +2973,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           });
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -3036,19 +3022,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/deployments/redeploy`);
+          const url = new URL(
+            `${apiUrl}/deployments/redeploy`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'POST',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
           const validatedBody = RedeployInputBodySchema.parse(params);
           options.body = JSON.stringify(validatedBody);
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -3092,19 +3081,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/environments/create`);
+          const url = new URL(
+            `${apiUrl}/environments/create`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'POST',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
           const validatedBody = CreateEnvironmentInputSchema.parse(params);
           options.body = JSON.stringify(validatedBody);
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -3146,19 +3138,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/environments/delete`);
+          const url = new URL(
+            `${apiUrl}/environments/delete`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'DELETE',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
           const validatedBody = DeleteEnvironmentInputBodySchema.parse(params);
           options.body = JSON.stringify(validatedBody);
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -3200,7 +3195,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/environments/get`);
+          const url = new URL(
+            `${apiUrl}/environments/get`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
           const validatedQuery = get_environmentQuerySchema.parse(params);
           const queryKeys = ['id', 'team_id', 'project_id'];
           queryKeys.forEach((key) => {
@@ -3211,14 +3209,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           });
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -3260,7 +3258,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/environments/list`);
+          const url = new URL(
+            `${apiUrl}/environments/list`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
           const validatedQuery = list_environmentsQuerySchema.parse(params);
           const queryKeys = ['team_id', 'project_id'];
           queryKeys.forEach((key) => {
@@ -3271,14 +3272,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           });
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -3320,19 +3321,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/environments/update`);
+          const url = new URL(
+            `${apiUrl}/environments/update`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'PUT',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
           const validatedBody = UpdateEnvironmentInputSchema.parse(params);
           options.body = JSON.stringify(validatedBody);
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -3377,7 +3381,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/github/app/create`);
+            const url = new URL(
+              `${apiUrl}/github/app/create`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
             const validatedQuery = app_createQuerySchema.parse(params);
             const queryKeys = ['redirect_url', 'organization'];
             queryKeys.forEach((key) => {
@@ -3388,14 +3395,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             });
             const options: RequestInit = {
               method: 'GET',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
 
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -3437,7 +3444,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/github/app/get`);
+            const url = new URL(
+              `${apiUrl}/github/app/get`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
             const validatedQuery = get_github_appQuerySchema.parse(params);
             const queryKeys = ['uuid'];
             queryKeys.forEach((key) => {
@@ -3448,14 +3458,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             });
             const options: RequestInit = {
               method: 'GET',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
 
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -3498,7 +3508,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/github/apps`);
+          const url = new URL(
+            `${apiUrl}/github/apps`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
           const validatedQuery = list_appsQuerySchema.parse(params);
           const queryKeys = ['with_installations'];
           queryKeys.forEach((key) => {
@@ -3509,14 +3522,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           });
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -3560,18 +3573,21 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               if (!apiUrl || typeof apiUrl !== 'string') {
                 throw new Error('API URL is undefined or not a string');
               }
-              const url = new URL(`${apiUrl}/github/installation/${installationId}/organizations`);
+              const url = new URL(
+                `${apiUrl}/github/installation/${installationId}/organizations`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
 
               const options: RequestInit = {
                 method: 'GET',
+                credentials: 'include',
                 headers: {
                   'Content-Type': 'application/json',
-                  Authorization: `Bearer ${accessToken}`,
                 },
                 ...fetchOptions,
               };
 
-              const response = await fetch(url.toString(), options);
+              const response = await fetchFn(url.toString(), options);
               if (!response.ok) {
                 console.log(
                   `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -3616,18 +3632,21 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/github/installations`);
+          const url = new URL(
+            `${apiUrl}/github/installations`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -3671,18 +3690,21 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/github/repositories`);
+            const url = new URL(
+              `${apiUrl}/github/repositories`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
 
             const options: RequestInit = {
               method: 'GET',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
 
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -3726,7 +3748,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               if (!apiUrl || typeof apiUrl !== 'string') {
                 throw new Error('API URL is undefined or not a string');
               }
-              const url = new URL(`${apiUrl}/github/repositories/info`);
+              const url = new URL(
+                `${apiUrl}/github/repositories/info`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
               const validatedQuery = repo_detailQuerySchema.parse(params);
               const queryKeys = ['installation_id', 'owner', 'repo_name'];
               queryKeys.forEach((key) => {
@@ -3737,14 +3762,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               });
               const options: RequestInit = {
                 method: 'GET',
+                credentials: 'include',
                 headers: {
                   'Content-Type': 'application/json',
-                  Authorization: `Bearer ${accessToken}`,
                 },
                 ...fetchOptions,
               };
 
-              const response = await fetch(url.toString(), options);
+              const response = await fetchFn(url.toString(), options);
               if (!response.ok) {
                 console.log(
                   `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -3791,7 +3816,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/instances/health`);
+          const url = new URL(
+            `${apiUrl}/instances/health`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
           const validatedQuery = get_instance_healthQuerySchema.parse(params);
           const queryKeys = ['team_id', 'project_id', 'environment_id', 'service_id'];
           queryKeys.forEach((key) => {
@@ -3802,14 +3830,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           });
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -3851,7 +3879,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/instances/list`);
+          const url = new URL(
+            `${apiUrl}/instances/list`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
           const validatedQuery = list_instancesQuerySchema.parse(params);
           const queryKeys = ['type', 'team_id', 'project_id', 'environment_id', 'service_id'];
           queryKeys.forEach((key) => {
@@ -3862,14 +3893,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           });
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -3911,19 +3942,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/instances/restart`);
+          const url = new URL(
+            `${apiUrl}/instances/restart`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'PUT',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
           const validatedBody = RestartInstancesInputBodySchema.parse(params);
           options.body = JSON.stringify(validatedBody);
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -3967,7 +4001,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/logs/query`);
+          const url = new URL(
+            `${apiUrl}/logs/query`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
           const validatedQuery = query_logsQuerySchema.parse(params);
           const queryKeys = [
             'type',
@@ -3991,14 +4028,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           });
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -4040,7 +4077,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/logs/stream`);
+          const url = new URL(
+            `${apiUrl}/logs/stream`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
           const validatedQuery = stream_logsQuerySchema.parse(params);
           const queryKeys = [
             'type',
@@ -4063,14 +4103,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           });
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -4108,7 +4148,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/metrics/get`);
+          const url = new URL(
+            `${apiUrl}/metrics/get`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
           const validatedQuery = get_metricsQuerySchema.parse(params);
           const queryKeys = [
             'type',
@@ -4127,14 +4170,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           });
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -4176,7 +4219,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/metrics/get-system`);
+          const url = new URL(
+            `${apiUrl}/metrics/get-system`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
           const validatedQuery = get_system_metricsQuerySchema.parse(params);
           const queryKeys = ['node_name', 'zone', 'region', 'cluster_name', 'start', 'end'];
           queryKeys.forEach((key) => {
@@ -4187,14 +4233,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           });
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -4236,7 +4282,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/metrics/get-volume`);
+          const url = new URL(
+            `${apiUrl}/metrics/get-volume`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
           const validatedQuery = get_volume_metricsQuerySchema.parse(params);
           const queryKeys = ['team_id', 'pvc_id', 'start', 'end'];
           queryKeys.forEach((key) => {
@@ -4247,14 +4296,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           });
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -4298,19 +4347,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/projects/create`);
+          const url = new URL(
+            `${apiUrl}/projects/create`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'POST',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
           const validatedBody = CreateProjectInputSchema.parse(params);
           options.body = JSON.stringify(validatedBody);
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -4352,19 +4404,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/projects/delete`);
+          const url = new URL(
+            `${apiUrl}/projects/delete`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'DELETE',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
           const validatedBody = DeleteProjectInputBodySchema.parse(params);
           options.body = JSON.stringify(validatedBody);
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -4406,7 +4461,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/projects/get`);
+          const url = new URL(
+            `${apiUrl}/projects/get`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
           const validatedQuery = get_projectQuerySchema.parse(params);
           const queryKeys = ['project_id', 'team_id'];
           queryKeys.forEach((key) => {
@@ -4417,14 +4475,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           });
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -4466,7 +4524,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/projects/list`);
+          const url = new URL(
+            `${apiUrl}/projects/list`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
           const validatedQuery = list_projectsQuerySchema.parse(params);
           const queryKeys = ['sort_by', 'sort_order', 'team_id'];
           queryKeys.forEach((key) => {
@@ -4477,14 +4538,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           });
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -4526,19 +4587,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/projects/update`);
+          const url = new URL(
+            `${apiUrl}/projects/update`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'PUT',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
           const validatedBody = UpdateProjectInputSchema.parse(params);
           options.body = JSON.stringify(validatedBody);
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -4582,19 +4646,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/service_groups/create`);
+          const url = new URL(
+            `${apiUrl}/service_groups/create`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'POST',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
           const validatedBody = CreateServiceGroupInputSchema.parse(params);
           options.body = JSON.stringify(validatedBody);
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -4636,19 +4703,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/service_groups/delete`);
+          const url = new URL(
+            `${apiUrl}/service_groups/delete`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'DELETE',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
           const validatedBody = DeleteServiceGroupInputSchema.parse(params);
           options.body = JSON.stringify(validatedBody);
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -4690,7 +4760,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/service_groups/get`);
+          const url = new URL(
+            `${apiUrl}/service_groups/get`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
           const validatedQuery = get_service_groupQuerySchema.parse(params);
           const queryKeys = ['id', 'team_id', 'project_id', 'environment_id'];
           queryKeys.forEach((key) => {
@@ -4701,14 +4774,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           });
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -4750,7 +4823,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/service_groups/list`);
+          const url = new URL(
+            `${apiUrl}/service_groups/list`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
           const validatedQuery = list_service_groupsQuerySchema.parse(params);
           const queryKeys = ['team_id', 'project_id', 'environment_id'];
           queryKeys.forEach((key) => {
@@ -4761,14 +4837,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           });
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -4810,19 +4886,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/service_groups/update`);
+          const url = new URL(
+            `${apiUrl}/service_groups/update`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'PUT',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
           const validatedBody = UpdateServiceGroupInputSchema.parse(params);
           options.body = JSON.stringify(validatedBody);
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -4866,19 +4945,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/services/create`);
+          const url = new URL(
+            `${apiUrl}/services/create`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'POST',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
           const validatedBody = CreateServiceInputSchema.parse(params);
           options.body = JSON.stringify(validatedBody);
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -4922,7 +5004,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               if (!apiUrl || typeof apiUrl !== 'string') {
                 throw new Error('API URL is undefined or not a string');
               }
-              const url = new URL(`${apiUrl}/services/databases/installable/get`);
+              const url = new URL(
+                `${apiUrl}/services/databases/installable/get`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
               const validatedQuery = get_database_definitionQuerySchema.parse(params);
               const queryKeys = ['type', 'version'];
               queryKeys.forEach((key) => {
@@ -4933,14 +5018,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               });
               const options: RequestInit = {
                 method: 'GET',
+                credentials: 'include',
                 headers: {
                   'Content-Type': 'application/json',
-                  Authorization: `Bearer ${accessToken}`,
                 },
                 ...fetchOptions,
               };
 
-              const response = await fetch(url.toString(), options);
+              const response = await fetchFn(url.toString(), options);
               if (!response.ok) {
                 console.log(
                   `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -4982,18 +5067,21 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               if (!apiUrl || typeof apiUrl !== 'string') {
                 throw new Error('API URL is undefined or not a string');
               }
-              const url = new URL(`${apiUrl}/services/databases/installable/list`);
+              const url = new URL(
+                `${apiUrl}/services/databases/installable/list`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
 
               const options: RequestInit = {
                 method: 'GET',
+                credentials: 'include',
                 headers: {
                   'Content-Type': 'application/json',
-                  Authorization: `Bearer ${accessToken}`,
                 },
                 ...fetchOptions,
               };
 
-              const response = await fetch(url.toString(), options);
+              const response = await fetchFn(url.toString(), options);
               if (!response.ok) {
                 console.log(
                   `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -5037,19 +5125,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/services/delete`);
+          const url = new URL(
+            `${apiUrl}/services/delete`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'DELETE',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
           const validatedBody = DeleteServiceInputBodySchema.parse(params);
           options.body = JSON.stringify(validatedBody);
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -5092,7 +5183,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/services/endpoints/list`);
+            const url = new URL(
+              `${apiUrl}/services/endpoints/list`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
             const validatedQuery = list_service_endpointsQuerySchema.parse(params);
             const queryKeys = ['team_id', 'project_id', 'environment_id', 'service_id'];
             queryKeys.forEach((key) => {
@@ -5103,14 +5197,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             });
             const options: RequestInit = {
               method: 'GET',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
 
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -5153,7 +5247,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/services/get`);
+          const url = new URL(
+            `${apiUrl}/services/get`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
           const validatedQuery = get_serviceQuerySchema.parse(params);
           const queryKeys = ['service_id', 'team_id', 'project_id', 'environment_id'];
           queryKeys.forEach((key) => {
@@ -5164,14 +5261,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           });
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -5213,7 +5310,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/services/list`);
+          const url = new URL(
+            `${apiUrl}/services/list`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
           const validatedQuery = list_serviceQuerySchema.parse(params);
           const queryKeys = ['team_id', 'project_id', 'environment_id'];
           queryKeys.forEach((key) => {
@@ -5224,14 +5324,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           });
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -5273,19 +5373,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/services/update`);
+          const url = new URL(
+            `${apiUrl}/services/update`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'PUT',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
           const validatedBody = UpdateServiceInputSchema.parse(params);
           options.body = JSON.stringify(validatedBody);
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -5329,19 +5432,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/setup/create-user`);
+          const url = new URL(
+            `${apiUrl}/setup/create-user`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'POST',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
           const validatedBody = CreateUserInputBodySchema.parse(params);
           options.body = JSON.stringify(validatedBody);
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -5383,18 +5489,21 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/setup/status`);
+          const url = new URL(
+            `${apiUrl}/setup/status`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -5439,19 +5548,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/storage/pvc/create`);
+            const url = new URL(
+              `${apiUrl}/storage/pvc/create`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
 
             const options: RequestInit = {
               method: 'POST',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
             const validatedBody = CreatePVCInputSchema.parse(params);
             options.body = JSON.stringify(validatedBody);
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -5493,19 +5605,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/storage/pvc/delete`);
+            const url = new URL(
+              `${apiUrl}/storage/pvc/delete`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
 
             const options: RequestInit = {
               method: 'DELETE',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
             const validatedBody = DeletePVCInputSchema.parse(params);
             options.body = JSON.stringify(validatedBody);
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -5547,7 +5662,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/storage/pvc/get`);
+            const url = new URL(
+              `${apiUrl}/storage/pvc/get`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
             const validatedQuery = get_pvcQuerySchema.parse(params);
             const queryKeys = ['type', 'team_id', 'project_id', 'environment_id', 'id'];
             queryKeys.forEach((key) => {
@@ -5558,14 +5676,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             });
             const options: RequestInit = {
               method: 'GET',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
 
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -5607,7 +5725,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/storage/pvc/list`);
+            const url = new URL(
+              `${apiUrl}/storage/pvc/list`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
             const validatedQuery = list_pvcQuerySchema.parse(params);
             const queryKeys = ['type', 'team_id', 'project_id', 'environment_id'];
             queryKeys.forEach((key) => {
@@ -5618,14 +5739,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             });
             const options: RequestInit = {
               method: 'GET',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
 
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -5667,19 +5788,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/storage/pvc/update`);
+            const url = new URL(
+              `${apiUrl}/storage/pvc/update`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
 
             const options: RequestInit = {
               method: 'PUT',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
             const validatedBody = UpdatePVCInputSchema.parse(params);
             options.body = JSON.stringify(validatedBody);
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -5723,19 +5847,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/storage/s3/create`);
+            const url = new URL(
+              `${apiUrl}/storage/s3/create`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
 
             const options: RequestInit = {
               method: 'POST',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
             const validatedBody = S3BackendCreateInputSchema.parse(params);
             options.body = JSON.stringify(validatedBody);
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -5777,19 +5904,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/storage/s3/delete`);
+            const url = new URL(
+              `${apiUrl}/storage/s3/delete`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
 
             const options: RequestInit = {
               method: 'DELETE',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
             const validatedBody = DeleteS3SourceByIDInputBodySchema.parse(params);
             options.body = JSON.stringify(validatedBody);
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -5831,7 +5961,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/storage/s3/get`);
+            const url = new URL(
+              `${apiUrl}/storage/s3/get`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
             const validatedQuery = get_s3_source_by_idQuerySchema.parse(params);
             const queryKeys = ['id', 'team_id', 'with_buckets'];
             queryKeys.forEach((key) => {
@@ -5842,14 +5975,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             });
             const options: RequestInit = {
               method: 'GET',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
 
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -5891,7 +6024,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/storage/s3/list`);
+            const url = new URL(
+              `${apiUrl}/storage/s3/list`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
             const validatedQuery = list_s3_sourcesQuerySchema.parse(params);
             const queryKeys = ['team_id', 'with_buckets'];
             queryKeys.forEach((key) => {
@@ -5902,14 +6038,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             });
             const options: RequestInit = {
               method: 'GET',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
 
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -5951,19 +6087,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/storage/s3/test`);
+            const url = new URL(
+              `${apiUrl}/storage/s3/test`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
 
             const options: RequestInit = {
               method: 'POST',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
             const validatedBody = TestS3AccessInputBodySchema.parse(params);
             options.body = JSON.stringify(validatedBody);
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -6005,19 +6144,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/storage/s3/update`);
+            const url = new URL(
+              `${apiUrl}/storage/s3/update`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
 
             const options: RequestInit = {
               method: 'POST',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
             const validatedBody = UpdateS3SourceInputBodySchema.parse(params);
             options.body = JSON.stringify(validatedBody);
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -6063,7 +6205,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/system/dns/check`);
+            const url = new URL(
+              `${apiUrl}/system/dns/check`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
             const validatedQuery = check_dns_resolutionQuerySchema.parse(params);
             const queryKeys = ['domain'];
             queryKeys.forEach((key) => {
@@ -6074,14 +6219,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             });
             const options: RequestInit = {
               method: 'GET',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
 
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -6125,18 +6270,21 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/system/domain/check`);
+            const url = new URL(
+              `${apiUrl}/system/domain/check`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
 
             const options: RequestInit = {
               method: 'GET',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
 
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -6178,19 +6326,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/system/domain/generate`);
+            const url = new URL(
+              `${apiUrl}/system/domain/generate`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
 
             const options: RequestInit = {
               method: 'POST',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
             const validatedBody = GenerateWildcardDomainInputBodySchema.parse(params);
             options.body = JSON.stringify(validatedBody);
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -6234,18 +6385,21 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/system/get`);
+          const url = new URL(
+            `${apiUrl}/system/get`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -6288,19 +6442,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/system/registries/create`);
+            const url = new URL(
+              `${apiUrl}/system/registries/create`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
 
             const options: RequestInit = {
               method: 'POST',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
             const validatedBody = CreateRegistryInputSchema.parse(params);
             options.body = JSON.stringify(validatedBody);
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -6334,27 +6491,27 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             throw error;
           }
         },
-        delete: async (
-          params: DeleteRegistryInput,
-          fetchOptions?: RequestInit,
-        ): Promise<ResponseError> => {
+        delete: async (params: DeleteRegistryInput, fetchOptions?: RequestInit) => {
           try {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/system/registries/delete`);
+            const url = new URL(
+              `${apiUrl}/system/registries/delete`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
 
             const options: RequestInit = {
               method: 'DELETE',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
             const validatedBody = DeleteRegistryInputSchema.parse(params);
             options.body = JSON.stringify(validatedBody);
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -6376,13 +6533,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               throw new Error(errorMessage);
             }
             const data = await response.json();
-            const { data: parsedData, error } = ResponseErrorSchema.safeParse(data);
-            if (error) {
-              console.error('Response validation error:', error);
-              console.error('Response data:', data);
-              throw new Error(error.message);
-            }
-            return parsedData;
+            return data;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -6396,7 +6547,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/system/registries/get`);
+            const url = new URL(
+              `${apiUrl}/system/registries/get`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
             const validatedQuery = get_registryQuerySchema.parse(params);
             const queryKeys = ['id'];
             queryKeys.forEach((key) => {
@@ -6407,14 +6561,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             });
             const options: RequestInit = {
               method: 'GET',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
 
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -6456,18 +6610,21 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/system/registries/list`);
+            const url = new URL(
+              `${apiUrl}/system/registries/list`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
 
             const options: RequestInit = {
               method: 'GET',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
 
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -6509,19 +6666,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/system/registries/set-default`);
+            const url = new URL(
+              `${apiUrl}/system/registries/set-default`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
 
             const options: RequestInit = {
               method: 'POST',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
             const validatedBody = SetDefaultRegistryInputSchema.parse(params);
             options.body = JSON.stringify(validatedBody);
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -6566,19 +6726,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/system/settings/update`);
+            const url = new URL(
+              `${apiUrl}/system/settings/update`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
 
             const options: RequestInit = {
               method: 'PUT',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
             const validatedBody = SystemSettingUpdateInputSchema.parse(params);
             options.body = JSON.stringify(validatedBody);
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -6622,19 +6785,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/system/update/apply`);
+            const url = new URL(
+              `${apiUrl}/system/update/apply`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
 
             const options: RequestInit = {
               method: 'POST',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
             const validatedBody = UpdateApplyInputBodySchema.parse(params);
             options.body = JSON.stringify(validatedBody);
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -6676,18 +6842,21 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/system/update/check`);
+            const url = new URL(
+              `${apiUrl}/system/update/check`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
 
             const options: RequestInit = {
               method: 'GET',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
 
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -6729,18 +6898,21 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/system/update/status`);
+            const url = new URL(
+              `${apiUrl}/system/update/status`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
 
             const options: RequestInit = {
               method: 'GET',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
 
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -6785,7 +6957,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/teams/get`);
+          const url = new URL(
+            `${apiUrl}/teams/get`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
           const validatedQuery = get_teamQuerySchema.parse(params);
           const queryKeys = ['team_id'];
           queryKeys.forEach((key) => {
@@ -6796,14 +6971,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           });
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -6842,18 +7017,21 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/teams/list`);
+          const url = new URL(
+            `${apiUrl}/teams/list`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -6895,19 +7073,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/teams/update`);
+          const url = new URL(
+            `${apiUrl}/teams/update`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'PUT',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
           const validatedBody = UpdateTeamInputBodySchema.parse(params);
           options.body = JSON.stringify(validatedBody);
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -6951,19 +7132,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/templates/deploy`);
+          const url = new URL(
+            `${apiUrl}/templates/deploy`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'POST',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
           const validatedBody = TemplateDeployInputSchema.parse(params);
           options.body = JSON.stringify(validatedBody);
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -7005,7 +7189,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/templates/get`);
+          const url = new URL(
+            `${apiUrl}/templates/get`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
           const validatedQuery = get_templateQuerySchema.parse(params);
           const queryKeys = ['id'];
           queryKeys.forEach((key) => {
@@ -7016,14 +7203,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           });
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -7065,18 +7252,21 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/templates/list`);
+          const url = new URL(
+            `${apiUrl}/templates/list`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -7120,19 +7310,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/unbindwebhooks/create`);
+          const url = new URL(
+            `${apiUrl}/unbindwebhooks/create`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'POST',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
           const validatedBody = WebhookCreateInputSchema.parse(params);
           options.body = JSON.stringify(validatedBody);
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -7174,19 +7367,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/unbindwebhooks/delete`);
+          const url = new URL(
+            `${apiUrl}/unbindwebhooks/delete`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'DELETE',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
           const validatedBody = DeleteWebhookInputBodySchema.parse(params);
           options.body = JSON.stringify(validatedBody);
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -7228,7 +7424,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/unbindwebhooks/get`);
+          const url = new URL(
+            `${apiUrl}/unbindwebhooks/get`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
           const validatedQuery = get_webhookQuerySchema.parse(params);
           const queryKeys = ['id', 'team_id', 'project_id'];
           queryKeys.forEach((key) => {
@@ -7239,14 +7438,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           });
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -7288,7 +7487,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/unbindwebhooks/list`);
+          const url = new URL(
+            `${apiUrl}/unbindwebhooks/list`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
           const validatedQuery = list_webhooksQuerySchema.parse(params);
           const queryKeys = ['type', 'team_id', 'project_id'];
           queryKeys.forEach((key) => {
@@ -7299,14 +7501,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           });
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -7348,19 +7550,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/unbindwebhooks/update`);
+          const url = new URL(
+            `${apiUrl}/unbindwebhooks/update`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'PUT',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
           const validatedBody = WebhookUpdateInputSchema.parse(params);
           options.body = JSON.stringify(validatedBody);
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -7401,18 +7606,21 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/users/me`);
+          const url = new URL(
+            `${apiUrl}/users/me`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -7456,19 +7664,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/variables/delete`);
+          const url = new URL(
+            `${apiUrl}/variables/delete`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'DELETE',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
           const validatedBody = DeleteVariablesInputBodySchema.parse(params);
           options.body = JSON.stringify(validatedBody);
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -7510,7 +7721,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/variables/list`);
+          const url = new URL(
+            `${apiUrl}/variables/list`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
           const validatedQuery = list_variablesQuerySchema.parse(params);
           const queryKeys = ['type', 'team_id', 'project_id', 'environment_id', 'service_id'];
           queryKeys.forEach((key) => {
@@ -7521,14 +7735,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           });
           const options: RequestInit = {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
 
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -7572,7 +7786,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               if (!apiUrl || typeof apiUrl !== 'string') {
                 throw new Error('API URL is undefined or not a string');
               }
-              const url = new URL(`${apiUrl}/variables/references/available`);
+              const url = new URL(
+                `${apiUrl}/variables/references/available`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
               const validatedQuery = list_available_referencesQuerySchema.parse(params);
               const queryKeys = ['team_id', 'project_id', 'environment_id', 'service_id'];
               queryKeys.forEach((key) => {
@@ -7583,14 +7800,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               });
               const options: RequestInit = {
                 method: 'GET',
+                credentials: 'include',
                 headers: {
                   'Content-Type': 'application/json',
-                  Authorization: `Bearer ${accessToken}`,
                 },
                 ...fetchOptions,
               };
 
-              const response = await fetch(url.toString(), options);
+              const response = await fetchFn(url.toString(), options);
               if (!response.ok) {
                 console.log(
                   `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -7634,7 +7851,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                 if (!apiUrl || typeof apiUrl !== 'string') {
                   throw new Error('API URL is undefined or not a string');
                 }
-                const url = new URL(`${apiUrl}/variables/references/available/get`);
+                const url = new URL(
+                  `${apiUrl}/variables/references/available/get`,
+                  typeof window !== 'undefined' ? window.location.origin : undefined,
+                );
                 const validatedQuery = read_available_variable_referenceQuerySchema.parse(params);
                 const queryKeys = ['team_id', 'type', 'name', 'source_type', 'source_id', 'key'];
                 queryKeys.forEach((key) => {
@@ -7645,14 +7865,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                 });
                 const options: RequestInit = {
                   method: 'GET',
+                  credentials: 'include',
                   headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${accessToken}`,
                   },
                   ...fetchOptions,
                 };
 
-                const response = await fetch(url.toString(), options);
+                const response = await fetchFn(url.toString(), options);
                 if (!response.ok) {
                   console.log(
                     `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -7699,7 +7919,10 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/variables/referneces/get`);
+            const url = new URL(
+              `${apiUrl}/variables/referneces/get`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
             const validatedQuery = read_variable_referenceQuerySchema.parse(params);
             const queryKeys = ['service_id', 'reference_id'];
             queryKeys.forEach((key) => {
@@ -7710,14 +7933,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             });
             const options: RequestInit = {
               method: 'GET',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
 
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -7761,19 +7984,22 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
           if (!apiUrl || typeof apiUrl !== 'string') {
             throw new Error('API URL is undefined or not a string');
           }
-          const url = new URL(`${apiUrl}/variables/update`);
+          const url = new URL(
+            `${apiUrl}/variables/update`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
 
           const options: RequestInit = {
             method: 'POST',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
             },
             ...fetchOptions,
           };
           const validatedBody = UpsertVariablesInputBodySchema.parse(params);
           options.body = JSON.stringify(validatedBody);
-          const response = await fetch(url.toString(), options);
+          const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
             console.log(
               `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -7810,23 +8036,26 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
     },
     webhook: {
       github: Object.assign(
-        async (params?: undefined, fetchOptions?: RequestInit): Promise<ResponseError> => {
+        async (params?: undefined, fetchOptions?: RequestInit) => {
           try {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
-            const url = new URL(`${apiUrl}/webhook/github`);
+            const url = new URL(
+              `${apiUrl}/webhook/github`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
 
             const options: RequestInit = {
               method: 'POST',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
               },
               ...fetchOptions,
             };
 
-            const response = await fetch(url.toString(), options);
+            const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               console.log(
                 `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -7848,13 +8077,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
               throw new Error(errorMessage);
             }
             const data = await response.json();
-            const { data: parsedData, error } = ResponseErrorSchema.safeParse(data);
-            if (error) {
-              console.error('Response validation error:', error);
-              console.error('Response data:', data);
-              throw new Error(error.message);
-            }
-            return parsedData;
+            return data;
           } catch (error) {
             console.error('Error in API request:', error);
             throw error;
@@ -7865,12 +8088,15 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
             save: async (
               params: z.infer<typeof app_saveQuerySchema>,
               fetchOptions?: RequestInit,
-            ): Promise<ResponseError> => {
+            ) => {
               try {
                 if (!apiUrl || typeof apiUrl !== 'string') {
                   throw new Error('API URL is undefined or not a string');
                 }
-                const url = new URL(`${apiUrl}/webhook/github/app/save`);
+                const url = new URL(
+                  `${apiUrl}/webhook/github/app/save`,
+                  typeof window !== 'undefined' ? window.location.origin : undefined,
+                );
                 const validatedQuery = app_saveQuerySchema.parse(params);
                 const queryKeys = ['code', 'state'];
                 queryKeys.forEach((key) => {
@@ -7881,14 +8107,14 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                 });
                 const options: RequestInit = {
                   method: 'GET',
+                  credentials: 'include',
                   headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${accessToken}`,
                   },
                   ...fetchOptions,
                 };
 
-                const response = await fetch(url.toString(), options);
+                const response = await fetchFn(url.toString(), options);
                 if (!response.ok) {
                   console.log(
                     `GO API request failed with status ${response.status}: ${response.statusText}`,
@@ -7910,13 +8136,7 @@ export function createClient({ accessToken, apiUrl }: ClientOptions) {
                   throw new Error(errorMessage);
                 }
                 const data = await response.json();
-                const { data: parsedData, error } = ResponseErrorSchema.safeParse(data);
-                if (error) {
-                  console.error('Response validation error:', error);
-                  console.error('Response data:', data);
-                  throw new Error(error.message);
-                }
-                return parsedData;
+                return data;
               } catch (error) {
                 console.error('Error in API request:', error);
                 throw error;

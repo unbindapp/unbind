@@ -1,18 +1,22 @@
 "use client";
 
+import { queryKeys } from "@/api/query-keys";
+import {
+  availableVariableReferencesQuery,
+  type TAvailableVariableReferences,
+} from "@/api/services/variables";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
-import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
-import { api } from "@/server/trpc/setup/client";
+import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
 type TVariableReferencesContext = {
-  list: AppRouterQueryResult<AppRouterOutputs["variables"]["listAvailableVariableReferences"]>;
+  list: UseQueryResult<TAvailableVariableReferences, Error>;
 } & TEntityVariableTypeProps;
 
 const VariableReferencesContext = createContext<TVariableReferencesContext | null>(null);
 
 type TProps = {
-  initialData?: AppRouterOutputs["variables"]["listAvailableVariableReferences"];
+  initialData?: TAvailableVariableReferences;
   refetchInterval?: number;
   children: ReactNode;
 } & TEntityVariableTypeProps;
@@ -23,30 +27,24 @@ export const VariableReferencesProvider: React.FC<TProps> = ({
   refetchInterval,
   ...typedProps
 }) => {
-  const initialData: AppRouterOutputs["variables"]["listAvailableVariableReferences"] | undefined =
-    useMemo(() => {
-      if (typedProps.type === "service") {
-        return initialDataFromProps;
-      }
-      return {
-        variables: [],
-      };
-    }, [initialDataFromProps, typedProps.type]);
+  const isService = typedProps.type === "service";
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { service, ...queryProps } = typedProps;
-  const list = api.variables.listAvailableVariableReferences.useQuery(
-    // @ts-expect-error - this is fine for now - TODO - fix this
-    {
-      ...queryProps,
-    },
-    {
-      initialData: typedProps.type === "service" ? initialData : { variables: [] },
-      enabled: typedProps.type === "service",
-      refetchInterval,
-      trpc: { context: { skipBatch: true } },
-    },
-  );
+  const initialData: TAvailableVariableReferences | undefined = useMemo(() => {
+    if (isService) return initialDataFromProps;
+    return { variables: [] };
+  }, [initialDataFromProps, isService]);
+
+  const list = useQuery({
+    ...availableVariableReferencesQuery(
+      typedProps.teamId,
+      typedProps.projectId ?? "",
+      typedProps.environmentId ?? "",
+      typedProps.serviceId ?? "",
+    ),
+    enabled: isService,
+    initialData: isService ? initialData : { variables: [] },
+    refetchInterval,
+  });
 
   const value: TVariableReferencesContext = useMemo(
     () => ({
@@ -80,27 +78,13 @@ export const useVariableReferenceUtils = ({
   environmentId,
   serviceId,
 }: TEntityVariableTypeProps) => {
-  const utils = api.useUtils();
+  const queryClient = useQueryClient();
+  if (type !== "service") {
+    return { invalidate: () => null, refetch: () => null };
+  }
+  const queryKey = queryKeys.variables.available(teamId, projectId, environmentId, serviceId);
   return {
-    invalidate:
-      type === "service"
-        ? () =>
-            utils.variables.listAvailableVariableReferences.invalidate({
-              teamId,
-              projectId,
-              environmentId,
-              serviceId,
-            })
-        : () => null,
-    refetch:
-      type === "service"
-        ? () =>
-            utils.variables.listAvailableVariableReferences.refetch({
-              teamId,
-              projectId,
-              environmentId,
-              serviceId,
-            })
-        : () => null,
+    invalidate: () => queryClient.invalidateQueries({ queryKey }),
+    refetch: () => queryClient.refetchQueries({ queryKey }),
   };
 };

@@ -41,7 +41,7 @@ export default function DeploymentStatusChip({
         className,
       )}
     >
-      <Icon className={cn("-ml-0.25 size-3.5 shrink-0", iconClassName)} />
+      <Icon className={cn("-ml-px size-3.5 shrink-0", iconClassName)} />
       <p className="min-w-0 shrink leading-tight">{statusText}</p>
     </div>
   );

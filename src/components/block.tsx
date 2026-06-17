@@ -166,8 +166,9 @@ export function BlockItemButtonLike({
   isEditing,
   ...props
 }: TBlockItemButtonLikeProps) {
-  const Element =
-    asElement === "button" ? Button : asElement === "LinkButton" && href ? LinkButton : "div";
+  const Element = (
+    asElement === "button" ? Button : asElement === "LinkButton" && href ? LinkButton : "div"
+  ) as React.ElementType;
 
   return (
     <Element
@@ -179,7 +180,6 @@ export function BlockItemButtonLike({
         "group/button flex w-full flex-row items-center justify-start gap-2 rounded-lg border px-3 py-2.5 text-left data-pending:text-transparent",
         className,
       )}
-      // @ts-expect-error this is fine. Typescript isn't smart enough
       href={href}
       target={href ? "_blank" : undefined}
       {...(asElement === "button"

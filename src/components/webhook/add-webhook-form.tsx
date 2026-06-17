@@ -9,13 +9,14 @@ import { getWebhookIcon } from "@/components/webhook/helpers";
 import { TWebhookProps } from "@/components/webhook/types";
 import { useWebhooksUtils } from "@/components/webhook/webhooks-provider";
 import { useAppForm } from "@/lib/hooks/use-app-form";
+import { createWebhook as createWebhookFn } from "@/api/services/webhooks";
 import {
   TWebhookIdProjectEnum,
   TWebhookIdTeamEnum,
   WebhookIdProjectEnum,
   WebhookIdTeamEnum,
 } from "@/server/trpc/api/webhooks/types";
-import { api } from "@/server/trpc/setup/client";
+import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
 
 type TProps = {
@@ -80,7 +81,8 @@ export default function AddWebhookForm({ className, ...rest }: TProps) {
 
   const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
 
-  const { mutateAsync: createWebhook } = api.webhooks.create.useMutation({
+  const { mutateAsync: createWebhook } = useMutation({
+    mutationFn: createWebhookFn,
     onSuccess: () => {
       invalidateWebhooks();
     },
@@ -103,7 +105,7 @@ export default function AddWebhookForm({ className, ...rest }: TProps) {
       const selectedIds = value.selectedIds;
       const res = await createWebhook({
         url: value.url,
-        events: selectedIds,
+        events: Array.from(selectedIds),
         ...rest,
       });
       temporarilyAddNewEntity(res.data.id);

@@ -4,7 +4,7 @@ import TabIndicator from "@/components/navigation/tab-indicator";
 import { LinkButton } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import { usePathname } from "next/navigation";
+import { useLocation } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 
 type TTab = {
@@ -24,7 +24,7 @@ export default function ProjectTabs({
   layoutId: string;
 }) {
   const { teamId, projectId, environmentId } = useIdsFromPathname();
-  const pathname = usePathname();
+  const pathname = useLocation({ select: (l) => l.pathname });
 
   const tabs: TTab[] = useMemo(() => {
     const baseTabUrl = `/${teamId}/project/${projectId}`;

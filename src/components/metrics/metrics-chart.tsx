@@ -165,7 +165,7 @@ export default function MetricsChart({
                         ? `var(--muted-more-foreground)`
                         : chartConfig[dataKey].color,
                   }}
-                  className="-ml-0.25 size-2.5 shrink-0 rounded-xs transition-[border-radius,_background-color] group-data-active/button:rounded-[0.3125rem]"
+                  className="-ml-px size-2.5 shrink-0 rounded-xs transition-[border-radius,_background-color] group-data-active/button:rounded-[0.3125rem]"
                 />
                 <p className="max-w-28 min-w-0 shrink overflow-hidden leading-tight text-ellipsis whitespace-nowrap">
                   {tooltipNameFormatter ? tooltipNameFormatter(dataKey) : dataKey}

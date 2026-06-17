@@ -5,8 +5,9 @@ import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import { Button, LinkButton, TButtonVariants } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
+import { deleteProject as deleteProjectFn } from "@/api/services/projects";
 import { TProjectShallow } from "@/server/trpc/api/projects/types";
-import { api } from "@/server/trpc/setup/client";
+import { useMutation } from "@tanstack/react-query";
 import { ReactNode } from "react";
 
 type TProps = {
@@ -109,7 +110,8 @@ function ConditionalButton({
     mutateAsync: deleteProject,
     error,
     reset,
-  } = api.projects.delete.useMutation({
+  } = useMutation({
+    mutationFn: deleteProjectFn,
     onSuccess: () => {
       invalidate();
     },

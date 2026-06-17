@@ -1,0 +1,605 @@
+@import "tailwindcss";
+
+@plugin "tailwindcss-animate";
+
+/* Fonts (previously wired via next/font). Files served from /public/fonts. */
+@font-face {
+  font-family: "DM Sans";
+  src: url("/fonts/DMSansVF.woff2") format("woff2");
+  font-weight: 100 1000;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("/fonts/GeistMonoVF.woff") format("woff");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+}
+
+@custom-variant dark (&:is(.dark *));
+
+@custom-variant has-hover {
+  @media (hover: hover) {
+    @slot;
+  }
+}
+
+@custom-variant touch {
+  @media (pointer: coarse) {
+    @slot;
+  }
+}
+
+@utility scrollbar-hidden {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+:root {
+  --safe-area-inset-bottom: env(safe-area-inset-bottom);
+  /* This is for dev only to test safe area */
+  /* --safe-area-inset-bottom: 34px; */
+
+  --safe-screen-height: calc(100svh - var(--safe-area-inset-bottom));
+
+  --dialog-top-padding: 3rem;
+  --dialog-bottom-padding: 3rem;
+  --dialog-bottom-padding-sm: calc(var(--safe-screen-height) * 0.06 + 3rem);
+  --radius: 0.5rem;
+
+  --background: hsl(120 35% 95%);
+  --background-hover: hsl(120 35% 95%);
+  --foreground: hsl(120 90% 5%);
+  --card: hsl(120 35% 95%);
+  --card-foreground: hsl(120 90% 5%);
+  --popover: hsl(120 35% 95%);
+  --popover-foreground: hsl(120 90% 5%);
+  --primary: hsl(120 90% 5%);
+  --primary-foreground: hsl(120 35% 95%);
+  --secondary: hsl(120 20% 85%);
+  --secondary-foreground: hsl(120 90% 5%);
+  --muted: hsl(120 20% 85%);
+  --muted-foreground: hsl(120 10% 35%);
+  --muted-more-foreground: hsl(120 10% 50%);
+  --accent: hsl(120 20% 85%);
+  --accent-foreground: hsl(120 90% 5%);
+  --destructive: hsl(0 84% 30%);
+  --destructive-foreground: hsl(120 35% 95%);
+  --warning: hsl(40 100% 25%);
+  --warning-foreground: hsl(120 35% 95%);
+  --success: hsl(120 85% 20%);
+  --success-foreground: hsl(120 35% 95%);
+  --process: hsl(220 85% 28%);
+  --process-foreground: hsl(120 35% 95%);
+  --wait: hsl(40 100% 25%);
+  --wait-foreground: hsl(120 35% 95%);
+  --shadow-color: hsl(120 30% 4%);
+  --border: hsl(120 20% 85%);
+  --input: hsl(120 50% 97%);
+  --ring: hsl(120 90% 5%);
+
+  --chart-1: hsl(120 100% 23%);
+  --chart-2: hsl(210 90% 30%);
+  --chart-3: hsl(300 60% 40%);
+  --chart-4: hsl(35 90% 40%);
+  --chart-5: hsl(0 70% 40%);
+  --chart-6: hsl(190 80% 35%);
+  --chart-7: hsl(120 70% 35%);
+  --chart-8: hsl(330 75% 40%);
+  --chart-9: hsl(270 60% 30%);
+  --chart-10: hsl(20 90% 30%);
+
+  --link-chip: hsl(210 100% 18%);
+
+  --top-loader: hsl(120 100% 30%);
+
+  --google: hsl(120 90% 5%);
+  --google-foreground: hsl(0 0% 100%);
+  --discord: hsl(235 86% 65%);
+  --discord-foreground: hsl(0 0% 100%);
+  --github: hsl(120 90% 5%);
+  --github-foreground: hsl(0 0% 100%);
+  --gitlab: hsl(9 60% 48%);
+  --gitlab-foreground: hsl(0 0% 100%);
+  --email: hsl(160 100% 24%);
+  --email-foreground: hsl(0 0% 100%);
+  --x: hsl(120 90% 5%);
+  --x-foreground: hsl(0 0% 100%);
+
+  --go: hsl(192 93% 35%);
+  --meilisearch: hsl(346 90% 60%);
+  --minio: hsl(349 60% 49%);
+  --mysql: hsl(206 45% 40%);
+  --postgresql: hsl(210 50% 40%);
+  --redis: hsl(5 70% 47%);
+  --rust: hsl(10 79% 51%);
+  --svelte: hsl(10 100% 45%);
+  --clickhouse: hsl(60 100% 25%);
+  --docker: hsl(220 81% 46%);
+  --strapi: hsl(241 100% 64%);
+  --mongodb: hsl(145 100% 35%);
+  --n8n: hsl(346 80% 45%);
+  --nodejs: hsl(108 40% 30%);
+  --python-1: hsl(207 52% 35%);
+  --python-2: hsl(47 100% 42%);
+  --telegram: hsl(200 85% 57%);
+  --slack-1: hsl(194 86% 58%);
+  --slack-2: hsl(155 60% 40%);
+  --slack-3: hsl(341 76% 50%);
+  --slack-4: hsl(42 83% 55%);
+  --cloudflare: hsl(27 100% 35%);
+  --nuxt: hsl(155 100% 33%);
+  --laravel: hsl(3 100% 56%);
+  --react: hsl(193 100% 40%);
+  --vuejs-1: hsl(153 48% 49%);
+  --vuejs-2: hsl(210 29% 29%);
+  --typesense: hsl(83 100% 30%);
+  --wireguard: hsl(358 71% 31%);
+  --formbricks: hsl(174 100% 35%);
+  --listmonk: hsl(216, 100%, 42%);
+  --nocodb: hsl(240 57% 49%);
+  --appsmith: hsl(18 100% 59%);
+  --flask: hsl(190 100% 30%);
+
+  --barrier: hsl(120 30% 4%);
+
+  --opacity-barrier: 70%;
+  --opacity-shadow: 6%;
+}
+
+.dark {
+  --background: hsl(120 9% 6%);
+  --background-hover: hsl(120 7% 8%);
+  --foreground: hsl(120 100% 97%);
+  --card: hsl(120 9% 6%);
+  --card-foreground: hsl(120 100% 97%);
+  --popover: hsl(120 7% 8%);
+  --popover-foreground: hsl(120 100% 97%);
+  --primary: hsl(120 100% 97%);
+  --primary-foreground: hsl(120 9% 6%);
+  --secondary: hsl(120 5% 12%);
+  --secondary-foreground: hsl(120 100% 97%);
+  --muted: hsl(120 5% 12%);
+  --muted-foreground: hsl(120 6% 65%);
+  --muted-more-foreground: hsl(120 6% 40%);
+  --accent: hsl(120 5% 12%);
+  --accent-foreground: hsl(120 100% 97%);
+  --destructive: hsl(0 80% 69%);
+  --destructive-foreground: hsl(120 9% 6%);
+  --warning: hsl(40 60% 55%);
+  --warning-foreground: hsl(120 9% 6%);
+  --success: hsl(120 50% 65%);
+  --success-foreground: hsl(120 9% 6%);
+  --process: hsl(220 100% 70%);
+  --process-foreground: hsl(120 9% 6%);
+  --wait: hsl(40 60% 55%);
+  --wait-foreground: hsl(120 9% 6%);
+  --shadow-color: hsl(120 11% 3%);
+  --border: hsl(120 5% 12%);
+  --input: hsl(120 7% 8%);
+  --ring: hsl(120 100% 97%);
+
+  --chart-1: hsl(120 70% 70%);
+  --chart-2: hsl(200 90% 55%);
+  --chart-3: hsl(275 90% 75%);
+  --chart-4: hsl(25 75% 65%);
+  --chart-5: hsl(0 90% 70%);
+  --chart-6: hsl(200 80% 70%);
+  --chart-7: hsl(80 85% 60%);
+  --chart-8: hsl(320 60% 60%);
+  --chart-9: hsl(250 100% 75%);
+  --chart-10: hsl(40 80% 65%);
+
+  --link-chip: hsl(210 100% 85%);
+
+  --top-loader: hsl(120 70% 70);
+
+  --google: hsl(120 100% 97%);
+  --google-foreground: hsl(120 9% 6%);
+  --discord: hsl(235 100% 72%);
+  --discord-foreground: hsl(120 100% 97%);
+  --github: hsl(120 100% 97%);
+  --github-foreground: hsl(120 9% 6%);
+  --gitlab: hsl(9 60% 48%);
+  --gitlab-foreground: hsl(0 0% 100%);
+  --email: hsl(160 68% 60%);
+  --email-foreground: hsl(120 9% 6%);
+  --x: hsl(120 100% 97%);
+  --x-foreground: hsl(120 9% 6%);
+
+  --go: hsl(192 93% 55%);
+  --meilisearch: hsl(346 100% 67%);
+  --minio: hsl(349 60% 49%);
+  --mysql: hsl(206 55% 65%);
+  --postgresql: hsl(210 46% 60%);
+  --redis: hsl(4 75% 60%);
+  --rust: hsl(10 79% 51%);
+  --svelte: hsl(10 100% 65%);
+  --clickhouse: hsl(62 100% 71%);
+  --docker: hsl(220 81% 60%);
+  --strapi: hsl(241 100% 75%);
+  --mongodb: hsl(145 100% 47%);
+  --n8n: hsl(346 79% 61%);
+  --nodejs: hsl(108 40% 60%);
+  --python-1: hsl(207 47% 52%);
+  --python-2: hsl(49 100% 70%);
+  --telegram: hsl(200 85% 57%);
+  --slack-1: hsl(194 86% 58%);
+  --slack-2: hsl(155 60% 40%);
+  --slack-3: hsl(341 76% 50%);
+  --slack-4: hsl(42 83% 55%);
+  --cloudflare: hsl(27 90% 65%);
+  --nuxt: hsl(155 100% 43%);
+  --laravel: hsl(3 100% 56%);
+  --react: hsl(193 95% 68%);
+  --vuejs-1: hsl(153 48% 49%);
+  --vuejs-2: hsl(210 29% 29%);
+  --typesense: hsl(83 100% 67%);
+  --wireguard: hsl(358 60% 60%);
+  --formbricks: hsl(174 100% 42%);
+  --listmonk: hsl(216, 100%, 50%);
+  --nocodb: hsl(240 100% 70%);
+  --appsmith: hsl(18 100% 59%);
+  --flask: hsl(190 52% 55%);
+
+  --barrier: hsl(120 10% 4%);
+
+  --opacity-barrier: 75%;
+  --opacity-shadow: 60%;
+}
+
+@theme {
+  --transition-delay-*: initial;
+
+  --animate-*: initial;
+  --animate-skeleton: skeleton 1.25s ease-in-out infinite;
+  --animate-pulse-scale: pulse-scale 1s ease-in-out infinite;
+  --animate-ping: ping 1s ease-in-out infinite;
+  --animate-spin: spin 1s linear infinite;
+  --animate-hourglass: hourglass 3s cubic-bezier(0.75, 0, 0.25, 1) infinite;
+  --animate-hourglass-long: hourglass 4s cubic-bezier(0.75, 0, 0.25, 1) infinite;
+  --animate-loading-bar: loading-bar 45s linear infinite;
+  --animate-line-in: line-in 0.01s step-end forwards;
+  --animate-ping-pong: ping-pong 2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  --animate-ping-pong-long: ping-pong 4s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+
+  --radius-px: 1px;
+  --radius-2px: 2px;
+
+  --spacing-2px: 2px;
+  --spacing-0.375: 0.09375rem;
+
+  --shadow-navbar: 0rem 0rem 0.5rem 0rem, 0rem 0rem 0.75rem 0rem;
+  --shadow-dialog: 0rem 0.5rem 1rem 0rem;
+  --shadow-card-highlight: inset 0rem 0rem 0rem 4px;
+  --shadow-underline: inset 0rem -3px 0rem 0rem;
+
+  --opacity-barrier: var(--opacity-barrier);
+  --opacity-shadow-opacity: var(--opacity-shadow);
+
+  @keyframes skeleton {
+    0% {
+      opacity: 20%;
+    }
+    50% {
+      opacity: 40%;
+    }
+    100% {
+      opacity: 20%;
+    }
+  }
+
+  @keyframes loading-bar {
+    0% {
+      transform: scaleX(0%);
+    }
+    100% {
+      transform: scaleX(100%);
+    }
+  }
+  @keyframes pulse-scale {
+    0% {
+      transform: scale(0.7);
+    }
+    50% {
+      transform: scale(1.4);
+    }
+    100% {
+      transform: scale(0.7);
+    }
+  }
+  @keyframes ping {
+    0% {
+      transform: scale(0.8);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+    100% {
+      transform: scale(0.8);
+    }
+  }
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes hourglass {
+    0% {
+      transform: rotate(0deg);
+    }
+    50% {
+      transform: rotate(180deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes line-in {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  @keyframes ping-pong {
+    0% {
+      transform: translateX(-95%);
+    }
+    50% {
+      transform: translateX(95%);
+    }
+    100% {
+      transform: translateX(-95%);
+    }
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-background-hover: var(--background-hover);
+
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-muted-more: var(--muted-more);
+  --color-muted-more-foreground: var(--muted-more-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+
+  --color-process: var(--process);
+  --color-process-foreground: var(--process-foreground);
+
+  --color-wait: var(--wait);
+  --color-wait-foreground: var(--wait-foreground);
+
+  --color-link-chip: var(--link-chip);
+  --color-shadow-color: var(--shadow-color);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-chart-7: var(--chart-7);
+  --color-chart-8: var(--chart-8);
+  --color-chart-9: var(--chart-9);
+  --color-chart-10: var(--chart-10);
+
+  --color-google: var(--google);
+  --color-google-foreground: var(--google-foreground);
+
+  --color-discord: var(--discord);
+  --color-discord-foreground: var(--discord-foreground);
+
+  --color-github: var(--github);
+  --color-github-foreground: var(--github-foreground);
+
+  --color-gitlab: var(--gitlab);
+  --color-gitlab-foreground: var(--gitlab-foreground);
+
+  --color-email: var(--email);
+  --color-email-foreground: var(--email-foreground);
+
+  --color-x: var(--x);
+  --color-x-foreground: var(--x-foreground);
+
+  --color-top-loader: var(--top-loader);
+
+  --color-go: var(--go);
+  --color-meilisearch: var(--meilisearch);
+  --color-minio: var(--minio);
+  --color-mysql: var(--mysql);
+  --color-postgresql: var(--postgresql);
+  --color-redis: var(--redis);
+  --color-rust: var(--rust);
+  --color-svelte: var(--svelte);
+  --color-clickhouse: var(--clickhouse);
+  --color-docker: var(--docker);
+  --color-strapi: var(--strapi);
+  --color-mongodb: var(--mongodb);
+  --color-n8n: var(--n8n);
+  --color-nodejs: var(--nodejs);
+  --color-python-1: var(--python-1);
+  --color-python-2: var(--python-2);
+  --color-telegram: var(--telegram);
+  --color-slack-1: var(--slack-1);
+  --color-slack-2: var(--slack-2);
+  --color-slack-3: var(--slack-3);
+  --color-slack-4: var(--slack-4);
+  --color-cloudflare: var(--cloudflare);
+  --color-nuxt: var(--nuxt);
+  --color-laravel: var(--laravel);
+  --color-react: var(--react);
+  --color-vuejs-1: var(--vuejs-1);
+  --color-vuejs-2: var(--vuejs-2);
+  --color-typesense: var(--typesense);
+  --color-wireguard: var(--wireguard);
+  --color-formbricks: var(--formbricks);
+  --color-listmonk: var(--listmonk);
+  --color-nocodb: var(--nocodb);
+  --color-appsmith: var(--appsmith);
+  --color-flask: var(--flask);
+
+  --color-barrier: var(--barrier);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-xs: calc(var(--radius) - 6px);
+  --radius-xxs: calc(var(--radius) - 8px);
+
+  --font-mono: var(--font-mono);
+  --font-sans: var(--font-sans);
+
+  --background-size-pattern: 10px 10px;
+  --background-position-pattern: 0px 0px, 5px 5px;
+}
+
+@layer utilities {
+  body {
+    font-family: var(--font-sans);
+  }
+
+  html,
+  body {
+    scroll-padding-top: 5rem;
+  }
+
+  a:focus,
+  button:focus {
+    outline: none;
+  }
+
+  pre {
+    font-family: var(--font-mono);
+  }
+
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .rdp-vhidden {
+    visibility: hidden;
+    position: absolute;
+  }
+
+  /* Hide the clear "X" button for the input[type="search"] */
+  input[type="search"]::-webkit-search-cancel-button {
+    display: none;
+  }
+
+  /* For Firefox */
+  input[type="search"]::-moz-search-cancel-button {
+    display: none;
+  }
+
+  /* (Optional) For Edge and other modern browsers */
+  input[type="search"] {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--top-loader) 50%, transparent);
+    color: color-mix(in oklab, var(--foreground) 100%, transparent);
+  }
+
+  textarea {
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    outline: none;
+    resize: none;
+  }
+
+  .token.attr-name {
+    color: var(--process);
+  }
+
+  .token.attr-value {
+    color: var(--success);
+  }
+
+  .token.punctuation {
+    color: color-mix(in oklab, var(--foreground) 75%, transparent);
+  }
+
+  input[type="checkbox"],
+  label {
+    touch-action: manipulation;
+  }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 100px color-mix(in oklab, var(--success) 10%, var(--background)) inset !important;
+    -webkit-text-fill-color: var(--success) !important;
+    transition: background-color 5000s ease-in-out 0s;
+    border-color: color-mix(in oklab, var(--success) 25%, var(--background));
+  }
+}
+
+@layer base {
+  button,
+  [role="button"] {
+    cursor: pointer;
+  }
+  button:disabled,
+  [role="button"]:disabled {
+    cursor: default;
+  }
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

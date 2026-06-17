@@ -1,7 +1,8 @@
 import { useServicesUtils } from "@/components/service/services-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { TServiceShallow } from "@/server/trpc/api/services/types";
-import { api } from "@/server/trpc/setup/client";
+import { deleteService as deleteServiceFn } from "@/api/services/services";
+import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import {
   DropdownMenu,
@@ -39,7 +40,8 @@ export default function ThreeDotButton({
     mutateAsync: deleteService,
     error,
     reset,
-  } = api.services.delete.useMutation({
+  } = useMutation({
+    mutationFn: deleteServiceFn,
     onSuccess: () => {
       setIsOpen(false);
       closePanel();

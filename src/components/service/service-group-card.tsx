@@ -6,8 +6,12 @@ import ServiceGroupIcon from "@/components/service/service-group-icon";
 import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
+import {
+  deleteServiceGroup as deleteServiceGroupFn,
+  updateServiceGroup as updateServiceGroupFn,
+} from "@/api/services/service-groups";
 import { ServiceRenameSchema } from "@/server/trpc/api/services/types";
-import { api } from "@/server/trpc/setup/client";
+import { useMutation } from "@tanstack/react-query";
 import { EllipsisVerticalIcon, PenIcon, Trash2Icon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { toast } from "sonner";
@@ -42,7 +46,7 @@ export default function ServiceGroupCard({
 }: TProps) {
   return (
     <li className={cn("flex w-full p-1", className)} {...rest}>
-      <div className="relative flex w-full flex-col rounded-xl border bg-[radial-gradient(color-mix(in_oklab,var(--border)_60%,transparent)_1px,transparent_1px),radial-gradient(color-mix(in_oklab,var(--border)_60%,transparent)_1px,transparent_1px)] [background-size:10px_10px] [background-position:0px_0px,5px_5px]">
+      <div className="relative flex w-full flex-col rounded-xl border bg-[radial-gradient(color-mix(in_oklab,var(--border)_60%,transparent)_1px,transparent_1px),radial-gradient(color-mix(in_oklab,var(--border)_60%,transparent)_1px,transparent_1px)] bg-size-[10px_10px] bg-position-[0px_0px,5px_5px]">
         <NewEntityIndicator id={groupObject.group.id} />
         <div className="flex w-full items-center gap-2 px-4 pt-2.5 pr-10 pb-1.5">
           <TitleButton
@@ -211,7 +215,8 @@ function RenameTrigger({
     mutateAsync: updateServiceGroup,
     error,
     reset,
-  } = api.serviceGroups.update.useMutation({
+  } = useMutation({
+    mutationFn: updateServiceGroupFn,
     onSuccess: async () => {
       const refetchRes = await ResultAsync.fromPromise(
         refetchServices(),
@@ -284,7 +289,8 @@ function DeleteTrigger({
     mutateAsync: deleteGroup,
     error: errorDeleteGroup,
     reset: resetDeleteGroup,
-  } = api.serviceGroups.delete.useMutation({
+  } = useMutation({
+    mutationFn: deleteServiceGroupFn,
     onSuccess: async () => {
       const result = await ResultAsync.fromPromise(
         refetchServices(),

@@ -5,16 +5,16 @@ import {
   PortSpecSchema,
   ServiceBuilderSchema,
 } from "@/server/go/client.gen";
+import type { EndpointDiscovery, ServiceResponse } from "@/server/go/client.gen";
 import { AvailableDatabaseEnum } from "@/server/go/data.gen";
-import { AppRouterOutputs } from "@/server/trpc/api/root";
 import { z } from "zod";
 
 export const serviceNameMinLength = 2;
 export const serviceNameMaxLength = 32;
 export const serviceDescriptionMaxLength = 128;
 
-export type TServiceShallow = AppRouterOutputs["services"]["list"]["services"][number];
-export type TService = AppRouterOutputs["services"]["get"]["service"];
+export type TServiceShallow = ServiceResponse;
+export type TService = ServiceResponse;
 export type TVolumeShallow = TService["config"]["volumes"][number];
 
 export const ServiceNameSchema = z
@@ -132,18 +132,10 @@ export const UpdateServiceInputSchema = z
 
 export type TUpdateServiceInput = z.infer<typeof UpdateServiceInputSchema>;
 
-export type THostFromServiceList = NonNullable<
-  AppRouterOutputs["services"]["list"]["services"][number]["config"]["hosts"]
->[0];
+export type THostFromServiceList = NonNullable<ServiceResponse["config"]["hosts"]>[0];
 
-export type THostFromServiceGet = NonNullable<
-  AppRouterOutputs["services"]["get"]["service"]["config"]["hosts"]
->[0];
+export type THostFromServiceGet = NonNullable<ServiceResponse["config"]["hosts"]>[0];
 
-export type TExternalEndpoint = NonNullable<
-  AppRouterOutputs["services"]["getServiceEndpoints"]["endpoints"]["external"]
->[0];
+export type TExternalEndpoint = NonNullable<EndpointDiscovery["external"]>[0];
 
-export type TInternalEndpoint = NonNullable<
-  AppRouterOutputs["services"]["getServiceEndpoints"]["endpoints"]["internal"]
->[0];
+export type TInternalEndpoint = NonNullable<EndpointDiscovery["internal"]>[0];

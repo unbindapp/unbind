@@ -2,10 +2,10 @@
 
 import Logo from "@/components/icons/logo";
 import { LinkButton } from "@/components/ui/button";
-import { usePathname } from "next/navigation";
+import { useLocation } from "@tanstack/react-router";
 
 export default function LogoLink() {
-  const pathname = usePathname();
+  const pathname = useLocation({ select: (l) => l.pathname });
   const pathnameArr = pathname.split("/");
   const teamIdFromPathname = pathnameArr.length > 1 ? pathnameArr[1] : undefined;
   const projectIdFromPathname = pathnameArr.length > 3 ? pathnameArr[3] : undefined;

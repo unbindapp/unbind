@@ -8,14 +8,14 @@ import {
   volumePanelTabKey,
 } from "@/components/volume/panel/constants";
 import { drawerAnimationMs } from "@/lib/constants";
-import { parseAsStringEnum, useQueryState, UseQueryStateReturn } from "nuqs";
+import { useSearchParam } from "@/lib/hooks/use-search-param";
 import { createContext, ReactNode, useContext, useMemo, useRef } from "react";
 
 type TVolumePanelContext = {
   currentTabId: TVolumePanelTabEnum;
-  setCurrentTabId: UseQueryStateReturn<TVolumePanelTabEnum, TVolumePanelTabEnum>["1"];
+  setCurrentTabId: (value: TVolumePanelTabEnum | null) => void;
   currentVolumeId: string | null;
-  setCurrentVolumeId: UseQueryStateReturn<string | null, string | null>["1"];
+  setCurrentVolumeId: (value: string | null) => void;
   resetCurrentTabId: () => void;
   closePanel: () => void;
   openPanel: (serviceId: string, tabId?: TVolumePanelTabEnum) => void;
@@ -26,12 +26,12 @@ const VolumePanelContext = createContext<TVolumePanelContext | null>(null);
 export const VolumePanelProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
-  const [currentTabId, setCurrentTabId] = useQueryState(
+  const [currentTabId, setCurrentTabId] = useSearchParam<TVolumePanelTabEnum>(
     volumePanelTabKey,
-    parseAsStringEnum(VolumePanelTabEnum.options).withDefault(volumePanelDefaultTabId),
+    volumePanelDefaultTabId,
   );
 
-  const [currentVolumeId, setCurrentVolumeId] = useQueryState(volumePanelVolumeIdKey);
+  const [currentVolumeId, setCurrentVolumeId] = useSearchParam(volumePanelVolumeIdKey);
 
   const timeout = useRef<NodeJS.Timeout | null>(null);
 

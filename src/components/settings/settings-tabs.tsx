@@ -3,7 +3,7 @@
 import SettingsTabIcon, { TSettingsTabVariant } from "@/components/icons/settings-tab-icon";
 import TabIndicator from "@/components/navigation/tab-indicator";
 import { LinkButton } from "@/components/ui/button";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 export type TSettingsTab = {
@@ -18,9 +18,8 @@ type TProps = {
 };
 
 export default function SettingsTabs({ tabs }: TProps) {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const searchParamsStr = searchParams.toString();
+  const pathname = useLocation({ select: (l) => l.pathname });
+  const searchParamsStr = useLocation({ select: (l) => l.searchStr }).replace(/^\?/, "");
   const [activeTabPath, setActiveTabPath] = useState<string | undefined>(pathname);
 
   useEffect(() => {
@@ -51,7 +50,7 @@ export default function SettingsTabs({ tabs }: TProps) {
             )}
             <SettingsTabIcon
               variant={tab.icon}
-              className="relative -my-1 -ml-0.25 size-4 shrink-0 translate-z-0 md:-ml-1 md:size-5"
+              className="relative -my-1 -ml-px size-4 shrink-0 translate-z-0 md:-ml-1 md:size-5"
             />
             <p className="relative leading-none whitespace-nowrap md:min-w-0 md:shrink md:whitespace-normal">
               {tab.label}

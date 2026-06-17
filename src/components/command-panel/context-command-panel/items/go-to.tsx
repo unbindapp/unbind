@@ -19,7 +19,7 @@ import {
   WebhookIcon,
 } from "lucide-react";
 import { ResultAsync } from "neverthrow";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@tanstack/react-router";
 import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 
@@ -32,6 +32,9 @@ export default function useGoToItem({ context }: TProps) {
   const subpageId = "go-to_subpage";
   const { asyncPush } = useAsyncPush();
   const router = useRouter();
+  // TanStack preloads on intent; expose a prefetch shim matching the old call sites.
+  const prefetch = (href: string) =>
+    void router.preloadRoute({ to: href } as Parameters<typeof router.preloadRoute>[0]);
 
   const { environmentId } = useIdsFromPathname();
   const setIsPendingId = useCommandPanelStore((s) => s.setIsPendingId);
@@ -107,7 +110,7 @@ export default function useGoToItem({ context }: TProps) {
                     });
                   },
                   onHighlight: () => {
-                    router.prefetch(
+                    prefetch(
                       `/${context.teamId}/project/${context.projectId}?environment=${environmentId}`,
                     );
                   },
@@ -126,7 +129,7 @@ export default function useGoToItem({ context }: TProps) {
                     });
                   },
                   onHighlight: () => {
-                    router.prefetch(
+                    prefetch(
                       `/${context.teamId}/project/${context.projectId}/logs?environment=${environmentId}`,
                     );
                   },
@@ -145,7 +148,7 @@ export default function useGoToItem({ context }: TProps) {
                     });
                   },
                   onHighlight: () => {
-                    router.prefetch(
+                    prefetch(
                       `/${context.teamId}/project/${context.projectId}/metrics?environment=${environmentId}`,
                     );
                   },
@@ -167,7 +170,7 @@ export default function useGoToItem({ context }: TProps) {
                       });
                     },
                     onHighlight: () => {
-                      router.prefetch(`/${context.teamId}`);
+                      prefetch(`/${context.teamId}`);
                     },
                     keywords: ["projects", "home page", "team", ...goToKeywords],
                   },
@@ -181,7 +184,7 @@ export default function useGoToItem({ context }: TProps) {
               navigateToSettings({ pathname: "", isPendingId: `${subpageId}_/settings` });
             },
             onHighlight: () => {
-              router.prefetch(getSettingsPageHref({ pathname: "", context, environmentId }));
+              prefetch(getSettingsPageHref({ pathname: "", context, environmentId }));
             },
             Icon: SettingsIcon,
             keywords: [
@@ -211,7 +214,7 @@ export default function useGoToItem({ context }: TProps) {
                     });
                   },
                   onHighlight: () => {
-                    router.prefetch(
+                    prefetch(
                       getSettingsPageHref({
                         pathname: "/environments",
                         context,
@@ -243,7 +246,7 @@ export default function useGoToItem({ context }: TProps) {
                     });
                   },
                   onHighlight: () => {
-                    router.prefetch(
+                    prefetch(
                       getSettingsPageHref({
                         pathname: "/storage",
                         context,
@@ -271,7 +274,7 @@ export default function useGoToItem({ context }: TProps) {
               });
             },
             onHighlight: () => {
-              router.prefetch(
+              prefetch(
                 getSettingsPageHref({ pathname: "/variables", context, environmentId }),
               );
             },
@@ -296,7 +299,7 @@ export default function useGoToItem({ context }: TProps) {
               });
             },
             onHighlight: () => {
-              router.prefetch(
+              prefetch(
                 getSettingsPageHref({ pathname: "/members", context, environmentId }),
               );
             },
@@ -314,7 +317,7 @@ export default function useGoToItem({ context }: TProps) {
               });
             },
             onHighlight: () => {
-              router.prefetch(
+              prefetch(
                 getSettingsPageHref({ pathname: "/webhooks", context, environmentId }),
               );
             },
@@ -341,7 +344,7 @@ export default function useGoToItem({ context }: TProps) {
               });
             },
             onHighlight: () => {
-              router.prefetch(
+              prefetch(
                 getSettingsPageHref({ pathname: "/danger-zone", context, environmentId }),
               );
             },

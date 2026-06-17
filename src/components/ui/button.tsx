@@ -1,13 +1,12 @@
 "use client";
 
 import { Slot } from "@radix-ui/react-slot";
+import { Link } from "@tanstack/react-router";
 import { cva, type VariantProps } from "class-variance-authority";
-import Link from "next/link";
 import * as React from "react";
 
 import { cn } from "@/components/ui/utils";
 import { LoaderIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 export const minButtonSizeEnforcerClassName =
   "before:w-full before:h-full before:min-w-[44px] before:min-h-[44px] before:z-[-1] before:bg-transparent before:absolute before:-translate-y-1/2 before:top-1/2 before:-translate-x-1/2 before:left-1/2";
@@ -66,7 +65,7 @@ const buttonVariants = cva(
         lg: "px-9 py-2.5",
         icon: "size-9 shrink-0 flex items-center justify-center",
       },
-      state: {
+      loadingState: {
         default: "",
         loading: "opacity-75 disabled:opacity-75",
       },
@@ -92,7 +91,7 @@ const buttonVariants = cva(
     defaultVariants: {
       variant: "default",
       size: "default",
-      state: "default",
+      loadingState: "default",
       fadeOnDisabled: "default",
       focusVariant: "default",
       forceMinSize: "default",
@@ -136,7 +135,7 @@ function Button({
   fadeOnDisabled,
   focusVariant,
   forceMinSize,
-  state,
+  loadingState,
   isPending,
   asChild = false,
   spinnerVariants: spinnerVariantProps,
@@ -152,7 +151,7 @@ function Button({
         buttonVariants({
           variant,
           size,
-          state,
+          loadingState,
           fadeOnDisabled,
           focusVariant,
           forceMinSize,
@@ -160,7 +159,7 @@ function Button({
           className,
         }),
       )}
-      disabled={state === "loading" || isPending ? true : disabled}
+      disabled={loadingState === "loading" || isPending ? true : disabled}
       {...props}
     >
       {isPending ? (
@@ -175,34 +174,32 @@ function Button({
   );
 }
 
-export interface TLinkButtonProps
-  extends React.ComponentProps<typeof LinkCustom>,
-    VariantProps<typeof buttonVariants> {
-  asChild?: boolean;
-}
+export type TLinkButtonProps = React.ComponentProps<typeof Link> &
+  VariantProps<typeof buttonVariants>;
 
 function LinkButton({
   className,
   variant,
   size,
-  state,
+  loadingState,
   fadeOnDisabled,
   focusVariant,
   forceMinSize,
   children,
-  asChild,
   ...props
 }: TLinkButtonProps) {
-  const Comp = asChild ? Slot : LinkCustom;
+  // TanStack Router preloads on intent by default (router `defaultPreload: "intent"`),
+  // so no manual hover/touch prefetching is needed. The button's `loadingState` style
+  // variant is named so it doesn't collide with TanStack Link's own `state` prop.
   const isText = typeof children === "string";
 
   return (
-    <Comp
+    <Link
       className={cn(
         buttonVariants({
           variant,
           size,
-          state,
+          loadingState,
           fadeOnDisabled,
           focusVariant,
           forceMinSize,
@@ -213,52 +210,7 @@ function LinkButton({
       {...props}
     >
       {children}
-    </Comp>
-  );
-}
-
-type TPrefetch = "hover" | false;
-type TLinkCustomProps = Omit<React.ComponentProps<typeof Link>, "prefetch"> & {
-  prefetch?: TPrefetch;
-};
-
-export function LinkCustom({
-  onMouseEnter: onMouseEnterProp,
-  onTouchStart: onTouchStartProp,
-  href,
-  prefetch = "hover",
-  ...rest
-}: TLinkCustomProps) {
-  const router = useRouter();
-
-  const onMouseEnter = React.useCallback(
-    (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
-      onMouseEnterProp?.(e);
-      if (prefetch === "hover") {
-        router.prefetch(href.toString());
-      }
-    },
-    [onMouseEnterProp, href, router, prefetch],
-  );
-
-  const onTouchStart = React.useCallback(
-    (e: React.TouchEvent<HTMLAnchorElement>) => {
-      onTouchStartProp?.(e);
-      if (prefetch === "hover") {
-        router.prefetch(href.toString());
-      }
-    },
-    [onTouchStartProp, href, router, prefetch],
-  );
-
-  return (
-    <Link
-      href={href}
-      onMouseEnter={onMouseEnter}
-      onTouchStart={onTouchStart}
-      prefetch={false}
-      {...rest}
-    />
+    </Link>
   );
 }
 

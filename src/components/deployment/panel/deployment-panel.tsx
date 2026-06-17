@@ -123,7 +123,7 @@ export default function DeploymentPanel({ service }: TProps) {
                     <ServiceIcon
                       service={service}
                       color="monochrome"
-                      className="-ml-0.25 size-4 sm:size-4.5"
+                      className="-ml-px size-4 sm:size-4.5"
                     />
                     <p className="min-w-0 shrink truncate">
                       {service.name} <span className="text-muted-more-foreground">/</span>{" "}
@@ -169,7 +169,7 @@ export default function DeploymentPanel({ service }: TProps) {
                     <ServiceIcon
                       service={service}
                       color="monochrome"
-                      className="-ml-0.25 size-4 sm:size-4.5"
+                      className="-ml-px size-4 sm:size-4.5"
                     />
                     <p className="min-w-0 shrink truncate">
                       {service.name} <span className="text-muted-more-foreground">/</span>{" "}

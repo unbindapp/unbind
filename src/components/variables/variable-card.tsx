@@ -25,7 +25,8 @@ import {
   TVariableShallow,
   VariableForCreateValueSchema,
 } from "@/server/trpc/api/variables/types";
-import { api } from "@/server/trpc/setup/client";
+import { createOrUpdateVariables, deleteVariables } from "@/api/services/variables";
+import { useMutation } from "@tanstack/react-query";
 import {
   CheckIcon,
   EllipsisVerticalIcon,
@@ -219,11 +220,11 @@ export default function VariableCard({
             </Button>
             <div className="relative flex min-h-9 min-w-0 flex-1 items-center justify-start pl-2">
               <ScrollArea
-                className="max-h-[min(16rem,50vh)] w-full [mask-image:linear-gradient(to_bottom,transparent_0%,black_0.375rem,black_calc(100%_-_0.375rem),transparent_100%)]"
+                className="max-h-[min(16rem,50vh)] w-full mask-[linear-gradient(to_bottom,transparent_0%,black_0.375rem,black_calc(100%-0.375rem),transparent_100%)]"
                 classNameViewport="py-1.5"
               >
                 <div className="flex w-full justify-start">
-                  <p className="group-data-placeholder/card:bg-foreground group-data-reference-error/card:text-destructive group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden px-0.25 py-0.25 pr-2 font-mono text-xs leading-tight whitespace-pre-wrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
+                  <p className="group-data-placeholder/card:bg-foreground group-data-reference-error/card:text-destructive group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden px-px py-px pr-2 font-mono text-xs leading-tight whitespace-pre-wrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
                     {referenceError
                       ? "The referenced value doesn't exist anymore. Consider deleting this."
                       : isPlaceholder || !isValueVisible
@@ -233,7 +234,7 @@ export default function VariableCard({
                               <span
                                 data-token={part.token !== null ? true : undefined}
                                 key={index}
-                                className="data-token:bg-process/10 data-token:ring-process/20 data-token:text-process data-token:rounded-[2px] data-token:ring-1"
+                                className="data-token:bg-process/10 data-token:ring-process/20 data-token:text-process data-token:rounded-2px data-token:ring-1"
                               >
                                 {part.token !== null ? (
                                   <>
@@ -483,7 +484,8 @@ function EditVariableForm({
     ...variableTypeProps,
   });
 
-  const { mutateAsync: upsertVariables, error } = api.variables.createOrUpdate.useMutation({
+  const { mutateAsync: upsertVariables, error } = useMutation({
+    mutationFn: createOrUpdateVariables,
     onSuccess: () => {},
   });
 
@@ -594,7 +596,8 @@ function DeleteTrigger({
     mutateAsync: deleteVariable,
     error,
     reset,
-  } = api.variables.delete.useMutation({
+  } = useMutation({
+    mutationFn: deleteVariables,
     onSuccess: async () => {
       optimisticRemoveVariables({
         variables: variable.variable_type === "reference" ? [] : [variable],

@@ -1,6 +1,6 @@
 "use client";
 
-import { useQueryState } from "nuqs";
+import { useSearchParam } from "@/lib/hooks/use-search-param";
 import { createContext, ReactNode, useCallback, useContext, useMemo } from "react";
 
 type TLogViewDropdownContext = [boolean, (open: boolean | ((open: boolean) => boolean)) => void];
@@ -12,7 +12,7 @@ export const logViewPreferencesDropdownId = "log_view_preferences";
 export const LogViewDropdownProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
-  const [dropdown, setDropdown] = useQueryState("dropdown");
+  const [dropdown, setDropdown] = useSearchParam("dropdown");
 
   const open = dropdown === logViewPreferencesDropdownId;
 

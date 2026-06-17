@@ -1,10 +1,11 @@
 "use client";
 
-import { AppRouterOutputs, AppRouterQueryResult } from "@/server/trpc/api/root";
-import { api } from "@/server/trpc/setup/client";
+import { queryKeys } from "@/api/query-keys";
+import { instanceHealthQuery, type TInstanceHealth } from "@/api/services/instances";
+import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext } from "react";
 
-type TInstanceHealthContext = AppRouterQueryResult<AppRouterOutputs["instances"]["health"]>;
+type TInstanceHealthContext = UseQueryResult<TInstanceHealth, Error>;
 
 const InstanceHealthContext = createContext<TInstanceHealthContext | null>(null);
 
@@ -23,10 +24,10 @@ export const InstanceHealthProvider: React.FC<TProps> = ({
   serviceId,
   children,
 }) => {
-  const query = api.instances.health.useQuery(
-    { teamId, projectId, environmentId, serviceId },
-    { refetchInterval: 3000 },
-  );
+  const query = useQuery({
+    ...instanceHealthQuery(teamId, projectId, environmentId, serviceId),
+    refetchInterval: 3000,
+  });
 
   return <InstanceHealthContext.Provider value={query}>{children}</InstanceHealthContext.Provider>;
 };
@@ -52,11 +53,12 @@ export const useInstanceHealthUtils = ({
   environmentId: string;
   serviceId: string;
 }) => {
-  const utils = api.useUtils();
+  const queryClient = useQueryClient();
+  const queryKey = queryKeys.instances.health(teamId, projectId, environmentId, serviceId);
   return {
-    invalidate: () =>
-      utils.instances.health.invalidate({ teamId, projectId, environmentId, serviceId }),
-    fetch: () => utils.instances.health.fetch({ teamId, projectId, environmentId, serviceId }),
-    refetch: () => utils.instances.health.refetch({ teamId, projectId, environmentId, serviceId }),
+    invalidate: () => queryClient.invalidateQueries({ queryKey }),
+    fetch: () =>
+      queryClient.ensureQueryData(instanceHealthQuery(teamId, projectId, environmentId, serviceId)),
+    refetch: () => queryClient.refetchQueries({ queryKey }),
   };
 };

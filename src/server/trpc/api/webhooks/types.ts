@@ -3,7 +3,7 @@ import {
   WebhookTeamEventSchema,
   WebhookTypeSchema,
 } from "@/server/go/client.gen";
-import { AppRouterOutputs } from "@/server/trpc/api/root";
+import type { WebhookResponse } from "@/server/go/client.gen";
 import { z } from "zod";
 
 export type TWebhookTypeProject = (typeof WebhookTypeSchema)["Enum"]["project"];
@@ -15,4 +15,4 @@ export type TWebhookIdTeamEnum = z.infer<typeof WebhookTeamEventSchema>;
 export const WebhookIdProjectEnum = WebhookProjectEventSchema;
 export const WebhookIdTeamEnum = WebhookTeamEventSchema;
 
-export type TWebhookShallow = AppRouterOutputs["webhooks"]["list"]["webhooks"][number];
+export type TWebhookShallow = WebhookResponse;

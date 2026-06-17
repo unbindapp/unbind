@@ -5,7 +5,10 @@ import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-
 import { TToken } from "@/components/ui/textarea-with-tokens";
 import { TReferenceExtended } from "@/components/variables/variables-form-field";
 import { useVariablesUtils } from "@/components/variables/variables-provider";
-import { api } from "@/server/trpc/setup/client";
+import { createDeployment as createDeploymentFn } from "@/api/services/deployments";
+import { updateService as updateServiceFn } from "@/api/services/services";
+import { createOrUpdateVariables as createOrUpdateVariablesFn } from "@/api/services/variables";
+import { useMutation } from "@tanstack/react-query";
 import { useCallback, useMemo, useRef } from "react";
 
 export default function useCreateFirstDeployment() {
@@ -36,9 +39,11 @@ export default function useCreateFirstDeployment() {
     serviceId,
   });
 
-  const { mutateAsync: createDeployment } = api.deployments.create.useMutation();
-  const { mutateAsync: createOrUpdateVariables } = api.variables.createOrUpdate.useMutation();
-  const { mutateAsync: updateService } = api.services.update.useMutation();
+  const { mutateAsync: createDeployment } = useMutation({ mutationFn: createDeploymentFn });
+  const { mutateAsync: createOrUpdateVariables } = useMutation({
+    mutationFn: createOrUpdateVariablesFn,
+  });
+  const { mutateAsync: updateService } = useMutation({ mutationFn: updateServiceFn });
 
   const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
 
