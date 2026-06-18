@@ -63,7 +63,7 @@ type Config struct {
 	// Logging
 	LokiEndpoint string `env:"LOKI_ENDPOINT" envDefault:"http://loki-unbind-gateway.unbind-system.svc.cluster.local"`
 	// Metrics
-	PrometheusEndpoint string `env:"PROMETHEUS_ENDPOINT" envDefault:"http://kube-prometheus-stack-prometheus.monitoring:9090"`
+	PrometheusEndpoint string `env:"PROMETHEUS_ENDPOINT" envDefault:"http://vmsingle-victoria-metrics-k8s-stack.unbind-system:8428"`
 	// Dev origins will inject localhost:3000 into cors, etc.
 	InjectDevOrigins bool `env:"INJECT_DEV_ORIGINS" envDefault:"false"`
 	SkipBootstrap    bool `env:"SKIP_BOOTSTRAP" envDefault:"false"`

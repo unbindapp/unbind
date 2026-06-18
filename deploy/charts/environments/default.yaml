@@ -106,7 +106,7 @@ overrides:
       loki:
         endpoint: http://loki-gateway.unbind-system.svc.cluster.local
       prometheus:
-        endpoint: http://vmsingle-victoria-metrics-k8s-stack.unbind-system:8429
+        endpoint: http://vmsingle-victoria-metrics-k8s-stack.unbind-system:8428
       resources:
         limits:
           cpu: 250m
