@@ -301,3 +301,7 @@ tool (
 	github.com/vburenin/ifacemaker
 	github.com/vektra/mockery/v2
 )
+
+// Operator lives in-repo (apps/operator); published module is stale. Resolve
+// locally so CI (GOWORK=off) matches the workspace.
+replace github.com/unbindapp/unbind-operator => ../operator
