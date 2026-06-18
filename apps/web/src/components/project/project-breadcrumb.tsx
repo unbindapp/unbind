@@ -98,7 +98,9 @@ export default function ProjectBreadcrumb({ className }: TProps) {
       if (!project || !environment) return null;
       const newUrl = new URL(window.location.href);
       newUrl.searchParams.set("environment", environment.id);
-      return newUrl.toString();
+      // Return a relative href. An absolute URL (with origin) makes TanStack
+      // Router treat the navigation as external and hard-reload the document.
+      return `${newUrl.pathname}${newUrl.search}${newUrl.hash}`;
     },
     [projectsData, selectedProjectId],
   );

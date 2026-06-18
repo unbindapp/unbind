@@ -17,11 +17,11 @@ export function NewEntityIndicator({ id, className }: { id: string; className?: 
     <div
       data-show={showIndicator ? true : undefined}
       className={cn(
-        "group/indicator pointer-events-none absolute -top-[1px] left-0 flex h-full w-full items-start justify-center overflow-hidden px-2 opacity-0 transition-opacity duration-500 data-show:opacity-100",
+        "group/indicator pointer-events-none absolute -top-px left-0 flex h-full w-full items-start justify-center overflow-hidden px-2 opacity-0 transition-opacity duration-500 data-show:opacity-100",
         className,
       )}
     >
-      <div className="from-top-loader/0 via-top-loader to-top-loader/0 h-[1.5px] w-full bg-gradient-to-r" />
+      <div className="from-top-loader/0 via-top-loader to-top-loader/0 h-[1.5px] w-full bg-linear-to-r" />
       <div className="from-top-loader via-top-loader/0 absolute top-0 left-1/2 h-3 w-full -translate-x-1/2 -translate-y-1/2 translate-z-0 rounded-full bg-radial blur-xs transition" />
     </div>
   );

@@ -13,6 +13,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/components/ui/utils";
+import { useIntent } from "@/lib/hooks/use-intent";
 import {
   ArrowRightIcon,
   CheckIcon,
@@ -318,7 +319,7 @@ function SheetItem<T>({
     >
       {isPending && (
         <div className="bg-background border-top-loader/25 absolute top-0 left-0 h-full w-full items-center justify-center overflow-hidden rounded-lg border">
-          <div className="from-top-loader/0 via-top-loader/25 to-top-loader/0 animate-ping-pong absolute top-1/2 left-1/2 aspect-square w-full origin-center -translate-1/2 bg-gradient-to-r" />
+          <div className="from-top-loader/0 via-top-loader/25 to-top-loader/0 animate-ping-pong absolute top-1/2 left-1/2 aspect-square w-full origin-center -translate-1/2 bg-linear-to-r" />
         </div>
       )}
       <div className="group-data-pending/item:text-foreground relative flex min-w-0 flex-1 items-center gap-1.5">
@@ -369,7 +370,7 @@ type TDropdownItemProps<T> = {
   isPending?: boolean;
   comingSoon?: boolean;
   className?: string;
-} & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onSelect">;
+} & Omit<ComponentProps<typeof DropdownMenuItem>, "onSelect">;
 
 function DropdownItem<T>({
   item,
@@ -388,6 +389,10 @@ function DropdownItem<T>({
   disabled,
   ...rest
 }: TDropdownItemProps<T>) {
+  const menuIntentProps = useIntent({
+    onIntent: () => onHover?.(item.id),
+    enabled: !comingSoon && !!onHover,
+  });
   return (
     <DropdownMenuItem
       onSelect={(e) => {
@@ -402,16 +407,15 @@ function DropdownItem<T>({
       data-last-hovered={lastHoveredItem?.id === item.id ? true : undefined}
       className={cn(`group/item`, className)}
       data-pending={isPending ? true : undefined}
-      // @ts-expect-error - TODO - Check this later, fine for now
+      {...menuIntentProps}
       onMouseEnter={() => {
         if (comingSoon) return;
-        onHover?.(item.id);
+        menuIntentProps.onMouseEnter();
         setLastHoveredItem(item);
       }}
-      // @ts-expect-error - TODO - Check this later, fine for now
       onTouchStart={() => {
         if (comingSoon) return;
-        onHover?.(item.id);
+        menuIntentProps.onTouchStart();
         setLastHoveredItem(item);
       }}
       disabled={comingSoon || disabled}
@@ -420,7 +424,7 @@ function DropdownItem<T>({
     >
       {isPending && (
         <div className="bg-background border-top-loader/25 absolute top-0 left-0 h-full w-full items-center justify-center overflow-hidden rounded-md border">
-          <div className="from-top-loader/0 via-top-loader/25 to-top-loader/0 animate-ping-pong absolute top-1/2 left-1/2 aspect-square w-full origin-center -translate-1/2 bg-gradient-to-r" />
+          <div className="from-top-loader/0 via-top-loader/25 to-top-loader/0 animate-ping-pong absolute top-1/2 left-1/2 aspect-square w-full origin-center -translate-1/2 bg-linear-to-r" />
         </div>
       )}
       <div className="group-data-pending/item:text-foreground relative flex min-w-0 flex-1 items-center gap-1.5">

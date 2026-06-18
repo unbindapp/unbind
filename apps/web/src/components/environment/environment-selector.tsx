@@ -10,13 +10,16 @@ import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { Button, TButtonProps } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
+import { servicesListQuery } from "@/lib/queries/services";
 import { ChevronDownIcon } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 
 export default function EnvironmentSelector() {
   const { asyncPush } = useAsyncPush();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const { data: projectsData } = useProjects();
 
@@ -53,7 +56,9 @@ export default function EnvironmentSelector() {
       if (!project || !environment) return null;
       const newUrl = new URL(window.location.href);
       newUrl.searchParams.set("environment", environment.id);
-      return newUrl.toString();
+      // Return a relative href. An absolute URL (with origin) makes TanStack
+      // Router treat the navigation as external and hard-reload the document.
+      return `${newUrl.pathname}${newUrl.search}${newUrl.hash}`;
     },
     [projectsData, selectedProjectId],
   );
@@ -70,11 +75,16 @@ export default function EnvironmentSelector() {
 
   const onEnvironmentIdHover = useCallback(
     (id: string) => {
-      const href = getHrefForEnvironmentId(id);
-      if (!href) return;
-      void router.preloadRoute({ to: href } as Parameters<typeof router.preloadRoute>[0]);
+      if (!teamIdFromPathname || !selectedProjectId) return;
+      void queryClient.prefetchQuery(
+        servicesListQuery({
+          teamId: teamIdFromPathname,
+          projectId: selectedProjectId,
+          environmentId: id,
+        }),
+      );
     },
-    [getHrefForEnvironmentId, router],
+    [queryClient, teamIdFromPathname, selectedProjectId],
   );
 
   const getHrefForEnvironmentManageItem = useCallback(() => {
@@ -137,18 +147,21 @@ function Trigger<T>({
   isOpen,
   className,
   ...rest
-}: { item?: TBreadcrumbItem<T>; isOpen: boolean } & TButtonProps) {
+}: { item: TBreadcrumbItem<T> | null | undefined; isOpen: boolean } & TButtonProps) {
   return (
     <Button
       {...rest}
       variant="outline"
       data-open={isOpen ? true : undefined}
+      data-pending={item === undefined ? true : undefined}
       className={cn(
         "group/button text-muted-foreground max-w-32 gap-1 rounded-md px-2.25 py-1.25 text-sm leading-tight font-medium",
         className,
       )}
     >
-      <p className="min-w-0 shrink truncate">{item?.name || "Not found"}</p>
+      <p className="group-data-pending/button:bg-foreground group-data-pending/button:animate-skeleton min-w-0 shrink truncate group-data-pending/button:rounded-sm group-data-pending/button:text-transparent">
+        {item === undefined ? "Loading" : item === null ? "Not found" : item.name}
+      </p>
       <ChevronDownIcon className="text-muted-more-foreground -mr-0.75 size-4 transition group-data-open/button:rotate-180" />
     </Button>
   );
