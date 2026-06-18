@@ -323,15 +323,20 @@ releases:
             echo "Installing Postgres Operator CRDs..."
             kubectl apply -f https://raw.githubusercontent.com/zalando/postgres-operator/refs/tags/v1.15.1/manifests/operatorconfiguration.crd.yaml
             kubectl apply -f https://raw.githubusercontent.com/zalando/postgres-operator/refs/tags/v1.15.1/manifests/postgresql.crd.yaml
-            # The upstream postgresql CRD caps spec.postgresql.version at "17". The custom
-            # unbind spilo ships PG18, so widen the enum to allow version "18".
-            kubectl get crd postgresqls.acid.zalan.do -o jsonpath='{.spec.versions[0].schema.openAPIV3Schema.properties.spec.properties.postgresql.properties.version.enum}' | grep -q '"18"' || \
-              kubectl patch crd postgresqls.acid.zalan.do --type=json \
-                -p '[{"op":"add","path":"/spec/versions/0/schema/openAPIV3Schema/properties/spec/properties/postgresql/properties/version/enum/-","value":"18"}]'
+            # The upstream postgresql CRD allows versions "13"-"17". Unbind supports "14"-"18"
+            # (the custom spilo ships PG18), so set the version enum to exactly that range.
+            # The operator's runtime CRD registration is disabled (enable_crd_registration:
+            # false) so this patch is not overwritten.
+            kubectl patch crd postgresqls.acid.zalan.do --type=json \
+              -p '[{"op":"replace","path":"/spec/versions/0/schema/openAPIV3Schema/properties/spec/properties/postgresql/properties/version/enum","value":["14","15","16","17","18"]}]'
             echo "Postgres Operator CRDs installed"
     values:
       -
         configGeneral:
+          # The presync hook installs the CRDs and widens the version enum to allow "18".
+          # The operator must NOT re-register the CRDs at runtime, or it would overwrite
+          # that patch with its built-in schema (capped at "17") and reject our PG18 spilo.
+          enable_crd_registration: false
           docker_image: {{ .Values | get "overrides.postgresOperator.spiloImage" }}
         resources:
           limits:
