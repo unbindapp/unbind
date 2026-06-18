@@ -473,27 +473,6 @@ func (self *UnbindInstaller) SyncHelmfileWithSteps(ctx context.Context, opts Syn
 				return nil
 			},
 		},
-		{
-			Description: "Waiting for authentication services",
-			Progress:    0.98,
-			Action: func(ctx context.Context) error {
-				namespace := "unbind-system"
-
-				// Wait for kube-oidc-proxy deployment to be ready
-				self.logProgress(dependencyName, 0.97, "Waiting for kube-oidc-proxy to be ready...", nil, StatusInstalling)
-				cmd1 := exec.CommandContext(ctx, "kubectl", "wait", "--for=condition=available",
-					"deployment/kube-oidc-proxy", "-n", namespace, "--timeout=300s")
-				cmd1.Env = append(os.Environ(), fmt.Sprintf("KUBECONFIG=%s", self.kubeConfigPath))
-
-				if output, err := cmd1.CombinedOutput(); err != nil {
-					self.sendLog(fmt.Sprintf("kubectl wait kube-oidc-proxy output: %s", string(output)))
-					return fmt.Errorf("failed waiting for kube-oidc-proxy deployment: %w", err)
-				}
-				self.sendLog("kube-oidc-proxy deployment is ready")
-
-				return nil
-			},
-		},
 	})
 }
 

@@ -600,78 +600,6 @@ releases:
       component: cert-manager
     installed: {{ .Values | get "components.certManager.enabled" true }}
 
-  - name: kube-oidc-proxy
-    namespace: {{ .Values.namespace }}
-    chart: ./charts/kube-oidc-proxy
-    needs:
-      - unbind-app
-    hooks:
-      - events: ["presync"]
-        showlogs: true
-        command: "/bin/sh"
-        args:
-          - "-c"
-          - |
-            set -eu
-            NAMESPACE="{{ .Values.namespace }}"
-
-            # Self-signed serving cert for the proxy's :443. The API connects with
-            # InsecureSkipVerify, so this only needs to exist, not be publicly trusted.
-            if kubectl get secret kube-oidc-proxy-tls -n "$NAMESPACE" >/dev/null 2>&1; then
-              echo "kube-oidc-proxy-tls already exists. Skipping."
-              exit 0
-            fi
-
-            CERT_DIR=$(mktemp -d)
-            trap 'rm -rf -- "$CERT_DIR"' EXIT
-            SVC_FQDN="kube-oidc-proxy.${NAMESPACE}.svc.cluster.local"
-
-            openssl req -x509 -newkey rsa:2048 -nodes -days 3650 -sha256 \
-              -keyout "$CERT_DIR/tls.key" -out "$CERT_DIR/tls.crt" \
-              -subj "/CN=${SVC_FQDN}" \
-              -addext "subjectAltName=DNS:kube-oidc-proxy,DNS:${SVC_FQDN}"
-
-            kubectl create secret tls kube-oidc-proxy-tls \
-              --namespace="$NAMESPACE" \
-              --cert="$CERT_DIR/tls.crt" \
-              --key="$CERT_DIR/tls.key"
-    values:
-      -
-        replicaCount: {{ .Values | get "overrides.kubeOidcProxy.replicaCount" 2 }}
-        image:
-          repository: {{ .Values | get "overrides.kubeOidcProxy.image.repository" "ghcr.io/unbindapp/kube-oidc-proxy" }}
-          tag: {{ .Values | get "overrides.kubeOidcProxy.image.tag" "master-14884925050" }}
-          pullPolicy: {{ .Values | get "overrides.kubeOidcProxy.image.pullPolicy" "IfNotPresent" }}
-
-        oidc:
-          issuerUrl: {{ .Values | get "overrides.kubeOidcProxy.oidc.issuerUrl" (printf "https://%s/api/oauth2" .Values.unbindDomain) }}
-          clientId: {{ .Values | get "overrides.kubeOidcProxy.oidc.clientId" "unbind-api" }}
-          usernameClaim: {{ .Values | get "overrides.kubeOidcProxy.oidc.usernameClaim" "email" }}
-          groupsClaim: {{ .Values | get "overrides.kubeOidcProxy.oidc.groupsClaim" "groups" }}
-          tlsSecretName: {{ .Values | get "overrides.kubeOidcProxy.oidc.tlsSecretName" "kube-oidc-proxy-tls" }}
-
-        service:
-          type: {{ .Values | get "overrides.kubeOidcProxy.service.type" "ClusterIP" }}
-          port: {{ .Values | get "overrides.kubeOidcProxy.service.port" 443 }}
-          targetPort: {{ .Values | get "overrides.kubeOidcProxy.service.targetPort" 443 }}
-
-        resources:
-          requests:
-            memory: "10Mi"
-            cpu: "10m"
-          limits:
-            cpu: {{ .Values | get "overrides.kubeOidcProxy.resources.limits.cpu" "300m" }}
-            memory: {{ .Values | get "overrides.kubeOidcProxy.resources.limits.memory" "256Mi" }}
-
-        rbac:
-          create: {{ .Values | get "overrides.kubeOidcProxy.rbac.create" true }}
-          viewerCreate: {{ .Values | get "overrides.kubeOidcProxy.rbac.viewerCreate" true }}
-          viewerGroupName: {{ .Values | get "overrides.kubeOidcProxy.rbac.viewerGroupName" "oidc:users" }}
-
-    labels:
-      component: auth
-    installed: {{ .Values | get "components.kubeOidcProxy.enabled" true }}
-
   - name: unbind-operator
     namespace: {{ .Values.namespace }}
     chart: ./charts/unbind-operator
@@ -820,8 +748,6 @@ releases:
               value: {{ .Values | get "overrides.unbind.api.database.name" "unbind" }}
             - name: REDIS_URL
               value: {{ .Values | get "overrides.unbind.api.redis.url" (printf "redis-headless.%s:6379" .Values.namespace) }}
-            - name: KUBE_PROXY_URL
-              value: {{ .Values | get "overrides.unbind.api.kubeProxyUrl" (printf "https://kube-oidc-proxy.%s.svc.cluster.local:443" .Values.namespace) }}
             - name: BUILDER_NAMESPACE
               value: {{ .Values.namespace }}
             - name: BOOTSTRAP_CONTAINER_REGISTRY_HOST

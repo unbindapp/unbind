@@ -64,8 +64,6 @@ graph TB
 
     subgraph "Auth"
         OIDC[OIDC issuer<br/>/api/oauth2]
-        Proxy[kube-oidc-proxy]
-        OIDC -.-> Proxy
     end
 
     subgraph "Data"
@@ -81,6 +79,7 @@ graph TB
     end
 
     subgraph "Kubernetes"
+        KubeAPI[K8s API server]
         Operator[Unbind Operator<br/>watches CRDs]
         CRD[Service CRDs]
         Operator -->|reconciles| CRD
@@ -92,6 +91,8 @@ graph TB
     API --> Redis
     API -->|trigger build| BuildJob
     API -->|reconcile| CRD
+    API -.->|mints tokens| OIDC
+    API -->|impersonates user| KubeAPI
 ```
 
 ### How the API serves the SPA

@@ -19,7 +19,6 @@ type ConfigInterface interface {
 	GetPostgresSSLMode() string
 	GetKubeConfig() string
 	GetSystemNamespace() string
-	GetKubeProxyURL() string
 	GetBuildkitHost() string
 	GetBuildImage() string
 }
@@ -49,14 +48,12 @@ type Config struct {
 	PostgresSSLMode  string `env:"POSTGRES_SSL_MODE" envDefault:"disable"`
 	// Redis
 	RedisURL string `env:"REDIS_URL" envDefault:"localhost:6379"`
-	// Auth tokens. TokenAudience is the JWT "aud" and must match the kube-oidc-proxy clientId.
+	// Auth tokens. TokenAudience is the JWT "aud" claim minted into access tokens.
 	TokenAudience string `env:"TOKEN_AUDIENCE" envDefault:"unbind-api"`
 	// CookieSecure should be false only for local http development.
 	CookieSecure bool `env:"COOKIE_SECURE" envDefault:"true"`
 	// Kubernetes config, optional - if in cluster it will use the in-cluster config
 	KubeConfig string `env:"KUBECONFIG"`
-	// kube-oidc-proxy
-	KubeProxyURL string `env:"KUBE_PROXY_URL" envDefault:"https://kube-oidc-proxy.unbind-system.svc.cluster.local:443"`
 	// Registry specific
 	BootstrapContainerRegistryHost     string `env:"BOOTSTRAP_CONTAINER_REGISTRY_HOST"`
 	BootstrapContainerRegistryUser     string `env:"BOOTSTRAP_CONTAINER_REGISTRY_USER"`
@@ -106,10 +103,6 @@ func (self *Config) GetKubeConfig() string {
 
 func (self *Config) GetSystemNamespace() string {
 	return self.SystemNamespace
-}
-
-func (self *Config) GetKubeProxyURL() string {
-	return self.KubeProxyURL
 }
 
 func (self *Config) GetBuildkitHost() string {

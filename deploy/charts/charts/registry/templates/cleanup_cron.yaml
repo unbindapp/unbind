@@ -137,7 +137,7 @@ spec:
 
                 for tag in $TAGS; do
                   # Get manifest digest
-                  MANIFEST=$(curl -s -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+                  MANIFEST=$(curl -s -H "Accept: application/vnd.oci.image.manifest.v1+json, application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.v2+json, application/vnd.docker.distribution.manifest.list.v2+json" \
                     $REGISTRY_URL/v2/$repo/manifests/$tag)
 
                   # Extract all layer digests to calculate size
@@ -302,7 +302,7 @@ spec:
                   echo "Deleting tag: $tag from repository: $REPO"
 
                   # Get manifest digest
-                  MANIFEST_DIGEST=$(curl -s -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+                  MANIFEST_DIGEST=$(curl -s -H "Accept: application/vnd.oci.image.manifest.v1+json, application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.v2+json, application/vnd.docker.distribution.manifest.list.v2+json" \
                     -I $REGISTRY_URL/v2/$REPO/manifests/$tag | grep Docker-Content-Digest | awk '{print $2}' | tr -d '\r')
 
                   if [ -n "$MANIFEST_DIGEST" ]; then
@@ -333,7 +333,7 @@ spec:
 
                 # Run garbage collection in the registry container
                 kubectl -n unbind-system exec $REGISTRY_POD -- /bin/registry garbage-collect \
-                  /etc/docker/registry/config.yml --delete-untagged=true
+                  /etc/distribution/config.yml --delete-untagged=true
 
                 echo "Garbage collection completed on pod $REGISTRY_POD"
               else

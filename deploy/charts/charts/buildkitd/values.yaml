@@ -1,5 +1,5 @@
 replicaCount: 1
-image: moby/buildkit:v0.22.0-rootless
+image: moby/buildkit:v0.31.0-rootless
 maxParallelism: 2
 registries: []
 # registries:

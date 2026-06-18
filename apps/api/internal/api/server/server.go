@@ -79,8 +79,8 @@ func (self *Server) GetUserFromContext(ctx context.Context) (user *ent.User, fou
 	return user, found
 }
 
-// GetBearerTokenFromContext returns the validated access token, forwarded to
-// kube-oidc-proxy for per-user Kubernetes operations.
+// GetBearerTokenFromContext returns the validated access token, used to impersonate
+// the user for per-user Kubernetes operations.
 func (self *Server) GetBearerTokenFromContext(ctx context.Context) (token string, found bool) {
 	token, found = ctx.Value("bearer_token").(string)
 	return token, found

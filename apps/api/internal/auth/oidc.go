@@ -9,8 +9,8 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 )
 
-// OIDCHandler serves the discovery and JWKS documents kube-oidc-proxy uses to
-// validate our tokens.
+// OIDCHandler serves the discovery and JWKS documents that token-consuming clients
+// use to validate our tokens.
 type OIDCHandler struct {
 	tokenManager *TokenManager
 }

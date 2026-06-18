@@ -293,6 +293,7 @@ func startAPI(cfg *config.Config) {
 	}
 	tokenManager := auth.NewTokenManager(pkey, cfg.ExternalOauth2URL, cfg.TokenAudience)
 	oidcHandler := auth.NewOIDCHandler(tokenManager)
+	kubeClient.SetTokenVerifier(tokenManager)
 
 	// Implementation
 	srvImpl := &server.Server{
@@ -359,8 +360,8 @@ func startAPI(cfg *config.Config) {
 		_, _ = w.Write([]byte("OK"))
 	})
 
-	// OIDC discovery + JWKS for kube-oidc-proxy. The ingress routes the issuer
-	// path (/api/oauth2) here.
+	// OIDC discovery + JWKS for token-consuming clients. The ingress routes the
+	// issuer path (/api/oauth2) here.
 	r.Get("/.well-known/openid-configuration", oidcHandler.HandleOpenIDConfiguration)
 	r.Get("/.well-known/jwks.json", oidcHandler.HandleJWKS)
 

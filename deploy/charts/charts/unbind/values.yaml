@@ -101,8 +101,6 @@ api:
       value: "unbind"
     - name: REDIS_URL
       value: redis-headless.unbind-system:6379
-    - name: KUBE_PROXY_URL
-      value: "https://kube-oidc-proxy.unbind-system.svc.cluster.local:443"
     - name: BUILD_IMAGER
       value: unbindapp/unbind-builder:latest
     - name: BUILDER_NAMESPACE

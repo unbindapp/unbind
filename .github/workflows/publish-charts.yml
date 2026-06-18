@@ -25,7 +25,6 @@ jobs:
         chart:
           - buildkitd
           - database
-          - kube-oidc-proxy
           - registry
           - unbind
           - unbind-operator

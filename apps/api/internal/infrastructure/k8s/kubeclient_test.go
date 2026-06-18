@@ -7,7 +7,9 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"k8s.io/client-go/rest"
 
+	"github.com/unbindapp/unbind-api/internal/auth"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	mocks_config "github.com/unbindapp/unbind-api/mocks/config"
 )
@@ -27,39 +29,45 @@ func TestKubeClientStructure(t *testing.T) {
 	assert.NotNil(t, kubeClient.httpClient)
 }
 
-// TestKubeClient_CreateClientWithToken tests client creation with token
-func TestKubeClient_CreateClientWithToken(t *testing.T) {
-	mockConfig := &mocks_config.ConfigMock{}
-	mockConfig.On("GetKubeProxyURL").Return("https://test-cluster:6443")
-
-	kubeClient := &KubeClient{
-		config: mockConfig,
-	}
-
-	// Test creating client with token
-	client, err := kubeClient.CreateClientWithToken("test-token")
-
-	assert.NoError(t, err)
-	assert.NotNil(t, client)
-	mockConfig.AssertExpectations(t)
+type fakeTokenVerifier struct {
+	claims *auth.VerifiedClaims
+	err    error
 }
 
-// TestKubeClient_CreateClientWithToken_InvalidURL tests error handling
-func TestKubeClient_CreateClientWithToken_InvalidURL(t *testing.T) {
-	mockConfig := &mocks_config.ConfigMock{}
-	mockConfig.On("GetKubeProxyURL").Return("") // Invalid URL
+func (f fakeTokenVerifier) Verify(string) (*auth.VerifiedClaims, error) {
+	return f.claims, f.err
+}
 
+// TestKubeClient_CreateClientWithToken verifies the token and builds an impersonating client
+func TestKubeClient_CreateClientWithToken(t *testing.T) {
 	kubeClient := &KubeClient{
-		config: mockConfig,
+		baseConfig: &rest.Config{Host: "https://test-cluster:6443"},
+		tokenVerifier: fakeTokenVerifier{
+			claims: &auth.VerifiedClaims{Email: "user@example.com", Groups: []string{"oidc:users"}},
+		},
 	}
 
-	// Test creating client with invalid config
 	client, err := kubeClient.CreateClientWithToken("test-token")
 
-	// Should still create client (kubernetes client handles empty host)
 	assert.NoError(t, err)
 	assert.NotNil(t, client)
-	mockConfig.AssertExpectations(t)
+
+	cfg := kubeClient.impersonationConfig("user@example.com", []string{"oidc:users"})
+	assert.Equal(t, "user@example.com", cfg.Impersonate.UserName)
+	assert.Equal(t, []string{"oidc:users"}, cfg.Impersonate.Groups)
+}
+
+// TestKubeClient_CreateClientWithToken_InvalidToken surfaces verification errors
+func TestKubeClient_CreateClientWithToken_InvalidToken(t *testing.T) {
+	kubeClient := &KubeClient{
+		baseConfig:    &rest.Config{Host: "https://test-cluster:6443"},
+		tokenVerifier: fakeTokenVerifier{err: auth.ErrInvalidToken},
+	}
+
+	client, err := kubeClient.CreateClientWithToken("bad-token")
+
+	assert.Error(t, err)
+	assert.Nil(t, client)
 }
 
 // TestKubeClient_GetInternalClient tests getting the internal client

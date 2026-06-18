@@ -137,10 +137,6 @@ func (self *Config) GetSystemNamespace() string {
 	return ""
 }
 
-func (self *Config) GetKubeProxyURL() string {
-	return ""
-}
-
 func (self *Config) GetBuildkitHost() string {
 	return self.BuildkitHost
 }

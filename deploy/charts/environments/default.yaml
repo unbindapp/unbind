@@ -24,8 +24,6 @@ components:
     enabled: true
   certManager:
     enabled: true
-  kubeOidcProxy:
-    enabled: true
 
 overrides:
   longhorn:
@@ -41,7 +39,7 @@ overrides:
     # Configurable storage size
     storage: "3Gi"
   buildkitd:
-    image: moby/buildkit:v0.22.0-rootless
+    image: moby/buildkit:v0.31.0-rootless
     replicas: 1
     maxParallism: 2
   postgresOperator:
@@ -75,29 +73,6 @@ overrides:
   certManager:
     replicaCount: 2
 
-  kubeOidcProxy:
-    replicaCount: 1
-    image:
-      repository: unbindapp/kube-oidc-proxy
-      tag: master-13812109543
-      pullPolicy: Always
-    oidc:
-      clientId: unbind-api
-      usernameClaim: email
-      groupsClaim: groups
-    service:
-      type: ClusterIP
-      port: 443
-      targetPort: 443
-    resources:
-      limits:
-        cpu: 300m
-        memory: 256Mi
-    rbac:
-      create: true
-      viewerCreate: true
-      viewerGroupName: oidc:users
-
   unbind:
     # Unbind operator settings
     operator:
@@ -118,8 +93,6 @@ overrides:
       # Redis Redis configuration
       redis:
         url: redis-headless.unbind-system:6379
-      # Kube proxy configuration
-      kubeProxyUrl: https://kube-oidc-proxy.unbind-system.svc.cluster.local:443
       # Builder configuration
       buildImager: unbindapp/unbind-builder:latest
       # Registry configuration
