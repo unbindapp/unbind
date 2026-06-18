@@ -358,6 +358,7 @@ func (self Model) installUnbind() tea.Cmd {
 		// Install Unbind
 		opts := unbindInstaller.SyncHelmfileOptions{
 			UnbindDomain: self.dnsInfo.UnbindDomain,
+			Ref:          self.version,
 		}
 
 		// Handle different registry configurations

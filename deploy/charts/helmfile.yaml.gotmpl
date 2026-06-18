@@ -5,6 +5,8 @@ repositories:
     url: https://opensource.zalando.com/postgres-operator/charts/postgres-operator
   - name: grafana
     url: https://grafana.github.io/helm-charts
+  - name: grafana-community
+    url: https://grafana-community.github.io/helm-charts
   - name: ingress-nginx
     url: https://kubernetes.github.io/ingress-nginx
   - name: jetstack
@@ -21,7 +23,7 @@ values:
  - namespace: unbind-system
  - tlsSecretName: unbind-domain-tls
  - registryTlsSecretName: unbind-registry-domain-tls
- - unbindVersion: v0.0.21
+ - unbindVersion: latest
  - externalRegistry:
      enabled: false
      host: docker.io
@@ -196,8 +198,8 @@ releases:
 
   - name: loki
     namespace: {{ .Values.namespace }}
-    chart: grafana/loki
-    version: 7.0.0
+    chart: grafana-community/loki
+    version: 17.4.6
     values:
       -
         loki:
