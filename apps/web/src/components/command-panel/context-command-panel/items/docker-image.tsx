@@ -204,7 +204,7 @@ function useDockerImageItem({ context }: TProps) {
               },
             ];
           }
-          const res = await queryClient.fetchQuery(dockerSearchQuery(search));
+          const res = await queryClient.fetchQuery(dockerSearchQuery({ search }));
           return res.repositories.map((item) => {
             const id = `${subpageId}_${item.repo_name}`;
             return {

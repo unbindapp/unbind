@@ -12,7 +12,7 @@ type TProps = {
 };
 
 export default function Content({ id }: TProps) {
-  const { data } = useQuery({ ...gitAppQuery(id), refetchInterval: 1000 });
+  const { data } = useQuery({ ...gitAppQuery({ uuid: id }), refetchInterval: 1000 });
 
   const [currentState, setCurrentState] = useState<"loading" | "has-opener" | "no-opener">(
     "loading",

@@ -8,26 +8,26 @@ export type TS3SourceShallow = S3Response;
 
 // ---- S3 sources ----
 
-export const s3SourcesListQuery = (teamId: string, withBuckets = true) =>
+export const s3SourcesListQuery = (input: { teamId: string; withBuckets?: boolean }) =>
   queryOptions({
-    queryKey: queryKeys.storage.s3List(teamId),
+    queryKey: queryKeys.storage.s3List(input),
     queryFn: async () => {
       const res = await getGoClient().storage.s3.list({
-        team_id: teamId,
-        with_buckets: withBuckets,
+        team_id: input.teamId,
+        with_buckets: input.withBuckets ?? true,
       });
       return { sources: res.data };
     },
   });
 
-export const s3SourceQuery = (id: string, teamId: string, withBuckets = true) =>
+export const s3SourceQuery = (input: { id: string; teamId: string; withBuckets?: boolean }) =>
   queryOptions({
-    queryKey: queryKeys.storage.s3Detail(teamId, id),
+    queryKey: queryKeys.storage.s3Detail(input),
     queryFn: async () => {
       const res = await getGoClient().storage.s3.get({
-        id,
-        team_id: teamId,
-        with_buckets: withBuckets,
+        id: input.id,
+        team_id: input.teamId,
+        with_buckets: input.withBuckets ?? true,
       });
       return { source: res.data };
     },
@@ -105,13 +105,7 @@ type TVolumeRef = {
 
 export const volumeQuery = (input: TVolumeRef) =>
   queryOptions({
-    queryKey: queryKeys.storage.volume(
-      input.teamId,
-      input.projectId,
-      input.environmentId,
-      input.type,
-      input.id,
-    ),
+    queryKey: queryKeys.storage.volume(input),
     queryFn: async () => {
       const res = await getGoClient().storage.pvc.get({
         id: input.id,

@@ -25,7 +25,7 @@ export const DeploymentProvider: React.FC<{
   children: ReactNode;
 }> = ({ teamId, projectId, environmentId, serviceId, deploymentId, children }) => {
   const query = useQuery(
-    deploymentQuery(teamId, projectId, environmentId, serviceId, deploymentId),
+    deploymentQuery({ teamId, projectId, environmentId, serviceId, deploymentId }),
   );
 
   const value = useMemo(
@@ -60,13 +60,13 @@ export const useDeploymentUtils = ({
   deploymentId: string;
 }) => {
   const queryClient = useQueryClient();
-  const queryKey = queryKeys.deployments.detail(
+  const queryKey = queryKeys.deployments.detail({
     teamId,
     projectId,
     environmentId,
     serviceId,
     deploymentId,
-  );
+  });
   return {
     invalidate: () => queryClient.invalidateQueries({ queryKey }),
     refetch: () => queryClient.refetchQueries({ queryKey }),

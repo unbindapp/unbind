@@ -7,41 +7,41 @@ import type { GetInstanceHealthResponseBody, ListInstancesResponseBody } from "@
 export type TInstancesList = { data: ListInstancesResponseBody["data"] };
 export type TInstanceHealth = { data: GetInstanceHealthResponseBody["data"] };
 
-export const instancesListQuery = (
-  teamId: string,
-  projectId: string,
-  environmentId: string,
-  serviceId: string,
-) =>
+export const instancesListQuery = (input: {
+  teamId: string;
+  projectId: string;
+  environmentId: string;
+  serviceId: string;
+}) =>
   queryOptions({
-    queryKey: queryKeys.instances.list(teamId, projectId, environmentId, serviceId),
+    queryKey: queryKeys.instances.list(input),
     queryFn: async (): Promise<TInstancesList> => {
       const res = await getGoClient().instances.list({
         type: "service",
-        team_id: teamId,
-        project_id: projectId,
-        environment_id: environmentId,
-        service_id: serviceId,
+        team_id: input.teamId,
+        project_id: input.projectId,
+        environment_id: input.environmentId,
+        service_id: input.serviceId,
       });
       return { data: res.data };
     },
   });
 
-export const instanceHealthQuery = (
-  teamId: string,
-  projectId: string,
-  environmentId: string,
-  serviceId: string,
-) =>
+export const instanceHealthQuery = (input: {
+  teamId: string;
+  projectId: string;
+  environmentId: string;
+  serviceId: string;
+}) =>
   queryOptions({
-    queryKey: queryKeys.instances.health(teamId, projectId, environmentId, serviceId),
+    queryKey: queryKeys.instances.health(input),
     queryFn: async (): Promise<TInstanceHealth> => {
       const res = await getGoClient().instances.health({
         type: "service",
-        team_id: teamId,
-        project_id: projectId,
-        environment_id: environmentId,
-        service_id: serviceId,
+        team_id: input.teamId,
+        project_id: input.projectId,
+        environment_id: input.environmentId,
+        service_id: input.serviceId,
       });
       return { data: res.data };
     },

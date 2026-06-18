@@ -16,11 +16,11 @@ export const teamsListQuery = () =>
     },
   });
 
-export const teamQuery = (teamId: string) =>
+export const teamQuery = (input: { teamId: string }) =>
   queryOptions({
-    queryKey: queryKeys.teams.detail(teamId),
+    queryKey: queryKeys.teams.detail(input),
     queryFn: async () => {
-      const res = await getGoClient().teams.get({ team_id: teamId });
+      const res = await getGoClient().teams.get({ team_id: input.teamId });
       return { team: res.data };
     },
   });

@@ -96,7 +96,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
     data: dataDatabase,
     isPending: isPendingDatabase,
     error: errorDatabase,
-  } = useQuery(databaseQuery(type));
+  } = useQuery(databaseQuery({ type }));
 
   const versionItems: TCommandItem[] | undefined = useMemo(() => {
     const items: TCommandItem[] | undefined = dataDatabase?.database.version.options.map((v) => ({

@@ -17,11 +17,11 @@ export const templatesListQuery = () =>
     },
   });
 
-export const templateQuery = (id: string) =>
+export const templateQuery = (input: { id: string }) =>
   queryOptions({
-    queryKey: queryKeys.templates.detail(id),
+    queryKey: queryKeys.templates.detail(input),
     queryFn: async () => {
-      const res = await getGoClient().templates.get({ id });
+      const res = await getGoClient().templates.get({ id: input.id });
       return { template: res.data };
     },
   });

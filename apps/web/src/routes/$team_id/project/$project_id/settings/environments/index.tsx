@@ -9,7 +9,9 @@ export const Route = createFileRoute("/$team_id/project/$project_id/settings/env
   // Runs on intent preload (hover) so hovering the tab warms the cache
   // before navigation. Non-blocking; the provider shows skeletons meanwhile.
   loader: ({ context: { queryClient }, params }) => {
-    void queryClient.prefetchQuery(environmentsListQuery(params.team_id, params.project_id));
+    void queryClient.prefetchQuery(
+      environmentsListQuery({ teamId: params.team_id, projectId: params.project_id }),
+    );
   },
   component: ProjectEnvironmentsSettings,
 });

@@ -8,20 +8,23 @@ import { generateProjectName } from "@/lib/helpers/generate-project-name";
 export type TProjectShallow = ProjectResponse;
 
 // Mirrors the old projects tRPC router: same inputs + `res.data` → `{ projects }` / `{ project }`.
-export const projectsListQuery = (teamId: string) =>
+export const projectsListQuery = (input: { teamId: string }) =>
   queryOptions({
-    queryKey: queryKeys.projects.list(teamId),
+    queryKey: queryKeys.projects.list(input),
     queryFn: async () => {
-      const res = await getGoClient().projects.list({ team_id: teamId });
+      const res = await getGoClient().projects.list({ team_id: input.teamId });
       return { projects: res.data };
     },
   });
 
-export const projectQuery = (teamId: string, projectId: string) =>
+export const projectQuery = (input: { teamId: string; projectId: string }) =>
   queryOptions({
-    queryKey: queryKeys.projects.detail(teamId, projectId),
+    queryKey: queryKeys.projects.detail(input),
     queryFn: async () => {
-      const res = await getGoClient().projects.get({ team_id: teamId, project_id: projectId });
+      const res = await getGoClient().projects.get({
+        team_id: input.teamId,
+        project_id: input.projectId,
+      });
       return { project: res.data };
     },
   });

@@ -9,7 +9,7 @@ import ProjectCardList from "@/components/team/project-card-list";
 export const Route = createFileRoute("/$team_id/_team/")({
   loader: ({ context: { queryClient }, params }) => {
     // Warm the cache without blocking; ProjectCardList shows skeletons meanwhile.
-    void queryClient.prefetchQuery(projectsListQuery(params.team_id));
+    void queryClient.prefetchQuery(projectsListQuery({ teamId: params.team_id }));
   },
   component: TeamProjectsPage,
 });

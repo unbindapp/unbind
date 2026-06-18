@@ -15,23 +15,27 @@ export const gitRepositoriesQuery = () =>
     },
   });
 
-export const gitAppQuery = (uuid: string) =>
+export const gitAppQuery = (input: { uuid: string }) =>
   queryOptions({
-    queryKey: queryKeys.git.app(uuid),
+    queryKey: queryKeys.git.app(input),
     queryFn: async () => {
-      const { data } = await getGoClient().github.app.get({ uuid });
+      const { data } = await getGoClient().github.app.get({ uuid: input.uuid });
       return { app: data };
     },
   });
 
-export const gitRepositoryQuery = (installationId: number, owner: string, repoName: string) =>
+export const gitRepositoryQuery = (input: {
+  installationId: number;
+  owner: string;
+  repoName: string;
+}) =>
   queryOptions({
-    queryKey: queryKeys.git.repository(installationId, owner, repoName),
+    queryKey: queryKeys.git.repository(input),
     queryFn: async () => {
       const res = await getGoClient().github.repositories.info({
-        installation_id: installationId,
-        repo_name: repoName,
-        owner,
+        installation_id: input.installationId,
+        repo_name: input.repoName,
+        owner: input.owner,
       });
       return { repository: res.data };
     },

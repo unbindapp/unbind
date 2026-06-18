@@ -26,7 +26,7 @@ export const ServiceProvider: React.FC<{
   children: ReactNode;
 }> = ({ teamId, projectId, environmentId, serviceId, children }) => {
   const query = useQuery({
-    ...serviceQuery(teamId, projectId, environmentId, serviceId),
+    ...serviceQuery({ teamId, projectId, environmentId, serviceId }),
     staleTime: 5 * 1000,
   });
 
@@ -60,7 +60,7 @@ export const useServiceUtils = ({
   serviceId: string;
 }) => {
   const queryClient = useQueryClient();
-  const queryKey = queryKeys.services.detail(teamId, projectId, environmentId, serviceId);
+  const queryKey = queryKeys.services.detail({ teamId, projectId, environmentId, serviceId });
   return {
     invalidate: () => queryClient.invalidateQueries({ queryKey }),
     refetch: () => queryClient.refetchQueries({ queryKey }),

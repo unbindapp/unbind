@@ -18,7 +18,7 @@ export const TeamProvider: React.FC<{
   initialData?: TTeamResult;
   children: ReactNode;
 }> = ({ teamId, initialData, children }) => {
-  const query = useQuery({ ...teamQuery(teamId), initialData });
+  const query = useQuery({ ...teamQuery({ teamId }), initialData });
   const value = useMemo(() => ({ query, teamId }), [query, teamId]);
 
   return <TeamContext.Provider value={value}>{children}</TeamContext.Provider>;

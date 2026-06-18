@@ -7,20 +7,20 @@ import type { DeploymentResponse, ListDeploymentsResponseBody } from "@/server/c
 export type TDeploymentsList = ListDeploymentsResponseBody["data"];
 export type TDeployment = DeploymentResponse;
 
-export const deploymentsListQuery = (
-  teamId: string,
-  projectId: string,
-  environmentId: string,
-  serviceId: string,
-) =>
+export const deploymentsListQuery = (input: {
+  teamId: string;
+  projectId: string;
+  environmentId: string;
+  serviceId: string;
+}) =>
   queryOptions({
-    queryKey: queryKeys.deployments.list(teamId, projectId, environmentId, serviceId),
+    queryKey: queryKeys.deployments.list(input),
     queryFn: async (): Promise<TDeploymentsList> => {
       const res = await getGoClient().deployments.list({
-        team_id: teamId,
-        project_id: projectId,
-        environment_id: environmentId,
-        service_id: serviceId,
+        team_id: input.teamId,
+        project_id: input.projectId,
+        environment_id: input.environmentId,
+        service_id: input.serviceId,
         per_page: 50,
       });
       return res.data;
@@ -28,30 +28,24 @@ export const deploymentsListQuery = (
   });
 
 // Mirrors the old router: the API has no single-deployment GET, so list + find by id.
-export const deploymentQuery = (
-  teamId: string,
-  projectId: string,
-  environmentId: string,
-  serviceId: string,
-  deploymentId: string,
-) =>
+export const deploymentQuery = (input: {
+  teamId: string;
+  projectId: string;
+  environmentId: string;
+  serviceId: string;
+  deploymentId: string;
+}) =>
   queryOptions({
-    queryKey: queryKeys.deployments.detail(
-      teamId,
-      projectId,
-      environmentId,
-      serviceId,
-      deploymentId,
-    ),
+    queryKey: queryKeys.deployments.detail(input),
     queryFn: async (): Promise<{ deployment: TDeployment }> => {
       const res = await getGoClient().deployments.list({
-        team_id: teamId,
-        project_id: projectId,
-        environment_id: environmentId,
-        service_id: serviceId,
+        team_id: input.teamId,
+        project_id: input.projectId,
+        environment_id: input.environmentId,
+        service_id: input.serviceId,
         per_page: 50,
       });
-      const deployment = res.data.deployments?.find((d) => d.id === deploymentId);
+      const deployment = res.data.deployments?.find((d) => d.id === input.deploymentId);
       if (!deployment) throw new Error("Deployment not found");
       return { deployment };
     },

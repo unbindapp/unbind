@@ -24,7 +24,7 @@ export const ServicesProvider: React.FC<{
   children: ReactNode;
 }> = ({ teamId, projectId, environmentId, initialData, children }) => {
   const query = useQuery({
-    ...servicesListQuery(teamId, projectId, environmentId),
+    ...servicesListQuery({ teamId, projectId, environmentId }),
     initialData,
     refetchInterval: 5000,
     // Skip the request during the brief window before the environment is
@@ -59,7 +59,7 @@ export const useServicesUtils = ({
   environmentId: string;
 }) => {
   const queryClient = useQueryClient();
-  const queryKey = queryKeys.services.list(teamId, projectId, environmentId);
+  const queryKey = queryKeys.services.list({ teamId, projectId, environmentId });
   return {
     invalidate: () => queryClient.invalidateQueries({ queryKey }),
     refetch: () => queryClient.refetchQueries({ queryKey }),

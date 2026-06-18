@@ -26,8 +26,10 @@ export const Route = createFileRoute("/$team_id/project/$project_id")({
   loader: ({ context: { queryClient }, params }) => {
     // Warm the cache (this also runs on intent preload) without blocking the
     // navigation — the components below render immediately and show skeletons.
-    void queryClient.prefetchQuery(projectQuery(params.team_id, params.project_id));
-    void queryClient.prefetchQuery(projectsListQuery(params.team_id));
+    void queryClient.prefetchQuery(
+      projectQuery({ teamId: params.team_id, projectId: params.project_id }),
+    );
+    void queryClient.prefetchQuery(projectsListQuery({ teamId: params.team_id }));
     void queryClient.prefetchQuery(templatesListQuery());
     void queryClient.prefetchQuery(systemQuery());
   },
@@ -37,7 +39,7 @@ export const Route = createFileRoute("/$team_id/project/$project_id")({
 function ProjectLayout() {
   const { team_id: teamId, project_id: projectId } = Route.useParams();
   const { environment } = Route.useSearch();
-  const { data: projectData } = useQuery(projectQuery(teamId, projectId));
+  const { data: projectData } = useQuery(projectQuery({ teamId, projectId }));
 
   // Resolve a valid environment into the URL for the whole project area. Moved
   // out of the loader so navigation isn't blocked on the project query.

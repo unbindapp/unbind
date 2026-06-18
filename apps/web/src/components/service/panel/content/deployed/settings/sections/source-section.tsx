@@ -105,7 +105,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
     data: dataRepository,
     isPending: isPendingRepository,
     error: errorRepository,
-  } = useQuery(gitRepositoryQuery(installationId, owner, repo));
+  } = useQuery(gitRepositoryQuery({ installationId, owner, repoName: repo }));
 
   const form = useAppForm({
     defaultValues: {
@@ -277,7 +277,7 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
     isPending: isPendingTags,
     error: errorTags,
   } = useQuery({
-    ...dockerTagsQuery(image, commandInputValue ? search : commandInputValue),
+    ...dockerTagsQuery({ repository: image, search: commandInputValue ? search : commandInputValue }),
     enabled: !imageIsNonDockerHub,
   });
 

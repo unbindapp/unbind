@@ -28,7 +28,7 @@ export function DomainCard({
   const isValid = isValidDebouncedDomain && isValidDomain;
 
   const { data: dnsCheckData } = useQuery({
-    ...dnsCheckQuery(debouncedDomain),
+    ...dnsCheckQuery({ domain: debouncedDomain }),
     enabled: isValid,
     refetchInterval: 5000,
   });

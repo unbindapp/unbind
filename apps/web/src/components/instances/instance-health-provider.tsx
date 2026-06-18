@@ -25,7 +25,7 @@ export const InstanceHealthProvider: React.FC<TProps> = ({
   children,
 }) => {
   const query = useQuery({
-    ...instanceHealthQuery(teamId, projectId, environmentId, serviceId),
+    ...instanceHealthQuery({ teamId, projectId, environmentId, serviceId }),
     refetchInterval: 3000,
   });
 
@@ -54,11 +54,13 @@ export const useInstanceHealthUtils = ({
   serviceId: string;
 }) => {
   const queryClient = useQueryClient();
-  const queryKey = queryKeys.instances.health(teamId, projectId, environmentId, serviceId);
+  const queryKey = queryKeys.instances.health({ teamId, projectId, environmentId, serviceId });
   return {
     invalidate: () => queryClient.invalidateQueries({ queryKey }),
     fetch: () =>
-      queryClient.ensureQueryData(instanceHealthQuery(teamId, projectId, environmentId, serviceId)),
+      queryClient.ensureQueryData(
+        instanceHealthQuery({ teamId, projectId, environmentId, serviceId }),
+      ),
     refetch: () => queryClient.refetchQueries({ queryKey }),
   };
 };

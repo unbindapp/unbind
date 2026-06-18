@@ -35,12 +35,12 @@ export const VariableReferencesProvider: React.FC<TProps> = ({
   }, [initialDataFromProps, isService]);
 
   const list = useQuery({
-    ...availableVariableReferencesQuery(
-      typedProps.teamId,
-      typedProps.projectId ?? "",
-      typedProps.environmentId ?? "",
-      typedProps.serviceId ?? "",
-    ),
+    ...availableVariableReferencesQuery({
+      teamId: typedProps.teamId,
+      projectId: typedProps.projectId ?? "",
+      environmentId: typedProps.environmentId ?? "",
+      serviceId: typedProps.serviceId ?? "",
+    }),
     enabled: isService,
     initialData: isService ? initialData : { variables: [] },
     refetchInterval,
@@ -82,7 +82,7 @@ export const useVariableReferenceUtils = ({
   if (type !== "service") {
     return { invalidate: () => null, refetch: () => null };
   }
-  const queryKey = queryKeys.variables.available(teamId, projectId, environmentId, serviceId);
+  const queryKey = queryKeys.variables.available({ teamId, projectId, environmentId, serviceId });
   return {
     invalidate: () => queryClient.invalidateQueries({ queryKey }),
     refetch: () => queryClient.refetchQueries({ queryKey }),

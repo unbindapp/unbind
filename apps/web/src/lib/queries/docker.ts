@@ -28,11 +28,11 @@ const DockerTagsResultSchema = z
   })
   .strip();
 
-export const dockerSearchQuery = (search?: string) =>
+export const dockerSearchQuery = (input: { search?: string }) =>
   queryOptions({
-    queryKey: queryKeys.docker.search(search),
+    queryKey: queryKeys.docker.search(input),
     queryFn: async () => {
-      const query = search || "a";
+      const query = input.search || "a";
       const res = await fetch(
         `${dockerHubApi}/v2/search/repositories/?page_size=50&query=${query}`,
       );
@@ -41,10 +41,11 @@ export const dockerSearchQuery = (search?: string) =>
     },
   });
 
-export const dockerTagsQuery = (repository: string, search?: string) =>
+export const dockerTagsQuery = (input: { repository: string; search?: string }) =>
   queryOptions({
-    queryKey: queryKeys.docker.tags(repository, search),
+    queryKey: queryKeys.docker.tags(input),
     queryFn: async () => {
+      const { repository, search } = input;
       const [namespace, name] = repository.includes("/")
         ? repository.split("/", 2)
         : ["library", repository];

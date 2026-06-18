@@ -21,7 +21,7 @@ export const DeploymentsProvider: React.FC<{
 }> = ({ children }) => {
   const { teamId, projectId, environmentId, serviceId } = useService();
   const query = useQuery({
-    ...deploymentsListQuery(teamId, projectId, environmentId, serviceId),
+    ...deploymentsListQuery({ teamId, projectId, environmentId, serviceId }),
     refetchInterval: 5000,
     staleTime: 0,
   });
@@ -56,12 +56,12 @@ export const useDeploymentsUtils = ({
   serviceId: string;
 }) => {
   const queryClient = useQueryClient();
-  const queryKey = queryKeys.deployments.list(teamId, projectId, environmentId, serviceId);
+  const queryKey = queryKeys.deployments.list({ teamId, projectId, environmentId, serviceId });
   return {
     invalidate: () => queryClient.invalidateQueries({ queryKey }),
     fetch: () =>
       queryClient.ensureQueryData(
-        deploymentsListQuery(teamId, projectId, environmentId, serviceId),
+        deploymentsListQuery({ teamId, projectId, environmentId, serviceId }),
       ),
     refetch: () => queryClient.refetchQueries({ queryKey }),
   };

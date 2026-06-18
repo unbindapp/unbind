@@ -68,7 +68,7 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort, service
     isPending: isPendingTags,
     error: errorTags,
   } = useQuery({
-    ...dockerTagsQuery(image, commandInputValue ? search : commandInputValue),
+    ...dockerTagsQuery({ repository: image, search: commandInputValue ? search : commandInputValue }),
     enabled: !imageIsNonDockerHub,
   });
 

@@ -14,52 +14,56 @@ export type TServiceShallow = ServiceResponse;
 export type TService = ServiceResponse;
 export type TServiceEndpoints = EndpointDiscovery;
 
-export const servicesListQuery = (teamId: string, projectId: string, environmentId: string) =>
+export const servicesListQuery = (input: {
+  teamId: string;
+  projectId: string;
+  environmentId: string;
+}) =>
   queryOptions({
-    queryKey: queryKeys.services.list(teamId, projectId, environmentId),
+    queryKey: queryKeys.services.list(input),
     queryFn: async () => {
       const res = await getGoClient().services.list({
-        team_id: teamId,
-        project_id: projectId,
-        environment_id: environmentId,
+        team_id: input.teamId,
+        project_id: input.projectId,
+        environment_id: input.environmentId,
       });
       return { services: res.data };
     },
   });
 
-export const serviceQuery = (
-  teamId: string,
-  projectId: string,
-  environmentId: string,
-  serviceId: string,
-) =>
+export const serviceQuery = (input: {
+  teamId: string;
+  projectId: string;
+  environmentId: string;
+  serviceId: string;
+}) =>
   queryOptions({
-    queryKey: queryKeys.services.detail(teamId, projectId, environmentId, serviceId),
+    queryKey: queryKeys.services.detail(input),
     queryFn: async () => {
       const res = await getGoClient().services.get({
-        team_id: teamId,
-        project_id: projectId,
-        environment_id: environmentId,
-        service_id: serviceId,
+        team_id: input.teamId,
+        project_id: input.projectId,
+        environment_id: input.environmentId,
+        service_id: input.serviceId,
       });
       return { service: res.data };
     },
   });
 
-export const serviceEndpointsQuery = (
-  teamId: string,
-  projectId: string,
-  environmentId: string,
-  serviceId: string,
-) =>
+export const serviceEndpointsQuery = (input: {
+  teamId: string;
+  projectId: string;
+  environmentId: string;
+  serviceId: string;
+}) =>
   queryOptions({
-    queryKey: queryKeys.services.endpoints(teamId, projectId, environmentId, serviceId),
+    queryKey: queryKeys.services.endpoints(input),
     queryFn: async () => {
       const res = await getGoClient().services.endpoints.list({
-        team_id: teamId,
-        project_id: projectId,
-        environment_id: environmentId,
-        service_id: serviceId,
+        team_id: input.teamId,
+        project_id: input.projectId,
+        environment_id: input.environmentId,
+        service_id: input.serviceId,
       });
       return { endpoints: res.data };
     },
@@ -74,11 +78,14 @@ export const databasesListQuery = () =>
     },
   });
 
-export const databaseQuery = (type: string, version?: string) =>
+export const databaseQuery = (input: { type: string; version?: string }) =>
   queryOptions({
-    queryKey: queryKeys.services.database(type, version),
+    queryKey: queryKeys.services.database(input),
     queryFn: async () => {
-      const res = await getGoClient().services.databases.installable.get({ type, version });
+      const res = await getGoClient().services.databases.installable.get({
+        type: input.type,
+        version: input.version,
+      });
       return { database: res.data };
     },
   });

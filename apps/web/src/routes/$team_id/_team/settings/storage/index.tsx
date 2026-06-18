@@ -9,7 +9,7 @@ export const Route = createFileRoute("/$team_id/_team/settings/storage/")({
   // Runs on intent preload (hover) so hovering the tab warms the cache
   // before navigation. Non-blocking; the provider shows skeletons meanwhile.
   loader: ({ context: { queryClient }, params }) => {
-    void queryClient.prefetchQuery(s3SourcesListQuery(params.team_id));
+    void queryClient.prefetchQuery(s3SourcesListQuery({ teamId: params.team_id }));
   },
   component: TeamStorageSettings,
 });

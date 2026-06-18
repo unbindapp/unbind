@@ -34,7 +34,11 @@ export const Route = createFileRoute("/$team_id/project/$project_id/metrics/")({
     // the cache under the wrong key (matches ServicesProvider's `enabled` guard).
     if (!deps.environment) return;
     void queryClient.prefetchQuery(
-      servicesListQuery(params.team_id, params.project_id, deps.environment),
+      servicesListQuery({
+        teamId: params.team_id,
+        projectId: params.project_id,
+        environmentId: deps.environment,
+      }),
     );
     void queryClient.prefetchQuery(
       metricsListQuery({

@@ -19,7 +19,7 @@ export const S3SourcesProvider: React.FC<{
   initialData?: TS3SourcesResult;
   children: ReactNode;
 }> = ({ teamId, initialData, children }) => {
-  const query = useQuery({ ...s3SourcesListQuery(teamId), initialData });
+  const query = useQuery({ ...s3SourcesListQuery({ teamId }), initialData });
   const value = useMemo(() => ({ query, teamId }), [query, teamId]);
 
   return <S3SourcesContext.Provider value={value}>{children}</S3SourcesContext.Provider>;
@@ -38,6 +38,7 @@ export default S3SourcesProvider;
 export const useS3SourcesUtils = ({ teamId }: { teamId: string }) => {
   const queryClient = useQueryClient();
   return {
-    invalidate: () => queryClient.invalidateQueries({ queryKey: queryKeys.storage.s3List(teamId) }),
+    invalidate: () =>
+      queryClient.invalidateQueries({ queryKey: queryKeys.storage.s3List({ teamId }) }),
   };
 };

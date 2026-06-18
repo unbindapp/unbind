@@ -21,7 +21,7 @@ export const ProjectProvider: React.FC<{
   initialData?: TProjectResult;
   children: ReactNode;
 }> = ({ teamId, projectId, initialData, children }) => {
-  const query = useQuery({ ...projectQuery(teamId, projectId), initialData });
+  const query = useQuery({ ...projectQuery({ teamId, projectId }), initialData });
   const value = useMemo(() => ({ query, teamId, projectId }), [query, teamId, projectId]);
 
   return <ProjectContext.Provider value={value}>{children}</ProjectContext.Provider>;
@@ -39,7 +39,7 @@ export const useProjectUtils = ({ teamId, projectId }: { teamId: string; project
   const queryClient = useQueryClient();
   return {
     invalidate: () =>
-      queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(teamId, projectId) }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail({ teamId, projectId }) }),
   };
 };
 

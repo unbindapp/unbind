@@ -22,7 +22,7 @@ export const EnvironmentsProvider: React.FC<{
   initialData?: TEnvironmentsResult;
   children: ReactNode;
 }> = ({ teamId, projectId, initialData, children }) => {
-  const query = useQuery({ ...environmentsListQuery(teamId, projectId), initialData });
+  const query = useQuery({ ...environmentsListQuery({ teamId, projectId }), initialData });
   const utils = useEnvironmentsUtils({ teamId, projectId });
   const value = useMemo(
     () => ({ query, utils, teamId, projectId }),
@@ -52,6 +52,6 @@ export const useEnvironmentsUtils = ({
   const queryClient = useQueryClient();
   return {
     invalidate: () =>
-      queryClient.invalidateQueries({ queryKey: queryKeys.environments.list(teamId, projectId) }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.environments.list({ teamId, projectId }) }),
   };
 };

@@ -15,7 +15,7 @@ export const ProjectsProvider: React.FC<{
   initialData?: TProjectsResult;
   children: ReactNode;
 }> = ({ teamId, initialData, children }) => {
-  const query = useQuery({ ...projectsListQuery(teamId), initialData });
+  const query = useQuery({ ...projectsListQuery({ teamId }), initialData });
 
   return <ProjectsContext.Provider value={query}>{children}</ProjectsContext.Provider>;
 };
@@ -33,6 +33,7 @@ export default ProjectsProvider;
 export const useProjectsUtils = ({ teamId }: { teamId: string }) => {
   const queryClient = useQueryClient();
   return {
-    invalidate: () => queryClient.invalidateQueries({ queryKey: queryKeys.projects.list(teamId) }),
+    invalidate: () =>
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.list({ teamId }) }),
   };
 };

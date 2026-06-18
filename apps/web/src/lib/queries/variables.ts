@@ -36,20 +36,20 @@ export const variablesListQuery = (input: TVariablesListInput) =>
     },
   });
 
-export const availableVariableReferencesQuery = (
-  teamId: string,
-  projectId: string,
-  environmentId: string,
-  serviceId: string,
-) =>
+export const availableVariableReferencesQuery = (input: {
+  teamId: string;
+  projectId: string;
+  environmentId: string;
+  serviceId: string;
+}) =>
   queryOptions({
-    queryKey: queryKeys.variables.available(teamId, projectId, environmentId, serviceId),
+    queryKey: queryKeys.variables.available(input),
     queryFn: async (): Promise<TAvailableVariableReferences> => {
       const res = await getGoClient().variables.references.available({
-        team_id: teamId,
-        environment_id: environmentId,
-        project_id: projectId,
-        service_id: serviceId,
+        team_id: input.teamId,
+        environment_id: input.environmentId,
+        project_id: input.projectId,
+        service_id: input.serviceId,
       });
       return { variables: res.data };
     },

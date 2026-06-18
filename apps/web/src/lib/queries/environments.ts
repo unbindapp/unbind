@@ -7,26 +7,30 @@ import type { EnvironmentResponse } from "@/server/client.gen";
 export type TEnvironmentShallow = EnvironmentResponse;
 
 // Mirrors the old environments tRPC router (queries + mutations, same reshapes/mappings).
-export const environmentsListQuery = (teamId: string, projectId: string) =>
+export const environmentsListQuery = (input: { teamId: string; projectId: string }) =>
   queryOptions({
-    queryKey: queryKeys.environments.list(teamId, projectId),
+    queryKey: queryKeys.environments.list(input),
     queryFn: async () => {
       const res = await getGoClient().environments.list({
-        team_id: teamId,
-        project_id: projectId,
+        team_id: input.teamId,
+        project_id: input.projectId,
       });
       return { environments: res.data };
     },
   });
 
-export const environmentQuery = (teamId: string, projectId: string, id: string) =>
+export const environmentQuery = (input: {
+  teamId: string;
+  projectId: string;
+  environmentId: string;
+}) =>
   queryOptions({
-    queryKey: queryKeys.environments.detail(teamId, projectId, id),
+    queryKey: queryKeys.environments.detail(input),
     queryFn: async () => {
       const res = await getGoClient().environments.get({
-        id,
-        team_id: teamId,
-        project_id: projectId,
+        id: input.environmentId,
+        team_id: input.teamId,
+        project_id: input.projectId,
       });
       return { environment: res.data };
     },

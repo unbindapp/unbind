@@ -20,7 +20,7 @@ export const Route = createFileRoute("/$team_id/_team")({
     void queryClient.prefetchQuery(teamsListQuery());
     void queryClient.prefetchQuery(systemQuery());
     void queryClient.prefetchQuery(templatesListQuery());
-    void queryClient.prefetchQuery(teamQuery(params.team_id));
+    void queryClient.prefetchQuery(teamQuery({ teamId: params.team_id }));
   },
   component: TeamLayout,
 });

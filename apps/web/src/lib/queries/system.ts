@@ -21,11 +21,11 @@ export const systemQuery = () =>
     },
   });
 
-export const dnsCheckQuery = (domain: string) =>
+export const dnsCheckQuery = (input: { domain: string }) =>
   queryOptions({
-    queryKey: queryKeys.system.dnsCheck(domain),
+    queryKey: queryKeys.system.dnsCheck(input),
     queryFn: async () => {
-      const res = await getGoClient().system.dns.check({ domain });
+      const res = await getGoClient().system.dns.check({ domain: input.domain });
       return { data: res.data };
     },
   });
