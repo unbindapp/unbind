@@ -1,7 +1,6 @@
 "use client";
 
-import { queryKeys } from "@/lib/queries/query-keys";
-import { webhooksListQuery, type TWebhookShallow } from "@/lib/queries/webhooks";
+import { queryKeyWebhooks, webhooksListQuery, type TWebhookShallow } from "@/lib/queries/webhooks";
 import { TWebhookTypeProject, TWebhookTypeTeam } from "@/server/types/webhooks";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext } from "react";
@@ -48,7 +47,7 @@ export const useWebhooks = () => {
 export const useWebhooksUtils = (params: TProjectWebhooks | TTeamWebhooks) => {
   const queryClient = useQueryClient();
   return {
-    invalidate: () => queryClient.invalidateQueries({ queryKey: queryKeys.webhooks.list(params) }),
+    invalidate: () => queryClient.invalidateQueries({ queryKey: queryKeyWebhooks.list(params) }),
   };
 };
 

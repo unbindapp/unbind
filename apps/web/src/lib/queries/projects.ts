@@ -1,16 +1,21 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import { getGoClient } from "@/server/client";
-import { queryKeys } from "@/lib/queries/query-keys";
 import type { ProjectResponse } from "@/server/client.gen";
 import { generateProjectName } from "@/lib/helpers/generate-project-name";
 
 export type TProjectShallow = ProjectResponse;
 
+export const queryKeyProjects = {
+  list: (input: { teamId: string }) => ["projects", "list", input.teamId] as const,
+  detail: (input: { teamId: string; projectId: string }) =>
+    ["projects", "detail", input.teamId, input.projectId] as const,
+};
+
 // Mirrors the old projects tRPC router: same inputs + `res.data` → `{ projects }` / `{ project }`.
 export const projectsListQuery = (input: { teamId: string }) =>
   queryOptions({
-    queryKey: queryKeys.projects.list(input),
+    queryKey: queryKeyProjects.list(input),
     queryFn: async () => {
       const res = await getGoClient().projects.list({ team_id: input.teamId });
       return { projects: res.data };
@@ -19,7 +24,7 @@ export const projectsListQuery = (input: { teamId: string }) =>
 
 export const projectQuery = (input: { teamId: string; projectId: string }) =>
   queryOptions({
-    queryKey: queryKeys.projects.detail(input),
+    queryKey: queryKeyProjects.detail(input),
     queryFn: async () => {
       const res = await getGoClient().projects.get({
         team_id: input.teamId,

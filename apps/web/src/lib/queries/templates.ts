@@ -1,16 +1,20 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import { getGoClient } from "@/server/client";
-import { queryKeys } from "@/lib/queries/query-keys";
 import type { TemplateInputValue } from "@/server/client.gen";
 
 export type TTemplatesList = {
   templates: Awaited<ReturnType<ReturnType<typeof getGoClient>["templates"]["list"]>>["data"];
 };
 
+export const queryKeyTemplates = {
+  list: () => ["templates", "list"] as const,
+  detail: (input: { id: string }) => ["templates", "detail", input.id] as const,
+};
+
 export const templatesListQuery = () =>
   queryOptions({
-    queryKey: queryKeys.templates.list(),
+    queryKey: queryKeyTemplates.list(),
     queryFn: async () => {
       const res = await getGoClient().templates.list();
       return { templates: res.data };
@@ -19,7 +23,7 @@ export const templatesListQuery = () =>
 
 export const templateQuery = (input: { id: string }) =>
   queryOptions({
-    queryKey: queryKeys.templates.detail(input),
+    queryKey: queryKeyTemplates.detail(input),
     queryFn: async () => {
       const res = await getGoClient().templates.get({ id: input.id });
       return { template: res.data };

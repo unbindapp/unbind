@@ -1,15 +1,19 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import { getGoClient } from "@/server/client";
-import { queryKeys } from "@/lib/queries/query-keys";
 import type { TeamResponse } from "@/server/client.gen";
 
 export type TTeam = TeamResponse;
 
+export const queryKeyTeams = {
+  list: () => ["teams", "list"] as const,
+  detail: (input: { teamId: string }) => ["teams", "detail", input.teamId] as const,
+};
+
 // Mirrors the old teams tRPC router: same input + the `res.data` → `{ teams }` reshape.
 export const teamsListQuery = () =>
   queryOptions({
-    queryKey: queryKeys.teams.list(),
+    queryKey: queryKeyTeams.list(),
     queryFn: async () => {
       const res = await getGoClient().teams.list();
       return { teams: res.data };
@@ -18,7 +22,7 @@ export const teamsListQuery = () =>
 
 export const teamQuery = (input: { teamId: string }) =>
   queryOptions({
-    queryKey: queryKeys.teams.detail(input),
+    queryKey: queryKeyTeams.detail(input),
     queryFn: async () => {
       const res = await getGoClient().teams.get({ team_id: input.teamId });
       return { team: res.data };

@@ -6,13 +6,15 @@ import type { MeResponseBody } from "@/server/client.gen";
 
 export type Me = MeResponseBody["data"];
 
+export const queryKeyMe = ["me"] as const;
+
 /**
  * Session = "does GET /users/me return 200". We call the endpoint through the
  * cookie-session fetch wrapper (which transparently refreshes on a recoverable
  * 401) and treat a final 401 as "not signed in" (null) rather than an error.
  */
 export const meQuery = queryOptions({
-  queryKey: ["me"] as const,
+  queryKey: queryKeyMe,
   queryFn: async (): Promise<Me | null> => {
     const res = await apiFetch(`${getConfig().apiUrl}/users/me`);
     if (res.status === 401) return null;

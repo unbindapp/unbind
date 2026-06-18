@@ -1,8 +1,8 @@
 "use client";
 
-import { queryKeys } from "@/lib/queries/query-keys";
 import {
   createOrUpdateVariables,
+  queryKeyVariables,
   variablesListQuery,
   type TCreateOrUpdateVariablesInput,
   type TVariablesList,
@@ -79,7 +79,7 @@ export const useVariablesUtils = ({
   type,
 }: Omit<TEntityVariableTypeProps, "service">) => {
   const queryClient = useQueryClient();
-  const queryKey = queryKeys.variables.list({ teamId, projectId, environmentId, serviceId, type });
+  const queryKey = queryKeyVariables.list({ teamId, projectId, environmentId, serviceId, type });
   return {
     invalidate: () => queryClient.invalidateQueries({ queryKey }),
     refetch: () => queryClient.refetchQueries({ queryKey }),

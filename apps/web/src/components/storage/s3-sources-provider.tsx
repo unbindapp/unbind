@@ -1,7 +1,6 @@
 "use client";
 
-import { queryKeys } from "@/lib/queries/query-keys";
-import { s3SourcesListQuery, type TS3SourceShallow } from "@/lib/queries/storage";
+import { queryKeyStorage, s3SourcesListQuery, type TS3SourceShallow } from "@/lib/queries/storage";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
@@ -39,6 +38,6 @@ export const useS3SourcesUtils = ({ teamId }: { teamId: string }) => {
   const queryClient = useQueryClient();
   return {
     invalidate: () =>
-      queryClient.invalidateQueries({ queryKey: queryKeys.storage.s3List({ teamId }) }),
+      queryClient.invalidateQueries({ queryKey: queryKeyStorage.s3List({ teamId }) }),
   };
 };

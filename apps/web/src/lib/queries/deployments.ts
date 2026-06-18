@@ -1,11 +1,31 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import { getGoClient } from "@/server/client";
-import { queryKeys } from "@/lib/queries/query-keys";
 import type { DeploymentResponse, ListDeploymentsResponseBody } from "@/server/client.gen";
 
 export type TDeploymentsList = ListDeploymentsResponseBody["data"];
 export type TDeployment = DeploymentResponse;
+
+export const queryKeyDeployments = {
+  list: (input: { teamId: string; projectId: string; environmentId: string; serviceId: string }) =>
+    ["deployments", "list", input.teamId, input.projectId, input.environmentId, input.serviceId] as const,
+  detail: (input: {
+    teamId: string;
+    projectId: string;
+    environmentId: string;
+    serviceId: string;
+    deploymentId: string;
+  }) =>
+    [
+      "deployments",
+      "detail",
+      input.teamId,
+      input.projectId,
+      input.environmentId,
+      input.serviceId,
+      input.deploymentId,
+    ] as const,
+};
 
 export const deploymentsListQuery = (input: {
   teamId: string;
@@ -14,7 +34,7 @@ export const deploymentsListQuery = (input: {
   serviceId: string;
 }) =>
   queryOptions({
-    queryKey: queryKeys.deployments.list(input),
+    queryKey: queryKeyDeployments.list(input),
     queryFn: async (): Promise<TDeploymentsList> => {
       const res = await getGoClient().deployments.list({
         team_id: input.teamId,
@@ -36,7 +56,7 @@ export const deploymentQuery = (input: {
   deploymentId: string;
 }) =>
   queryOptions({
-    queryKey: queryKeys.deployments.detail(input),
+    queryKey: queryKeyDeployments.detail(input),
     queryFn: async (): Promise<{ deployment: TDeployment }> => {
       const res = await getGoClient().deployments.list({
         team_id: input.teamId,

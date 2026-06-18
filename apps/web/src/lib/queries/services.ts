@@ -1,7 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import { getGoClient } from "@/server/client";
-import { queryKeys } from "@/lib/queries/query-keys";
 import type {
   CreateServiceInput,
   EndpointDiscovery,
@@ -14,13 +13,35 @@ export type TServiceShallow = ServiceResponse;
 export type TService = ServiceResponse;
 export type TServiceEndpoints = EndpointDiscovery;
 
+export const queryKeyServices = {
+  list: (input: { teamId: string; projectId: string; environmentId: string }) =>
+    ["services", "list", input.teamId, input.projectId, input.environmentId] as const,
+  detail: (input: {
+    teamId: string;
+    projectId: string;
+    environmentId: string;
+    serviceId: string;
+  }) =>
+    ["services", "detail", input.teamId, input.projectId, input.environmentId, input.serviceId] as const,
+  endpoints: (input: {
+    teamId: string;
+    projectId: string;
+    environmentId: string;
+    serviceId: string;
+  }) =>
+    ["services", "endpoints", input.teamId, input.projectId, input.environmentId, input.serviceId] as const,
+  databases: () => ["services", "databases"] as const,
+  database: (input: { type: string; version?: string }) =>
+    ["services", "database", input.type, input.version ?? null] as const,
+};
+
 export const servicesListQuery = (input: {
   teamId: string;
   projectId: string;
   environmentId: string;
 }) =>
   queryOptions({
-    queryKey: queryKeys.services.list(input),
+    queryKey: queryKeyServices.list(input),
     queryFn: async () => {
       const res = await getGoClient().services.list({
         team_id: input.teamId,
@@ -38,7 +59,7 @@ export const serviceQuery = (input: {
   serviceId: string;
 }) =>
   queryOptions({
-    queryKey: queryKeys.services.detail(input),
+    queryKey: queryKeyServices.detail(input),
     queryFn: async () => {
       const res = await getGoClient().services.get({
         team_id: input.teamId,
@@ -57,7 +78,7 @@ export const serviceEndpointsQuery = (input: {
   serviceId: string;
 }) =>
   queryOptions({
-    queryKey: queryKeys.services.endpoints(input),
+    queryKey: queryKeyServices.endpoints(input),
     queryFn: async () => {
       const res = await getGoClient().services.endpoints.list({
         team_id: input.teamId,
@@ -71,7 +92,7 @@ export const serviceEndpointsQuery = (input: {
 
 export const databasesListQuery = () =>
   queryOptions({
-    queryKey: queryKeys.services.databases(),
+    queryKey: queryKeyServices.databases(),
     queryFn: async () => {
       const res = await getGoClient().services.databases.installable.list();
       return { databases: res.data };
@@ -80,7 +101,7 @@ export const databasesListQuery = () =>
 
 export const databaseQuery = (input: { type: string; version?: string }) =>
   queryOptions({
-    queryKey: queryKeys.services.database(input),
+    queryKey: queryKeyServices.database(input),
     queryFn: async () => {
       const res = await getGoClient().services.databases.installable.get({
         type: input.type,

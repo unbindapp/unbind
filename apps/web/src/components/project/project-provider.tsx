@@ -1,7 +1,6 @@
 "use client";
 
-import { queryKeys } from "@/lib/queries/query-keys";
-import { projectQuery, type TProjectShallow } from "@/lib/queries/projects";
+import { projectQuery, queryKeyProjects, type TProjectShallow } from "@/lib/queries/projects";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
@@ -39,7 +38,7 @@ export const useProjectUtils = ({ teamId, projectId }: { teamId: string; project
   const queryClient = useQueryClient();
   return {
     invalidate: () =>
-      queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail({ teamId, projectId }) }),
+      queryClient.invalidateQueries({ queryKey: queryKeyProjects.detail({ teamId, projectId }) }),
   };
 };
 

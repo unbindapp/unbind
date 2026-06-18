@@ -1,7 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import { getGoClient } from "@/server/client";
-import { queryKeys } from "@/lib/queries/query-keys";
 import { getLogLevelFromMessage } from "@/lib/helpers/get-log-level-from-message";
 import type { TLogLineWithLevel, TLogType } from "@/server/types/logs";
 
@@ -19,9 +18,40 @@ export type TLogsListInput = {
   limit?: number;
 };
 
+export const queryKeyLogs = {
+  list: (input: {
+    type: string;
+    teamId: string;
+    projectId?: string;
+    environmentId?: string;
+    serviceId?: string;
+    deploymentId?: string;
+    filters?: string;
+    since?: string;
+    start?: string;
+    end?: string;
+    limit?: number;
+  }) =>
+    [
+      "logs",
+      "list",
+      input.type,
+      input.teamId,
+      input.projectId ?? null,
+      input.environmentId ?? null,
+      input.serviceId ?? null,
+      input.deploymentId ?? null,
+      input.filters ?? null,
+      input.since ?? null,
+      input.start ?? null,
+      input.end ?? null,
+      input.limit ?? 500,
+    ] as const,
+};
+
 export const logsListQuery = (input: TLogsListInput) =>
   queryOptions({
-    queryKey: queryKeys.logs.list(input),
+    queryKey: queryKeyLogs.list(input),
     queryFn: async (): Promise<{ logs: TLogLineWithLevel[] }> => {
       const res = await getGoClient().logs.query({
         type: input.type,

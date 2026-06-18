@@ -1,7 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import { getGoClient } from "@/server/client";
-import { queryKeys } from "@/lib/queries/query-keys";
 import type { GetMetricsResponseBody, MetricsType } from "@/server/client.gen";
 import type { TMetricsIntervalEnum } from "@/server/types/metrics";
 
@@ -29,9 +28,30 @@ export type TMetricsListInput = {
   interval: TMetricsIntervalEnum;
 };
 
+export const queryKeyMetrics = {
+  list: (input: {
+    type: string;
+    teamId: string;
+    projectId?: string;
+    environmentId?: string;
+    serviceId?: string;
+    interval: string;
+  }) =>
+    [
+      "metrics",
+      "list",
+      input.type,
+      input.teamId,
+      input.projectId ?? null,
+      input.environmentId ?? null,
+      input.serviceId ?? null,
+      input.interval,
+    ] as const,
+};
+
 export const metricsListQuery = (input: TMetricsListInput) =>
   queryOptions({
-    queryKey: queryKeys.metrics.list(input),
+    queryKey: queryKeyMetrics.list(input),
     queryFn: async (): Promise<TMetrics> => {
       const res = await getGoClient().metrics.get({
         type: input.type,

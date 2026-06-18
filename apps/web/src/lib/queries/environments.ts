@@ -1,15 +1,21 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import { getGoClient } from "@/server/client";
-import { queryKeys } from "@/lib/queries/query-keys";
 import type { EnvironmentResponse } from "@/server/client.gen";
 
 export type TEnvironmentShallow = EnvironmentResponse;
 
+export const queryKeyEnvironments = {
+  list: (input: { teamId: string; projectId: string }) =>
+    ["environments", "list", input.teamId, input.projectId] as const,
+  detail: (input: { teamId: string; projectId: string; environmentId: string }) =>
+    ["environments", "detail", input.teamId, input.projectId, input.environmentId] as const,
+};
+
 // Mirrors the old environments tRPC router (queries + mutations, same reshapes/mappings).
 export const environmentsListQuery = (input: { teamId: string; projectId: string }) =>
   queryOptions({
-    queryKey: queryKeys.environments.list(input),
+    queryKey: queryKeyEnvironments.list(input),
     queryFn: async () => {
       const res = await getGoClient().environments.list({
         team_id: input.teamId,
@@ -25,7 +31,7 @@ export const environmentQuery = (input: {
   environmentId: string;
 }) =>
   queryOptions({
-    queryKey: queryKeys.environments.detail(input),
+    queryKey: queryKeyEnvironments.detail(input),
     queryFn: async () => {
       const res = await getGoClient().environments.get({
         id: input.environmentId,

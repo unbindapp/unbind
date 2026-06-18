@@ -1,16 +1,29 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import { getGoClient } from "@/server/client";
-import { queryKeys } from "@/lib/queries/query-keys";
 import type { PvcScope, S3Response } from "@/server/client.gen";
 
 export type TS3SourceShallow = S3Response;
+
+export const queryKeyStorage = {
+  s3List: (input: { teamId: string }) => ["storage", "s3", "list", input.teamId] as const,
+  s3Detail: (input: { teamId: string; id: string }) =>
+    ["storage", "s3", "detail", input.teamId, input.id] as const,
+  volume: (input: {
+    teamId: string;
+    projectId: string;
+    environmentId: string;
+    type: string;
+    id: string;
+  }) =>
+    ["storage", "volume", input.teamId, input.projectId, input.environmentId, input.type, input.id] as const,
+};
 
 // ---- S3 sources ----
 
 export const s3SourcesListQuery = (input: { teamId: string; withBuckets?: boolean }) =>
   queryOptions({
-    queryKey: queryKeys.storage.s3List(input),
+    queryKey: queryKeyStorage.s3List(input),
     queryFn: async () => {
       const res = await getGoClient().storage.s3.list({
         team_id: input.teamId,
@@ -22,7 +35,7 @@ export const s3SourcesListQuery = (input: { teamId: string; withBuckets?: boolea
 
 export const s3SourceQuery = (input: { id: string; teamId: string; withBuckets?: boolean }) =>
   queryOptions({
-    queryKey: queryKeys.storage.s3Detail(input),
+    queryKey: queryKeyStorage.s3Detail(input),
     queryFn: async () => {
       const res = await getGoClient().storage.s3.get({
         id: input.id,
@@ -105,7 +118,7 @@ type TVolumeRef = {
 
 export const volumeQuery = (input: TVolumeRef) =>
   queryOptions({
-    queryKey: queryKeys.storage.volume(input),
+    queryKey: queryKeyStorage.volume(input),
     queryFn: async () => {
       const res = await getGoClient().storage.pvc.get({
         id: input.id,

@@ -1,7 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import { getGoClient } from "@/server/client";
-import { queryKeys } from "@/lib/queries/query-keys";
 import type { WebhookEvent, WebhookResponse } from "@/server/client.gen";
 
 export type TWebhookShallow = WebhookResponse;
@@ -10,9 +9,16 @@ export type TWebhooksListInput =
   | { type: "project"; teamId: string; projectId: string }
   | { type: "team"; teamId: string };
 
+export const queryKeyWebhooks = {
+  list: (input: { type: "project" | "team"; teamId: string; projectId?: string }) =>
+    input.type === "project"
+      ? (["webhooks", "list", "project", input.teamId, input.projectId] as const)
+      : (["webhooks", "list", "team", input.teamId] as const),
+};
+
 export const webhooksListQuery = (input: TWebhooksListInput) =>
   queryOptions({
-    queryKey: queryKeys.webhooks.list(input),
+    queryKey: queryKeyWebhooks.list(input),
     queryFn: async () => {
       const res = await getGoClient().unbindwebhooks.list(
         input.type === "project"

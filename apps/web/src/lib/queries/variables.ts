@@ -1,7 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import { getGoClient } from "@/server/client";
-import { queryKeys } from "@/lib/queries/query-keys";
 import type {
   AvailableVariableReference,
   VariableReferenceInputItem,
@@ -13,6 +12,32 @@ import type {
 export type TVariablesList = VariablesResponseBody["data"];
 export type TAvailableVariableReferences = { variables: AvailableVariableReference[] };
 
+export const queryKeyVariables = {
+  list: (input: {
+    teamId: string;
+    projectId?: string;
+    environmentId?: string;
+    serviceId?: string;
+    type: string;
+  }) =>
+    [
+      "variables",
+      "list",
+      input.teamId,
+      input.projectId ?? null,
+      input.environmentId ?? null,
+      input.serviceId ?? null,
+      input.type,
+    ] as const,
+  available: (input: {
+    teamId: string;
+    projectId: string;
+    environmentId: string;
+    serviceId: string;
+  }) =>
+    ["variables", "available", input.teamId, input.projectId, input.environmentId, input.serviceId] as const,
+};
+
 export type TVariablesListInput = {
   teamId: string;
   projectId?: string;
@@ -23,7 +48,7 @@ export type TVariablesListInput = {
 
 export const variablesListQuery = (input: TVariablesListInput) =>
   queryOptions({
-    queryKey: queryKeys.variables.list(input),
+    queryKey: queryKeyVariables.list(input),
     queryFn: async (): Promise<TVariablesList> => {
       const res = await getGoClient().variables.list({
         team_id: input.teamId,
@@ -43,7 +68,7 @@ export const availableVariableReferencesQuery = (input: {
   serviceId: string;
 }) =>
   queryOptions({
-    queryKey: queryKeys.variables.available(input),
+    queryKey: queryKeyVariables.available(input),
     queryFn: async (): Promise<TAvailableVariableReferences> => {
       const res = await getGoClient().variables.references.available({
         team_id: input.teamId,

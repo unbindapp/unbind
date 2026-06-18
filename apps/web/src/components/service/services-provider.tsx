@@ -1,7 +1,6 @@
 "use client";
 
-import { queryKeys } from "@/lib/queries/query-keys";
-import { servicesListQuery, type TServiceShallow } from "@/lib/queries/services";
+import { queryKeyServices, servicesListQuery, type TServiceShallow } from "@/lib/queries/services";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
@@ -59,7 +58,7 @@ export const useServicesUtils = ({
   environmentId: string;
 }) => {
   const queryClient = useQueryClient();
-  const queryKey = queryKeys.services.list({ teamId, projectId, environmentId });
+  const queryKey = queryKeyServices.list({ teamId, projectId, environmentId });
   return {
     invalidate: () => queryClient.invalidateQueries({ queryKey }),
     refetch: () => queryClient.refetchQueries({ queryKey }),

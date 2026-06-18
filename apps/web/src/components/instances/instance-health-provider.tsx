@@ -1,7 +1,6 @@
 "use client";
 
-import { queryKeys } from "@/lib/queries/query-keys";
-import { instanceHealthQuery, type TInstanceHealth } from "@/lib/queries/instances";
+import { instanceHealthQuery, queryKeyInstances, type TInstanceHealth } from "@/lib/queries/instances";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext } from "react";
 
@@ -54,7 +53,7 @@ export const useInstanceHealthUtils = ({
   serviceId: string;
 }) => {
   const queryClient = useQueryClient();
-  const queryKey = queryKeys.instances.health({ teamId, projectId, environmentId, serviceId });
+  const queryKey = queryKeyInstances.health({ teamId, projectId, environmentId, serviceId });
   return {
     invalidate: () => queryClient.invalidateQueries({ queryKey }),
     fetch: () =>

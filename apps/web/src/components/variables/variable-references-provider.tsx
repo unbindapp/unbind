@@ -1,8 +1,8 @@
 "use client";
 
-import { queryKeys } from "@/lib/queries/query-keys";
 import {
   availableVariableReferencesQuery,
+  queryKeyVariables,
   type TAvailableVariableReferences,
 } from "@/lib/queries/variables";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
@@ -82,7 +82,7 @@ export const useVariableReferenceUtils = ({
   if (type !== "service") {
     return { invalidate: () => null, refetch: () => null };
   }
-  const queryKey = queryKeys.variables.available({ teamId, projectId, environmentId, serviceId });
+  const queryKey = queryKeyVariables.available({ teamId, projectId, environmentId, serviceId });
   return {
     invalidate: () => queryClient.invalidateQueries({ queryKey }),
     refetch: () => queryClient.refetchQueries({ queryKey }),

@@ -1,7 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import { getGoClient } from "@/server/client";
-import { queryKeys } from "@/lib/queries/query-keys";
 import type {
   SystemMetaResponseBody,
   UpdateCheckResponseBody,
@@ -12,9 +11,16 @@ export type TSystem = { data: SystemMetaResponseBody["data"] };
 export type TCheckForUpdates = { data: UpdateCheckResponseBody };
 export type TUpdateStatus = { data: UpdateStatusResponseBody };
 
+export const queryKeySystem = {
+  get: () => ["system", "get"] as const,
+  dnsCheck: (input: { domain: string }) => ["system", "dns", input.domain] as const,
+  updateCheck: () => ["system", "update", "check"] as const,
+  updateStatus: () => ["system", "update", "status"] as const,
+};
+
 export const systemQuery = () =>
   queryOptions({
-    queryKey: queryKeys.system.get(),
+    queryKey: queryKeySystem.get(),
     queryFn: async (): Promise<TSystem> => {
       const res = await getGoClient().system.get();
       return { data: res.data };
@@ -23,7 +29,7 @@ export const systemQuery = () =>
 
 export const dnsCheckQuery = (input: { domain: string }) =>
   queryOptions({
-    queryKey: queryKeys.system.dnsCheck(input),
+    queryKey: queryKeySystem.dnsCheck(input),
     queryFn: async () => {
       const res = await getGoClient().system.dns.check({ domain: input.domain });
       return { data: res.data };
@@ -32,7 +38,7 @@ export const dnsCheckQuery = (input: { domain: string }) =>
 
 export const checkForUpdatesQuery = () =>
   queryOptions({
-    queryKey: queryKeys.system.updateCheck(),
+    queryKey: queryKeySystem.updateCheck(),
     queryFn: async (): Promise<TCheckForUpdates> => {
       const res = await getGoClient().system.update.check();
       return { data: res };
@@ -41,7 +47,7 @@ export const checkForUpdatesQuery = () =>
 
 export const checkUpdateStatusQuery = () =>
   queryOptions({
-    queryKey: queryKeys.system.updateStatus(),
+    queryKey: queryKeySystem.updateStatus(),
     queryFn: async (): Promise<TUpdateStatus> => {
       const res = await getGoClient().system.update.status();
       return { data: res };

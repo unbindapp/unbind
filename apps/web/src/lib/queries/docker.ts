@@ -1,9 +1,13 @@
 import { queryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 
-import { queryKeys } from "@/lib/queries/query-keys";
-
 const dockerHubApi = "https://hub.docker.com";
+
+export const queryKeyDocker = {
+  search: (input: { search?: string }) => ["docker", "search", input.search ?? null] as const,
+  tags: (input: { repository: string; search?: string }) =>
+    ["docker", "tags", input.repository, input.search ?? null] as const,
+};
 
 const DockerSearchResultSchema = z
   .object({
@@ -30,7 +34,7 @@ const DockerTagsResultSchema = z
 
 export const dockerSearchQuery = (input: { search?: string }) =>
   queryOptions({
-    queryKey: queryKeys.docker.search(input),
+    queryKey: queryKeyDocker.search(input),
     queryFn: async () => {
       const query = input.search || "a";
       const res = await fetch(
@@ -43,7 +47,7 @@ export const dockerSearchQuery = (input: { search?: string }) =>
 
 export const dockerTagsQuery = (input: { repository: string; search?: string }) =>
   queryOptions({
-    queryKey: queryKeys.docker.tags(input),
+    queryKey: queryKeyDocker.tags(input),
     queryFn: async () => {
       const { repository, search } = input;
       const [namespace, name] = repository.includes("/")
