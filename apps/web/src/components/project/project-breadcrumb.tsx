@@ -9,7 +9,7 @@ import { BreadcrumbSeparator, BreadcrumbWrapper } from "@/components/navigation/
 import { useProjects, useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import { createProject as createProjectFn } from "@/api/queries/projects";
+import { createProject as createProjectFn } from "@/lib/queries/projects";
 import { useMutation } from "@tanstack/react-query";
 import { ResultAsync } from "neverthrow";
 import { useLocation, useRouter } from "@tanstack/react-router";

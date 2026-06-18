@@ -2,7 +2,7 @@
 
 import BrandIcon from "@/components/icons/brand";
 import PageWrapper from "@/components/page-wrapper";
-import { gitAppQuery } from "@/api/queries/git";
+import { gitAppQuery } from "@/lib/queries/git";
 import { useQuery } from "@tanstack/react-query";
 import { LoaderIcon, TriangleAlertIcon } from "lucide-react";
 import { useEffect, useState } from "react";

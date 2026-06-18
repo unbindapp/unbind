@@ -1,6 +1,6 @@
 import { createFileRoute, useSearch } from "@tanstack/react-router";
 
-import { servicesListQuery } from "@/api/queries/services";
+import { servicesListQuery } from "@/lib/queries/services";
 import EnvironmentSelector from "@/components/environment/environment-selector";
 import PageWrapper from "@/components/page-wrapper";
 import NewServiceButton from "@/components/project/new-service-button";

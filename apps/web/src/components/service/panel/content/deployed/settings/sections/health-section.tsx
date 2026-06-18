@@ -14,7 +14,7 @@ import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { HealthCheckTypeSchema } from "@/server/go/client.gen";
+import { HealthCheckTypeSchema } from "@/server/client.gen";
 import { THealthCheckType, TServiceShallow } from "@/server/types/services";
 import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
 import { useStore } from "@tanstack/react-form";

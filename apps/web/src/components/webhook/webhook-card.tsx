@@ -16,7 +16,7 @@ import { cn } from "@/components/ui/utils";
 import { getWebhookIcon } from "@/components/webhook/helpers";
 import { TWebhookProjectProps, TWebhookProps, TWebhookTeamProps } from "@/components/webhook/types";
 import { useWebhooksUtils } from "@/components/webhook/webhooks-provider";
-import { deleteWebhook as deleteWebhookFn } from "@/api/queries/webhooks";
+import { deleteWebhook as deleteWebhookFn } from "@/lib/queries/webhooks";
 import { TWebhookShallow } from "@/server/types/webhooks";
 import { useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";

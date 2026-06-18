@@ -8,7 +8,7 @@ import {
   projectNameMaxLength,
   ProjectUpdateFormSchema,
 } from "@/server/types/projects";
-import { updateProject as updateProjectFn } from "@/api/queries/projects";
+import { updateProject as updateProjectFn } from "@/lib/queries/projects";
 import { useMutation } from "@tanstack/react-query";
 
 type TProps = {

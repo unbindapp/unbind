@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { variablesListQuery } from "@/api/queries/variables";
+import { variablesListQuery } from "@/lib/queries/variables";
 import VariableReferencesProvider from "@/components/variables/variable-references-provider";
 import VariablesHeader from "@/components/variables/variables-header";
 import VariablesList from "@/components/variables/variables-list";

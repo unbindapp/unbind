@@ -1,7 +1,7 @@
 "use client";
 
-import { queryKeys } from "@/api/query-keys";
-import { environmentsListQuery, type TEnvironmentShallow } from "@/api/queries/environments";
+import { queryKeys } from "@/lib/queries/query-keys";
+import { environmentsListQuery, type TEnvironmentShallow } from "@/lib/queries/environments";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 

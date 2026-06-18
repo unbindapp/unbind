@@ -1,7 +1,7 @@
 "use client";
 
-import { queryKeys } from "@/api/query-keys";
-import { deploymentQuery, type TDeployment } from "@/api/queries/deployments";
+import { queryKeys } from "@/lib/queries/query-keys";
+import { deploymentQuery, type TDeployment } from "@/lib/queries/deployments";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 

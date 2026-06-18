@@ -1,14 +1,14 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { getGoClient } from "@/api/client";
-import { queryKeys } from "@/api/query-keys";
+import { getGoClient } from "@/server/client";
+import { queryKeys } from "@/lib/queries/query-keys";
 import type {
   AvailableVariableReference,
   VariableReferenceInputItem,
   VariableReferenceSourceType,
   VariablesResponseBody,
   VariableUpdateBehavior,
-} from "@/server/go/client.gen";
+} from "@/server/client.gen";
 
 export type TVariablesList = VariablesResponseBody["data"];
 export type TAvailableVariableReferences = { variables: AvailableVariableReference[] };

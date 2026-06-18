@@ -1,8 +1,8 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { apiFetch, getGoClient } from "@/api/client";
+import { apiFetch } from "@/server/client";
 import { getConfig } from "@/lib/config";
-import type { MeResponseBody } from "@/server/go/client.gen";
+import type { MeResponseBody } from "@/server/client.gen";
 
 export type Me = MeResponseBody["data"];
 
@@ -22,19 +22,3 @@ export const meQuery = queryOptions({
   },
   staleTime: 5 * 60 * 1000,
 });
-
-export function login(email: string, password: string) {
-  return getGoClient().auth.login({ email, password });
-}
-
-export function logout() {
-  return getGoClient().auth.logout();
-}
-
-export function getSetupStatus() {
-  return getGoClient().setup.status();
-}
-
-export function createFirstUser(email: string, password: string) {
-  return getGoClient().setup.createUser({ email, password });
-}

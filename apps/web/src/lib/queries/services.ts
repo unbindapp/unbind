@@ -1,13 +1,13 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { getGoClient } from "@/api/client";
-import { queryKeys } from "@/api/query-keys";
+import { getGoClient } from "@/server/client";
+import { queryKeys } from "@/lib/queries/query-keys";
 import type {
   CreateServiceInput,
   EndpointDiscovery,
   ServiceResponse,
   UpdateServiceInput,
-} from "@/server/go/client.gen";
+} from "@/server/client.gen";
 import type { TUpdateServiceInput } from "@/server/types/services";
 
 export type TServiceShallow = ServiceResponse;
@@ -144,7 +144,8 @@ export async function updateService(input: TUpdateServiceInput) {
     healthCheckType || healthCheckEndpoint || healthCheckCommand ? {} : undefined;
   if (healthCheckType !== undefined && healthCheck) healthCheck.type = healthCheckType;
   if (healthCheckEndpoint !== undefined && healthCheck) healthCheck.path = healthCheckEndpoint;
-  if (healthCheckEndpointPort !== undefined && healthCheck) healthCheck.port = healthCheckEndpointPort;
+  if (healthCheckEndpointPort !== undefined && healthCheck)
+    healthCheck.port = healthCheckEndpointPort;
   if (healthCheckCommand !== undefined && healthCheck) healthCheck.command = healthCheckCommand;
   if (healthCheckType !== "none") {
     if (healthCheckIntervalSeconds !== undefined && healthCheck)

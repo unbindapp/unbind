@@ -1,7 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 
-import { queryKeys } from "@/api/query-keys";
+import { queryKeys } from "@/lib/queries/query-keys";
 
 const dockerHubApi = "https://hub.docker.com";
 

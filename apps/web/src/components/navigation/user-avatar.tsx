@@ -1,6 +1,5 @@
 "use client";
 
-import { logout, meQuery } from "@/api/auth";
 import Blockies from "@/components/blockies/blockies";
 import {
   DropdownOrDrawer,
@@ -20,6 +19,8 @@ import {
   useCheckForUpdates,
   useCheckNewVersion,
 } from "@/components/update/check-for-updates-provider";
+import { meQuery } from "@/lib/queries/me";
+import { getGoClient } from "@/server/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { GiftIcon, GitBranchIcon, LoaderIcon, LogOutIcon } from "lucide-react";
@@ -31,7 +32,7 @@ export default function UserAvatar({ email, className }: TProps) {
   const queryClient = useQueryClient();
   const router = useRouter();
   const { mutate: signOut, isPending: isPendingSignOut } = useMutation({
-    mutationFn: logout,
+    mutationFn: async () => await getGoClient().auth.logout(),
     onSuccess: () => {
       queryClient.setQueryData(meQuery.queryKey, null);
       router.history.push("/sign-in");

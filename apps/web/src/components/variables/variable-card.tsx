@@ -25,7 +25,7 @@ import {
   TVariableShallow,
   VariableForCreateValueSchema,
 } from "@/server/types/variables";
-import { createOrUpdateVariables, deleteVariables } from "@/api/queries/variables";
+import { createOrUpdateVariables, deleteVariables } from "@/lib/queries/variables";
 import { useMutation } from "@tanstack/react-query";
 import {
   CheckIcon,

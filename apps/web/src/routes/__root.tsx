@@ -1,10 +1,10 @@
 import Providers from "@/components/providers/providers";
 import NotFoundTemplate from "@/components/navigation/not-found-template";
-import { meQuery } from "@/api/auth";
 import type { QueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext, Outlet, redirect } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { TriangleAlertIcon } from "lucide-react";
+import { meQuery } from "@/lib/queries/me";
 
 export type RouterContext = {
   queryClient: QueryClient;

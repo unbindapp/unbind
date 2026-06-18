@@ -19,7 +19,7 @@ const CustomServiceDefinitionsResultSchema = z.object({
 async function main() {
   const args = process.argv.slice(2);
 
-  let outputFile = "./src/server/go/data.gen.ts";
+  let outputFile = "./src/server/data.gen.ts";
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];

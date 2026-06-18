@@ -1,4 +1,4 @@
-import type { ProjectResponse } from "@/server/go/client.gen";
+import type { ProjectResponse } from "@/server/client.gen";
 import { z } from "zod";
 
 export const projectNameMinLength = 2;

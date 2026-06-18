@@ -2,9 +2,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 
-import { logout, meQuery } from "@/api/auth";
+import { getGoClient } from "@/server/client";
 import { Button } from "@/components/ui/button";
 import { AuthShell } from "../../components/auth-shell";
+import { meQuery } from "@/lib/queries/me";
 
 export const Route = createFileRoute("/sign-out/")({
   component: SignOut,
@@ -18,8 +19,9 @@ function SignOut() {
   async function onSignOut() {
     setIsPending(true);
     try {
-      await logout();
+      await getGoClient().auth.logout();
     } catch {
+      // TO-DO
       // Clear local session regardless of the network result.
     }
     queryClient.setQueryData(meQuery.queryKey, null);

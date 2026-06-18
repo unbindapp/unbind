@@ -1,9 +1,9 @@
-import { VariableReferenceInputItemSchema } from "@/server/go/client.gen";
+import { VariableReferenceInputItemSchema } from "@/server/client.gen";
 import type {
   AvailableVariableReference,
   VariableReferenceResponse,
   VariableResponseItem,
-} from "@/server/go/client.gen";
+} from "@/server/client.gen";
 import { z } from "zod";
 
 export const VariableForCreateValueSchema = z.string().nonempty("Value is required.");

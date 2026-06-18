@@ -1,7 +1,7 @@
 "use client";
 
-import { queryKeys } from "@/api/query-keys";
-import { s3SourcesListQuery, type TS3SourceShallow } from "@/api/queries/storage";
+import { queryKeys } from "@/lib/queries/query-keys";
+import { s3SourcesListQuery, type TS3SourceShallow } from "@/lib/queries/storage";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 

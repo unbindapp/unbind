@@ -32,7 +32,7 @@ import { getVariablesPair } from "@/components/variables/helpers";
 import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
 import { TVariableForCreate } from "@/server/types/variables";
-import { databaseQuery } from "@/api/queries/services";
+import { databaseQuery } from "@/lib/queries/services";
 import { useQuery } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
 import { CylinderIcon, MilestoneIcon, OctagonXIcon } from "lucide-react";

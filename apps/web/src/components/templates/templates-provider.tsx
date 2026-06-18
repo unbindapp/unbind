@@ -1,6 +1,6 @@
 "use client";
 
-import { templatesListQuery, type TTemplatesList } from "@/api/queries/templates";
+import { templatesListQuery, type TTemplatesList } from "@/lib/queries/templates";
 import { useQuery } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 

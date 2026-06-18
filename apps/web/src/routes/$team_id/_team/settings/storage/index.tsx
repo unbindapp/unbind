@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { s3SourcesListQuery } from "@/api/queries/storage";
+import { s3SourcesListQuery } from "@/lib/queries/storage";
 import SettingsTabTitle from "@/components/settings/settings-tab-title";
 import S3SourcesProvider from "@/components/storage/s3-sources-provider";
 import StorageTabContent from "@/components/storage/storage-tab-content";

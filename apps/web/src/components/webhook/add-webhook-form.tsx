@@ -9,7 +9,7 @@ import { getWebhookIcon } from "@/components/webhook/helpers";
 import { TWebhookProps } from "@/components/webhook/types";
 import { useWebhooksUtils } from "@/components/webhook/webhooks-provider";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { createWebhook as createWebhookFn } from "@/api/queries/webhooks";
+import { createWebhook as createWebhookFn } from "@/lib/queries/webhooks";
 import {
   TWebhookIdProjectEnum,
   TWebhookIdTeamEnum,

@@ -1,4 +1,4 @@
-import type { ListDeploymentsResponseBody } from "@/server/go/client.gen";
+import type { ListDeploymentsResponseBody } from "@/server/client.gen";
 
 export type TDeploymentShallow = NonNullable<
   ListDeploymentsResponseBody["data"]["deployments"]

@@ -1,12 +1,12 @@
 "use client";
 
-import { queryKeys } from "@/api/query-keys";
+import { queryKeys } from "@/lib/queries/query-keys";
 import {
   createOrUpdateVariables,
   variablesListQuery,
   type TCreateOrUpdateVariablesInput,
   type TVariablesList,
-} from "@/api/queries/variables";
+} from "@/lib/queries/variables";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
 import { TVariableReferenceShallow, TVariableShallow } from "@/server/types/variables";
 import {

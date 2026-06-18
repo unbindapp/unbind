@@ -5,11 +5,12 @@ import { KeyRoundIcon, MailIcon } from "lucide-react";
 import { useState } from "react";
 import { z } from "zod";
 
-import { getSetupStatus, login, meQuery } from "@/api/auth";
+import { getGoClient } from "@/server/client";
 import ErrorLine from "@/components/error-line";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthShell } from "../../components/auth-shell";
+import { meQuery } from "@/lib/queries/me";
 
 const searchSchema = z.object({ redirect: z.string().optional() });
 
@@ -22,7 +23,7 @@ export const Route = createFileRoute("/sign-in/")({
     // Setup gate: no first user yet → send to account creation.
     let firstUserCreated = true;
     try {
-      const status = await getSetupStatus();
+      const status = await getGoClient().setup.status();
       firstUserCreated = status.data.is_first_user_created;
     } catch {
       // API unreachable — fall through to the sign-in form.
@@ -41,12 +42,13 @@ function SignIn() {
   const [error, setError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
 
+  // TO-DO: Convert this to TanStack Form
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setIsPending(true);
     try {
-      await login(email, password);
+      await getGoClient().auth.login({ email, password });
       // Drop the stale "not signed in" cache and fetch /users/me fresh with the new
       // session cookie before navigating, so the root guard sees the signed-in user.
       queryClient.removeQueries({ queryKey: meQuery.queryKey });

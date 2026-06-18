@@ -4,7 +4,7 @@ import { useProject } from "@/components/project/project-provider";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useAsyncPush } from "@/components/providers/async-push-provider";
 import DeleteCard from "@/components/settings/delete-card";
-import { deleteProject as deleteProjectFn } from "@/api/queries/projects";
+import { deleteProject as deleteProjectFn } from "@/lib/queries/projects";
 import { useMutation } from "@tanstack/react-query";
 
 type Props = {

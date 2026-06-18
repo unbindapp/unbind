@@ -1,6 +1,6 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 
-import { teamsListQuery } from "@/api/queries/teams";
+import { teamsListQuery } from "@/lib/queries/teams";
 
 // "/" resolves to the user's first team, mirroring the old server redirect.
 export const Route = createFileRoute("/")({

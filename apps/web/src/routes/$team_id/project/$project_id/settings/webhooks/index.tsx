@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { webhooksListQuery } from "@/api/queries/webhooks";
+import { webhooksListQuery } from "@/lib/queries/webhooks";
 import SettingsTabTitle from "@/components/settings/settings-tab-title";
 import AddWebhookForm from "@/components/webhook/add-webhook-form";
 import WebhooksList from "@/components/webhook/webhooks-list";

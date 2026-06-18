@@ -2,8 +2,8 @@ import {
   WebhookProjectEventSchema,
   WebhookTeamEventSchema,
   WebhookTypeSchema,
-} from "@/server/go/client.gen";
-import type { WebhookResponse } from "@/server/go/client.gen";
+} from "@/server/client.gen";
+import type { WebhookResponse } from "@/server/client.gen";
 import { z } from "zod";
 
 export type TWebhookTypeProject = (typeof WebhookTypeSchema)["Enum"]["project"];

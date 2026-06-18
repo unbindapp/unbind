@@ -1,7 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { getGoClient } from "@/api/client";
-import { queryKeys } from "@/api/query-keys";
+import { getGoClient } from "@/server/client";
+import { queryKeys } from "@/lib/queries/query-keys";
 import { getLogLevelFromMessage } from "@/lib/helpers/get-log-level-from-message";
 import type { TLogLineWithLevel, TLogType } from "@/server/types/logs";
 

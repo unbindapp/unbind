@@ -2,8 +2,8 @@ import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { z } from "zod";
 
-import { metricsListQuery } from "@/api/queries/metrics";
-import { servicesListQuery } from "@/api/queries/services";
+import { metricsListQuery } from "@/lib/queries/metrics";
+import { servicesListQuery } from "@/lib/queries/services";
 import Charts from "@/components/metrics/charts";
 import MetricsIntervalDropdown from "@/components/metrics/metrics-interval-dropdown";
 import MetricsProvider from "@/components/metrics/metrics-provider";

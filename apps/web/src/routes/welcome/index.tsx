@@ -3,17 +3,18 @@ import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
 import { KeyRoundIcon, MailIcon } from "lucide-react";
 import { useState } from "react";
 
-import { createFirstUser, getSetupStatus, login, meQuery } from "@/api/auth";
+import { getGoClient } from "@/server/client";
 import ErrorLine from "@/components/error-line";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthShell } from "../../components/auth-shell";
+import { meQuery } from "@/lib/queries/me";
 
 export const Route = createFileRoute("/welcome/")({
   beforeLoad: async () => {
     // Account creation is only for the very first user.
     let firstUserCreated = false;
-    const status = await getSetupStatus();
+    const status = await getGoClient().setup.status();
     firstUserCreated = status.data.is_first_user_created;
     if (firstUserCreated) throw redirect({ to: "/sign-in" });
   },
@@ -28,13 +29,16 @@ function Welcome() {
   const [error, setError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
 
+  // TO-DO: Convert this to TanStack Form
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setIsPending(true);
     try {
-      await createFirstUser(email, password);
-      await login(email, password);
+      const goClient = getGoClient();
+      await goClient.setup.createUser({ email, password });
+      await goClient.auth.login({ email, password });
       // Drop the stale "not signed in" cache and fetch /users/me fresh with the new
       // session cookie before navigating, so the root guard sees the signed-in user.
       queryClient.removeQueries({ queryKey: meQuery.queryKey });

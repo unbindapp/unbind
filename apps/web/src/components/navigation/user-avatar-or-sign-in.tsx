@@ -1,8 +1,8 @@
 "use client";
 
-import { meQuery } from "@/api/auth";
 import UserAvatar from "@/components/navigation/user-avatar";
 import { LinkButton } from "@/components/ui/button";
+import { meQuery } from "@/lib/queries/me";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "@tanstack/react-router";
 

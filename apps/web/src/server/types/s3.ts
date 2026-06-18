@@ -1,4 +1,4 @@
-import type { S3Response } from "@/server/go/client.gen";
+import type { S3Response } from "@/server/client.gen";
 import { z } from "zod";
 
 export type TS3SourceShallow = S3Response;

@@ -1,8 +1,8 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { getGoClient } from "@/api/client";
-import { queryKeys } from "@/api/query-keys";
-import type { EnvironmentResponse } from "@/server/go/client.gen";
+import { getGoClient } from "@/server/client";
+import { queryKeys } from "@/lib/queries/query-keys";
+import type { EnvironmentResponse } from "@/server/client.gen";
 
 export type TEnvironmentShallow = EnvironmentResponse;
 
@@ -64,11 +64,7 @@ export async function updateEnvironment(input: {
   return { data: res.data };
 }
 
-export async function deleteEnvironment(input: {
-  id: string;
-  teamId: string;
-  projectId: string;
-}) {
+export async function deleteEnvironment(input: { id: string; teamId: string; projectId: string }) {
   const res = await getGoClient().environments.delete({
     environment_id: input.id,
     team_id: input.teamId,

@@ -1,6 +1,6 @@
 "use client";
 
-import { teamsListQuery, type TTeam } from "@/api/queries/teams";
+import { teamsListQuery, type TTeam } from "@/lib/queries/teams";
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext } from "react";
 

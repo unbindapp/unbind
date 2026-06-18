@@ -490,7 +490,7 @@ async function main() {
   }
 
   let inputFile: string | undefined;
-  let outputFile = "./src/server/go/client.gen.ts";
+  let outputFile = "./src/server/client.gen.ts";
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];

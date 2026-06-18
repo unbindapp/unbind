@@ -1,7 +1,7 @@
 "use client";
 
-import { queryKeys } from "@/api/query-keys";
-import { serviceEndpointsQuery, type TServiceEndpoints } from "@/api/queries/services";
+import { queryKeys } from "@/lib/queries/query-keys";
+import { serviceEndpointsQuery, type TServiceEndpoints } from "@/lib/queries/services";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 

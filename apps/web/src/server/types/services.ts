@@ -4,9 +4,9 @@ import {
   HostSpecSchema,
   PortSpecSchema,
   ServiceBuilderSchema,
-} from "@/server/go/client.gen";
-import type { EndpointDiscovery, ServiceResponse } from "@/server/go/client.gen";
-import { AvailableDatabaseEnum } from "@/server/go/data.gen";
+} from "@/server/client.gen";
+import type { EndpointDiscovery, ServiceResponse } from "@/server/client.gen";
+import { AvailableDatabaseEnum } from "@/server/data.gen";
 import { z } from "zod";
 
 export const serviceNameMinLength = 2;

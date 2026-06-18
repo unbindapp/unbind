@@ -1,11 +1,11 @@
 "use client";
 
-import { logsListQuery } from "@/api/queries/logs";
+import { logsListQuery } from "@/lib/queries/logs";
 import { useLogViewState } from "@/components/logs/log-view-state-provider";
 import { createSearchFilter } from "@/components/logs/search-filter";
 import { useAppConfig } from "@/components/providers/app-config-provider";
 import useSSEQuery from "@/lib/hooks/use-sse-query";
-import { LogEventSchema } from "@/server/go/client.gen";
+import { LogEventSchema } from "@/server/client.gen";
 import { getLogLevelFromMessage } from "@/lib/helpers/get-log-level-from-message";
 import { TLogLineWithLevel, TLogType } from "@/server/types/logs";
 import { useQuery } from "@tanstack/react-query";

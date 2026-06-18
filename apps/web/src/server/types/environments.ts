@@ -1,4 +1,4 @@
-import type { EnvironmentResponse } from "@/server/go/client.gen";
+import type { EnvironmentResponse } from "@/server/client.gen";
 import { z } from "zod";
 
 export const environmentNameMinLength = 2;

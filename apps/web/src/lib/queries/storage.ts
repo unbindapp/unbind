@@ -1,8 +1,8 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { getGoClient } from "@/api/client";
-import { queryKeys } from "@/api/query-keys";
-import type { PvcScope, S3Response } from "@/server/go/client.gen";
+import { getGoClient } from "@/server/client";
+import { queryKeys } from "@/lib/queries/query-keys";
+import type { PvcScope, S3Response } from "@/server/client.gen";
 
 export type TS3SourceShallow = S3Response;
 

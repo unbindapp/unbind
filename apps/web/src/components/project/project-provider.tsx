@@ -1,7 +1,7 @@
 "use client";
 
-import { queryKeys } from "@/api/query-keys";
-import { projectQuery, type TProjectShallow } from "@/api/queries/projects";
+import { queryKeys } from "@/lib/queries/query-keys";
+import { projectQuery, type TProjectShallow } from "@/lib/queries/projects";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 

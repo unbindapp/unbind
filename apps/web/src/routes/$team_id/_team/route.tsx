@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Navigate, Outlet } from "@tanstack/react-router";
 
-import { systemQuery } from "@/api/queries/system";
-import { teamQuery, teamsListQuery } from "@/api/queries/teams";
-import { templatesListQuery } from "@/api/queries/templates";
+import { systemQuery } from "@/lib/queries/system";
+import { teamQuery, teamsListQuery } from "@/lib/queries/teams";
+import { templatesListQuery } from "@/lib/queries/templates";
 import ContextCommandPanel from "@/components/command-panel/context-command-panel/context-command-panel";
 import NavbarSafeAreaInsetBottom from "@/components/navigation/navbar-safe-area-inset-bottom";
 import SystemProvider from "@/components/system/system-provider";

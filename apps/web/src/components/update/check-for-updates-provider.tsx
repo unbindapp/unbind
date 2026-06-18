@@ -1,6 +1,6 @@
 "use client";
 
-import { checkForUpdatesQuery, type TCheckForUpdates } from "@/api/queries/system";
+import { checkForUpdatesQuery, type TCheckForUpdates } from "@/lib/queries/system";
 import { useMainStore } from "@/components/stores/main/main-store-provider";
 import { LinkButton } from "@/components/ui/button";
 import { useMounted } from "@/lib/hooks/use-mounted";
