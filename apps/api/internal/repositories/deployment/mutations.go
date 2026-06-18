@@ -61,6 +61,11 @@ func (self *DeploymentRepository) Create(ctx context.Context,
 	if service.Edges.ServiceConfig.DockerBuilderBuildContext != nil {
 		c.SetDockerBuilderBuildContext(*service.Edges.ServiceConfig.DockerBuilderBuildContext)
 	}
+	// Docker-image services already know their image, so set it now instead of
+	// leaving it blank until the build attaches metadata (UI shows it while pending).
+	if service.Edges.ServiceConfig.Image != "" {
+		c.SetImage(service.Edges.ServiceConfig.Image)
+	}
 
 	if CommitSHA != "" {
 		c.SetCommitSha(CommitSHA)
