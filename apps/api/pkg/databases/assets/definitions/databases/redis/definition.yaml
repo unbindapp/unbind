@@ -13,6 +13,13 @@ commonLabels:
   {{ $key }}: {{ $value | quote }}
   {{- end }}
 
+# commonLabels don't reach the pod template; podLabels do. The platform detects
+# readiness by the unbind-service label, so the pods need it.
+podLabels:
+  {{- range $key, $value := .Parameters.labels }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+
 # Image configuration - tag follows the selected version (default 8.8)
 image:
   registry: docker.io
