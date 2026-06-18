@@ -1,8 +1,9 @@
 import { queryOptions } from "@tanstack/react-query";
+import { z } from "zod";
 
-import { getGoClient } from "@/server/client";
+import { getGoClient } from "@/lib/server/client";
+import { LogEventSchema, query_logsQuerySchema } from "@/lib/server/client.gen";
 import { getLogLevelFromMessage } from "@/lib/helpers/get-log-level-from-message";
-import type { TLogLineWithLevel, TLogType } from "@/server/types/logs";
 
 export type TLogsListInput = {
   type: TLogType;
@@ -75,3 +76,12 @@ export const logsListQuery = (input: TLogsListInput) =>
       return { logs };
     },
   });
+
+// ---- Types ----
+
+export type TLogType = z.infer<typeof query_logsQuerySchema.shape.type>;
+
+export type TLogLine = z.infer<typeof LogEventSchema>;
+export type TLogLineWithLevel = TLogLine & {
+  level: "info" | "warn" | "error";
+};

@@ -1,7 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { getGoClient } from "@/server/client";
-import type { GithubAdminRepositoryListResponseBody } from "@/server/client.gen";
+import { getGoClient } from "@/lib/server/client";
+import type { GithubAdminRepositoryListResponseBody } from "@/lib/server/client.gen";
 
 export type TGitRepository = GithubAdminRepositoryListResponseBody["data"][number];
 

@@ -5,7 +5,7 @@ import { KeyRoundIcon, MailIcon } from "lucide-react";
 import { useState } from "react";
 import { z } from "zod";
 
-import { getGoClient } from "@/server/client";
+import { getGoClient } from "@/lib/server/client";
 import ErrorLine from "@/components/error-line";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

@@ -1,6 +1,6 @@
 import ServiceUrl from "@/components/service/panel/components/service-url";
 import { useServiceEndpoints } from "@/components/service/service-endpoints-provider";
-import { THostFromServiceList } from "@/server/types/services";
+import { THostFromServiceList } from "@/lib/queries/services";
 
 type TProps = {
   hosts: THostFromServiceList[];

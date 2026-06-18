@@ -1,7 +1,12 @@
 "use client";
 
-import { queryKeyWebhooks, webhooksListQuery, type TWebhookShallow } from "@/lib/queries/webhooks";
-import { TWebhookTypeProject, TWebhookTypeTeam } from "@/server/types/webhooks";
+import {
+  queryKeyWebhooks,
+  webhooksListQuery,
+  type TWebhookShallow,
+  type TWebhookTypeProject,
+  type TWebhookTypeTeam,
+} from "@/lib/queries/webhooks";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext } from "react";
 

@@ -23,8 +23,8 @@ import { getNewEntityIdForVariable } from "@/components/variables/variable-card"
 import { defaultDebounceMs } from "@/lib/constants";
 import { generateDomain } from "@/lib/helpers/generate-domain";
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
-import { TServiceShallow } from "@/server/types/services";
-import { TVariableForCreate } from "@/server/types/variables";
+import { TServiceShallow } from "@/lib/queries/services";
+import { TVariableForCreate } from "@/lib/queries/variables";
 import { dockerTagsQuery } from "@/lib/queries/docker";
 import { useQuery } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";

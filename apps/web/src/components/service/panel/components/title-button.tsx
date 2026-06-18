@@ -3,8 +3,11 @@ import ServiceIcon from "@/components/service/service-icon";
 import { useServiceUtils } from "@/components/service/service-provider";
 import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
 import { Button } from "@/components/ui/button";
-import { ServiceRenameSchema, TServiceShallow } from "@/server/types/services";
-import { updateService as updateServiceFn } from "@/lib/queries/services";
+import {
+  ServiceRenameSchema,
+  type TServiceShallow,
+  updateService as updateServiceFn,
+} from "@/lib/queries/services";
 import { useMutation } from "@tanstack/react-query";
 import { PenIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";

@@ -11,10 +11,13 @@ import { useServicesUtils } from "@/components/service/services-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import { getGoClient } from "@/server/client";
+import { getGoClient } from "@/lib/server/client";
 import { gitRepositoriesQuery, type TGitRepository } from "@/lib/queries/git";
-import { createService as createServiceFn } from "@/lib/queries/services";
-import { TBuilderEnum, TGitServiceBuilder } from "@/server/types/services";
+import {
+  createService as createServiceFn,
+  type TBuilderEnum,
+  type TGitServiceBuilder,
+} from "@/lib/queries/services";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BuildingIcon, CogIcon, HourglassIcon, UnplugIcon, UserIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";

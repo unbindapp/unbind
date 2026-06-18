@@ -9,13 +9,13 @@ import { getWebhookIcon } from "@/components/webhook/helpers";
 import { TWebhookProps } from "@/components/webhook/types";
 import { useWebhooksUtils } from "@/components/webhook/webhooks-provider";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { createWebhook as createWebhookFn } from "@/lib/queries/webhooks";
 import {
+  createWebhook as createWebhookFn,
   TWebhookIdProjectEnum,
   TWebhookIdTeamEnum,
   WebhookIdProjectEnum,
   WebhookIdTeamEnum,
-} from "@/server/types/webhooks";
+} from "@/lib/queries/webhooks";
 import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
 

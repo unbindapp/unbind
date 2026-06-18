@@ -2,7 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 
-import { getGoClient } from "@/server/client";
+import { getGoClient } from "@/lib/server/client";
 import { Button } from "@/components/ui/button";
 import { AuthShell } from "../../components/auth-shell";
 import { meQuery } from "@/lib/queries/me";

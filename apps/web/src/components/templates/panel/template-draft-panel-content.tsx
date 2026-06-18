@@ -13,7 +13,7 @@ import { drawerAnimationMs } from "@/lib/constants";
 import { formatGB } from "@/lib/helpers/format-gb";
 import { generateDomain } from "@/lib/helpers/generate-domain";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { TemplateInputTypeSchema } from "@/server/client.gen";
+import { TemplateInputTypeSchema } from "@/lib/server/client.gen";
 import { deployTemplate as deployTemplateFn } from "@/lib/queries/templates";
 import { useMutation } from "@tanstack/react-query";
 import {

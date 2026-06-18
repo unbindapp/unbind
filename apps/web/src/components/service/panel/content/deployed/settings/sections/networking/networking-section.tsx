@@ -15,7 +15,7 @@ import { useServiceEndpoints } from "@/components/service/service-endpoints-prov
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { cn } from "@/components/ui/utils";
-import { TServiceShallow } from "@/server/types/services";
+import { TServiceShallow } from "@/lib/queries/services";
 import { GlobeLockIcon, NetworkIcon } from "lucide-react";
 import { useMemo } from "react";
 

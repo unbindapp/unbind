@@ -5,10 +5,11 @@ import {
   queryKeyVariables,
   variablesListQuery,
   type TCreateOrUpdateVariablesInput,
+  type TVariableReferenceShallow,
+  type TVariableShallow,
   type TVariablesList,
 } from "@/lib/queries/variables";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
-import { TVariableReferenceShallow, TVariableShallow } from "@/server/types/variables";
 import {
   useMutation,
   useQuery,

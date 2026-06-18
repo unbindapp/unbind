@@ -19,7 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
-import { TLogType } from "@/server/types/logs";
+import { TLogType } from "@/lib/queries/logs";
 import {
   FilterIcon,
   LoaderIcon,

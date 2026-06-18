@@ -4,7 +4,7 @@ import { useDeploymentPanel } from "@/components/deployment/panel/deployment-pan
 import PanelContentWrapper from "@/components/panel/panel-content-wrapper";
 import PanelNavbar from "@/components/panel/panel-navbar";
 import PanelTabWrapper from "@/components/panel/panel-tab-wrapper";
-import { TDeploymentShallow } from "@/server/types/deployments";
+import { TDeploymentShallow } from "@/lib/queries/deployments";
 import { HTMLAttributes } from "react";
 
 type TProps = {

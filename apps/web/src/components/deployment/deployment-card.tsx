@@ -32,10 +32,12 @@ import { cn } from "@/components/ui/utils";
 import { defaultAnimationMs, sourceToTitle } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-difference";
-import { redeployDeployment as redeployDeploymentFn } from "@/lib/queries/deployments";
+import {
+  redeployDeployment as redeployDeploymentFn,
+  type TDeploymentShallow,
+} from "@/lib/queries/deployments";
 import { restartInstances } from "@/lib/queries/instances";
-import { TDeploymentShallow } from "@/server/types/deployments";
-import { TServiceShallow } from "@/server/types/services";
+import { TServiceShallow } from "@/lib/queries/services";
 import { useMutation } from "@tanstack/react-query";
 import {
   EllipsisVerticalIcon,
@@ -549,17 +551,17 @@ function DeploymentInfo({ deployment, service, isPlaceholder, className }: TDepl
     >
       <div className="flex min-w-0 shrink items-center gap-1.5">
         {isPlaceholder && service.type === "github" ? (
-          <div className="bg-muted-foreground animate-skeleton -mt-[0.5px] size-4.5 rounded-full" />
+          <div className="bg-muted-foreground animate-skeleton mt-[-0.5px] size-4.5 rounded-full" />
         ) : deployment?.commit_author?.avatar_url ? (
           <img
             alt="Avatar"
             width={24}
             height={24}
-            className="bg-border -mt-[0.5px] size-4.5 rounded-full border"
+            className="bg-border mt-[-0.5px] size-4.5 rounded-full border"
             src={deployment.commit_author.avatar_url}
           />
         ) : (
-          <div className="-mt-[0.5px] -ml-1.5 h-4.5" />
+          <div className="mt-[-0.5px] -ml-1.5 h-4.5" />
         )}
         <p className="text-muted-foreground group-data-placeholder/div:bg-muted-foreground group-data-placeholder/div:animate-skeleton max-w-full min-w-0 shrink leading-tight group-data-placeholder/div:rounded-md group-data-placeholder/div:text-transparent">
           {isPlaceholder

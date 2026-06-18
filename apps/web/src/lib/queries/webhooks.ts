@@ -1,9 +1,13 @@
 import { queryOptions } from "@tanstack/react-query";
+import { z } from "zod";
 
-import { getGoClient } from "@/server/client";
-import type { WebhookEvent, WebhookResponse } from "@/server/client.gen";
-
-export type TWebhookShallow = WebhookResponse;
+import { getGoClient } from "@/lib/server/client";
+import {
+  WebhookProjectEventSchema,
+  WebhookTeamEventSchema,
+  WebhookTypeSchema,
+} from "@/lib/server/client.gen";
+import type { WebhookEvent, WebhookResponse } from "@/lib/server/client.gen";
 
 export type TWebhooksListInput =
   | { type: "project"; teamId: string; projectId: string }
@@ -60,3 +64,16 @@ export async function deleteWebhook(input: TDeleteWebhookInput) {
   );
   return { data: res.data };
 }
+
+// ---- Types ----
+
+export type TWebhookShallow = WebhookResponse;
+
+export type TWebhookTypeProject = (typeof WebhookTypeSchema)["Enum"]["project"];
+export type TWebhookTypeTeam = (typeof WebhookTypeSchema)["Enum"]["team"];
+export type TWebhookTypeEnum = z.infer<typeof WebhookTypeSchema>;
+
+export type TWebhookIdProjectEnum = z.infer<typeof WebhookProjectEventSchema>;
+export type TWebhookIdTeamEnum = z.infer<typeof WebhookTeamEventSchema>;
+export const WebhookIdProjectEnum = WebhookProjectEventSchema;
+export const WebhookIdTeamEnum = WebhookTeamEventSchema;

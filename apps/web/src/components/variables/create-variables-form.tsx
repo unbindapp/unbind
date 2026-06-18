@@ -17,7 +17,7 @@ import {
   TVariableForCreate,
   VariableForCreateSchema,
   VariableReferenceForCreateSchema,
-} from "@/server/types/variables";
+} from "@/lib/queries/variables";
 import { Link2Icon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";

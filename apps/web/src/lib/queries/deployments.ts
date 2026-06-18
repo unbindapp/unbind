@@ -1,14 +1,18 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { getGoClient } from "@/server/client";
-import type { DeploymentResponse, ListDeploymentsResponseBody } from "@/server/client.gen";
-
-export type TDeploymentsList = ListDeploymentsResponseBody["data"];
-export type TDeployment = DeploymentResponse;
+import { getGoClient } from "@/lib/server/client";
+import type { DeploymentResponse, ListDeploymentsResponseBody } from "@/lib/server/client.gen";
 
 export const queryKeyDeployments = {
   list: (input: { teamId: string; projectId: string; environmentId: string; serviceId: string }) =>
-    ["deployments", "list", input.teamId, input.projectId, input.environmentId, input.serviceId] as const,
+    [
+      "deployments",
+      "list",
+      input.teamId,
+      input.projectId,
+      input.environmentId,
+      input.serviceId,
+    ] as const,
   detail: (input: {
     teamId: string;
     projectId: string;
@@ -104,3 +108,11 @@ export async function redeployDeployment(input: {
   });
   return { data: res.data };
 }
+
+// ---- Types ----
+
+export type TDeploymentsList = ListDeploymentsResponseBody["data"];
+export type TDeployment = DeploymentResponse;
+export type TDeploymentShallow = NonNullable<
+  ListDeploymentsResponseBody["data"]["deployments"]
+>[number];

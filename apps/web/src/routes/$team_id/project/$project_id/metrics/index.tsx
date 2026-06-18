@@ -2,7 +2,7 @@ import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { z } from "zod";
 
-import { metricsListQuery } from "@/lib/queries/metrics";
+import { metricsListQuery, MetricsIntervalEnum } from "@/lib/queries/metrics";
 import { servicesListQuery } from "@/lib/queries/services";
 import Charts from "@/components/metrics/charts";
 import MetricsIntervalDropdown from "@/components/metrics/metrics-interval-dropdown";
@@ -13,7 +13,6 @@ import MetricsStateProvider, {
 import EnvironmentSelector from "@/components/environment/environment-selector";
 import PageWrapper from "@/components/page-wrapper";
 import ServicesProvider from "@/components/service/services-provider";
-import { MetricsIntervalEnum } from "@/server/types/metrics";
 
 const projectRouteId = "/$team_id/project/$project_id";
 

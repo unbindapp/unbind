@@ -8,8 +8,8 @@ import NoItemsCard from "@/components/no-items-card";
 import { useDeployments } from "@/components/deployment/deployments-provider";
 import DeploymentCard from "@/components/deployment/deployment-card";
 import { useService } from "@/components/service/service-provider";
-import { TDeploymentShallow } from "@/server/types/deployments";
-import { TServiceShallow } from "@/server/types/services";
+import { TDeploymentShallow } from "@/lib/queries/deployments";
+import { TServiceShallow } from "@/lib/queries/services";
 import { HistoryIcon, RocketIcon } from "lucide-react";
 import { useMemo } from "react";
 

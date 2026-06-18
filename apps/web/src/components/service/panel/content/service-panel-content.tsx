@@ -24,8 +24,8 @@ import VariablesProvider, {
   useVariables,
   useVariablesUtils,
 } from "@/components/variables/variables-provider";
-import { TMetricsIntervalEnum } from "@/server/types/metrics";
-import { TServiceShallow } from "@/server/types/services";
+import { TMetricsIntervalEnum } from "@/lib/queries/metrics";
+import { TServiceShallow } from "@/lib/queries/services";
 import { FC, ReactNode, useEffect } from "react";
 
 type TServicePage = FC<{ service: TServiceShallow }>;

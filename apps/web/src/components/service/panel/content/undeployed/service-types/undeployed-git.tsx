@@ -27,8 +27,8 @@ import {
   TBuilderEnum,
   TGitServiceBuilder,
   TServiceShallow,
-} from "@/server/types/services";
-import { TVariableForCreate } from "@/server/types/variables";
+} from "@/lib/queries/services";
+import { TVariableForCreate } from "@/lib/queries/variables";
 import { gitRepositoryQuery } from "@/lib/queries/git";
 import { useQuery } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";

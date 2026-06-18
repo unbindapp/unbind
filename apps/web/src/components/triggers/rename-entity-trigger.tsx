@@ -14,7 +14,7 @@ import { useAppForm } from "@/lib/hooks/use-app-form";
 import {
   serviceDescriptionMaxLength,
   serviceNameMaxLength,
-} from "@/server/types/services";
+} from "@/lib/queries/services";
 import { ReactNode, useCallback, useRef, useState } from "react";
 import { z } from "zod";
 

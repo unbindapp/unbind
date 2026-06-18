@@ -1,7 +1,7 @@
 import { SettingsSection } from "@/components/settings/settings-section";
 import { getVolumeUsageLevel, percentageFormatter } from "@/components/volume/helpers";
 import { formatGB } from "@/lib/helpers/format-gb";
-import { TVolumeShallow } from "@/server/types/services";
+import { TVolumeShallow } from "@/lib/queries/services";
 import { ChartNoAxesColumnIcon } from "lucide-react";
 import { useMemo } from "react";
 

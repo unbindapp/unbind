@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { TTokenProps } from "@/components/ui/textarea-with-tokens";
 import { withForm } from "@/lib/hooks/use-app-form";
-import { TAvailableVariableReference, TVariableForCreate } from "@/server/types/variables";
+import { TAvailableVariableReference, TVariableForCreate } from "@/lib/queries/variables";
 import { Link2Icon, PlusIcon, Trash2Icon } from "lucide-react";
 import { useCallback } from "react";
 

@@ -4,7 +4,7 @@ import PanelTabWrapper from "@/components/panel/panel-tab-wrapper";
 import { TServicePanelTab } from "@/components/service/panel/content/service-panel-content";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useService } from "@/components/service/service-provider";
-import { TServiceShallow } from "@/server/types/services";
+import { TServiceShallow } from "@/lib/queries/services";
 import { HTMLAttributes } from "react";
 
 type TProps = {

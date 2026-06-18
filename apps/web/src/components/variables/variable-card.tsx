@@ -20,12 +20,13 @@ import { TEntityVariableTypeProps } from "@/components/variables/types";
 import { useVariablesUtils } from "@/components/variables/variables-provider";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import {
+  createOrUpdateVariables,
+  deleteVariables,
   TVariableReferenceShallow,
   TVariableReferenceShallowSource,
   TVariableShallow,
   VariableForCreateValueSchema,
-} from "@/server/types/variables";
-import { createOrUpdateVariables, deleteVariables } from "@/lib/queries/variables";
+} from "@/lib/queries/variables";
 import { useMutation } from "@tanstack/react-query";
 import {
   CheckIcon,

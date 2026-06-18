@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParam } from "@/lib/hooks/use-search-param";
-import { TMetricsIntervalEnum } from "@/server/types/metrics";
+import { TMetricsIntervalEnum } from "@/lib/queries/metrics";
 import { createContext, useContext, useMemo } from "react";
 
 type TInterval = {

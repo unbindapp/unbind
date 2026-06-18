@@ -24,8 +24,8 @@ import {
 } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getDurationStr } from "@/lib/hooks/use-time-difference";
-import { TDeploymentShallow } from "@/server/types/deployments";
-import { TServiceShallow } from "@/server/types/services";
+import { TDeploymentShallow } from "@/lib/queries/deployments";
+import { TServiceShallow } from "@/lib/queries/services";
 import { RocketIcon, XIcon } from "lucide-react";
 import { FC, ReactNode } from "react";
 

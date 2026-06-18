@@ -3,7 +3,7 @@ import ConnectionSection from "@/components/volume/panel/tabs/settings/sections/
 import DeleteSection from "@/components/volume/panel/tabs/settings/sections/delete-section";
 import ExpandSection from "@/components/volume/panel/tabs/settings/sections/expand-section";
 import UsageSection from "@/components/volume/panel/tabs/settings/sections/usage-section";
-import { TVolumeShallow } from "@/server/types/services";
+import { TVolumeShallow } from "@/lib/queries/services";
 
 type TProps = { volume: TVolumeShallow };
 

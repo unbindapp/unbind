@@ -32,14 +32,12 @@ import { defaultAnimationMs } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import {
+  createEnvironment as createEnvironmentFn,
+  deleteEnvironment as deleteEnvironmentFn,
   environmentNameMaxLength,
   EnvironmentNameSchema,
   EnvironmentRenameSchema,
   TEnvironmentShallow,
-} from "@/server/types/environments";
-import {
-  createEnvironment as createEnvironmentFn,
-  deleteEnvironment as deleteEnvironmentFn,
   updateEnvironment as updateEnvironmentFn,
 } from "@/lib/queries/environments";
 import { useMutation } from "@tanstack/react-query";

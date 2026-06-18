@@ -1,10 +1,9 @@
 import { queryOptions } from "@tanstack/react-query";
+import { z } from "zod";
 
-import { getGoClient } from "@/server/client";
-import type { ProjectResponse } from "@/server/client.gen";
+import { getGoClient } from "@/lib/server/client";
+import type { ProjectResponse } from "@/lib/server/client.gen";
 import { generateProjectName } from "@/lib/helpers/generate-project-name";
-
-export type TProjectShallow = ProjectResponse;
 
 export const queryKeyProjects = {
   list: (input: { teamId: string }) => ["projects", "list", input.teamId] as const,
@@ -69,3 +68,26 @@ export async function deleteProject(input: { teamId: string; projectId: string }
   });
   return { data: res.data };
 }
+
+// ---- Types ----
+
+export type TProjectShallow = ProjectResponse;
+
+export const projectNameMinLength = 2;
+export const projectNameMaxLength = 32;
+export const projectDescriptionMaxLength = 128;
+
+export const ProjectUpdateFormSchema = z
+  .object({
+    name: z
+      .string()
+      .min(projectNameMinLength, `Name should be at least ${projectNameMinLength} characters.`)
+      .max(projectNameMaxLength, `Name should be at most ${projectNameMaxLength} characters.`),
+    description: z
+      .string()
+      .max(
+        projectDescriptionMaxLength,
+        `Description should be at most ${projectDescriptionMaxLength} characters.`,
+      ),
+  })
+  .strip();

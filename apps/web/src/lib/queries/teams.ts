@@ -1,9 +1,8 @@
 import { queryOptions } from "@tanstack/react-query";
+import { z } from "zod";
 
-import { getGoClient } from "@/server/client";
-import type { TeamResponse } from "@/server/client.gen";
-
-export type TTeam = TeamResponse;
+import { getGoClient } from "@/lib/server/client";
+import type { TeamResponse } from "@/lib/server/client.gen";
 
 export const queryKeyTeams = {
   list: () => ["teams", "list"] as const,
@@ -37,3 +36,26 @@ export async function updateTeam(input: { teamId: string; name: string; descript
   });
   return { data: res.data };
 }
+
+// ---- Types ----
+
+export type TTeam = TeamResponse;
+
+export const teamNameMinLength = 3;
+export const teamNameMaxLength = 32;
+export const teamDescriptionMaxLength = 128;
+
+export const TeamUpdateFormSchema = z
+  .object({
+    name: z
+      .string()
+      .min(teamNameMinLength, `Name should be at least ${teamNameMinLength} characters.`)
+      .max(teamNameMaxLength, `Name should be at most ${teamNameMaxLength} characters.`),
+    description: z
+      .string()
+      .max(
+        teamDescriptionMaxLength,
+        `Description should be at most ${teamDescriptionMaxLength} characters.`,
+      ),
+  })
+  .strip();

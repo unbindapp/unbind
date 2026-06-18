@@ -1,6 +1,6 @@
 import BrandIcon from "@/components/icons/brand";
 import { cn } from "@/components/ui/utils";
-import { TServiceShallow } from "@/server/types/services";
+import { TServiceShallow } from "@/lib/queries/services";
 
 type TProps = {
   service: TServiceShallow;

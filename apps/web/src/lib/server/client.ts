@@ -1,6 +1,6 @@
-import { readCsrfToken } from "@/server/csrf";
+import { readCsrfToken } from "@/lib/server/csrf";
 import { getConfig } from "@/lib/config";
-import { createClient } from "@/server/client.gen";
+import { createClient } from "@/lib/server/client.gen";
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 

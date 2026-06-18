@@ -1,7 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { getGoClient } from "@/server/client";
-import type { TemplateInputValue } from "@/server/client.gen";
+import { getGoClient } from "@/lib/server/client";
+import type { TemplateInputValue } from "@/lib/server/client.gen";
 
 export type TTemplatesList = {
   templates: Awaited<ReturnType<ReturnType<typeof getGoClient>["templates"]["list"]>>["data"];

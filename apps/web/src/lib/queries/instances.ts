@@ -1,21 +1,35 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { getGoClient } from "@/server/client";
-import type { GetInstanceHealthResponseBody, ListInstancesResponseBody } from "@/server/client.gen";
-
-export type TInstancesList = { data: ListInstancesResponseBody["data"] };
-export type TInstanceHealth = { data: GetInstanceHealthResponseBody["data"] };
+import { getGoClient } from "@/lib/server/client";
+import type {
+  GetInstanceHealthResponseBody,
+  ListInstancesResponseBody,
+} from "@/lib/server/client.gen";
 
 export const queryKeyInstances = {
   list: (input: { teamId: string; projectId: string; environmentId: string; serviceId: string }) =>
-    ["instances", "list", input.teamId, input.projectId, input.environmentId, input.serviceId] as const,
+    [
+      "instances",
+      "list",
+      input.teamId,
+      input.projectId,
+      input.environmentId,
+      input.serviceId,
+    ] as const,
   health: (input: {
     teamId: string;
     projectId: string;
     environmentId: string;
     serviceId: string;
   }) =>
-    ["instances", "health", input.teamId, input.projectId, input.environmentId, input.serviceId] as const,
+    [
+      "instances",
+      "health",
+      input.teamId,
+      input.projectId,
+      input.environmentId,
+      input.serviceId,
+    ] as const,
 };
 
 export const instancesListQuery = (input: {
@@ -72,3 +86,9 @@ export async function restartInstances(input: {
   });
   return { data: res.data };
 }
+
+// ---- Types ----
+
+export type TInstancesList = { data: ListInstancesResponseBody["data"] };
+export type TInstanceHealth = { data: GetInstanceHealthResponseBody["data"] };
+export type TInstanceFromHealth = GetInstanceHealthResponseBody["data"]["instances"][number];

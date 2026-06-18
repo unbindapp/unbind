@@ -2,7 +2,7 @@ import { useNow } from "@/components/providers/now-provider";
 import { cn } from "@/components/ui/utils";
 import { sourceToTitle } from "@/lib/constants";
 import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-difference";
-import { TService, TServiceShallow } from "@/server/types/services";
+import { TService, TServiceShallow } from "@/lib/queries/services";
 import {
   CircleCheckBigIcon,
   HourglassIcon,

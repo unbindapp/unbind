@@ -2,7 +2,7 @@ import {
   TVariableForCreate,
   VariableForCreateNameSchema,
   VariableForCreateValueSchema,
-} from "@/server/types/variables";
+} from "@/lib/queries/variables";
 
 export function softValidateVariables(variables: TVariableForCreate[]) {
   const cleanedVariables = variables

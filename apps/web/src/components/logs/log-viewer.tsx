@@ -23,7 +23,7 @@ import NoItemsCard from "@/components/no-items-card";
 import { useServices } from "@/components/service/services-provider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
-import { TLogType } from "@/server/types/logs";
+import { TLogType } from "@/lib/queries/logs";
 import { HourglassIcon, SearchIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useThrottledCallback } from "use-debounce";

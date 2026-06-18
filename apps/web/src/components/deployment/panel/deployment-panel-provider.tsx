@@ -8,7 +8,7 @@ import {
 } from "@/components/deployment/panel/constants";
 import { drawerAnimationMs } from "@/lib/constants";
 import { useSearchParam } from "@/lib/hooks/use-search-param";
-import { TDeploymentShallow } from "@/server/types/deployments";
+import { TDeploymentShallow } from "@/lib/queries/deployments";
 import { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 type TDeploymentPanelContext = {

@@ -25,7 +25,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { defaultAnimationMs } from "@/lib/constants";
-import { ServiceRenameSchema } from "@/server/types/services";
+import { ServiceRenameSchema } from "@/lib/queries/services";
 import { EllipsisVerticalIcon, PenIcon, Trash2Icon, XIcon } from "lucide-react";
 import { ReactNode, useCallback, useRef, useState } from "react";
 

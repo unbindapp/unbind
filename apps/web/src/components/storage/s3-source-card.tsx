@@ -29,14 +29,12 @@ import { defaultAnimationMs } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import {
   CreateS3SourceFormSchema,
-  s3SourceNameMaxLength,
-  S3SourceNameSchema,
-  TS3SourceShallow,
-} from "@/server/types/s3";
-import {
   createS3Source as createS3SourceFn,
   deleteS3Source as deleteS3SourceFn,
+  s3SourceNameMaxLength,
+  S3SourceNameSchema,
   testS3Query,
+  TS3SourceShallow,
   updateS3Source as updateS3SourceFn,
 } from "@/lib/queries/storage";
 import { useMutation, useQuery } from "@tanstack/react-query";

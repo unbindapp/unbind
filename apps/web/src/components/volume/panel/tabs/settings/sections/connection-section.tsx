@@ -2,7 +2,7 @@ import ErrorLine from "@/components/error-line";
 import { useServices } from "@/components/service/services-provider";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { Input } from "@/components/ui/input";
-import { TVolumeShallow } from "@/server/types/services";
+import { TVolumeShallow } from "@/lib/queries/services";
 import { FolderClosedIcon, UnplugIcon } from "lucide-react";
 import { useMemo } from "react";
 

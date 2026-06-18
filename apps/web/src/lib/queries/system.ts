@@ -1,11 +1,11 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { getGoClient } from "@/server/client";
+import { getGoClient } from "@/lib/server/client";
 import type {
   SystemMetaResponseBody,
   UpdateCheckResponseBody,
   UpdateStatusResponseBody,
-} from "@/server/client.gen";
+} from "@/lib/server/client.gen";
 
 export type TSystem = { data: SystemMetaResponseBody["data"] };
 export type TCheckForUpdates = { data: UpdateCheckResponseBody };

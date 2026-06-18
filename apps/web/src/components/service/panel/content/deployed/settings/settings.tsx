@@ -6,7 +6,7 @@ import DeploySection from "@/components/service/panel/content/deployed/settings/
 import HealthSection from "@/components/service/panel/content/deployed/settings/sections/health-section";
 import NetworkingSection from "@/components/service/panel/content/deployed/settings/sections/networking/networking-section";
 import SourceSection from "@/components/service/panel/content/deployed/settings/sections/source-section";
-import { TServiceShallow } from "@/server/types/services";
+import { TServiceShallow } from "@/lib/queries/services";
 
 export default function Settings({ service }: { service: TServiceShallow }) {
   return (

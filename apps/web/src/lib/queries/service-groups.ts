@@ -1,4 +1,4 @@
-import { getGoClient } from "@/server/client";
+import { getGoClient } from "@/lib/server/client";
 
 export async function updateServiceGroup(input: {
   id: string;

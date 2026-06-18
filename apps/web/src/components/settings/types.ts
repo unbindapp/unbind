@@ -1,4 +1,4 @@
-import { TServiceShallow } from "@/server/types/services";
+import { TServiceShallow } from "@/lib/queries/services";
 
 export type TGitSectionProps = {
   owner: string;

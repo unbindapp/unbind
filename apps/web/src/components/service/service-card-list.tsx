@@ -11,7 +11,7 @@ import { TTemplateDraft } from "@/components/templates/template-draft-store";
 import { useTemplateDraftStore } from "@/components/templates/template-draft-store-provider";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import { TServiceShallow } from "@/server/types/services";
+import { TServiceShallow } from "@/lib/queries/services";
 import { PlusIcon } from "lucide-react";
 import { ReactNode, useMemo } from "react";
 

@@ -20,7 +20,7 @@ import {
   useCheckNewVersion,
 } from "@/components/update/check-for-updates-provider";
 import { meQuery } from "@/lib/queries/me";
-import { getGoClient } from "@/server/client";
+import { getGoClient } from "@/lib/server/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { GiftIcon, GitBranchIcon, LoaderIcon, LogOutIcon } from "lucide-react";

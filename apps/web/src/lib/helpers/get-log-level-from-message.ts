@@ -1,4 +1,4 @@
-import { TLogLineWithLevel } from "@/server/types/logs";
+import type { TLogLineWithLevel } from "@/lib/queries/logs";
 
 export function getLogLevelFromMessage(message: string): TLogLineWithLevel["level"] {
   if (/(\s|^|[^a-zA-Z0-9])(error|fatal|fail|failed)(\s|$|[^a-zA-Z0-9])/i.test(message)) {

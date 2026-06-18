@@ -4,7 +4,7 @@ import {
   TAvailableVariableReference,
   TVariableForCreate,
   TVariableReferenceForCreate,
-} from "@/server/types/variables";
+} from "@/lib/queries/variables";
 
 export function unwrapQuotes(value: string) {
   let newValue = value;

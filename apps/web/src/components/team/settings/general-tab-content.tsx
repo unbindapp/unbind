@@ -7,8 +7,8 @@ import {
   teamDescriptionMaxLength,
   teamNameMaxLength,
   TeamUpdateFormSchema,
-} from "@/server/types/teams";
-import { updateTeam as updateTeamFn } from "@/lib/queries/teams";
+  updateTeam as updateTeamFn,
+} from "@/lib/queries/teams";
 import { useMutation } from "@tanstack/react-query";
 
 type TProps = {

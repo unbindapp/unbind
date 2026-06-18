@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/drawer";
 import VolumePanelContent from "@/components/volume/panel/volume-panel-content";
 import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
-import { TVolumeShallow } from "@/server/types/services";
+import { TVolumeShallow } from "@/lib/queries/services";
 import { HardDriveIcon, XIcon } from "lucide-react";
 import { ReactNode } from "react";
 

@@ -29,7 +29,7 @@ import S3SourcesProvider, { useS3Sources } from "@/components/storage/s3-sources
 import { CommandItem } from "@/components/ui/command";
 import { cn } from "@/components/ui/utils";
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
-import { TServiceShallow } from "@/server/types/services";
+import { TServiceShallow } from "@/lib/queries/services";
 import { useStore } from "@tanstack/react-form";
 import { CylinderIcon, DatabaseBackupIcon, OctagonXIcon } from "lucide-react";
 import { useCallback, useMemo } from "react";

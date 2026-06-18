@@ -1,5 +1,5 @@
 import { createJSONZodStorage } from "@/lib/create-json-zod-storage";
-import { TemplateWithDefinitionResponseSchema } from "@/server/client.gen";
+import { TemplateWithDefinitionResponseSchema } from "@/lib/server/client.gen";
 import { z } from "zod";
 import { persist } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";

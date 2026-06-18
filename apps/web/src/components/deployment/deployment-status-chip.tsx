@@ -1,6 +1,6 @@
 import BroomIcon from "@/components/icons/broom";
 import { cn } from "@/components/ui/utils";
-import { TDeploymentShallow } from "@/server/types/deployments";
+import { TDeploymentShallow } from "@/lib/queries/deployments";
 import { CircleCheckIcon, HourglassIcon, LoaderIcon, TriangleAlertIcon, XIcon } from "lucide-react";
 import { FC, useMemo } from "react";
 

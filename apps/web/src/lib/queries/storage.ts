@@ -1,9 +1,9 @@
 import { queryOptions } from "@tanstack/react-query";
+import { z } from "zod";
 
-import { getGoClient } from "@/server/client";
-import type { PvcScope, S3Response } from "@/server/client.gen";
-
-export type TS3SourceShallow = S3Response;
+import { getGoClient } from "@/lib/server/client";
+import { PvcScopeSchema } from "@/lib/server/client.gen";
+import type { PvcScope, S3Response } from "@/lib/server/client.gen";
 
 export const queryKeyStorage = {
   s3List: (input: { teamId: string }) => ["storage", "s3", "list", input.teamId] as const,
@@ -16,7 +16,15 @@ export const queryKeyStorage = {
     type: string;
     id: string;
   }) =>
-    ["storage", "volume", input.teamId, input.projectId, input.environmentId, input.type, input.id] as const,
+    [
+      "storage",
+      "volume",
+      input.teamId,
+      input.projectId,
+      input.environmentId,
+      input.type,
+      input.id,
+    ] as const,
 };
 
 // ---- S3 sources ----
@@ -153,3 +161,25 @@ export async function expandVolume(input: TVolumeRef & { capacityGb: number }) {
   });
   return { volume: res.data };
 }
+
+// ---- Types ----
+
+export type TS3SourceShallow = S3Response;
+
+export const s3SourceNameMinLength = 2;
+export const s3SourceNameMaxLength = 32;
+
+export const S3SourceNameSchema = z
+  .string()
+  .min(s3SourceNameMinLength, `Name should be at least ${s3SourceNameMinLength} characters.`)
+  .max(s3SourceNameMaxLength, `Name should be at most ${s3SourceNameMaxLength} characters.`);
+
+export const CreateS3SourceFormSchema = z.object({
+  name: S3SourceNameSchema,
+  endpoint: z.string().url("Endpoint must be a valid URL."),
+  accessKeyId: z.string().min(1, "Access Key ID is required."),
+  secretKey: z.string().min(1, "Secret Access Key is required."),
+  region: z.string(),
+});
+
+export type TVolumeType = z.infer<typeof PvcScopeSchema>;

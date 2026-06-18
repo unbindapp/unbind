@@ -1,8 +1,8 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { apiFetch } from "@/server/client";
+import { apiFetch } from "@/lib/server/client";
 import { getConfig } from "@/lib/config";
-import type { MeResponseBody } from "@/server/client.gen";
+import type { MeResponseBody } from "@/lib/server/client.gen";
 
 export type Me = MeResponseBody["data"];
 

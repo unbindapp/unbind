@@ -1,9 +1,8 @@
 import { queryOptions } from "@tanstack/react-query";
+import { z } from "zod";
 
-import { getGoClient } from "@/server/client";
-import type { EnvironmentResponse } from "@/server/client.gen";
-
-export type TEnvironmentShallow = EnvironmentResponse;
+import { getGoClient } from "@/lib/server/client";
+import type { EnvironmentResponse } from "@/lib/server/client.gen";
 
 export const queryKeyEnvironments = {
   list: (input: { teamId: string; projectId: string }) =>
@@ -82,3 +81,28 @@ export async function deleteEnvironment(input: { id: string; teamId: string; pro
   });
   return { data: res.data };
 }
+
+// ---- Types ----
+
+export type TEnvironmentShallow = EnvironmentResponse;
+
+export const environmentNameMinLength = 2;
+export const environmentNameMaxLength = 32;
+export const environmentDescriptionMaxLength = 128;
+
+export const EnvironmentNameSchema = z
+  .string()
+  .min(environmentNameMinLength, `Name should be at least ${environmentNameMinLength} characters.`)
+  .max(environmentNameMaxLength, `Name should be at most ${environmentNameMaxLength} characters.`);
+
+export const EnvironmentDescriptionSchema = z
+  .string()
+  .max(
+    environmentDescriptionMaxLength,
+    `Description should be at most ${environmentDescriptionMaxLength} characters.`,
+  );
+
+export const EnvironmentRenameSchema = z.object({
+  name: EnvironmentNameSchema,
+  description: EnvironmentDescriptionSchema,
+});

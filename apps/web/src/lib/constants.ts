@@ -1,4 +1,4 @@
-import { TService } from "@/server/types/services";
+import { TService } from "@/lib/queries/services";
 
 export const siteTitle = "Unbind";
 export const siteTagline = "Self-hosting done right";
