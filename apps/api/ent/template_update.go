@@ -28,211 +28,211 @@ type TemplateUpdate struct {
 }
 
 // Where appends a list predicates to the TemplateUpdate builder.
-func (tu *TemplateUpdate) Where(ps ...predicate.Template) *TemplateUpdate {
-	tu.mutation.Where(ps...)
-	return tu
+func (_u *TemplateUpdate) Where(ps ...predicate.Template) *TemplateUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (tu *TemplateUpdate) SetUpdatedAt(t time.Time) *TemplateUpdate {
-	tu.mutation.SetUpdatedAt(t)
-	return tu
+func (_u *TemplateUpdate) SetUpdatedAt(v time.Time) *TemplateUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetName sets the "name" field.
-func (tu *TemplateUpdate) SetName(s string) *TemplateUpdate {
-	tu.mutation.SetName(s)
-	return tu
+func (_u *TemplateUpdate) SetName(v string) *TemplateUpdate {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (tu *TemplateUpdate) SetNillableName(s *string) *TemplateUpdate {
-	if s != nil {
-		tu.SetName(*s)
+func (_u *TemplateUpdate) SetNillableName(v *string) *TemplateUpdate {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return tu
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (tu *TemplateUpdate) SetDescription(s string) *TemplateUpdate {
-	tu.mutation.SetDescription(s)
-	return tu
+func (_u *TemplateUpdate) SetDescription(v string) *TemplateUpdate {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (tu *TemplateUpdate) SetNillableDescription(s *string) *TemplateUpdate {
-	if s != nil {
-		tu.SetDescription(*s)
+func (_u *TemplateUpdate) SetNillableDescription(v *string) *TemplateUpdate {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return tu
+	return _u
 }
 
 // SetIcon sets the "icon" field.
-func (tu *TemplateUpdate) SetIcon(s string) *TemplateUpdate {
-	tu.mutation.SetIcon(s)
-	return tu
+func (_u *TemplateUpdate) SetIcon(v string) *TemplateUpdate {
+	_u.mutation.SetIcon(v)
+	return _u
 }
 
 // SetNillableIcon sets the "icon" field if the given value is not nil.
-func (tu *TemplateUpdate) SetNillableIcon(s *string) *TemplateUpdate {
-	if s != nil {
-		tu.SetIcon(*s)
+func (_u *TemplateUpdate) SetNillableIcon(v *string) *TemplateUpdate {
+	if v != nil {
+		_u.SetIcon(*v)
 	}
-	return tu
+	return _u
 }
 
 // SetKeywords sets the "keywords" field.
-func (tu *TemplateUpdate) SetKeywords(s []string) *TemplateUpdate {
-	tu.mutation.SetKeywords(s)
-	return tu
+func (_u *TemplateUpdate) SetKeywords(v []string) *TemplateUpdate {
+	_u.mutation.SetKeywords(v)
+	return _u
 }
 
-// AppendKeywords appends s to the "keywords" field.
-func (tu *TemplateUpdate) AppendKeywords(s []string) *TemplateUpdate {
-	tu.mutation.AppendKeywords(s)
-	return tu
+// AppendKeywords appends value to the "keywords" field.
+func (_u *TemplateUpdate) AppendKeywords(v []string) *TemplateUpdate {
+	_u.mutation.AppendKeywords(v)
+	return _u
 }
 
 // ClearKeywords clears the value of the "keywords" field.
-func (tu *TemplateUpdate) ClearKeywords() *TemplateUpdate {
-	tu.mutation.ClearKeywords()
-	return tu
+func (_u *TemplateUpdate) ClearKeywords() *TemplateUpdate {
+	_u.mutation.ClearKeywords()
+	return _u
 }
 
 // SetResourceRecommendations sets the "resource_recommendations" field.
-func (tu *TemplateUpdate) SetResourceRecommendations(srr schema.TemplateResourceRecommendations) *TemplateUpdate {
-	tu.mutation.SetResourceRecommendations(srr)
-	return tu
+func (_u *TemplateUpdate) SetResourceRecommendations(v schema.TemplateResourceRecommendations) *TemplateUpdate {
+	_u.mutation.SetResourceRecommendations(v)
+	return _u
 }
 
 // SetNillableResourceRecommendations sets the "resource_recommendations" field if the given value is not nil.
-func (tu *TemplateUpdate) SetNillableResourceRecommendations(srr *schema.TemplateResourceRecommendations) *TemplateUpdate {
-	if srr != nil {
-		tu.SetResourceRecommendations(*srr)
+func (_u *TemplateUpdate) SetNillableResourceRecommendations(v *schema.TemplateResourceRecommendations) *TemplateUpdate {
+	if v != nil {
+		_u.SetResourceRecommendations(*v)
 	}
-	return tu
+	return _u
 }
 
 // SetDisplayRank sets the "display_rank" field.
-func (tu *TemplateUpdate) SetDisplayRank(u uint) *TemplateUpdate {
-	tu.mutation.ResetDisplayRank()
-	tu.mutation.SetDisplayRank(u)
-	return tu
+func (_u *TemplateUpdate) SetDisplayRank(v uint) *TemplateUpdate {
+	_u.mutation.ResetDisplayRank()
+	_u.mutation.SetDisplayRank(v)
+	return _u
 }
 
 // SetNillableDisplayRank sets the "display_rank" field if the given value is not nil.
-func (tu *TemplateUpdate) SetNillableDisplayRank(u *uint) *TemplateUpdate {
-	if u != nil {
-		tu.SetDisplayRank(*u)
+func (_u *TemplateUpdate) SetNillableDisplayRank(v *uint) *TemplateUpdate {
+	if v != nil {
+		_u.SetDisplayRank(*v)
 	}
-	return tu
+	return _u
 }
 
-// AddDisplayRank adds u to the "display_rank" field.
-func (tu *TemplateUpdate) AddDisplayRank(u int) *TemplateUpdate {
-	tu.mutation.AddDisplayRank(u)
-	return tu
+// AddDisplayRank adds value to the "display_rank" field.
+func (_u *TemplateUpdate) AddDisplayRank(v int) *TemplateUpdate {
+	_u.mutation.AddDisplayRank(v)
+	return _u
 }
 
 // SetVersion sets the "version" field.
-func (tu *TemplateUpdate) SetVersion(i int) *TemplateUpdate {
-	tu.mutation.ResetVersion()
-	tu.mutation.SetVersion(i)
-	return tu
+func (_u *TemplateUpdate) SetVersion(v int) *TemplateUpdate {
+	_u.mutation.ResetVersion()
+	_u.mutation.SetVersion(v)
+	return _u
 }
 
 // SetNillableVersion sets the "version" field if the given value is not nil.
-func (tu *TemplateUpdate) SetNillableVersion(i *int) *TemplateUpdate {
-	if i != nil {
-		tu.SetVersion(*i)
+func (_u *TemplateUpdate) SetNillableVersion(v *int) *TemplateUpdate {
+	if v != nil {
+		_u.SetVersion(*v)
 	}
-	return tu
+	return _u
 }
 
-// AddVersion adds i to the "version" field.
-func (tu *TemplateUpdate) AddVersion(i int) *TemplateUpdate {
-	tu.mutation.AddVersion(i)
-	return tu
+// AddVersion adds value to the "version" field.
+func (_u *TemplateUpdate) AddVersion(v int) *TemplateUpdate {
+	_u.mutation.AddVersion(v)
+	return _u
 }
 
 // SetImmutable sets the "immutable" field.
-func (tu *TemplateUpdate) SetImmutable(b bool) *TemplateUpdate {
-	tu.mutation.SetImmutable(b)
-	return tu
+func (_u *TemplateUpdate) SetImmutable(v bool) *TemplateUpdate {
+	_u.mutation.SetImmutable(v)
+	return _u
 }
 
 // SetNillableImmutable sets the "immutable" field if the given value is not nil.
-func (tu *TemplateUpdate) SetNillableImmutable(b *bool) *TemplateUpdate {
-	if b != nil {
-		tu.SetImmutable(*b)
+func (_u *TemplateUpdate) SetNillableImmutable(v *bool) *TemplateUpdate {
+	if v != nil {
+		_u.SetImmutable(*v)
 	}
-	return tu
+	return _u
 }
 
 // SetDefinition sets the "definition" field.
-func (tu *TemplateUpdate) SetDefinition(sd schema.TemplateDefinition) *TemplateUpdate {
-	tu.mutation.SetDefinition(sd)
-	return tu
+func (_u *TemplateUpdate) SetDefinition(v schema.TemplateDefinition) *TemplateUpdate {
+	_u.mutation.SetDefinition(v)
+	return _u
 }
 
 // SetNillableDefinition sets the "definition" field if the given value is not nil.
-func (tu *TemplateUpdate) SetNillableDefinition(sd *schema.TemplateDefinition) *TemplateUpdate {
-	if sd != nil {
-		tu.SetDefinition(*sd)
+func (_u *TemplateUpdate) SetNillableDefinition(v *schema.TemplateDefinition) *TemplateUpdate {
+	if v != nil {
+		_u.SetDefinition(*v)
 	}
-	return tu
+	return _u
 }
 
 // AddServiceIDs adds the "services" edge to the Service entity by IDs.
-func (tu *TemplateUpdate) AddServiceIDs(ids ...uuid.UUID) *TemplateUpdate {
-	tu.mutation.AddServiceIDs(ids...)
-	return tu
+func (_u *TemplateUpdate) AddServiceIDs(ids ...uuid.UUID) *TemplateUpdate {
+	_u.mutation.AddServiceIDs(ids...)
+	return _u
 }
 
 // AddServices adds the "services" edges to the Service entity.
-func (tu *TemplateUpdate) AddServices(s ...*Service) *TemplateUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *TemplateUpdate) AddServices(v ...*Service) *TemplateUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tu.AddServiceIDs(ids...)
+	return _u.AddServiceIDs(ids...)
 }
 
 // Mutation returns the TemplateMutation object of the builder.
-func (tu *TemplateUpdate) Mutation() *TemplateMutation {
-	return tu.mutation
+func (_u *TemplateUpdate) Mutation() *TemplateMutation {
+	return _u.mutation
 }
 
 // ClearServices clears all "services" edges to the Service entity.
-func (tu *TemplateUpdate) ClearServices() *TemplateUpdate {
-	tu.mutation.ClearServices()
-	return tu
+func (_u *TemplateUpdate) ClearServices() *TemplateUpdate {
+	_u.mutation.ClearServices()
+	return _u
 }
 
 // RemoveServiceIDs removes the "services" edge to Service entities by IDs.
-func (tu *TemplateUpdate) RemoveServiceIDs(ids ...uuid.UUID) *TemplateUpdate {
-	tu.mutation.RemoveServiceIDs(ids...)
-	return tu
+func (_u *TemplateUpdate) RemoveServiceIDs(ids ...uuid.UUID) *TemplateUpdate {
+	_u.mutation.RemoveServiceIDs(ids...)
+	return _u
 }
 
 // RemoveServices removes "services" edges to Service entities.
-func (tu *TemplateUpdate) RemoveServices(s ...*Service) *TemplateUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *TemplateUpdate) RemoveServices(v ...*Service) *TemplateUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tu.RemoveServiceIDs(ids...)
+	return _u.RemoveServiceIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (tu *TemplateUpdate) Save(ctx context.Context) (int, error) {
-	tu.defaults()
-	return withHooks(ctx, tu.sqlSave, tu.mutation, tu.hooks)
+func (_u *TemplateUpdate) Save(ctx context.Context) (int, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (tu *TemplateUpdate) SaveX(ctx context.Context) int {
-	affected, err := tu.Save(ctx)
+func (_u *TemplateUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -240,86 +240,86 @@ func (tu *TemplateUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (tu *TemplateUpdate) Exec(ctx context.Context) error {
-	_, err := tu.Save(ctx)
+func (_u *TemplateUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (tu *TemplateUpdate) ExecX(ctx context.Context) {
-	if err := tu.Exec(ctx); err != nil {
+func (_u *TemplateUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (tu *TemplateUpdate) defaults() {
-	if _, ok := tu.mutation.UpdatedAt(); !ok {
+func (_u *TemplateUpdate) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := template.UpdateDefaultUpdatedAt()
-		tu.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (tu *TemplateUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *TemplateUpdate {
-	tu.modifiers = append(tu.modifiers, modifiers...)
-	return tu
+func (_u *TemplateUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *TemplateUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (tu *TemplateUpdate) sqlSave(ctx context.Context) (n int, err error) {
+func (_u *TemplateUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	_spec := sqlgraph.NewUpdateSpec(template.Table, template.Columns, sqlgraph.NewFieldSpec(template.FieldID, field.TypeUUID))
-	if ps := tu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := tu.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(template.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := tu.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(template.FieldName, field.TypeString, value)
 	}
-	if value, ok := tu.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(template.FieldDescription, field.TypeString, value)
 	}
-	if value, ok := tu.mutation.Icon(); ok {
+	if value, ok := _u.mutation.Icon(); ok {
 		_spec.SetField(template.FieldIcon, field.TypeString, value)
 	}
-	if value, ok := tu.mutation.Keywords(); ok {
+	if value, ok := _u.mutation.Keywords(); ok {
 		_spec.SetField(template.FieldKeywords, field.TypeJSON, value)
 	}
-	if value, ok := tu.mutation.AppendedKeywords(); ok {
+	if value, ok := _u.mutation.AppendedKeywords(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, template.FieldKeywords, value)
 		})
 	}
-	if tu.mutation.KeywordsCleared() {
+	if _u.mutation.KeywordsCleared() {
 		_spec.ClearField(template.FieldKeywords, field.TypeJSON)
 	}
-	if value, ok := tu.mutation.ResourceRecommendations(); ok {
+	if value, ok := _u.mutation.ResourceRecommendations(); ok {
 		_spec.SetField(template.FieldResourceRecommendations, field.TypeJSON, value)
 	}
-	if value, ok := tu.mutation.DisplayRank(); ok {
+	if value, ok := _u.mutation.DisplayRank(); ok {
 		_spec.SetField(template.FieldDisplayRank, field.TypeUint, value)
 	}
-	if value, ok := tu.mutation.AddedDisplayRank(); ok {
+	if value, ok := _u.mutation.AddedDisplayRank(); ok {
 		_spec.AddField(template.FieldDisplayRank, field.TypeUint, value)
 	}
-	if value, ok := tu.mutation.Version(); ok {
+	if value, ok := _u.mutation.Version(); ok {
 		_spec.SetField(template.FieldVersion, field.TypeInt, value)
 	}
-	if value, ok := tu.mutation.AddedVersion(); ok {
+	if value, ok := _u.mutation.AddedVersion(); ok {
 		_spec.AddField(template.FieldVersion, field.TypeInt, value)
 	}
-	if value, ok := tu.mutation.Immutable(); ok {
+	if value, ok := _u.mutation.Immutable(); ok {
 		_spec.SetField(template.FieldImmutable, field.TypeBool, value)
 	}
-	if value, ok := tu.mutation.Definition(); ok {
+	if value, ok := _u.mutation.Definition(); ok {
 		_spec.SetField(template.FieldDefinition, field.TypeJSON, value)
 	}
-	if tu.mutation.ServicesCleared() {
+	if _u.mutation.ServicesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -332,7 +332,7 @@ func (tu *TemplateUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tu.mutation.RemovedServicesIDs(); len(nodes) > 0 && !tu.mutation.ServicesCleared() {
+	if nodes := _u.mutation.RemovedServicesIDs(); len(nodes) > 0 && !_u.mutation.ServicesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -348,7 +348,7 @@ func (tu *TemplateUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tu.mutation.ServicesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ServicesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -364,8 +364,8 @@ func (tu *TemplateUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(tu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, tu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{template.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -373,8 +373,8 @@ func (tu *TemplateUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	tu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // TemplateUpdateOne is the builder for updating a single Template entity.
@@ -387,218 +387,218 @@ type TemplateUpdateOne struct {
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (tuo *TemplateUpdateOne) SetUpdatedAt(t time.Time) *TemplateUpdateOne {
-	tuo.mutation.SetUpdatedAt(t)
-	return tuo
+func (_u *TemplateUpdateOne) SetUpdatedAt(v time.Time) *TemplateUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetName sets the "name" field.
-func (tuo *TemplateUpdateOne) SetName(s string) *TemplateUpdateOne {
-	tuo.mutation.SetName(s)
-	return tuo
+func (_u *TemplateUpdateOne) SetName(v string) *TemplateUpdateOne {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (tuo *TemplateUpdateOne) SetNillableName(s *string) *TemplateUpdateOne {
-	if s != nil {
-		tuo.SetName(*s)
+func (_u *TemplateUpdateOne) SetNillableName(v *string) *TemplateUpdateOne {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return tuo
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (tuo *TemplateUpdateOne) SetDescription(s string) *TemplateUpdateOne {
-	tuo.mutation.SetDescription(s)
-	return tuo
+func (_u *TemplateUpdateOne) SetDescription(v string) *TemplateUpdateOne {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (tuo *TemplateUpdateOne) SetNillableDescription(s *string) *TemplateUpdateOne {
-	if s != nil {
-		tuo.SetDescription(*s)
+func (_u *TemplateUpdateOne) SetNillableDescription(v *string) *TemplateUpdateOne {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return tuo
+	return _u
 }
 
 // SetIcon sets the "icon" field.
-func (tuo *TemplateUpdateOne) SetIcon(s string) *TemplateUpdateOne {
-	tuo.mutation.SetIcon(s)
-	return tuo
+func (_u *TemplateUpdateOne) SetIcon(v string) *TemplateUpdateOne {
+	_u.mutation.SetIcon(v)
+	return _u
 }
 
 // SetNillableIcon sets the "icon" field if the given value is not nil.
-func (tuo *TemplateUpdateOne) SetNillableIcon(s *string) *TemplateUpdateOne {
-	if s != nil {
-		tuo.SetIcon(*s)
+func (_u *TemplateUpdateOne) SetNillableIcon(v *string) *TemplateUpdateOne {
+	if v != nil {
+		_u.SetIcon(*v)
 	}
-	return tuo
+	return _u
 }
 
 // SetKeywords sets the "keywords" field.
-func (tuo *TemplateUpdateOne) SetKeywords(s []string) *TemplateUpdateOne {
-	tuo.mutation.SetKeywords(s)
-	return tuo
+func (_u *TemplateUpdateOne) SetKeywords(v []string) *TemplateUpdateOne {
+	_u.mutation.SetKeywords(v)
+	return _u
 }
 
-// AppendKeywords appends s to the "keywords" field.
-func (tuo *TemplateUpdateOne) AppendKeywords(s []string) *TemplateUpdateOne {
-	tuo.mutation.AppendKeywords(s)
-	return tuo
+// AppendKeywords appends value to the "keywords" field.
+func (_u *TemplateUpdateOne) AppendKeywords(v []string) *TemplateUpdateOne {
+	_u.mutation.AppendKeywords(v)
+	return _u
 }
 
 // ClearKeywords clears the value of the "keywords" field.
-func (tuo *TemplateUpdateOne) ClearKeywords() *TemplateUpdateOne {
-	tuo.mutation.ClearKeywords()
-	return tuo
+func (_u *TemplateUpdateOne) ClearKeywords() *TemplateUpdateOne {
+	_u.mutation.ClearKeywords()
+	return _u
 }
 
 // SetResourceRecommendations sets the "resource_recommendations" field.
-func (tuo *TemplateUpdateOne) SetResourceRecommendations(srr schema.TemplateResourceRecommendations) *TemplateUpdateOne {
-	tuo.mutation.SetResourceRecommendations(srr)
-	return tuo
+func (_u *TemplateUpdateOne) SetResourceRecommendations(v schema.TemplateResourceRecommendations) *TemplateUpdateOne {
+	_u.mutation.SetResourceRecommendations(v)
+	return _u
 }
 
 // SetNillableResourceRecommendations sets the "resource_recommendations" field if the given value is not nil.
-func (tuo *TemplateUpdateOne) SetNillableResourceRecommendations(srr *schema.TemplateResourceRecommendations) *TemplateUpdateOne {
-	if srr != nil {
-		tuo.SetResourceRecommendations(*srr)
+func (_u *TemplateUpdateOne) SetNillableResourceRecommendations(v *schema.TemplateResourceRecommendations) *TemplateUpdateOne {
+	if v != nil {
+		_u.SetResourceRecommendations(*v)
 	}
-	return tuo
+	return _u
 }
 
 // SetDisplayRank sets the "display_rank" field.
-func (tuo *TemplateUpdateOne) SetDisplayRank(u uint) *TemplateUpdateOne {
-	tuo.mutation.ResetDisplayRank()
-	tuo.mutation.SetDisplayRank(u)
-	return tuo
+func (_u *TemplateUpdateOne) SetDisplayRank(v uint) *TemplateUpdateOne {
+	_u.mutation.ResetDisplayRank()
+	_u.mutation.SetDisplayRank(v)
+	return _u
 }
 
 // SetNillableDisplayRank sets the "display_rank" field if the given value is not nil.
-func (tuo *TemplateUpdateOne) SetNillableDisplayRank(u *uint) *TemplateUpdateOne {
-	if u != nil {
-		tuo.SetDisplayRank(*u)
+func (_u *TemplateUpdateOne) SetNillableDisplayRank(v *uint) *TemplateUpdateOne {
+	if v != nil {
+		_u.SetDisplayRank(*v)
 	}
-	return tuo
+	return _u
 }
 
-// AddDisplayRank adds u to the "display_rank" field.
-func (tuo *TemplateUpdateOne) AddDisplayRank(u int) *TemplateUpdateOne {
-	tuo.mutation.AddDisplayRank(u)
-	return tuo
+// AddDisplayRank adds value to the "display_rank" field.
+func (_u *TemplateUpdateOne) AddDisplayRank(v int) *TemplateUpdateOne {
+	_u.mutation.AddDisplayRank(v)
+	return _u
 }
 
 // SetVersion sets the "version" field.
-func (tuo *TemplateUpdateOne) SetVersion(i int) *TemplateUpdateOne {
-	tuo.mutation.ResetVersion()
-	tuo.mutation.SetVersion(i)
-	return tuo
+func (_u *TemplateUpdateOne) SetVersion(v int) *TemplateUpdateOne {
+	_u.mutation.ResetVersion()
+	_u.mutation.SetVersion(v)
+	return _u
 }
 
 // SetNillableVersion sets the "version" field if the given value is not nil.
-func (tuo *TemplateUpdateOne) SetNillableVersion(i *int) *TemplateUpdateOne {
-	if i != nil {
-		tuo.SetVersion(*i)
+func (_u *TemplateUpdateOne) SetNillableVersion(v *int) *TemplateUpdateOne {
+	if v != nil {
+		_u.SetVersion(*v)
 	}
-	return tuo
+	return _u
 }
 
-// AddVersion adds i to the "version" field.
-func (tuo *TemplateUpdateOne) AddVersion(i int) *TemplateUpdateOne {
-	tuo.mutation.AddVersion(i)
-	return tuo
+// AddVersion adds value to the "version" field.
+func (_u *TemplateUpdateOne) AddVersion(v int) *TemplateUpdateOne {
+	_u.mutation.AddVersion(v)
+	return _u
 }
 
 // SetImmutable sets the "immutable" field.
-func (tuo *TemplateUpdateOne) SetImmutable(b bool) *TemplateUpdateOne {
-	tuo.mutation.SetImmutable(b)
-	return tuo
+func (_u *TemplateUpdateOne) SetImmutable(v bool) *TemplateUpdateOne {
+	_u.mutation.SetImmutable(v)
+	return _u
 }
 
 // SetNillableImmutable sets the "immutable" field if the given value is not nil.
-func (tuo *TemplateUpdateOne) SetNillableImmutable(b *bool) *TemplateUpdateOne {
-	if b != nil {
-		tuo.SetImmutable(*b)
+func (_u *TemplateUpdateOne) SetNillableImmutable(v *bool) *TemplateUpdateOne {
+	if v != nil {
+		_u.SetImmutable(*v)
 	}
-	return tuo
+	return _u
 }
 
 // SetDefinition sets the "definition" field.
-func (tuo *TemplateUpdateOne) SetDefinition(sd schema.TemplateDefinition) *TemplateUpdateOne {
-	tuo.mutation.SetDefinition(sd)
-	return tuo
+func (_u *TemplateUpdateOne) SetDefinition(v schema.TemplateDefinition) *TemplateUpdateOne {
+	_u.mutation.SetDefinition(v)
+	return _u
 }
 
 // SetNillableDefinition sets the "definition" field if the given value is not nil.
-func (tuo *TemplateUpdateOne) SetNillableDefinition(sd *schema.TemplateDefinition) *TemplateUpdateOne {
-	if sd != nil {
-		tuo.SetDefinition(*sd)
+func (_u *TemplateUpdateOne) SetNillableDefinition(v *schema.TemplateDefinition) *TemplateUpdateOne {
+	if v != nil {
+		_u.SetDefinition(*v)
 	}
-	return tuo
+	return _u
 }
 
 // AddServiceIDs adds the "services" edge to the Service entity by IDs.
-func (tuo *TemplateUpdateOne) AddServiceIDs(ids ...uuid.UUID) *TemplateUpdateOne {
-	tuo.mutation.AddServiceIDs(ids...)
-	return tuo
+func (_u *TemplateUpdateOne) AddServiceIDs(ids ...uuid.UUID) *TemplateUpdateOne {
+	_u.mutation.AddServiceIDs(ids...)
+	return _u
 }
 
 // AddServices adds the "services" edges to the Service entity.
-func (tuo *TemplateUpdateOne) AddServices(s ...*Service) *TemplateUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *TemplateUpdateOne) AddServices(v ...*Service) *TemplateUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tuo.AddServiceIDs(ids...)
+	return _u.AddServiceIDs(ids...)
 }
 
 // Mutation returns the TemplateMutation object of the builder.
-func (tuo *TemplateUpdateOne) Mutation() *TemplateMutation {
-	return tuo.mutation
+func (_u *TemplateUpdateOne) Mutation() *TemplateMutation {
+	return _u.mutation
 }
 
 // ClearServices clears all "services" edges to the Service entity.
-func (tuo *TemplateUpdateOne) ClearServices() *TemplateUpdateOne {
-	tuo.mutation.ClearServices()
-	return tuo
+func (_u *TemplateUpdateOne) ClearServices() *TemplateUpdateOne {
+	_u.mutation.ClearServices()
+	return _u
 }
 
 // RemoveServiceIDs removes the "services" edge to Service entities by IDs.
-func (tuo *TemplateUpdateOne) RemoveServiceIDs(ids ...uuid.UUID) *TemplateUpdateOne {
-	tuo.mutation.RemoveServiceIDs(ids...)
-	return tuo
+func (_u *TemplateUpdateOne) RemoveServiceIDs(ids ...uuid.UUID) *TemplateUpdateOne {
+	_u.mutation.RemoveServiceIDs(ids...)
+	return _u
 }
 
 // RemoveServices removes "services" edges to Service entities.
-func (tuo *TemplateUpdateOne) RemoveServices(s ...*Service) *TemplateUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *TemplateUpdateOne) RemoveServices(v ...*Service) *TemplateUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tuo.RemoveServiceIDs(ids...)
+	return _u.RemoveServiceIDs(ids...)
 }
 
 // Where appends a list predicates to the TemplateUpdate builder.
-func (tuo *TemplateUpdateOne) Where(ps ...predicate.Template) *TemplateUpdateOne {
-	tuo.mutation.Where(ps...)
-	return tuo
+func (_u *TemplateUpdateOne) Where(ps ...predicate.Template) *TemplateUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (tuo *TemplateUpdateOne) Select(field string, fields ...string) *TemplateUpdateOne {
-	tuo.fields = append([]string{field}, fields...)
-	return tuo
+func (_u *TemplateUpdateOne) Select(field string, fields ...string) *TemplateUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated Template entity.
-func (tuo *TemplateUpdateOne) Save(ctx context.Context) (*Template, error) {
-	tuo.defaults()
-	return withHooks(ctx, tuo.sqlSave, tuo.mutation, tuo.hooks)
+func (_u *TemplateUpdateOne) Save(ctx context.Context) (*Template, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (tuo *TemplateUpdateOne) SaveX(ctx context.Context) *Template {
-	node, err := tuo.Save(ctx)
+func (_u *TemplateUpdateOne) SaveX(ctx context.Context) *Template {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -606,40 +606,40 @@ func (tuo *TemplateUpdateOne) SaveX(ctx context.Context) *Template {
 }
 
 // Exec executes the query on the entity.
-func (tuo *TemplateUpdateOne) Exec(ctx context.Context) error {
-	_, err := tuo.Save(ctx)
+func (_u *TemplateUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (tuo *TemplateUpdateOne) ExecX(ctx context.Context) {
-	if err := tuo.Exec(ctx); err != nil {
+func (_u *TemplateUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (tuo *TemplateUpdateOne) defaults() {
-	if _, ok := tuo.mutation.UpdatedAt(); !ok {
+func (_u *TemplateUpdateOne) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := template.UpdateDefaultUpdatedAt()
-		tuo.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (tuo *TemplateUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *TemplateUpdateOne {
-	tuo.modifiers = append(tuo.modifiers, modifiers...)
-	return tuo
+func (_u *TemplateUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *TemplateUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (tuo *TemplateUpdateOne) sqlSave(ctx context.Context) (_node *Template, err error) {
+func (_u *TemplateUpdateOne) sqlSave(ctx context.Context) (_node *Template, err error) {
 	_spec := sqlgraph.NewUpdateSpec(template.Table, template.Columns, sqlgraph.NewFieldSpec(template.FieldID, field.TypeUUID))
-	id, ok := tuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Template.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := tuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, template.FieldID)
 		for _, f := range fields {
@@ -651,58 +651,58 @@ func (tuo *TemplateUpdateOne) sqlSave(ctx context.Context) (_node *Template, err
 			}
 		}
 	}
-	if ps := tuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := tuo.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(template.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := tuo.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(template.FieldName, field.TypeString, value)
 	}
-	if value, ok := tuo.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(template.FieldDescription, field.TypeString, value)
 	}
-	if value, ok := tuo.mutation.Icon(); ok {
+	if value, ok := _u.mutation.Icon(); ok {
 		_spec.SetField(template.FieldIcon, field.TypeString, value)
 	}
-	if value, ok := tuo.mutation.Keywords(); ok {
+	if value, ok := _u.mutation.Keywords(); ok {
 		_spec.SetField(template.FieldKeywords, field.TypeJSON, value)
 	}
-	if value, ok := tuo.mutation.AppendedKeywords(); ok {
+	if value, ok := _u.mutation.AppendedKeywords(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, template.FieldKeywords, value)
 		})
 	}
-	if tuo.mutation.KeywordsCleared() {
+	if _u.mutation.KeywordsCleared() {
 		_spec.ClearField(template.FieldKeywords, field.TypeJSON)
 	}
-	if value, ok := tuo.mutation.ResourceRecommendations(); ok {
+	if value, ok := _u.mutation.ResourceRecommendations(); ok {
 		_spec.SetField(template.FieldResourceRecommendations, field.TypeJSON, value)
 	}
-	if value, ok := tuo.mutation.DisplayRank(); ok {
+	if value, ok := _u.mutation.DisplayRank(); ok {
 		_spec.SetField(template.FieldDisplayRank, field.TypeUint, value)
 	}
-	if value, ok := tuo.mutation.AddedDisplayRank(); ok {
+	if value, ok := _u.mutation.AddedDisplayRank(); ok {
 		_spec.AddField(template.FieldDisplayRank, field.TypeUint, value)
 	}
-	if value, ok := tuo.mutation.Version(); ok {
+	if value, ok := _u.mutation.Version(); ok {
 		_spec.SetField(template.FieldVersion, field.TypeInt, value)
 	}
-	if value, ok := tuo.mutation.AddedVersion(); ok {
+	if value, ok := _u.mutation.AddedVersion(); ok {
 		_spec.AddField(template.FieldVersion, field.TypeInt, value)
 	}
-	if value, ok := tuo.mutation.Immutable(); ok {
+	if value, ok := _u.mutation.Immutable(); ok {
 		_spec.SetField(template.FieldImmutable, field.TypeBool, value)
 	}
-	if value, ok := tuo.mutation.Definition(); ok {
+	if value, ok := _u.mutation.Definition(); ok {
 		_spec.SetField(template.FieldDefinition, field.TypeJSON, value)
 	}
-	if tuo.mutation.ServicesCleared() {
+	if _u.mutation.ServicesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -715,7 +715,7 @@ func (tuo *TemplateUpdateOne) sqlSave(ctx context.Context) (_node *Template, err
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tuo.mutation.RemovedServicesIDs(); len(nodes) > 0 && !tuo.mutation.ServicesCleared() {
+	if nodes := _u.mutation.RemovedServicesIDs(); len(nodes) > 0 && !_u.mutation.ServicesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -731,7 +731,7 @@ func (tuo *TemplateUpdateOne) sqlSave(ctx context.Context) (_node *Template, err
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tuo.mutation.ServicesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ServicesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -747,11 +747,11 @@ func (tuo *TemplateUpdateOne) sqlSave(ctx context.Context) (_node *Template, err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(tuo.modifiers...)
-	_node = &Template{config: tuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &Template{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, tuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{template.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -759,6 +759,6 @@ func (tuo *TemplateUpdateOne) sqlSave(ctx context.Context) (_node *Template, err
 		}
 		return nil, err
 	}
-	tuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

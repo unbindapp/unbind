@@ -100,7 +100,7 @@ func (*Webhook) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Webhook fields.
-func (w *Webhook) assignValues(columns []string, values []any) error {
+func (_m *Webhook) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -110,37 +110,37 @@ func (w *Webhook) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				w.ID = *value
+				_m.ID = *value
 			}
 		case webhook.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				w.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case webhook.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				w.UpdatedAt = value.Time
+				_m.UpdatedAt = value.Time
 			}
 		case webhook.FieldURL:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field url", values[i])
 			} else if value.Valid {
-				w.URL = value.String
+				_m.URL = value.String
 			}
 		case webhook.FieldType:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field type", values[i])
 			} else if value.Valid {
-				w.Type = schema.WebhookType(value.String)
+				_m.Type = schema.WebhookType(value.String)
 			}
 		case webhook.FieldEvents:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field events", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &w.Events); err != nil {
+				if err := json.Unmarshal(*value, &_m.Events); err != nil {
 					return fmt.Errorf("unmarshal field events: %w", err)
 				}
 			}
@@ -148,17 +148,17 @@ func (w *Webhook) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field team_id", values[i])
 			} else if value != nil {
-				w.TeamID = *value
+				_m.TeamID = *value
 			}
 		case webhook.FieldProjectID:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field project_id", values[i])
 			} else if value.Valid {
-				w.ProjectID = new(uuid.UUID)
-				*w.ProjectID = *value.S.(*uuid.UUID)
+				_m.ProjectID = new(uuid.UUID)
+				*_m.ProjectID = *value.S.(*uuid.UUID)
 			}
 		default:
-			w.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -166,62 +166,62 @@ func (w *Webhook) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the Webhook.
 // This includes values selected through modifiers, order, etc.
-func (w *Webhook) Value(name string) (ent.Value, error) {
-	return w.selectValues.Get(name)
+func (_m *Webhook) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTeam queries the "team" edge of the Webhook entity.
-func (w *Webhook) QueryTeam() *TeamQuery {
-	return NewWebhookClient(w.config).QueryTeam(w)
+func (_m *Webhook) QueryTeam() *TeamQuery {
+	return NewWebhookClient(_m.config).QueryTeam(_m)
 }
 
 // QueryProject queries the "project" edge of the Webhook entity.
-func (w *Webhook) QueryProject() *ProjectQuery {
-	return NewWebhookClient(w.config).QueryProject(w)
+func (_m *Webhook) QueryProject() *ProjectQuery {
+	return NewWebhookClient(_m.config).QueryProject(_m)
 }
 
 // Update returns a builder for updating this Webhook.
 // Note that you need to call Webhook.Unwrap() before calling this method if this Webhook
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (w *Webhook) Update() *WebhookUpdateOne {
-	return NewWebhookClient(w.config).UpdateOne(w)
+func (_m *Webhook) Update() *WebhookUpdateOne {
+	return NewWebhookClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the Webhook entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (w *Webhook) Unwrap() *Webhook {
-	_tx, ok := w.config.driver.(*txDriver)
+func (_m *Webhook) Unwrap() *Webhook {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: Webhook is not a transactional entity")
 	}
-	w.config.driver = _tx.drv
-	return w
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (w *Webhook) String() string {
+func (_m *Webhook) String() string {
 	var builder strings.Builder
 	builder.WriteString("Webhook(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", w.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("created_at=")
-	builder.WriteString(w.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(w.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("url=")
-	builder.WriteString(w.URL)
+	builder.WriteString(_m.URL)
 	builder.WriteString(", ")
 	builder.WriteString("type=")
-	builder.WriteString(fmt.Sprintf("%v", w.Type))
+	builder.WriteString(fmt.Sprintf("%v", _m.Type))
 	builder.WriteString(", ")
 	builder.WriteString("events=")
-	builder.WriteString(fmt.Sprintf("%v", w.Events))
+	builder.WriteString(fmt.Sprintf("%v", _m.Events))
 	builder.WriteString(", ")
 	builder.WriteString("team_id=")
-	builder.WriteString(fmt.Sprintf("%v", w.TeamID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TeamID))
 	builder.WriteString(", ")
-	if v := w.ProjectID; v != nil {
+	if v := _m.ProjectID; v != nil {
 		builder.WriteString("project_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}

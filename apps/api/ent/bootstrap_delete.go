@@ -20,56 +20,56 @@ type BootstrapDelete struct {
 }
 
 // Where appends a list predicates to the BootstrapDelete builder.
-func (bd *BootstrapDelete) Where(ps ...predicate.Bootstrap) *BootstrapDelete {
-	bd.mutation.Where(ps...)
-	return bd
+func (_d *BootstrapDelete) Where(ps ...predicate.Bootstrap) *BootstrapDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (bd *BootstrapDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, bd.sqlExec, bd.mutation, bd.hooks)
+func (_d *BootstrapDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (bd *BootstrapDelete) ExecX(ctx context.Context) int {
-	n, err := bd.Exec(ctx)
+func (_d *BootstrapDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (bd *BootstrapDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *BootstrapDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(bootstrap.Table, sqlgraph.NewFieldSpec(bootstrap.FieldID, field.TypeInt))
-	if ps := bd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, bd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	bd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // BootstrapDeleteOne is the builder for deleting a single Bootstrap entity.
 type BootstrapDeleteOne struct {
-	bd *BootstrapDelete
+	_d *BootstrapDelete
 }
 
 // Where appends a list predicates to the BootstrapDelete builder.
-func (bdo *BootstrapDeleteOne) Where(ps ...predicate.Bootstrap) *BootstrapDeleteOne {
-	bdo.bd.mutation.Where(ps...)
-	return bdo
+func (_d *BootstrapDeleteOne) Where(ps ...predicate.Bootstrap) *BootstrapDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (bdo *BootstrapDeleteOne) Exec(ctx context.Context) error {
-	n, err := bdo.bd.Exec(ctx)
+func (_d *BootstrapDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (bdo *BootstrapDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (bdo *BootstrapDeleteOne) ExecX(ctx context.Context) {
-	if err := bdo.Exec(ctx); err != nil {
+func (_d *BootstrapDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

@@ -27,146 +27,146 @@ type ServiceGroupUpdate struct {
 }
 
 // Where appends a list predicates to the ServiceGroupUpdate builder.
-func (sgu *ServiceGroupUpdate) Where(ps ...predicate.ServiceGroup) *ServiceGroupUpdate {
-	sgu.mutation.Where(ps...)
-	return sgu
+func (_u *ServiceGroupUpdate) Where(ps ...predicate.ServiceGroup) *ServiceGroupUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (sgu *ServiceGroupUpdate) SetUpdatedAt(t time.Time) *ServiceGroupUpdate {
-	sgu.mutation.SetUpdatedAt(t)
-	return sgu
+func (_u *ServiceGroupUpdate) SetUpdatedAt(v time.Time) *ServiceGroupUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetName sets the "name" field.
-func (sgu *ServiceGroupUpdate) SetName(s string) *ServiceGroupUpdate {
-	sgu.mutation.SetName(s)
-	return sgu
+func (_u *ServiceGroupUpdate) SetName(v string) *ServiceGroupUpdate {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (sgu *ServiceGroupUpdate) SetNillableName(s *string) *ServiceGroupUpdate {
-	if s != nil {
-		sgu.SetName(*s)
+func (_u *ServiceGroupUpdate) SetNillableName(v *string) *ServiceGroupUpdate {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return sgu
+	return _u
 }
 
 // SetIcon sets the "icon" field.
-func (sgu *ServiceGroupUpdate) SetIcon(s string) *ServiceGroupUpdate {
-	sgu.mutation.SetIcon(s)
-	return sgu
+func (_u *ServiceGroupUpdate) SetIcon(v string) *ServiceGroupUpdate {
+	_u.mutation.SetIcon(v)
+	return _u
 }
 
 // SetNillableIcon sets the "icon" field if the given value is not nil.
-func (sgu *ServiceGroupUpdate) SetNillableIcon(s *string) *ServiceGroupUpdate {
-	if s != nil {
-		sgu.SetIcon(*s)
+func (_u *ServiceGroupUpdate) SetNillableIcon(v *string) *ServiceGroupUpdate {
+	if v != nil {
+		_u.SetIcon(*v)
 	}
-	return sgu
+	return _u
 }
 
 // ClearIcon clears the value of the "icon" field.
-func (sgu *ServiceGroupUpdate) ClearIcon() *ServiceGroupUpdate {
-	sgu.mutation.ClearIcon()
-	return sgu
+func (_u *ServiceGroupUpdate) ClearIcon() *ServiceGroupUpdate {
+	_u.mutation.ClearIcon()
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (sgu *ServiceGroupUpdate) SetDescription(s string) *ServiceGroupUpdate {
-	sgu.mutation.SetDescription(s)
-	return sgu
+func (_u *ServiceGroupUpdate) SetDescription(v string) *ServiceGroupUpdate {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (sgu *ServiceGroupUpdate) SetNillableDescription(s *string) *ServiceGroupUpdate {
-	if s != nil {
-		sgu.SetDescription(*s)
+func (_u *ServiceGroupUpdate) SetNillableDescription(v *string) *ServiceGroupUpdate {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return sgu
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (sgu *ServiceGroupUpdate) ClearDescription() *ServiceGroupUpdate {
-	sgu.mutation.ClearDescription()
-	return sgu
+func (_u *ServiceGroupUpdate) ClearDescription() *ServiceGroupUpdate {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetEnvironmentID sets the "environment_id" field.
-func (sgu *ServiceGroupUpdate) SetEnvironmentID(u uuid.UUID) *ServiceGroupUpdate {
-	sgu.mutation.SetEnvironmentID(u)
-	return sgu
+func (_u *ServiceGroupUpdate) SetEnvironmentID(v uuid.UUID) *ServiceGroupUpdate {
+	_u.mutation.SetEnvironmentID(v)
+	return _u
 }
 
 // SetNillableEnvironmentID sets the "environment_id" field if the given value is not nil.
-func (sgu *ServiceGroupUpdate) SetNillableEnvironmentID(u *uuid.UUID) *ServiceGroupUpdate {
-	if u != nil {
-		sgu.SetEnvironmentID(*u)
+func (_u *ServiceGroupUpdate) SetNillableEnvironmentID(v *uuid.UUID) *ServiceGroupUpdate {
+	if v != nil {
+		_u.SetEnvironmentID(*v)
 	}
-	return sgu
+	return _u
 }
 
 // SetEnvironment sets the "environment" edge to the Environment entity.
-func (sgu *ServiceGroupUpdate) SetEnvironment(e *Environment) *ServiceGroupUpdate {
-	return sgu.SetEnvironmentID(e.ID)
+func (_u *ServiceGroupUpdate) SetEnvironment(v *Environment) *ServiceGroupUpdate {
+	return _u.SetEnvironmentID(v.ID)
 }
 
 // AddServiceIDs adds the "services" edge to the Service entity by IDs.
-func (sgu *ServiceGroupUpdate) AddServiceIDs(ids ...uuid.UUID) *ServiceGroupUpdate {
-	sgu.mutation.AddServiceIDs(ids...)
-	return sgu
+func (_u *ServiceGroupUpdate) AddServiceIDs(ids ...uuid.UUID) *ServiceGroupUpdate {
+	_u.mutation.AddServiceIDs(ids...)
+	return _u
 }
 
 // AddServices adds the "services" edges to the Service entity.
-func (sgu *ServiceGroupUpdate) AddServices(s ...*Service) *ServiceGroupUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *ServiceGroupUpdate) AddServices(v ...*Service) *ServiceGroupUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sgu.AddServiceIDs(ids...)
+	return _u.AddServiceIDs(ids...)
 }
 
 // Mutation returns the ServiceGroupMutation object of the builder.
-func (sgu *ServiceGroupUpdate) Mutation() *ServiceGroupMutation {
-	return sgu.mutation
+func (_u *ServiceGroupUpdate) Mutation() *ServiceGroupMutation {
+	return _u.mutation
 }
 
 // ClearEnvironment clears the "environment" edge to the Environment entity.
-func (sgu *ServiceGroupUpdate) ClearEnvironment() *ServiceGroupUpdate {
-	sgu.mutation.ClearEnvironment()
-	return sgu
+func (_u *ServiceGroupUpdate) ClearEnvironment() *ServiceGroupUpdate {
+	_u.mutation.ClearEnvironment()
+	return _u
 }
 
 // ClearServices clears all "services" edges to the Service entity.
-func (sgu *ServiceGroupUpdate) ClearServices() *ServiceGroupUpdate {
-	sgu.mutation.ClearServices()
-	return sgu
+func (_u *ServiceGroupUpdate) ClearServices() *ServiceGroupUpdate {
+	_u.mutation.ClearServices()
+	return _u
 }
 
 // RemoveServiceIDs removes the "services" edge to Service entities by IDs.
-func (sgu *ServiceGroupUpdate) RemoveServiceIDs(ids ...uuid.UUID) *ServiceGroupUpdate {
-	sgu.mutation.RemoveServiceIDs(ids...)
-	return sgu
+func (_u *ServiceGroupUpdate) RemoveServiceIDs(ids ...uuid.UUID) *ServiceGroupUpdate {
+	_u.mutation.RemoveServiceIDs(ids...)
+	return _u
 }
 
 // RemoveServices removes "services" edges to Service entities.
-func (sgu *ServiceGroupUpdate) RemoveServices(s ...*Service) *ServiceGroupUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *ServiceGroupUpdate) RemoveServices(v ...*Service) *ServiceGroupUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sgu.RemoveServiceIDs(ids...)
+	return _u.RemoveServiceIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (sgu *ServiceGroupUpdate) Save(ctx context.Context) (int, error) {
-	sgu.defaults()
-	return withHooks(ctx, sgu.sqlSave, sgu.mutation, sgu.hooks)
+func (_u *ServiceGroupUpdate) Save(ctx context.Context) (int, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (sgu *ServiceGroupUpdate) SaveX(ctx context.Context) int {
-	affected, err := sgu.Save(ctx)
+func (_u *ServiceGroupUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -174,71 +174,71 @@ func (sgu *ServiceGroupUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (sgu *ServiceGroupUpdate) Exec(ctx context.Context) error {
-	_, err := sgu.Save(ctx)
+func (_u *ServiceGroupUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sgu *ServiceGroupUpdate) ExecX(ctx context.Context) {
-	if err := sgu.Exec(ctx); err != nil {
+func (_u *ServiceGroupUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (sgu *ServiceGroupUpdate) defaults() {
-	if _, ok := sgu.mutation.UpdatedAt(); !ok {
+func (_u *ServiceGroupUpdate) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := servicegroup.UpdateDefaultUpdatedAt()
-		sgu.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (sgu *ServiceGroupUpdate) check() error {
-	if sgu.mutation.EnvironmentCleared() && len(sgu.mutation.EnvironmentIDs()) > 0 {
+func (_u *ServiceGroupUpdate) check() error {
+	if _u.mutation.EnvironmentCleared() && len(_u.mutation.EnvironmentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "ServiceGroup.environment"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (sgu *ServiceGroupUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ServiceGroupUpdate {
-	sgu.modifiers = append(sgu.modifiers, modifiers...)
-	return sgu
+func (_u *ServiceGroupUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ServiceGroupUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (sgu *ServiceGroupUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := sgu.check(); err != nil {
-		return n, err
+func (_u *ServiceGroupUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(servicegroup.Table, servicegroup.Columns, sqlgraph.NewFieldSpec(servicegroup.FieldID, field.TypeUUID))
-	if ps := sgu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := sgu.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(servicegroup.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := sgu.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(servicegroup.FieldName, field.TypeString, value)
 	}
-	if value, ok := sgu.mutation.Icon(); ok {
+	if value, ok := _u.mutation.Icon(); ok {
 		_spec.SetField(servicegroup.FieldIcon, field.TypeString, value)
 	}
-	if sgu.mutation.IconCleared() {
+	if _u.mutation.IconCleared() {
 		_spec.ClearField(servicegroup.FieldIcon, field.TypeString)
 	}
-	if value, ok := sgu.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(servicegroup.FieldDescription, field.TypeString, value)
 	}
-	if sgu.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(servicegroup.FieldDescription, field.TypeString)
 	}
-	if sgu.mutation.EnvironmentCleared() {
+	if _u.mutation.EnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -251,7 +251,7 @@ func (sgu *ServiceGroupUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sgu.mutation.EnvironmentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.EnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -267,7 +267,7 @@ func (sgu *ServiceGroupUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if sgu.mutation.ServicesCleared() {
+	if _u.mutation.ServicesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -280,7 +280,7 @@ func (sgu *ServiceGroupUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sgu.mutation.RemovedServicesIDs(); len(nodes) > 0 && !sgu.mutation.ServicesCleared() {
+	if nodes := _u.mutation.RemovedServicesIDs(); len(nodes) > 0 && !_u.mutation.ServicesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -296,7 +296,7 @@ func (sgu *ServiceGroupUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sgu.mutation.ServicesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ServicesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -312,8 +312,8 @@ func (sgu *ServiceGroupUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(sgu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, sgu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{servicegroup.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -321,8 +321,8 @@ func (sgu *ServiceGroupUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	sgu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // ServiceGroupUpdateOne is the builder for updating a single ServiceGroup entity.
@@ -335,153 +335,153 @@ type ServiceGroupUpdateOne struct {
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (sguo *ServiceGroupUpdateOne) SetUpdatedAt(t time.Time) *ServiceGroupUpdateOne {
-	sguo.mutation.SetUpdatedAt(t)
-	return sguo
+func (_u *ServiceGroupUpdateOne) SetUpdatedAt(v time.Time) *ServiceGroupUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetName sets the "name" field.
-func (sguo *ServiceGroupUpdateOne) SetName(s string) *ServiceGroupUpdateOne {
-	sguo.mutation.SetName(s)
-	return sguo
+func (_u *ServiceGroupUpdateOne) SetName(v string) *ServiceGroupUpdateOne {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (sguo *ServiceGroupUpdateOne) SetNillableName(s *string) *ServiceGroupUpdateOne {
-	if s != nil {
-		sguo.SetName(*s)
+func (_u *ServiceGroupUpdateOne) SetNillableName(v *string) *ServiceGroupUpdateOne {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return sguo
+	return _u
 }
 
 // SetIcon sets the "icon" field.
-func (sguo *ServiceGroupUpdateOne) SetIcon(s string) *ServiceGroupUpdateOne {
-	sguo.mutation.SetIcon(s)
-	return sguo
+func (_u *ServiceGroupUpdateOne) SetIcon(v string) *ServiceGroupUpdateOne {
+	_u.mutation.SetIcon(v)
+	return _u
 }
 
 // SetNillableIcon sets the "icon" field if the given value is not nil.
-func (sguo *ServiceGroupUpdateOne) SetNillableIcon(s *string) *ServiceGroupUpdateOne {
-	if s != nil {
-		sguo.SetIcon(*s)
+func (_u *ServiceGroupUpdateOne) SetNillableIcon(v *string) *ServiceGroupUpdateOne {
+	if v != nil {
+		_u.SetIcon(*v)
 	}
-	return sguo
+	return _u
 }
 
 // ClearIcon clears the value of the "icon" field.
-func (sguo *ServiceGroupUpdateOne) ClearIcon() *ServiceGroupUpdateOne {
-	sguo.mutation.ClearIcon()
-	return sguo
+func (_u *ServiceGroupUpdateOne) ClearIcon() *ServiceGroupUpdateOne {
+	_u.mutation.ClearIcon()
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (sguo *ServiceGroupUpdateOne) SetDescription(s string) *ServiceGroupUpdateOne {
-	sguo.mutation.SetDescription(s)
-	return sguo
+func (_u *ServiceGroupUpdateOne) SetDescription(v string) *ServiceGroupUpdateOne {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (sguo *ServiceGroupUpdateOne) SetNillableDescription(s *string) *ServiceGroupUpdateOne {
-	if s != nil {
-		sguo.SetDescription(*s)
+func (_u *ServiceGroupUpdateOne) SetNillableDescription(v *string) *ServiceGroupUpdateOne {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return sguo
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (sguo *ServiceGroupUpdateOne) ClearDescription() *ServiceGroupUpdateOne {
-	sguo.mutation.ClearDescription()
-	return sguo
+func (_u *ServiceGroupUpdateOne) ClearDescription() *ServiceGroupUpdateOne {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetEnvironmentID sets the "environment_id" field.
-func (sguo *ServiceGroupUpdateOne) SetEnvironmentID(u uuid.UUID) *ServiceGroupUpdateOne {
-	sguo.mutation.SetEnvironmentID(u)
-	return sguo
+func (_u *ServiceGroupUpdateOne) SetEnvironmentID(v uuid.UUID) *ServiceGroupUpdateOne {
+	_u.mutation.SetEnvironmentID(v)
+	return _u
 }
 
 // SetNillableEnvironmentID sets the "environment_id" field if the given value is not nil.
-func (sguo *ServiceGroupUpdateOne) SetNillableEnvironmentID(u *uuid.UUID) *ServiceGroupUpdateOne {
-	if u != nil {
-		sguo.SetEnvironmentID(*u)
+func (_u *ServiceGroupUpdateOne) SetNillableEnvironmentID(v *uuid.UUID) *ServiceGroupUpdateOne {
+	if v != nil {
+		_u.SetEnvironmentID(*v)
 	}
-	return sguo
+	return _u
 }
 
 // SetEnvironment sets the "environment" edge to the Environment entity.
-func (sguo *ServiceGroupUpdateOne) SetEnvironment(e *Environment) *ServiceGroupUpdateOne {
-	return sguo.SetEnvironmentID(e.ID)
+func (_u *ServiceGroupUpdateOne) SetEnvironment(v *Environment) *ServiceGroupUpdateOne {
+	return _u.SetEnvironmentID(v.ID)
 }
 
 // AddServiceIDs adds the "services" edge to the Service entity by IDs.
-func (sguo *ServiceGroupUpdateOne) AddServiceIDs(ids ...uuid.UUID) *ServiceGroupUpdateOne {
-	sguo.mutation.AddServiceIDs(ids...)
-	return sguo
+func (_u *ServiceGroupUpdateOne) AddServiceIDs(ids ...uuid.UUID) *ServiceGroupUpdateOne {
+	_u.mutation.AddServiceIDs(ids...)
+	return _u
 }
 
 // AddServices adds the "services" edges to the Service entity.
-func (sguo *ServiceGroupUpdateOne) AddServices(s ...*Service) *ServiceGroupUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *ServiceGroupUpdateOne) AddServices(v ...*Service) *ServiceGroupUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sguo.AddServiceIDs(ids...)
+	return _u.AddServiceIDs(ids...)
 }
 
 // Mutation returns the ServiceGroupMutation object of the builder.
-func (sguo *ServiceGroupUpdateOne) Mutation() *ServiceGroupMutation {
-	return sguo.mutation
+func (_u *ServiceGroupUpdateOne) Mutation() *ServiceGroupMutation {
+	return _u.mutation
 }
 
 // ClearEnvironment clears the "environment" edge to the Environment entity.
-func (sguo *ServiceGroupUpdateOne) ClearEnvironment() *ServiceGroupUpdateOne {
-	sguo.mutation.ClearEnvironment()
-	return sguo
+func (_u *ServiceGroupUpdateOne) ClearEnvironment() *ServiceGroupUpdateOne {
+	_u.mutation.ClearEnvironment()
+	return _u
 }
 
 // ClearServices clears all "services" edges to the Service entity.
-func (sguo *ServiceGroupUpdateOne) ClearServices() *ServiceGroupUpdateOne {
-	sguo.mutation.ClearServices()
-	return sguo
+func (_u *ServiceGroupUpdateOne) ClearServices() *ServiceGroupUpdateOne {
+	_u.mutation.ClearServices()
+	return _u
 }
 
 // RemoveServiceIDs removes the "services" edge to Service entities by IDs.
-func (sguo *ServiceGroupUpdateOne) RemoveServiceIDs(ids ...uuid.UUID) *ServiceGroupUpdateOne {
-	sguo.mutation.RemoveServiceIDs(ids...)
-	return sguo
+func (_u *ServiceGroupUpdateOne) RemoveServiceIDs(ids ...uuid.UUID) *ServiceGroupUpdateOne {
+	_u.mutation.RemoveServiceIDs(ids...)
+	return _u
 }
 
 // RemoveServices removes "services" edges to Service entities.
-func (sguo *ServiceGroupUpdateOne) RemoveServices(s ...*Service) *ServiceGroupUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *ServiceGroupUpdateOne) RemoveServices(v ...*Service) *ServiceGroupUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sguo.RemoveServiceIDs(ids...)
+	return _u.RemoveServiceIDs(ids...)
 }
 
 // Where appends a list predicates to the ServiceGroupUpdate builder.
-func (sguo *ServiceGroupUpdateOne) Where(ps ...predicate.ServiceGroup) *ServiceGroupUpdateOne {
-	sguo.mutation.Where(ps...)
-	return sguo
+func (_u *ServiceGroupUpdateOne) Where(ps ...predicate.ServiceGroup) *ServiceGroupUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (sguo *ServiceGroupUpdateOne) Select(field string, fields ...string) *ServiceGroupUpdateOne {
-	sguo.fields = append([]string{field}, fields...)
-	return sguo
+func (_u *ServiceGroupUpdateOne) Select(field string, fields ...string) *ServiceGroupUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated ServiceGroup entity.
-func (sguo *ServiceGroupUpdateOne) Save(ctx context.Context) (*ServiceGroup, error) {
-	sguo.defaults()
-	return withHooks(ctx, sguo.sqlSave, sguo.mutation, sguo.hooks)
+func (_u *ServiceGroupUpdateOne) Save(ctx context.Context) (*ServiceGroup, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (sguo *ServiceGroupUpdateOne) SaveX(ctx context.Context) *ServiceGroup {
-	node, err := sguo.Save(ctx)
+func (_u *ServiceGroupUpdateOne) SaveX(ctx context.Context) *ServiceGroup {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -489,51 +489,51 @@ func (sguo *ServiceGroupUpdateOne) SaveX(ctx context.Context) *ServiceGroup {
 }
 
 // Exec executes the query on the entity.
-func (sguo *ServiceGroupUpdateOne) Exec(ctx context.Context) error {
-	_, err := sguo.Save(ctx)
+func (_u *ServiceGroupUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sguo *ServiceGroupUpdateOne) ExecX(ctx context.Context) {
-	if err := sguo.Exec(ctx); err != nil {
+func (_u *ServiceGroupUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (sguo *ServiceGroupUpdateOne) defaults() {
-	if _, ok := sguo.mutation.UpdatedAt(); !ok {
+func (_u *ServiceGroupUpdateOne) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := servicegroup.UpdateDefaultUpdatedAt()
-		sguo.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (sguo *ServiceGroupUpdateOne) check() error {
-	if sguo.mutation.EnvironmentCleared() && len(sguo.mutation.EnvironmentIDs()) > 0 {
+func (_u *ServiceGroupUpdateOne) check() error {
+	if _u.mutation.EnvironmentCleared() && len(_u.mutation.EnvironmentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "ServiceGroup.environment"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (sguo *ServiceGroupUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ServiceGroupUpdateOne {
-	sguo.modifiers = append(sguo.modifiers, modifiers...)
-	return sguo
+func (_u *ServiceGroupUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ServiceGroupUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (sguo *ServiceGroupUpdateOne) sqlSave(ctx context.Context) (_node *ServiceGroup, err error) {
-	if err := sguo.check(); err != nil {
+func (_u *ServiceGroupUpdateOne) sqlSave(ctx context.Context) (_node *ServiceGroup, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(servicegroup.Table, servicegroup.Columns, sqlgraph.NewFieldSpec(servicegroup.FieldID, field.TypeUUID))
-	id, ok := sguo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "ServiceGroup.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := sguo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, servicegroup.FieldID)
 		for _, f := range fields {
@@ -545,32 +545,32 @@ func (sguo *ServiceGroupUpdateOne) sqlSave(ctx context.Context) (_node *ServiceG
 			}
 		}
 	}
-	if ps := sguo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := sguo.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(servicegroup.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := sguo.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(servicegroup.FieldName, field.TypeString, value)
 	}
-	if value, ok := sguo.mutation.Icon(); ok {
+	if value, ok := _u.mutation.Icon(); ok {
 		_spec.SetField(servicegroup.FieldIcon, field.TypeString, value)
 	}
-	if sguo.mutation.IconCleared() {
+	if _u.mutation.IconCleared() {
 		_spec.ClearField(servicegroup.FieldIcon, field.TypeString)
 	}
-	if value, ok := sguo.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(servicegroup.FieldDescription, field.TypeString, value)
 	}
-	if sguo.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(servicegroup.FieldDescription, field.TypeString)
 	}
-	if sguo.mutation.EnvironmentCleared() {
+	if _u.mutation.EnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -583,7 +583,7 @@ func (sguo *ServiceGroupUpdateOne) sqlSave(ctx context.Context) (_node *ServiceG
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sguo.mutation.EnvironmentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.EnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -599,7 +599,7 @@ func (sguo *ServiceGroupUpdateOne) sqlSave(ctx context.Context) (_node *ServiceG
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if sguo.mutation.ServicesCleared() {
+	if _u.mutation.ServicesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -612,7 +612,7 @@ func (sguo *ServiceGroupUpdateOne) sqlSave(ctx context.Context) (_node *ServiceG
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sguo.mutation.RemovedServicesIDs(); len(nodes) > 0 && !sguo.mutation.ServicesCleared() {
+	if nodes := _u.mutation.RemovedServicesIDs(); len(nodes) > 0 && !_u.mutation.ServicesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -628,7 +628,7 @@ func (sguo *ServiceGroupUpdateOne) sqlSave(ctx context.Context) (_node *ServiceG
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sguo.mutation.ServicesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ServicesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -644,11 +644,11 @@ func (sguo *ServiceGroupUpdateOne) sqlSave(ctx context.Context) (_node *ServiceG
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(sguo.modifiers...)
-	_node = &ServiceGroup{config: sguo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &ServiceGroup{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, sguo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{servicegroup.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -656,6 +656,6 @@ func (sguo *ServiceGroupUpdateOne) sqlSave(ctx context.Context) (_node *ServiceG
 		}
 		return nil, err
 	}
-	sguo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

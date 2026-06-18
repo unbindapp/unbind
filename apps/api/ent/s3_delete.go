@@ -20,56 +20,56 @@ type S3Delete struct {
 }
 
 // Where appends a list predicates to the S3Delete builder.
-func (s *S3Delete) Where(ps ...predicate.S3) *S3Delete {
-	s.mutation.Where(ps...)
-	return s
+func (_d *S3Delete) Where(ps ...predicate.S3) *S3Delete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (s *S3Delete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, s.sqlExec, s.mutation, s.hooks)
+func (_d *S3Delete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (s *S3Delete) ExecX(ctx context.Context) int {
-	n, err := s.Exec(ctx)
+func (_d *S3Delete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (s *S3Delete) sqlExec(ctx context.Context) (int, error) {
+func (_d *S3Delete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(s3.Table, sqlgraph.NewFieldSpec(s3.FieldID, field.TypeUUID))
-	if ps := s.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, s.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	s.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // S3DeleteOne is the builder for deleting a single S3 entity.
 type S3DeleteOne struct {
-	s *S3Delete
+	_d *S3Delete
 }
 
 // Where appends a list predicates to the S3Delete builder.
-func (so *S3DeleteOne) Where(ps ...predicate.S3) *S3DeleteOne {
-	so.s.mutation.Where(ps...)
-	return so
+func (_d *S3DeleteOne) Where(ps ...predicate.S3) *S3DeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (so *S3DeleteOne) Exec(ctx context.Context) error {
-	n, err := so.s.Exec(ctx)
+func (_d *S3DeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (so *S3DeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (so *S3DeleteOne) ExecX(ctx context.Context) {
-	if err := so.Exec(ctx); err != nil {
+func (_d *S3DeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

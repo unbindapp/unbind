@@ -23,38 +23,38 @@ type BootstrapUpdate struct {
 }
 
 // Where appends a list predicates to the BootstrapUpdate builder.
-func (bu *BootstrapUpdate) Where(ps ...predicate.Bootstrap) *BootstrapUpdate {
-	bu.mutation.Where(ps...)
-	return bu
+func (_u *BootstrapUpdate) Where(ps ...predicate.Bootstrap) *BootstrapUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetIsBootstrapped sets the "is_bootstrapped" field.
-func (bu *BootstrapUpdate) SetIsBootstrapped(b bool) *BootstrapUpdate {
-	bu.mutation.SetIsBootstrapped(b)
-	return bu
+func (_u *BootstrapUpdate) SetIsBootstrapped(v bool) *BootstrapUpdate {
+	_u.mutation.SetIsBootstrapped(v)
+	return _u
 }
 
 // SetNillableIsBootstrapped sets the "is_bootstrapped" field if the given value is not nil.
-func (bu *BootstrapUpdate) SetNillableIsBootstrapped(b *bool) *BootstrapUpdate {
-	if b != nil {
-		bu.SetIsBootstrapped(*b)
+func (_u *BootstrapUpdate) SetNillableIsBootstrapped(v *bool) *BootstrapUpdate {
+	if v != nil {
+		_u.SetIsBootstrapped(*v)
 	}
-	return bu
+	return _u
 }
 
 // Mutation returns the BootstrapMutation object of the builder.
-func (bu *BootstrapUpdate) Mutation() *BootstrapMutation {
-	return bu.mutation
+func (_u *BootstrapUpdate) Mutation() *BootstrapMutation {
+	return _u.mutation
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (bu *BootstrapUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, bu.sqlSave, bu.mutation, bu.hooks)
+func (_u *BootstrapUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (bu *BootstrapUpdate) SaveX(ctx context.Context) int {
-	affected, err := bu.Save(ctx)
+func (_u *BootstrapUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -62,38 +62,38 @@ func (bu *BootstrapUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (bu *BootstrapUpdate) Exec(ctx context.Context) error {
-	_, err := bu.Save(ctx)
+func (_u *BootstrapUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (bu *BootstrapUpdate) ExecX(ctx context.Context) {
-	if err := bu.Exec(ctx); err != nil {
+func (_u *BootstrapUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (bu *BootstrapUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *BootstrapUpdate {
-	bu.modifiers = append(bu.modifiers, modifiers...)
-	return bu
+func (_u *BootstrapUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *BootstrapUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (bu *BootstrapUpdate) sqlSave(ctx context.Context) (n int, err error) {
+func (_u *BootstrapUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	_spec := sqlgraph.NewUpdateSpec(bootstrap.Table, bootstrap.Columns, sqlgraph.NewFieldSpec(bootstrap.FieldID, field.TypeInt))
-	if ps := bu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := bu.mutation.IsBootstrapped(); ok {
+	if value, ok := _u.mutation.IsBootstrapped(); ok {
 		_spec.SetField(bootstrap.FieldIsBootstrapped, field.TypeBool, value)
 	}
-	_spec.AddModifiers(bu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, bu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{bootstrap.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -101,8 +101,8 @@ func (bu *BootstrapUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	bu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // BootstrapUpdateOne is the builder for updating a single Bootstrap entity.
@@ -115,45 +115,45 @@ type BootstrapUpdateOne struct {
 }
 
 // SetIsBootstrapped sets the "is_bootstrapped" field.
-func (buo *BootstrapUpdateOne) SetIsBootstrapped(b bool) *BootstrapUpdateOne {
-	buo.mutation.SetIsBootstrapped(b)
-	return buo
+func (_u *BootstrapUpdateOne) SetIsBootstrapped(v bool) *BootstrapUpdateOne {
+	_u.mutation.SetIsBootstrapped(v)
+	return _u
 }
 
 // SetNillableIsBootstrapped sets the "is_bootstrapped" field if the given value is not nil.
-func (buo *BootstrapUpdateOne) SetNillableIsBootstrapped(b *bool) *BootstrapUpdateOne {
-	if b != nil {
-		buo.SetIsBootstrapped(*b)
+func (_u *BootstrapUpdateOne) SetNillableIsBootstrapped(v *bool) *BootstrapUpdateOne {
+	if v != nil {
+		_u.SetIsBootstrapped(*v)
 	}
-	return buo
+	return _u
 }
 
 // Mutation returns the BootstrapMutation object of the builder.
-func (buo *BootstrapUpdateOne) Mutation() *BootstrapMutation {
-	return buo.mutation
+func (_u *BootstrapUpdateOne) Mutation() *BootstrapMutation {
+	return _u.mutation
 }
 
 // Where appends a list predicates to the BootstrapUpdate builder.
-func (buo *BootstrapUpdateOne) Where(ps ...predicate.Bootstrap) *BootstrapUpdateOne {
-	buo.mutation.Where(ps...)
-	return buo
+func (_u *BootstrapUpdateOne) Where(ps ...predicate.Bootstrap) *BootstrapUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (buo *BootstrapUpdateOne) Select(field string, fields ...string) *BootstrapUpdateOne {
-	buo.fields = append([]string{field}, fields...)
-	return buo
+func (_u *BootstrapUpdateOne) Select(field string, fields ...string) *BootstrapUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated Bootstrap entity.
-func (buo *BootstrapUpdateOne) Save(ctx context.Context) (*Bootstrap, error) {
-	return withHooks(ctx, buo.sqlSave, buo.mutation, buo.hooks)
+func (_u *BootstrapUpdateOne) Save(ctx context.Context) (*Bootstrap, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (buo *BootstrapUpdateOne) SaveX(ctx context.Context) *Bootstrap {
-	node, err := buo.Save(ctx)
+func (_u *BootstrapUpdateOne) SaveX(ctx context.Context) *Bootstrap {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -161,32 +161,32 @@ func (buo *BootstrapUpdateOne) SaveX(ctx context.Context) *Bootstrap {
 }
 
 // Exec executes the query on the entity.
-func (buo *BootstrapUpdateOne) Exec(ctx context.Context) error {
-	_, err := buo.Save(ctx)
+func (_u *BootstrapUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (buo *BootstrapUpdateOne) ExecX(ctx context.Context) {
-	if err := buo.Exec(ctx); err != nil {
+func (_u *BootstrapUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (buo *BootstrapUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *BootstrapUpdateOne {
-	buo.modifiers = append(buo.modifiers, modifiers...)
-	return buo
+func (_u *BootstrapUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *BootstrapUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (buo *BootstrapUpdateOne) sqlSave(ctx context.Context) (_node *Bootstrap, err error) {
+func (_u *BootstrapUpdateOne) sqlSave(ctx context.Context) (_node *Bootstrap, err error) {
 	_spec := sqlgraph.NewUpdateSpec(bootstrap.Table, bootstrap.Columns, sqlgraph.NewFieldSpec(bootstrap.FieldID, field.TypeInt))
-	id, ok := buo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Bootstrap.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := buo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, bootstrap.FieldID)
 		for _, f := range fields {
@@ -198,21 +198,21 @@ func (buo *BootstrapUpdateOne) sqlSave(ctx context.Context) (_node *Bootstrap, e
 			}
 		}
 	}
-	if ps := buo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := buo.mutation.IsBootstrapped(); ok {
+	if value, ok := _u.mutation.IsBootstrapped(); ok {
 		_spec.SetField(bootstrap.FieldIsBootstrapped, field.TypeBool, value)
 	}
-	_spec.AddModifiers(buo.modifiers...)
-	_node = &Bootstrap{config: buo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &Bootstrap{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, buo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{bootstrap.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -220,6 +220,6 @@ func (buo *BootstrapUpdateOne) sqlSave(ctx context.Context) (_node *Bootstrap, e
 		}
 		return nil, err
 	}
-	buo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

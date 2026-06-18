@@ -20,56 +20,56 @@ type Oauth2CodeDelete struct {
 }
 
 // Where appends a list predicates to the Oauth2CodeDelete builder.
-func (od *Oauth2CodeDelete) Where(ps ...predicate.Oauth2Code) *Oauth2CodeDelete {
-	od.mutation.Where(ps...)
-	return od
+func (_d *Oauth2CodeDelete) Where(ps ...predicate.Oauth2Code) *Oauth2CodeDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (od *Oauth2CodeDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, od.sqlExec, od.mutation, od.hooks)
+func (_d *Oauth2CodeDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (od *Oauth2CodeDelete) ExecX(ctx context.Context) int {
-	n, err := od.Exec(ctx)
+func (_d *Oauth2CodeDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (od *Oauth2CodeDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *Oauth2CodeDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(oauth2code.Table, sqlgraph.NewFieldSpec(oauth2code.FieldID, field.TypeUUID))
-	if ps := od.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, od.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	od.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // Oauth2CodeDeleteOne is the builder for deleting a single Oauth2Code entity.
 type Oauth2CodeDeleteOne struct {
-	od *Oauth2CodeDelete
+	_d *Oauth2CodeDelete
 }
 
 // Where appends a list predicates to the Oauth2CodeDelete builder.
-func (odo *Oauth2CodeDeleteOne) Where(ps ...predicate.Oauth2Code) *Oauth2CodeDeleteOne {
-	odo.od.mutation.Where(ps...)
-	return odo
+func (_d *Oauth2CodeDeleteOne) Where(ps ...predicate.Oauth2Code) *Oauth2CodeDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (odo *Oauth2CodeDeleteOne) Exec(ctx context.Context) error {
-	n, err := odo.od.Exec(ctx)
+func (_d *Oauth2CodeDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (odo *Oauth2CodeDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (odo *Oauth2CodeDeleteOne) ExecX(ctx context.Context) {
-	if err := odo.Exec(ctx); err != nil {
+func (_d *Oauth2CodeDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

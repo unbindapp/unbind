@@ -27,109 +27,109 @@ type PermissionUpdate struct {
 }
 
 // Where appends a list predicates to the PermissionUpdate builder.
-func (pu *PermissionUpdate) Where(ps ...predicate.Permission) *PermissionUpdate {
-	pu.mutation.Where(ps...)
-	return pu
+func (_u *PermissionUpdate) Where(ps ...predicate.Permission) *PermissionUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (pu *PermissionUpdate) SetUpdatedAt(t time.Time) *PermissionUpdate {
-	pu.mutation.SetUpdatedAt(t)
-	return pu
+func (_u *PermissionUpdate) SetUpdatedAt(v time.Time) *PermissionUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetAction sets the "action" field.
-func (pu *PermissionUpdate) SetAction(sa schema.PermittedAction) *PermissionUpdate {
-	pu.mutation.SetAction(sa)
-	return pu
+func (_u *PermissionUpdate) SetAction(v schema.PermittedAction) *PermissionUpdate {
+	_u.mutation.SetAction(v)
+	return _u
 }
 
 // SetNillableAction sets the "action" field if the given value is not nil.
-func (pu *PermissionUpdate) SetNillableAction(sa *schema.PermittedAction) *PermissionUpdate {
-	if sa != nil {
-		pu.SetAction(*sa)
+func (_u *PermissionUpdate) SetNillableAction(v *schema.PermittedAction) *PermissionUpdate {
+	if v != nil {
+		_u.SetAction(*v)
 	}
-	return pu
+	return _u
 }
 
 // SetResourceType sets the "resource_type" field.
-func (pu *PermissionUpdate) SetResourceType(st schema.ResourceType) *PermissionUpdate {
-	pu.mutation.SetResourceType(st)
-	return pu
+func (_u *PermissionUpdate) SetResourceType(v schema.ResourceType) *PermissionUpdate {
+	_u.mutation.SetResourceType(v)
+	return _u
 }
 
 // SetNillableResourceType sets the "resource_type" field if the given value is not nil.
-func (pu *PermissionUpdate) SetNillableResourceType(st *schema.ResourceType) *PermissionUpdate {
-	if st != nil {
-		pu.SetResourceType(*st)
+func (_u *PermissionUpdate) SetNillableResourceType(v *schema.ResourceType) *PermissionUpdate {
+	if v != nil {
+		_u.SetResourceType(*v)
 	}
-	return pu
+	return _u
 }
 
 // SetResourceSelector sets the "resource_selector" field.
-func (pu *PermissionUpdate) SetResourceSelector(ss schema.ResourceSelector) *PermissionUpdate {
-	pu.mutation.SetResourceSelector(ss)
-	return pu
+func (_u *PermissionUpdate) SetResourceSelector(v schema.ResourceSelector) *PermissionUpdate {
+	_u.mutation.SetResourceSelector(v)
+	return _u
 }
 
 // SetNillableResourceSelector sets the "resource_selector" field if the given value is not nil.
-func (pu *PermissionUpdate) SetNillableResourceSelector(ss *schema.ResourceSelector) *PermissionUpdate {
-	if ss != nil {
-		pu.SetResourceSelector(*ss)
+func (_u *PermissionUpdate) SetNillableResourceSelector(v *schema.ResourceSelector) *PermissionUpdate {
+	if v != nil {
+		_u.SetResourceSelector(*v)
 	}
-	return pu
+	return _u
 }
 
 // AddGroupIDs adds the "groups" edge to the Group entity by IDs.
-func (pu *PermissionUpdate) AddGroupIDs(ids ...uuid.UUID) *PermissionUpdate {
-	pu.mutation.AddGroupIDs(ids...)
-	return pu
+func (_u *PermissionUpdate) AddGroupIDs(ids ...uuid.UUID) *PermissionUpdate {
+	_u.mutation.AddGroupIDs(ids...)
+	return _u
 }
 
 // AddGroups adds the "groups" edges to the Group entity.
-func (pu *PermissionUpdate) AddGroups(g ...*Group) *PermissionUpdate {
-	ids := make([]uuid.UUID, len(g))
-	for i := range g {
-		ids[i] = g[i].ID
+func (_u *PermissionUpdate) AddGroups(v ...*Group) *PermissionUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return pu.AddGroupIDs(ids...)
+	return _u.AddGroupIDs(ids...)
 }
 
 // Mutation returns the PermissionMutation object of the builder.
-func (pu *PermissionUpdate) Mutation() *PermissionMutation {
-	return pu.mutation
+func (_u *PermissionUpdate) Mutation() *PermissionMutation {
+	return _u.mutation
 }
 
 // ClearGroups clears all "groups" edges to the Group entity.
-func (pu *PermissionUpdate) ClearGroups() *PermissionUpdate {
-	pu.mutation.ClearGroups()
-	return pu
+func (_u *PermissionUpdate) ClearGroups() *PermissionUpdate {
+	_u.mutation.ClearGroups()
+	return _u
 }
 
 // RemoveGroupIDs removes the "groups" edge to Group entities by IDs.
-func (pu *PermissionUpdate) RemoveGroupIDs(ids ...uuid.UUID) *PermissionUpdate {
-	pu.mutation.RemoveGroupIDs(ids...)
-	return pu
+func (_u *PermissionUpdate) RemoveGroupIDs(ids ...uuid.UUID) *PermissionUpdate {
+	_u.mutation.RemoveGroupIDs(ids...)
+	return _u
 }
 
 // RemoveGroups removes "groups" edges to Group entities.
-func (pu *PermissionUpdate) RemoveGroups(g ...*Group) *PermissionUpdate {
-	ids := make([]uuid.UUID, len(g))
-	for i := range g {
-		ids[i] = g[i].ID
+func (_u *PermissionUpdate) RemoveGroups(v ...*Group) *PermissionUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return pu.RemoveGroupIDs(ids...)
+	return _u.RemoveGroupIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (pu *PermissionUpdate) Save(ctx context.Context) (int, error) {
-	pu.defaults()
-	return withHooks(ctx, pu.sqlSave, pu.mutation, pu.hooks)
+func (_u *PermissionUpdate) Save(ctx context.Context) (int, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (pu *PermissionUpdate) SaveX(ctx context.Context) int {
-	affected, err := pu.Save(ctx)
+func (_u *PermissionUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -137,34 +137,34 @@ func (pu *PermissionUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (pu *PermissionUpdate) Exec(ctx context.Context) error {
-	_, err := pu.Save(ctx)
+func (_u *PermissionUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (pu *PermissionUpdate) ExecX(ctx context.Context) {
-	if err := pu.Exec(ctx); err != nil {
+func (_u *PermissionUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (pu *PermissionUpdate) defaults() {
-	if _, ok := pu.mutation.UpdatedAt(); !ok {
+func (_u *PermissionUpdate) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := permission.UpdateDefaultUpdatedAt()
-		pu.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (pu *PermissionUpdate) check() error {
-	if v, ok := pu.mutation.Action(); ok {
+func (_u *PermissionUpdate) check() error {
+	if v, ok := _u.mutation.Action(); ok {
 		if err := permission.ActionValidator(v); err != nil {
 			return &ValidationError{Name: "action", err: fmt.Errorf(`ent: validator failed for field "Permission.action": %w`, err)}
 		}
 	}
-	if v, ok := pu.mutation.ResourceType(); ok {
+	if v, ok := _u.mutation.ResourceType(); ok {
 		if err := permission.ResourceTypeValidator(v); err != nil {
 			return &ValidationError{Name: "resource_type", err: fmt.Errorf(`ent: validator failed for field "Permission.resource_type": %w`, err)}
 		}
@@ -173,36 +173,36 @@ func (pu *PermissionUpdate) check() error {
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (pu *PermissionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *PermissionUpdate {
-	pu.modifiers = append(pu.modifiers, modifiers...)
-	return pu
+func (_u *PermissionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *PermissionUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (pu *PermissionUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := pu.check(); err != nil {
-		return n, err
+func (_u *PermissionUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(permission.Table, permission.Columns, sqlgraph.NewFieldSpec(permission.FieldID, field.TypeUUID))
-	if ps := pu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := pu.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(permission.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := pu.mutation.Action(); ok {
+	if value, ok := _u.mutation.Action(); ok {
 		_spec.SetField(permission.FieldAction, field.TypeEnum, value)
 	}
-	if value, ok := pu.mutation.ResourceType(); ok {
+	if value, ok := _u.mutation.ResourceType(); ok {
 		_spec.SetField(permission.FieldResourceType, field.TypeEnum, value)
 	}
-	if value, ok := pu.mutation.ResourceSelector(); ok {
+	if value, ok := _u.mutation.ResourceSelector(); ok {
 		_spec.SetField(permission.FieldResourceSelector, field.TypeJSON, value)
 	}
-	if pu.mutation.GroupsCleared() {
+	if _u.mutation.GroupsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -215,7 +215,7 @@ func (pu *PermissionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pu.mutation.RemovedGroupsIDs(); len(nodes) > 0 && !pu.mutation.GroupsCleared() {
+	if nodes := _u.mutation.RemovedGroupsIDs(); len(nodes) > 0 && !_u.mutation.GroupsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -231,7 +231,7 @@ func (pu *PermissionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pu.mutation.GroupsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.GroupsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -247,8 +247,8 @@ func (pu *PermissionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(pu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, pu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{permission.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -256,8 +256,8 @@ func (pu *PermissionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	pu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // PermissionUpdateOne is the builder for updating a single Permission entity.
@@ -270,116 +270,116 @@ type PermissionUpdateOne struct {
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (puo *PermissionUpdateOne) SetUpdatedAt(t time.Time) *PermissionUpdateOne {
-	puo.mutation.SetUpdatedAt(t)
-	return puo
+func (_u *PermissionUpdateOne) SetUpdatedAt(v time.Time) *PermissionUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetAction sets the "action" field.
-func (puo *PermissionUpdateOne) SetAction(sa schema.PermittedAction) *PermissionUpdateOne {
-	puo.mutation.SetAction(sa)
-	return puo
+func (_u *PermissionUpdateOne) SetAction(v schema.PermittedAction) *PermissionUpdateOne {
+	_u.mutation.SetAction(v)
+	return _u
 }
 
 // SetNillableAction sets the "action" field if the given value is not nil.
-func (puo *PermissionUpdateOne) SetNillableAction(sa *schema.PermittedAction) *PermissionUpdateOne {
-	if sa != nil {
-		puo.SetAction(*sa)
+func (_u *PermissionUpdateOne) SetNillableAction(v *schema.PermittedAction) *PermissionUpdateOne {
+	if v != nil {
+		_u.SetAction(*v)
 	}
-	return puo
+	return _u
 }
 
 // SetResourceType sets the "resource_type" field.
-func (puo *PermissionUpdateOne) SetResourceType(st schema.ResourceType) *PermissionUpdateOne {
-	puo.mutation.SetResourceType(st)
-	return puo
+func (_u *PermissionUpdateOne) SetResourceType(v schema.ResourceType) *PermissionUpdateOne {
+	_u.mutation.SetResourceType(v)
+	return _u
 }
 
 // SetNillableResourceType sets the "resource_type" field if the given value is not nil.
-func (puo *PermissionUpdateOne) SetNillableResourceType(st *schema.ResourceType) *PermissionUpdateOne {
-	if st != nil {
-		puo.SetResourceType(*st)
+func (_u *PermissionUpdateOne) SetNillableResourceType(v *schema.ResourceType) *PermissionUpdateOne {
+	if v != nil {
+		_u.SetResourceType(*v)
 	}
-	return puo
+	return _u
 }
 
 // SetResourceSelector sets the "resource_selector" field.
-func (puo *PermissionUpdateOne) SetResourceSelector(ss schema.ResourceSelector) *PermissionUpdateOne {
-	puo.mutation.SetResourceSelector(ss)
-	return puo
+func (_u *PermissionUpdateOne) SetResourceSelector(v schema.ResourceSelector) *PermissionUpdateOne {
+	_u.mutation.SetResourceSelector(v)
+	return _u
 }
 
 // SetNillableResourceSelector sets the "resource_selector" field if the given value is not nil.
-func (puo *PermissionUpdateOne) SetNillableResourceSelector(ss *schema.ResourceSelector) *PermissionUpdateOne {
-	if ss != nil {
-		puo.SetResourceSelector(*ss)
+func (_u *PermissionUpdateOne) SetNillableResourceSelector(v *schema.ResourceSelector) *PermissionUpdateOne {
+	if v != nil {
+		_u.SetResourceSelector(*v)
 	}
-	return puo
+	return _u
 }
 
 // AddGroupIDs adds the "groups" edge to the Group entity by IDs.
-func (puo *PermissionUpdateOne) AddGroupIDs(ids ...uuid.UUID) *PermissionUpdateOne {
-	puo.mutation.AddGroupIDs(ids...)
-	return puo
+func (_u *PermissionUpdateOne) AddGroupIDs(ids ...uuid.UUID) *PermissionUpdateOne {
+	_u.mutation.AddGroupIDs(ids...)
+	return _u
 }
 
 // AddGroups adds the "groups" edges to the Group entity.
-func (puo *PermissionUpdateOne) AddGroups(g ...*Group) *PermissionUpdateOne {
-	ids := make([]uuid.UUID, len(g))
-	for i := range g {
-		ids[i] = g[i].ID
+func (_u *PermissionUpdateOne) AddGroups(v ...*Group) *PermissionUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return puo.AddGroupIDs(ids...)
+	return _u.AddGroupIDs(ids...)
 }
 
 // Mutation returns the PermissionMutation object of the builder.
-func (puo *PermissionUpdateOne) Mutation() *PermissionMutation {
-	return puo.mutation
+func (_u *PermissionUpdateOne) Mutation() *PermissionMutation {
+	return _u.mutation
 }
 
 // ClearGroups clears all "groups" edges to the Group entity.
-func (puo *PermissionUpdateOne) ClearGroups() *PermissionUpdateOne {
-	puo.mutation.ClearGroups()
-	return puo
+func (_u *PermissionUpdateOne) ClearGroups() *PermissionUpdateOne {
+	_u.mutation.ClearGroups()
+	return _u
 }
 
 // RemoveGroupIDs removes the "groups" edge to Group entities by IDs.
-func (puo *PermissionUpdateOne) RemoveGroupIDs(ids ...uuid.UUID) *PermissionUpdateOne {
-	puo.mutation.RemoveGroupIDs(ids...)
-	return puo
+func (_u *PermissionUpdateOne) RemoveGroupIDs(ids ...uuid.UUID) *PermissionUpdateOne {
+	_u.mutation.RemoveGroupIDs(ids...)
+	return _u
 }
 
 // RemoveGroups removes "groups" edges to Group entities.
-func (puo *PermissionUpdateOne) RemoveGroups(g ...*Group) *PermissionUpdateOne {
-	ids := make([]uuid.UUID, len(g))
-	for i := range g {
-		ids[i] = g[i].ID
+func (_u *PermissionUpdateOne) RemoveGroups(v ...*Group) *PermissionUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return puo.RemoveGroupIDs(ids...)
+	return _u.RemoveGroupIDs(ids...)
 }
 
 // Where appends a list predicates to the PermissionUpdate builder.
-func (puo *PermissionUpdateOne) Where(ps ...predicate.Permission) *PermissionUpdateOne {
-	puo.mutation.Where(ps...)
-	return puo
+func (_u *PermissionUpdateOne) Where(ps ...predicate.Permission) *PermissionUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (puo *PermissionUpdateOne) Select(field string, fields ...string) *PermissionUpdateOne {
-	puo.fields = append([]string{field}, fields...)
-	return puo
+func (_u *PermissionUpdateOne) Select(field string, fields ...string) *PermissionUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated Permission entity.
-func (puo *PermissionUpdateOne) Save(ctx context.Context) (*Permission, error) {
-	puo.defaults()
-	return withHooks(ctx, puo.sqlSave, puo.mutation, puo.hooks)
+func (_u *PermissionUpdateOne) Save(ctx context.Context) (*Permission, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (puo *PermissionUpdateOne) SaveX(ctx context.Context) *Permission {
-	node, err := puo.Save(ctx)
+func (_u *PermissionUpdateOne) SaveX(ctx context.Context) *Permission {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -387,34 +387,34 @@ func (puo *PermissionUpdateOne) SaveX(ctx context.Context) *Permission {
 }
 
 // Exec executes the query on the entity.
-func (puo *PermissionUpdateOne) Exec(ctx context.Context) error {
-	_, err := puo.Save(ctx)
+func (_u *PermissionUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (puo *PermissionUpdateOne) ExecX(ctx context.Context) {
-	if err := puo.Exec(ctx); err != nil {
+func (_u *PermissionUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (puo *PermissionUpdateOne) defaults() {
-	if _, ok := puo.mutation.UpdatedAt(); !ok {
+func (_u *PermissionUpdateOne) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := permission.UpdateDefaultUpdatedAt()
-		puo.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (puo *PermissionUpdateOne) check() error {
-	if v, ok := puo.mutation.Action(); ok {
+func (_u *PermissionUpdateOne) check() error {
+	if v, ok := _u.mutation.Action(); ok {
 		if err := permission.ActionValidator(v); err != nil {
 			return &ValidationError{Name: "action", err: fmt.Errorf(`ent: validator failed for field "Permission.action": %w`, err)}
 		}
 	}
-	if v, ok := puo.mutation.ResourceType(); ok {
+	if v, ok := _u.mutation.ResourceType(); ok {
 		if err := permission.ResourceTypeValidator(v); err != nil {
 			return &ValidationError{Name: "resource_type", err: fmt.Errorf(`ent: validator failed for field "Permission.resource_type": %w`, err)}
 		}
@@ -423,22 +423,22 @@ func (puo *PermissionUpdateOne) check() error {
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (puo *PermissionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *PermissionUpdateOne {
-	puo.modifiers = append(puo.modifiers, modifiers...)
-	return puo
+func (_u *PermissionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *PermissionUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (puo *PermissionUpdateOne) sqlSave(ctx context.Context) (_node *Permission, err error) {
-	if err := puo.check(); err != nil {
+func (_u *PermissionUpdateOne) sqlSave(ctx context.Context) (_node *Permission, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(permission.Table, permission.Columns, sqlgraph.NewFieldSpec(permission.FieldID, field.TypeUUID))
-	id, ok := puo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Permission.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := puo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, permission.FieldID)
 		for _, f := range fields {
@@ -450,26 +450,26 @@ func (puo *PermissionUpdateOne) sqlSave(ctx context.Context) (_node *Permission,
 			}
 		}
 	}
-	if ps := puo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := puo.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(permission.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := puo.mutation.Action(); ok {
+	if value, ok := _u.mutation.Action(); ok {
 		_spec.SetField(permission.FieldAction, field.TypeEnum, value)
 	}
-	if value, ok := puo.mutation.ResourceType(); ok {
+	if value, ok := _u.mutation.ResourceType(); ok {
 		_spec.SetField(permission.FieldResourceType, field.TypeEnum, value)
 	}
-	if value, ok := puo.mutation.ResourceSelector(); ok {
+	if value, ok := _u.mutation.ResourceSelector(); ok {
 		_spec.SetField(permission.FieldResourceSelector, field.TypeJSON, value)
 	}
-	if puo.mutation.GroupsCleared() {
+	if _u.mutation.GroupsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -482,7 +482,7 @@ func (puo *PermissionUpdateOne) sqlSave(ctx context.Context) (_node *Permission,
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := puo.mutation.RemovedGroupsIDs(); len(nodes) > 0 && !puo.mutation.GroupsCleared() {
+	if nodes := _u.mutation.RemovedGroupsIDs(); len(nodes) > 0 && !_u.mutation.GroupsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -498,7 +498,7 @@ func (puo *PermissionUpdateOne) sqlSave(ctx context.Context) (_node *Permission,
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := puo.mutation.GroupsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.GroupsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -514,11 +514,11 @@ func (puo *PermissionUpdateOne) sqlSave(ctx context.Context) (_node *Permission,
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(puo.modifiers...)
-	_node = &Permission{config: puo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &Permission{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, puo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{permission.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -526,6 +526,6 @@ func (puo *PermissionUpdateOne) sqlSave(ctx context.Context) (_node *Permission,
 		}
 		return nil, err
 	}
-	puo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

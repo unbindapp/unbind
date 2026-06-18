@@ -20,56 +20,56 @@ type PVCMetadataDelete struct {
 }
 
 // Where appends a list predicates to the PVCMetadataDelete builder.
-func (pmd *PVCMetadataDelete) Where(ps ...predicate.PVCMetadata) *PVCMetadataDelete {
-	pmd.mutation.Where(ps...)
-	return pmd
+func (_d *PVCMetadataDelete) Where(ps ...predicate.PVCMetadata) *PVCMetadataDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (pmd *PVCMetadataDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, pmd.sqlExec, pmd.mutation, pmd.hooks)
+func (_d *PVCMetadataDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (pmd *PVCMetadataDelete) ExecX(ctx context.Context) int {
-	n, err := pmd.Exec(ctx)
+func (_d *PVCMetadataDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (pmd *PVCMetadataDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *PVCMetadataDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(pvcmetadata.Table, sqlgraph.NewFieldSpec(pvcmetadata.FieldID, field.TypeUUID))
-	if ps := pmd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, pmd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	pmd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // PVCMetadataDeleteOne is the builder for deleting a single PVCMetadata entity.
 type PVCMetadataDeleteOne struct {
-	pmd *PVCMetadataDelete
+	_d *PVCMetadataDelete
 }
 
 // Where appends a list predicates to the PVCMetadataDelete builder.
-func (pmdo *PVCMetadataDeleteOne) Where(ps ...predicate.PVCMetadata) *PVCMetadataDeleteOne {
-	pmdo.pmd.mutation.Where(ps...)
-	return pmdo
+func (_d *PVCMetadataDeleteOne) Where(ps ...predicate.PVCMetadata) *PVCMetadataDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (pmdo *PVCMetadataDeleteOne) Exec(ctx context.Context) error {
-	n, err := pmdo.pmd.Exec(ctx)
+func (_d *PVCMetadataDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (pmdo *PVCMetadataDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (pmdo *PVCMetadataDeleteOne) ExecX(ctx context.Context) {
-	if err := pmdo.Exec(ctx); err != nil {
+func (_d *PVCMetadataDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

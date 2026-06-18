@@ -25,95 +25,95 @@ type PVCMetadataCreate struct {
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (pmc *PVCMetadataCreate) SetCreatedAt(t time.Time) *PVCMetadataCreate {
-	pmc.mutation.SetCreatedAt(t)
-	return pmc
+func (_c *PVCMetadataCreate) SetCreatedAt(v time.Time) *PVCMetadataCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (pmc *PVCMetadataCreate) SetNillableCreatedAt(t *time.Time) *PVCMetadataCreate {
-	if t != nil {
-		pmc.SetCreatedAt(*t)
+func (_c *PVCMetadataCreate) SetNillableCreatedAt(v *time.Time) *PVCMetadataCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return pmc
+	return _c
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (pmc *PVCMetadataCreate) SetUpdatedAt(t time.Time) *PVCMetadataCreate {
-	pmc.mutation.SetUpdatedAt(t)
-	return pmc
+func (_c *PVCMetadataCreate) SetUpdatedAt(v time.Time) *PVCMetadataCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (pmc *PVCMetadataCreate) SetNillableUpdatedAt(t *time.Time) *PVCMetadataCreate {
-	if t != nil {
-		pmc.SetUpdatedAt(*t)
+func (_c *PVCMetadataCreate) SetNillableUpdatedAt(v *time.Time) *PVCMetadataCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
 	}
-	return pmc
+	return _c
 }
 
 // SetPvcID sets the "pvc_id" field.
-func (pmc *PVCMetadataCreate) SetPvcID(s string) *PVCMetadataCreate {
-	pmc.mutation.SetPvcID(s)
-	return pmc
+func (_c *PVCMetadataCreate) SetPvcID(v string) *PVCMetadataCreate {
+	_c.mutation.SetPvcID(v)
+	return _c
 }
 
 // SetName sets the "name" field.
-func (pmc *PVCMetadataCreate) SetName(s string) *PVCMetadataCreate {
-	pmc.mutation.SetName(s)
-	return pmc
+func (_c *PVCMetadataCreate) SetName(v string) *PVCMetadataCreate {
+	_c.mutation.SetName(v)
+	return _c
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (pmc *PVCMetadataCreate) SetNillableName(s *string) *PVCMetadataCreate {
-	if s != nil {
-		pmc.SetName(*s)
+func (_c *PVCMetadataCreate) SetNillableName(v *string) *PVCMetadataCreate {
+	if v != nil {
+		_c.SetName(*v)
 	}
-	return pmc
+	return _c
 }
 
 // SetDescription sets the "description" field.
-func (pmc *PVCMetadataCreate) SetDescription(s string) *PVCMetadataCreate {
-	pmc.mutation.SetDescription(s)
-	return pmc
+func (_c *PVCMetadataCreate) SetDescription(v string) *PVCMetadataCreate {
+	_c.mutation.SetDescription(v)
+	return _c
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (pmc *PVCMetadataCreate) SetNillableDescription(s *string) *PVCMetadataCreate {
-	if s != nil {
-		pmc.SetDescription(*s)
+func (_c *PVCMetadataCreate) SetNillableDescription(v *string) *PVCMetadataCreate {
+	if v != nil {
+		_c.SetDescription(*v)
 	}
-	return pmc
+	return _c
 }
 
 // SetID sets the "id" field.
-func (pmc *PVCMetadataCreate) SetID(u uuid.UUID) *PVCMetadataCreate {
-	pmc.mutation.SetID(u)
-	return pmc
+func (_c *PVCMetadataCreate) SetID(v uuid.UUID) *PVCMetadataCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (pmc *PVCMetadataCreate) SetNillableID(u *uuid.UUID) *PVCMetadataCreate {
-	if u != nil {
-		pmc.SetID(*u)
+func (_c *PVCMetadataCreate) SetNillableID(v *uuid.UUID) *PVCMetadataCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return pmc
+	return _c
 }
 
 // Mutation returns the PVCMetadataMutation object of the builder.
-func (pmc *PVCMetadataCreate) Mutation() *PVCMetadataMutation {
-	return pmc.mutation
+func (_c *PVCMetadataCreate) Mutation() *PVCMetadataMutation {
+	return _c.mutation
 }
 
 // Save creates the PVCMetadata in the database.
-func (pmc *PVCMetadataCreate) Save(ctx context.Context) (*PVCMetadata, error) {
-	pmc.defaults()
-	return withHooks(ctx, pmc.sqlSave, pmc.mutation, pmc.hooks)
+func (_c *PVCMetadataCreate) Save(ctx context.Context) (*PVCMetadata, error) {
+	_c.defaults()
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (pmc *PVCMetadataCreate) SaveX(ctx context.Context) *PVCMetadata {
-	v, err := pmc.Save(ctx)
+func (_c *PVCMetadataCreate) SaveX(ctx context.Context) *PVCMetadata {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -121,54 +121,54 @@ func (pmc *PVCMetadataCreate) SaveX(ctx context.Context) *PVCMetadata {
 }
 
 // Exec executes the query.
-func (pmc *PVCMetadataCreate) Exec(ctx context.Context) error {
-	_, err := pmc.Save(ctx)
+func (_c *PVCMetadataCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (pmc *PVCMetadataCreate) ExecX(ctx context.Context) {
-	if err := pmc.Exec(ctx); err != nil {
+func (_c *PVCMetadataCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (pmc *PVCMetadataCreate) defaults() {
-	if _, ok := pmc.mutation.CreatedAt(); !ok {
+func (_c *PVCMetadataCreate) defaults() {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := pvcmetadata.DefaultCreatedAt()
-		pmc.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := pmc.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		v := pvcmetadata.DefaultUpdatedAt()
-		pmc.mutation.SetUpdatedAt(v)
+		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := pmc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		v := pvcmetadata.DefaultID()
-		pmc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (pmc *PVCMetadataCreate) check() error {
-	if _, ok := pmc.mutation.CreatedAt(); !ok {
+func (_c *PVCMetadataCreate) check() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "PVCMetadata.created_at"`)}
 	}
-	if _, ok := pmc.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "PVCMetadata.updated_at"`)}
 	}
-	if _, ok := pmc.mutation.PvcID(); !ok {
+	if _, ok := _c.mutation.PvcID(); !ok {
 		return &ValidationError{Name: "pvc_id", err: errors.New(`ent: missing required field "PVCMetadata.pvc_id"`)}
 	}
 	return nil
 }
 
-func (pmc *PVCMetadataCreate) sqlSave(ctx context.Context) (*PVCMetadata, error) {
-	if err := pmc.check(); err != nil {
+func (_c *PVCMetadataCreate) sqlSave(ctx context.Context) (*PVCMetadata, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := pmc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, pmc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -181,38 +181,38 @@ func (pmc *PVCMetadataCreate) sqlSave(ctx context.Context) (*PVCMetadata, error)
 			return nil, err
 		}
 	}
-	pmc.mutation.id = &_node.ID
-	pmc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (pmc *PVCMetadataCreate) createSpec() (*PVCMetadata, *sqlgraph.CreateSpec) {
+func (_c *PVCMetadataCreate) createSpec() (*PVCMetadata, *sqlgraph.CreateSpec) {
 	var (
-		_node = &PVCMetadata{config: pmc.config}
+		_node = &PVCMetadata{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(pvcmetadata.Table, sqlgraph.NewFieldSpec(pvcmetadata.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = pmc.conflict
-	if id, ok := pmc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := pmc.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(pvcmetadata.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if value, ok := pmc.mutation.UpdatedAt(); ok {
+	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(pvcmetadata.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := pmc.mutation.PvcID(); ok {
+	if value, ok := _c.mutation.PvcID(); ok {
 		_spec.SetField(pvcmetadata.FieldPvcID, field.TypeString, value)
 		_node.PvcID = value
 	}
-	if value, ok := pmc.mutation.Name(); ok {
+	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(pvcmetadata.FieldName, field.TypeString, value)
 		_node.Name = &value
 	}
-	if value, ok := pmc.mutation.Description(); ok {
+	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(pvcmetadata.FieldDescription, field.TypeString, value)
 		_node.Description = &value
 	}
@@ -235,10 +235,10 @@ func (pmc *PVCMetadataCreate) createSpec() (*PVCMetadata, *sqlgraph.CreateSpec) 
 //			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
-func (pmc *PVCMetadataCreate) OnConflict(opts ...sql.ConflictOption) *PVCMetadataUpsertOne {
-	pmc.conflict = opts
+func (_c *PVCMetadataCreate) OnConflict(opts ...sql.ConflictOption) *PVCMetadataUpsertOne {
+	_c.conflict = opts
 	return &PVCMetadataUpsertOne{
-		create: pmc,
+		create: _c,
 	}
 }
 
@@ -248,10 +248,10 @@ func (pmc *PVCMetadataCreate) OnConflict(opts ...sql.ConflictOption) *PVCMetadat
 //	client.PVCMetadata.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (pmc *PVCMetadataCreate) OnConflictColumns(columns ...string) *PVCMetadataUpsertOne {
-	pmc.conflict = append(pmc.conflict, sql.ConflictColumns(columns...))
+func (_c *PVCMetadataCreate) OnConflictColumns(columns ...string) *PVCMetadataUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &PVCMetadataUpsertOne{
-		create: pmc,
+		create: _c,
 	}
 }
 
@@ -496,16 +496,16 @@ type PVCMetadataCreateBulk struct {
 }
 
 // Save creates the PVCMetadata entities in the database.
-func (pmcb *PVCMetadataCreateBulk) Save(ctx context.Context) ([]*PVCMetadata, error) {
-	if pmcb.err != nil {
-		return nil, pmcb.err
+func (_c *PVCMetadataCreateBulk) Save(ctx context.Context) ([]*PVCMetadata, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(pmcb.builders))
-	nodes := make([]*PVCMetadata, len(pmcb.builders))
-	mutators := make([]Mutator, len(pmcb.builders))
-	for i := range pmcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*PVCMetadata, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := pmcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*PVCMetadataMutation)
@@ -519,12 +519,12 @@ func (pmcb *PVCMetadataCreateBulk) Save(ctx context.Context) ([]*PVCMetadata, er
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, pmcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = pmcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, pmcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -544,7 +544,7 @@ func (pmcb *PVCMetadataCreateBulk) Save(ctx context.Context) ([]*PVCMetadata, er
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, pmcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -552,8 +552,8 @@ func (pmcb *PVCMetadataCreateBulk) Save(ctx context.Context) ([]*PVCMetadata, er
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (pmcb *PVCMetadataCreateBulk) SaveX(ctx context.Context) []*PVCMetadata {
-	v, err := pmcb.Save(ctx)
+func (_c *PVCMetadataCreateBulk) SaveX(ctx context.Context) []*PVCMetadata {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -561,14 +561,14 @@ func (pmcb *PVCMetadataCreateBulk) SaveX(ctx context.Context) []*PVCMetadata {
 }
 
 // Exec executes the query.
-func (pmcb *PVCMetadataCreateBulk) Exec(ctx context.Context) error {
-	_, err := pmcb.Save(ctx)
+func (_c *PVCMetadataCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (pmcb *PVCMetadataCreateBulk) ExecX(ctx context.Context) {
-	if err := pmcb.Exec(ctx); err != nil {
+func (_c *PVCMetadataCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -588,10 +588,10 @@ func (pmcb *PVCMetadataCreateBulk) ExecX(ctx context.Context) {
 //			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
-func (pmcb *PVCMetadataCreateBulk) OnConflict(opts ...sql.ConflictOption) *PVCMetadataUpsertBulk {
-	pmcb.conflict = opts
+func (_c *PVCMetadataCreateBulk) OnConflict(opts ...sql.ConflictOption) *PVCMetadataUpsertBulk {
+	_c.conflict = opts
 	return &PVCMetadataUpsertBulk{
-		create: pmcb,
+		create: _c,
 	}
 }
 
@@ -601,10 +601,10 @@ func (pmcb *PVCMetadataCreateBulk) OnConflict(opts ...sql.ConflictOption) *PVCMe
 //	client.PVCMetadata.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (pmcb *PVCMetadataCreateBulk) OnConflictColumns(columns ...string) *PVCMetadataUpsertBulk {
-	pmcb.conflict = append(pmcb.conflict, sql.ConflictColumns(columns...))
+func (_c *PVCMetadataCreateBulk) OnConflictColumns(columns ...string) *PVCMetadataUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &PVCMetadataUpsertBulk{
-		create: pmcb,
+		create: _c,
 	}
 }
 

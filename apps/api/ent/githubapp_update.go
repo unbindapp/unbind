@@ -27,168 +27,168 @@ type GithubAppUpdate struct {
 }
 
 // Where appends a list predicates to the GithubAppUpdate builder.
-func (gau *GithubAppUpdate) Where(ps ...predicate.GithubApp) *GithubAppUpdate {
-	gau.mutation.Where(ps...)
-	return gau
+func (_u *GithubAppUpdate) Where(ps ...predicate.GithubApp) *GithubAppUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (gau *GithubAppUpdate) SetUpdatedAt(t time.Time) *GithubAppUpdate {
-	gau.mutation.SetUpdatedAt(t)
-	return gau
+func (_u *GithubAppUpdate) SetUpdatedAt(v time.Time) *GithubAppUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetCreatedBy sets the "created_by" field.
-func (gau *GithubAppUpdate) SetCreatedBy(u uuid.UUID) *GithubAppUpdate {
-	gau.mutation.SetCreatedBy(u)
-	return gau
+func (_u *GithubAppUpdate) SetCreatedBy(v uuid.UUID) *GithubAppUpdate {
+	_u.mutation.SetCreatedBy(v)
+	return _u
 }
 
 // SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (gau *GithubAppUpdate) SetNillableCreatedBy(u *uuid.UUID) *GithubAppUpdate {
-	if u != nil {
-		gau.SetCreatedBy(*u)
+func (_u *GithubAppUpdate) SetNillableCreatedBy(v *uuid.UUID) *GithubAppUpdate {
+	if v != nil {
+		_u.SetCreatedBy(*v)
 	}
-	return gau
+	return _u
 }
 
 // SetName sets the "name" field.
-func (gau *GithubAppUpdate) SetName(s string) *GithubAppUpdate {
-	gau.mutation.SetName(s)
-	return gau
+func (_u *GithubAppUpdate) SetName(v string) *GithubAppUpdate {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (gau *GithubAppUpdate) SetNillableName(s *string) *GithubAppUpdate {
-	if s != nil {
-		gau.SetName(*s)
+func (_u *GithubAppUpdate) SetNillableName(v *string) *GithubAppUpdate {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return gau
+	return _u
 }
 
 // SetClientID sets the "client_id" field.
-func (gau *GithubAppUpdate) SetClientID(s string) *GithubAppUpdate {
-	gau.mutation.SetClientID(s)
-	return gau
+func (_u *GithubAppUpdate) SetClientID(v string) *GithubAppUpdate {
+	_u.mutation.SetClientID(v)
+	return _u
 }
 
 // SetNillableClientID sets the "client_id" field if the given value is not nil.
-func (gau *GithubAppUpdate) SetNillableClientID(s *string) *GithubAppUpdate {
-	if s != nil {
-		gau.SetClientID(*s)
+func (_u *GithubAppUpdate) SetNillableClientID(v *string) *GithubAppUpdate {
+	if v != nil {
+		_u.SetClientID(*v)
 	}
-	return gau
+	return _u
 }
 
 // SetClientSecret sets the "client_secret" field.
-func (gau *GithubAppUpdate) SetClientSecret(s string) *GithubAppUpdate {
-	gau.mutation.SetClientSecret(s)
-	return gau
+func (_u *GithubAppUpdate) SetClientSecret(v string) *GithubAppUpdate {
+	_u.mutation.SetClientSecret(v)
+	return _u
 }
 
 // SetNillableClientSecret sets the "client_secret" field if the given value is not nil.
-func (gau *GithubAppUpdate) SetNillableClientSecret(s *string) *GithubAppUpdate {
-	if s != nil {
-		gau.SetClientSecret(*s)
+func (_u *GithubAppUpdate) SetNillableClientSecret(v *string) *GithubAppUpdate {
+	if v != nil {
+		_u.SetClientSecret(*v)
 	}
-	return gau
+	return _u
 }
 
 // SetWebhookSecret sets the "webhook_secret" field.
-func (gau *GithubAppUpdate) SetWebhookSecret(s string) *GithubAppUpdate {
-	gau.mutation.SetWebhookSecret(s)
-	return gau
+func (_u *GithubAppUpdate) SetWebhookSecret(v string) *GithubAppUpdate {
+	_u.mutation.SetWebhookSecret(v)
+	return _u
 }
 
 // SetNillableWebhookSecret sets the "webhook_secret" field if the given value is not nil.
-func (gau *GithubAppUpdate) SetNillableWebhookSecret(s *string) *GithubAppUpdate {
-	if s != nil {
-		gau.SetWebhookSecret(*s)
+func (_u *GithubAppUpdate) SetNillableWebhookSecret(v *string) *GithubAppUpdate {
+	if v != nil {
+		_u.SetWebhookSecret(*v)
 	}
-	return gau
+	return _u
 }
 
 // SetPrivateKey sets the "private_key" field.
-func (gau *GithubAppUpdate) SetPrivateKey(s string) *GithubAppUpdate {
-	gau.mutation.SetPrivateKey(s)
-	return gau
+func (_u *GithubAppUpdate) SetPrivateKey(v string) *GithubAppUpdate {
+	_u.mutation.SetPrivateKey(v)
+	return _u
 }
 
 // SetNillablePrivateKey sets the "private_key" field if the given value is not nil.
-func (gau *GithubAppUpdate) SetNillablePrivateKey(s *string) *GithubAppUpdate {
-	if s != nil {
-		gau.SetPrivateKey(*s)
+func (_u *GithubAppUpdate) SetNillablePrivateKey(v *string) *GithubAppUpdate {
+	if v != nil {
+		_u.SetPrivateKey(*v)
 	}
-	return gau
+	return _u
 }
 
 // AddInstallationIDs adds the "installations" edge to the GithubInstallation entity by IDs.
-func (gau *GithubAppUpdate) AddInstallationIDs(ids ...int64) *GithubAppUpdate {
-	gau.mutation.AddInstallationIDs(ids...)
-	return gau
+func (_u *GithubAppUpdate) AddInstallationIDs(ids ...int64) *GithubAppUpdate {
+	_u.mutation.AddInstallationIDs(ids...)
+	return _u
 }
 
 // AddInstallations adds the "installations" edges to the GithubInstallation entity.
-func (gau *GithubAppUpdate) AddInstallations(g ...*GithubInstallation) *GithubAppUpdate {
-	ids := make([]int64, len(g))
-	for i := range g {
-		ids[i] = g[i].ID
+func (_u *GithubAppUpdate) AddInstallations(v ...*GithubInstallation) *GithubAppUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return gau.AddInstallationIDs(ids...)
+	return _u.AddInstallationIDs(ids...)
 }
 
 // SetUsersID sets the "users" edge to the User entity by ID.
-func (gau *GithubAppUpdate) SetUsersID(id uuid.UUID) *GithubAppUpdate {
-	gau.mutation.SetUsersID(id)
-	return gau
+func (_u *GithubAppUpdate) SetUsersID(id uuid.UUID) *GithubAppUpdate {
+	_u.mutation.SetUsersID(id)
+	return _u
 }
 
 // SetUsers sets the "users" edge to the User entity.
-func (gau *GithubAppUpdate) SetUsers(u *User) *GithubAppUpdate {
-	return gau.SetUsersID(u.ID)
+func (_u *GithubAppUpdate) SetUsers(v *User) *GithubAppUpdate {
+	return _u.SetUsersID(v.ID)
 }
 
 // Mutation returns the GithubAppMutation object of the builder.
-func (gau *GithubAppUpdate) Mutation() *GithubAppMutation {
-	return gau.mutation
+func (_u *GithubAppUpdate) Mutation() *GithubAppMutation {
+	return _u.mutation
 }
 
 // ClearInstallations clears all "installations" edges to the GithubInstallation entity.
-func (gau *GithubAppUpdate) ClearInstallations() *GithubAppUpdate {
-	gau.mutation.ClearInstallations()
-	return gau
+func (_u *GithubAppUpdate) ClearInstallations() *GithubAppUpdate {
+	_u.mutation.ClearInstallations()
+	return _u
 }
 
 // RemoveInstallationIDs removes the "installations" edge to GithubInstallation entities by IDs.
-func (gau *GithubAppUpdate) RemoveInstallationIDs(ids ...int64) *GithubAppUpdate {
-	gau.mutation.RemoveInstallationIDs(ids...)
-	return gau
+func (_u *GithubAppUpdate) RemoveInstallationIDs(ids ...int64) *GithubAppUpdate {
+	_u.mutation.RemoveInstallationIDs(ids...)
+	return _u
 }
 
 // RemoveInstallations removes "installations" edges to GithubInstallation entities.
-func (gau *GithubAppUpdate) RemoveInstallations(g ...*GithubInstallation) *GithubAppUpdate {
-	ids := make([]int64, len(g))
-	for i := range g {
-		ids[i] = g[i].ID
+func (_u *GithubAppUpdate) RemoveInstallations(v ...*GithubInstallation) *GithubAppUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return gau.RemoveInstallationIDs(ids...)
+	return _u.RemoveInstallationIDs(ids...)
 }
 
 // ClearUsers clears the "users" edge to the User entity.
-func (gau *GithubAppUpdate) ClearUsers() *GithubAppUpdate {
-	gau.mutation.ClearUsers()
-	return gau
+func (_u *GithubAppUpdate) ClearUsers() *GithubAppUpdate {
+	_u.mutation.ClearUsers()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (gau *GithubAppUpdate) Save(ctx context.Context) (int, error) {
-	gau.defaults()
-	return withHooks(ctx, gau.sqlSave, gau.mutation, gau.hooks)
+func (_u *GithubAppUpdate) Save(ctx context.Context) (int, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (gau *GithubAppUpdate) SaveX(ctx context.Context) int {
-	affected, err := gau.Save(ctx)
+func (_u *GithubAppUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -196,76 +196,76 @@ func (gau *GithubAppUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (gau *GithubAppUpdate) Exec(ctx context.Context) error {
-	_, err := gau.Save(ctx)
+func (_u *GithubAppUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (gau *GithubAppUpdate) ExecX(ctx context.Context) {
-	if err := gau.Exec(ctx); err != nil {
+func (_u *GithubAppUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (gau *GithubAppUpdate) defaults() {
-	if _, ok := gau.mutation.UpdatedAt(); !ok {
+func (_u *GithubAppUpdate) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := githubapp.UpdateDefaultUpdatedAt()
-		gau.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (gau *GithubAppUpdate) check() error {
-	if v, ok := gau.mutation.Name(); ok {
+func (_u *GithubAppUpdate) check() error {
+	if v, ok := _u.mutation.Name(); ok {
 		if err := githubapp.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "GithubApp.name": %w`, err)}
 		}
 	}
-	if gau.mutation.UsersCleared() && len(gau.mutation.UsersIDs()) > 0 {
+	if _u.mutation.UsersCleared() && len(_u.mutation.UsersIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "GithubApp.users"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (gau *GithubAppUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *GithubAppUpdate {
-	gau.modifiers = append(gau.modifiers, modifiers...)
-	return gau
+func (_u *GithubAppUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *GithubAppUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (gau *GithubAppUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := gau.check(); err != nil {
-		return n, err
+func (_u *GithubAppUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(githubapp.Table, githubapp.Columns, sqlgraph.NewFieldSpec(githubapp.FieldID, field.TypeInt64))
-	if ps := gau.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := gau.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(githubapp.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := gau.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(githubapp.FieldName, field.TypeString, value)
 	}
-	if value, ok := gau.mutation.ClientID(); ok {
+	if value, ok := _u.mutation.ClientID(); ok {
 		_spec.SetField(githubapp.FieldClientID, field.TypeString, value)
 	}
-	if value, ok := gau.mutation.ClientSecret(); ok {
+	if value, ok := _u.mutation.ClientSecret(); ok {
 		_spec.SetField(githubapp.FieldClientSecret, field.TypeString, value)
 	}
-	if value, ok := gau.mutation.WebhookSecret(); ok {
+	if value, ok := _u.mutation.WebhookSecret(); ok {
 		_spec.SetField(githubapp.FieldWebhookSecret, field.TypeString, value)
 	}
-	if value, ok := gau.mutation.PrivateKey(); ok {
+	if value, ok := _u.mutation.PrivateKey(); ok {
 		_spec.SetField(githubapp.FieldPrivateKey, field.TypeString, value)
 	}
-	if gau.mutation.InstallationsCleared() {
+	if _u.mutation.InstallationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -278,7 +278,7 @@ func (gau *GithubAppUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := gau.mutation.RemovedInstallationsIDs(); len(nodes) > 0 && !gau.mutation.InstallationsCleared() {
+	if nodes := _u.mutation.RemovedInstallationsIDs(); len(nodes) > 0 && !_u.mutation.InstallationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -294,7 +294,7 @@ func (gau *GithubAppUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := gau.mutation.InstallationsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.InstallationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -310,7 +310,7 @@ func (gau *GithubAppUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if gau.mutation.UsersCleared() {
+	if _u.mutation.UsersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -323,7 +323,7 @@ func (gau *GithubAppUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := gau.mutation.UsersIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UsersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -339,8 +339,8 @@ func (gau *GithubAppUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(gau.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, gau.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{githubapp.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -348,8 +348,8 @@ func (gau *GithubAppUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	gau.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // GithubAppUpdateOne is the builder for updating a single GithubApp entity.
@@ -362,175 +362,175 @@ type GithubAppUpdateOne struct {
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (gauo *GithubAppUpdateOne) SetUpdatedAt(t time.Time) *GithubAppUpdateOne {
-	gauo.mutation.SetUpdatedAt(t)
-	return gauo
+func (_u *GithubAppUpdateOne) SetUpdatedAt(v time.Time) *GithubAppUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetCreatedBy sets the "created_by" field.
-func (gauo *GithubAppUpdateOne) SetCreatedBy(u uuid.UUID) *GithubAppUpdateOne {
-	gauo.mutation.SetCreatedBy(u)
-	return gauo
+func (_u *GithubAppUpdateOne) SetCreatedBy(v uuid.UUID) *GithubAppUpdateOne {
+	_u.mutation.SetCreatedBy(v)
+	return _u
 }
 
 // SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (gauo *GithubAppUpdateOne) SetNillableCreatedBy(u *uuid.UUID) *GithubAppUpdateOne {
-	if u != nil {
-		gauo.SetCreatedBy(*u)
+func (_u *GithubAppUpdateOne) SetNillableCreatedBy(v *uuid.UUID) *GithubAppUpdateOne {
+	if v != nil {
+		_u.SetCreatedBy(*v)
 	}
-	return gauo
+	return _u
 }
 
 // SetName sets the "name" field.
-func (gauo *GithubAppUpdateOne) SetName(s string) *GithubAppUpdateOne {
-	gauo.mutation.SetName(s)
-	return gauo
+func (_u *GithubAppUpdateOne) SetName(v string) *GithubAppUpdateOne {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (gauo *GithubAppUpdateOne) SetNillableName(s *string) *GithubAppUpdateOne {
-	if s != nil {
-		gauo.SetName(*s)
+func (_u *GithubAppUpdateOne) SetNillableName(v *string) *GithubAppUpdateOne {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return gauo
+	return _u
 }
 
 // SetClientID sets the "client_id" field.
-func (gauo *GithubAppUpdateOne) SetClientID(s string) *GithubAppUpdateOne {
-	gauo.mutation.SetClientID(s)
-	return gauo
+func (_u *GithubAppUpdateOne) SetClientID(v string) *GithubAppUpdateOne {
+	_u.mutation.SetClientID(v)
+	return _u
 }
 
 // SetNillableClientID sets the "client_id" field if the given value is not nil.
-func (gauo *GithubAppUpdateOne) SetNillableClientID(s *string) *GithubAppUpdateOne {
-	if s != nil {
-		gauo.SetClientID(*s)
+func (_u *GithubAppUpdateOne) SetNillableClientID(v *string) *GithubAppUpdateOne {
+	if v != nil {
+		_u.SetClientID(*v)
 	}
-	return gauo
+	return _u
 }
 
 // SetClientSecret sets the "client_secret" field.
-func (gauo *GithubAppUpdateOne) SetClientSecret(s string) *GithubAppUpdateOne {
-	gauo.mutation.SetClientSecret(s)
-	return gauo
+func (_u *GithubAppUpdateOne) SetClientSecret(v string) *GithubAppUpdateOne {
+	_u.mutation.SetClientSecret(v)
+	return _u
 }
 
 // SetNillableClientSecret sets the "client_secret" field if the given value is not nil.
-func (gauo *GithubAppUpdateOne) SetNillableClientSecret(s *string) *GithubAppUpdateOne {
-	if s != nil {
-		gauo.SetClientSecret(*s)
+func (_u *GithubAppUpdateOne) SetNillableClientSecret(v *string) *GithubAppUpdateOne {
+	if v != nil {
+		_u.SetClientSecret(*v)
 	}
-	return gauo
+	return _u
 }
 
 // SetWebhookSecret sets the "webhook_secret" field.
-func (gauo *GithubAppUpdateOne) SetWebhookSecret(s string) *GithubAppUpdateOne {
-	gauo.mutation.SetWebhookSecret(s)
-	return gauo
+func (_u *GithubAppUpdateOne) SetWebhookSecret(v string) *GithubAppUpdateOne {
+	_u.mutation.SetWebhookSecret(v)
+	return _u
 }
 
 // SetNillableWebhookSecret sets the "webhook_secret" field if the given value is not nil.
-func (gauo *GithubAppUpdateOne) SetNillableWebhookSecret(s *string) *GithubAppUpdateOne {
-	if s != nil {
-		gauo.SetWebhookSecret(*s)
+func (_u *GithubAppUpdateOne) SetNillableWebhookSecret(v *string) *GithubAppUpdateOne {
+	if v != nil {
+		_u.SetWebhookSecret(*v)
 	}
-	return gauo
+	return _u
 }
 
 // SetPrivateKey sets the "private_key" field.
-func (gauo *GithubAppUpdateOne) SetPrivateKey(s string) *GithubAppUpdateOne {
-	gauo.mutation.SetPrivateKey(s)
-	return gauo
+func (_u *GithubAppUpdateOne) SetPrivateKey(v string) *GithubAppUpdateOne {
+	_u.mutation.SetPrivateKey(v)
+	return _u
 }
 
 // SetNillablePrivateKey sets the "private_key" field if the given value is not nil.
-func (gauo *GithubAppUpdateOne) SetNillablePrivateKey(s *string) *GithubAppUpdateOne {
-	if s != nil {
-		gauo.SetPrivateKey(*s)
+func (_u *GithubAppUpdateOne) SetNillablePrivateKey(v *string) *GithubAppUpdateOne {
+	if v != nil {
+		_u.SetPrivateKey(*v)
 	}
-	return gauo
+	return _u
 }
 
 // AddInstallationIDs adds the "installations" edge to the GithubInstallation entity by IDs.
-func (gauo *GithubAppUpdateOne) AddInstallationIDs(ids ...int64) *GithubAppUpdateOne {
-	gauo.mutation.AddInstallationIDs(ids...)
-	return gauo
+func (_u *GithubAppUpdateOne) AddInstallationIDs(ids ...int64) *GithubAppUpdateOne {
+	_u.mutation.AddInstallationIDs(ids...)
+	return _u
 }
 
 // AddInstallations adds the "installations" edges to the GithubInstallation entity.
-func (gauo *GithubAppUpdateOne) AddInstallations(g ...*GithubInstallation) *GithubAppUpdateOne {
-	ids := make([]int64, len(g))
-	for i := range g {
-		ids[i] = g[i].ID
+func (_u *GithubAppUpdateOne) AddInstallations(v ...*GithubInstallation) *GithubAppUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return gauo.AddInstallationIDs(ids...)
+	return _u.AddInstallationIDs(ids...)
 }
 
 // SetUsersID sets the "users" edge to the User entity by ID.
-func (gauo *GithubAppUpdateOne) SetUsersID(id uuid.UUID) *GithubAppUpdateOne {
-	gauo.mutation.SetUsersID(id)
-	return gauo
+func (_u *GithubAppUpdateOne) SetUsersID(id uuid.UUID) *GithubAppUpdateOne {
+	_u.mutation.SetUsersID(id)
+	return _u
 }
 
 // SetUsers sets the "users" edge to the User entity.
-func (gauo *GithubAppUpdateOne) SetUsers(u *User) *GithubAppUpdateOne {
-	return gauo.SetUsersID(u.ID)
+func (_u *GithubAppUpdateOne) SetUsers(v *User) *GithubAppUpdateOne {
+	return _u.SetUsersID(v.ID)
 }
 
 // Mutation returns the GithubAppMutation object of the builder.
-func (gauo *GithubAppUpdateOne) Mutation() *GithubAppMutation {
-	return gauo.mutation
+func (_u *GithubAppUpdateOne) Mutation() *GithubAppMutation {
+	return _u.mutation
 }
 
 // ClearInstallations clears all "installations" edges to the GithubInstallation entity.
-func (gauo *GithubAppUpdateOne) ClearInstallations() *GithubAppUpdateOne {
-	gauo.mutation.ClearInstallations()
-	return gauo
+func (_u *GithubAppUpdateOne) ClearInstallations() *GithubAppUpdateOne {
+	_u.mutation.ClearInstallations()
+	return _u
 }
 
 // RemoveInstallationIDs removes the "installations" edge to GithubInstallation entities by IDs.
-func (gauo *GithubAppUpdateOne) RemoveInstallationIDs(ids ...int64) *GithubAppUpdateOne {
-	gauo.mutation.RemoveInstallationIDs(ids...)
-	return gauo
+func (_u *GithubAppUpdateOne) RemoveInstallationIDs(ids ...int64) *GithubAppUpdateOne {
+	_u.mutation.RemoveInstallationIDs(ids...)
+	return _u
 }
 
 // RemoveInstallations removes "installations" edges to GithubInstallation entities.
-func (gauo *GithubAppUpdateOne) RemoveInstallations(g ...*GithubInstallation) *GithubAppUpdateOne {
-	ids := make([]int64, len(g))
-	for i := range g {
-		ids[i] = g[i].ID
+func (_u *GithubAppUpdateOne) RemoveInstallations(v ...*GithubInstallation) *GithubAppUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return gauo.RemoveInstallationIDs(ids...)
+	return _u.RemoveInstallationIDs(ids...)
 }
 
 // ClearUsers clears the "users" edge to the User entity.
-func (gauo *GithubAppUpdateOne) ClearUsers() *GithubAppUpdateOne {
-	gauo.mutation.ClearUsers()
-	return gauo
+func (_u *GithubAppUpdateOne) ClearUsers() *GithubAppUpdateOne {
+	_u.mutation.ClearUsers()
+	return _u
 }
 
 // Where appends a list predicates to the GithubAppUpdate builder.
-func (gauo *GithubAppUpdateOne) Where(ps ...predicate.GithubApp) *GithubAppUpdateOne {
-	gauo.mutation.Where(ps...)
-	return gauo
+func (_u *GithubAppUpdateOne) Where(ps ...predicate.GithubApp) *GithubAppUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (gauo *GithubAppUpdateOne) Select(field string, fields ...string) *GithubAppUpdateOne {
-	gauo.fields = append([]string{field}, fields...)
-	return gauo
+func (_u *GithubAppUpdateOne) Select(field string, fields ...string) *GithubAppUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated GithubApp entity.
-func (gauo *GithubAppUpdateOne) Save(ctx context.Context) (*GithubApp, error) {
-	gauo.defaults()
-	return withHooks(ctx, gauo.sqlSave, gauo.mutation, gauo.hooks)
+func (_u *GithubAppUpdateOne) Save(ctx context.Context) (*GithubApp, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (gauo *GithubAppUpdateOne) SaveX(ctx context.Context) *GithubApp {
-	node, err := gauo.Save(ctx)
+func (_u *GithubAppUpdateOne) SaveX(ctx context.Context) *GithubApp {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -538,56 +538,56 @@ func (gauo *GithubAppUpdateOne) SaveX(ctx context.Context) *GithubApp {
 }
 
 // Exec executes the query on the entity.
-func (gauo *GithubAppUpdateOne) Exec(ctx context.Context) error {
-	_, err := gauo.Save(ctx)
+func (_u *GithubAppUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (gauo *GithubAppUpdateOne) ExecX(ctx context.Context) {
-	if err := gauo.Exec(ctx); err != nil {
+func (_u *GithubAppUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (gauo *GithubAppUpdateOne) defaults() {
-	if _, ok := gauo.mutation.UpdatedAt(); !ok {
+func (_u *GithubAppUpdateOne) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := githubapp.UpdateDefaultUpdatedAt()
-		gauo.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (gauo *GithubAppUpdateOne) check() error {
-	if v, ok := gauo.mutation.Name(); ok {
+func (_u *GithubAppUpdateOne) check() error {
+	if v, ok := _u.mutation.Name(); ok {
 		if err := githubapp.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "GithubApp.name": %w`, err)}
 		}
 	}
-	if gauo.mutation.UsersCleared() && len(gauo.mutation.UsersIDs()) > 0 {
+	if _u.mutation.UsersCleared() && len(_u.mutation.UsersIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "GithubApp.users"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (gauo *GithubAppUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *GithubAppUpdateOne {
-	gauo.modifiers = append(gauo.modifiers, modifiers...)
-	return gauo
+func (_u *GithubAppUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *GithubAppUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (gauo *GithubAppUpdateOne) sqlSave(ctx context.Context) (_node *GithubApp, err error) {
-	if err := gauo.check(); err != nil {
+func (_u *GithubAppUpdateOne) sqlSave(ctx context.Context) (_node *GithubApp, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(githubapp.Table, githubapp.Columns, sqlgraph.NewFieldSpec(githubapp.FieldID, field.TypeInt64))
-	id, ok := gauo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "GithubApp.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := gauo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, githubapp.FieldID)
 		for _, f := range fields {
@@ -599,32 +599,32 @@ func (gauo *GithubAppUpdateOne) sqlSave(ctx context.Context) (_node *GithubApp, 
 			}
 		}
 	}
-	if ps := gauo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := gauo.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(githubapp.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := gauo.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(githubapp.FieldName, field.TypeString, value)
 	}
-	if value, ok := gauo.mutation.ClientID(); ok {
+	if value, ok := _u.mutation.ClientID(); ok {
 		_spec.SetField(githubapp.FieldClientID, field.TypeString, value)
 	}
-	if value, ok := gauo.mutation.ClientSecret(); ok {
+	if value, ok := _u.mutation.ClientSecret(); ok {
 		_spec.SetField(githubapp.FieldClientSecret, field.TypeString, value)
 	}
-	if value, ok := gauo.mutation.WebhookSecret(); ok {
+	if value, ok := _u.mutation.WebhookSecret(); ok {
 		_spec.SetField(githubapp.FieldWebhookSecret, field.TypeString, value)
 	}
-	if value, ok := gauo.mutation.PrivateKey(); ok {
+	if value, ok := _u.mutation.PrivateKey(); ok {
 		_spec.SetField(githubapp.FieldPrivateKey, field.TypeString, value)
 	}
-	if gauo.mutation.InstallationsCleared() {
+	if _u.mutation.InstallationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -637,7 +637,7 @@ func (gauo *GithubAppUpdateOne) sqlSave(ctx context.Context) (_node *GithubApp, 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := gauo.mutation.RemovedInstallationsIDs(); len(nodes) > 0 && !gauo.mutation.InstallationsCleared() {
+	if nodes := _u.mutation.RemovedInstallationsIDs(); len(nodes) > 0 && !_u.mutation.InstallationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -653,7 +653,7 @@ func (gauo *GithubAppUpdateOne) sqlSave(ctx context.Context) (_node *GithubApp, 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := gauo.mutation.InstallationsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.InstallationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -669,7 +669,7 @@ func (gauo *GithubAppUpdateOne) sqlSave(ctx context.Context) (_node *GithubApp, 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if gauo.mutation.UsersCleared() {
+	if _u.mutation.UsersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -682,7 +682,7 @@ func (gauo *GithubAppUpdateOne) sqlSave(ctx context.Context) (_node *GithubApp, 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := gauo.mutation.UsersIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UsersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -698,11 +698,11 @@ func (gauo *GithubAppUpdateOne) sqlSave(ctx context.Context) (_node *GithubApp, 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(gauo.modifiers...)
-	_node = &GithubApp{config: gauo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &GithubApp{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, gauo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{githubapp.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -710,6 +710,6 @@ func (gauo *GithubAppUpdateOne) sqlSave(ctx context.Context) (_node *GithubApp, 
 		}
 		return nil, err
 	}
-	gauo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

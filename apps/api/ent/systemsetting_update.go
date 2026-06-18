@@ -25,63 +25,63 @@ type SystemSettingUpdate struct {
 }
 
 // Where appends a list predicates to the SystemSettingUpdate builder.
-func (ssu *SystemSettingUpdate) Where(ps ...predicate.SystemSetting) *SystemSettingUpdate {
-	ssu.mutation.Where(ps...)
-	return ssu
+func (_u *SystemSettingUpdate) Where(ps ...predicate.SystemSetting) *SystemSettingUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (ssu *SystemSettingUpdate) SetUpdatedAt(t time.Time) *SystemSettingUpdate {
-	ssu.mutation.SetUpdatedAt(t)
-	return ssu
+func (_u *SystemSettingUpdate) SetUpdatedAt(v time.Time) *SystemSettingUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetWildcardBaseURL sets the "wildcard_base_url" field.
-func (ssu *SystemSettingUpdate) SetWildcardBaseURL(s string) *SystemSettingUpdate {
-	ssu.mutation.SetWildcardBaseURL(s)
-	return ssu
+func (_u *SystemSettingUpdate) SetWildcardBaseURL(v string) *SystemSettingUpdate {
+	_u.mutation.SetWildcardBaseURL(v)
+	return _u
 }
 
 // SetNillableWildcardBaseURL sets the "wildcard_base_url" field if the given value is not nil.
-func (ssu *SystemSettingUpdate) SetNillableWildcardBaseURL(s *string) *SystemSettingUpdate {
-	if s != nil {
-		ssu.SetWildcardBaseURL(*s)
+func (_u *SystemSettingUpdate) SetNillableWildcardBaseURL(v *string) *SystemSettingUpdate {
+	if v != nil {
+		_u.SetWildcardBaseURL(*v)
 	}
-	return ssu
+	return _u
 }
 
 // ClearWildcardBaseURL clears the value of the "wildcard_base_url" field.
-func (ssu *SystemSettingUpdate) ClearWildcardBaseURL() *SystemSettingUpdate {
-	ssu.mutation.ClearWildcardBaseURL()
-	return ssu
+func (_u *SystemSettingUpdate) ClearWildcardBaseURL() *SystemSettingUpdate {
+	_u.mutation.ClearWildcardBaseURL()
+	return _u
 }
 
 // SetBuildkitSettings sets the "buildkit_settings" field.
-func (ssu *SystemSettingUpdate) SetBuildkitSettings(ss *schema.BuildkitSettings) *SystemSettingUpdate {
-	ssu.mutation.SetBuildkitSettings(ss)
-	return ssu
+func (_u *SystemSettingUpdate) SetBuildkitSettings(v *schema.BuildkitSettings) *SystemSettingUpdate {
+	_u.mutation.SetBuildkitSettings(v)
+	return _u
 }
 
 // ClearBuildkitSettings clears the value of the "buildkit_settings" field.
-func (ssu *SystemSettingUpdate) ClearBuildkitSettings() *SystemSettingUpdate {
-	ssu.mutation.ClearBuildkitSettings()
-	return ssu
+func (_u *SystemSettingUpdate) ClearBuildkitSettings() *SystemSettingUpdate {
+	_u.mutation.ClearBuildkitSettings()
+	return _u
 }
 
 // Mutation returns the SystemSettingMutation object of the builder.
-func (ssu *SystemSettingUpdate) Mutation() *SystemSettingMutation {
-	return ssu.mutation
+func (_u *SystemSettingUpdate) Mutation() *SystemSettingMutation {
+	return _u.mutation
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (ssu *SystemSettingUpdate) Save(ctx context.Context) (int, error) {
-	ssu.defaults()
-	return withHooks(ctx, ssu.sqlSave, ssu.mutation, ssu.hooks)
+func (_u *SystemSettingUpdate) Save(ctx context.Context) (int, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ssu *SystemSettingUpdate) SaveX(ctx context.Context) int {
-	affected, err := ssu.Save(ctx)
+func (_u *SystemSettingUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -89,58 +89,58 @@ func (ssu *SystemSettingUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (ssu *SystemSettingUpdate) Exec(ctx context.Context) error {
-	_, err := ssu.Save(ctx)
+func (_u *SystemSettingUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ssu *SystemSettingUpdate) ExecX(ctx context.Context) {
-	if err := ssu.Exec(ctx); err != nil {
+func (_u *SystemSettingUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (ssu *SystemSettingUpdate) defaults() {
-	if _, ok := ssu.mutation.UpdatedAt(); !ok {
+func (_u *SystemSettingUpdate) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := systemsetting.UpdateDefaultUpdatedAt()
-		ssu.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (ssu *SystemSettingUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemSettingUpdate {
-	ssu.modifiers = append(ssu.modifiers, modifiers...)
-	return ssu
+func (_u *SystemSettingUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemSettingUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (ssu *SystemSettingUpdate) sqlSave(ctx context.Context) (n int, err error) {
+func (_u *SystemSettingUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	_spec := sqlgraph.NewUpdateSpec(systemsetting.Table, systemsetting.Columns, sqlgraph.NewFieldSpec(systemsetting.FieldID, field.TypeUUID))
-	if ps := ssu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := ssu.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemsetting.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := ssu.mutation.WildcardBaseURL(); ok {
+	if value, ok := _u.mutation.WildcardBaseURL(); ok {
 		_spec.SetField(systemsetting.FieldWildcardBaseURL, field.TypeString, value)
 	}
-	if ssu.mutation.WildcardBaseURLCleared() {
+	if _u.mutation.WildcardBaseURLCleared() {
 		_spec.ClearField(systemsetting.FieldWildcardBaseURL, field.TypeString)
 	}
-	if value, ok := ssu.mutation.BuildkitSettings(); ok {
+	if value, ok := _u.mutation.BuildkitSettings(); ok {
 		_spec.SetField(systemsetting.FieldBuildkitSettings, field.TypeJSON, value)
 	}
-	if ssu.mutation.BuildkitSettingsCleared() {
+	if _u.mutation.BuildkitSettingsCleared() {
 		_spec.ClearField(systemsetting.FieldBuildkitSettings, field.TypeJSON)
 	}
-	_spec.AddModifiers(ssu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, ssu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{systemsetting.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -148,8 +148,8 @@ func (ssu *SystemSettingUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		return 0, err
 	}
-	ssu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // SystemSettingUpdateOne is the builder for updating a single SystemSetting entity.
@@ -162,70 +162,70 @@ type SystemSettingUpdateOne struct {
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (ssuo *SystemSettingUpdateOne) SetUpdatedAt(t time.Time) *SystemSettingUpdateOne {
-	ssuo.mutation.SetUpdatedAt(t)
-	return ssuo
+func (_u *SystemSettingUpdateOne) SetUpdatedAt(v time.Time) *SystemSettingUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetWildcardBaseURL sets the "wildcard_base_url" field.
-func (ssuo *SystemSettingUpdateOne) SetWildcardBaseURL(s string) *SystemSettingUpdateOne {
-	ssuo.mutation.SetWildcardBaseURL(s)
-	return ssuo
+func (_u *SystemSettingUpdateOne) SetWildcardBaseURL(v string) *SystemSettingUpdateOne {
+	_u.mutation.SetWildcardBaseURL(v)
+	return _u
 }
 
 // SetNillableWildcardBaseURL sets the "wildcard_base_url" field if the given value is not nil.
-func (ssuo *SystemSettingUpdateOne) SetNillableWildcardBaseURL(s *string) *SystemSettingUpdateOne {
-	if s != nil {
-		ssuo.SetWildcardBaseURL(*s)
+func (_u *SystemSettingUpdateOne) SetNillableWildcardBaseURL(v *string) *SystemSettingUpdateOne {
+	if v != nil {
+		_u.SetWildcardBaseURL(*v)
 	}
-	return ssuo
+	return _u
 }
 
 // ClearWildcardBaseURL clears the value of the "wildcard_base_url" field.
-func (ssuo *SystemSettingUpdateOne) ClearWildcardBaseURL() *SystemSettingUpdateOne {
-	ssuo.mutation.ClearWildcardBaseURL()
-	return ssuo
+func (_u *SystemSettingUpdateOne) ClearWildcardBaseURL() *SystemSettingUpdateOne {
+	_u.mutation.ClearWildcardBaseURL()
+	return _u
 }
 
 // SetBuildkitSettings sets the "buildkit_settings" field.
-func (ssuo *SystemSettingUpdateOne) SetBuildkitSettings(ss *schema.BuildkitSettings) *SystemSettingUpdateOne {
-	ssuo.mutation.SetBuildkitSettings(ss)
-	return ssuo
+func (_u *SystemSettingUpdateOne) SetBuildkitSettings(v *schema.BuildkitSettings) *SystemSettingUpdateOne {
+	_u.mutation.SetBuildkitSettings(v)
+	return _u
 }
 
 // ClearBuildkitSettings clears the value of the "buildkit_settings" field.
-func (ssuo *SystemSettingUpdateOne) ClearBuildkitSettings() *SystemSettingUpdateOne {
-	ssuo.mutation.ClearBuildkitSettings()
-	return ssuo
+func (_u *SystemSettingUpdateOne) ClearBuildkitSettings() *SystemSettingUpdateOne {
+	_u.mutation.ClearBuildkitSettings()
+	return _u
 }
 
 // Mutation returns the SystemSettingMutation object of the builder.
-func (ssuo *SystemSettingUpdateOne) Mutation() *SystemSettingMutation {
-	return ssuo.mutation
+func (_u *SystemSettingUpdateOne) Mutation() *SystemSettingMutation {
+	return _u.mutation
 }
 
 // Where appends a list predicates to the SystemSettingUpdate builder.
-func (ssuo *SystemSettingUpdateOne) Where(ps ...predicate.SystemSetting) *SystemSettingUpdateOne {
-	ssuo.mutation.Where(ps...)
-	return ssuo
+func (_u *SystemSettingUpdateOne) Where(ps ...predicate.SystemSetting) *SystemSettingUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (ssuo *SystemSettingUpdateOne) Select(field string, fields ...string) *SystemSettingUpdateOne {
-	ssuo.fields = append([]string{field}, fields...)
-	return ssuo
+func (_u *SystemSettingUpdateOne) Select(field string, fields ...string) *SystemSettingUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated SystemSetting entity.
-func (ssuo *SystemSettingUpdateOne) Save(ctx context.Context) (*SystemSetting, error) {
-	ssuo.defaults()
-	return withHooks(ctx, ssuo.sqlSave, ssuo.mutation, ssuo.hooks)
+func (_u *SystemSettingUpdateOne) Save(ctx context.Context) (*SystemSetting, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ssuo *SystemSettingUpdateOne) SaveX(ctx context.Context) *SystemSetting {
-	node, err := ssuo.Save(ctx)
+func (_u *SystemSettingUpdateOne) SaveX(ctx context.Context) *SystemSetting {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -233,40 +233,40 @@ func (ssuo *SystemSettingUpdateOne) SaveX(ctx context.Context) *SystemSetting {
 }
 
 // Exec executes the query on the entity.
-func (ssuo *SystemSettingUpdateOne) Exec(ctx context.Context) error {
-	_, err := ssuo.Save(ctx)
+func (_u *SystemSettingUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ssuo *SystemSettingUpdateOne) ExecX(ctx context.Context) {
-	if err := ssuo.Exec(ctx); err != nil {
+func (_u *SystemSettingUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (ssuo *SystemSettingUpdateOne) defaults() {
-	if _, ok := ssuo.mutation.UpdatedAt(); !ok {
+func (_u *SystemSettingUpdateOne) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := systemsetting.UpdateDefaultUpdatedAt()
-		ssuo.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (ssuo *SystemSettingUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemSettingUpdateOne {
-	ssuo.modifiers = append(ssuo.modifiers, modifiers...)
-	return ssuo
+func (_u *SystemSettingUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemSettingUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (ssuo *SystemSettingUpdateOne) sqlSave(ctx context.Context) (_node *SystemSetting, err error) {
+func (_u *SystemSettingUpdateOne) sqlSave(ctx context.Context) (_node *SystemSetting, err error) {
 	_spec := sqlgraph.NewUpdateSpec(systemsetting.Table, systemsetting.Columns, sqlgraph.NewFieldSpec(systemsetting.FieldID, field.TypeUUID))
-	id, ok := ssuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "SystemSetting.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := ssuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, systemsetting.FieldID)
 		for _, f := range fields {
@@ -278,33 +278,33 @@ func (ssuo *SystemSettingUpdateOne) sqlSave(ctx context.Context) (_node *SystemS
 			}
 		}
 	}
-	if ps := ssuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := ssuo.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemsetting.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := ssuo.mutation.WildcardBaseURL(); ok {
+	if value, ok := _u.mutation.WildcardBaseURL(); ok {
 		_spec.SetField(systemsetting.FieldWildcardBaseURL, field.TypeString, value)
 	}
-	if ssuo.mutation.WildcardBaseURLCleared() {
+	if _u.mutation.WildcardBaseURLCleared() {
 		_spec.ClearField(systemsetting.FieldWildcardBaseURL, field.TypeString)
 	}
-	if value, ok := ssuo.mutation.BuildkitSettings(); ok {
+	if value, ok := _u.mutation.BuildkitSettings(); ok {
 		_spec.SetField(systemsetting.FieldBuildkitSettings, field.TypeJSON, value)
 	}
-	if ssuo.mutation.BuildkitSettingsCleared() {
+	if _u.mutation.BuildkitSettingsCleared() {
 		_spec.ClearField(systemsetting.FieldBuildkitSettings, field.TypeJSON)
 	}
-	_spec.AddModifiers(ssuo.modifiers...)
-	_node = &SystemSetting{config: ssuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &SystemSetting{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, ssuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{systemsetting.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -312,6 +312,6 @@ func (ssuo *SystemSettingUpdateOne) sqlSave(ctx context.Context) (_node *SystemS
 		}
 		return nil, err
 	}
-	ssuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

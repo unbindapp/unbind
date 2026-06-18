@@ -26,110 +26,110 @@ type Oauth2CodeCreate struct {
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (oc *Oauth2CodeCreate) SetCreatedAt(t time.Time) *Oauth2CodeCreate {
-	oc.mutation.SetCreatedAt(t)
-	return oc
+func (_c *Oauth2CodeCreate) SetCreatedAt(v time.Time) *Oauth2CodeCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (oc *Oauth2CodeCreate) SetNillableCreatedAt(t *time.Time) *Oauth2CodeCreate {
-	if t != nil {
-		oc.SetCreatedAt(*t)
+func (_c *Oauth2CodeCreate) SetNillableCreatedAt(v *time.Time) *Oauth2CodeCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return oc
+	return _c
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (oc *Oauth2CodeCreate) SetUpdatedAt(t time.Time) *Oauth2CodeCreate {
-	oc.mutation.SetUpdatedAt(t)
-	return oc
+func (_c *Oauth2CodeCreate) SetUpdatedAt(v time.Time) *Oauth2CodeCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (oc *Oauth2CodeCreate) SetNillableUpdatedAt(t *time.Time) *Oauth2CodeCreate {
-	if t != nil {
-		oc.SetUpdatedAt(*t)
+func (_c *Oauth2CodeCreate) SetNillableUpdatedAt(v *time.Time) *Oauth2CodeCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
 	}
-	return oc
+	return _c
 }
 
 // SetAuthCode sets the "auth_code" field.
-func (oc *Oauth2CodeCreate) SetAuthCode(s string) *Oauth2CodeCreate {
-	oc.mutation.SetAuthCode(s)
-	return oc
+func (_c *Oauth2CodeCreate) SetAuthCode(v string) *Oauth2CodeCreate {
+	_c.mutation.SetAuthCode(v)
+	return _c
 }
 
 // SetClientID sets the "client_id" field.
-func (oc *Oauth2CodeCreate) SetClientID(s string) *Oauth2CodeCreate {
-	oc.mutation.SetClientID(s)
-	return oc
+func (_c *Oauth2CodeCreate) SetClientID(v string) *Oauth2CodeCreate {
+	_c.mutation.SetClientID(v)
+	return _c
 }
 
 // SetScope sets the "scope" field.
-func (oc *Oauth2CodeCreate) SetScope(s string) *Oauth2CodeCreate {
-	oc.mutation.SetScope(s)
-	return oc
+func (_c *Oauth2CodeCreate) SetScope(v string) *Oauth2CodeCreate {
+	_c.mutation.SetScope(v)
+	return _c
 }
 
 // SetExpiresAt sets the "expires_at" field.
-func (oc *Oauth2CodeCreate) SetExpiresAt(t time.Time) *Oauth2CodeCreate {
-	oc.mutation.SetExpiresAt(t)
-	return oc
+func (_c *Oauth2CodeCreate) SetExpiresAt(v time.Time) *Oauth2CodeCreate {
+	_c.mutation.SetExpiresAt(v)
+	return _c
 }
 
 // SetRevoked sets the "revoked" field.
-func (oc *Oauth2CodeCreate) SetRevoked(b bool) *Oauth2CodeCreate {
-	oc.mutation.SetRevoked(b)
-	return oc
+func (_c *Oauth2CodeCreate) SetRevoked(v bool) *Oauth2CodeCreate {
+	_c.mutation.SetRevoked(v)
+	return _c
 }
 
 // SetNillableRevoked sets the "revoked" field if the given value is not nil.
-func (oc *Oauth2CodeCreate) SetNillableRevoked(b *bool) *Oauth2CodeCreate {
-	if b != nil {
-		oc.SetRevoked(*b)
+func (_c *Oauth2CodeCreate) SetNillableRevoked(v *bool) *Oauth2CodeCreate {
+	if v != nil {
+		_c.SetRevoked(*v)
 	}
-	return oc
+	return _c
 }
 
 // SetID sets the "id" field.
-func (oc *Oauth2CodeCreate) SetID(u uuid.UUID) *Oauth2CodeCreate {
-	oc.mutation.SetID(u)
-	return oc
+func (_c *Oauth2CodeCreate) SetID(v uuid.UUID) *Oauth2CodeCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (oc *Oauth2CodeCreate) SetNillableID(u *uuid.UUID) *Oauth2CodeCreate {
-	if u != nil {
-		oc.SetID(*u)
+func (_c *Oauth2CodeCreate) SetNillableID(v *uuid.UUID) *Oauth2CodeCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return oc
+	return _c
 }
 
 // SetUserID sets the "user" edge to the User entity by ID.
-func (oc *Oauth2CodeCreate) SetUserID(id uuid.UUID) *Oauth2CodeCreate {
-	oc.mutation.SetUserID(id)
-	return oc
+func (_c *Oauth2CodeCreate) SetUserID(id uuid.UUID) *Oauth2CodeCreate {
+	_c.mutation.SetUserID(id)
+	return _c
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (oc *Oauth2CodeCreate) SetUser(u *User) *Oauth2CodeCreate {
-	return oc.SetUserID(u.ID)
+func (_c *Oauth2CodeCreate) SetUser(v *User) *Oauth2CodeCreate {
+	return _c.SetUserID(v.ID)
 }
 
 // Mutation returns the Oauth2CodeMutation object of the builder.
-func (oc *Oauth2CodeCreate) Mutation() *Oauth2CodeMutation {
-	return oc.mutation
+func (_c *Oauth2CodeCreate) Mutation() *Oauth2CodeMutation {
+	return _c.mutation
 }
 
 // Save creates the Oauth2Code in the database.
-func (oc *Oauth2CodeCreate) Save(ctx context.Context) (*Oauth2Code, error) {
-	oc.defaults()
-	return withHooks(ctx, oc.sqlSave, oc.mutation, oc.hooks)
+func (_c *Oauth2CodeCreate) Save(ctx context.Context) (*Oauth2Code, error) {
+	_c.defaults()
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (oc *Oauth2CodeCreate) SaveX(ctx context.Context) *Oauth2Code {
-	v, err := oc.Save(ctx)
+func (_c *Oauth2CodeCreate) SaveX(ctx context.Context) *Oauth2Code {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -137,73 +137,73 @@ func (oc *Oauth2CodeCreate) SaveX(ctx context.Context) *Oauth2Code {
 }
 
 // Exec executes the query.
-func (oc *Oauth2CodeCreate) Exec(ctx context.Context) error {
-	_, err := oc.Save(ctx)
+func (_c *Oauth2CodeCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (oc *Oauth2CodeCreate) ExecX(ctx context.Context) {
-	if err := oc.Exec(ctx); err != nil {
+func (_c *Oauth2CodeCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (oc *Oauth2CodeCreate) defaults() {
-	if _, ok := oc.mutation.CreatedAt(); !ok {
+func (_c *Oauth2CodeCreate) defaults() {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := oauth2code.DefaultCreatedAt()
-		oc.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := oc.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		v := oauth2code.DefaultUpdatedAt()
-		oc.mutation.SetUpdatedAt(v)
+		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := oc.mutation.Revoked(); !ok {
+	if _, ok := _c.mutation.Revoked(); !ok {
 		v := oauth2code.DefaultRevoked
-		oc.mutation.SetRevoked(v)
+		_c.mutation.SetRevoked(v)
 	}
-	if _, ok := oc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		v := oauth2code.DefaultID()
-		oc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (oc *Oauth2CodeCreate) check() error {
-	if _, ok := oc.mutation.CreatedAt(); !ok {
+func (_c *Oauth2CodeCreate) check() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Oauth2Code.created_at"`)}
 	}
-	if _, ok := oc.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Oauth2Code.updated_at"`)}
 	}
-	if _, ok := oc.mutation.AuthCode(); !ok {
+	if _, ok := _c.mutation.AuthCode(); !ok {
 		return &ValidationError{Name: "auth_code", err: errors.New(`ent: missing required field "Oauth2Code.auth_code"`)}
 	}
-	if _, ok := oc.mutation.ClientID(); !ok {
+	if _, ok := _c.mutation.ClientID(); !ok {
 		return &ValidationError{Name: "client_id", err: errors.New(`ent: missing required field "Oauth2Code.client_id"`)}
 	}
-	if _, ok := oc.mutation.Scope(); !ok {
+	if _, ok := _c.mutation.Scope(); !ok {
 		return &ValidationError{Name: "scope", err: errors.New(`ent: missing required field "Oauth2Code.scope"`)}
 	}
-	if _, ok := oc.mutation.ExpiresAt(); !ok {
+	if _, ok := _c.mutation.ExpiresAt(); !ok {
 		return &ValidationError{Name: "expires_at", err: errors.New(`ent: missing required field "Oauth2Code.expires_at"`)}
 	}
-	if _, ok := oc.mutation.Revoked(); !ok {
+	if _, ok := _c.mutation.Revoked(); !ok {
 		return &ValidationError{Name: "revoked", err: errors.New(`ent: missing required field "Oauth2Code.revoked"`)}
 	}
-	if len(oc.mutation.UserIDs()) == 0 {
+	if len(_c.mutation.UserIDs()) == 0 {
 		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "Oauth2Code.user"`)}
 	}
 	return nil
 }
 
-func (oc *Oauth2CodeCreate) sqlSave(ctx context.Context) (*Oauth2Code, error) {
-	if err := oc.check(); err != nil {
+func (_c *Oauth2CodeCreate) sqlSave(ctx context.Context) (*Oauth2Code, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := oc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, oc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -216,50 +216,50 @@ func (oc *Oauth2CodeCreate) sqlSave(ctx context.Context) (*Oauth2Code, error) {
 			return nil, err
 		}
 	}
-	oc.mutation.id = &_node.ID
-	oc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (oc *Oauth2CodeCreate) createSpec() (*Oauth2Code, *sqlgraph.CreateSpec) {
+func (_c *Oauth2CodeCreate) createSpec() (*Oauth2Code, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Oauth2Code{config: oc.config}
+		_node = &Oauth2Code{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(oauth2code.Table, sqlgraph.NewFieldSpec(oauth2code.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = oc.conflict
-	if id, ok := oc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := oc.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(oauth2code.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if value, ok := oc.mutation.UpdatedAt(); ok {
+	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(oauth2code.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := oc.mutation.AuthCode(); ok {
+	if value, ok := _c.mutation.AuthCode(); ok {
 		_spec.SetField(oauth2code.FieldAuthCode, field.TypeString, value)
 		_node.AuthCode = value
 	}
-	if value, ok := oc.mutation.ClientID(); ok {
+	if value, ok := _c.mutation.ClientID(); ok {
 		_spec.SetField(oauth2code.FieldClientID, field.TypeString, value)
 		_node.ClientID = value
 	}
-	if value, ok := oc.mutation.Scope(); ok {
+	if value, ok := _c.mutation.Scope(); ok {
 		_spec.SetField(oauth2code.FieldScope, field.TypeString, value)
 		_node.Scope = value
 	}
-	if value, ok := oc.mutation.ExpiresAt(); ok {
+	if value, ok := _c.mutation.ExpiresAt(); ok {
 		_spec.SetField(oauth2code.FieldExpiresAt, field.TypeTime, value)
 		_node.ExpiresAt = value
 	}
-	if value, ok := oc.mutation.Revoked(); ok {
+	if value, ok := _c.mutation.Revoked(); ok {
 		_spec.SetField(oauth2code.FieldRevoked, field.TypeBool, value)
 		_node.Revoked = value
 	}
-	if nodes := oc.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -295,10 +295,10 @@ func (oc *Oauth2CodeCreate) createSpec() (*Oauth2Code, *sqlgraph.CreateSpec) {
 //			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
-func (oc *Oauth2CodeCreate) OnConflict(opts ...sql.ConflictOption) *Oauth2CodeUpsertOne {
-	oc.conflict = opts
+func (_c *Oauth2CodeCreate) OnConflict(opts ...sql.ConflictOption) *Oauth2CodeUpsertOne {
+	_c.conflict = opts
 	return &Oauth2CodeUpsertOne{
-		create: oc,
+		create: _c,
 	}
 }
 
@@ -308,10 +308,10 @@ func (oc *Oauth2CodeCreate) OnConflict(opts ...sql.ConflictOption) *Oauth2CodeUp
 //	client.Oauth2Code.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (oc *Oauth2CodeCreate) OnConflictColumns(columns ...string) *Oauth2CodeUpsertOne {
-	oc.conflict = append(oc.conflict, sql.ConflictColumns(columns...))
+func (_c *Oauth2CodeCreate) OnConflictColumns(columns ...string) *Oauth2CodeUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &Oauth2CodeUpsertOne{
-		create: oc,
+		create: _c,
 	}
 }
 
@@ -582,16 +582,16 @@ type Oauth2CodeCreateBulk struct {
 }
 
 // Save creates the Oauth2Code entities in the database.
-func (ocb *Oauth2CodeCreateBulk) Save(ctx context.Context) ([]*Oauth2Code, error) {
-	if ocb.err != nil {
-		return nil, ocb.err
+func (_c *Oauth2CodeCreateBulk) Save(ctx context.Context) ([]*Oauth2Code, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(ocb.builders))
-	nodes := make([]*Oauth2Code, len(ocb.builders))
-	mutators := make([]Mutator, len(ocb.builders))
-	for i := range ocb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*Oauth2Code, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := ocb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*Oauth2CodeMutation)
@@ -605,12 +605,12 @@ func (ocb *Oauth2CodeCreateBulk) Save(ctx context.Context) ([]*Oauth2Code, error
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, ocb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = ocb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, ocb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -630,7 +630,7 @@ func (ocb *Oauth2CodeCreateBulk) Save(ctx context.Context) ([]*Oauth2Code, error
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, ocb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -638,8 +638,8 @@ func (ocb *Oauth2CodeCreateBulk) Save(ctx context.Context) ([]*Oauth2Code, error
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ocb *Oauth2CodeCreateBulk) SaveX(ctx context.Context) []*Oauth2Code {
-	v, err := ocb.Save(ctx)
+func (_c *Oauth2CodeCreateBulk) SaveX(ctx context.Context) []*Oauth2Code {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -647,14 +647,14 @@ func (ocb *Oauth2CodeCreateBulk) SaveX(ctx context.Context) []*Oauth2Code {
 }
 
 // Exec executes the query.
-func (ocb *Oauth2CodeCreateBulk) Exec(ctx context.Context) error {
-	_, err := ocb.Save(ctx)
+func (_c *Oauth2CodeCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ocb *Oauth2CodeCreateBulk) ExecX(ctx context.Context) {
-	if err := ocb.Exec(ctx); err != nil {
+func (_c *Oauth2CodeCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -674,10 +674,10 @@ func (ocb *Oauth2CodeCreateBulk) ExecX(ctx context.Context) {
 //			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
-func (ocb *Oauth2CodeCreateBulk) OnConflict(opts ...sql.ConflictOption) *Oauth2CodeUpsertBulk {
-	ocb.conflict = opts
+func (_c *Oauth2CodeCreateBulk) OnConflict(opts ...sql.ConflictOption) *Oauth2CodeUpsertBulk {
+	_c.conflict = opts
 	return &Oauth2CodeUpsertBulk{
-		create: ocb,
+		create: _c,
 	}
 }
 
@@ -687,10 +687,10 @@ func (ocb *Oauth2CodeCreateBulk) OnConflict(opts ...sql.ConflictOption) *Oauth2C
 //	client.Oauth2Code.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (ocb *Oauth2CodeCreateBulk) OnConflictColumns(columns ...string) *Oauth2CodeUpsertBulk {
-	ocb.conflict = append(ocb.conflict, sql.ConflictColumns(columns...))
+func (_c *Oauth2CodeCreateBulk) OnConflictColumns(columns ...string) *Oauth2CodeUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &Oauth2CodeUpsertBulk{
-		create: ocb,
+		create: _c,
 	}
 }
 

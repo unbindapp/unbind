@@ -35,44 +35,44 @@ type ServiceGroupQuery struct {
 }
 
 // Where adds a new predicate for the ServiceGroupQuery builder.
-func (sgq *ServiceGroupQuery) Where(ps ...predicate.ServiceGroup) *ServiceGroupQuery {
-	sgq.predicates = append(sgq.predicates, ps...)
-	return sgq
+func (_q *ServiceGroupQuery) Where(ps ...predicate.ServiceGroup) *ServiceGroupQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (sgq *ServiceGroupQuery) Limit(limit int) *ServiceGroupQuery {
-	sgq.ctx.Limit = &limit
-	return sgq
+func (_q *ServiceGroupQuery) Limit(limit int) *ServiceGroupQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (sgq *ServiceGroupQuery) Offset(offset int) *ServiceGroupQuery {
-	sgq.ctx.Offset = &offset
-	return sgq
+func (_q *ServiceGroupQuery) Offset(offset int) *ServiceGroupQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (sgq *ServiceGroupQuery) Unique(unique bool) *ServiceGroupQuery {
-	sgq.ctx.Unique = &unique
-	return sgq
+func (_q *ServiceGroupQuery) Unique(unique bool) *ServiceGroupQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (sgq *ServiceGroupQuery) Order(o ...servicegroup.OrderOption) *ServiceGroupQuery {
-	sgq.order = append(sgq.order, o...)
-	return sgq
+func (_q *ServiceGroupQuery) Order(o ...servicegroup.OrderOption) *ServiceGroupQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryEnvironment chains the current query on the "environment" edge.
-func (sgq *ServiceGroupQuery) QueryEnvironment() *EnvironmentQuery {
-	query := (&EnvironmentClient{config: sgq.config}).Query()
+func (_q *ServiceGroupQuery) QueryEnvironment() *EnvironmentQuery {
+	query := (&EnvironmentClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := sgq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := sgq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -81,20 +81,20 @@ func (sgq *ServiceGroupQuery) QueryEnvironment() *EnvironmentQuery {
 			sqlgraph.To(environment.Table, environment.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, servicegroup.EnvironmentTable, servicegroup.EnvironmentColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(sgq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryServices chains the current query on the "services" edge.
-func (sgq *ServiceGroupQuery) QueryServices() *ServiceQuery {
-	query := (&ServiceClient{config: sgq.config}).Query()
+func (_q *ServiceGroupQuery) QueryServices() *ServiceQuery {
+	query := (&ServiceClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := sgq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := sgq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -103,7 +103,7 @@ func (sgq *ServiceGroupQuery) QueryServices() *ServiceQuery {
 			sqlgraph.To(service.Table, service.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, servicegroup.ServicesTable, servicegroup.ServicesColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(sgq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -111,8 +111,8 @@ func (sgq *ServiceGroupQuery) QueryServices() *ServiceQuery {
 
 // First returns the first ServiceGroup entity from the query.
 // Returns a *NotFoundError when no ServiceGroup was found.
-func (sgq *ServiceGroupQuery) First(ctx context.Context) (*ServiceGroup, error) {
-	nodes, err := sgq.Limit(1).All(setContextOp(ctx, sgq.ctx, ent.OpQueryFirst))
+func (_q *ServiceGroupQuery) First(ctx context.Context) (*ServiceGroup, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -123,8 +123,8 @@ func (sgq *ServiceGroupQuery) First(ctx context.Context) (*ServiceGroup, error) 
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (sgq *ServiceGroupQuery) FirstX(ctx context.Context) *ServiceGroup {
-	node, err := sgq.First(ctx)
+func (_q *ServiceGroupQuery) FirstX(ctx context.Context) *ServiceGroup {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -133,9 +133,9 @@ func (sgq *ServiceGroupQuery) FirstX(ctx context.Context) *ServiceGroup {
 
 // FirstID returns the first ServiceGroup ID from the query.
 // Returns a *NotFoundError when no ServiceGroup ID was found.
-func (sgq *ServiceGroupQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *ServiceGroupQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = sgq.Limit(1).IDs(setContextOp(ctx, sgq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -146,8 +146,8 @@ func (sgq *ServiceGroupQuery) FirstID(ctx context.Context) (id uuid.UUID, err er
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (sgq *ServiceGroupQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := sgq.FirstID(ctx)
+func (_q *ServiceGroupQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -157,8 +157,8 @@ func (sgq *ServiceGroupQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single ServiceGroup entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one ServiceGroup entity is found.
 // Returns a *NotFoundError when no ServiceGroup entities are found.
-func (sgq *ServiceGroupQuery) Only(ctx context.Context) (*ServiceGroup, error) {
-	nodes, err := sgq.Limit(2).All(setContextOp(ctx, sgq.ctx, ent.OpQueryOnly))
+func (_q *ServiceGroupQuery) Only(ctx context.Context) (*ServiceGroup, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -173,8 +173,8 @@ func (sgq *ServiceGroupQuery) Only(ctx context.Context) (*ServiceGroup, error) {
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (sgq *ServiceGroupQuery) OnlyX(ctx context.Context) *ServiceGroup {
-	node, err := sgq.Only(ctx)
+func (_q *ServiceGroupQuery) OnlyX(ctx context.Context) *ServiceGroup {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -184,9 +184,9 @@ func (sgq *ServiceGroupQuery) OnlyX(ctx context.Context) *ServiceGroup {
 // OnlyID is like Only, but returns the only ServiceGroup ID in the query.
 // Returns a *NotSingularError when more than one ServiceGroup ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (sgq *ServiceGroupQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *ServiceGroupQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = sgq.Limit(2).IDs(setContextOp(ctx, sgq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -201,8 +201,8 @@ func (sgq *ServiceGroupQuery) OnlyID(ctx context.Context) (id uuid.UUID, err err
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (sgq *ServiceGroupQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := sgq.OnlyID(ctx)
+func (_q *ServiceGroupQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -210,18 +210,18 @@ func (sgq *ServiceGroupQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of ServiceGroups.
-func (sgq *ServiceGroupQuery) All(ctx context.Context) ([]*ServiceGroup, error) {
-	ctx = setContextOp(ctx, sgq.ctx, ent.OpQueryAll)
-	if err := sgq.prepareQuery(ctx); err != nil {
+func (_q *ServiceGroupQuery) All(ctx context.Context) ([]*ServiceGroup, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*ServiceGroup, *ServiceGroupQuery]()
-	return withInterceptors[[]*ServiceGroup](ctx, sgq, qr, sgq.inters)
+	return withInterceptors[[]*ServiceGroup](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (sgq *ServiceGroupQuery) AllX(ctx context.Context) []*ServiceGroup {
-	nodes, err := sgq.All(ctx)
+func (_q *ServiceGroupQuery) AllX(ctx context.Context) []*ServiceGroup {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -229,20 +229,20 @@ func (sgq *ServiceGroupQuery) AllX(ctx context.Context) []*ServiceGroup {
 }
 
 // IDs executes the query and returns a list of ServiceGroup IDs.
-func (sgq *ServiceGroupQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if sgq.ctx.Unique == nil && sgq.path != nil {
-		sgq.Unique(true)
+func (_q *ServiceGroupQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, sgq.ctx, ent.OpQueryIDs)
-	if err = sgq.Select(servicegroup.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(servicegroup.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (sgq *ServiceGroupQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := sgq.IDs(ctx)
+func (_q *ServiceGroupQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -250,17 +250,17 @@ func (sgq *ServiceGroupQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (sgq *ServiceGroupQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, sgq.ctx, ent.OpQueryCount)
-	if err := sgq.prepareQuery(ctx); err != nil {
+func (_q *ServiceGroupQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, sgq, querierCount[*ServiceGroupQuery](), sgq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*ServiceGroupQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (sgq *ServiceGroupQuery) CountX(ctx context.Context) int {
-	count, err := sgq.Count(ctx)
+func (_q *ServiceGroupQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -268,9 +268,9 @@ func (sgq *ServiceGroupQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (sgq *ServiceGroupQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, sgq.ctx, ent.OpQueryExist)
-	switch _, err := sgq.FirstID(ctx); {
+func (_q *ServiceGroupQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -281,8 +281,8 @@ func (sgq *ServiceGroupQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (sgq *ServiceGroupQuery) ExistX(ctx context.Context) bool {
-	exist, err := sgq.Exist(ctx)
+func (_q *ServiceGroupQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -291,45 +291,45 @@ func (sgq *ServiceGroupQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the ServiceGroupQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (sgq *ServiceGroupQuery) Clone() *ServiceGroupQuery {
-	if sgq == nil {
+func (_q *ServiceGroupQuery) Clone() *ServiceGroupQuery {
+	if _q == nil {
 		return nil
 	}
 	return &ServiceGroupQuery{
-		config:          sgq.config,
-		ctx:             sgq.ctx.Clone(),
-		order:           append([]servicegroup.OrderOption{}, sgq.order...),
-		inters:          append([]Interceptor{}, sgq.inters...),
-		predicates:      append([]predicate.ServiceGroup{}, sgq.predicates...),
-		withEnvironment: sgq.withEnvironment.Clone(),
-		withServices:    sgq.withServices.Clone(),
+		config:          _q.config,
+		ctx:             _q.ctx.Clone(),
+		order:           append([]servicegroup.OrderOption{}, _q.order...),
+		inters:          append([]Interceptor{}, _q.inters...),
+		predicates:      append([]predicate.ServiceGroup{}, _q.predicates...),
+		withEnvironment: _q.withEnvironment.Clone(),
+		withServices:    _q.withServices.Clone(),
 		// clone intermediate query.
-		sql:       sgq.sql.Clone(),
-		path:      sgq.path,
-		modifiers: append([]func(*sql.Selector){}, sgq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithEnvironment tells the query-builder to eager-load the nodes that are connected to
 // the "environment" edge. The optional arguments are used to configure the query builder of the edge.
-func (sgq *ServiceGroupQuery) WithEnvironment(opts ...func(*EnvironmentQuery)) *ServiceGroupQuery {
-	query := (&EnvironmentClient{config: sgq.config}).Query()
+func (_q *ServiceGroupQuery) WithEnvironment(opts ...func(*EnvironmentQuery)) *ServiceGroupQuery {
+	query := (&EnvironmentClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	sgq.withEnvironment = query
-	return sgq
+	_q.withEnvironment = query
+	return _q
 }
 
 // WithServices tells the query-builder to eager-load the nodes that are connected to
 // the "services" edge. The optional arguments are used to configure the query builder of the edge.
-func (sgq *ServiceGroupQuery) WithServices(opts ...func(*ServiceQuery)) *ServiceGroupQuery {
-	query := (&ServiceClient{config: sgq.config}).Query()
+func (_q *ServiceGroupQuery) WithServices(opts ...func(*ServiceQuery)) *ServiceGroupQuery {
+	query := (&ServiceClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	sgq.withServices = query
-	return sgq
+	_q.withServices = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -346,10 +346,10 @@ func (sgq *ServiceGroupQuery) WithServices(opts ...func(*ServiceQuery)) *Service
 //		GroupBy(servicegroup.FieldCreatedAt).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (sgq *ServiceGroupQuery) GroupBy(field string, fields ...string) *ServiceGroupGroupBy {
-	sgq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &ServiceGroupGroupBy{build: sgq}
-	grbuild.flds = &sgq.ctx.Fields
+func (_q *ServiceGroupQuery) GroupBy(field string, fields ...string) *ServiceGroupGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &ServiceGroupGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = servicegroup.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -367,83 +367,83 @@ func (sgq *ServiceGroupQuery) GroupBy(field string, fields ...string) *ServiceGr
 //	client.ServiceGroup.Query().
 //		Select(servicegroup.FieldCreatedAt).
 //		Scan(ctx, &v)
-func (sgq *ServiceGroupQuery) Select(fields ...string) *ServiceGroupSelect {
-	sgq.ctx.Fields = append(sgq.ctx.Fields, fields...)
-	sbuild := &ServiceGroupSelect{ServiceGroupQuery: sgq}
+func (_q *ServiceGroupQuery) Select(fields ...string) *ServiceGroupSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &ServiceGroupSelect{ServiceGroupQuery: _q}
 	sbuild.label = servicegroup.Label
-	sbuild.flds, sbuild.scan = &sgq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a ServiceGroupSelect configured with the given aggregations.
-func (sgq *ServiceGroupQuery) Aggregate(fns ...AggregateFunc) *ServiceGroupSelect {
-	return sgq.Select().Aggregate(fns...)
+func (_q *ServiceGroupQuery) Aggregate(fns ...AggregateFunc) *ServiceGroupSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (sgq *ServiceGroupQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range sgq.inters {
+func (_q *ServiceGroupQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, sgq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range sgq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !servicegroup.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if sgq.path != nil {
-		prev, err := sgq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		sgq.sql = prev
+		_q.sql = prev
 	}
 	return nil
 }
 
-func (sgq *ServiceGroupQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ServiceGroup, error) {
+func (_q *ServiceGroupQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ServiceGroup, error) {
 	var (
 		nodes       = []*ServiceGroup{}
-		_spec       = sgq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
-			sgq.withEnvironment != nil,
-			sgq.withServices != nil,
+			_q.withEnvironment != nil,
+			_q.withServices != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*ServiceGroup).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &ServiceGroup{config: sgq.config}
+		node := &ServiceGroup{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(sgq.modifiers) > 0 {
-		_spec.Modifiers = sgq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, sgq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := sgq.withEnvironment; query != nil {
-		if err := sgq.loadEnvironment(ctx, query, nodes, nil,
+	if query := _q.withEnvironment; query != nil {
+		if err := _q.loadEnvironment(ctx, query, nodes, nil,
 			func(n *ServiceGroup, e *Environment) { n.Edges.Environment = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := sgq.withServices; query != nil {
-		if err := sgq.loadServices(ctx, query, nodes,
+	if query := _q.withServices; query != nil {
+		if err := _q.loadServices(ctx, query, nodes,
 			func(n *ServiceGroup) { n.Edges.Services = []*Service{} },
 			func(n *ServiceGroup, e *Service) { n.Edges.Services = append(n.Edges.Services, e) }); err != nil {
 			return nil, err
@@ -452,7 +452,7 @@ func (sgq *ServiceGroupQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	return nodes, nil
 }
 
-func (sgq *ServiceGroupQuery) loadEnvironment(ctx context.Context, query *EnvironmentQuery, nodes []*ServiceGroup, init func(*ServiceGroup), assign func(*ServiceGroup, *Environment)) error {
+func (_q *ServiceGroupQuery) loadEnvironment(ctx context.Context, query *EnvironmentQuery, nodes []*ServiceGroup, init func(*ServiceGroup), assign func(*ServiceGroup, *Environment)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*ServiceGroup)
 	for i := range nodes {
@@ -481,7 +481,7 @@ func (sgq *ServiceGroupQuery) loadEnvironment(ctx context.Context, query *Enviro
 	}
 	return nil
 }
-func (sgq *ServiceGroupQuery) loadServices(ctx context.Context, query *ServiceQuery, nodes []*ServiceGroup, init func(*ServiceGroup), assign func(*ServiceGroup, *Service)) error {
+func (_q *ServiceGroupQuery) loadServices(ctx context.Context, query *ServiceQuery, nodes []*ServiceGroup, init func(*ServiceGroup), assign func(*ServiceGroup, *Service)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*ServiceGroup)
 	for i := range nodes {
@@ -515,27 +515,27 @@ func (sgq *ServiceGroupQuery) loadServices(ctx context.Context, query *ServiceQu
 	return nil
 }
 
-func (sgq *ServiceGroupQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := sgq.querySpec()
-	if len(sgq.modifiers) > 0 {
-		_spec.Modifiers = sgq.modifiers
+func (_q *ServiceGroupQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = sgq.ctx.Fields
-	if len(sgq.ctx.Fields) > 0 {
-		_spec.Unique = sgq.ctx.Unique != nil && *sgq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, sgq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (sgq *ServiceGroupQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *ServiceGroupQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(servicegroup.Table, servicegroup.Columns, sqlgraph.NewFieldSpec(servicegroup.FieldID, field.TypeUUID))
-	_spec.From = sgq.sql
-	if unique := sgq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if sgq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := sgq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, servicegroup.FieldID)
 		for i := range fields {
@@ -543,24 +543,24 @@ func (sgq *ServiceGroupQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if sgq.withEnvironment != nil {
+		if _q.withEnvironment != nil {
 			_spec.Node.AddColumnOnce(servicegroup.FieldEnvironmentID)
 		}
 	}
-	if ps := sgq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := sgq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := sgq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := sgq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -570,45 +570,45 @@ func (sgq *ServiceGroupQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (sgq *ServiceGroupQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(sgq.driver.Dialect())
+func (_q *ServiceGroupQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(servicegroup.Table)
-	columns := sgq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = servicegroup.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if sgq.sql != nil {
-		selector = sgq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if sgq.ctx.Unique != nil && *sgq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range sgq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range sgq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range sgq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := sgq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := sgq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (sgq *ServiceGroupQuery) Modify(modifiers ...func(s *sql.Selector)) *ServiceGroupSelect {
-	sgq.modifiers = append(sgq.modifiers, modifiers...)
-	return sgq.Select()
+func (_q *ServiceGroupQuery) Modify(modifiers ...func(s *sql.Selector)) *ServiceGroupSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // ServiceGroupGroupBy is the group-by builder for ServiceGroup entities.
@@ -618,41 +618,41 @@ type ServiceGroupGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (sggb *ServiceGroupGroupBy) Aggregate(fns ...AggregateFunc) *ServiceGroupGroupBy {
-	sggb.fns = append(sggb.fns, fns...)
-	return sggb
+func (_g *ServiceGroupGroupBy) Aggregate(fns ...AggregateFunc) *ServiceGroupGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (sggb *ServiceGroupGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, sggb.build.ctx, ent.OpQueryGroupBy)
-	if err := sggb.build.prepareQuery(ctx); err != nil {
+func (_g *ServiceGroupGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*ServiceGroupQuery, *ServiceGroupGroupBy](ctx, sggb.build, sggb, sggb.build.inters, v)
+	return scanWithInterceptors[*ServiceGroupQuery, *ServiceGroupGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (sggb *ServiceGroupGroupBy) sqlScan(ctx context.Context, root *ServiceGroupQuery, v any) error {
+func (_g *ServiceGroupGroupBy) sqlScan(ctx context.Context, root *ServiceGroupQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(sggb.fns))
-	for _, fn := range sggb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*sggb.flds)+len(sggb.fns))
-		for _, f := range *sggb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*sggb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := sggb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -666,27 +666,27 @@ type ServiceGroupSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (sgs *ServiceGroupSelect) Aggregate(fns ...AggregateFunc) *ServiceGroupSelect {
-	sgs.fns = append(sgs.fns, fns...)
-	return sgs
+func (_s *ServiceGroupSelect) Aggregate(fns ...AggregateFunc) *ServiceGroupSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (sgs *ServiceGroupSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, sgs.ctx, ent.OpQuerySelect)
-	if err := sgs.prepareQuery(ctx); err != nil {
+func (_s *ServiceGroupSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*ServiceGroupQuery, *ServiceGroupSelect](ctx, sgs.ServiceGroupQuery, sgs, sgs.inters, v)
+	return scanWithInterceptors[*ServiceGroupQuery, *ServiceGroupSelect](ctx, _s.ServiceGroupQuery, _s, _s.inters, v)
 }
 
-func (sgs *ServiceGroupSelect) sqlScan(ctx context.Context, root *ServiceGroupQuery, v any) error {
+func (_s *ServiceGroupSelect) sqlScan(ctx context.Context, root *ServiceGroupQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(sgs.fns))
-	for _, fn := range sgs.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*sgs.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -694,7 +694,7 @@ func (sgs *ServiceGroupSelect) sqlScan(ctx context.Context, root *ServiceGroupQu
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := sgs.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -702,7 +702,7 @@ func (sgs *ServiceGroupSelect) sqlScan(ctx context.Context, root *ServiceGroupQu
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (sgs *ServiceGroupSelect) Modify(modifiers ...func(s *sql.Selector)) *ServiceGroupSelect {
-	sgs.modifiers = append(sgs.modifiers, modifiers...)
-	return sgs
+func (_s *ServiceGroupSelect) Modify(modifiers ...func(s *sql.Selector)) *ServiceGroupSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

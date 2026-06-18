@@ -35,44 +35,44 @@ type S3Query struct {
 }
 
 // Where adds a new predicate for the S3Query builder.
-func (s *S3Query) Where(ps ...predicate.S3) *S3Query {
-	s.predicates = append(s.predicates, ps...)
-	return s
+func (_q *S3Query) Where(ps ...predicate.S3) *S3Query {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (s *S3Query) Limit(limit int) *S3Query {
-	s.ctx.Limit = &limit
-	return s
+func (_q *S3Query) Limit(limit int) *S3Query {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (s *S3Query) Offset(offset int) *S3Query {
-	s.ctx.Offset = &offset
-	return s
+func (_q *S3Query) Offset(offset int) *S3Query {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (s *S3Query) Unique(unique bool) *S3Query {
-	s.ctx.Unique = &unique
-	return s
+func (_q *S3Query) Unique(unique bool) *S3Query {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (s *S3Query) Order(o ...s3.OrderOption) *S3Query {
-	s.order = append(s.order, o...)
-	return s
+func (_q *S3Query) Order(o ...s3.OrderOption) *S3Query {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTeam chains the current query on the "team" edge.
-func (s *S3Query) QueryTeam() *TeamQuery {
-	query := (&TeamClient{config: s.config}).Query()
+func (_q *S3Query) QueryTeam() *TeamQuery {
+	query := (&TeamClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := s.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := s.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -81,20 +81,20 @@ func (s *S3Query) QueryTeam() *TeamQuery {
 			sqlgraph.To(team.Table, team.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, s3.TeamTable, s3.TeamColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(s.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryServiceBackupSource chains the current query on the "service_backup_source" edge.
-func (s *S3Query) QueryServiceBackupSource() *ServiceConfigQuery {
-	query := (&ServiceConfigClient{config: s.config}).Query()
+func (_q *S3Query) QueryServiceBackupSource() *ServiceConfigQuery {
+	query := (&ServiceConfigClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := s.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := s.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -103,7 +103,7 @@ func (s *S3Query) QueryServiceBackupSource() *ServiceConfigQuery {
 			sqlgraph.To(serviceconfig.Table, serviceconfig.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, s3.ServiceBackupSourceTable, s3.ServiceBackupSourceColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(s.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -111,8 +111,8 @@ func (s *S3Query) QueryServiceBackupSource() *ServiceConfigQuery {
 
 // First returns the first S3 entity from the query.
 // Returns a *NotFoundError when no S3 was found.
-func (s *S3Query) First(ctx context.Context) (*S3, error) {
-	nodes, err := s.Limit(1).All(setContextOp(ctx, s.ctx, ent.OpQueryFirst))
+func (_q *S3Query) First(ctx context.Context) (*S3, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -123,8 +123,8 @@ func (s *S3Query) First(ctx context.Context) (*S3, error) {
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (s *S3Query) FirstX(ctx context.Context) *S3 {
-	node, err := s.First(ctx)
+func (_q *S3Query) FirstX(ctx context.Context) *S3 {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -133,9 +133,9 @@ func (s *S3Query) FirstX(ctx context.Context) *S3 {
 
 // FirstID returns the first S3 ID from the query.
 // Returns a *NotFoundError when no S3 ID was found.
-func (s *S3Query) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *S3Query) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = s.Limit(1).IDs(setContextOp(ctx, s.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -146,8 +146,8 @@ func (s *S3Query) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (s *S3Query) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := s.FirstID(ctx)
+func (_q *S3Query) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -157,8 +157,8 @@ func (s *S3Query) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single S3 entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one S3 entity is found.
 // Returns a *NotFoundError when no S3 entities are found.
-func (s *S3Query) Only(ctx context.Context) (*S3, error) {
-	nodes, err := s.Limit(2).All(setContextOp(ctx, s.ctx, ent.OpQueryOnly))
+func (_q *S3Query) Only(ctx context.Context) (*S3, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -173,8 +173,8 @@ func (s *S3Query) Only(ctx context.Context) (*S3, error) {
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (s *S3Query) OnlyX(ctx context.Context) *S3 {
-	node, err := s.Only(ctx)
+func (_q *S3Query) OnlyX(ctx context.Context) *S3 {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -184,9 +184,9 @@ func (s *S3Query) OnlyX(ctx context.Context) *S3 {
 // OnlyID is like Only, but returns the only S3 ID in the query.
 // Returns a *NotSingularError when more than one S3 ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (s *S3Query) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *S3Query) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = s.Limit(2).IDs(setContextOp(ctx, s.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -201,8 +201,8 @@ func (s *S3Query) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (s *S3Query) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := s.OnlyID(ctx)
+func (_q *S3Query) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -210,18 +210,18 @@ func (s *S3Query) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of S3s.
-func (s *S3Query) All(ctx context.Context) ([]*S3, error) {
-	ctx = setContextOp(ctx, s.ctx, ent.OpQueryAll)
-	if err := s.prepareQuery(ctx); err != nil {
+func (_q *S3Query) All(ctx context.Context) ([]*S3, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*S3, *S3Query]()
-	return withInterceptors[[]*S3](ctx, s, qr, s.inters)
+	return withInterceptors[[]*S3](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (s *S3Query) AllX(ctx context.Context) []*S3 {
-	nodes, err := s.All(ctx)
+func (_q *S3Query) AllX(ctx context.Context) []*S3 {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -229,20 +229,20 @@ func (s *S3Query) AllX(ctx context.Context) []*S3 {
 }
 
 // IDs executes the query and returns a list of S3 IDs.
-func (s *S3Query) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if s.ctx.Unique == nil && s.path != nil {
-		s.Unique(true)
+func (_q *S3Query) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, s.ctx, ent.OpQueryIDs)
-	if err = s.Select(s3.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(s3.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (s *S3Query) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := s.IDs(ctx)
+func (_q *S3Query) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -250,17 +250,17 @@ func (s *S3Query) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (s *S3Query) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, s.ctx, ent.OpQueryCount)
-	if err := s.prepareQuery(ctx); err != nil {
+func (_q *S3Query) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, s, querierCount[*S3Query](), s.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*S3Query](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (s *S3Query) CountX(ctx context.Context) int {
-	count, err := s.Count(ctx)
+func (_q *S3Query) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -268,9 +268,9 @@ func (s *S3Query) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (s *S3Query) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, s.ctx, ent.OpQueryExist)
-	switch _, err := s.FirstID(ctx); {
+func (_q *S3Query) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -281,8 +281,8 @@ func (s *S3Query) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (s *S3Query) ExistX(ctx context.Context) bool {
-	exist, err := s.Exist(ctx)
+func (_q *S3Query) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -291,45 +291,45 @@ func (s *S3Query) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the S3Query builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (s *S3Query) Clone() *S3Query {
-	if s == nil {
+func (_q *S3Query) Clone() *S3Query {
+	if _q == nil {
 		return nil
 	}
 	return &S3Query{
-		config:                  s.config,
-		ctx:                     s.ctx.Clone(),
-		order:                   append([]s3.OrderOption{}, s.order...),
-		inters:                  append([]Interceptor{}, s.inters...),
-		predicates:              append([]predicate.S3{}, s.predicates...),
-		withTeam:                s.withTeam.Clone(),
-		withServiceBackupSource: s.withServiceBackupSource.Clone(),
+		config:                  _q.config,
+		ctx:                     _q.ctx.Clone(),
+		order:                   append([]s3.OrderOption{}, _q.order...),
+		inters:                  append([]Interceptor{}, _q.inters...),
+		predicates:              append([]predicate.S3{}, _q.predicates...),
+		withTeam:                _q.withTeam.Clone(),
+		withServiceBackupSource: _q.withServiceBackupSource.Clone(),
 		// clone intermediate query.
-		sql:       s.sql.Clone(),
-		path:      s.path,
-		modifiers: append([]func(*sql.Selector){}, s.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTeam tells the query-builder to eager-load the nodes that are connected to
 // the "team" edge. The optional arguments are used to configure the query builder of the edge.
-func (s *S3Query) WithTeam(opts ...func(*TeamQuery)) *S3Query {
-	query := (&TeamClient{config: s.config}).Query()
+func (_q *S3Query) WithTeam(opts ...func(*TeamQuery)) *S3Query {
+	query := (&TeamClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	s.withTeam = query
-	return s
+	_q.withTeam = query
+	return _q
 }
 
 // WithServiceBackupSource tells the query-builder to eager-load the nodes that are connected to
 // the "service_backup_source" edge. The optional arguments are used to configure the query builder of the edge.
-func (s *S3Query) WithServiceBackupSource(opts ...func(*ServiceConfigQuery)) *S3Query {
-	query := (&ServiceConfigClient{config: s.config}).Query()
+func (_q *S3Query) WithServiceBackupSource(opts ...func(*ServiceConfigQuery)) *S3Query {
+	query := (&ServiceConfigClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	s.withServiceBackupSource = query
-	return s
+	_q.withServiceBackupSource = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -346,10 +346,10 @@ func (s *S3Query) WithServiceBackupSource(opts ...func(*ServiceConfigQuery)) *S3
 //		GroupBy(s3.FieldCreatedAt).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (s *S3Query) GroupBy(field string, fields ...string) *S3GroupBy {
-	s.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &S3GroupBy{build: s}
-	grbuild.flds = &s.ctx.Fields
+func (_q *S3Query) GroupBy(field string, fields ...string) *S3GroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &S3GroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = s3.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -367,83 +367,83 @@ func (s *S3Query) GroupBy(field string, fields ...string) *S3GroupBy {
 //	client.S3.Query().
 //		Select(s3.FieldCreatedAt).
 //		Scan(ctx, &v)
-func (s *S3Query) Select(fields ...string) *S3Select {
-	s.ctx.Fields = append(s.ctx.Fields, fields...)
-	sbuild := &S3Select{S3Query: s}
+func (_q *S3Query) Select(fields ...string) *S3Select {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &S3Select{S3Query: _q}
 	sbuild.label = s3.Label
-	sbuild.flds, sbuild.scan = &s.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a S3Select configured with the given aggregations.
-func (s *S3Query) Aggregate(fns ...AggregateFunc) *S3Select {
-	return s.Select().Aggregate(fns...)
+func (_q *S3Query) Aggregate(fns ...AggregateFunc) *S3Select {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (s *S3Query) prepareQuery(ctx context.Context) error {
-	for _, inter := range s.inters {
+func (_q *S3Query) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, s); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range s.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !s3.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if s.path != nil {
-		prev, err := s.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		s.sql = prev
+		_q.sql = prev
 	}
 	return nil
 }
 
-func (s *S3Query) sqlAll(ctx context.Context, hooks ...queryHook) ([]*S3, error) {
+func (_q *S3Query) sqlAll(ctx context.Context, hooks ...queryHook) ([]*S3, error) {
 	var (
 		nodes       = []*S3{}
-		_spec       = s.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
-			s.withTeam != nil,
-			s.withServiceBackupSource != nil,
+			_q.withTeam != nil,
+			_q.withServiceBackupSource != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*S3).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &S3{config: s.config}
+		node := &S3{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(s.modifiers) > 0 {
-		_spec.Modifiers = s.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, s.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := s.withTeam; query != nil {
-		if err := s.loadTeam(ctx, query, nodes, nil,
+	if query := _q.withTeam; query != nil {
+		if err := _q.loadTeam(ctx, query, nodes, nil,
 			func(n *S3, e *Team) { n.Edges.Team = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := s.withServiceBackupSource; query != nil {
-		if err := s.loadServiceBackupSource(ctx, query, nodes,
+	if query := _q.withServiceBackupSource; query != nil {
+		if err := _q.loadServiceBackupSource(ctx, query, nodes,
 			func(n *S3) { n.Edges.ServiceBackupSource = []*ServiceConfig{} },
 			func(n *S3, e *ServiceConfig) { n.Edges.ServiceBackupSource = append(n.Edges.ServiceBackupSource, e) }); err != nil {
 			return nil, err
@@ -452,7 +452,7 @@ func (s *S3Query) sqlAll(ctx context.Context, hooks ...queryHook) ([]*S3, error)
 	return nodes, nil
 }
 
-func (s *S3Query) loadTeam(ctx context.Context, query *TeamQuery, nodes []*S3, init func(*S3), assign func(*S3, *Team)) error {
+func (_q *S3Query) loadTeam(ctx context.Context, query *TeamQuery, nodes []*S3, init func(*S3), assign func(*S3, *Team)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*S3)
 	for i := range nodes {
@@ -481,7 +481,7 @@ func (s *S3Query) loadTeam(ctx context.Context, query *TeamQuery, nodes []*S3, i
 	}
 	return nil
 }
-func (s *S3Query) loadServiceBackupSource(ctx context.Context, query *ServiceConfigQuery, nodes []*S3, init func(*S3), assign func(*S3, *ServiceConfig)) error {
+func (_q *S3Query) loadServiceBackupSource(ctx context.Context, query *ServiceConfigQuery, nodes []*S3, init func(*S3), assign func(*S3, *ServiceConfig)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*S3)
 	for i := range nodes {
@@ -515,27 +515,27 @@ func (s *S3Query) loadServiceBackupSource(ctx context.Context, query *ServiceCon
 	return nil
 }
 
-func (s *S3Query) sqlCount(ctx context.Context) (int, error) {
-	_spec := s.querySpec()
-	if len(s.modifiers) > 0 {
-		_spec.Modifiers = s.modifiers
+func (_q *S3Query) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = s.ctx.Fields
-	if len(s.ctx.Fields) > 0 {
-		_spec.Unique = s.ctx.Unique != nil && *s.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, s.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (s *S3Query) querySpec() *sqlgraph.QuerySpec {
+func (_q *S3Query) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(s3.Table, s3.Columns, sqlgraph.NewFieldSpec(s3.FieldID, field.TypeUUID))
-	_spec.From = s.sql
-	if unique := s.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if s.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := s.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, s3.FieldID)
 		for i := range fields {
@@ -543,24 +543,24 @@ func (s *S3Query) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if s.withTeam != nil {
+		if _q.withTeam != nil {
 			_spec.Node.AddColumnOnce(s3.FieldTeamID)
 		}
 	}
-	if ps := s.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := s.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := s.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := s.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -570,45 +570,45 @@ func (s *S3Query) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (s *S3Query) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(s.driver.Dialect())
+func (_q *S3Query) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(s3.Table)
-	columns := s.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = s3.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if s.sql != nil {
-		selector = s.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if s.ctx.Unique != nil && *s.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range s.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range s.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range s.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := s.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := s.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (s *S3Query) Modify(modifiers ...func(s *sql.Selector)) *S3Select {
-	s.modifiers = append(s.modifiers, modifiers...)
-	return s.Select()
+func (_q *S3Query) Modify(modifiers ...func(s *sql.Selector)) *S3Select {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // S3GroupBy is the group-by builder for S3 entities.
@@ -618,41 +618,41 @@ type S3GroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (sb *S3GroupBy) Aggregate(fns ...AggregateFunc) *S3GroupBy {
-	sb.fns = append(sb.fns, fns...)
-	return sb
+func (_g *S3GroupBy) Aggregate(fns ...AggregateFunc) *S3GroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (sb *S3GroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, sb.build.ctx, ent.OpQueryGroupBy)
-	if err := sb.build.prepareQuery(ctx); err != nil {
+func (_g *S3GroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*S3Query, *S3GroupBy](ctx, sb.build, sb, sb.build.inters, v)
+	return scanWithInterceptors[*S3Query, *S3GroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (sb *S3GroupBy) sqlScan(ctx context.Context, root *S3Query, v any) error {
+func (_g *S3GroupBy) sqlScan(ctx context.Context, root *S3Query, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(sb.fns))
-	for _, fn := range sb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*sb.flds)+len(sb.fns))
-		for _, f := range *sb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*sb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := sb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -666,27 +666,27 @@ type S3Select struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (s *S3Select) Aggregate(fns ...AggregateFunc) *S3Select {
-	s.fns = append(s.fns, fns...)
-	return s
+func (_s *S3Select) Aggregate(fns ...AggregateFunc) *S3Select {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (s *S3Select) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, s.ctx, ent.OpQuerySelect)
-	if err := s.prepareQuery(ctx); err != nil {
+func (_s *S3Select) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*S3Query, *S3Select](ctx, s.S3Query, s, s.inters, v)
+	return scanWithInterceptors[*S3Query, *S3Select](ctx, _s.S3Query, _s, _s.inters, v)
 }
 
-func (s *S3Select) sqlScan(ctx context.Context, root *S3Query, v any) error {
+func (_s *S3Select) sqlScan(ctx context.Context, root *S3Query, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(s.fns))
-	for _, fn := range s.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*s.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -694,7 +694,7 @@ func (s *S3Select) sqlScan(ctx context.Context, root *S3Query, v any) error {
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := s.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -702,7 +702,7 @@ func (s *S3Select) sqlScan(ctx context.Context, root *S3Query, v any) error {
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (s *S3Select) Modify(modifiers ...func(s *sql.Selector)) *S3Select {
-	s.modifiers = append(s.modifiers, modifiers...)
-	return s
+func (_s *S3Select) Modify(modifiers ...func(s *sql.Selector)) *S3Select {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

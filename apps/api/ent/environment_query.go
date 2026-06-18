@@ -38,44 +38,44 @@ type EnvironmentQuery struct {
 }
 
 // Where adds a new predicate for the EnvironmentQuery builder.
-func (eq *EnvironmentQuery) Where(ps ...predicate.Environment) *EnvironmentQuery {
-	eq.predicates = append(eq.predicates, ps...)
-	return eq
+func (_q *EnvironmentQuery) Where(ps ...predicate.Environment) *EnvironmentQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (eq *EnvironmentQuery) Limit(limit int) *EnvironmentQuery {
-	eq.ctx.Limit = &limit
-	return eq
+func (_q *EnvironmentQuery) Limit(limit int) *EnvironmentQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (eq *EnvironmentQuery) Offset(offset int) *EnvironmentQuery {
-	eq.ctx.Offset = &offset
-	return eq
+func (_q *EnvironmentQuery) Offset(offset int) *EnvironmentQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (eq *EnvironmentQuery) Unique(unique bool) *EnvironmentQuery {
-	eq.ctx.Unique = &unique
-	return eq
+func (_q *EnvironmentQuery) Unique(unique bool) *EnvironmentQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (eq *EnvironmentQuery) Order(o ...environment.OrderOption) *EnvironmentQuery {
-	eq.order = append(eq.order, o...)
-	return eq
+func (_q *EnvironmentQuery) Order(o ...environment.OrderOption) *EnvironmentQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryProject chains the current query on the "project" edge.
-func (eq *EnvironmentQuery) QueryProject() *ProjectQuery {
-	query := (&ProjectClient{config: eq.config}).Query()
+func (_q *EnvironmentQuery) QueryProject() *ProjectQuery {
+	query := (&ProjectClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := eq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := eq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -84,20 +84,20 @@ func (eq *EnvironmentQuery) QueryProject() *ProjectQuery {
 			sqlgraph.To(project.Table, project.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, environment.ProjectTable, environment.ProjectColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryServices chains the current query on the "services" edge.
-func (eq *EnvironmentQuery) QueryServices() *ServiceQuery {
-	query := (&ServiceClient{config: eq.config}).Query()
+func (_q *EnvironmentQuery) QueryServices() *ServiceQuery {
+	query := (&ServiceClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := eq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := eq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -106,20 +106,20 @@ func (eq *EnvironmentQuery) QueryServices() *ServiceQuery {
 			sqlgraph.To(service.Table, service.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, environment.ServicesTable, environment.ServicesColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryProjectDefault chains the current query on the "project_default" edge.
-func (eq *EnvironmentQuery) QueryProjectDefault() *ProjectQuery {
-	query := (&ProjectClient{config: eq.config}).Query()
+func (_q *EnvironmentQuery) QueryProjectDefault() *ProjectQuery {
+	query := (&ProjectClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := eq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := eq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -128,20 +128,20 @@ func (eq *EnvironmentQuery) QueryProjectDefault() *ProjectQuery {
 			sqlgraph.To(project.Table, project.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, environment.ProjectDefaultTable, environment.ProjectDefaultColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryServiceGroups chains the current query on the "service_groups" edge.
-func (eq *EnvironmentQuery) QueryServiceGroups() *ServiceGroupQuery {
-	query := (&ServiceGroupClient{config: eq.config}).Query()
+func (_q *EnvironmentQuery) QueryServiceGroups() *ServiceGroupQuery {
+	query := (&ServiceGroupClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := eq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := eq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -150,7 +150,7 @@ func (eq *EnvironmentQuery) QueryServiceGroups() *ServiceGroupQuery {
 			sqlgraph.To(servicegroup.Table, servicegroup.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, environment.ServiceGroupsTable, environment.ServiceGroupsColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -158,8 +158,8 @@ func (eq *EnvironmentQuery) QueryServiceGroups() *ServiceGroupQuery {
 
 // First returns the first Environment entity from the query.
 // Returns a *NotFoundError when no Environment was found.
-func (eq *EnvironmentQuery) First(ctx context.Context) (*Environment, error) {
-	nodes, err := eq.Limit(1).All(setContextOp(ctx, eq.ctx, ent.OpQueryFirst))
+func (_q *EnvironmentQuery) First(ctx context.Context) (*Environment, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -170,8 +170,8 @@ func (eq *EnvironmentQuery) First(ctx context.Context) (*Environment, error) {
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (eq *EnvironmentQuery) FirstX(ctx context.Context) *Environment {
-	node, err := eq.First(ctx)
+func (_q *EnvironmentQuery) FirstX(ctx context.Context) *Environment {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -180,9 +180,9 @@ func (eq *EnvironmentQuery) FirstX(ctx context.Context) *Environment {
 
 // FirstID returns the first Environment ID from the query.
 // Returns a *NotFoundError when no Environment ID was found.
-func (eq *EnvironmentQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *EnvironmentQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = eq.Limit(1).IDs(setContextOp(ctx, eq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -193,8 +193,8 @@ func (eq *EnvironmentQuery) FirstID(ctx context.Context) (id uuid.UUID, err erro
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (eq *EnvironmentQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := eq.FirstID(ctx)
+func (_q *EnvironmentQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -204,8 +204,8 @@ func (eq *EnvironmentQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single Environment entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one Environment entity is found.
 // Returns a *NotFoundError when no Environment entities are found.
-func (eq *EnvironmentQuery) Only(ctx context.Context) (*Environment, error) {
-	nodes, err := eq.Limit(2).All(setContextOp(ctx, eq.ctx, ent.OpQueryOnly))
+func (_q *EnvironmentQuery) Only(ctx context.Context) (*Environment, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -220,8 +220,8 @@ func (eq *EnvironmentQuery) Only(ctx context.Context) (*Environment, error) {
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (eq *EnvironmentQuery) OnlyX(ctx context.Context) *Environment {
-	node, err := eq.Only(ctx)
+func (_q *EnvironmentQuery) OnlyX(ctx context.Context) *Environment {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -231,9 +231,9 @@ func (eq *EnvironmentQuery) OnlyX(ctx context.Context) *Environment {
 // OnlyID is like Only, but returns the only Environment ID in the query.
 // Returns a *NotSingularError when more than one Environment ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (eq *EnvironmentQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *EnvironmentQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = eq.Limit(2).IDs(setContextOp(ctx, eq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -248,8 +248,8 @@ func (eq *EnvironmentQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (eq *EnvironmentQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := eq.OnlyID(ctx)
+func (_q *EnvironmentQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -257,18 +257,18 @@ func (eq *EnvironmentQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of Environments.
-func (eq *EnvironmentQuery) All(ctx context.Context) ([]*Environment, error) {
-	ctx = setContextOp(ctx, eq.ctx, ent.OpQueryAll)
-	if err := eq.prepareQuery(ctx); err != nil {
+func (_q *EnvironmentQuery) All(ctx context.Context) ([]*Environment, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*Environment, *EnvironmentQuery]()
-	return withInterceptors[[]*Environment](ctx, eq, qr, eq.inters)
+	return withInterceptors[[]*Environment](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (eq *EnvironmentQuery) AllX(ctx context.Context) []*Environment {
-	nodes, err := eq.All(ctx)
+func (_q *EnvironmentQuery) AllX(ctx context.Context) []*Environment {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -276,20 +276,20 @@ func (eq *EnvironmentQuery) AllX(ctx context.Context) []*Environment {
 }
 
 // IDs executes the query and returns a list of Environment IDs.
-func (eq *EnvironmentQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if eq.ctx.Unique == nil && eq.path != nil {
-		eq.Unique(true)
+func (_q *EnvironmentQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, eq.ctx, ent.OpQueryIDs)
-	if err = eq.Select(environment.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(environment.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (eq *EnvironmentQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := eq.IDs(ctx)
+func (_q *EnvironmentQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -297,17 +297,17 @@ func (eq *EnvironmentQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (eq *EnvironmentQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, eq.ctx, ent.OpQueryCount)
-	if err := eq.prepareQuery(ctx); err != nil {
+func (_q *EnvironmentQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, eq, querierCount[*EnvironmentQuery](), eq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*EnvironmentQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (eq *EnvironmentQuery) CountX(ctx context.Context) int {
-	count, err := eq.Count(ctx)
+func (_q *EnvironmentQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -315,9 +315,9 @@ func (eq *EnvironmentQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (eq *EnvironmentQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, eq.ctx, ent.OpQueryExist)
-	switch _, err := eq.FirstID(ctx); {
+func (_q *EnvironmentQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -328,8 +328,8 @@ func (eq *EnvironmentQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (eq *EnvironmentQuery) ExistX(ctx context.Context) bool {
-	exist, err := eq.Exist(ctx)
+func (_q *EnvironmentQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -338,69 +338,69 @@ func (eq *EnvironmentQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the EnvironmentQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (eq *EnvironmentQuery) Clone() *EnvironmentQuery {
-	if eq == nil {
+func (_q *EnvironmentQuery) Clone() *EnvironmentQuery {
+	if _q == nil {
 		return nil
 	}
 	return &EnvironmentQuery{
-		config:             eq.config,
-		ctx:                eq.ctx.Clone(),
-		order:              append([]environment.OrderOption{}, eq.order...),
-		inters:             append([]Interceptor{}, eq.inters...),
-		predicates:         append([]predicate.Environment{}, eq.predicates...),
-		withProject:        eq.withProject.Clone(),
-		withServices:       eq.withServices.Clone(),
-		withProjectDefault: eq.withProjectDefault.Clone(),
-		withServiceGroups:  eq.withServiceGroups.Clone(),
+		config:             _q.config,
+		ctx:                _q.ctx.Clone(),
+		order:              append([]environment.OrderOption{}, _q.order...),
+		inters:             append([]Interceptor{}, _q.inters...),
+		predicates:         append([]predicate.Environment{}, _q.predicates...),
+		withProject:        _q.withProject.Clone(),
+		withServices:       _q.withServices.Clone(),
+		withProjectDefault: _q.withProjectDefault.Clone(),
+		withServiceGroups:  _q.withServiceGroups.Clone(),
 		// clone intermediate query.
-		sql:       eq.sql.Clone(),
-		path:      eq.path,
-		modifiers: append([]func(*sql.Selector){}, eq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithProject tells the query-builder to eager-load the nodes that are connected to
 // the "project" edge. The optional arguments are used to configure the query builder of the edge.
-func (eq *EnvironmentQuery) WithProject(opts ...func(*ProjectQuery)) *EnvironmentQuery {
-	query := (&ProjectClient{config: eq.config}).Query()
+func (_q *EnvironmentQuery) WithProject(opts ...func(*ProjectQuery)) *EnvironmentQuery {
+	query := (&ProjectClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	eq.withProject = query
-	return eq
+	_q.withProject = query
+	return _q
 }
 
 // WithServices tells the query-builder to eager-load the nodes that are connected to
 // the "services" edge. The optional arguments are used to configure the query builder of the edge.
-func (eq *EnvironmentQuery) WithServices(opts ...func(*ServiceQuery)) *EnvironmentQuery {
-	query := (&ServiceClient{config: eq.config}).Query()
+func (_q *EnvironmentQuery) WithServices(opts ...func(*ServiceQuery)) *EnvironmentQuery {
+	query := (&ServiceClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	eq.withServices = query
-	return eq
+	_q.withServices = query
+	return _q
 }
 
 // WithProjectDefault tells the query-builder to eager-load the nodes that are connected to
 // the "project_default" edge. The optional arguments are used to configure the query builder of the edge.
-func (eq *EnvironmentQuery) WithProjectDefault(opts ...func(*ProjectQuery)) *EnvironmentQuery {
-	query := (&ProjectClient{config: eq.config}).Query()
+func (_q *EnvironmentQuery) WithProjectDefault(opts ...func(*ProjectQuery)) *EnvironmentQuery {
+	query := (&ProjectClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	eq.withProjectDefault = query
-	return eq
+	_q.withProjectDefault = query
+	return _q
 }
 
 // WithServiceGroups tells the query-builder to eager-load the nodes that are connected to
 // the "service_groups" edge. The optional arguments are used to configure the query builder of the edge.
-func (eq *EnvironmentQuery) WithServiceGroups(opts ...func(*ServiceGroupQuery)) *EnvironmentQuery {
-	query := (&ServiceGroupClient{config: eq.config}).Query()
+func (_q *EnvironmentQuery) WithServiceGroups(opts ...func(*ServiceGroupQuery)) *EnvironmentQuery {
+	query := (&ServiceGroupClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	eq.withServiceGroups = query
-	return eq
+	_q.withServiceGroups = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -417,10 +417,10 @@ func (eq *EnvironmentQuery) WithServiceGroups(opts ...func(*ServiceGroupQuery)) 
 //		GroupBy(environment.FieldCreatedAt).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (eq *EnvironmentQuery) GroupBy(field string, fields ...string) *EnvironmentGroupBy {
-	eq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &EnvironmentGroupBy{build: eq}
-	grbuild.flds = &eq.ctx.Fields
+func (_q *EnvironmentQuery) GroupBy(field string, fields ...string) *EnvironmentGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &EnvironmentGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = environment.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -438,99 +438,99 @@ func (eq *EnvironmentQuery) GroupBy(field string, fields ...string) *Environment
 //	client.Environment.Query().
 //		Select(environment.FieldCreatedAt).
 //		Scan(ctx, &v)
-func (eq *EnvironmentQuery) Select(fields ...string) *EnvironmentSelect {
-	eq.ctx.Fields = append(eq.ctx.Fields, fields...)
-	sbuild := &EnvironmentSelect{EnvironmentQuery: eq}
+func (_q *EnvironmentQuery) Select(fields ...string) *EnvironmentSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &EnvironmentSelect{EnvironmentQuery: _q}
 	sbuild.label = environment.Label
-	sbuild.flds, sbuild.scan = &eq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a EnvironmentSelect configured with the given aggregations.
-func (eq *EnvironmentQuery) Aggregate(fns ...AggregateFunc) *EnvironmentSelect {
-	return eq.Select().Aggregate(fns...)
+func (_q *EnvironmentQuery) Aggregate(fns ...AggregateFunc) *EnvironmentSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (eq *EnvironmentQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range eq.inters {
+func (_q *EnvironmentQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, eq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range eq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !environment.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if eq.path != nil {
-		prev, err := eq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		eq.sql = prev
+		_q.sql = prev
 	}
 	return nil
 }
 
-func (eq *EnvironmentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Environment, error) {
+func (_q *EnvironmentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Environment, error) {
 	var (
 		nodes       = []*Environment{}
-		_spec       = eq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [4]bool{
-			eq.withProject != nil,
-			eq.withServices != nil,
-			eq.withProjectDefault != nil,
-			eq.withServiceGroups != nil,
+			_q.withProject != nil,
+			_q.withServices != nil,
+			_q.withProjectDefault != nil,
+			_q.withServiceGroups != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Environment).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &Environment{config: eq.config}
+		node := &Environment{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(eq.modifiers) > 0 {
-		_spec.Modifiers = eq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, eq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := eq.withProject; query != nil {
-		if err := eq.loadProject(ctx, query, nodes, nil,
+	if query := _q.withProject; query != nil {
+		if err := _q.loadProject(ctx, query, nodes, nil,
 			func(n *Environment, e *Project) { n.Edges.Project = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := eq.withServices; query != nil {
-		if err := eq.loadServices(ctx, query, nodes,
+	if query := _q.withServices; query != nil {
+		if err := _q.loadServices(ctx, query, nodes,
 			func(n *Environment) { n.Edges.Services = []*Service{} },
 			func(n *Environment, e *Service) { n.Edges.Services = append(n.Edges.Services, e) }); err != nil {
 			return nil, err
 		}
 	}
-	if query := eq.withProjectDefault; query != nil {
-		if err := eq.loadProjectDefault(ctx, query, nodes,
+	if query := _q.withProjectDefault; query != nil {
+		if err := _q.loadProjectDefault(ctx, query, nodes,
 			func(n *Environment) { n.Edges.ProjectDefault = []*Project{} },
 			func(n *Environment, e *Project) { n.Edges.ProjectDefault = append(n.Edges.ProjectDefault, e) }); err != nil {
 			return nil, err
 		}
 	}
-	if query := eq.withServiceGroups; query != nil {
-		if err := eq.loadServiceGroups(ctx, query, nodes,
+	if query := _q.withServiceGroups; query != nil {
+		if err := _q.loadServiceGroups(ctx, query, nodes,
 			func(n *Environment) { n.Edges.ServiceGroups = []*ServiceGroup{} },
 			func(n *Environment, e *ServiceGroup) { n.Edges.ServiceGroups = append(n.Edges.ServiceGroups, e) }); err != nil {
 			return nil, err
@@ -539,7 +539,7 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 	return nodes, nil
 }
 
-func (eq *EnvironmentQuery) loadProject(ctx context.Context, query *ProjectQuery, nodes []*Environment, init func(*Environment), assign func(*Environment, *Project)) error {
+func (_q *EnvironmentQuery) loadProject(ctx context.Context, query *ProjectQuery, nodes []*Environment, init func(*Environment), assign func(*Environment, *Project)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Environment)
 	for i := range nodes {
@@ -568,7 +568,7 @@ func (eq *EnvironmentQuery) loadProject(ctx context.Context, query *ProjectQuery
 	}
 	return nil
 }
-func (eq *EnvironmentQuery) loadServices(ctx context.Context, query *ServiceQuery, nodes []*Environment, init func(*Environment), assign func(*Environment, *Service)) error {
+func (_q *EnvironmentQuery) loadServices(ctx context.Context, query *ServiceQuery, nodes []*Environment, init func(*Environment), assign func(*Environment, *Service)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Environment)
 	for i := range nodes {
@@ -598,7 +598,7 @@ func (eq *EnvironmentQuery) loadServices(ctx context.Context, query *ServiceQuer
 	}
 	return nil
 }
-func (eq *EnvironmentQuery) loadProjectDefault(ctx context.Context, query *ProjectQuery, nodes []*Environment, init func(*Environment), assign func(*Environment, *Project)) error {
+func (_q *EnvironmentQuery) loadProjectDefault(ctx context.Context, query *ProjectQuery, nodes []*Environment, init func(*Environment), assign func(*Environment, *Project)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Environment)
 	for i := range nodes {
@@ -631,7 +631,7 @@ func (eq *EnvironmentQuery) loadProjectDefault(ctx context.Context, query *Proje
 	}
 	return nil
 }
-func (eq *EnvironmentQuery) loadServiceGroups(ctx context.Context, query *ServiceGroupQuery, nodes []*Environment, init func(*Environment), assign func(*Environment, *ServiceGroup)) error {
+func (_q *EnvironmentQuery) loadServiceGroups(ctx context.Context, query *ServiceGroupQuery, nodes []*Environment, init func(*Environment), assign func(*Environment, *ServiceGroup)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Environment)
 	for i := range nodes {
@@ -662,27 +662,27 @@ func (eq *EnvironmentQuery) loadServiceGroups(ctx context.Context, query *Servic
 	return nil
 }
 
-func (eq *EnvironmentQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := eq.querySpec()
-	if len(eq.modifiers) > 0 {
-		_spec.Modifiers = eq.modifiers
+func (_q *EnvironmentQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = eq.ctx.Fields
-	if len(eq.ctx.Fields) > 0 {
-		_spec.Unique = eq.ctx.Unique != nil && *eq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, eq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (eq *EnvironmentQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *EnvironmentQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(environment.Table, environment.Columns, sqlgraph.NewFieldSpec(environment.FieldID, field.TypeUUID))
-	_spec.From = eq.sql
-	if unique := eq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if eq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := eq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, environment.FieldID)
 		for i := range fields {
@@ -690,24 +690,24 @@ func (eq *EnvironmentQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if eq.withProject != nil {
+		if _q.withProject != nil {
 			_spec.Node.AddColumnOnce(environment.FieldProjectID)
 		}
 	}
-	if ps := eq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := eq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := eq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := eq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -717,45 +717,45 @@ func (eq *EnvironmentQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (eq *EnvironmentQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(eq.driver.Dialect())
+func (_q *EnvironmentQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(environment.Table)
-	columns := eq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = environment.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if eq.sql != nil {
-		selector = eq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if eq.ctx.Unique != nil && *eq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range eq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range eq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range eq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := eq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := eq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (eq *EnvironmentQuery) Modify(modifiers ...func(s *sql.Selector)) *EnvironmentSelect {
-	eq.modifiers = append(eq.modifiers, modifiers...)
-	return eq.Select()
+func (_q *EnvironmentQuery) Modify(modifiers ...func(s *sql.Selector)) *EnvironmentSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // EnvironmentGroupBy is the group-by builder for Environment entities.
@@ -765,41 +765,41 @@ type EnvironmentGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (egb *EnvironmentGroupBy) Aggregate(fns ...AggregateFunc) *EnvironmentGroupBy {
-	egb.fns = append(egb.fns, fns...)
-	return egb
+func (_g *EnvironmentGroupBy) Aggregate(fns ...AggregateFunc) *EnvironmentGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (egb *EnvironmentGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, egb.build.ctx, ent.OpQueryGroupBy)
-	if err := egb.build.prepareQuery(ctx); err != nil {
+func (_g *EnvironmentGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*EnvironmentQuery, *EnvironmentGroupBy](ctx, egb.build, egb, egb.build.inters, v)
+	return scanWithInterceptors[*EnvironmentQuery, *EnvironmentGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (egb *EnvironmentGroupBy) sqlScan(ctx context.Context, root *EnvironmentQuery, v any) error {
+func (_g *EnvironmentGroupBy) sqlScan(ctx context.Context, root *EnvironmentQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(egb.fns))
-	for _, fn := range egb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*egb.flds)+len(egb.fns))
-		for _, f := range *egb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*egb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := egb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -813,27 +813,27 @@ type EnvironmentSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (es *EnvironmentSelect) Aggregate(fns ...AggregateFunc) *EnvironmentSelect {
-	es.fns = append(es.fns, fns...)
-	return es
+func (_s *EnvironmentSelect) Aggregate(fns ...AggregateFunc) *EnvironmentSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (es *EnvironmentSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, es.ctx, ent.OpQuerySelect)
-	if err := es.prepareQuery(ctx); err != nil {
+func (_s *EnvironmentSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*EnvironmentQuery, *EnvironmentSelect](ctx, es.EnvironmentQuery, es, es.inters, v)
+	return scanWithInterceptors[*EnvironmentQuery, *EnvironmentSelect](ctx, _s.EnvironmentQuery, _s, _s.inters, v)
 }
 
-func (es *EnvironmentSelect) sqlScan(ctx context.Context, root *EnvironmentQuery, v any) error {
+func (_s *EnvironmentSelect) sqlScan(ctx context.Context, root *EnvironmentQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(es.fns))
-	for _, fn := range es.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*es.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -841,7 +841,7 @@ func (es *EnvironmentSelect) sqlScan(ctx context.Context, root *EnvironmentQuery
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := es.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -849,7 +849,7 @@ func (es *EnvironmentSelect) sqlScan(ctx context.Context, root *EnvironmentQuery
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (es *EnvironmentSelect) Modify(modifiers ...func(s *sql.Selector)) *EnvironmentSelect {
-	es.modifiers = append(es.modifiers, modifiers...)
-	return es
+func (_s *EnvironmentSelect) Modify(modifiers ...func(s *sql.Selector)) *EnvironmentSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

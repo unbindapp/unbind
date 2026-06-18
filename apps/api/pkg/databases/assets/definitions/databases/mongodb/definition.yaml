@@ -14,8 +14,7 @@ commonLabels:
 image:
   registry: docker.io
   repository: mongo
-  # Quote the tag: the CloudPirates chart schema requires image.tag to be a
-  # string, and an unquoted value like 8.2 is parsed by YAML as a number.
+  # Quote: CloudPirates' schema requires a string (unquoted 8.2 -> YAML number).
   tag: {{ .Parameters.version | default "8.3" | quote }}
   extraArgs:
     - "--wiredTigerCacheSizeGB=0.25"

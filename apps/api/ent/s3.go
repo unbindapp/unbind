@@ -95,7 +95,7 @@ func (*S3) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the S3 fields.
-func (s *S3) assignValues(columns []string, values []any) error {
+func (_m *S3) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -105,58 +105,58 @@ func (s *S3) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				s.ID = *value
+				_m.ID = *value
 			}
 		case s3.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				s.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case s3.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				s.UpdatedAt = value.Time
+				_m.UpdatedAt = value.Time
 			}
 		case s3.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				s.Name = value.String
+				_m.Name = value.String
 			}
 		case s3.FieldEndpoint:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field endpoint", values[i])
 			} else if value.Valid {
-				s.Endpoint = value.String
+				_m.Endpoint = value.String
 			}
 		case s3.FieldRegion:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field region", values[i])
 			} else if value.Valid {
-				s.Region = value.String
+				_m.Region = value.String
 			}
 		case s3.FieldForcePathStyle:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field force_path_style", values[i])
 			} else if value.Valid {
-				s.ForcePathStyle = value.Bool
+				_m.ForcePathStyle = value.Bool
 			}
 		case s3.FieldKubernetesSecret:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field kubernetes_secret", values[i])
 			} else if value.Valid {
-				s.KubernetesSecret = value.String
+				_m.KubernetesSecret = value.String
 			}
 		case s3.FieldTeamID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field team_id", values[i])
 			} else if value != nil {
-				s.TeamID = *value
+				_m.TeamID = *value
 			}
 		default:
-			s.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -164,66 +164,66 @@ func (s *S3) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the S3.
 // This includes values selected through modifiers, order, etc.
-func (s *S3) Value(name string) (ent.Value, error) {
-	return s.selectValues.Get(name)
+func (_m *S3) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTeam queries the "team" edge of the S3 entity.
-func (s *S3) QueryTeam() *TeamQuery {
-	return NewS3Client(s.config).QueryTeam(s)
+func (_m *S3) QueryTeam() *TeamQuery {
+	return NewS3Client(_m.config).QueryTeam(_m)
 }
 
 // QueryServiceBackupSource queries the "service_backup_source" edge of the S3 entity.
-func (s *S3) QueryServiceBackupSource() *ServiceConfigQuery {
-	return NewS3Client(s.config).QueryServiceBackupSource(s)
+func (_m *S3) QueryServiceBackupSource() *ServiceConfigQuery {
+	return NewS3Client(_m.config).QueryServiceBackupSource(_m)
 }
 
 // Update returns a builder for updating this S3.
 // Note that you need to call S3.Unwrap() before calling this method if this S3
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (s *S3) Update() *S3UpdateOne {
-	return NewS3Client(s.config).UpdateOne(s)
+func (_m *S3) Update() *S3UpdateOne {
+	return NewS3Client(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the S3 entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (s *S3) Unwrap() *S3 {
-	_tx, ok := s.config.driver.(*txDriver)
+func (_m *S3) Unwrap() *S3 {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: S3 is not a transactional entity")
 	}
-	s.config.driver = _tx.drv
-	return s
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (s *S3) String() string {
+func (_m *S3) String() string {
 	var builder strings.Builder
 	builder.WriteString("S3(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", s.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("created_at=")
-	builder.WriteString(s.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(s.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("name=")
-	builder.WriteString(s.Name)
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
 	builder.WriteString("endpoint=")
-	builder.WriteString(s.Endpoint)
+	builder.WriteString(_m.Endpoint)
 	builder.WriteString(", ")
 	builder.WriteString("region=")
-	builder.WriteString(s.Region)
+	builder.WriteString(_m.Region)
 	builder.WriteString(", ")
 	builder.WriteString("force_path_style=")
-	builder.WriteString(fmt.Sprintf("%v", s.ForcePathStyle))
+	builder.WriteString(fmt.Sprintf("%v", _m.ForcePathStyle))
 	builder.WriteString(", ")
 	builder.WriteString("kubernetes_secret=")
-	builder.WriteString(s.KubernetesSecret)
+	builder.WriteString(_m.KubernetesSecret)
 	builder.WriteString(", ")
 	builder.WriteString("team_id=")
-	builder.WriteString(fmt.Sprintf("%v", s.TeamID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TeamID))
 	builder.WriteByte(')')
 	return builder.String()
 }

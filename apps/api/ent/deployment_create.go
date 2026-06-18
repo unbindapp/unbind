@@ -28,334 +28,334 @@ type DeploymentCreate struct {
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (dc *DeploymentCreate) SetCreatedAt(t time.Time) *DeploymentCreate {
-	dc.mutation.SetCreatedAt(t)
-	return dc
+func (_c *DeploymentCreate) SetCreatedAt(v time.Time) *DeploymentCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (dc *DeploymentCreate) SetNillableCreatedAt(t *time.Time) *DeploymentCreate {
-	if t != nil {
-		dc.SetCreatedAt(*t)
+func (_c *DeploymentCreate) SetNillableCreatedAt(v *time.Time) *DeploymentCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return dc
+	return _c
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (dc *DeploymentCreate) SetUpdatedAt(t time.Time) *DeploymentCreate {
-	dc.mutation.SetUpdatedAt(t)
-	return dc
+func (_c *DeploymentCreate) SetUpdatedAt(v time.Time) *DeploymentCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (dc *DeploymentCreate) SetNillableUpdatedAt(t *time.Time) *DeploymentCreate {
-	if t != nil {
-		dc.SetUpdatedAt(*t)
+func (_c *DeploymentCreate) SetNillableUpdatedAt(v *time.Time) *DeploymentCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
 	}
-	return dc
+	return _c
 }
 
 // SetServiceID sets the "service_id" field.
-func (dc *DeploymentCreate) SetServiceID(u uuid.UUID) *DeploymentCreate {
-	dc.mutation.SetServiceID(u)
-	return dc
+func (_c *DeploymentCreate) SetServiceID(v uuid.UUID) *DeploymentCreate {
+	_c.mutation.SetServiceID(v)
+	return _c
 }
 
 // SetStatus sets the "status" field.
-func (dc *DeploymentCreate) SetStatus(ss schema.DeploymentStatus) *DeploymentCreate {
-	dc.mutation.SetStatus(ss)
-	return dc
+func (_c *DeploymentCreate) SetStatus(v schema.DeploymentStatus) *DeploymentCreate {
+	_c.mutation.SetStatus(v)
+	return _c
 }
 
 // SetSource sets the "source" field.
-func (dc *DeploymentCreate) SetSource(ss schema.DeploymentSource) *DeploymentCreate {
-	dc.mutation.SetSource(ss)
-	return dc
+func (_c *DeploymentCreate) SetSource(v schema.DeploymentSource) *DeploymentCreate {
+	_c.mutation.SetSource(v)
+	return _c
 }
 
 // SetNillableSource sets the "source" field if the given value is not nil.
-func (dc *DeploymentCreate) SetNillableSource(ss *schema.DeploymentSource) *DeploymentCreate {
-	if ss != nil {
-		dc.SetSource(*ss)
+func (_c *DeploymentCreate) SetNillableSource(v *schema.DeploymentSource) *DeploymentCreate {
+	if v != nil {
+		_c.SetSource(*v)
 	}
-	return dc
+	return _c
 }
 
 // SetError sets the "error" field.
-func (dc *DeploymentCreate) SetError(s string) *DeploymentCreate {
-	dc.mutation.SetError(s)
-	return dc
+func (_c *DeploymentCreate) SetError(v string) *DeploymentCreate {
+	_c.mutation.SetError(v)
+	return _c
 }
 
 // SetNillableError sets the "error" field if the given value is not nil.
-func (dc *DeploymentCreate) SetNillableError(s *string) *DeploymentCreate {
-	if s != nil {
-		dc.SetError(*s)
+func (_c *DeploymentCreate) SetNillableError(v *string) *DeploymentCreate {
+	if v != nil {
+		_c.SetError(*v)
 	}
-	return dc
+	return _c
 }
 
 // SetCommitSha sets the "commit_sha" field.
-func (dc *DeploymentCreate) SetCommitSha(s string) *DeploymentCreate {
-	dc.mutation.SetCommitSha(s)
-	return dc
+func (_c *DeploymentCreate) SetCommitSha(v string) *DeploymentCreate {
+	_c.mutation.SetCommitSha(v)
+	return _c
 }
 
 // SetNillableCommitSha sets the "commit_sha" field if the given value is not nil.
-func (dc *DeploymentCreate) SetNillableCommitSha(s *string) *DeploymentCreate {
-	if s != nil {
-		dc.SetCommitSha(*s)
+func (_c *DeploymentCreate) SetNillableCommitSha(v *string) *DeploymentCreate {
+	if v != nil {
+		_c.SetCommitSha(*v)
 	}
-	return dc
+	return _c
 }
 
 // SetCommitMessage sets the "commit_message" field.
-func (dc *DeploymentCreate) SetCommitMessage(s string) *DeploymentCreate {
-	dc.mutation.SetCommitMessage(s)
-	return dc
+func (_c *DeploymentCreate) SetCommitMessage(v string) *DeploymentCreate {
+	_c.mutation.SetCommitMessage(v)
+	return _c
 }
 
 // SetNillableCommitMessage sets the "commit_message" field if the given value is not nil.
-func (dc *DeploymentCreate) SetNillableCommitMessage(s *string) *DeploymentCreate {
-	if s != nil {
-		dc.SetCommitMessage(*s)
+func (_c *DeploymentCreate) SetNillableCommitMessage(v *string) *DeploymentCreate {
+	if v != nil {
+		_c.SetCommitMessage(*v)
 	}
-	return dc
+	return _c
 }
 
 // SetGitBranch sets the "git_branch" field.
-func (dc *DeploymentCreate) SetGitBranch(s string) *DeploymentCreate {
-	dc.mutation.SetGitBranch(s)
-	return dc
+func (_c *DeploymentCreate) SetGitBranch(v string) *DeploymentCreate {
+	_c.mutation.SetGitBranch(v)
+	return _c
 }
 
 // SetNillableGitBranch sets the "git_branch" field if the given value is not nil.
-func (dc *DeploymentCreate) SetNillableGitBranch(s *string) *DeploymentCreate {
-	if s != nil {
-		dc.SetGitBranch(*s)
+func (_c *DeploymentCreate) SetNillableGitBranch(v *string) *DeploymentCreate {
+	if v != nil {
+		_c.SetGitBranch(*v)
 	}
-	return dc
+	return _c
 }
 
 // SetCommitAuthor sets the "commit_author" field.
-func (dc *DeploymentCreate) SetCommitAuthor(sc *schema.GitCommitter) *DeploymentCreate {
-	dc.mutation.SetCommitAuthor(sc)
-	return dc
+func (_c *DeploymentCreate) SetCommitAuthor(v *schema.GitCommitter) *DeploymentCreate {
+	_c.mutation.SetCommitAuthor(v)
+	return _c
 }
 
 // SetQueuedAt sets the "queued_at" field.
-func (dc *DeploymentCreate) SetQueuedAt(t time.Time) *DeploymentCreate {
-	dc.mutation.SetQueuedAt(t)
-	return dc
+func (_c *DeploymentCreate) SetQueuedAt(v time.Time) *DeploymentCreate {
+	_c.mutation.SetQueuedAt(v)
+	return _c
 }
 
 // SetNillableQueuedAt sets the "queued_at" field if the given value is not nil.
-func (dc *DeploymentCreate) SetNillableQueuedAt(t *time.Time) *DeploymentCreate {
-	if t != nil {
-		dc.SetQueuedAt(*t)
+func (_c *DeploymentCreate) SetNillableQueuedAt(v *time.Time) *DeploymentCreate {
+	if v != nil {
+		_c.SetQueuedAt(*v)
 	}
-	return dc
+	return _c
 }
 
 // SetStartedAt sets the "started_at" field.
-func (dc *DeploymentCreate) SetStartedAt(t time.Time) *DeploymentCreate {
-	dc.mutation.SetStartedAt(t)
-	return dc
+func (_c *DeploymentCreate) SetStartedAt(v time.Time) *DeploymentCreate {
+	_c.mutation.SetStartedAt(v)
+	return _c
 }
 
 // SetNillableStartedAt sets the "started_at" field if the given value is not nil.
-func (dc *DeploymentCreate) SetNillableStartedAt(t *time.Time) *DeploymentCreate {
-	if t != nil {
-		dc.SetStartedAt(*t)
+func (_c *DeploymentCreate) SetNillableStartedAt(v *time.Time) *DeploymentCreate {
+	if v != nil {
+		_c.SetStartedAt(*v)
 	}
-	return dc
+	return _c
 }
 
 // SetCompletedAt sets the "completed_at" field.
-func (dc *DeploymentCreate) SetCompletedAt(t time.Time) *DeploymentCreate {
-	dc.mutation.SetCompletedAt(t)
-	return dc
+func (_c *DeploymentCreate) SetCompletedAt(v time.Time) *DeploymentCreate {
+	_c.mutation.SetCompletedAt(v)
+	return _c
 }
 
 // SetNillableCompletedAt sets the "completed_at" field if the given value is not nil.
-func (dc *DeploymentCreate) SetNillableCompletedAt(t *time.Time) *DeploymentCreate {
-	if t != nil {
-		dc.SetCompletedAt(*t)
+func (_c *DeploymentCreate) SetNillableCompletedAt(v *time.Time) *DeploymentCreate {
+	if v != nil {
+		_c.SetCompletedAt(*v)
 	}
-	return dc
+	return _c
 }
 
 // SetKubernetesJobName sets the "kubernetes_job_name" field.
-func (dc *DeploymentCreate) SetKubernetesJobName(s string) *DeploymentCreate {
-	dc.mutation.SetKubernetesJobName(s)
-	return dc
+func (_c *DeploymentCreate) SetKubernetesJobName(v string) *DeploymentCreate {
+	_c.mutation.SetKubernetesJobName(v)
+	return _c
 }
 
 // SetNillableKubernetesJobName sets the "kubernetes_job_name" field if the given value is not nil.
-func (dc *DeploymentCreate) SetNillableKubernetesJobName(s *string) *DeploymentCreate {
-	if s != nil {
-		dc.SetKubernetesJobName(*s)
+func (_c *DeploymentCreate) SetNillableKubernetesJobName(v *string) *DeploymentCreate {
+	if v != nil {
+		_c.SetKubernetesJobName(*v)
 	}
-	return dc
+	return _c
 }
 
 // SetKubernetesJobStatus sets the "kubernetes_job_status" field.
-func (dc *DeploymentCreate) SetKubernetesJobStatus(s string) *DeploymentCreate {
-	dc.mutation.SetKubernetesJobStatus(s)
-	return dc
+func (_c *DeploymentCreate) SetKubernetesJobStatus(v string) *DeploymentCreate {
+	_c.mutation.SetKubernetesJobStatus(v)
+	return _c
 }
 
 // SetNillableKubernetesJobStatus sets the "kubernetes_job_status" field if the given value is not nil.
-func (dc *DeploymentCreate) SetNillableKubernetesJobStatus(s *string) *DeploymentCreate {
-	if s != nil {
-		dc.SetKubernetesJobStatus(*s)
+func (_c *DeploymentCreate) SetNillableKubernetesJobStatus(v *string) *DeploymentCreate {
+	if v != nil {
+		_c.SetKubernetesJobStatus(*v)
 	}
-	return dc
+	return _c
 }
 
 // SetAttempts sets the "attempts" field.
-func (dc *DeploymentCreate) SetAttempts(i int) *DeploymentCreate {
-	dc.mutation.SetAttempts(i)
-	return dc
+func (_c *DeploymentCreate) SetAttempts(v int) *DeploymentCreate {
+	_c.mutation.SetAttempts(v)
+	return _c
 }
 
 // SetNillableAttempts sets the "attempts" field if the given value is not nil.
-func (dc *DeploymentCreate) SetNillableAttempts(i *int) *DeploymentCreate {
-	if i != nil {
-		dc.SetAttempts(*i)
+func (_c *DeploymentCreate) SetNillableAttempts(v *int) *DeploymentCreate {
+	if v != nil {
+		_c.SetAttempts(*v)
 	}
-	return dc
+	return _c
 }
 
 // SetImage sets the "image" field.
-func (dc *DeploymentCreate) SetImage(s string) *DeploymentCreate {
-	dc.mutation.SetImage(s)
-	return dc
+func (_c *DeploymentCreate) SetImage(v string) *DeploymentCreate {
+	_c.mutation.SetImage(v)
+	return _c
 }
 
 // SetNillableImage sets the "image" field if the given value is not nil.
-func (dc *DeploymentCreate) SetNillableImage(s *string) *DeploymentCreate {
-	if s != nil {
-		dc.SetImage(*s)
+func (_c *DeploymentCreate) SetNillableImage(v *string) *DeploymentCreate {
+	if v != nil {
+		_c.SetImage(*v)
 	}
-	return dc
+	return _c
 }
 
 // SetResourceDefinition sets the "resource_definition" field.
-func (dc *DeploymentCreate) SetResourceDefinition(v *v1.Service) *DeploymentCreate {
-	dc.mutation.SetResourceDefinition(v)
-	return dc
+func (_c *DeploymentCreate) SetResourceDefinition(v *v1.Service) *DeploymentCreate {
+	_c.mutation.SetResourceDefinition(v)
+	return _c
 }
 
 // SetBuilder sets the "builder" field.
-func (dc *DeploymentCreate) SetBuilder(sb schema.ServiceBuilder) *DeploymentCreate {
-	dc.mutation.SetBuilder(sb)
-	return dc
+func (_c *DeploymentCreate) SetBuilder(v schema.ServiceBuilder) *DeploymentCreate {
+	_c.mutation.SetBuilder(v)
+	return _c
 }
 
 // SetRailpackBuilderInstallCommand sets the "railpack_builder_install_command" field.
-func (dc *DeploymentCreate) SetRailpackBuilderInstallCommand(s string) *DeploymentCreate {
-	dc.mutation.SetRailpackBuilderInstallCommand(s)
-	return dc
+func (_c *DeploymentCreate) SetRailpackBuilderInstallCommand(v string) *DeploymentCreate {
+	_c.mutation.SetRailpackBuilderInstallCommand(v)
+	return _c
 }
 
 // SetNillableRailpackBuilderInstallCommand sets the "railpack_builder_install_command" field if the given value is not nil.
-func (dc *DeploymentCreate) SetNillableRailpackBuilderInstallCommand(s *string) *DeploymentCreate {
-	if s != nil {
-		dc.SetRailpackBuilderInstallCommand(*s)
+func (_c *DeploymentCreate) SetNillableRailpackBuilderInstallCommand(v *string) *DeploymentCreate {
+	if v != nil {
+		_c.SetRailpackBuilderInstallCommand(*v)
 	}
-	return dc
+	return _c
 }
 
 // SetRailpackBuilderBuildCommand sets the "railpack_builder_build_command" field.
-func (dc *DeploymentCreate) SetRailpackBuilderBuildCommand(s string) *DeploymentCreate {
-	dc.mutation.SetRailpackBuilderBuildCommand(s)
-	return dc
+func (_c *DeploymentCreate) SetRailpackBuilderBuildCommand(v string) *DeploymentCreate {
+	_c.mutation.SetRailpackBuilderBuildCommand(v)
+	return _c
 }
 
 // SetNillableRailpackBuilderBuildCommand sets the "railpack_builder_build_command" field if the given value is not nil.
-func (dc *DeploymentCreate) SetNillableRailpackBuilderBuildCommand(s *string) *DeploymentCreate {
-	if s != nil {
-		dc.SetRailpackBuilderBuildCommand(*s)
+func (_c *DeploymentCreate) SetNillableRailpackBuilderBuildCommand(v *string) *DeploymentCreate {
+	if v != nil {
+		_c.SetRailpackBuilderBuildCommand(*v)
 	}
-	return dc
+	return _c
 }
 
 // SetRunCommand sets the "run_command" field.
-func (dc *DeploymentCreate) SetRunCommand(s string) *DeploymentCreate {
-	dc.mutation.SetRunCommand(s)
-	return dc
+func (_c *DeploymentCreate) SetRunCommand(v string) *DeploymentCreate {
+	_c.mutation.SetRunCommand(v)
+	return _c
 }
 
 // SetNillableRunCommand sets the "run_command" field if the given value is not nil.
-func (dc *DeploymentCreate) SetNillableRunCommand(s *string) *DeploymentCreate {
-	if s != nil {
-		dc.SetRunCommand(*s)
+func (_c *DeploymentCreate) SetNillableRunCommand(v *string) *DeploymentCreate {
+	if v != nil {
+		_c.SetRunCommand(*v)
 	}
-	return dc
+	return _c
 }
 
 // SetDockerBuilderDockerfilePath sets the "docker_builder_dockerfile_path" field.
-func (dc *DeploymentCreate) SetDockerBuilderDockerfilePath(s string) *DeploymentCreate {
-	dc.mutation.SetDockerBuilderDockerfilePath(s)
-	return dc
+func (_c *DeploymentCreate) SetDockerBuilderDockerfilePath(v string) *DeploymentCreate {
+	_c.mutation.SetDockerBuilderDockerfilePath(v)
+	return _c
 }
 
 // SetNillableDockerBuilderDockerfilePath sets the "docker_builder_dockerfile_path" field if the given value is not nil.
-func (dc *DeploymentCreate) SetNillableDockerBuilderDockerfilePath(s *string) *DeploymentCreate {
-	if s != nil {
-		dc.SetDockerBuilderDockerfilePath(*s)
+func (_c *DeploymentCreate) SetNillableDockerBuilderDockerfilePath(v *string) *DeploymentCreate {
+	if v != nil {
+		_c.SetDockerBuilderDockerfilePath(*v)
 	}
-	return dc
+	return _c
 }
 
 // SetDockerBuilderBuildContext sets the "docker_builder_build_context" field.
-func (dc *DeploymentCreate) SetDockerBuilderBuildContext(s string) *DeploymentCreate {
-	dc.mutation.SetDockerBuilderBuildContext(s)
-	return dc
+func (_c *DeploymentCreate) SetDockerBuilderBuildContext(v string) *DeploymentCreate {
+	_c.mutation.SetDockerBuilderBuildContext(v)
+	return _c
 }
 
 // SetNillableDockerBuilderBuildContext sets the "docker_builder_build_context" field if the given value is not nil.
-func (dc *DeploymentCreate) SetNillableDockerBuilderBuildContext(s *string) *DeploymentCreate {
-	if s != nil {
-		dc.SetDockerBuilderBuildContext(*s)
+func (_c *DeploymentCreate) SetNillableDockerBuilderBuildContext(v *string) *DeploymentCreate {
+	if v != nil {
+		_c.SetDockerBuilderBuildContext(*v)
 	}
-	return dc
+	return _c
 }
 
 // SetID sets the "id" field.
-func (dc *DeploymentCreate) SetID(u uuid.UUID) *DeploymentCreate {
-	dc.mutation.SetID(u)
-	return dc
+func (_c *DeploymentCreate) SetID(v uuid.UUID) *DeploymentCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (dc *DeploymentCreate) SetNillableID(u *uuid.UUID) *DeploymentCreate {
-	if u != nil {
-		dc.SetID(*u)
+func (_c *DeploymentCreate) SetNillableID(v *uuid.UUID) *DeploymentCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return dc
+	return _c
 }
 
 // SetService sets the "service" edge to the Service entity.
-func (dc *DeploymentCreate) SetService(s *Service) *DeploymentCreate {
-	return dc.SetServiceID(s.ID)
+func (_c *DeploymentCreate) SetService(v *Service) *DeploymentCreate {
+	return _c.SetServiceID(v.ID)
 }
 
 // Mutation returns the DeploymentMutation object of the builder.
-func (dc *DeploymentCreate) Mutation() *DeploymentMutation {
-	return dc.mutation
+func (_c *DeploymentCreate) Mutation() *DeploymentMutation {
+	return _c.mutation
 }
 
 // Save creates the Deployment in the database.
-func (dc *DeploymentCreate) Save(ctx context.Context) (*Deployment, error) {
-	dc.defaults()
-	return withHooks(ctx, dc.sqlSave, dc.mutation, dc.hooks)
+func (_c *DeploymentCreate) Save(ctx context.Context) (*Deployment, error) {
+	_c.defaults()
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (dc *DeploymentCreate) SaveX(ctx context.Context) *Deployment {
-	v, err := dc.Save(ctx)
+func (_c *DeploymentCreate) SaveX(ctx context.Context) *Deployment {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -363,92 +363,92 @@ func (dc *DeploymentCreate) SaveX(ctx context.Context) *Deployment {
 }
 
 // Exec executes the query.
-func (dc *DeploymentCreate) Exec(ctx context.Context) error {
-	_, err := dc.Save(ctx)
+func (_c *DeploymentCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (dc *DeploymentCreate) ExecX(ctx context.Context) {
-	if err := dc.Exec(ctx); err != nil {
+func (_c *DeploymentCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (dc *DeploymentCreate) defaults() {
-	if _, ok := dc.mutation.CreatedAt(); !ok {
+func (_c *DeploymentCreate) defaults() {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := deployment.DefaultCreatedAt()
-		dc.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := dc.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		v := deployment.DefaultUpdatedAt()
-		dc.mutation.SetUpdatedAt(v)
+		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := dc.mutation.Source(); !ok {
+	if _, ok := _c.mutation.Source(); !ok {
 		v := deployment.DefaultSource
-		dc.mutation.SetSource(v)
+		_c.mutation.SetSource(v)
 	}
-	if _, ok := dc.mutation.Attempts(); !ok {
+	if _, ok := _c.mutation.Attempts(); !ok {
 		v := deployment.DefaultAttempts
-		dc.mutation.SetAttempts(v)
+		_c.mutation.SetAttempts(v)
 	}
-	if _, ok := dc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		v := deployment.DefaultID()
-		dc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (dc *DeploymentCreate) check() error {
-	if _, ok := dc.mutation.CreatedAt(); !ok {
+func (_c *DeploymentCreate) check() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Deployment.created_at"`)}
 	}
-	if _, ok := dc.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Deployment.updated_at"`)}
 	}
-	if _, ok := dc.mutation.ServiceID(); !ok {
+	if _, ok := _c.mutation.ServiceID(); !ok {
 		return &ValidationError{Name: "service_id", err: errors.New(`ent: missing required field "Deployment.service_id"`)}
 	}
-	if _, ok := dc.mutation.Status(); !ok {
+	if _, ok := _c.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Deployment.status"`)}
 	}
-	if v, ok := dc.mutation.Status(); ok {
+	if v, ok := _c.mutation.Status(); ok {
 		if err := deployment.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Deployment.status": %w`, err)}
 		}
 	}
-	if _, ok := dc.mutation.Source(); !ok {
+	if _, ok := _c.mutation.Source(); !ok {
 		return &ValidationError{Name: "source", err: errors.New(`ent: missing required field "Deployment.source"`)}
 	}
-	if v, ok := dc.mutation.Source(); ok {
+	if v, ok := _c.mutation.Source(); ok {
 		if err := deployment.SourceValidator(v); err != nil {
 			return &ValidationError{Name: "source", err: fmt.Errorf(`ent: validator failed for field "Deployment.source": %w`, err)}
 		}
 	}
-	if _, ok := dc.mutation.Attempts(); !ok {
+	if _, ok := _c.mutation.Attempts(); !ok {
 		return &ValidationError{Name: "attempts", err: errors.New(`ent: missing required field "Deployment.attempts"`)}
 	}
-	if _, ok := dc.mutation.Builder(); !ok {
+	if _, ok := _c.mutation.Builder(); !ok {
 		return &ValidationError{Name: "builder", err: errors.New(`ent: missing required field "Deployment.builder"`)}
 	}
-	if v, ok := dc.mutation.Builder(); ok {
+	if v, ok := _c.mutation.Builder(); ok {
 		if err := deployment.BuilderValidator(v); err != nil {
 			return &ValidationError{Name: "builder", err: fmt.Errorf(`ent: validator failed for field "Deployment.builder": %w`, err)}
 		}
 	}
-	if len(dc.mutation.ServiceIDs()) == 0 {
+	if len(_c.mutation.ServiceIDs()) == 0 {
 		return &ValidationError{Name: "service", err: errors.New(`ent: missing required edge "Deployment.service"`)}
 	}
 	return nil
 }
 
-func (dc *DeploymentCreate) sqlSave(ctx context.Context) (*Deployment, error) {
-	if err := dc.check(); err != nil {
+func (_c *DeploymentCreate) sqlSave(ctx context.Context) (*Deployment, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := dc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, dc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -461,114 +461,114 @@ func (dc *DeploymentCreate) sqlSave(ctx context.Context) (*Deployment, error) {
 			return nil, err
 		}
 	}
-	dc.mutation.id = &_node.ID
-	dc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (dc *DeploymentCreate) createSpec() (*Deployment, *sqlgraph.CreateSpec) {
+func (_c *DeploymentCreate) createSpec() (*Deployment, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Deployment{config: dc.config}
+		_node = &Deployment{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(deployment.Table, sqlgraph.NewFieldSpec(deployment.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = dc.conflict
-	if id, ok := dc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := dc.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(deployment.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if value, ok := dc.mutation.UpdatedAt(); ok {
+	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(deployment.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := dc.mutation.Status(); ok {
+	if value, ok := _c.mutation.Status(); ok {
 		_spec.SetField(deployment.FieldStatus, field.TypeEnum, value)
 		_node.Status = value
 	}
-	if value, ok := dc.mutation.Source(); ok {
+	if value, ok := _c.mutation.Source(); ok {
 		_spec.SetField(deployment.FieldSource, field.TypeEnum, value)
 		_node.Source = value
 	}
-	if value, ok := dc.mutation.Error(); ok {
+	if value, ok := _c.mutation.Error(); ok {
 		_spec.SetField(deployment.FieldError, field.TypeString, value)
 		_node.Error = value
 	}
-	if value, ok := dc.mutation.CommitSha(); ok {
+	if value, ok := _c.mutation.CommitSha(); ok {
 		_spec.SetField(deployment.FieldCommitSha, field.TypeString, value)
 		_node.CommitSha = &value
 	}
-	if value, ok := dc.mutation.CommitMessage(); ok {
+	if value, ok := _c.mutation.CommitMessage(); ok {
 		_spec.SetField(deployment.FieldCommitMessage, field.TypeString, value)
 		_node.CommitMessage = &value
 	}
-	if value, ok := dc.mutation.GitBranch(); ok {
+	if value, ok := _c.mutation.GitBranch(); ok {
 		_spec.SetField(deployment.FieldGitBranch, field.TypeString, value)
 		_node.GitBranch = &value
 	}
-	if value, ok := dc.mutation.CommitAuthor(); ok {
+	if value, ok := _c.mutation.CommitAuthor(); ok {
 		_spec.SetField(deployment.FieldCommitAuthor, field.TypeJSON, value)
 		_node.CommitAuthor = value
 	}
-	if value, ok := dc.mutation.QueuedAt(); ok {
+	if value, ok := _c.mutation.QueuedAt(); ok {
 		_spec.SetField(deployment.FieldQueuedAt, field.TypeTime, value)
 		_node.QueuedAt = &value
 	}
-	if value, ok := dc.mutation.StartedAt(); ok {
+	if value, ok := _c.mutation.StartedAt(); ok {
 		_spec.SetField(deployment.FieldStartedAt, field.TypeTime, value)
 		_node.StartedAt = &value
 	}
-	if value, ok := dc.mutation.CompletedAt(); ok {
+	if value, ok := _c.mutation.CompletedAt(); ok {
 		_spec.SetField(deployment.FieldCompletedAt, field.TypeTime, value)
 		_node.CompletedAt = &value
 	}
-	if value, ok := dc.mutation.KubernetesJobName(); ok {
+	if value, ok := _c.mutation.KubernetesJobName(); ok {
 		_spec.SetField(deployment.FieldKubernetesJobName, field.TypeString, value)
 		_node.KubernetesJobName = value
 	}
-	if value, ok := dc.mutation.KubernetesJobStatus(); ok {
+	if value, ok := _c.mutation.KubernetesJobStatus(); ok {
 		_spec.SetField(deployment.FieldKubernetesJobStatus, field.TypeString, value)
 		_node.KubernetesJobStatus = value
 	}
-	if value, ok := dc.mutation.Attempts(); ok {
+	if value, ok := _c.mutation.Attempts(); ok {
 		_spec.SetField(deployment.FieldAttempts, field.TypeInt, value)
 		_node.Attempts = value
 	}
-	if value, ok := dc.mutation.Image(); ok {
+	if value, ok := _c.mutation.Image(); ok {
 		_spec.SetField(deployment.FieldImage, field.TypeString, value)
 		_node.Image = &value
 	}
-	if value, ok := dc.mutation.ResourceDefinition(); ok {
+	if value, ok := _c.mutation.ResourceDefinition(); ok {
 		_spec.SetField(deployment.FieldResourceDefinition, field.TypeJSON, value)
 		_node.ResourceDefinition = value
 	}
-	if value, ok := dc.mutation.Builder(); ok {
+	if value, ok := _c.mutation.Builder(); ok {
 		_spec.SetField(deployment.FieldBuilder, field.TypeEnum, value)
 		_node.Builder = value
 	}
-	if value, ok := dc.mutation.RailpackBuilderInstallCommand(); ok {
+	if value, ok := _c.mutation.RailpackBuilderInstallCommand(); ok {
 		_spec.SetField(deployment.FieldRailpackBuilderInstallCommand, field.TypeString, value)
 		_node.RailpackBuilderInstallCommand = &value
 	}
-	if value, ok := dc.mutation.RailpackBuilderBuildCommand(); ok {
+	if value, ok := _c.mutation.RailpackBuilderBuildCommand(); ok {
 		_spec.SetField(deployment.FieldRailpackBuilderBuildCommand, field.TypeString, value)
 		_node.RailpackBuilderBuildCommand = &value
 	}
-	if value, ok := dc.mutation.RunCommand(); ok {
+	if value, ok := _c.mutation.RunCommand(); ok {
 		_spec.SetField(deployment.FieldRunCommand, field.TypeString, value)
 		_node.RunCommand = &value
 	}
-	if value, ok := dc.mutation.DockerBuilderDockerfilePath(); ok {
+	if value, ok := _c.mutation.DockerBuilderDockerfilePath(); ok {
 		_spec.SetField(deployment.FieldDockerBuilderDockerfilePath, field.TypeString, value)
 		_node.DockerBuilderDockerfilePath = &value
 	}
-	if value, ok := dc.mutation.DockerBuilderBuildContext(); ok {
+	if value, ok := _c.mutation.DockerBuilderBuildContext(); ok {
 		_spec.SetField(deployment.FieldDockerBuilderBuildContext, field.TypeString, value)
 		_node.DockerBuilderBuildContext = &value
 	}
-	if nodes := dc.mutation.ServiceIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ServiceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -604,10 +604,10 @@ func (dc *DeploymentCreate) createSpec() (*Deployment, *sqlgraph.CreateSpec) {
 //			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
-func (dc *DeploymentCreate) OnConflict(opts ...sql.ConflictOption) *DeploymentUpsertOne {
-	dc.conflict = opts
+func (_c *DeploymentCreate) OnConflict(opts ...sql.ConflictOption) *DeploymentUpsertOne {
+	_c.conflict = opts
 	return &DeploymentUpsertOne{
-		create: dc,
+		create: _c,
 	}
 }
 
@@ -617,10 +617,10 @@ func (dc *DeploymentCreate) OnConflict(opts ...sql.ConflictOption) *DeploymentUp
 //	client.Deployment.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (dc *DeploymentCreate) OnConflictColumns(columns ...string) *DeploymentUpsertOne {
-	dc.conflict = append(dc.conflict, sql.ConflictColumns(columns...))
+func (_c *DeploymentCreate) OnConflictColumns(columns ...string) *DeploymentUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &DeploymentUpsertOne{
-		create: dc,
+		create: _c,
 	}
 }
 
@@ -1567,16 +1567,16 @@ type DeploymentCreateBulk struct {
 }
 
 // Save creates the Deployment entities in the database.
-func (dcb *DeploymentCreateBulk) Save(ctx context.Context) ([]*Deployment, error) {
-	if dcb.err != nil {
-		return nil, dcb.err
+func (_c *DeploymentCreateBulk) Save(ctx context.Context) ([]*Deployment, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(dcb.builders))
-	nodes := make([]*Deployment, len(dcb.builders))
-	mutators := make([]Mutator, len(dcb.builders))
-	for i := range dcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*Deployment, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := dcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*DeploymentMutation)
@@ -1590,12 +1590,12 @@ func (dcb *DeploymentCreateBulk) Save(ctx context.Context) ([]*Deployment, error
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, dcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = dcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, dcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -1615,7 +1615,7 @@ func (dcb *DeploymentCreateBulk) Save(ctx context.Context) ([]*Deployment, error
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, dcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -1623,8 +1623,8 @@ func (dcb *DeploymentCreateBulk) Save(ctx context.Context) ([]*Deployment, error
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (dcb *DeploymentCreateBulk) SaveX(ctx context.Context) []*Deployment {
-	v, err := dcb.Save(ctx)
+func (_c *DeploymentCreateBulk) SaveX(ctx context.Context) []*Deployment {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -1632,14 +1632,14 @@ func (dcb *DeploymentCreateBulk) SaveX(ctx context.Context) []*Deployment {
 }
 
 // Exec executes the query.
-func (dcb *DeploymentCreateBulk) Exec(ctx context.Context) error {
-	_, err := dcb.Save(ctx)
+func (_c *DeploymentCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (dcb *DeploymentCreateBulk) ExecX(ctx context.Context) {
-	if err := dcb.Exec(ctx); err != nil {
+func (_c *DeploymentCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -1659,10 +1659,10 @@ func (dcb *DeploymentCreateBulk) ExecX(ctx context.Context) {
 //			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
-func (dcb *DeploymentCreateBulk) OnConflict(opts ...sql.ConflictOption) *DeploymentUpsertBulk {
-	dcb.conflict = opts
+func (_c *DeploymentCreateBulk) OnConflict(opts ...sql.ConflictOption) *DeploymentUpsertBulk {
+	_c.conflict = opts
 	return &DeploymentUpsertBulk{
-		create: dcb,
+		create: _c,
 	}
 }
 
@@ -1672,10 +1672,10 @@ func (dcb *DeploymentCreateBulk) OnConflict(opts ...sql.ConflictOption) *Deploym
 //	client.Deployment.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (dcb *DeploymentCreateBulk) OnConflictColumns(columns ...string) *DeploymentUpsertBulk {
-	dcb.conflict = append(dcb.conflict, sql.ConflictColumns(columns...))
+func (_c *DeploymentCreateBulk) OnConflictColumns(columns ...string) *DeploymentUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &DeploymentUpsertBulk{
-		create: dcb,
+		create: _c,
 	}
 }
 

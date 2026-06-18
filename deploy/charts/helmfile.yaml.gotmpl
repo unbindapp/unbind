@@ -613,13 +613,9 @@ releases:
                 allowedRoutes:
                   namespaces:
                     from: All
-              # The platform's own domain gets a dedicated HTTPS listener. Its cert
-              # is issued over HTTP-01 by the explicit Certificate created in the
-              # cert-manager hook below, which carries the issue-temporary-certificate
-              # annotation so this listener programs immediately (self-signed) and stays
-              # up even while ACME is slow/unreachable — cert-manager swaps in the real
-              # cert once it issues. Relying on the gateway-shim instead would leave 443
-              # closed until first issuance, which makes the origin unreachable (CF 521).
+              # HTTPS for the platform domain. Cert comes from the explicit
+              # Certificate in the cert-manager hook below (issue-temporary-certificate),
+              # so 443 programs immediately instead of staying closed until ACME issues.
               - name: https-main
                 protocol: HTTPS
                 port: 443
@@ -687,13 +683,8 @@ releases:
             {{- end }}
             EOF
             {{- if eq $certProvider "gateway" }}
-            # Explicit Certificate for the platform domain. We create it ourselves
-            # (rather than letting the gateway-shim auto-create one from a Gateway
-            # annotation) so we can set issue-temporary-certificate: the secret is
-            # populated with a self-signed cert immediately, so the gateway's https-main
-            # listener programs right away and the origin is reachable on :443 even
-            # before — or during an outage of — ACME. cert-manager overwrites it with
-            # the real Let's Encrypt cert once issuance succeeds.
+            # Explicit Certificate (not the gateway-shim) so issue-temporary-certificate
+            # seeds a self-signed cert immediately and 443 is reachable before ACME issues.
             cat <<EOF | kubectl apply -f -
             apiVersion: cert-manager.io/v1
             kind: Certificate

@@ -20,56 +20,56 @@ type VariableReferenceDelete struct {
 }
 
 // Where appends a list predicates to the VariableReferenceDelete builder.
-func (vrd *VariableReferenceDelete) Where(ps ...predicate.VariableReference) *VariableReferenceDelete {
-	vrd.mutation.Where(ps...)
-	return vrd
+func (_d *VariableReferenceDelete) Where(ps ...predicate.VariableReference) *VariableReferenceDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (vrd *VariableReferenceDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, vrd.sqlExec, vrd.mutation, vrd.hooks)
+func (_d *VariableReferenceDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (vrd *VariableReferenceDelete) ExecX(ctx context.Context) int {
-	n, err := vrd.Exec(ctx)
+func (_d *VariableReferenceDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (vrd *VariableReferenceDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *VariableReferenceDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(variablereference.Table, sqlgraph.NewFieldSpec(variablereference.FieldID, field.TypeUUID))
-	if ps := vrd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, vrd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	vrd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // VariableReferenceDeleteOne is the builder for deleting a single VariableReference entity.
 type VariableReferenceDeleteOne struct {
-	vrd *VariableReferenceDelete
+	_d *VariableReferenceDelete
 }
 
 // Where appends a list predicates to the VariableReferenceDelete builder.
-func (vrdo *VariableReferenceDeleteOne) Where(ps ...predicate.VariableReference) *VariableReferenceDeleteOne {
-	vrdo.vrd.mutation.Where(ps...)
-	return vrdo
+func (_d *VariableReferenceDeleteOne) Where(ps ...predicate.VariableReference) *VariableReferenceDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (vrdo *VariableReferenceDeleteOne) Exec(ctx context.Context) error {
-	n, err := vrdo.vrd.Exec(ctx)
+func (_d *VariableReferenceDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (vrdo *VariableReferenceDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (vrdo *VariableReferenceDeleteOne) ExecX(ctx context.Context) {
-	if err := vrdo.Exec(ctx); err != nil {
+func (_d *VariableReferenceDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

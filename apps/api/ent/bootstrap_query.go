@@ -29,40 +29,40 @@ type BootstrapQuery struct {
 }
 
 // Where adds a new predicate for the BootstrapQuery builder.
-func (bq *BootstrapQuery) Where(ps ...predicate.Bootstrap) *BootstrapQuery {
-	bq.predicates = append(bq.predicates, ps...)
-	return bq
+func (_q *BootstrapQuery) Where(ps ...predicate.Bootstrap) *BootstrapQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (bq *BootstrapQuery) Limit(limit int) *BootstrapQuery {
-	bq.ctx.Limit = &limit
-	return bq
+func (_q *BootstrapQuery) Limit(limit int) *BootstrapQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (bq *BootstrapQuery) Offset(offset int) *BootstrapQuery {
-	bq.ctx.Offset = &offset
-	return bq
+func (_q *BootstrapQuery) Offset(offset int) *BootstrapQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (bq *BootstrapQuery) Unique(unique bool) *BootstrapQuery {
-	bq.ctx.Unique = &unique
-	return bq
+func (_q *BootstrapQuery) Unique(unique bool) *BootstrapQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (bq *BootstrapQuery) Order(o ...bootstrap.OrderOption) *BootstrapQuery {
-	bq.order = append(bq.order, o...)
-	return bq
+func (_q *BootstrapQuery) Order(o ...bootstrap.OrderOption) *BootstrapQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // First returns the first Bootstrap entity from the query.
 // Returns a *NotFoundError when no Bootstrap was found.
-func (bq *BootstrapQuery) First(ctx context.Context) (*Bootstrap, error) {
-	nodes, err := bq.Limit(1).All(setContextOp(ctx, bq.ctx, ent.OpQueryFirst))
+func (_q *BootstrapQuery) First(ctx context.Context) (*Bootstrap, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -73,8 +73,8 @@ func (bq *BootstrapQuery) First(ctx context.Context) (*Bootstrap, error) {
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (bq *BootstrapQuery) FirstX(ctx context.Context) *Bootstrap {
-	node, err := bq.First(ctx)
+func (_q *BootstrapQuery) FirstX(ctx context.Context) *Bootstrap {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -83,9 +83,9 @@ func (bq *BootstrapQuery) FirstX(ctx context.Context) *Bootstrap {
 
 // FirstID returns the first Bootstrap ID from the query.
 // Returns a *NotFoundError when no Bootstrap ID was found.
-func (bq *BootstrapQuery) FirstID(ctx context.Context) (id int, err error) {
+func (_q *BootstrapQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = bq.Limit(1).IDs(setContextOp(ctx, bq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -96,8 +96,8 @@ func (bq *BootstrapQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (bq *BootstrapQuery) FirstIDX(ctx context.Context) int {
-	id, err := bq.FirstID(ctx)
+func (_q *BootstrapQuery) FirstIDX(ctx context.Context) int {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -107,8 +107,8 @@ func (bq *BootstrapQuery) FirstIDX(ctx context.Context) int {
 // Only returns a single Bootstrap entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one Bootstrap entity is found.
 // Returns a *NotFoundError when no Bootstrap entities are found.
-func (bq *BootstrapQuery) Only(ctx context.Context) (*Bootstrap, error) {
-	nodes, err := bq.Limit(2).All(setContextOp(ctx, bq.ctx, ent.OpQueryOnly))
+func (_q *BootstrapQuery) Only(ctx context.Context) (*Bootstrap, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -123,8 +123,8 @@ func (bq *BootstrapQuery) Only(ctx context.Context) (*Bootstrap, error) {
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (bq *BootstrapQuery) OnlyX(ctx context.Context) *Bootstrap {
-	node, err := bq.Only(ctx)
+func (_q *BootstrapQuery) OnlyX(ctx context.Context) *Bootstrap {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -134,9 +134,9 @@ func (bq *BootstrapQuery) OnlyX(ctx context.Context) *Bootstrap {
 // OnlyID is like Only, but returns the only Bootstrap ID in the query.
 // Returns a *NotSingularError when more than one Bootstrap ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (bq *BootstrapQuery) OnlyID(ctx context.Context) (id int, err error) {
+func (_q *BootstrapQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = bq.Limit(2).IDs(setContextOp(ctx, bq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -151,8 +151,8 @@ func (bq *BootstrapQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (bq *BootstrapQuery) OnlyIDX(ctx context.Context) int {
-	id, err := bq.OnlyID(ctx)
+func (_q *BootstrapQuery) OnlyIDX(ctx context.Context) int {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -160,18 +160,18 @@ func (bq *BootstrapQuery) OnlyIDX(ctx context.Context) int {
 }
 
 // All executes the query and returns a list of Bootstraps.
-func (bq *BootstrapQuery) All(ctx context.Context) ([]*Bootstrap, error) {
-	ctx = setContextOp(ctx, bq.ctx, ent.OpQueryAll)
-	if err := bq.prepareQuery(ctx); err != nil {
+func (_q *BootstrapQuery) All(ctx context.Context) ([]*Bootstrap, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*Bootstrap, *BootstrapQuery]()
-	return withInterceptors[[]*Bootstrap](ctx, bq, qr, bq.inters)
+	return withInterceptors[[]*Bootstrap](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (bq *BootstrapQuery) AllX(ctx context.Context) []*Bootstrap {
-	nodes, err := bq.All(ctx)
+func (_q *BootstrapQuery) AllX(ctx context.Context) []*Bootstrap {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -179,20 +179,20 @@ func (bq *BootstrapQuery) AllX(ctx context.Context) []*Bootstrap {
 }
 
 // IDs executes the query and returns a list of Bootstrap IDs.
-func (bq *BootstrapQuery) IDs(ctx context.Context) (ids []int, err error) {
-	if bq.ctx.Unique == nil && bq.path != nil {
-		bq.Unique(true)
+func (_q *BootstrapQuery) IDs(ctx context.Context) (ids []int, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, bq.ctx, ent.OpQueryIDs)
-	if err = bq.Select(bootstrap.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(bootstrap.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (bq *BootstrapQuery) IDsX(ctx context.Context) []int {
-	ids, err := bq.IDs(ctx)
+func (_q *BootstrapQuery) IDsX(ctx context.Context) []int {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -200,17 +200,17 @@ func (bq *BootstrapQuery) IDsX(ctx context.Context) []int {
 }
 
 // Count returns the count of the given query.
-func (bq *BootstrapQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, bq.ctx, ent.OpQueryCount)
-	if err := bq.prepareQuery(ctx); err != nil {
+func (_q *BootstrapQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, bq, querierCount[*BootstrapQuery](), bq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*BootstrapQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (bq *BootstrapQuery) CountX(ctx context.Context) int {
-	count, err := bq.Count(ctx)
+func (_q *BootstrapQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -218,9 +218,9 @@ func (bq *BootstrapQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (bq *BootstrapQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, bq.ctx, ent.OpQueryExist)
-	switch _, err := bq.FirstID(ctx); {
+func (_q *BootstrapQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -231,8 +231,8 @@ func (bq *BootstrapQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (bq *BootstrapQuery) ExistX(ctx context.Context) bool {
-	exist, err := bq.Exist(ctx)
+func (_q *BootstrapQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -241,20 +241,20 @@ func (bq *BootstrapQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the BootstrapQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (bq *BootstrapQuery) Clone() *BootstrapQuery {
-	if bq == nil {
+func (_q *BootstrapQuery) Clone() *BootstrapQuery {
+	if _q == nil {
 		return nil
 	}
 	return &BootstrapQuery{
-		config:     bq.config,
-		ctx:        bq.ctx.Clone(),
-		order:      append([]bootstrap.OrderOption{}, bq.order...),
-		inters:     append([]Interceptor{}, bq.inters...),
-		predicates: append([]predicate.Bootstrap{}, bq.predicates...),
+		config:     _q.config,
+		ctx:        _q.ctx.Clone(),
+		order:      append([]bootstrap.OrderOption{}, _q.order...),
+		inters:     append([]Interceptor{}, _q.inters...),
+		predicates: append([]predicate.Bootstrap{}, _q.predicates...),
 		// clone intermediate query.
-		sql:       bq.sql.Clone(),
-		path:      bq.path,
-		modifiers: append([]func(*sql.Selector){}, bq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -272,10 +272,10 @@ func (bq *BootstrapQuery) Clone() *BootstrapQuery {
 //		GroupBy(bootstrap.FieldIsBootstrapped).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (bq *BootstrapQuery) GroupBy(field string, fields ...string) *BootstrapGroupBy {
-	bq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &BootstrapGroupBy{build: bq}
-	grbuild.flds = &bq.ctx.Fields
+func (_q *BootstrapQuery) GroupBy(field string, fields ...string) *BootstrapGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &BootstrapGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = bootstrap.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -293,65 +293,65 @@ func (bq *BootstrapQuery) GroupBy(field string, fields ...string) *BootstrapGrou
 //	client.Bootstrap.Query().
 //		Select(bootstrap.FieldIsBootstrapped).
 //		Scan(ctx, &v)
-func (bq *BootstrapQuery) Select(fields ...string) *BootstrapSelect {
-	bq.ctx.Fields = append(bq.ctx.Fields, fields...)
-	sbuild := &BootstrapSelect{BootstrapQuery: bq}
+func (_q *BootstrapQuery) Select(fields ...string) *BootstrapSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &BootstrapSelect{BootstrapQuery: _q}
 	sbuild.label = bootstrap.Label
-	sbuild.flds, sbuild.scan = &bq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a BootstrapSelect configured with the given aggregations.
-func (bq *BootstrapQuery) Aggregate(fns ...AggregateFunc) *BootstrapSelect {
-	return bq.Select().Aggregate(fns...)
+func (_q *BootstrapQuery) Aggregate(fns ...AggregateFunc) *BootstrapSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (bq *BootstrapQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range bq.inters {
+func (_q *BootstrapQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, bq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range bq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !bootstrap.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if bq.path != nil {
-		prev, err := bq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		bq.sql = prev
+		_q.sql = prev
 	}
 	return nil
 }
 
-func (bq *BootstrapQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Bootstrap, error) {
+func (_q *BootstrapQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Bootstrap, error) {
 	var (
 		nodes = []*Bootstrap{}
-		_spec = bq.querySpec()
+		_spec = _q.querySpec()
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Bootstrap).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &Bootstrap{config: bq.config}
+		node := &Bootstrap{config: _q.config}
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
 	}
-	if len(bq.modifiers) > 0 {
-		_spec.Modifiers = bq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, bq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
@@ -360,27 +360,27 @@ func (bq *BootstrapQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Bo
 	return nodes, nil
 }
 
-func (bq *BootstrapQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := bq.querySpec()
-	if len(bq.modifiers) > 0 {
-		_spec.Modifiers = bq.modifiers
+func (_q *BootstrapQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = bq.ctx.Fields
-	if len(bq.ctx.Fields) > 0 {
-		_spec.Unique = bq.ctx.Unique != nil && *bq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, bq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (bq *BootstrapQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *BootstrapQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(bootstrap.Table, bootstrap.Columns, sqlgraph.NewFieldSpec(bootstrap.FieldID, field.TypeInt))
-	_spec.From = bq.sql
-	if unique := bq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if bq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := bq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, bootstrap.FieldID)
 		for i := range fields {
@@ -389,20 +389,20 @@ func (bq *BootstrapQuery) querySpec() *sqlgraph.QuerySpec {
 			}
 		}
 	}
-	if ps := bq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := bq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := bq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := bq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -412,45 +412,45 @@ func (bq *BootstrapQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (bq *BootstrapQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(bq.driver.Dialect())
+func (_q *BootstrapQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(bootstrap.Table)
-	columns := bq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = bootstrap.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if bq.sql != nil {
-		selector = bq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if bq.ctx.Unique != nil && *bq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range bq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range bq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range bq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := bq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := bq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (bq *BootstrapQuery) Modify(modifiers ...func(s *sql.Selector)) *BootstrapSelect {
-	bq.modifiers = append(bq.modifiers, modifiers...)
-	return bq.Select()
+func (_q *BootstrapQuery) Modify(modifiers ...func(s *sql.Selector)) *BootstrapSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // BootstrapGroupBy is the group-by builder for Bootstrap entities.
@@ -460,41 +460,41 @@ type BootstrapGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (bgb *BootstrapGroupBy) Aggregate(fns ...AggregateFunc) *BootstrapGroupBy {
-	bgb.fns = append(bgb.fns, fns...)
-	return bgb
+func (_g *BootstrapGroupBy) Aggregate(fns ...AggregateFunc) *BootstrapGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (bgb *BootstrapGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, bgb.build.ctx, ent.OpQueryGroupBy)
-	if err := bgb.build.prepareQuery(ctx); err != nil {
+func (_g *BootstrapGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*BootstrapQuery, *BootstrapGroupBy](ctx, bgb.build, bgb, bgb.build.inters, v)
+	return scanWithInterceptors[*BootstrapQuery, *BootstrapGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (bgb *BootstrapGroupBy) sqlScan(ctx context.Context, root *BootstrapQuery, v any) error {
+func (_g *BootstrapGroupBy) sqlScan(ctx context.Context, root *BootstrapQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(bgb.fns))
-	for _, fn := range bgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*bgb.flds)+len(bgb.fns))
-		for _, f := range *bgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*bgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := bgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -508,27 +508,27 @@ type BootstrapSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (bs *BootstrapSelect) Aggregate(fns ...AggregateFunc) *BootstrapSelect {
-	bs.fns = append(bs.fns, fns...)
-	return bs
+func (_s *BootstrapSelect) Aggregate(fns ...AggregateFunc) *BootstrapSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (bs *BootstrapSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, bs.ctx, ent.OpQuerySelect)
-	if err := bs.prepareQuery(ctx); err != nil {
+func (_s *BootstrapSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*BootstrapQuery, *BootstrapSelect](ctx, bs.BootstrapQuery, bs, bs.inters, v)
+	return scanWithInterceptors[*BootstrapQuery, *BootstrapSelect](ctx, _s.BootstrapQuery, _s, _s.inters, v)
 }
 
-func (bs *BootstrapSelect) sqlScan(ctx context.Context, root *BootstrapQuery, v any) error {
+func (_s *BootstrapSelect) sqlScan(ctx context.Context, root *BootstrapQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(bs.fns))
-	for _, fn := range bs.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*bs.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -536,7 +536,7 @@ func (bs *BootstrapSelect) sqlScan(ctx context.Context, root *BootstrapQuery, v 
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := bs.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -544,7 +544,7 @@ func (bs *BootstrapSelect) sqlScan(ctx context.Context, root *BootstrapQuery, v 
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (bs *BootstrapSelect) Modify(modifiers ...func(s *sql.Selector)) *BootstrapSelect {
-	bs.modifiers = append(bs.modifiers, modifiers...)
-	return bs
+func (_s *BootstrapSelect) Modify(modifiers ...func(s *sql.Selector)) *BootstrapSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

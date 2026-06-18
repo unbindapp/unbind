@@ -39,44 +39,44 @@ type TeamQuery struct {
 }
 
 // Where adds a new predicate for the TeamQuery builder.
-func (tq *TeamQuery) Where(ps ...predicate.Team) *TeamQuery {
-	tq.predicates = append(tq.predicates, ps...)
-	return tq
+func (_q *TeamQuery) Where(ps ...predicate.Team) *TeamQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (tq *TeamQuery) Limit(limit int) *TeamQuery {
-	tq.ctx.Limit = &limit
-	return tq
+func (_q *TeamQuery) Limit(limit int) *TeamQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (tq *TeamQuery) Offset(offset int) *TeamQuery {
-	tq.ctx.Offset = &offset
-	return tq
+func (_q *TeamQuery) Offset(offset int) *TeamQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (tq *TeamQuery) Unique(unique bool) *TeamQuery {
-	tq.ctx.Unique = &unique
-	return tq
+func (_q *TeamQuery) Unique(unique bool) *TeamQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (tq *TeamQuery) Order(o ...team.OrderOption) *TeamQuery {
-	tq.order = append(tq.order, o...)
-	return tq
+func (_q *TeamQuery) Order(o ...team.OrderOption) *TeamQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryProjects chains the current query on the "projects" edge.
-func (tq *TeamQuery) QueryProjects() *ProjectQuery {
-	query := (&ProjectClient{config: tq.config}).Query()
+func (_q *TeamQuery) QueryProjects() *ProjectQuery {
+	query := (&ProjectClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := tq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := tq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -85,20 +85,20 @@ func (tq *TeamQuery) QueryProjects() *ProjectQuery {
 			sqlgraph.To(project.Table, project.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, team.ProjectsTable, team.ProjectsColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryS3Sources chains the current query on the "s3_sources" edge.
-func (tq *TeamQuery) QueryS3Sources() *S3Query {
-	query := (&S3Client{config: tq.config}).Query()
+func (_q *TeamQuery) QueryS3Sources() *S3Query {
+	query := (&S3Client{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := tq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := tq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -107,20 +107,20 @@ func (tq *TeamQuery) QueryS3Sources() *S3Query {
 			sqlgraph.To(s3.Table, s3.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, team.S3SourcesTable, team.S3SourcesColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryMembers chains the current query on the "members" edge.
-func (tq *TeamQuery) QueryMembers() *UserQuery {
-	query := (&UserClient{config: tq.config}).Query()
+func (_q *TeamQuery) QueryMembers() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := tq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := tq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -129,20 +129,20 @@ func (tq *TeamQuery) QueryMembers() *UserQuery {
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, team.MembersTable, team.MembersPrimaryKey...),
 		)
-		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryTeamWebhooks chains the current query on the "team_webhooks" edge.
-func (tq *TeamQuery) QueryTeamWebhooks() *WebhookQuery {
-	query := (&WebhookClient{config: tq.config}).Query()
+func (_q *TeamQuery) QueryTeamWebhooks() *WebhookQuery {
+	query := (&WebhookClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := tq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := tq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -151,7 +151,7 @@ func (tq *TeamQuery) QueryTeamWebhooks() *WebhookQuery {
 			sqlgraph.To(webhook.Table, webhook.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, team.TeamWebhooksTable, team.TeamWebhooksColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -159,8 +159,8 @@ func (tq *TeamQuery) QueryTeamWebhooks() *WebhookQuery {
 
 // First returns the first Team entity from the query.
 // Returns a *NotFoundError when no Team was found.
-func (tq *TeamQuery) First(ctx context.Context) (*Team, error) {
-	nodes, err := tq.Limit(1).All(setContextOp(ctx, tq.ctx, ent.OpQueryFirst))
+func (_q *TeamQuery) First(ctx context.Context) (*Team, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -171,8 +171,8 @@ func (tq *TeamQuery) First(ctx context.Context) (*Team, error) {
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (tq *TeamQuery) FirstX(ctx context.Context) *Team {
-	node, err := tq.First(ctx)
+func (_q *TeamQuery) FirstX(ctx context.Context) *Team {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -181,9 +181,9 @@ func (tq *TeamQuery) FirstX(ctx context.Context) *Team {
 
 // FirstID returns the first Team ID from the query.
 // Returns a *NotFoundError when no Team ID was found.
-func (tq *TeamQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *TeamQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = tq.Limit(1).IDs(setContextOp(ctx, tq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -194,8 +194,8 @@ func (tq *TeamQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (tq *TeamQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := tq.FirstID(ctx)
+func (_q *TeamQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -205,8 +205,8 @@ func (tq *TeamQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single Team entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one Team entity is found.
 // Returns a *NotFoundError when no Team entities are found.
-func (tq *TeamQuery) Only(ctx context.Context) (*Team, error) {
-	nodes, err := tq.Limit(2).All(setContextOp(ctx, tq.ctx, ent.OpQueryOnly))
+func (_q *TeamQuery) Only(ctx context.Context) (*Team, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -221,8 +221,8 @@ func (tq *TeamQuery) Only(ctx context.Context) (*Team, error) {
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (tq *TeamQuery) OnlyX(ctx context.Context) *Team {
-	node, err := tq.Only(ctx)
+func (_q *TeamQuery) OnlyX(ctx context.Context) *Team {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -232,9 +232,9 @@ func (tq *TeamQuery) OnlyX(ctx context.Context) *Team {
 // OnlyID is like Only, but returns the only Team ID in the query.
 // Returns a *NotSingularError when more than one Team ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (tq *TeamQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *TeamQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = tq.Limit(2).IDs(setContextOp(ctx, tq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -249,8 +249,8 @@ func (tq *TeamQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (tq *TeamQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := tq.OnlyID(ctx)
+func (_q *TeamQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -258,18 +258,18 @@ func (tq *TeamQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of Teams.
-func (tq *TeamQuery) All(ctx context.Context) ([]*Team, error) {
-	ctx = setContextOp(ctx, tq.ctx, ent.OpQueryAll)
-	if err := tq.prepareQuery(ctx); err != nil {
+func (_q *TeamQuery) All(ctx context.Context) ([]*Team, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*Team, *TeamQuery]()
-	return withInterceptors[[]*Team](ctx, tq, qr, tq.inters)
+	return withInterceptors[[]*Team](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (tq *TeamQuery) AllX(ctx context.Context) []*Team {
-	nodes, err := tq.All(ctx)
+func (_q *TeamQuery) AllX(ctx context.Context) []*Team {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -277,20 +277,20 @@ func (tq *TeamQuery) AllX(ctx context.Context) []*Team {
 }
 
 // IDs executes the query and returns a list of Team IDs.
-func (tq *TeamQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if tq.ctx.Unique == nil && tq.path != nil {
-		tq.Unique(true)
+func (_q *TeamQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, tq.ctx, ent.OpQueryIDs)
-	if err = tq.Select(team.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(team.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (tq *TeamQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := tq.IDs(ctx)
+func (_q *TeamQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -298,17 +298,17 @@ func (tq *TeamQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (tq *TeamQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, tq.ctx, ent.OpQueryCount)
-	if err := tq.prepareQuery(ctx); err != nil {
+func (_q *TeamQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, tq, querierCount[*TeamQuery](), tq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*TeamQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (tq *TeamQuery) CountX(ctx context.Context) int {
-	count, err := tq.Count(ctx)
+func (_q *TeamQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -316,9 +316,9 @@ func (tq *TeamQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (tq *TeamQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, tq.ctx, ent.OpQueryExist)
-	switch _, err := tq.FirstID(ctx); {
+func (_q *TeamQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -329,8 +329,8 @@ func (tq *TeamQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (tq *TeamQuery) ExistX(ctx context.Context) bool {
-	exist, err := tq.Exist(ctx)
+func (_q *TeamQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -339,69 +339,69 @@ func (tq *TeamQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the TeamQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (tq *TeamQuery) Clone() *TeamQuery {
-	if tq == nil {
+func (_q *TeamQuery) Clone() *TeamQuery {
+	if _q == nil {
 		return nil
 	}
 	return &TeamQuery{
-		config:           tq.config,
-		ctx:              tq.ctx.Clone(),
-		order:            append([]team.OrderOption{}, tq.order...),
-		inters:           append([]Interceptor{}, tq.inters...),
-		predicates:       append([]predicate.Team{}, tq.predicates...),
-		withProjects:     tq.withProjects.Clone(),
-		withS3Sources:    tq.withS3Sources.Clone(),
-		withMembers:      tq.withMembers.Clone(),
-		withTeamWebhooks: tq.withTeamWebhooks.Clone(),
+		config:           _q.config,
+		ctx:              _q.ctx.Clone(),
+		order:            append([]team.OrderOption{}, _q.order...),
+		inters:           append([]Interceptor{}, _q.inters...),
+		predicates:       append([]predicate.Team{}, _q.predicates...),
+		withProjects:     _q.withProjects.Clone(),
+		withS3Sources:    _q.withS3Sources.Clone(),
+		withMembers:      _q.withMembers.Clone(),
+		withTeamWebhooks: _q.withTeamWebhooks.Clone(),
 		// clone intermediate query.
-		sql:       tq.sql.Clone(),
-		path:      tq.path,
-		modifiers: append([]func(*sql.Selector){}, tq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithProjects tells the query-builder to eager-load the nodes that are connected to
 // the "projects" edge. The optional arguments are used to configure the query builder of the edge.
-func (tq *TeamQuery) WithProjects(opts ...func(*ProjectQuery)) *TeamQuery {
-	query := (&ProjectClient{config: tq.config}).Query()
+func (_q *TeamQuery) WithProjects(opts ...func(*ProjectQuery)) *TeamQuery {
+	query := (&ProjectClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	tq.withProjects = query
-	return tq
+	_q.withProjects = query
+	return _q
 }
 
 // WithS3Sources tells the query-builder to eager-load the nodes that are connected to
 // the "s3_sources" edge. The optional arguments are used to configure the query builder of the edge.
-func (tq *TeamQuery) WithS3Sources(opts ...func(*S3Query)) *TeamQuery {
-	query := (&S3Client{config: tq.config}).Query()
+func (_q *TeamQuery) WithS3Sources(opts ...func(*S3Query)) *TeamQuery {
+	query := (&S3Client{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	tq.withS3Sources = query
-	return tq
+	_q.withS3Sources = query
+	return _q
 }
 
 // WithMembers tells the query-builder to eager-load the nodes that are connected to
 // the "members" edge. The optional arguments are used to configure the query builder of the edge.
-func (tq *TeamQuery) WithMembers(opts ...func(*UserQuery)) *TeamQuery {
-	query := (&UserClient{config: tq.config}).Query()
+func (_q *TeamQuery) WithMembers(opts ...func(*UserQuery)) *TeamQuery {
+	query := (&UserClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	tq.withMembers = query
-	return tq
+	_q.withMembers = query
+	return _q
 }
 
 // WithTeamWebhooks tells the query-builder to eager-load the nodes that are connected to
 // the "team_webhooks" edge. The optional arguments are used to configure the query builder of the edge.
-func (tq *TeamQuery) WithTeamWebhooks(opts ...func(*WebhookQuery)) *TeamQuery {
-	query := (&WebhookClient{config: tq.config}).Query()
+func (_q *TeamQuery) WithTeamWebhooks(opts ...func(*WebhookQuery)) *TeamQuery {
+	query := (&WebhookClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	tq.withTeamWebhooks = query
-	return tq
+	_q.withTeamWebhooks = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -418,10 +418,10 @@ func (tq *TeamQuery) WithTeamWebhooks(opts ...func(*WebhookQuery)) *TeamQuery {
 //		GroupBy(team.FieldCreatedAt).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (tq *TeamQuery) GroupBy(field string, fields ...string) *TeamGroupBy {
-	tq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &TeamGroupBy{build: tq}
-	grbuild.flds = &tq.ctx.Fields
+func (_q *TeamQuery) GroupBy(field string, fields ...string) *TeamGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &TeamGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = team.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -439,100 +439,100 @@ func (tq *TeamQuery) GroupBy(field string, fields ...string) *TeamGroupBy {
 //	client.Team.Query().
 //		Select(team.FieldCreatedAt).
 //		Scan(ctx, &v)
-func (tq *TeamQuery) Select(fields ...string) *TeamSelect {
-	tq.ctx.Fields = append(tq.ctx.Fields, fields...)
-	sbuild := &TeamSelect{TeamQuery: tq}
+func (_q *TeamQuery) Select(fields ...string) *TeamSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &TeamSelect{TeamQuery: _q}
 	sbuild.label = team.Label
-	sbuild.flds, sbuild.scan = &tq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a TeamSelect configured with the given aggregations.
-func (tq *TeamQuery) Aggregate(fns ...AggregateFunc) *TeamSelect {
-	return tq.Select().Aggregate(fns...)
+func (_q *TeamQuery) Aggregate(fns ...AggregateFunc) *TeamSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (tq *TeamQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range tq.inters {
+func (_q *TeamQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, tq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range tq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !team.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if tq.path != nil {
-		prev, err := tq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		tq.sql = prev
+		_q.sql = prev
 	}
 	return nil
 }
 
-func (tq *TeamQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Team, error) {
+func (_q *TeamQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Team, error) {
 	var (
 		nodes       = []*Team{}
-		_spec       = tq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [4]bool{
-			tq.withProjects != nil,
-			tq.withS3Sources != nil,
-			tq.withMembers != nil,
-			tq.withTeamWebhooks != nil,
+			_q.withProjects != nil,
+			_q.withS3Sources != nil,
+			_q.withMembers != nil,
+			_q.withTeamWebhooks != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Team).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &Team{config: tq.config}
+		node := &Team{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(tq.modifiers) > 0 {
-		_spec.Modifiers = tq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, tq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := tq.withProjects; query != nil {
-		if err := tq.loadProjects(ctx, query, nodes,
+	if query := _q.withProjects; query != nil {
+		if err := _q.loadProjects(ctx, query, nodes,
 			func(n *Team) { n.Edges.Projects = []*Project{} },
 			func(n *Team, e *Project) { n.Edges.Projects = append(n.Edges.Projects, e) }); err != nil {
 			return nil, err
 		}
 	}
-	if query := tq.withS3Sources; query != nil {
-		if err := tq.loadS3Sources(ctx, query, nodes,
+	if query := _q.withS3Sources; query != nil {
+		if err := _q.loadS3Sources(ctx, query, nodes,
 			func(n *Team) { n.Edges.S3Sources = []*S3{} },
 			func(n *Team, e *S3) { n.Edges.S3Sources = append(n.Edges.S3Sources, e) }); err != nil {
 			return nil, err
 		}
 	}
-	if query := tq.withMembers; query != nil {
-		if err := tq.loadMembers(ctx, query, nodes,
+	if query := _q.withMembers; query != nil {
+		if err := _q.loadMembers(ctx, query, nodes,
 			func(n *Team) { n.Edges.Members = []*User{} },
 			func(n *Team, e *User) { n.Edges.Members = append(n.Edges.Members, e) }); err != nil {
 			return nil, err
 		}
 	}
-	if query := tq.withTeamWebhooks; query != nil {
-		if err := tq.loadTeamWebhooks(ctx, query, nodes,
+	if query := _q.withTeamWebhooks; query != nil {
+		if err := _q.loadTeamWebhooks(ctx, query, nodes,
 			func(n *Team) { n.Edges.TeamWebhooks = []*Webhook{} },
 			func(n *Team, e *Webhook) { n.Edges.TeamWebhooks = append(n.Edges.TeamWebhooks, e) }); err != nil {
 			return nil, err
@@ -541,7 +541,7 @@ func (tq *TeamQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Team, e
 	return nodes, nil
 }
 
-func (tq *TeamQuery) loadProjects(ctx context.Context, query *ProjectQuery, nodes []*Team, init func(*Team), assign func(*Team, *Project)) error {
+func (_q *TeamQuery) loadProjects(ctx context.Context, query *ProjectQuery, nodes []*Team, init func(*Team), assign func(*Team, *Project)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Team)
 	for i := range nodes {
@@ -571,7 +571,7 @@ func (tq *TeamQuery) loadProjects(ctx context.Context, query *ProjectQuery, node
 	}
 	return nil
 }
-func (tq *TeamQuery) loadS3Sources(ctx context.Context, query *S3Query, nodes []*Team, init func(*Team), assign func(*Team, *S3)) error {
+func (_q *TeamQuery) loadS3Sources(ctx context.Context, query *S3Query, nodes []*Team, init func(*Team), assign func(*Team, *S3)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Team)
 	for i := range nodes {
@@ -601,7 +601,7 @@ func (tq *TeamQuery) loadS3Sources(ctx context.Context, query *S3Query, nodes []
 	}
 	return nil
 }
-func (tq *TeamQuery) loadMembers(ctx context.Context, query *UserQuery, nodes []*Team, init func(*Team), assign func(*Team, *User)) error {
+func (_q *TeamQuery) loadMembers(ctx context.Context, query *UserQuery, nodes []*Team, init func(*Team), assign func(*Team, *User)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*Team)
 	nids := make(map[uuid.UUID]map[*Team]struct{})
@@ -662,7 +662,7 @@ func (tq *TeamQuery) loadMembers(ctx context.Context, query *UserQuery, nodes []
 	}
 	return nil
 }
-func (tq *TeamQuery) loadTeamWebhooks(ctx context.Context, query *WebhookQuery, nodes []*Team, init func(*Team), assign func(*Team, *Webhook)) error {
+func (_q *TeamQuery) loadTeamWebhooks(ctx context.Context, query *WebhookQuery, nodes []*Team, init func(*Team), assign func(*Team, *Webhook)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Team)
 	for i := range nodes {
@@ -693,27 +693,27 @@ func (tq *TeamQuery) loadTeamWebhooks(ctx context.Context, query *WebhookQuery, 
 	return nil
 }
 
-func (tq *TeamQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := tq.querySpec()
-	if len(tq.modifiers) > 0 {
-		_spec.Modifiers = tq.modifiers
+func (_q *TeamQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = tq.ctx.Fields
-	if len(tq.ctx.Fields) > 0 {
-		_spec.Unique = tq.ctx.Unique != nil && *tq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, tq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (tq *TeamQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *TeamQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(team.Table, team.Columns, sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID))
-	_spec.From = tq.sql
-	if unique := tq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if tq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := tq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, team.FieldID)
 		for i := range fields {
@@ -722,20 +722,20 @@ func (tq *TeamQuery) querySpec() *sqlgraph.QuerySpec {
 			}
 		}
 	}
-	if ps := tq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := tq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := tq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := tq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -745,45 +745,45 @@ func (tq *TeamQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (tq *TeamQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(tq.driver.Dialect())
+func (_q *TeamQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(team.Table)
-	columns := tq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = team.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if tq.sql != nil {
-		selector = tq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if tq.ctx.Unique != nil && *tq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range tq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range tq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range tq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := tq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := tq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (tq *TeamQuery) Modify(modifiers ...func(s *sql.Selector)) *TeamSelect {
-	tq.modifiers = append(tq.modifiers, modifiers...)
-	return tq.Select()
+func (_q *TeamQuery) Modify(modifiers ...func(s *sql.Selector)) *TeamSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // TeamGroupBy is the group-by builder for Team entities.
@@ -793,41 +793,41 @@ type TeamGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (tgb *TeamGroupBy) Aggregate(fns ...AggregateFunc) *TeamGroupBy {
-	tgb.fns = append(tgb.fns, fns...)
-	return tgb
+func (_g *TeamGroupBy) Aggregate(fns ...AggregateFunc) *TeamGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (tgb *TeamGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, tgb.build.ctx, ent.OpQueryGroupBy)
-	if err := tgb.build.prepareQuery(ctx); err != nil {
+func (_g *TeamGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*TeamQuery, *TeamGroupBy](ctx, tgb.build, tgb, tgb.build.inters, v)
+	return scanWithInterceptors[*TeamQuery, *TeamGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (tgb *TeamGroupBy) sqlScan(ctx context.Context, root *TeamQuery, v any) error {
+func (_g *TeamGroupBy) sqlScan(ctx context.Context, root *TeamQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(tgb.fns))
-	for _, fn := range tgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*tgb.flds)+len(tgb.fns))
-		for _, f := range *tgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*tgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := tgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -841,27 +841,27 @@ type TeamSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (ts *TeamSelect) Aggregate(fns ...AggregateFunc) *TeamSelect {
-	ts.fns = append(ts.fns, fns...)
-	return ts
+func (_s *TeamSelect) Aggregate(fns ...AggregateFunc) *TeamSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (ts *TeamSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, ts.ctx, ent.OpQuerySelect)
-	if err := ts.prepareQuery(ctx); err != nil {
+func (_s *TeamSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*TeamQuery, *TeamSelect](ctx, ts.TeamQuery, ts, ts.inters, v)
+	return scanWithInterceptors[*TeamQuery, *TeamSelect](ctx, _s.TeamQuery, _s, _s.inters, v)
 }
 
-func (ts *TeamSelect) sqlScan(ctx context.Context, root *TeamQuery, v any) error {
+func (_s *TeamSelect) sqlScan(ctx context.Context, root *TeamQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(ts.fns))
-	for _, fn := range ts.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*ts.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -869,7 +869,7 @@ func (ts *TeamSelect) sqlScan(ctx context.Context, root *TeamQuery, v any) error
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := ts.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -877,7 +877,7 @@ func (ts *TeamSelect) sqlScan(ctx context.Context, root *TeamQuery, v any) error
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (ts *TeamSelect) Modify(modifiers ...func(s *sql.Selector)) *TeamSelect {
-	ts.modifiers = append(ts.modifiers, modifiers...)
-	return ts
+func (_s *TeamSelect) Modify(modifiers ...func(s *sql.Selector)) *TeamSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

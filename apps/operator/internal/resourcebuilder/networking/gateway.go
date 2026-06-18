@@ -105,15 +105,9 @@ func (p gatewayProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 			Listeners:        listeners,
 		},
 	}
-	// HTTPS listeners need a cert; raw L4 does not. We emit an explicit cert-manager
-	// Certificate rather than relying on the gateway-shim (which the
-	// cert-manager.io/cluster-issuer annotation would trigger) so we can set
-	// issue-temporary-certificate: cert-manager writes a self-signed placeholder into
-	// the secret immediately, so the HTTPS listener programs right away and the host
-	// is reachable even before — or during an outage of — ACME. With mergeGateways one
-	// Envoy serves every host on :443, so a host whose listener never programmed makes
-	// Envoy reset the connection for that SNI (ERR_CONNECTION_RESET); the placeholder
-	// avoids that. cert-manager swaps in the real cert once issuance succeeds.
+	// Emit an explicit Certificate (not the gateway-shim) with issue-temporary-certificate
+	// so the HTTPS listener programs immediately; otherwise the shared Envoy resets that
+	// SNI until ACME issues (ERR_CONNECTION_RESET). Raw L4 needs no cert.
 	certHosts := append([]v1.HostSpec{}, httpHosts...)
 	certHosts = append(certHosts, grpcHosts...)
 	if len(certHosts) > 0 {
@@ -207,11 +201,9 @@ func (p gatewayProvider) l4Route(svc *v1.Service, labels map[string]string, port
 	}
 }
 
-// certificate builds the cert-manager Certificate backing a service's HTTPS
-// listeners. The issue-temporary-certificate annotation makes cert-manager write a
-// self-signed placeholder into the secret immediately so the listener programs
-// before ACME completes; it is overwritten with the real cert once issued. Built
-// unstructured to avoid a hard dependency on the cert-manager API module.
+// certificate builds the cert-manager Certificate for a service's HTTPS listeners.
+// issue-temporary-certificate seeds a self-signed cert so the listener programs
+// before ACME completes. Unstructured to avoid depending on the cert-manager module.
 func (p gatewayProvider) certificate(svc *v1.Service, labels map[string]string, hosts []v1.HostSpec) *unstructured.Unstructured {
 	dnsNames := make([]any, len(hosts))
 	for i, h := range hosts {

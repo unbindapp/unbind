@@ -54,7 +54,7 @@ func (*SystemSetting) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the SystemSetting fields.
-func (ss *SystemSetting) assignValues(columns []string, values []any) error {
+func (_m *SystemSetting) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -64,37 +64,37 @@ func (ss *SystemSetting) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				ss.ID = *value
+				_m.ID = *value
 			}
 		case systemsetting.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				ss.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case systemsetting.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				ss.UpdatedAt = value.Time
+				_m.UpdatedAt = value.Time
 			}
 		case systemsetting.FieldWildcardBaseURL:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field wildcard_base_url", values[i])
 			} else if value.Valid {
-				ss.WildcardBaseURL = new(string)
-				*ss.WildcardBaseURL = value.String
+				_m.WildcardBaseURL = new(string)
+				*_m.WildcardBaseURL = value.String
 			}
 		case systemsetting.FieldBuildkitSettings:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field buildkit_settings", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &ss.BuildkitSettings); err != nil {
+				if err := json.Unmarshal(*value, &_m.BuildkitSettings); err != nil {
 					return fmt.Errorf("unmarshal field buildkit_settings: %w", err)
 				}
 			}
 		default:
-			ss.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -102,46 +102,46 @@ func (ss *SystemSetting) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the SystemSetting.
 // This includes values selected through modifiers, order, etc.
-func (ss *SystemSetting) Value(name string) (ent.Value, error) {
-	return ss.selectValues.Get(name)
+func (_m *SystemSetting) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // Update returns a builder for updating this SystemSetting.
 // Note that you need to call SystemSetting.Unwrap() before calling this method if this SystemSetting
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (ss *SystemSetting) Update() *SystemSettingUpdateOne {
-	return NewSystemSettingClient(ss.config).UpdateOne(ss)
+func (_m *SystemSetting) Update() *SystemSettingUpdateOne {
+	return NewSystemSettingClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the SystemSetting entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (ss *SystemSetting) Unwrap() *SystemSetting {
-	_tx, ok := ss.config.driver.(*txDriver)
+func (_m *SystemSetting) Unwrap() *SystemSetting {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: SystemSetting is not a transactional entity")
 	}
-	ss.config.driver = _tx.drv
-	return ss
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (ss *SystemSetting) String() string {
+func (_m *SystemSetting) String() string {
 	var builder strings.Builder
 	builder.WriteString("SystemSetting(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", ss.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("created_at=")
-	builder.WriteString(ss.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(ss.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	if v := ss.WildcardBaseURL; v != nil {
+	if v := _m.WildcardBaseURL; v != nil {
 		builder.WriteString("wildcard_base_url=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
 	builder.WriteString("buildkit_settings=")
-	builder.WriteString(fmt.Sprintf("%v", ss.BuildkitSettings))
+	builder.WriteString(fmt.Sprintf("%v", _m.BuildkitSettings))
 	builder.WriteByte(')')
 	return builder.String()
 }

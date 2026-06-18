@@ -20,56 +20,56 @@ type WebhookDelete struct {
 }
 
 // Where appends a list predicates to the WebhookDelete builder.
-func (wd *WebhookDelete) Where(ps ...predicate.Webhook) *WebhookDelete {
-	wd.mutation.Where(ps...)
-	return wd
+func (_d *WebhookDelete) Where(ps ...predicate.Webhook) *WebhookDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (wd *WebhookDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, wd.sqlExec, wd.mutation, wd.hooks)
+func (_d *WebhookDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (wd *WebhookDelete) ExecX(ctx context.Context) int {
-	n, err := wd.Exec(ctx)
+func (_d *WebhookDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (wd *WebhookDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *WebhookDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(webhook.Table, sqlgraph.NewFieldSpec(webhook.FieldID, field.TypeUUID))
-	if ps := wd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, wd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	wd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // WebhookDeleteOne is the builder for deleting a single Webhook entity.
 type WebhookDeleteOne struct {
-	wd *WebhookDelete
+	_d *WebhookDelete
 }
 
 // Where appends a list predicates to the WebhookDelete builder.
-func (wdo *WebhookDeleteOne) Where(ps ...predicate.Webhook) *WebhookDeleteOne {
-	wdo.wd.mutation.Where(ps...)
-	return wdo
+func (_d *WebhookDeleteOne) Where(ps ...predicate.Webhook) *WebhookDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (wdo *WebhookDeleteOne) Exec(ctx context.Context) error {
-	n, err := wdo.wd.Exec(ctx)
+func (_d *WebhookDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (wdo *WebhookDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (wdo *WebhookDeleteOne) ExecX(ctx context.Context) {
-	if err := wdo.Exec(ctx); err != nil {
+func (_d *WebhookDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

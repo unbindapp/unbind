@@ -20,56 +20,56 @@ type JWTKeyDelete struct {
 }
 
 // Where appends a list predicates to the JWTKeyDelete builder.
-func (jkd *JWTKeyDelete) Where(ps ...predicate.JWTKey) *JWTKeyDelete {
-	jkd.mutation.Where(ps...)
-	return jkd
+func (_d *JWTKeyDelete) Where(ps ...predicate.JWTKey) *JWTKeyDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (jkd *JWTKeyDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, jkd.sqlExec, jkd.mutation, jkd.hooks)
+func (_d *JWTKeyDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (jkd *JWTKeyDelete) ExecX(ctx context.Context) int {
-	n, err := jkd.Exec(ctx)
+func (_d *JWTKeyDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (jkd *JWTKeyDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *JWTKeyDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(jwtkey.Table, sqlgraph.NewFieldSpec(jwtkey.FieldID, field.TypeInt))
-	if ps := jkd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, jkd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	jkd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // JWTKeyDeleteOne is the builder for deleting a single JWTKey entity.
 type JWTKeyDeleteOne struct {
-	jkd *JWTKeyDelete
+	_d *JWTKeyDelete
 }
 
 // Where appends a list predicates to the JWTKeyDelete builder.
-func (jkdo *JWTKeyDeleteOne) Where(ps ...predicate.JWTKey) *JWTKeyDeleteOne {
-	jkdo.jkd.mutation.Where(ps...)
-	return jkdo
+func (_d *JWTKeyDeleteOne) Where(ps ...predicate.JWTKey) *JWTKeyDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (jkdo *JWTKeyDeleteOne) Exec(ctx context.Context) error {
-	n, err := jkdo.jkd.Exec(ctx)
+func (_d *JWTKeyDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (jkdo *JWTKeyDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (jkdo *JWTKeyDeleteOne) ExecX(ctx context.Context) {
-	if err := jkdo.Exec(ctx); err != nil {
+func (_d *JWTKeyDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

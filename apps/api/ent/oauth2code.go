@@ -85,7 +85,7 @@ func (*Oauth2Code) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Oauth2Code fields.
-func (o *Oauth2Code) assignValues(columns []string, values []any) error {
+func (_m *Oauth2Code) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -95,59 +95,59 @@ func (o *Oauth2Code) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				o.ID = *value
+				_m.ID = *value
 			}
 		case oauth2code.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				o.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case oauth2code.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				o.UpdatedAt = value.Time
+				_m.UpdatedAt = value.Time
 			}
 		case oauth2code.FieldAuthCode:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field auth_code", values[i])
 			} else if value.Valid {
-				o.AuthCode = value.String
+				_m.AuthCode = value.String
 			}
 		case oauth2code.FieldClientID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field client_id", values[i])
 			} else if value.Valid {
-				o.ClientID = value.String
+				_m.ClientID = value.String
 			}
 		case oauth2code.FieldScope:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field scope", values[i])
 			} else if value.Valid {
-				o.Scope = value.String
+				_m.Scope = value.String
 			}
 		case oauth2code.FieldExpiresAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field expires_at", values[i])
 			} else if value.Valid {
-				o.ExpiresAt = value.Time
+				_m.ExpiresAt = value.Time
 			}
 		case oauth2code.FieldRevoked:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field revoked", values[i])
 			} else if value.Valid {
-				o.Revoked = value.Bool
+				_m.Revoked = value.Bool
 			}
 		case oauth2code.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field user_oauth2_codes", values[i])
 			} else if value.Valid {
-				o.user_oauth2_codes = new(uuid.UUID)
-				*o.user_oauth2_codes = *value.S.(*uuid.UUID)
+				_m.user_oauth2_codes = new(uuid.UUID)
+				*_m.user_oauth2_codes = *value.S.(*uuid.UUID)
 			}
 		default:
-			o.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -155,57 +155,57 @@ func (o *Oauth2Code) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the Oauth2Code.
 // This includes values selected through modifiers, order, etc.
-func (o *Oauth2Code) Value(name string) (ent.Value, error) {
-	return o.selectValues.Get(name)
+func (_m *Oauth2Code) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryUser queries the "user" edge of the Oauth2Code entity.
-func (o *Oauth2Code) QueryUser() *UserQuery {
-	return NewOauth2CodeClient(o.config).QueryUser(o)
+func (_m *Oauth2Code) QueryUser() *UserQuery {
+	return NewOauth2CodeClient(_m.config).QueryUser(_m)
 }
 
 // Update returns a builder for updating this Oauth2Code.
 // Note that you need to call Oauth2Code.Unwrap() before calling this method if this Oauth2Code
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (o *Oauth2Code) Update() *Oauth2CodeUpdateOne {
-	return NewOauth2CodeClient(o.config).UpdateOne(o)
+func (_m *Oauth2Code) Update() *Oauth2CodeUpdateOne {
+	return NewOauth2CodeClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the Oauth2Code entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (o *Oauth2Code) Unwrap() *Oauth2Code {
-	_tx, ok := o.config.driver.(*txDriver)
+func (_m *Oauth2Code) Unwrap() *Oauth2Code {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: Oauth2Code is not a transactional entity")
 	}
-	o.config.driver = _tx.drv
-	return o
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (o *Oauth2Code) String() string {
+func (_m *Oauth2Code) String() string {
 	var builder strings.Builder
 	builder.WriteString("Oauth2Code(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", o.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("created_at=")
-	builder.WriteString(o.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(o.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("auth_code=<sensitive>")
 	builder.WriteString(", ")
 	builder.WriteString("client_id=")
-	builder.WriteString(o.ClientID)
+	builder.WriteString(_m.ClientID)
 	builder.WriteString(", ")
 	builder.WriteString("scope=")
-	builder.WriteString(o.Scope)
+	builder.WriteString(_m.Scope)
 	builder.WriteString(", ")
 	builder.WriteString("expires_at=")
-	builder.WriteString(o.ExpiresAt.Format(time.ANSIC))
+	builder.WriteString(_m.ExpiresAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("revoked=")
-	builder.WriteString(fmt.Sprintf("%v", o.Revoked))
+	builder.WriteString(fmt.Sprintf("%v", _m.Revoked))
 	builder.WriteByte(')')
 	return builder.String()
 }

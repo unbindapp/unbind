@@ -1939,12 +1939,8 @@ spec:
 	})
 }
 
-// TestCloudPiratesImageTagIsString renders the real embedded CloudPirates
-// (Helm) database definitions with default parameters and asserts image.tag
-// renders as a quoted string. These charts ship a values.schema.json that
-// requires image.tag to be a string; an unquoted value like 8.2 is parsed by
-// YAML as a number and the Helm install fails schema validation (this is what
-// left MongoDB stuck "launching").
+// TestCloudPiratesImageTagIsString guards the image.tag string-quoting bug that
+// left MongoDB stuck launching: CloudPirates' schema rejects an unquoted numeric tag.
 func TestCloudPiratesImageTagIsString(t *testing.T) {
 	provider := NewDatabaseProvider()
 	renderer := NewDatabaseRenderer()

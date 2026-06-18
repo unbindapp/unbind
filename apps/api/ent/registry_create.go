@@ -25,79 +25,79 @@ type RegistryCreate struct {
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (rc *RegistryCreate) SetCreatedAt(t time.Time) *RegistryCreate {
-	rc.mutation.SetCreatedAt(t)
-	return rc
+func (_c *RegistryCreate) SetCreatedAt(v time.Time) *RegistryCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (rc *RegistryCreate) SetNillableCreatedAt(t *time.Time) *RegistryCreate {
-	if t != nil {
-		rc.SetCreatedAt(*t)
+func (_c *RegistryCreate) SetNillableCreatedAt(v *time.Time) *RegistryCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return rc
+	return _c
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (rc *RegistryCreate) SetUpdatedAt(t time.Time) *RegistryCreate {
-	rc.mutation.SetUpdatedAt(t)
-	return rc
+func (_c *RegistryCreate) SetUpdatedAt(v time.Time) *RegistryCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (rc *RegistryCreate) SetNillableUpdatedAt(t *time.Time) *RegistryCreate {
-	if t != nil {
-		rc.SetUpdatedAt(*t)
+func (_c *RegistryCreate) SetNillableUpdatedAt(v *time.Time) *RegistryCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
 	}
-	return rc
+	return _c
 }
 
 // SetHost sets the "host" field.
-func (rc *RegistryCreate) SetHost(s string) *RegistryCreate {
-	rc.mutation.SetHost(s)
-	return rc
+func (_c *RegistryCreate) SetHost(v string) *RegistryCreate {
+	_c.mutation.SetHost(v)
+	return _c
 }
 
 // SetKubernetesSecret sets the "kubernetes_secret" field.
-func (rc *RegistryCreate) SetKubernetesSecret(s string) *RegistryCreate {
-	rc.mutation.SetKubernetesSecret(s)
-	return rc
+func (_c *RegistryCreate) SetKubernetesSecret(v string) *RegistryCreate {
+	_c.mutation.SetKubernetesSecret(v)
+	return _c
 }
 
 // SetIsDefault sets the "is_default" field.
-func (rc *RegistryCreate) SetIsDefault(b bool) *RegistryCreate {
-	rc.mutation.SetIsDefault(b)
-	return rc
+func (_c *RegistryCreate) SetIsDefault(v bool) *RegistryCreate {
+	_c.mutation.SetIsDefault(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (rc *RegistryCreate) SetID(u uuid.UUID) *RegistryCreate {
-	rc.mutation.SetID(u)
-	return rc
+func (_c *RegistryCreate) SetID(v uuid.UUID) *RegistryCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (rc *RegistryCreate) SetNillableID(u *uuid.UUID) *RegistryCreate {
-	if u != nil {
-		rc.SetID(*u)
+func (_c *RegistryCreate) SetNillableID(v *uuid.UUID) *RegistryCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return rc
+	return _c
 }
 
 // Mutation returns the RegistryMutation object of the builder.
-func (rc *RegistryCreate) Mutation() *RegistryMutation {
-	return rc.mutation
+func (_c *RegistryCreate) Mutation() *RegistryMutation {
+	return _c.mutation
 }
 
 // Save creates the Registry in the database.
-func (rc *RegistryCreate) Save(ctx context.Context) (*Registry, error) {
-	rc.defaults()
-	return withHooks(ctx, rc.sqlSave, rc.mutation, rc.hooks)
+func (_c *RegistryCreate) Save(ctx context.Context) (*Registry, error) {
+	_c.defaults()
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (rc *RegistryCreate) SaveX(ctx context.Context) *Registry {
-	v, err := rc.Save(ctx)
+func (_c *RegistryCreate) SaveX(ctx context.Context) *Registry {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -105,65 +105,65 @@ func (rc *RegistryCreate) SaveX(ctx context.Context) *Registry {
 }
 
 // Exec executes the query.
-func (rc *RegistryCreate) Exec(ctx context.Context) error {
-	_, err := rc.Save(ctx)
+func (_c *RegistryCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (rc *RegistryCreate) ExecX(ctx context.Context) {
-	if err := rc.Exec(ctx); err != nil {
+func (_c *RegistryCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (rc *RegistryCreate) defaults() {
-	if _, ok := rc.mutation.CreatedAt(); !ok {
+func (_c *RegistryCreate) defaults() {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := registry.DefaultCreatedAt()
-		rc.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := rc.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		v := registry.DefaultUpdatedAt()
-		rc.mutation.SetUpdatedAt(v)
+		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := rc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		v := registry.DefaultID()
-		rc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (rc *RegistryCreate) check() error {
-	if _, ok := rc.mutation.CreatedAt(); !ok {
+func (_c *RegistryCreate) check() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Registry.created_at"`)}
 	}
-	if _, ok := rc.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Registry.updated_at"`)}
 	}
-	if _, ok := rc.mutation.Host(); !ok {
+	if _, ok := _c.mutation.Host(); !ok {
 		return &ValidationError{Name: "host", err: errors.New(`ent: missing required field "Registry.host"`)}
 	}
-	if v, ok := rc.mutation.Host(); ok {
+	if v, ok := _c.mutation.Host(); ok {
 		if err := registry.HostValidator(v); err != nil {
 			return &ValidationError{Name: "host", err: fmt.Errorf(`ent: validator failed for field "Registry.host": %w`, err)}
 		}
 	}
-	if _, ok := rc.mutation.KubernetesSecret(); !ok {
+	if _, ok := _c.mutation.KubernetesSecret(); !ok {
 		return &ValidationError{Name: "kubernetes_secret", err: errors.New(`ent: missing required field "Registry.kubernetes_secret"`)}
 	}
-	if _, ok := rc.mutation.IsDefault(); !ok {
+	if _, ok := _c.mutation.IsDefault(); !ok {
 		return &ValidationError{Name: "is_default", err: errors.New(`ent: missing required field "Registry.is_default"`)}
 	}
 	return nil
 }
 
-func (rc *RegistryCreate) sqlSave(ctx context.Context) (*Registry, error) {
-	if err := rc.check(); err != nil {
+func (_c *RegistryCreate) sqlSave(ctx context.Context) (*Registry, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := rc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, rc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -176,38 +176,38 @@ func (rc *RegistryCreate) sqlSave(ctx context.Context) (*Registry, error) {
 			return nil, err
 		}
 	}
-	rc.mutation.id = &_node.ID
-	rc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (rc *RegistryCreate) createSpec() (*Registry, *sqlgraph.CreateSpec) {
+func (_c *RegistryCreate) createSpec() (*Registry, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Registry{config: rc.config}
+		_node = &Registry{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(registry.Table, sqlgraph.NewFieldSpec(registry.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = rc.conflict
-	if id, ok := rc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := rc.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(registry.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if value, ok := rc.mutation.UpdatedAt(); ok {
+	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(registry.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := rc.mutation.Host(); ok {
+	if value, ok := _c.mutation.Host(); ok {
 		_spec.SetField(registry.FieldHost, field.TypeString, value)
 		_node.Host = value
 	}
-	if value, ok := rc.mutation.KubernetesSecret(); ok {
+	if value, ok := _c.mutation.KubernetesSecret(); ok {
 		_spec.SetField(registry.FieldKubernetesSecret, field.TypeString, value)
 		_node.KubernetesSecret = value
 	}
-	if value, ok := rc.mutation.IsDefault(); ok {
+	if value, ok := _c.mutation.IsDefault(); ok {
 		_spec.SetField(registry.FieldIsDefault, field.TypeBool, value)
 		_node.IsDefault = value
 	}
@@ -230,10 +230,10 @@ func (rc *RegistryCreate) createSpec() (*Registry, *sqlgraph.CreateSpec) {
 //			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
-func (rc *RegistryCreate) OnConflict(opts ...sql.ConflictOption) *RegistryUpsertOne {
-	rc.conflict = opts
+func (_c *RegistryCreate) OnConflict(opts ...sql.ConflictOption) *RegistryUpsertOne {
+	_c.conflict = opts
 	return &RegistryUpsertOne{
-		create: rc,
+		create: _c,
 	}
 }
 
@@ -243,10 +243,10 @@ func (rc *RegistryCreate) OnConflict(opts ...sql.ConflictOption) *RegistryUpsert
 //	client.Registry.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (rc *RegistryCreate) OnConflictColumns(columns ...string) *RegistryUpsertOne {
-	rc.conflict = append(rc.conflict, sql.ConflictColumns(columns...))
+func (_c *RegistryCreate) OnConflictColumns(columns ...string) *RegistryUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &RegistryUpsertOne{
-		create: rc,
+		create: _c,
 	}
 }
 
@@ -465,16 +465,16 @@ type RegistryCreateBulk struct {
 }
 
 // Save creates the Registry entities in the database.
-func (rcb *RegistryCreateBulk) Save(ctx context.Context) ([]*Registry, error) {
-	if rcb.err != nil {
-		return nil, rcb.err
+func (_c *RegistryCreateBulk) Save(ctx context.Context) ([]*Registry, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(rcb.builders))
-	nodes := make([]*Registry, len(rcb.builders))
-	mutators := make([]Mutator, len(rcb.builders))
-	for i := range rcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*Registry, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := rcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*RegistryMutation)
@@ -488,12 +488,12 @@ func (rcb *RegistryCreateBulk) Save(ctx context.Context) ([]*Registry, error) {
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, rcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = rcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, rcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -513,7 +513,7 @@ func (rcb *RegistryCreateBulk) Save(ctx context.Context) ([]*Registry, error) {
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, rcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -521,8 +521,8 @@ func (rcb *RegistryCreateBulk) Save(ctx context.Context) ([]*Registry, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (rcb *RegistryCreateBulk) SaveX(ctx context.Context) []*Registry {
-	v, err := rcb.Save(ctx)
+func (_c *RegistryCreateBulk) SaveX(ctx context.Context) []*Registry {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -530,14 +530,14 @@ func (rcb *RegistryCreateBulk) SaveX(ctx context.Context) []*Registry {
 }
 
 // Exec executes the query.
-func (rcb *RegistryCreateBulk) Exec(ctx context.Context) error {
-	_, err := rcb.Save(ctx)
+func (_c *RegistryCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (rcb *RegistryCreateBulk) ExecX(ctx context.Context) {
-	if err := rcb.Exec(ctx); err != nil {
+func (_c *RegistryCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -557,10 +557,10 @@ func (rcb *RegistryCreateBulk) ExecX(ctx context.Context) {
 //			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
-func (rcb *RegistryCreateBulk) OnConflict(opts ...sql.ConflictOption) *RegistryUpsertBulk {
-	rcb.conflict = opts
+func (_c *RegistryCreateBulk) OnConflict(opts ...sql.ConflictOption) *RegistryUpsertBulk {
+	_c.conflict = opts
 	return &RegistryUpsertBulk{
-		create: rcb,
+		create: _c,
 	}
 }
 
@@ -570,10 +570,10 @@ func (rcb *RegistryCreateBulk) OnConflict(opts ...sql.ConflictOption) *RegistryU
 //	client.Registry.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (rcb *RegistryCreateBulk) OnConflictColumns(columns ...string) *RegistryUpsertBulk {
-	rcb.conflict = append(rcb.conflict, sql.ConflictColumns(columns...))
+func (_c *RegistryCreateBulk) OnConflictColumns(columns ...string) *RegistryUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &RegistryUpsertBulk{
-		create: rcb,
+		create: _c,
 	}
 }
 

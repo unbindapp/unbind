@@ -27,110 +27,110 @@ type VariableReferenceCreate struct {
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (vrc *VariableReferenceCreate) SetCreatedAt(t time.Time) *VariableReferenceCreate {
-	vrc.mutation.SetCreatedAt(t)
-	return vrc
+func (_c *VariableReferenceCreate) SetCreatedAt(v time.Time) *VariableReferenceCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (vrc *VariableReferenceCreate) SetNillableCreatedAt(t *time.Time) *VariableReferenceCreate {
-	if t != nil {
-		vrc.SetCreatedAt(*t)
+func (_c *VariableReferenceCreate) SetNillableCreatedAt(v *time.Time) *VariableReferenceCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return vrc
+	return _c
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (vrc *VariableReferenceCreate) SetUpdatedAt(t time.Time) *VariableReferenceCreate {
-	vrc.mutation.SetUpdatedAt(t)
-	return vrc
+func (_c *VariableReferenceCreate) SetUpdatedAt(v time.Time) *VariableReferenceCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (vrc *VariableReferenceCreate) SetNillableUpdatedAt(t *time.Time) *VariableReferenceCreate {
-	if t != nil {
-		vrc.SetUpdatedAt(*t)
+func (_c *VariableReferenceCreate) SetNillableUpdatedAt(v *time.Time) *VariableReferenceCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
 	}
-	return vrc
+	return _c
 }
 
 // SetTargetServiceID sets the "target_service_id" field.
-func (vrc *VariableReferenceCreate) SetTargetServiceID(u uuid.UUID) *VariableReferenceCreate {
-	vrc.mutation.SetTargetServiceID(u)
-	return vrc
+func (_c *VariableReferenceCreate) SetTargetServiceID(v uuid.UUID) *VariableReferenceCreate {
+	_c.mutation.SetTargetServiceID(v)
+	return _c
 }
 
 // SetTargetName sets the "target_name" field.
-func (vrc *VariableReferenceCreate) SetTargetName(s string) *VariableReferenceCreate {
-	vrc.mutation.SetTargetName(s)
-	return vrc
+func (_c *VariableReferenceCreate) SetTargetName(v string) *VariableReferenceCreate {
+	_c.mutation.SetTargetName(v)
+	return _c
 }
 
 // SetSources sets the "sources" field.
-func (vrc *VariableReferenceCreate) SetSources(srs []schema.VariableReferenceSource) *VariableReferenceCreate {
-	vrc.mutation.SetSources(srs)
-	return vrc
+func (_c *VariableReferenceCreate) SetSources(v []schema.VariableReferenceSource) *VariableReferenceCreate {
+	_c.mutation.SetSources(v)
+	return _c
 }
 
 // SetValueTemplate sets the "value_template" field.
-func (vrc *VariableReferenceCreate) SetValueTemplate(s string) *VariableReferenceCreate {
-	vrc.mutation.SetValueTemplate(s)
-	return vrc
+func (_c *VariableReferenceCreate) SetValueTemplate(v string) *VariableReferenceCreate {
+	_c.mutation.SetValueTemplate(v)
+	return _c
 }
 
 // SetError sets the "error" field.
-func (vrc *VariableReferenceCreate) SetError(s string) *VariableReferenceCreate {
-	vrc.mutation.SetError(s)
-	return vrc
+func (_c *VariableReferenceCreate) SetError(v string) *VariableReferenceCreate {
+	_c.mutation.SetError(v)
+	return _c
 }
 
 // SetNillableError sets the "error" field if the given value is not nil.
-func (vrc *VariableReferenceCreate) SetNillableError(s *string) *VariableReferenceCreate {
-	if s != nil {
-		vrc.SetError(*s)
+func (_c *VariableReferenceCreate) SetNillableError(v *string) *VariableReferenceCreate {
+	if v != nil {
+		_c.SetError(*v)
 	}
-	return vrc
+	return _c
 }
 
 // SetID sets the "id" field.
-func (vrc *VariableReferenceCreate) SetID(u uuid.UUID) *VariableReferenceCreate {
-	vrc.mutation.SetID(u)
-	return vrc
+func (_c *VariableReferenceCreate) SetID(v uuid.UUID) *VariableReferenceCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (vrc *VariableReferenceCreate) SetNillableID(u *uuid.UUID) *VariableReferenceCreate {
-	if u != nil {
-		vrc.SetID(*u)
+func (_c *VariableReferenceCreate) SetNillableID(v *uuid.UUID) *VariableReferenceCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return vrc
+	return _c
 }
 
 // SetServiceID sets the "service" edge to the Service entity by ID.
-func (vrc *VariableReferenceCreate) SetServiceID(id uuid.UUID) *VariableReferenceCreate {
-	vrc.mutation.SetServiceID(id)
-	return vrc
+func (_c *VariableReferenceCreate) SetServiceID(id uuid.UUID) *VariableReferenceCreate {
+	_c.mutation.SetServiceID(id)
+	return _c
 }
 
 // SetService sets the "service" edge to the Service entity.
-func (vrc *VariableReferenceCreate) SetService(s *Service) *VariableReferenceCreate {
-	return vrc.SetServiceID(s.ID)
+func (_c *VariableReferenceCreate) SetService(v *Service) *VariableReferenceCreate {
+	return _c.SetServiceID(v.ID)
 }
 
 // Mutation returns the VariableReferenceMutation object of the builder.
-func (vrc *VariableReferenceCreate) Mutation() *VariableReferenceMutation {
-	return vrc.mutation
+func (_c *VariableReferenceCreate) Mutation() *VariableReferenceMutation {
+	return _c.mutation
 }
 
 // Save creates the VariableReference in the database.
-func (vrc *VariableReferenceCreate) Save(ctx context.Context) (*VariableReference, error) {
-	vrc.defaults()
-	return withHooks(ctx, vrc.sqlSave, vrc.mutation, vrc.hooks)
+func (_c *VariableReferenceCreate) Save(ctx context.Context) (*VariableReference, error) {
+	_c.defaults()
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (vrc *VariableReferenceCreate) SaveX(ctx context.Context) *VariableReference {
-	v, err := vrc.Save(ctx)
+func (_c *VariableReferenceCreate) SaveX(ctx context.Context) *VariableReference {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -138,66 +138,66 @@ func (vrc *VariableReferenceCreate) SaveX(ctx context.Context) *VariableReferenc
 }
 
 // Exec executes the query.
-func (vrc *VariableReferenceCreate) Exec(ctx context.Context) error {
-	_, err := vrc.Save(ctx)
+func (_c *VariableReferenceCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (vrc *VariableReferenceCreate) ExecX(ctx context.Context) {
-	if err := vrc.Exec(ctx); err != nil {
+func (_c *VariableReferenceCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (vrc *VariableReferenceCreate) defaults() {
-	if _, ok := vrc.mutation.CreatedAt(); !ok {
+func (_c *VariableReferenceCreate) defaults() {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := variablereference.DefaultCreatedAt()
-		vrc.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := vrc.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		v := variablereference.DefaultUpdatedAt()
-		vrc.mutation.SetUpdatedAt(v)
+		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := vrc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		v := variablereference.DefaultID()
-		vrc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (vrc *VariableReferenceCreate) check() error {
-	if _, ok := vrc.mutation.CreatedAt(); !ok {
+func (_c *VariableReferenceCreate) check() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "VariableReference.created_at"`)}
 	}
-	if _, ok := vrc.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "VariableReference.updated_at"`)}
 	}
-	if _, ok := vrc.mutation.TargetServiceID(); !ok {
+	if _, ok := _c.mutation.TargetServiceID(); !ok {
 		return &ValidationError{Name: "target_service_id", err: errors.New(`ent: missing required field "VariableReference.target_service_id"`)}
 	}
-	if _, ok := vrc.mutation.TargetName(); !ok {
+	if _, ok := _c.mutation.TargetName(); !ok {
 		return &ValidationError{Name: "target_name", err: errors.New(`ent: missing required field "VariableReference.target_name"`)}
 	}
-	if _, ok := vrc.mutation.Sources(); !ok {
+	if _, ok := _c.mutation.Sources(); !ok {
 		return &ValidationError{Name: "sources", err: errors.New(`ent: missing required field "VariableReference.sources"`)}
 	}
-	if _, ok := vrc.mutation.ValueTemplate(); !ok {
+	if _, ok := _c.mutation.ValueTemplate(); !ok {
 		return &ValidationError{Name: "value_template", err: errors.New(`ent: missing required field "VariableReference.value_template"`)}
 	}
-	if len(vrc.mutation.ServiceIDs()) == 0 {
+	if len(_c.mutation.ServiceIDs()) == 0 {
 		return &ValidationError{Name: "service", err: errors.New(`ent: missing required edge "VariableReference.service"`)}
 	}
 	return nil
 }
 
-func (vrc *VariableReferenceCreate) sqlSave(ctx context.Context) (*VariableReference, error) {
-	if err := vrc.check(); err != nil {
+func (_c *VariableReferenceCreate) sqlSave(ctx context.Context) (*VariableReference, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := vrc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, vrc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -210,46 +210,46 @@ func (vrc *VariableReferenceCreate) sqlSave(ctx context.Context) (*VariableRefer
 			return nil, err
 		}
 	}
-	vrc.mutation.id = &_node.ID
-	vrc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (vrc *VariableReferenceCreate) createSpec() (*VariableReference, *sqlgraph.CreateSpec) {
+func (_c *VariableReferenceCreate) createSpec() (*VariableReference, *sqlgraph.CreateSpec) {
 	var (
-		_node = &VariableReference{config: vrc.config}
+		_node = &VariableReference{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(variablereference.Table, sqlgraph.NewFieldSpec(variablereference.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = vrc.conflict
-	if id, ok := vrc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := vrc.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(variablereference.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if value, ok := vrc.mutation.UpdatedAt(); ok {
+	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(variablereference.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := vrc.mutation.TargetName(); ok {
+	if value, ok := _c.mutation.TargetName(); ok {
 		_spec.SetField(variablereference.FieldTargetName, field.TypeString, value)
 		_node.TargetName = value
 	}
-	if value, ok := vrc.mutation.Sources(); ok {
+	if value, ok := _c.mutation.Sources(); ok {
 		_spec.SetField(variablereference.FieldSources, field.TypeJSON, value)
 		_node.Sources = value
 	}
-	if value, ok := vrc.mutation.ValueTemplate(); ok {
+	if value, ok := _c.mutation.ValueTemplate(); ok {
 		_spec.SetField(variablereference.FieldValueTemplate, field.TypeString, value)
 		_node.ValueTemplate = value
 	}
-	if value, ok := vrc.mutation.Error(); ok {
+	if value, ok := _c.mutation.Error(); ok {
 		_spec.SetField(variablereference.FieldError, field.TypeString, value)
 		_node.Error = &value
 	}
-	if nodes := vrc.mutation.ServiceIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ServiceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -285,10 +285,10 @@ func (vrc *VariableReferenceCreate) createSpec() (*VariableReference, *sqlgraph.
 //			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
-func (vrc *VariableReferenceCreate) OnConflict(opts ...sql.ConflictOption) *VariableReferenceUpsertOne {
-	vrc.conflict = opts
+func (_c *VariableReferenceCreate) OnConflict(opts ...sql.ConflictOption) *VariableReferenceUpsertOne {
+	_c.conflict = opts
 	return &VariableReferenceUpsertOne{
-		create: vrc,
+		create: _c,
 	}
 }
 
@@ -298,10 +298,10 @@ func (vrc *VariableReferenceCreate) OnConflict(opts ...sql.ConflictOption) *Vari
 //	client.VariableReference.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (vrc *VariableReferenceCreate) OnConflictColumns(columns ...string) *VariableReferenceUpsertOne {
-	vrc.conflict = append(vrc.conflict, sql.ConflictColumns(columns...))
+func (_c *VariableReferenceCreate) OnConflictColumns(columns ...string) *VariableReferenceUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &VariableReferenceUpsertOne{
-		create: vrc,
+		create: _c,
 	}
 }
 
@@ -585,16 +585,16 @@ type VariableReferenceCreateBulk struct {
 }
 
 // Save creates the VariableReference entities in the database.
-func (vrcb *VariableReferenceCreateBulk) Save(ctx context.Context) ([]*VariableReference, error) {
-	if vrcb.err != nil {
-		return nil, vrcb.err
+func (_c *VariableReferenceCreateBulk) Save(ctx context.Context) ([]*VariableReference, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(vrcb.builders))
-	nodes := make([]*VariableReference, len(vrcb.builders))
-	mutators := make([]Mutator, len(vrcb.builders))
-	for i := range vrcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*VariableReference, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := vrcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*VariableReferenceMutation)
@@ -608,12 +608,12 @@ func (vrcb *VariableReferenceCreateBulk) Save(ctx context.Context) ([]*VariableR
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, vrcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = vrcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, vrcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -633,7 +633,7 @@ func (vrcb *VariableReferenceCreateBulk) Save(ctx context.Context) ([]*VariableR
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, vrcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -641,8 +641,8 @@ func (vrcb *VariableReferenceCreateBulk) Save(ctx context.Context) ([]*VariableR
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (vrcb *VariableReferenceCreateBulk) SaveX(ctx context.Context) []*VariableReference {
-	v, err := vrcb.Save(ctx)
+func (_c *VariableReferenceCreateBulk) SaveX(ctx context.Context) []*VariableReference {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -650,14 +650,14 @@ func (vrcb *VariableReferenceCreateBulk) SaveX(ctx context.Context) []*VariableR
 }
 
 // Exec executes the query.
-func (vrcb *VariableReferenceCreateBulk) Exec(ctx context.Context) error {
-	_, err := vrcb.Save(ctx)
+func (_c *VariableReferenceCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (vrcb *VariableReferenceCreateBulk) ExecX(ctx context.Context) {
-	if err := vrcb.Exec(ctx); err != nil {
+func (_c *VariableReferenceCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -677,10 +677,10 @@ func (vrcb *VariableReferenceCreateBulk) ExecX(ctx context.Context) {
 //			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
-func (vrcb *VariableReferenceCreateBulk) OnConflict(opts ...sql.ConflictOption) *VariableReferenceUpsertBulk {
-	vrcb.conflict = opts
+func (_c *VariableReferenceCreateBulk) OnConflict(opts ...sql.ConflictOption) *VariableReferenceUpsertBulk {
+	_c.conflict = opts
 	return &VariableReferenceUpsertBulk{
-		create: vrcb,
+		create: _c,
 	}
 }
 
@@ -690,10 +690,10 @@ func (vrcb *VariableReferenceCreateBulk) OnConflict(opts ...sql.ConflictOption) 
 //	client.VariableReference.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (vrcb *VariableReferenceCreateBulk) OnConflictColumns(columns ...string) *VariableReferenceUpsertBulk {
-	vrcb.conflict = append(vrcb.conflict, sql.ConflictColumns(columns...))
+func (_c *VariableReferenceCreateBulk) OnConflictColumns(columns ...string) *VariableReferenceUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &VariableReferenceUpsertBulk{
-		create: vrcb,
+		create: _c,
 	}
 }
 

@@ -34,471 +34,471 @@ type ServiceUpdate struct {
 }
 
 // Where appends a list predicates to the ServiceUpdate builder.
-func (su *ServiceUpdate) Where(ps ...predicate.Service) *ServiceUpdate {
-	su.mutation.Where(ps...)
-	return su
+func (_u *ServiceUpdate) Where(ps ...predicate.Service) *ServiceUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (su *ServiceUpdate) SetUpdatedAt(t time.Time) *ServiceUpdate {
-	su.mutation.SetUpdatedAt(t)
-	return su
+func (_u *ServiceUpdate) SetUpdatedAt(v time.Time) *ServiceUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetType sets the "type" field.
-func (su *ServiceUpdate) SetType(st schema.ServiceType) *ServiceUpdate {
-	su.mutation.SetType(st)
-	return su
+func (_u *ServiceUpdate) SetType(v schema.ServiceType) *ServiceUpdate {
+	_u.mutation.SetType(v)
+	return _u
 }
 
 // SetNillableType sets the "type" field if the given value is not nil.
-func (su *ServiceUpdate) SetNillableType(st *schema.ServiceType) *ServiceUpdate {
-	if st != nil {
-		su.SetType(*st)
+func (_u *ServiceUpdate) SetNillableType(v *schema.ServiceType) *ServiceUpdate {
+	if v != nil {
+		_u.SetType(*v)
 	}
-	return su
+	return _u
 }
 
 // SetKubernetesName sets the "kubernetes_name" field.
-func (su *ServiceUpdate) SetKubernetesName(s string) *ServiceUpdate {
-	su.mutation.SetKubernetesName(s)
-	return su
+func (_u *ServiceUpdate) SetKubernetesName(v string) *ServiceUpdate {
+	_u.mutation.SetKubernetesName(v)
+	return _u
 }
 
 // SetNillableKubernetesName sets the "kubernetes_name" field if the given value is not nil.
-func (su *ServiceUpdate) SetNillableKubernetesName(s *string) *ServiceUpdate {
-	if s != nil {
-		su.SetKubernetesName(*s)
+func (_u *ServiceUpdate) SetNillableKubernetesName(v *string) *ServiceUpdate {
+	if v != nil {
+		_u.SetKubernetesName(*v)
 	}
-	return su
+	return _u
 }
 
 // SetName sets the "name" field.
-func (su *ServiceUpdate) SetName(s string) *ServiceUpdate {
-	su.mutation.SetName(s)
-	return su
+func (_u *ServiceUpdate) SetName(v string) *ServiceUpdate {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (su *ServiceUpdate) SetNillableName(s *string) *ServiceUpdate {
-	if s != nil {
-		su.SetName(*s)
+func (_u *ServiceUpdate) SetNillableName(v *string) *ServiceUpdate {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return su
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (su *ServiceUpdate) SetDescription(s string) *ServiceUpdate {
-	su.mutation.SetDescription(s)
-	return su
+func (_u *ServiceUpdate) SetDescription(v string) *ServiceUpdate {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (su *ServiceUpdate) SetNillableDescription(s *string) *ServiceUpdate {
-	if s != nil {
-		su.SetDescription(*s)
+func (_u *ServiceUpdate) SetNillableDescription(v *string) *ServiceUpdate {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return su
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (su *ServiceUpdate) ClearDescription() *ServiceUpdate {
-	su.mutation.ClearDescription()
-	return su
+func (_u *ServiceUpdate) ClearDescription() *ServiceUpdate {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetEnvironmentID sets the "environment_id" field.
-func (su *ServiceUpdate) SetEnvironmentID(u uuid.UUID) *ServiceUpdate {
-	su.mutation.SetEnvironmentID(u)
-	return su
+func (_u *ServiceUpdate) SetEnvironmentID(v uuid.UUID) *ServiceUpdate {
+	_u.mutation.SetEnvironmentID(v)
+	return _u
 }
 
 // SetNillableEnvironmentID sets the "environment_id" field if the given value is not nil.
-func (su *ServiceUpdate) SetNillableEnvironmentID(u *uuid.UUID) *ServiceUpdate {
-	if u != nil {
-		su.SetEnvironmentID(*u)
+func (_u *ServiceUpdate) SetNillableEnvironmentID(v *uuid.UUID) *ServiceUpdate {
+	if v != nil {
+		_u.SetEnvironmentID(*v)
 	}
-	return su
+	return _u
 }
 
 // SetDetectedPorts sets the "detected_ports" field.
-func (su *ServiceUpdate) SetDetectedPorts(ss []schema.PortSpec) *ServiceUpdate {
-	su.mutation.SetDetectedPorts(ss)
-	return su
+func (_u *ServiceUpdate) SetDetectedPorts(v []schema.PortSpec) *ServiceUpdate {
+	_u.mutation.SetDetectedPorts(v)
+	return _u
 }
 
-// AppendDetectedPorts appends ss to the "detected_ports" field.
-func (su *ServiceUpdate) AppendDetectedPorts(ss []schema.PortSpec) *ServiceUpdate {
-	su.mutation.AppendDetectedPorts(ss)
-	return su
+// AppendDetectedPorts appends value to the "detected_ports" field.
+func (_u *ServiceUpdate) AppendDetectedPorts(v []schema.PortSpec) *ServiceUpdate {
+	_u.mutation.AppendDetectedPorts(v)
+	return _u
 }
 
 // ClearDetectedPorts clears the value of the "detected_ports" field.
-func (su *ServiceUpdate) ClearDetectedPorts() *ServiceUpdate {
-	su.mutation.ClearDetectedPorts()
-	return su
+func (_u *ServiceUpdate) ClearDetectedPorts() *ServiceUpdate {
+	_u.mutation.ClearDetectedPorts()
+	return _u
 }
 
 // SetDatabase sets the "database" field.
-func (su *ServiceUpdate) SetDatabase(s string) *ServiceUpdate {
-	su.mutation.SetDatabase(s)
-	return su
+func (_u *ServiceUpdate) SetDatabase(v string) *ServiceUpdate {
+	_u.mutation.SetDatabase(v)
+	return _u
 }
 
 // SetNillableDatabase sets the "database" field if the given value is not nil.
-func (su *ServiceUpdate) SetNillableDatabase(s *string) *ServiceUpdate {
-	if s != nil {
-		su.SetDatabase(*s)
+func (_u *ServiceUpdate) SetNillableDatabase(v *string) *ServiceUpdate {
+	if v != nil {
+		_u.SetDatabase(*v)
 	}
-	return su
+	return _u
 }
 
 // ClearDatabase clears the value of the "database" field.
-func (su *ServiceUpdate) ClearDatabase() *ServiceUpdate {
-	su.mutation.ClearDatabase()
-	return su
+func (_u *ServiceUpdate) ClearDatabase() *ServiceUpdate {
+	_u.mutation.ClearDatabase()
+	return _u
 }
 
 // SetDatabaseVersion sets the "database_version" field.
-func (su *ServiceUpdate) SetDatabaseVersion(s string) *ServiceUpdate {
-	su.mutation.SetDatabaseVersion(s)
-	return su
+func (_u *ServiceUpdate) SetDatabaseVersion(v string) *ServiceUpdate {
+	_u.mutation.SetDatabaseVersion(v)
+	return _u
 }
 
 // SetNillableDatabaseVersion sets the "database_version" field if the given value is not nil.
-func (su *ServiceUpdate) SetNillableDatabaseVersion(s *string) *ServiceUpdate {
-	if s != nil {
-		su.SetDatabaseVersion(*s)
+func (_u *ServiceUpdate) SetNillableDatabaseVersion(v *string) *ServiceUpdate {
+	if v != nil {
+		_u.SetDatabaseVersion(*v)
 	}
-	return su
+	return _u
 }
 
 // ClearDatabaseVersion clears the value of the "database_version" field.
-func (su *ServiceUpdate) ClearDatabaseVersion() *ServiceUpdate {
-	su.mutation.ClearDatabaseVersion()
-	return su
+func (_u *ServiceUpdate) ClearDatabaseVersion() *ServiceUpdate {
+	_u.mutation.ClearDatabaseVersion()
+	return _u
 }
 
 // SetGithubInstallationID sets the "github_installation_id" field.
-func (su *ServiceUpdate) SetGithubInstallationID(i int64) *ServiceUpdate {
-	su.mutation.SetGithubInstallationID(i)
-	return su
+func (_u *ServiceUpdate) SetGithubInstallationID(v int64) *ServiceUpdate {
+	_u.mutation.SetGithubInstallationID(v)
+	return _u
 }
 
 // SetNillableGithubInstallationID sets the "github_installation_id" field if the given value is not nil.
-func (su *ServiceUpdate) SetNillableGithubInstallationID(i *int64) *ServiceUpdate {
-	if i != nil {
-		su.SetGithubInstallationID(*i)
+func (_u *ServiceUpdate) SetNillableGithubInstallationID(v *int64) *ServiceUpdate {
+	if v != nil {
+		_u.SetGithubInstallationID(*v)
 	}
-	return su
+	return _u
 }
 
 // ClearGithubInstallationID clears the value of the "github_installation_id" field.
-func (su *ServiceUpdate) ClearGithubInstallationID() *ServiceUpdate {
-	su.mutation.ClearGithubInstallationID()
-	return su
+func (_u *ServiceUpdate) ClearGithubInstallationID() *ServiceUpdate {
+	_u.mutation.ClearGithubInstallationID()
+	return _u
 }
 
 // SetGitRepositoryOwner sets the "git_repository_owner" field.
-func (su *ServiceUpdate) SetGitRepositoryOwner(s string) *ServiceUpdate {
-	su.mutation.SetGitRepositoryOwner(s)
-	return su
+func (_u *ServiceUpdate) SetGitRepositoryOwner(v string) *ServiceUpdate {
+	_u.mutation.SetGitRepositoryOwner(v)
+	return _u
 }
 
 // SetNillableGitRepositoryOwner sets the "git_repository_owner" field if the given value is not nil.
-func (su *ServiceUpdate) SetNillableGitRepositoryOwner(s *string) *ServiceUpdate {
-	if s != nil {
-		su.SetGitRepositoryOwner(*s)
+func (_u *ServiceUpdate) SetNillableGitRepositoryOwner(v *string) *ServiceUpdate {
+	if v != nil {
+		_u.SetGitRepositoryOwner(*v)
 	}
-	return su
+	return _u
 }
 
 // ClearGitRepositoryOwner clears the value of the "git_repository_owner" field.
-func (su *ServiceUpdate) ClearGitRepositoryOwner() *ServiceUpdate {
-	su.mutation.ClearGitRepositoryOwner()
-	return su
+func (_u *ServiceUpdate) ClearGitRepositoryOwner() *ServiceUpdate {
+	_u.mutation.ClearGitRepositoryOwner()
+	return _u
 }
 
 // SetGitRepository sets the "git_repository" field.
-func (su *ServiceUpdate) SetGitRepository(s string) *ServiceUpdate {
-	su.mutation.SetGitRepository(s)
-	return su
+func (_u *ServiceUpdate) SetGitRepository(v string) *ServiceUpdate {
+	_u.mutation.SetGitRepository(v)
+	return _u
 }
 
 // SetNillableGitRepository sets the "git_repository" field if the given value is not nil.
-func (su *ServiceUpdate) SetNillableGitRepository(s *string) *ServiceUpdate {
-	if s != nil {
-		su.SetGitRepository(*s)
+func (_u *ServiceUpdate) SetNillableGitRepository(v *string) *ServiceUpdate {
+	if v != nil {
+		_u.SetGitRepository(*v)
 	}
-	return su
+	return _u
 }
 
 // ClearGitRepository clears the value of the "git_repository" field.
-func (su *ServiceUpdate) ClearGitRepository() *ServiceUpdate {
-	su.mutation.ClearGitRepository()
-	return su
+func (_u *ServiceUpdate) ClearGitRepository() *ServiceUpdate {
+	_u.mutation.ClearGitRepository()
+	return _u
 }
 
 // SetKubernetesSecret sets the "kubernetes_secret" field.
-func (su *ServiceUpdate) SetKubernetesSecret(s string) *ServiceUpdate {
-	su.mutation.SetKubernetesSecret(s)
-	return su
+func (_u *ServiceUpdate) SetKubernetesSecret(v string) *ServiceUpdate {
+	_u.mutation.SetKubernetesSecret(v)
+	return _u
 }
 
 // SetNillableKubernetesSecret sets the "kubernetes_secret" field if the given value is not nil.
-func (su *ServiceUpdate) SetNillableKubernetesSecret(s *string) *ServiceUpdate {
-	if s != nil {
-		su.SetKubernetesSecret(*s)
+func (_u *ServiceUpdate) SetNillableKubernetesSecret(v *string) *ServiceUpdate {
+	if v != nil {
+		_u.SetKubernetesSecret(*v)
 	}
-	return su
+	return _u
 }
 
 // SetCurrentDeploymentID sets the "current_deployment_id" field.
-func (su *ServiceUpdate) SetCurrentDeploymentID(u uuid.UUID) *ServiceUpdate {
-	su.mutation.SetCurrentDeploymentID(u)
-	return su
+func (_u *ServiceUpdate) SetCurrentDeploymentID(v uuid.UUID) *ServiceUpdate {
+	_u.mutation.SetCurrentDeploymentID(v)
+	return _u
 }
 
 // SetNillableCurrentDeploymentID sets the "current_deployment_id" field if the given value is not nil.
-func (su *ServiceUpdate) SetNillableCurrentDeploymentID(u *uuid.UUID) *ServiceUpdate {
-	if u != nil {
-		su.SetCurrentDeploymentID(*u)
+func (_u *ServiceUpdate) SetNillableCurrentDeploymentID(v *uuid.UUID) *ServiceUpdate {
+	if v != nil {
+		_u.SetCurrentDeploymentID(*v)
 	}
-	return su
+	return _u
 }
 
 // ClearCurrentDeploymentID clears the value of the "current_deployment_id" field.
-func (su *ServiceUpdate) ClearCurrentDeploymentID() *ServiceUpdate {
-	su.mutation.ClearCurrentDeploymentID()
-	return su
+func (_u *ServiceUpdate) ClearCurrentDeploymentID() *ServiceUpdate {
+	_u.mutation.ClearCurrentDeploymentID()
+	return _u
 }
 
 // SetTemplateID sets the "template_id" field.
-func (su *ServiceUpdate) SetTemplateID(u uuid.UUID) *ServiceUpdate {
-	su.mutation.SetTemplateID(u)
-	return su
+func (_u *ServiceUpdate) SetTemplateID(v uuid.UUID) *ServiceUpdate {
+	_u.mutation.SetTemplateID(v)
+	return _u
 }
 
 // SetNillableTemplateID sets the "template_id" field if the given value is not nil.
-func (su *ServiceUpdate) SetNillableTemplateID(u *uuid.UUID) *ServiceUpdate {
-	if u != nil {
-		su.SetTemplateID(*u)
+func (_u *ServiceUpdate) SetNillableTemplateID(v *uuid.UUID) *ServiceUpdate {
+	if v != nil {
+		_u.SetTemplateID(*v)
 	}
-	return su
+	return _u
 }
 
 // ClearTemplateID clears the value of the "template_id" field.
-func (su *ServiceUpdate) ClearTemplateID() *ServiceUpdate {
-	su.mutation.ClearTemplateID()
-	return su
+func (_u *ServiceUpdate) ClearTemplateID() *ServiceUpdate {
+	_u.mutation.ClearTemplateID()
+	return _u
 }
 
 // SetTemplateInstanceID sets the "template_instance_id" field.
-func (su *ServiceUpdate) SetTemplateInstanceID(u uuid.UUID) *ServiceUpdate {
-	su.mutation.SetTemplateInstanceID(u)
-	return su
+func (_u *ServiceUpdate) SetTemplateInstanceID(v uuid.UUID) *ServiceUpdate {
+	_u.mutation.SetTemplateInstanceID(v)
+	return _u
 }
 
 // SetNillableTemplateInstanceID sets the "template_instance_id" field if the given value is not nil.
-func (su *ServiceUpdate) SetNillableTemplateInstanceID(u *uuid.UUID) *ServiceUpdate {
-	if u != nil {
-		su.SetTemplateInstanceID(*u)
+func (_u *ServiceUpdate) SetNillableTemplateInstanceID(v *uuid.UUID) *ServiceUpdate {
+	if v != nil {
+		_u.SetTemplateInstanceID(*v)
 	}
-	return su
+	return _u
 }
 
 // ClearTemplateInstanceID clears the value of the "template_instance_id" field.
-func (su *ServiceUpdate) ClearTemplateInstanceID() *ServiceUpdate {
-	su.mutation.ClearTemplateInstanceID()
-	return su
+func (_u *ServiceUpdate) ClearTemplateInstanceID() *ServiceUpdate {
+	_u.mutation.ClearTemplateInstanceID()
+	return _u
 }
 
 // SetServiceGroupID sets the "service_group_id" field.
-func (su *ServiceUpdate) SetServiceGroupID(u uuid.UUID) *ServiceUpdate {
-	su.mutation.SetServiceGroupID(u)
-	return su
+func (_u *ServiceUpdate) SetServiceGroupID(v uuid.UUID) *ServiceUpdate {
+	_u.mutation.SetServiceGroupID(v)
+	return _u
 }
 
 // SetNillableServiceGroupID sets the "service_group_id" field if the given value is not nil.
-func (su *ServiceUpdate) SetNillableServiceGroupID(u *uuid.UUID) *ServiceUpdate {
-	if u != nil {
-		su.SetServiceGroupID(*u)
+func (_u *ServiceUpdate) SetNillableServiceGroupID(v *uuid.UUID) *ServiceUpdate {
+	if v != nil {
+		_u.SetServiceGroupID(*v)
 	}
-	return su
+	return _u
 }
 
 // ClearServiceGroupID clears the value of the "service_group_id" field.
-func (su *ServiceUpdate) ClearServiceGroupID() *ServiceUpdate {
-	su.mutation.ClearServiceGroupID()
-	return su
+func (_u *ServiceUpdate) ClearServiceGroupID() *ServiceUpdate {
+	_u.mutation.ClearServiceGroupID()
+	return _u
 }
 
 // SetEnvironment sets the "environment" edge to the Environment entity.
-func (su *ServiceUpdate) SetEnvironment(e *Environment) *ServiceUpdate {
-	return su.SetEnvironmentID(e.ID)
+func (_u *ServiceUpdate) SetEnvironment(v *Environment) *ServiceUpdate {
+	return _u.SetEnvironmentID(v.ID)
 }
 
 // SetGithubInstallation sets the "github_installation" edge to the GithubInstallation entity.
-func (su *ServiceUpdate) SetGithubInstallation(g *GithubInstallation) *ServiceUpdate {
-	return su.SetGithubInstallationID(g.ID)
+func (_u *ServiceUpdate) SetGithubInstallation(v *GithubInstallation) *ServiceUpdate {
+	return _u.SetGithubInstallationID(v.ID)
 }
 
 // SetServiceConfigID sets the "service_config" edge to the ServiceConfig entity by ID.
-func (su *ServiceUpdate) SetServiceConfigID(id uuid.UUID) *ServiceUpdate {
-	su.mutation.SetServiceConfigID(id)
-	return su
+func (_u *ServiceUpdate) SetServiceConfigID(id uuid.UUID) *ServiceUpdate {
+	_u.mutation.SetServiceConfigID(id)
+	return _u
 }
 
 // SetNillableServiceConfigID sets the "service_config" edge to the ServiceConfig entity by ID if the given value is not nil.
-func (su *ServiceUpdate) SetNillableServiceConfigID(id *uuid.UUID) *ServiceUpdate {
+func (_u *ServiceUpdate) SetNillableServiceConfigID(id *uuid.UUID) *ServiceUpdate {
 	if id != nil {
-		su = su.SetServiceConfigID(*id)
+		_u = _u.SetServiceConfigID(*id)
 	}
-	return su
+	return _u
 }
 
 // SetServiceConfig sets the "service_config" edge to the ServiceConfig entity.
-func (su *ServiceUpdate) SetServiceConfig(s *ServiceConfig) *ServiceUpdate {
-	return su.SetServiceConfigID(s.ID)
+func (_u *ServiceUpdate) SetServiceConfig(v *ServiceConfig) *ServiceUpdate {
+	return _u.SetServiceConfigID(v.ID)
 }
 
 // AddDeploymentIDs adds the "deployments" edge to the Deployment entity by IDs.
-func (su *ServiceUpdate) AddDeploymentIDs(ids ...uuid.UUID) *ServiceUpdate {
-	su.mutation.AddDeploymentIDs(ids...)
-	return su
+func (_u *ServiceUpdate) AddDeploymentIDs(ids ...uuid.UUID) *ServiceUpdate {
+	_u.mutation.AddDeploymentIDs(ids...)
+	return _u
 }
 
 // AddDeployments adds the "deployments" edges to the Deployment entity.
-func (su *ServiceUpdate) AddDeployments(d ...*Deployment) *ServiceUpdate {
-	ids := make([]uuid.UUID, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
+func (_u *ServiceUpdate) AddDeployments(v ...*Deployment) *ServiceUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return su.AddDeploymentIDs(ids...)
+	return _u.AddDeploymentIDs(ids...)
 }
 
 // SetCurrentDeployment sets the "current_deployment" edge to the Deployment entity.
-func (su *ServiceUpdate) SetCurrentDeployment(d *Deployment) *ServiceUpdate {
-	return su.SetCurrentDeploymentID(d.ID)
+func (_u *ServiceUpdate) SetCurrentDeployment(v *Deployment) *ServiceUpdate {
+	return _u.SetCurrentDeploymentID(v.ID)
 }
 
 // SetTemplate sets the "template" edge to the Template entity.
-func (su *ServiceUpdate) SetTemplate(t *Template) *ServiceUpdate {
-	return su.SetTemplateID(t.ID)
+func (_u *ServiceUpdate) SetTemplate(v *Template) *ServiceUpdate {
+	return _u.SetTemplateID(v.ID)
 }
 
 // SetServiceGroup sets the "service_group" edge to the ServiceGroup entity.
-func (su *ServiceUpdate) SetServiceGroup(s *ServiceGroup) *ServiceUpdate {
-	return su.SetServiceGroupID(s.ID)
+func (_u *ServiceUpdate) SetServiceGroup(v *ServiceGroup) *ServiceUpdate {
+	return _u.SetServiceGroupID(v.ID)
 }
 
 // AddVariableReferenceIDs adds the "variable_references" edge to the VariableReference entity by IDs.
-func (su *ServiceUpdate) AddVariableReferenceIDs(ids ...uuid.UUID) *ServiceUpdate {
-	su.mutation.AddVariableReferenceIDs(ids...)
-	return su
+func (_u *ServiceUpdate) AddVariableReferenceIDs(ids ...uuid.UUID) *ServiceUpdate {
+	_u.mutation.AddVariableReferenceIDs(ids...)
+	return _u
 }
 
 // AddVariableReferences adds the "variable_references" edges to the VariableReference entity.
-func (su *ServiceUpdate) AddVariableReferences(v ...*VariableReference) *ServiceUpdate {
+func (_u *ServiceUpdate) AddVariableReferences(v ...*VariableReference) *ServiceUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return su.AddVariableReferenceIDs(ids...)
+	return _u.AddVariableReferenceIDs(ids...)
 }
 
 // Mutation returns the ServiceMutation object of the builder.
-func (su *ServiceUpdate) Mutation() *ServiceMutation {
-	return su.mutation
+func (_u *ServiceUpdate) Mutation() *ServiceMutation {
+	return _u.mutation
 }
 
 // ClearEnvironment clears the "environment" edge to the Environment entity.
-func (su *ServiceUpdate) ClearEnvironment() *ServiceUpdate {
-	su.mutation.ClearEnvironment()
-	return su
+func (_u *ServiceUpdate) ClearEnvironment() *ServiceUpdate {
+	_u.mutation.ClearEnvironment()
+	return _u
 }
 
 // ClearGithubInstallation clears the "github_installation" edge to the GithubInstallation entity.
-func (su *ServiceUpdate) ClearGithubInstallation() *ServiceUpdate {
-	su.mutation.ClearGithubInstallation()
-	return su
+func (_u *ServiceUpdate) ClearGithubInstallation() *ServiceUpdate {
+	_u.mutation.ClearGithubInstallation()
+	return _u
 }
 
 // ClearServiceConfig clears the "service_config" edge to the ServiceConfig entity.
-func (su *ServiceUpdate) ClearServiceConfig() *ServiceUpdate {
-	su.mutation.ClearServiceConfig()
-	return su
+func (_u *ServiceUpdate) ClearServiceConfig() *ServiceUpdate {
+	_u.mutation.ClearServiceConfig()
+	return _u
 }
 
 // ClearDeployments clears all "deployments" edges to the Deployment entity.
-func (su *ServiceUpdate) ClearDeployments() *ServiceUpdate {
-	su.mutation.ClearDeployments()
-	return su
+func (_u *ServiceUpdate) ClearDeployments() *ServiceUpdate {
+	_u.mutation.ClearDeployments()
+	return _u
 }
 
 // RemoveDeploymentIDs removes the "deployments" edge to Deployment entities by IDs.
-func (su *ServiceUpdate) RemoveDeploymentIDs(ids ...uuid.UUID) *ServiceUpdate {
-	su.mutation.RemoveDeploymentIDs(ids...)
-	return su
+func (_u *ServiceUpdate) RemoveDeploymentIDs(ids ...uuid.UUID) *ServiceUpdate {
+	_u.mutation.RemoveDeploymentIDs(ids...)
+	return _u
 }
 
 // RemoveDeployments removes "deployments" edges to Deployment entities.
-func (su *ServiceUpdate) RemoveDeployments(d ...*Deployment) *ServiceUpdate {
-	ids := make([]uuid.UUID, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
-	}
-	return su.RemoveDeploymentIDs(ids...)
-}
-
-// ClearCurrentDeployment clears the "current_deployment" edge to the Deployment entity.
-func (su *ServiceUpdate) ClearCurrentDeployment() *ServiceUpdate {
-	su.mutation.ClearCurrentDeployment()
-	return su
-}
-
-// ClearTemplate clears the "template" edge to the Template entity.
-func (su *ServiceUpdate) ClearTemplate() *ServiceUpdate {
-	su.mutation.ClearTemplate()
-	return su
-}
-
-// ClearServiceGroup clears the "service_group" edge to the ServiceGroup entity.
-func (su *ServiceUpdate) ClearServiceGroup() *ServiceUpdate {
-	su.mutation.ClearServiceGroup()
-	return su
-}
-
-// ClearVariableReferences clears all "variable_references" edges to the VariableReference entity.
-func (su *ServiceUpdate) ClearVariableReferences() *ServiceUpdate {
-	su.mutation.ClearVariableReferences()
-	return su
-}
-
-// RemoveVariableReferenceIDs removes the "variable_references" edge to VariableReference entities by IDs.
-func (su *ServiceUpdate) RemoveVariableReferenceIDs(ids ...uuid.UUID) *ServiceUpdate {
-	su.mutation.RemoveVariableReferenceIDs(ids...)
-	return su
-}
-
-// RemoveVariableReferences removes "variable_references" edges to VariableReference entities.
-func (su *ServiceUpdate) RemoveVariableReferences(v ...*VariableReference) *ServiceUpdate {
+func (_u *ServiceUpdate) RemoveDeployments(v ...*Deployment) *ServiceUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return su.RemoveVariableReferenceIDs(ids...)
+	return _u.RemoveDeploymentIDs(ids...)
+}
+
+// ClearCurrentDeployment clears the "current_deployment" edge to the Deployment entity.
+func (_u *ServiceUpdate) ClearCurrentDeployment() *ServiceUpdate {
+	_u.mutation.ClearCurrentDeployment()
+	return _u
+}
+
+// ClearTemplate clears the "template" edge to the Template entity.
+func (_u *ServiceUpdate) ClearTemplate() *ServiceUpdate {
+	_u.mutation.ClearTemplate()
+	return _u
+}
+
+// ClearServiceGroup clears the "service_group" edge to the ServiceGroup entity.
+func (_u *ServiceUpdate) ClearServiceGroup() *ServiceUpdate {
+	_u.mutation.ClearServiceGroup()
+	return _u
+}
+
+// ClearVariableReferences clears all "variable_references" edges to the VariableReference entity.
+func (_u *ServiceUpdate) ClearVariableReferences() *ServiceUpdate {
+	_u.mutation.ClearVariableReferences()
+	return _u
+}
+
+// RemoveVariableReferenceIDs removes the "variable_references" edge to VariableReference entities by IDs.
+func (_u *ServiceUpdate) RemoveVariableReferenceIDs(ids ...uuid.UUID) *ServiceUpdate {
+	_u.mutation.RemoveVariableReferenceIDs(ids...)
+	return _u
+}
+
+// RemoveVariableReferences removes "variable_references" edges to VariableReference entities.
+func (_u *ServiceUpdate) RemoveVariableReferences(v ...*VariableReference) *ServiceUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveVariableReferenceIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (su *ServiceUpdate) Save(ctx context.Context) (int, error) {
-	su.defaults()
-	return withHooks(ctx, su.sqlSave, su.mutation, su.hooks)
+func (_u *ServiceUpdate) Save(ctx context.Context) (int, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (su *ServiceUpdate) SaveX(ctx context.Context) int {
-	affected, err := su.Save(ctx)
+func (_u *ServiceUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -506,125 +506,125 @@ func (su *ServiceUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (su *ServiceUpdate) Exec(ctx context.Context) error {
-	_, err := su.Save(ctx)
+func (_u *ServiceUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (su *ServiceUpdate) ExecX(ctx context.Context) {
-	if err := su.Exec(ctx); err != nil {
+func (_u *ServiceUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (su *ServiceUpdate) defaults() {
-	if _, ok := su.mutation.UpdatedAt(); !ok {
+func (_u *ServiceUpdate) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := service.UpdateDefaultUpdatedAt()
-		su.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (su *ServiceUpdate) check() error {
-	if v, ok := su.mutation.GetType(); ok {
+func (_u *ServiceUpdate) check() error {
+	if v, ok := _u.mutation.GetType(); ok {
 		if err := service.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Service.type": %w`, err)}
 		}
 	}
-	if v, ok := su.mutation.KubernetesName(); ok {
+	if v, ok := _u.mutation.KubernetesName(); ok {
 		if err := service.KubernetesNameValidator(v); err != nil {
 			return &ValidationError{Name: "kubernetes_name", err: fmt.Errorf(`ent: validator failed for field "Service.kubernetes_name": %w`, err)}
 		}
 	}
-	if su.mutation.EnvironmentCleared() && len(su.mutation.EnvironmentIDs()) > 0 {
+	if _u.mutation.EnvironmentCleared() && len(_u.mutation.EnvironmentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Service.environment"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (su *ServiceUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ServiceUpdate {
-	su.modifiers = append(su.modifiers, modifiers...)
-	return su
+func (_u *ServiceUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ServiceUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (su *ServiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := su.check(); err != nil {
-		return n, err
+func (_u *ServiceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(service.Table, service.Columns, sqlgraph.NewFieldSpec(service.FieldID, field.TypeUUID))
-	if ps := su.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := su.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(service.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := su.mutation.GetType(); ok {
+	if value, ok := _u.mutation.GetType(); ok {
 		_spec.SetField(service.FieldType, field.TypeEnum, value)
 	}
-	if value, ok := su.mutation.KubernetesName(); ok {
+	if value, ok := _u.mutation.KubernetesName(); ok {
 		_spec.SetField(service.FieldKubernetesName, field.TypeString, value)
 	}
-	if value, ok := su.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(service.FieldName, field.TypeString, value)
 	}
-	if value, ok := su.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(service.FieldDescription, field.TypeString, value)
 	}
-	if su.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(service.FieldDescription, field.TypeString)
 	}
-	if value, ok := su.mutation.DetectedPorts(); ok {
+	if value, ok := _u.mutation.DetectedPorts(); ok {
 		_spec.SetField(service.FieldDetectedPorts, field.TypeJSON, value)
 	}
-	if value, ok := su.mutation.AppendedDetectedPorts(); ok {
+	if value, ok := _u.mutation.AppendedDetectedPorts(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, service.FieldDetectedPorts, value)
 		})
 	}
-	if su.mutation.DetectedPortsCleared() {
+	if _u.mutation.DetectedPortsCleared() {
 		_spec.ClearField(service.FieldDetectedPorts, field.TypeJSON)
 	}
-	if value, ok := su.mutation.Database(); ok {
+	if value, ok := _u.mutation.Database(); ok {
 		_spec.SetField(service.FieldDatabase, field.TypeString, value)
 	}
-	if su.mutation.DatabaseCleared() {
+	if _u.mutation.DatabaseCleared() {
 		_spec.ClearField(service.FieldDatabase, field.TypeString)
 	}
-	if value, ok := su.mutation.DatabaseVersion(); ok {
+	if value, ok := _u.mutation.DatabaseVersion(); ok {
 		_spec.SetField(service.FieldDatabaseVersion, field.TypeString, value)
 	}
-	if su.mutation.DatabaseVersionCleared() {
+	if _u.mutation.DatabaseVersionCleared() {
 		_spec.ClearField(service.FieldDatabaseVersion, field.TypeString)
 	}
-	if value, ok := su.mutation.GitRepositoryOwner(); ok {
+	if value, ok := _u.mutation.GitRepositoryOwner(); ok {
 		_spec.SetField(service.FieldGitRepositoryOwner, field.TypeString, value)
 	}
-	if su.mutation.GitRepositoryOwnerCleared() {
+	if _u.mutation.GitRepositoryOwnerCleared() {
 		_spec.ClearField(service.FieldGitRepositoryOwner, field.TypeString)
 	}
-	if value, ok := su.mutation.GitRepository(); ok {
+	if value, ok := _u.mutation.GitRepository(); ok {
 		_spec.SetField(service.FieldGitRepository, field.TypeString, value)
 	}
-	if su.mutation.GitRepositoryCleared() {
+	if _u.mutation.GitRepositoryCleared() {
 		_spec.ClearField(service.FieldGitRepository, field.TypeString)
 	}
-	if value, ok := su.mutation.KubernetesSecret(); ok {
+	if value, ok := _u.mutation.KubernetesSecret(); ok {
 		_spec.SetField(service.FieldKubernetesSecret, field.TypeString, value)
 	}
-	if value, ok := su.mutation.TemplateInstanceID(); ok {
+	if value, ok := _u.mutation.TemplateInstanceID(); ok {
 		_spec.SetField(service.FieldTemplateInstanceID, field.TypeUUID, value)
 	}
-	if su.mutation.TemplateInstanceIDCleared() {
+	if _u.mutation.TemplateInstanceIDCleared() {
 		_spec.ClearField(service.FieldTemplateInstanceID, field.TypeUUID)
 	}
-	if su.mutation.EnvironmentCleared() {
+	if _u.mutation.EnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -637,7 +637,7 @@ func (su *ServiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := su.mutation.EnvironmentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.EnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -653,7 +653,7 @@ func (su *ServiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if su.mutation.GithubInstallationCleared() {
+	if _u.mutation.GithubInstallationCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -666,7 +666,7 @@ func (su *ServiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := su.mutation.GithubInstallationIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.GithubInstallationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -682,7 +682,7 @@ func (su *ServiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if su.mutation.ServiceConfigCleared() {
+	if _u.mutation.ServiceConfigCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -695,7 +695,7 @@ func (su *ServiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := su.mutation.ServiceConfigIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ServiceConfigIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -711,7 +711,7 @@ func (su *ServiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if su.mutation.DeploymentsCleared() {
+	if _u.mutation.DeploymentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -724,7 +724,7 @@ func (su *ServiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := su.mutation.RemovedDeploymentsIDs(); len(nodes) > 0 && !su.mutation.DeploymentsCleared() {
+	if nodes := _u.mutation.RemovedDeploymentsIDs(); len(nodes) > 0 && !_u.mutation.DeploymentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -740,7 +740,7 @@ func (su *ServiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := su.mutation.DeploymentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.DeploymentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -756,7 +756,7 @@ func (su *ServiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if su.mutation.CurrentDeploymentCleared() {
+	if _u.mutation.CurrentDeploymentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -769,7 +769,7 @@ func (su *ServiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := su.mutation.CurrentDeploymentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.CurrentDeploymentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -785,7 +785,7 @@ func (su *ServiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if su.mutation.TemplateCleared() {
+	if _u.mutation.TemplateCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -798,7 +798,7 @@ func (su *ServiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := su.mutation.TemplateIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.TemplateIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -814,7 +814,7 @@ func (su *ServiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if su.mutation.ServiceGroupCleared() {
+	if _u.mutation.ServiceGroupCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -827,7 +827,7 @@ func (su *ServiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := su.mutation.ServiceGroupIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ServiceGroupIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -843,7 +843,7 @@ func (su *ServiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if su.mutation.VariableReferencesCleared() {
+	if _u.mutation.VariableReferencesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -856,7 +856,7 @@ func (su *ServiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := su.mutation.RemovedVariableReferencesIDs(); len(nodes) > 0 && !su.mutation.VariableReferencesCleared() {
+	if nodes := _u.mutation.RemovedVariableReferencesIDs(); len(nodes) > 0 && !_u.mutation.VariableReferencesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -872,7 +872,7 @@ func (su *ServiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := su.mutation.VariableReferencesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.VariableReferencesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -888,8 +888,8 @@ func (su *ServiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(su.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, su.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{service.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -897,8 +897,8 @@ func (su *ServiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	su.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // ServiceUpdateOne is the builder for updating a single Service entity.
@@ -911,478 +911,478 @@ type ServiceUpdateOne struct {
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (suo *ServiceUpdateOne) SetUpdatedAt(t time.Time) *ServiceUpdateOne {
-	suo.mutation.SetUpdatedAt(t)
-	return suo
+func (_u *ServiceUpdateOne) SetUpdatedAt(v time.Time) *ServiceUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetType sets the "type" field.
-func (suo *ServiceUpdateOne) SetType(st schema.ServiceType) *ServiceUpdateOne {
-	suo.mutation.SetType(st)
-	return suo
+func (_u *ServiceUpdateOne) SetType(v schema.ServiceType) *ServiceUpdateOne {
+	_u.mutation.SetType(v)
+	return _u
 }
 
 // SetNillableType sets the "type" field if the given value is not nil.
-func (suo *ServiceUpdateOne) SetNillableType(st *schema.ServiceType) *ServiceUpdateOne {
-	if st != nil {
-		suo.SetType(*st)
+func (_u *ServiceUpdateOne) SetNillableType(v *schema.ServiceType) *ServiceUpdateOne {
+	if v != nil {
+		_u.SetType(*v)
 	}
-	return suo
+	return _u
 }
 
 // SetKubernetesName sets the "kubernetes_name" field.
-func (suo *ServiceUpdateOne) SetKubernetesName(s string) *ServiceUpdateOne {
-	suo.mutation.SetKubernetesName(s)
-	return suo
+func (_u *ServiceUpdateOne) SetKubernetesName(v string) *ServiceUpdateOne {
+	_u.mutation.SetKubernetesName(v)
+	return _u
 }
 
 // SetNillableKubernetesName sets the "kubernetes_name" field if the given value is not nil.
-func (suo *ServiceUpdateOne) SetNillableKubernetesName(s *string) *ServiceUpdateOne {
-	if s != nil {
-		suo.SetKubernetesName(*s)
+func (_u *ServiceUpdateOne) SetNillableKubernetesName(v *string) *ServiceUpdateOne {
+	if v != nil {
+		_u.SetKubernetesName(*v)
 	}
-	return suo
+	return _u
 }
 
 // SetName sets the "name" field.
-func (suo *ServiceUpdateOne) SetName(s string) *ServiceUpdateOne {
-	suo.mutation.SetName(s)
-	return suo
+func (_u *ServiceUpdateOne) SetName(v string) *ServiceUpdateOne {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (suo *ServiceUpdateOne) SetNillableName(s *string) *ServiceUpdateOne {
-	if s != nil {
-		suo.SetName(*s)
+func (_u *ServiceUpdateOne) SetNillableName(v *string) *ServiceUpdateOne {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return suo
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (suo *ServiceUpdateOne) SetDescription(s string) *ServiceUpdateOne {
-	suo.mutation.SetDescription(s)
-	return suo
+func (_u *ServiceUpdateOne) SetDescription(v string) *ServiceUpdateOne {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (suo *ServiceUpdateOne) SetNillableDescription(s *string) *ServiceUpdateOne {
-	if s != nil {
-		suo.SetDescription(*s)
+func (_u *ServiceUpdateOne) SetNillableDescription(v *string) *ServiceUpdateOne {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return suo
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (suo *ServiceUpdateOne) ClearDescription() *ServiceUpdateOne {
-	suo.mutation.ClearDescription()
-	return suo
+func (_u *ServiceUpdateOne) ClearDescription() *ServiceUpdateOne {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetEnvironmentID sets the "environment_id" field.
-func (suo *ServiceUpdateOne) SetEnvironmentID(u uuid.UUID) *ServiceUpdateOne {
-	suo.mutation.SetEnvironmentID(u)
-	return suo
+func (_u *ServiceUpdateOne) SetEnvironmentID(v uuid.UUID) *ServiceUpdateOne {
+	_u.mutation.SetEnvironmentID(v)
+	return _u
 }
 
 // SetNillableEnvironmentID sets the "environment_id" field if the given value is not nil.
-func (suo *ServiceUpdateOne) SetNillableEnvironmentID(u *uuid.UUID) *ServiceUpdateOne {
-	if u != nil {
-		suo.SetEnvironmentID(*u)
+func (_u *ServiceUpdateOne) SetNillableEnvironmentID(v *uuid.UUID) *ServiceUpdateOne {
+	if v != nil {
+		_u.SetEnvironmentID(*v)
 	}
-	return suo
+	return _u
 }
 
 // SetDetectedPorts sets the "detected_ports" field.
-func (suo *ServiceUpdateOne) SetDetectedPorts(ss []schema.PortSpec) *ServiceUpdateOne {
-	suo.mutation.SetDetectedPorts(ss)
-	return suo
+func (_u *ServiceUpdateOne) SetDetectedPorts(v []schema.PortSpec) *ServiceUpdateOne {
+	_u.mutation.SetDetectedPorts(v)
+	return _u
 }
 
-// AppendDetectedPorts appends ss to the "detected_ports" field.
-func (suo *ServiceUpdateOne) AppendDetectedPorts(ss []schema.PortSpec) *ServiceUpdateOne {
-	suo.mutation.AppendDetectedPorts(ss)
-	return suo
+// AppendDetectedPorts appends value to the "detected_ports" field.
+func (_u *ServiceUpdateOne) AppendDetectedPorts(v []schema.PortSpec) *ServiceUpdateOne {
+	_u.mutation.AppendDetectedPorts(v)
+	return _u
 }
 
 // ClearDetectedPorts clears the value of the "detected_ports" field.
-func (suo *ServiceUpdateOne) ClearDetectedPorts() *ServiceUpdateOne {
-	suo.mutation.ClearDetectedPorts()
-	return suo
+func (_u *ServiceUpdateOne) ClearDetectedPorts() *ServiceUpdateOne {
+	_u.mutation.ClearDetectedPorts()
+	return _u
 }
 
 // SetDatabase sets the "database" field.
-func (suo *ServiceUpdateOne) SetDatabase(s string) *ServiceUpdateOne {
-	suo.mutation.SetDatabase(s)
-	return suo
+func (_u *ServiceUpdateOne) SetDatabase(v string) *ServiceUpdateOne {
+	_u.mutation.SetDatabase(v)
+	return _u
 }
 
 // SetNillableDatabase sets the "database" field if the given value is not nil.
-func (suo *ServiceUpdateOne) SetNillableDatabase(s *string) *ServiceUpdateOne {
-	if s != nil {
-		suo.SetDatabase(*s)
+func (_u *ServiceUpdateOne) SetNillableDatabase(v *string) *ServiceUpdateOne {
+	if v != nil {
+		_u.SetDatabase(*v)
 	}
-	return suo
+	return _u
 }
 
 // ClearDatabase clears the value of the "database" field.
-func (suo *ServiceUpdateOne) ClearDatabase() *ServiceUpdateOne {
-	suo.mutation.ClearDatabase()
-	return suo
+func (_u *ServiceUpdateOne) ClearDatabase() *ServiceUpdateOne {
+	_u.mutation.ClearDatabase()
+	return _u
 }
 
 // SetDatabaseVersion sets the "database_version" field.
-func (suo *ServiceUpdateOne) SetDatabaseVersion(s string) *ServiceUpdateOne {
-	suo.mutation.SetDatabaseVersion(s)
-	return suo
+func (_u *ServiceUpdateOne) SetDatabaseVersion(v string) *ServiceUpdateOne {
+	_u.mutation.SetDatabaseVersion(v)
+	return _u
 }
 
 // SetNillableDatabaseVersion sets the "database_version" field if the given value is not nil.
-func (suo *ServiceUpdateOne) SetNillableDatabaseVersion(s *string) *ServiceUpdateOne {
-	if s != nil {
-		suo.SetDatabaseVersion(*s)
+func (_u *ServiceUpdateOne) SetNillableDatabaseVersion(v *string) *ServiceUpdateOne {
+	if v != nil {
+		_u.SetDatabaseVersion(*v)
 	}
-	return suo
+	return _u
 }
 
 // ClearDatabaseVersion clears the value of the "database_version" field.
-func (suo *ServiceUpdateOne) ClearDatabaseVersion() *ServiceUpdateOne {
-	suo.mutation.ClearDatabaseVersion()
-	return suo
+func (_u *ServiceUpdateOne) ClearDatabaseVersion() *ServiceUpdateOne {
+	_u.mutation.ClearDatabaseVersion()
+	return _u
 }
 
 // SetGithubInstallationID sets the "github_installation_id" field.
-func (suo *ServiceUpdateOne) SetGithubInstallationID(i int64) *ServiceUpdateOne {
-	suo.mutation.SetGithubInstallationID(i)
-	return suo
+func (_u *ServiceUpdateOne) SetGithubInstallationID(v int64) *ServiceUpdateOne {
+	_u.mutation.SetGithubInstallationID(v)
+	return _u
 }
 
 // SetNillableGithubInstallationID sets the "github_installation_id" field if the given value is not nil.
-func (suo *ServiceUpdateOne) SetNillableGithubInstallationID(i *int64) *ServiceUpdateOne {
-	if i != nil {
-		suo.SetGithubInstallationID(*i)
+func (_u *ServiceUpdateOne) SetNillableGithubInstallationID(v *int64) *ServiceUpdateOne {
+	if v != nil {
+		_u.SetGithubInstallationID(*v)
 	}
-	return suo
+	return _u
 }
 
 // ClearGithubInstallationID clears the value of the "github_installation_id" field.
-func (suo *ServiceUpdateOne) ClearGithubInstallationID() *ServiceUpdateOne {
-	suo.mutation.ClearGithubInstallationID()
-	return suo
+func (_u *ServiceUpdateOne) ClearGithubInstallationID() *ServiceUpdateOne {
+	_u.mutation.ClearGithubInstallationID()
+	return _u
 }
 
 // SetGitRepositoryOwner sets the "git_repository_owner" field.
-func (suo *ServiceUpdateOne) SetGitRepositoryOwner(s string) *ServiceUpdateOne {
-	suo.mutation.SetGitRepositoryOwner(s)
-	return suo
+func (_u *ServiceUpdateOne) SetGitRepositoryOwner(v string) *ServiceUpdateOne {
+	_u.mutation.SetGitRepositoryOwner(v)
+	return _u
 }
 
 // SetNillableGitRepositoryOwner sets the "git_repository_owner" field if the given value is not nil.
-func (suo *ServiceUpdateOne) SetNillableGitRepositoryOwner(s *string) *ServiceUpdateOne {
-	if s != nil {
-		suo.SetGitRepositoryOwner(*s)
+func (_u *ServiceUpdateOne) SetNillableGitRepositoryOwner(v *string) *ServiceUpdateOne {
+	if v != nil {
+		_u.SetGitRepositoryOwner(*v)
 	}
-	return suo
+	return _u
 }
 
 // ClearGitRepositoryOwner clears the value of the "git_repository_owner" field.
-func (suo *ServiceUpdateOne) ClearGitRepositoryOwner() *ServiceUpdateOne {
-	suo.mutation.ClearGitRepositoryOwner()
-	return suo
+func (_u *ServiceUpdateOne) ClearGitRepositoryOwner() *ServiceUpdateOne {
+	_u.mutation.ClearGitRepositoryOwner()
+	return _u
 }
 
 // SetGitRepository sets the "git_repository" field.
-func (suo *ServiceUpdateOne) SetGitRepository(s string) *ServiceUpdateOne {
-	suo.mutation.SetGitRepository(s)
-	return suo
+func (_u *ServiceUpdateOne) SetGitRepository(v string) *ServiceUpdateOne {
+	_u.mutation.SetGitRepository(v)
+	return _u
 }
 
 // SetNillableGitRepository sets the "git_repository" field if the given value is not nil.
-func (suo *ServiceUpdateOne) SetNillableGitRepository(s *string) *ServiceUpdateOne {
-	if s != nil {
-		suo.SetGitRepository(*s)
+func (_u *ServiceUpdateOne) SetNillableGitRepository(v *string) *ServiceUpdateOne {
+	if v != nil {
+		_u.SetGitRepository(*v)
 	}
-	return suo
+	return _u
 }
 
 // ClearGitRepository clears the value of the "git_repository" field.
-func (suo *ServiceUpdateOne) ClearGitRepository() *ServiceUpdateOne {
-	suo.mutation.ClearGitRepository()
-	return suo
+func (_u *ServiceUpdateOne) ClearGitRepository() *ServiceUpdateOne {
+	_u.mutation.ClearGitRepository()
+	return _u
 }
 
 // SetKubernetesSecret sets the "kubernetes_secret" field.
-func (suo *ServiceUpdateOne) SetKubernetesSecret(s string) *ServiceUpdateOne {
-	suo.mutation.SetKubernetesSecret(s)
-	return suo
+func (_u *ServiceUpdateOne) SetKubernetesSecret(v string) *ServiceUpdateOne {
+	_u.mutation.SetKubernetesSecret(v)
+	return _u
 }
 
 // SetNillableKubernetesSecret sets the "kubernetes_secret" field if the given value is not nil.
-func (suo *ServiceUpdateOne) SetNillableKubernetesSecret(s *string) *ServiceUpdateOne {
-	if s != nil {
-		suo.SetKubernetesSecret(*s)
+func (_u *ServiceUpdateOne) SetNillableKubernetesSecret(v *string) *ServiceUpdateOne {
+	if v != nil {
+		_u.SetKubernetesSecret(*v)
 	}
-	return suo
+	return _u
 }
 
 // SetCurrentDeploymentID sets the "current_deployment_id" field.
-func (suo *ServiceUpdateOne) SetCurrentDeploymentID(u uuid.UUID) *ServiceUpdateOne {
-	suo.mutation.SetCurrentDeploymentID(u)
-	return suo
+func (_u *ServiceUpdateOne) SetCurrentDeploymentID(v uuid.UUID) *ServiceUpdateOne {
+	_u.mutation.SetCurrentDeploymentID(v)
+	return _u
 }
 
 // SetNillableCurrentDeploymentID sets the "current_deployment_id" field if the given value is not nil.
-func (suo *ServiceUpdateOne) SetNillableCurrentDeploymentID(u *uuid.UUID) *ServiceUpdateOne {
-	if u != nil {
-		suo.SetCurrentDeploymentID(*u)
+func (_u *ServiceUpdateOne) SetNillableCurrentDeploymentID(v *uuid.UUID) *ServiceUpdateOne {
+	if v != nil {
+		_u.SetCurrentDeploymentID(*v)
 	}
-	return suo
+	return _u
 }
 
 // ClearCurrentDeploymentID clears the value of the "current_deployment_id" field.
-func (suo *ServiceUpdateOne) ClearCurrentDeploymentID() *ServiceUpdateOne {
-	suo.mutation.ClearCurrentDeploymentID()
-	return suo
+func (_u *ServiceUpdateOne) ClearCurrentDeploymentID() *ServiceUpdateOne {
+	_u.mutation.ClearCurrentDeploymentID()
+	return _u
 }
 
 // SetTemplateID sets the "template_id" field.
-func (suo *ServiceUpdateOne) SetTemplateID(u uuid.UUID) *ServiceUpdateOne {
-	suo.mutation.SetTemplateID(u)
-	return suo
+func (_u *ServiceUpdateOne) SetTemplateID(v uuid.UUID) *ServiceUpdateOne {
+	_u.mutation.SetTemplateID(v)
+	return _u
 }
 
 // SetNillableTemplateID sets the "template_id" field if the given value is not nil.
-func (suo *ServiceUpdateOne) SetNillableTemplateID(u *uuid.UUID) *ServiceUpdateOne {
-	if u != nil {
-		suo.SetTemplateID(*u)
+func (_u *ServiceUpdateOne) SetNillableTemplateID(v *uuid.UUID) *ServiceUpdateOne {
+	if v != nil {
+		_u.SetTemplateID(*v)
 	}
-	return suo
+	return _u
 }
 
 // ClearTemplateID clears the value of the "template_id" field.
-func (suo *ServiceUpdateOne) ClearTemplateID() *ServiceUpdateOne {
-	suo.mutation.ClearTemplateID()
-	return suo
+func (_u *ServiceUpdateOne) ClearTemplateID() *ServiceUpdateOne {
+	_u.mutation.ClearTemplateID()
+	return _u
 }
 
 // SetTemplateInstanceID sets the "template_instance_id" field.
-func (suo *ServiceUpdateOne) SetTemplateInstanceID(u uuid.UUID) *ServiceUpdateOne {
-	suo.mutation.SetTemplateInstanceID(u)
-	return suo
+func (_u *ServiceUpdateOne) SetTemplateInstanceID(v uuid.UUID) *ServiceUpdateOne {
+	_u.mutation.SetTemplateInstanceID(v)
+	return _u
 }
 
 // SetNillableTemplateInstanceID sets the "template_instance_id" field if the given value is not nil.
-func (suo *ServiceUpdateOne) SetNillableTemplateInstanceID(u *uuid.UUID) *ServiceUpdateOne {
-	if u != nil {
-		suo.SetTemplateInstanceID(*u)
+func (_u *ServiceUpdateOne) SetNillableTemplateInstanceID(v *uuid.UUID) *ServiceUpdateOne {
+	if v != nil {
+		_u.SetTemplateInstanceID(*v)
 	}
-	return suo
+	return _u
 }
 
 // ClearTemplateInstanceID clears the value of the "template_instance_id" field.
-func (suo *ServiceUpdateOne) ClearTemplateInstanceID() *ServiceUpdateOne {
-	suo.mutation.ClearTemplateInstanceID()
-	return suo
+func (_u *ServiceUpdateOne) ClearTemplateInstanceID() *ServiceUpdateOne {
+	_u.mutation.ClearTemplateInstanceID()
+	return _u
 }
 
 // SetServiceGroupID sets the "service_group_id" field.
-func (suo *ServiceUpdateOne) SetServiceGroupID(u uuid.UUID) *ServiceUpdateOne {
-	suo.mutation.SetServiceGroupID(u)
-	return suo
+func (_u *ServiceUpdateOne) SetServiceGroupID(v uuid.UUID) *ServiceUpdateOne {
+	_u.mutation.SetServiceGroupID(v)
+	return _u
 }
 
 // SetNillableServiceGroupID sets the "service_group_id" field if the given value is not nil.
-func (suo *ServiceUpdateOne) SetNillableServiceGroupID(u *uuid.UUID) *ServiceUpdateOne {
-	if u != nil {
-		suo.SetServiceGroupID(*u)
+func (_u *ServiceUpdateOne) SetNillableServiceGroupID(v *uuid.UUID) *ServiceUpdateOne {
+	if v != nil {
+		_u.SetServiceGroupID(*v)
 	}
-	return suo
+	return _u
 }
 
 // ClearServiceGroupID clears the value of the "service_group_id" field.
-func (suo *ServiceUpdateOne) ClearServiceGroupID() *ServiceUpdateOne {
-	suo.mutation.ClearServiceGroupID()
-	return suo
+func (_u *ServiceUpdateOne) ClearServiceGroupID() *ServiceUpdateOne {
+	_u.mutation.ClearServiceGroupID()
+	return _u
 }
 
 // SetEnvironment sets the "environment" edge to the Environment entity.
-func (suo *ServiceUpdateOne) SetEnvironment(e *Environment) *ServiceUpdateOne {
-	return suo.SetEnvironmentID(e.ID)
+func (_u *ServiceUpdateOne) SetEnvironment(v *Environment) *ServiceUpdateOne {
+	return _u.SetEnvironmentID(v.ID)
 }
 
 // SetGithubInstallation sets the "github_installation" edge to the GithubInstallation entity.
-func (suo *ServiceUpdateOne) SetGithubInstallation(g *GithubInstallation) *ServiceUpdateOne {
-	return suo.SetGithubInstallationID(g.ID)
+func (_u *ServiceUpdateOne) SetGithubInstallation(v *GithubInstallation) *ServiceUpdateOne {
+	return _u.SetGithubInstallationID(v.ID)
 }
 
 // SetServiceConfigID sets the "service_config" edge to the ServiceConfig entity by ID.
-func (suo *ServiceUpdateOne) SetServiceConfigID(id uuid.UUID) *ServiceUpdateOne {
-	suo.mutation.SetServiceConfigID(id)
-	return suo
+func (_u *ServiceUpdateOne) SetServiceConfigID(id uuid.UUID) *ServiceUpdateOne {
+	_u.mutation.SetServiceConfigID(id)
+	return _u
 }
 
 // SetNillableServiceConfigID sets the "service_config" edge to the ServiceConfig entity by ID if the given value is not nil.
-func (suo *ServiceUpdateOne) SetNillableServiceConfigID(id *uuid.UUID) *ServiceUpdateOne {
+func (_u *ServiceUpdateOne) SetNillableServiceConfigID(id *uuid.UUID) *ServiceUpdateOne {
 	if id != nil {
-		suo = suo.SetServiceConfigID(*id)
+		_u = _u.SetServiceConfigID(*id)
 	}
-	return suo
+	return _u
 }
 
 // SetServiceConfig sets the "service_config" edge to the ServiceConfig entity.
-func (suo *ServiceUpdateOne) SetServiceConfig(s *ServiceConfig) *ServiceUpdateOne {
-	return suo.SetServiceConfigID(s.ID)
+func (_u *ServiceUpdateOne) SetServiceConfig(v *ServiceConfig) *ServiceUpdateOne {
+	return _u.SetServiceConfigID(v.ID)
 }
 
 // AddDeploymentIDs adds the "deployments" edge to the Deployment entity by IDs.
-func (suo *ServiceUpdateOne) AddDeploymentIDs(ids ...uuid.UUID) *ServiceUpdateOne {
-	suo.mutation.AddDeploymentIDs(ids...)
-	return suo
+func (_u *ServiceUpdateOne) AddDeploymentIDs(ids ...uuid.UUID) *ServiceUpdateOne {
+	_u.mutation.AddDeploymentIDs(ids...)
+	return _u
 }
 
 // AddDeployments adds the "deployments" edges to the Deployment entity.
-func (suo *ServiceUpdateOne) AddDeployments(d ...*Deployment) *ServiceUpdateOne {
-	ids := make([]uuid.UUID, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
+func (_u *ServiceUpdateOne) AddDeployments(v ...*Deployment) *ServiceUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return suo.AddDeploymentIDs(ids...)
+	return _u.AddDeploymentIDs(ids...)
 }
 
 // SetCurrentDeployment sets the "current_deployment" edge to the Deployment entity.
-func (suo *ServiceUpdateOne) SetCurrentDeployment(d *Deployment) *ServiceUpdateOne {
-	return suo.SetCurrentDeploymentID(d.ID)
+func (_u *ServiceUpdateOne) SetCurrentDeployment(v *Deployment) *ServiceUpdateOne {
+	return _u.SetCurrentDeploymentID(v.ID)
 }
 
 // SetTemplate sets the "template" edge to the Template entity.
-func (suo *ServiceUpdateOne) SetTemplate(t *Template) *ServiceUpdateOne {
-	return suo.SetTemplateID(t.ID)
+func (_u *ServiceUpdateOne) SetTemplate(v *Template) *ServiceUpdateOne {
+	return _u.SetTemplateID(v.ID)
 }
 
 // SetServiceGroup sets the "service_group" edge to the ServiceGroup entity.
-func (suo *ServiceUpdateOne) SetServiceGroup(s *ServiceGroup) *ServiceUpdateOne {
-	return suo.SetServiceGroupID(s.ID)
+func (_u *ServiceUpdateOne) SetServiceGroup(v *ServiceGroup) *ServiceUpdateOne {
+	return _u.SetServiceGroupID(v.ID)
 }
 
 // AddVariableReferenceIDs adds the "variable_references" edge to the VariableReference entity by IDs.
-func (suo *ServiceUpdateOne) AddVariableReferenceIDs(ids ...uuid.UUID) *ServiceUpdateOne {
-	suo.mutation.AddVariableReferenceIDs(ids...)
-	return suo
+func (_u *ServiceUpdateOne) AddVariableReferenceIDs(ids ...uuid.UUID) *ServiceUpdateOne {
+	_u.mutation.AddVariableReferenceIDs(ids...)
+	return _u
 }
 
 // AddVariableReferences adds the "variable_references" edges to the VariableReference entity.
-func (suo *ServiceUpdateOne) AddVariableReferences(v ...*VariableReference) *ServiceUpdateOne {
+func (_u *ServiceUpdateOne) AddVariableReferences(v ...*VariableReference) *ServiceUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return suo.AddVariableReferenceIDs(ids...)
+	return _u.AddVariableReferenceIDs(ids...)
 }
 
 // Mutation returns the ServiceMutation object of the builder.
-func (suo *ServiceUpdateOne) Mutation() *ServiceMutation {
-	return suo.mutation
+func (_u *ServiceUpdateOne) Mutation() *ServiceMutation {
+	return _u.mutation
 }
 
 // ClearEnvironment clears the "environment" edge to the Environment entity.
-func (suo *ServiceUpdateOne) ClearEnvironment() *ServiceUpdateOne {
-	suo.mutation.ClearEnvironment()
-	return suo
+func (_u *ServiceUpdateOne) ClearEnvironment() *ServiceUpdateOne {
+	_u.mutation.ClearEnvironment()
+	return _u
 }
 
 // ClearGithubInstallation clears the "github_installation" edge to the GithubInstallation entity.
-func (suo *ServiceUpdateOne) ClearGithubInstallation() *ServiceUpdateOne {
-	suo.mutation.ClearGithubInstallation()
-	return suo
+func (_u *ServiceUpdateOne) ClearGithubInstallation() *ServiceUpdateOne {
+	_u.mutation.ClearGithubInstallation()
+	return _u
 }
 
 // ClearServiceConfig clears the "service_config" edge to the ServiceConfig entity.
-func (suo *ServiceUpdateOne) ClearServiceConfig() *ServiceUpdateOne {
-	suo.mutation.ClearServiceConfig()
-	return suo
+func (_u *ServiceUpdateOne) ClearServiceConfig() *ServiceUpdateOne {
+	_u.mutation.ClearServiceConfig()
+	return _u
 }
 
 // ClearDeployments clears all "deployments" edges to the Deployment entity.
-func (suo *ServiceUpdateOne) ClearDeployments() *ServiceUpdateOne {
-	suo.mutation.ClearDeployments()
-	return suo
+func (_u *ServiceUpdateOne) ClearDeployments() *ServiceUpdateOne {
+	_u.mutation.ClearDeployments()
+	return _u
 }
 
 // RemoveDeploymentIDs removes the "deployments" edge to Deployment entities by IDs.
-func (suo *ServiceUpdateOne) RemoveDeploymentIDs(ids ...uuid.UUID) *ServiceUpdateOne {
-	suo.mutation.RemoveDeploymentIDs(ids...)
-	return suo
+func (_u *ServiceUpdateOne) RemoveDeploymentIDs(ids ...uuid.UUID) *ServiceUpdateOne {
+	_u.mutation.RemoveDeploymentIDs(ids...)
+	return _u
 }
 
 // RemoveDeployments removes "deployments" edges to Deployment entities.
-func (suo *ServiceUpdateOne) RemoveDeployments(d ...*Deployment) *ServiceUpdateOne {
-	ids := make([]uuid.UUID, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
-	}
-	return suo.RemoveDeploymentIDs(ids...)
-}
-
-// ClearCurrentDeployment clears the "current_deployment" edge to the Deployment entity.
-func (suo *ServiceUpdateOne) ClearCurrentDeployment() *ServiceUpdateOne {
-	suo.mutation.ClearCurrentDeployment()
-	return suo
-}
-
-// ClearTemplate clears the "template" edge to the Template entity.
-func (suo *ServiceUpdateOne) ClearTemplate() *ServiceUpdateOne {
-	suo.mutation.ClearTemplate()
-	return suo
-}
-
-// ClearServiceGroup clears the "service_group" edge to the ServiceGroup entity.
-func (suo *ServiceUpdateOne) ClearServiceGroup() *ServiceUpdateOne {
-	suo.mutation.ClearServiceGroup()
-	return suo
-}
-
-// ClearVariableReferences clears all "variable_references" edges to the VariableReference entity.
-func (suo *ServiceUpdateOne) ClearVariableReferences() *ServiceUpdateOne {
-	suo.mutation.ClearVariableReferences()
-	return suo
-}
-
-// RemoveVariableReferenceIDs removes the "variable_references" edge to VariableReference entities by IDs.
-func (suo *ServiceUpdateOne) RemoveVariableReferenceIDs(ids ...uuid.UUID) *ServiceUpdateOne {
-	suo.mutation.RemoveVariableReferenceIDs(ids...)
-	return suo
-}
-
-// RemoveVariableReferences removes "variable_references" edges to VariableReference entities.
-func (suo *ServiceUpdateOne) RemoveVariableReferences(v ...*VariableReference) *ServiceUpdateOne {
+func (_u *ServiceUpdateOne) RemoveDeployments(v ...*Deployment) *ServiceUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return suo.RemoveVariableReferenceIDs(ids...)
+	return _u.RemoveDeploymentIDs(ids...)
+}
+
+// ClearCurrentDeployment clears the "current_deployment" edge to the Deployment entity.
+func (_u *ServiceUpdateOne) ClearCurrentDeployment() *ServiceUpdateOne {
+	_u.mutation.ClearCurrentDeployment()
+	return _u
+}
+
+// ClearTemplate clears the "template" edge to the Template entity.
+func (_u *ServiceUpdateOne) ClearTemplate() *ServiceUpdateOne {
+	_u.mutation.ClearTemplate()
+	return _u
+}
+
+// ClearServiceGroup clears the "service_group" edge to the ServiceGroup entity.
+func (_u *ServiceUpdateOne) ClearServiceGroup() *ServiceUpdateOne {
+	_u.mutation.ClearServiceGroup()
+	return _u
+}
+
+// ClearVariableReferences clears all "variable_references" edges to the VariableReference entity.
+func (_u *ServiceUpdateOne) ClearVariableReferences() *ServiceUpdateOne {
+	_u.mutation.ClearVariableReferences()
+	return _u
+}
+
+// RemoveVariableReferenceIDs removes the "variable_references" edge to VariableReference entities by IDs.
+func (_u *ServiceUpdateOne) RemoveVariableReferenceIDs(ids ...uuid.UUID) *ServiceUpdateOne {
+	_u.mutation.RemoveVariableReferenceIDs(ids...)
+	return _u
+}
+
+// RemoveVariableReferences removes "variable_references" edges to VariableReference entities.
+func (_u *ServiceUpdateOne) RemoveVariableReferences(v ...*VariableReference) *ServiceUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveVariableReferenceIDs(ids...)
 }
 
 // Where appends a list predicates to the ServiceUpdate builder.
-func (suo *ServiceUpdateOne) Where(ps ...predicate.Service) *ServiceUpdateOne {
-	suo.mutation.Where(ps...)
-	return suo
+func (_u *ServiceUpdateOne) Where(ps ...predicate.Service) *ServiceUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (suo *ServiceUpdateOne) Select(field string, fields ...string) *ServiceUpdateOne {
-	suo.fields = append([]string{field}, fields...)
-	return suo
+func (_u *ServiceUpdateOne) Select(field string, fields ...string) *ServiceUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated Service entity.
-func (suo *ServiceUpdateOne) Save(ctx context.Context) (*Service, error) {
-	suo.defaults()
-	return withHooks(ctx, suo.sqlSave, suo.mutation, suo.hooks)
+func (_u *ServiceUpdateOne) Save(ctx context.Context) (*Service, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (suo *ServiceUpdateOne) SaveX(ctx context.Context) *Service {
-	node, err := suo.Save(ctx)
+func (_u *ServiceUpdateOne) SaveX(ctx context.Context) *Service {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -1390,61 +1390,61 @@ func (suo *ServiceUpdateOne) SaveX(ctx context.Context) *Service {
 }
 
 // Exec executes the query on the entity.
-func (suo *ServiceUpdateOne) Exec(ctx context.Context) error {
-	_, err := suo.Save(ctx)
+func (_u *ServiceUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (suo *ServiceUpdateOne) ExecX(ctx context.Context) {
-	if err := suo.Exec(ctx); err != nil {
+func (_u *ServiceUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (suo *ServiceUpdateOne) defaults() {
-	if _, ok := suo.mutation.UpdatedAt(); !ok {
+func (_u *ServiceUpdateOne) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := service.UpdateDefaultUpdatedAt()
-		suo.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (suo *ServiceUpdateOne) check() error {
-	if v, ok := suo.mutation.GetType(); ok {
+func (_u *ServiceUpdateOne) check() error {
+	if v, ok := _u.mutation.GetType(); ok {
 		if err := service.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Service.type": %w`, err)}
 		}
 	}
-	if v, ok := suo.mutation.KubernetesName(); ok {
+	if v, ok := _u.mutation.KubernetesName(); ok {
 		if err := service.KubernetesNameValidator(v); err != nil {
 			return &ValidationError{Name: "kubernetes_name", err: fmt.Errorf(`ent: validator failed for field "Service.kubernetes_name": %w`, err)}
 		}
 	}
-	if suo.mutation.EnvironmentCleared() && len(suo.mutation.EnvironmentIDs()) > 0 {
+	if _u.mutation.EnvironmentCleared() && len(_u.mutation.EnvironmentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Service.environment"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (suo *ServiceUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ServiceUpdateOne {
-	suo.modifiers = append(suo.modifiers, modifiers...)
-	return suo
+func (_u *ServiceUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ServiceUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (suo *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err error) {
-	if err := suo.check(); err != nil {
+func (_u *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(service.Table, service.Columns, sqlgraph.NewFieldSpec(service.FieldID, field.TypeUUID))
-	id, ok := suo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Service.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := suo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, service.FieldID)
 		for _, f := range fields {
@@ -1456,76 +1456,76 @@ func (suo *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err e
 			}
 		}
 	}
-	if ps := suo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := suo.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(service.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := suo.mutation.GetType(); ok {
+	if value, ok := _u.mutation.GetType(); ok {
 		_spec.SetField(service.FieldType, field.TypeEnum, value)
 	}
-	if value, ok := suo.mutation.KubernetesName(); ok {
+	if value, ok := _u.mutation.KubernetesName(); ok {
 		_spec.SetField(service.FieldKubernetesName, field.TypeString, value)
 	}
-	if value, ok := suo.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(service.FieldName, field.TypeString, value)
 	}
-	if value, ok := suo.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(service.FieldDescription, field.TypeString, value)
 	}
-	if suo.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(service.FieldDescription, field.TypeString)
 	}
-	if value, ok := suo.mutation.DetectedPorts(); ok {
+	if value, ok := _u.mutation.DetectedPorts(); ok {
 		_spec.SetField(service.FieldDetectedPorts, field.TypeJSON, value)
 	}
-	if value, ok := suo.mutation.AppendedDetectedPorts(); ok {
+	if value, ok := _u.mutation.AppendedDetectedPorts(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, service.FieldDetectedPorts, value)
 		})
 	}
-	if suo.mutation.DetectedPortsCleared() {
+	if _u.mutation.DetectedPortsCleared() {
 		_spec.ClearField(service.FieldDetectedPorts, field.TypeJSON)
 	}
-	if value, ok := suo.mutation.Database(); ok {
+	if value, ok := _u.mutation.Database(); ok {
 		_spec.SetField(service.FieldDatabase, field.TypeString, value)
 	}
-	if suo.mutation.DatabaseCleared() {
+	if _u.mutation.DatabaseCleared() {
 		_spec.ClearField(service.FieldDatabase, field.TypeString)
 	}
-	if value, ok := suo.mutation.DatabaseVersion(); ok {
+	if value, ok := _u.mutation.DatabaseVersion(); ok {
 		_spec.SetField(service.FieldDatabaseVersion, field.TypeString, value)
 	}
-	if suo.mutation.DatabaseVersionCleared() {
+	if _u.mutation.DatabaseVersionCleared() {
 		_spec.ClearField(service.FieldDatabaseVersion, field.TypeString)
 	}
-	if value, ok := suo.mutation.GitRepositoryOwner(); ok {
+	if value, ok := _u.mutation.GitRepositoryOwner(); ok {
 		_spec.SetField(service.FieldGitRepositoryOwner, field.TypeString, value)
 	}
-	if suo.mutation.GitRepositoryOwnerCleared() {
+	if _u.mutation.GitRepositoryOwnerCleared() {
 		_spec.ClearField(service.FieldGitRepositoryOwner, field.TypeString)
 	}
-	if value, ok := suo.mutation.GitRepository(); ok {
+	if value, ok := _u.mutation.GitRepository(); ok {
 		_spec.SetField(service.FieldGitRepository, field.TypeString, value)
 	}
-	if suo.mutation.GitRepositoryCleared() {
+	if _u.mutation.GitRepositoryCleared() {
 		_spec.ClearField(service.FieldGitRepository, field.TypeString)
 	}
-	if value, ok := suo.mutation.KubernetesSecret(); ok {
+	if value, ok := _u.mutation.KubernetesSecret(); ok {
 		_spec.SetField(service.FieldKubernetesSecret, field.TypeString, value)
 	}
-	if value, ok := suo.mutation.TemplateInstanceID(); ok {
+	if value, ok := _u.mutation.TemplateInstanceID(); ok {
 		_spec.SetField(service.FieldTemplateInstanceID, field.TypeUUID, value)
 	}
-	if suo.mutation.TemplateInstanceIDCleared() {
+	if _u.mutation.TemplateInstanceIDCleared() {
 		_spec.ClearField(service.FieldTemplateInstanceID, field.TypeUUID)
 	}
-	if suo.mutation.EnvironmentCleared() {
+	if _u.mutation.EnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -1538,7 +1538,7 @@ func (suo *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := suo.mutation.EnvironmentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.EnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -1554,7 +1554,7 @@ func (suo *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if suo.mutation.GithubInstallationCleared() {
+	if _u.mutation.GithubInstallationCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -1567,7 +1567,7 @@ func (suo *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := suo.mutation.GithubInstallationIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.GithubInstallationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -1583,7 +1583,7 @@ func (suo *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if suo.mutation.ServiceConfigCleared() {
+	if _u.mutation.ServiceConfigCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -1596,7 +1596,7 @@ func (suo *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := suo.mutation.ServiceConfigIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ServiceConfigIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -1612,7 +1612,7 @@ func (suo *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if suo.mutation.DeploymentsCleared() {
+	if _u.mutation.DeploymentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -1625,7 +1625,7 @@ func (suo *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := suo.mutation.RemovedDeploymentsIDs(); len(nodes) > 0 && !suo.mutation.DeploymentsCleared() {
+	if nodes := _u.mutation.RemovedDeploymentsIDs(); len(nodes) > 0 && !_u.mutation.DeploymentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -1641,7 +1641,7 @@ func (suo *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := suo.mutation.DeploymentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.DeploymentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -1657,7 +1657,7 @@ func (suo *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if suo.mutation.CurrentDeploymentCleared() {
+	if _u.mutation.CurrentDeploymentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -1670,7 +1670,7 @@ func (suo *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := suo.mutation.CurrentDeploymentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.CurrentDeploymentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -1686,7 +1686,7 @@ func (suo *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if suo.mutation.TemplateCleared() {
+	if _u.mutation.TemplateCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -1699,7 +1699,7 @@ func (suo *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := suo.mutation.TemplateIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.TemplateIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -1715,7 +1715,7 @@ func (suo *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if suo.mutation.ServiceGroupCleared() {
+	if _u.mutation.ServiceGroupCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -1728,7 +1728,7 @@ func (suo *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := suo.mutation.ServiceGroupIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ServiceGroupIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -1744,7 +1744,7 @@ func (suo *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if suo.mutation.VariableReferencesCleared() {
+	if _u.mutation.VariableReferencesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -1757,7 +1757,7 @@ func (suo *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := suo.mutation.RemovedVariableReferencesIDs(); len(nodes) > 0 && !suo.mutation.VariableReferencesCleared() {
+	if nodes := _u.mutation.RemovedVariableReferencesIDs(); len(nodes) > 0 && !_u.mutation.VariableReferencesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -1773,7 +1773,7 @@ func (suo *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := suo.mutation.VariableReferencesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.VariableReferencesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -1789,11 +1789,11 @@ func (suo *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(suo.modifiers...)
-	_node = &Service{config: suo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &Service{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, suo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{service.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -1801,6 +1801,6 @@ func (suo *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err e
 		}
 		return nil, err
 	}
-	suo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

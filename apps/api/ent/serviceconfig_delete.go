@@ -20,56 +20,56 @@ type ServiceConfigDelete struct {
 }
 
 // Where appends a list predicates to the ServiceConfigDelete builder.
-func (scd *ServiceConfigDelete) Where(ps ...predicate.ServiceConfig) *ServiceConfigDelete {
-	scd.mutation.Where(ps...)
-	return scd
+func (_d *ServiceConfigDelete) Where(ps ...predicate.ServiceConfig) *ServiceConfigDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (scd *ServiceConfigDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, scd.sqlExec, scd.mutation, scd.hooks)
+func (_d *ServiceConfigDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (scd *ServiceConfigDelete) ExecX(ctx context.Context) int {
-	n, err := scd.Exec(ctx)
+func (_d *ServiceConfigDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (scd *ServiceConfigDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *ServiceConfigDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(serviceconfig.Table, sqlgraph.NewFieldSpec(serviceconfig.FieldID, field.TypeUUID))
-	if ps := scd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, scd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	scd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // ServiceConfigDeleteOne is the builder for deleting a single ServiceConfig entity.
 type ServiceConfigDeleteOne struct {
-	scd *ServiceConfigDelete
+	_d *ServiceConfigDelete
 }
 
 // Where appends a list predicates to the ServiceConfigDelete builder.
-func (scdo *ServiceConfigDeleteOne) Where(ps ...predicate.ServiceConfig) *ServiceConfigDeleteOne {
-	scdo.scd.mutation.Where(ps...)
-	return scdo
+func (_d *ServiceConfigDeleteOne) Where(ps ...predicate.ServiceConfig) *ServiceConfigDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (scdo *ServiceConfigDeleteOne) Exec(ctx context.Context) error {
-	n, err := scdo.scd.Exec(ctx)
+func (_d *ServiceConfigDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (scdo *ServiceConfigDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (scdo *ServiceConfigDeleteOne) ExecX(ctx context.Context) {
-	if err := scdo.Exec(ctx); err != nil {
+func (_d *ServiceConfigDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

@@ -27,162 +27,162 @@ type S3Update struct {
 }
 
 // Where appends a list predicates to the S3Update builder.
-func (s *S3Update) Where(ps ...predicate.S3) *S3Update {
-	s.mutation.Where(ps...)
-	return s
+func (_u *S3Update) Where(ps ...predicate.S3) *S3Update {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (s *S3Update) SetUpdatedAt(t time.Time) *S3Update {
-	s.mutation.SetUpdatedAt(t)
-	return s
+func (_u *S3Update) SetUpdatedAt(v time.Time) *S3Update {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetName sets the "name" field.
-func (s *S3Update) SetName(value string) *S3Update {
-	s.mutation.SetName(value)
-	return s
+func (_u *S3Update) SetName(v string) *S3Update {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (s *S3Update) SetNillableName(value *string) *S3Update {
-	if value != nil {
-		s.SetName(*value)
+func (_u *S3Update) SetNillableName(v *string) *S3Update {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return s
+	return _u
 }
 
 // SetEndpoint sets the "endpoint" field.
-func (s *S3Update) SetEndpoint(value string) *S3Update {
-	s.mutation.SetEndpoint(value)
-	return s
+func (_u *S3Update) SetEndpoint(v string) *S3Update {
+	_u.mutation.SetEndpoint(v)
+	return _u
 }
 
 // SetNillableEndpoint sets the "endpoint" field if the given value is not nil.
-func (s *S3Update) SetNillableEndpoint(value *string) *S3Update {
-	if value != nil {
-		s.SetEndpoint(*value)
+func (_u *S3Update) SetNillableEndpoint(v *string) *S3Update {
+	if v != nil {
+		_u.SetEndpoint(*v)
 	}
-	return s
+	return _u
 }
 
 // SetRegion sets the "region" field.
-func (s *S3Update) SetRegion(value string) *S3Update {
-	s.mutation.SetRegion(value)
-	return s
+func (_u *S3Update) SetRegion(v string) *S3Update {
+	_u.mutation.SetRegion(v)
+	return _u
 }
 
 // SetNillableRegion sets the "region" field if the given value is not nil.
-func (s *S3Update) SetNillableRegion(value *string) *S3Update {
-	if value != nil {
-		s.SetRegion(*value)
+func (_u *S3Update) SetNillableRegion(v *string) *S3Update {
+	if v != nil {
+		_u.SetRegion(*v)
 	}
-	return s
+	return _u
 }
 
 // SetForcePathStyle sets the "force_path_style" field.
-func (s *S3Update) SetForcePathStyle(b bool) *S3Update {
-	s.mutation.SetForcePathStyle(b)
-	return s
+func (_u *S3Update) SetForcePathStyle(v bool) *S3Update {
+	_u.mutation.SetForcePathStyle(v)
+	return _u
 }
 
 // SetNillableForcePathStyle sets the "force_path_style" field if the given value is not nil.
-func (s *S3Update) SetNillableForcePathStyle(b *bool) *S3Update {
-	if b != nil {
-		s.SetForcePathStyle(*b)
+func (_u *S3Update) SetNillableForcePathStyle(v *bool) *S3Update {
+	if v != nil {
+		_u.SetForcePathStyle(*v)
 	}
-	return s
+	return _u
 }
 
 // SetKubernetesSecret sets the "kubernetes_secret" field.
-func (s *S3Update) SetKubernetesSecret(value string) *S3Update {
-	s.mutation.SetKubernetesSecret(value)
-	return s
+func (_u *S3Update) SetKubernetesSecret(v string) *S3Update {
+	_u.mutation.SetKubernetesSecret(v)
+	return _u
 }
 
 // SetNillableKubernetesSecret sets the "kubernetes_secret" field if the given value is not nil.
-func (s *S3Update) SetNillableKubernetesSecret(value *string) *S3Update {
-	if value != nil {
-		s.SetKubernetesSecret(*value)
+func (_u *S3Update) SetNillableKubernetesSecret(v *string) *S3Update {
+	if v != nil {
+		_u.SetKubernetesSecret(*v)
 	}
-	return s
+	return _u
 }
 
 // SetTeamID sets the "team_id" field.
-func (s *S3Update) SetTeamID(u uuid.UUID) *S3Update {
-	s.mutation.SetTeamID(u)
-	return s
+func (_u *S3Update) SetTeamID(v uuid.UUID) *S3Update {
+	_u.mutation.SetTeamID(v)
+	return _u
 }
 
 // SetNillableTeamID sets the "team_id" field if the given value is not nil.
-func (s *S3Update) SetNillableTeamID(u *uuid.UUID) *S3Update {
-	if u != nil {
-		s.SetTeamID(*u)
+func (_u *S3Update) SetNillableTeamID(v *uuid.UUID) *S3Update {
+	if v != nil {
+		_u.SetTeamID(*v)
 	}
-	return s
+	return _u
 }
 
 // SetTeam sets the "team" edge to the Team entity.
-func (s *S3Update) SetTeam(t *Team) *S3Update {
-	return s.SetTeamID(t.ID)
+func (_u *S3Update) SetTeam(v *Team) *S3Update {
+	return _u.SetTeamID(v.ID)
 }
 
 // AddServiceBackupSourceIDs adds the "service_backup_source" edge to the ServiceConfig entity by IDs.
-func (s *S3Update) AddServiceBackupSourceIDs(ids ...uuid.UUID) *S3Update {
-	s.mutation.AddServiceBackupSourceIDs(ids...)
-	return s
+func (_u *S3Update) AddServiceBackupSourceIDs(ids ...uuid.UUID) *S3Update {
+	_u.mutation.AddServiceBackupSourceIDs(ids...)
+	return _u
 }
 
 // AddServiceBackupSource adds the "service_backup_source" edges to the ServiceConfig entity.
-func (s *S3Update) AddServiceBackupSource(v ...*ServiceConfig) *S3Update {
+func (_u *S3Update) AddServiceBackupSource(v ...*ServiceConfig) *S3Update {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return s.AddServiceBackupSourceIDs(ids...)
+	return _u.AddServiceBackupSourceIDs(ids...)
 }
 
 // Mutation returns the S3Mutation object of the builder.
-func (s *S3Update) Mutation() *S3Mutation {
-	return s.mutation
+func (_u *S3Update) Mutation() *S3Mutation {
+	return _u.mutation
 }
 
 // ClearTeam clears the "team" edge to the Team entity.
-func (s *S3Update) ClearTeam() *S3Update {
-	s.mutation.ClearTeam()
-	return s
+func (_u *S3Update) ClearTeam() *S3Update {
+	_u.mutation.ClearTeam()
+	return _u
 }
 
 // ClearServiceBackupSource clears all "service_backup_source" edges to the ServiceConfig entity.
-func (s *S3Update) ClearServiceBackupSource() *S3Update {
-	s.mutation.ClearServiceBackupSource()
-	return s
+func (_u *S3Update) ClearServiceBackupSource() *S3Update {
+	_u.mutation.ClearServiceBackupSource()
+	return _u
 }
 
 // RemoveServiceBackupSourceIDs removes the "service_backup_source" edge to ServiceConfig entities by IDs.
-func (s *S3Update) RemoveServiceBackupSourceIDs(ids ...uuid.UUID) *S3Update {
-	s.mutation.RemoveServiceBackupSourceIDs(ids...)
-	return s
+func (_u *S3Update) RemoveServiceBackupSourceIDs(ids ...uuid.UUID) *S3Update {
+	_u.mutation.RemoveServiceBackupSourceIDs(ids...)
+	return _u
 }
 
 // RemoveServiceBackupSource removes "service_backup_source" edges to ServiceConfig entities.
-func (s *S3Update) RemoveServiceBackupSource(v ...*ServiceConfig) *S3Update {
+func (_u *S3Update) RemoveServiceBackupSource(v ...*ServiceConfig) *S3Update {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return s.RemoveServiceBackupSourceIDs(ids...)
+	return _u.RemoveServiceBackupSourceIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (s *S3Update) Save(ctx context.Context) (int, error) {
-	s.defaults()
-	return withHooks(ctx, s.sqlSave, s.mutation, s.hooks)
+func (_u *S3Update) Save(ctx context.Context) (int, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (s *S3Update) SaveX(ctx context.Context) int {
-	affected, err := s.Save(ctx)
+func (_u *S3Update) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -190,76 +190,76 @@ func (s *S3Update) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (s *S3Update) Exec(ctx context.Context) error {
-	_, err := s.Save(ctx)
+func (_u *S3Update) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (s *S3Update) ExecX(ctx context.Context) {
-	if err := s.Exec(ctx); err != nil {
+func (_u *S3Update) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (s *S3Update) defaults() {
-	if _, ok := s.mutation.UpdatedAt(); !ok {
+func (_u *S3Update) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := s3.UpdateDefaultUpdatedAt()
-		s.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (s *S3Update) check() error {
-	if v, ok := s.mutation.Name(); ok {
+func (_u *S3Update) check() error {
+	if v, ok := _u.mutation.Name(); ok {
 		if err := s3.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "S3.name": %w`, err)}
 		}
 	}
-	if s.mutation.TeamCleared() && len(s.mutation.TeamIDs()) > 0 {
+	if _u.mutation.TeamCleared() && len(_u.mutation.TeamIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "S3.team"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (s *S3Update) Modify(modifiers ...func(u *sql.UpdateBuilder)) *S3Update {
-	s.modifiers = append(s.modifiers, modifiers...)
-	return s
+func (_u *S3Update) Modify(modifiers ...func(u *sql.UpdateBuilder)) *S3Update {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (s *S3Update) sqlSave(ctx context.Context) (n int, err error) {
-	if err := s.check(); err != nil {
-		return n, err
+func (_u *S3Update) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(s3.Table, s3.Columns, sqlgraph.NewFieldSpec(s3.FieldID, field.TypeUUID))
-	if ps := s.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := s.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(s3.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := s.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(s3.FieldName, field.TypeString, value)
 	}
-	if value, ok := s.mutation.Endpoint(); ok {
+	if value, ok := _u.mutation.Endpoint(); ok {
 		_spec.SetField(s3.FieldEndpoint, field.TypeString, value)
 	}
-	if value, ok := s.mutation.Region(); ok {
+	if value, ok := _u.mutation.Region(); ok {
 		_spec.SetField(s3.FieldRegion, field.TypeString, value)
 	}
-	if value, ok := s.mutation.ForcePathStyle(); ok {
+	if value, ok := _u.mutation.ForcePathStyle(); ok {
 		_spec.SetField(s3.FieldForcePathStyle, field.TypeBool, value)
 	}
-	if value, ok := s.mutation.KubernetesSecret(); ok {
+	if value, ok := _u.mutation.KubernetesSecret(); ok {
 		_spec.SetField(s3.FieldKubernetesSecret, field.TypeString, value)
 	}
-	if s.mutation.TeamCleared() {
+	if _u.mutation.TeamCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -272,7 +272,7 @@ func (s *S3Update) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := s.mutation.TeamIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.TeamIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -288,7 +288,7 @@ func (s *S3Update) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if s.mutation.ServiceBackupSourceCleared() {
+	if _u.mutation.ServiceBackupSourceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -301,7 +301,7 @@ func (s *S3Update) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := s.mutation.RemovedServiceBackupSourceIDs(); len(nodes) > 0 && !s.mutation.ServiceBackupSourceCleared() {
+	if nodes := _u.mutation.RemovedServiceBackupSourceIDs(); len(nodes) > 0 && !_u.mutation.ServiceBackupSourceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -317,7 +317,7 @@ func (s *S3Update) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := s.mutation.ServiceBackupSourceIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ServiceBackupSourceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -333,8 +333,8 @@ func (s *S3Update) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(s.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, s.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{s3.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -342,8 +342,8 @@ func (s *S3Update) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	s.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // S3UpdateOne is the builder for updating a single S3 entity.
@@ -356,169 +356,169 @@ type S3UpdateOne struct {
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (so *S3UpdateOne) SetUpdatedAt(t time.Time) *S3UpdateOne {
-	so.mutation.SetUpdatedAt(t)
-	return so
+func (_u *S3UpdateOne) SetUpdatedAt(v time.Time) *S3UpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetName sets the "name" field.
-func (so *S3UpdateOne) SetName(s string) *S3UpdateOne {
-	so.mutation.SetName(s)
-	return so
+func (_u *S3UpdateOne) SetName(v string) *S3UpdateOne {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (so *S3UpdateOne) SetNillableName(s *string) *S3UpdateOne {
-	if s != nil {
-		so.SetName(*s)
+func (_u *S3UpdateOne) SetNillableName(v *string) *S3UpdateOne {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return so
+	return _u
 }
 
 // SetEndpoint sets the "endpoint" field.
-func (so *S3UpdateOne) SetEndpoint(s string) *S3UpdateOne {
-	so.mutation.SetEndpoint(s)
-	return so
+func (_u *S3UpdateOne) SetEndpoint(v string) *S3UpdateOne {
+	_u.mutation.SetEndpoint(v)
+	return _u
 }
 
 // SetNillableEndpoint sets the "endpoint" field if the given value is not nil.
-func (so *S3UpdateOne) SetNillableEndpoint(s *string) *S3UpdateOne {
-	if s != nil {
-		so.SetEndpoint(*s)
+func (_u *S3UpdateOne) SetNillableEndpoint(v *string) *S3UpdateOne {
+	if v != nil {
+		_u.SetEndpoint(*v)
 	}
-	return so
+	return _u
 }
 
 // SetRegion sets the "region" field.
-func (so *S3UpdateOne) SetRegion(s string) *S3UpdateOne {
-	so.mutation.SetRegion(s)
-	return so
+func (_u *S3UpdateOne) SetRegion(v string) *S3UpdateOne {
+	_u.mutation.SetRegion(v)
+	return _u
 }
 
 // SetNillableRegion sets the "region" field if the given value is not nil.
-func (so *S3UpdateOne) SetNillableRegion(s *string) *S3UpdateOne {
-	if s != nil {
-		so.SetRegion(*s)
+func (_u *S3UpdateOne) SetNillableRegion(v *string) *S3UpdateOne {
+	if v != nil {
+		_u.SetRegion(*v)
 	}
-	return so
+	return _u
 }
 
 // SetForcePathStyle sets the "force_path_style" field.
-func (so *S3UpdateOne) SetForcePathStyle(b bool) *S3UpdateOne {
-	so.mutation.SetForcePathStyle(b)
-	return so
+func (_u *S3UpdateOne) SetForcePathStyle(v bool) *S3UpdateOne {
+	_u.mutation.SetForcePathStyle(v)
+	return _u
 }
 
 // SetNillableForcePathStyle sets the "force_path_style" field if the given value is not nil.
-func (so *S3UpdateOne) SetNillableForcePathStyle(b *bool) *S3UpdateOne {
-	if b != nil {
-		so.SetForcePathStyle(*b)
+func (_u *S3UpdateOne) SetNillableForcePathStyle(v *bool) *S3UpdateOne {
+	if v != nil {
+		_u.SetForcePathStyle(*v)
 	}
-	return so
+	return _u
 }
 
 // SetKubernetesSecret sets the "kubernetes_secret" field.
-func (so *S3UpdateOne) SetKubernetesSecret(s string) *S3UpdateOne {
-	so.mutation.SetKubernetesSecret(s)
-	return so
+func (_u *S3UpdateOne) SetKubernetesSecret(v string) *S3UpdateOne {
+	_u.mutation.SetKubernetesSecret(v)
+	return _u
 }
 
 // SetNillableKubernetesSecret sets the "kubernetes_secret" field if the given value is not nil.
-func (so *S3UpdateOne) SetNillableKubernetesSecret(s *string) *S3UpdateOne {
-	if s != nil {
-		so.SetKubernetesSecret(*s)
+func (_u *S3UpdateOne) SetNillableKubernetesSecret(v *string) *S3UpdateOne {
+	if v != nil {
+		_u.SetKubernetesSecret(*v)
 	}
-	return so
+	return _u
 }
 
 // SetTeamID sets the "team_id" field.
-func (so *S3UpdateOne) SetTeamID(u uuid.UUID) *S3UpdateOne {
-	so.mutation.SetTeamID(u)
-	return so
+func (_u *S3UpdateOne) SetTeamID(v uuid.UUID) *S3UpdateOne {
+	_u.mutation.SetTeamID(v)
+	return _u
 }
 
 // SetNillableTeamID sets the "team_id" field if the given value is not nil.
-func (so *S3UpdateOne) SetNillableTeamID(u *uuid.UUID) *S3UpdateOne {
-	if u != nil {
-		so.SetTeamID(*u)
+func (_u *S3UpdateOne) SetNillableTeamID(v *uuid.UUID) *S3UpdateOne {
+	if v != nil {
+		_u.SetTeamID(*v)
 	}
-	return so
+	return _u
 }
 
 // SetTeam sets the "team" edge to the Team entity.
-func (so *S3UpdateOne) SetTeam(t *Team) *S3UpdateOne {
-	return so.SetTeamID(t.ID)
+func (_u *S3UpdateOne) SetTeam(v *Team) *S3UpdateOne {
+	return _u.SetTeamID(v.ID)
 }
 
 // AddServiceBackupSourceIDs adds the "service_backup_source" edge to the ServiceConfig entity by IDs.
-func (so *S3UpdateOne) AddServiceBackupSourceIDs(ids ...uuid.UUID) *S3UpdateOne {
-	so.mutation.AddServiceBackupSourceIDs(ids...)
-	return so
+func (_u *S3UpdateOne) AddServiceBackupSourceIDs(ids ...uuid.UUID) *S3UpdateOne {
+	_u.mutation.AddServiceBackupSourceIDs(ids...)
+	return _u
 }
 
 // AddServiceBackupSource adds the "service_backup_source" edges to the ServiceConfig entity.
-func (so *S3UpdateOne) AddServiceBackupSource(s ...*ServiceConfig) *S3UpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *S3UpdateOne) AddServiceBackupSource(v ...*ServiceConfig) *S3UpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return so.AddServiceBackupSourceIDs(ids...)
+	return _u.AddServiceBackupSourceIDs(ids...)
 }
 
 // Mutation returns the S3Mutation object of the builder.
-func (so *S3UpdateOne) Mutation() *S3Mutation {
-	return so.mutation
+func (_u *S3UpdateOne) Mutation() *S3Mutation {
+	return _u.mutation
 }
 
 // ClearTeam clears the "team" edge to the Team entity.
-func (so *S3UpdateOne) ClearTeam() *S3UpdateOne {
-	so.mutation.ClearTeam()
-	return so
+func (_u *S3UpdateOne) ClearTeam() *S3UpdateOne {
+	_u.mutation.ClearTeam()
+	return _u
 }
 
 // ClearServiceBackupSource clears all "service_backup_source" edges to the ServiceConfig entity.
-func (so *S3UpdateOne) ClearServiceBackupSource() *S3UpdateOne {
-	so.mutation.ClearServiceBackupSource()
-	return so
+func (_u *S3UpdateOne) ClearServiceBackupSource() *S3UpdateOne {
+	_u.mutation.ClearServiceBackupSource()
+	return _u
 }
 
 // RemoveServiceBackupSourceIDs removes the "service_backup_source" edge to ServiceConfig entities by IDs.
-func (so *S3UpdateOne) RemoveServiceBackupSourceIDs(ids ...uuid.UUID) *S3UpdateOne {
-	so.mutation.RemoveServiceBackupSourceIDs(ids...)
-	return so
+func (_u *S3UpdateOne) RemoveServiceBackupSourceIDs(ids ...uuid.UUID) *S3UpdateOne {
+	_u.mutation.RemoveServiceBackupSourceIDs(ids...)
+	return _u
 }
 
 // RemoveServiceBackupSource removes "service_backup_source" edges to ServiceConfig entities.
-func (so *S3UpdateOne) RemoveServiceBackupSource(s ...*ServiceConfig) *S3UpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *S3UpdateOne) RemoveServiceBackupSource(v ...*ServiceConfig) *S3UpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return so.RemoveServiceBackupSourceIDs(ids...)
+	return _u.RemoveServiceBackupSourceIDs(ids...)
 }
 
 // Where appends a list predicates to the S3Update builder.
-func (so *S3UpdateOne) Where(ps ...predicate.S3) *S3UpdateOne {
-	so.mutation.Where(ps...)
-	return so
+func (_u *S3UpdateOne) Where(ps ...predicate.S3) *S3UpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (so *S3UpdateOne) Select(field string, fields ...string) *S3UpdateOne {
-	so.fields = append([]string{field}, fields...)
-	return so
+func (_u *S3UpdateOne) Select(field string, fields ...string) *S3UpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated S3 entity.
-func (so *S3UpdateOne) Save(ctx context.Context) (*S3, error) {
-	so.defaults()
-	return withHooks(ctx, so.sqlSave, so.mutation, so.hooks)
+func (_u *S3UpdateOne) Save(ctx context.Context) (*S3, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (so *S3UpdateOne) SaveX(ctx context.Context) *S3 {
-	node, err := so.Save(ctx)
+func (_u *S3UpdateOne) SaveX(ctx context.Context) *S3 {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -526,56 +526,56 @@ func (so *S3UpdateOne) SaveX(ctx context.Context) *S3 {
 }
 
 // Exec executes the query on the entity.
-func (so *S3UpdateOne) Exec(ctx context.Context) error {
-	_, err := so.Save(ctx)
+func (_u *S3UpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (so *S3UpdateOne) ExecX(ctx context.Context) {
-	if err := so.Exec(ctx); err != nil {
+func (_u *S3UpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (so *S3UpdateOne) defaults() {
-	if _, ok := so.mutation.UpdatedAt(); !ok {
+func (_u *S3UpdateOne) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := s3.UpdateDefaultUpdatedAt()
-		so.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (so *S3UpdateOne) check() error {
-	if v, ok := so.mutation.Name(); ok {
+func (_u *S3UpdateOne) check() error {
+	if v, ok := _u.mutation.Name(); ok {
 		if err := s3.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "S3.name": %w`, err)}
 		}
 	}
-	if so.mutation.TeamCleared() && len(so.mutation.TeamIDs()) > 0 {
+	if _u.mutation.TeamCleared() && len(_u.mutation.TeamIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "S3.team"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (so *S3UpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *S3UpdateOne {
-	so.modifiers = append(so.modifiers, modifiers...)
-	return so
+func (_u *S3UpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *S3UpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (so *S3UpdateOne) sqlSave(ctx context.Context) (_node *S3, err error) {
-	if err := so.check(); err != nil {
+func (_u *S3UpdateOne) sqlSave(ctx context.Context) (_node *S3, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(s3.Table, s3.Columns, sqlgraph.NewFieldSpec(s3.FieldID, field.TypeUUID))
-	id, ok := so.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "S3.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := so.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, s3.FieldID)
 		for _, f := range fields {
@@ -587,32 +587,32 @@ func (so *S3UpdateOne) sqlSave(ctx context.Context) (_node *S3, err error) {
 			}
 		}
 	}
-	if ps := so.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := so.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(s3.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := so.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(s3.FieldName, field.TypeString, value)
 	}
-	if value, ok := so.mutation.Endpoint(); ok {
+	if value, ok := _u.mutation.Endpoint(); ok {
 		_spec.SetField(s3.FieldEndpoint, field.TypeString, value)
 	}
-	if value, ok := so.mutation.Region(); ok {
+	if value, ok := _u.mutation.Region(); ok {
 		_spec.SetField(s3.FieldRegion, field.TypeString, value)
 	}
-	if value, ok := so.mutation.ForcePathStyle(); ok {
+	if value, ok := _u.mutation.ForcePathStyle(); ok {
 		_spec.SetField(s3.FieldForcePathStyle, field.TypeBool, value)
 	}
-	if value, ok := so.mutation.KubernetesSecret(); ok {
+	if value, ok := _u.mutation.KubernetesSecret(); ok {
 		_spec.SetField(s3.FieldKubernetesSecret, field.TypeString, value)
 	}
-	if so.mutation.TeamCleared() {
+	if _u.mutation.TeamCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -625,7 +625,7 @@ func (so *S3UpdateOne) sqlSave(ctx context.Context) (_node *S3, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := so.mutation.TeamIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.TeamIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -641,7 +641,7 @@ func (so *S3UpdateOne) sqlSave(ctx context.Context) (_node *S3, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if so.mutation.ServiceBackupSourceCleared() {
+	if _u.mutation.ServiceBackupSourceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -654,7 +654,7 @@ func (so *S3UpdateOne) sqlSave(ctx context.Context) (_node *S3, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := so.mutation.RemovedServiceBackupSourceIDs(); len(nodes) > 0 && !so.mutation.ServiceBackupSourceCleared() {
+	if nodes := _u.mutation.RemovedServiceBackupSourceIDs(); len(nodes) > 0 && !_u.mutation.ServiceBackupSourceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -670,7 +670,7 @@ func (so *S3UpdateOne) sqlSave(ctx context.Context) (_node *S3, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := so.mutation.ServiceBackupSourceIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ServiceBackupSourceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -686,11 +686,11 @@ func (so *S3UpdateOne) sqlSave(ctx context.Context) (_node *S3, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(so.modifiers...)
-	_node = &S3{config: so.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &S3{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, so.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{s3.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -698,6 +698,6 @@ func (so *S3UpdateOne) sqlSave(ctx context.Context) (_node *S3, err error) {
 		}
 		return nil, err
 	}
-	so.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

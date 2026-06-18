@@ -28,163 +28,163 @@ type EnvironmentCreate struct {
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (ec *EnvironmentCreate) SetCreatedAt(t time.Time) *EnvironmentCreate {
-	ec.mutation.SetCreatedAt(t)
-	return ec
+func (_c *EnvironmentCreate) SetCreatedAt(v time.Time) *EnvironmentCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (ec *EnvironmentCreate) SetNillableCreatedAt(t *time.Time) *EnvironmentCreate {
-	if t != nil {
-		ec.SetCreatedAt(*t)
+func (_c *EnvironmentCreate) SetNillableCreatedAt(v *time.Time) *EnvironmentCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return ec
+	return _c
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (ec *EnvironmentCreate) SetUpdatedAt(t time.Time) *EnvironmentCreate {
-	ec.mutation.SetUpdatedAt(t)
-	return ec
+func (_c *EnvironmentCreate) SetUpdatedAt(v time.Time) *EnvironmentCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (ec *EnvironmentCreate) SetNillableUpdatedAt(t *time.Time) *EnvironmentCreate {
-	if t != nil {
-		ec.SetUpdatedAt(*t)
+func (_c *EnvironmentCreate) SetNillableUpdatedAt(v *time.Time) *EnvironmentCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
 	}
-	return ec
+	return _c
 }
 
 // SetKubernetesName sets the "kubernetes_name" field.
-func (ec *EnvironmentCreate) SetKubernetesName(s string) *EnvironmentCreate {
-	ec.mutation.SetKubernetesName(s)
-	return ec
+func (_c *EnvironmentCreate) SetKubernetesName(v string) *EnvironmentCreate {
+	_c.mutation.SetKubernetesName(v)
+	return _c
 }
 
 // SetName sets the "name" field.
-func (ec *EnvironmentCreate) SetName(s string) *EnvironmentCreate {
-	ec.mutation.SetName(s)
-	return ec
+func (_c *EnvironmentCreate) SetName(v string) *EnvironmentCreate {
+	_c.mutation.SetName(v)
+	return _c
 }
 
 // SetDescription sets the "description" field.
-func (ec *EnvironmentCreate) SetDescription(s string) *EnvironmentCreate {
-	ec.mutation.SetDescription(s)
-	return ec
+func (_c *EnvironmentCreate) SetDescription(v string) *EnvironmentCreate {
+	_c.mutation.SetDescription(v)
+	return _c
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (ec *EnvironmentCreate) SetNillableDescription(s *string) *EnvironmentCreate {
-	if s != nil {
-		ec.SetDescription(*s)
+func (_c *EnvironmentCreate) SetNillableDescription(v *string) *EnvironmentCreate {
+	if v != nil {
+		_c.SetDescription(*v)
 	}
-	return ec
+	return _c
 }
 
 // SetActive sets the "active" field.
-func (ec *EnvironmentCreate) SetActive(b bool) *EnvironmentCreate {
-	ec.mutation.SetActive(b)
-	return ec
+func (_c *EnvironmentCreate) SetActive(v bool) *EnvironmentCreate {
+	_c.mutation.SetActive(v)
+	return _c
 }
 
 // SetNillableActive sets the "active" field if the given value is not nil.
-func (ec *EnvironmentCreate) SetNillableActive(b *bool) *EnvironmentCreate {
-	if b != nil {
-		ec.SetActive(*b)
+func (_c *EnvironmentCreate) SetNillableActive(v *bool) *EnvironmentCreate {
+	if v != nil {
+		_c.SetActive(*v)
 	}
-	return ec
+	return _c
 }
 
 // SetProjectID sets the "project_id" field.
-func (ec *EnvironmentCreate) SetProjectID(u uuid.UUID) *EnvironmentCreate {
-	ec.mutation.SetProjectID(u)
-	return ec
+func (_c *EnvironmentCreate) SetProjectID(v uuid.UUID) *EnvironmentCreate {
+	_c.mutation.SetProjectID(v)
+	return _c
 }
 
 // SetKubernetesSecret sets the "kubernetes_secret" field.
-func (ec *EnvironmentCreate) SetKubernetesSecret(s string) *EnvironmentCreate {
-	ec.mutation.SetKubernetesSecret(s)
-	return ec
+func (_c *EnvironmentCreate) SetKubernetesSecret(v string) *EnvironmentCreate {
+	_c.mutation.SetKubernetesSecret(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (ec *EnvironmentCreate) SetID(u uuid.UUID) *EnvironmentCreate {
-	ec.mutation.SetID(u)
-	return ec
+func (_c *EnvironmentCreate) SetID(v uuid.UUID) *EnvironmentCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (ec *EnvironmentCreate) SetNillableID(u *uuid.UUID) *EnvironmentCreate {
-	if u != nil {
-		ec.SetID(*u)
+func (_c *EnvironmentCreate) SetNillableID(v *uuid.UUID) *EnvironmentCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return ec
+	return _c
 }
 
 // SetProject sets the "project" edge to the Project entity.
-func (ec *EnvironmentCreate) SetProject(p *Project) *EnvironmentCreate {
-	return ec.SetProjectID(p.ID)
+func (_c *EnvironmentCreate) SetProject(v *Project) *EnvironmentCreate {
+	return _c.SetProjectID(v.ID)
 }
 
 // AddServiceIDs adds the "services" edge to the Service entity by IDs.
-func (ec *EnvironmentCreate) AddServiceIDs(ids ...uuid.UUID) *EnvironmentCreate {
-	ec.mutation.AddServiceIDs(ids...)
-	return ec
+func (_c *EnvironmentCreate) AddServiceIDs(ids ...uuid.UUID) *EnvironmentCreate {
+	_c.mutation.AddServiceIDs(ids...)
+	return _c
 }
 
 // AddServices adds the "services" edges to the Service entity.
-func (ec *EnvironmentCreate) AddServices(s ...*Service) *EnvironmentCreate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_c *EnvironmentCreate) AddServices(v ...*Service) *EnvironmentCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ec.AddServiceIDs(ids...)
+	return _c.AddServiceIDs(ids...)
 }
 
 // AddProjectDefaultIDs adds the "project_default" edge to the Project entity by IDs.
-func (ec *EnvironmentCreate) AddProjectDefaultIDs(ids ...uuid.UUID) *EnvironmentCreate {
-	ec.mutation.AddProjectDefaultIDs(ids...)
-	return ec
+func (_c *EnvironmentCreate) AddProjectDefaultIDs(ids ...uuid.UUID) *EnvironmentCreate {
+	_c.mutation.AddProjectDefaultIDs(ids...)
+	return _c
 }
 
 // AddProjectDefault adds the "project_default" edges to the Project entity.
-func (ec *EnvironmentCreate) AddProjectDefault(p ...*Project) *EnvironmentCreate {
-	ids := make([]uuid.UUID, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+func (_c *EnvironmentCreate) AddProjectDefault(v ...*Project) *EnvironmentCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ec.AddProjectDefaultIDs(ids...)
+	return _c.AddProjectDefaultIDs(ids...)
 }
 
 // AddServiceGroupIDs adds the "service_groups" edge to the ServiceGroup entity by IDs.
-func (ec *EnvironmentCreate) AddServiceGroupIDs(ids ...uuid.UUID) *EnvironmentCreate {
-	ec.mutation.AddServiceGroupIDs(ids...)
-	return ec
+func (_c *EnvironmentCreate) AddServiceGroupIDs(ids ...uuid.UUID) *EnvironmentCreate {
+	_c.mutation.AddServiceGroupIDs(ids...)
+	return _c
 }
 
 // AddServiceGroups adds the "service_groups" edges to the ServiceGroup entity.
-func (ec *EnvironmentCreate) AddServiceGroups(s ...*ServiceGroup) *EnvironmentCreate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_c *EnvironmentCreate) AddServiceGroups(v ...*ServiceGroup) *EnvironmentCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ec.AddServiceGroupIDs(ids...)
+	return _c.AddServiceGroupIDs(ids...)
 }
 
 // Mutation returns the EnvironmentMutation object of the builder.
-func (ec *EnvironmentCreate) Mutation() *EnvironmentMutation {
-	return ec.mutation
+func (_c *EnvironmentCreate) Mutation() *EnvironmentMutation {
+	return _c.mutation
 }
 
 // Save creates the Environment in the database.
-func (ec *EnvironmentCreate) Save(ctx context.Context) (*Environment, error) {
-	ec.defaults()
-	return withHooks(ctx, ec.sqlSave, ec.mutation, ec.hooks)
+func (_c *EnvironmentCreate) Save(ctx context.Context) (*Environment, error) {
+	_c.defaults()
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (ec *EnvironmentCreate) SaveX(ctx context.Context) *Environment {
-	v, err := ec.Save(ctx)
+func (_c *EnvironmentCreate) SaveX(ctx context.Context) *Environment {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -192,78 +192,78 @@ func (ec *EnvironmentCreate) SaveX(ctx context.Context) *Environment {
 }
 
 // Exec executes the query.
-func (ec *EnvironmentCreate) Exec(ctx context.Context) error {
-	_, err := ec.Save(ctx)
+func (_c *EnvironmentCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ec *EnvironmentCreate) ExecX(ctx context.Context) {
-	if err := ec.Exec(ctx); err != nil {
+func (_c *EnvironmentCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (ec *EnvironmentCreate) defaults() {
-	if _, ok := ec.mutation.CreatedAt(); !ok {
+func (_c *EnvironmentCreate) defaults() {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := environment.DefaultCreatedAt()
-		ec.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := ec.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		v := environment.DefaultUpdatedAt()
-		ec.mutation.SetUpdatedAt(v)
+		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := ec.mutation.Active(); !ok {
+	if _, ok := _c.mutation.Active(); !ok {
 		v := environment.DefaultActive
-		ec.mutation.SetActive(v)
+		_c.mutation.SetActive(v)
 	}
-	if _, ok := ec.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		v := environment.DefaultID()
-		ec.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ec *EnvironmentCreate) check() error {
-	if _, ok := ec.mutation.CreatedAt(); !ok {
+func (_c *EnvironmentCreate) check() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Environment.created_at"`)}
 	}
-	if _, ok := ec.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Environment.updated_at"`)}
 	}
-	if _, ok := ec.mutation.KubernetesName(); !ok {
+	if _, ok := _c.mutation.KubernetesName(); !ok {
 		return &ValidationError{Name: "kubernetes_name", err: errors.New(`ent: missing required field "Environment.kubernetes_name"`)}
 	}
-	if v, ok := ec.mutation.KubernetesName(); ok {
+	if v, ok := _c.mutation.KubernetesName(); ok {
 		if err := environment.KubernetesNameValidator(v); err != nil {
 			return &ValidationError{Name: "kubernetes_name", err: fmt.Errorf(`ent: validator failed for field "Environment.kubernetes_name": %w`, err)}
 		}
 	}
-	if _, ok := ec.mutation.Name(); !ok {
+	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Environment.name"`)}
 	}
-	if _, ok := ec.mutation.Active(); !ok {
+	if _, ok := _c.mutation.Active(); !ok {
 		return &ValidationError{Name: "active", err: errors.New(`ent: missing required field "Environment.active"`)}
 	}
-	if _, ok := ec.mutation.ProjectID(); !ok {
+	if _, ok := _c.mutation.ProjectID(); !ok {
 		return &ValidationError{Name: "project_id", err: errors.New(`ent: missing required field "Environment.project_id"`)}
 	}
-	if _, ok := ec.mutation.KubernetesSecret(); !ok {
+	if _, ok := _c.mutation.KubernetesSecret(); !ok {
 		return &ValidationError{Name: "kubernetes_secret", err: errors.New(`ent: missing required field "Environment.kubernetes_secret"`)}
 	}
-	if len(ec.mutation.ProjectIDs()) == 0 {
+	if len(_c.mutation.ProjectIDs()) == 0 {
 		return &ValidationError{Name: "project", err: errors.New(`ent: missing required edge "Environment.project"`)}
 	}
 	return nil
 }
 
-func (ec *EnvironmentCreate) sqlSave(ctx context.Context) (*Environment, error) {
-	if err := ec.check(); err != nil {
+func (_c *EnvironmentCreate) sqlSave(ctx context.Context) (*Environment, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := ec.createSpec()
-	if err := sqlgraph.CreateNode(ctx, ec.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -276,50 +276,50 @@ func (ec *EnvironmentCreate) sqlSave(ctx context.Context) (*Environment, error) 
 			return nil, err
 		}
 	}
-	ec.mutation.id = &_node.ID
-	ec.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
+func (_c *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Environment{config: ec.config}
+		_node = &Environment{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(environment.Table, sqlgraph.NewFieldSpec(environment.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = ec.conflict
-	if id, ok := ec.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := ec.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(environment.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if value, ok := ec.mutation.UpdatedAt(); ok {
+	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(environment.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := ec.mutation.KubernetesName(); ok {
+	if value, ok := _c.mutation.KubernetesName(); ok {
 		_spec.SetField(environment.FieldKubernetesName, field.TypeString, value)
 		_node.KubernetesName = value
 	}
-	if value, ok := ec.mutation.Name(); ok {
+	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(environment.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := ec.mutation.Description(); ok {
+	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(environment.FieldDescription, field.TypeString, value)
 		_node.Description = &value
 	}
-	if value, ok := ec.mutation.Active(); ok {
+	if value, ok := _c.mutation.Active(); ok {
 		_spec.SetField(environment.FieldActive, field.TypeBool, value)
 		_node.Active = value
 	}
-	if value, ok := ec.mutation.KubernetesSecret(); ok {
+	if value, ok := _c.mutation.KubernetesSecret(); ok {
 		_spec.SetField(environment.FieldKubernetesSecret, field.TypeString, value)
 		_node.KubernetesSecret = value
 	}
-	if nodes := ec.mutation.ProjectIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ProjectIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -336,7 +336,7 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 		_node.ProjectID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ec.mutation.ServicesIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ServicesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -352,7 +352,7 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ec.mutation.ProjectDefaultIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ProjectDefaultIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -368,7 +368,7 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ec.mutation.ServiceGroupsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ServiceGroupsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -403,10 +403,10 @@ func (ec *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 //			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
-func (ec *EnvironmentCreate) OnConflict(opts ...sql.ConflictOption) *EnvironmentUpsertOne {
-	ec.conflict = opts
+func (_c *EnvironmentCreate) OnConflict(opts ...sql.ConflictOption) *EnvironmentUpsertOne {
+	_c.conflict = opts
 	return &EnvironmentUpsertOne{
-		create: ec,
+		create: _c,
 	}
 }
 
@@ -416,10 +416,10 @@ func (ec *EnvironmentCreate) OnConflict(opts ...sql.ConflictOption) *Environment
 //	client.Environment.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (ec *EnvironmentCreate) OnConflictColumns(columns ...string) *EnvironmentUpsertOne {
-	ec.conflict = append(ec.conflict, sql.ConflictColumns(columns...))
+func (_c *EnvironmentCreate) OnConflictColumns(columns ...string) *EnvironmentUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &EnvironmentUpsertOne{
-		create: ec,
+		create: _c,
 	}
 }
 
@@ -729,16 +729,16 @@ type EnvironmentCreateBulk struct {
 }
 
 // Save creates the Environment entities in the database.
-func (ecb *EnvironmentCreateBulk) Save(ctx context.Context) ([]*Environment, error) {
-	if ecb.err != nil {
-		return nil, ecb.err
+func (_c *EnvironmentCreateBulk) Save(ctx context.Context) ([]*Environment, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(ecb.builders))
-	nodes := make([]*Environment, len(ecb.builders))
-	mutators := make([]Mutator, len(ecb.builders))
-	for i := range ecb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*Environment, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := ecb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*EnvironmentMutation)
@@ -752,12 +752,12 @@ func (ecb *EnvironmentCreateBulk) Save(ctx context.Context) ([]*Environment, err
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, ecb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = ecb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, ecb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -777,7 +777,7 @@ func (ecb *EnvironmentCreateBulk) Save(ctx context.Context) ([]*Environment, err
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, ecb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -785,8 +785,8 @@ func (ecb *EnvironmentCreateBulk) Save(ctx context.Context) ([]*Environment, err
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ecb *EnvironmentCreateBulk) SaveX(ctx context.Context) []*Environment {
-	v, err := ecb.Save(ctx)
+func (_c *EnvironmentCreateBulk) SaveX(ctx context.Context) []*Environment {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -794,14 +794,14 @@ func (ecb *EnvironmentCreateBulk) SaveX(ctx context.Context) []*Environment {
 }
 
 // Exec executes the query.
-func (ecb *EnvironmentCreateBulk) Exec(ctx context.Context) error {
-	_, err := ecb.Save(ctx)
+func (_c *EnvironmentCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ecb *EnvironmentCreateBulk) ExecX(ctx context.Context) {
-	if err := ecb.Exec(ctx); err != nil {
+func (_c *EnvironmentCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -821,10 +821,10 @@ func (ecb *EnvironmentCreateBulk) ExecX(ctx context.Context) {
 //			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
-func (ecb *EnvironmentCreateBulk) OnConflict(opts ...sql.ConflictOption) *EnvironmentUpsertBulk {
-	ecb.conflict = opts
+func (_c *EnvironmentCreateBulk) OnConflict(opts ...sql.ConflictOption) *EnvironmentUpsertBulk {
+	_c.conflict = opts
 	return &EnvironmentUpsertBulk{
-		create: ecb,
+		create: _c,
 	}
 }
 
@@ -834,10 +834,10 @@ func (ecb *EnvironmentCreateBulk) OnConflict(opts ...sql.ConflictOption) *Enviro
 //	client.Environment.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (ecb *EnvironmentCreateBulk) OnConflictColumns(columns ...string) *EnvironmentUpsertBulk {
-	ecb.conflict = append(ecb.conflict, sql.ConflictColumns(columns...))
+func (_c *EnvironmentCreateBulk) OnConflictColumns(columns ...string) *EnvironmentUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &EnvironmentUpsertBulk{
-		create: ecb,
+		create: _c,
 	}
 }
 

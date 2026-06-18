@@ -22,30 +22,30 @@ type JWTKeyCreate struct {
 }
 
 // SetLabel sets the "label" field.
-func (jkc *JWTKeyCreate) SetLabel(s string) *JWTKeyCreate {
-	jkc.mutation.SetLabel(s)
-	return jkc
+func (_c *JWTKeyCreate) SetLabel(v string) *JWTKeyCreate {
+	_c.mutation.SetLabel(v)
+	return _c
 }
 
 // SetPrivateKey sets the "private_key" field.
-func (jkc *JWTKeyCreate) SetPrivateKey(b []byte) *JWTKeyCreate {
-	jkc.mutation.SetPrivateKey(b)
-	return jkc
+func (_c *JWTKeyCreate) SetPrivateKey(v []byte) *JWTKeyCreate {
+	_c.mutation.SetPrivateKey(v)
+	return _c
 }
 
 // Mutation returns the JWTKeyMutation object of the builder.
-func (jkc *JWTKeyCreate) Mutation() *JWTKeyMutation {
-	return jkc.mutation
+func (_c *JWTKeyCreate) Mutation() *JWTKeyMutation {
+	return _c.mutation
 }
 
 // Save creates the JWTKey in the database.
-func (jkc *JWTKeyCreate) Save(ctx context.Context) (*JWTKey, error) {
-	return withHooks(ctx, jkc.sqlSave, jkc.mutation, jkc.hooks)
+func (_c *JWTKeyCreate) Save(ctx context.Context) (*JWTKey, error) {
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (jkc *JWTKeyCreate) SaveX(ctx context.Context) *JWTKey {
-	v, err := jkc.Save(ctx)
+func (_c *JWTKeyCreate) SaveX(ctx context.Context) *JWTKey {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -53,35 +53,35 @@ func (jkc *JWTKeyCreate) SaveX(ctx context.Context) *JWTKey {
 }
 
 // Exec executes the query.
-func (jkc *JWTKeyCreate) Exec(ctx context.Context) error {
-	_, err := jkc.Save(ctx)
+func (_c *JWTKeyCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (jkc *JWTKeyCreate) ExecX(ctx context.Context) {
-	if err := jkc.Exec(ctx); err != nil {
+func (_c *JWTKeyCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (jkc *JWTKeyCreate) check() error {
-	if _, ok := jkc.mutation.Label(); !ok {
+func (_c *JWTKeyCreate) check() error {
+	if _, ok := _c.mutation.Label(); !ok {
 		return &ValidationError{Name: "label", err: errors.New(`ent: missing required field "JWTKey.label"`)}
 	}
-	if _, ok := jkc.mutation.PrivateKey(); !ok {
+	if _, ok := _c.mutation.PrivateKey(); !ok {
 		return &ValidationError{Name: "private_key", err: errors.New(`ent: missing required field "JWTKey.private_key"`)}
 	}
 	return nil
 }
 
-func (jkc *JWTKeyCreate) sqlSave(ctx context.Context) (*JWTKey, error) {
-	if err := jkc.check(); err != nil {
+func (_c *JWTKeyCreate) sqlSave(ctx context.Context) (*JWTKey, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := jkc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, jkc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -89,22 +89,22 @@ func (jkc *JWTKeyCreate) sqlSave(ctx context.Context) (*JWTKey, error) {
 	}
 	id := _spec.ID.Value.(int64)
 	_node.ID = int(id)
-	jkc.mutation.id = &_node.ID
-	jkc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (jkc *JWTKeyCreate) createSpec() (*JWTKey, *sqlgraph.CreateSpec) {
+func (_c *JWTKeyCreate) createSpec() (*JWTKey, *sqlgraph.CreateSpec) {
 	var (
-		_node = &JWTKey{config: jkc.config}
+		_node = &JWTKey{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(jwtkey.Table, sqlgraph.NewFieldSpec(jwtkey.FieldID, field.TypeInt))
 	)
-	_spec.OnConflict = jkc.conflict
-	if value, ok := jkc.mutation.Label(); ok {
+	_spec.OnConflict = _c.conflict
+	if value, ok := _c.mutation.Label(); ok {
 		_spec.SetField(jwtkey.FieldLabel, field.TypeString, value)
 		_node.Label = value
 	}
-	if value, ok := jkc.mutation.PrivateKey(); ok {
+	if value, ok := _c.mutation.PrivateKey(); ok {
 		_spec.SetField(jwtkey.FieldPrivateKey, field.TypeBytes, value)
 		_node.PrivateKey = value
 	}
@@ -127,10 +127,10 @@ func (jkc *JWTKeyCreate) createSpec() (*JWTKey, *sqlgraph.CreateSpec) {
 //			SetLabel(v+v).
 //		}).
 //		Exec(ctx)
-func (jkc *JWTKeyCreate) OnConflict(opts ...sql.ConflictOption) *JWTKeyUpsertOne {
-	jkc.conflict = opts
+func (_c *JWTKeyCreate) OnConflict(opts ...sql.ConflictOption) *JWTKeyUpsertOne {
+	_c.conflict = opts
 	return &JWTKeyUpsertOne{
-		create: jkc,
+		create: _c,
 	}
 }
 
@@ -140,10 +140,10 @@ func (jkc *JWTKeyCreate) OnConflict(opts ...sql.ConflictOption) *JWTKeyUpsertOne
 //	client.JWTKey.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (jkc *JWTKeyCreate) OnConflictColumns(columns ...string) *JWTKeyUpsertOne {
-	jkc.conflict = append(jkc.conflict, sql.ConflictColumns(columns...))
+func (_c *JWTKeyCreate) OnConflictColumns(columns ...string) *JWTKeyUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &JWTKeyUpsertOne{
-		create: jkc,
+		create: _c,
 	}
 }
 
@@ -294,16 +294,16 @@ type JWTKeyCreateBulk struct {
 }
 
 // Save creates the JWTKey entities in the database.
-func (jkcb *JWTKeyCreateBulk) Save(ctx context.Context) ([]*JWTKey, error) {
-	if jkcb.err != nil {
-		return nil, jkcb.err
+func (_c *JWTKeyCreateBulk) Save(ctx context.Context) ([]*JWTKey, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(jkcb.builders))
-	nodes := make([]*JWTKey, len(jkcb.builders))
-	mutators := make([]Mutator, len(jkcb.builders))
-	for i := range jkcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*JWTKey, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := jkcb.builders[i]
+			builder := _c.builders[i]
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*JWTKeyMutation)
 				if !ok {
@@ -316,12 +316,12 @@ func (jkcb *JWTKeyCreateBulk) Save(ctx context.Context) ([]*JWTKey, error) {
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, jkcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = jkcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, jkcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -345,7 +345,7 @@ func (jkcb *JWTKeyCreateBulk) Save(ctx context.Context) ([]*JWTKey, error) {
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, jkcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -353,8 +353,8 @@ func (jkcb *JWTKeyCreateBulk) Save(ctx context.Context) ([]*JWTKey, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (jkcb *JWTKeyCreateBulk) SaveX(ctx context.Context) []*JWTKey {
-	v, err := jkcb.Save(ctx)
+func (_c *JWTKeyCreateBulk) SaveX(ctx context.Context) []*JWTKey {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -362,14 +362,14 @@ func (jkcb *JWTKeyCreateBulk) SaveX(ctx context.Context) []*JWTKey {
 }
 
 // Exec executes the query.
-func (jkcb *JWTKeyCreateBulk) Exec(ctx context.Context) error {
-	_, err := jkcb.Save(ctx)
+func (_c *JWTKeyCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (jkcb *JWTKeyCreateBulk) ExecX(ctx context.Context) {
-	if err := jkcb.Exec(ctx); err != nil {
+func (_c *JWTKeyCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -389,10 +389,10 @@ func (jkcb *JWTKeyCreateBulk) ExecX(ctx context.Context) {
 //			SetLabel(v+v).
 //		}).
 //		Exec(ctx)
-func (jkcb *JWTKeyCreateBulk) OnConflict(opts ...sql.ConflictOption) *JWTKeyUpsertBulk {
-	jkcb.conflict = opts
+func (_c *JWTKeyCreateBulk) OnConflict(opts ...sql.ConflictOption) *JWTKeyUpsertBulk {
+	_c.conflict = opts
 	return &JWTKeyUpsertBulk{
-		create: jkcb,
+		create: _c,
 	}
 }
 
@@ -402,10 +402,10 @@ func (jkcb *JWTKeyCreateBulk) OnConflict(opts ...sql.ConflictOption) *JWTKeyUpse
 //	client.JWTKey.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (jkcb *JWTKeyCreateBulk) OnConflictColumns(columns ...string) *JWTKeyUpsertBulk {
-	jkcb.conflict = append(jkcb.conflict, sql.ConflictColumns(columns...))
+func (_c *JWTKeyCreateBulk) OnConflictColumns(columns ...string) *JWTKeyUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &JWTKeyUpsertBulk{
-		create: jkcb,
+		create: _c,
 	}
 }
 

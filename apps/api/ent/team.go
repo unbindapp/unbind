@@ -110,7 +110,7 @@ func (*Team) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Team fields.
-func (t *Team) assignValues(columns []string, values []any) error {
+func (_m *Team) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -120,53 +120,53 @@ func (t *Team) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				t.ID = *value
+				_m.ID = *value
 			}
 		case team.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				t.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case team.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				t.UpdatedAt = value.Time
+				_m.UpdatedAt = value.Time
 			}
 		case team.FieldKubernetesName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field kubernetes_name", values[i])
 			} else if value.Valid {
-				t.KubernetesName = value.String
+				_m.KubernetesName = value.String
 			}
 		case team.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				t.Name = value.String
+				_m.Name = value.String
 			}
 		case team.FieldNamespace:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field namespace", values[i])
 			} else if value.Valid {
-				t.Namespace = value.String
+				_m.Namespace = value.String
 			}
 		case team.FieldKubernetesSecret:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field kubernetes_secret", values[i])
 			} else if value.Valid {
-				t.KubernetesSecret = value.String
+				_m.KubernetesSecret = value.String
 			}
 		case team.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				t.Description = new(string)
-				*t.Description = value.String
+				_m.Description = new(string)
+				*_m.Description = value.String
 			}
 		default:
-			t.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -174,72 +174,72 @@ func (t *Team) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the Team.
 // This includes values selected through modifiers, order, etc.
-func (t *Team) Value(name string) (ent.Value, error) {
-	return t.selectValues.Get(name)
+func (_m *Team) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryProjects queries the "projects" edge of the Team entity.
-func (t *Team) QueryProjects() *ProjectQuery {
-	return NewTeamClient(t.config).QueryProjects(t)
+func (_m *Team) QueryProjects() *ProjectQuery {
+	return NewTeamClient(_m.config).QueryProjects(_m)
 }
 
 // QueryS3Sources queries the "s3_sources" edge of the Team entity.
-func (t *Team) QueryS3Sources() *S3Query {
-	return NewTeamClient(t.config).QueryS3Sources(t)
+func (_m *Team) QueryS3Sources() *S3Query {
+	return NewTeamClient(_m.config).QueryS3Sources(_m)
 }
 
 // QueryMembers queries the "members" edge of the Team entity.
-func (t *Team) QueryMembers() *UserQuery {
-	return NewTeamClient(t.config).QueryMembers(t)
+func (_m *Team) QueryMembers() *UserQuery {
+	return NewTeamClient(_m.config).QueryMembers(_m)
 }
 
 // QueryTeamWebhooks queries the "team_webhooks" edge of the Team entity.
-func (t *Team) QueryTeamWebhooks() *WebhookQuery {
-	return NewTeamClient(t.config).QueryTeamWebhooks(t)
+func (_m *Team) QueryTeamWebhooks() *WebhookQuery {
+	return NewTeamClient(_m.config).QueryTeamWebhooks(_m)
 }
 
 // Update returns a builder for updating this Team.
 // Note that you need to call Team.Unwrap() before calling this method if this Team
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (t *Team) Update() *TeamUpdateOne {
-	return NewTeamClient(t.config).UpdateOne(t)
+func (_m *Team) Update() *TeamUpdateOne {
+	return NewTeamClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the Team entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (t *Team) Unwrap() *Team {
-	_tx, ok := t.config.driver.(*txDriver)
+func (_m *Team) Unwrap() *Team {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: Team is not a transactional entity")
 	}
-	t.config.driver = _tx.drv
-	return t
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (t *Team) String() string {
+func (_m *Team) String() string {
 	var builder strings.Builder
 	builder.WriteString("Team(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", t.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("created_at=")
-	builder.WriteString(t.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(t.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("kubernetes_name=")
-	builder.WriteString(t.KubernetesName)
+	builder.WriteString(_m.KubernetesName)
 	builder.WriteString(", ")
 	builder.WriteString("name=")
-	builder.WriteString(t.Name)
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
 	builder.WriteString("namespace=")
-	builder.WriteString(t.Namespace)
+	builder.WriteString(_m.Namespace)
 	builder.WriteString(", ")
 	builder.WriteString("kubernetes_secret=")
-	builder.WriteString(t.KubernetesSecret)
+	builder.WriteString(_m.KubernetesSecret)
 	builder.WriteString(", ")
-	if v := t.Description; v != nil {
+	if v := _m.Description; v != nil {
 		builder.WriteString("description=")
 		builder.WriteString(*v)
 	}

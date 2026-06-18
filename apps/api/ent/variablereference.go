@@ -84,7 +84,7 @@ func (*VariableReference) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the VariableReference fields.
-func (vr *VariableReference) assignValues(columns []string, values []any) error {
+func (_m *VariableReference) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -94,37 +94,37 @@ func (vr *VariableReference) assignValues(columns []string, values []any) error 
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				vr.ID = *value
+				_m.ID = *value
 			}
 		case variablereference.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				vr.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case variablereference.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				vr.UpdatedAt = value.Time
+				_m.UpdatedAt = value.Time
 			}
 		case variablereference.FieldTargetServiceID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field target_service_id", values[i])
 			} else if value != nil {
-				vr.TargetServiceID = *value
+				_m.TargetServiceID = *value
 			}
 		case variablereference.FieldTargetName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field target_name", values[i])
 			} else if value.Valid {
-				vr.TargetName = value.String
+				_m.TargetName = value.String
 			}
 		case variablereference.FieldSources:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field sources", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &vr.Sources); err != nil {
+				if err := json.Unmarshal(*value, &_m.Sources); err != nil {
 					return fmt.Errorf("unmarshal field sources: %w", err)
 				}
 			}
@@ -132,17 +132,17 @@ func (vr *VariableReference) assignValues(columns []string, values []any) error 
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field value_template", values[i])
 			} else if value.Valid {
-				vr.ValueTemplate = value.String
+				_m.ValueTemplate = value.String
 			}
 		case variablereference.FieldError:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field error", values[i])
 			} else if value.Valid {
-				vr.Error = new(string)
-				*vr.Error = value.String
+				_m.Error = new(string)
+				*_m.Error = value.String
 			}
 		default:
-			vr.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -150,57 +150,57 @@ func (vr *VariableReference) assignValues(columns []string, values []any) error 
 
 // Value returns the ent.Value that was dynamically selected and assigned to the VariableReference.
 // This includes values selected through modifiers, order, etc.
-func (vr *VariableReference) Value(name string) (ent.Value, error) {
-	return vr.selectValues.Get(name)
+func (_m *VariableReference) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryService queries the "service" edge of the VariableReference entity.
-func (vr *VariableReference) QueryService() *ServiceQuery {
-	return NewVariableReferenceClient(vr.config).QueryService(vr)
+func (_m *VariableReference) QueryService() *ServiceQuery {
+	return NewVariableReferenceClient(_m.config).QueryService(_m)
 }
 
 // Update returns a builder for updating this VariableReference.
 // Note that you need to call VariableReference.Unwrap() before calling this method if this VariableReference
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (vr *VariableReference) Update() *VariableReferenceUpdateOne {
-	return NewVariableReferenceClient(vr.config).UpdateOne(vr)
+func (_m *VariableReference) Update() *VariableReferenceUpdateOne {
+	return NewVariableReferenceClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the VariableReference entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (vr *VariableReference) Unwrap() *VariableReference {
-	_tx, ok := vr.config.driver.(*txDriver)
+func (_m *VariableReference) Unwrap() *VariableReference {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: VariableReference is not a transactional entity")
 	}
-	vr.config.driver = _tx.drv
-	return vr
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (vr *VariableReference) String() string {
+func (_m *VariableReference) String() string {
 	var builder strings.Builder
 	builder.WriteString("VariableReference(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", vr.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("created_at=")
-	builder.WriteString(vr.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(vr.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("target_service_id=")
-	builder.WriteString(fmt.Sprintf("%v", vr.TargetServiceID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TargetServiceID))
 	builder.WriteString(", ")
 	builder.WriteString("target_name=")
-	builder.WriteString(vr.TargetName)
+	builder.WriteString(_m.TargetName)
 	builder.WriteString(", ")
 	builder.WriteString("sources=")
-	builder.WriteString(fmt.Sprintf("%v", vr.Sources))
+	builder.WriteString(fmt.Sprintf("%v", _m.Sources))
 	builder.WriteString(", ")
 	builder.WriteString("value_template=")
-	builder.WriteString(vr.ValueTemplate)
+	builder.WriteString(_m.ValueTemplate)
 	builder.WriteString(", ")
-	if v := vr.Error; v != nil {
+	if v := _m.Error; v != nil {
 		builder.WriteString("error=")
 		builder.WriteString(*v)
 	}

@@ -127,7 +127,7 @@ func (*Project) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Project fields.
-func (pr *Project) assignValues(columns []string, values []any) error {
+func (_m *Project) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -137,56 +137,56 @@ func (pr *Project) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				pr.ID = *value
+				_m.ID = *value
 			}
 		case project.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				pr.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case project.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				pr.UpdatedAt = value.Time
+				_m.UpdatedAt = value.Time
 			}
 		case project.FieldKubernetesName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field kubernetes_name", values[i])
 			} else if value.Valid {
-				pr.KubernetesName = value.String
+				_m.KubernetesName = value.String
 			}
 		case project.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				pr.Name = value.String
+				_m.Name = value.String
 			}
 		case project.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				pr.Description = new(string)
-				*pr.Description = value.String
+				_m.Description = new(string)
+				*_m.Description = value.String
 			}
 		case project.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
-				pr.Status = value.String
+				_m.Status = value.String
 			}
 		case project.FieldTeamID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field team_id", values[i])
 			} else if value != nil {
-				pr.TeamID = *value
+				_m.TeamID = *value
 			}
 		case project.FieldTags:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field tags", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &pr.Tags); err != nil {
+				if err := json.Unmarshal(*value, &_m.Tags); err != nil {
 					return fmt.Errorf("unmarshal field tags: %w", err)
 				}
 			}
@@ -194,17 +194,17 @@ func (pr *Project) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field default_environment_id", values[i])
 			} else if value.Valid {
-				pr.DefaultEnvironmentID = new(uuid.UUID)
-				*pr.DefaultEnvironmentID = *value.S.(*uuid.UUID)
+				_m.DefaultEnvironmentID = new(uuid.UUID)
+				*_m.DefaultEnvironmentID = *value.S.(*uuid.UUID)
 			}
 		case project.FieldKubernetesSecret:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field kubernetes_secret", values[i])
 			} else if value.Valid {
-				pr.KubernetesSecret = value.String
+				_m.KubernetesSecret = value.String
 			}
 		default:
-			pr.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -212,86 +212,86 @@ func (pr *Project) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the Project.
 // This includes values selected through modifiers, order, etc.
-func (pr *Project) Value(name string) (ent.Value, error) {
-	return pr.selectValues.Get(name)
+func (_m *Project) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTeam queries the "team" edge of the Project entity.
-func (pr *Project) QueryTeam() *TeamQuery {
-	return NewProjectClient(pr.config).QueryTeam(pr)
+func (_m *Project) QueryTeam() *TeamQuery {
+	return NewProjectClient(_m.config).QueryTeam(_m)
 }
 
 // QueryEnvironments queries the "environments" edge of the Project entity.
-func (pr *Project) QueryEnvironments() *EnvironmentQuery {
-	return NewProjectClient(pr.config).QueryEnvironments(pr)
+func (_m *Project) QueryEnvironments() *EnvironmentQuery {
+	return NewProjectClient(_m.config).QueryEnvironments(_m)
 }
 
 // QueryDefaultEnvironment queries the "default_environment" edge of the Project entity.
-func (pr *Project) QueryDefaultEnvironment() *EnvironmentQuery {
-	return NewProjectClient(pr.config).QueryDefaultEnvironment(pr)
+func (_m *Project) QueryDefaultEnvironment() *EnvironmentQuery {
+	return NewProjectClient(_m.config).QueryDefaultEnvironment(_m)
 }
 
 // QueryProjectWebhooks queries the "project_webhooks" edge of the Project entity.
-func (pr *Project) QueryProjectWebhooks() *WebhookQuery {
-	return NewProjectClient(pr.config).QueryProjectWebhooks(pr)
+func (_m *Project) QueryProjectWebhooks() *WebhookQuery {
+	return NewProjectClient(_m.config).QueryProjectWebhooks(_m)
 }
 
 // Update returns a builder for updating this Project.
 // Note that you need to call Project.Unwrap() before calling this method if this Project
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (pr *Project) Update() *ProjectUpdateOne {
-	return NewProjectClient(pr.config).UpdateOne(pr)
+func (_m *Project) Update() *ProjectUpdateOne {
+	return NewProjectClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the Project entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (pr *Project) Unwrap() *Project {
-	_tx, ok := pr.config.driver.(*txDriver)
+func (_m *Project) Unwrap() *Project {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: Project is not a transactional entity")
 	}
-	pr.config.driver = _tx.drv
-	return pr
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (pr *Project) String() string {
+func (_m *Project) String() string {
 	var builder strings.Builder
 	builder.WriteString("Project(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", pr.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("created_at=")
-	builder.WriteString(pr.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(pr.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("kubernetes_name=")
-	builder.WriteString(pr.KubernetesName)
+	builder.WriteString(_m.KubernetesName)
 	builder.WriteString(", ")
 	builder.WriteString("name=")
-	builder.WriteString(pr.Name)
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
-	if v := pr.Description; v != nil {
+	if v := _m.Description; v != nil {
 		builder.WriteString("description=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
 	builder.WriteString("status=")
-	builder.WriteString(pr.Status)
+	builder.WriteString(_m.Status)
 	builder.WriteString(", ")
 	builder.WriteString("team_id=")
-	builder.WriteString(fmt.Sprintf("%v", pr.TeamID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TeamID))
 	builder.WriteString(", ")
 	builder.WriteString("tags=")
-	builder.WriteString(fmt.Sprintf("%v", pr.Tags))
+	builder.WriteString(fmt.Sprintf("%v", _m.Tags))
 	builder.WriteString(", ")
-	if v := pr.DefaultEnvironmentID; v != nil {
+	if v := _m.DefaultEnvironmentID; v != nil {
 		builder.WriteString("default_environment_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
 	builder.WriteString("kubernetes_secret=")
-	builder.WriteString(pr.KubernetesSecret)
+	builder.WriteString(_m.KubernetesSecret)
 	builder.WriteByte(')')
 	return builder.String()
 }

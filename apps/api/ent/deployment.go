@@ -121,7 +121,7 @@ func (*Deployment) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Deployment fields.
-func (d *Deployment) assignValues(columns []string, values []any) error {
+func (_m *Deployment) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -131,70 +131,70 @@ func (d *Deployment) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				d.ID = *value
+				_m.ID = *value
 			}
 		case deployment.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				d.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case deployment.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				d.UpdatedAt = value.Time
+				_m.UpdatedAt = value.Time
 			}
 		case deployment.FieldServiceID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field service_id", values[i])
 			} else if value != nil {
-				d.ServiceID = *value
+				_m.ServiceID = *value
 			}
 		case deployment.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
-				d.Status = schema.DeploymentStatus(value.String)
+				_m.Status = schema.DeploymentStatus(value.String)
 			}
 		case deployment.FieldSource:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field source", values[i])
 			} else if value.Valid {
-				d.Source = schema.DeploymentSource(value.String)
+				_m.Source = schema.DeploymentSource(value.String)
 			}
 		case deployment.FieldError:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field error", values[i])
 			} else if value.Valid {
-				d.Error = value.String
+				_m.Error = value.String
 			}
 		case deployment.FieldCommitSha:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field commit_sha", values[i])
 			} else if value.Valid {
-				d.CommitSha = new(string)
-				*d.CommitSha = value.String
+				_m.CommitSha = new(string)
+				*_m.CommitSha = value.String
 			}
 		case deployment.FieldCommitMessage:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field commit_message", values[i])
 			} else if value.Valid {
-				d.CommitMessage = new(string)
-				*d.CommitMessage = value.String
+				_m.CommitMessage = new(string)
+				*_m.CommitMessage = value.String
 			}
 		case deployment.FieldGitBranch:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field git_branch", values[i])
 			} else if value.Valid {
-				d.GitBranch = new(string)
-				*d.GitBranch = value.String
+				_m.GitBranch = new(string)
+				*_m.GitBranch = value.String
 			}
 		case deployment.FieldCommitAuthor:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field commit_author", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &d.CommitAuthor); err != nil {
+				if err := json.Unmarshal(*value, &_m.CommitAuthor); err != nil {
 					return fmt.Errorf("unmarshal field commit_author: %w", err)
 				}
 			}
@@ -202,53 +202,53 @@ func (d *Deployment) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field queued_at", values[i])
 			} else if value.Valid {
-				d.QueuedAt = new(time.Time)
-				*d.QueuedAt = value.Time
+				_m.QueuedAt = new(time.Time)
+				*_m.QueuedAt = value.Time
 			}
 		case deployment.FieldStartedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field started_at", values[i])
 			} else if value.Valid {
-				d.StartedAt = new(time.Time)
-				*d.StartedAt = value.Time
+				_m.StartedAt = new(time.Time)
+				*_m.StartedAt = value.Time
 			}
 		case deployment.FieldCompletedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field completed_at", values[i])
 			} else if value.Valid {
-				d.CompletedAt = new(time.Time)
-				*d.CompletedAt = value.Time
+				_m.CompletedAt = new(time.Time)
+				*_m.CompletedAt = value.Time
 			}
 		case deployment.FieldKubernetesJobName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field kubernetes_job_name", values[i])
 			} else if value.Valid {
-				d.KubernetesJobName = value.String
+				_m.KubernetesJobName = value.String
 			}
 		case deployment.FieldKubernetesJobStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field kubernetes_job_status", values[i])
 			} else if value.Valid {
-				d.KubernetesJobStatus = value.String
+				_m.KubernetesJobStatus = value.String
 			}
 		case deployment.FieldAttempts:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field attempts", values[i])
 			} else if value.Valid {
-				d.Attempts = int(value.Int64)
+				_m.Attempts = int(value.Int64)
 			}
 		case deployment.FieldImage:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field image", values[i])
 			} else if value.Valid {
-				d.Image = new(string)
-				*d.Image = value.String
+				_m.Image = new(string)
+				*_m.Image = value.String
 			}
 		case deployment.FieldResourceDefinition:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field resource_definition", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &d.ResourceDefinition); err != nil {
+				if err := json.Unmarshal(*value, &_m.ResourceDefinition); err != nil {
 					return fmt.Errorf("unmarshal field resource_definition: %w", err)
 				}
 			}
@@ -256,45 +256,45 @@ func (d *Deployment) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field builder", values[i])
 			} else if value.Valid {
-				d.Builder = schema.ServiceBuilder(value.String)
+				_m.Builder = schema.ServiceBuilder(value.String)
 			}
 		case deployment.FieldRailpackBuilderInstallCommand:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field railpack_builder_install_command", values[i])
 			} else if value.Valid {
-				d.RailpackBuilderInstallCommand = new(string)
-				*d.RailpackBuilderInstallCommand = value.String
+				_m.RailpackBuilderInstallCommand = new(string)
+				*_m.RailpackBuilderInstallCommand = value.String
 			}
 		case deployment.FieldRailpackBuilderBuildCommand:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field railpack_builder_build_command", values[i])
 			} else if value.Valid {
-				d.RailpackBuilderBuildCommand = new(string)
-				*d.RailpackBuilderBuildCommand = value.String
+				_m.RailpackBuilderBuildCommand = new(string)
+				*_m.RailpackBuilderBuildCommand = value.String
 			}
 		case deployment.FieldRunCommand:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field run_command", values[i])
 			} else if value.Valid {
-				d.RunCommand = new(string)
-				*d.RunCommand = value.String
+				_m.RunCommand = new(string)
+				*_m.RunCommand = value.String
 			}
 		case deployment.FieldDockerBuilderDockerfilePath:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field docker_builder_dockerfile_path", values[i])
 			} else if value.Valid {
-				d.DockerBuilderDockerfilePath = new(string)
-				*d.DockerBuilderDockerfilePath = value.String
+				_m.DockerBuilderDockerfilePath = new(string)
+				*_m.DockerBuilderDockerfilePath = value.String
 			}
 		case deployment.FieldDockerBuilderBuildContext:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field docker_builder_build_context", values[i])
 			} else if value.Valid {
-				d.DockerBuilderBuildContext = new(string)
-				*d.DockerBuilderBuildContext = value.String
+				_m.DockerBuilderBuildContext = new(string)
+				*_m.DockerBuilderBuildContext = value.String
 			}
 		default:
-			d.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -302,130 +302,130 @@ func (d *Deployment) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the Deployment.
 // This includes values selected through modifiers, order, etc.
-func (d *Deployment) Value(name string) (ent.Value, error) {
-	return d.selectValues.Get(name)
+func (_m *Deployment) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryService queries the "service" edge of the Deployment entity.
-func (d *Deployment) QueryService() *ServiceQuery {
-	return NewDeploymentClient(d.config).QueryService(d)
+func (_m *Deployment) QueryService() *ServiceQuery {
+	return NewDeploymentClient(_m.config).QueryService(_m)
 }
 
 // Update returns a builder for updating this Deployment.
 // Note that you need to call Deployment.Unwrap() before calling this method if this Deployment
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (d *Deployment) Update() *DeploymentUpdateOne {
-	return NewDeploymentClient(d.config).UpdateOne(d)
+func (_m *Deployment) Update() *DeploymentUpdateOne {
+	return NewDeploymentClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the Deployment entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (d *Deployment) Unwrap() *Deployment {
-	_tx, ok := d.config.driver.(*txDriver)
+func (_m *Deployment) Unwrap() *Deployment {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: Deployment is not a transactional entity")
 	}
-	d.config.driver = _tx.drv
-	return d
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (d *Deployment) String() string {
+func (_m *Deployment) String() string {
 	var builder strings.Builder
 	builder.WriteString("Deployment(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", d.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("created_at=")
-	builder.WriteString(d.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(d.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("service_id=")
-	builder.WriteString(fmt.Sprintf("%v", d.ServiceID))
+	builder.WriteString(fmt.Sprintf("%v", _m.ServiceID))
 	builder.WriteString(", ")
 	builder.WriteString("status=")
-	builder.WriteString(fmt.Sprintf("%v", d.Status))
+	builder.WriteString(fmt.Sprintf("%v", _m.Status))
 	builder.WriteString(", ")
 	builder.WriteString("source=")
-	builder.WriteString(fmt.Sprintf("%v", d.Source))
+	builder.WriteString(fmt.Sprintf("%v", _m.Source))
 	builder.WriteString(", ")
 	builder.WriteString("error=")
-	builder.WriteString(d.Error)
+	builder.WriteString(_m.Error)
 	builder.WriteString(", ")
-	if v := d.CommitSha; v != nil {
+	if v := _m.CommitSha; v != nil {
 		builder.WriteString("commit_sha=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	if v := d.CommitMessage; v != nil {
+	if v := _m.CommitMessage; v != nil {
 		builder.WriteString("commit_message=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	if v := d.GitBranch; v != nil {
+	if v := _m.GitBranch; v != nil {
 		builder.WriteString("git_branch=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
 	builder.WriteString("commit_author=")
-	builder.WriteString(fmt.Sprintf("%v", d.CommitAuthor))
+	builder.WriteString(fmt.Sprintf("%v", _m.CommitAuthor))
 	builder.WriteString(", ")
-	if v := d.QueuedAt; v != nil {
+	if v := _m.QueuedAt; v != nil {
 		builder.WriteString("queued_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteString(", ")
-	if v := d.StartedAt; v != nil {
+	if v := _m.StartedAt; v != nil {
 		builder.WriteString("started_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteString(", ")
-	if v := d.CompletedAt; v != nil {
+	if v := _m.CompletedAt; v != nil {
 		builder.WriteString("completed_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteString(", ")
 	builder.WriteString("kubernetes_job_name=")
-	builder.WriteString(d.KubernetesJobName)
+	builder.WriteString(_m.KubernetesJobName)
 	builder.WriteString(", ")
 	builder.WriteString("kubernetes_job_status=")
-	builder.WriteString(d.KubernetesJobStatus)
+	builder.WriteString(_m.KubernetesJobStatus)
 	builder.WriteString(", ")
 	builder.WriteString("attempts=")
-	builder.WriteString(fmt.Sprintf("%v", d.Attempts))
+	builder.WriteString(fmt.Sprintf("%v", _m.Attempts))
 	builder.WriteString(", ")
-	if v := d.Image; v != nil {
+	if v := _m.Image; v != nil {
 		builder.WriteString("image=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
 	builder.WriteString("resource_definition=")
-	builder.WriteString(fmt.Sprintf("%v", d.ResourceDefinition))
+	builder.WriteString(fmt.Sprintf("%v", _m.ResourceDefinition))
 	builder.WriteString(", ")
 	builder.WriteString("builder=")
-	builder.WriteString(fmt.Sprintf("%v", d.Builder))
+	builder.WriteString(fmt.Sprintf("%v", _m.Builder))
 	builder.WriteString(", ")
-	if v := d.RailpackBuilderInstallCommand; v != nil {
+	if v := _m.RailpackBuilderInstallCommand; v != nil {
 		builder.WriteString("railpack_builder_install_command=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	if v := d.RailpackBuilderBuildCommand; v != nil {
+	if v := _m.RailpackBuilderBuildCommand; v != nil {
 		builder.WriteString("railpack_builder_build_command=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	if v := d.RunCommand; v != nil {
+	if v := _m.RunCommand; v != nil {
 		builder.WriteString("run_command=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	if v := d.DockerBuilderDockerfilePath; v != nil {
+	if v := _m.DockerBuilderDockerfilePath; v != nil {
 		builder.WriteString("docker_builder_dockerfile_path=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	if v := d.DockerBuilderBuildContext; v != nil {
+	if v := _m.DockerBuilderBuildContext; v != nil {
 		builder.WriteString("docker_builder_build_context=")
 		builder.WriteString(*v)
 	}

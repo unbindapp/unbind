@@ -89,7 +89,7 @@ func (*Oauth2Token) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Oauth2Token fields.
-func (o *Oauth2Token) assignValues(columns []string, values []any) error {
+func (_m *Oauth2Token) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -99,71 +99,71 @@ func (o *Oauth2Token) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				o.ID = *value
+				_m.ID = *value
 			}
 		case oauth2token.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				o.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case oauth2token.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				o.UpdatedAt = value.Time
+				_m.UpdatedAt = value.Time
 			}
 		case oauth2token.FieldAccessToken:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field access_token", values[i])
 			} else if value.Valid {
-				o.AccessToken = value.String
+				_m.AccessToken = value.String
 			}
 		case oauth2token.FieldRefreshToken:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field refresh_token", values[i])
 			} else if value.Valid {
-				o.RefreshToken = value.String
+				_m.RefreshToken = value.String
 			}
 		case oauth2token.FieldClientID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field client_id", values[i])
 			} else if value.Valid {
-				o.ClientID = value.String
+				_m.ClientID = value.String
 			}
 		case oauth2token.FieldExpiresAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field expires_at", values[i])
 			} else if value.Valid {
-				o.ExpiresAt = value.Time
+				_m.ExpiresAt = value.Time
 			}
 		case oauth2token.FieldRevoked:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field revoked", values[i])
 			} else if value.Valid {
-				o.Revoked = value.Bool
+				_m.Revoked = value.Bool
 			}
 		case oauth2token.FieldScope:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field scope", values[i])
 			} else if value.Valid {
-				o.Scope = value.String
+				_m.Scope = value.String
 			}
 		case oauth2token.FieldDeviceInfo:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field device_info", values[i])
 			} else if value.Valid {
-				o.DeviceInfo = value.String
+				_m.DeviceInfo = value.String
 			}
 		case oauth2token.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field user_oauth2_tokens", values[i])
 			} else if value.Valid {
-				o.user_oauth2_tokens = new(uuid.UUID)
-				*o.user_oauth2_tokens = *value.S.(*uuid.UUID)
+				_m.user_oauth2_tokens = new(uuid.UUID)
+				*_m.user_oauth2_tokens = *value.S.(*uuid.UUID)
 			}
 		default:
-			o.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -171,62 +171,62 @@ func (o *Oauth2Token) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the Oauth2Token.
 // This includes values selected through modifiers, order, etc.
-func (o *Oauth2Token) Value(name string) (ent.Value, error) {
-	return o.selectValues.Get(name)
+func (_m *Oauth2Token) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryUser queries the "user" edge of the Oauth2Token entity.
-func (o *Oauth2Token) QueryUser() *UserQuery {
-	return NewOauth2TokenClient(o.config).QueryUser(o)
+func (_m *Oauth2Token) QueryUser() *UserQuery {
+	return NewOauth2TokenClient(_m.config).QueryUser(_m)
 }
 
 // Update returns a builder for updating this Oauth2Token.
 // Note that you need to call Oauth2Token.Unwrap() before calling this method if this Oauth2Token
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (o *Oauth2Token) Update() *Oauth2TokenUpdateOne {
-	return NewOauth2TokenClient(o.config).UpdateOne(o)
+func (_m *Oauth2Token) Update() *Oauth2TokenUpdateOne {
+	return NewOauth2TokenClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the Oauth2Token entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (o *Oauth2Token) Unwrap() *Oauth2Token {
-	_tx, ok := o.config.driver.(*txDriver)
+func (_m *Oauth2Token) Unwrap() *Oauth2Token {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: Oauth2Token is not a transactional entity")
 	}
-	o.config.driver = _tx.drv
-	return o
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (o *Oauth2Token) String() string {
+func (_m *Oauth2Token) String() string {
 	var builder strings.Builder
 	builder.WriteString("Oauth2Token(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", o.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("created_at=")
-	builder.WriteString(o.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(o.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("access_token=<sensitive>")
 	builder.WriteString(", ")
 	builder.WriteString("refresh_token=<sensitive>")
 	builder.WriteString(", ")
 	builder.WriteString("client_id=")
-	builder.WriteString(o.ClientID)
+	builder.WriteString(_m.ClientID)
 	builder.WriteString(", ")
 	builder.WriteString("expires_at=")
-	builder.WriteString(o.ExpiresAt.Format(time.ANSIC))
+	builder.WriteString(_m.ExpiresAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("revoked=")
-	builder.WriteString(fmt.Sprintf("%v", o.Revoked))
+	builder.WriteString(fmt.Sprintf("%v", _m.Revoked))
 	builder.WriteString(", ")
 	builder.WriteString("scope=")
-	builder.WriteString(o.Scope)
+	builder.WriteString(_m.Scope)
 	builder.WriteString(", ")
 	builder.WriteString("device_info=")
-	builder.WriteString(o.DeviceInfo)
+	builder.WriteString(_m.DeviceInfo)
 	builder.WriteByte(')')
 	return builder.String()
 }

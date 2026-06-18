@@ -20,56 +20,56 @@ type SystemSettingDelete struct {
 }
 
 // Where appends a list predicates to the SystemSettingDelete builder.
-func (ssd *SystemSettingDelete) Where(ps ...predicate.SystemSetting) *SystemSettingDelete {
-	ssd.mutation.Where(ps...)
-	return ssd
+func (_d *SystemSettingDelete) Where(ps ...predicate.SystemSetting) *SystemSettingDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (ssd *SystemSettingDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, ssd.sqlExec, ssd.mutation, ssd.hooks)
+func (_d *SystemSettingDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ssd *SystemSettingDelete) ExecX(ctx context.Context) int {
-	n, err := ssd.Exec(ctx)
+func (_d *SystemSettingDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (ssd *SystemSettingDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *SystemSettingDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(systemsetting.Table, sqlgraph.NewFieldSpec(systemsetting.FieldID, field.TypeUUID))
-	if ps := ssd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, ssd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	ssd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // SystemSettingDeleteOne is the builder for deleting a single SystemSetting entity.
 type SystemSettingDeleteOne struct {
-	ssd *SystemSettingDelete
+	_d *SystemSettingDelete
 }
 
 // Where appends a list predicates to the SystemSettingDelete builder.
-func (ssdo *SystemSettingDeleteOne) Where(ps ...predicate.SystemSetting) *SystemSettingDeleteOne {
-	ssdo.ssd.mutation.Where(ps...)
-	return ssdo
+func (_d *SystemSettingDeleteOne) Where(ps ...predicate.SystemSetting) *SystemSettingDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (ssdo *SystemSettingDeleteOne) Exec(ctx context.Context) error {
-	n, err := ssdo.ssd.Exec(ctx)
+func (_d *SystemSettingDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (ssdo *SystemSettingDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ssdo *SystemSettingDeleteOne) ExecX(ctx context.Context) {
-	if err := ssdo.Exec(ctx); err != nil {
+func (_d *SystemSettingDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

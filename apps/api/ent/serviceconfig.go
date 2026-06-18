@@ -157,7 +157,7 @@ func (*ServiceConfig) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the ServiceConfig fields.
-func (sc *ServiceConfig) assignValues(columns []string, values []any) error {
+func (_m *ServiceConfig) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -167,85 +167,85 @@ func (sc *ServiceConfig) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				sc.ID = *value
+				_m.ID = *value
 			}
 		case serviceconfig.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				sc.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case serviceconfig.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				sc.UpdatedAt = value.Time
+				_m.UpdatedAt = value.Time
 			}
 		case serviceconfig.FieldServiceID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field service_id", values[i])
 			} else if value != nil {
-				sc.ServiceID = *value
+				_m.ServiceID = *value
 			}
 		case serviceconfig.FieldBuilder:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field builder", values[i])
 			} else if value.Valid {
-				sc.Builder = schema.ServiceBuilder(value.String)
+				_m.Builder = schema.ServiceBuilder(value.String)
 			}
 		case serviceconfig.FieldIcon:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field icon", values[i])
 			} else if value.Valid {
-				sc.Icon = value.String
+				_m.Icon = value.String
 			}
 		case serviceconfig.FieldDockerBuilderDockerfilePath:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field docker_builder_dockerfile_path", values[i])
 			} else if value.Valid {
-				sc.DockerBuilderDockerfilePath = new(string)
-				*sc.DockerBuilderDockerfilePath = value.String
+				_m.DockerBuilderDockerfilePath = new(string)
+				*_m.DockerBuilderDockerfilePath = value.String
 			}
 		case serviceconfig.FieldDockerBuilderBuildContext:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field docker_builder_build_context", values[i])
 			} else if value.Valid {
-				sc.DockerBuilderBuildContext = new(string)
-				*sc.DockerBuilderBuildContext = value.String
+				_m.DockerBuilderBuildContext = new(string)
+				*_m.DockerBuilderBuildContext = value.String
 			}
 		case serviceconfig.FieldRailpackProvider:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field railpack_provider", values[i])
 			} else if value.Valid {
-				sc.RailpackProvider = new(enum.Provider)
-				*sc.RailpackProvider = enum.Provider(value.String)
+				_m.RailpackProvider = new(enum.Provider)
+				*_m.RailpackProvider = enum.Provider(value.String)
 			}
 		case serviceconfig.FieldRailpackFramework:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field railpack_framework", values[i])
 			} else if value.Valid {
-				sc.RailpackFramework = new(enum.Framework)
-				*sc.RailpackFramework = enum.Framework(value.String)
+				_m.RailpackFramework = new(enum.Framework)
+				*_m.RailpackFramework = enum.Framework(value.String)
 			}
 		case serviceconfig.FieldGitBranch:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field git_branch", values[i])
 			} else if value.Valid {
-				sc.GitBranch = new(string)
-				*sc.GitBranch = value.String
+				_m.GitBranch = new(string)
+				*_m.GitBranch = value.String
 			}
 		case serviceconfig.FieldGitTag:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field git_tag", values[i])
 			} else if value.Valid {
-				sc.GitTag = new(string)
-				*sc.GitTag = value.String
+				_m.GitTag = new(string)
+				*_m.GitTag = value.String
 			}
 		case serviceconfig.FieldHosts:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field hosts", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &sc.Hosts); err != nil {
+				if err := json.Unmarshal(*value, &_m.Hosts); err != nil {
 					return fmt.Errorf("unmarshal field hosts: %w", err)
 				}
 			}
@@ -253,7 +253,7 @@ func (sc *ServiceConfig) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field ports", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &sc.Ports); err != nil {
+				if err := json.Unmarshal(*value, &_m.Ports); err != nil {
 					return fmt.Errorf("unmarshal field ports: %w", err)
 				}
 			}
@@ -261,59 +261,59 @@ func (sc *ServiceConfig) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field replicas", values[i])
 			} else if value.Valid {
-				sc.Replicas = int32(value.Int64)
+				_m.Replicas = int32(value.Int64)
 			}
 		case serviceconfig.FieldAutoDeploy:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field auto_deploy", values[i])
 			} else if value.Valid {
-				sc.AutoDeploy = value.Bool
+				_m.AutoDeploy = value.Bool
 			}
 		case serviceconfig.FieldRailpackBuilderInstallCommand:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field railpack_builder_install_command", values[i])
 			} else if value.Valid {
-				sc.RailpackBuilderInstallCommand = new(string)
-				*sc.RailpackBuilderInstallCommand = value.String
+				_m.RailpackBuilderInstallCommand = new(string)
+				*_m.RailpackBuilderInstallCommand = value.String
 			}
 		case serviceconfig.FieldRailpackBuilderBuildCommand:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field railpack_builder_build_command", values[i])
 			} else if value.Valid {
-				sc.RailpackBuilderBuildCommand = new(string)
-				*sc.RailpackBuilderBuildCommand = value.String
+				_m.RailpackBuilderBuildCommand = new(string)
+				*_m.RailpackBuilderBuildCommand = value.String
 			}
 		case serviceconfig.FieldRunCommand:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field run_command", values[i])
 			} else if value.Valid {
-				sc.RunCommand = new(string)
-				*sc.RunCommand = value.String
+				_m.RunCommand = new(string)
+				*_m.RunCommand = value.String
 			}
 		case serviceconfig.FieldIsPublic:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field is_public", values[i])
 			} else if value.Valid {
-				sc.IsPublic = value.Bool
+				_m.IsPublic = value.Bool
 			}
 		case serviceconfig.FieldImage:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field image", values[i])
 			} else if value.Valid {
-				sc.Image = value.String
+				_m.Image = value.String
 			}
 		case serviceconfig.FieldDefinitionVersion:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field definition_version", values[i])
 			} else if value.Valid {
-				sc.DefinitionVersion = new(string)
-				*sc.DefinitionVersion = value.String
+				_m.DefinitionVersion = new(string)
+				*_m.DefinitionVersion = value.String
 			}
 		case serviceconfig.FieldDatabaseConfig:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field database_config", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &sc.DatabaseConfig); err != nil {
+				if err := json.Unmarshal(*value, &_m.DatabaseConfig); err != nil {
 					return fmt.Errorf("unmarshal field database_config: %w", err)
 				}
 			}
@@ -321,33 +321,33 @@ func (sc *ServiceConfig) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field s3_backup_source_id", values[i])
 			} else if value.Valid {
-				sc.S3BackupSourceID = new(uuid.UUID)
-				*sc.S3BackupSourceID = *value.S.(*uuid.UUID)
+				_m.S3BackupSourceID = new(uuid.UUID)
+				*_m.S3BackupSourceID = *value.S.(*uuid.UUID)
 			}
 		case serviceconfig.FieldS3BackupBucket:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field s3_backup_bucket", values[i])
 			} else if value.Valid {
-				sc.S3BackupBucket = new(string)
-				*sc.S3BackupBucket = value.String
+				_m.S3BackupBucket = new(string)
+				*_m.S3BackupBucket = value.String
 			}
 		case serviceconfig.FieldBackupSchedule:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field backup_schedule", values[i])
 			} else if value.Valid {
-				sc.BackupSchedule = value.String
+				_m.BackupSchedule = value.String
 			}
 		case serviceconfig.FieldBackupRetentionCount:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field backup_retention_count", values[i])
 			} else if value.Valid {
-				sc.BackupRetentionCount = int(value.Int64)
+				_m.BackupRetentionCount = int(value.Int64)
 			}
 		case serviceconfig.FieldVolumes:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field volumes", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &sc.Volumes); err != nil {
+				if err := json.Unmarshal(*value, &_m.Volumes); err != nil {
 					return fmt.Errorf("unmarshal field volumes: %w", err)
 				}
 			}
@@ -355,7 +355,7 @@ func (sc *ServiceConfig) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field security_context", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &sc.SecurityContext); err != nil {
+				if err := json.Unmarshal(*value, &_m.SecurityContext); err != nil {
 					return fmt.Errorf("unmarshal field security_context: %w", err)
 				}
 			}
@@ -363,7 +363,7 @@ func (sc *ServiceConfig) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field health_check", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &sc.HealthCheck); err != nil {
+				if err := json.Unmarshal(*value, &_m.HealthCheck); err != nil {
 					return fmt.Errorf("unmarshal field health_check: %w", err)
 				}
 			}
@@ -371,7 +371,7 @@ func (sc *ServiceConfig) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field variable_mounts", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &sc.VariableMounts); err != nil {
+				if err := json.Unmarshal(*value, &_m.VariableMounts); err != nil {
 					return fmt.Errorf("unmarshal field variable_mounts: %w", err)
 				}
 			}
@@ -379,7 +379,7 @@ func (sc *ServiceConfig) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field protected_variables", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &sc.ProtectedVariables); err != nil {
+				if err := json.Unmarshal(*value, &_m.ProtectedVariables); err != nil {
 					return fmt.Errorf("unmarshal field protected_variables: %w", err)
 				}
 			}
@@ -387,7 +387,7 @@ func (sc *ServiceConfig) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field init_containers", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &sc.InitContainers); err != nil {
+				if err := json.Unmarshal(*value, &_m.InitContainers); err != nil {
 					return fmt.Errorf("unmarshal field init_containers: %w", err)
 				}
 			}
@@ -395,12 +395,12 @@ func (sc *ServiceConfig) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field resources", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &sc.Resources); err != nil {
+				if err := json.Unmarshal(*value, &_m.Resources); err != nil {
 					return fmt.Errorf("unmarshal field resources: %w", err)
 				}
 			}
 		default:
-			sc.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -408,165 +408,165 @@ func (sc *ServiceConfig) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the ServiceConfig.
 // This includes values selected through modifiers, order, etc.
-func (sc *ServiceConfig) Value(name string) (ent.Value, error) {
-	return sc.selectValues.Get(name)
+func (_m *ServiceConfig) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryService queries the "service" edge of the ServiceConfig entity.
-func (sc *ServiceConfig) QueryService() *ServiceQuery {
-	return NewServiceConfigClient(sc.config).QueryService(sc)
+func (_m *ServiceConfig) QueryService() *ServiceQuery {
+	return NewServiceConfigClient(_m.config).QueryService(_m)
 }
 
 // QueryS3BackupSources queries the "s3_backup_sources" edge of the ServiceConfig entity.
-func (sc *ServiceConfig) QueryS3BackupSources() *S3Query {
-	return NewServiceConfigClient(sc.config).QueryS3BackupSources(sc)
+func (_m *ServiceConfig) QueryS3BackupSources() *S3Query {
+	return NewServiceConfigClient(_m.config).QueryS3BackupSources(_m)
 }
 
 // Update returns a builder for updating this ServiceConfig.
 // Note that you need to call ServiceConfig.Unwrap() before calling this method if this ServiceConfig
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (sc *ServiceConfig) Update() *ServiceConfigUpdateOne {
-	return NewServiceConfigClient(sc.config).UpdateOne(sc)
+func (_m *ServiceConfig) Update() *ServiceConfigUpdateOne {
+	return NewServiceConfigClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the ServiceConfig entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (sc *ServiceConfig) Unwrap() *ServiceConfig {
-	_tx, ok := sc.config.driver.(*txDriver)
+func (_m *ServiceConfig) Unwrap() *ServiceConfig {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: ServiceConfig is not a transactional entity")
 	}
-	sc.config.driver = _tx.drv
-	return sc
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (sc *ServiceConfig) String() string {
+func (_m *ServiceConfig) String() string {
 	var builder strings.Builder
 	builder.WriteString("ServiceConfig(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", sc.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("created_at=")
-	builder.WriteString(sc.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(sc.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("service_id=")
-	builder.WriteString(fmt.Sprintf("%v", sc.ServiceID))
+	builder.WriteString(fmt.Sprintf("%v", _m.ServiceID))
 	builder.WriteString(", ")
 	builder.WriteString("builder=")
-	builder.WriteString(fmt.Sprintf("%v", sc.Builder))
+	builder.WriteString(fmt.Sprintf("%v", _m.Builder))
 	builder.WriteString(", ")
 	builder.WriteString("icon=")
-	builder.WriteString(sc.Icon)
+	builder.WriteString(_m.Icon)
 	builder.WriteString(", ")
-	if v := sc.DockerBuilderDockerfilePath; v != nil {
+	if v := _m.DockerBuilderDockerfilePath; v != nil {
 		builder.WriteString("docker_builder_dockerfile_path=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	if v := sc.DockerBuilderBuildContext; v != nil {
+	if v := _m.DockerBuilderBuildContext; v != nil {
 		builder.WriteString("docker_builder_build_context=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	if v := sc.RailpackProvider; v != nil {
+	if v := _m.RailpackProvider; v != nil {
 		builder.WriteString("railpack_provider=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
-	if v := sc.RailpackFramework; v != nil {
+	if v := _m.RailpackFramework; v != nil {
 		builder.WriteString("railpack_framework=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
-	if v := sc.GitBranch; v != nil {
+	if v := _m.GitBranch; v != nil {
 		builder.WriteString("git_branch=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	if v := sc.GitTag; v != nil {
+	if v := _m.GitTag; v != nil {
 		builder.WriteString("git_tag=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
 	builder.WriteString("hosts=")
-	builder.WriteString(fmt.Sprintf("%v", sc.Hosts))
+	builder.WriteString(fmt.Sprintf("%v", _m.Hosts))
 	builder.WriteString(", ")
 	builder.WriteString("ports=")
-	builder.WriteString(fmt.Sprintf("%v", sc.Ports))
+	builder.WriteString(fmt.Sprintf("%v", _m.Ports))
 	builder.WriteString(", ")
 	builder.WriteString("replicas=")
-	builder.WriteString(fmt.Sprintf("%v", sc.Replicas))
+	builder.WriteString(fmt.Sprintf("%v", _m.Replicas))
 	builder.WriteString(", ")
 	builder.WriteString("auto_deploy=")
-	builder.WriteString(fmt.Sprintf("%v", sc.AutoDeploy))
+	builder.WriteString(fmt.Sprintf("%v", _m.AutoDeploy))
 	builder.WriteString(", ")
-	if v := sc.RailpackBuilderInstallCommand; v != nil {
+	if v := _m.RailpackBuilderInstallCommand; v != nil {
 		builder.WriteString("railpack_builder_install_command=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	if v := sc.RailpackBuilderBuildCommand; v != nil {
+	if v := _m.RailpackBuilderBuildCommand; v != nil {
 		builder.WriteString("railpack_builder_build_command=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	if v := sc.RunCommand; v != nil {
+	if v := _m.RunCommand; v != nil {
 		builder.WriteString("run_command=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
 	builder.WriteString("is_public=")
-	builder.WriteString(fmt.Sprintf("%v", sc.IsPublic))
+	builder.WriteString(fmt.Sprintf("%v", _m.IsPublic))
 	builder.WriteString(", ")
 	builder.WriteString("image=")
-	builder.WriteString(sc.Image)
+	builder.WriteString(_m.Image)
 	builder.WriteString(", ")
-	if v := sc.DefinitionVersion; v != nil {
+	if v := _m.DefinitionVersion; v != nil {
 		builder.WriteString("definition_version=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
 	builder.WriteString("database_config=")
-	builder.WriteString(fmt.Sprintf("%v", sc.DatabaseConfig))
+	builder.WriteString(fmt.Sprintf("%v", _m.DatabaseConfig))
 	builder.WriteString(", ")
-	if v := sc.S3BackupSourceID; v != nil {
+	if v := _m.S3BackupSourceID; v != nil {
 		builder.WriteString("s3_backup_source_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
-	if v := sc.S3BackupBucket; v != nil {
+	if v := _m.S3BackupBucket; v != nil {
 		builder.WriteString("s3_backup_bucket=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
 	builder.WriteString("backup_schedule=")
-	builder.WriteString(sc.BackupSchedule)
+	builder.WriteString(_m.BackupSchedule)
 	builder.WriteString(", ")
 	builder.WriteString("backup_retention_count=")
-	builder.WriteString(fmt.Sprintf("%v", sc.BackupRetentionCount))
+	builder.WriteString(fmt.Sprintf("%v", _m.BackupRetentionCount))
 	builder.WriteString(", ")
 	builder.WriteString("volumes=")
-	builder.WriteString(fmt.Sprintf("%v", sc.Volumes))
+	builder.WriteString(fmt.Sprintf("%v", _m.Volumes))
 	builder.WriteString(", ")
 	builder.WriteString("security_context=")
-	builder.WriteString(fmt.Sprintf("%v", sc.SecurityContext))
+	builder.WriteString(fmt.Sprintf("%v", _m.SecurityContext))
 	builder.WriteString(", ")
 	builder.WriteString("health_check=")
-	builder.WriteString(fmt.Sprintf("%v", sc.HealthCheck))
+	builder.WriteString(fmt.Sprintf("%v", _m.HealthCheck))
 	builder.WriteString(", ")
 	builder.WriteString("variable_mounts=")
-	builder.WriteString(fmt.Sprintf("%v", sc.VariableMounts))
+	builder.WriteString(fmt.Sprintf("%v", _m.VariableMounts))
 	builder.WriteString(", ")
 	builder.WriteString("protected_variables=")
-	builder.WriteString(fmt.Sprintf("%v", sc.ProtectedVariables))
+	builder.WriteString(fmt.Sprintf("%v", _m.ProtectedVariables))
 	builder.WriteString(", ")
 	builder.WriteString("init_containers=")
-	builder.WriteString(fmt.Sprintf("%v", sc.InitContainers))
+	builder.WriteString(fmt.Sprintf("%v", _m.InitContainers))
 	builder.WriteString(", ")
 	builder.WriteString("resources=")
-	builder.WriteString(fmt.Sprintf("%v", sc.Resources))
+	builder.WriteString(fmt.Sprintf("%v", _m.Resources))
 	builder.WriteByte(')')
 	return builder.String()
 }

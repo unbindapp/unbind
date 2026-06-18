@@ -202,7 +202,7 @@ func (*Service) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Service fields.
-func (s *Service) assignValues(columns []string, values []any) error {
+func (_m *Service) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -212,55 +212,55 @@ func (s *Service) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				s.ID = *value
+				_m.ID = *value
 			}
 		case service.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				s.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case service.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				s.UpdatedAt = value.Time
+				_m.UpdatedAt = value.Time
 			}
 		case service.FieldType:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field type", values[i])
 			} else if value.Valid {
-				s.Type = schema.ServiceType(value.String)
+				_m.Type = schema.ServiceType(value.String)
 			}
 		case service.FieldKubernetesName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field kubernetes_name", values[i])
 			} else if value.Valid {
-				s.KubernetesName = value.String
+				_m.KubernetesName = value.String
 			}
 		case service.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				s.Name = value.String
+				_m.Name = value.String
 			}
 		case service.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				s.Description = value.String
+				_m.Description = value.String
 			}
 		case service.FieldEnvironmentID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field environment_id", values[i])
 			} else if value != nil {
-				s.EnvironmentID = *value
+				_m.EnvironmentID = *value
 			}
 		case service.FieldDetectedPorts:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field detected_ports", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &s.DetectedPorts); err != nil {
+				if err := json.Unmarshal(*value, &_m.DetectedPorts); err != nil {
 					return fmt.Errorf("unmarshal field detected_ports: %w", err)
 				}
 			}
@@ -268,73 +268,73 @@ func (s *Service) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field database", values[i])
 			} else if value.Valid {
-				s.Database = new(string)
-				*s.Database = value.String
+				_m.Database = new(string)
+				*_m.Database = value.String
 			}
 		case service.FieldDatabaseVersion:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field database_version", values[i])
 			} else if value.Valid {
-				s.DatabaseVersion = new(string)
-				*s.DatabaseVersion = value.String
+				_m.DatabaseVersion = new(string)
+				*_m.DatabaseVersion = value.String
 			}
 		case service.FieldGithubInstallationID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field github_installation_id", values[i])
 			} else if value.Valid {
-				s.GithubInstallationID = new(int64)
-				*s.GithubInstallationID = value.Int64
+				_m.GithubInstallationID = new(int64)
+				*_m.GithubInstallationID = value.Int64
 			}
 		case service.FieldGitRepositoryOwner:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field git_repository_owner", values[i])
 			} else if value.Valid {
-				s.GitRepositoryOwner = new(string)
-				*s.GitRepositoryOwner = value.String
+				_m.GitRepositoryOwner = new(string)
+				*_m.GitRepositoryOwner = value.String
 			}
 		case service.FieldGitRepository:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field git_repository", values[i])
 			} else if value.Valid {
-				s.GitRepository = new(string)
-				*s.GitRepository = value.String
+				_m.GitRepository = new(string)
+				*_m.GitRepository = value.String
 			}
 		case service.FieldKubernetesSecret:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field kubernetes_secret", values[i])
 			} else if value.Valid {
-				s.KubernetesSecret = value.String
+				_m.KubernetesSecret = value.String
 			}
 		case service.FieldCurrentDeploymentID:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field current_deployment_id", values[i])
 			} else if value.Valid {
-				s.CurrentDeploymentID = new(uuid.UUID)
-				*s.CurrentDeploymentID = *value.S.(*uuid.UUID)
+				_m.CurrentDeploymentID = new(uuid.UUID)
+				*_m.CurrentDeploymentID = *value.S.(*uuid.UUID)
 			}
 		case service.FieldTemplateID:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field template_id", values[i])
 			} else if value.Valid {
-				s.TemplateID = new(uuid.UUID)
-				*s.TemplateID = *value.S.(*uuid.UUID)
+				_m.TemplateID = new(uuid.UUID)
+				*_m.TemplateID = *value.S.(*uuid.UUID)
 			}
 		case service.FieldTemplateInstanceID:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field template_instance_id", values[i])
 			} else if value.Valid {
-				s.TemplateInstanceID = new(uuid.UUID)
-				*s.TemplateInstanceID = *value.S.(*uuid.UUID)
+				_m.TemplateInstanceID = new(uuid.UUID)
+				*_m.TemplateInstanceID = *value.S.(*uuid.UUID)
 			}
 		case service.FieldServiceGroupID:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field service_group_id", values[i])
 			} else if value.Valid {
-				s.ServiceGroupID = new(uuid.UUID)
-				*s.ServiceGroupID = *value.S.(*uuid.UUID)
+				_m.ServiceGroupID = new(uuid.UUID)
+				*_m.ServiceGroupID = *value.S.(*uuid.UUID)
 			}
 		default:
-			s.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -342,141 +342,141 @@ func (s *Service) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the Service.
 // This includes values selected through modifiers, order, etc.
-func (s *Service) Value(name string) (ent.Value, error) {
-	return s.selectValues.Get(name)
+func (_m *Service) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryEnvironment queries the "environment" edge of the Service entity.
-func (s *Service) QueryEnvironment() *EnvironmentQuery {
-	return NewServiceClient(s.config).QueryEnvironment(s)
+func (_m *Service) QueryEnvironment() *EnvironmentQuery {
+	return NewServiceClient(_m.config).QueryEnvironment(_m)
 }
 
 // QueryGithubInstallation queries the "github_installation" edge of the Service entity.
-func (s *Service) QueryGithubInstallation() *GithubInstallationQuery {
-	return NewServiceClient(s.config).QueryGithubInstallation(s)
+func (_m *Service) QueryGithubInstallation() *GithubInstallationQuery {
+	return NewServiceClient(_m.config).QueryGithubInstallation(_m)
 }
 
 // QueryServiceConfig queries the "service_config" edge of the Service entity.
-func (s *Service) QueryServiceConfig() *ServiceConfigQuery {
-	return NewServiceClient(s.config).QueryServiceConfig(s)
+func (_m *Service) QueryServiceConfig() *ServiceConfigQuery {
+	return NewServiceClient(_m.config).QueryServiceConfig(_m)
 }
 
 // QueryDeployments queries the "deployments" edge of the Service entity.
-func (s *Service) QueryDeployments() *DeploymentQuery {
-	return NewServiceClient(s.config).QueryDeployments(s)
+func (_m *Service) QueryDeployments() *DeploymentQuery {
+	return NewServiceClient(_m.config).QueryDeployments(_m)
 }
 
 // QueryCurrentDeployment queries the "current_deployment" edge of the Service entity.
-func (s *Service) QueryCurrentDeployment() *DeploymentQuery {
-	return NewServiceClient(s.config).QueryCurrentDeployment(s)
+func (_m *Service) QueryCurrentDeployment() *DeploymentQuery {
+	return NewServiceClient(_m.config).QueryCurrentDeployment(_m)
 }
 
 // QueryTemplate queries the "template" edge of the Service entity.
-func (s *Service) QueryTemplate() *TemplateQuery {
-	return NewServiceClient(s.config).QueryTemplate(s)
+func (_m *Service) QueryTemplate() *TemplateQuery {
+	return NewServiceClient(_m.config).QueryTemplate(_m)
 }
 
 // QueryServiceGroup queries the "service_group" edge of the Service entity.
-func (s *Service) QueryServiceGroup() *ServiceGroupQuery {
-	return NewServiceClient(s.config).QueryServiceGroup(s)
+func (_m *Service) QueryServiceGroup() *ServiceGroupQuery {
+	return NewServiceClient(_m.config).QueryServiceGroup(_m)
 }
 
 // QueryVariableReferences queries the "variable_references" edge of the Service entity.
-func (s *Service) QueryVariableReferences() *VariableReferenceQuery {
-	return NewServiceClient(s.config).QueryVariableReferences(s)
+func (_m *Service) QueryVariableReferences() *VariableReferenceQuery {
+	return NewServiceClient(_m.config).QueryVariableReferences(_m)
 }
 
 // Update returns a builder for updating this Service.
 // Note that you need to call Service.Unwrap() before calling this method if this Service
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (s *Service) Update() *ServiceUpdateOne {
-	return NewServiceClient(s.config).UpdateOne(s)
+func (_m *Service) Update() *ServiceUpdateOne {
+	return NewServiceClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the Service entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (s *Service) Unwrap() *Service {
-	_tx, ok := s.config.driver.(*txDriver)
+func (_m *Service) Unwrap() *Service {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: Service is not a transactional entity")
 	}
-	s.config.driver = _tx.drv
-	return s
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (s *Service) String() string {
+func (_m *Service) String() string {
 	var builder strings.Builder
 	builder.WriteString("Service(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", s.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("created_at=")
-	builder.WriteString(s.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(s.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("type=")
-	builder.WriteString(fmt.Sprintf("%v", s.Type))
+	builder.WriteString(fmt.Sprintf("%v", _m.Type))
 	builder.WriteString(", ")
 	builder.WriteString("kubernetes_name=")
-	builder.WriteString(s.KubernetesName)
+	builder.WriteString(_m.KubernetesName)
 	builder.WriteString(", ")
 	builder.WriteString("name=")
-	builder.WriteString(s.Name)
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
 	builder.WriteString("description=")
-	builder.WriteString(s.Description)
+	builder.WriteString(_m.Description)
 	builder.WriteString(", ")
 	builder.WriteString("environment_id=")
-	builder.WriteString(fmt.Sprintf("%v", s.EnvironmentID))
+	builder.WriteString(fmt.Sprintf("%v", _m.EnvironmentID))
 	builder.WriteString(", ")
 	builder.WriteString("detected_ports=")
-	builder.WriteString(fmt.Sprintf("%v", s.DetectedPorts))
+	builder.WriteString(fmt.Sprintf("%v", _m.DetectedPorts))
 	builder.WriteString(", ")
-	if v := s.Database; v != nil {
+	if v := _m.Database; v != nil {
 		builder.WriteString("database=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	if v := s.DatabaseVersion; v != nil {
+	if v := _m.DatabaseVersion; v != nil {
 		builder.WriteString("database_version=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	if v := s.GithubInstallationID; v != nil {
+	if v := _m.GithubInstallationID; v != nil {
 		builder.WriteString("github_installation_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
-	if v := s.GitRepositoryOwner; v != nil {
+	if v := _m.GitRepositoryOwner; v != nil {
 		builder.WriteString("git_repository_owner=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	if v := s.GitRepository; v != nil {
+	if v := _m.GitRepository; v != nil {
 		builder.WriteString("git_repository=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
 	builder.WriteString("kubernetes_secret=")
-	builder.WriteString(s.KubernetesSecret)
+	builder.WriteString(_m.KubernetesSecret)
 	builder.WriteString(", ")
-	if v := s.CurrentDeploymentID; v != nil {
+	if v := _m.CurrentDeploymentID; v != nil {
 		builder.WriteString("current_deployment_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
-	if v := s.TemplateID; v != nil {
+	if v := _m.TemplateID; v != nil {
 		builder.WriteString("template_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
-	if v := s.TemplateInstanceID; v != nil {
+	if v := _m.TemplateInstanceID; v != nil {
 		builder.WriteString("template_instance_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
-	if v := s.ServiceGroupID; v != nil {
+	if v := _m.ServiceGroupID; v != nil {
 		builder.WriteString("service_group_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}

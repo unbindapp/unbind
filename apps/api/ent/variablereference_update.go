@@ -28,122 +28,122 @@ type VariableReferenceUpdate struct {
 }
 
 // Where appends a list predicates to the VariableReferenceUpdate builder.
-func (vru *VariableReferenceUpdate) Where(ps ...predicate.VariableReference) *VariableReferenceUpdate {
-	vru.mutation.Where(ps...)
-	return vru
+func (_u *VariableReferenceUpdate) Where(ps ...predicate.VariableReference) *VariableReferenceUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (vru *VariableReferenceUpdate) SetUpdatedAt(t time.Time) *VariableReferenceUpdate {
-	vru.mutation.SetUpdatedAt(t)
-	return vru
+func (_u *VariableReferenceUpdate) SetUpdatedAt(v time.Time) *VariableReferenceUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetTargetServiceID sets the "target_service_id" field.
-func (vru *VariableReferenceUpdate) SetTargetServiceID(u uuid.UUID) *VariableReferenceUpdate {
-	vru.mutation.SetTargetServiceID(u)
-	return vru
+func (_u *VariableReferenceUpdate) SetTargetServiceID(v uuid.UUID) *VariableReferenceUpdate {
+	_u.mutation.SetTargetServiceID(v)
+	return _u
 }
 
 // SetNillableTargetServiceID sets the "target_service_id" field if the given value is not nil.
-func (vru *VariableReferenceUpdate) SetNillableTargetServiceID(u *uuid.UUID) *VariableReferenceUpdate {
-	if u != nil {
-		vru.SetTargetServiceID(*u)
+func (_u *VariableReferenceUpdate) SetNillableTargetServiceID(v *uuid.UUID) *VariableReferenceUpdate {
+	if v != nil {
+		_u.SetTargetServiceID(*v)
 	}
-	return vru
+	return _u
 }
 
 // SetTargetName sets the "target_name" field.
-func (vru *VariableReferenceUpdate) SetTargetName(s string) *VariableReferenceUpdate {
-	vru.mutation.SetTargetName(s)
-	return vru
+func (_u *VariableReferenceUpdate) SetTargetName(v string) *VariableReferenceUpdate {
+	_u.mutation.SetTargetName(v)
+	return _u
 }
 
 // SetNillableTargetName sets the "target_name" field if the given value is not nil.
-func (vru *VariableReferenceUpdate) SetNillableTargetName(s *string) *VariableReferenceUpdate {
-	if s != nil {
-		vru.SetTargetName(*s)
+func (_u *VariableReferenceUpdate) SetNillableTargetName(v *string) *VariableReferenceUpdate {
+	if v != nil {
+		_u.SetTargetName(*v)
 	}
-	return vru
+	return _u
 }
 
 // SetSources sets the "sources" field.
-func (vru *VariableReferenceUpdate) SetSources(srs []schema.VariableReferenceSource) *VariableReferenceUpdate {
-	vru.mutation.SetSources(srs)
-	return vru
+func (_u *VariableReferenceUpdate) SetSources(v []schema.VariableReferenceSource) *VariableReferenceUpdate {
+	_u.mutation.SetSources(v)
+	return _u
 }
 
-// AppendSources appends srs to the "sources" field.
-func (vru *VariableReferenceUpdate) AppendSources(srs []schema.VariableReferenceSource) *VariableReferenceUpdate {
-	vru.mutation.AppendSources(srs)
-	return vru
+// AppendSources appends value to the "sources" field.
+func (_u *VariableReferenceUpdate) AppendSources(v []schema.VariableReferenceSource) *VariableReferenceUpdate {
+	_u.mutation.AppendSources(v)
+	return _u
 }
 
 // SetValueTemplate sets the "value_template" field.
-func (vru *VariableReferenceUpdate) SetValueTemplate(s string) *VariableReferenceUpdate {
-	vru.mutation.SetValueTemplate(s)
-	return vru
+func (_u *VariableReferenceUpdate) SetValueTemplate(v string) *VariableReferenceUpdate {
+	_u.mutation.SetValueTemplate(v)
+	return _u
 }
 
 // SetNillableValueTemplate sets the "value_template" field if the given value is not nil.
-func (vru *VariableReferenceUpdate) SetNillableValueTemplate(s *string) *VariableReferenceUpdate {
-	if s != nil {
-		vru.SetValueTemplate(*s)
+func (_u *VariableReferenceUpdate) SetNillableValueTemplate(v *string) *VariableReferenceUpdate {
+	if v != nil {
+		_u.SetValueTemplate(*v)
 	}
-	return vru
+	return _u
 }
 
 // SetError sets the "error" field.
-func (vru *VariableReferenceUpdate) SetError(s string) *VariableReferenceUpdate {
-	vru.mutation.SetError(s)
-	return vru
+func (_u *VariableReferenceUpdate) SetError(v string) *VariableReferenceUpdate {
+	_u.mutation.SetError(v)
+	return _u
 }
 
 // SetNillableError sets the "error" field if the given value is not nil.
-func (vru *VariableReferenceUpdate) SetNillableError(s *string) *VariableReferenceUpdate {
-	if s != nil {
-		vru.SetError(*s)
+func (_u *VariableReferenceUpdate) SetNillableError(v *string) *VariableReferenceUpdate {
+	if v != nil {
+		_u.SetError(*v)
 	}
-	return vru
+	return _u
 }
 
 // ClearError clears the value of the "error" field.
-func (vru *VariableReferenceUpdate) ClearError() *VariableReferenceUpdate {
-	vru.mutation.ClearError()
-	return vru
+func (_u *VariableReferenceUpdate) ClearError() *VariableReferenceUpdate {
+	_u.mutation.ClearError()
+	return _u
 }
 
 // SetServiceID sets the "service" edge to the Service entity by ID.
-func (vru *VariableReferenceUpdate) SetServiceID(id uuid.UUID) *VariableReferenceUpdate {
-	vru.mutation.SetServiceID(id)
-	return vru
+func (_u *VariableReferenceUpdate) SetServiceID(id uuid.UUID) *VariableReferenceUpdate {
+	_u.mutation.SetServiceID(id)
+	return _u
 }
 
 // SetService sets the "service" edge to the Service entity.
-func (vru *VariableReferenceUpdate) SetService(s *Service) *VariableReferenceUpdate {
-	return vru.SetServiceID(s.ID)
+func (_u *VariableReferenceUpdate) SetService(v *Service) *VariableReferenceUpdate {
+	return _u.SetServiceID(v.ID)
 }
 
 // Mutation returns the VariableReferenceMutation object of the builder.
-func (vru *VariableReferenceUpdate) Mutation() *VariableReferenceMutation {
-	return vru.mutation
+func (_u *VariableReferenceUpdate) Mutation() *VariableReferenceMutation {
+	return _u.mutation
 }
 
 // ClearService clears the "service" edge to the Service entity.
-func (vru *VariableReferenceUpdate) ClearService() *VariableReferenceUpdate {
-	vru.mutation.ClearService()
-	return vru
+func (_u *VariableReferenceUpdate) ClearService() *VariableReferenceUpdate {
+	_u.mutation.ClearService()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (vru *VariableReferenceUpdate) Save(ctx context.Context) (int, error) {
-	vru.defaults()
-	return withHooks(ctx, vru.sqlSave, vru.mutation, vru.hooks)
+func (_u *VariableReferenceUpdate) Save(ctx context.Context) (int, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (vru *VariableReferenceUpdate) SaveX(ctx context.Context) int {
-	affected, err := vru.Save(ctx)
+func (_u *VariableReferenceUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -151,76 +151,76 @@ func (vru *VariableReferenceUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (vru *VariableReferenceUpdate) Exec(ctx context.Context) error {
-	_, err := vru.Save(ctx)
+func (_u *VariableReferenceUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (vru *VariableReferenceUpdate) ExecX(ctx context.Context) {
-	if err := vru.Exec(ctx); err != nil {
+func (_u *VariableReferenceUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (vru *VariableReferenceUpdate) defaults() {
-	if _, ok := vru.mutation.UpdatedAt(); !ok {
+func (_u *VariableReferenceUpdate) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := variablereference.UpdateDefaultUpdatedAt()
-		vru.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (vru *VariableReferenceUpdate) check() error {
-	if vru.mutation.ServiceCleared() && len(vru.mutation.ServiceIDs()) > 0 {
+func (_u *VariableReferenceUpdate) check() error {
+	if _u.mutation.ServiceCleared() && len(_u.mutation.ServiceIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "VariableReference.service"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (vru *VariableReferenceUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *VariableReferenceUpdate {
-	vru.modifiers = append(vru.modifiers, modifiers...)
-	return vru
+func (_u *VariableReferenceUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *VariableReferenceUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (vru *VariableReferenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := vru.check(); err != nil {
-		return n, err
+func (_u *VariableReferenceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(variablereference.Table, variablereference.Columns, sqlgraph.NewFieldSpec(variablereference.FieldID, field.TypeUUID))
-	if ps := vru.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := vru.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(variablereference.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := vru.mutation.TargetName(); ok {
+	if value, ok := _u.mutation.TargetName(); ok {
 		_spec.SetField(variablereference.FieldTargetName, field.TypeString, value)
 	}
-	if value, ok := vru.mutation.Sources(); ok {
+	if value, ok := _u.mutation.Sources(); ok {
 		_spec.SetField(variablereference.FieldSources, field.TypeJSON, value)
 	}
-	if value, ok := vru.mutation.AppendedSources(); ok {
+	if value, ok := _u.mutation.AppendedSources(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, variablereference.FieldSources, value)
 		})
 	}
-	if value, ok := vru.mutation.ValueTemplate(); ok {
+	if value, ok := _u.mutation.ValueTemplate(); ok {
 		_spec.SetField(variablereference.FieldValueTemplate, field.TypeString, value)
 	}
-	if value, ok := vru.mutation.Error(); ok {
+	if value, ok := _u.mutation.Error(); ok {
 		_spec.SetField(variablereference.FieldError, field.TypeString, value)
 	}
-	if vru.mutation.ErrorCleared() {
+	if _u.mutation.ErrorCleared() {
 		_spec.ClearField(variablereference.FieldError, field.TypeString)
 	}
-	if vru.mutation.ServiceCleared() {
+	if _u.mutation.ServiceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -233,7 +233,7 @@ func (vru *VariableReferenceUpdate) sqlSave(ctx context.Context) (n int, err err
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := vru.mutation.ServiceIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ServiceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -249,8 +249,8 @@ func (vru *VariableReferenceUpdate) sqlSave(ctx context.Context) (n int, err err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(vru.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, vru.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{variablereference.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -258,8 +258,8 @@ func (vru *VariableReferenceUpdate) sqlSave(ctx context.Context) (n int, err err
 		}
 		return 0, err
 	}
-	vru.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // VariableReferenceUpdateOne is the builder for updating a single VariableReference entity.
@@ -272,129 +272,129 @@ type VariableReferenceUpdateOne struct {
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (vruo *VariableReferenceUpdateOne) SetUpdatedAt(t time.Time) *VariableReferenceUpdateOne {
-	vruo.mutation.SetUpdatedAt(t)
-	return vruo
+func (_u *VariableReferenceUpdateOne) SetUpdatedAt(v time.Time) *VariableReferenceUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetTargetServiceID sets the "target_service_id" field.
-func (vruo *VariableReferenceUpdateOne) SetTargetServiceID(u uuid.UUID) *VariableReferenceUpdateOne {
-	vruo.mutation.SetTargetServiceID(u)
-	return vruo
+func (_u *VariableReferenceUpdateOne) SetTargetServiceID(v uuid.UUID) *VariableReferenceUpdateOne {
+	_u.mutation.SetTargetServiceID(v)
+	return _u
 }
 
 // SetNillableTargetServiceID sets the "target_service_id" field if the given value is not nil.
-func (vruo *VariableReferenceUpdateOne) SetNillableTargetServiceID(u *uuid.UUID) *VariableReferenceUpdateOne {
-	if u != nil {
-		vruo.SetTargetServiceID(*u)
+func (_u *VariableReferenceUpdateOne) SetNillableTargetServiceID(v *uuid.UUID) *VariableReferenceUpdateOne {
+	if v != nil {
+		_u.SetTargetServiceID(*v)
 	}
-	return vruo
+	return _u
 }
 
 // SetTargetName sets the "target_name" field.
-func (vruo *VariableReferenceUpdateOne) SetTargetName(s string) *VariableReferenceUpdateOne {
-	vruo.mutation.SetTargetName(s)
-	return vruo
+func (_u *VariableReferenceUpdateOne) SetTargetName(v string) *VariableReferenceUpdateOne {
+	_u.mutation.SetTargetName(v)
+	return _u
 }
 
 // SetNillableTargetName sets the "target_name" field if the given value is not nil.
-func (vruo *VariableReferenceUpdateOne) SetNillableTargetName(s *string) *VariableReferenceUpdateOne {
-	if s != nil {
-		vruo.SetTargetName(*s)
+func (_u *VariableReferenceUpdateOne) SetNillableTargetName(v *string) *VariableReferenceUpdateOne {
+	if v != nil {
+		_u.SetTargetName(*v)
 	}
-	return vruo
+	return _u
 }
 
 // SetSources sets the "sources" field.
-func (vruo *VariableReferenceUpdateOne) SetSources(srs []schema.VariableReferenceSource) *VariableReferenceUpdateOne {
-	vruo.mutation.SetSources(srs)
-	return vruo
+func (_u *VariableReferenceUpdateOne) SetSources(v []schema.VariableReferenceSource) *VariableReferenceUpdateOne {
+	_u.mutation.SetSources(v)
+	return _u
 }
 
-// AppendSources appends srs to the "sources" field.
-func (vruo *VariableReferenceUpdateOne) AppendSources(srs []schema.VariableReferenceSource) *VariableReferenceUpdateOne {
-	vruo.mutation.AppendSources(srs)
-	return vruo
+// AppendSources appends value to the "sources" field.
+func (_u *VariableReferenceUpdateOne) AppendSources(v []schema.VariableReferenceSource) *VariableReferenceUpdateOne {
+	_u.mutation.AppendSources(v)
+	return _u
 }
 
 // SetValueTemplate sets the "value_template" field.
-func (vruo *VariableReferenceUpdateOne) SetValueTemplate(s string) *VariableReferenceUpdateOne {
-	vruo.mutation.SetValueTemplate(s)
-	return vruo
+func (_u *VariableReferenceUpdateOne) SetValueTemplate(v string) *VariableReferenceUpdateOne {
+	_u.mutation.SetValueTemplate(v)
+	return _u
 }
 
 // SetNillableValueTemplate sets the "value_template" field if the given value is not nil.
-func (vruo *VariableReferenceUpdateOne) SetNillableValueTemplate(s *string) *VariableReferenceUpdateOne {
-	if s != nil {
-		vruo.SetValueTemplate(*s)
+func (_u *VariableReferenceUpdateOne) SetNillableValueTemplate(v *string) *VariableReferenceUpdateOne {
+	if v != nil {
+		_u.SetValueTemplate(*v)
 	}
-	return vruo
+	return _u
 }
 
 // SetError sets the "error" field.
-func (vruo *VariableReferenceUpdateOne) SetError(s string) *VariableReferenceUpdateOne {
-	vruo.mutation.SetError(s)
-	return vruo
+func (_u *VariableReferenceUpdateOne) SetError(v string) *VariableReferenceUpdateOne {
+	_u.mutation.SetError(v)
+	return _u
 }
 
 // SetNillableError sets the "error" field if the given value is not nil.
-func (vruo *VariableReferenceUpdateOne) SetNillableError(s *string) *VariableReferenceUpdateOne {
-	if s != nil {
-		vruo.SetError(*s)
+func (_u *VariableReferenceUpdateOne) SetNillableError(v *string) *VariableReferenceUpdateOne {
+	if v != nil {
+		_u.SetError(*v)
 	}
-	return vruo
+	return _u
 }
 
 // ClearError clears the value of the "error" field.
-func (vruo *VariableReferenceUpdateOne) ClearError() *VariableReferenceUpdateOne {
-	vruo.mutation.ClearError()
-	return vruo
+func (_u *VariableReferenceUpdateOne) ClearError() *VariableReferenceUpdateOne {
+	_u.mutation.ClearError()
+	return _u
 }
 
 // SetServiceID sets the "service" edge to the Service entity by ID.
-func (vruo *VariableReferenceUpdateOne) SetServiceID(id uuid.UUID) *VariableReferenceUpdateOne {
-	vruo.mutation.SetServiceID(id)
-	return vruo
+func (_u *VariableReferenceUpdateOne) SetServiceID(id uuid.UUID) *VariableReferenceUpdateOne {
+	_u.mutation.SetServiceID(id)
+	return _u
 }
 
 // SetService sets the "service" edge to the Service entity.
-func (vruo *VariableReferenceUpdateOne) SetService(s *Service) *VariableReferenceUpdateOne {
-	return vruo.SetServiceID(s.ID)
+func (_u *VariableReferenceUpdateOne) SetService(v *Service) *VariableReferenceUpdateOne {
+	return _u.SetServiceID(v.ID)
 }
 
 // Mutation returns the VariableReferenceMutation object of the builder.
-func (vruo *VariableReferenceUpdateOne) Mutation() *VariableReferenceMutation {
-	return vruo.mutation
+func (_u *VariableReferenceUpdateOne) Mutation() *VariableReferenceMutation {
+	return _u.mutation
 }
 
 // ClearService clears the "service" edge to the Service entity.
-func (vruo *VariableReferenceUpdateOne) ClearService() *VariableReferenceUpdateOne {
-	vruo.mutation.ClearService()
-	return vruo
+func (_u *VariableReferenceUpdateOne) ClearService() *VariableReferenceUpdateOne {
+	_u.mutation.ClearService()
+	return _u
 }
 
 // Where appends a list predicates to the VariableReferenceUpdate builder.
-func (vruo *VariableReferenceUpdateOne) Where(ps ...predicate.VariableReference) *VariableReferenceUpdateOne {
-	vruo.mutation.Where(ps...)
-	return vruo
+func (_u *VariableReferenceUpdateOne) Where(ps ...predicate.VariableReference) *VariableReferenceUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (vruo *VariableReferenceUpdateOne) Select(field string, fields ...string) *VariableReferenceUpdateOne {
-	vruo.fields = append([]string{field}, fields...)
-	return vruo
+func (_u *VariableReferenceUpdateOne) Select(field string, fields ...string) *VariableReferenceUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated VariableReference entity.
-func (vruo *VariableReferenceUpdateOne) Save(ctx context.Context) (*VariableReference, error) {
-	vruo.defaults()
-	return withHooks(ctx, vruo.sqlSave, vruo.mutation, vruo.hooks)
+func (_u *VariableReferenceUpdateOne) Save(ctx context.Context) (*VariableReference, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (vruo *VariableReferenceUpdateOne) SaveX(ctx context.Context) *VariableReference {
-	node, err := vruo.Save(ctx)
+func (_u *VariableReferenceUpdateOne) SaveX(ctx context.Context) *VariableReference {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -402,51 +402,51 @@ func (vruo *VariableReferenceUpdateOne) SaveX(ctx context.Context) *VariableRefe
 }
 
 // Exec executes the query on the entity.
-func (vruo *VariableReferenceUpdateOne) Exec(ctx context.Context) error {
-	_, err := vruo.Save(ctx)
+func (_u *VariableReferenceUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (vruo *VariableReferenceUpdateOne) ExecX(ctx context.Context) {
-	if err := vruo.Exec(ctx); err != nil {
+func (_u *VariableReferenceUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (vruo *VariableReferenceUpdateOne) defaults() {
-	if _, ok := vruo.mutation.UpdatedAt(); !ok {
+func (_u *VariableReferenceUpdateOne) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := variablereference.UpdateDefaultUpdatedAt()
-		vruo.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (vruo *VariableReferenceUpdateOne) check() error {
-	if vruo.mutation.ServiceCleared() && len(vruo.mutation.ServiceIDs()) > 0 {
+func (_u *VariableReferenceUpdateOne) check() error {
+	if _u.mutation.ServiceCleared() && len(_u.mutation.ServiceIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "VariableReference.service"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (vruo *VariableReferenceUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *VariableReferenceUpdateOne {
-	vruo.modifiers = append(vruo.modifiers, modifiers...)
-	return vruo
+func (_u *VariableReferenceUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *VariableReferenceUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (vruo *VariableReferenceUpdateOne) sqlSave(ctx context.Context) (_node *VariableReference, err error) {
-	if err := vruo.check(); err != nil {
+func (_u *VariableReferenceUpdateOne) sqlSave(ctx context.Context) (_node *VariableReference, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(variablereference.Table, variablereference.Columns, sqlgraph.NewFieldSpec(variablereference.FieldID, field.TypeUUID))
-	id, ok := vruo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "VariableReference.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := vruo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, variablereference.FieldID)
 		for _, f := range fields {
@@ -458,37 +458,37 @@ func (vruo *VariableReferenceUpdateOne) sqlSave(ctx context.Context) (_node *Var
 			}
 		}
 	}
-	if ps := vruo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := vruo.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(variablereference.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := vruo.mutation.TargetName(); ok {
+	if value, ok := _u.mutation.TargetName(); ok {
 		_spec.SetField(variablereference.FieldTargetName, field.TypeString, value)
 	}
-	if value, ok := vruo.mutation.Sources(); ok {
+	if value, ok := _u.mutation.Sources(); ok {
 		_spec.SetField(variablereference.FieldSources, field.TypeJSON, value)
 	}
-	if value, ok := vruo.mutation.AppendedSources(); ok {
+	if value, ok := _u.mutation.AppendedSources(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, variablereference.FieldSources, value)
 		})
 	}
-	if value, ok := vruo.mutation.ValueTemplate(); ok {
+	if value, ok := _u.mutation.ValueTemplate(); ok {
 		_spec.SetField(variablereference.FieldValueTemplate, field.TypeString, value)
 	}
-	if value, ok := vruo.mutation.Error(); ok {
+	if value, ok := _u.mutation.Error(); ok {
 		_spec.SetField(variablereference.FieldError, field.TypeString, value)
 	}
-	if vruo.mutation.ErrorCleared() {
+	if _u.mutation.ErrorCleared() {
 		_spec.ClearField(variablereference.FieldError, field.TypeString)
 	}
-	if vruo.mutation.ServiceCleared() {
+	if _u.mutation.ServiceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -501,7 +501,7 @@ func (vruo *VariableReferenceUpdateOne) sqlSave(ctx context.Context) (_node *Var
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := vruo.mutation.ServiceIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ServiceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -517,11 +517,11 @@ func (vruo *VariableReferenceUpdateOne) sqlSave(ctx context.Context) (_node *Var
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(vruo.modifiers...)
-	_node = &VariableReference{config: vruo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &VariableReference{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, vruo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{variablereference.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -529,6 +529,6 @@ func (vruo *VariableReferenceUpdateOne) sqlSave(ctx context.Context) (_node *Var
 		}
 		return nil, err
 	}
-	vruo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

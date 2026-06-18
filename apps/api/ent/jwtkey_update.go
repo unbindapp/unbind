@@ -23,44 +23,44 @@ type JWTKeyUpdate struct {
 }
 
 // Where appends a list predicates to the JWTKeyUpdate builder.
-func (jku *JWTKeyUpdate) Where(ps ...predicate.JWTKey) *JWTKeyUpdate {
-	jku.mutation.Where(ps...)
-	return jku
+func (_u *JWTKeyUpdate) Where(ps ...predicate.JWTKey) *JWTKeyUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetLabel sets the "label" field.
-func (jku *JWTKeyUpdate) SetLabel(s string) *JWTKeyUpdate {
-	jku.mutation.SetLabel(s)
-	return jku
+func (_u *JWTKeyUpdate) SetLabel(v string) *JWTKeyUpdate {
+	_u.mutation.SetLabel(v)
+	return _u
 }
 
 // SetNillableLabel sets the "label" field if the given value is not nil.
-func (jku *JWTKeyUpdate) SetNillableLabel(s *string) *JWTKeyUpdate {
-	if s != nil {
-		jku.SetLabel(*s)
+func (_u *JWTKeyUpdate) SetNillableLabel(v *string) *JWTKeyUpdate {
+	if v != nil {
+		_u.SetLabel(*v)
 	}
-	return jku
+	return _u
 }
 
 // SetPrivateKey sets the "private_key" field.
-func (jku *JWTKeyUpdate) SetPrivateKey(b []byte) *JWTKeyUpdate {
-	jku.mutation.SetPrivateKey(b)
-	return jku
+func (_u *JWTKeyUpdate) SetPrivateKey(v []byte) *JWTKeyUpdate {
+	_u.mutation.SetPrivateKey(v)
+	return _u
 }
 
 // Mutation returns the JWTKeyMutation object of the builder.
-func (jku *JWTKeyUpdate) Mutation() *JWTKeyMutation {
-	return jku.mutation
+func (_u *JWTKeyUpdate) Mutation() *JWTKeyMutation {
+	return _u.mutation
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (jku *JWTKeyUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, jku.sqlSave, jku.mutation, jku.hooks)
+func (_u *JWTKeyUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (jku *JWTKeyUpdate) SaveX(ctx context.Context) int {
-	affected, err := jku.Save(ctx)
+func (_u *JWTKeyUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -68,41 +68,41 @@ func (jku *JWTKeyUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (jku *JWTKeyUpdate) Exec(ctx context.Context) error {
-	_, err := jku.Save(ctx)
+func (_u *JWTKeyUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (jku *JWTKeyUpdate) ExecX(ctx context.Context) {
-	if err := jku.Exec(ctx); err != nil {
+func (_u *JWTKeyUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (jku *JWTKeyUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *JWTKeyUpdate {
-	jku.modifiers = append(jku.modifiers, modifiers...)
-	return jku
+func (_u *JWTKeyUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *JWTKeyUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (jku *JWTKeyUpdate) sqlSave(ctx context.Context) (n int, err error) {
+func (_u *JWTKeyUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	_spec := sqlgraph.NewUpdateSpec(jwtkey.Table, jwtkey.Columns, sqlgraph.NewFieldSpec(jwtkey.FieldID, field.TypeInt))
-	if ps := jku.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := jku.mutation.Label(); ok {
+	if value, ok := _u.mutation.Label(); ok {
 		_spec.SetField(jwtkey.FieldLabel, field.TypeString, value)
 	}
-	if value, ok := jku.mutation.PrivateKey(); ok {
+	if value, ok := _u.mutation.PrivateKey(); ok {
 		_spec.SetField(jwtkey.FieldPrivateKey, field.TypeBytes, value)
 	}
-	_spec.AddModifiers(jku.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, jku.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{jwtkey.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -110,8 +110,8 @@ func (jku *JWTKeyUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	jku.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // JWTKeyUpdateOne is the builder for updating a single JWTKey entity.
@@ -124,51 +124,51 @@ type JWTKeyUpdateOne struct {
 }
 
 // SetLabel sets the "label" field.
-func (jkuo *JWTKeyUpdateOne) SetLabel(s string) *JWTKeyUpdateOne {
-	jkuo.mutation.SetLabel(s)
-	return jkuo
+func (_u *JWTKeyUpdateOne) SetLabel(v string) *JWTKeyUpdateOne {
+	_u.mutation.SetLabel(v)
+	return _u
 }
 
 // SetNillableLabel sets the "label" field if the given value is not nil.
-func (jkuo *JWTKeyUpdateOne) SetNillableLabel(s *string) *JWTKeyUpdateOne {
-	if s != nil {
-		jkuo.SetLabel(*s)
+func (_u *JWTKeyUpdateOne) SetNillableLabel(v *string) *JWTKeyUpdateOne {
+	if v != nil {
+		_u.SetLabel(*v)
 	}
-	return jkuo
+	return _u
 }
 
 // SetPrivateKey sets the "private_key" field.
-func (jkuo *JWTKeyUpdateOne) SetPrivateKey(b []byte) *JWTKeyUpdateOne {
-	jkuo.mutation.SetPrivateKey(b)
-	return jkuo
+func (_u *JWTKeyUpdateOne) SetPrivateKey(v []byte) *JWTKeyUpdateOne {
+	_u.mutation.SetPrivateKey(v)
+	return _u
 }
 
 // Mutation returns the JWTKeyMutation object of the builder.
-func (jkuo *JWTKeyUpdateOne) Mutation() *JWTKeyMutation {
-	return jkuo.mutation
+func (_u *JWTKeyUpdateOne) Mutation() *JWTKeyMutation {
+	return _u.mutation
 }
 
 // Where appends a list predicates to the JWTKeyUpdate builder.
-func (jkuo *JWTKeyUpdateOne) Where(ps ...predicate.JWTKey) *JWTKeyUpdateOne {
-	jkuo.mutation.Where(ps...)
-	return jkuo
+func (_u *JWTKeyUpdateOne) Where(ps ...predicate.JWTKey) *JWTKeyUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (jkuo *JWTKeyUpdateOne) Select(field string, fields ...string) *JWTKeyUpdateOne {
-	jkuo.fields = append([]string{field}, fields...)
-	return jkuo
+func (_u *JWTKeyUpdateOne) Select(field string, fields ...string) *JWTKeyUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated JWTKey entity.
-func (jkuo *JWTKeyUpdateOne) Save(ctx context.Context) (*JWTKey, error) {
-	return withHooks(ctx, jkuo.sqlSave, jkuo.mutation, jkuo.hooks)
+func (_u *JWTKeyUpdateOne) Save(ctx context.Context) (*JWTKey, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (jkuo *JWTKeyUpdateOne) SaveX(ctx context.Context) *JWTKey {
-	node, err := jkuo.Save(ctx)
+func (_u *JWTKeyUpdateOne) SaveX(ctx context.Context) *JWTKey {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -176,32 +176,32 @@ func (jkuo *JWTKeyUpdateOne) SaveX(ctx context.Context) *JWTKey {
 }
 
 // Exec executes the query on the entity.
-func (jkuo *JWTKeyUpdateOne) Exec(ctx context.Context) error {
-	_, err := jkuo.Save(ctx)
+func (_u *JWTKeyUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (jkuo *JWTKeyUpdateOne) ExecX(ctx context.Context) {
-	if err := jkuo.Exec(ctx); err != nil {
+func (_u *JWTKeyUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (jkuo *JWTKeyUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *JWTKeyUpdateOne {
-	jkuo.modifiers = append(jkuo.modifiers, modifiers...)
-	return jkuo
+func (_u *JWTKeyUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *JWTKeyUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (jkuo *JWTKeyUpdateOne) sqlSave(ctx context.Context) (_node *JWTKey, err error) {
+func (_u *JWTKeyUpdateOne) sqlSave(ctx context.Context) (_node *JWTKey, err error) {
 	_spec := sqlgraph.NewUpdateSpec(jwtkey.Table, jwtkey.Columns, sqlgraph.NewFieldSpec(jwtkey.FieldID, field.TypeInt))
-	id, ok := jkuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "JWTKey.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := jkuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, jwtkey.FieldID)
 		for _, f := range fields {
@@ -213,24 +213,24 @@ func (jkuo *JWTKeyUpdateOne) sqlSave(ctx context.Context) (_node *JWTKey, err er
 			}
 		}
 	}
-	if ps := jkuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := jkuo.mutation.Label(); ok {
+	if value, ok := _u.mutation.Label(); ok {
 		_spec.SetField(jwtkey.FieldLabel, field.TypeString, value)
 	}
-	if value, ok := jkuo.mutation.PrivateKey(); ok {
+	if value, ok := _u.mutation.PrivateKey(); ok {
 		_spec.SetField(jwtkey.FieldPrivateKey, field.TypeBytes, value)
 	}
-	_spec.AddModifiers(jkuo.modifiers...)
-	_node = &JWTKey{config: jkuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &JWTKey{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, jkuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{jwtkey.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -238,6 +238,6 @@ func (jkuo *JWTKeyUpdateOne) sqlSave(ctx context.Context) (_node *JWTKey, err er
 		}
 		return nil, err
 	}
-	jkuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

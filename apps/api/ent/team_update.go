@@ -29,251 +29,251 @@ type TeamUpdate struct {
 }
 
 // Where appends a list predicates to the TeamUpdate builder.
-func (tu *TeamUpdate) Where(ps ...predicate.Team) *TeamUpdate {
-	tu.mutation.Where(ps...)
-	return tu
+func (_u *TeamUpdate) Where(ps ...predicate.Team) *TeamUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (tu *TeamUpdate) SetUpdatedAt(t time.Time) *TeamUpdate {
-	tu.mutation.SetUpdatedAt(t)
-	return tu
+func (_u *TeamUpdate) SetUpdatedAt(v time.Time) *TeamUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetKubernetesName sets the "kubernetes_name" field.
-func (tu *TeamUpdate) SetKubernetesName(s string) *TeamUpdate {
-	tu.mutation.SetKubernetesName(s)
-	return tu
+func (_u *TeamUpdate) SetKubernetesName(v string) *TeamUpdate {
+	_u.mutation.SetKubernetesName(v)
+	return _u
 }
 
 // SetNillableKubernetesName sets the "kubernetes_name" field if the given value is not nil.
-func (tu *TeamUpdate) SetNillableKubernetesName(s *string) *TeamUpdate {
-	if s != nil {
-		tu.SetKubernetesName(*s)
+func (_u *TeamUpdate) SetNillableKubernetesName(v *string) *TeamUpdate {
+	if v != nil {
+		_u.SetKubernetesName(*v)
 	}
-	return tu
+	return _u
 }
 
 // SetName sets the "name" field.
-func (tu *TeamUpdate) SetName(s string) *TeamUpdate {
-	tu.mutation.SetName(s)
-	return tu
+func (_u *TeamUpdate) SetName(v string) *TeamUpdate {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (tu *TeamUpdate) SetNillableName(s *string) *TeamUpdate {
-	if s != nil {
-		tu.SetName(*s)
+func (_u *TeamUpdate) SetNillableName(v *string) *TeamUpdate {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return tu
+	return _u
 }
 
 // SetNamespace sets the "namespace" field.
-func (tu *TeamUpdate) SetNamespace(s string) *TeamUpdate {
-	tu.mutation.SetNamespace(s)
-	return tu
+func (_u *TeamUpdate) SetNamespace(v string) *TeamUpdate {
+	_u.mutation.SetNamespace(v)
+	return _u
 }
 
 // SetNillableNamespace sets the "namespace" field if the given value is not nil.
-func (tu *TeamUpdate) SetNillableNamespace(s *string) *TeamUpdate {
-	if s != nil {
-		tu.SetNamespace(*s)
+func (_u *TeamUpdate) SetNillableNamespace(v *string) *TeamUpdate {
+	if v != nil {
+		_u.SetNamespace(*v)
 	}
-	return tu
+	return _u
 }
 
 // SetKubernetesSecret sets the "kubernetes_secret" field.
-func (tu *TeamUpdate) SetKubernetesSecret(s string) *TeamUpdate {
-	tu.mutation.SetKubernetesSecret(s)
-	return tu
+func (_u *TeamUpdate) SetKubernetesSecret(v string) *TeamUpdate {
+	_u.mutation.SetKubernetesSecret(v)
+	return _u
 }
 
 // SetNillableKubernetesSecret sets the "kubernetes_secret" field if the given value is not nil.
-func (tu *TeamUpdate) SetNillableKubernetesSecret(s *string) *TeamUpdate {
-	if s != nil {
-		tu.SetKubernetesSecret(*s)
+func (_u *TeamUpdate) SetNillableKubernetesSecret(v *string) *TeamUpdate {
+	if v != nil {
+		_u.SetKubernetesSecret(*v)
 	}
-	return tu
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (tu *TeamUpdate) SetDescription(s string) *TeamUpdate {
-	tu.mutation.SetDescription(s)
-	return tu
+func (_u *TeamUpdate) SetDescription(v string) *TeamUpdate {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (tu *TeamUpdate) SetNillableDescription(s *string) *TeamUpdate {
-	if s != nil {
-		tu.SetDescription(*s)
+func (_u *TeamUpdate) SetNillableDescription(v *string) *TeamUpdate {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return tu
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (tu *TeamUpdate) ClearDescription() *TeamUpdate {
-	tu.mutation.ClearDescription()
-	return tu
+func (_u *TeamUpdate) ClearDescription() *TeamUpdate {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // AddProjectIDs adds the "projects" edge to the Project entity by IDs.
-func (tu *TeamUpdate) AddProjectIDs(ids ...uuid.UUID) *TeamUpdate {
-	tu.mutation.AddProjectIDs(ids...)
-	return tu
+func (_u *TeamUpdate) AddProjectIDs(ids ...uuid.UUID) *TeamUpdate {
+	_u.mutation.AddProjectIDs(ids...)
+	return _u
 }
 
 // AddProjects adds the "projects" edges to the Project entity.
-func (tu *TeamUpdate) AddProjects(p ...*Project) *TeamUpdate {
-	ids := make([]uuid.UUID, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+func (_u *TeamUpdate) AddProjects(v ...*Project) *TeamUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tu.AddProjectIDs(ids...)
+	return _u.AddProjectIDs(ids...)
 }
 
 // AddS3SourceIDs adds the "s3_sources" edge to the S3 entity by IDs.
-func (tu *TeamUpdate) AddS3SourceIDs(ids ...uuid.UUID) *TeamUpdate {
-	tu.mutation.AddS3SourceIDs(ids...)
-	return tu
+func (_u *TeamUpdate) AddS3SourceIDs(ids ...uuid.UUID) *TeamUpdate {
+	_u.mutation.AddS3SourceIDs(ids...)
+	return _u
 }
 
 // AddS3Sources adds the "s3_sources" edges to the S3 entity.
-func (tu *TeamUpdate) AddS3Sources(s ...*S3) *TeamUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *TeamUpdate) AddS3Sources(v ...*S3) *TeamUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tu.AddS3SourceIDs(ids...)
+	return _u.AddS3SourceIDs(ids...)
 }
 
 // AddMemberIDs adds the "members" edge to the User entity by IDs.
-func (tu *TeamUpdate) AddMemberIDs(ids ...uuid.UUID) *TeamUpdate {
-	tu.mutation.AddMemberIDs(ids...)
-	return tu
+func (_u *TeamUpdate) AddMemberIDs(ids ...uuid.UUID) *TeamUpdate {
+	_u.mutation.AddMemberIDs(ids...)
+	return _u
 }
 
 // AddMembers adds the "members" edges to the User entity.
-func (tu *TeamUpdate) AddMembers(u ...*User) *TeamUpdate {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+func (_u *TeamUpdate) AddMembers(v ...*User) *TeamUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tu.AddMemberIDs(ids...)
+	return _u.AddMemberIDs(ids...)
 }
 
 // AddTeamWebhookIDs adds the "team_webhooks" edge to the Webhook entity by IDs.
-func (tu *TeamUpdate) AddTeamWebhookIDs(ids ...uuid.UUID) *TeamUpdate {
-	tu.mutation.AddTeamWebhookIDs(ids...)
-	return tu
+func (_u *TeamUpdate) AddTeamWebhookIDs(ids ...uuid.UUID) *TeamUpdate {
+	_u.mutation.AddTeamWebhookIDs(ids...)
+	return _u
 }
 
 // AddTeamWebhooks adds the "team_webhooks" edges to the Webhook entity.
-func (tu *TeamUpdate) AddTeamWebhooks(w ...*Webhook) *TeamUpdate {
-	ids := make([]uuid.UUID, len(w))
-	for i := range w {
-		ids[i] = w[i].ID
+func (_u *TeamUpdate) AddTeamWebhooks(v ...*Webhook) *TeamUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tu.AddTeamWebhookIDs(ids...)
+	return _u.AddTeamWebhookIDs(ids...)
 }
 
 // Mutation returns the TeamMutation object of the builder.
-func (tu *TeamUpdate) Mutation() *TeamMutation {
-	return tu.mutation
+func (_u *TeamUpdate) Mutation() *TeamMutation {
+	return _u.mutation
 }
 
 // ClearProjects clears all "projects" edges to the Project entity.
-func (tu *TeamUpdate) ClearProjects() *TeamUpdate {
-	tu.mutation.ClearProjects()
-	return tu
+func (_u *TeamUpdate) ClearProjects() *TeamUpdate {
+	_u.mutation.ClearProjects()
+	return _u
 }
 
 // RemoveProjectIDs removes the "projects" edge to Project entities by IDs.
-func (tu *TeamUpdate) RemoveProjectIDs(ids ...uuid.UUID) *TeamUpdate {
-	tu.mutation.RemoveProjectIDs(ids...)
-	return tu
+func (_u *TeamUpdate) RemoveProjectIDs(ids ...uuid.UUID) *TeamUpdate {
+	_u.mutation.RemoveProjectIDs(ids...)
+	return _u
 }
 
 // RemoveProjects removes "projects" edges to Project entities.
-func (tu *TeamUpdate) RemoveProjects(p ...*Project) *TeamUpdate {
-	ids := make([]uuid.UUID, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+func (_u *TeamUpdate) RemoveProjects(v ...*Project) *TeamUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tu.RemoveProjectIDs(ids...)
+	return _u.RemoveProjectIDs(ids...)
 }
 
 // ClearS3Sources clears all "s3_sources" edges to the S3 entity.
-func (tu *TeamUpdate) ClearS3Sources() *TeamUpdate {
-	tu.mutation.ClearS3Sources()
-	return tu
+func (_u *TeamUpdate) ClearS3Sources() *TeamUpdate {
+	_u.mutation.ClearS3Sources()
+	return _u
 }
 
 // RemoveS3SourceIDs removes the "s3_sources" edge to S3 entities by IDs.
-func (tu *TeamUpdate) RemoveS3SourceIDs(ids ...uuid.UUID) *TeamUpdate {
-	tu.mutation.RemoveS3SourceIDs(ids...)
-	return tu
+func (_u *TeamUpdate) RemoveS3SourceIDs(ids ...uuid.UUID) *TeamUpdate {
+	_u.mutation.RemoveS3SourceIDs(ids...)
+	return _u
 }
 
 // RemoveS3Sources removes "s3_sources" edges to S3 entities.
-func (tu *TeamUpdate) RemoveS3Sources(s ...*S3) *TeamUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *TeamUpdate) RemoveS3Sources(v ...*S3) *TeamUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tu.RemoveS3SourceIDs(ids...)
+	return _u.RemoveS3SourceIDs(ids...)
 }
 
 // ClearMembers clears all "members" edges to the User entity.
-func (tu *TeamUpdate) ClearMembers() *TeamUpdate {
-	tu.mutation.ClearMembers()
-	return tu
+func (_u *TeamUpdate) ClearMembers() *TeamUpdate {
+	_u.mutation.ClearMembers()
+	return _u
 }
 
 // RemoveMemberIDs removes the "members" edge to User entities by IDs.
-func (tu *TeamUpdate) RemoveMemberIDs(ids ...uuid.UUID) *TeamUpdate {
-	tu.mutation.RemoveMemberIDs(ids...)
-	return tu
+func (_u *TeamUpdate) RemoveMemberIDs(ids ...uuid.UUID) *TeamUpdate {
+	_u.mutation.RemoveMemberIDs(ids...)
+	return _u
 }
 
 // RemoveMembers removes "members" edges to User entities.
-func (tu *TeamUpdate) RemoveMembers(u ...*User) *TeamUpdate {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+func (_u *TeamUpdate) RemoveMembers(v ...*User) *TeamUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tu.RemoveMemberIDs(ids...)
+	return _u.RemoveMemberIDs(ids...)
 }
 
 // ClearTeamWebhooks clears all "team_webhooks" edges to the Webhook entity.
-func (tu *TeamUpdate) ClearTeamWebhooks() *TeamUpdate {
-	tu.mutation.ClearTeamWebhooks()
-	return tu
+func (_u *TeamUpdate) ClearTeamWebhooks() *TeamUpdate {
+	_u.mutation.ClearTeamWebhooks()
+	return _u
 }
 
 // RemoveTeamWebhookIDs removes the "team_webhooks" edge to Webhook entities by IDs.
-func (tu *TeamUpdate) RemoveTeamWebhookIDs(ids ...uuid.UUID) *TeamUpdate {
-	tu.mutation.RemoveTeamWebhookIDs(ids...)
-	return tu
+func (_u *TeamUpdate) RemoveTeamWebhookIDs(ids ...uuid.UUID) *TeamUpdate {
+	_u.mutation.RemoveTeamWebhookIDs(ids...)
+	return _u
 }
 
 // RemoveTeamWebhooks removes "team_webhooks" edges to Webhook entities.
-func (tu *TeamUpdate) RemoveTeamWebhooks(w ...*Webhook) *TeamUpdate {
-	ids := make([]uuid.UUID, len(w))
-	for i := range w {
-		ids[i] = w[i].ID
+func (_u *TeamUpdate) RemoveTeamWebhooks(v ...*Webhook) *TeamUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tu.RemoveTeamWebhookIDs(ids...)
+	return _u.RemoveTeamWebhookIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (tu *TeamUpdate) Save(ctx context.Context) (int, error) {
-	tu.defaults()
-	return withHooks(ctx, tu.sqlSave, tu.mutation, tu.hooks)
+func (_u *TeamUpdate) Save(ctx context.Context) (int, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (tu *TeamUpdate) SaveX(ctx context.Context) int {
-	affected, err := tu.Save(ctx)
+func (_u *TeamUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -281,29 +281,29 @@ func (tu *TeamUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (tu *TeamUpdate) Exec(ctx context.Context) error {
-	_, err := tu.Save(ctx)
+func (_u *TeamUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (tu *TeamUpdate) ExecX(ctx context.Context) {
-	if err := tu.Exec(ctx); err != nil {
+func (_u *TeamUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (tu *TeamUpdate) defaults() {
-	if _, ok := tu.mutation.UpdatedAt(); !ok {
+func (_u *TeamUpdate) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := team.UpdateDefaultUpdatedAt()
-		tu.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (tu *TeamUpdate) check() error {
-	if v, ok := tu.mutation.KubernetesName(); ok {
+func (_u *TeamUpdate) check() error {
+	if v, ok := _u.mutation.KubernetesName(); ok {
 		if err := team.KubernetesNameValidator(v); err != nil {
 			return &ValidationError{Name: "kubernetes_name", err: fmt.Errorf(`ent: validator failed for field "Team.kubernetes_name": %w`, err)}
 		}
@@ -312,45 +312,45 @@ func (tu *TeamUpdate) check() error {
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (tu *TeamUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *TeamUpdate {
-	tu.modifiers = append(tu.modifiers, modifiers...)
-	return tu
+func (_u *TeamUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *TeamUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := tu.check(); err != nil {
-		return n, err
+func (_u *TeamUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(team.Table, team.Columns, sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID))
-	if ps := tu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := tu.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(team.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := tu.mutation.KubernetesName(); ok {
+	if value, ok := _u.mutation.KubernetesName(); ok {
 		_spec.SetField(team.FieldKubernetesName, field.TypeString, value)
 	}
-	if value, ok := tu.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(team.FieldName, field.TypeString, value)
 	}
-	if value, ok := tu.mutation.Namespace(); ok {
+	if value, ok := _u.mutation.Namespace(); ok {
 		_spec.SetField(team.FieldNamespace, field.TypeString, value)
 	}
-	if value, ok := tu.mutation.KubernetesSecret(); ok {
+	if value, ok := _u.mutation.KubernetesSecret(); ok {
 		_spec.SetField(team.FieldKubernetesSecret, field.TypeString, value)
 	}
-	if value, ok := tu.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(team.FieldDescription, field.TypeString, value)
 	}
-	if tu.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(team.FieldDescription, field.TypeString)
 	}
-	if tu.mutation.ProjectsCleared() {
+	if _u.mutation.ProjectsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -363,23 +363,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tu.mutation.RemovedProjectsIDs(); len(nodes) > 0 && !tu.mutation.ProjectsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   team.ProjectsTable,
-			Columns: []string{team.ProjectsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tu.mutation.ProjectsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RemovedProjectsIDs(); len(nodes) > 0 && !_u.mutation.ProjectsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -393,9 +377,25 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ProjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   team.ProjectsTable,
+			Columns: []string{team.ProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if tu.mutation.S3SourcesCleared() {
+	if _u.mutation.S3SourcesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -408,7 +408,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tu.mutation.RemovedS3SourcesIDs(); len(nodes) > 0 && !tu.mutation.S3SourcesCleared() {
+	if nodes := _u.mutation.RemovedS3SourcesIDs(); len(nodes) > 0 && !_u.mutation.S3SourcesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -424,7 +424,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tu.mutation.S3SourcesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.S3SourcesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -440,7 +440,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if tu.mutation.MembersCleared() {
+	if _u.mutation.MembersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -453,7 +453,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tu.mutation.RemovedMembersIDs(); len(nodes) > 0 && !tu.mutation.MembersCleared() {
+	if nodes := _u.mutation.RemovedMembersIDs(); len(nodes) > 0 && !_u.mutation.MembersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -469,7 +469,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tu.mutation.MembersIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.MembersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -485,7 +485,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if tu.mutation.TeamWebhooksCleared() {
+	if _u.mutation.TeamWebhooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -498,7 +498,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tu.mutation.RemovedTeamWebhooksIDs(); len(nodes) > 0 && !tu.mutation.TeamWebhooksCleared() {
+	if nodes := _u.mutation.RemovedTeamWebhooksIDs(); len(nodes) > 0 && !_u.mutation.TeamWebhooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -514,7 +514,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tu.mutation.TeamWebhooksIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.TeamWebhooksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -530,8 +530,8 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(tu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, tu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{team.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -539,8 +539,8 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	tu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // TeamUpdateOne is the builder for updating a single Team entity.
@@ -553,258 +553,258 @@ type TeamUpdateOne struct {
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (tuo *TeamUpdateOne) SetUpdatedAt(t time.Time) *TeamUpdateOne {
-	tuo.mutation.SetUpdatedAt(t)
-	return tuo
+func (_u *TeamUpdateOne) SetUpdatedAt(v time.Time) *TeamUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetKubernetesName sets the "kubernetes_name" field.
-func (tuo *TeamUpdateOne) SetKubernetesName(s string) *TeamUpdateOne {
-	tuo.mutation.SetKubernetesName(s)
-	return tuo
+func (_u *TeamUpdateOne) SetKubernetesName(v string) *TeamUpdateOne {
+	_u.mutation.SetKubernetesName(v)
+	return _u
 }
 
 // SetNillableKubernetesName sets the "kubernetes_name" field if the given value is not nil.
-func (tuo *TeamUpdateOne) SetNillableKubernetesName(s *string) *TeamUpdateOne {
-	if s != nil {
-		tuo.SetKubernetesName(*s)
+func (_u *TeamUpdateOne) SetNillableKubernetesName(v *string) *TeamUpdateOne {
+	if v != nil {
+		_u.SetKubernetesName(*v)
 	}
-	return tuo
+	return _u
 }
 
 // SetName sets the "name" field.
-func (tuo *TeamUpdateOne) SetName(s string) *TeamUpdateOne {
-	tuo.mutation.SetName(s)
-	return tuo
+func (_u *TeamUpdateOne) SetName(v string) *TeamUpdateOne {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (tuo *TeamUpdateOne) SetNillableName(s *string) *TeamUpdateOne {
-	if s != nil {
-		tuo.SetName(*s)
+func (_u *TeamUpdateOne) SetNillableName(v *string) *TeamUpdateOne {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return tuo
+	return _u
 }
 
 // SetNamespace sets the "namespace" field.
-func (tuo *TeamUpdateOne) SetNamespace(s string) *TeamUpdateOne {
-	tuo.mutation.SetNamespace(s)
-	return tuo
+func (_u *TeamUpdateOne) SetNamespace(v string) *TeamUpdateOne {
+	_u.mutation.SetNamespace(v)
+	return _u
 }
 
 // SetNillableNamespace sets the "namespace" field if the given value is not nil.
-func (tuo *TeamUpdateOne) SetNillableNamespace(s *string) *TeamUpdateOne {
-	if s != nil {
-		tuo.SetNamespace(*s)
+func (_u *TeamUpdateOne) SetNillableNamespace(v *string) *TeamUpdateOne {
+	if v != nil {
+		_u.SetNamespace(*v)
 	}
-	return tuo
+	return _u
 }
 
 // SetKubernetesSecret sets the "kubernetes_secret" field.
-func (tuo *TeamUpdateOne) SetKubernetesSecret(s string) *TeamUpdateOne {
-	tuo.mutation.SetKubernetesSecret(s)
-	return tuo
+func (_u *TeamUpdateOne) SetKubernetesSecret(v string) *TeamUpdateOne {
+	_u.mutation.SetKubernetesSecret(v)
+	return _u
 }
 
 // SetNillableKubernetesSecret sets the "kubernetes_secret" field if the given value is not nil.
-func (tuo *TeamUpdateOne) SetNillableKubernetesSecret(s *string) *TeamUpdateOne {
-	if s != nil {
-		tuo.SetKubernetesSecret(*s)
+func (_u *TeamUpdateOne) SetNillableKubernetesSecret(v *string) *TeamUpdateOne {
+	if v != nil {
+		_u.SetKubernetesSecret(*v)
 	}
-	return tuo
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (tuo *TeamUpdateOne) SetDescription(s string) *TeamUpdateOne {
-	tuo.mutation.SetDescription(s)
-	return tuo
+func (_u *TeamUpdateOne) SetDescription(v string) *TeamUpdateOne {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (tuo *TeamUpdateOne) SetNillableDescription(s *string) *TeamUpdateOne {
-	if s != nil {
-		tuo.SetDescription(*s)
+func (_u *TeamUpdateOne) SetNillableDescription(v *string) *TeamUpdateOne {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return tuo
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (tuo *TeamUpdateOne) ClearDescription() *TeamUpdateOne {
-	tuo.mutation.ClearDescription()
-	return tuo
+func (_u *TeamUpdateOne) ClearDescription() *TeamUpdateOne {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // AddProjectIDs adds the "projects" edge to the Project entity by IDs.
-func (tuo *TeamUpdateOne) AddProjectIDs(ids ...uuid.UUID) *TeamUpdateOne {
-	tuo.mutation.AddProjectIDs(ids...)
-	return tuo
+func (_u *TeamUpdateOne) AddProjectIDs(ids ...uuid.UUID) *TeamUpdateOne {
+	_u.mutation.AddProjectIDs(ids...)
+	return _u
 }
 
 // AddProjects adds the "projects" edges to the Project entity.
-func (tuo *TeamUpdateOne) AddProjects(p ...*Project) *TeamUpdateOne {
-	ids := make([]uuid.UUID, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+func (_u *TeamUpdateOne) AddProjects(v ...*Project) *TeamUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tuo.AddProjectIDs(ids...)
+	return _u.AddProjectIDs(ids...)
 }
 
 // AddS3SourceIDs adds the "s3_sources" edge to the S3 entity by IDs.
-func (tuo *TeamUpdateOne) AddS3SourceIDs(ids ...uuid.UUID) *TeamUpdateOne {
-	tuo.mutation.AddS3SourceIDs(ids...)
-	return tuo
+func (_u *TeamUpdateOne) AddS3SourceIDs(ids ...uuid.UUID) *TeamUpdateOne {
+	_u.mutation.AddS3SourceIDs(ids...)
+	return _u
 }
 
 // AddS3Sources adds the "s3_sources" edges to the S3 entity.
-func (tuo *TeamUpdateOne) AddS3Sources(s ...*S3) *TeamUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *TeamUpdateOne) AddS3Sources(v ...*S3) *TeamUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tuo.AddS3SourceIDs(ids...)
+	return _u.AddS3SourceIDs(ids...)
 }
 
 // AddMemberIDs adds the "members" edge to the User entity by IDs.
-func (tuo *TeamUpdateOne) AddMemberIDs(ids ...uuid.UUID) *TeamUpdateOne {
-	tuo.mutation.AddMemberIDs(ids...)
-	return tuo
+func (_u *TeamUpdateOne) AddMemberIDs(ids ...uuid.UUID) *TeamUpdateOne {
+	_u.mutation.AddMemberIDs(ids...)
+	return _u
 }
 
 // AddMembers adds the "members" edges to the User entity.
-func (tuo *TeamUpdateOne) AddMembers(u ...*User) *TeamUpdateOne {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+func (_u *TeamUpdateOne) AddMembers(v ...*User) *TeamUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tuo.AddMemberIDs(ids...)
+	return _u.AddMemberIDs(ids...)
 }
 
 // AddTeamWebhookIDs adds the "team_webhooks" edge to the Webhook entity by IDs.
-func (tuo *TeamUpdateOne) AddTeamWebhookIDs(ids ...uuid.UUID) *TeamUpdateOne {
-	tuo.mutation.AddTeamWebhookIDs(ids...)
-	return tuo
+func (_u *TeamUpdateOne) AddTeamWebhookIDs(ids ...uuid.UUID) *TeamUpdateOne {
+	_u.mutation.AddTeamWebhookIDs(ids...)
+	return _u
 }
 
 // AddTeamWebhooks adds the "team_webhooks" edges to the Webhook entity.
-func (tuo *TeamUpdateOne) AddTeamWebhooks(w ...*Webhook) *TeamUpdateOne {
-	ids := make([]uuid.UUID, len(w))
-	for i := range w {
-		ids[i] = w[i].ID
+func (_u *TeamUpdateOne) AddTeamWebhooks(v ...*Webhook) *TeamUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tuo.AddTeamWebhookIDs(ids...)
+	return _u.AddTeamWebhookIDs(ids...)
 }
 
 // Mutation returns the TeamMutation object of the builder.
-func (tuo *TeamUpdateOne) Mutation() *TeamMutation {
-	return tuo.mutation
+func (_u *TeamUpdateOne) Mutation() *TeamMutation {
+	return _u.mutation
 }
 
 // ClearProjects clears all "projects" edges to the Project entity.
-func (tuo *TeamUpdateOne) ClearProjects() *TeamUpdateOne {
-	tuo.mutation.ClearProjects()
-	return tuo
+func (_u *TeamUpdateOne) ClearProjects() *TeamUpdateOne {
+	_u.mutation.ClearProjects()
+	return _u
 }
 
 // RemoveProjectIDs removes the "projects" edge to Project entities by IDs.
-func (tuo *TeamUpdateOne) RemoveProjectIDs(ids ...uuid.UUID) *TeamUpdateOne {
-	tuo.mutation.RemoveProjectIDs(ids...)
-	return tuo
+func (_u *TeamUpdateOne) RemoveProjectIDs(ids ...uuid.UUID) *TeamUpdateOne {
+	_u.mutation.RemoveProjectIDs(ids...)
+	return _u
 }
 
 // RemoveProjects removes "projects" edges to Project entities.
-func (tuo *TeamUpdateOne) RemoveProjects(p ...*Project) *TeamUpdateOne {
-	ids := make([]uuid.UUID, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+func (_u *TeamUpdateOne) RemoveProjects(v ...*Project) *TeamUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tuo.RemoveProjectIDs(ids...)
+	return _u.RemoveProjectIDs(ids...)
 }
 
 // ClearS3Sources clears all "s3_sources" edges to the S3 entity.
-func (tuo *TeamUpdateOne) ClearS3Sources() *TeamUpdateOne {
-	tuo.mutation.ClearS3Sources()
-	return tuo
+func (_u *TeamUpdateOne) ClearS3Sources() *TeamUpdateOne {
+	_u.mutation.ClearS3Sources()
+	return _u
 }
 
 // RemoveS3SourceIDs removes the "s3_sources" edge to S3 entities by IDs.
-func (tuo *TeamUpdateOne) RemoveS3SourceIDs(ids ...uuid.UUID) *TeamUpdateOne {
-	tuo.mutation.RemoveS3SourceIDs(ids...)
-	return tuo
+func (_u *TeamUpdateOne) RemoveS3SourceIDs(ids ...uuid.UUID) *TeamUpdateOne {
+	_u.mutation.RemoveS3SourceIDs(ids...)
+	return _u
 }
 
 // RemoveS3Sources removes "s3_sources" edges to S3 entities.
-func (tuo *TeamUpdateOne) RemoveS3Sources(s ...*S3) *TeamUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *TeamUpdateOne) RemoveS3Sources(v ...*S3) *TeamUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tuo.RemoveS3SourceIDs(ids...)
+	return _u.RemoveS3SourceIDs(ids...)
 }
 
 // ClearMembers clears all "members" edges to the User entity.
-func (tuo *TeamUpdateOne) ClearMembers() *TeamUpdateOne {
-	tuo.mutation.ClearMembers()
-	return tuo
+func (_u *TeamUpdateOne) ClearMembers() *TeamUpdateOne {
+	_u.mutation.ClearMembers()
+	return _u
 }
 
 // RemoveMemberIDs removes the "members" edge to User entities by IDs.
-func (tuo *TeamUpdateOne) RemoveMemberIDs(ids ...uuid.UUID) *TeamUpdateOne {
-	tuo.mutation.RemoveMemberIDs(ids...)
-	return tuo
+func (_u *TeamUpdateOne) RemoveMemberIDs(ids ...uuid.UUID) *TeamUpdateOne {
+	_u.mutation.RemoveMemberIDs(ids...)
+	return _u
 }
 
 // RemoveMembers removes "members" edges to User entities.
-func (tuo *TeamUpdateOne) RemoveMembers(u ...*User) *TeamUpdateOne {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+func (_u *TeamUpdateOne) RemoveMembers(v ...*User) *TeamUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tuo.RemoveMemberIDs(ids...)
+	return _u.RemoveMemberIDs(ids...)
 }
 
 // ClearTeamWebhooks clears all "team_webhooks" edges to the Webhook entity.
-func (tuo *TeamUpdateOne) ClearTeamWebhooks() *TeamUpdateOne {
-	tuo.mutation.ClearTeamWebhooks()
-	return tuo
+func (_u *TeamUpdateOne) ClearTeamWebhooks() *TeamUpdateOne {
+	_u.mutation.ClearTeamWebhooks()
+	return _u
 }
 
 // RemoveTeamWebhookIDs removes the "team_webhooks" edge to Webhook entities by IDs.
-func (tuo *TeamUpdateOne) RemoveTeamWebhookIDs(ids ...uuid.UUID) *TeamUpdateOne {
-	tuo.mutation.RemoveTeamWebhookIDs(ids...)
-	return tuo
+func (_u *TeamUpdateOne) RemoveTeamWebhookIDs(ids ...uuid.UUID) *TeamUpdateOne {
+	_u.mutation.RemoveTeamWebhookIDs(ids...)
+	return _u
 }
 
 // RemoveTeamWebhooks removes "team_webhooks" edges to Webhook entities.
-func (tuo *TeamUpdateOne) RemoveTeamWebhooks(w ...*Webhook) *TeamUpdateOne {
-	ids := make([]uuid.UUID, len(w))
-	for i := range w {
-		ids[i] = w[i].ID
+func (_u *TeamUpdateOne) RemoveTeamWebhooks(v ...*Webhook) *TeamUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tuo.RemoveTeamWebhookIDs(ids...)
+	return _u.RemoveTeamWebhookIDs(ids...)
 }
 
 // Where appends a list predicates to the TeamUpdate builder.
-func (tuo *TeamUpdateOne) Where(ps ...predicate.Team) *TeamUpdateOne {
-	tuo.mutation.Where(ps...)
-	return tuo
+func (_u *TeamUpdateOne) Where(ps ...predicate.Team) *TeamUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (tuo *TeamUpdateOne) Select(field string, fields ...string) *TeamUpdateOne {
-	tuo.fields = append([]string{field}, fields...)
-	return tuo
+func (_u *TeamUpdateOne) Select(field string, fields ...string) *TeamUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated Team entity.
-func (tuo *TeamUpdateOne) Save(ctx context.Context) (*Team, error) {
-	tuo.defaults()
-	return withHooks(ctx, tuo.sqlSave, tuo.mutation, tuo.hooks)
+func (_u *TeamUpdateOne) Save(ctx context.Context) (*Team, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (tuo *TeamUpdateOne) SaveX(ctx context.Context) *Team {
-	node, err := tuo.Save(ctx)
+func (_u *TeamUpdateOne) SaveX(ctx context.Context) *Team {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -812,29 +812,29 @@ func (tuo *TeamUpdateOne) SaveX(ctx context.Context) *Team {
 }
 
 // Exec executes the query on the entity.
-func (tuo *TeamUpdateOne) Exec(ctx context.Context) error {
-	_, err := tuo.Save(ctx)
+func (_u *TeamUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (tuo *TeamUpdateOne) ExecX(ctx context.Context) {
-	if err := tuo.Exec(ctx); err != nil {
+func (_u *TeamUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (tuo *TeamUpdateOne) defaults() {
-	if _, ok := tuo.mutation.UpdatedAt(); !ok {
+func (_u *TeamUpdateOne) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := team.UpdateDefaultUpdatedAt()
-		tuo.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (tuo *TeamUpdateOne) check() error {
-	if v, ok := tuo.mutation.KubernetesName(); ok {
+func (_u *TeamUpdateOne) check() error {
+	if v, ok := _u.mutation.KubernetesName(); ok {
 		if err := team.KubernetesNameValidator(v); err != nil {
 			return &ValidationError{Name: "kubernetes_name", err: fmt.Errorf(`ent: validator failed for field "Team.kubernetes_name": %w`, err)}
 		}
@@ -843,22 +843,22 @@ func (tuo *TeamUpdateOne) check() error {
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (tuo *TeamUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *TeamUpdateOne {
-	tuo.modifiers = append(tuo.modifiers, modifiers...)
-	return tuo
+func (_u *TeamUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *TeamUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) {
-	if err := tuo.check(); err != nil {
+func (_u *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(team.Table, team.Columns, sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID))
-	id, ok := tuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Team.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := tuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, team.FieldID)
 		for _, f := range fields {
@@ -870,35 +870,35 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 			}
 		}
 	}
-	if ps := tuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := tuo.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(team.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := tuo.mutation.KubernetesName(); ok {
+	if value, ok := _u.mutation.KubernetesName(); ok {
 		_spec.SetField(team.FieldKubernetesName, field.TypeString, value)
 	}
-	if value, ok := tuo.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(team.FieldName, field.TypeString, value)
 	}
-	if value, ok := tuo.mutation.Namespace(); ok {
+	if value, ok := _u.mutation.Namespace(); ok {
 		_spec.SetField(team.FieldNamespace, field.TypeString, value)
 	}
-	if value, ok := tuo.mutation.KubernetesSecret(); ok {
+	if value, ok := _u.mutation.KubernetesSecret(); ok {
 		_spec.SetField(team.FieldKubernetesSecret, field.TypeString, value)
 	}
-	if value, ok := tuo.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(team.FieldDescription, field.TypeString, value)
 	}
-	if tuo.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(team.FieldDescription, field.TypeString)
 	}
-	if tuo.mutation.ProjectsCleared() {
+	if _u.mutation.ProjectsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -911,23 +911,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tuo.mutation.RemovedProjectsIDs(); len(nodes) > 0 && !tuo.mutation.ProjectsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   team.ProjectsTable,
-			Columns: []string{team.ProjectsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tuo.mutation.ProjectsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RemovedProjectsIDs(); len(nodes) > 0 && !_u.mutation.ProjectsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -941,9 +925,25 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ProjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   team.ProjectsTable,
+			Columns: []string{team.ProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if tuo.mutation.S3SourcesCleared() {
+	if _u.mutation.S3SourcesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -956,7 +956,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tuo.mutation.RemovedS3SourcesIDs(); len(nodes) > 0 && !tuo.mutation.S3SourcesCleared() {
+	if nodes := _u.mutation.RemovedS3SourcesIDs(); len(nodes) > 0 && !_u.mutation.S3SourcesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -972,7 +972,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tuo.mutation.S3SourcesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.S3SourcesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -988,7 +988,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if tuo.mutation.MembersCleared() {
+	if _u.mutation.MembersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -1001,7 +1001,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tuo.mutation.RemovedMembersIDs(); len(nodes) > 0 && !tuo.mutation.MembersCleared() {
+	if nodes := _u.mutation.RemovedMembersIDs(); len(nodes) > 0 && !_u.mutation.MembersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -1017,7 +1017,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tuo.mutation.MembersIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.MembersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -1033,7 +1033,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if tuo.mutation.TeamWebhooksCleared() {
+	if _u.mutation.TeamWebhooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -1046,7 +1046,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tuo.mutation.RemovedTeamWebhooksIDs(); len(nodes) > 0 && !tuo.mutation.TeamWebhooksCleared() {
+	if nodes := _u.mutation.RemovedTeamWebhooksIDs(); len(nodes) > 0 && !_u.mutation.TeamWebhooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -1062,7 +1062,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tuo.mutation.TeamWebhooksIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.TeamWebhooksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -1078,11 +1078,11 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(tuo.modifiers...)
-	_node = &Team{config: tuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &Team{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, tuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{team.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -1090,6 +1090,6 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 		}
 		return nil, err
 	}
-	tuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

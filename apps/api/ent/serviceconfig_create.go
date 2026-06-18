@@ -29,415 +29,415 @@ type ServiceConfigCreate struct {
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (scc *ServiceConfigCreate) SetCreatedAt(t time.Time) *ServiceConfigCreate {
-	scc.mutation.SetCreatedAt(t)
-	return scc
+func (_c *ServiceConfigCreate) SetCreatedAt(v time.Time) *ServiceConfigCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (scc *ServiceConfigCreate) SetNillableCreatedAt(t *time.Time) *ServiceConfigCreate {
-	if t != nil {
-		scc.SetCreatedAt(*t)
+func (_c *ServiceConfigCreate) SetNillableCreatedAt(v *time.Time) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return scc
+	return _c
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (scc *ServiceConfigCreate) SetUpdatedAt(t time.Time) *ServiceConfigCreate {
-	scc.mutation.SetUpdatedAt(t)
-	return scc
+func (_c *ServiceConfigCreate) SetUpdatedAt(v time.Time) *ServiceConfigCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (scc *ServiceConfigCreate) SetNillableUpdatedAt(t *time.Time) *ServiceConfigCreate {
-	if t != nil {
-		scc.SetUpdatedAt(*t)
+func (_c *ServiceConfigCreate) SetNillableUpdatedAt(v *time.Time) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
 	}
-	return scc
+	return _c
 }
 
 // SetServiceID sets the "service_id" field.
-func (scc *ServiceConfigCreate) SetServiceID(u uuid.UUID) *ServiceConfigCreate {
-	scc.mutation.SetServiceID(u)
-	return scc
+func (_c *ServiceConfigCreate) SetServiceID(v uuid.UUID) *ServiceConfigCreate {
+	_c.mutation.SetServiceID(v)
+	return _c
 }
 
 // SetBuilder sets the "builder" field.
-func (scc *ServiceConfigCreate) SetBuilder(sb schema.ServiceBuilder) *ServiceConfigCreate {
-	scc.mutation.SetBuilder(sb)
-	return scc
+func (_c *ServiceConfigCreate) SetBuilder(v schema.ServiceBuilder) *ServiceConfigCreate {
+	_c.mutation.SetBuilder(v)
+	return _c
 }
 
 // SetIcon sets the "icon" field.
-func (scc *ServiceConfigCreate) SetIcon(s string) *ServiceConfigCreate {
-	scc.mutation.SetIcon(s)
-	return scc
+func (_c *ServiceConfigCreate) SetIcon(v string) *ServiceConfigCreate {
+	_c.mutation.SetIcon(v)
+	return _c
 }
 
 // SetDockerBuilderDockerfilePath sets the "docker_builder_dockerfile_path" field.
-func (scc *ServiceConfigCreate) SetDockerBuilderDockerfilePath(s string) *ServiceConfigCreate {
-	scc.mutation.SetDockerBuilderDockerfilePath(s)
-	return scc
+func (_c *ServiceConfigCreate) SetDockerBuilderDockerfilePath(v string) *ServiceConfigCreate {
+	_c.mutation.SetDockerBuilderDockerfilePath(v)
+	return _c
 }
 
 // SetNillableDockerBuilderDockerfilePath sets the "docker_builder_dockerfile_path" field if the given value is not nil.
-func (scc *ServiceConfigCreate) SetNillableDockerBuilderDockerfilePath(s *string) *ServiceConfigCreate {
-	if s != nil {
-		scc.SetDockerBuilderDockerfilePath(*s)
+func (_c *ServiceConfigCreate) SetNillableDockerBuilderDockerfilePath(v *string) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetDockerBuilderDockerfilePath(*v)
 	}
-	return scc
+	return _c
 }
 
 // SetDockerBuilderBuildContext sets the "docker_builder_build_context" field.
-func (scc *ServiceConfigCreate) SetDockerBuilderBuildContext(s string) *ServiceConfigCreate {
-	scc.mutation.SetDockerBuilderBuildContext(s)
-	return scc
+func (_c *ServiceConfigCreate) SetDockerBuilderBuildContext(v string) *ServiceConfigCreate {
+	_c.mutation.SetDockerBuilderBuildContext(v)
+	return _c
 }
 
 // SetNillableDockerBuilderBuildContext sets the "docker_builder_build_context" field if the given value is not nil.
-func (scc *ServiceConfigCreate) SetNillableDockerBuilderBuildContext(s *string) *ServiceConfigCreate {
-	if s != nil {
-		scc.SetDockerBuilderBuildContext(*s)
+func (_c *ServiceConfigCreate) SetNillableDockerBuilderBuildContext(v *string) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetDockerBuilderBuildContext(*v)
 	}
-	return scc
+	return _c
 }
 
 // SetRailpackProvider sets the "railpack_provider" field.
-func (scc *ServiceConfigCreate) SetRailpackProvider(e enum.Provider) *ServiceConfigCreate {
-	scc.mutation.SetRailpackProvider(e)
-	return scc
+func (_c *ServiceConfigCreate) SetRailpackProvider(v enum.Provider) *ServiceConfigCreate {
+	_c.mutation.SetRailpackProvider(v)
+	return _c
 }
 
 // SetNillableRailpackProvider sets the "railpack_provider" field if the given value is not nil.
-func (scc *ServiceConfigCreate) SetNillableRailpackProvider(e *enum.Provider) *ServiceConfigCreate {
-	if e != nil {
-		scc.SetRailpackProvider(*e)
+func (_c *ServiceConfigCreate) SetNillableRailpackProvider(v *enum.Provider) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetRailpackProvider(*v)
 	}
-	return scc
+	return _c
 }
 
 // SetRailpackFramework sets the "railpack_framework" field.
-func (scc *ServiceConfigCreate) SetRailpackFramework(e enum.Framework) *ServiceConfigCreate {
-	scc.mutation.SetRailpackFramework(e)
-	return scc
+func (_c *ServiceConfigCreate) SetRailpackFramework(v enum.Framework) *ServiceConfigCreate {
+	_c.mutation.SetRailpackFramework(v)
+	return _c
 }
 
 // SetNillableRailpackFramework sets the "railpack_framework" field if the given value is not nil.
-func (scc *ServiceConfigCreate) SetNillableRailpackFramework(e *enum.Framework) *ServiceConfigCreate {
-	if e != nil {
-		scc.SetRailpackFramework(*e)
+func (_c *ServiceConfigCreate) SetNillableRailpackFramework(v *enum.Framework) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetRailpackFramework(*v)
 	}
-	return scc
+	return _c
 }
 
 // SetGitBranch sets the "git_branch" field.
-func (scc *ServiceConfigCreate) SetGitBranch(s string) *ServiceConfigCreate {
-	scc.mutation.SetGitBranch(s)
-	return scc
+func (_c *ServiceConfigCreate) SetGitBranch(v string) *ServiceConfigCreate {
+	_c.mutation.SetGitBranch(v)
+	return _c
 }
 
 // SetNillableGitBranch sets the "git_branch" field if the given value is not nil.
-func (scc *ServiceConfigCreate) SetNillableGitBranch(s *string) *ServiceConfigCreate {
-	if s != nil {
-		scc.SetGitBranch(*s)
+func (_c *ServiceConfigCreate) SetNillableGitBranch(v *string) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetGitBranch(*v)
 	}
-	return scc
+	return _c
 }
 
 // SetGitTag sets the "git_tag" field.
-func (scc *ServiceConfigCreate) SetGitTag(s string) *ServiceConfigCreate {
-	scc.mutation.SetGitTag(s)
-	return scc
+func (_c *ServiceConfigCreate) SetGitTag(v string) *ServiceConfigCreate {
+	_c.mutation.SetGitTag(v)
+	return _c
 }
 
 // SetNillableGitTag sets the "git_tag" field if the given value is not nil.
-func (scc *ServiceConfigCreate) SetNillableGitTag(s *string) *ServiceConfigCreate {
-	if s != nil {
-		scc.SetGitTag(*s)
+func (_c *ServiceConfigCreate) SetNillableGitTag(v *string) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetGitTag(*v)
 	}
-	return scc
+	return _c
 }
 
 // SetHosts sets the "hosts" field.
-func (scc *ServiceConfigCreate) SetHosts(ss []schema.HostSpec) *ServiceConfigCreate {
-	scc.mutation.SetHosts(ss)
-	return scc
+func (_c *ServiceConfigCreate) SetHosts(v []schema.HostSpec) *ServiceConfigCreate {
+	_c.mutation.SetHosts(v)
+	return _c
 }
 
 // SetPorts sets the "ports" field.
-func (scc *ServiceConfigCreate) SetPorts(ss []schema.PortSpec) *ServiceConfigCreate {
-	scc.mutation.SetPorts(ss)
-	return scc
+func (_c *ServiceConfigCreate) SetPorts(v []schema.PortSpec) *ServiceConfigCreate {
+	_c.mutation.SetPorts(v)
+	return _c
 }
 
 // SetReplicas sets the "replicas" field.
-func (scc *ServiceConfigCreate) SetReplicas(i int32) *ServiceConfigCreate {
-	scc.mutation.SetReplicas(i)
-	return scc
+func (_c *ServiceConfigCreate) SetReplicas(v int32) *ServiceConfigCreate {
+	_c.mutation.SetReplicas(v)
+	return _c
 }
 
 // SetNillableReplicas sets the "replicas" field if the given value is not nil.
-func (scc *ServiceConfigCreate) SetNillableReplicas(i *int32) *ServiceConfigCreate {
-	if i != nil {
-		scc.SetReplicas(*i)
+func (_c *ServiceConfigCreate) SetNillableReplicas(v *int32) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetReplicas(*v)
 	}
-	return scc
+	return _c
 }
 
 // SetAutoDeploy sets the "auto_deploy" field.
-func (scc *ServiceConfigCreate) SetAutoDeploy(b bool) *ServiceConfigCreate {
-	scc.mutation.SetAutoDeploy(b)
-	return scc
+func (_c *ServiceConfigCreate) SetAutoDeploy(v bool) *ServiceConfigCreate {
+	_c.mutation.SetAutoDeploy(v)
+	return _c
 }
 
 // SetNillableAutoDeploy sets the "auto_deploy" field if the given value is not nil.
-func (scc *ServiceConfigCreate) SetNillableAutoDeploy(b *bool) *ServiceConfigCreate {
-	if b != nil {
-		scc.SetAutoDeploy(*b)
+func (_c *ServiceConfigCreate) SetNillableAutoDeploy(v *bool) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetAutoDeploy(*v)
 	}
-	return scc
+	return _c
 }
 
 // SetRailpackBuilderInstallCommand sets the "railpack_builder_install_command" field.
-func (scc *ServiceConfigCreate) SetRailpackBuilderInstallCommand(s string) *ServiceConfigCreate {
-	scc.mutation.SetRailpackBuilderInstallCommand(s)
-	return scc
+func (_c *ServiceConfigCreate) SetRailpackBuilderInstallCommand(v string) *ServiceConfigCreate {
+	_c.mutation.SetRailpackBuilderInstallCommand(v)
+	return _c
 }
 
 // SetNillableRailpackBuilderInstallCommand sets the "railpack_builder_install_command" field if the given value is not nil.
-func (scc *ServiceConfigCreate) SetNillableRailpackBuilderInstallCommand(s *string) *ServiceConfigCreate {
-	if s != nil {
-		scc.SetRailpackBuilderInstallCommand(*s)
+func (_c *ServiceConfigCreate) SetNillableRailpackBuilderInstallCommand(v *string) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetRailpackBuilderInstallCommand(*v)
 	}
-	return scc
+	return _c
 }
 
 // SetRailpackBuilderBuildCommand sets the "railpack_builder_build_command" field.
-func (scc *ServiceConfigCreate) SetRailpackBuilderBuildCommand(s string) *ServiceConfigCreate {
-	scc.mutation.SetRailpackBuilderBuildCommand(s)
-	return scc
+func (_c *ServiceConfigCreate) SetRailpackBuilderBuildCommand(v string) *ServiceConfigCreate {
+	_c.mutation.SetRailpackBuilderBuildCommand(v)
+	return _c
 }
 
 // SetNillableRailpackBuilderBuildCommand sets the "railpack_builder_build_command" field if the given value is not nil.
-func (scc *ServiceConfigCreate) SetNillableRailpackBuilderBuildCommand(s *string) *ServiceConfigCreate {
-	if s != nil {
-		scc.SetRailpackBuilderBuildCommand(*s)
+func (_c *ServiceConfigCreate) SetNillableRailpackBuilderBuildCommand(v *string) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetRailpackBuilderBuildCommand(*v)
 	}
-	return scc
+	return _c
 }
 
 // SetRunCommand sets the "run_command" field.
-func (scc *ServiceConfigCreate) SetRunCommand(s string) *ServiceConfigCreate {
-	scc.mutation.SetRunCommand(s)
-	return scc
+func (_c *ServiceConfigCreate) SetRunCommand(v string) *ServiceConfigCreate {
+	_c.mutation.SetRunCommand(v)
+	return _c
 }
 
 // SetNillableRunCommand sets the "run_command" field if the given value is not nil.
-func (scc *ServiceConfigCreate) SetNillableRunCommand(s *string) *ServiceConfigCreate {
-	if s != nil {
-		scc.SetRunCommand(*s)
+func (_c *ServiceConfigCreate) SetNillableRunCommand(v *string) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetRunCommand(*v)
 	}
-	return scc
+	return _c
 }
 
 // SetIsPublic sets the "is_public" field.
-func (scc *ServiceConfigCreate) SetIsPublic(b bool) *ServiceConfigCreate {
-	scc.mutation.SetIsPublic(b)
-	return scc
+func (_c *ServiceConfigCreate) SetIsPublic(v bool) *ServiceConfigCreate {
+	_c.mutation.SetIsPublic(v)
+	return _c
 }
 
 // SetNillableIsPublic sets the "is_public" field if the given value is not nil.
-func (scc *ServiceConfigCreate) SetNillableIsPublic(b *bool) *ServiceConfigCreate {
-	if b != nil {
-		scc.SetIsPublic(*b)
+func (_c *ServiceConfigCreate) SetNillableIsPublic(v *bool) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetIsPublic(*v)
 	}
-	return scc
+	return _c
 }
 
 // SetImage sets the "image" field.
-func (scc *ServiceConfigCreate) SetImage(s string) *ServiceConfigCreate {
-	scc.mutation.SetImage(s)
-	return scc
+func (_c *ServiceConfigCreate) SetImage(v string) *ServiceConfigCreate {
+	_c.mutation.SetImage(v)
+	return _c
 }
 
 // SetNillableImage sets the "image" field if the given value is not nil.
-func (scc *ServiceConfigCreate) SetNillableImage(s *string) *ServiceConfigCreate {
-	if s != nil {
-		scc.SetImage(*s)
+func (_c *ServiceConfigCreate) SetNillableImage(v *string) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetImage(*v)
 	}
-	return scc
+	return _c
 }
 
 // SetDefinitionVersion sets the "definition_version" field.
-func (scc *ServiceConfigCreate) SetDefinitionVersion(s string) *ServiceConfigCreate {
-	scc.mutation.SetDefinitionVersion(s)
-	return scc
+func (_c *ServiceConfigCreate) SetDefinitionVersion(v string) *ServiceConfigCreate {
+	_c.mutation.SetDefinitionVersion(v)
+	return _c
 }
 
 // SetNillableDefinitionVersion sets the "definition_version" field if the given value is not nil.
-func (scc *ServiceConfigCreate) SetNillableDefinitionVersion(s *string) *ServiceConfigCreate {
-	if s != nil {
-		scc.SetDefinitionVersion(*s)
+func (_c *ServiceConfigCreate) SetNillableDefinitionVersion(v *string) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetDefinitionVersion(*v)
 	}
-	return scc
+	return _c
 }
 
 // SetDatabaseConfig sets the "database_config" field.
-func (scc *ServiceConfigCreate) SetDatabaseConfig(sc *schema.DatabaseConfig) *ServiceConfigCreate {
-	scc.mutation.SetDatabaseConfig(sc)
-	return scc
+func (_c *ServiceConfigCreate) SetDatabaseConfig(v *schema.DatabaseConfig) *ServiceConfigCreate {
+	_c.mutation.SetDatabaseConfig(v)
+	return _c
 }
 
 // SetS3BackupSourceID sets the "s3_backup_source_id" field.
-func (scc *ServiceConfigCreate) SetS3BackupSourceID(u uuid.UUID) *ServiceConfigCreate {
-	scc.mutation.SetS3BackupSourceID(u)
-	return scc
+func (_c *ServiceConfigCreate) SetS3BackupSourceID(v uuid.UUID) *ServiceConfigCreate {
+	_c.mutation.SetS3BackupSourceID(v)
+	return _c
 }
 
 // SetNillableS3BackupSourceID sets the "s3_backup_source_id" field if the given value is not nil.
-func (scc *ServiceConfigCreate) SetNillableS3BackupSourceID(u *uuid.UUID) *ServiceConfigCreate {
-	if u != nil {
-		scc.SetS3BackupSourceID(*u)
+func (_c *ServiceConfigCreate) SetNillableS3BackupSourceID(v *uuid.UUID) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetS3BackupSourceID(*v)
 	}
-	return scc
+	return _c
 }
 
 // SetS3BackupBucket sets the "s3_backup_bucket" field.
-func (scc *ServiceConfigCreate) SetS3BackupBucket(s string) *ServiceConfigCreate {
-	scc.mutation.SetS3BackupBucket(s)
-	return scc
+func (_c *ServiceConfigCreate) SetS3BackupBucket(v string) *ServiceConfigCreate {
+	_c.mutation.SetS3BackupBucket(v)
+	return _c
 }
 
 // SetNillableS3BackupBucket sets the "s3_backup_bucket" field if the given value is not nil.
-func (scc *ServiceConfigCreate) SetNillableS3BackupBucket(s *string) *ServiceConfigCreate {
-	if s != nil {
-		scc.SetS3BackupBucket(*s)
+func (_c *ServiceConfigCreate) SetNillableS3BackupBucket(v *string) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetS3BackupBucket(*v)
 	}
-	return scc
+	return _c
 }
 
 // SetBackupSchedule sets the "backup_schedule" field.
-func (scc *ServiceConfigCreate) SetBackupSchedule(s string) *ServiceConfigCreate {
-	scc.mutation.SetBackupSchedule(s)
-	return scc
+func (_c *ServiceConfigCreate) SetBackupSchedule(v string) *ServiceConfigCreate {
+	_c.mutation.SetBackupSchedule(v)
+	return _c
 }
 
 // SetNillableBackupSchedule sets the "backup_schedule" field if the given value is not nil.
-func (scc *ServiceConfigCreate) SetNillableBackupSchedule(s *string) *ServiceConfigCreate {
-	if s != nil {
-		scc.SetBackupSchedule(*s)
+func (_c *ServiceConfigCreate) SetNillableBackupSchedule(v *string) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetBackupSchedule(*v)
 	}
-	return scc
+	return _c
 }
 
 // SetBackupRetentionCount sets the "backup_retention_count" field.
-func (scc *ServiceConfigCreate) SetBackupRetentionCount(i int) *ServiceConfigCreate {
-	scc.mutation.SetBackupRetentionCount(i)
-	return scc
+func (_c *ServiceConfigCreate) SetBackupRetentionCount(v int) *ServiceConfigCreate {
+	_c.mutation.SetBackupRetentionCount(v)
+	return _c
 }
 
 // SetNillableBackupRetentionCount sets the "backup_retention_count" field if the given value is not nil.
-func (scc *ServiceConfigCreate) SetNillableBackupRetentionCount(i *int) *ServiceConfigCreate {
-	if i != nil {
-		scc.SetBackupRetentionCount(*i)
+func (_c *ServiceConfigCreate) SetNillableBackupRetentionCount(v *int) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetBackupRetentionCount(*v)
 	}
-	return scc
+	return _c
 }
 
 // SetVolumes sets the "volumes" field.
-func (scc *ServiceConfigCreate) SetVolumes(sv []schema.ServiceVolume) *ServiceConfigCreate {
-	scc.mutation.SetVolumes(sv)
-	return scc
+func (_c *ServiceConfigCreate) SetVolumes(v []schema.ServiceVolume) *ServiceConfigCreate {
+	_c.mutation.SetVolumes(v)
+	return _c
 }
 
 // SetSecurityContext sets the "security_context" field.
-func (scc *ServiceConfigCreate) SetSecurityContext(sc *schema.SecurityContext) *ServiceConfigCreate {
-	scc.mutation.SetSecurityContext(sc)
-	return scc
+func (_c *ServiceConfigCreate) SetSecurityContext(v *schema.SecurityContext) *ServiceConfigCreate {
+	_c.mutation.SetSecurityContext(v)
+	return _c
 }
 
 // SetHealthCheck sets the "health_check" field.
-func (scc *ServiceConfigCreate) SetHealthCheck(sc *schema.HealthCheck) *ServiceConfigCreate {
-	scc.mutation.SetHealthCheck(sc)
-	return scc
+func (_c *ServiceConfigCreate) SetHealthCheck(v *schema.HealthCheck) *ServiceConfigCreate {
+	_c.mutation.SetHealthCheck(v)
+	return _c
 }
 
 // SetVariableMounts sets the "variable_mounts" field.
-func (scc *ServiceConfigCreate) SetVariableMounts(sm []*schema.VariableMount) *ServiceConfigCreate {
-	scc.mutation.SetVariableMounts(sm)
-	return scc
+func (_c *ServiceConfigCreate) SetVariableMounts(v []*schema.VariableMount) *ServiceConfigCreate {
+	_c.mutation.SetVariableMounts(v)
+	return _c
 }
 
 // SetProtectedVariables sets the "protected_variables" field.
-func (scc *ServiceConfigCreate) SetProtectedVariables(s []string) *ServiceConfigCreate {
-	scc.mutation.SetProtectedVariables(s)
-	return scc
+func (_c *ServiceConfigCreate) SetProtectedVariables(v []string) *ServiceConfigCreate {
+	_c.mutation.SetProtectedVariables(v)
+	return _c
 }
 
 // SetInitContainers sets the "init_containers" field.
-func (scc *ServiceConfigCreate) SetInitContainers(sc []*schema.InitContainer) *ServiceConfigCreate {
-	scc.mutation.SetInitContainers(sc)
-	return scc
+func (_c *ServiceConfigCreate) SetInitContainers(v []*schema.InitContainer) *ServiceConfigCreate {
+	_c.mutation.SetInitContainers(v)
+	return _c
 }
 
 // SetResources sets the "resources" field.
-func (scc *ServiceConfigCreate) SetResources(s *schema.Resources) *ServiceConfigCreate {
-	scc.mutation.SetResources(s)
-	return scc
+func (_c *ServiceConfigCreate) SetResources(v *schema.Resources) *ServiceConfigCreate {
+	_c.mutation.SetResources(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (scc *ServiceConfigCreate) SetID(u uuid.UUID) *ServiceConfigCreate {
-	scc.mutation.SetID(u)
-	return scc
+func (_c *ServiceConfigCreate) SetID(v uuid.UUID) *ServiceConfigCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (scc *ServiceConfigCreate) SetNillableID(u *uuid.UUID) *ServiceConfigCreate {
-	if u != nil {
-		scc.SetID(*u)
+func (_c *ServiceConfigCreate) SetNillableID(v *uuid.UUID) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return scc
+	return _c
 }
 
 // SetService sets the "service" edge to the Service entity.
-func (scc *ServiceConfigCreate) SetService(s *Service) *ServiceConfigCreate {
-	return scc.SetServiceID(s.ID)
+func (_c *ServiceConfigCreate) SetService(v *Service) *ServiceConfigCreate {
+	return _c.SetServiceID(v.ID)
 }
 
 // SetS3BackupSourcesID sets the "s3_backup_sources" edge to the S3 entity by ID.
-func (scc *ServiceConfigCreate) SetS3BackupSourcesID(id uuid.UUID) *ServiceConfigCreate {
-	scc.mutation.SetS3BackupSourcesID(id)
-	return scc
+func (_c *ServiceConfigCreate) SetS3BackupSourcesID(id uuid.UUID) *ServiceConfigCreate {
+	_c.mutation.SetS3BackupSourcesID(id)
+	return _c
 }
 
 // SetNillableS3BackupSourcesID sets the "s3_backup_sources" edge to the S3 entity by ID if the given value is not nil.
-func (scc *ServiceConfigCreate) SetNillableS3BackupSourcesID(id *uuid.UUID) *ServiceConfigCreate {
+func (_c *ServiceConfigCreate) SetNillableS3BackupSourcesID(id *uuid.UUID) *ServiceConfigCreate {
 	if id != nil {
-		scc = scc.SetS3BackupSourcesID(*id)
+		_c = _c.SetS3BackupSourcesID(*id)
 	}
-	return scc
+	return _c
 }
 
 // SetS3BackupSources sets the "s3_backup_sources" edge to the S3 entity.
-func (scc *ServiceConfigCreate) SetS3BackupSources(s *S3) *ServiceConfigCreate {
-	return scc.SetS3BackupSourcesID(s.ID)
+func (_c *ServiceConfigCreate) SetS3BackupSources(v *S3) *ServiceConfigCreate {
+	return _c.SetS3BackupSourcesID(v.ID)
 }
 
 // Mutation returns the ServiceConfigMutation object of the builder.
-func (scc *ServiceConfigCreate) Mutation() *ServiceConfigMutation {
-	return scc.mutation
+func (_c *ServiceConfigCreate) Mutation() *ServiceConfigMutation {
+	return _c.mutation
 }
 
 // Save creates the ServiceConfig in the database.
-func (scc *ServiceConfigCreate) Save(ctx context.Context) (*ServiceConfig, error) {
-	scc.defaults()
-	return withHooks(ctx, scc.sqlSave, scc.mutation, scc.hooks)
+func (_c *ServiceConfigCreate) Save(ctx context.Context) (*ServiceConfig, error) {
+	_c.defaults()
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (scc *ServiceConfigCreate) SaveX(ctx context.Context) *ServiceConfig {
-	v, err := scc.Save(ctx)
+func (_c *ServiceConfigCreate) SaveX(ctx context.Context) *ServiceConfig {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -445,118 +445,118 @@ func (scc *ServiceConfigCreate) SaveX(ctx context.Context) *ServiceConfig {
 }
 
 // Exec executes the query.
-func (scc *ServiceConfigCreate) Exec(ctx context.Context) error {
-	_, err := scc.Save(ctx)
+func (_c *ServiceConfigCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (scc *ServiceConfigCreate) ExecX(ctx context.Context) {
-	if err := scc.Exec(ctx); err != nil {
+func (_c *ServiceConfigCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (scc *ServiceConfigCreate) defaults() {
-	if _, ok := scc.mutation.CreatedAt(); !ok {
+func (_c *ServiceConfigCreate) defaults() {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := serviceconfig.DefaultCreatedAt()
-		scc.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := scc.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		v := serviceconfig.DefaultUpdatedAt()
-		scc.mutation.SetUpdatedAt(v)
+		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := scc.mutation.Replicas(); !ok {
+	if _, ok := _c.mutation.Replicas(); !ok {
 		v := serviceconfig.DefaultReplicas
-		scc.mutation.SetReplicas(v)
+		_c.mutation.SetReplicas(v)
 	}
-	if _, ok := scc.mutation.AutoDeploy(); !ok {
+	if _, ok := _c.mutation.AutoDeploy(); !ok {
 		v := serviceconfig.DefaultAutoDeploy
-		scc.mutation.SetAutoDeploy(v)
+		_c.mutation.SetAutoDeploy(v)
 	}
-	if _, ok := scc.mutation.IsPublic(); !ok {
+	if _, ok := _c.mutation.IsPublic(); !ok {
 		v := serviceconfig.DefaultIsPublic
-		scc.mutation.SetIsPublic(v)
+		_c.mutation.SetIsPublic(v)
 	}
-	if _, ok := scc.mutation.BackupSchedule(); !ok {
+	if _, ok := _c.mutation.BackupSchedule(); !ok {
 		v := serviceconfig.DefaultBackupSchedule
-		scc.mutation.SetBackupSchedule(v)
+		_c.mutation.SetBackupSchedule(v)
 	}
-	if _, ok := scc.mutation.BackupRetentionCount(); !ok {
+	if _, ok := _c.mutation.BackupRetentionCount(); !ok {
 		v := serviceconfig.DefaultBackupRetentionCount
-		scc.mutation.SetBackupRetentionCount(v)
+		_c.mutation.SetBackupRetentionCount(v)
 	}
-	if _, ok := scc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		v := serviceconfig.DefaultID()
-		scc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (scc *ServiceConfigCreate) check() error {
-	if _, ok := scc.mutation.CreatedAt(); !ok {
+func (_c *ServiceConfigCreate) check() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "ServiceConfig.created_at"`)}
 	}
-	if _, ok := scc.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "ServiceConfig.updated_at"`)}
 	}
-	if _, ok := scc.mutation.ServiceID(); !ok {
+	if _, ok := _c.mutation.ServiceID(); !ok {
 		return &ValidationError{Name: "service_id", err: errors.New(`ent: missing required field "ServiceConfig.service_id"`)}
 	}
-	if _, ok := scc.mutation.Builder(); !ok {
+	if _, ok := _c.mutation.Builder(); !ok {
 		return &ValidationError{Name: "builder", err: errors.New(`ent: missing required field "ServiceConfig.builder"`)}
 	}
-	if v, ok := scc.mutation.Builder(); ok {
+	if v, ok := _c.mutation.Builder(); ok {
 		if err := serviceconfig.BuilderValidator(v); err != nil {
 			return &ValidationError{Name: "builder", err: fmt.Errorf(`ent: validator failed for field "ServiceConfig.builder": %w`, err)}
 		}
 	}
-	if _, ok := scc.mutation.Icon(); !ok {
+	if _, ok := _c.mutation.Icon(); !ok {
 		return &ValidationError{Name: "icon", err: errors.New(`ent: missing required field "ServiceConfig.icon"`)}
 	}
-	if v, ok := scc.mutation.RailpackProvider(); ok {
+	if v, ok := _c.mutation.RailpackProvider(); ok {
 		if err := serviceconfig.RailpackProviderValidator(v); err != nil {
 			return &ValidationError{Name: "railpack_provider", err: fmt.Errorf(`ent: validator failed for field "ServiceConfig.railpack_provider": %w`, err)}
 		}
 	}
-	if v, ok := scc.mutation.RailpackFramework(); ok {
+	if v, ok := _c.mutation.RailpackFramework(); ok {
 		if err := serviceconfig.RailpackFrameworkValidator(v); err != nil {
 			return &ValidationError{Name: "railpack_framework", err: fmt.Errorf(`ent: validator failed for field "ServiceConfig.railpack_framework": %w`, err)}
 		}
 	}
-	if _, ok := scc.mutation.Replicas(); !ok {
+	if _, ok := _c.mutation.Replicas(); !ok {
 		return &ValidationError{Name: "replicas", err: errors.New(`ent: missing required field "ServiceConfig.replicas"`)}
 	}
-	if _, ok := scc.mutation.AutoDeploy(); !ok {
+	if _, ok := _c.mutation.AutoDeploy(); !ok {
 		return &ValidationError{Name: "auto_deploy", err: errors.New(`ent: missing required field "ServiceConfig.auto_deploy"`)}
 	}
-	if _, ok := scc.mutation.IsPublic(); !ok {
+	if _, ok := _c.mutation.IsPublic(); !ok {
 		return &ValidationError{Name: "is_public", err: errors.New(`ent: missing required field "ServiceConfig.is_public"`)}
 	}
-	if _, ok := scc.mutation.BackupSchedule(); !ok {
+	if _, ok := _c.mutation.BackupSchedule(); !ok {
 		return &ValidationError{Name: "backup_schedule", err: errors.New(`ent: missing required field "ServiceConfig.backup_schedule"`)}
 	}
-	if _, ok := scc.mutation.BackupRetentionCount(); !ok {
+	if _, ok := _c.mutation.BackupRetentionCount(); !ok {
 		return &ValidationError{Name: "backup_retention_count", err: errors.New(`ent: missing required field "ServiceConfig.backup_retention_count"`)}
 	}
-	if v, ok := scc.mutation.HealthCheck(); ok {
+	if v, ok := _c.mutation.HealthCheck(); ok {
 		if err := v.Validate(); err != nil {
 			return &ValidationError{Name: "health_check", err: fmt.Errorf(`ent: validator failed for field "ServiceConfig.health_check": %w`, err)}
 		}
 	}
-	if len(scc.mutation.ServiceIDs()) == 0 {
+	if len(_c.mutation.ServiceIDs()) == 0 {
 		return &ValidationError{Name: "service", err: errors.New(`ent: missing required edge "ServiceConfig.service"`)}
 	}
 	return nil
 }
 
-func (scc *ServiceConfigCreate) sqlSave(ctx context.Context) (*ServiceConfig, error) {
-	if err := scc.check(); err != nil {
+func (_c *ServiceConfigCreate) sqlSave(ctx context.Context) (*ServiceConfig, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := scc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, scc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -569,146 +569,146 @@ func (scc *ServiceConfigCreate) sqlSave(ctx context.Context) (*ServiceConfig, er
 			return nil, err
 		}
 	}
-	scc.mutation.id = &_node.ID
-	scc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (scc *ServiceConfigCreate) createSpec() (*ServiceConfig, *sqlgraph.CreateSpec) {
+func (_c *ServiceConfigCreate) createSpec() (*ServiceConfig, *sqlgraph.CreateSpec) {
 	var (
-		_node = &ServiceConfig{config: scc.config}
+		_node = &ServiceConfig{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(serviceconfig.Table, sqlgraph.NewFieldSpec(serviceconfig.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = scc.conflict
-	if id, ok := scc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := scc.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(serviceconfig.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if value, ok := scc.mutation.UpdatedAt(); ok {
+	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(serviceconfig.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := scc.mutation.Builder(); ok {
+	if value, ok := _c.mutation.Builder(); ok {
 		_spec.SetField(serviceconfig.FieldBuilder, field.TypeEnum, value)
 		_node.Builder = value
 	}
-	if value, ok := scc.mutation.Icon(); ok {
+	if value, ok := _c.mutation.Icon(); ok {
 		_spec.SetField(serviceconfig.FieldIcon, field.TypeString, value)
 		_node.Icon = value
 	}
-	if value, ok := scc.mutation.DockerBuilderDockerfilePath(); ok {
+	if value, ok := _c.mutation.DockerBuilderDockerfilePath(); ok {
 		_spec.SetField(serviceconfig.FieldDockerBuilderDockerfilePath, field.TypeString, value)
 		_node.DockerBuilderDockerfilePath = &value
 	}
-	if value, ok := scc.mutation.DockerBuilderBuildContext(); ok {
+	if value, ok := _c.mutation.DockerBuilderBuildContext(); ok {
 		_spec.SetField(serviceconfig.FieldDockerBuilderBuildContext, field.TypeString, value)
 		_node.DockerBuilderBuildContext = &value
 	}
-	if value, ok := scc.mutation.RailpackProvider(); ok {
+	if value, ok := _c.mutation.RailpackProvider(); ok {
 		_spec.SetField(serviceconfig.FieldRailpackProvider, field.TypeEnum, value)
 		_node.RailpackProvider = &value
 	}
-	if value, ok := scc.mutation.RailpackFramework(); ok {
+	if value, ok := _c.mutation.RailpackFramework(); ok {
 		_spec.SetField(serviceconfig.FieldRailpackFramework, field.TypeEnum, value)
 		_node.RailpackFramework = &value
 	}
-	if value, ok := scc.mutation.GitBranch(); ok {
+	if value, ok := _c.mutation.GitBranch(); ok {
 		_spec.SetField(serviceconfig.FieldGitBranch, field.TypeString, value)
 		_node.GitBranch = &value
 	}
-	if value, ok := scc.mutation.GitTag(); ok {
+	if value, ok := _c.mutation.GitTag(); ok {
 		_spec.SetField(serviceconfig.FieldGitTag, field.TypeString, value)
 		_node.GitTag = &value
 	}
-	if value, ok := scc.mutation.Hosts(); ok {
+	if value, ok := _c.mutation.Hosts(); ok {
 		_spec.SetField(serviceconfig.FieldHosts, field.TypeJSON, value)
 		_node.Hosts = value
 	}
-	if value, ok := scc.mutation.Ports(); ok {
+	if value, ok := _c.mutation.Ports(); ok {
 		_spec.SetField(serviceconfig.FieldPorts, field.TypeJSON, value)
 		_node.Ports = value
 	}
-	if value, ok := scc.mutation.Replicas(); ok {
+	if value, ok := _c.mutation.Replicas(); ok {
 		_spec.SetField(serviceconfig.FieldReplicas, field.TypeInt32, value)
 		_node.Replicas = value
 	}
-	if value, ok := scc.mutation.AutoDeploy(); ok {
+	if value, ok := _c.mutation.AutoDeploy(); ok {
 		_spec.SetField(serviceconfig.FieldAutoDeploy, field.TypeBool, value)
 		_node.AutoDeploy = value
 	}
-	if value, ok := scc.mutation.RailpackBuilderInstallCommand(); ok {
+	if value, ok := _c.mutation.RailpackBuilderInstallCommand(); ok {
 		_spec.SetField(serviceconfig.FieldRailpackBuilderInstallCommand, field.TypeString, value)
 		_node.RailpackBuilderInstallCommand = &value
 	}
-	if value, ok := scc.mutation.RailpackBuilderBuildCommand(); ok {
+	if value, ok := _c.mutation.RailpackBuilderBuildCommand(); ok {
 		_spec.SetField(serviceconfig.FieldRailpackBuilderBuildCommand, field.TypeString, value)
 		_node.RailpackBuilderBuildCommand = &value
 	}
-	if value, ok := scc.mutation.RunCommand(); ok {
+	if value, ok := _c.mutation.RunCommand(); ok {
 		_spec.SetField(serviceconfig.FieldRunCommand, field.TypeString, value)
 		_node.RunCommand = &value
 	}
-	if value, ok := scc.mutation.IsPublic(); ok {
+	if value, ok := _c.mutation.IsPublic(); ok {
 		_spec.SetField(serviceconfig.FieldIsPublic, field.TypeBool, value)
 		_node.IsPublic = value
 	}
-	if value, ok := scc.mutation.Image(); ok {
+	if value, ok := _c.mutation.Image(); ok {
 		_spec.SetField(serviceconfig.FieldImage, field.TypeString, value)
 		_node.Image = value
 	}
-	if value, ok := scc.mutation.DefinitionVersion(); ok {
+	if value, ok := _c.mutation.DefinitionVersion(); ok {
 		_spec.SetField(serviceconfig.FieldDefinitionVersion, field.TypeString, value)
 		_node.DefinitionVersion = &value
 	}
-	if value, ok := scc.mutation.DatabaseConfig(); ok {
+	if value, ok := _c.mutation.DatabaseConfig(); ok {
 		_spec.SetField(serviceconfig.FieldDatabaseConfig, field.TypeJSON, value)
 		_node.DatabaseConfig = value
 	}
-	if value, ok := scc.mutation.S3BackupBucket(); ok {
+	if value, ok := _c.mutation.S3BackupBucket(); ok {
 		_spec.SetField(serviceconfig.FieldS3BackupBucket, field.TypeString, value)
 		_node.S3BackupBucket = &value
 	}
-	if value, ok := scc.mutation.BackupSchedule(); ok {
+	if value, ok := _c.mutation.BackupSchedule(); ok {
 		_spec.SetField(serviceconfig.FieldBackupSchedule, field.TypeString, value)
 		_node.BackupSchedule = value
 	}
-	if value, ok := scc.mutation.BackupRetentionCount(); ok {
+	if value, ok := _c.mutation.BackupRetentionCount(); ok {
 		_spec.SetField(serviceconfig.FieldBackupRetentionCount, field.TypeInt, value)
 		_node.BackupRetentionCount = value
 	}
-	if value, ok := scc.mutation.Volumes(); ok {
+	if value, ok := _c.mutation.Volumes(); ok {
 		_spec.SetField(serviceconfig.FieldVolumes, field.TypeJSON, value)
 		_node.Volumes = value
 	}
-	if value, ok := scc.mutation.SecurityContext(); ok {
+	if value, ok := _c.mutation.SecurityContext(); ok {
 		_spec.SetField(serviceconfig.FieldSecurityContext, field.TypeJSON, value)
 		_node.SecurityContext = value
 	}
-	if value, ok := scc.mutation.HealthCheck(); ok {
+	if value, ok := _c.mutation.HealthCheck(); ok {
 		_spec.SetField(serviceconfig.FieldHealthCheck, field.TypeJSON, value)
 		_node.HealthCheck = value
 	}
-	if value, ok := scc.mutation.VariableMounts(); ok {
+	if value, ok := _c.mutation.VariableMounts(); ok {
 		_spec.SetField(serviceconfig.FieldVariableMounts, field.TypeJSON, value)
 		_node.VariableMounts = value
 	}
-	if value, ok := scc.mutation.ProtectedVariables(); ok {
+	if value, ok := _c.mutation.ProtectedVariables(); ok {
 		_spec.SetField(serviceconfig.FieldProtectedVariables, field.TypeJSON, value)
 		_node.ProtectedVariables = value
 	}
-	if value, ok := scc.mutation.InitContainers(); ok {
+	if value, ok := _c.mutation.InitContainers(); ok {
 		_spec.SetField(serviceconfig.FieldInitContainers, field.TypeJSON, value)
 		_node.InitContainers = value
 	}
-	if value, ok := scc.mutation.Resources(); ok {
+	if value, ok := _c.mutation.Resources(); ok {
 		_spec.SetField(serviceconfig.FieldResources, field.TypeJSON, value)
 		_node.Resources = value
 	}
-	if nodes := scc.mutation.ServiceIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ServiceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -725,7 +725,7 @@ func (scc *ServiceConfigCreate) createSpec() (*ServiceConfig, *sqlgraph.CreateSp
 		_node.ServiceID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := scc.mutation.S3BackupSourcesIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.S3BackupSourcesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -761,10 +761,10 @@ func (scc *ServiceConfigCreate) createSpec() (*ServiceConfig, *sqlgraph.CreateSp
 //			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
-func (scc *ServiceConfigCreate) OnConflict(opts ...sql.ConflictOption) *ServiceConfigUpsertOne {
-	scc.conflict = opts
+func (_c *ServiceConfigCreate) OnConflict(opts ...sql.ConflictOption) *ServiceConfigUpsertOne {
+	_c.conflict = opts
 	return &ServiceConfigUpsertOne{
-		create: scc,
+		create: _c,
 	}
 }
 
@@ -774,10 +774,10 @@ func (scc *ServiceConfigCreate) OnConflict(opts ...sql.ConflictOption) *ServiceC
 //	client.ServiceConfig.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (scc *ServiceConfigCreate) OnConflictColumns(columns ...string) *ServiceConfigUpsertOne {
-	scc.conflict = append(scc.conflict, sql.ConflictColumns(columns...))
+func (_c *ServiceConfigCreate) OnConflictColumns(columns ...string) *ServiceConfigUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &ServiceConfigUpsertOne{
-		create: scc,
+		create: _c,
 	}
 }
 
@@ -2049,16 +2049,16 @@ type ServiceConfigCreateBulk struct {
 }
 
 // Save creates the ServiceConfig entities in the database.
-func (sccb *ServiceConfigCreateBulk) Save(ctx context.Context) ([]*ServiceConfig, error) {
-	if sccb.err != nil {
-		return nil, sccb.err
+func (_c *ServiceConfigCreateBulk) Save(ctx context.Context) ([]*ServiceConfig, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(sccb.builders))
-	nodes := make([]*ServiceConfig, len(sccb.builders))
-	mutators := make([]Mutator, len(sccb.builders))
-	for i := range sccb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*ServiceConfig, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := sccb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*ServiceConfigMutation)
@@ -2072,12 +2072,12 @@ func (sccb *ServiceConfigCreateBulk) Save(ctx context.Context) ([]*ServiceConfig
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, sccb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = sccb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, sccb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -2097,7 +2097,7 @@ func (sccb *ServiceConfigCreateBulk) Save(ctx context.Context) ([]*ServiceConfig
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, sccb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -2105,8 +2105,8 @@ func (sccb *ServiceConfigCreateBulk) Save(ctx context.Context) ([]*ServiceConfig
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (sccb *ServiceConfigCreateBulk) SaveX(ctx context.Context) []*ServiceConfig {
-	v, err := sccb.Save(ctx)
+func (_c *ServiceConfigCreateBulk) SaveX(ctx context.Context) []*ServiceConfig {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -2114,14 +2114,14 @@ func (sccb *ServiceConfigCreateBulk) SaveX(ctx context.Context) []*ServiceConfig
 }
 
 // Exec executes the query.
-func (sccb *ServiceConfigCreateBulk) Exec(ctx context.Context) error {
-	_, err := sccb.Save(ctx)
+func (_c *ServiceConfigCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sccb *ServiceConfigCreateBulk) ExecX(ctx context.Context) {
-	if err := sccb.Exec(ctx); err != nil {
+func (_c *ServiceConfigCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -2141,10 +2141,10 @@ func (sccb *ServiceConfigCreateBulk) ExecX(ctx context.Context) {
 //			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
-func (sccb *ServiceConfigCreateBulk) OnConflict(opts ...sql.ConflictOption) *ServiceConfigUpsertBulk {
-	sccb.conflict = opts
+func (_c *ServiceConfigCreateBulk) OnConflict(opts ...sql.ConflictOption) *ServiceConfigUpsertBulk {
+	_c.conflict = opts
 	return &ServiceConfigUpsertBulk{
-		create: sccb,
+		create: _c,
 	}
 }
 
@@ -2154,10 +2154,10 @@ func (sccb *ServiceConfigCreateBulk) OnConflict(opts ...sql.ConflictOption) *Ser
 //	client.ServiceConfig.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (sccb *ServiceConfigCreateBulk) OnConflictColumns(columns ...string) *ServiceConfigUpsertBulk {
-	sccb.conflict = append(sccb.conflict, sql.ConflictColumns(columns...))
+func (_c *ServiceConfigCreateBulk) OnConflictColumns(columns ...string) *ServiceConfigUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &ServiceConfigUpsertBulk{
-		create: sccb,
+		create: _c,
 	}
 }
 

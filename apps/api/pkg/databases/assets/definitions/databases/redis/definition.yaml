@@ -1,9 +1,7 @@
 # definitions/databases/redis/definition.yaml
 # Helm values for CloudPirates Redis chart
 
-# Set a variable for the total requested nodes, applying the default from base.yaml (which is 1).
-# Coerce to int: schema-default numbers arrive as float64, and `gt` below requires
-# matching types (float64 vs int otherwise errors at render time).
+# Total nodes (default 1). int-coerce: schema defaults are float64 and `gt` needs matching types.
 {{- $requestedReplicas := .Parameters.common.replicas | default 1 | int -}}
 
 # Apply common labels to all resources created by the chart
@@ -44,9 +42,7 @@ architecture: standalone
 {{- end }}
 
 # Persistence configuration
-# Quote string-typed values: the CloudPirates chart schema requires
-# persistence.size to be a string, and an unquoted value like "10" would render
-# as a YAML number. Same reasoning for the resource quantities below.
+# Quote values: CloudPirates' schema requires these as strings (unquoted "10" -> number).
 persistence:
   enabled: true
   size: {{ .Parameters.common.storage | default "1Gi" | quote }}

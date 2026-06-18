@@ -30,40 +30,40 @@ type RegistryQuery struct {
 }
 
 // Where adds a new predicate for the RegistryQuery builder.
-func (rq *RegistryQuery) Where(ps ...predicate.Registry) *RegistryQuery {
-	rq.predicates = append(rq.predicates, ps...)
-	return rq
+func (_q *RegistryQuery) Where(ps ...predicate.Registry) *RegistryQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (rq *RegistryQuery) Limit(limit int) *RegistryQuery {
-	rq.ctx.Limit = &limit
-	return rq
+func (_q *RegistryQuery) Limit(limit int) *RegistryQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (rq *RegistryQuery) Offset(offset int) *RegistryQuery {
-	rq.ctx.Offset = &offset
-	return rq
+func (_q *RegistryQuery) Offset(offset int) *RegistryQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (rq *RegistryQuery) Unique(unique bool) *RegistryQuery {
-	rq.ctx.Unique = &unique
-	return rq
+func (_q *RegistryQuery) Unique(unique bool) *RegistryQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (rq *RegistryQuery) Order(o ...registry.OrderOption) *RegistryQuery {
-	rq.order = append(rq.order, o...)
-	return rq
+func (_q *RegistryQuery) Order(o ...registry.OrderOption) *RegistryQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // First returns the first Registry entity from the query.
 // Returns a *NotFoundError when no Registry was found.
-func (rq *RegistryQuery) First(ctx context.Context) (*Registry, error) {
-	nodes, err := rq.Limit(1).All(setContextOp(ctx, rq.ctx, ent.OpQueryFirst))
+func (_q *RegistryQuery) First(ctx context.Context) (*Registry, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -74,8 +74,8 @@ func (rq *RegistryQuery) First(ctx context.Context) (*Registry, error) {
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (rq *RegistryQuery) FirstX(ctx context.Context) *Registry {
-	node, err := rq.First(ctx)
+func (_q *RegistryQuery) FirstX(ctx context.Context) *Registry {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -84,9 +84,9 @@ func (rq *RegistryQuery) FirstX(ctx context.Context) *Registry {
 
 // FirstID returns the first Registry ID from the query.
 // Returns a *NotFoundError when no Registry ID was found.
-func (rq *RegistryQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *RegistryQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = rq.Limit(1).IDs(setContextOp(ctx, rq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -97,8 +97,8 @@ func (rq *RegistryQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) 
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (rq *RegistryQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := rq.FirstID(ctx)
+func (_q *RegistryQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -108,8 +108,8 @@ func (rq *RegistryQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single Registry entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one Registry entity is found.
 // Returns a *NotFoundError when no Registry entities are found.
-func (rq *RegistryQuery) Only(ctx context.Context) (*Registry, error) {
-	nodes, err := rq.Limit(2).All(setContextOp(ctx, rq.ctx, ent.OpQueryOnly))
+func (_q *RegistryQuery) Only(ctx context.Context) (*Registry, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -124,8 +124,8 @@ func (rq *RegistryQuery) Only(ctx context.Context) (*Registry, error) {
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (rq *RegistryQuery) OnlyX(ctx context.Context) *Registry {
-	node, err := rq.Only(ctx)
+func (_q *RegistryQuery) OnlyX(ctx context.Context) *Registry {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -135,9 +135,9 @@ func (rq *RegistryQuery) OnlyX(ctx context.Context) *Registry {
 // OnlyID is like Only, but returns the only Registry ID in the query.
 // Returns a *NotSingularError when more than one Registry ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (rq *RegistryQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *RegistryQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = rq.Limit(2).IDs(setContextOp(ctx, rq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -152,8 +152,8 @@ func (rq *RegistryQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (rq *RegistryQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := rq.OnlyID(ctx)
+func (_q *RegistryQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -161,18 +161,18 @@ func (rq *RegistryQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of Registries.
-func (rq *RegistryQuery) All(ctx context.Context) ([]*Registry, error) {
-	ctx = setContextOp(ctx, rq.ctx, ent.OpQueryAll)
-	if err := rq.prepareQuery(ctx); err != nil {
+func (_q *RegistryQuery) All(ctx context.Context) ([]*Registry, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*Registry, *RegistryQuery]()
-	return withInterceptors[[]*Registry](ctx, rq, qr, rq.inters)
+	return withInterceptors[[]*Registry](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (rq *RegistryQuery) AllX(ctx context.Context) []*Registry {
-	nodes, err := rq.All(ctx)
+func (_q *RegistryQuery) AllX(ctx context.Context) []*Registry {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -180,20 +180,20 @@ func (rq *RegistryQuery) AllX(ctx context.Context) []*Registry {
 }
 
 // IDs executes the query and returns a list of Registry IDs.
-func (rq *RegistryQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if rq.ctx.Unique == nil && rq.path != nil {
-		rq.Unique(true)
+func (_q *RegistryQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, rq.ctx, ent.OpQueryIDs)
-	if err = rq.Select(registry.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(registry.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (rq *RegistryQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := rq.IDs(ctx)
+func (_q *RegistryQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -201,17 +201,17 @@ func (rq *RegistryQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (rq *RegistryQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, rq.ctx, ent.OpQueryCount)
-	if err := rq.prepareQuery(ctx); err != nil {
+func (_q *RegistryQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, rq, querierCount[*RegistryQuery](), rq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*RegistryQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (rq *RegistryQuery) CountX(ctx context.Context) int {
-	count, err := rq.Count(ctx)
+func (_q *RegistryQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -219,9 +219,9 @@ func (rq *RegistryQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (rq *RegistryQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, rq.ctx, ent.OpQueryExist)
-	switch _, err := rq.FirstID(ctx); {
+func (_q *RegistryQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -232,8 +232,8 @@ func (rq *RegistryQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (rq *RegistryQuery) ExistX(ctx context.Context) bool {
-	exist, err := rq.Exist(ctx)
+func (_q *RegistryQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -242,20 +242,20 @@ func (rq *RegistryQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the RegistryQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (rq *RegistryQuery) Clone() *RegistryQuery {
-	if rq == nil {
+func (_q *RegistryQuery) Clone() *RegistryQuery {
+	if _q == nil {
 		return nil
 	}
 	return &RegistryQuery{
-		config:     rq.config,
-		ctx:        rq.ctx.Clone(),
-		order:      append([]registry.OrderOption{}, rq.order...),
-		inters:     append([]Interceptor{}, rq.inters...),
-		predicates: append([]predicate.Registry{}, rq.predicates...),
+		config:     _q.config,
+		ctx:        _q.ctx.Clone(),
+		order:      append([]registry.OrderOption{}, _q.order...),
+		inters:     append([]Interceptor{}, _q.inters...),
+		predicates: append([]predicate.Registry{}, _q.predicates...),
 		// clone intermediate query.
-		sql:       rq.sql.Clone(),
-		path:      rq.path,
-		modifiers: append([]func(*sql.Selector){}, rq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -273,10 +273,10 @@ func (rq *RegistryQuery) Clone() *RegistryQuery {
 //		GroupBy(registry.FieldCreatedAt).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (rq *RegistryQuery) GroupBy(field string, fields ...string) *RegistryGroupBy {
-	rq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &RegistryGroupBy{build: rq}
-	grbuild.flds = &rq.ctx.Fields
+func (_q *RegistryQuery) GroupBy(field string, fields ...string) *RegistryGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &RegistryGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = registry.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -294,65 +294,65 @@ func (rq *RegistryQuery) GroupBy(field string, fields ...string) *RegistryGroupB
 //	client.Registry.Query().
 //		Select(registry.FieldCreatedAt).
 //		Scan(ctx, &v)
-func (rq *RegistryQuery) Select(fields ...string) *RegistrySelect {
-	rq.ctx.Fields = append(rq.ctx.Fields, fields...)
-	sbuild := &RegistrySelect{RegistryQuery: rq}
+func (_q *RegistryQuery) Select(fields ...string) *RegistrySelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &RegistrySelect{RegistryQuery: _q}
 	sbuild.label = registry.Label
-	sbuild.flds, sbuild.scan = &rq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a RegistrySelect configured with the given aggregations.
-func (rq *RegistryQuery) Aggregate(fns ...AggregateFunc) *RegistrySelect {
-	return rq.Select().Aggregate(fns...)
+func (_q *RegistryQuery) Aggregate(fns ...AggregateFunc) *RegistrySelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (rq *RegistryQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range rq.inters {
+func (_q *RegistryQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, rq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range rq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !registry.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if rq.path != nil {
-		prev, err := rq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		rq.sql = prev
+		_q.sql = prev
 	}
 	return nil
 }
 
-func (rq *RegistryQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Registry, error) {
+func (_q *RegistryQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Registry, error) {
 	var (
 		nodes = []*Registry{}
-		_spec = rq.querySpec()
+		_spec = _q.querySpec()
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Registry).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &Registry{config: rq.config}
+		node := &Registry{config: _q.config}
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
 	}
-	if len(rq.modifiers) > 0 {
-		_spec.Modifiers = rq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, rq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
@@ -361,27 +361,27 @@ func (rq *RegistryQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Reg
 	return nodes, nil
 }
 
-func (rq *RegistryQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := rq.querySpec()
-	if len(rq.modifiers) > 0 {
-		_spec.Modifiers = rq.modifiers
+func (_q *RegistryQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = rq.ctx.Fields
-	if len(rq.ctx.Fields) > 0 {
-		_spec.Unique = rq.ctx.Unique != nil && *rq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, rq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (rq *RegistryQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *RegistryQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(registry.Table, registry.Columns, sqlgraph.NewFieldSpec(registry.FieldID, field.TypeUUID))
-	_spec.From = rq.sql
-	if unique := rq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if rq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := rq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, registry.FieldID)
 		for i := range fields {
@@ -390,20 +390,20 @@ func (rq *RegistryQuery) querySpec() *sqlgraph.QuerySpec {
 			}
 		}
 	}
-	if ps := rq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := rq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := rq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := rq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -413,45 +413,45 @@ func (rq *RegistryQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (rq *RegistryQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(rq.driver.Dialect())
+func (_q *RegistryQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(registry.Table)
-	columns := rq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = registry.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if rq.sql != nil {
-		selector = rq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if rq.ctx.Unique != nil && *rq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range rq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range rq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range rq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := rq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := rq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (rq *RegistryQuery) Modify(modifiers ...func(s *sql.Selector)) *RegistrySelect {
-	rq.modifiers = append(rq.modifiers, modifiers...)
-	return rq.Select()
+func (_q *RegistryQuery) Modify(modifiers ...func(s *sql.Selector)) *RegistrySelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // RegistryGroupBy is the group-by builder for Registry entities.
@@ -461,41 +461,41 @@ type RegistryGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (rgb *RegistryGroupBy) Aggregate(fns ...AggregateFunc) *RegistryGroupBy {
-	rgb.fns = append(rgb.fns, fns...)
-	return rgb
+func (_g *RegistryGroupBy) Aggregate(fns ...AggregateFunc) *RegistryGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (rgb *RegistryGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, rgb.build.ctx, ent.OpQueryGroupBy)
-	if err := rgb.build.prepareQuery(ctx); err != nil {
+func (_g *RegistryGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*RegistryQuery, *RegistryGroupBy](ctx, rgb.build, rgb, rgb.build.inters, v)
+	return scanWithInterceptors[*RegistryQuery, *RegistryGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (rgb *RegistryGroupBy) sqlScan(ctx context.Context, root *RegistryQuery, v any) error {
+func (_g *RegistryGroupBy) sqlScan(ctx context.Context, root *RegistryQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(rgb.fns))
-	for _, fn := range rgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*rgb.flds)+len(rgb.fns))
-		for _, f := range *rgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*rgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := rgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -509,27 +509,27 @@ type RegistrySelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (rs *RegistrySelect) Aggregate(fns ...AggregateFunc) *RegistrySelect {
-	rs.fns = append(rs.fns, fns...)
-	return rs
+func (_s *RegistrySelect) Aggregate(fns ...AggregateFunc) *RegistrySelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (rs *RegistrySelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, rs.ctx, ent.OpQuerySelect)
-	if err := rs.prepareQuery(ctx); err != nil {
+func (_s *RegistrySelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*RegistryQuery, *RegistrySelect](ctx, rs.RegistryQuery, rs, rs.inters, v)
+	return scanWithInterceptors[*RegistryQuery, *RegistrySelect](ctx, _s.RegistryQuery, _s, _s.inters, v)
 }
 
-func (rs *RegistrySelect) sqlScan(ctx context.Context, root *RegistryQuery, v any) error {
+func (_s *RegistrySelect) sqlScan(ctx context.Context, root *RegistryQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(rs.fns))
-	for _, fn := range rs.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*rs.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -537,7 +537,7 @@ func (rs *RegistrySelect) sqlScan(ctx context.Context, root *RegistryQuery, v an
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := rs.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -545,7 +545,7 @@ func (rs *RegistrySelect) sqlScan(ctx context.Context, root *RegistryQuery, v an
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (rs *RegistrySelect) Modify(modifiers ...func(s *sql.Selector)) *RegistrySelect {
-	rs.modifiers = append(rs.modifiers, modifiers...)
-	return rs
+func (_s *RegistrySelect) Modify(modifiers ...func(s *sql.Selector)) *RegistrySelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

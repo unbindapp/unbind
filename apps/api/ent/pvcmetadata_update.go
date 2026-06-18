@@ -24,85 +24,85 @@ type PVCMetadataUpdate struct {
 }
 
 // Where appends a list predicates to the PVCMetadataUpdate builder.
-func (pmu *PVCMetadataUpdate) Where(ps ...predicate.PVCMetadata) *PVCMetadataUpdate {
-	pmu.mutation.Where(ps...)
-	return pmu
+func (_u *PVCMetadataUpdate) Where(ps ...predicate.PVCMetadata) *PVCMetadataUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (pmu *PVCMetadataUpdate) SetUpdatedAt(t time.Time) *PVCMetadataUpdate {
-	pmu.mutation.SetUpdatedAt(t)
-	return pmu
+func (_u *PVCMetadataUpdate) SetUpdatedAt(v time.Time) *PVCMetadataUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetPvcID sets the "pvc_id" field.
-func (pmu *PVCMetadataUpdate) SetPvcID(s string) *PVCMetadataUpdate {
-	pmu.mutation.SetPvcID(s)
-	return pmu
+func (_u *PVCMetadataUpdate) SetPvcID(v string) *PVCMetadataUpdate {
+	_u.mutation.SetPvcID(v)
+	return _u
 }
 
 // SetNillablePvcID sets the "pvc_id" field if the given value is not nil.
-func (pmu *PVCMetadataUpdate) SetNillablePvcID(s *string) *PVCMetadataUpdate {
-	if s != nil {
-		pmu.SetPvcID(*s)
+func (_u *PVCMetadataUpdate) SetNillablePvcID(v *string) *PVCMetadataUpdate {
+	if v != nil {
+		_u.SetPvcID(*v)
 	}
-	return pmu
+	return _u
 }
 
 // SetName sets the "name" field.
-func (pmu *PVCMetadataUpdate) SetName(s string) *PVCMetadataUpdate {
-	pmu.mutation.SetName(s)
-	return pmu
+func (_u *PVCMetadataUpdate) SetName(v string) *PVCMetadataUpdate {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (pmu *PVCMetadataUpdate) SetNillableName(s *string) *PVCMetadataUpdate {
-	if s != nil {
-		pmu.SetName(*s)
+func (_u *PVCMetadataUpdate) SetNillableName(v *string) *PVCMetadataUpdate {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return pmu
+	return _u
 }
 
 // ClearName clears the value of the "name" field.
-func (pmu *PVCMetadataUpdate) ClearName() *PVCMetadataUpdate {
-	pmu.mutation.ClearName()
-	return pmu
+func (_u *PVCMetadataUpdate) ClearName() *PVCMetadataUpdate {
+	_u.mutation.ClearName()
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (pmu *PVCMetadataUpdate) SetDescription(s string) *PVCMetadataUpdate {
-	pmu.mutation.SetDescription(s)
-	return pmu
+func (_u *PVCMetadataUpdate) SetDescription(v string) *PVCMetadataUpdate {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (pmu *PVCMetadataUpdate) SetNillableDescription(s *string) *PVCMetadataUpdate {
-	if s != nil {
-		pmu.SetDescription(*s)
+func (_u *PVCMetadataUpdate) SetNillableDescription(v *string) *PVCMetadataUpdate {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return pmu
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (pmu *PVCMetadataUpdate) ClearDescription() *PVCMetadataUpdate {
-	pmu.mutation.ClearDescription()
-	return pmu
+func (_u *PVCMetadataUpdate) ClearDescription() *PVCMetadataUpdate {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // Mutation returns the PVCMetadataMutation object of the builder.
-func (pmu *PVCMetadataUpdate) Mutation() *PVCMetadataMutation {
-	return pmu.mutation
+func (_u *PVCMetadataUpdate) Mutation() *PVCMetadataMutation {
+	return _u.mutation
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (pmu *PVCMetadataUpdate) Save(ctx context.Context) (int, error) {
-	pmu.defaults()
-	return withHooks(ctx, pmu.sqlSave, pmu.mutation, pmu.hooks)
+func (_u *PVCMetadataUpdate) Save(ctx context.Context) (int, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (pmu *PVCMetadataUpdate) SaveX(ctx context.Context) int {
-	affected, err := pmu.Save(ctx)
+func (_u *PVCMetadataUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -110,61 +110,61 @@ func (pmu *PVCMetadataUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (pmu *PVCMetadataUpdate) Exec(ctx context.Context) error {
-	_, err := pmu.Save(ctx)
+func (_u *PVCMetadataUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (pmu *PVCMetadataUpdate) ExecX(ctx context.Context) {
-	if err := pmu.Exec(ctx); err != nil {
+func (_u *PVCMetadataUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (pmu *PVCMetadataUpdate) defaults() {
-	if _, ok := pmu.mutation.UpdatedAt(); !ok {
+func (_u *PVCMetadataUpdate) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := pvcmetadata.UpdateDefaultUpdatedAt()
-		pmu.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (pmu *PVCMetadataUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *PVCMetadataUpdate {
-	pmu.modifiers = append(pmu.modifiers, modifiers...)
-	return pmu
+func (_u *PVCMetadataUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *PVCMetadataUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (pmu *PVCMetadataUpdate) sqlSave(ctx context.Context) (n int, err error) {
+func (_u *PVCMetadataUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	_spec := sqlgraph.NewUpdateSpec(pvcmetadata.Table, pvcmetadata.Columns, sqlgraph.NewFieldSpec(pvcmetadata.FieldID, field.TypeUUID))
-	if ps := pmu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := pmu.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(pvcmetadata.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := pmu.mutation.PvcID(); ok {
+	if value, ok := _u.mutation.PvcID(); ok {
 		_spec.SetField(pvcmetadata.FieldPvcID, field.TypeString, value)
 	}
-	if value, ok := pmu.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(pvcmetadata.FieldName, field.TypeString, value)
 	}
-	if pmu.mutation.NameCleared() {
+	if _u.mutation.NameCleared() {
 		_spec.ClearField(pvcmetadata.FieldName, field.TypeString)
 	}
-	if value, ok := pmu.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(pvcmetadata.FieldDescription, field.TypeString, value)
 	}
-	if pmu.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(pvcmetadata.FieldDescription, field.TypeString)
 	}
-	_spec.AddModifiers(pmu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, pmu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{pvcmetadata.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -172,8 +172,8 @@ func (pmu *PVCMetadataUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	pmu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // PVCMetadataUpdateOne is the builder for updating a single PVCMetadata entity.
@@ -186,92 +186,92 @@ type PVCMetadataUpdateOne struct {
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (pmuo *PVCMetadataUpdateOne) SetUpdatedAt(t time.Time) *PVCMetadataUpdateOne {
-	pmuo.mutation.SetUpdatedAt(t)
-	return pmuo
+func (_u *PVCMetadataUpdateOne) SetUpdatedAt(v time.Time) *PVCMetadataUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetPvcID sets the "pvc_id" field.
-func (pmuo *PVCMetadataUpdateOne) SetPvcID(s string) *PVCMetadataUpdateOne {
-	pmuo.mutation.SetPvcID(s)
-	return pmuo
+func (_u *PVCMetadataUpdateOne) SetPvcID(v string) *PVCMetadataUpdateOne {
+	_u.mutation.SetPvcID(v)
+	return _u
 }
 
 // SetNillablePvcID sets the "pvc_id" field if the given value is not nil.
-func (pmuo *PVCMetadataUpdateOne) SetNillablePvcID(s *string) *PVCMetadataUpdateOne {
-	if s != nil {
-		pmuo.SetPvcID(*s)
+func (_u *PVCMetadataUpdateOne) SetNillablePvcID(v *string) *PVCMetadataUpdateOne {
+	if v != nil {
+		_u.SetPvcID(*v)
 	}
-	return pmuo
+	return _u
 }
 
 // SetName sets the "name" field.
-func (pmuo *PVCMetadataUpdateOne) SetName(s string) *PVCMetadataUpdateOne {
-	pmuo.mutation.SetName(s)
-	return pmuo
+func (_u *PVCMetadataUpdateOne) SetName(v string) *PVCMetadataUpdateOne {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (pmuo *PVCMetadataUpdateOne) SetNillableName(s *string) *PVCMetadataUpdateOne {
-	if s != nil {
-		pmuo.SetName(*s)
+func (_u *PVCMetadataUpdateOne) SetNillableName(v *string) *PVCMetadataUpdateOne {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return pmuo
+	return _u
 }
 
 // ClearName clears the value of the "name" field.
-func (pmuo *PVCMetadataUpdateOne) ClearName() *PVCMetadataUpdateOne {
-	pmuo.mutation.ClearName()
-	return pmuo
+func (_u *PVCMetadataUpdateOne) ClearName() *PVCMetadataUpdateOne {
+	_u.mutation.ClearName()
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (pmuo *PVCMetadataUpdateOne) SetDescription(s string) *PVCMetadataUpdateOne {
-	pmuo.mutation.SetDescription(s)
-	return pmuo
+func (_u *PVCMetadataUpdateOne) SetDescription(v string) *PVCMetadataUpdateOne {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (pmuo *PVCMetadataUpdateOne) SetNillableDescription(s *string) *PVCMetadataUpdateOne {
-	if s != nil {
-		pmuo.SetDescription(*s)
+func (_u *PVCMetadataUpdateOne) SetNillableDescription(v *string) *PVCMetadataUpdateOne {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return pmuo
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (pmuo *PVCMetadataUpdateOne) ClearDescription() *PVCMetadataUpdateOne {
-	pmuo.mutation.ClearDescription()
-	return pmuo
+func (_u *PVCMetadataUpdateOne) ClearDescription() *PVCMetadataUpdateOne {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // Mutation returns the PVCMetadataMutation object of the builder.
-func (pmuo *PVCMetadataUpdateOne) Mutation() *PVCMetadataMutation {
-	return pmuo.mutation
+func (_u *PVCMetadataUpdateOne) Mutation() *PVCMetadataMutation {
+	return _u.mutation
 }
 
 // Where appends a list predicates to the PVCMetadataUpdate builder.
-func (pmuo *PVCMetadataUpdateOne) Where(ps ...predicate.PVCMetadata) *PVCMetadataUpdateOne {
-	pmuo.mutation.Where(ps...)
-	return pmuo
+func (_u *PVCMetadataUpdateOne) Where(ps ...predicate.PVCMetadata) *PVCMetadataUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (pmuo *PVCMetadataUpdateOne) Select(field string, fields ...string) *PVCMetadataUpdateOne {
-	pmuo.fields = append([]string{field}, fields...)
-	return pmuo
+func (_u *PVCMetadataUpdateOne) Select(field string, fields ...string) *PVCMetadataUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated PVCMetadata entity.
-func (pmuo *PVCMetadataUpdateOne) Save(ctx context.Context) (*PVCMetadata, error) {
-	pmuo.defaults()
-	return withHooks(ctx, pmuo.sqlSave, pmuo.mutation, pmuo.hooks)
+func (_u *PVCMetadataUpdateOne) Save(ctx context.Context) (*PVCMetadata, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (pmuo *PVCMetadataUpdateOne) SaveX(ctx context.Context) *PVCMetadata {
-	node, err := pmuo.Save(ctx)
+func (_u *PVCMetadataUpdateOne) SaveX(ctx context.Context) *PVCMetadata {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -279,40 +279,40 @@ func (pmuo *PVCMetadataUpdateOne) SaveX(ctx context.Context) *PVCMetadata {
 }
 
 // Exec executes the query on the entity.
-func (pmuo *PVCMetadataUpdateOne) Exec(ctx context.Context) error {
-	_, err := pmuo.Save(ctx)
+func (_u *PVCMetadataUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (pmuo *PVCMetadataUpdateOne) ExecX(ctx context.Context) {
-	if err := pmuo.Exec(ctx); err != nil {
+func (_u *PVCMetadataUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (pmuo *PVCMetadataUpdateOne) defaults() {
-	if _, ok := pmuo.mutation.UpdatedAt(); !ok {
+func (_u *PVCMetadataUpdateOne) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := pvcmetadata.UpdateDefaultUpdatedAt()
-		pmuo.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (pmuo *PVCMetadataUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *PVCMetadataUpdateOne {
-	pmuo.modifiers = append(pmuo.modifiers, modifiers...)
-	return pmuo
+func (_u *PVCMetadataUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *PVCMetadataUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (pmuo *PVCMetadataUpdateOne) sqlSave(ctx context.Context) (_node *PVCMetadata, err error) {
+func (_u *PVCMetadataUpdateOne) sqlSave(ctx context.Context) (_node *PVCMetadata, err error) {
 	_spec := sqlgraph.NewUpdateSpec(pvcmetadata.Table, pvcmetadata.Columns, sqlgraph.NewFieldSpec(pvcmetadata.FieldID, field.TypeUUID))
-	id, ok := pmuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "PVCMetadata.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := pmuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, pvcmetadata.FieldID)
 		for _, f := range fields {
@@ -324,36 +324,36 @@ func (pmuo *PVCMetadataUpdateOne) sqlSave(ctx context.Context) (_node *PVCMetada
 			}
 		}
 	}
-	if ps := pmuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := pmuo.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(pvcmetadata.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := pmuo.mutation.PvcID(); ok {
+	if value, ok := _u.mutation.PvcID(); ok {
 		_spec.SetField(pvcmetadata.FieldPvcID, field.TypeString, value)
 	}
-	if value, ok := pmuo.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(pvcmetadata.FieldName, field.TypeString, value)
 	}
-	if pmuo.mutation.NameCleared() {
+	if _u.mutation.NameCleared() {
 		_spec.ClearField(pvcmetadata.FieldName, field.TypeString)
 	}
-	if value, ok := pmuo.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(pvcmetadata.FieldDescription, field.TypeString, value)
 	}
-	if pmuo.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(pvcmetadata.FieldDescription, field.TypeString)
 	}
-	_spec.AddModifiers(pmuo.modifiers...)
-	_node = &PVCMetadata{config: pmuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &PVCMetadata{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, pmuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{pvcmetadata.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -361,6 +361,6 @@ func (pmuo *PVCMetadataUpdateOne) sqlSave(ctx context.Context) (_node *PVCMetada
 		}
 		return nil, err
 	}
-	pmuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

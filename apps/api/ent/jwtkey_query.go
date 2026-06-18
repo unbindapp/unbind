@@ -29,40 +29,40 @@ type JWTKeyQuery struct {
 }
 
 // Where adds a new predicate for the JWTKeyQuery builder.
-func (jkq *JWTKeyQuery) Where(ps ...predicate.JWTKey) *JWTKeyQuery {
-	jkq.predicates = append(jkq.predicates, ps...)
-	return jkq
+func (_q *JWTKeyQuery) Where(ps ...predicate.JWTKey) *JWTKeyQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (jkq *JWTKeyQuery) Limit(limit int) *JWTKeyQuery {
-	jkq.ctx.Limit = &limit
-	return jkq
+func (_q *JWTKeyQuery) Limit(limit int) *JWTKeyQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (jkq *JWTKeyQuery) Offset(offset int) *JWTKeyQuery {
-	jkq.ctx.Offset = &offset
-	return jkq
+func (_q *JWTKeyQuery) Offset(offset int) *JWTKeyQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (jkq *JWTKeyQuery) Unique(unique bool) *JWTKeyQuery {
-	jkq.ctx.Unique = &unique
-	return jkq
+func (_q *JWTKeyQuery) Unique(unique bool) *JWTKeyQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (jkq *JWTKeyQuery) Order(o ...jwtkey.OrderOption) *JWTKeyQuery {
-	jkq.order = append(jkq.order, o...)
-	return jkq
+func (_q *JWTKeyQuery) Order(o ...jwtkey.OrderOption) *JWTKeyQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // First returns the first JWTKey entity from the query.
 // Returns a *NotFoundError when no JWTKey was found.
-func (jkq *JWTKeyQuery) First(ctx context.Context) (*JWTKey, error) {
-	nodes, err := jkq.Limit(1).All(setContextOp(ctx, jkq.ctx, ent.OpQueryFirst))
+func (_q *JWTKeyQuery) First(ctx context.Context) (*JWTKey, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -73,8 +73,8 @@ func (jkq *JWTKeyQuery) First(ctx context.Context) (*JWTKey, error) {
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (jkq *JWTKeyQuery) FirstX(ctx context.Context) *JWTKey {
-	node, err := jkq.First(ctx)
+func (_q *JWTKeyQuery) FirstX(ctx context.Context) *JWTKey {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -83,9 +83,9 @@ func (jkq *JWTKeyQuery) FirstX(ctx context.Context) *JWTKey {
 
 // FirstID returns the first JWTKey ID from the query.
 // Returns a *NotFoundError when no JWTKey ID was found.
-func (jkq *JWTKeyQuery) FirstID(ctx context.Context) (id int, err error) {
+func (_q *JWTKeyQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = jkq.Limit(1).IDs(setContextOp(ctx, jkq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -96,8 +96,8 @@ func (jkq *JWTKeyQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (jkq *JWTKeyQuery) FirstIDX(ctx context.Context) int {
-	id, err := jkq.FirstID(ctx)
+func (_q *JWTKeyQuery) FirstIDX(ctx context.Context) int {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -107,8 +107,8 @@ func (jkq *JWTKeyQuery) FirstIDX(ctx context.Context) int {
 // Only returns a single JWTKey entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one JWTKey entity is found.
 // Returns a *NotFoundError when no JWTKey entities are found.
-func (jkq *JWTKeyQuery) Only(ctx context.Context) (*JWTKey, error) {
-	nodes, err := jkq.Limit(2).All(setContextOp(ctx, jkq.ctx, ent.OpQueryOnly))
+func (_q *JWTKeyQuery) Only(ctx context.Context) (*JWTKey, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -123,8 +123,8 @@ func (jkq *JWTKeyQuery) Only(ctx context.Context) (*JWTKey, error) {
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (jkq *JWTKeyQuery) OnlyX(ctx context.Context) *JWTKey {
-	node, err := jkq.Only(ctx)
+func (_q *JWTKeyQuery) OnlyX(ctx context.Context) *JWTKey {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -134,9 +134,9 @@ func (jkq *JWTKeyQuery) OnlyX(ctx context.Context) *JWTKey {
 // OnlyID is like Only, but returns the only JWTKey ID in the query.
 // Returns a *NotSingularError when more than one JWTKey ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (jkq *JWTKeyQuery) OnlyID(ctx context.Context) (id int, err error) {
+func (_q *JWTKeyQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = jkq.Limit(2).IDs(setContextOp(ctx, jkq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -151,8 +151,8 @@ func (jkq *JWTKeyQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (jkq *JWTKeyQuery) OnlyIDX(ctx context.Context) int {
-	id, err := jkq.OnlyID(ctx)
+func (_q *JWTKeyQuery) OnlyIDX(ctx context.Context) int {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -160,18 +160,18 @@ func (jkq *JWTKeyQuery) OnlyIDX(ctx context.Context) int {
 }
 
 // All executes the query and returns a list of JWTKeys.
-func (jkq *JWTKeyQuery) All(ctx context.Context) ([]*JWTKey, error) {
-	ctx = setContextOp(ctx, jkq.ctx, ent.OpQueryAll)
-	if err := jkq.prepareQuery(ctx); err != nil {
+func (_q *JWTKeyQuery) All(ctx context.Context) ([]*JWTKey, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*JWTKey, *JWTKeyQuery]()
-	return withInterceptors[[]*JWTKey](ctx, jkq, qr, jkq.inters)
+	return withInterceptors[[]*JWTKey](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (jkq *JWTKeyQuery) AllX(ctx context.Context) []*JWTKey {
-	nodes, err := jkq.All(ctx)
+func (_q *JWTKeyQuery) AllX(ctx context.Context) []*JWTKey {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -179,20 +179,20 @@ func (jkq *JWTKeyQuery) AllX(ctx context.Context) []*JWTKey {
 }
 
 // IDs executes the query and returns a list of JWTKey IDs.
-func (jkq *JWTKeyQuery) IDs(ctx context.Context) (ids []int, err error) {
-	if jkq.ctx.Unique == nil && jkq.path != nil {
-		jkq.Unique(true)
+func (_q *JWTKeyQuery) IDs(ctx context.Context) (ids []int, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, jkq.ctx, ent.OpQueryIDs)
-	if err = jkq.Select(jwtkey.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(jwtkey.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (jkq *JWTKeyQuery) IDsX(ctx context.Context) []int {
-	ids, err := jkq.IDs(ctx)
+func (_q *JWTKeyQuery) IDsX(ctx context.Context) []int {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -200,17 +200,17 @@ func (jkq *JWTKeyQuery) IDsX(ctx context.Context) []int {
 }
 
 // Count returns the count of the given query.
-func (jkq *JWTKeyQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, jkq.ctx, ent.OpQueryCount)
-	if err := jkq.prepareQuery(ctx); err != nil {
+func (_q *JWTKeyQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, jkq, querierCount[*JWTKeyQuery](), jkq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*JWTKeyQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (jkq *JWTKeyQuery) CountX(ctx context.Context) int {
-	count, err := jkq.Count(ctx)
+func (_q *JWTKeyQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -218,9 +218,9 @@ func (jkq *JWTKeyQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (jkq *JWTKeyQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, jkq.ctx, ent.OpQueryExist)
-	switch _, err := jkq.FirstID(ctx); {
+func (_q *JWTKeyQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -231,8 +231,8 @@ func (jkq *JWTKeyQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (jkq *JWTKeyQuery) ExistX(ctx context.Context) bool {
-	exist, err := jkq.Exist(ctx)
+func (_q *JWTKeyQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -241,20 +241,20 @@ func (jkq *JWTKeyQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the JWTKeyQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (jkq *JWTKeyQuery) Clone() *JWTKeyQuery {
-	if jkq == nil {
+func (_q *JWTKeyQuery) Clone() *JWTKeyQuery {
+	if _q == nil {
 		return nil
 	}
 	return &JWTKeyQuery{
-		config:     jkq.config,
-		ctx:        jkq.ctx.Clone(),
-		order:      append([]jwtkey.OrderOption{}, jkq.order...),
-		inters:     append([]Interceptor{}, jkq.inters...),
-		predicates: append([]predicate.JWTKey{}, jkq.predicates...),
+		config:     _q.config,
+		ctx:        _q.ctx.Clone(),
+		order:      append([]jwtkey.OrderOption{}, _q.order...),
+		inters:     append([]Interceptor{}, _q.inters...),
+		predicates: append([]predicate.JWTKey{}, _q.predicates...),
 		// clone intermediate query.
-		sql:       jkq.sql.Clone(),
-		path:      jkq.path,
-		modifiers: append([]func(*sql.Selector){}, jkq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -272,10 +272,10 @@ func (jkq *JWTKeyQuery) Clone() *JWTKeyQuery {
 //		GroupBy(jwtkey.FieldLabel).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (jkq *JWTKeyQuery) GroupBy(field string, fields ...string) *JWTKeyGroupBy {
-	jkq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &JWTKeyGroupBy{build: jkq}
-	grbuild.flds = &jkq.ctx.Fields
+func (_q *JWTKeyQuery) GroupBy(field string, fields ...string) *JWTKeyGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &JWTKeyGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = jwtkey.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -293,65 +293,65 @@ func (jkq *JWTKeyQuery) GroupBy(field string, fields ...string) *JWTKeyGroupBy {
 //	client.JWTKey.Query().
 //		Select(jwtkey.FieldLabel).
 //		Scan(ctx, &v)
-func (jkq *JWTKeyQuery) Select(fields ...string) *JWTKeySelect {
-	jkq.ctx.Fields = append(jkq.ctx.Fields, fields...)
-	sbuild := &JWTKeySelect{JWTKeyQuery: jkq}
+func (_q *JWTKeyQuery) Select(fields ...string) *JWTKeySelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &JWTKeySelect{JWTKeyQuery: _q}
 	sbuild.label = jwtkey.Label
-	sbuild.flds, sbuild.scan = &jkq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a JWTKeySelect configured with the given aggregations.
-func (jkq *JWTKeyQuery) Aggregate(fns ...AggregateFunc) *JWTKeySelect {
-	return jkq.Select().Aggregate(fns...)
+func (_q *JWTKeyQuery) Aggregate(fns ...AggregateFunc) *JWTKeySelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (jkq *JWTKeyQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range jkq.inters {
+func (_q *JWTKeyQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, jkq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range jkq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !jwtkey.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if jkq.path != nil {
-		prev, err := jkq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		jkq.sql = prev
+		_q.sql = prev
 	}
 	return nil
 }
 
-func (jkq *JWTKeyQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*JWTKey, error) {
+func (_q *JWTKeyQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*JWTKey, error) {
 	var (
 		nodes = []*JWTKey{}
-		_spec = jkq.querySpec()
+		_spec = _q.querySpec()
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*JWTKey).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &JWTKey{config: jkq.config}
+		node := &JWTKey{config: _q.config}
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
 	}
-	if len(jkq.modifiers) > 0 {
-		_spec.Modifiers = jkq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, jkq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
@@ -360,27 +360,27 @@ func (jkq *JWTKeyQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*JWTK
 	return nodes, nil
 }
 
-func (jkq *JWTKeyQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := jkq.querySpec()
-	if len(jkq.modifiers) > 0 {
-		_spec.Modifiers = jkq.modifiers
+func (_q *JWTKeyQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = jkq.ctx.Fields
-	if len(jkq.ctx.Fields) > 0 {
-		_spec.Unique = jkq.ctx.Unique != nil && *jkq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, jkq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (jkq *JWTKeyQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *JWTKeyQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(jwtkey.Table, jwtkey.Columns, sqlgraph.NewFieldSpec(jwtkey.FieldID, field.TypeInt))
-	_spec.From = jkq.sql
-	if unique := jkq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if jkq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := jkq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, jwtkey.FieldID)
 		for i := range fields {
@@ -389,20 +389,20 @@ func (jkq *JWTKeyQuery) querySpec() *sqlgraph.QuerySpec {
 			}
 		}
 	}
-	if ps := jkq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := jkq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := jkq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := jkq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -412,45 +412,45 @@ func (jkq *JWTKeyQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (jkq *JWTKeyQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(jkq.driver.Dialect())
+func (_q *JWTKeyQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(jwtkey.Table)
-	columns := jkq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = jwtkey.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if jkq.sql != nil {
-		selector = jkq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if jkq.ctx.Unique != nil && *jkq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range jkq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range jkq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range jkq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := jkq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := jkq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (jkq *JWTKeyQuery) Modify(modifiers ...func(s *sql.Selector)) *JWTKeySelect {
-	jkq.modifiers = append(jkq.modifiers, modifiers...)
-	return jkq.Select()
+func (_q *JWTKeyQuery) Modify(modifiers ...func(s *sql.Selector)) *JWTKeySelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // JWTKeyGroupBy is the group-by builder for JWTKey entities.
@@ -460,41 +460,41 @@ type JWTKeyGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (jkgb *JWTKeyGroupBy) Aggregate(fns ...AggregateFunc) *JWTKeyGroupBy {
-	jkgb.fns = append(jkgb.fns, fns...)
-	return jkgb
+func (_g *JWTKeyGroupBy) Aggregate(fns ...AggregateFunc) *JWTKeyGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (jkgb *JWTKeyGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, jkgb.build.ctx, ent.OpQueryGroupBy)
-	if err := jkgb.build.prepareQuery(ctx); err != nil {
+func (_g *JWTKeyGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*JWTKeyQuery, *JWTKeyGroupBy](ctx, jkgb.build, jkgb, jkgb.build.inters, v)
+	return scanWithInterceptors[*JWTKeyQuery, *JWTKeyGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (jkgb *JWTKeyGroupBy) sqlScan(ctx context.Context, root *JWTKeyQuery, v any) error {
+func (_g *JWTKeyGroupBy) sqlScan(ctx context.Context, root *JWTKeyQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(jkgb.fns))
-	for _, fn := range jkgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*jkgb.flds)+len(jkgb.fns))
-		for _, f := range *jkgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*jkgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := jkgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -508,27 +508,27 @@ type JWTKeySelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (jks *JWTKeySelect) Aggregate(fns ...AggregateFunc) *JWTKeySelect {
-	jks.fns = append(jks.fns, fns...)
-	return jks
+func (_s *JWTKeySelect) Aggregate(fns ...AggregateFunc) *JWTKeySelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (jks *JWTKeySelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, jks.ctx, ent.OpQuerySelect)
-	if err := jks.prepareQuery(ctx); err != nil {
+func (_s *JWTKeySelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*JWTKeyQuery, *JWTKeySelect](ctx, jks.JWTKeyQuery, jks, jks.inters, v)
+	return scanWithInterceptors[*JWTKeyQuery, *JWTKeySelect](ctx, _s.JWTKeyQuery, _s, _s.inters, v)
 }
 
-func (jks *JWTKeySelect) sqlScan(ctx context.Context, root *JWTKeyQuery, v any) error {
+func (_s *JWTKeySelect) sqlScan(ctx context.Context, root *JWTKeyQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(jks.fns))
-	for _, fn := range jks.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*jks.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -536,7 +536,7 @@ func (jks *JWTKeySelect) sqlScan(ctx context.Context, root *JWTKeyQuery, v any) 
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := jks.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -544,7 +544,7 @@ func (jks *JWTKeySelect) sqlScan(ctx context.Context, root *JWTKeyQuery, v any) 
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (jks *JWTKeySelect) Modify(modifiers ...func(s *sql.Selector)) *JWTKeySelect {
-	jks.modifiers = append(jks.modifiers, modifiers...)
-	return jks
+func (_s *JWTKeySelect) Modify(modifiers ...func(s *sql.Selector)) *JWTKeySelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

@@ -97,7 +97,7 @@ func (*GithubApp) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the GithubApp fields.
-func (ga *GithubApp) assignValues(columns []string, values []any) error {
+func (_m *GithubApp) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -108,63 +108,63 @@ func (ga *GithubApp) assignValues(columns []string, values []any) error {
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			ga.ID = int64(value.Int64)
+			_m.ID = int64(value.Int64)
 		case githubapp.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				ga.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case githubapp.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				ga.UpdatedAt = value.Time
+				_m.UpdatedAt = value.Time
 			}
 		case githubapp.FieldUUID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field uuid", values[i])
 			} else if value != nil {
-				ga.UUID = *value
+				_m.UUID = *value
 			}
 		case githubapp.FieldCreatedBy:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field created_by", values[i])
 			} else if value != nil {
-				ga.CreatedBy = *value
+				_m.CreatedBy = *value
 			}
 		case githubapp.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				ga.Name = value.String
+				_m.Name = value.String
 			}
 		case githubapp.FieldClientID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field client_id", values[i])
 			} else if value.Valid {
-				ga.ClientID = value.String
+				_m.ClientID = value.String
 			}
 		case githubapp.FieldClientSecret:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field client_secret", values[i])
 			} else if value.Valid {
-				ga.ClientSecret = value.String
+				_m.ClientSecret = value.String
 			}
 		case githubapp.FieldWebhookSecret:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field webhook_secret", values[i])
 			} else if value.Valid {
-				ga.WebhookSecret = value.String
+				_m.WebhookSecret = value.String
 			}
 		case githubapp.FieldPrivateKey:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field private_key", values[i])
 			} else if value.Valid {
-				ga.PrivateKey = value.String
+				_m.PrivateKey = value.String
 			}
 		default:
-			ga.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -172,60 +172,60 @@ func (ga *GithubApp) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the GithubApp.
 // This includes values selected through modifiers, order, etc.
-func (ga *GithubApp) Value(name string) (ent.Value, error) {
-	return ga.selectValues.Get(name)
+func (_m *GithubApp) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryInstallations queries the "installations" edge of the GithubApp entity.
-func (ga *GithubApp) QueryInstallations() *GithubInstallationQuery {
-	return NewGithubAppClient(ga.config).QueryInstallations(ga)
+func (_m *GithubApp) QueryInstallations() *GithubInstallationQuery {
+	return NewGithubAppClient(_m.config).QueryInstallations(_m)
 }
 
 // QueryUsers queries the "users" edge of the GithubApp entity.
-func (ga *GithubApp) QueryUsers() *UserQuery {
-	return NewGithubAppClient(ga.config).QueryUsers(ga)
+func (_m *GithubApp) QueryUsers() *UserQuery {
+	return NewGithubAppClient(_m.config).QueryUsers(_m)
 }
 
 // Update returns a builder for updating this GithubApp.
 // Note that you need to call GithubApp.Unwrap() before calling this method if this GithubApp
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (ga *GithubApp) Update() *GithubAppUpdateOne {
-	return NewGithubAppClient(ga.config).UpdateOne(ga)
+func (_m *GithubApp) Update() *GithubAppUpdateOne {
+	return NewGithubAppClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the GithubApp entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (ga *GithubApp) Unwrap() *GithubApp {
-	_tx, ok := ga.config.driver.(*txDriver)
+func (_m *GithubApp) Unwrap() *GithubApp {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: GithubApp is not a transactional entity")
 	}
-	ga.config.driver = _tx.drv
-	return ga
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (ga *GithubApp) String() string {
+func (_m *GithubApp) String() string {
 	var builder strings.Builder
 	builder.WriteString("GithubApp(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", ga.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("created_at=")
-	builder.WriteString(ga.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(ga.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("uuid=")
-	builder.WriteString(fmt.Sprintf("%v", ga.UUID))
+	builder.WriteString(fmt.Sprintf("%v", _m.UUID))
 	builder.WriteString(", ")
 	builder.WriteString("created_by=")
-	builder.WriteString(fmt.Sprintf("%v", ga.CreatedBy))
+	builder.WriteString(fmt.Sprintf("%v", _m.CreatedBy))
 	builder.WriteString(", ")
 	builder.WriteString("name=")
-	builder.WriteString(ga.Name)
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
 	builder.WriteString("client_id=")
-	builder.WriteString(ga.ClientID)
+	builder.WriteString(_m.ClientID)
 	builder.WriteString(", ")
 	builder.WriteString("client_secret=<sensitive>")
 	builder.WriteString(", ")

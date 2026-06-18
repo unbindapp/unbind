@@ -93,7 +93,7 @@ func (*Template) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Template fields.
-func (t *Template) assignValues(columns []string, values []any) error {
+func (_m *Template) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -103,43 +103,43 @@ func (t *Template) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				t.ID = *value
+				_m.ID = *value
 			}
 		case template.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				t.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case template.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				t.UpdatedAt = value.Time
+				_m.UpdatedAt = value.Time
 			}
 		case template.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				t.Name = value.String
+				_m.Name = value.String
 			}
 		case template.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				t.Description = value.String
+				_m.Description = value.String
 			}
 		case template.FieldIcon:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field icon", values[i])
 			} else if value.Valid {
-				t.Icon = value.String
+				_m.Icon = value.String
 			}
 		case template.FieldKeywords:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field keywords", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &t.Keywords); err != nil {
+				if err := json.Unmarshal(*value, &_m.Keywords); err != nil {
 					return fmt.Errorf("unmarshal field keywords: %w", err)
 				}
 			}
@@ -147,7 +147,7 @@ func (t *Template) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field resource_recommendations", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &t.ResourceRecommendations); err != nil {
+				if err := json.Unmarshal(*value, &_m.ResourceRecommendations); err != nil {
 					return fmt.Errorf("unmarshal field resource_recommendations: %w", err)
 				}
 			}
@@ -155,30 +155,30 @@ func (t *Template) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field display_rank", values[i])
 			} else if value.Valid {
-				t.DisplayRank = uint(value.Int64)
+				_m.DisplayRank = uint(value.Int64)
 			}
 		case template.FieldVersion:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field version", values[i])
 			} else if value.Valid {
-				t.Version = int(value.Int64)
+				_m.Version = int(value.Int64)
 			}
 		case template.FieldImmutable:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field immutable", values[i])
 			} else if value.Valid {
-				t.Immutable = value.Bool
+				_m.Immutable = value.Bool
 			}
 		case template.FieldDefinition:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field definition", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &t.Definition); err != nil {
+				if err := json.Unmarshal(*value, &_m.Definition); err != nil {
 					return fmt.Errorf("unmarshal field definition: %w", err)
 				}
 			}
 		default:
-			t.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -186,70 +186,70 @@ func (t *Template) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the Template.
 // This includes values selected through modifiers, order, etc.
-func (t *Template) Value(name string) (ent.Value, error) {
-	return t.selectValues.Get(name)
+func (_m *Template) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryServices queries the "services" edge of the Template entity.
-func (t *Template) QueryServices() *ServiceQuery {
-	return NewTemplateClient(t.config).QueryServices(t)
+func (_m *Template) QueryServices() *ServiceQuery {
+	return NewTemplateClient(_m.config).QueryServices(_m)
 }
 
 // Update returns a builder for updating this Template.
 // Note that you need to call Template.Unwrap() before calling this method if this Template
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (t *Template) Update() *TemplateUpdateOne {
-	return NewTemplateClient(t.config).UpdateOne(t)
+func (_m *Template) Update() *TemplateUpdateOne {
+	return NewTemplateClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the Template entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (t *Template) Unwrap() *Template {
-	_tx, ok := t.config.driver.(*txDriver)
+func (_m *Template) Unwrap() *Template {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: Template is not a transactional entity")
 	}
-	t.config.driver = _tx.drv
-	return t
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (t *Template) String() string {
+func (_m *Template) String() string {
 	var builder strings.Builder
 	builder.WriteString("Template(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", t.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("created_at=")
-	builder.WriteString(t.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(t.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("name=")
-	builder.WriteString(t.Name)
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
 	builder.WriteString("description=")
-	builder.WriteString(t.Description)
+	builder.WriteString(_m.Description)
 	builder.WriteString(", ")
 	builder.WriteString("icon=")
-	builder.WriteString(t.Icon)
+	builder.WriteString(_m.Icon)
 	builder.WriteString(", ")
 	builder.WriteString("keywords=")
-	builder.WriteString(fmt.Sprintf("%v", t.Keywords))
+	builder.WriteString(fmt.Sprintf("%v", _m.Keywords))
 	builder.WriteString(", ")
 	builder.WriteString("resource_recommendations=")
-	builder.WriteString(fmt.Sprintf("%v", t.ResourceRecommendations))
+	builder.WriteString(fmt.Sprintf("%v", _m.ResourceRecommendations))
 	builder.WriteString(", ")
 	builder.WriteString("display_rank=")
-	builder.WriteString(fmt.Sprintf("%v", t.DisplayRank))
+	builder.WriteString(fmt.Sprintf("%v", _m.DisplayRank))
 	builder.WriteString(", ")
 	builder.WriteString("version=")
-	builder.WriteString(fmt.Sprintf("%v", t.Version))
+	builder.WriteString(fmt.Sprintf("%v", _m.Version))
 	builder.WriteString(", ")
 	builder.WriteString("immutable=")
-	builder.WriteString(fmt.Sprintf("%v", t.Immutable))
+	builder.WriteString(fmt.Sprintf("%v", _m.Immutable))
 	builder.WriteString(", ")
 	builder.WriteString("definition=")
-	builder.WriteString(fmt.Sprintf("%v", t.Definition))
+	builder.WriteString(fmt.Sprintf("%v", _m.Definition))
 	builder.WriteByte(')')
 	return builder.String()
 }

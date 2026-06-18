@@ -28,109 +28,109 @@ type WebhookCreate struct {
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (wc *WebhookCreate) SetCreatedAt(t time.Time) *WebhookCreate {
-	wc.mutation.SetCreatedAt(t)
-	return wc
+func (_c *WebhookCreate) SetCreatedAt(v time.Time) *WebhookCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (wc *WebhookCreate) SetNillableCreatedAt(t *time.Time) *WebhookCreate {
-	if t != nil {
-		wc.SetCreatedAt(*t)
+func (_c *WebhookCreate) SetNillableCreatedAt(v *time.Time) *WebhookCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return wc
+	return _c
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (wc *WebhookCreate) SetUpdatedAt(t time.Time) *WebhookCreate {
-	wc.mutation.SetUpdatedAt(t)
-	return wc
+func (_c *WebhookCreate) SetUpdatedAt(v time.Time) *WebhookCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (wc *WebhookCreate) SetNillableUpdatedAt(t *time.Time) *WebhookCreate {
-	if t != nil {
-		wc.SetUpdatedAt(*t)
+func (_c *WebhookCreate) SetNillableUpdatedAt(v *time.Time) *WebhookCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
 	}
-	return wc
+	return _c
 }
 
 // SetURL sets the "url" field.
-func (wc *WebhookCreate) SetURL(s string) *WebhookCreate {
-	wc.mutation.SetURL(s)
-	return wc
+func (_c *WebhookCreate) SetURL(v string) *WebhookCreate {
+	_c.mutation.SetURL(v)
+	return _c
 }
 
 // SetType sets the "type" field.
-func (wc *WebhookCreate) SetType(st schema.WebhookType) *WebhookCreate {
-	wc.mutation.SetType(st)
-	return wc
+func (_c *WebhookCreate) SetType(v schema.WebhookType) *WebhookCreate {
+	_c.mutation.SetType(v)
+	return _c
 }
 
 // SetEvents sets the "events" field.
-func (wc *WebhookCreate) SetEvents(se []schema.WebhookEvent) *WebhookCreate {
-	wc.mutation.SetEvents(se)
-	return wc
+func (_c *WebhookCreate) SetEvents(v []schema.WebhookEvent) *WebhookCreate {
+	_c.mutation.SetEvents(v)
+	return _c
 }
 
 // SetTeamID sets the "team_id" field.
-func (wc *WebhookCreate) SetTeamID(u uuid.UUID) *WebhookCreate {
-	wc.mutation.SetTeamID(u)
-	return wc
+func (_c *WebhookCreate) SetTeamID(v uuid.UUID) *WebhookCreate {
+	_c.mutation.SetTeamID(v)
+	return _c
 }
 
 // SetProjectID sets the "project_id" field.
-func (wc *WebhookCreate) SetProjectID(u uuid.UUID) *WebhookCreate {
-	wc.mutation.SetProjectID(u)
-	return wc
+func (_c *WebhookCreate) SetProjectID(v uuid.UUID) *WebhookCreate {
+	_c.mutation.SetProjectID(v)
+	return _c
 }
 
 // SetNillableProjectID sets the "project_id" field if the given value is not nil.
-func (wc *WebhookCreate) SetNillableProjectID(u *uuid.UUID) *WebhookCreate {
-	if u != nil {
-		wc.SetProjectID(*u)
+func (_c *WebhookCreate) SetNillableProjectID(v *uuid.UUID) *WebhookCreate {
+	if v != nil {
+		_c.SetProjectID(*v)
 	}
-	return wc
+	return _c
 }
 
 // SetID sets the "id" field.
-func (wc *WebhookCreate) SetID(u uuid.UUID) *WebhookCreate {
-	wc.mutation.SetID(u)
-	return wc
+func (_c *WebhookCreate) SetID(v uuid.UUID) *WebhookCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (wc *WebhookCreate) SetNillableID(u *uuid.UUID) *WebhookCreate {
-	if u != nil {
-		wc.SetID(*u)
+func (_c *WebhookCreate) SetNillableID(v *uuid.UUID) *WebhookCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return wc
+	return _c
 }
 
 // SetTeam sets the "team" edge to the Team entity.
-func (wc *WebhookCreate) SetTeam(t *Team) *WebhookCreate {
-	return wc.SetTeamID(t.ID)
+func (_c *WebhookCreate) SetTeam(v *Team) *WebhookCreate {
+	return _c.SetTeamID(v.ID)
 }
 
 // SetProject sets the "project" edge to the Project entity.
-func (wc *WebhookCreate) SetProject(p *Project) *WebhookCreate {
-	return wc.SetProjectID(p.ID)
+func (_c *WebhookCreate) SetProject(v *Project) *WebhookCreate {
+	return _c.SetProjectID(v.ID)
 }
 
 // Mutation returns the WebhookMutation object of the builder.
-func (wc *WebhookCreate) Mutation() *WebhookMutation {
-	return wc.mutation
+func (_c *WebhookCreate) Mutation() *WebhookMutation {
+	return _c.mutation
 }
 
 // Save creates the Webhook in the database.
-func (wc *WebhookCreate) Save(ctx context.Context) (*Webhook, error) {
-	wc.defaults()
-	return withHooks(ctx, wc.sqlSave, wc.mutation, wc.hooks)
+func (_c *WebhookCreate) Save(ctx context.Context) (*Webhook, error) {
+	_c.defaults()
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (wc *WebhookCreate) SaveX(ctx context.Context) *Webhook {
-	v, err := wc.Save(ctx)
+func (_c *WebhookCreate) SaveX(ctx context.Context) *Webhook {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -138,76 +138,76 @@ func (wc *WebhookCreate) SaveX(ctx context.Context) *Webhook {
 }
 
 // Exec executes the query.
-func (wc *WebhookCreate) Exec(ctx context.Context) error {
-	_, err := wc.Save(ctx)
+func (_c *WebhookCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (wc *WebhookCreate) ExecX(ctx context.Context) {
-	if err := wc.Exec(ctx); err != nil {
+func (_c *WebhookCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (wc *WebhookCreate) defaults() {
-	if _, ok := wc.mutation.CreatedAt(); !ok {
+func (_c *WebhookCreate) defaults() {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := webhook.DefaultCreatedAt()
-		wc.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := wc.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		v := webhook.DefaultUpdatedAt()
-		wc.mutation.SetUpdatedAt(v)
+		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := wc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		v := webhook.DefaultID()
-		wc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (wc *WebhookCreate) check() error {
-	if _, ok := wc.mutation.CreatedAt(); !ok {
+func (_c *WebhookCreate) check() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Webhook.created_at"`)}
 	}
-	if _, ok := wc.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Webhook.updated_at"`)}
 	}
-	if _, ok := wc.mutation.URL(); !ok {
+	if _, ok := _c.mutation.URL(); !ok {
 		return &ValidationError{Name: "url", err: errors.New(`ent: missing required field "Webhook.url"`)}
 	}
-	if v, ok := wc.mutation.URL(); ok {
+	if v, ok := _c.mutation.URL(); ok {
 		if err := webhook.URLValidator(v); err != nil {
 			return &ValidationError{Name: "url", err: fmt.Errorf(`ent: validator failed for field "Webhook.url": %w`, err)}
 		}
 	}
-	if _, ok := wc.mutation.GetType(); !ok {
+	if _, ok := _c.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Webhook.type"`)}
 	}
-	if v, ok := wc.mutation.GetType(); ok {
+	if v, ok := _c.mutation.GetType(); ok {
 		if err := webhook.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Webhook.type": %w`, err)}
 		}
 	}
-	if _, ok := wc.mutation.Events(); !ok {
+	if _, ok := _c.mutation.Events(); !ok {
 		return &ValidationError{Name: "events", err: errors.New(`ent: missing required field "Webhook.events"`)}
 	}
-	if _, ok := wc.mutation.TeamID(); !ok {
+	if _, ok := _c.mutation.TeamID(); !ok {
 		return &ValidationError{Name: "team_id", err: errors.New(`ent: missing required field "Webhook.team_id"`)}
 	}
-	if len(wc.mutation.TeamIDs()) == 0 {
+	if len(_c.mutation.TeamIDs()) == 0 {
 		return &ValidationError{Name: "team", err: errors.New(`ent: missing required edge "Webhook.team"`)}
 	}
 	return nil
 }
 
-func (wc *WebhookCreate) sqlSave(ctx context.Context) (*Webhook, error) {
-	if err := wc.check(); err != nil {
+func (_c *WebhookCreate) sqlSave(ctx context.Context) (*Webhook, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := wc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, wc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -220,42 +220,42 @@ func (wc *WebhookCreate) sqlSave(ctx context.Context) (*Webhook, error) {
 			return nil, err
 		}
 	}
-	wc.mutation.id = &_node.ID
-	wc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (wc *WebhookCreate) createSpec() (*Webhook, *sqlgraph.CreateSpec) {
+func (_c *WebhookCreate) createSpec() (*Webhook, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Webhook{config: wc.config}
+		_node = &Webhook{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(webhook.Table, sqlgraph.NewFieldSpec(webhook.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = wc.conflict
-	if id, ok := wc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := wc.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(webhook.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if value, ok := wc.mutation.UpdatedAt(); ok {
+	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(webhook.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := wc.mutation.URL(); ok {
+	if value, ok := _c.mutation.URL(); ok {
 		_spec.SetField(webhook.FieldURL, field.TypeString, value)
 		_node.URL = value
 	}
-	if value, ok := wc.mutation.GetType(); ok {
+	if value, ok := _c.mutation.GetType(); ok {
 		_spec.SetField(webhook.FieldType, field.TypeEnum, value)
 		_node.Type = value
 	}
-	if value, ok := wc.mutation.Events(); ok {
+	if value, ok := _c.mutation.Events(); ok {
 		_spec.SetField(webhook.FieldEvents, field.TypeJSON, value)
 		_node.Events = value
 	}
-	if nodes := wc.mutation.TeamIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TeamIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -272,7 +272,7 @@ func (wc *WebhookCreate) createSpec() (*Webhook, *sqlgraph.CreateSpec) {
 		_node.TeamID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := wc.mutation.ProjectIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ProjectIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -308,10 +308,10 @@ func (wc *WebhookCreate) createSpec() (*Webhook, *sqlgraph.CreateSpec) {
 //			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
-func (wc *WebhookCreate) OnConflict(opts ...sql.ConflictOption) *WebhookUpsertOne {
-	wc.conflict = opts
+func (_c *WebhookCreate) OnConflict(opts ...sql.ConflictOption) *WebhookUpsertOne {
+	_c.conflict = opts
 	return &WebhookUpsertOne{
-		create: wc,
+		create: _c,
 	}
 }
 
@@ -321,10 +321,10 @@ func (wc *WebhookCreate) OnConflict(opts ...sql.ConflictOption) *WebhookUpsertOn
 //	client.Webhook.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (wc *WebhookCreate) OnConflictColumns(columns ...string) *WebhookUpsertOne {
-	wc.conflict = append(wc.conflict, sql.ConflictColumns(columns...))
+func (_c *WebhookCreate) OnConflictColumns(columns ...string) *WebhookUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &WebhookUpsertOne{
-		create: wc,
+		create: _c,
 	}
 }
 
@@ -608,16 +608,16 @@ type WebhookCreateBulk struct {
 }
 
 // Save creates the Webhook entities in the database.
-func (wcb *WebhookCreateBulk) Save(ctx context.Context) ([]*Webhook, error) {
-	if wcb.err != nil {
-		return nil, wcb.err
+func (_c *WebhookCreateBulk) Save(ctx context.Context) ([]*Webhook, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(wcb.builders))
-	nodes := make([]*Webhook, len(wcb.builders))
-	mutators := make([]Mutator, len(wcb.builders))
-	for i := range wcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*Webhook, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := wcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*WebhookMutation)
@@ -631,12 +631,12 @@ func (wcb *WebhookCreateBulk) Save(ctx context.Context) ([]*Webhook, error) {
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, wcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = wcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, wcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -656,7 +656,7 @@ func (wcb *WebhookCreateBulk) Save(ctx context.Context) ([]*Webhook, error) {
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, wcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -664,8 +664,8 @@ func (wcb *WebhookCreateBulk) Save(ctx context.Context) ([]*Webhook, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (wcb *WebhookCreateBulk) SaveX(ctx context.Context) []*Webhook {
-	v, err := wcb.Save(ctx)
+func (_c *WebhookCreateBulk) SaveX(ctx context.Context) []*Webhook {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -673,14 +673,14 @@ func (wcb *WebhookCreateBulk) SaveX(ctx context.Context) []*Webhook {
 }
 
 // Exec executes the query.
-func (wcb *WebhookCreateBulk) Exec(ctx context.Context) error {
-	_, err := wcb.Save(ctx)
+func (_c *WebhookCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (wcb *WebhookCreateBulk) ExecX(ctx context.Context) {
-	if err := wcb.Exec(ctx); err != nil {
+func (_c *WebhookCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -700,10 +700,10 @@ func (wcb *WebhookCreateBulk) ExecX(ctx context.Context) {
 //			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
-func (wcb *WebhookCreateBulk) OnConflict(opts ...sql.ConflictOption) *WebhookUpsertBulk {
-	wcb.conflict = opts
+func (_c *WebhookCreateBulk) OnConflict(opts ...sql.ConflictOption) *WebhookUpsertBulk {
+	_c.conflict = opts
 	return &WebhookUpsertBulk{
-		create: wcb,
+		create: _c,
 	}
 }
 
@@ -713,10 +713,10 @@ func (wcb *WebhookCreateBulk) OnConflict(opts ...sql.ConflictOption) *WebhookUps
 //	client.Webhook.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (wcb *WebhookCreateBulk) OnConflictColumns(columns ...string) *WebhookUpsertBulk {
-	wcb.conflict = append(wcb.conflict, sql.ConflictColumns(columns...))
+func (_c *WebhookCreateBulk) OnConflictColumns(columns ...string) *WebhookUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &WebhookUpsertBulk{
-		create: wcb,
+		create: _c,
 	}
 }
 

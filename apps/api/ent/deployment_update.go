@@ -28,443 +28,443 @@ type DeploymentUpdate struct {
 }
 
 // Where appends a list predicates to the DeploymentUpdate builder.
-func (du *DeploymentUpdate) Where(ps ...predicate.Deployment) *DeploymentUpdate {
-	du.mutation.Where(ps...)
-	return du
+func (_u *DeploymentUpdate) Where(ps ...predicate.Deployment) *DeploymentUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (du *DeploymentUpdate) SetUpdatedAt(t time.Time) *DeploymentUpdate {
-	du.mutation.SetUpdatedAt(t)
-	return du
+func (_u *DeploymentUpdate) SetUpdatedAt(v time.Time) *DeploymentUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetServiceID sets the "service_id" field.
-func (du *DeploymentUpdate) SetServiceID(u uuid.UUID) *DeploymentUpdate {
-	du.mutation.SetServiceID(u)
-	return du
+func (_u *DeploymentUpdate) SetServiceID(v uuid.UUID) *DeploymentUpdate {
+	_u.mutation.SetServiceID(v)
+	return _u
 }
 
 // SetNillableServiceID sets the "service_id" field if the given value is not nil.
-func (du *DeploymentUpdate) SetNillableServiceID(u *uuid.UUID) *DeploymentUpdate {
-	if u != nil {
-		du.SetServiceID(*u)
+func (_u *DeploymentUpdate) SetNillableServiceID(v *uuid.UUID) *DeploymentUpdate {
+	if v != nil {
+		_u.SetServiceID(*v)
 	}
-	return du
+	return _u
 }
 
 // SetStatus sets the "status" field.
-func (du *DeploymentUpdate) SetStatus(ss schema.DeploymentStatus) *DeploymentUpdate {
-	du.mutation.SetStatus(ss)
-	return du
+func (_u *DeploymentUpdate) SetStatus(v schema.DeploymentStatus) *DeploymentUpdate {
+	_u.mutation.SetStatus(v)
+	return _u
 }
 
 // SetNillableStatus sets the "status" field if the given value is not nil.
-func (du *DeploymentUpdate) SetNillableStatus(ss *schema.DeploymentStatus) *DeploymentUpdate {
-	if ss != nil {
-		du.SetStatus(*ss)
+func (_u *DeploymentUpdate) SetNillableStatus(v *schema.DeploymentStatus) *DeploymentUpdate {
+	if v != nil {
+		_u.SetStatus(*v)
 	}
-	return du
+	return _u
 }
 
 // SetSource sets the "source" field.
-func (du *DeploymentUpdate) SetSource(ss schema.DeploymentSource) *DeploymentUpdate {
-	du.mutation.SetSource(ss)
-	return du
+func (_u *DeploymentUpdate) SetSource(v schema.DeploymentSource) *DeploymentUpdate {
+	_u.mutation.SetSource(v)
+	return _u
 }
 
 // SetNillableSource sets the "source" field if the given value is not nil.
-func (du *DeploymentUpdate) SetNillableSource(ss *schema.DeploymentSource) *DeploymentUpdate {
-	if ss != nil {
-		du.SetSource(*ss)
+func (_u *DeploymentUpdate) SetNillableSource(v *schema.DeploymentSource) *DeploymentUpdate {
+	if v != nil {
+		_u.SetSource(*v)
 	}
-	return du
+	return _u
 }
 
 // SetError sets the "error" field.
-func (du *DeploymentUpdate) SetError(s string) *DeploymentUpdate {
-	du.mutation.SetError(s)
-	return du
+func (_u *DeploymentUpdate) SetError(v string) *DeploymentUpdate {
+	_u.mutation.SetError(v)
+	return _u
 }
 
 // SetNillableError sets the "error" field if the given value is not nil.
-func (du *DeploymentUpdate) SetNillableError(s *string) *DeploymentUpdate {
-	if s != nil {
-		du.SetError(*s)
+func (_u *DeploymentUpdate) SetNillableError(v *string) *DeploymentUpdate {
+	if v != nil {
+		_u.SetError(*v)
 	}
-	return du
+	return _u
 }
 
 // ClearError clears the value of the "error" field.
-func (du *DeploymentUpdate) ClearError() *DeploymentUpdate {
-	du.mutation.ClearError()
-	return du
+func (_u *DeploymentUpdate) ClearError() *DeploymentUpdate {
+	_u.mutation.ClearError()
+	return _u
 }
 
 // SetCommitSha sets the "commit_sha" field.
-func (du *DeploymentUpdate) SetCommitSha(s string) *DeploymentUpdate {
-	du.mutation.SetCommitSha(s)
-	return du
+func (_u *DeploymentUpdate) SetCommitSha(v string) *DeploymentUpdate {
+	_u.mutation.SetCommitSha(v)
+	return _u
 }
 
 // SetNillableCommitSha sets the "commit_sha" field if the given value is not nil.
-func (du *DeploymentUpdate) SetNillableCommitSha(s *string) *DeploymentUpdate {
-	if s != nil {
-		du.SetCommitSha(*s)
+func (_u *DeploymentUpdate) SetNillableCommitSha(v *string) *DeploymentUpdate {
+	if v != nil {
+		_u.SetCommitSha(*v)
 	}
-	return du
+	return _u
 }
 
 // ClearCommitSha clears the value of the "commit_sha" field.
-func (du *DeploymentUpdate) ClearCommitSha() *DeploymentUpdate {
-	du.mutation.ClearCommitSha()
-	return du
+func (_u *DeploymentUpdate) ClearCommitSha() *DeploymentUpdate {
+	_u.mutation.ClearCommitSha()
+	return _u
 }
 
 // SetCommitMessage sets the "commit_message" field.
-func (du *DeploymentUpdate) SetCommitMessage(s string) *DeploymentUpdate {
-	du.mutation.SetCommitMessage(s)
-	return du
+func (_u *DeploymentUpdate) SetCommitMessage(v string) *DeploymentUpdate {
+	_u.mutation.SetCommitMessage(v)
+	return _u
 }
 
 // SetNillableCommitMessage sets the "commit_message" field if the given value is not nil.
-func (du *DeploymentUpdate) SetNillableCommitMessage(s *string) *DeploymentUpdate {
-	if s != nil {
-		du.SetCommitMessage(*s)
+func (_u *DeploymentUpdate) SetNillableCommitMessage(v *string) *DeploymentUpdate {
+	if v != nil {
+		_u.SetCommitMessage(*v)
 	}
-	return du
+	return _u
 }
 
 // ClearCommitMessage clears the value of the "commit_message" field.
-func (du *DeploymentUpdate) ClearCommitMessage() *DeploymentUpdate {
-	du.mutation.ClearCommitMessage()
-	return du
+func (_u *DeploymentUpdate) ClearCommitMessage() *DeploymentUpdate {
+	_u.mutation.ClearCommitMessage()
+	return _u
 }
 
 // SetGitBranch sets the "git_branch" field.
-func (du *DeploymentUpdate) SetGitBranch(s string) *DeploymentUpdate {
-	du.mutation.SetGitBranch(s)
-	return du
+func (_u *DeploymentUpdate) SetGitBranch(v string) *DeploymentUpdate {
+	_u.mutation.SetGitBranch(v)
+	return _u
 }
 
 // SetNillableGitBranch sets the "git_branch" field if the given value is not nil.
-func (du *DeploymentUpdate) SetNillableGitBranch(s *string) *DeploymentUpdate {
-	if s != nil {
-		du.SetGitBranch(*s)
+func (_u *DeploymentUpdate) SetNillableGitBranch(v *string) *DeploymentUpdate {
+	if v != nil {
+		_u.SetGitBranch(*v)
 	}
-	return du
+	return _u
 }
 
 // ClearGitBranch clears the value of the "git_branch" field.
-func (du *DeploymentUpdate) ClearGitBranch() *DeploymentUpdate {
-	du.mutation.ClearGitBranch()
-	return du
+func (_u *DeploymentUpdate) ClearGitBranch() *DeploymentUpdate {
+	_u.mutation.ClearGitBranch()
+	return _u
 }
 
 // SetCommitAuthor sets the "commit_author" field.
-func (du *DeploymentUpdate) SetCommitAuthor(sc *schema.GitCommitter) *DeploymentUpdate {
-	du.mutation.SetCommitAuthor(sc)
-	return du
+func (_u *DeploymentUpdate) SetCommitAuthor(v *schema.GitCommitter) *DeploymentUpdate {
+	_u.mutation.SetCommitAuthor(v)
+	return _u
 }
 
 // ClearCommitAuthor clears the value of the "commit_author" field.
-func (du *DeploymentUpdate) ClearCommitAuthor() *DeploymentUpdate {
-	du.mutation.ClearCommitAuthor()
-	return du
+func (_u *DeploymentUpdate) ClearCommitAuthor() *DeploymentUpdate {
+	_u.mutation.ClearCommitAuthor()
+	return _u
 }
 
 // SetQueuedAt sets the "queued_at" field.
-func (du *DeploymentUpdate) SetQueuedAt(t time.Time) *DeploymentUpdate {
-	du.mutation.SetQueuedAt(t)
-	return du
+func (_u *DeploymentUpdate) SetQueuedAt(v time.Time) *DeploymentUpdate {
+	_u.mutation.SetQueuedAt(v)
+	return _u
 }
 
 // SetNillableQueuedAt sets the "queued_at" field if the given value is not nil.
-func (du *DeploymentUpdate) SetNillableQueuedAt(t *time.Time) *DeploymentUpdate {
-	if t != nil {
-		du.SetQueuedAt(*t)
+func (_u *DeploymentUpdate) SetNillableQueuedAt(v *time.Time) *DeploymentUpdate {
+	if v != nil {
+		_u.SetQueuedAt(*v)
 	}
-	return du
+	return _u
 }
 
 // ClearQueuedAt clears the value of the "queued_at" field.
-func (du *DeploymentUpdate) ClearQueuedAt() *DeploymentUpdate {
-	du.mutation.ClearQueuedAt()
-	return du
+func (_u *DeploymentUpdate) ClearQueuedAt() *DeploymentUpdate {
+	_u.mutation.ClearQueuedAt()
+	return _u
 }
 
 // SetStartedAt sets the "started_at" field.
-func (du *DeploymentUpdate) SetStartedAt(t time.Time) *DeploymentUpdate {
-	du.mutation.SetStartedAt(t)
-	return du
+func (_u *DeploymentUpdate) SetStartedAt(v time.Time) *DeploymentUpdate {
+	_u.mutation.SetStartedAt(v)
+	return _u
 }
 
 // SetNillableStartedAt sets the "started_at" field if the given value is not nil.
-func (du *DeploymentUpdate) SetNillableStartedAt(t *time.Time) *DeploymentUpdate {
-	if t != nil {
-		du.SetStartedAt(*t)
+func (_u *DeploymentUpdate) SetNillableStartedAt(v *time.Time) *DeploymentUpdate {
+	if v != nil {
+		_u.SetStartedAt(*v)
 	}
-	return du
+	return _u
 }
 
 // ClearStartedAt clears the value of the "started_at" field.
-func (du *DeploymentUpdate) ClearStartedAt() *DeploymentUpdate {
-	du.mutation.ClearStartedAt()
-	return du
+func (_u *DeploymentUpdate) ClearStartedAt() *DeploymentUpdate {
+	_u.mutation.ClearStartedAt()
+	return _u
 }
 
 // SetCompletedAt sets the "completed_at" field.
-func (du *DeploymentUpdate) SetCompletedAt(t time.Time) *DeploymentUpdate {
-	du.mutation.SetCompletedAt(t)
-	return du
+func (_u *DeploymentUpdate) SetCompletedAt(v time.Time) *DeploymentUpdate {
+	_u.mutation.SetCompletedAt(v)
+	return _u
 }
 
 // SetNillableCompletedAt sets the "completed_at" field if the given value is not nil.
-func (du *DeploymentUpdate) SetNillableCompletedAt(t *time.Time) *DeploymentUpdate {
-	if t != nil {
-		du.SetCompletedAt(*t)
+func (_u *DeploymentUpdate) SetNillableCompletedAt(v *time.Time) *DeploymentUpdate {
+	if v != nil {
+		_u.SetCompletedAt(*v)
 	}
-	return du
+	return _u
 }
 
 // ClearCompletedAt clears the value of the "completed_at" field.
-func (du *DeploymentUpdate) ClearCompletedAt() *DeploymentUpdate {
-	du.mutation.ClearCompletedAt()
-	return du
+func (_u *DeploymentUpdate) ClearCompletedAt() *DeploymentUpdate {
+	_u.mutation.ClearCompletedAt()
+	return _u
 }
 
 // SetKubernetesJobName sets the "kubernetes_job_name" field.
-func (du *DeploymentUpdate) SetKubernetesJobName(s string) *DeploymentUpdate {
-	du.mutation.SetKubernetesJobName(s)
-	return du
+func (_u *DeploymentUpdate) SetKubernetesJobName(v string) *DeploymentUpdate {
+	_u.mutation.SetKubernetesJobName(v)
+	return _u
 }
 
 // SetNillableKubernetesJobName sets the "kubernetes_job_name" field if the given value is not nil.
-func (du *DeploymentUpdate) SetNillableKubernetesJobName(s *string) *DeploymentUpdate {
-	if s != nil {
-		du.SetKubernetesJobName(*s)
+func (_u *DeploymentUpdate) SetNillableKubernetesJobName(v *string) *DeploymentUpdate {
+	if v != nil {
+		_u.SetKubernetesJobName(*v)
 	}
-	return du
+	return _u
 }
 
 // ClearKubernetesJobName clears the value of the "kubernetes_job_name" field.
-func (du *DeploymentUpdate) ClearKubernetesJobName() *DeploymentUpdate {
-	du.mutation.ClearKubernetesJobName()
-	return du
+func (_u *DeploymentUpdate) ClearKubernetesJobName() *DeploymentUpdate {
+	_u.mutation.ClearKubernetesJobName()
+	return _u
 }
 
 // SetKubernetesJobStatus sets the "kubernetes_job_status" field.
-func (du *DeploymentUpdate) SetKubernetesJobStatus(s string) *DeploymentUpdate {
-	du.mutation.SetKubernetesJobStatus(s)
-	return du
+func (_u *DeploymentUpdate) SetKubernetesJobStatus(v string) *DeploymentUpdate {
+	_u.mutation.SetKubernetesJobStatus(v)
+	return _u
 }
 
 // SetNillableKubernetesJobStatus sets the "kubernetes_job_status" field if the given value is not nil.
-func (du *DeploymentUpdate) SetNillableKubernetesJobStatus(s *string) *DeploymentUpdate {
-	if s != nil {
-		du.SetKubernetesJobStatus(*s)
+func (_u *DeploymentUpdate) SetNillableKubernetesJobStatus(v *string) *DeploymentUpdate {
+	if v != nil {
+		_u.SetKubernetesJobStatus(*v)
 	}
-	return du
+	return _u
 }
 
 // ClearKubernetesJobStatus clears the value of the "kubernetes_job_status" field.
-func (du *DeploymentUpdate) ClearKubernetesJobStatus() *DeploymentUpdate {
-	du.mutation.ClearKubernetesJobStatus()
-	return du
+func (_u *DeploymentUpdate) ClearKubernetesJobStatus() *DeploymentUpdate {
+	_u.mutation.ClearKubernetesJobStatus()
+	return _u
 }
 
 // SetAttempts sets the "attempts" field.
-func (du *DeploymentUpdate) SetAttempts(i int) *DeploymentUpdate {
-	du.mutation.ResetAttempts()
-	du.mutation.SetAttempts(i)
-	return du
+func (_u *DeploymentUpdate) SetAttempts(v int) *DeploymentUpdate {
+	_u.mutation.ResetAttempts()
+	_u.mutation.SetAttempts(v)
+	return _u
 }
 
 // SetNillableAttempts sets the "attempts" field if the given value is not nil.
-func (du *DeploymentUpdate) SetNillableAttempts(i *int) *DeploymentUpdate {
-	if i != nil {
-		du.SetAttempts(*i)
+func (_u *DeploymentUpdate) SetNillableAttempts(v *int) *DeploymentUpdate {
+	if v != nil {
+		_u.SetAttempts(*v)
 	}
-	return du
+	return _u
 }
 
-// AddAttempts adds i to the "attempts" field.
-func (du *DeploymentUpdate) AddAttempts(i int) *DeploymentUpdate {
-	du.mutation.AddAttempts(i)
-	return du
+// AddAttempts adds value to the "attempts" field.
+func (_u *DeploymentUpdate) AddAttempts(v int) *DeploymentUpdate {
+	_u.mutation.AddAttempts(v)
+	return _u
 }
 
 // SetImage sets the "image" field.
-func (du *DeploymentUpdate) SetImage(s string) *DeploymentUpdate {
-	du.mutation.SetImage(s)
-	return du
+func (_u *DeploymentUpdate) SetImage(v string) *DeploymentUpdate {
+	_u.mutation.SetImage(v)
+	return _u
 }
 
 // SetNillableImage sets the "image" field if the given value is not nil.
-func (du *DeploymentUpdate) SetNillableImage(s *string) *DeploymentUpdate {
-	if s != nil {
-		du.SetImage(*s)
+func (_u *DeploymentUpdate) SetNillableImage(v *string) *DeploymentUpdate {
+	if v != nil {
+		_u.SetImage(*v)
 	}
-	return du
+	return _u
 }
 
 // ClearImage clears the value of the "image" field.
-func (du *DeploymentUpdate) ClearImage() *DeploymentUpdate {
-	du.mutation.ClearImage()
-	return du
+func (_u *DeploymentUpdate) ClearImage() *DeploymentUpdate {
+	_u.mutation.ClearImage()
+	return _u
 }
 
 // SetResourceDefinition sets the "resource_definition" field.
-func (du *DeploymentUpdate) SetResourceDefinition(v *v1.Service) *DeploymentUpdate {
-	du.mutation.SetResourceDefinition(v)
-	return du
+func (_u *DeploymentUpdate) SetResourceDefinition(v *v1.Service) *DeploymentUpdate {
+	_u.mutation.SetResourceDefinition(v)
+	return _u
 }
 
 // ClearResourceDefinition clears the value of the "resource_definition" field.
-func (du *DeploymentUpdate) ClearResourceDefinition() *DeploymentUpdate {
-	du.mutation.ClearResourceDefinition()
-	return du
+func (_u *DeploymentUpdate) ClearResourceDefinition() *DeploymentUpdate {
+	_u.mutation.ClearResourceDefinition()
+	return _u
 }
 
 // SetBuilder sets the "builder" field.
-func (du *DeploymentUpdate) SetBuilder(sb schema.ServiceBuilder) *DeploymentUpdate {
-	du.mutation.SetBuilder(sb)
-	return du
+func (_u *DeploymentUpdate) SetBuilder(v schema.ServiceBuilder) *DeploymentUpdate {
+	_u.mutation.SetBuilder(v)
+	return _u
 }
 
 // SetNillableBuilder sets the "builder" field if the given value is not nil.
-func (du *DeploymentUpdate) SetNillableBuilder(sb *schema.ServiceBuilder) *DeploymentUpdate {
-	if sb != nil {
-		du.SetBuilder(*sb)
+func (_u *DeploymentUpdate) SetNillableBuilder(v *schema.ServiceBuilder) *DeploymentUpdate {
+	if v != nil {
+		_u.SetBuilder(*v)
 	}
-	return du
+	return _u
 }
 
 // SetRailpackBuilderInstallCommand sets the "railpack_builder_install_command" field.
-func (du *DeploymentUpdate) SetRailpackBuilderInstallCommand(s string) *DeploymentUpdate {
-	du.mutation.SetRailpackBuilderInstallCommand(s)
-	return du
+func (_u *DeploymentUpdate) SetRailpackBuilderInstallCommand(v string) *DeploymentUpdate {
+	_u.mutation.SetRailpackBuilderInstallCommand(v)
+	return _u
 }
 
 // SetNillableRailpackBuilderInstallCommand sets the "railpack_builder_install_command" field if the given value is not nil.
-func (du *DeploymentUpdate) SetNillableRailpackBuilderInstallCommand(s *string) *DeploymentUpdate {
-	if s != nil {
-		du.SetRailpackBuilderInstallCommand(*s)
+func (_u *DeploymentUpdate) SetNillableRailpackBuilderInstallCommand(v *string) *DeploymentUpdate {
+	if v != nil {
+		_u.SetRailpackBuilderInstallCommand(*v)
 	}
-	return du
+	return _u
 }
 
 // ClearRailpackBuilderInstallCommand clears the value of the "railpack_builder_install_command" field.
-func (du *DeploymentUpdate) ClearRailpackBuilderInstallCommand() *DeploymentUpdate {
-	du.mutation.ClearRailpackBuilderInstallCommand()
-	return du
+func (_u *DeploymentUpdate) ClearRailpackBuilderInstallCommand() *DeploymentUpdate {
+	_u.mutation.ClearRailpackBuilderInstallCommand()
+	return _u
 }
 
 // SetRailpackBuilderBuildCommand sets the "railpack_builder_build_command" field.
-func (du *DeploymentUpdate) SetRailpackBuilderBuildCommand(s string) *DeploymentUpdate {
-	du.mutation.SetRailpackBuilderBuildCommand(s)
-	return du
+func (_u *DeploymentUpdate) SetRailpackBuilderBuildCommand(v string) *DeploymentUpdate {
+	_u.mutation.SetRailpackBuilderBuildCommand(v)
+	return _u
 }
 
 // SetNillableRailpackBuilderBuildCommand sets the "railpack_builder_build_command" field if the given value is not nil.
-func (du *DeploymentUpdate) SetNillableRailpackBuilderBuildCommand(s *string) *DeploymentUpdate {
-	if s != nil {
-		du.SetRailpackBuilderBuildCommand(*s)
+func (_u *DeploymentUpdate) SetNillableRailpackBuilderBuildCommand(v *string) *DeploymentUpdate {
+	if v != nil {
+		_u.SetRailpackBuilderBuildCommand(*v)
 	}
-	return du
+	return _u
 }
 
 // ClearRailpackBuilderBuildCommand clears the value of the "railpack_builder_build_command" field.
-func (du *DeploymentUpdate) ClearRailpackBuilderBuildCommand() *DeploymentUpdate {
-	du.mutation.ClearRailpackBuilderBuildCommand()
-	return du
+func (_u *DeploymentUpdate) ClearRailpackBuilderBuildCommand() *DeploymentUpdate {
+	_u.mutation.ClearRailpackBuilderBuildCommand()
+	return _u
 }
 
 // SetRunCommand sets the "run_command" field.
-func (du *DeploymentUpdate) SetRunCommand(s string) *DeploymentUpdate {
-	du.mutation.SetRunCommand(s)
-	return du
+func (_u *DeploymentUpdate) SetRunCommand(v string) *DeploymentUpdate {
+	_u.mutation.SetRunCommand(v)
+	return _u
 }
 
 // SetNillableRunCommand sets the "run_command" field if the given value is not nil.
-func (du *DeploymentUpdate) SetNillableRunCommand(s *string) *DeploymentUpdate {
-	if s != nil {
-		du.SetRunCommand(*s)
+func (_u *DeploymentUpdate) SetNillableRunCommand(v *string) *DeploymentUpdate {
+	if v != nil {
+		_u.SetRunCommand(*v)
 	}
-	return du
+	return _u
 }
 
 // ClearRunCommand clears the value of the "run_command" field.
-func (du *DeploymentUpdate) ClearRunCommand() *DeploymentUpdate {
-	du.mutation.ClearRunCommand()
-	return du
+func (_u *DeploymentUpdate) ClearRunCommand() *DeploymentUpdate {
+	_u.mutation.ClearRunCommand()
+	return _u
 }
 
 // SetDockerBuilderDockerfilePath sets the "docker_builder_dockerfile_path" field.
-func (du *DeploymentUpdate) SetDockerBuilderDockerfilePath(s string) *DeploymentUpdate {
-	du.mutation.SetDockerBuilderDockerfilePath(s)
-	return du
+func (_u *DeploymentUpdate) SetDockerBuilderDockerfilePath(v string) *DeploymentUpdate {
+	_u.mutation.SetDockerBuilderDockerfilePath(v)
+	return _u
 }
 
 // SetNillableDockerBuilderDockerfilePath sets the "docker_builder_dockerfile_path" field if the given value is not nil.
-func (du *DeploymentUpdate) SetNillableDockerBuilderDockerfilePath(s *string) *DeploymentUpdate {
-	if s != nil {
-		du.SetDockerBuilderDockerfilePath(*s)
+func (_u *DeploymentUpdate) SetNillableDockerBuilderDockerfilePath(v *string) *DeploymentUpdate {
+	if v != nil {
+		_u.SetDockerBuilderDockerfilePath(*v)
 	}
-	return du
+	return _u
 }
 
 // ClearDockerBuilderDockerfilePath clears the value of the "docker_builder_dockerfile_path" field.
-func (du *DeploymentUpdate) ClearDockerBuilderDockerfilePath() *DeploymentUpdate {
-	du.mutation.ClearDockerBuilderDockerfilePath()
-	return du
+func (_u *DeploymentUpdate) ClearDockerBuilderDockerfilePath() *DeploymentUpdate {
+	_u.mutation.ClearDockerBuilderDockerfilePath()
+	return _u
 }
 
 // SetDockerBuilderBuildContext sets the "docker_builder_build_context" field.
-func (du *DeploymentUpdate) SetDockerBuilderBuildContext(s string) *DeploymentUpdate {
-	du.mutation.SetDockerBuilderBuildContext(s)
-	return du
+func (_u *DeploymentUpdate) SetDockerBuilderBuildContext(v string) *DeploymentUpdate {
+	_u.mutation.SetDockerBuilderBuildContext(v)
+	return _u
 }
 
 // SetNillableDockerBuilderBuildContext sets the "docker_builder_build_context" field if the given value is not nil.
-func (du *DeploymentUpdate) SetNillableDockerBuilderBuildContext(s *string) *DeploymentUpdate {
-	if s != nil {
-		du.SetDockerBuilderBuildContext(*s)
+func (_u *DeploymentUpdate) SetNillableDockerBuilderBuildContext(v *string) *DeploymentUpdate {
+	if v != nil {
+		_u.SetDockerBuilderBuildContext(*v)
 	}
-	return du
+	return _u
 }
 
 // ClearDockerBuilderBuildContext clears the value of the "docker_builder_build_context" field.
-func (du *DeploymentUpdate) ClearDockerBuilderBuildContext() *DeploymentUpdate {
-	du.mutation.ClearDockerBuilderBuildContext()
-	return du
+func (_u *DeploymentUpdate) ClearDockerBuilderBuildContext() *DeploymentUpdate {
+	_u.mutation.ClearDockerBuilderBuildContext()
+	return _u
 }
 
 // SetService sets the "service" edge to the Service entity.
-func (du *DeploymentUpdate) SetService(s *Service) *DeploymentUpdate {
-	return du.SetServiceID(s.ID)
+func (_u *DeploymentUpdate) SetService(v *Service) *DeploymentUpdate {
+	return _u.SetServiceID(v.ID)
 }
 
 // Mutation returns the DeploymentMutation object of the builder.
-func (du *DeploymentUpdate) Mutation() *DeploymentMutation {
-	return du.mutation
+func (_u *DeploymentUpdate) Mutation() *DeploymentMutation {
+	return _u.mutation
 }
 
 // ClearService clears the "service" edge to the Service entity.
-func (du *DeploymentUpdate) ClearService() *DeploymentUpdate {
-	du.mutation.ClearService()
-	return du
+func (_u *DeploymentUpdate) ClearService() *DeploymentUpdate {
+	_u.mutation.ClearService()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (du *DeploymentUpdate) Save(ctx context.Context) (int, error) {
-	du.defaults()
-	return withHooks(ctx, du.sqlSave, du.mutation, du.hooks)
+func (_u *DeploymentUpdate) Save(ctx context.Context) (int, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (du *DeploymentUpdate) SaveX(ctx context.Context) int {
-	affected, err := du.Save(ctx)
+func (_u *DeploymentUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -472,188 +472,188 @@ func (du *DeploymentUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (du *DeploymentUpdate) Exec(ctx context.Context) error {
-	_, err := du.Save(ctx)
+func (_u *DeploymentUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (du *DeploymentUpdate) ExecX(ctx context.Context) {
-	if err := du.Exec(ctx); err != nil {
+func (_u *DeploymentUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (du *DeploymentUpdate) defaults() {
-	if _, ok := du.mutation.UpdatedAt(); !ok {
+func (_u *DeploymentUpdate) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := deployment.UpdateDefaultUpdatedAt()
-		du.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (du *DeploymentUpdate) check() error {
-	if v, ok := du.mutation.Status(); ok {
+func (_u *DeploymentUpdate) check() error {
+	if v, ok := _u.mutation.Status(); ok {
 		if err := deployment.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Deployment.status": %w`, err)}
 		}
 	}
-	if v, ok := du.mutation.Source(); ok {
+	if v, ok := _u.mutation.Source(); ok {
 		if err := deployment.SourceValidator(v); err != nil {
 			return &ValidationError{Name: "source", err: fmt.Errorf(`ent: validator failed for field "Deployment.source": %w`, err)}
 		}
 	}
-	if v, ok := du.mutation.Builder(); ok {
+	if v, ok := _u.mutation.Builder(); ok {
 		if err := deployment.BuilderValidator(v); err != nil {
 			return &ValidationError{Name: "builder", err: fmt.Errorf(`ent: validator failed for field "Deployment.builder": %w`, err)}
 		}
 	}
-	if du.mutation.ServiceCleared() && len(du.mutation.ServiceIDs()) > 0 {
+	if _u.mutation.ServiceCleared() && len(_u.mutation.ServiceIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Deployment.service"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (du *DeploymentUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *DeploymentUpdate {
-	du.modifiers = append(du.modifiers, modifiers...)
-	return du
+func (_u *DeploymentUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *DeploymentUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (du *DeploymentUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := du.check(); err != nil {
-		return n, err
+func (_u *DeploymentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(deployment.Table, deployment.Columns, sqlgraph.NewFieldSpec(deployment.FieldID, field.TypeUUID))
-	if ps := du.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := du.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(deployment.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := du.mutation.Status(); ok {
+	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(deployment.FieldStatus, field.TypeEnum, value)
 	}
-	if value, ok := du.mutation.Source(); ok {
+	if value, ok := _u.mutation.Source(); ok {
 		_spec.SetField(deployment.FieldSource, field.TypeEnum, value)
 	}
-	if value, ok := du.mutation.Error(); ok {
+	if value, ok := _u.mutation.Error(); ok {
 		_spec.SetField(deployment.FieldError, field.TypeString, value)
 	}
-	if du.mutation.ErrorCleared() {
+	if _u.mutation.ErrorCleared() {
 		_spec.ClearField(deployment.FieldError, field.TypeString)
 	}
-	if value, ok := du.mutation.CommitSha(); ok {
+	if value, ok := _u.mutation.CommitSha(); ok {
 		_spec.SetField(deployment.FieldCommitSha, field.TypeString, value)
 	}
-	if du.mutation.CommitShaCleared() {
+	if _u.mutation.CommitShaCleared() {
 		_spec.ClearField(deployment.FieldCommitSha, field.TypeString)
 	}
-	if value, ok := du.mutation.CommitMessage(); ok {
+	if value, ok := _u.mutation.CommitMessage(); ok {
 		_spec.SetField(deployment.FieldCommitMessage, field.TypeString, value)
 	}
-	if du.mutation.CommitMessageCleared() {
+	if _u.mutation.CommitMessageCleared() {
 		_spec.ClearField(deployment.FieldCommitMessage, field.TypeString)
 	}
-	if value, ok := du.mutation.GitBranch(); ok {
+	if value, ok := _u.mutation.GitBranch(); ok {
 		_spec.SetField(deployment.FieldGitBranch, field.TypeString, value)
 	}
-	if du.mutation.GitBranchCleared() {
+	if _u.mutation.GitBranchCleared() {
 		_spec.ClearField(deployment.FieldGitBranch, field.TypeString)
 	}
-	if value, ok := du.mutation.CommitAuthor(); ok {
+	if value, ok := _u.mutation.CommitAuthor(); ok {
 		_spec.SetField(deployment.FieldCommitAuthor, field.TypeJSON, value)
 	}
-	if du.mutation.CommitAuthorCleared() {
+	if _u.mutation.CommitAuthorCleared() {
 		_spec.ClearField(deployment.FieldCommitAuthor, field.TypeJSON)
 	}
-	if value, ok := du.mutation.QueuedAt(); ok {
+	if value, ok := _u.mutation.QueuedAt(); ok {
 		_spec.SetField(deployment.FieldQueuedAt, field.TypeTime, value)
 	}
-	if du.mutation.QueuedAtCleared() {
+	if _u.mutation.QueuedAtCleared() {
 		_spec.ClearField(deployment.FieldQueuedAt, field.TypeTime)
 	}
-	if value, ok := du.mutation.StartedAt(); ok {
+	if value, ok := _u.mutation.StartedAt(); ok {
 		_spec.SetField(deployment.FieldStartedAt, field.TypeTime, value)
 	}
-	if du.mutation.StartedAtCleared() {
+	if _u.mutation.StartedAtCleared() {
 		_spec.ClearField(deployment.FieldStartedAt, field.TypeTime)
 	}
-	if value, ok := du.mutation.CompletedAt(); ok {
+	if value, ok := _u.mutation.CompletedAt(); ok {
 		_spec.SetField(deployment.FieldCompletedAt, field.TypeTime, value)
 	}
-	if du.mutation.CompletedAtCleared() {
+	if _u.mutation.CompletedAtCleared() {
 		_spec.ClearField(deployment.FieldCompletedAt, field.TypeTime)
 	}
-	if value, ok := du.mutation.KubernetesJobName(); ok {
+	if value, ok := _u.mutation.KubernetesJobName(); ok {
 		_spec.SetField(deployment.FieldKubernetesJobName, field.TypeString, value)
 	}
-	if du.mutation.KubernetesJobNameCleared() {
+	if _u.mutation.KubernetesJobNameCleared() {
 		_spec.ClearField(deployment.FieldKubernetesJobName, field.TypeString)
 	}
-	if value, ok := du.mutation.KubernetesJobStatus(); ok {
+	if value, ok := _u.mutation.KubernetesJobStatus(); ok {
 		_spec.SetField(deployment.FieldKubernetesJobStatus, field.TypeString, value)
 	}
-	if du.mutation.KubernetesJobStatusCleared() {
+	if _u.mutation.KubernetesJobStatusCleared() {
 		_spec.ClearField(deployment.FieldKubernetesJobStatus, field.TypeString)
 	}
-	if value, ok := du.mutation.Attempts(); ok {
+	if value, ok := _u.mutation.Attempts(); ok {
 		_spec.SetField(deployment.FieldAttempts, field.TypeInt, value)
 	}
-	if value, ok := du.mutation.AddedAttempts(); ok {
+	if value, ok := _u.mutation.AddedAttempts(); ok {
 		_spec.AddField(deployment.FieldAttempts, field.TypeInt, value)
 	}
-	if value, ok := du.mutation.Image(); ok {
+	if value, ok := _u.mutation.Image(); ok {
 		_spec.SetField(deployment.FieldImage, field.TypeString, value)
 	}
-	if du.mutation.ImageCleared() {
+	if _u.mutation.ImageCleared() {
 		_spec.ClearField(deployment.FieldImage, field.TypeString)
 	}
-	if value, ok := du.mutation.ResourceDefinition(); ok {
+	if value, ok := _u.mutation.ResourceDefinition(); ok {
 		_spec.SetField(deployment.FieldResourceDefinition, field.TypeJSON, value)
 	}
-	if du.mutation.ResourceDefinitionCleared() {
+	if _u.mutation.ResourceDefinitionCleared() {
 		_spec.ClearField(deployment.FieldResourceDefinition, field.TypeJSON)
 	}
-	if value, ok := du.mutation.Builder(); ok {
+	if value, ok := _u.mutation.Builder(); ok {
 		_spec.SetField(deployment.FieldBuilder, field.TypeEnum, value)
 	}
-	if value, ok := du.mutation.RailpackBuilderInstallCommand(); ok {
+	if value, ok := _u.mutation.RailpackBuilderInstallCommand(); ok {
 		_spec.SetField(deployment.FieldRailpackBuilderInstallCommand, field.TypeString, value)
 	}
-	if du.mutation.RailpackBuilderInstallCommandCleared() {
+	if _u.mutation.RailpackBuilderInstallCommandCleared() {
 		_spec.ClearField(deployment.FieldRailpackBuilderInstallCommand, field.TypeString)
 	}
-	if value, ok := du.mutation.RailpackBuilderBuildCommand(); ok {
+	if value, ok := _u.mutation.RailpackBuilderBuildCommand(); ok {
 		_spec.SetField(deployment.FieldRailpackBuilderBuildCommand, field.TypeString, value)
 	}
-	if du.mutation.RailpackBuilderBuildCommandCleared() {
+	if _u.mutation.RailpackBuilderBuildCommandCleared() {
 		_spec.ClearField(deployment.FieldRailpackBuilderBuildCommand, field.TypeString)
 	}
-	if value, ok := du.mutation.RunCommand(); ok {
+	if value, ok := _u.mutation.RunCommand(); ok {
 		_spec.SetField(deployment.FieldRunCommand, field.TypeString, value)
 	}
-	if du.mutation.RunCommandCleared() {
+	if _u.mutation.RunCommandCleared() {
 		_spec.ClearField(deployment.FieldRunCommand, field.TypeString)
 	}
-	if value, ok := du.mutation.DockerBuilderDockerfilePath(); ok {
+	if value, ok := _u.mutation.DockerBuilderDockerfilePath(); ok {
 		_spec.SetField(deployment.FieldDockerBuilderDockerfilePath, field.TypeString, value)
 	}
-	if du.mutation.DockerBuilderDockerfilePathCleared() {
+	if _u.mutation.DockerBuilderDockerfilePathCleared() {
 		_spec.ClearField(deployment.FieldDockerBuilderDockerfilePath, field.TypeString)
 	}
-	if value, ok := du.mutation.DockerBuilderBuildContext(); ok {
+	if value, ok := _u.mutation.DockerBuilderBuildContext(); ok {
 		_spec.SetField(deployment.FieldDockerBuilderBuildContext, field.TypeString, value)
 	}
-	if du.mutation.DockerBuilderBuildContextCleared() {
+	if _u.mutation.DockerBuilderBuildContextCleared() {
 		_spec.ClearField(deployment.FieldDockerBuilderBuildContext, field.TypeString)
 	}
-	if du.mutation.ServiceCleared() {
+	if _u.mutation.ServiceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -666,7 +666,7 @@ func (du *DeploymentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := du.mutation.ServiceIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ServiceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -682,8 +682,8 @@ func (du *DeploymentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(du.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, du.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{deployment.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -691,8 +691,8 @@ func (du *DeploymentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	du.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // DeploymentUpdateOne is the builder for updating a single Deployment entity.
@@ -705,450 +705,450 @@ type DeploymentUpdateOne struct {
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (duo *DeploymentUpdateOne) SetUpdatedAt(t time.Time) *DeploymentUpdateOne {
-	duo.mutation.SetUpdatedAt(t)
-	return duo
+func (_u *DeploymentUpdateOne) SetUpdatedAt(v time.Time) *DeploymentUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetServiceID sets the "service_id" field.
-func (duo *DeploymentUpdateOne) SetServiceID(u uuid.UUID) *DeploymentUpdateOne {
-	duo.mutation.SetServiceID(u)
-	return duo
+func (_u *DeploymentUpdateOne) SetServiceID(v uuid.UUID) *DeploymentUpdateOne {
+	_u.mutation.SetServiceID(v)
+	return _u
 }
 
 // SetNillableServiceID sets the "service_id" field if the given value is not nil.
-func (duo *DeploymentUpdateOne) SetNillableServiceID(u *uuid.UUID) *DeploymentUpdateOne {
-	if u != nil {
-		duo.SetServiceID(*u)
+func (_u *DeploymentUpdateOne) SetNillableServiceID(v *uuid.UUID) *DeploymentUpdateOne {
+	if v != nil {
+		_u.SetServiceID(*v)
 	}
-	return duo
+	return _u
 }
 
 // SetStatus sets the "status" field.
-func (duo *DeploymentUpdateOne) SetStatus(ss schema.DeploymentStatus) *DeploymentUpdateOne {
-	duo.mutation.SetStatus(ss)
-	return duo
+func (_u *DeploymentUpdateOne) SetStatus(v schema.DeploymentStatus) *DeploymentUpdateOne {
+	_u.mutation.SetStatus(v)
+	return _u
 }
 
 // SetNillableStatus sets the "status" field if the given value is not nil.
-func (duo *DeploymentUpdateOne) SetNillableStatus(ss *schema.DeploymentStatus) *DeploymentUpdateOne {
-	if ss != nil {
-		duo.SetStatus(*ss)
+func (_u *DeploymentUpdateOne) SetNillableStatus(v *schema.DeploymentStatus) *DeploymentUpdateOne {
+	if v != nil {
+		_u.SetStatus(*v)
 	}
-	return duo
+	return _u
 }
 
 // SetSource sets the "source" field.
-func (duo *DeploymentUpdateOne) SetSource(ss schema.DeploymentSource) *DeploymentUpdateOne {
-	duo.mutation.SetSource(ss)
-	return duo
+func (_u *DeploymentUpdateOne) SetSource(v schema.DeploymentSource) *DeploymentUpdateOne {
+	_u.mutation.SetSource(v)
+	return _u
 }
 
 // SetNillableSource sets the "source" field if the given value is not nil.
-func (duo *DeploymentUpdateOne) SetNillableSource(ss *schema.DeploymentSource) *DeploymentUpdateOne {
-	if ss != nil {
-		duo.SetSource(*ss)
+func (_u *DeploymentUpdateOne) SetNillableSource(v *schema.DeploymentSource) *DeploymentUpdateOne {
+	if v != nil {
+		_u.SetSource(*v)
 	}
-	return duo
+	return _u
 }
 
 // SetError sets the "error" field.
-func (duo *DeploymentUpdateOne) SetError(s string) *DeploymentUpdateOne {
-	duo.mutation.SetError(s)
-	return duo
+func (_u *DeploymentUpdateOne) SetError(v string) *DeploymentUpdateOne {
+	_u.mutation.SetError(v)
+	return _u
 }
 
 // SetNillableError sets the "error" field if the given value is not nil.
-func (duo *DeploymentUpdateOne) SetNillableError(s *string) *DeploymentUpdateOne {
-	if s != nil {
-		duo.SetError(*s)
+func (_u *DeploymentUpdateOne) SetNillableError(v *string) *DeploymentUpdateOne {
+	if v != nil {
+		_u.SetError(*v)
 	}
-	return duo
+	return _u
 }
 
 // ClearError clears the value of the "error" field.
-func (duo *DeploymentUpdateOne) ClearError() *DeploymentUpdateOne {
-	duo.mutation.ClearError()
-	return duo
+func (_u *DeploymentUpdateOne) ClearError() *DeploymentUpdateOne {
+	_u.mutation.ClearError()
+	return _u
 }
 
 // SetCommitSha sets the "commit_sha" field.
-func (duo *DeploymentUpdateOne) SetCommitSha(s string) *DeploymentUpdateOne {
-	duo.mutation.SetCommitSha(s)
-	return duo
+func (_u *DeploymentUpdateOne) SetCommitSha(v string) *DeploymentUpdateOne {
+	_u.mutation.SetCommitSha(v)
+	return _u
 }
 
 // SetNillableCommitSha sets the "commit_sha" field if the given value is not nil.
-func (duo *DeploymentUpdateOne) SetNillableCommitSha(s *string) *DeploymentUpdateOne {
-	if s != nil {
-		duo.SetCommitSha(*s)
+func (_u *DeploymentUpdateOne) SetNillableCommitSha(v *string) *DeploymentUpdateOne {
+	if v != nil {
+		_u.SetCommitSha(*v)
 	}
-	return duo
+	return _u
 }
 
 // ClearCommitSha clears the value of the "commit_sha" field.
-func (duo *DeploymentUpdateOne) ClearCommitSha() *DeploymentUpdateOne {
-	duo.mutation.ClearCommitSha()
-	return duo
+func (_u *DeploymentUpdateOne) ClearCommitSha() *DeploymentUpdateOne {
+	_u.mutation.ClearCommitSha()
+	return _u
 }
 
 // SetCommitMessage sets the "commit_message" field.
-func (duo *DeploymentUpdateOne) SetCommitMessage(s string) *DeploymentUpdateOne {
-	duo.mutation.SetCommitMessage(s)
-	return duo
+func (_u *DeploymentUpdateOne) SetCommitMessage(v string) *DeploymentUpdateOne {
+	_u.mutation.SetCommitMessage(v)
+	return _u
 }
 
 // SetNillableCommitMessage sets the "commit_message" field if the given value is not nil.
-func (duo *DeploymentUpdateOne) SetNillableCommitMessage(s *string) *DeploymentUpdateOne {
-	if s != nil {
-		duo.SetCommitMessage(*s)
+func (_u *DeploymentUpdateOne) SetNillableCommitMessage(v *string) *DeploymentUpdateOne {
+	if v != nil {
+		_u.SetCommitMessage(*v)
 	}
-	return duo
+	return _u
 }
 
 // ClearCommitMessage clears the value of the "commit_message" field.
-func (duo *DeploymentUpdateOne) ClearCommitMessage() *DeploymentUpdateOne {
-	duo.mutation.ClearCommitMessage()
-	return duo
+func (_u *DeploymentUpdateOne) ClearCommitMessage() *DeploymentUpdateOne {
+	_u.mutation.ClearCommitMessage()
+	return _u
 }
 
 // SetGitBranch sets the "git_branch" field.
-func (duo *DeploymentUpdateOne) SetGitBranch(s string) *DeploymentUpdateOne {
-	duo.mutation.SetGitBranch(s)
-	return duo
+func (_u *DeploymentUpdateOne) SetGitBranch(v string) *DeploymentUpdateOne {
+	_u.mutation.SetGitBranch(v)
+	return _u
 }
 
 // SetNillableGitBranch sets the "git_branch" field if the given value is not nil.
-func (duo *DeploymentUpdateOne) SetNillableGitBranch(s *string) *DeploymentUpdateOne {
-	if s != nil {
-		duo.SetGitBranch(*s)
+func (_u *DeploymentUpdateOne) SetNillableGitBranch(v *string) *DeploymentUpdateOne {
+	if v != nil {
+		_u.SetGitBranch(*v)
 	}
-	return duo
+	return _u
 }
 
 // ClearGitBranch clears the value of the "git_branch" field.
-func (duo *DeploymentUpdateOne) ClearGitBranch() *DeploymentUpdateOne {
-	duo.mutation.ClearGitBranch()
-	return duo
+func (_u *DeploymentUpdateOne) ClearGitBranch() *DeploymentUpdateOne {
+	_u.mutation.ClearGitBranch()
+	return _u
 }
 
 // SetCommitAuthor sets the "commit_author" field.
-func (duo *DeploymentUpdateOne) SetCommitAuthor(sc *schema.GitCommitter) *DeploymentUpdateOne {
-	duo.mutation.SetCommitAuthor(sc)
-	return duo
+func (_u *DeploymentUpdateOne) SetCommitAuthor(v *schema.GitCommitter) *DeploymentUpdateOne {
+	_u.mutation.SetCommitAuthor(v)
+	return _u
 }
 
 // ClearCommitAuthor clears the value of the "commit_author" field.
-func (duo *DeploymentUpdateOne) ClearCommitAuthor() *DeploymentUpdateOne {
-	duo.mutation.ClearCommitAuthor()
-	return duo
+func (_u *DeploymentUpdateOne) ClearCommitAuthor() *DeploymentUpdateOne {
+	_u.mutation.ClearCommitAuthor()
+	return _u
 }
 
 // SetQueuedAt sets the "queued_at" field.
-func (duo *DeploymentUpdateOne) SetQueuedAt(t time.Time) *DeploymentUpdateOne {
-	duo.mutation.SetQueuedAt(t)
-	return duo
+func (_u *DeploymentUpdateOne) SetQueuedAt(v time.Time) *DeploymentUpdateOne {
+	_u.mutation.SetQueuedAt(v)
+	return _u
 }
 
 // SetNillableQueuedAt sets the "queued_at" field if the given value is not nil.
-func (duo *DeploymentUpdateOne) SetNillableQueuedAt(t *time.Time) *DeploymentUpdateOne {
-	if t != nil {
-		duo.SetQueuedAt(*t)
+func (_u *DeploymentUpdateOne) SetNillableQueuedAt(v *time.Time) *DeploymentUpdateOne {
+	if v != nil {
+		_u.SetQueuedAt(*v)
 	}
-	return duo
+	return _u
 }
 
 // ClearQueuedAt clears the value of the "queued_at" field.
-func (duo *DeploymentUpdateOne) ClearQueuedAt() *DeploymentUpdateOne {
-	duo.mutation.ClearQueuedAt()
-	return duo
+func (_u *DeploymentUpdateOne) ClearQueuedAt() *DeploymentUpdateOne {
+	_u.mutation.ClearQueuedAt()
+	return _u
 }
 
 // SetStartedAt sets the "started_at" field.
-func (duo *DeploymentUpdateOne) SetStartedAt(t time.Time) *DeploymentUpdateOne {
-	duo.mutation.SetStartedAt(t)
-	return duo
+func (_u *DeploymentUpdateOne) SetStartedAt(v time.Time) *DeploymentUpdateOne {
+	_u.mutation.SetStartedAt(v)
+	return _u
 }
 
 // SetNillableStartedAt sets the "started_at" field if the given value is not nil.
-func (duo *DeploymentUpdateOne) SetNillableStartedAt(t *time.Time) *DeploymentUpdateOne {
-	if t != nil {
-		duo.SetStartedAt(*t)
+func (_u *DeploymentUpdateOne) SetNillableStartedAt(v *time.Time) *DeploymentUpdateOne {
+	if v != nil {
+		_u.SetStartedAt(*v)
 	}
-	return duo
+	return _u
 }
 
 // ClearStartedAt clears the value of the "started_at" field.
-func (duo *DeploymentUpdateOne) ClearStartedAt() *DeploymentUpdateOne {
-	duo.mutation.ClearStartedAt()
-	return duo
+func (_u *DeploymentUpdateOne) ClearStartedAt() *DeploymentUpdateOne {
+	_u.mutation.ClearStartedAt()
+	return _u
 }
 
 // SetCompletedAt sets the "completed_at" field.
-func (duo *DeploymentUpdateOne) SetCompletedAt(t time.Time) *DeploymentUpdateOne {
-	duo.mutation.SetCompletedAt(t)
-	return duo
+func (_u *DeploymentUpdateOne) SetCompletedAt(v time.Time) *DeploymentUpdateOne {
+	_u.mutation.SetCompletedAt(v)
+	return _u
 }
 
 // SetNillableCompletedAt sets the "completed_at" field if the given value is not nil.
-func (duo *DeploymentUpdateOne) SetNillableCompletedAt(t *time.Time) *DeploymentUpdateOne {
-	if t != nil {
-		duo.SetCompletedAt(*t)
+func (_u *DeploymentUpdateOne) SetNillableCompletedAt(v *time.Time) *DeploymentUpdateOne {
+	if v != nil {
+		_u.SetCompletedAt(*v)
 	}
-	return duo
+	return _u
 }
 
 // ClearCompletedAt clears the value of the "completed_at" field.
-func (duo *DeploymentUpdateOne) ClearCompletedAt() *DeploymentUpdateOne {
-	duo.mutation.ClearCompletedAt()
-	return duo
+func (_u *DeploymentUpdateOne) ClearCompletedAt() *DeploymentUpdateOne {
+	_u.mutation.ClearCompletedAt()
+	return _u
 }
 
 // SetKubernetesJobName sets the "kubernetes_job_name" field.
-func (duo *DeploymentUpdateOne) SetKubernetesJobName(s string) *DeploymentUpdateOne {
-	duo.mutation.SetKubernetesJobName(s)
-	return duo
+func (_u *DeploymentUpdateOne) SetKubernetesJobName(v string) *DeploymentUpdateOne {
+	_u.mutation.SetKubernetesJobName(v)
+	return _u
 }
 
 // SetNillableKubernetesJobName sets the "kubernetes_job_name" field if the given value is not nil.
-func (duo *DeploymentUpdateOne) SetNillableKubernetesJobName(s *string) *DeploymentUpdateOne {
-	if s != nil {
-		duo.SetKubernetesJobName(*s)
+func (_u *DeploymentUpdateOne) SetNillableKubernetesJobName(v *string) *DeploymentUpdateOne {
+	if v != nil {
+		_u.SetKubernetesJobName(*v)
 	}
-	return duo
+	return _u
 }
 
 // ClearKubernetesJobName clears the value of the "kubernetes_job_name" field.
-func (duo *DeploymentUpdateOne) ClearKubernetesJobName() *DeploymentUpdateOne {
-	duo.mutation.ClearKubernetesJobName()
-	return duo
+func (_u *DeploymentUpdateOne) ClearKubernetesJobName() *DeploymentUpdateOne {
+	_u.mutation.ClearKubernetesJobName()
+	return _u
 }
 
 // SetKubernetesJobStatus sets the "kubernetes_job_status" field.
-func (duo *DeploymentUpdateOne) SetKubernetesJobStatus(s string) *DeploymentUpdateOne {
-	duo.mutation.SetKubernetesJobStatus(s)
-	return duo
+func (_u *DeploymentUpdateOne) SetKubernetesJobStatus(v string) *DeploymentUpdateOne {
+	_u.mutation.SetKubernetesJobStatus(v)
+	return _u
 }
 
 // SetNillableKubernetesJobStatus sets the "kubernetes_job_status" field if the given value is not nil.
-func (duo *DeploymentUpdateOne) SetNillableKubernetesJobStatus(s *string) *DeploymentUpdateOne {
-	if s != nil {
-		duo.SetKubernetesJobStatus(*s)
+func (_u *DeploymentUpdateOne) SetNillableKubernetesJobStatus(v *string) *DeploymentUpdateOne {
+	if v != nil {
+		_u.SetKubernetesJobStatus(*v)
 	}
-	return duo
+	return _u
 }
 
 // ClearKubernetesJobStatus clears the value of the "kubernetes_job_status" field.
-func (duo *DeploymentUpdateOne) ClearKubernetesJobStatus() *DeploymentUpdateOne {
-	duo.mutation.ClearKubernetesJobStatus()
-	return duo
+func (_u *DeploymentUpdateOne) ClearKubernetesJobStatus() *DeploymentUpdateOne {
+	_u.mutation.ClearKubernetesJobStatus()
+	return _u
 }
 
 // SetAttempts sets the "attempts" field.
-func (duo *DeploymentUpdateOne) SetAttempts(i int) *DeploymentUpdateOne {
-	duo.mutation.ResetAttempts()
-	duo.mutation.SetAttempts(i)
-	return duo
+func (_u *DeploymentUpdateOne) SetAttempts(v int) *DeploymentUpdateOne {
+	_u.mutation.ResetAttempts()
+	_u.mutation.SetAttempts(v)
+	return _u
 }
 
 // SetNillableAttempts sets the "attempts" field if the given value is not nil.
-func (duo *DeploymentUpdateOne) SetNillableAttempts(i *int) *DeploymentUpdateOne {
-	if i != nil {
-		duo.SetAttempts(*i)
+func (_u *DeploymentUpdateOne) SetNillableAttempts(v *int) *DeploymentUpdateOne {
+	if v != nil {
+		_u.SetAttempts(*v)
 	}
-	return duo
+	return _u
 }
 
-// AddAttempts adds i to the "attempts" field.
-func (duo *DeploymentUpdateOne) AddAttempts(i int) *DeploymentUpdateOne {
-	duo.mutation.AddAttempts(i)
-	return duo
+// AddAttempts adds value to the "attempts" field.
+func (_u *DeploymentUpdateOne) AddAttempts(v int) *DeploymentUpdateOne {
+	_u.mutation.AddAttempts(v)
+	return _u
 }
 
 // SetImage sets the "image" field.
-func (duo *DeploymentUpdateOne) SetImage(s string) *DeploymentUpdateOne {
-	duo.mutation.SetImage(s)
-	return duo
+func (_u *DeploymentUpdateOne) SetImage(v string) *DeploymentUpdateOne {
+	_u.mutation.SetImage(v)
+	return _u
 }
 
 // SetNillableImage sets the "image" field if the given value is not nil.
-func (duo *DeploymentUpdateOne) SetNillableImage(s *string) *DeploymentUpdateOne {
-	if s != nil {
-		duo.SetImage(*s)
+func (_u *DeploymentUpdateOne) SetNillableImage(v *string) *DeploymentUpdateOne {
+	if v != nil {
+		_u.SetImage(*v)
 	}
-	return duo
+	return _u
 }
 
 // ClearImage clears the value of the "image" field.
-func (duo *DeploymentUpdateOne) ClearImage() *DeploymentUpdateOne {
-	duo.mutation.ClearImage()
-	return duo
+func (_u *DeploymentUpdateOne) ClearImage() *DeploymentUpdateOne {
+	_u.mutation.ClearImage()
+	return _u
 }
 
 // SetResourceDefinition sets the "resource_definition" field.
-func (duo *DeploymentUpdateOne) SetResourceDefinition(v *v1.Service) *DeploymentUpdateOne {
-	duo.mutation.SetResourceDefinition(v)
-	return duo
+func (_u *DeploymentUpdateOne) SetResourceDefinition(v *v1.Service) *DeploymentUpdateOne {
+	_u.mutation.SetResourceDefinition(v)
+	return _u
 }
 
 // ClearResourceDefinition clears the value of the "resource_definition" field.
-func (duo *DeploymentUpdateOne) ClearResourceDefinition() *DeploymentUpdateOne {
-	duo.mutation.ClearResourceDefinition()
-	return duo
+func (_u *DeploymentUpdateOne) ClearResourceDefinition() *DeploymentUpdateOne {
+	_u.mutation.ClearResourceDefinition()
+	return _u
 }
 
 // SetBuilder sets the "builder" field.
-func (duo *DeploymentUpdateOne) SetBuilder(sb schema.ServiceBuilder) *DeploymentUpdateOne {
-	duo.mutation.SetBuilder(sb)
-	return duo
+func (_u *DeploymentUpdateOne) SetBuilder(v schema.ServiceBuilder) *DeploymentUpdateOne {
+	_u.mutation.SetBuilder(v)
+	return _u
 }
 
 // SetNillableBuilder sets the "builder" field if the given value is not nil.
-func (duo *DeploymentUpdateOne) SetNillableBuilder(sb *schema.ServiceBuilder) *DeploymentUpdateOne {
-	if sb != nil {
-		duo.SetBuilder(*sb)
+func (_u *DeploymentUpdateOne) SetNillableBuilder(v *schema.ServiceBuilder) *DeploymentUpdateOne {
+	if v != nil {
+		_u.SetBuilder(*v)
 	}
-	return duo
+	return _u
 }
 
 // SetRailpackBuilderInstallCommand sets the "railpack_builder_install_command" field.
-func (duo *DeploymentUpdateOne) SetRailpackBuilderInstallCommand(s string) *DeploymentUpdateOne {
-	duo.mutation.SetRailpackBuilderInstallCommand(s)
-	return duo
+func (_u *DeploymentUpdateOne) SetRailpackBuilderInstallCommand(v string) *DeploymentUpdateOne {
+	_u.mutation.SetRailpackBuilderInstallCommand(v)
+	return _u
 }
 
 // SetNillableRailpackBuilderInstallCommand sets the "railpack_builder_install_command" field if the given value is not nil.
-func (duo *DeploymentUpdateOne) SetNillableRailpackBuilderInstallCommand(s *string) *DeploymentUpdateOne {
-	if s != nil {
-		duo.SetRailpackBuilderInstallCommand(*s)
+func (_u *DeploymentUpdateOne) SetNillableRailpackBuilderInstallCommand(v *string) *DeploymentUpdateOne {
+	if v != nil {
+		_u.SetRailpackBuilderInstallCommand(*v)
 	}
-	return duo
+	return _u
 }
 
 // ClearRailpackBuilderInstallCommand clears the value of the "railpack_builder_install_command" field.
-func (duo *DeploymentUpdateOne) ClearRailpackBuilderInstallCommand() *DeploymentUpdateOne {
-	duo.mutation.ClearRailpackBuilderInstallCommand()
-	return duo
+func (_u *DeploymentUpdateOne) ClearRailpackBuilderInstallCommand() *DeploymentUpdateOne {
+	_u.mutation.ClearRailpackBuilderInstallCommand()
+	return _u
 }
 
 // SetRailpackBuilderBuildCommand sets the "railpack_builder_build_command" field.
-func (duo *DeploymentUpdateOne) SetRailpackBuilderBuildCommand(s string) *DeploymentUpdateOne {
-	duo.mutation.SetRailpackBuilderBuildCommand(s)
-	return duo
+func (_u *DeploymentUpdateOne) SetRailpackBuilderBuildCommand(v string) *DeploymentUpdateOne {
+	_u.mutation.SetRailpackBuilderBuildCommand(v)
+	return _u
 }
 
 // SetNillableRailpackBuilderBuildCommand sets the "railpack_builder_build_command" field if the given value is not nil.
-func (duo *DeploymentUpdateOne) SetNillableRailpackBuilderBuildCommand(s *string) *DeploymentUpdateOne {
-	if s != nil {
-		duo.SetRailpackBuilderBuildCommand(*s)
+func (_u *DeploymentUpdateOne) SetNillableRailpackBuilderBuildCommand(v *string) *DeploymentUpdateOne {
+	if v != nil {
+		_u.SetRailpackBuilderBuildCommand(*v)
 	}
-	return duo
+	return _u
 }
 
 // ClearRailpackBuilderBuildCommand clears the value of the "railpack_builder_build_command" field.
-func (duo *DeploymentUpdateOne) ClearRailpackBuilderBuildCommand() *DeploymentUpdateOne {
-	duo.mutation.ClearRailpackBuilderBuildCommand()
-	return duo
+func (_u *DeploymentUpdateOne) ClearRailpackBuilderBuildCommand() *DeploymentUpdateOne {
+	_u.mutation.ClearRailpackBuilderBuildCommand()
+	return _u
 }
 
 // SetRunCommand sets the "run_command" field.
-func (duo *DeploymentUpdateOne) SetRunCommand(s string) *DeploymentUpdateOne {
-	duo.mutation.SetRunCommand(s)
-	return duo
+func (_u *DeploymentUpdateOne) SetRunCommand(v string) *DeploymentUpdateOne {
+	_u.mutation.SetRunCommand(v)
+	return _u
 }
 
 // SetNillableRunCommand sets the "run_command" field if the given value is not nil.
-func (duo *DeploymentUpdateOne) SetNillableRunCommand(s *string) *DeploymentUpdateOne {
-	if s != nil {
-		duo.SetRunCommand(*s)
+func (_u *DeploymentUpdateOne) SetNillableRunCommand(v *string) *DeploymentUpdateOne {
+	if v != nil {
+		_u.SetRunCommand(*v)
 	}
-	return duo
+	return _u
 }
 
 // ClearRunCommand clears the value of the "run_command" field.
-func (duo *DeploymentUpdateOne) ClearRunCommand() *DeploymentUpdateOne {
-	duo.mutation.ClearRunCommand()
-	return duo
+func (_u *DeploymentUpdateOne) ClearRunCommand() *DeploymentUpdateOne {
+	_u.mutation.ClearRunCommand()
+	return _u
 }
 
 // SetDockerBuilderDockerfilePath sets the "docker_builder_dockerfile_path" field.
-func (duo *DeploymentUpdateOne) SetDockerBuilderDockerfilePath(s string) *DeploymentUpdateOne {
-	duo.mutation.SetDockerBuilderDockerfilePath(s)
-	return duo
+func (_u *DeploymentUpdateOne) SetDockerBuilderDockerfilePath(v string) *DeploymentUpdateOne {
+	_u.mutation.SetDockerBuilderDockerfilePath(v)
+	return _u
 }
 
 // SetNillableDockerBuilderDockerfilePath sets the "docker_builder_dockerfile_path" field if the given value is not nil.
-func (duo *DeploymentUpdateOne) SetNillableDockerBuilderDockerfilePath(s *string) *DeploymentUpdateOne {
-	if s != nil {
-		duo.SetDockerBuilderDockerfilePath(*s)
+func (_u *DeploymentUpdateOne) SetNillableDockerBuilderDockerfilePath(v *string) *DeploymentUpdateOne {
+	if v != nil {
+		_u.SetDockerBuilderDockerfilePath(*v)
 	}
-	return duo
+	return _u
 }
 
 // ClearDockerBuilderDockerfilePath clears the value of the "docker_builder_dockerfile_path" field.
-func (duo *DeploymentUpdateOne) ClearDockerBuilderDockerfilePath() *DeploymentUpdateOne {
-	duo.mutation.ClearDockerBuilderDockerfilePath()
-	return duo
+func (_u *DeploymentUpdateOne) ClearDockerBuilderDockerfilePath() *DeploymentUpdateOne {
+	_u.mutation.ClearDockerBuilderDockerfilePath()
+	return _u
 }
 
 // SetDockerBuilderBuildContext sets the "docker_builder_build_context" field.
-func (duo *DeploymentUpdateOne) SetDockerBuilderBuildContext(s string) *DeploymentUpdateOne {
-	duo.mutation.SetDockerBuilderBuildContext(s)
-	return duo
+func (_u *DeploymentUpdateOne) SetDockerBuilderBuildContext(v string) *DeploymentUpdateOne {
+	_u.mutation.SetDockerBuilderBuildContext(v)
+	return _u
 }
 
 // SetNillableDockerBuilderBuildContext sets the "docker_builder_build_context" field if the given value is not nil.
-func (duo *DeploymentUpdateOne) SetNillableDockerBuilderBuildContext(s *string) *DeploymentUpdateOne {
-	if s != nil {
-		duo.SetDockerBuilderBuildContext(*s)
+func (_u *DeploymentUpdateOne) SetNillableDockerBuilderBuildContext(v *string) *DeploymentUpdateOne {
+	if v != nil {
+		_u.SetDockerBuilderBuildContext(*v)
 	}
-	return duo
+	return _u
 }
 
 // ClearDockerBuilderBuildContext clears the value of the "docker_builder_build_context" field.
-func (duo *DeploymentUpdateOne) ClearDockerBuilderBuildContext() *DeploymentUpdateOne {
-	duo.mutation.ClearDockerBuilderBuildContext()
-	return duo
+func (_u *DeploymentUpdateOne) ClearDockerBuilderBuildContext() *DeploymentUpdateOne {
+	_u.mutation.ClearDockerBuilderBuildContext()
+	return _u
 }
 
 // SetService sets the "service" edge to the Service entity.
-func (duo *DeploymentUpdateOne) SetService(s *Service) *DeploymentUpdateOne {
-	return duo.SetServiceID(s.ID)
+func (_u *DeploymentUpdateOne) SetService(v *Service) *DeploymentUpdateOne {
+	return _u.SetServiceID(v.ID)
 }
 
 // Mutation returns the DeploymentMutation object of the builder.
-func (duo *DeploymentUpdateOne) Mutation() *DeploymentMutation {
-	return duo.mutation
+func (_u *DeploymentUpdateOne) Mutation() *DeploymentMutation {
+	return _u.mutation
 }
 
 // ClearService clears the "service" edge to the Service entity.
-func (duo *DeploymentUpdateOne) ClearService() *DeploymentUpdateOne {
-	duo.mutation.ClearService()
-	return duo
+func (_u *DeploymentUpdateOne) ClearService() *DeploymentUpdateOne {
+	_u.mutation.ClearService()
+	return _u
 }
 
 // Where appends a list predicates to the DeploymentUpdate builder.
-func (duo *DeploymentUpdateOne) Where(ps ...predicate.Deployment) *DeploymentUpdateOne {
-	duo.mutation.Where(ps...)
-	return duo
+func (_u *DeploymentUpdateOne) Where(ps ...predicate.Deployment) *DeploymentUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (duo *DeploymentUpdateOne) Select(field string, fields ...string) *DeploymentUpdateOne {
-	duo.fields = append([]string{field}, fields...)
-	return duo
+func (_u *DeploymentUpdateOne) Select(field string, fields ...string) *DeploymentUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated Deployment entity.
-func (duo *DeploymentUpdateOne) Save(ctx context.Context) (*Deployment, error) {
-	duo.defaults()
-	return withHooks(ctx, duo.sqlSave, duo.mutation, duo.hooks)
+func (_u *DeploymentUpdateOne) Save(ctx context.Context) (*Deployment, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (duo *DeploymentUpdateOne) SaveX(ctx context.Context) *Deployment {
-	node, err := duo.Save(ctx)
+func (_u *DeploymentUpdateOne) SaveX(ctx context.Context) *Deployment {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -1156,66 +1156,66 @@ func (duo *DeploymentUpdateOne) SaveX(ctx context.Context) *Deployment {
 }
 
 // Exec executes the query on the entity.
-func (duo *DeploymentUpdateOne) Exec(ctx context.Context) error {
-	_, err := duo.Save(ctx)
+func (_u *DeploymentUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (duo *DeploymentUpdateOne) ExecX(ctx context.Context) {
-	if err := duo.Exec(ctx); err != nil {
+func (_u *DeploymentUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (duo *DeploymentUpdateOne) defaults() {
-	if _, ok := duo.mutation.UpdatedAt(); !ok {
+func (_u *DeploymentUpdateOne) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := deployment.UpdateDefaultUpdatedAt()
-		duo.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (duo *DeploymentUpdateOne) check() error {
-	if v, ok := duo.mutation.Status(); ok {
+func (_u *DeploymentUpdateOne) check() error {
+	if v, ok := _u.mutation.Status(); ok {
 		if err := deployment.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Deployment.status": %w`, err)}
 		}
 	}
-	if v, ok := duo.mutation.Source(); ok {
+	if v, ok := _u.mutation.Source(); ok {
 		if err := deployment.SourceValidator(v); err != nil {
 			return &ValidationError{Name: "source", err: fmt.Errorf(`ent: validator failed for field "Deployment.source": %w`, err)}
 		}
 	}
-	if v, ok := duo.mutation.Builder(); ok {
+	if v, ok := _u.mutation.Builder(); ok {
 		if err := deployment.BuilderValidator(v); err != nil {
 			return &ValidationError{Name: "builder", err: fmt.Errorf(`ent: validator failed for field "Deployment.builder": %w`, err)}
 		}
 	}
-	if duo.mutation.ServiceCleared() && len(duo.mutation.ServiceIDs()) > 0 {
+	if _u.mutation.ServiceCleared() && len(_u.mutation.ServiceIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Deployment.service"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (duo *DeploymentUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *DeploymentUpdateOne {
-	duo.modifiers = append(duo.modifiers, modifiers...)
-	return duo
+func (_u *DeploymentUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *DeploymentUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (duo *DeploymentUpdateOne) sqlSave(ctx context.Context) (_node *Deployment, err error) {
-	if err := duo.check(); err != nil {
+func (_u *DeploymentUpdateOne) sqlSave(ctx context.Context) (_node *Deployment, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(deployment.Table, deployment.Columns, sqlgraph.NewFieldSpec(deployment.FieldID, field.TypeUUID))
-	id, ok := duo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Deployment.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := duo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, deployment.FieldID)
 		for _, f := range fields {
@@ -1227,134 +1227,134 @@ func (duo *DeploymentUpdateOne) sqlSave(ctx context.Context) (_node *Deployment,
 			}
 		}
 	}
-	if ps := duo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := duo.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(deployment.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := duo.mutation.Status(); ok {
+	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(deployment.FieldStatus, field.TypeEnum, value)
 	}
-	if value, ok := duo.mutation.Source(); ok {
+	if value, ok := _u.mutation.Source(); ok {
 		_spec.SetField(deployment.FieldSource, field.TypeEnum, value)
 	}
-	if value, ok := duo.mutation.Error(); ok {
+	if value, ok := _u.mutation.Error(); ok {
 		_spec.SetField(deployment.FieldError, field.TypeString, value)
 	}
-	if duo.mutation.ErrorCleared() {
+	if _u.mutation.ErrorCleared() {
 		_spec.ClearField(deployment.FieldError, field.TypeString)
 	}
-	if value, ok := duo.mutation.CommitSha(); ok {
+	if value, ok := _u.mutation.CommitSha(); ok {
 		_spec.SetField(deployment.FieldCommitSha, field.TypeString, value)
 	}
-	if duo.mutation.CommitShaCleared() {
+	if _u.mutation.CommitShaCleared() {
 		_spec.ClearField(deployment.FieldCommitSha, field.TypeString)
 	}
-	if value, ok := duo.mutation.CommitMessage(); ok {
+	if value, ok := _u.mutation.CommitMessage(); ok {
 		_spec.SetField(deployment.FieldCommitMessage, field.TypeString, value)
 	}
-	if duo.mutation.CommitMessageCleared() {
+	if _u.mutation.CommitMessageCleared() {
 		_spec.ClearField(deployment.FieldCommitMessage, field.TypeString)
 	}
-	if value, ok := duo.mutation.GitBranch(); ok {
+	if value, ok := _u.mutation.GitBranch(); ok {
 		_spec.SetField(deployment.FieldGitBranch, field.TypeString, value)
 	}
-	if duo.mutation.GitBranchCleared() {
+	if _u.mutation.GitBranchCleared() {
 		_spec.ClearField(deployment.FieldGitBranch, field.TypeString)
 	}
-	if value, ok := duo.mutation.CommitAuthor(); ok {
+	if value, ok := _u.mutation.CommitAuthor(); ok {
 		_spec.SetField(deployment.FieldCommitAuthor, field.TypeJSON, value)
 	}
-	if duo.mutation.CommitAuthorCleared() {
+	if _u.mutation.CommitAuthorCleared() {
 		_spec.ClearField(deployment.FieldCommitAuthor, field.TypeJSON)
 	}
-	if value, ok := duo.mutation.QueuedAt(); ok {
+	if value, ok := _u.mutation.QueuedAt(); ok {
 		_spec.SetField(deployment.FieldQueuedAt, field.TypeTime, value)
 	}
-	if duo.mutation.QueuedAtCleared() {
+	if _u.mutation.QueuedAtCleared() {
 		_spec.ClearField(deployment.FieldQueuedAt, field.TypeTime)
 	}
-	if value, ok := duo.mutation.StartedAt(); ok {
+	if value, ok := _u.mutation.StartedAt(); ok {
 		_spec.SetField(deployment.FieldStartedAt, field.TypeTime, value)
 	}
-	if duo.mutation.StartedAtCleared() {
+	if _u.mutation.StartedAtCleared() {
 		_spec.ClearField(deployment.FieldStartedAt, field.TypeTime)
 	}
-	if value, ok := duo.mutation.CompletedAt(); ok {
+	if value, ok := _u.mutation.CompletedAt(); ok {
 		_spec.SetField(deployment.FieldCompletedAt, field.TypeTime, value)
 	}
-	if duo.mutation.CompletedAtCleared() {
+	if _u.mutation.CompletedAtCleared() {
 		_spec.ClearField(deployment.FieldCompletedAt, field.TypeTime)
 	}
-	if value, ok := duo.mutation.KubernetesJobName(); ok {
+	if value, ok := _u.mutation.KubernetesJobName(); ok {
 		_spec.SetField(deployment.FieldKubernetesJobName, field.TypeString, value)
 	}
-	if duo.mutation.KubernetesJobNameCleared() {
+	if _u.mutation.KubernetesJobNameCleared() {
 		_spec.ClearField(deployment.FieldKubernetesJobName, field.TypeString)
 	}
-	if value, ok := duo.mutation.KubernetesJobStatus(); ok {
+	if value, ok := _u.mutation.KubernetesJobStatus(); ok {
 		_spec.SetField(deployment.FieldKubernetesJobStatus, field.TypeString, value)
 	}
-	if duo.mutation.KubernetesJobStatusCleared() {
+	if _u.mutation.KubernetesJobStatusCleared() {
 		_spec.ClearField(deployment.FieldKubernetesJobStatus, field.TypeString)
 	}
-	if value, ok := duo.mutation.Attempts(); ok {
+	if value, ok := _u.mutation.Attempts(); ok {
 		_spec.SetField(deployment.FieldAttempts, field.TypeInt, value)
 	}
-	if value, ok := duo.mutation.AddedAttempts(); ok {
+	if value, ok := _u.mutation.AddedAttempts(); ok {
 		_spec.AddField(deployment.FieldAttempts, field.TypeInt, value)
 	}
-	if value, ok := duo.mutation.Image(); ok {
+	if value, ok := _u.mutation.Image(); ok {
 		_spec.SetField(deployment.FieldImage, field.TypeString, value)
 	}
-	if duo.mutation.ImageCleared() {
+	if _u.mutation.ImageCleared() {
 		_spec.ClearField(deployment.FieldImage, field.TypeString)
 	}
-	if value, ok := duo.mutation.ResourceDefinition(); ok {
+	if value, ok := _u.mutation.ResourceDefinition(); ok {
 		_spec.SetField(deployment.FieldResourceDefinition, field.TypeJSON, value)
 	}
-	if duo.mutation.ResourceDefinitionCleared() {
+	if _u.mutation.ResourceDefinitionCleared() {
 		_spec.ClearField(deployment.FieldResourceDefinition, field.TypeJSON)
 	}
-	if value, ok := duo.mutation.Builder(); ok {
+	if value, ok := _u.mutation.Builder(); ok {
 		_spec.SetField(deployment.FieldBuilder, field.TypeEnum, value)
 	}
-	if value, ok := duo.mutation.RailpackBuilderInstallCommand(); ok {
+	if value, ok := _u.mutation.RailpackBuilderInstallCommand(); ok {
 		_spec.SetField(deployment.FieldRailpackBuilderInstallCommand, field.TypeString, value)
 	}
-	if duo.mutation.RailpackBuilderInstallCommandCleared() {
+	if _u.mutation.RailpackBuilderInstallCommandCleared() {
 		_spec.ClearField(deployment.FieldRailpackBuilderInstallCommand, field.TypeString)
 	}
-	if value, ok := duo.mutation.RailpackBuilderBuildCommand(); ok {
+	if value, ok := _u.mutation.RailpackBuilderBuildCommand(); ok {
 		_spec.SetField(deployment.FieldRailpackBuilderBuildCommand, field.TypeString, value)
 	}
-	if duo.mutation.RailpackBuilderBuildCommandCleared() {
+	if _u.mutation.RailpackBuilderBuildCommandCleared() {
 		_spec.ClearField(deployment.FieldRailpackBuilderBuildCommand, field.TypeString)
 	}
-	if value, ok := duo.mutation.RunCommand(); ok {
+	if value, ok := _u.mutation.RunCommand(); ok {
 		_spec.SetField(deployment.FieldRunCommand, field.TypeString, value)
 	}
-	if duo.mutation.RunCommandCleared() {
+	if _u.mutation.RunCommandCleared() {
 		_spec.ClearField(deployment.FieldRunCommand, field.TypeString)
 	}
-	if value, ok := duo.mutation.DockerBuilderDockerfilePath(); ok {
+	if value, ok := _u.mutation.DockerBuilderDockerfilePath(); ok {
 		_spec.SetField(deployment.FieldDockerBuilderDockerfilePath, field.TypeString, value)
 	}
-	if duo.mutation.DockerBuilderDockerfilePathCleared() {
+	if _u.mutation.DockerBuilderDockerfilePathCleared() {
 		_spec.ClearField(deployment.FieldDockerBuilderDockerfilePath, field.TypeString)
 	}
-	if value, ok := duo.mutation.DockerBuilderBuildContext(); ok {
+	if value, ok := _u.mutation.DockerBuilderBuildContext(); ok {
 		_spec.SetField(deployment.FieldDockerBuilderBuildContext, field.TypeString, value)
 	}
-	if duo.mutation.DockerBuilderBuildContextCleared() {
+	if _u.mutation.DockerBuilderBuildContextCleared() {
 		_spec.ClearField(deployment.FieldDockerBuilderBuildContext, field.TypeString)
 	}
-	if duo.mutation.ServiceCleared() {
+	if _u.mutation.ServiceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -1367,7 +1367,7 @@ func (duo *DeploymentUpdateOne) sqlSave(ctx context.Context) (_node *Deployment,
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := duo.mutation.ServiceIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ServiceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -1383,11 +1383,11 @@ func (duo *DeploymentUpdateOne) sqlSave(ctx context.Context) (_node *Deployment,
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(duo.modifiers...)
-	_node = &Deployment{config: duo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &Deployment{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, duo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{deployment.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -1395,6 +1395,6 @@ func (duo *DeploymentUpdateOne) sqlSave(ctx context.Context) (_node *Deployment,
 		}
 		return nil, err
 	}
-	duo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

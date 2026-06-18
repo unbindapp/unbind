@@ -20,56 +20,56 @@ type ServiceGroupDelete struct {
 }
 
 // Where appends a list predicates to the ServiceGroupDelete builder.
-func (sgd *ServiceGroupDelete) Where(ps ...predicate.ServiceGroup) *ServiceGroupDelete {
-	sgd.mutation.Where(ps...)
-	return sgd
+func (_d *ServiceGroupDelete) Where(ps ...predicate.ServiceGroup) *ServiceGroupDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (sgd *ServiceGroupDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, sgd.sqlExec, sgd.mutation, sgd.hooks)
+func (_d *ServiceGroupDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sgd *ServiceGroupDelete) ExecX(ctx context.Context) int {
-	n, err := sgd.Exec(ctx)
+func (_d *ServiceGroupDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (sgd *ServiceGroupDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *ServiceGroupDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(servicegroup.Table, sqlgraph.NewFieldSpec(servicegroup.FieldID, field.TypeUUID))
-	if ps := sgd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, sgd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	sgd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // ServiceGroupDeleteOne is the builder for deleting a single ServiceGroup entity.
 type ServiceGroupDeleteOne struct {
-	sgd *ServiceGroupDelete
+	_d *ServiceGroupDelete
 }
 
 // Where appends a list predicates to the ServiceGroupDelete builder.
-func (sgdo *ServiceGroupDeleteOne) Where(ps ...predicate.ServiceGroup) *ServiceGroupDeleteOne {
-	sgdo.sgd.mutation.Where(ps...)
-	return sgdo
+func (_d *ServiceGroupDeleteOne) Where(ps ...predicate.ServiceGroup) *ServiceGroupDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (sgdo *ServiceGroupDeleteOne) Exec(ctx context.Context) error {
-	n, err := sgdo.sgd.Exec(ctx)
+func (_d *ServiceGroupDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (sgdo *ServiceGroupDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sgdo *ServiceGroupDeleteOne) ExecX(ctx context.Context) {
-	if err := sgdo.Exec(ctx); err != nil {
+func (_d *ServiceGroupDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

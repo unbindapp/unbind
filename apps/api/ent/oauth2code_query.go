@@ -33,44 +33,44 @@ type Oauth2CodeQuery struct {
 }
 
 // Where adds a new predicate for the Oauth2CodeQuery builder.
-func (oq *Oauth2CodeQuery) Where(ps ...predicate.Oauth2Code) *Oauth2CodeQuery {
-	oq.predicates = append(oq.predicates, ps...)
-	return oq
+func (_q *Oauth2CodeQuery) Where(ps ...predicate.Oauth2Code) *Oauth2CodeQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (oq *Oauth2CodeQuery) Limit(limit int) *Oauth2CodeQuery {
-	oq.ctx.Limit = &limit
-	return oq
+func (_q *Oauth2CodeQuery) Limit(limit int) *Oauth2CodeQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (oq *Oauth2CodeQuery) Offset(offset int) *Oauth2CodeQuery {
-	oq.ctx.Offset = &offset
-	return oq
+func (_q *Oauth2CodeQuery) Offset(offset int) *Oauth2CodeQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (oq *Oauth2CodeQuery) Unique(unique bool) *Oauth2CodeQuery {
-	oq.ctx.Unique = &unique
-	return oq
+func (_q *Oauth2CodeQuery) Unique(unique bool) *Oauth2CodeQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (oq *Oauth2CodeQuery) Order(o ...oauth2code.OrderOption) *Oauth2CodeQuery {
-	oq.order = append(oq.order, o...)
-	return oq
+func (_q *Oauth2CodeQuery) Order(o ...oauth2code.OrderOption) *Oauth2CodeQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryUser chains the current query on the "user" edge.
-func (oq *Oauth2CodeQuery) QueryUser() *UserQuery {
-	query := (&UserClient{config: oq.config}).Query()
+func (_q *Oauth2CodeQuery) QueryUser() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := oq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := oq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -79,7 +79,7 @@ func (oq *Oauth2CodeQuery) QueryUser() *UserQuery {
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, oauth2code.UserTable, oauth2code.UserColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(oq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -87,8 +87,8 @@ func (oq *Oauth2CodeQuery) QueryUser() *UserQuery {
 
 // First returns the first Oauth2Code entity from the query.
 // Returns a *NotFoundError when no Oauth2Code was found.
-func (oq *Oauth2CodeQuery) First(ctx context.Context) (*Oauth2Code, error) {
-	nodes, err := oq.Limit(1).All(setContextOp(ctx, oq.ctx, ent.OpQueryFirst))
+func (_q *Oauth2CodeQuery) First(ctx context.Context) (*Oauth2Code, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -99,8 +99,8 @@ func (oq *Oauth2CodeQuery) First(ctx context.Context) (*Oauth2Code, error) {
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (oq *Oauth2CodeQuery) FirstX(ctx context.Context) *Oauth2Code {
-	node, err := oq.First(ctx)
+func (_q *Oauth2CodeQuery) FirstX(ctx context.Context) *Oauth2Code {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -109,9 +109,9 @@ func (oq *Oauth2CodeQuery) FirstX(ctx context.Context) *Oauth2Code {
 
 // FirstID returns the first Oauth2Code ID from the query.
 // Returns a *NotFoundError when no Oauth2Code ID was found.
-func (oq *Oauth2CodeQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *Oauth2CodeQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = oq.Limit(1).IDs(setContextOp(ctx, oq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -122,8 +122,8 @@ func (oq *Oauth2CodeQuery) FirstID(ctx context.Context) (id uuid.UUID, err error
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (oq *Oauth2CodeQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := oq.FirstID(ctx)
+func (_q *Oauth2CodeQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -133,8 +133,8 @@ func (oq *Oauth2CodeQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single Oauth2Code entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one Oauth2Code entity is found.
 // Returns a *NotFoundError when no Oauth2Code entities are found.
-func (oq *Oauth2CodeQuery) Only(ctx context.Context) (*Oauth2Code, error) {
-	nodes, err := oq.Limit(2).All(setContextOp(ctx, oq.ctx, ent.OpQueryOnly))
+func (_q *Oauth2CodeQuery) Only(ctx context.Context) (*Oauth2Code, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -149,8 +149,8 @@ func (oq *Oauth2CodeQuery) Only(ctx context.Context) (*Oauth2Code, error) {
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (oq *Oauth2CodeQuery) OnlyX(ctx context.Context) *Oauth2Code {
-	node, err := oq.Only(ctx)
+func (_q *Oauth2CodeQuery) OnlyX(ctx context.Context) *Oauth2Code {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -160,9 +160,9 @@ func (oq *Oauth2CodeQuery) OnlyX(ctx context.Context) *Oauth2Code {
 // OnlyID is like Only, but returns the only Oauth2Code ID in the query.
 // Returns a *NotSingularError when more than one Oauth2Code ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (oq *Oauth2CodeQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *Oauth2CodeQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = oq.Limit(2).IDs(setContextOp(ctx, oq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -177,8 +177,8 @@ func (oq *Oauth2CodeQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error)
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (oq *Oauth2CodeQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := oq.OnlyID(ctx)
+func (_q *Oauth2CodeQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -186,18 +186,18 @@ func (oq *Oauth2CodeQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of Oauth2Codes.
-func (oq *Oauth2CodeQuery) All(ctx context.Context) ([]*Oauth2Code, error) {
-	ctx = setContextOp(ctx, oq.ctx, ent.OpQueryAll)
-	if err := oq.prepareQuery(ctx); err != nil {
+func (_q *Oauth2CodeQuery) All(ctx context.Context) ([]*Oauth2Code, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*Oauth2Code, *Oauth2CodeQuery]()
-	return withInterceptors[[]*Oauth2Code](ctx, oq, qr, oq.inters)
+	return withInterceptors[[]*Oauth2Code](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (oq *Oauth2CodeQuery) AllX(ctx context.Context) []*Oauth2Code {
-	nodes, err := oq.All(ctx)
+func (_q *Oauth2CodeQuery) AllX(ctx context.Context) []*Oauth2Code {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -205,20 +205,20 @@ func (oq *Oauth2CodeQuery) AllX(ctx context.Context) []*Oauth2Code {
 }
 
 // IDs executes the query and returns a list of Oauth2Code IDs.
-func (oq *Oauth2CodeQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if oq.ctx.Unique == nil && oq.path != nil {
-		oq.Unique(true)
+func (_q *Oauth2CodeQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, oq.ctx, ent.OpQueryIDs)
-	if err = oq.Select(oauth2code.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(oauth2code.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (oq *Oauth2CodeQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := oq.IDs(ctx)
+func (_q *Oauth2CodeQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -226,17 +226,17 @@ func (oq *Oauth2CodeQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (oq *Oauth2CodeQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, oq.ctx, ent.OpQueryCount)
-	if err := oq.prepareQuery(ctx); err != nil {
+func (_q *Oauth2CodeQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, oq, querierCount[*Oauth2CodeQuery](), oq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*Oauth2CodeQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (oq *Oauth2CodeQuery) CountX(ctx context.Context) int {
-	count, err := oq.Count(ctx)
+func (_q *Oauth2CodeQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -244,9 +244,9 @@ func (oq *Oauth2CodeQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (oq *Oauth2CodeQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, oq.ctx, ent.OpQueryExist)
-	switch _, err := oq.FirstID(ctx); {
+func (_q *Oauth2CodeQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -257,8 +257,8 @@ func (oq *Oauth2CodeQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (oq *Oauth2CodeQuery) ExistX(ctx context.Context) bool {
-	exist, err := oq.Exist(ctx)
+func (_q *Oauth2CodeQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -267,33 +267,33 @@ func (oq *Oauth2CodeQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the Oauth2CodeQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (oq *Oauth2CodeQuery) Clone() *Oauth2CodeQuery {
-	if oq == nil {
+func (_q *Oauth2CodeQuery) Clone() *Oauth2CodeQuery {
+	if _q == nil {
 		return nil
 	}
 	return &Oauth2CodeQuery{
-		config:     oq.config,
-		ctx:        oq.ctx.Clone(),
-		order:      append([]oauth2code.OrderOption{}, oq.order...),
-		inters:     append([]Interceptor{}, oq.inters...),
-		predicates: append([]predicate.Oauth2Code{}, oq.predicates...),
-		withUser:   oq.withUser.Clone(),
+		config:     _q.config,
+		ctx:        _q.ctx.Clone(),
+		order:      append([]oauth2code.OrderOption{}, _q.order...),
+		inters:     append([]Interceptor{}, _q.inters...),
+		predicates: append([]predicate.Oauth2Code{}, _q.predicates...),
+		withUser:   _q.withUser.Clone(),
 		// clone intermediate query.
-		sql:       oq.sql.Clone(),
-		path:      oq.path,
-		modifiers: append([]func(*sql.Selector){}, oq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithUser tells the query-builder to eager-load the nodes that are connected to
 // the "user" edge. The optional arguments are used to configure the query builder of the edge.
-func (oq *Oauth2CodeQuery) WithUser(opts ...func(*UserQuery)) *Oauth2CodeQuery {
-	query := (&UserClient{config: oq.config}).Query()
+func (_q *Oauth2CodeQuery) WithUser(opts ...func(*UserQuery)) *Oauth2CodeQuery {
+	query := (&UserClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	oq.withUser = query
-	return oq
+	_q.withUser = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -310,10 +310,10 @@ func (oq *Oauth2CodeQuery) WithUser(opts ...func(*UserQuery)) *Oauth2CodeQuery {
 //		GroupBy(oauth2code.FieldCreatedAt).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (oq *Oauth2CodeQuery) GroupBy(field string, fields ...string) *Oauth2CodeGroupBy {
-	oq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &Oauth2CodeGroupBy{build: oq}
-	grbuild.flds = &oq.ctx.Fields
+func (_q *Oauth2CodeQuery) GroupBy(field string, fields ...string) *Oauth2CodeGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &Oauth2CodeGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = oauth2code.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -331,55 +331,55 @@ func (oq *Oauth2CodeQuery) GroupBy(field string, fields ...string) *Oauth2CodeGr
 //	client.Oauth2Code.Query().
 //		Select(oauth2code.FieldCreatedAt).
 //		Scan(ctx, &v)
-func (oq *Oauth2CodeQuery) Select(fields ...string) *Oauth2CodeSelect {
-	oq.ctx.Fields = append(oq.ctx.Fields, fields...)
-	sbuild := &Oauth2CodeSelect{Oauth2CodeQuery: oq}
+func (_q *Oauth2CodeQuery) Select(fields ...string) *Oauth2CodeSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &Oauth2CodeSelect{Oauth2CodeQuery: _q}
 	sbuild.label = oauth2code.Label
-	sbuild.flds, sbuild.scan = &oq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a Oauth2CodeSelect configured with the given aggregations.
-func (oq *Oauth2CodeQuery) Aggregate(fns ...AggregateFunc) *Oauth2CodeSelect {
-	return oq.Select().Aggregate(fns...)
+func (_q *Oauth2CodeQuery) Aggregate(fns ...AggregateFunc) *Oauth2CodeSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (oq *Oauth2CodeQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range oq.inters {
+func (_q *Oauth2CodeQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, oq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range oq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !oauth2code.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if oq.path != nil {
-		prev, err := oq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		oq.sql = prev
+		_q.sql = prev
 	}
 	return nil
 }
 
-func (oq *Oauth2CodeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Oauth2Code, error) {
+func (_q *Oauth2CodeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Oauth2Code, error) {
 	var (
 		nodes       = []*Oauth2Code{}
-		withFKs     = oq.withFKs
-		_spec       = oq.querySpec()
+		withFKs     = _q.withFKs
+		_spec       = _q.querySpec()
 		loadedTypes = [1]bool{
-			oq.withUser != nil,
+			_q.withUser != nil,
 		}
 	)
-	if oq.withUser != nil {
+	if _q.withUser != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -389,25 +389,25 @@ func (oq *Oauth2CodeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*O
 		return (*Oauth2Code).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &Oauth2Code{config: oq.config}
+		node := &Oauth2Code{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(oq.modifiers) > 0 {
-		_spec.Modifiers = oq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, oq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := oq.withUser; query != nil {
-		if err := oq.loadUser(ctx, query, nodes, nil,
+	if query := _q.withUser; query != nil {
+		if err := _q.loadUser(ctx, query, nodes, nil,
 			func(n *Oauth2Code, e *User) { n.Edges.User = e }); err != nil {
 			return nil, err
 		}
@@ -415,7 +415,7 @@ func (oq *Oauth2CodeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*O
 	return nodes, nil
 }
 
-func (oq *Oauth2CodeQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*Oauth2Code, init func(*Oauth2Code), assign func(*Oauth2Code, *User)) error {
+func (_q *Oauth2CodeQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*Oauth2Code, init func(*Oauth2Code), assign func(*Oauth2Code, *User)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Oauth2Code)
 	for i := range nodes {
@@ -448,27 +448,27 @@ func (oq *Oauth2CodeQuery) loadUser(ctx context.Context, query *UserQuery, nodes
 	return nil
 }
 
-func (oq *Oauth2CodeQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := oq.querySpec()
-	if len(oq.modifiers) > 0 {
-		_spec.Modifiers = oq.modifiers
+func (_q *Oauth2CodeQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = oq.ctx.Fields
-	if len(oq.ctx.Fields) > 0 {
-		_spec.Unique = oq.ctx.Unique != nil && *oq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, oq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (oq *Oauth2CodeQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *Oauth2CodeQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(oauth2code.Table, oauth2code.Columns, sqlgraph.NewFieldSpec(oauth2code.FieldID, field.TypeUUID))
-	_spec.From = oq.sql
-	if unique := oq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if oq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := oq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, oauth2code.FieldID)
 		for i := range fields {
@@ -477,20 +477,20 @@ func (oq *Oauth2CodeQuery) querySpec() *sqlgraph.QuerySpec {
 			}
 		}
 	}
-	if ps := oq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := oq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := oq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := oq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -500,45 +500,45 @@ func (oq *Oauth2CodeQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (oq *Oauth2CodeQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(oq.driver.Dialect())
+func (_q *Oauth2CodeQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(oauth2code.Table)
-	columns := oq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = oauth2code.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if oq.sql != nil {
-		selector = oq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if oq.ctx.Unique != nil && *oq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range oq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range oq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range oq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := oq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := oq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (oq *Oauth2CodeQuery) Modify(modifiers ...func(s *sql.Selector)) *Oauth2CodeSelect {
-	oq.modifiers = append(oq.modifiers, modifiers...)
-	return oq.Select()
+func (_q *Oauth2CodeQuery) Modify(modifiers ...func(s *sql.Selector)) *Oauth2CodeSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // Oauth2CodeGroupBy is the group-by builder for Oauth2Code entities.
@@ -548,41 +548,41 @@ type Oauth2CodeGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (ogb *Oauth2CodeGroupBy) Aggregate(fns ...AggregateFunc) *Oauth2CodeGroupBy {
-	ogb.fns = append(ogb.fns, fns...)
-	return ogb
+func (_g *Oauth2CodeGroupBy) Aggregate(fns ...AggregateFunc) *Oauth2CodeGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (ogb *Oauth2CodeGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, ogb.build.ctx, ent.OpQueryGroupBy)
-	if err := ogb.build.prepareQuery(ctx); err != nil {
+func (_g *Oauth2CodeGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*Oauth2CodeQuery, *Oauth2CodeGroupBy](ctx, ogb.build, ogb, ogb.build.inters, v)
+	return scanWithInterceptors[*Oauth2CodeQuery, *Oauth2CodeGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (ogb *Oauth2CodeGroupBy) sqlScan(ctx context.Context, root *Oauth2CodeQuery, v any) error {
+func (_g *Oauth2CodeGroupBy) sqlScan(ctx context.Context, root *Oauth2CodeQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(ogb.fns))
-	for _, fn := range ogb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*ogb.flds)+len(ogb.fns))
-		for _, f := range *ogb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*ogb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := ogb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -596,27 +596,27 @@ type Oauth2CodeSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (os *Oauth2CodeSelect) Aggregate(fns ...AggregateFunc) *Oauth2CodeSelect {
-	os.fns = append(os.fns, fns...)
-	return os
+func (_s *Oauth2CodeSelect) Aggregate(fns ...AggregateFunc) *Oauth2CodeSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (os *Oauth2CodeSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, os.ctx, ent.OpQuerySelect)
-	if err := os.prepareQuery(ctx); err != nil {
+func (_s *Oauth2CodeSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*Oauth2CodeQuery, *Oauth2CodeSelect](ctx, os.Oauth2CodeQuery, os, os.inters, v)
+	return scanWithInterceptors[*Oauth2CodeQuery, *Oauth2CodeSelect](ctx, _s.Oauth2CodeQuery, _s, _s.inters, v)
 }
 
-func (os *Oauth2CodeSelect) sqlScan(ctx context.Context, root *Oauth2CodeQuery, v any) error {
+func (_s *Oauth2CodeSelect) sqlScan(ctx context.Context, root *Oauth2CodeQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(os.fns))
-	for _, fn := range os.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*os.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -624,7 +624,7 @@ func (os *Oauth2CodeSelect) sqlScan(ctx context.Context, root *Oauth2CodeQuery, 
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := os.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -632,7 +632,7 @@ func (os *Oauth2CodeSelect) sqlScan(ctx context.Context, root *Oauth2CodeQuery, 
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (os *Oauth2CodeSelect) Modify(modifiers ...func(s *sql.Selector)) *Oauth2CodeSelect {
-	os.modifiers = append(os.modifiers, modifiers...)
-	return os
+func (_s *Oauth2CodeSelect) Modify(modifiers ...func(s *sql.Selector)) *Oauth2CodeSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

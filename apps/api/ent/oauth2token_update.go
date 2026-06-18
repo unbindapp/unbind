@@ -26,152 +26,152 @@ type Oauth2TokenUpdate struct {
 }
 
 // Where appends a list predicates to the Oauth2TokenUpdate builder.
-func (ou *Oauth2TokenUpdate) Where(ps ...predicate.Oauth2Token) *Oauth2TokenUpdate {
-	ou.mutation.Where(ps...)
-	return ou
+func (_u *Oauth2TokenUpdate) Where(ps ...predicate.Oauth2Token) *Oauth2TokenUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (ou *Oauth2TokenUpdate) SetUpdatedAt(t time.Time) *Oauth2TokenUpdate {
-	ou.mutation.SetUpdatedAt(t)
-	return ou
+func (_u *Oauth2TokenUpdate) SetUpdatedAt(v time.Time) *Oauth2TokenUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetAccessToken sets the "access_token" field.
-func (ou *Oauth2TokenUpdate) SetAccessToken(s string) *Oauth2TokenUpdate {
-	ou.mutation.SetAccessToken(s)
-	return ou
+func (_u *Oauth2TokenUpdate) SetAccessToken(v string) *Oauth2TokenUpdate {
+	_u.mutation.SetAccessToken(v)
+	return _u
 }
 
 // SetNillableAccessToken sets the "access_token" field if the given value is not nil.
-func (ou *Oauth2TokenUpdate) SetNillableAccessToken(s *string) *Oauth2TokenUpdate {
-	if s != nil {
-		ou.SetAccessToken(*s)
+func (_u *Oauth2TokenUpdate) SetNillableAccessToken(v *string) *Oauth2TokenUpdate {
+	if v != nil {
+		_u.SetAccessToken(*v)
 	}
-	return ou
+	return _u
 }
 
 // SetRefreshToken sets the "refresh_token" field.
-func (ou *Oauth2TokenUpdate) SetRefreshToken(s string) *Oauth2TokenUpdate {
-	ou.mutation.SetRefreshToken(s)
-	return ou
+func (_u *Oauth2TokenUpdate) SetRefreshToken(v string) *Oauth2TokenUpdate {
+	_u.mutation.SetRefreshToken(v)
+	return _u
 }
 
 // SetNillableRefreshToken sets the "refresh_token" field if the given value is not nil.
-func (ou *Oauth2TokenUpdate) SetNillableRefreshToken(s *string) *Oauth2TokenUpdate {
-	if s != nil {
-		ou.SetRefreshToken(*s)
+func (_u *Oauth2TokenUpdate) SetNillableRefreshToken(v *string) *Oauth2TokenUpdate {
+	if v != nil {
+		_u.SetRefreshToken(*v)
 	}
-	return ou
+	return _u
 }
 
 // SetClientID sets the "client_id" field.
-func (ou *Oauth2TokenUpdate) SetClientID(s string) *Oauth2TokenUpdate {
-	ou.mutation.SetClientID(s)
-	return ou
+func (_u *Oauth2TokenUpdate) SetClientID(v string) *Oauth2TokenUpdate {
+	_u.mutation.SetClientID(v)
+	return _u
 }
 
 // SetNillableClientID sets the "client_id" field if the given value is not nil.
-func (ou *Oauth2TokenUpdate) SetNillableClientID(s *string) *Oauth2TokenUpdate {
-	if s != nil {
-		ou.SetClientID(*s)
+func (_u *Oauth2TokenUpdate) SetNillableClientID(v *string) *Oauth2TokenUpdate {
+	if v != nil {
+		_u.SetClientID(*v)
 	}
-	return ou
+	return _u
 }
 
 // SetExpiresAt sets the "expires_at" field.
-func (ou *Oauth2TokenUpdate) SetExpiresAt(t time.Time) *Oauth2TokenUpdate {
-	ou.mutation.SetExpiresAt(t)
-	return ou
+func (_u *Oauth2TokenUpdate) SetExpiresAt(v time.Time) *Oauth2TokenUpdate {
+	_u.mutation.SetExpiresAt(v)
+	return _u
 }
 
 // SetNillableExpiresAt sets the "expires_at" field if the given value is not nil.
-func (ou *Oauth2TokenUpdate) SetNillableExpiresAt(t *time.Time) *Oauth2TokenUpdate {
-	if t != nil {
-		ou.SetExpiresAt(*t)
+func (_u *Oauth2TokenUpdate) SetNillableExpiresAt(v *time.Time) *Oauth2TokenUpdate {
+	if v != nil {
+		_u.SetExpiresAt(*v)
 	}
-	return ou
+	return _u
 }
 
 // SetRevoked sets the "revoked" field.
-func (ou *Oauth2TokenUpdate) SetRevoked(b bool) *Oauth2TokenUpdate {
-	ou.mutation.SetRevoked(b)
-	return ou
+func (_u *Oauth2TokenUpdate) SetRevoked(v bool) *Oauth2TokenUpdate {
+	_u.mutation.SetRevoked(v)
+	return _u
 }
 
 // SetNillableRevoked sets the "revoked" field if the given value is not nil.
-func (ou *Oauth2TokenUpdate) SetNillableRevoked(b *bool) *Oauth2TokenUpdate {
-	if b != nil {
-		ou.SetRevoked(*b)
+func (_u *Oauth2TokenUpdate) SetNillableRevoked(v *bool) *Oauth2TokenUpdate {
+	if v != nil {
+		_u.SetRevoked(*v)
 	}
-	return ou
+	return _u
 }
 
 // SetScope sets the "scope" field.
-func (ou *Oauth2TokenUpdate) SetScope(s string) *Oauth2TokenUpdate {
-	ou.mutation.SetScope(s)
-	return ou
+func (_u *Oauth2TokenUpdate) SetScope(v string) *Oauth2TokenUpdate {
+	_u.mutation.SetScope(v)
+	return _u
 }
 
 // SetNillableScope sets the "scope" field if the given value is not nil.
-func (ou *Oauth2TokenUpdate) SetNillableScope(s *string) *Oauth2TokenUpdate {
-	if s != nil {
-		ou.SetScope(*s)
+func (_u *Oauth2TokenUpdate) SetNillableScope(v *string) *Oauth2TokenUpdate {
+	if v != nil {
+		_u.SetScope(*v)
 	}
-	return ou
+	return _u
 }
 
 // SetDeviceInfo sets the "device_info" field.
-func (ou *Oauth2TokenUpdate) SetDeviceInfo(s string) *Oauth2TokenUpdate {
-	ou.mutation.SetDeviceInfo(s)
-	return ou
+func (_u *Oauth2TokenUpdate) SetDeviceInfo(v string) *Oauth2TokenUpdate {
+	_u.mutation.SetDeviceInfo(v)
+	return _u
 }
 
 // SetNillableDeviceInfo sets the "device_info" field if the given value is not nil.
-func (ou *Oauth2TokenUpdate) SetNillableDeviceInfo(s *string) *Oauth2TokenUpdate {
-	if s != nil {
-		ou.SetDeviceInfo(*s)
+func (_u *Oauth2TokenUpdate) SetNillableDeviceInfo(v *string) *Oauth2TokenUpdate {
+	if v != nil {
+		_u.SetDeviceInfo(*v)
 	}
-	return ou
+	return _u
 }
 
 // ClearDeviceInfo clears the value of the "device_info" field.
-func (ou *Oauth2TokenUpdate) ClearDeviceInfo() *Oauth2TokenUpdate {
-	ou.mutation.ClearDeviceInfo()
-	return ou
+func (_u *Oauth2TokenUpdate) ClearDeviceInfo() *Oauth2TokenUpdate {
+	_u.mutation.ClearDeviceInfo()
+	return _u
 }
 
 // SetUserID sets the "user" edge to the User entity by ID.
-func (ou *Oauth2TokenUpdate) SetUserID(id uuid.UUID) *Oauth2TokenUpdate {
-	ou.mutation.SetUserID(id)
-	return ou
+func (_u *Oauth2TokenUpdate) SetUserID(id uuid.UUID) *Oauth2TokenUpdate {
+	_u.mutation.SetUserID(id)
+	return _u
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (ou *Oauth2TokenUpdate) SetUser(u *User) *Oauth2TokenUpdate {
-	return ou.SetUserID(u.ID)
+func (_u *Oauth2TokenUpdate) SetUser(v *User) *Oauth2TokenUpdate {
+	return _u.SetUserID(v.ID)
 }
 
 // Mutation returns the Oauth2TokenMutation object of the builder.
-func (ou *Oauth2TokenUpdate) Mutation() *Oauth2TokenMutation {
-	return ou.mutation
+func (_u *Oauth2TokenUpdate) Mutation() *Oauth2TokenMutation {
+	return _u.mutation
 }
 
 // ClearUser clears the "user" edge to the User entity.
-func (ou *Oauth2TokenUpdate) ClearUser() *Oauth2TokenUpdate {
-	ou.mutation.ClearUser()
-	return ou
+func (_u *Oauth2TokenUpdate) ClearUser() *Oauth2TokenUpdate {
+	_u.mutation.ClearUser()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (ou *Oauth2TokenUpdate) Save(ctx context.Context) (int, error) {
-	ou.defaults()
-	return withHooks(ctx, ou.sqlSave, ou.mutation, ou.hooks)
+func (_u *Oauth2TokenUpdate) Save(ctx context.Context) (int, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ou *Oauth2TokenUpdate) SaveX(ctx context.Context) int {
-	affected, err := ou.Save(ctx)
+func (_u *Oauth2TokenUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -179,80 +179,80 @@ func (ou *Oauth2TokenUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (ou *Oauth2TokenUpdate) Exec(ctx context.Context) error {
-	_, err := ou.Save(ctx)
+func (_u *Oauth2TokenUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ou *Oauth2TokenUpdate) ExecX(ctx context.Context) {
-	if err := ou.Exec(ctx); err != nil {
+func (_u *Oauth2TokenUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (ou *Oauth2TokenUpdate) defaults() {
-	if _, ok := ou.mutation.UpdatedAt(); !ok {
+func (_u *Oauth2TokenUpdate) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := oauth2token.UpdateDefaultUpdatedAt()
-		ou.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ou *Oauth2TokenUpdate) check() error {
-	if ou.mutation.UserCleared() && len(ou.mutation.UserIDs()) > 0 {
+func (_u *Oauth2TokenUpdate) check() error {
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Oauth2Token.user"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (ou *Oauth2TokenUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *Oauth2TokenUpdate {
-	ou.modifiers = append(ou.modifiers, modifiers...)
-	return ou
+func (_u *Oauth2TokenUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *Oauth2TokenUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (ou *Oauth2TokenUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := ou.check(); err != nil {
-		return n, err
+func (_u *Oauth2TokenUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(oauth2token.Table, oauth2token.Columns, sqlgraph.NewFieldSpec(oauth2token.FieldID, field.TypeUUID))
-	if ps := ou.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := ou.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(oauth2token.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := ou.mutation.AccessToken(); ok {
+	if value, ok := _u.mutation.AccessToken(); ok {
 		_spec.SetField(oauth2token.FieldAccessToken, field.TypeString, value)
 	}
-	if value, ok := ou.mutation.RefreshToken(); ok {
+	if value, ok := _u.mutation.RefreshToken(); ok {
 		_spec.SetField(oauth2token.FieldRefreshToken, field.TypeString, value)
 	}
-	if value, ok := ou.mutation.ClientID(); ok {
+	if value, ok := _u.mutation.ClientID(); ok {
 		_spec.SetField(oauth2token.FieldClientID, field.TypeString, value)
 	}
-	if value, ok := ou.mutation.ExpiresAt(); ok {
+	if value, ok := _u.mutation.ExpiresAt(); ok {
 		_spec.SetField(oauth2token.FieldExpiresAt, field.TypeTime, value)
 	}
-	if value, ok := ou.mutation.Revoked(); ok {
+	if value, ok := _u.mutation.Revoked(); ok {
 		_spec.SetField(oauth2token.FieldRevoked, field.TypeBool, value)
 	}
-	if value, ok := ou.mutation.Scope(); ok {
+	if value, ok := _u.mutation.Scope(); ok {
 		_spec.SetField(oauth2token.FieldScope, field.TypeString, value)
 	}
-	if value, ok := ou.mutation.DeviceInfo(); ok {
+	if value, ok := _u.mutation.DeviceInfo(); ok {
 		_spec.SetField(oauth2token.FieldDeviceInfo, field.TypeString, value)
 	}
-	if ou.mutation.DeviceInfoCleared() {
+	if _u.mutation.DeviceInfoCleared() {
 		_spec.ClearField(oauth2token.FieldDeviceInfo, field.TypeString)
 	}
-	if ou.mutation.UserCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -265,7 +265,7 @@ func (ou *Oauth2TokenUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ou.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -281,8 +281,8 @@ func (ou *Oauth2TokenUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(ou.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, ou.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{oauth2token.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -290,8 +290,8 @@ func (ou *Oauth2TokenUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	ou.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // Oauth2TokenUpdateOne is the builder for updating a single Oauth2Token entity.
@@ -304,159 +304,159 @@ type Oauth2TokenUpdateOne struct {
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (ouo *Oauth2TokenUpdateOne) SetUpdatedAt(t time.Time) *Oauth2TokenUpdateOne {
-	ouo.mutation.SetUpdatedAt(t)
-	return ouo
+func (_u *Oauth2TokenUpdateOne) SetUpdatedAt(v time.Time) *Oauth2TokenUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetAccessToken sets the "access_token" field.
-func (ouo *Oauth2TokenUpdateOne) SetAccessToken(s string) *Oauth2TokenUpdateOne {
-	ouo.mutation.SetAccessToken(s)
-	return ouo
+func (_u *Oauth2TokenUpdateOne) SetAccessToken(v string) *Oauth2TokenUpdateOne {
+	_u.mutation.SetAccessToken(v)
+	return _u
 }
 
 // SetNillableAccessToken sets the "access_token" field if the given value is not nil.
-func (ouo *Oauth2TokenUpdateOne) SetNillableAccessToken(s *string) *Oauth2TokenUpdateOne {
-	if s != nil {
-		ouo.SetAccessToken(*s)
+func (_u *Oauth2TokenUpdateOne) SetNillableAccessToken(v *string) *Oauth2TokenUpdateOne {
+	if v != nil {
+		_u.SetAccessToken(*v)
 	}
-	return ouo
+	return _u
 }
 
 // SetRefreshToken sets the "refresh_token" field.
-func (ouo *Oauth2TokenUpdateOne) SetRefreshToken(s string) *Oauth2TokenUpdateOne {
-	ouo.mutation.SetRefreshToken(s)
-	return ouo
+func (_u *Oauth2TokenUpdateOne) SetRefreshToken(v string) *Oauth2TokenUpdateOne {
+	_u.mutation.SetRefreshToken(v)
+	return _u
 }
 
 // SetNillableRefreshToken sets the "refresh_token" field if the given value is not nil.
-func (ouo *Oauth2TokenUpdateOne) SetNillableRefreshToken(s *string) *Oauth2TokenUpdateOne {
-	if s != nil {
-		ouo.SetRefreshToken(*s)
+func (_u *Oauth2TokenUpdateOne) SetNillableRefreshToken(v *string) *Oauth2TokenUpdateOne {
+	if v != nil {
+		_u.SetRefreshToken(*v)
 	}
-	return ouo
+	return _u
 }
 
 // SetClientID sets the "client_id" field.
-func (ouo *Oauth2TokenUpdateOne) SetClientID(s string) *Oauth2TokenUpdateOne {
-	ouo.mutation.SetClientID(s)
-	return ouo
+func (_u *Oauth2TokenUpdateOne) SetClientID(v string) *Oauth2TokenUpdateOne {
+	_u.mutation.SetClientID(v)
+	return _u
 }
 
 // SetNillableClientID sets the "client_id" field if the given value is not nil.
-func (ouo *Oauth2TokenUpdateOne) SetNillableClientID(s *string) *Oauth2TokenUpdateOne {
-	if s != nil {
-		ouo.SetClientID(*s)
+func (_u *Oauth2TokenUpdateOne) SetNillableClientID(v *string) *Oauth2TokenUpdateOne {
+	if v != nil {
+		_u.SetClientID(*v)
 	}
-	return ouo
+	return _u
 }
 
 // SetExpiresAt sets the "expires_at" field.
-func (ouo *Oauth2TokenUpdateOne) SetExpiresAt(t time.Time) *Oauth2TokenUpdateOne {
-	ouo.mutation.SetExpiresAt(t)
-	return ouo
+func (_u *Oauth2TokenUpdateOne) SetExpiresAt(v time.Time) *Oauth2TokenUpdateOne {
+	_u.mutation.SetExpiresAt(v)
+	return _u
 }
 
 // SetNillableExpiresAt sets the "expires_at" field if the given value is not nil.
-func (ouo *Oauth2TokenUpdateOne) SetNillableExpiresAt(t *time.Time) *Oauth2TokenUpdateOne {
-	if t != nil {
-		ouo.SetExpiresAt(*t)
+func (_u *Oauth2TokenUpdateOne) SetNillableExpiresAt(v *time.Time) *Oauth2TokenUpdateOne {
+	if v != nil {
+		_u.SetExpiresAt(*v)
 	}
-	return ouo
+	return _u
 }
 
 // SetRevoked sets the "revoked" field.
-func (ouo *Oauth2TokenUpdateOne) SetRevoked(b bool) *Oauth2TokenUpdateOne {
-	ouo.mutation.SetRevoked(b)
-	return ouo
+func (_u *Oauth2TokenUpdateOne) SetRevoked(v bool) *Oauth2TokenUpdateOne {
+	_u.mutation.SetRevoked(v)
+	return _u
 }
 
 // SetNillableRevoked sets the "revoked" field if the given value is not nil.
-func (ouo *Oauth2TokenUpdateOne) SetNillableRevoked(b *bool) *Oauth2TokenUpdateOne {
-	if b != nil {
-		ouo.SetRevoked(*b)
+func (_u *Oauth2TokenUpdateOne) SetNillableRevoked(v *bool) *Oauth2TokenUpdateOne {
+	if v != nil {
+		_u.SetRevoked(*v)
 	}
-	return ouo
+	return _u
 }
 
 // SetScope sets the "scope" field.
-func (ouo *Oauth2TokenUpdateOne) SetScope(s string) *Oauth2TokenUpdateOne {
-	ouo.mutation.SetScope(s)
-	return ouo
+func (_u *Oauth2TokenUpdateOne) SetScope(v string) *Oauth2TokenUpdateOne {
+	_u.mutation.SetScope(v)
+	return _u
 }
 
 // SetNillableScope sets the "scope" field if the given value is not nil.
-func (ouo *Oauth2TokenUpdateOne) SetNillableScope(s *string) *Oauth2TokenUpdateOne {
-	if s != nil {
-		ouo.SetScope(*s)
+func (_u *Oauth2TokenUpdateOne) SetNillableScope(v *string) *Oauth2TokenUpdateOne {
+	if v != nil {
+		_u.SetScope(*v)
 	}
-	return ouo
+	return _u
 }
 
 // SetDeviceInfo sets the "device_info" field.
-func (ouo *Oauth2TokenUpdateOne) SetDeviceInfo(s string) *Oauth2TokenUpdateOne {
-	ouo.mutation.SetDeviceInfo(s)
-	return ouo
+func (_u *Oauth2TokenUpdateOne) SetDeviceInfo(v string) *Oauth2TokenUpdateOne {
+	_u.mutation.SetDeviceInfo(v)
+	return _u
 }
 
 // SetNillableDeviceInfo sets the "device_info" field if the given value is not nil.
-func (ouo *Oauth2TokenUpdateOne) SetNillableDeviceInfo(s *string) *Oauth2TokenUpdateOne {
-	if s != nil {
-		ouo.SetDeviceInfo(*s)
+func (_u *Oauth2TokenUpdateOne) SetNillableDeviceInfo(v *string) *Oauth2TokenUpdateOne {
+	if v != nil {
+		_u.SetDeviceInfo(*v)
 	}
-	return ouo
+	return _u
 }
 
 // ClearDeviceInfo clears the value of the "device_info" field.
-func (ouo *Oauth2TokenUpdateOne) ClearDeviceInfo() *Oauth2TokenUpdateOne {
-	ouo.mutation.ClearDeviceInfo()
-	return ouo
+func (_u *Oauth2TokenUpdateOne) ClearDeviceInfo() *Oauth2TokenUpdateOne {
+	_u.mutation.ClearDeviceInfo()
+	return _u
 }
 
 // SetUserID sets the "user" edge to the User entity by ID.
-func (ouo *Oauth2TokenUpdateOne) SetUserID(id uuid.UUID) *Oauth2TokenUpdateOne {
-	ouo.mutation.SetUserID(id)
-	return ouo
+func (_u *Oauth2TokenUpdateOne) SetUserID(id uuid.UUID) *Oauth2TokenUpdateOne {
+	_u.mutation.SetUserID(id)
+	return _u
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (ouo *Oauth2TokenUpdateOne) SetUser(u *User) *Oauth2TokenUpdateOne {
-	return ouo.SetUserID(u.ID)
+func (_u *Oauth2TokenUpdateOne) SetUser(v *User) *Oauth2TokenUpdateOne {
+	return _u.SetUserID(v.ID)
 }
 
 // Mutation returns the Oauth2TokenMutation object of the builder.
-func (ouo *Oauth2TokenUpdateOne) Mutation() *Oauth2TokenMutation {
-	return ouo.mutation
+func (_u *Oauth2TokenUpdateOne) Mutation() *Oauth2TokenMutation {
+	return _u.mutation
 }
 
 // ClearUser clears the "user" edge to the User entity.
-func (ouo *Oauth2TokenUpdateOne) ClearUser() *Oauth2TokenUpdateOne {
-	ouo.mutation.ClearUser()
-	return ouo
+func (_u *Oauth2TokenUpdateOne) ClearUser() *Oauth2TokenUpdateOne {
+	_u.mutation.ClearUser()
+	return _u
 }
 
 // Where appends a list predicates to the Oauth2TokenUpdate builder.
-func (ouo *Oauth2TokenUpdateOne) Where(ps ...predicate.Oauth2Token) *Oauth2TokenUpdateOne {
-	ouo.mutation.Where(ps...)
-	return ouo
+func (_u *Oauth2TokenUpdateOne) Where(ps ...predicate.Oauth2Token) *Oauth2TokenUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (ouo *Oauth2TokenUpdateOne) Select(field string, fields ...string) *Oauth2TokenUpdateOne {
-	ouo.fields = append([]string{field}, fields...)
-	return ouo
+func (_u *Oauth2TokenUpdateOne) Select(field string, fields ...string) *Oauth2TokenUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated Oauth2Token entity.
-func (ouo *Oauth2TokenUpdateOne) Save(ctx context.Context) (*Oauth2Token, error) {
-	ouo.defaults()
-	return withHooks(ctx, ouo.sqlSave, ouo.mutation, ouo.hooks)
+func (_u *Oauth2TokenUpdateOne) Save(ctx context.Context) (*Oauth2Token, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ouo *Oauth2TokenUpdateOne) SaveX(ctx context.Context) *Oauth2Token {
-	node, err := ouo.Save(ctx)
+func (_u *Oauth2TokenUpdateOne) SaveX(ctx context.Context) *Oauth2Token {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -464,51 +464,51 @@ func (ouo *Oauth2TokenUpdateOne) SaveX(ctx context.Context) *Oauth2Token {
 }
 
 // Exec executes the query on the entity.
-func (ouo *Oauth2TokenUpdateOne) Exec(ctx context.Context) error {
-	_, err := ouo.Save(ctx)
+func (_u *Oauth2TokenUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ouo *Oauth2TokenUpdateOne) ExecX(ctx context.Context) {
-	if err := ouo.Exec(ctx); err != nil {
+func (_u *Oauth2TokenUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (ouo *Oauth2TokenUpdateOne) defaults() {
-	if _, ok := ouo.mutation.UpdatedAt(); !ok {
+func (_u *Oauth2TokenUpdateOne) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := oauth2token.UpdateDefaultUpdatedAt()
-		ouo.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ouo *Oauth2TokenUpdateOne) check() error {
-	if ouo.mutation.UserCleared() && len(ouo.mutation.UserIDs()) > 0 {
+func (_u *Oauth2TokenUpdateOne) check() error {
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Oauth2Token.user"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (ouo *Oauth2TokenUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *Oauth2TokenUpdateOne {
-	ouo.modifiers = append(ouo.modifiers, modifiers...)
-	return ouo
+func (_u *Oauth2TokenUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *Oauth2TokenUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (ouo *Oauth2TokenUpdateOne) sqlSave(ctx context.Context) (_node *Oauth2Token, err error) {
-	if err := ouo.check(); err != nil {
+func (_u *Oauth2TokenUpdateOne) sqlSave(ctx context.Context) (_node *Oauth2Token, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(oauth2token.Table, oauth2token.Columns, sqlgraph.NewFieldSpec(oauth2token.FieldID, field.TypeUUID))
-	id, ok := ouo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Oauth2Token.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := ouo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, oauth2token.FieldID)
 		for _, f := range fields {
@@ -520,41 +520,41 @@ func (ouo *Oauth2TokenUpdateOne) sqlSave(ctx context.Context) (_node *Oauth2Toke
 			}
 		}
 	}
-	if ps := ouo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := ouo.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(oauth2token.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := ouo.mutation.AccessToken(); ok {
+	if value, ok := _u.mutation.AccessToken(); ok {
 		_spec.SetField(oauth2token.FieldAccessToken, field.TypeString, value)
 	}
-	if value, ok := ouo.mutation.RefreshToken(); ok {
+	if value, ok := _u.mutation.RefreshToken(); ok {
 		_spec.SetField(oauth2token.FieldRefreshToken, field.TypeString, value)
 	}
-	if value, ok := ouo.mutation.ClientID(); ok {
+	if value, ok := _u.mutation.ClientID(); ok {
 		_spec.SetField(oauth2token.FieldClientID, field.TypeString, value)
 	}
-	if value, ok := ouo.mutation.ExpiresAt(); ok {
+	if value, ok := _u.mutation.ExpiresAt(); ok {
 		_spec.SetField(oauth2token.FieldExpiresAt, field.TypeTime, value)
 	}
-	if value, ok := ouo.mutation.Revoked(); ok {
+	if value, ok := _u.mutation.Revoked(); ok {
 		_spec.SetField(oauth2token.FieldRevoked, field.TypeBool, value)
 	}
-	if value, ok := ouo.mutation.Scope(); ok {
+	if value, ok := _u.mutation.Scope(); ok {
 		_spec.SetField(oauth2token.FieldScope, field.TypeString, value)
 	}
-	if value, ok := ouo.mutation.DeviceInfo(); ok {
+	if value, ok := _u.mutation.DeviceInfo(); ok {
 		_spec.SetField(oauth2token.FieldDeviceInfo, field.TypeString, value)
 	}
-	if ouo.mutation.DeviceInfoCleared() {
+	if _u.mutation.DeviceInfoCleared() {
 		_spec.ClearField(oauth2token.FieldDeviceInfo, field.TypeString)
 	}
-	if ouo.mutation.UserCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -567,7 +567,7 @@ func (ouo *Oauth2TokenUpdateOne) sqlSave(ctx context.Context) (_node *Oauth2Toke
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ouo.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -583,11 +583,11 @@ func (ouo *Oauth2TokenUpdateOne) sqlSave(ctx context.Context) (_node *Oauth2Toke
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(ouo.modifiers...)
-	_node = &Oauth2Token{config: ouo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &Oauth2Token{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, ouo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{oauth2token.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -595,6 +595,6 @@ func (ouo *Oauth2TokenUpdateOne) sqlSave(ctx context.Context) (_node *Oauth2Toke
 		}
 		return nil, err
 	}
-	ouo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

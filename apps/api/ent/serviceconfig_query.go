@@ -34,44 +34,44 @@ type ServiceConfigQuery struct {
 }
 
 // Where adds a new predicate for the ServiceConfigQuery builder.
-func (scq *ServiceConfigQuery) Where(ps ...predicate.ServiceConfig) *ServiceConfigQuery {
-	scq.predicates = append(scq.predicates, ps...)
-	return scq
+func (_q *ServiceConfigQuery) Where(ps ...predicate.ServiceConfig) *ServiceConfigQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (scq *ServiceConfigQuery) Limit(limit int) *ServiceConfigQuery {
-	scq.ctx.Limit = &limit
-	return scq
+func (_q *ServiceConfigQuery) Limit(limit int) *ServiceConfigQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (scq *ServiceConfigQuery) Offset(offset int) *ServiceConfigQuery {
-	scq.ctx.Offset = &offset
-	return scq
+func (_q *ServiceConfigQuery) Offset(offset int) *ServiceConfigQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (scq *ServiceConfigQuery) Unique(unique bool) *ServiceConfigQuery {
-	scq.ctx.Unique = &unique
-	return scq
+func (_q *ServiceConfigQuery) Unique(unique bool) *ServiceConfigQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (scq *ServiceConfigQuery) Order(o ...serviceconfig.OrderOption) *ServiceConfigQuery {
-	scq.order = append(scq.order, o...)
-	return scq
+func (_q *ServiceConfigQuery) Order(o ...serviceconfig.OrderOption) *ServiceConfigQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryService chains the current query on the "service" edge.
-func (scq *ServiceConfigQuery) QueryService() *ServiceQuery {
-	query := (&ServiceClient{config: scq.config}).Query()
+func (_q *ServiceConfigQuery) QueryService() *ServiceQuery {
+	query := (&ServiceClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := scq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := scq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -80,20 +80,20 @@ func (scq *ServiceConfigQuery) QueryService() *ServiceQuery {
 			sqlgraph.To(service.Table, service.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, serviceconfig.ServiceTable, serviceconfig.ServiceColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(scq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryS3BackupSources chains the current query on the "s3_backup_sources" edge.
-func (scq *ServiceConfigQuery) QueryS3BackupSources() *S3Query {
-	query := (&S3Client{config: scq.config}).Query()
+func (_q *ServiceConfigQuery) QueryS3BackupSources() *S3Query {
+	query := (&S3Client{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := scq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := scq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -102,7 +102,7 @@ func (scq *ServiceConfigQuery) QueryS3BackupSources() *S3Query {
 			sqlgraph.To(s3.Table, s3.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, serviceconfig.S3BackupSourcesTable, serviceconfig.S3BackupSourcesColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(scq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -110,8 +110,8 @@ func (scq *ServiceConfigQuery) QueryS3BackupSources() *S3Query {
 
 // First returns the first ServiceConfig entity from the query.
 // Returns a *NotFoundError when no ServiceConfig was found.
-func (scq *ServiceConfigQuery) First(ctx context.Context) (*ServiceConfig, error) {
-	nodes, err := scq.Limit(1).All(setContextOp(ctx, scq.ctx, ent.OpQueryFirst))
+func (_q *ServiceConfigQuery) First(ctx context.Context) (*ServiceConfig, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -122,8 +122,8 @@ func (scq *ServiceConfigQuery) First(ctx context.Context) (*ServiceConfig, error
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (scq *ServiceConfigQuery) FirstX(ctx context.Context) *ServiceConfig {
-	node, err := scq.First(ctx)
+func (_q *ServiceConfigQuery) FirstX(ctx context.Context) *ServiceConfig {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -132,9 +132,9 @@ func (scq *ServiceConfigQuery) FirstX(ctx context.Context) *ServiceConfig {
 
 // FirstID returns the first ServiceConfig ID from the query.
 // Returns a *NotFoundError when no ServiceConfig ID was found.
-func (scq *ServiceConfigQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *ServiceConfigQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = scq.Limit(1).IDs(setContextOp(ctx, scq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -145,8 +145,8 @@ func (scq *ServiceConfigQuery) FirstID(ctx context.Context) (id uuid.UUID, err e
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (scq *ServiceConfigQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := scq.FirstID(ctx)
+func (_q *ServiceConfigQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -156,8 +156,8 @@ func (scq *ServiceConfigQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single ServiceConfig entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one ServiceConfig entity is found.
 // Returns a *NotFoundError when no ServiceConfig entities are found.
-func (scq *ServiceConfigQuery) Only(ctx context.Context) (*ServiceConfig, error) {
-	nodes, err := scq.Limit(2).All(setContextOp(ctx, scq.ctx, ent.OpQueryOnly))
+func (_q *ServiceConfigQuery) Only(ctx context.Context) (*ServiceConfig, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -172,8 +172,8 @@ func (scq *ServiceConfigQuery) Only(ctx context.Context) (*ServiceConfig, error)
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (scq *ServiceConfigQuery) OnlyX(ctx context.Context) *ServiceConfig {
-	node, err := scq.Only(ctx)
+func (_q *ServiceConfigQuery) OnlyX(ctx context.Context) *ServiceConfig {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -183,9 +183,9 @@ func (scq *ServiceConfigQuery) OnlyX(ctx context.Context) *ServiceConfig {
 // OnlyID is like Only, but returns the only ServiceConfig ID in the query.
 // Returns a *NotSingularError when more than one ServiceConfig ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (scq *ServiceConfigQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *ServiceConfigQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = scq.Limit(2).IDs(setContextOp(ctx, scq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -200,8 +200,8 @@ func (scq *ServiceConfigQuery) OnlyID(ctx context.Context) (id uuid.UUID, err er
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (scq *ServiceConfigQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := scq.OnlyID(ctx)
+func (_q *ServiceConfigQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -209,18 +209,18 @@ func (scq *ServiceConfigQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of ServiceConfigs.
-func (scq *ServiceConfigQuery) All(ctx context.Context) ([]*ServiceConfig, error) {
-	ctx = setContextOp(ctx, scq.ctx, ent.OpQueryAll)
-	if err := scq.prepareQuery(ctx); err != nil {
+func (_q *ServiceConfigQuery) All(ctx context.Context) ([]*ServiceConfig, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*ServiceConfig, *ServiceConfigQuery]()
-	return withInterceptors[[]*ServiceConfig](ctx, scq, qr, scq.inters)
+	return withInterceptors[[]*ServiceConfig](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (scq *ServiceConfigQuery) AllX(ctx context.Context) []*ServiceConfig {
-	nodes, err := scq.All(ctx)
+func (_q *ServiceConfigQuery) AllX(ctx context.Context) []*ServiceConfig {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -228,20 +228,20 @@ func (scq *ServiceConfigQuery) AllX(ctx context.Context) []*ServiceConfig {
 }
 
 // IDs executes the query and returns a list of ServiceConfig IDs.
-func (scq *ServiceConfigQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if scq.ctx.Unique == nil && scq.path != nil {
-		scq.Unique(true)
+func (_q *ServiceConfigQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, scq.ctx, ent.OpQueryIDs)
-	if err = scq.Select(serviceconfig.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(serviceconfig.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (scq *ServiceConfigQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := scq.IDs(ctx)
+func (_q *ServiceConfigQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -249,17 +249,17 @@ func (scq *ServiceConfigQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (scq *ServiceConfigQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, scq.ctx, ent.OpQueryCount)
-	if err := scq.prepareQuery(ctx); err != nil {
+func (_q *ServiceConfigQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, scq, querierCount[*ServiceConfigQuery](), scq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*ServiceConfigQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (scq *ServiceConfigQuery) CountX(ctx context.Context) int {
-	count, err := scq.Count(ctx)
+func (_q *ServiceConfigQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -267,9 +267,9 @@ func (scq *ServiceConfigQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (scq *ServiceConfigQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, scq.ctx, ent.OpQueryExist)
-	switch _, err := scq.FirstID(ctx); {
+func (_q *ServiceConfigQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -280,8 +280,8 @@ func (scq *ServiceConfigQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (scq *ServiceConfigQuery) ExistX(ctx context.Context) bool {
-	exist, err := scq.Exist(ctx)
+func (_q *ServiceConfigQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -290,45 +290,45 @@ func (scq *ServiceConfigQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the ServiceConfigQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (scq *ServiceConfigQuery) Clone() *ServiceConfigQuery {
-	if scq == nil {
+func (_q *ServiceConfigQuery) Clone() *ServiceConfigQuery {
+	if _q == nil {
 		return nil
 	}
 	return &ServiceConfigQuery{
-		config:              scq.config,
-		ctx:                 scq.ctx.Clone(),
-		order:               append([]serviceconfig.OrderOption{}, scq.order...),
-		inters:              append([]Interceptor{}, scq.inters...),
-		predicates:          append([]predicate.ServiceConfig{}, scq.predicates...),
-		withService:         scq.withService.Clone(),
-		withS3BackupSources: scq.withS3BackupSources.Clone(),
+		config:              _q.config,
+		ctx:                 _q.ctx.Clone(),
+		order:               append([]serviceconfig.OrderOption{}, _q.order...),
+		inters:              append([]Interceptor{}, _q.inters...),
+		predicates:          append([]predicate.ServiceConfig{}, _q.predicates...),
+		withService:         _q.withService.Clone(),
+		withS3BackupSources: _q.withS3BackupSources.Clone(),
 		// clone intermediate query.
-		sql:       scq.sql.Clone(),
-		path:      scq.path,
-		modifiers: append([]func(*sql.Selector){}, scq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithService tells the query-builder to eager-load the nodes that are connected to
 // the "service" edge. The optional arguments are used to configure the query builder of the edge.
-func (scq *ServiceConfigQuery) WithService(opts ...func(*ServiceQuery)) *ServiceConfigQuery {
-	query := (&ServiceClient{config: scq.config}).Query()
+func (_q *ServiceConfigQuery) WithService(opts ...func(*ServiceQuery)) *ServiceConfigQuery {
+	query := (&ServiceClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	scq.withService = query
-	return scq
+	_q.withService = query
+	return _q
 }
 
 // WithS3BackupSources tells the query-builder to eager-load the nodes that are connected to
 // the "s3_backup_sources" edge. The optional arguments are used to configure the query builder of the edge.
-func (scq *ServiceConfigQuery) WithS3BackupSources(opts ...func(*S3Query)) *ServiceConfigQuery {
-	query := (&S3Client{config: scq.config}).Query()
+func (_q *ServiceConfigQuery) WithS3BackupSources(opts ...func(*S3Query)) *ServiceConfigQuery {
+	query := (&S3Client{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	scq.withS3BackupSources = query
-	return scq
+	_q.withS3BackupSources = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -345,10 +345,10 @@ func (scq *ServiceConfigQuery) WithS3BackupSources(opts ...func(*S3Query)) *Serv
 //		GroupBy(serviceconfig.FieldCreatedAt).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (scq *ServiceConfigQuery) GroupBy(field string, fields ...string) *ServiceConfigGroupBy {
-	scq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &ServiceConfigGroupBy{build: scq}
-	grbuild.flds = &scq.ctx.Fields
+func (_q *ServiceConfigQuery) GroupBy(field string, fields ...string) *ServiceConfigGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &ServiceConfigGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = serviceconfig.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -366,83 +366,83 @@ func (scq *ServiceConfigQuery) GroupBy(field string, fields ...string) *ServiceC
 //	client.ServiceConfig.Query().
 //		Select(serviceconfig.FieldCreatedAt).
 //		Scan(ctx, &v)
-func (scq *ServiceConfigQuery) Select(fields ...string) *ServiceConfigSelect {
-	scq.ctx.Fields = append(scq.ctx.Fields, fields...)
-	sbuild := &ServiceConfigSelect{ServiceConfigQuery: scq}
+func (_q *ServiceConfigQuery) Select(fields ...string) *ServiceConfigSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &ServiceConfigSelect{ServiceConfigQuery: _q}
 	sbuild.label = serviceconfig.Label
-	sbuild.flds, sbuild.scan = &scq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a ServiceConfigSelect configured with the given aggregations.
-func (scq *ServiceConfigQuery) Aggregate(fns ...AggregateFunc) *ServiceConfigSelect {
-	return scq.Select().Aggregate(fns...)
+func (_q *ServiceConfigQuery) Aggregate(fns ...AggregateFunc) *ServiceConfigSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (scq *ServiceConfigQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range scq.inters {
+func (_q *ServiceConfigQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, scq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range scq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !serviceconfig.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if scq.path != nil {
-		prev, err := scq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		scq.sql = prev
+		_q.sql = prev
 	}
 	return nil
 }
 
-func (scq *ServiceConfigQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ServiceConfig, error) {
+func (_q *ServiceConfigQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ServiceConfig, error) {
 	var (
 		nodes       = []*ServiceConfig{}
-		_spec       = scq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
-			scq.withService != nil,
-			scq.withS3BackupSources != nil,
+			_q.withService != nil,
+			_q.withS3BackupSources != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*ServiceConfig).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &ServiceConfig{config: scq.config}
+		node := &ServiceConfig{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(scq.modifiers) > 0 {
-		_spec.Modifiers = scq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, scq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := scq.withService; query != nil {
-		if err := scq.loadService(ctx, query, nodes, nil,
+	if query := _q.withService; query != nil {
+		if err := _q.loadService(ctx, query, nodes, nil,
 			func(n *ServiceConfig, e *Service) { n.Edges.Service = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := scq.withS3BackupSources; query != nil {
-		if err := scq.loadS3BackupSources(ctx, query, nodes, nil,
+	if query := _q.withS3BackupSources; query != nil {
+		if err := _q.loadS3BackupSources(ctx, query, nodes, nil,
 			func(n *ServiceConfig, e *S3) { n.Edges.S3BackupSources = e }); err != nil {
 			return nil, err
 		}
@@ -450,7 +450,7 @@ func (scq *ServiceConfigQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 	return nodes, nil
 }
 
-func (scq *ServiceConfigQuery) loadService(ctx context.Context, query *ServiceQuery, nodes []*ServiceConfig, init func(*ServiceConfig), assign func(*ServiceConfig, *Service)) error {
+func (_q *ServiceConfigQuery) loadService(ctx context.Context, query *ServiceQuery, nodes []*ServiceConfig, init func(*ServiceConfig), assign func(*ServiceConfig, *Service)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*ServiceConfig)
 	for i := range nodes {
@@ -479,7 +479,7 @@ func (scq *ServiceConfigQuery) loadService(ctx context.Context, query *ServiceQu
 	}
 	return nil
 }
-func (scq *ServiceConfigQuery) loadS3BackupSources(ctx context.Context, query *S3Query, nodes []*ServiceConfig, init func(*ServiceConfig), assign func(*ServiceConfig, *S3)) error {
+func (_q *ServiceConfigQuery) loadS3BackupSources(ctx context.Context, query *S3Query, nodes []*ServiceConfig, init func(*ServiceConfig), assign func(*ServiceConfig, *S3)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*ServiceConfig)
 	for i := range nodes {
@@ -512,27 +512,27 @@ func (scq *ServiceConfigQuery) loadS3BackupSources(ctx context.Context, query *S
 	return nil
 }
 
-func (scq *ServiceConfigQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := scq.querySpec()
-	if len(scq.modifiers) > 0 {
-		_spec.Modifiers = scq.modifiers
+func (_q *ServiceConfigQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = scq.ctx.Fields
-	if len(scq.ctx.Fields) > 0 {
-		_spec.Unique = scq.ctx.Unique != nil && *scq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, scq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (scq *ServiceConfigQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *ServiceConfigQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(serviceconfig.Table, serviceconfig.Columns, sqlgraph.NewFieldSpec(serviceconfig.FieldID, field.TypeUUID))
-	_spec.From = scq.sql
-	if unique := scq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if scq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := scq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, serviceconfig.FieldID)
 		for i := range fields {
@@ -540,27 +540,27 @@ func (scq *ServiceConfigQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if scq.withService != nil {
+		if _q.withService != nil {
 			_spec.Node.AddColumnOnce(serviceconfig.FieldServiceID)
 		}
-		if scq.withS3BackupSources != nil {
+		if _q.withS3BackupSources != nil {
 			_spec.Node.AddColumnOnce(serviceconfig.FieldS3BackupSourceID)
 		}
 	}
-	if ps := scq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := scq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := scq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := scq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -570,45 +570,45 @@ func (scq *ServiceConfigQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (scq *ServiceConfigQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(scq.driver.Dialect())
+func (_q *ServiceConfigQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(serviceconfig.Table)
-	columns := scq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = serviceconfig.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if scq.sql != nil {
-		selector = scq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if scq.ctx.Unique != nil && *scq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range scq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range scq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range scq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := scq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := scq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (scq *ServiceConfigQuery) Modify(modifiers ...func(s *sql.Selector)) *ServiceConfigSelect {
-	scq.modifiers = append(scq.modifiers, modifiers...)
-	return scq.Select()
+func (_q *ServiceConfigQuery) Modify(modifiers ...func(s *sql.Selector)) *ServiceConfigSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // ServiceConfigGroupBy is the group-by builder for ServiceConfig entities.
@@ -618,41 +618,41 @@ type ServiceConfigGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (scgb *ServiceConfigGroupBy) Aggregate(fns ...AggregateFunc) *ServiceConfigGroupBy {
-	scgb.fns = append(scgb.fns, fns...)
-	return scgb
+func (_g *ServiceConfigGroupBy) Aggregate(fns ...AggregateFunc) *ServiceConfigGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (scgb *ServiceConfigGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, scgb.build.ctx, ent.OpQueryGroupBy)
-	if err := scgb.build.prepareQuery(ctx); err != nil {
+func (_g *ServiceConfigGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*ServiceConfigQuery, *ServiceConfigGroupBy](ctx, scgb.build, scgb, scgb.build.inters, v)
+	return scanWithInterceptors[*ServiceConfigQuery, *ServiceConfigGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (scgb *ServiceConfigGroupBy) sqlScan(ctx context.Context, root *ServiceConfigQuery, v any) error {
+func (_g *ServiceConfigGroupBy) sqlScan(ctx context.Context, root *ServiceConfigQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(scgb.fns))
-	for _, fn := range scgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*scgb.flds)+len(scgb.fns))
-		for _, f := range *scgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*scgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := scgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -666,27 +666,27 @@ type ServiceConfigSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (scs *ServiceConfigSelect) Aggregate(fns ...AggregateFunc) *ServiceConfigSelect {
-	scs.fns = append(scs.fns, fns...)
-	return scs
+func (_s *ServiceConfigSelect) Aggregate(fns ...AggregateFunc) *ServiceConfigSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (scs *ServiceConfigSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, scs.ctx, ent.OpQuerySelect)
-	if err := scs.prepareQuery(ctx); err != nil {
+func (_s *ServiceConfigSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*ServiceConfigQuery, *ServiceConfigSelect](ctx, scs.ServiceConfigQuery, scs, scs.inters, v)
+	return scanWithInterceptors[*ServiceConfigQuery, *ServiceConfigSelect](ctx, _s.ServiceConfigQuery, _s, _s.inters, v)
 }
 
-func (scs *ServiceConfigSelect) sqlScan(ctx context.Context, root *ServiceConfigQuery, v any) error {
+func (_s *ServiceConfigSelect) sqlScan(ctx context.Context, root *ServiceConfigQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(scs.fns))
-	for _, fn := range scs.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*scs.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -694,7 +694,7 @@ func (scs *ServiceConfigSelect) sqlScan(ctx context.Context, root *ServiceConfig
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := scs.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -702,7 +702,7 @@ func (scs *ServiceConfigSelect) sqlScan(ctx context.Context, root *ServiceConfig
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (scs *ServiceConfigSelect) Modify(modifiers ...func(s *sql.Selector)) *ServiceConfigSelect {
-	scs.modifiers = append(scs.modifiers, modifiers...)
-	return scs
+func (_s *ServiceConfigSelect) Modify(modifiers ...func(s *sql.Selector)) *ServiceConfigSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

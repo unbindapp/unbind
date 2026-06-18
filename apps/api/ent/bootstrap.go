@@ -39,7 +39,7 @@ func (*Bootstrap) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Bootstrap fields.
-func (b *Bootstrap) assignValues(columns []string, values []any) error {
+func (_m *Bootstrap) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -50,15 +50,15 @@ func (b *Bootstrap) assignValues(columns []string, values []any) error {
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			b.ID = int(value.Int64)
+			_m.ID = int(value.Int64)
 		case bootstrap.FieldIsBootstrapped:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field is_bootstrapped", values[i])
 			} else if value.Valid {
-				b.IsBootstrapped = value.Bool
+				_m.IsBootstrapped = value.Bool
 			}
 		default:
-			b.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -66,35 +66,35 @@ func (b *Bootstrap) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the Bootstrap.
 // This includes values selected through modifiers, order, etc.
-func (b *Bootstrap) Value(name string) (ent.Value, error) {
-	return b.selectValues.Get(name)
+func (_m *Bootstrap) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // Update returns a builder for updating this Bootstrap.
 // Note that you need to call Bootstrap.Unwrap() before calling this method if this Bootstrap
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (b *Bootstrap) Update() *BootstrapUpdateOne {
-	return NewBootstrapClient(b.config).UpdateOne(b)
+func (_m *Bootstrap) Update() *BootstrapUpdateOne {
+	return NewBootstrapClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the Bootstrap entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (b *Bootstrap) Unwrap() *Bootstrap {
-	_tx, ok := b.config.driver.(*txDriver)
+func (_m *Bootstrap) Unwrap() *Bootstrap {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: Bootstrap is not a transactional entity")
 	}
-	b.config.driver = _tx.drv
-	return b
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (b *Bootstrap) String() string {
+func (_m *Bootstrap) String() string {
 	var builder strings.Builder
 	builder.WriteString("Bootstrap(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", b.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("is_bootstrapped=")
-	builder.WriteString(fmt.Sprintf("%v", b.IsBootstrapped))
+	builder.WriteString(fmt.Sprintf("%v", _m.IsBootstrapped))
 	builder.WriteByte(')')
 	return builder.String()
 }

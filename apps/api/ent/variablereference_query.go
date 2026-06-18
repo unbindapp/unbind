@@ -32,44 +32,44 @@ type VariableReferenceQuery struct {
 }
 
 // Where adds a new predicate for the VariableReferenceQuery builder.
-func (vrq *VariableReferenceQuery) Where(ps ...predicate.VariableReference) *VariableReferenceQuery {
-	vrq.predicates = append(vrq.predicates, ps...)
-	return vrq
+func (_q *VariableReferenceQuery) Where(ps ...predicate.VariableReference) *VariableReferenceQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (vrq *VariableReferenceQuery) Limit(limit int) *VariableReferenceQuery {
-	vrq.ctx.Limit = &limit
-	return vrq
+func (_q *VariableReferenceQuery) Limit(limit int) *VariableReferenceQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (vrq *VariableReferenceQuery) Offset(offset int) *VariableReferenceQuery {
-	vrq.ctx.Offset = &offset
-	return vrq
+func (_q *VariableReferenceQuery) Offset(offset int) *VariableReferenceQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (vrq *VariableReferenceQuery) Unique(unique bool) *VariableReferenceQuery {
-	vrq.ctx.Unique = &unique
-	return vrq
+func (_q *VariableReferenceQuery) Unique(unique bool) *VariableReferenceQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (vrq *VariableReferenceQuery) Order(o ...variablereference.OrderOption) *VariableReferenceQuery {
-	vrq.order = append(vrq.order, o...)
-	return vrq
+func (_q *VariableReferenceQuery) Order(o ...variablereference.OrderOption) *VariableReferenceQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryService chains the current query on the "service" edge.
-func (vrq *VariableReferenceQuery) QueryService() *ServiceQuery {
-	query := (&ServiceClient{config: vrq.config}).Query()
+func (_q *VariableReferenceQuery) QueryService() *ServiceQuery {
+	query := (&ServiceClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := vrq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := vrq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -78,7 +78,7 @@ func (vrq *VariableReferenceQuery) QueryService() *ServiceQuery {
 			sqlgraph.To(service.Table, service.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, variablereference.ServiceTable, variablereference.ServiceColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(vrq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -86,8 +86,8 @@ func (vrq *VariableReferenceQuery) QueryService() *ServiceQuery {
 
 // First returns the first VariableReference entity from the query.
 // Returns a *NotFoundError when no VariableReference was found.
-func (vrq *VariableReferenceQuery) First(ctx context.Context) (*VariableReference, error) {
-	nodes, err := vrq.Limit(1).All(setContextOp(ctx, vrq.ctx, ent.OpQueryFirst))
+func (_q *VariableReferenceQuery) First(ctx context.Context) (*VariableReference, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -98,8 +98,8 @@ func (vrq *VariableReferenceQuery) First(ctx context.Context) (*VariableReferenc
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (vrq *VariableReferenceQuery) FirstX(ctx context.Context) *VariableReference {
-	node, err := vrq.First(ctx)
+func (_q *VariableReferenceQuery) FirstX(ctx context.Context) *VariableReference {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -108,9 +108,9 @@ func (vrq *VariableReferenceQuery) FirstX(ctx context.Context) *VariableReferenc
 
 // FirstID returns the first VariableReference ID from the query.
 // Returns a *NotFoundError when no VariableReference ID was found.
-func (vrq *VariableReferenceQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *VariableReferenceQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = vrq.Limit(1).IDs(setContextOp(ctx, vrq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -121,8 +121,8 @@ func (vrq *VariableReferenceQuery) FirstID(ctx context.Context) (id uuid.UUID, e
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (vrq *VariableReferenceQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := vrq.FirstID(ctx)
+func (_q *VariableReferenceQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -132,8 +132,8 @@ func (vrq *VariableReferenceQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single VariableReference entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one VariableReference entity is found.
 // Returns a *NotFoundError when no VariableReference entities are found.
-func (vrq *VariableReferenceQuery) Only(ctx context.Context) (*VariableReference, error) {
-	nodes, err := vrq.Limit(2).All(setContextOp(ctx, vrq.ctx, ent.OpQueryOnly))
+func (_q *VariableReferenceQuery) Only(ctx context.Context) (*VariableReference, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -148,8 +148,8 @@ func (vrq *VariableReferenceQuery) Only(ctx context.Context) (*VariableReference
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (vrq *VariableReferenceQuery) OnlyX(ctx context.Context) *VariableReference {
-	node, err := vrq.Only(ctx)
+func (_q *VariableReferenceQuery) OnlyX(ctx context.Context) *VariableReference {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -159,9 +159,9 @@ func (vrq *VariableReferenceQuery) OnlyX(ctx context.Context) *VariableReference
 // OnlyID is like Only, but returns the only VariableReference ID in the query.
 // Returns a *NotSingularError when more than one VariableReference ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (vrq *VariableReferenceQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *VariableReferenceQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = vrq.Limit(2).IDs(setContextOp(ctx, vrq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -176,8 +176,8 @@ func (vrq *VariableReferenceQuery) OnlyID(ctx context.Context) (id uuid.UUID, er
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (vrq *VariableReferenceQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := vrq.OnlyID(ctx)
+func (_q *VariableReferenceQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -185,18 +185,18 @@ func (vrq *VariableReferenceQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of VariableReferences.
-func (vrq *VariableReferenceQuery) All(ctx context.Context) ([]*VariableReference, error) {
-	ctx = setContextOp(ctx, vrq.ctx, ent.OpQueryAll)
-	if err := vrq.prepareQuery(ctx); err != nil {
+func (_q *VariableReferenceQuery) All(ctx context.Context) ([]*VariableReference, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*VariableReference, *VariableReferenceQuery]()
-	return withInterceptors[[]*VariableReference](ctx, vrq, qr, vrq.inters)
+	return withInterceptors[[]*VariableReference](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (vrq *VariableReferenceQuery) AllX(ctx context.Context) []*VariableReference {
-	nodes, err := vrq.All(ctx)
+func (_q *VariableReferenceQuery) AllX(ctx context.Context) []*VariableReference {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -204,20 +204,20 @@ func (vrq *VariableReferenceQuery) AllX(ctx context.Context) []*VariableReferenc
 }
 
 // IDs executes the query and returns a list of VariableReference IDs.
-func (vrq *VariableReferenceQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if vrq.ctx.Unique == nil && vrq.path != nil {
-		vrq.Unique(true)
+func (_q *VariableReferenceQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, vrq.ctx, ent.OpQueryIDs)
-	if err = vrq.Select(variablereference.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(variablereference.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (vrq *VariableReferenceQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := vrq.IDs(ctx)
+func (_q *VariableReferenceQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -225,17 +225,17 @@ func (vrq *VariableReferenceQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (vrq *VariableReferenceQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, vrq.ctx, ent.OpQueryCount)
-	if err := vrq.prepareQuery(ctx); err != nil {
+func (_q *VariableReferenceQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, vrq, querierCount[*VariableReferenceQuery](), vrq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*VariableReferenceQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (vrq *VariableReferenceQuery) CountX(ctx context.Context) int {
-	count, err := vrq.Count(ctx)
+func (_q *VariableReferenceQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -243,9 +243,9 @@ func (vrq *VariableReferenceQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (vrq *VariableReferenceQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, vrq.ctx, ent.OpQueryExist)
-	switch _, err := vrq.FirstID(ctx); {
+func (_q *VariableReferenceQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -256,8 +256,8 @@ func (vrq *VariableReferenceQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (vrq *VariableReferenceQuery) ExistX(ctx context.Context) bool {
-	exist, err := vrq.Exist(ctx)
+func (_q *VariableReferenceQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -266,33 +266,33 @@ func (vrq *VariableReferenceQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the VariableReferenceQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (vrq *VariableReferenceQuery) Clone() *VariableReferenceQuery {
-	if vrq == nil {
+func (_q *VariableReferenceQuery) Clone() *VariableReferenceQuery {
+	if _q == nil {
 		return nil
 	}
 	return &VariableReferenceQuery{
-		config:      vrq.config,
-		ctx:         vrq.ctx.Clone(),
-		order:       append([]variablereference.OrderOption{}, vrq.order...),
-		inters:      append([]Interceptor{}, vrq.inters...),
-		predicates:  append([]predicate.VariableReference{}, vrq.predicates...),
-		withService: vrq.withService.Clone(),
+		config:      _q.config,
+		ctx:         _q.ctx.Clone(),
+		order:       append([]variablereference.OrderOption{}, _q.order...),
+		inters:      append([]Interceptor{}, _q.inters...),
+		predicates:  append([]predicate.VariableReference{}, _q.predicates...),
+		withService: _q.withService.Clone(),
 		// clone intermediate query.
-		sql:       vrq.sql.Clone(),
-		path:      vrq.path,
-		modifiers: append([]func(*sql.Selector){}, vrq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithService tells the query-builder to eager-load the nodes that are connected to
 // the "service" edge. The optional arguments are used to configure the query builder of the edge.
-func (vrq *VariableReferenceQuery) WithService(opts ...func(*ServiceQuery)) *VariableReferenceQuery {
-	query := (&ServiceClient{config: vrq.config}).Query()
+func (_q *VariableReferenceQuery) WithService(opts ...func(*ServiceQuery)) *VariableReferenceQuery {
+	query := (&ServiceClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	vrq.withService = query
-	return vrq
+	_q.withService = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -309,10 +309,10 @@ func (vrq *VariableReferenceQuery) WithService(opts ...func(*ServiceQuery)) *Var
 //		GroupBy(variablereference.FieldCreatedAt).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (vrq *VariableReferenceQuery) GroupBy(field string, fields ...string) *VariableReferenceGroupBy {
-	vrq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &VariableReferenceGroupBy{build: vrq}
-	grbuild.flds = &vrq.ctx.Fields
+func (_q *VariableReferenceQuery) GroupBy(field string, fields ...string) *VariableReferenceGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &VariableReferenceGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = variablereference.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -330,76 +330,76 @@ func (vrq *VariableReferenceQuery) GroupBy(field string, fields ...string) *Vari
 //	client.VariableReference.Query().
 //		Select(variablereference.FieldCreatedAt).
 //		Scan(ctx, &v)
-func (vrq *VariableReferenceQuery) Select(fields ...string) *VariableReferenceSelect {
-	vrq.ctx.Fields = append(vrq.ctx.Fields, fields...)
-	sbuild := &VariableReferenceSelect{VariableReferenceQuery: vrq}
+func (_q *VariableReferenceQuery) Select(fields ...string) *VariableReferenceSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &VariableReferenceSelect{VariableReferenceQuery: _q}
 	sbuild.label = variablereference.Label
-	sbuild.flds, sbuild.scan = &vrq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a VariableReferenceSelect configured with the given aggregations.
-func (vrq *VariableReferenceQuery) Aggregate(fns ...AggregateFunc) *VariableReferenceSelect {
-	return vrq.Select().Aggregate(fns...)
+func (_q *VariableReferenceQuery) Aggregate(fns ...AggregateFunc) *VariableReferenceSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (vrq *VariableReferenceQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range vrq.inters {
+func (_q *VariableReferenceQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, vrq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range vrq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !variablereference.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if vrq.path != nil {
-		prev, err := vrq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		vrq.sql = prev
+		_q.sql = prev
 	}
 	return nil
 }
 
-func (vrq *VariableReferenceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*VariableReference, error) {
+func (_q *VariableReferenceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*VariableReference, error) {
 	var (
 		nodes       = []*VariableReference{}
-		_spec       = vrq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [1]bool{
-			vrq.withService != nil,
+			_q.withService != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*VariableReference).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &VariableReference{config: vrq.config}
+		node := &VariableReference{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(vrq.modifiers) > 0 {
-		_spec.Modifiers = vrq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, vrq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := vrq.withService; query != nil {
-		if err := vrq.loadService(ctx, query, nodes, nil,
+	if query := _q.withService; query != nil {
+		if err := _q.loadService(ctx, query, nodes, nil,
 			func(n *VariableReference, e *Service) { n.Edges.Service = e }); err != nil {
 			return nil, err
 		}
@@ -407,7 +407,7 @@ func (vrq *VariableReferenceQuery) sqlAll(ctx context.Context, hooks ...queryHoo
 	return nodes, nil
 }
 
-func (vrq *VariableReferenceQuery) loadService(ctx context.Context, query *ServiceQuery, nodes []*VariableReference, init func(*VariableReference), assign func(*VariableReference, *Service)) error {
+func (_q *VariableReferenceQuery) loadService(ctx context.Context, query *ServiceQuery, nodes []*VariableReference, init func(*VariableReference), assign func(*VariableReference, *Service)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*VariableReference)
 	for i := range nodes {
@@ -437,27 +437,27 @@ func (vrq *VariableReferenceQuery) loadService(ctx context.Context, query *Servi
 	return nil
 }
 
-func (vrq *VariableReferenceQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := vrq.querySpec()
-	if len(vrq.modifiers) > 0 {
-		_spec.Modifiers = vrq.modifiers
+func (_q *VariableReferenceQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = vrq.ctx.Fields
-	if len(vrq.ctx.Fields) > 0 {
-		_spec.Unique = vrq.ctx.Unique != nil && *vrq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, vrq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (vrq *VariableReferenceQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *VariableReferenceQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(variablereference.Table, variablereference.Columns, sqlgraph.NewFieldSpec(variablereference.FieldID, field.TypeUUID))
-	_spec.From = vrq.sql
-	if unique := vrq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if vrq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := vrq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, variablereference.FieldID)
 		for i := range fields {
@@ -465,24 +465,24 @@ func (vrq *VariableReferenceQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if vrq.withService != nil {
+		if _q.withService != nil {
 			_spec.Node.AddColumnOnce(variablereference.FieldTargetServiceID)
 		}
 	}
-	if ps := vrq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := vrq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := vrq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := vrq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -492,45 +492,45 @@ func (vrq *VariableReferenceQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (vrq *VariableReferenceQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(vrq.driver.Dialect())
+func (_q *VariableReferenceQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(variablereference.Table)
-	columns := vrq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = variablereference.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if vrq.sql != nil {
-		selector = vrq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if vrq.ctx.Unique != nil && *vrq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range vrq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range vrq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range vrq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := vrq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := vrq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (vrq *VariableReferenceQuery) Modify(modifiers ...func(s *sql.Selector)) *VariableReferenceSelect {
-	vrq.modifiers = append(vrq.modifiers, modifiers...)
-	return vrq.Select()
+func (_q *VariableReferenceQuery) Modify(modifiers ...func(s *sql.Selector)) *VariableReferenceSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // VariableReferenceGroupBy is the group-by builder for VariableReference entities.
@@ -540,41 +540,41 @@ type VariableReferenceGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (vrgb *VariableReferenceGroupBy) Aggregate(fns ...AggregateFunc) *VariableReferenceGroupBy {
-	vrgb.fns = append(vrgb.fns, fns...)
-	return vrgb
+func (_g *VariableReferenceGroupBy) Aggregate(fns ...AggregateFunc) *VariableReferenceGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (vrgb *VariableReferenceGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, vrgb.build.ctx, ent.OpQueryGroupBy)
-	if err := vrgb.build.prepareQuery(ctx); err != nil {
+func (_g *VariableReferenceGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*VariableReferenceQuery, *VariableReferenceGroupBy](ctx, vrgb.build, vrgb, vrgb.build.inters, v)
+	return scanWithInterceptors[*VariableReferenceQuery, *VariableReferenceGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (vrgb *VariableReferenceGroupBy) sqlScan(ctx context.Context, root *VariableReferenceQuery, v any) error {
+func (_g *VariableReferenceGroupBy) sqlScan(ctx context.Context, root *VariableReferenceQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(vrgb.fns))
-	for _, fn := range vrgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*vrgb.flds)+len(vrgb.fns))
-		for _, f := range *vrgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*vrgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := vrgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -588,27 +588,27 @@ type VariableReferenceSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (vrs *VariableReferenceSelect) Aggregate(fns ...AggregateFunc) *VariableReferenceSelect {
-	vrs.fns = append(vrs.fns, fns...)
-	return vrs
+func (_s *VariableReferenceSelect) Aggregate(fns ...AggregateFunc) *VariableReferenceSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (vrs *VariableReferenceSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, vrs.ctx, ent.OpQuerySelect)
-	if err := vrs.prepareQuery(ctx); err != nil {
+func (_s *VariableReferenceSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*VariableReferenceQuery, *VariableReferenceSelect](ctx, vrs.VariableReferenceQuery, vrs, vrs.inters, v)
+	return scanWithInterceptors[*VariableReferenceQuery, *VariableReferenceSelect](ctx, _s.VariableReferenceQuery, _s, _s.inters, v)
 }
 
-func (vrs *VariableReferenceSelect) sqlScan(ctx context.Context, root *VariableReferenceQuery, v any) error {
+func (_s *VariableReferenceSelect) sqlScan(ctx context.Context, root *VariableReferenceQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(vrs.fns))
-	for _, fn := range vrs.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*vrs.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -616,7 +616,7 @@ func (vrs *VariableReferenceSelect) sqlScan(ctx context.Context, root *VariableR
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := vrs.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -624,7 +624,7 @@ func (vrs *VariableReferenceSelect) sqlScan(ctx context.Context, root *VariableR
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (vrs *VariableReferenceSelect) Modify(modifiers ...func(s *sql.Selector)) *VariableReferenceSelect {
-	vrs.modifiers = append(vrs.modifiers, modifiers...)
-	return vrs
+func (_s *VariableReferenceSelect) Modify(modifiers ...func(s *sql.Selector)) *VariableReferenceSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

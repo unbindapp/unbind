@@ -35,44 +35,44 @@ type GithubAppQuery struct {
 }
 
 // Where adds a new predicate for the GithubAppQuery builder.
-func (gaq *GithubAppQuery) Where(ps ...predicate.GithubApp) *GithubAppQuery {
-	gaq.predicates = append(gaq.predicates, ps...)
-	return gaq
+func (_q *GithubAppQuery) Where(ps ...predicate.GithubApp) *GithubAppQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (gaq *GithubAppQuery) Limit(limit int) *GithubAppQuery {
-	gaq.ctx.Limit = &limit
-	return gaq
+func (_q *GithubAppQuery) Limit(limit int) *GithubAppQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (gaq *GithubAppQuery) Offset(offset int) *GithubAppQuery {
-	gaq.ctx.Offset = &offset
-	return gaq
+func (_q *GithubAppQuery) Offset(offset int) *GithubAppQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (gaq *GithubAppQuery) Unique(unique bool) *GithubAppQuery {
-	gaq.ctx.Unique = &unique
-	return gaq
+func (_q *GithubAppQuery) Unique(unique bool) *GithubAppQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (gaq *GithubAppQuery) Order(o ...githubapp.OrderOption) *GithubAppQuery {
-	gaq.order = append(gaq.order, o...)
-	return gaq
+func (_q *GithubAppQuery) Order(o ...githubapp.OrderOption) *GithubAppQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryInstallations chains the current query on the "installations" edge.
-func (gaq *GithubAppQuery) QueryInstallations() *GithubInstallationQuery {
-	query := (&GithubInstallationClient{config: gaq.config}).Query()
+func (_q *GithubAppQuery) QueryInstallations() *GithubInstallationQuery {
+	query := (&GithubInstallationClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := gaq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := gaq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -81,20 +81,20 @@ func (gaq *GithubAppQuery) QueryInstallations() *GithubInstallationQuery {
 			sqlgraph.To(githubinstallation.Table, githubinstallation.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, githubapp.InstallationsTable, githubapp.InstallationsColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(gaq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryUsers chains the current query on the "users" edge.
-func (gaq *GithubAppQuery) QueryUsers() *UserQuery {
-	query := (&UserClient{config: gaq.config}).Query()
+func (_q *GithubAppQuery) QueryUsers() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := gaq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := gaq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -103,7 +103,7 @@ func (gaq *GithubAppQuery) QueryUsers() *UserQuery {
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, githubapp.UsersTable, githubapp.UsersColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(gaq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -111,8 +111,8 @@ func (gaq *GithubAppQuery) QueryUsers() *UserQuery {
 
 // First returns the first GithubApp entity from the query.
 // Returns a *NotFoundError when no GithubApp was found.
-func (gaq *GithubAppQuery) First(ctx context.Context) (*GithubApp, error) {
-	nodes, err := gaq.Limit(1).All(setContextOp(ctx, gaq.ctx, ent.OpQueryFirst))
+func (_q *GithubAppQuery) First(ctx context.Context) (*GithubApp, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -123,8 +123,8 @@ func (gaq *GithubAppQuery) First(ctx context.Context) (*GithubApp, error) {
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (gaq *GithubAppQuery) FirstX(ctx context.Context) *GithubApp {
-	node, err := gaq.First(ctx)
+func (_q *GithubAppQuery) FirstX(ctx context.Context) *GithubApp {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -133,9 +133,9 @@ func (gaq *GithubAppQuery) FirstX(ctx context.Context) *GithubApp {
 
 // FirstID returns the first GithubApp ID from the query.
 // Returns a *NotFoundError when no GithubApp ID was found.
-func (gaq *GithubAppQuery) FirstID(ctx context.Context) (id int64, err error) {
+func (_q *GithubAppQuery) FirstID(ctx context.Context) (id int64, err error) {
 	var ids []int64
-	if ids, err = gaq.Limit(1).IDs(setContextOp(ctx, gaq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -146,8 +146,8 @@ func (gaq *GithubAppQuery) FirstID(ctx context.Context) (id int64, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (gaq *GithubAppQuery) FirstIDX(ctx context.Context) int64 {
-	id, err := gaq.FirstID(ctx)
+func (_q *GithubAppQuery) FirstIDX(ctx context.Context) int64 {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -157,8 +157,8 @@ func (gaq *GithubAppQuery) FirstIDX(ctx context.Context) int64 {
 // Only returns a single GithubApp entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one GithubApp entity is found.
 // Returns a *NotFoundError when no GithubApp entities are found.
-func (gaq *GithubAppQuery) Only(ctx context.Context) (*GithubApp, error) {
-	nodes, err := gaq.Limit(2).All(setContextOp(ctx, gaq.ctx, ent.OpQueryOnly))
+func (_q *GithubAppQuery) Only(ctx context.Context) (*GithubApp, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -173,8 +173,8 @@ func (gaq *GithubAppQuery) Only(ctx context.Context) (*GithubApp, error) {
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (gaq *GithubAppQuery) OnlyX(ctx context.Context) *GithubApp {
-	node, err := gaq.Only(ctx)
+func (_q *GithubAppQuery) OnlyX(ctx context.Context) *GithubApp {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -184,9 +184,9 @@ func (gaq *GithubAppQuery) OnlyX(ctx context.Context) *GithubApp {
 // OnlyID is like Only, but returns the only GithubApp ID in the query.
 // Returns a *NotSingularError when more than one GithubApp ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (gaq *GithubAppQuery) OnlyID(ctx context.Context) (id int64, err error) {
+func (_q *GithubAppQuery) OnlyID(ctx context.Context) (id int64, err error) {
 	var ids []int64
-	if ids, err = gaq.Limit(2).IDs(setContextOp(ctx, gaq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -201,8 +201,8 @@ func (gaq *GithubAppQuery) OnlyID(ctx context.Context) (id int64, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (gaq *GithubAppQuery) OnlyIDX(ctx context.Context) int64 {
-	id, err := gaq.OnlyID(ctx)
+func (_q *GithubAppQuery) OnlyIDX(ctx context.Context) int64 {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -210,18 +210,18 @@ func (gaq *GithubAppQuery) OnlyIDX(ctx context.Context) int64 {
 }
 
 // All executes the query and returns a list of GithubApps.
-func (gaq *GithubAppQuery) All(ctx context.Context) ([]*GithubApp, error) {
-	ctx = setContextOp(ctx, gaq.ctx, ent.OpQueryAll)
-	if err := gaq.prepareQuery(ctx); err != nil {
+func (_q *GithubAppQuery) All(ctx context.Context) ([]*GithubApp, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*GithubApp, *GithubAppQuery]()
-	return withInterceptors[[]*GithubApp](ctx, gaq, qr, gaq.inters)
+	return withInterceptors[[]*GithubApp](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (gaq *GithubAppQuery) AllX(ctx context.Context) []*GithubApp {
-	nodes, err := gaq.All(ctx)
+func (_q *GithubAppQuery) AllX(ctx context.Context) []*GithubApp {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -229,20 +229,20 @@ func (gaq *GithubAppQuery) AllX(ctx context.Context) []*GithubApp {
 }
 
 // IDs executes the query and returns a list of GithubApp IDs.
-func (gaq *GithubAppQuery) IDs(ctx context.Context) (ids []int64, err error) {
-	if gaq.ctx.Unique == nil && gaq.path != nil {
-		gaq.Unique(true)
+func (_q *GithubAppQuery) IDs(ctx context.Context) (ids []int64, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, gaq.ctx, ent.OpQueryIDs)
-	if err = gaq.Select(githubapp.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(githubapp.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (gaq *GithubAppQuery) IDsX(ctx context.Context) []int64 {
-	ids, err := gaq.IDs(ctx)
+func (_q *GithubAppQuery) IDsX(ctx context.Context) []int64 {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -250,17 +250,17 @@ func (gaq *GithubAppQuery) IDsX(ctx context.Context) []int64 {
 }
 
 // Count returns the count of the given query.
-func (gaq *GithubAppQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, gaq.ctx, ent.OpQueryCount)
-	if err := gaq.prepareQuery(ctx); err != nil {
+func (_q *GithubAppQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, gaq, querierCount[*GithubAppQuery](), gaq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*GithubAppQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (gaq *GithubAppQuery) CountX(ctx context.Context) int {
-	count, err := gaq.Count(ctx)
+func (_q *GithubAppQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -268,9 +268,9 @@ func (gaq *GithubAppQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (gaq *GithubAppQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, gaq.ctx, ent.OpQueryExist)
-	switch _, err := gaq.FirstID(ctx); {
+func (_q *GithubAppQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -281,8 +281,8 @@ func (gaq *GithubAppQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (gaq *GithubAppQuery) ExistX(ctx context.Context) bool {
-	exist, err := gaq.Exist(ctx)
+func (_q *GithubAppQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -291,45 +291,45 @@ func (gaq *GithubAppQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the GithubAppQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (gaq *GithubAppQuery) Clone() *GithubAppQuery {
-	if gaq == nil {
+func (_q *GithubAppQuery) Clone() *GithubAppQuery {
+	if _q == nil {
 		return nil
 	}
 	return &GithubAppQuery{
-		config:            gaq.config,
-		ctx:               gaq.ctx.Clone(),
-		order:             append([]githubapp.OrderOption{}, gaq.order...),
-		inters:            append([]Interceptor{}, gaq.inters...),
-		predicates:        append([]predicate.GithubApp{}, gaq.predicates...),
-		withInstallations: gaq.withInstallations.Clone(),
-		withUsers:         gaq.withUsers.Clone(),
+		config:            _q.config,
+		ctx:               _q.ctx.Clone(),
+		order:             append([]githubapp.OrderOption{}, _q.order...),
+		inters:            append([]Interceptor{}, _q.inters...),
+		predicates:        append([]predicate.GithubApp{}, _q.predicates...),
+		withInstallations: _q.withInstallations.Clone(),
+		withUsers:         _q.withUsers.Clone(),
 		// clone intermediate query.
-		sql:       gaq.sql.Clone(),
-		path:      gaq.path,
-		modifiers: append([]func(*sql.Selector){}, gaq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithInstallations tells the query-builder to eager-load the nodes that are connected to
 // the "installations" edge. The optional arguments are used to configure the query builder of the edge.
-func (gaq *GithubAppQuery) WithInstallations(opts ...func(*GithubInstallationQuery)) *GithubAppQuery {
-	query := (&GithubInstallationClient{config: gaq.config}).Query()
+func (_q *GithubAppQuery) WithInstallations(opts ...func(*GithubInstallationQuery)) *GithubAppQuery {
+	query := (&GithubInstallationClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	gaq.withInstallations = query
-	return gaq
+	_q.withInstallations = query
+	return _q
 }
 
 // WithUsers tells the query-builder to eager-load the nodes that are connected to
 // the "users" edge. The optional arguments are used to configure the query builder of the edge.
-func (gaq *GithubAppQuery) WithUsers(opts ...func(*UserQuery)) *GithubAppQuery {
-	query := (&UserClient{config: gaq.config}).Query()
+func (_q *GithubAppQuery) WithUsers(opts ...func(*UserQuery)) *GithubAppQuery {
+	query := (&UserClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	gaq.withUsers = query
-	return gaq
+	_q.withUsers = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -346,10 +346,10 @@ func (gaq *GithubAppQuery) WithUsers(opts ...func(*UserQuery)) *GithubAppQuery {
 //		GroupBy(githubapp.FieldCreatedAt).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (gaq *GithubAppQuery) GroupBy(field string, fields ...string) *GithubAppGroupBy {
-	gaq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &GithubAppGroupBy{build: gaq}
-	grbuild.flds = &gaq.ctx.Fields
+func (_q *GithubAppQuery) GroupBy(field string, fields ...string) *GithubAppGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &GithubAppGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = githubapp.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -367,84 +367,84 @@ func (gaq *GithubAppQuery) GroupBy(field string, fields ...string) *GithubAppGro
 //	client.GithubApp.Query().
 //		Select(githubapp.FieldCreatedAt).
 //		Scan(ctx, &v)
-func (gaq *GithubAppQuery) Select(fields ...string) *GithubAppSelect {
-	gaq.ctx.Fields = append(gaq.ctx.Fields, fields...)
-	sbuild := &GithubAppSelect{GithubAppQuery: gaq}
+func (_q *GithubAppQuery) Select(fields ...string) *GithubAppSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &GithubAppSelect{GithubAppQuery: _q}
 	sbuild.label = githubapp.Label
-	sbuild.flds, sbuild.scan = &gaq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a GithubAppSelect configured with the given aggregations.
-func (gaq *GithubAppQuery) Aggregate(fns ...AggregateFunc) *GithubAppSelect {
-	return gaq.Select().Aggregate(fns...)
+func (_q *GithubAppQuery) Aggregate(fns ...AggregateFunc) *GithubAppSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (gaq *GithubAppQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range gaq.inters {
+func (_q *GithubAppQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, gaq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range gaq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !githubapp.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if gaq.path != nil {
-		prev, err := gaq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		gaq.sql = prev
+		_q.sql = prev
 	}
 	return nil
 }
 
-func (gaq *GithubAppQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*GithubApp, error) {
+func (_q *GithubAppQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*GithubApp, error) {
 	var (
 		nodes       = []*GithubApp{}
-		_spec       = gaq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
-			gaq.withInstallations != nil,
-			gaq.withUsers != nil,
+			_q.withInstallations != nil,
+			_q.withUsers != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*GithubApp).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &GithubApp{config: gaq.config}
+		node := &GithubApp{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(gaq.modifiers) > 0 {
-		_spec.Modifiers = gaq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, gaq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := gaq.withInstallations; query != nil {
-		if err := gaq.loadInstallations(ctx, query, nodes,
+	if query := _q.withInstallations; query != nil {
+		if err := _q.loadInstallations(ctx, query, nodes,
 			func(n *GithubApp) { n.Edges.Installations = []*GithubInstallation{} },
 			func(n *GithubApp, e *GithubInstallation) { n.Edges.Installations = append(n.Edges.Installations, e) }); err != nil {
 			return nil, err
 		}
 	}
-	if query := gaq.withUsers; query != nil {
-		if err := gaq.loadUsers(ctx, query, nodes, nil,
+	if query := _q.withUsers; query != nil {
+		if err := _q.loadUsers(ctx, query, nodes, nil,
 			func(n *GithubApp, e *User) { n.Edges.Users = e }); err != nil {
 			return nil, err
 		}
@@ -452,7 +452,7 @@ func (gaq *GithubAppQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*G
 	return nodes, nil
 }
 
-func (gaq *GithubAppQuery) loadInstallations(ctx context.Context, query *GithubInstallationQuery, nodes []*GithubApp, init func(*GithubApp), assign func(*GithubApp, *GithubInstallation)) error {
+func (_q *GithubAppQuery) loadInstallations(ctx context.Context, query *GithubInstallationQuery, nodes []*GithubApp, init func(*GithubApp), assign func(*GithubApp, *GithubInstallation)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[int64]*GithubApp)
 	for i := range nodes {
@@ -482,7 +482,7 @@ func (gaq *GithubAppQuery) loadInstallations(ctx context.Context, query *GithubI
 	}
 	return nil
 }
-func (gaq *GithubAppQuery) loadUsers(ctx context.Context, query *UserQuery, nodes []*GithubApp, init func(*GithubApp), assign func(*GithubApp, *User)) error {
+func (_q *GithubAppQuery) loadUsers(ctx context.Context, query *UserQuery, nodes []*GithubApp, init func(*GithubApp), assign func(*GithubApp, *User)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*GithubApp)
 	for i := range nodes {
@@ -512,27 +512,27 @@ func (gaq *GithubAppQuery) loadUsers(ctx context.Context, query *UserQuery, node
 	return nil
 }
 
-func (gaq *GithubAppQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := gaq.querySpec()
-	if len(gaq.modifiers) > 0 {
-		_spec.Modifiers = gaq.modifiers
+func (_q *GithubAppQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = gaq.ctx.Fields
-	if len(gaq.ctx.Fields) > 0 {
-		_spec.Unique = gaq.ctx.Unique != nil && *gaq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, gaq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (gaq *GithubAppQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *GithubAppQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(githubapp.Table, githubapp.Columns, sqlgraph.NewFieldSpec(githubapp.FieldID, field.TypeInt64))
-	_spec.From = gaq.sql
-	if unique := gaq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if gaq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := gaq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, githubapp.FieldID)
 		for i := range fields {
@@ -540,24 +540,24 @@ func (gaq *GithubAppQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if gaq.withUsers != nil {
+		if _q.withUsers != nil {
 			_spec.Node.AddColumnOnce(githubapp.FieldCreatedBy)
 		}
 	}
-	if ps := gaq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := gaq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := gaq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := gaq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -567,45 +567,45 @@ func (gaq *GithubAppQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (gaq *GithubAppQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(gaq.driver.Dialect())
+func (_q *GithubAppQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(githubapp.Table)
-	columns := gaq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = githubapp.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if gaq.sql != nil {
-		selector = gaq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if gaq.ctx.Unique != nil && *gaq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range gaq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range gaq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range gaq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := gaq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := gaq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (gaq *GithubAppQuery) Modify(modifiers ...func(s *sql.Selector)) *GithubAppSelect {
-	gaq.modifiers = append(gaq.modifiers, modifiers...)
-	return gaq.Select()
+func (_q *GithubAppQuery) Modify(modifiers ...func(s *sql.Selector)) *GithubAppSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // GithubAppGroupBy is the group-by builder for GithubApp entities.
@@ -615,41 +615,41 @@ type GithubAppGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (gagb *GithubAppGroupBy) Aggregate(fns ...AggregateFunc) *GithubAppGroupBy {
-	gagb.fns = append(gagb.fns, fns...)
-	return gagb
+func (_g *GithubAppGroupBy) Aggregate(fns ...AggregateFunc) *GithubAppGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (gagb *GithubAppGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, gagb.build.ctx, ent.OpQueryGroupBy)
-	if err := gagb.build.prepareQuery(ctx); err != nil {
+func (_g *GithubAppGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*GithubAppQuery, *GithubAppGroupBy](ctx, gagb.build, gagb, gagb.build.inters, v)
+	return scanWithInterceptors[*GithubAppQuery, *GithubAppGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (gagb *GithubAppGroupBy) sqlScan(ctx context.Context, root *GithubAppQuery, v any) error {
+func (_g *GithubAppGroupBy) sqlScan(ctx context.Context, root *GithubAppQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(gagb.fns))
-	for _, fn := range gagb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*gagb.flds)+len(gagb.fns))
-		for _, f := range *gagb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*gagb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := gagb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -663,27 +663,27 @@ type GithubAppSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (gas *GithubAppSelect) Aggregate(fns ...AggregateFunc) *GithubAppSelect {
-	gas.fns = append(gas.fns, fns...)
-	return gas
+func (_s *GithubAppSelect) Aggregate(fns ...AggregateFunc) *GithubAppSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (gas *GithubAppSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, gas.ctx, ent.OpQuerySelect)
-	if err := gas.prepareQuery(ctx); err != nil {
+func (_s *GithubAppSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*GithubAppQuery, *GithubAppSelect](ctx, gas.GithubAppQuery, gas, gas.inters, v)
+	return scanWithInterceptors[*GithubAppQuery, *GithubAppSelect](ctx, _s.GithubAppQuery, _s, _s.inters, v)
 }
 
-func (gas *GithubAppSelect) sqlScan(ctx context.Context, root *GithubAppQuery, v any) error {
+func (_s *GithubAppSelect) sqlScan(ctx context.Context, root *GithubAppQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(gas.fns))
-	for _, fn := range gas.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*gas.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -691,7 +691,7 @@ func (gas *GithubAppSelect) sqlScan(ctx context.Context, root *GithubAppQuery, v
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := gas.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -699,7 +699,7 @@ func (gas *GithubAppSelect) sqlScan(ctx context.Context, root *GithubAppQuery, v
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (gas *GithubAppSelect) Modify(modifiers ...func(s *sql.Selector)) *GithubAppSelect {
-	gas.modifiers = append(gas.modifiers, modifiers...)
-	return gas
+func (_s *GithubAppSelect) Modify(modifiers ...func(s *sql.Selector)) *GithubAppSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

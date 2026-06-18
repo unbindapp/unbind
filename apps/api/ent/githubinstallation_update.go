@@ -29,235 +29,235 @@ type GithubInstallationUpdate struct {
 }
 
 // Where appends a list predicates to the GithubInstallationUpdate builder.
-func (giu *GithubInstallationUpdate) Where(ps ...predicate.GithubInstallation) *GithubInstallationUpdate {
-	giu.mutation.Where(ps...)
-	return giu
+func (_u *GithubInstallationUpdate) Where(ps ...predicate.GithubInstallation) *GithubInstallationUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (giu *GithubInstallationUpdate) SetUpdatedAt(t time.Time) *GithubInstallationUpdate {
-	giu.mutation.SetUpdatedAt(t)
-	return giu
+func (_u *GithubInstallationUpdate) SetUpdatedAt(v time.Time) *GithubInstallationUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetGithubAppID sets the "github_app_id" field.
-func (giu *GithubInstallationUpdate) SetGithubAppID(i int64) *GithubInstallationUpdate {
-	giu.mutation.SetGithubAppID(i)
-	return giu
+func (_u *GithubInstallationUpdate) SetGithubAppID(v int64) *GithubInstallationUpdate {
+	_u.mutation.SetGithubAppID(v)
+	return _u
 }
 
 // SetNillableGithubAppID sets the "github_app_id" field if the given value is not nil.
-func (giu *GithubInstallationUpdate) SetNillableGithubAppID(i *int64) *GithubInstallationUpdate {
-	if i != nil {
-		giu.SetGithubAppID(*i)
+func (_u *GithubInstallationUpdate) SetNillableGithubAppID(v *int64) *GithubInstallationUpdate {
+	if v != nil {
+		_u.SetGithubAppID(*v)
 	}
-	return giu
+	return _u
 }
 
 // SetAccountID sets the "account_id" field.
-func (giu *GithubInstallationUpdate) SetAccountID(i int64) *GithubInstallationUpdate {
-	giu.mutation.ResetAccountID()
-	giu.mutation.SetAccountID(i)
-	return giu
+func (_u *GithubInstallationUpdate) SetAccountID(v int64) *GithubInstallationUpdate {
+	_u.mutation.ResetAccountID()
+	_u.mutation.SetAccountID(v)
+	return _u
 }
 
 // SetNillableAccountID sets the "account_id" field if the given value is not nil.
-func (giu *GithubInstallationUpdate) SetNillableAccountID(i *int64) *GithubInstallationUpdate {
-	if i != nil {
-		giu.SetAccountID(*i)
+func (_u *GithubInstallationUpdate) SetNillableAccountID(v *int64) *GithubInstallationUpdate {
+	if v != nil {
+		_u.SetAccountID(*v)
 	}
-	return giu
+	return _u
 }
 
-// AddAccountID adds i to the "account_id" field.
-func (giu *GithubInstallationUpdate) AddAccountID(i int64) *GithubInstallationUpdate {
-	giu.mutation.AddAccountID(i)
-	return giu
+// AddAccountID adds value to the "account_id" field.
+func (_u *GithubInstallationUpdate) AddAccountID(v int64) *GithubInstallationUpdate {
+	_u.mutation.AddAccountID(v)
+	return _u
 }
 
 // SetAccountLogin sets the "account_login" field.
-func (giu *GithubInstallationUpdate) SetAccountLogin(s string) *GithubInstallationUpdate {
-	giu.mutation.SetAccountLogin(s)
-	return giu
+func (_u *GithubInstallationUpdate) SetAccountLogin(v string) *GithubInstallationUpdate {
+	_u.mutation.SetAccountLogin(v)
+	return _u
 }
 
 // SetNillableAccountLogin sets the "account_login" field if the given value is not nil.
-func (giu *GithubInstallationUpdate) SetNillableAccountLogin(s *string) *GithubInstallationUpdate {
-	if s != nil {
-		giu.SetAccountLogin(*s)
+func (_u *GithubInstallationUpdate) SetNillableAccountLogin(v *string) *GithubInstallationUpdate {
+	if v != nil {
+		_u.SetAccountLogin(*v)
 	}
-	return giu
+	return _u
 }
 
 // SetAccountType sets the "account_type" field.
-func (giu *GithubInstallationUpdate) SetAccountType(gt githubinstallation.AccountType) *GithubInstallationUpdate {
-	giu.mutation.SetAccountType(gt)
-	return giu
+func (_u *GithubInstallationUpdate) SetAccountType(v githubinstallation.AccountType) *GithubInstallationUpdate {
+	_u.mutation.SetAccountType(v)
+	return _u
 }
 
 // SetNillableAccountType sets the "account_type" field if the given value is not nil.
-func (giu *GithubInstallationUpdate) SetNillableAccountType(gt *githubinstallation.AccountType) *GithubInstallationUpdate {
-	if gt != nil {
-		giu.SetAccountType(*gt)
+func (_u *GithubInstallationUpdate) SetNillableAccountType(v *githubinstallation.AccountType) *GithubInstallationUpdate {
+	if v != nil {
+		_u.SetAccountType(*v)
 	}
-	return giu
+	return _u
 }
 
 // SetAccountURL sets the "account_url" field.
-func (giu *GithubInstallationUpdate) SetAccountURL(s string) *GithubInstallationUpdate {
-	giu.mutation.SetAccountURL(s)
-	return giu
+func (_u *GithubInstallationUpdate) SetAccountURL(v string) *GithubInstallationUpdate {
+	_u.mutation.SetAccountURL(v)
+	return _u
 }
 
 // SetNillableAccountURL sets the "account_url" field if the given value is not nil.
-func (giu *GithubInstallationUpdate) SetNillableAccountURL(s *string) *GithubInstallationUpdate {
-	if s != nil {
-		giu.SetAccountURL(*s)
+func (_u *GithubInstallationUpdate) SetNillableAccountURL(v *string) *GithubInstallationUpdate {
+	if v != nil {
+		_u.SetAccountURL(*v)
 	}
-	return giu
+	return _u
 }
 
 // SetRepositorySelection sets the "repository_selection" field.
-func (giu *GithubInstallationUpdate) SetRepositorySelection(gs githubinstallation.RepositorySelection) *GithubInstallationUpdate {
-	giu.mutation.SetRepositorySelection(gs)
-	return giu
+func (_u *GithubInstallationUpdate) SetRepositorySelection(v githubinstallation.RepositorySelection) *GithubInstallationUpdate {
+	_u.mutation.SetRepositorySelection(v)
+	return _u
 }
 
 // SetNillableRepositorySelection sets the "repository_selection" field if the given value is not nil.
-func (giu *GithubInstallationUpdate) SetNillableRepositorySelection(gs *githubinstallation.RepositorySelection) *GithubInstallationUpdate {
-	if gs != nil {
-		giu.SetRepositorySelection(*gs)
+func (_u *GithubInstallationUpdate) SetNillableRepositorySelection(v *githubinstallation.RepositorySelection) *GithubInstallationUpdate {
+	if v != nil {
+		_u.SetRepositorySelection(*v)
 	}
-	return giu
+	return _u
 }
 
 // SetSuspended sets the "suspended" field.
-func (giu *GithubInstallationUpdate) SetSuspended(b bool) *GithubInstallationUpdate {
-	giu.mutation.SetSuspended(b)
-	return giu
+func (_u *GithubInstallationUpdate) SetSuspended(v bool) *GithubInstallationUpdate {
+	_u.mutation.SetSuspended(v)
+	return _u
 }
 
 // SetNillableSuspended sets the "suspended" field if the given value is not nil.
-func (giu *GithubInstallationUpdate) SetNillableSuspended(b *bool) *GithubInstallationUpdate {
-	if b != nil {
-		giu.SetSuspended(*b)
+func (_u *GithubInstallationUpdate) SetNillableSuspended(v *bool) *GithubInstallationUpdate {
+	if v != nil {
+		_u.SetSuspended(*v)
 	}
-	return giu
+	return _u
 }
 
 // SetActive sets the "active" field.
-func (giu *GithubInstallationUpdate) SetActive(b bool) *GithubInstallationUpdate {
-	giu.mutation.SetActive(b)
-	return giu
+func (_u *GithubInstallationUpdate) SetActive(v bool) *GithubInstallationUpdate {
+	_u.mutation.SetActive(v)
+	return _u
 }
 
 // SetNillableActive sets the "active" field if the given value is not nil.
-func (giu *GithubInstallationUpdate) SetNillableActive(b *bool) *GithubInstallationUpdate {
-	if b != nil {
-		giu.SetActive(*b)
+func (_u *GithubInstallationUpdate) SetNillableActive(v *bool) *GithubInstallationUpdate {
+	if v != nil {
+		_u.SetActive(*v)
 	}
-	return giu
+	return _u
 }
 
 // SetPermissions sets the "permissions" field.
-func (giu *GithubInstallationUpdate) SetPermissions(sip schema.GithubInstallationPermissions) *GithubInstallationUpdate {
-	giu.mutation.SetPermissions(sip)
-	return giu
+func (_u *GithubInstallationUpdate) SetPermissions(v schema.GithubInstallationPermissions) *GithubInstallationUpdate {
+	_u.mutation.SetPermissions(v)
+	return _u
 }
 
 // SetNillablePermissions sets the "permissions" field if the given value is not nil.
-func (giu *GithubInstallationUpdate) SetNillablePermissions(sip *schema.GithubInstallationPermissions) *GithubInstallationUpdate {
-	if sip != nil {
-		giu.SetPermissions(*sip)
+func (_u *GithubInstallationUpdate) SetNillablePermissions(v *schema.GithubInstallationPermissions) *GithubInstallationUpdate {
+	if v != nil {
+		_u.SetPermissions(*v)
 	}
-	return giu
+	return _u
 }
 
 // ClearPermissions clears the value of the "permissions" field.
-func (giu *GithubInstallationUpdate) ClearPermissions() *GithubInstallationUpdate {
-	giu.mutation.ClearPermissions()
-	return giu
+func (_u *GithubInstallationUpdate) ClearPermissions() *GithubInstallationUpdate {
+	_u.mutation.ClearPermissions()
+	return _u
 }
 
 // SetEvents sets the "events" field.
-func (giu *GithubInstallationUpdate) SetEvents(s []string) *GithubInstallationUpdate {
-	giu.mutation.SetEvents(s)
-	return giu
+func (_u *GithubInstallationUpdate) SetEvents(v []string) *GithubInstallationUpdate {
+	_u.mutation.SetEvents(v)
+	return _u
 }
 
-// AppendEvents appends s to the "events" field.
-func (giu *GithubInstallationUpdate) AppendEvents(s []string) *GithubInstallationUpdate {
-	giu.mutation.AppendEvents(s)
-	return giu
+// AppendEvents appends value to the "events" field.
+func (_u *GithubInstallationUpdate) AppendEvents(v []string) *GithubInstallationUpdate {
+	_u.mutation.AppendEvents(v)
+	return _u
 }
 
 // ClearEvents clears the value of the "events" field.
-func (giu *GithubInstallationUpdate) ClearEvents() *GithubInstallationUpdate {
-	giu.mutation.ClearEvents()
-	return giu
+func (_u *GithubInstallationUpdate) ClearEvents() *GithubInstallationUpdate {
+	_u.mutation.ClearEvents()
+	return _u
 }
 
 // SetGithubApp sets the "github_app" edge to the GithubApp entity.
-func (giu *GithubInstallationUpdate) SetGithubApp(g *GithubApp) *GithubInstallationUpdate {
-	return giu.SetGithubAppID(g.ID)
+func (_u *GithubInstallationUpdate) SetGithubApp(v *GithubApp) *GithubInstallationUpdate {
+	return _u.SetGithubAppID(v.ID)
 }
 
 // AddServiceIDs adds the "services" edge to the Service entity by IDs.
-func (giu *GithubInstallationUpdate) AddServiceIDs(ids ...uuid.UUID) *GithubInstallationUpdate {
-	giu.mutation.AddServiceIDs(ids...)
-	return giu
+func (_u *GithubInstallationUpdate) AddServiceIDs(ids ...uuid.UUID) *GithubInstallationUpdate {
+	_u.mutation.AddServiceIDs(ids...)
+	return _u
 }
 
 // AddServices adds the "services" edges to the Service entity.
-func (giu *GithubInstallationUpdate) AddServices(s ...*Service) *GithubInstallationUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *GithubInstallationUpdate) AddServices(v ...*Service) *GithubInstallationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return giu.AddServiceIDs(ids...)
+	return _u.AddServiceIDs(ids...)
 }
 
 // Mutation returns the GithubInstallationMutation object of the builder.
-func (giu *GithubInstallationUpdate) Mutation() *GithubInstallationMutation {
-	return giu.mutation
+func (_u *GithubInstallationUpdate) Mutation() *GithubInstallationMutation {
+	return _u.mutation
 }
 
 // ClearGithubApp clears the "github_app" edge to the GithubApp entity.
-func (giu *GithubInstallationUpdate) ClearGithubApp() *GithubInstallationUpdate {
-	giu.mutation.ClearGithubApp()
-	return giu
+func (_u *GithubInstallationUpdate) ClearGithubApp() *GithubInstallationUpdate {
+	_u.mutation.ClearGithubApp()
+	return _u
 }
 
 // ClearServices clears all "services" edges to the Service entity.
-func (giu *GithubInstallationUpdate) ClearServices() *GithubInstallationUpdate {
-	giu.mutation.ClearServices()
-	return giu
+func (_u *GithubInstallationUpdate) ClearServices() *GithubInstallationUpdate {
+	_u.mutation.ClearServices()
+	return _u
 }
 
 // RemoveServiceIDs removes the "services" edge to Service entities by IDs.
-func (giu *GithubInstallationUpdate) RemoveServiceIDs(ids ...uuid.UUID) *GithubInstallationUpdate {
-	giu.mutation.RemoveServiceIDs(ids...)
-	return giu
+func (_u *GithubInstallationUpdate) RemoveServiceIDs(ids ...uuid.UUID) *GithubInstallationUpdate {
+	_u.mutation.RemoveServiceIDs(ids...)
+	return _u
 }
 
 // RemoveServices removes "services" edges to Service entities.
-func (giu *GithubInstallationUpdate) RemoveServices(s ...*Service) *GithubInstallationUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *GithubInstallationUpdate) RemoveServices(v ...*Service) *GithubInstallationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return giu.RemoveServiceIDs(ids...)
+	return _u.RemoveServiceIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (giu *GithubInstallationUpdate) Save(ctx context.Context) (int, error) {
-	giu.defaults()
-	return withHooks(ctx, giu.sqlSave, giu.mutation, giu.hooks)
+func (_u *GithubInstallationUpdate) Save(ctx context.Context) (int, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (giu *GithubInstallationUpdate) SaveX(ctx context.Context) int {
-	affected, err := giu.Save(ctx)
+func (_u *GithubInstallationUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -265,117 +265,117 @@ func (giu *GithubInstallationUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (giu *GithubInstallationUpdate) Exec(ctx context.Context) error {
-	_, err := giu.Save(ctx)
+func (_u *GithubInstallationUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (giu *GithubInstallationUpdate) ExecX(ctx context.Context) {
-	if err := giu.Exec(ctx); err != nil {
+func (_u *GithubInstallationUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (giu *GithubInstallationUpdate) defaults() {
-	if _, ok := giu.mutation.UpdatedAt(); !ok {
+func (_u *GithubInstallationUpdate) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := githubinstallation.UpdateDefaultUpdatedAt()
-		giu.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (giu *GithubInstallationUpdate) check() error {
-	if v, ok := giu.mutation.AccountLogin(); ok {
+func (_u *GithubInstallationUpdate) check() error {
+	if v, ok := _u.mutation.AccountLogin(); ok {
 		if err := githubinstallation.AccountLoginValidator(v); err != nil {
 			return &ValidationError{Name: "account_login", err: fmt.Errorf(`ent: validator failed for field "GithubInstallation.account_login": %w`, err)}
 		}
 	}
-	if v, ok := giu.mutation.AccountType(); ok {
+	if v, ok := _u.mutation.AccountType(); ok {
 		if err := githubinstallation.AccountTypeValidator(v); err != nil {
 			return &ValidationError{Name: "account_type", err: fmt.Errorf(`ent: validator failed for field "GithubInstallation.account_type": %w`, err)}
 		}
 	}
-	if v, ok := giu.mutation.AccountURL(); ok {
+	if v, ok := _u.mutation.AccountURL(); ok {
 		if err := githubinstallation.AccountURLValidator(v); err != nil {
 			return &ValidationError{Name: "account_url", err: fmt.Errorf(`ent: validator failed for field "GithubInstallation.account_url": %w`, err)}
 		}
 	}
-	if v, ok := giu.mutation.RepositorySelection(); ok {
+	if v, ok := _u.mutation.RepositorySelection(); ok {
 		if err := githubinstallation.RepositorySelectionValidator(v); err != nil {
 			return &ValidationError{Name: "repository_selection", err: fmt.Errorf(`ent: validator failed for field "GithubInstallation.repository_selection": %w`, err)}
 		}
 	}
-	if giu.mutation.GithubAppCleared() && len(giu.mutation.GithubAppIDs()) > 0 {
+	if _u.mutation.GithubAppCleared() && len(_u.mutation.GithubAppIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "GithubInstallation.github_app"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (giu *GithubInstallationUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *GithubInstallationUpdate {
-	giu.modifiers = append(giu.modifiers, modifiers...)
-	return giu
+func (_u *GithubInstallationUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *GithubInstallationUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (giu *GithubInstallationUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := giu.check(); err != nil {
-		return n, err
+func (_u *GithubInstallationUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(githubinstallation.Table, githubinstallation.Columns, sqlgraph.NewFieldSpec(githubinstallation.FieldID, field.TypeInt64))
-	if ps := giu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := giu.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(githubinstallation.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := giu.mutation.AccountID(); ok {
+	if value, ok := _u.mutation.AccountID(); ok {
 		_spec.SetField(githubinstallation.FieldAccountID, field.TypeInt64, value)
 	}
-	if value, ok := giu.mutation.AddedAccountID(); ok {
+	if value, ok := _u.mutation.AddedAccountID(); ok {
 		_spec.AddField(githubinstallation.FieldAccountID, field.TypeInt64, value)
 	}
-	if value, ok := giu.mutation.AccountLogin(); ok {
+	if value, ok := _u.mutation.AccountLogin(); ok {
 		_spec.SetField(githubinstallation.FieldAccountLogin, field.TypeString, value)
 	}
-	if value, ok := giu.mutation.AccountType(); ok {
+	if value, ok := _u.mutation.AccountType(); ok {
 		_spec.SetField(githubinstallation.FieldAccountType, field.TypeEnum, value)
 	}
-	if value, ok := giu.mutation.AccountURL(); ok {
+	if value, ok := _u.mutation.AccountURL(); ok {
 		_spec.SetField(githubinstallation.FieldAccountURL, field.TypeString, value)
 	}
-	if value, ok := giu.mutation.RepositorySelection(); ok {
+	if value, ok := _u.mutation.RepositorySelection(); ok {
 		_spec.SetField(githubinstallation.FieldRepositorySelection, field.TypeEnum, value)
 	}
-	if value, ok := giu.mutation.Suspended(); ok {
+	if value, ok := _u.mutation.Suspended(); ok {
 		_spec.SetField(githubinstallation.FieldSuspended, field.TypeBool, value)
 	}
-	if value, ok := giu.mutation.Active(); ok {
+	if value, ok := _u.mutation.Active(); ok {
 		_spec.SetField(githubinstallation.FieldActive, field.TypeBool, value)
 	}
-	if value, ok := giu.mutation.Permissions(); ok {
+	if value, ok := _u.mutation.Permissions(); ok {
 		_spec.SetField(githubinstallation.FieldPermissions, field.TypeJSON, value)
 	}
-	if giu.mutation.PermissionsCleared() {
+	if _u.mutation.PermissionsCleared() {
 		_spec.ClearField(githubinstallation.FieldPermissions, field.TypeJSON)
 	}
-	if value, ok := giu.mutation.Events(); ok {
+	if value, ok := _u.mutation.Events(); ok {
 		_spec.SetField(githubinstallation.FieldEvents, field.TypeJSON, value)
 	}
-	if value, ok := giu.mutation.AppendedEvents(); ok {
+	if value, ok := _u.mutation.AppendedEvents(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, githubinstallation.FieldEvents, value)
 		})
 	}
-	if giu.mutation.EventsCleared() {
+	if _u.mutation.EventsCleared() {
 		_spec.ClearField(githubinstallation.FieldEvents, field.TypeJSON)
 	}
-	if giu.mutation.GithubAppCleared() {
+	if _u.mutation.GithubAppCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -388,7 +388,7 @@ func (giu *GithubInstallationUpdate) sqlSave(ctx context.Context) (n int, err er
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := giu.mutation.GithubAppIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.GithubAppIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -404,7 +404,7 @@ func (giu *GithubInstallationUpdate) sqlSave(ctx context.Context) (n int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if giu.mutation.ServicesCleared() {
+	if _u.mutation.ServicesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -417,7 +417,7 @@ func (giu *GithubInstallationUpdate) sqlSave(ctx context.Context) (n int, err er
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := giu.mutation.RemovedServicesIDs(); len(nodes) > 0 && !giu.mutation.ServicesCleared() {
+	if nodes := _u.mutation.RemovedServicesIDs(); len(nodes) > 0 && !_u.mutation.ServicesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -433,7 +433,7 @@ func (giu *GithubInstallationUpdate) sqlSave(ctx context.Context) (n int, err er
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := giu.mutation.ServicesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ServicesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -449,8 +449,8 @@ func (giu *GithubInstallationUpdate) sqlSave(ctx context.Context) (n int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(giu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, giu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{githubinstallation.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -458,8 +458,8 @@ func (giu *GithubInstallationUpdate) sqlSave(ctx context.Context) (n int, err er
 		}
 		return 0, err
 	}
-	giu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // GithubInstallationUpdateOne is the builder for updating a single GithubInstallation entity.
@@ -472,242 +472,242 @@ type GithubInstallationUpdateOne struct {
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (giuo *GithubInstallationUpdateOne) SetUpdatedAt(t time.Time) *GithubInstallationUpdateOne {
-	giuo.mutation.SetUpdatedAt(t)
-	return giuo
+func (_u *GithubInstallationUpdateOne) SetUpdatedAt(v time.Time) *GithubInstallationUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetGithubAppID sets the "github_app_id" field.
-func (giuo *GithubInstallationUpdateOne) SetGithubAppID(i int64) *GithubInstallationUpdateOne {
-	giuo.mutation.SetGithubAppID(i)
-	return giuo
+func (_u *GithubInstallationUpdateOne) SetGithubAppID(v int64) *GithubInstallationUpdateOne {
+	_u.mutation.SetGithubAppID(v)
+	return _u
 }
 
 // SetNillableGithubAppID sets the "github_app_id" field if the given value is not nil.
-func (giuo *GithubInstallationUpdateOne) SetNillableGithubAppID(i *int64) *GithubInstallationUpdateOne {
-	if i != nil {
-		giuo.SetGithubAppID(*i)
+func (_u *GithubInstallationUpdateOne) SetNillableGithubAppID(v *int64) *GithubInstallationUpdateOne {
+	if v != nil {
+		_u.SetGithubAppID(*v)
 	}
-	return giuo
+	return _u
 }
 
 // SetAccountID sets the "account_id" field.
-func (giuo *GithubInstallationUpdateOne) SetAccountID(i int64) *GithubInstallationUpdateOne {
-	giuo.mutation.ResetAccountID()
-	giuo.mutation.SetAccountID(i)
-	return giuo
+func (_u *GithubInstallationUpdateOne) SetAccountID(v int64) *GithubInstallationUpdateOne {
+	_u.mutation.ResetAccountID()
+	_u.mutation.SetAccountID(v)
+	return _u
 }
 
 // SetNillableAccountID sets the "account_id" field if the given value is not nil.
-func (giuo *GithubInstallationUpdateOne) SetNillableAccountID(i *int64) *GithubInstallationUpdateOne {
-	if i != nil {
-		giuo.SetAccountID(*i)
+func (_u *GithubInstallationUpdateOne) SetNillableAccountID(v *int64) *GithubInstallationUpdateOne {
+	if v != nil {
+		_u.SetAccountID(*v)
 	}
-	return giuo
+	return _u
 }
 
-// AddAccountID adds i to the "account_id" field.
-func (giuo *GithubInstallationUpdateOne) AddAccountID(i int64) *GithubInstallationUpdateOne {
-	giuo.mutation.AddAccountID(i)
-	return giuo
+// AddAccountID adds value to the "account_id" field.
+func (_u *GithubInstallationUpdateOne) AddAccountID(v int64) *GithubInstallationUpdateOne {
+	_u.mutation.AddAccountID(v)
+	return _u
 }
 
 // SetAccountLogin sets the "account_login" field.
-func (giuo *GithubInstallationUpdateOne) SetAccountLogin(s string) *GithubInstallationUpdateOne {
-	giuo.mutation.SetAccountLogin(s)
-	return giuo
+func (_u *GithubInstallationUpdateOne) SetAccountLogin(v string) *GithubInstallationUpdateOne {
+	_u.mutation.SetAccountLogin(v)
+	return _u
 }
 
 // SetNillableAccountLogin sets the "account_login" field if the given value is not nil.
-func (giuo *GithubInstallationUpdateOne) SetNillableAccountLogin(s *string) *GithubInstallationUpdateOne {
-	if s != nil {
-		giuo.SetAccountLogin(*s)
+func (_u *GithubInstallationUpdateOne) SetNillableAccountLogin(v *string) *GithubInstallationUpdateOne {
+	if v != nil {
+		_u.SetAccountLogin(*v)
 	}
-	return giuo
+	return _u
 }
 
 // SetAccountType sets the "account_type" field.
-func (giuo *GithubInstallationUpdateOne) SetAccountType(gt githubinstallation.AccountType) *GithubInstallationUpdateOne {
-	giuo.mutation.SetAccountType(gt)
-	return giuo
+func (_u *GithubInstallationUpdateOne) SetAccountType(v githubinstallation.AccountType) *GithubInstallationUpdateOne {
+	_u.mutation.SetAccountType(v)
+	return _u
 }
 
 // SetNillableAccountType sets the "account_type" field if the given value is not nil.
-func (giuo *GithubInstallationUpdateOne) SetNillableAccountType(gt *githubinstallation.AccountType) *GithubInstallationUpdateOne {
-	if gt != nil {
-		giuo.SetAccountType(*gt)
+func (_u *GithubInstallationUpdateOne) SetNillableAccountType(v *githubinstallation.AccountType) *GithubInstallationUpdateOne {
+	if v != nil {
+		_u.SetAccountType(*v)
 	}
-	return giuo
+	return _u
 }
 
 // SetAccountURL sets the "account_url" field.
-func (giuo *GithubInstallationUpdateOne) SetAccountURL(s string) *GithubInstallationUpdateOne {
-	giuo.mutation.SetAccountURL(s)
-	return giuo
+func (_u *GithubInstallationUpdateOne) SetAccountURL(v string) *GithubInstallationUpdateOne {
+	_u.mutation.SetAccountURL(v)
+	return _u
 }
 
 // SetNillableAccountURL sets the "account_url" field if the given value is not nil.
-func (giuo *GithubInstallationUpdateOne) SetNillableAccountURL(s *string) *GithubInstallationUpdateOne {
-	if s != nil {
-		giuo.SetAccountURL(*s)
+func (_u *GithubInstallationUpdateOne) SetNillableAccountURL(v *string) *GithubInstallationUpdateOne {
+	if v != nil {
+		_u.SetAccountURL(*v)
 	}
-	return giuo
+	return _u
 }
 
 // SetRepositorySelection sets the "repository_selection" field.
-func (giuo *GithubInstallationUpdateOne) SetRepositorySelection(gs githubinstallation.RepositorySelection) *GithubInstallationUpdateOne {
-	giuo.mutation.SetRepositorySelection(gs)
-	return giuo
+func (_u *GithubInstallationUpdateOne) SetRepositorySelection(v githubinstallation.RepositorySelection) *GithubInstallationUpdateOne {
+	_u.mutation.SetRepositorySelection(v)
+	return _u
 }
 
 // SetNillableRepositorySelection sets the "repository_selection" field if the given value is not nil.
-func (giuo *GithubInstallationUpdateOne) SetNillableRepositorySelection(gs *githubinstallation.RepositorySelection) *GithubInstallationUpdateOne {
-	if gs != nil {
-		giuo.SetRepositorySelection(*gs)
+func (_u *GithubInstallationUpdateOne) SetNillableRepositorySelection(v *githubinstallation.RepositorySelection) *GithubInstallationUpdateOne {
+	if v != nil {
+		_u.SetRepositorySelection(*v)
 	}
-	return giuo
+	return _u
 }
 
 // SetSuspended sets the "suspended" field.
-func (giuo *GithubInstallationUpdateOne) SetSuspended(b bool) *GithubInstallationUpdateOne {
-	giuo.mutation.SetSuspended(b)
-	return giuo
+func (_u *GithubInstallationUpdateOne) SetSuspended(v bool) *GithubInstallationUpdateOne {
+	_u.mutation.SetSuspended(v)
+	return _u
 }
 
 // SetNillableSuspended sets the "suspended" field if the given value is not nil.
-func (giuo *GithubInstallationUpdateOne) SetNillableSuspended(b *bool) *GithubInstallationUpdateOne {
-	if b != nil {
-		giuo.SetSuspended(*b)
+func (_u *GithubInstallationUpdateOne) SetNillableSuspended(v *bool) *GithubInstallationUpdateOne {
+	if v != nil {
+		_u.SetSuspended(*v)
 	}
-	return giuo
+	return _u
 }
 
 // SetActive sets the "active" field.
-func (giuo *GithubInstallationUpdateOne) SetActive(b bool) *GithubInstallationUpdateOne {
-	giuo.mutation.SetActive(b)
-	return giuo
+func (_u *GithubInstallationUpdateOne) SetActive(v bool) *GithubInstallationUpdateOne {
+	_u.mutation.SetActive(v)
+	return _u
 }
 
 // SetNillableActive sets the "active" field if the given value is not nil.
-func (giuo *GithubInstallationUpdateOne) SetNillableActive(b *bool) *GithubInstallationUpdateOne {
-	if b != nil {
-		giuo.SetActive(*b)
+func (_u *GithubInstallationUpdateOne) SetNillableActive(v *bool) *GithubInstallationUpdateOne {
+	if v != nil {
+		_u.SetActive(*v)
 	}
-	return giuo
+	return _u
 }
 
 // SetPermissions sets the "permissions" field.
-func (giuo *GithubInstallationUpdateOne) SetPermissions(sip schema.GithubInstallationPermissions) *GithubInstallationUpdateOne {
-	giuo.mutation.SetPermissions(sip)
-	return giuo
+func (_u *GithubInstallationUpdateOne) SetPermissions(v schema.GithubInstallationPermissions) *GithubInstallationUpdateOne {
+	_u.mutation.SetPermissions(v)
+	return _u
 }
 
 // SetNillablePermissions sets the "permissions" field if the given value is not nil.
-func (giuo *GithubInstallationUpdateOne) SetNillablePermissions(sip *schema.GithubInstallationPermissions) *GithubInstallationUpdateOne {
-	if sip != nil {
-		giuo.SetPermissions(*sip)
+func (_u *GithubInstallationUpdateOne) SetNillablePermissions(v *schema.GithubInstallationPermissions) *GithubInstallationUpdateOne {
+	if v != nil {
+		_u.SetPermissions(*v)
 	}
-	return giuo
+	return _u
 }
 
 // ClearPermissions clears the value of the "permissions" field.
-func (giuo *GithubInstallationUpdateOne) ClearPermissions() *GithubInstallationUpdateOne {
-	giuo.mutation.ClearPermissions()
-	return giuo
+func (_u *GithubInstallationUpdateOne) ClearPermissions() *GithubInstallationUpdateOne {
+	_u.mutation.ClearPermissions()
+	return _u
 }
 
 // SetEvents sets the "events" field.
-func (giuo *GithubInstallationUpdateOne) SetEvents(s []string) *GithubInstallationUpdateOne {
-	giuo.mutation.SetEvents(s)
-	return giuo
+func (_u *GithubInstallationUpdateOne) SetEvents(v []string) *GithubInstallationUpdateOne {
+	_u.mutation.SetEvents(v)
+	return _u
 }
 
-// AppendEvents appends s to the "events" field.
-func (giuo *GithubInstallationUpdateOne) AppendEvents(s []string) *GithubInstallationUpdateOne {
-	giuo.mutation.AppendEvents(s)
-	return giuo
+// AppendEvents appends value to the "events" field.
+func (_u *GithubInstallationUpdateOne) AppendEvents(v []string) *GithubInstallationUpdateOne {
+	_u.mutation.AppendEvents(v)
+	return _u
 }
 
 // ClearEvents clears the value of the "events" field.
-func (giuo *GithubInstallationUpdateOne) ClearEvents() *GithubInstallationUpdateOne {
-	giuo.mutation.ClearEvents()
-	return giuo
+func (_u *GithubInstallationUpdateOne) ClearEvents() *GithubInstallationUpdateOne {
+	_u.mutation.ClearEvents()
+	return _u
 }
 
 // SetGithubApp sets the "github_app" edge to the GithubApp entity.
-func (giuo *GithubInstallationUpdateOne) SetGithubApp(g *GithubApp) *GithubInstallationUpdateOne {
-	return giuo.SetGithubAppID(g.ID)
+func (_u *GithubInstallationUpdateOne) SetGithubApp(v *GithubApp) *GithubInstallationUpdateOne {
+	return _u.SetGithubAppID(v.ID)
 }
 
 // AddServiceIDs adds the "services" edge to the Service entity by IDs.
-func (giuo *GithubInstallationUpdateOne) AddServiceIDs(ids ...uuid.UUID) *GithubInstallationUpdateOne {
-	giuo.mutation.AddServiceIDs(ids...)
-	return giuo
+func (_u *GithubInstallationUpdateOne) AddServiceIDs(ids ...uuid.UUID) *GithubInstallationUpdateOne {
+	_u.mutation.AddServiceIDs(ids...)
+	return _u
 }
 
 // AddServices adds the "services" edges to the Service entity.
-func (giuo *GithubInstallationUpdateOne) AddServices(s ...*Service) *GithubInstallationUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *GithubInstallationUpdateOne) AddServices(v ...*Service) *GithubInstallationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return giuo.AddServiceIDs(ids...)
+	return _u.AddServiceIDs(ids...)
 }
 
 // Mutation returns the GithubInstallationMutation object of the builder.
-func (giuo *GithubInstallationUpdateOne) Mutation() *GithubInstallationMutation {
-	return giuo.mutation
+func (_u *GithubInstallationUpdateOne) Mutation() *GithubInstallationMutation {
+	return _u.mutation
 }
 
 // ClearGithubApp clears the "github_app" edge to the GithubApp entity.
-func (giuo *GithubInstallationUpdateOne) ClearGithubApp() *GithubInstallationUpdateOne {
-	giuo.mutation.ClearGithubApp()
-	return giuo
+func (_u *GithubInstallationUpdateOne) ClearGithubApp() *GithubInstallationUpdateOne {
+	_u.mutation.ClearGithubApp()
+	return _u
 }
 
 // ClearServices clears all "services" edges to the Service entity.
-func (giuo *GithubInstallationUpdateOne) ClearServices() *GithubInstallationUpdateOne {
-	giuo.mutation.ClearServices()
-	return giuo
+func (_u *GithubInstallationUpdateOne) ClearServices() *GithubInstallationUpdateOne {
+	_u.mutation.ClearServices()
+	return _u
 }
 
 // RemoveServiceIDs removes the "services" edge to Service entities by IDs.
-func (giuo *GithubInstallationUpdateOne) RemoveServiceIDs(ids ...uuid.UUID) *GithubInstallationUpdateOne {
-	giuo.mutation.RemoveServiceIDs(ids...)
-	return giuo
+func (_u *GithubInstallationUpdateOne) RemoveServiceIDs(ids ...uuid.UUID) *GithubInstallationUpdateOne {
+	_u.mutation.RemoveServiceIDs(ids...)
+	return _u
 }
 
 // RemoveServices removes "services" edges to Service entities.
-func (giuo *GithubInstallationUpdateOne) RemoveServices(s ...*Service) *GithubInstallationUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *GithubInstallationUpdateOne) RemoveServices(v ...*Service) *GithubInstallationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return giuo.RemoveServiceIDs(ids...)
+	return _u.RemoveServiceIDs(ids...)
 }
 
 // Where appends a list predicates to the GithubInstallationUpdate builder.
-func (giuo *GithubInstallationUpdateOne) Where(ps ...predicate.GithubInstallation) *GithubInstallationUpdateOne {
-	giuo.mutation.Where(ps...)
-	return giuo
+func (_u *GithubInstallationUpdateOne) Where(ps ...predicate.GithubInstallation) *GithubInstallationUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (giuo *GithubInstallationUpdateOne) Select(field string, fields ...string) *GithubInstallationUpdateOne {
-	giuo.fields = append([]string{field}, fields...)
-	return giuo
+func (_u *GithubInstallationUpdateOne) Select(field string, fields ...string) *GithubInstallationUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated GithubInstallation entity.
-func (giuo *GithubInstallationUpdateOne) Save(ctx context.Context) (*GithubInstallation, error) {
-	giuo.defaults()
-	return withHooks(ctx, giuo.sqlSave, giuo.mutation, giuo.hooks)
+func (_u *GithubInstallationUpdateOne) Save(ctx context.Context) (*GithubInstallation, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (giuo *GithubInstallationUpdateOne) SaveX(ctx context.Context) *GithubInstallation {
-	node, err := giuo.Save(ctx)
+func (_u *GithubInstallationUpdateOne) SaveX(ctx context.Context) *GithubInstallation {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -715,71 +715,71 @@ func (giuo *GithubInstallationUpdateOne) SaveX(ctx context.Context) *GithubInsta
 }
 
 // Exec executes the query on the entity.
-func (giuo *GithubInstallationUpdateOne) Exec(ctx context.Context) error {
-	_, err := giuo.Save(ctx)
+func (_u *GithubInstallationUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (giuo *GithubInstallationUpdateOne) ExecX(ctx context.Context) {
-	if err := giuo.Exec(ctx); err != nil {
+func (_u *GithubInstallationUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (giuo *GithubInstallationUpdateOne) defaults() {
-	if _, ok := giuo.mutation.UpdatedAt(); !ok {
+func (_u *GithubInstallationUpdateOne) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := githubinstallation.UpdateDefaultUpdatedAt()
-		giuo.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (giuo *GithubInstallationUpdateOne) check() error {
-	if v, ok := giuo.mutation.AccountLogin(); ok {
+func (_u *GithubInstallationUpdateOne) check() error {
+	if v, ok := _u.mutation.AccountLogin(); ok {
 		if err := githubinstallation.AccountLoginValidator(v); err != nil {
 			return &ValidationError{Name: "account_login", err: fmt.Errorf(`ent: validator failed for field "GithubInstallation.account_login": %w`, err)}
 		}
 	}
-	if v, ok := giuo.mutation.AccountType(); ok {
+	if v, ok := _u.mutation.AccountType(); ok {
 		if err := githubinstallation.AccountTypeValidator(v); err != nil {
 			return &ValidationError{Name: "account_type", err: fmt.Errorf(`ent: validator failed for field "GithubInstallation.account_type": %w`, err)}
 		}
 	}
-	if v, ok := giuo.mutation.AccountURL(); ok {
+	if v, ok := _u.mutation.AccountURL(); ok {
 		if err := githubinstallation.AccountURLValidator(v); err != nil {
 			return &ValidationError{Name: "account_url", err: fmt.Errorf(`ent: validator failed for field "GithubInstallation.account_url": %w`, err)}
 		}
 	}
-	if v, ok := giuo.mutation.RepositorySelection(); ok {
+	if v, ok := _u.mutation.RepositorySelection(); ok {
 		if err := githubinstallation.RepositorySelectionValidator(v); err != nil {
 			return &ValidationError{Name: "repository_selection", err: fmt.Errorf(`ent: validator failed for field "GithubInstallation.repository_selection": %w`, err)}
 		}
 	}
-	if giuo.mutation.GithubAppCleared() && len(giuo.mutation.GithubAppIDs()) > 0 {
+	if _u.mutation.GithubAppCleared() && len(_u.mutation.GithubAppIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "GithubInstallation.github_app"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (giuo *GithubInstallationUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *GithubInstallationUpdateOne {
-	giuo.modifiers = append(giuo.modifiers, modifiers...)
-	return giuo
+func (_u *GithubInstallationUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *GithubInstallationUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (giuo *GithubInstallationUpdateOne) sqlSave(ctx context.Context) (_node *GithubInstallation, err error) {
-	if err := giuo.check(); err != nil {
+func (_u *GithubInstallationUpdateOne) sqlSave(ctx context.Context) (_node *GithubInstallation, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(githubinstallation.Table, githubinstallation.Columns, sqlgraph.NewFieldSpec(githubinstallation.FieldID, field.TypeInt64))
-	id, ok := giuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "GithubInstallation.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := giuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, githubinstallation.FieldID)
 		for _, f := range fields {
@@ -791,58 +791,58 @@ func (giuo *GithubInstallationUpdateOne) sqlSave(ctx context.Context) (_node *Gi
 			}
 		}
 	}
-	if ps := giuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := giuo.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(githubinstallation.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := giuo.mutation.AccountID(); ok {
+	if value, ok := _u.mutation.AccountID(); ok {
 		_spec.SetField(githubinstallation.FieldAccountID, field.TypeInt64, value)
 	}
-	if value, ok := giuo.mutation.AddedAccountID(); ok {
+	if value, ok := _u.mutation.AddedAccountID(); ok {
 		_spec.AddField(githubinstallation.FieldAccountID, field.TypeInt64, value)
 	}
-	if value, ok := giuo.mutation.AccountLogin(); ok {
+	if value, ok := _u.mutation.AccountLogin(); ok {
 		_spec.SetField(githubinstallation.FieldAccountLogin, field.TypeString, value)
 	}
-	if value, ok := giuo.mutation.AccountType(); ok {
+	if value, ok := _u.mutation.AccountType(); ok {
 		_spec.SetField(githubinstallation.FieldAccountType, field.TypeEnum, value)
 	}
-	if value, ok := giuo.mutation.AccountURL(); ok {
+	if value, ok := _u.mutation.AccountURL(); ok {
 		_spec.SetField(githubinstallation.FieldAccountURL, field.TypeString, value)
 	}
-	if value, ok := giuo.mutation.RepositorySelection(); ok {
+	if value, ok := _u.mutation.RepositorySelection(); ok {
 		_spec.SetField(githubinstallation.FieldRepositorySelection, field.TypeEnum, value)
 	}
-	if value, ok := giuo.mutation.Suspended(); ok {
+	if value, ok := _u.mutation.Suspended(); ok {
 		_spec.SetField(githubinstallation.FieldSuspended, field.TypeBool, value)
 	}
-	if value, ok := giuo.mutation.Active(); ok {
+	if value, ok := _u.mutation.Active(); ok {
 		_spec.SetField(githubinstallation.FieldActive, field.TypeBool, value)
 	}
-	if value, ok := giuo.mutation.Permissions(); ok {
+	if value, ok := _u.mutation.Permissions(); ok {
 		_spec.SetField(githubinstallation.FieldPermissions, field.TypeJSON, value)
 	}
-	if giuo.mutation.PermissionsCleared() {
+	if _u.mutation.PermissionsCleared() {
 		_spec.ClearField(githubinstallation.FieldPermissions, field.TypeJSON)
 	}
-	if value, ok := giuo.mutation.Events(); ok {
+	if value, ok := _u.mutation.Events(); ok {
 		_spec.SetField(githubinstallation.FieldEvents, field.TypeJSON, value)
 	}
-	if value, ok := giuo.mutation.AppendedEvents(); ok {
+	if value, ok := _u.mutation.AppendedEvents(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, githubinstallation.FieldEvents, value)
 		})
 	}
-	if giuo.mutation.EventsCleared() {
+	if _u.mutation.EventsCleared() {
 		_spec.ClearField(githubinstallation.FieldEvents, field.TypeJSON)
 	}
-	if giuo.mutation.GithubAppCleared() {
+	if _u.mutation.GithubAppCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -855,7 +855,7 @@ func (giuo *GithubInstallationUpdateOne) sqlSave(ctx context.Context) (_node *Gi
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := giuo.mutation.GithubAppIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.GithubAppIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -871,7 +871,7 @@ func (giuo *GithubInstallationUpdateOne) sqlSave(ctx context.Context) (_node *Gi
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if giuo.mutation.ServicesCleared() {
+	if _u.mutation.ServicesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -884,7 +884,7 @@ func (giuo *GithubInstallationUpdateOne) sqlSave(ctx context.Context) (_node *Gi
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := giuo.mutation.RemovedServicesIDs(); len(nodes) > 0 && !giuo.mutation.ServicesCleared() {
+	if nodes := _u.mutation.RemovedServicesIDs(); len(nodes) > 0 && !_u.mutation.ServicesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -900,7 +900,7 @@ func (giuo *GithubInstallationUpdateOne) sqlSave(ctx context.Context) (_node *Gi
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := giuo.mutation.ServicesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ServicesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -916,11 +916,11 @@ func (giuo *GithubInstallationUpdateOne) sqlSave(ctx context.Context) (_node *Gi
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(giuo.modifiers...)
-	_node = &GithubInstallation{config: giuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &GithubInstallation{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, giuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{githubinstallation.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -928,6 +928,6 @@ func (giuo *GithubInstallationUpdateOne) sqlSave(ctx context.Context) (_node *Gi
 		}
 		return nil, err
 	}
-	giuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

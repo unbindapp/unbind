@@ -106,7 +106,7 @@ func (*GithubInstallation) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the GithubInstallation fields.
-func (gi *GithubInstallation) assignValues(columns []string, values []any) error {
+func (_m *GithubInstallation) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -117,72 +117,72 @@ func (gi *GithubInstallation) assignValues(columns []string, values []any) error
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			gi.ID = int64(value.Int64)
+			_m.ID = int64(value.Int64)
 		case githubinstallation.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				gi.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case githubinstallation.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				gi.UpdatedAt = value.Time
+				_m.UpdatedAt = value.Time
 			}
 		case githubinstallation.FieldGithubAppID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field github_app_id", values[i])
 			} else if value.Valid {
-				gi.GithubAppID = value.Int64
+				_m.GithubAppID = value.Int64
 			}
 		case githubinstallation.FieldAccountID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field account_id", values[i])
 			} else if value.Valid {
-				gi.AccountID = value.Int64
+				_m.AccountID = value.Int64
 			}
 		case githubinstallation.FieldAccountLogin:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field account_login", values[i])
 			} else if value.Valid {
-				gi.AccountLogin = value.String
+				_m.AccountLogin = value.String
 			}
 		case githubinstallation.FieldAccountType:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field account_type", values[i])
 			} else if value.Valid {
-				gi.AccountType = githubinstallation.AccountType(value.String)
+				_m.AccountType = githubinstallation.AccountType(value.String)
 			}
 		case githubinstallation.FieldAccountURL:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field account_url", values[i])
 			} else if value.Valid {
-				gi.AccountURL = value.String
+				_m.AccountURL = value.String
 			}
 		case githubinstallation.FieldRepositorySelection:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field repository_selection", values[i])
 			} else if value.Valid {
-				gi.RepositorySelection = githubinstallation.RepositorySelection(value.String)
+				_m.RepositorySelection = githubinstallation.RepositorySelection(value.String)
 			}
 		case githubinstallation.FieldSuspended:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field suspended", values[i])
 			} else if value.Valid {
-				gi.Suspended = value.Bool
+				_m.Suspended = value.Bool
 			}
 		case githubinstallation.FieldActive:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field active", values[i])
 			} else if value.Valid {
-				gi.Active = value.Bool
+				_m.Active = value.Bool
 			}
 		case githubinstallation.FieldPermissions:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field permissions", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &gi.Permissions); err != nil {
+				if err := json.Unmarshal(*value, &_m.Permissions); err != nil {
 					return fmt.Errorf("unmarshal field permissions: %w", err)
 				}
 			}
@@ -190,12 +190,12 @@ func (gi *GithubInstallation) assignValues(columns []string, values []any) error
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field events", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &gi.Events); err != nil {
+				if err := json.Unmarshal(*value, &_m.Events); err != nil {
 					return fmt.Errorf("unmarshal field events: %w", err)
 				}
 			}
 		default:
-			gi.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -203,78 +203,78 @@ func (gi *GithubInstallation) assignValues(columns []string, values []any) error
 
 // Value returns the ent.Value that was dynamically selected and assigned to the GithubInstallation.
 // This includes values selected through modifiers, order, etc.
-func (gi *GithubInstallation) Value(name string) (ent.Value, error) {
-	return gi.selectValues.Get(name)
+func (_m *GithubInstallation) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryGithubApp queries the "github_app" edge of the GithubInstallation entity.
-func (gi *GithubInstallation) QueryGithubApp() *GithubAppQuery {
-	return NewGithubInstallationClient(gi.config).QueryGithubApp(gi)
+func (_m *GithubInstallation) QueryGithubApp() *GithubAppQuery {
+	return NewGithubInstallationClient(_m.config).QueryGithubApp(_m)
 }
 
 // QueryServices queries the "services" edge of the GithubInstallation entity.
-func (gi *GithubInstallation) QueryServices() *ServiceQuery {
-	return NewGithubInstallationClient(gi.config).QueryServices(gi)
+func (_m *GithubInstallation) QueryServices() *ServiceQuery {
+	return NewGithubInstallationClient(_m.config).QueryServices(_m)
 }
 
 // Update returns a builder for updating this GithubInstallation.
 // Note that you need to call GithubInstallation.Unwrap() before calling this method if this GithubInstallation
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (gi *GithubInstallation) Update() *GithubInstallationUpdateOne {
-	return NewGithubInstallationClient(gi.config).UpdateOne(gi)
+func (_m *GithubInstallation) Update() *GithubInstallationUpdateOne {
+	return NewGithubInstallationClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the GithubInstallation entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (gi *GithubInstallation) Unwrap() *GithubInstallation {
-	_tx, ok := gi.config.driver.(*txDriver)
+func (_m *GithubInstallation) Unwrap() *GithubInstallation {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: GithubInstallation is not a transactional entity")
 	}
-	gi.config.driver = _tx.drv
-	return gi
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (gi *GithubInstallation) String() string {
+func (_m *GithubInstallation) String() string {
 	var builder strings.Builder
 	builder.WriteString("GithubInstallation(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", gi.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("created_at=")
-	builder.WriteString(gi.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(gi.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("github_app_id=")
-	builder.WriteString(fmt.Sprintf("%v", gi.GithubAppID))
+	builder.WriteString(fmt.Sprintf("%v", _m.GithubAppID))
 	builder.WriteString(", ")
 	builder.WriteString("account_id=")
-	builder.WriteString(fmt.Sprintf("%v", gi.AccountID))
+	builder.WriteString(fmt.Sprintf("%v", _m.AccountID))
 	builder.WriteString(", ")
 	builder.WriteString("account_login=")
-	builder.WriteString(gi.AccountLogin)
+	builder.WriteString(_m.AccountLogin)
 	builder.WriteString(", ")
 	builder.WriteString("account_type=")
-	builder.WriteString(fmt.Sprintf("%v", gi.AccountType))
+	builder.WriteString(fmt.Sprintf("%v", _m.AccountType))
 	builder.WriteString(", ")
 	builder.WriteString("account_url=")
-	builder.WriteString(gi.AccountURL)
+	builder.WriteString(_m.AccountURL)
 	builder.WriteString(", ")
 	builder.WriteString("repository_selection=")
-	builder.WriteString(fmt.Sprintf("%v", gi.RepositorySelection))
+	builder.WriteString(fmt.Sprintf("%v", _m.RepositorySelection))
 	builder.WriteString(", ")
 	builder.WriteString("suspended=")
-	builder.WriteString(fmt.Sprintf("%v", gi.Suspended))
+	builder.WriteString(fmt.Sprintf("%v", _m.Suspended))
 	builder.WriteString(", ")
 	builder.WriteString("active=")
-	builder.WriteString(fmt.Sprintf("%v", gi.Active))
+	builder.WriteString(fmt.Sprintf("%v", _m.Active))
 	builder.WriteString(", ")
 	builder.WriteString("permissions=")
-	builder.WriteString(fmt.Sprintf("%v", gi.Permissions))
+	builder.WriteString(fmt.Sprintf("%v", _m.Permissions))
 	builder.WriteString(", ")
 	builder.WriteString("events=")
-	builder.WriteString(fmt.Sprintf("%v", gi.Events))
+	builder.WriteString(fmt.Sprintf("%v", _m.Events))
 	builder.WriteByte(')')
 	return builder.String()
 }

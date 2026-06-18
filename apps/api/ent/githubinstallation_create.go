@@ -27,165 +27,165 @@ type GithubInstallationCreate struct {
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (gic *GithubInstallationCreate) SetCreatedAt(t time.Time) *GithubInstallationCreate {
-	gic.mutation.SetCreatedAt(t)
-	return gic
+func (_c *GithubInstallationCreate) SetCreatedAt(v time.Time) *GithubInstallationCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (gic *GithubInstallationCreate) SetNillableCreatedAt(t *time.Time) *GithubInstallationCreate {
-	if t != nil {
-		gic.SetCreatedAt(*t)
+func (_c *GithubInstallationCreate) SetNillableCreatedAt(v *time.Time) *GithubInstallationCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return gic
+	return _c
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (gic *GithubInstallationCreate) SetUpdatedAt(t time.Time) *GithubInstallationCreate {
-	gic.mutation.SetUpdatedAt(t)
-	return gic
+func (_c *GithubInstallationCreate) SetUpdatedAt(v time.Time) *GithubInstallationCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (gic *GithubInstallationCreate) SetNillableUpdatedAt(t *time.Time) *GithubInstallationCreate {
-	if t != nil {
-		gic.SetUpdatedAt(*t)
+func (_c *GithubInstallationCreate) SetNillableUpdatedAt(v *time.Time) *GithubInstallationCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
 	}
-	return gic
+	return _c
 }
 
 // SetGithubAppID sets the "github_app_id" field.
-func (gic *GithubInstallationCreate) SetGithubAppID(i int64) *GithubInstallationCreate {
-	gic.mutation.SetGithubAppID(i)
-	return gic
+func (_c *GithubInstallationCreate) SetGithubAppID(v int64) *GithubInstallationCreate {
+	_c.mutation.SetGithubAppID(v)
+	return _c
 }
 
 // SetAccountID sets the "account_id" field.
-func (gic *GithubInstallationCreate) SetAccountID(i int64) *GithubInstallationCreate {
-	gic.mutation.SetAccountID(i)
-	return gic
+func (_c *GithubInstallationCreate) SetAccountID(v int64) *GithubInstallationCreate {
+	_c.mutation.SetAccountID(v)
+	return _c
 }
 
 // SetAccountLogin sets the "account_login" field.
-func (gic *GithubInstallationCreate) SetAccountLogin(s string) *GithubInstallationCreate {
-	gic.mutation.SetAccountLogin(s)
-	return gic
+func (_c *GithubInstallationCreate) SetAccountLogin(v string) *GithubInstallationCreate {
+	_c.mutation.SetAccountLogin(v)
+	return _c
 }
 
 // SetAccountType sets the "account_type" field.
-func (gic *GithubInstallationCreate) SetAccountType(gt githubinstallation.AccountType) *GithubInstallationCreate {
-	gic.mutation.SetAccountType(gt)
-	return gic
+func (_c *GithubInstallationCreate) SetAccountType(v githubinstallation.AccountType) *GithubInstallationCreate {
+	_c.mutation.SetAccountType(v)
+	return _c
 }
 
 // SetAccountURL sets the "account_url" field.
-func (gic *GithubInstallationCreate) SetAccountURL(s string) *GithubInstallationCreate {
-	gic.mutation.SetAccountURL(s)
-	return gic
+func (_c *GithubInstallationCreate) SetAccountURL(v string) *GithubInstallationCreate {
+	_c.mutation.SetAccountURL(v)
+	return _c
 }
 
 // SetRepositorySelection sets the "repository_selection" field.
-func (gic *GithubInstallationCreate) SetRepositorySelection(gs githubinstallation.RepositorySelection) *GithubInstallationCreate {
-	gic.mutation.SetRepositorySelection(gs)
-	return gic
+func (_c *GithubInstallationCreate) SetRepositorySelection(v githubinstallation.RepositorySelection) *GithubInstallationCreate {
+	_c.mutation.SetRepositorySelection(v)
+	return _c
 }
 
 // SetNillableRepositorySelection sets the "repository_selection" field if the given value is not nil.
-func (gic *GithubInstallationCreate) SetNillableRepositorySelection(gs *githubinstallation.RepositorySelection) *GithubInstallationCreate {
-	if gs != nil {
-		gic.SetRepositorySelection(*gs)
+func (_c *GithubInstallationCreate) SetNillableRepositorySelection(v *githubinstallation.RepositorySelection) *GithubInstallationCreate {
+	if v != nil {
+		_c.SetRepositorySelection(*v)
 	}
-	return gic
+	return _c
 }
 
 // SetSuspended sets the "suspended" field.
-func (gic *GithubInstallationCreate) SetSuspended(b bool) *GithubInstallationCreate {
-	gic.mutation.SetSuspended(b)
-	return gic
+func (_c *GithubInstallationCreate) SetSuspended(v bool) *GithubInstallationCreate {
+	_c.mutation.SetSuspended(v)
+	return _c
 }
 
 // SetNillableSuspended sets the "suspended" field if the given value is not nil.
-func (gic *GithubInstallationCreate) SetNillableSuspended(b *bool) *GithubInstallationCreate {
-	if b != nil {
-		gic.SetSuspended(*b)
+func (_c *GithubInstallationCreate) SetNillableSuspended(v *bool) *GithubInstallationCreate {
+	if v != nil {
+		_c.SetSuspended(*v)
 	}
-	return gic
+	return _c
 }
 
 // SetActive sets the "active" field.
-func (gic *GithubInstallationCreate) SetActive(b bool) *GithubInstallationCreate {
-	gic.mutation.SetActive(b)
-	return gic
+func (_c *GithubInstallationCreate) SetActive(v bool) *GithubInstallationCreate {
+	_c.mutation.SetActive(v)
+	return _c
 }
 
 // SetNillableActive sets the "active" field if the given value is not nil.
-func (gic *GithubInstallationCreate) SetNillableActive(b *bool) *GithubInstallationCreate {
-	if b != nil {
-		gic.SetActive(*b)
+func (_c *GithubInstallationCreate) SetNillableActive(v *bool) *GithubInstallationCreate {
+	if v != nil {
+		_c.SetActive(*v)
 	}
-	return gic
+	return _c
 }
 
 // SetPermissions sets the "permissions" field.
-func (gic *GithubInstallationCreate) SetPermissions(sip schema.GithubInstallationPermissions) *GithubInstallationCreate {
-	gic.mutation.SetPermissions(sip)
-	return gic
+func (_c *GithubInstallationCreate) SetPermissions(v schema.GithubInstallationPermissions) *GithubInstallationCreate {
+	_c.mutation.SetPermissions(v)
+	return _c
 }
 
 // SetNillablePermissions sets the "permissions" field if the given value is not nil.
-func (gic *GithubInstallationCreate) SetNillablePermissions(sip *schema.GithubInstallationPermissions) *GithubInstallationCreate {
-	if sip != nil {
-		gic.SetPermissions(*sip)
+func (_c *GithubInstallationCreate) SetNillablePermissions(v *schema.GithubInstallationPermissions) *GithubInstallationCreate {
+	if v != nil {
+		_c.SetPermissions(*v)
 	}
-	return gic
+	return _c
 }
 
 // SetEvents sets the "events" field.
-func (gic *GithubInstallationCreate) SetEvents(s []string) *GithubInstallationCreate {
-	gic.mutation.SetEvents(s)
-	return gic
+func (_c *GithubInstallationCreate) SetEvents(v []string) *GithubInstallationCreate {
+	_c.mutation.SetEvents(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (gic *GithubInstallationCreate) SetID(i int64) *GithubInstallationCreate {
-	gic.mutation.SetID(i)
-	return gic
+func (_c *GithubInstallationCreate) SetID(v int64) *GithubInstallationCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetGithubApp sets the "github_app" edge to the GithubApp entity.
-func (gic *GithubInstallationCreate) SetGithubApp(g *GithubApp) *GithubInstallationCreate {
-	return gic.SetGithubAppID(g.ID)
+func (_c *GithubInstallationCreate) SetGithubApp(v *GithubApp) *GithubInstallationCreate {
+	return _c.SetGithubAppID(v.ID)
 }
 
 // AddServiceIDs adds the "services" edge to the Service entity by IDs.
-func (gic *GithubInstallationCreate) AddServiceIDs(ids ...uuid.UUID) *GithubInstallationCreate {
-	gic.mutation.AddServiceIDs(ids...)
-	return gic
+func (_c *GithubInstallationCreate) AddServiceIDs(ids ...uuid.UUID) *GithubInstallationCreate {
+	_c.mutation.AddServiceIDs(ids...)
+	return _c
 }
 
 // AddServices adds the "services" edges to the Service entity.
-func (gic *GithubInstallationCreate) AddServices(s ...*Service) *GithubInstallationCreate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_c *GithubInstallationCreate) AddServices(v ...*Service) *GithubInstallationCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return gic.AddServiceIDs(ids...)
+	return _c.AddServiceIDs(ids...)
 }
 
 // Mutation returns the GithubInstallationMutation object of the builder.
-func (gic *GithubInstallationCreate) Mutation() *GithubInstallationMutation {
-	return gic.mutation
+func (_c *GithubInstallationCreate) Mutation() *GithubInstallationMutation {
+	return _c.mutation
 }
 
 // Save creates the GithubInstallation in the database.
-func (gic *GithubInstallationCreate) Save(ctx context.Context) (*GithubInstallation, error) {
-	gic.defaults()
-	return withHooks(ctx, gic.sqlSave, gic.mutation, gic.hooks)
+func (_c *GithubInstallationCreate) Save(ctx context.Context) (*GithubInstallation, error) {
+	_c.defaults()
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (gic *GithubInstallationCreate) SaveX(ctx context.Context) *GithubInstallation {
-	v, err := gic.Save(ctx)
+func (_c *GithubInstallationCreate) SaveX(ctx context.Context) *GithubInstallation {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -193,111 +193,111 @@ func (gic *GithubInstallationCreate) SaveX(ctx context.Context) *GithubInstallat
 }
 
 // Exec executes the query.
-func (gic *GithubInstallationCreate) Exec(ctx context.Context) error {
-	_, err := gic.Save(ctx)
+func (_c *GithubInstallationCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (gic *GithubInstallationCreate) ExecX(ctx context.Context) {
-	if err := gic.Exec(ctx); err != nil {
+func (_c *GithubInstallationCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (gic *GithubInstallationCreate) defaults() {
-	if _, ok := gic.mutation.CreatedAt(); !ok {
+func (_c *GithubInstallationCreate) defaults() {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := githubinstallation.DefaultCreatedAt()
-		gic.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := gic.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		v := githubinstallation.DefaultUpdatedAt()
-		gic.mutation.SetUpdatedAt(v)
+		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := gic.mutation.RepositorySelection(); !ok {
+	if _, ok := _c.mutation.RepositorySelection(); !ok {
 		v := githubinstallation.DefaultRepositorySelection
-		gic.mutation.SetRepositorySelection(v)
+		_c.mutation.SetRepositorySelection(v)
 	}
-	if _, ok := gic.mutation.Suspended(); !ok {
+	if _, ok := _c.mutation.Suspended(); !ok {
 		v := githubinstallation.DefaultSuspended
-		gic.mutation.SetSuspended(v)
+		_c.mutation.SetSuspended(v)
 	}
-	if _, ok := gic.mutation.Active(); !ok {
+	if _, ok := _c.mutation.Active(); !ok {
 		v := githubinstallation.DefaultActive
-		gic.mutation.SetActive(v)
+		_c.mutation.SetActive(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (gic *GithubInstallationCreate) check() error {
-	if _, ok := gic.mutation.CreatedAt(); !ok {
+func (_c *GithubInstallationCreate) check() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "GithubInstallation.created_at"`)}
 	}
-	if _, ok := gic.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "GithubInstallation.updated_at"`)}
 	}
-	if _, ok := gic.mutation.GithubAppID(); !ok {
+	if _, ok := _c.mutation.GithubAppID(); !ok {
 		return &ValidationError{Name: "github_app_id", err: errors.New(`ent: missing required field "GithubInstallation.github_app_id"`)}
 	}
-	if _, ok := gic.mutation.AccountID(); !ok {
+	if _, ok := _c.mutation.AccountID(); !ok {
 		return &ValidationError{Name: "account_id", err: errors.New(`ent: missing required field "GithubInstallation.account_id"`)}
 	}
-	if _, ok := gic.mutation.AccountLogin(); !ok {
+	if _, ok := _c.mutation.AccountLogin(); !ok {
 		return &ValidationError{Name: "account_login", err: errors.New(`ent: missing required field "GithubInstallation.account_login"`)}
 	}
-	if v, ok := gic.mutation.AccountLogin(); ok {
+	if v, ok := _c.mutation.AccountLogin(); ok {
 		if err := githubinstallation.AccountLoginValidator(v); err != nil {
 			return &ValidationError{Name: "account_login", err: fmt.Errorf(`ent: validator failed for field "GithubInstallation.account_login": %w`, err)}
 		}
 	}
-	if _, ok := gic.mutation.AccountType(); !ok {
+	if _, ok := _c.mutation.AccountType(); !ok {
 		return &ValidationError{Name: "account_type", err: errors.New(`ent: missing required field "GithubInstallation.account_type"`)}
 	}
-	if v, ok := gic.mutation.AccountType(); ok {
+	if v, ok := _c.mutation.AccountType(); ok {
 		if err := githubinstallation.AccountTypeValidator(v); err != nil {
 			return &ValidationError{Name: "account_type", err: fmt.Errorf(`ent: validator failed for field "GithubInstallation.account_type": %w`, err)}
 		}
 	}
-	if _, ok := gic.mutation.AccountURL(); !ok {
+	if _, ok := _c.mutation.AccountURL(); !ok {
 		return &ValidationError{Name: "account_url", err: errors.New(`ent: missing required field "GithubInstallation.account_url"`)}
 	}
-	if v, ok := gic.mutation.AccountURL(); ok {
+	if v, ok := _c.mutation.AccountURL(); ok {
 		if err := githubinstallation.AccountURLValidator(v); err != nil {
 			return &ValidationError{Name: "account_url", err: fmt.Errorf(`ent: validator failed for field "GithubInstallation.account_url": %w`, err)}
 		}
 	}
-	if _, ok := gic.mutation.RepositorySelection(); !ok {
+	if _, ok := _c.mutation.RepositorySelection(); !ok {
 		return &ValidationError{Name: "repository_selection", err: errors.New(`ent: missing required field "GithubInstallation.repository_selection"`)}
 	}
-	if v, ok := gic.mutation.RepositorySelection(); ok {
+	if v, ok := _c.mutation.RepositorySelection(); ok {
 		if err := githubinstallation.RepositorySelectionValidator(v); err != nil {
 			return &ValidationError{Name: "repository_selection", err: fmt.Errorf(`ent: validator failed for field "GithubInstallation.repository_selection": %w`, err)}
 		}
 	}
-	if _, ok := gic.mutation.Suspended(); !ok {
+	if _, ok := _c.mutation.Suspended(); !ok {
 		return &ValidationError{Name: "suspended", err: errors.New(`ent: missing required field "GithubInstallation.suspended"`)}
 	}
-	if _, ok := gic.mutation.Active(); !ok {
+	if _, ok := _c.mutation.Active(); !ok {
 		return &ValidationError{Name: "active", err: errors.New(`ent: missing required field "GithubInstallation.active"`)}
 	}
-	if v, ok := gic.mutation.ID(); ok {
+	if v, ok := _c.mutation.ID(); ok {
 		if err := githubinstallation.IDValidator(v); err != nil {
 			return &ValidationError{Name: "id", err: fmt.Errorf(`ent: validator failed for field "GithubInstallation.id": %w`, err)}
 		}
 	}
-	if len(gic.mutation.GithubAppIDs()) == 0 {
+	if len(_c.mutation.GithubAppIDs()) == 0 {
 		return &ValidationError{Name: "github_app", err: errors.New(`ent: missing required edge "GithubInstallation.github_app"`)}
 	}
 	return nil
 }
 
-func (gic *GithubInstallationCreate) sqlSave(ctx context.Context) (*GithubInstallation, error) {
-	if err := gic.check(); err != nil {
+func (_c *GithubInstallationCreate) sqlSave(ctx context.Context) (*GithubInstallation, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := gic.createSpec()
-	if err := sqlgraph.CreateNode(ctx, gic.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -307,66 +307,66 @@ func (gic *GithubInstallationCreate) sqlSave(ctx context.Context) (*GithubInstal
 		id := _spec.ID.Value.(int64)
 		_node.ID = int64(id)
 	}
-	gic.mutation.id = &_node.ID
-	gic.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (gic *GithubInstallationCreate) createSpec() (*GithubInstallation, *sqlgraph.CreateSpec) {
+func (_c *GithubInstallationCreate) createSpec() (*GithubInstallation, *sqlgraph.CreateSpec) {
 	var (
-		_node = &GithubInstallation{config: gic.config}
+		_node = &GithubInstallation{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(githubinstallation.Table, sqlgraph.NewFieldSpec(githubinstallation.FieldID, field.TypeInt64))
 	)
-	_spec.OnConflict = gic.conflict
-	if id, ok := gic.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
-	if value, ok := gic.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(githubinstallation.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if value, ok := gic.mutation.UpdatedAt(); ok {
+	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(githubinstallation.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := gic.mutation.AccountID(); ok {
+	if value, ok := _c.mutation.AccountID(); ok {
 		_spec.SetField(githubinstallation.FieldAccountID, field.TypeInt64, value)
 		_node.AccountID = value
 	}
-	if value, ok := gic.mutation.AccountLogin(); ok {
+	if value, ok := _c.mutation.AccountLogin(); ok {
 		_spec.SetField(githubinstallation.FieldAccountLogin, field.TypeString, value)
 		_node.AccountLogin = value
 	}
-	if value, ok := gic.mutation.AccountType(); ok {
+	if value, ok := _c.mutation.AccountType(); ok {
 		_spec.SetField(githubinstallation.FieldAccountType, field.TypeEnum, value)
 		_node.AccountType = value
 	}
-	if value, ok := gic.mutation.AccountURL(); ok {
+	if value, ok := _c.mutation.AccountURL(); ok {
 		_spec.SetField(githubinstallation.FieldAccountURL, field.TypeString, value)
 		_node.AccountURL = value
 	}
-	if value, ok := gic.mutation.RepositorySelection(); ok {
+	if value, ok := _c.mutation.RepositorySelection(); ok {
 		_spec.SetField(githubinstallation.FieldRepositorySelection, field.TypeEnum, value)
 		_node.RepositorySelection = value
 	}
-	if value, ok := gic.mutation.Suspended(); ok {
+	if value, ok := _c.mutation.Suspended(); ok {
 		_spec.SetField(githubinstallation.FieldSuspended, field.TypeBool, value)
 		_node.Suspended = value
 	}
-	if value, ok := gic.mutation.Active(); ok {
+	if value, ok := _c.mutation.Active(); ok {
 		_spec.SetField(githubinstallation.FieldActive, field.TypeBool, value)
 		_node.Active = value
 	}
-	if value, ok := gic.mutation.Permissions(); ok {
+	if value, ok := _c.mutation.Permissions(); ok {
 		_spec.SetField(githubinstallation.FieldPermissions, field.TypeJSON, value)
 		_node.Permissions = value
 	}
-	if value, ok := gic.mutation.Events(); ok {
+	if value, ok := _c.mutation.Events(); ok {
 		_spec.SetField(githubinstallation.FieldEvents, field.TypeJSON, value)
 		_node.Events = value
 	}
-	if nodes := gic.mutation.GithubAppIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.GithubAppIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -383,7 +383,7 @@ func (gic *GithubInstallationCreate) createSpec() (*GithubInstallation, *sqlgrap
 		_node.GithubAppID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := gic.mutation.ServicesIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ServicesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -418,10 +418,10 @@ func (gic *GithubInstallationCreate) createSpec() (*GithubInstallation, *sqlgrap
 //			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
-func (gic *GithubInstallationCreate) OnConflict(opts ...sql.ConflictOption) *GithubInstallationUpsertOne {
-	gic.conflict = opts
+func (_c *GithubInstallationCreate) OnConflict(opts ...sql.ConflictOption) *GithubInstallationUpsertOne {
+	_c.conflict = opts
 	return &GithubInstallationUpsertOne{
-		create: gic,
+		create: _c,
 	}
 }
 
@@ -431,10 +431,10 @@ func (gic *GithubInstallationCreate) OnConflict(opts ...sql.ConflictOption) *Git
 //	client.GithubInstallation.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (gic *GithubInstallationCreate) OnConflictColumns(columns ...string) *GithubInstallationUpsertOne {
-	gic.conflict = append(gic.conflict, sql.ConflictColumns(columns...))
+func (_c *GithubInstallationCreate) OnConflictColumns(columns ...string) *GithubInstallationUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &GithubInstallationUpsertOne{
-		create: gic,
+		create: _c,
 	}
 }
 
@@ -869,16 +869,16 @@ type GithubInstallationCreateBulk struct {
 }
 
 // Save creates the GithubInstallation entities in the database.
-func (gicb *GithubInstallationCreateBulk) Save(ctx context.Context) ([]*GithubInstallation, error) {
-	if gicb.err != nil {
-		return nil, gicb.err
+func (_c *GithubInstallationCreateBulk) Save(ctx context.Context) ([]*GithubInstallation, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(gicb.builders))
-	nodes := make([]*GithubInstallation, len(gicb.builders))
-	mutators := make([]Mutator, len(gicb.builders))
-	for i := range gicb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*GithubInstallation, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := gicb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*GithubInstallationMutation)
@@ -892,12 +892,12 @@ func (gicb *GithubInstallationCreateBulk) Save(ctx context.Context) ([]*GithubIn
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, gicb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = gicb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, gicb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -921,7 +921,7 @@ func (gicb *GithubInstallationCreateBulk) Save(ctx context.Context) ([]*GithubIn
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, gicb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -929,8 +929,8 @@ func (gicb *GithubInstallationCreateBulk) Save(ctx context.Context) ([]*GithubIn
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (gicb *GithubInstallationCreateBulk) SaveX(ctx context.Context) []*GithubInstallation {
-	v, err := gicb.Save(ctx)
+func (_c *GithubInstallationCreateBulk) SaveX(ctx context.Context) []*GithubInstallation {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -938,14 +938,14 @@ func (gicb *GithubInstallationCreateBulk) SaveX(ctx context.Context) []*GithubIn
 }
 
 // Exec executes the query.
-func (gicb *GithubInstallationCreateBulk) Exec(ctx context.Context) error {
-	_, err := gicb.Save(ctx)
+func (_c *GithubInstallationCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (gicb *GithubInstallationCreateBulk) ExecX(ctx context.Context) {
-	if err := gicb.Exec(ctx); err != nil {
+func (_c *GithubInstallationCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -965,10 +965,10 @@ func (gicb *GithubInstallationCreateBulk) ExecX(ctx context.Context) {
 //			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
-func (gicb *GithubInstallationCreateBulk) OnConflict(opts ...sql.ConflictOption) *GithubInstallationUpsertBulk {
-	gicb.conflict = opts
+func (_c *GithubInstallationCreateBulk) OnConflict(opts ...sql.ConflictOption) *GithubInstallationUpsertBulk {
+	_c.conflict = opts
 	return &GithubInstallationUpsertBulk{
-		create: gicb,
+		create: _c,
 	}
 }
 
@@ -978,10 +978,10 @@ func (gicb *GithubInstallationCreateBulk) OnConflict(opts ...sql.ConflictOption)
 //	client.GithubInstallation.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (gicb *GithubInstallationCreateBulk) OnConflictColumns(columns ...string) *GithubInstallationUpsertBulk {
-	gicb.conflict = append(gicb.conflict, sql.ConflictColumns(columns...))
+func (_c *GithubInstallationCreateBulk) OnConflictColumns(columns ...string) *GithubInstallationUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &GithubInstallationUpsertBulk{
-		create: gicb,
+		create: _c,
 	}
 }
 

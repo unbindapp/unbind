@@ -89,7 +89,7 @@ func (*ServiceGroup) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the ServiceGroup fields.
-func (sg *ServiceGroup) assignValues(columns []string, values []any) error {
+func (_m *ServiceGroup) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -99,48 +99,48 @@ func (sg *ServiceGroup) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				sg.ID = *value
+				_m.ID = *value
 			}
 		case servicegroup.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				sg.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case servicegroup.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				sg.UpdatedAt = value.Time
+				_m.UpdatedAt = value.Time
 			}
 		case servicegroup.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				sg.Name = value.String
+				_m.Name = value.String
 			}
 		case servicegroup.FieldIcon:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field icon", values[i])
 			} else if value.Valid {
-				sg.Icon = new(string)
-				*sg.Icon = value.String
+				_m.Icon = new(string)
+				*_m.Icon = value.String
 			}
 		case servicegroup.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				sg.Description = new(string)
-				*sg.Description = value.String
+				_m.Description = new(string)
+				*_m.Description = value.String
 			}
 		case servicegroup.FieldEnvironmentID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field environment_id", values[i])
 			} else if value != nil {
-				sg.EnvironmentID = *value
+				_m.EnvironmentID = *value
 			}
 		default:
-			sg.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -148,64 +148,64 @@ func (sg *ServiceGroup) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the ServiceGroup.
 // This includes values selected through modifiers, order, etc.
-func (sg *ServiceGroup) Value(name string) (ent.Value, error) {
-	return sg.selectValues.Get(name)
+func (_m *ServiceGroup) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryEnvironment queries the "environment" edge of the ServiceGroup entity.
-func (sg *ServiceGroup) QueryEnvironment() *EnvironmentQuery {
-	return NewServiceGroupClient(sg.config).QueryEnvironment(sg)
+func (_m *ServiceGroup) QueryEnvironment() *EnvironmentQuery {
+	return NewServiceGroupClient(_m.config).QueryEnvironment(_m)
 }
 
 // QueryServices queries the "services" edge of the ServiceGroup entity.
-func (sg *ServiceGroup) QueryServices() *ServiceQuery {
-	return NewServiceGroupClient(sg.config).QueryServices(sg)
+func (_m *ServiceGroup) QueryServices() *ServiceQuery {
+	return NewServiceGroupClient(_m.config).QueryServices(_m)
 }
 
 // Update returns a builder for updating this ServiceGroup.
 // Note that you need to call ServiceGroup.Unwrap() before calling this method if this ServiceGroup
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (sg *ServiceGroup) Update() *ServiceGroupUpdateOne {
-	return NewServiceGroupClient(sg.config).UpdateOne(sg)
+func (_m *ServiceGroup) Update() *ServiceGroupUpdateOne {
+	return NewServiceGroupClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the ServiceGroup entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (sg *ServiceGroup) Unwrap() *ServiceGroup {
-	_tx, ok := sg.config.driver.(*txDriver)
+func (_m *ServiceGroup) Unwrap() *ServiceGroup {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: ServiceGroup is not a transactional entity")
 	}
-	sg.config.driver = _tx.drv
-	return sg
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (sg *ServiceGroup) String() string {
+func (_m *ServiceGroup) String() string {
 	var builder strings.Builder
 	builder.WriteString("ServiceGroup(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", sg.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("created_at=")
-	builder.WriteString(sg.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(sg.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("name=")
-	builder.WriteString(sg.Name)
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
-	if v := sg.Icon; v != nil {
+	if v := _m.Icon; v != nil {
 		builder.WriteString("icon=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	if v := sg.Description; v != nil {
+	if v := _m.Description; v != nil {
 		builder.WriteString("description=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
 	builder.WriteString("environment_id=")
-	builder.WriteString(fmt.Sprintf("%v", sg.EnvironmentID))
+	builder.WriteString(fmt.Sprintf("%v", _m.EnvironmentID))
 	builder.WriteByte(')')
 	return builder.String()
 }

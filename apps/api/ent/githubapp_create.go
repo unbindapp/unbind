@@ -26,121 +26,121 @@ type GithubAppCreate struct {
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (gac *GithubAppCreate) SetCreatedAt(t time.Time) *GithubAppCreate {
-	gac.mutation.SetCreatedAt(t)
-	return gac
+func (_c *GithubAppCreate) SetCreatedAt(v time.Time) *GithubAppCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (gac *GithubAppCreate) SetNillableCreatedAt(t *time.Time) *GithubAppCreate {
-	if t != nil {
-		gac.SetCreatedAt(*t)
+func (_c *GithubAppCreate) SetNillableCreatedAt(v *time.Time) *GithubAppCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return gac
+	return _c
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (gac *GithubAppCreate) SetUpdatedAt(t time.Time) *GithubAppCreate {
-	gac.mutation.SetUpdatedAt(t)
-	return gac
+func (_c *GithubAppCreate) SetUpdatedAt(v time.Time) *GithubAppCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (gac *GithubAppCreate) SetNillableUpdatedAt(t *time.Time) *GithubAppCreate {
-	if t != nil {
-		gac.SetUpdatedAt(*t)
+func (_c *GithubAppCreate) SetNillableUpdatedAt(v *time.Time) *GithubAppCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
 	}
-	return gac
+	return _c
 }
 
 // SetUUID sets the "uuid" field.
-func (gac *GithubAppCreate) SetUUID(u uuid.UUID) *GithubAppCreate {
-	gac.mutation.SetUUID(u)
-	return gac
+func (_c *GithubAppCreate) SetUUID(v uuid.UUID) *GithubAppCreate {
+	_c.mutation.SetUUID(v)
+	return _c
 }
 
 // SetCreatedBy sets the "created_by" field.
-func (gac *GithubAppCreate) SetCreatedBy(u uuid.UUID) *GithubAppCreate {
-	gac.mutation.SetCreatedBy(u)
-	return gac
+func (_c *GithubAppCreate) SetCreatedBy(v uuid.UUID) *GithubAppCreate {
+	_c.mutation.SetCreatedBy(v)
+	return _c
 }
 
 // SetName sets the "name" field.
-func (gac *GithubAppCreate) SetName(s string) *GithubAppCreate {
-	gac.mutation.SetName(s)
-	return gac
+func (_c *GithubAppCreate) SetName(v string) *GithubAppCreate {
+	_c.mutation.SetName(v)
+	return _c
 }
 
 // SetClientID sets the "client_id" field.
-func (gac *GithubAppCreate) SetClientID(s string) *GithubAppCreate {
-	gac.mutation.SetClientID(s)
-	return gac
+func (_c *GithubAppCreate) SetClientID(v string) *GithubAppCreate {
+	_c.mutation.SetClientID(v)
+	return _c
 }
 
 // SetClientSecret sets the "client_secret" field.
-func (gac *GithubAppCreate) SetClientSecret(s string) *GithubAppCreate {
-	gac.mutation.SetClientSecret(s)
-	return gac
+func (_c *GithubAppCreate) SetClientSecret(v string) *GithubAppCreate {
+	_c.mutation.SetClientSecret(v)
+	return _c
 }
 
 // SetWebhookSecret sets the "webhook_secret" field.
-func (gac *GithubAppCreate) SetWebhookSecret(s string) *GithubAppCreate {
-	gac.mutation.SetWebhookSecret(s)
-	return gac
+func (_c *GithubAppCreate) SetWebhookSecret(v string) *GithubAppCreate {
+	_c.mutation.SetWebhookSecret(v)
+	return _c
 }
 
 // SetPrivateKey sets the "private_key" field.
-func (gac *GithubAppCreate) SetPrivateKey(s string) *GithubAppCreate {
-	gac.mutation.SetPrivateKey(s)
-	return gac
+func (_c *GithubAppCreate) SetPrivateKey(v string) *GithubAppCreate {
+	_c.mutation.SetPrivateKey(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (gac *GithubAppCreate) SetID(i int64) *GithubAppCreate {
-	gac.mutation.SetID(i)
-	return gac
+func (_c *GithubAppCreate) SetID(v int64) *GithubAppCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // AddInstallationIDs adds the "installations" edge to the GithubInstallation entity by IDs.
-func (gac *GithubAppCreate) AddInstallationIDs(ids ...int64) *GithubAppCreate {
-	gac.mutation.AddInstallationIDs(ids...)
-	return gac
+func (_c *GithubAppCreate) AddInstallationIDs(ids ...int64) *GithubAppCreate {
+	_c.mutation.AddInstallationIDs(ids...)
+	return _c
 }
 
 // AddInstallations adds the "installations" edges to the GithubInstallation entity.
-func (gac *GithubAppCreate) AddInstallations(g ...*GithubInstallation) *GithubAppCreate {
-	ids := make([]int64, len(g))
-	for i := range g {
-		ids[i] = g[i].ID
+func (_c *GithubAppCreate) AddInstallations(v ...*GithubInstallation) *GithubAppCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return gac.AddInstallationIDs(ids...)
+	return _c.AddInstallationIDs(ids...)
 }
 
 // SetUsersID sets the "users" edge to the User entity by ID.
-func (gac *GithubAppCreate) SetUsersID(id uuid.UUID) *GithubAppCreate {
-	gac.mutation.SetUsersID(id)
-	return gac
+func (_c *GithubAppCreate) SetUsersID(id uuid.UUID) *GithubAppCreate {
+	_c.mutation.SetUsersID(id)
+	return _c
 }
 
 // SetUsers sets the "users" edge to the User entity.
-func (gac *GithubAppCreate) SetUsers(u *User) *GithubAppCreate {
-	return gac.SetUsersID(u.ID)
+func (_c *GithubAppCreate) SetUsers(v *User) *GithubAppCreate {
+	return _c.SetUsersID(v.ID)
 }
 
 // Mutation returns the GithubAppMutation object of the builder.
-func (gac *GithubAppCreate) Mutation() *GithubAppMutation {
-	return gac.mutation
+func (_c *GithubAppCreate) Mutation() *GithubAppMutation {
+	return _c.mutation
 }
 
 // Save creates the GithubApp in the database.
-func (gac *GithubAppCreate) Save(ctx context.Context) (*GithubApp, error) {
-	gac.defaults()
-	return withHooks(ctx, gac.sqlSave, gac.mutation, gac.hooks)
+func (_c *GithubAppCreate) Save(ctx context.Context) (*GithubApp, error) {
+	_c.defaults()
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (gac *GithubAppCreate) SaveX(ctx context.Context) *GithubApp {
-	v, err := gac.Save(ctx)
+func (_c *GithubAppCreate) SaveX(ctx context.Context) *GithubApp {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -148,81 +148,81 @@ func (gac *GithubAppCreate) SaveX(ctx context.Context) *GithubApp {
 }
 
 // Exec executes the query.
-func (gac *GithubAppCreate) Exec(ctx context.Context) error {
-	_, err := gac.Save(ctx)
+func (_c *GithubAppCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (gac *GithubAppCreate) ExecX(ctx context.Context) {
-	if err := gac.Exec(ctx); err != nil {
+func (_c *GithubAppCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (gac *GithubAppCreate) defaults() {
-	if _, ok := gac.mutation.CreatedAt(); !ok {
+func (_c *GithubAppCreate) defaults() {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := githubapp.DefaultCreatedAt()
-		gac.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := gac.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		v := githubapp.DefaultUpdatedAt()
-		gac.mutation.SetUpdatedAt(v)
+		_c.mutation.SetUpdatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (gac *GithubAppCreate) check() error {
-	if _, ok := gac.mutation.CreatedAt(); !ok {
+func (_c *GithubAppCreate) check() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "GithubApp.created_at"`)}
 	}
-	if _, ok := gac.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "GithubApp.updated_at"`)}
 	}
-	if _, ok := gac.mutation.UUID(); !ok {
+	if _, ok := _c.mutation.UUID(); !ok {
 		return &ValidationError{Name: "uuid", err: errors.New(`ent: missing required field "GithubApp.uuid"`)}
 	}
-	if _, ok := gac.mutation.CreatedBy(); !ok {
+	if _, ok := _c.mutation.CreatedBy(); !ok {
 		return &ValidationError{Name: "created_by", err: errors.New(`ent: missing required field "GithubApp.created_by"`)}
 	}
-	if _, ok := gac.mutation.Name(); !ok {
+	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "GithubApp.name"`)}
 	}
-	if v, ok := gac.mutation.Name(); ok {
+	if v, ok := _c.mutation.Name(); ok {
 		if err := githubapp.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "GithubApp.name": %w`, err)}
 		}
 	}
-	if _, ok := gac.mutation.ClientID(); !ok {
+	if _, ok := _c.mutation.ClientID(); !ok {
 		return &ValidationError{Name: "client_id", err: errors.New(`ent: missing required field "GithubApp.client_id"`)}
 	}
-	if _, ok := gac.mutation.ClientSecret(); !ok {
+	if _, ok := _c.mutation.ClientSecret(); !ok {
 		return &ValidationError{Name: "client_secret", err: errors.New(`ent: missing required field "GithubApp.client_secret"`)}
 	}
-	if _, ok := gac.mutation.WebhookSecret(); !ok {
+	if _, ok := _c.mutation.WebhookSecret(); !ok {
 		return &ValidationError{Name: "webhook_secret", err: errors.New(`ent: missing required field "GithubApp.webhook_secret"`)}
 	}
-	if _, ok := gac.mutation.PrivateKey(); !ok {
+	if _, ok := _c.mutation.PrivateKey(); !ok {
 		return &ValidationError{Name: "private_key", err: errors.New(`ent: missing required field "GithubApp.private_key"`)}
 	}
-	if v, ok := gac.mutation.ID(); ok {
+	if v, ok := _c.mutation.ID(); ok {
 		if err := githubapp.IDValidator(v); err != nil {
 			return &ValidationError{Name: "id", err: fmt.Errorf(`ent: validator failed for field "GithubApp.id": %w`, err)}
 		}
 	}
-	if len(gac.mutation.UsersIDs()) == 0 {
+	if len(_c.mutation.UsersIDs()) == 0 {
 		return &ValidationError{Name: "users", err: errors.New(`ent: missing required edge "GithubApp.users"`)}
 	}
 	return nil
 }
 
-func (gac *GithubAppCreate) sqlSave(ctx context.Context) (*GithubApp, error) {
-	if err := gac.check(); err != nil {
+func (_c *GithubAppCreate) sqlSave(ctx context.Context) (*GithubApp, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := gac.createSpec()
-	if err := sqlgraph.CreateNode(ctx, gac.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -232,54 +232,54 @@ func (gac *GithubAppCreate) sqlSave(ctx context.Context) (*GithubApp, error) {
 		id := _spec.ID.Value.(int64)
 		_node.ID = int64(id)
 	}
-	gac.mutation.id = &_node.ID
-	gac.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (gac *GithubAppCreate) createSpec() (*GithubApp, *sqlgraph.CreateSpec) {
+func (_c *GithubAppCreate) createSpec() (*GithubApp, *sqlgraph.CreateSpec) {
 	var (
-		_node = &GithubApp{config: gac.config}
+		_node = &GithubApp{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(githubapp.Table, sqlgraph.NewFieldSpec(githubapp.FieldID, field.TypeInt64))
 	)
-	_spec.OnConflict = gac.conflict
-	if id, ok := gac.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
-	if value, ok := gac.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(githubapp.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if value, ok := gac.mutation.UpdatedAt(); ok {
+	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(githubapp.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := gac.mutation.UUID(); ok {
+	if value, ok := _c.mutation.UUID(); ok {
 		_spec.SetField(githubapp.FieldUUID, field.TypeUUID, value)
 		_node.UUID = value
 	}
-	if value, ok := gac.mutation.Name(); ok {
+	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(githubapp.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := gac.mutation.ClientID(); ok {
+	if value, ok := _c.mutation.ClientID(); ok {
 		_spec.SetField(githubapp.FieldClientID, field.TypeString, value)
 		_node.ClientID = value
 	}
-	if value, ok := gac.mutation.ClientSecret(); ok {
+	if value, ok := _c.mutation.ClientSecret(); ok {
 		_spec.SetField(githubapp.FieldClientSecret, field.TypeString, value)
 		_node.ClientSecret = value
 	}
-	if value, ok := gac.mutation.WebhookSecret(); ok {
+	if value, ok := _c.mutation.WebhookSecret(); ok {
 		_spec.SetField(githubapp.FieldWebhookSecret, field.TypeString, value)
 		_node.WebhookSecret = value
 	}
-	if value, ok := gac.mutation.PrivateKey(); ok {
+	if value, ok := _c.mutation.PrivateKey(); ok {
 		_spec.SetField(githubapp.FieldPrivateKey, field.TypeString, value)
 		_node.PrivateKey = value
 	}
-	if nodes := gac.mutation.InstallationsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.InstallationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -295,7 +295,7 @@ func (gac *GithubAppCreate) createSpec() (*GithubApp, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := gac.mutation.UsersIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.UsersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -331,10 +331,10 @@ func (gac *GithubAppCreate) createSpec() (*GithubApp, *sqlgraph.CreateSpec) {
 //			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
-func (gac *GithubAppCreate) OnConflict(opts ...sql.ConflictOption) *GithubAppUpsertOne {
-	gac.conflict = opts
+func (_c *GithubAppCreate) OnConflict(opts ...sql.ConflictOption) *GithubAppUpsertOne {
+	_c.conflict = opts
 	return &GithubAppUpsertOne{
-		create: gac,
+		create: _c,
 	}
 }
 
@@ -344,10 +344,10 @@ func (gac *GithubAppCreate) OnConflict(opts ...sql.ConflictOption) *GithubAppUps
 //	client.GithubApp.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (gac *GithubAppCreate) OnConflictColumns(columns ...string) *GithubAppUpsertOne {
-	gac.conflict = append(gac.conflict, sql.ConflictColumns(columns...))
+func (_c *GithubAppCreate) OnConflictColumns(columns ...string) *GithubAppUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &GithubAppUpsertOne{
-		create: gac,
+		create: _c,
 	}
 }
 
@@ -642,16 +642,16 @@ type GithubAppCreateBulk struct {
 }
 
 // Save creates the GithubApp entities in the database.
-func (gacb *GithubAppCreateBulk) Save(ctx context.Context) ([]*GithubApp, error) {
-	if gacb.err != nil {
-		return nil, gacb.err
+func (_c *GithubAppCreateBulk) Save(ctx context.Context) ([]*GithubApp, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(gacb.builders))
-	nodes := make([]*GithubApp, len(gacb.builders))
-	mutators := make([]Mutator, len(gacb.builders))
-	for i := range gacb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*GithubApp, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := gacb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*GithubAppMutation)
@@ -665,12 +665,12 @@ func (gacb *GithubAppCreateBulk) Save(ctx context.Context) ([]*GithubApp, error)
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, gacb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = gacb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, gacb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -694,7 +694,7 @@ func (gacb *GithubAppCreateBulk) Save(ctx context.Context) ([]*GithubApp, error)
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, gacb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -702,8 +702,8 @@ func (gacb *GithubAppCreateBulk) Save(ctx context.Context) ([]*GithubApp, error)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (gacb *GithubAppCreateBulk) SaveX(ctx context.Context) []*GithubApp {
-	v, err := gacb.Save(ctx)
+func (_c *GithubAppCreateBulk) SaveX(ctx context.Context) []*GithubApp {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -711,14 +711,14 @@ func (gacb *GithubAppCreateBulk) SaveX(ctx context.Context) []*GithubApp {
 }
 
 // Exec executes the query.
-func (gacb *GithubAppCreateBulk) Exec(ctx context.Context) error {
-	_, err := gacb.Save(ctx)
+func (_c *GithubAppCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (gacb *GithubAppCreateBulk) ExecX(ctx context.Context) {
-	if err := gacb.Exec(ctx); err != nil {
+func (_c *GithubAppCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -738,10 +738,10 @@ func (gacb *GithubAppCreateBulk) ExecX(ctx context.Context) {
 //			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
-func (gacb *GithubAppCreateBulk) OnConflict(opts ...sql.ConflictOption) *GithubAppUpsertBulk {
-	gacb.conflict = opts
+func (_c *GithubAppCreateBulk) OnConflict(opts ...sql.ConflictOption) *GithubAppUpsertBulk {
+	_c.conflict = opts
 	return &GithubAppUpsertBulk{
-		create: gacb,
+		create: _c,
 	}
 }
 
@@ -751,10 +751,10 @@ func (gacb *GithubAppCreateBulk) OnConflict(opts ...sql.ConflictOption) *GithubA
 //	client.GithubApp.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (gacb *GithubAppCreateBulk) OnConflictColumns(columns ...string) *GithubAppUpsertBulk {
-	gacb.conflict = append(gacb.conflict, sql.ConflictColumns(columns...))
+func (_c *GithubAppCreateBulk) OnConflictColumns(columns ...string) *GithubAppUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &GithubAppUpsertBulk{
-		create: gacb,
+		create: _c,
 	}
 }
 

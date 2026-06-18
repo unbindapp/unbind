@@ -33,311 +33,311 @@ type ServiceCreate struct {
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (sc *ServiceCreate) SetCreatedAt(t time.Time) *ServiceCreate {
-	sc.mutation.SetCreatedAt(t)
-	return sc
+func (_c *ServiceCreate) SetCreatedAt(v time.Time) *ServiceCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (sc *ServiceCreate) SetNillableCreatedAt(t *time.Time) *ServiceCreate {
-	if t != nil {
-		sc.SetCreatedAt(*t)
+func (_c *ServiceCreate) SetNillableCreatedAt(v *time.Time) *ServiceCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return sc
+	return _c
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (sc *ServiceCreate) SetUpdatedAt(t time.Time) *ServiceCreate {
-	sc.mutation.SetUpdatedAt(t)
-	return sc
+func (_c *ServiceCreate) SetUpdatedAt(v time.Time) *ServiceCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (sc *ServiceCreate) SetNillableUpdatedAt(t *time.Time) *ServiceCreate {
-	if t != nil {
-		sc.SetUpdatedAt(*t)
+func (_c *ServiceCreate) SetNillableUpdatedAt(v *time.Time) *ServiceCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
 	}
-	return sc
+	return _c
 }
 
 // SetType sets the "type" field.
-func (sc *ServiceCreate) SetType(st schema.ServiceType) *ServiceCreate {
-	sc.mutation.SetType(st)
-	return sc
+func (_c *ServiceCreate) SetType(v schema.ServiceType) *ServiceCreate {
+	_c.mutation.SetType(v)
+	return _c
 }
 
 // SetKubernetesName sets the "kubernetes_name" field.
-func (sc *ServiceCreate) SetKubernetesName(s string) *ServiceCreate {
-	sc.mutation.SetKubernetesName(s)
-	return sc
+func (_c *ServiceCreate) SetKubernetesName(v string) *ServiceCreate {
+	_c.mutation.SetKubernetesName(v)
+	return _c
 }
 
 // SetName sets the "name" field.
-func (sc *ServiceCreate) SetName(s string) *ServiceCreate {
-	sc.mutation.SetName(s)
-	return sc
+func (_c *ServiceCreate) SetName(v string) *ServiceCreate {
+	_c.mutation.SetName(v)
+	return _c
 }
 
 // SetDescription sets the "description" field.
-func (sc *ServiceCreate) SetDescription(s string) *ServiceCreate {
-	sc.mutation.SetDescription(s)
-	return sc
+func (_c *ServiceCreate) SetDescription(v string) *ServiceCreate {
+	_c.mutation.SetDescription(v)
+	return _c
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (sc *ServiceCreate) SetNillableDescription(s *string) *ServiceCreate {
-	if s != nil {
-		sc.SetDescription(*s)
+func (_c *ServiceCreate) SetNillableDescription(v *string) *ServiceCreate {
+	if v != nil {
+		_c.SetDescription(*v)
 	}
-	return sc
+	return _c
 }
 
 // SetEnvironmentID sets the "environment_id" field.
-func (sc *ServiceCreate) SetEnvironmentID(u uuid.UUID) *ServiceCreate {
-	sc.mutation.SetEnvironmentID(u)
-	return sc
+func (_c *ServiceCreate) SetEnvironmentID(v uuid.UUID) *ServiceCreate {
+	_c.mutation.SetEnvironmentID(v)
+	return _c
 }
 
 // SetDetectedPorts sets the "detected_ports" field.
-func (sc *ServiceCreate) SetDetectedPorts(ss []schema.PortSpec) *ServiceCreate {
-	sc.mutation.SetDetectedPorts(ss)
-	return sc
+func (_c *ServiceCreate) SetDetectedPorts(v []schema.PortSpec) *ServiceCreate {
+	_c.mutation.SetDetectedPorts(v)
+	return _c
 }
 
 // SetDatabase sets the "database" field.
-func (sc *ServiceCreate) SetDatabase(s string) *ServiceCreate {
-	sc.mutation.SetDatabase(s)
-	return sc
+func (_c *ServiceCreate) SetDatabase(v string) *ServiceCreate {
+	_c.mutation.SetDatabase(v)
+	return _c
 }
 
 // SetNillableDatabase sets the "database" field if the given value is not nil.
-func (sc *ServiceCreate) SetNillableDatabase(s *string) *ServiceCreate {
-	if s != nil {
-		sc.SetDatabase(*s)
+func (_c *ServiceCreate) SetNillableDatabase(v *string) *ServiceCreate {
+	if v != nil {
+		_c.SetDatabase(*v)
 	}
-	return sc
+	return _c
 }
 
 // SetDatabaseVersion sets the "database_version" field.
-func (sc *ServiceCreate) SetDatabaseVersion(s string) *ServiceCreate {
-	sc.mutation.SetDatabaseVersion(s)
-	return sc
+func (_c *ServiceCreate) SetDatabaseVersion(v string) *ServiceCreate {
+	_c.mutation.SetDatabaseVersion(v)
+	return _c
 }
 
 // SetNillableDatabaseVersion sets the "database_version" field if the given value is not nil.
-func (sc *ServiceCreate) SetNillableDatabaseVersion(s *string) *ServiceCreate {
-	if s != nil {
-		sc.SetDatabaseVersion(*s)
+func (_c *ServiceCreate) SetNillableDatabaseVersion(v *string) *ServiceCreate {
+	if v != nil {
+		_c.SetDatabaseVersion(*v)
 	}
-	return sc
+	return _c
 }
 
 // SetGithubInstallationID sets the "github_installation_id" field.
-func (sc *ServiceCreate) SetGithubInstallationID(i int64) *ServiceCreate {
-	sc.mutation.SetGithubInstallationID(i)
-	return sc
+func (_c *ServiceCreate) SetGithubInstallationID(v int64) *ServiceCreate {
+	_c.mutation.SetGithubInstallationID(v)
+	return _c
 }
 
 // SetNillableGithubInstallationID sets the "github_installation_id" field if the given value is not nil.
-func (sc *ServiceCreate) SetNillableGithubInstallationID(i *int64) *ServiceCreate {
-	if i != nil {
-		sc.SetGithubInstallationID(*i)
+func (_c *ServiceCreate) SetNillableGithubInstallationID(v *int64) *ServiceCreate {
+	if v != nil {
+		_c.SetGithubInstallationID(*v)
 	}
-	return sc
+	return _c
 }
 
 // SetGitRepositoryOwner sets the "git_repository_owner" field.
-func (sc *ServiceCreate) SetGitRepositoryOwner(s string) *ServiceCreate {
-	sc.mutation.SetGitRepositoryOwner(s)
-	return sc
+func (_c *ServiceCreate) SetGitRepositoryOwner(v string) *ServiceCreate {
+	_c.mutation.SetGitRepositoryOwner(v)
+	return _c
 }
 
 // SetNillableGitRepositoryOwner sets the "git_repository_owner" field if the given value is not nil.
-func (sc *ServiceCreate) SetNillableGitRepositoryOwner(s *string) *ServiceCreate {
-	if s != nil {
-		sc.SetGitRepositoryOwner(*s)
+func (_c *ServiceCreate) SetNillableGitRepositoryOwner(v *string) *ServiceCreate {
+	if v != nil {
+		_c.SetGitRepositoryOwner(*v)
 	}
-	return sc
+	return _c
 }
 
 // SetGitRepository sets the "git_repository" field.
-func (sc *ServiceCreate) SetGitRepository(s string) *ServiceCreate {
-	sc.mutation.SetGitRepository(s)
-	return sc
+func (_c *ServiceCreate) SetGitRepository(v string) *ServiceCreate {
+	_c.mutation.SetGitRepository(v)
+	return _c
 }
 
 // SetNillableGitRepository sets the "git_repository" field if the given value is not nil.
-func (sc *ServiceCreate) SetNillableGitRepository(s *string) *ServiceCreate {
-	if s != nil {
-		sc.SetGitRepository(*s)
+func (_c *ServiceCreate) SetNillableGitRepository(v *string) *ServiceCreate {
+	if v != nil {
+		_c.SetGitRepository(*v)
 	}
-	return sc
+	return _c
 }
 
 // SetKubernetesSecret sets the "kubernetes_secret" field.
-func (sc *ServiceCreate) SetKubernetesSecret(s string) *ServiceCreate {
-	sc.mutation.SetKubernetesSecret(s)
-	return sc
+func (_c *ServiceCreate) SetKubernetesSecret(v string) *ServiceCreate {
+	_c.mutation.SetKubernetesSecret(v)
+	return _c
 }
 
 // SetCurrentDeploymentID sets the "current_deployment_id" field.
-func (sc *ServiceCreate) SetCurrentDeploymentID(u uuid.UUID) *ServiceCreate {
-	sc.mutation.SetCurrentDeploymentID(u)
-	return sc
+func (_c *ServiceCreate) SetCurrentDeploymentID(v uuid.UUID) *ServiceCreate {
+	_c.mutation.SetCurrentDeploymentID(v)
+	return _c
 }
 
 // SetNillableCurrentDeploymentID sets the "current_deployment_id" field if the given value is not nil.
-func (sc *ServiceCreate) SetNillableCurrentDeploymentID(u *uuid.UUID) *ServiceCreate {
-	if u != nil {
-		sc.SetCurrentDeploymentID(*u)
+func (_c *ServiceCreate) SetNillableCurrentDeploymentID(v *uuid.UUID) *ServiceCreate {
+	if v != nil {
+		_c.SetCurrentDeploymentID(*v)
 	}
-	return sc
+	return _c
 }
 
 // SetTemplateID sets the "template_id" field.
-func (sc *ServiceCreate) SetTemplateID(u uuid.UUID) *ServiceCreate {
-	sc.mutation.SetTemplateID(u)
-	return sc
+func (_c *ServiceCreate) SetTemplateID(v uuid.UUID) *ServiceCreate {
+	_c.mutation.SetTemplateID(v)
+	return _c
 }
 
 // SetNillableTemplateID sets the "template_id" field if the given value is not nil.
-func (sc *ServiceCreate) SetNillableTemplateID(u *uuid.UUID) *ServiceCreate {
-	if u != nil {
-		sc.SetTemplateID(*u)
+func (_c *ServiceCreate) SetNillableTemplateID(v *uuid.UUID) *ServiceCreate {
+	if v != nil {
+		_c.SetTemplateID(*v)
 	}
-	return sc
+	return _c
 }
 
 // SetTemplateInstanceID sets the "template_instance_id" field.
-func (sc *ServiceCreate) SetTemplateInstanceID(u uuid.UUID) *ServiceCreate {
-	sc.mutation.SetTemplateInstanceID(u)
-	return sc
+func (_c *ServiceCreate) SetTemplateInstanceID(v uuid.UUID) *ServiceCreate {
+	_c.mutation.SetTemplateInstanceID(v)
+	return _c
 }
 
 // SetNillableTemplateInstanceID sets the "template_instance_id" field if the given value is not nil.
-func (sc *ServiceCreate) SetNillableTemplateInstanceID(u *uuid.UUID) *ServiceCreate {
-	if u != nil {
-		sc.SetTemplateInstanceID(*u)
+func (_c *ServiceCreate) SetNillableTemplateInstanceID(v *uuid.UUID) *ServiceCreate {
+	if v != nil {
+		_c.SetTemplateInstanceID(*v)
 	}
-	return sc
+	return _c
 }
 
 // SetServiceGroupID sets the "service_group_id" field.
-func (sc *ServiceCreate) SetServiceGroupID(u uuid.UUID) *ServiceCreate {
-	sc.mutation.SetServiceGroupID(u)
-	return sc
+func (_c *ServiceCreate) SetServiceGroupID(v uuid.UUID) *ServiceCreate {
+	_c.mutation.SetServiceGroupID(v)
+	return _c
 }
 
 // SetNillableServiceGroupID sets the "service_group_id" field if the given value is not nil.
-func (sc *ServiceCreate) SetNillableServiceGroupID(u *uuid.UUID) *ServiceCreate {
-	if u != nil {
-		sc.SetServiceGroupID(*u)
+func (_c *ServiceCreate) SetNillableServiceGroupID(v *uuid.UUID) *ServiceCreate {
+	if v != nil {
+		_c.SetServiceGroupID(*v)
 	}
-	return sc
+	return _c
 }
 
 // SetID sets the "id" field.
-func (sc *ServiceCreate) SetID(u uuid.UUID) *ServiceCreate {
-	sc.mutation.SetID(u)
-	return sc
+func (_c *ServiceCreate) SetID(v uuid.UUID) *ServiceCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (sc *ServiceCreate) SetNillableID(u *uuid.UUID) *ServiceCreate {
-	if u != nil {
-		sc.SetID(*u)
+func (_c *ServiceCreate) SetNillableID(v *uuid.UUID) *ServiceCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return sc
+	return _c
 }
 
 // SetEnvironment sets the "environment" edge to the Environment entity.
-func (sc *ServiceCreate) SetEnvironment(e *Environment) *ServiceCreate {
-	return sc.SetEnvironmentID(e.ID)
+func (_c *ServiceCreate) SetEnvironment(v *Environment) *ServiceCreate {
+	return _c.SetEnvironmentID(v.ID)
 }
 
 // SetGithubInstallation sets the "github_installation" edge to the GithubInstallation entity.
-func (sc *ServiceCreate) SetGithubInstallation(g *GithubInstallation) *ServiceCreate {
-	return sc.SetGithubInstallationID(g.ID)
+func (_c *ServiceCreate) SetGithubInstallation(v *GithubInstallation) *ServiceCreate {
+	return _c.SetGithubInstallationID(v.ID)
 }
 
 // SetServiceConfigID sets the "service_config" edge to the ServiceConfig entity by ID.
-func (sc *ServiceCreate) SetServiceConfigID(id uuid.UUID) *ServiceCreate {
-	sc.mutation.SetServiceConfigID(id)
-	return sc
+func (_c *ServiceCreate) SetServiceConfigID(id uuid.UUID) *ServiceCreate {
+	_c.mutation.SetServiceConfigID(id)
+	return _c
 }
 
 // SetNillableServiceConfigID sets the "service_config" edge to the ServiceConfig entity by ID if the given value is not nil.
-func (sc *ServiceCreate) SetNillableServiceConfigID(id *uuid.UUID) *ServiceCreate {
+func (_c *ServiceCreate) SetNillableServiceConfigID(id *uuid.UUID) *ServiceCreate {
 	if id != nil {
-		sc = sc.SetServiceConfigID(*id)
+		_c = _c.SetServiceConfigID(*id)
 	}
-	return sc
+	return _c
 }
 
 // SetServiceConfig sets the "service_config" edge to the ServiceConfig entity.
-func (sc *ServiceCreate) SetServiceConfig(s *ServiceConfig) *ServiceCreate {
-	return sc.SetServiceConfigID(s.ID)
+func (_c *ServiceCreate) SetServiceConfig(v *ServiceConfig) *ServiceCreate {
+	return _c.SetServiceConfigID(v.ID)
 }
 
 // AddDeploymentIDs adds the "deployments" edge to the Deployment entity by IDs.
-func (sc *ServiceCreate) AddDeploymentIDs(ids ...uuid.UUID) *ServiceCreate {
-	sc.mutation.AddDeploymentIDs(ids...)
-	return sc
+func (_c *ServiceCreate) AddDeploymentIDs(ids ...uuid.UUID) *ServiceCreate {
+	_c.mutation.AddDeploymentIDs(ids...)
+	return _c
 }
 
 // AddDeployments adds the "deployments" edges to the Deployment entity.
-func (sc *ServiceCreate) AddDeployments(d ...*Deployment) *ServiceCreate {
-	ids := make([]uuid.UUID, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
-	}
-	return sc.AddDeploymentIDs(ids...)
-}
-
-// SetCurrentDeployment sets the "current_deployment" edge to the Deployment entity.
-func (sc *ServiceCreate) SetCurrentDeployment(d *Deployment) *ServiceCreate {
-	return sc.SetCurrentDeploymentID(d.ID)
-}
-
-// SetTemplate sets the "template" edge to the Template entity.
-func (sc *ServiceCreate) SetTemplate(t *Template) *ServiceCreate {
-	return sc.SetTemplateID(t.ID)
-}
-
-// SetServiceGroup sets the "service_group" edge to the ServiceGroup entity.
-func (sc *ServiceCreate) SetServiceGroup(s *ServiceGroup) *ServiceCreate {
-	return sc.SetServiceGroupID(s.ID)
-}
-
-// AddVariableReferenceIDs adds the "variable_references" edge to the VariableReference entity by IDs.
-func (sc *ServiceCreate) AddVariableReferenceIDs(ids ...uuid.UUID) *ServiceCreate {
-	sc.mutation.AddVariableReferenceIDs(ids...)
-	return sc
-}
-
-// AddVariableReferences adds the "variable_references" edges to the VariableReference entity.
-func (sc *ServiceCreate) AddVariableReferences(v ...*VariableReference) *ServiceCreate {
+func (_c *ServiceCreate) AddDeployments(v ...*Deployment) *ServiceCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return sc.AddVariableReferenceIDs(ids...)
+	return _c.AddDeploymentIDs(ids...)
+}
+
+// SetCurrentDeployment sets the "current_deployment" edge to the Deployment entity.
+func (_c *ServiceCreate) SetCurrentDeployment(v *Deployment) *ServiceCreate {
+	return _c.SetCurrentDeploymentID(v.ID)
+}
+
+// SetTemplate sets the "template" edge to the Template entity.
+func (_c *ServiceCreate) SetTemplate(v *Template) *ServiceCreate {
+	return _c.SetTemplateID(v.ID)
+}
+
+// SetServiceGroup sets the "service_group" edge to the ServiceGroup entity.
+func (_c *ServiceCreate) SetServiceGroup(v *ServiceGroup) *ServiceCreate {
+	return _c.SetServiceGroupID(v.ID)
+}
+
+// AddVariableReferenceIDs adds the "variable_references" edge to the VariableReference entity by IDs.
+func (_c *ServiceCreate) AddVariableReferenceIDs(ids ...uuid.UUID) *ServiceCreate {
+	_c.mutation.AddVariableReferenceIDs(ids...)
+	return _c
+}
+
+// AddVariableReferences adds the "variable_references" edges to the VariableReference entity.
+func (_c *ServiceCreate) AddVariableReferences(v ...*VariableReference) *ServiceCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddVariableReferenceIDs(ids...)
 }
 
 // Mutation returns the ServiceMutation object of the builder.
-func (sc *ServiceCreate) Mutation() *ServiceMutation {
-	return sc.mutation
+func (_c *ServiceCreate) Mutation() *ServiceMutation {
+	return _c.mutation
 }
 
 // Save creates the Service in the database.
-func (sc *ServiceCreate) Save(ctx context.Context) (*Service, error) {
-	sc.defaults()
-	return withHooks(ctx, sc.sqlSave, sc.mutation, sc.hooks)
+func (_c *ServiceCreate) Save(ctx context.Context) (*Service, error) {
+	_c.defaults()
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (sc *ServiceCreate) SaveX(ctx context.Context) *Service {
-	v, err := sc.Save(ctx)
+func (_c *ServiceCreate) SaveX(ctx context.Context) *Service {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -345,79 +345,79 @@ func (sc *ServiceCreate) SaveX(ctx context.Context) *Service {
 }
 
 // Exec executes the query.
-func (sc *ServiceCreate) Exec(ctx context.Context) error {
-	_, err := sc.Save(ctx)
+func (_c *ServiceCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sc *ServiceCreate) ExecX(ctx context.Context) {
-	if err := sc.Exec(ctx); err != nil {
+func (_c *ServiceCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (sc *ServiceCreate) defaults() {
-	if _, ok := sc.mutation.CreatedAt(); !ok {
+func (_c *ServiceCreate) defaults() {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := service.DefaultCreatedAt()
-		sc.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := sc.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		v := service.DefaultUpdatedAt()
-		sc.mutation.SetUpdatedAt(v)
+		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := sc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		v := service.DefaultID()
-		sc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (sc *ServiceCreate) check() error {
-	if _, ok := sc.mutation.CreatedAt(); !ok {
+func (_c *ServiceCreate) check() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Service.created_at"`)}
 	}
-	if _, ok := sc.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Service.updated_at"`)}
 	}
-	if _, ok := sc.mutation.GetType(); !ok {
+	if _, ok := _c.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Service.type"`)}
 	}
-	if v, ok := sc.mutation.GetType(); ok {
+	if v, ok := _c.mutation.GetType(); ok {
 		if err := service.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Service.type": %w`, err)}
 		}
 	}
-	if _, ok := sc.mutation.KubernetesName(); !ok {
+	if _, ok := _c.mutation.KubernetesName(); !ok {
 		return &ValidationError{Name: "kubernetes_name", err: errors.New(`ent: missing required field "Service.kubernetes_name"`)}
 	}
-	if v, ok := sc.mutation.KubernetesName(); ok {
+	if v, ok := _c.mutation.KubernetesName(); ok {
 		if err := service.KubernetesNameValidator(v); err != nil {
 			return &ValidationError{Name: "kubernetes_name", err: fmt.Errorf(`ent: validator failed for field "Service.kubernetes_name": %w`, err)}
 		}
 	}
-	if _, ok := sc.mutation.Name(); !ok {
+	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Service.name"`)}
 	}
-	if _, ok := sc.mutation.EnvironmentID(); !ok {
+	if _, ok := _c.mutation.EnvironmentID(); !ok {
 		return &ValidationError{Name: "environment_id", err: errors.New(`ent: missing required field "Service.environment_id"`)}
 	}
-	if _, ok := sc.mutation.KubernetesSecret(); !ok {
+	if _, ok := _c.mutation.KubernetesSecret(); !ok {
 		return &ValidationError{Name: "kubernetes_secret", err: errors.New(`ent: missing required field "Service.kubernetes_secret"`)}
 	}
-	if len(sc.mutation.EnvironmentIDs()) == 0 {
+	if len(_c.mutation.EnvironmentIDs()) == 0 {
 		return &ValidationError{Name: "environment", err: errors.New(`ent: missing required edge "Service.environment"`)}
 	}
 	return nil
 }
 
-func (sc *ServiceCreate) sqlSave(ctx context.Context) (*Service, error) {
-	if err := sc.check(); err != nil {
+func (_c *ServiceCreate) sqlSave(ctx context.Context) (*Service, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := sc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, sc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -430,74 +430,74 @@ func (sc *ServiceCreate) sqlSave(ctx context.Context) (*Service, error) {
 			return nil, err
 		}
 	}
-	sc.mutation.id = &_node.ID
-	sc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (sc *ServiceCreate) createSpec() (*Service, *sqlgraph.CreateSpec) {
+func (_c *ServiceCreate) createSpec() (*Service, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Service{config: sc.config}
+		_node = &Service{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(service.Table, sqlgraph.NewFieldSpec(service.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = sc.conflict
-	if id, ok := sc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := sc.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(service.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if value, ok := sc.mutation.UpdatedAt(); ok {
+	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(service.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := sc.mutation.GetType(); ok {
+	if value, ok := _c.mutation.GetType(); ok {
 		_spec.SetField(service.FieldType, field.TypeEnum, value)
 		_node.Type = value
 	}
-	if value, ok := sc.mutation.KubernetesName(); ok {
+	if value, ok := _c.mutation.KubernetesName(); ok {
 		_spec.SetField(service.FieldKubernetesName, field.TypeString, value)
 		_node.KubernetesName = value
 	}
-	if value, ok := sc.mutation.Name(); ok {
+	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(service.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := sc.mutation.Description(); ok {
+	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(service.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
-	if value, ok := sc.mutation.DetectedPorts(); ok {
+	if value, ok := _c.mutation.DetectedPorts(); ok {
 		_spec.SetField(service.FieldDetectedPorts, field.TypeJSON, value)
 		_node.DetectedPorts = value
 	}
-	if value, ok := sc.mutation.Database(); ok {
+	if value, ok := _c.mutation.Database(); ok {
 		_spec.SetField(service.FieldDatabase, field.TypeString, value)
 		_node.Database = &value
 	}
-	if value, ok := sc.mutation.DatabaseVersion(); ok {
+	if value, ok := _c.mutation.DatabaseVersion(); ok {
 		_spec.SetField(service.FieldDatabaseVersion, field.TypeString, value)
 		_node.DatabaseVersion = &value
 	}
-	if value, ok := sc.mutation.GitRepositoryOwner(); ok {
+	if value, ok := _c.mutation.GitRepositoryOwner(); ok {
 		_spec.SetField(service.FieldGitRepositoryOwner, field.TypeString, value)
 		_node.GitRepositoryOwner = &value
 	}
-	if value, ok := sc.mutation.GitRepository(); ok {
+	if value, ok := _c.mutation.GitRepository(); ok {
 		_spec.SetField(service.FieldGitRepository, field.TypeString, value)
 		_node.GitRepository = &value
 	}
-	if value, ok := sc.mutation.KubernetesSecret(); ok {
+	if value, ok := _c.mutation.KubernetesSecret(); ok {
 		_spec.SetField(service.FieldKubernetesSecret, field.TypeString, value)
 		_node.KubernetesSecret = value
 	}
-	if value, ok := sc.mutation.TemplateInstanceID(); ok {
+	if value, ok := _c.mutation.TemplateInstanceID(); ok {
 		_spec.SetField(service.FieldTemplateInstanceID, field.TypeUUID, value)
 		_node.TemplateInstanceID = &value
 	}
-	if nodes := sc.mutation.EnvironmentIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.EnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -514,7 +514,7 @@ func (sc *ServiceCreate) createSpec() (*Service, *sqlgraph.CreateSpec) {
 		_node.EnvironmentID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := sc.mutation.GithubInstallationIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.GithubInstallationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -531,7 +531,7 @@ func (sc *ServiceCreate) createSpec() (*Service, *sqlgraph.CreateSpec) {
 		_node.GithubInstallationID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := sc.mutation.ServiceConfigIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ServiceConfigIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -547,7 +547,7 @@ func (sc *ServiceCreate) createSpec() (*Service, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := sc.mutation.DeploymentsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.DeploymentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -563,7 +563,7 @@ func (sc *ServiceCreate) createSpec() (*Service, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := sc.mutation.CurrentDeploymentIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.CurrentDeploymentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -580,7 +580,7 @@ func (sc *ServiceCreate) createSpec() (*Service, *sqlgraph.CreateSpec) {
 		_node.CurrentDeploymentID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := sc.mutation.TemplateIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TemplateIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -597,7 +597,7 @@ func (sc *ServiceCreate) createSpec() (*Service, *sqlgraph.CreateSpec) {
 		_node.TemplateID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := sc.mutation.ServiceGroupIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ServiceGroupIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -614,7 +614,7 @@ func (sc *ServiceCreate) createSpec() (*Service, *sqlgraph.CreateSpec) {
 		_node.ServiceGroupID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := sc.mutation.VariableReferencesIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.VariableReferencesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -649,10 +649,10 @@ func (sc *ServiceCreate) createSpec() (*Service, *sqlgraph.CreateSpec) {
 //			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
-func (sc *ServiceCreate) OnConflict(opts ...sql.ConflictOption) *ServiceUpsertOne {
-	sc.conflict = opts
+func (_c *ServiceCreate) OnConflict(opts ...sql.ConflictOption) *ServiceUpsertOne {
+	_c.conflict = opts
 	return &ServiceUpsertOne{
-		create: sc,
+		create: _c,
 	}
 }
 
@@ -662,10 +662,10 @@ func (sc *ServiceCreate) OnConflict(opts ...sql.ConflictOption) *ServiceUpsertOn
 //	client.Service.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (sc *ServiceCreate) OnConflictColumns(columns ...string) *ServiceUpsertOne {
-	sc.conflict = append(sc.conflict, sql.ConflictColumns(columns...))
+func (_c *ServiceCreate) OnConflictColumns(columns ...string) *ServiceUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &ServiceUpsertOne{
-		create: sc,
+		create: _c,
 	}
 }
 
@@ -1365,16 +1365,16 @@ type ServiceCreateBulk struct {
 }
 
 // Save creates the Service entities in the database.
-func (scb *ServiceCreateBulk) Save(ctx context.Context) ([]*Service, error) {
-	if scb.err != nil {
-		return nil, scb.err
+func (_c *ServiceCreateBulk) Save(ctx context.Context) ([]*Service, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(scb.builders))
-	nodes := make([]*Service, len(scb.builders))
-	mutators := make([]Mutator, len(scb.builders))
-	for i := range scb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*Service, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := scb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*ServiceMutation)
@@ -1388,12 +1388,12 @@ func (scb *ServiceCreateBulk) Save(ctx context.Context) ([]*Service, error) {
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, scb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = scb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, scb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -1413,7 +1413,7 @@ func (scb *ServiceCreateBulk) Save(ctx context.Context) ([]*Service, error) {
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, scb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -1421,8 +1421,8 @@ func (scb *ServiceCreateBulk) Save(ctx context.Context) ([]*Service, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (scb *ServiceCreateBulk) SaveX(ctx context.Context) []*Service {
-	v, err := scb.Save(ctx)
+func (_c *ServiceCreateBulk) SaveX(ctx context.Context) []*Service {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -1430,14 +1430,14 @@ func (scb *ServiceCreateBulk) SaveX(ctx context.Context) []*Service {
 }
 
 // Exec executes the query.
-func (scb *ServiceCreateBulk) Exec(ctx context.Context) error {
-	_, err := scb.Save(ctx)
+func (_c *ServiceCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (scb *ServiceCreateBulk) ExecX(ctx context.Context) {
-	if err := scb.Exec(ctx); err != nil {
+func (_c *ServiceCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -1457,10 +1457,10 @@ func (scb *ServiceCreateBulk) ExecX(ctx context.Context) {
 //			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
-func (scb *ServiceCreateBulk) OnConflict(opts ...sql.ConflictOption) *ServiceUpsertBulk {
-	scb.conflict = opts
+func (_c *ServiceCreateBulk) OnConflict(opts ...sql.ConflictOption) *ServiceUpsertBulk {
+	_c.conflict = opts
 	return &ServiceUpsertBulk{
-		create: scb,
+		create: _c,
 	}
 }
 
@@ -1470,10 +1470,10 @@ func (scb *ServiceCreateBulk) OnConflict(opts ...sql.ConflictOption) *ServiceUps
 //	client.Service.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (scb *ServiceCreateBulk) OnConflictColumns(columns ...string) *ServiceUpsertBulk {
-	scb.conflict = append(scb.conflict, sql.ConflictColumns(columns...))
+func (_c *ServiceCreateBulk) OnConflictColumns(columns ...string) *ServiceUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &ServiceUpsertBulk{
-		create: scb,
+		create: _c,
 	}
 }
 

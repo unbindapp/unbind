@@ -30,609 +30,609 @@ type ServiceConfigUpdate struct {
 }
 
 // Where appends a list predicates to the ServiceConfigUpdate builder.
-func (scu *ServiceConfigUpdate) Where(ps ...predicate.ServiceConfig) *ServiceConfigUpdate {
-	scu.mutation.Where(ps...)
-	return scu
+func (_u *ServiceConfigUpdate) Where(ps ...predicate.ServiceConfig) *ServiceConfigUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (scu *ServiceConfigUpdate) SetUpdatedAt(t time.Time) *ServiceConfigUpdate {
-	scu.mutation.SetUpdatedAt(t)
-	return scu
+func (_u *ServiceConfigUpdate) SetUpdatedAt(v time.Time) *ServiceConfigUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetServiceID sets the "service_id" field.
-func (scu *ServiceConfigUpdate) SetServiceID(u uuid.UUID) *ServiceConfigUpdate {
-	scu.mutation.SetServiceID(u)
-	return scu
+func (_u *ServiceConfigUpdate) SetServiceID(v uuid.UUID) *ServiceConfigUpdate {
+	_u.mutation.SetServiceID(v)
+	return _u
 }
 
 // SetNillableServiceID sets the "service_id" field if the given value is not nil.
-func (scu *ServiceConfigUpdate) SetNillableServiceID(u *uuid.UUID) *ServiceConfigUpdate {
-	if u != nil {
-		scu.SetServiceID(*u)
+func (_u *ServiceConfigUpdate) SetNillableServiceID(v *uuid.UUID) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetServiceID(*v)
 	}
-	return scu
+	return _u
 }
 
 // SetBuilder sets the "builder" field.
-func (scu *ServiceConfigUpdate) SetBuilder(sb schema.ServiceBuilder) *ServiceConfigUpdate {
-	scu.mutation.SetBuilder(sb)
-	return scu
+func (_u *ServiceConfigUpdate) SetBuilder(v schema.ServiceBuilder) *ServiceConfigUpdate {
+	_u.mutation.SetBuilder(v)
+	return _u
 }
 
 // SetNillableBuilder sets the "builder" field if the given value is not nil.
-func (scu *ServiceConfigUpdate) SetNillableBuilder(sb *schema.ServiceBuilder) *ServiceConfigUpdate {
-	if sb != nil {
-		scu.SetBuilder(*sb)
+func (_u *ServiceConfigUpdate) SetNillableBuilder(v *schema.ServiceBuilder) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetBuilder(*v)
 	}
-	return scu
+	return _u
 }
 
 // SetIcon sets the "icon" field.
-func (scu *ServiceConfigUpdate) SetIcon(s string) *ServiceConfigUpdate {
-	scu.mutation.SetIcon(s)
-	return scu
+func (_u *ServiceConfigUpdate) SetIcon(v string) *ServiceConfigUpdate {
+	_u.mutation.SetIcon(v)
+	return _u
 }
 
 // SetNillableIcon sets the "icon" field if the given value is not nil.
-func (scu *ServiceConfigUpdate) SetNillableIcon(s *string) *ServiceConfigUpdate {
-	if s != nil {
-		scu.SetIcon(*s)
+func (_u *ServiceConfigUpdate) SetNillableIcon(v *string) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetIcon(*v)
 	}
-	return scu
+	return _u
 }
 
 // SetDockerBuilderDockerfilePath sets the "docker_builder_dockerfile_path" field.
-func (scu *ServiceConfigUpdate) SetDockerBuilderDockerfilePath(s string) *ServiceConfigUpdate {
-	scu.mutation.SetDockerBuilderDockerfilePath(s)
-	return scu
+func (_u *ServiceConfigUpdate) SetDockerBuilderDockerfilePath(v string) *ServiceConfigUpdate {
+	_u.mutation.SetDockerBuilderDockerfilePath(v)
+	return _u
 }
 
 // SetNillableDockerBuilderDockerfilePath sets the "docker_builder_dockerfile_path" field if the given value is not nil.
-func (scu *ServiceConfigUpdate) SetNillableDockerBuilderDockerfilePath(s *string) *ServiceConfigUpdate {
-	if s != nil {
-		scu.SetDockerBuilderDockerfilePath(*s)
+func (_u *ServiceConfigUpdate) SetNillableDockerBuilderDockerfilePath(v *string) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetDockerBuilderDockerfilePath(*v)
 	}
-	return scu
+	return _u
 }
 
 // ClearDockerBuilderDockerfilePath clears the value of the "docker_builder_dockerfile_path" field.
-func (scu *ServiceConfigUpdate) ClearDockerBuilderDockerfilePath() *ServiceConfigUpdate {
-	scu.mutation.ClearDockerBuilderDockerfilePath()
-	return scu
+func (_u *ServiceConfigUpdate) ClearDockerBuilderDockerfilePath() *ServiceConfigUpdate {
+	_u.mutation.ClearDockerBuilderDockerfilePath()
+	return _u
 }
 
 // SetDockerBuilderBuildContext sets the "docker_builder_build_context" field.
-func (scu *ServiceConfigUpdate) SetDockerBuilderBuildContext(s string) *ServiceConfigUpdate {
-	scu.mutation.SetDockerBuilderBuildContext(s)
-	return scu
+func (_u *ServiceConfigUpdate) SetDockerBuilderBuildContext(v string) *ServiceConfigUpdate {
+	_u.mutation.SetDockerBuilderBuildContext(v)
+	return _u
 }
 
 // SetNillableDockerBuilderBuildContext sets the "docker_builder_build_context" field if the given value is not nil.
-func (scu *ServiceConfigUpdate) SetNillableDockerBuilderBuildContext(s *string) *ServiceConfigUpdate {
-	if s != nil {
-		scu.SetDockerBuilderBuildContext(*s)
+func (_u *ServiceConfigUpdate) SetNillableDockerBuilderBuildContext(v *string) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetDockerBuilderBuildContext(*v)
 	}
-	return scu
+	return _u
 }
 
 // ClearDockerBuilderBuildContext clears the value of the "docker_builder_build_context" field.
-func (scu *ServiceConfigUpdate) ClearDockerBuilderBuildContext() *ServiceConfigUpdate {
-	scu.mutation.ClearDockerBuilderBuildContext()
-	return scu
+func (_u *ServiceConfigUpdate) ClearDockerBuilderBuildContext() *ServiceConfigUpdate {
+	_u.mutation.ClearDockerBuilderBuildContext()
+	return _u
 }
 
 // SetRailpackProvider sets the "railpack_provider" field.
-func (scu *ServiceConfigUpdate) SetRailpackProvider(e enum.Provider) *ServiceConfigUpdate {
-	scu.mutation.SetRailpackProvider(e)
-	return scu
+func (_u *ServiceConfigUpdate) SetRailpackProvider(v enum.Provider) *ServiceConfigUpdate {
+	_u.mutation.SetRailpackProvider(v)
+	return _u
 }
 
 // SetNillableRailpackProvider sets the "railpack_provider" field if the given value is not nil.
-func (scu *ServiceConfigUpdate) SetNillableRailpackProvider(e *enum.Provider) *ServiceConfigUpdate {
-	if e != nil {
-		scu.SetRailpackProvider(*e)
+func (_u *ServiceConfigUpdate) SetNillableRailpackProvider(v *enum.Provider) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetRailpackProvider(*v)
 	}
-	return scu
+	return _u
 }
 
 // ClearRailpackProvider clears the value of the "railpack_provider" field.
-func (scu *ServiceConfigUpdate) ClearRailpackProvider() *ServiceConfigUpdate {
-	scu.mutation.ClearRailpackProvider()
-	return scu
+func (_u *ServiceConfigUpdate) ClearRailpackProvider() *ServiceConfigUpdate {
+	_u.mutation.ClearRailpackProvider()
+	return _u
 }
 
 // SetRailpackFramework sets the "railpack_framework" field.
-func (scu *ServiceConfigUpdate) SetRailpackFramework(e enum.Framework) *ServiceConfigUpdate {
-	scu.mutation.SetRailpackFramework(e)
-	return scu
+func (_u *ServiceConfigUpdate) SetRailpackFramework(v enum.Framework) *ServiceConfigUpdate {
+	_u.mutation.SetRailpackFramework(v)
+	return _u
 }
 
 // SetNillableRailpackFramework sets the "railpack_framework" field if the given value is not nil.
-func (scu *ServiceConfigUpdate) SetNillableRailpackFramework(e *enum.Framework) *ServiceConfigUpdate {
-	if e != nil {
-		scu.SetRailpackFramework(*e)
+func (_u *ServiceConfigUpdate) SetNillableRailpackFramework(v *enum.Framework) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetRailpackFramework(*v)
 	}
-	return scu
+	return _u
 }
 
 // ClearRailpackFramework clears the value of the "railpack_framework" field.
-func (scu *ServiceConfigUpdate) ClearRailpackFramework() *ServiceConfigUpdate {
-	scu.mutation.ClearRailpackFramework()
-	return scu
+func (_u *ServiceConfigUpdate) ClearRailpackFramework() *ServiceConfigUpdate {
+	_u.mutation.ClearRailpackFramework()
+	return _u
 }
 
 // SetGitBranch sets the "git_branch" field.
-func (scu *ServiceConfigUpdate) SetGitBranch(s string) *ServiceConfigUpdate {
-	scu.mutation.SetGitBranch(s)
-	return scu
+func (_u *ServiceConfigUpdate) SetGitBranch(v string) *ServiceConfigUpdate {
+	_u.mutation.SetGitBranch(v)
+	return _u
 }
 
 // SetNillableGitBranch sets the "git_branch" field if the given value is not nil.
-func (scu *ServiceConfigUpdate) SetNillableGitBranch(s *string) *ServiceConfigUpdate {
-	if s != nil {
-		scu.SetGitBranch(*s)
+func (_u *ServiceConfigUpdate) SetNillableGitBranch(v *string) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetGitBranch(*v)
 	}
-	return scu
+	return _u
 }
 
 // ClearGitBranch clears the value of the "git_branch" field.
-func (scu *ServiceConfigUpdate) ClearGitBranch() *ServiceConfigUpdate {
-	scu.mutation.ClearGitBranch()
-	return scu
+func (_u *ServiceConfigUpdate) ClearGitBranch() *ServiceConfigUpdate {
+	_u.mutation.ClearGitBranch()
+	return _u
 }
 
 // SetGitTag sets the "git_tag" field.
-func (scu *ServiceConfigUpdate) SetGitTag(s string) *ServiceConfigUpdate {
-	scu.mutation.SetGitTag(s)
-	return scu
+func (_u *ServiceConfigUpdate) SetGitTag(v string) *ServiceConfigUpdate {
+	_u.mutation.SetGitTag(v)
+	return _u
 }
 
 // SetNillableGitTag sets the "git_tag" field if the given value is not nil.
-func (scu *ServiceConfigUpdate) SetNillableGitTag(s *string) *ServiceConfigUpdate {
-	if s != nil {
-		scu.SetGitTag(*s)
+func (_u *ServiceConfigUpdate) SetNillableGitTag(v *string) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetGitTag(*v)
 	}
-	return scu
+	return _u
 }
 
 // ClearGitTag clears the value of the "git_tag" field.
-func (scu *ServiceConfigUpdate) ClearGitTag() *ServiceConfigUpdate {
-	scu.mutation.ClearGitTag()
-	return scu
+func (_u *ServiceConfigUpdate) ClearGitTag() *ServiceConfigUpdate {
+	_u.mutation.ClearGitTag()
+	return _u
 }
 
 // SetHosts sets the "hosts" field.
-func (scu *ServiceConfigUpdate) SetHosts(ss []schema.HostSpec) *ServiceConfigUpdate {
-	scu.mutation.SetHosts(ss)
-	return scu
+func (_u *ServiceConfigUpdate) SetHosts(v []schema.HostSpec) *ServiceConfigUpdate {
+	_u.mutation.SetHosts(v)
+	return _u
 }
 
-// AppendHosts appends ss to the "hosts" field.
-func (scu *ServiceConfigUpdate) AppendHosts(ss []schema.HostSpec) *ServiceConfigUpdate {
-	scu.mutation.AppendHosts(ss)
-	return scu
+// AppendHosts appends value to the "hosts" field.
+func (_u *ServiceConfigUpdate) AppendHosts(v []schema.HostSpec) *ServiceConfigUpdate {
+	_u.mutation.AppendHosts(v)
+	return _u
 }
 
 // ClearHosts clears the value of the "hosts" field.
-func (scu *ServiceConfigUpdate) ClearHosts() *ServiceConfigUpdate {
-	scu.mutation.ClearHosts()
-	return scu
+func (_u *ServiceConfigUpdate) ClearHosts() *ServiceConfigUpdate {
+	_u.mutation.ClearHosts()
+	return _u
 }
 
 // SetPorts sets the "ports" field.
-func (scu *ServiceConfigUpdate) SetPorts(ss []schema.PortSpec) *ServiceConfigUpdate {
-	scu.mutation.SetPorts(ss)
-	return scu
+func (_u *ServiceConfigUpdate) SetPorts(v []schema.PortSpec) *ServiceConfigUpdate {
+	_u.mutation.SetPorts(v)
+	return _u
 }
 
-// AppendPorts appends ss to the "ports" field.
-func (scu *ServiceConfigUpdate) AppendPorts(ss []schema.PortSpec) *ServiceConfigUpdate {
-	scu.mutation.AppendPorts(ss)
-	return scu
+// AppendPorts appends value to the "ports" field.
+func (_u *ServiceConfigUpdate) AppendPorts(v []schema.PortSpec) *ServiceConfigUpdate {
+	_u.mutation.AppendPorts(v)
+	return _u
 }
 
 // ClearPorts clears the value of the "ports" field.
-func (scu *ServiceConfigUpdate) ClearPorts() *ServiceConfigUpdate {
-	scu.mutation.ClearPorts()
-	return scu
+func (_u *ServiceConfigUpdate) ClearPorts() *ServiceConfigUpdate {
+	_u.mutation.ClearPorts()
+	return _u
 }
 
 // SetReplicas sets the "replicas" field.
-func (scu *ServiceConfigUpdate) SetReplicas(i int32) *ServiceConfigUpdate {
-	scu.mutation.ResetReplicas()
-	scu.mutation.SetReplicas(i)
-	return scu
+func (_u *ServiceConfigUpdate) SetReplicas(v int32) *ServiceConfigUpdate {
+	_u.mutation.ResetReplicas()
+	_u.mutation.SetReplicas(v)
+	return _u
 }
 
 // SetNillableReplicas sets the "replicas" field if the given value is not nil.
-func (scu *ServiceConfigUpdate) SetNillableReplicas(i *int32) *ServiceConfigUpdate {
-	if i != nil {
-		scu.SetReplicas(*i)
+func (_u *ServiceConfigUpdate) SetNillableReplicas(v *int32) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetReplicas(*v)
 	}
-	return scu
+	return _u
 }
 
-// AddReplicas adds i to the "replicas" field.
-func (scu *ServiceConfigUpdate) AddReplicas(i int32) *ServiceConfigUpdate {
-	scu.mutation.AddReplicas(i)
-	return scu
+// AddReplicas adds value to the "replicas" field.
+func (_u *ServiceConfigUpdate) AddReplicas(v int32) *ServiceConfigUpdate {
+	_u.mutation.AddReplicas(v)
+	return _u
 }
 
 // SetAutoDeploy sets the "auto_deploy" field.
-func (scu *ServiceConfigUpdate) SetAutoDeploy(b bool) *ServiceConfigUpdate {
-	scu.mutation.SetAutoDeploy(b)
-	return scu
+func (_u *ServiceConfigUpdate) SetAutoDeploy(v bool) *ServiceConfigUpdate {
+	_u.mutation.SetAutoDeploy(v)
+	return _u
 }
 
 // SetNillableAutoDeploy sets the "auto_deploy" field if the given value is not nil.
-func (scu *ServiceConfigUpdate) SetNillableAutoDeploy(b *bool) *ServiceConfigUpdate {
-	if b != nil {
-		scu.SetAutoDeploy(*b)
+func (_u *ServiceConfigUpdate) SetNillableAutoDeploy(v *bool) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetAutoDeploy(*v)
 	}
-	return scu
+	return _u
 }
 
 // SetRailpackBuilderInstallCommand sets the "railpack_builder_install_command" field.
-func (scu *ServiceConfigUpdate) SetRailpackBuilderInstallCommand(s string) *ServiceConfigUpdate {
-	scu.mutation.SetRailpackBuilderInstallCommand(s)
-	return scu
+func (_u *ServiceConfigUpdate) SetRailpackBuilderInstallCommand(v string) *ServiceConfigUpdate {
+	_u.mutation.SetRailpackBuilderInstallCommand(v)
+	return _u
 }
 
 // SetNillableRailpackBuilderInstallCommand sets the "railpack_builder_install_command" field if the given value is not nil.
-func (scu *ServiceConfigUpdate) SetNillableRailpackBuilderInstallCommand(s *string) *ServiceConfigUpdate {
-	if s != nil {
-		scu.SetRailpackBuilderInstallCommand(*s)
+func (_u *ServiceConfigUpdate) SetNillableRailpackBuilderInstallCommand(v *string) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetRailpackBuilderInstallCommand(*v)
 	}
-	return scu
+	return _u
 }
 
 // ClearRailpackBuilderInstallCommand clears the value of the "railpack_builder_install_command" field.
-func (scu *ServiceConfigUpdate) ClearRailpackBuilderInstallCommand() *ServiceConfigUpdate {
-	scu.mutation.ClearRailpackBuilderInstallCommand()
-	return scu
+func (_u *ServiceConfigUpdate) ClearRailpackBuilderInstallCommand() *ServiceConfigUpdate {
+	_u.mutation.ClearRailpackBuilderInstallCommand()
+	return _u
 }
 
 // SetRailpackBuilderBuildCommand sets the "railpack_builder_build_command" field.
-func (scu *ServiceConfigUpdate) SetRailpackBuilderBuildCommand(s string) *ServiceConfigUpdate {
-	scu.mutation.SetRailpackBuilderBuildCommand(s)
-	return scu
+func (_u *ServiceConfigUpdate) SetRailpackBuilderBuildCommand(v string) *ServiceConfigUpdate {
+	_u.mutation.SetRailpackBuilderBuildCommand(v)
+	return _u
 }
 
 // SetNillableRailpackBuilderBuildCommand sets the "railpack_builder_build_command" field if the given value is not nil.
-func (scu *ServiceConfigUpdate) SetNillableRailpackBuilderBuildCommand(s *string) *ServiceConfigUpdate {
-	if s != nil {
-		scu.SetRailpackBuilderBuildCommand(*s)
+func (_u *ServiceConfigUpdate) SetNillableRailpackBuilderBuildCommand(v *string) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetRailpackBuilderBuildCommand(*v)
 	}
-	return scu
+	return _u
 }
 
 // ClearRailpackBuilderBuildCommand clears the value of the "railpack_builder_build_command" field.
-func (scu *ServiceConfigUpdate) ClearRailpackBuilderBuildCommand() *ServiceConfigUpdate {
-	scu.mutation.ClearRailpackBuilderBuildCommand()
-	return scu
+func (_u *ServiceConfigUpdate) ClearRailpackBuilderBuildCommand() *ServiceConfigUpdate {
+	_u.mutation.ClearRailpackBuilderBuildCommand()
+	return _u
 }
 
 // SetRunCommand sets the "run_command" field.
-func (scu *ServiceConfigUpdate) SetRunCommand(s string) *ServiceConfigUpdate {
-	scu.mutation.SetRunCommand(s)
-	return scu
+func (_u *ServiceConfigUpdate) SetRunCommand(v string) *ServiceConfigUpdate {
+	_u.mutation.SetRunCommand(v)
+	return _u
 }
 
 // SetNillableRunCommand sets the "run_command" field if the given value is not nil.
-func (scu *ServiceConfigUpdate) SetNillableRunCommand(s *string) *ServiceConfigUpdate {
-	if s != nil {
-		scu.SetRunCommand(*s)
+func (_u *ServiceConfigUpdate) SetNillableRunCommand(v *string) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetRunCommand(*v)
 	}
-	return scu
+	return _u
 }
 
 // ClearRunCommand clears the value of the "run_command" field.
-func (scu *ServiceConfigUpdate) ClearRunCommand() *ServiceConfigUpdate {
-	scu.mutation.ClearRunCommand()
-	return scu
+func (_u *ServiceConfigUpdate) ClearRunCommand() *ServiceConfigUpdate {
+	_u.mutation.ClearRunCommand()
+	return _u
 }
 
 // SetIsPublic sets the "is_public" field.
-func (scu *ServiceConfigUpdate) SetIsPublic(b bool) *ServiceConfigUpdate {
-	scu.mutation.SetIsPublic(b)
-	return scu
+func (_u *ServiceConfigUpdate) SetIsPublic(v bool) *ServiceConfigUpdate {
+	_u.mutation.SetIsPublic(v)
+	return _u
 }
 
 // SetNillableIsPublic sets the "is_public" field if the given value is not nil.
-func (scu *ServiceConfigUpdate) SetNillableIsPublic(b *bool) *ServiceConfigUpdate {
-	if b != nil {
-		scu.SetIsPublic(*b)
+func (_u *ServiceConfigUpdate) SetNillableIsPublic(v *bool) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetIsPublic(*v)
 	}
-	return scu
+	return _u
 }
 
 // SetImage sets the "image" field.
-func (scu *ServiceConfigUpdate) SetImage(s string) *ServiceConfigUpdate {
-	scu.mutation.SetImage(s)
-	return scu
+func (_u *ServiceConfigUpdate) SetImage(v string) *ServiceConfigUpdate {
+	_u.mutation.SetImage(v)
+	return _u
 }
 
 // SetNillableImage sets the "image" field if the given value is not nil.
-func (scu *ServiceConfigUpdate) SetNillableImage(s *string) *ServiceConfigUpdate {
-	if s != nil {
-		scu.SetImage(*s)
+func (_u *ServiceConfigUpdate) SetNillableImage(v *string) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetImage(*v)
 	}
-	return scu
+	return _u
 }
 
 // ClearImage clears the value of the "image" field.
-func (scu *ServiceConfigUpdate) ClearImage() *ServiceConfigUpdate {
-	scu.mutation.ClearImage()
-	return scu
+func (_u *ServiceConfigUpdate) ClearImage() *ServiceConfigUpdate {
+	_u.mutation.ClearImage()
+	return _u
 }
 
 // SetDefinitionVersion sets the "definition_version" field.
-func (scu *ServiceConfigUpdate) SetDefinitionVersion(s string) *ServiceConfigUpdate {
-	scu.mutation.SetDefinitionVersion(s)
-	return scu
+func (_u *ServiceConfigUpdate) SetDefinitionVersion(v string) *ServiceConfigUpdate {
+	_u.mutation.SetDefinitionVersion(v)
+	return _u
 }
 
 // SetNillableDefinitionVersion sets the "definition_version" field if the given value is not nil.
-func (scu *ServiceConfigUpdate) SetNillableDefinitionVersion(s *string) *ServiceConfigUpdate {
-	if s != nil {
-		scu.SetDefinitionVersion(*s)
+func (_u *ServiceConfigUpdate) SetNillableDefinitionVersion(v *string) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetDefinitionVersion(*v)
 	}
-	return scu
+	return _u
 }
 
 // ClearDefinitionVersion clears the value of the "definition_version" field.
-func (scu *ServiceConfigUpdate) ClearDefinitionVersion() *ServiceConfigUpdate {
-	scu.mutation.ClearDefinitionVersion()
-	return scu
+func (_u *ServiceConfigUpdate) ClearDefinitionVersion() *ServiceConfigUpdate {
+	_u.mutation.ClearDefinitionVersion()
+	return _u
 }
 
 // SetDatabaseConfig sets the "database_config" field.
-func (scu *ServiceConfigUpdate) SetDatabaseConfig(sc *schema.DatabaseConfig) *ServiceConfigUpdate {
-	scu.mutation.SetDatabaseConfig(sc)
-	return scu
+func (_u *ServiceConfigUpdate) SetDatabaseConfig(v *schema.DatabaseConfig) *ServiceConfigUpdate {
+	_u.mutation.SetDatabaseConfig(v)
+	return _u
 }
 
 // ClearDatabaseConfig clears the value of the "database_config" field.
-func (scu *ServiceConfigUpdate) ClearDatabaseConfig() *ServiceConfigUpdate {
-	scu.mutation.ClearDatabaseConfig()
-	return scu
+func (_u *ServiceConfigUpdate) ClearDatabaseConfig() *ServiceConfigUpdate {
+	_u.mutation.ClearDatabaseConfig()
+	return _u
 }
 
 // SetS3BackupSourceID sets the "s3_backup_source_id" field.
-func (scu *ServiceConfigUpdate) SetS3BackupSourceID(u uuid.UUID) *ServiceConfigUpdate {
-	scu.mutation.SetS3BackupSourceID(u)
-	return scu
+func (_u *ServiceConfigUpdate) SetS3BackupSourceID(v uuid.UUID) *ServiceConfigUpdate {
+	_u.mutation.SetS3BackupSourceID(v)
+	return _u
 }
 
 // SetNillableS3BackupSourceID sets the "s3_backup_source_id" field if the given value is not nil.
-func (scu *ServiceConfigUpdate) SetNillableS3BackupSourceID(u *uuid.UUID) *ServiceConfigUpdate {
-	if u != nil {
-		scu.SetS3BackupSourceID(*u)
+func (_u *ServiceConfigUpdate) SetNillableS3BackupSourceID(v *uuid.UUID) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetS3BackupSourceID(*v)
 	}
-	return scu
+	return _u
 }
 
 // ClearS3BackupSourceID clears the value of the "s3_backup_source_id" field.
-func (scu *ServiceConfigUpdate) ClearS3BackupSourceID() *ServiceConfigUpdate {
-	scu.mutation.ClearS3BackupSourceID()
-	return scu
+func (_u *ServiceConfigUpdate) ClearS3BackupSourceID() *ServiceConfigUpdate {
+	_u.mutation.ClearS3BackupSourceID()
+	return _u
 }
 
 // SetS3BackupBucket sets the "s3_backup_bucket" field.
-func (scu *ServiceConfigUpdate) SetS3BackupBucket(s string) *ServiceConfigUpdate {
-	scu.mutation.SetS3BackupBucket(s)
-	return scu
+func (_u *ServiceConfigUpdate) SetS3BackupBucket(v string) *ServiceConfigUpdate {
+	_u.mutation.SetS3BackupBucket(v)
+	return _u
 }
 
 // SetNillableS3BackupBucket sets the "s3_backup_bucket" field if the given value is not nil.
-func (scu *ServiceConfigUpdate) SetNillableS3BackupBucket(s *string) *ServiceConfigUpdate {
-	if s != nil {
-		scu.SetS3BackupBucket(*s)
+func (_u *ServiceConfigUpdate) SetNillableS3BackupBucket(v *string) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetS3BackupBucket(*v)
 	}
-	return scu
+	return _u
 }
 
 // ClearS3BackupBucket clears the value of the "s3_backup_bucket" field.
-func (scu *ServiceConfigUpdate) ClearS3BackupBucket() *ServiceConfigUpdate {
-	scu.mutation.ClearS3BackupBucket()
-	return scu
+func (_u *ServiceConfigUpdate) ClearS3BackupBucket() *ServiceConfigUpdate {
+	_u.mutation.ClearS3BackupBucket()
+	return _u
 }
 
 // SetBackupSchedule sets the "backup_schedule" field.
-func (scu *ServiceConfigUpdate) SetBackupSchedule(s string) *ServiceConfigUpdate {
-	scu.mutation.SetBackupSchedule(s)
-	return scu
+func (_u *ServiceConfigUpdate) SetBackupSchedule(v string) *ServiceConfigUpdate {
+	_u.mutation.SetBackupSchedule(v)
+	return _u
 }
 
 // SetNillableBackupSchedule sets the "backup_schedule" field if the given value is not nil.
-func (scu *ServiceConfigUpdate) SetNillableBackupSchedule(s *string) *ServiceConfigUpdate {
-	if s != nil {
-		scu.SetBackupSchedule(*s)
+func (_u *ServiceConfigUpdate) SetNillableBackupSchedule(v *string) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetBackupSchedule(*v)
 	}
-	return scu
+	return _u
 }
 
 // SetBackupRetentionCount sets the "backup_retention_count" field.
-func (scu *ServiceConfigUpdate) SetBackupRetentionCount(i int) *ServiceConfigUpdate {
-	scu.mutation.ResetBackupRetentionCount()
-	scu.mutation.SetBackupRetentionCount(i)
-	return scu
+func (_u *ServiceConfigUpdate) SetBackupRetentionCount(v int) *ServiceConfigUpdate {
+	_u.mutation.ResetBackupRetentionCount()
+	_u.mutation.SetBackupRetentionCount(v)
+	return _u
 }
 
 // SetNillableBackupRetentionCount sets the "backup_retention_count" field if the given value is not nil.
-func (scu *ServiceConfigUpdate) SetNillableBackupRetentionCount(i *int) *ServiceConfigUpdate {
-	if i != nil {
-		scu.SetBackupRetentionCount(*i)
+func (_u *ServiceConfigUpdate) SetNillableBackupRetentionCount(v *int) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetBackupRetentionCount(*v)
 	}
-	return scu
+	return _u
 }
 
-// AddBackupRetentionCount adds i to the "backup_retention_count" field.
-func (scu *ServiceConfigUpdate) AddBackupRetentionCount(i int) *ServiceConfigUpdate {
-	scu.mutation.AddBackupRetentionCount(i)
-	return scu
+// AddBackupRetentionCount adds value to the "backup_retention_count" field.
+func (_u *ServiceConfigUpdate) AddBackupRetentionCount(v int) *ServiceConfigUpdate {
+	_u.mutation.AddBackupRetentionCount(v)
+	return _u
 }
 
 // SetVolumes sets the "volumes" field.
-func (scu *ServiceConfigUpdate) SetVolumes(sv []schema.ServiceVolume) *ServiceConfigUpdate {
-	scu.mutation.SetVolumes(sv)
-	return scu
+func (_u *ServiceConfigUpdate) SetVolumes(v []schema.ServiceVolume) *ServiceConfigUpdate {
+	_u.mutation.SetVolumes(v)
+	return _u
 }
 
-// AppendVolumes appends sv to the "volumes" field.
-func (scu *ServiceConfigUpdate) AppendVolumes(sv []schema.ServiceVolume) *ServiceConfigUpdate {
-	scu.mutation.AppendVolumes(sv)
-	return scu
+// AppendVolumes appends value to the "volumes" field.
+func (_u *ServiceConfigUpdate) AppendVolumes(v []schema.ServiceVolume) *ServiceConfigUpdate {
+	_u.mutation.AppendVolumes(v)
+	return _u
 }
 
 // ClearVolumes clears the value of the "volumes" field.
-func (scu *ServiceConfigUpdate) ClearVolumes() *ServiceConfigUpdate {
-	scu.mutation.ClearVolumes()
-	return scu
+func (_u *ServiceConfigUpdate) ClearVolumes() *ServiceConfigUpdate {
+	_u.mutation.ClearVolumes()
+	return _u
 }
 
 // SetSecurityContext sets the "security_context" field.
-func (scu *ServiceConfigUpdate) SetSecurityContext(sc *schema.SecurityContext) *ServiceConfigUpdate {
-	scu.mutation.SetSecurityContext(sc)
-	return scu
+func (_u *ServiceConfigUpdate) SetSecurityContext(v *schema.SecurityContext) *ServiceConfigUpdate {
+	_u.mutation.SetSecurityContext(v)
+	return _u
 }
 
 // ClearSecurityContext clears the value of the "security_context" field.
-func (scu *ServiceConfigUpdate) ClearSecurityContext() *ServiceConfigUpdate {
-	scu.mutation.ClearSecurityContext()
-	return scu
+func (_u *ServiceConfigUpdate) ClearSecurityContext() *ServiceConfigUpdate {
+	_u.mutation.ClearSecurityContext()
+	return _u
 }
 
 // SetHealthCheck sets the "health_check" field.
-func (scu *ServiceConfigUpdate) SetHealthCheck(sc *schema.HealthCheck) *ServiceConfigUpdate {
-	scu.mutation.SetHealthCheck(sc)
-	return scu
+func (_u *ServiceConfigUpdate) SetHealthCheck(v *schema.HealthCheck) *ServiceConfigUpdate {
+	_u.mutation.SetHealthCheck(v)
+	return _u
 }
 
 // ClearHealthCheck clears the value of the "health_check" field.
-func (scu *ServiceConfigUpdate) ClearHealthCheck() *ServiceConfigUpdate {
-	scu.mutation.ClearHealthCheck()
-	return scu
+func (_u *ServiceConfigUpdate) ClearHealthCheck() *ServiceConfigUpdate {
+	_u.mutation.ClearHealthCheck()
+	return _u
 }
 
 // SetVariableMounts sets the "variable_mounts" field.
-func (scu *ServiceConfigUpdate) SetVariableMounts(sm []*schema.VariableMount) *ServiceConfigUpdate {
-	scu.mutation.SetVariableMounts(sm)
-	return scu
+func (_u *ServiceConfigUpdate) SetVariableMounts(v []*schema.VariableMount) *ServiceConfigUpdate {
+	_u.mutation.SetVariableMounts(v)
+	return _u
 }
 
-// AppendVariableMounts appends sm to the "variable_mounts" field.
-func (scu *ServiceConfigUpdate) AppendVariableMounts(sm []*schema.VariableMount) *ServiceConfigUpdate {
-	scu.mutation.AppendVariableMounts(sm)
-	return scu
+// AppendVariableMounts appends value to the "variable_mounts" field.
+func (_u *ServiceConfigUpdate) AppendVariableMounts(v []*schema.VariableMount) *ServiceConfigUpdate {
+	_u.mutation.AppendVariableMounts(v)
+	return _u
 }
 
 // ClearVariableMounts clears the value of the "variable_mounts" field.
-func (scu *ServiceConfigUpdate) ClearVariableMounts() *ServiceConfigUpdate {
-	scu.mutation.ClearVariableMounts()
-	return scu
+func (_u *ServiceConfigUpdate) ClearVariableMounts() *ServiceConfigUpdate {
+	_u.mutation.ClearVariableMounts()
+	return _u
 }
 
 // SetProtectedVariables sets the "protected_variables" field.
-func (scu *ServiceConfigUpdate) SetProtectedVariables(s []string) *ServiceConfigUpdate {
-	scu.mutation.SetProtectedVariables(s)
-	return scu
+func (_u *ServiceConfigUpdate) SetProtectedVariables(v []string) *ServiceConfigUpdate {
+	_u.mutation.SetProtectedVariables(v)
+	return _u
 }
 
-// AppendProtectedVariables appends s to the "protected_variables" field.
-func (scu *ServiceConfigUpdate) AppendProtectedVariables(s []string) *ServiceConfigUpdate {
-	scu.mutation.AppendProtectedVariables(s)
-	return scu
+// AppendProtectedVariables appends value to the "protected_variables" field.
+func (_u *ServiceConfigUpdate) AppendProtectedVariables(v []string) *ServiceConfigUpdate {
+	_u.mutation.AppendProtectedVariables(v)
+	return _u
 }
 
 // ClearProtectedVariables clears the value of the "protected_variables" field.
-func (scu *ServiceConfigUpdate) ClearProtectedVariables() *ServiceConfigUpdate {
-	scu.mutation.ClearProtectedVariables()
-	return scu
+func (_u *ServiceConfigUpdate) ClearProtectedVariables() *ServiceConfigUpdate {
+	_u.mutation.ClearProtectedVariables()
+	return _u
 }
 
 // SetInitContainers sets the "init_containers" field.
-func (scu *ServiceConfigUpdate) SetInitContainers(sc []*schema.InitContainer) *ServiceConfigUpdate {
-	scu.mutation.SetInitContainers(sc)
-	return scu
+func (_u *ServiceConfigUpdate) SetInitContainers(v []*schema.InitContainer) *ServiceConfigUpdate {
+	_u.mutation.SetInitContainers(v)
+	return _u
 }
 
-// AppendInitContainers appends sc to the "init_containers" field.
-func (scu *ServiceConfigUpdate) AppendInitContainers(sc []*schema.InitContainer) *ServiceConfigUpdate {
-	scu.mutation.AppendInitContainers(sc)
-	return scu
+// AppendInitContainers appends value to the "init_containers" field.
+func (_u *ServiceConfigUpdate) AppendInitContainers(v []*schema.InitContainer) *ServiceConfigUpdate {
+	_u.mutation.AppendInitContainers(v)
+	return _u
 }
 
 // ClearInitContainers clears the value of the "init_containers" field.
-func (scu *ServiceConfigUpdate) ClearInitContainers() *ServiceConfigUpdate {
-	scu.mutation.ClearInitContainers()
-	return scu
+func (_u *ServiceConfigUpdate) ClearInitContainers() *ServiceConfigUpdate {
+	_u.mutation.ClearInitContainers()
+	return _u
 }
 
 // SetResources sets the "resources" field.
-func (scu *ServiceConfigUpdate) SetResources(s *schema.Resources) *ServiceConfigUpdate {
-	scu.mutation.SetResources(s)
-	return scu
+func (_u *ServiceConfigUpdate) SetResources(v *schema.Resources) *ServiceConfigUpdate {
+	_u.mutation.SetResources(v)
+	return _u
 }
 
 // ClearResources clears the value of the "resources" field.
-func (scu *ServiceConfigUpdate) ClearResources() *ServiceConfigUpdate {
-	scu.mutation.ClearResources()
-	return scu
+func (_u *ServiceConfigUpdate) ClearResources() *ServiceConfigUpdate {
+	_u.mutation.ClearResources()
+	return _u
 }
 
 // SetService sets the "service" edge to the Service entity.
-func (scu *ServiceConfigUpdate) SetService(s *Service) *ServiceConfigUpdate {
-	return scu.SetServiceID(s.ID)
+func (_u *ServiceConfigUpdate) SetService(v *Service) *ServiceConfigUpdate {
+	return _u.SetServiceID(v.ID)
 }
 
 // SetS3BackupSourcesID sets the "s3_backup_sources" edge to the S3 entity by ID.
-func (scu *ServiceConfigUpdate) SetS3BackupSourcesID(id uuid.UUID) *ServiceConfigUpdate {
-	scu.mutation.SetS3BackupSourcesID(id)
-	return scu
+func (_u *ServiceConfigUpdate) SetS3BackupSourcesID(id uuid.UUID) *ServiceConfigUpdate {
+	_u.mutation.SetS3BackupSourcesID(id)
+	return _u
 }
 
 // SetNillableS3BackupSourcesID sets the "s3_backup_sources" edge to the S3 entity by ID if the given value is not nil.
-func (scu *ServiceConfigUpdate) SetNillableS3BackupSourcesID(id *uuid.UUID) *ServiceConfigUpdate {
+func (_u *ServiceConfigUpdate) SetNillableS3BackupSourcesID(id *uuid.UUID) *ServiceConfigUpdate {
 	if id != nil {
-		scu = scu.SetS3BackupSourcesID(*id)
+		_u = _u.SetS3BackupSourcesID(*id)
 	}
-	return scu
+	return _u
 }
 
 // SetS3BackupSources sets the "s3_backup_sources" edge to the S3 entity.
-func (scu *ServiceConfigUpdate) SetS3BackupSources(s *S3) *ServiceConfigUpdate {
-	return scu.SetS3BackupSourcesID(s.ID)
+func (_u *ServiceConfigUpdate) SetS3BackupSources(v *S3) *ServiceConfigUpdate {
+	return _u.SetS3BackupSourcesID(v.ID)
 }
 
 // Mutation returns the ServiceConfigMutation object of the builder.
-func (scu *ServiceConfigUpdate) Mutation() *ServiceConfigMutation {
-	return scu.mutation
+func (_u *ServiceConfigUpdate) Mutation() *ServiceConfigMutation {
+	return _u.mutation
 }
 
 // ClearService clears the "service" edge to the Service entity.
-func (scu *ServiceConfigUpdate) ClearService() *ServiceConfigUpdate {
-	scu.mutation.ClearService()
-	return scu
+func (_u *ServiceConfigUpdate) ClearService() *ServiceConfigUpdate {
+	_u.mutation.ClearService()
+	return _u
 }
 
 // ClearS3BackupSources clears the "s3_backup_sources" edge to the S3 entity.
-func (scu *ServiceConfigUpdate) ClearS3BackupSources() *ServiceConfigUpdate {
-	scu.mutation.ClearS3BackupSources()
-	return scu
+func (_u *ServiceConfigUpdate) ClearS3BackupSources() *ServiceConfigUpdate {
+	_u.mutation.ClearS3BackupSources()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (scu *ServiceConfigUpdate) Save(ctx context.Context) (int, error) {
-	scu.defaults()
-	return withHooks(ctx, scu.sqlSave, scu.mutation, scu.hooks)
+func (_u *ServiceConfigUpdate) Save(ctx context.Context) (int, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (scu *ServiceConfigUpdate) SaveX(ctx context.Context) int {
-	affected, err := scu.Save(ctx)
+func (_u *ServiceConfigUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -640,265 +640,265 @@ func (scu *ServiceConfigUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (scu *ServiceConfigUpdate) Exec(ctx context.Context) error {
-	_, err := scu.Save(ctx)
+func (_u *ServiceConfigUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (scu *ServiceConfigUpdate) ExecX(ctx context.Context) {
-	if err := scu.Exec(ctx); err != nil {
+func (_u *ServiceConfigUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (scu *ServiceConfigUpdate) defaults() {
-	if _, ok := scu.mutation.UpdatedAt(); !ok {
+func (_u *ServiceConfigUpdate) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := serviceconfig.UpdateDefaultUpdatedAt()
-		scu.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (scu *ServiceConfigUpdate) check() error {
-	if v, ok := scu.mutation.Builder(); ok {
+func (_u *ServiceConfigUpdate) check() error {
+	if v, ok := _u.mutation.Builder(); ok {
 		if err := serviceconfig.BuilderValidator(v); err != nil {
 			return &ValidationError{Name: "builder", err: fmt.Errorf(`ent: validator failed for field "ServiceConfig.builder": %w`, err)}
 		}
 	}
-	if v, ok := scu.mutation.RailpackProvider(); ok {
+	if v, ok := _u.mutation.RailpackProvider(); ok {
 		if err := serviceconfig.RailpackProviderValidator(v); err != nil {
 			return &ValidationError{Name: "railpack_provider", err: fmt.Errorf(`ent: validator failed for field "ServiceConfig.railpack_provider": %w`, err)}
 		}
 	}
-	if v, ok := scu.mutation.RailpackFramework(); ok {
+	if v, ok := _u.mutation.RailpackFramework(); ok {
 		if err := serviceconfig.RailpackFrameworkValidator(v); err != nil {
 			return &ValidationError{Name: "railpack_framework", err: fmt.Errorf(`ent: validator failed for field "ServiceConfig.railpack_framework": %w`, err)}
 		}
 	}
-	if v, ok := scu.mutation.HealthCheck(); ok {
+	if v, ok := _u.mutation.HealthCheck(); ok {
 		if err := v.Validate(); err != nil {
 			return &ValidationError{Name: "health_check", err: fmt.Errorf(`ent: validator failed for field "ServiceConfig.health_check": %w`, err)}
 		}
 	}
-	if scu.mutation.ServiceCleared() && len(scu.mutation.ServiceIDs()) > 0 {
+	if _u.mutation.ServiceCleared() && len(_u.mutation.ServiceIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "ServiceConfig.service"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (scu *ServiceConfigUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ServiceConfigUpdate {
-	scu.modifiers = append(scu.modifiers, modifiers...)
-	return scu
+func (_u *ServiceConfigUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ServiceConfigUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (scu *ServiceConfigUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := scu.check(); err != nil {
-		return n, err
+func (_u *ServiceConfigUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(serviceconfig.Table, serviceconfig.Columns, sqlgraph.NewFieldSpec(serviceconfig.FieldID, field.TypeUUID))
-	if ps := scu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := scu.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(serviceconfig.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := scu.mutation.Builder(); ok {
+	if value, ok := _u.mutation.Builder(); ok {
 		_spec.SetField(serviceconfig.FieldBuilder, field.TypeEnum, value)
 	}
-	if value, ok := scu.mutation.Icon(); ok {
+	if value, ok := _u.mutation.Icon(); ok {
 		_spec.SetField(serviceconfig.FieldIcon, field.TypeString, value)
 	}
-	if value, ok := scu.mutation.DockerBuilderDockerfilePath(); ok {
+	if value, ok := _u.mutation.DockerBuilderDockerfilePath(); ok {
 		_spec.SetField(serviceconfig.FieldDockerBuilderDockerfilePath, field.TypeString, value)
 	}
-	if scu.mutation.DockerBuilderDockerfilePathCleared() {
+	if _u.mutation.DockerBuilderDockerfilePathCleared() {
 		_spec.ClearField(serviceconfig.FieldDockerBuilderDockerfilePath, field.TypeString)
 	}
-	if value, ok := scu.mutation.DockerBuilderBuildContext(); ok {
+	if value, ok := _u.mutation.DockerBuilderBuildContext(); ok {
 		_spec.SetField(serviceconfig.FieldDockerBuilderBuildContext, field.TypeString, value)
 	}
-	if scu.mutation.DockerBuilderBuildContextCleared() {
+	if _u.mutation.DockerBuilderBuildContextCleared() {
 		_spec.ClearField(serviceconfig.FieldDockerBuilderBuildContext, field.TypeString)
 	}
-	if value, ok := scu.mutation.RailpackProvider(); ok {
+	if value, ok := _u.mutation.RailpackProvider(); ok {
 		_spec.SetField(serviceconfig.FieldRailpackProvider, field.TypeEnum, value)
 	}
-	if scu.mutation.RailpackProviderCleared() {
+	if _u.mutation.RailpackProviderCleared() {
 		_spec.ClearField(serviceconfig.FieldRailpackProvider, field.TypeEnum)
 	}
-	if value, ok := scu.mutation.RailpackFramework(); ok {
+	if value, ok := _u.mutation.RailpackFramework(); ok {
 		_spec.SetField(serviceconfig.FieldRailpackFramework, field.TypeEnum, value)
 	}
-	if scu.mutation.RailpackFrameworkCleared() {
+	if _u.mutation.RailpackFrameworkCleared() {
 		_spec.ClearField(serviceconfig.FieldRailpackFramework, field.TypeEnum)
 	}
-	if value, ok := scu.mutation.GitBranch(); ok {
+	if value, ok := _u.mutation.GitBranch(); ok {
 		_spec.SetField(serviceconfig.FieldGitBranch, field.TypeString, value)
 	}
-	if scu.mutation.GitBranchCleared() {
+	if _u.mutation.GitBranchCleared() {
 		_spec.ClearField(serviceconfig.FieldGitBranch, field.TypeString)
 	}
-	if value, ok := scu.mutation.GitTag(); ok {
+	if value, ok := _u.mutation.GitTag(); ok {
 		_spec.SetField(serviceconfig.FieldGitTag, field.TypeString, value)
 	}
-	if scu.mutation.GitTagCleared() {
+	if _u.mutation.GitTagCleared() {
 		_spec.ClearField(serviceconfig.FieldGitTag, field.TypeString)
 	}
-	if value, ok := scu.mutation.Hosts(); ok {
+	if value, ok := _u.mutation.Hosts(); ok {
 		_spec.SetField(serviceconfig.FieldHosts, field.TypeJSON, value)
 	}
-	if value, ok := scu.mutation.AppendedHosts(); ok {
+	if value, ok := _u.mutation.AppendedHosts(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, serviceconfig.FieldHosts, value)
 		})
 	}
-	if scu.mutation.HostsCleared() {
+	if _u.mutation.HostsCleared() {
 		_spec.ClearField(serviceconfig.FieldHosts, field.TypeJSON)
 	}
-	if value, ok := scu.mutation.Ports(); ok {
+	if value, ok := _u.mutation.Ports(); ok {
 		_spec.SetField(serviceconfig.FieldPorts, field.TypeJSON, value)
 	}
-	if value, ok := scu.mutation.AppendedPorts(); ok {
+	if value, ok := _u.mutation.AppendedPorts(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, serviceconfig.FieldPorts, value)
 		})
 	}
-	if scu.mutation.PortsCleared() {
+	if _u.mutation.PortsCleared() {
 		_spec.ClearField(serviceconfig.FieldPorts, field.TypeJSON)
 	}
-	if value, ok := scu.mutation.Replicas(); ok {
+	if value, ok := _u.mutation.Replicas(); ok {
 		_spec.SetField(serviceconfig.FieldReplicas, field.TypeInt32, value)
 	}
-	if value, ok := scu.mutation.AddedReplicas(); ok {
+	if value, ok := _u.mutation.AddedReplicas(); ok {
 		_spec.AddField(serviceconfig.FieldReplicas, field.TypeInt32, value)
 	}
-	if value, ok := scu.mutation.AutoDeploy(); ok {
+	if value, ok := _u.mutation.AutoDeploy(); ok {
 		_spec.SetField(serviceconfig.FieldAutoDeploy, field.TypeBool, value)
 	}
-	if value, ok := scu.mutation.RailpackBuilderInstallCommand(); ok {
+	if value, ok := _u.mutation.RailpackBuilderInstallCommand(); ok {
 		_spec.SetField(serviceconfig.FieldRailpackBuilderInstallCommand, field.TypeString, value)
 	}
-	if scu.mutation.RailpackBuilderInstallCommandCleared() {
+	if _u.mutation.RailpackBuilderInstallCommandCleared() {
 		_spec.ClearField(serviceconfig.FieldRailpackBuilderInstallCommand, field.TypeString)
 	}
-	if value, ok := scu.mutation.RailpackBuilderBuildCommand(); ok {
+	if value, ok := _u.mutation.RailpackBuilderBuildCommand(); ok {
 		_spec.SetField(serviceconfig.FieldRailpackBuilderBuildCommand, field.TypeString, value)
 	}
-	if scu.mutation.RailpackBuilderBuildCommandCleared() {
+	if _u.mutation.RailpackBuilderBuildCommandCleared() {
 		_spec.ClearField(serviceconfig.FieldRailpackBuilderBuildCommand, field.TypeString)
 	}
-	if value, ok := scu.mutation.RunCommand(); ok {
+	if value, ok := _u.mutation.RunCommand(); ok {
 		_spec.SetField(serviceconfig.FieldRunCommand, field.TypeString, value)
 	}
-	if scu.mutation.RunCommandCleared() {
+	if _u.mutation.RunCommandCleared() {
 		_spec.ClearField(serviceconfig.FieldRunCommand, field.TypeString)
 	}
-	if value, ok := scu.mutation.IsPublic(); ok {
+	if value, ok := _u.mutation.IsPublic(); ok {
 		_spec.SetField(serviceconfig.FieldIsPublic, field.TypeBool, value)
 	}
-	if value, ok := scu.mutation.Image(); ok {
+	if value, ok := _u.mutation.Image(); ok {
 		_spec.SetField(serviceconfig.FieldImage, field.TypeString, value)
 	}
-	if scu.mutation.ImageCleared() {
+	if _u.mutation.ImageCleared() {
 		_spec.ClearField(serviceconfig.FieldImage, field.TypeString)
 	}
-	if value, ok := scu.mutation.DefinitionVersion(); ok {
+	if value, ok := _u.mutation.DefinitionVersion(); ok {
 		_spec.SetField(serviceconfig.FieldDefinitionVersion, field.TypeString, value)
 	}
-	if scu.mutation.DefinitionVersionCleared() {
+	if _u.mutation.DefinitionVersionCleared() {
 		_spec.ClearField(serviceconfig.FieldDefinitionVersion, field.TypeString)
 	}
-	if value, ok := scu.mutation.DatabaseConfig(); ok {
+	if value, ok := _u.mutation.DatabaseConfig(); ok {
 		_spec.SetField(serviceconfig.FieldDatabaseConfig, field.TypeJSON, value)
 	}
-	if scu.mutation.DatabaseConfigCleared() {
+	if _u.mutation.DatabaseConfigCleared() {
 		_spec.ClearField(serviceconfig.FieldDatabaseConfig, field.TypeJSON)
 	}
-	if value, ok := scu.mutation.S3BackupBucket(); ok {
+	if value, ok := _u.mutation.S3BackupBucket(); ok {
 		_spec.SetField(serviceconfig.FieldS3BackupBucket, field.TypeString, value)
 	}
-	if scu.mutation.S3BackupBucketCleared() {
+	if _u.mutation.S3BackupBucketCleared() {
 		_spec.ClearField(serviceconfig.FieldS3BackupBucket, field.TypeString)
 	}
-	if value, ok := scu.mutation.BackupSchedule(); ok {
+	if value, ok := _u.mutation.BackupSchedule(); ok {
 		_spec.SetField(serviceconfig.FieldBackupSchedule, field.TypeString, value)
 	}
-	if value, ok := scu.mutation.BackupRetentionCount(); ok {
+	if value, ok := _u.mutation.BackupRetentionCount(); ok {
 		_spec.SetField(serviceconfig.FieldBackupRetentionCount, field.TypeInt, value)
 	}
-	if value, ok := scu.mutation.AddedBackupRetentionCount(); ok {
+	if value, ok := _u.mutation.AddedBackupRetentionCount(); ok {
 		_spec.AddField(serviceconfig.FieldBackupRetentionCount, field.TypeInt, value)
 	}
-	if value, ok := scu.mutation.Volumes(); ok {
+	if value, ok := _u.mutation.Volumes(); ok {
 		_spec.SetField(serviceconfig.FieldVolumes, field.TypeJSON, value)
 	}
-	if value, ok := scu.mutation.AppendedVolumes(); ok {
+	if value, ok := _u.mutation.AppendedVolumes(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, serviceconfig.FieldVolumes, value)
 		})
 	}
-	if scu.mutation.VolumesCleared() {
+	if _u.mutation.VolumesCleared() {
 		_spec.ClearField(serviceconfig.FieldVolumes, field.TypeJSON)
 	}
-	if value, ok := scu.mutation.SecurityContext(); ok {
+	if value, ok := _u.mutation.SecurityContext(); ok {
 		_spec.SetField(serviceconfig.FieldSecurityContext, field.TypeJSON, value)
 	}
-	if scu.mutation.SecurityContextCleared() {
+	if _u.mutation.SecurityContextCleared() {
 		_spec.ClearField(serviceconfig.FieldSecurityContext, field.TypeJSON)
 	}
-	if value, ok := scu.mutation.HealthCheck(); ok {
+	if value, ok := _u.mutation.HealthCheck(); ok {
 		_spec.SetField(serviceconfig.FieldHealthCheck, field.TypeJSON, value)
 	}
-	if scu.mutation.HealthCheckCleared() {
+	if _u.mutation.HealthCheckCleared() {
 		_spec.ClearField(serviceconfig.FieldHealthCheck, field.TypeJSON)
 	}
-	if value, ok := scu.mutation.VariableMounts(); ok {
+	if value, ok := _u.mutation.VariableMounts(); ok {
 		_spec.SetField(serviceconfig.FieldVariableMounts, field.TypeJSON, value)
 	}
-	if value, ok := scu.mutation.AppendedVariableMounts(); ok {
+	if value, ok := _u.mutation.AppendedVariableMounts(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, serviceconfig.FieldVariableMounts, value)
 		})
 	}
-	if scu.mutation.VariableMountsCleared() {
+	if _u.mutation.VariableMountsCleared() {
 		_spec.ClearField(serviceconfig.FieldVariableMounts, field.TypeJSON)
 	}
-	if value, ok := scu.mutation.ProtectedVariables(); ok {
+	if value, ok := _u.mutation.ProtectedVariables(); ok {
 		_spec.SetField(serviceconfig.FieldProtectedVariables, field.TypeJSON, value)
 	}
-	if value, ok := scu.mutation.AppendedProtectedVariables(); ok {
+	if value, ok := _u.mutation.AppendedProtectedVariables(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, serviceconfig.FieldProtectedVariables, value)
 		})
 	}
-	if scu.mutation.ProtectedVariablesCleared() {
+	if _u.mutation.ProtectedVariablesCleared() {
 		_spec.ClearField(serviceconfig.FieldProtectedVariables, field.TypeJSON)
 	}
-	if value, ok := scu.mutation.InitContainers(); ok {
+	if value, ok := _u.mutation.InitContainers(); ok {
 		_spec.SetField(serviceconfig.FieldInitContainers, field.TypeJSON, value)
 	}
-	if value, ok := scu.mutation.AppendedInitContainers(); ok {
+	if value, ok := _u.mutation.AppendedInitContainers(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, serviceconfig.FieldInitContainers, value)
 		})
 	}
-	if scu.mutation.InitContainersCleared() {
+	if _u.mutation.InitContainersCleared() {
 		_spec.ClearField(serviceconfig.FieldInitContainers, field.TypeJSON)
 	}
-	if value, ok := scu.mutation.Resources(); ok {
+	if value, ok := _u.mutation.Resources(); ok {
 		_spec.SetField(serviceconfig.FieldResources, field.TypeJSON, value)
 	}
-	if scu.mutation.ResourcesCleared() {
+	if _u.mutation.ResourcesCleared() {
 		_spec.ClearField(serviceconfig.FieldResources, field.TypeJSON)
 	}
-	if scu.mutation.ServiceCleared() {
+	if _u.mutation.ServiceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -911,7 +911,7 @@ func (scu *ServiceConfigUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := scu.mutation.ServiceIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ServiceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -927,7 +927,7 @@ func (scu *ServiceConfigUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if scu.mutation.S3BackupSourcesCleared() {
+	if _u.mutation.S3BackupSourcesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -940,7 +940,7 @@ func (scu *ServiceConfigUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := scu.mutation.S3BackupSourcesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.S3BackupSourcesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -956,8 +956,8 @@ func (scu *ServiceConfigUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(scu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, scu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{serviceconfig.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -965,8 +965,8 @@ func (scu *ServiceConfigUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		return 0, err
 	}
-	scu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // ServiceConfigUpdateOne is the builder for updating a single ServiceConfig entity.
@@ -979,616 +979,616 @@ type ServiceConfigUpdateOne struct {
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (scuo *ServiceConfigUpdateOne) SetUpdatedAt(t time.Time) *ServiceConfigUpdateOne {
-	scuo.mutation.SetUpdatedAt(t)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetUpdatedAt(v time.Time) *ServiceConfigUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetServiceID sets the "service_id" field.
-func (scuo *ServiceConfigUpdateOne) SetServiceID(u uuid.UUID) *ServiceConfigUpdateOne {
-	scuo.mutation.SetServiceID(u)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetServiceID(v uuid.UUID) *ServiceConfigUpdateOne {
+	_u.mutation.SetServiceID(v)
+	return _u
 }
 
 // SetNillableServiceID sets the "service_id" field if the given value is not nil.
-func (scuo *ServiceConfigUpdateOne) SetNillableServiceID(u *uuid.UUID) *ServiceConfigUpdateOne {
-	if u != nil {
-		scuo.SetServiceID(*u)
+func (_u *ServiceConfigUpdateOne) SetNillableServiceID(v *uuid.UUID) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetServiceID(*v)
 	}
-	return scuo
+	return _u
 }
 
 // SetBuilder sets the "builder" field.
-func (scuo *ServiceConfigUpdateOne) SetBuilder(sb schema.ServiceBuilder) *ServiceConfigUpdateOne {
-	scuo.mutation.SetBuilder(sb)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetBuilder(v schema.ServiceBuilder) *ServiceConfigUpdateOne {
+	_u.mutation.SetBuilder(v)
+	return _u
 }
 
 // SetNillableBuilder sets the "builder" field if the given value is not nil.
-func (scuo *ServiceConfigUpdateOne) SetNillableBuilder(sb *schema.ServiceBuilder) *ServiceConfigUpdateOne {
-	if sb != nil {
-		scuo.SetBuilder(*sb)
+func (_u *ServiceConfigUpdateOne) SetNillableBuilder(v *schema.ServiceBuilder) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetBuilder(*v)
 	}
-	return scuo
+	return _u
 }
 
 // SetIcon sets the "icon" field.
-func (scuo *ServiceConfigUpdateOne) SetIcon(s string) *ServiceConfigUpdateOne {
-	scuo.mutation.SetIcon(s)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetIcon(v string) *ServiceConfigUpdateOne {
+	_u.mutation.SetIcon(v)
+	return _u
 }
 
 // SetNillableIcon sets the "icon" field if the given value is not nil.
-func (scuo *ServiceConfigUpdateOne) SetNillableIcon(s *string) *ServiceConfigUpdateOne {
-	if s != nil {
-		scuo.SetIcon(*s)
+func (_u *ServiceConfigUpdateOne) SetNillableIcon(v *string) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetIcon(*v)
 	}
-	return scuo
+	return _u
 }
 
 // SetDockerBuilderDockerfilePath sets the "docker_builder_dockerfile_path" field.
-func (scuo *ServiceConfigUpdateOne) SetDockerBuilderDockerfilePath(s string) *ServiceConfigUpdateOne {
-	scuo.mutation.SetDockerBuilderDockerfilePath(s)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetDockerBuilderDockerfilePath(v string) *ServiceConfigUpdateOne {
+	_u.mutation.SetDockerBuilderDockerfilePath(v)
+	return _u
 }
 
 // SetNillableDockerBuilderDockerfilePath sets the "docker_builder_dockerfile_path" field if the given value is not nil.
-func (scuo *ServiceConfigUpdateOne) SetNillableDockerBuilderDockerfilePath(s *string) *ServiceConfigUpdateOne {
-	if s != nil {
-		scuo.SetDockerBuilderDockerfilePath(*s)
+func (_u *ServiceConfigUpdateOne) SetNillableDockerBuilderDockerfilePath(v *string) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetDockerBuilderDockerfilePath(*v)
 	}
-	return scuo
+	return _u
 }
 
 // ClearDockerBuilderDockerfilePath clears the value of the "docker_builder_dockerfile_path" field.
-func (scuo *ServiceConfigUpdateOne) ClearDockerBuilderDockerfilePath() *ServiceConfigUpdateOne {
-	scuo.mutation.ClearDockerBuilderDockerfilePath()
-	return scuo
+func (_u *ServiceConfigUpdateOne) ClearDockerBuilderDockerfilePath() *ServiceConfigUpdateOne {
+	_u.mutation.ClearDockerBuilderDockerfilePath()
+	return _u
 }
 
 // SetDockerBuilderBuildContext sets the "docker_builder_build_context" field.
-func (scuo *ServiceConfigUpdateOne) SetDockerBuilderBuildContext(s string) *ServiceConfigUpdateOne {
-	scuo.mutation.SetDockerBuilderBuildContext(s)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetDockerBuilderBuildContext(v string) *ServiceConfigUpdateOne {
+	_u.mutation.SetDockerBuilderBuildContext(v)
+	return _u
 }
 
 // SetNillableDockerBuilderBuildContext sets the "docker_builder_build_context" field if the given value is not nil.
-func (scuo *ServiceConfigUpdateOne) SetNillableDockerBuilderBuildContext(s *string) *ServiceConfigUpdateOne {
-	if s != nil {
-		scuo.SetDockerBuilderBuildContext(*s)
+func (_u *ServiceConfigUpdateOne) SetNillableDockerBuilderBuildContext(v *string) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetDockerBuilderBuildContext(*v)
 	}
-	return scuo
+	return _u
 }
 
 // ClearDockerBuilderBuildContext clears the value of the "docker_builder_build_context" field.
-func (scuo *ServiceConfigUpdateOne) ClearDockerBuilderBuildContext() *ServiceConfigUpdateOne {
-	scuo.mutation.ClearDockerBuilderBuildContext()
-	return scuo
+func (_u *ServiceConfigUpdateOne) ClearDockerBuilderBuildContext() *ServiceConfigUpdateOne {
+	_u.mutation.ClearDockerBuilderBuildContext()
+	return _u
 }
 
 // SetRailpackProvider sets the "railpack_provider" field.
-func (scuo *ServiceConfigUpdateOne) SetRailpackProvider(e enum.Provider) *ServiceConfigUpdateOne {
-	scuo.mutation.SetRailpackProvider(e)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetRailpackProvider(v enum.Provider) *ServiceConfigUpdateOne {
+	_u.mutation.SetRailpackProvider(v)
+	return _u
 }
 
 // SetNillableRailpackProvider sets the "railpack_provider" field if the given value is not nil.
-func (scuo *ServiceConfigUpdateOne) SetNillableRailpackProvider(e *enum.Provider) *ServiceConfigUpdateOne {
-	if e != nil {
-		scuo.SetRailpackProvider(*e)
+func (_u *ServiceConfigUpdateOne) SetNillableRailpackProvider(v *enum.Provider) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetRailpackProvider(*v)
 	}
-	return scuo
+	return _u
 }
 
 // ClearRailpackProvider clears the value of the "railpack_provider" field.
-func (scuo *ServiceConfigUpdateOne) ClearRailpackProvider() *ServiceConfigUpdateOne {
-	scuo.mutation.ClearRailpackProvider()
-	return scuo
+func (_u *ServiceConfigUpdateOne) ClearRailpackProvider() *ServiceConfigUpdateOne {
+	_u.mutation.ClearRailpackProvider()
+	return _u
 }
 
 // SetRailpackFramework sets the "railpack_framework" field.
-func (scuo *ServiceConfigUpdateOne) SetRailpackFramework(e enum.Framework) *ServiceConfigUpdateOne {
-	scuo.mutation.SetRailpackFramework(e)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetRailpackFramework(v enum.Framework) *ServiceConfigUpdateOne {
+	_u.mutation.SetRailpackFramework(v)
+	return _u
 }
 
 // SetNillableRailpackFramework sets the "railpack_framework" field if the given value is not nil.
-func (scuo *ServiceConfigUpdateOne) SetNillableRailpackFramework(e *enum.Framework) *ServiceConfigUpdateOne {
-	if e != nil {
-		scuo.SetRailpackFramework(*e)
+func (_u *ServiceConfigUpdateOne) SetNillableRailpackFramework(v *enum.Framework) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetRailpackFramework(*v)
 	}
-	return scuo
+	return _u
 }
 
 // ClearRailpackFramework clears the value of the "railpack_framework" field.
-func (scuo *ServiceConfigUpdateOne) ClearRailpackFramework() *ServiceConfigUpdateOne {
-	scuo.mutation.ClearRailpackFramework()
-	return scuo
+func (_u *ServiceConfigUpdateOne) ClearRailpackFramework() *ServiceConfigUpdateOne {
+	_u.mutation.ClearRailpackFramework()
+	return _u
 }
 
 // SetGitBranch sets the "git_branch" field.
-func (scuo *ServiceConfigUpdateOne) SetGitBranch(s string) *ServiceConfigUpdateOne {
-	scuo.mutation.SetGitBranch(s)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetGitBranch(v string) *ServiceConfigUpdateOne {
+	_u.mutation.SetGitBranch(v)
+	return _u
 }
 
 // SetNillableGitBranch sets the "git_branch" field if the given value is not nil.
-func (scuo *ServiceConfigUpdateOne) SetNillableGitBranch(s *string) *ServiceConfigUpdateOne {
-	if s != nil {
-		scuo.SetGitBranch(*s)
+func (_u *ServiceConfigUpdateOne) SetNillableGitBranch(v *string) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetGitBranch(*v)
 	}
-	return scuo
+	return _u
 }
 
 // ClearGitBranch clears the value of the "git_branch" field.
-func (scuo *ServiceConfigUpdateOne) ClearGitBranch() *ServiceConfigUpdateOne {
-	scuo.mutation.ClearGitBranch()
-	return scuo
+func (_u *ServiceConfigUpdateOne) ClearGitBranch() *ServiceConfigUpdateOne {
+	_u.mutation.ClearGitBranch()
+	return _u
 }
 
 // SetGitTag sets the "git_tag" field.
-func (scuo *ServiceConfigUpdateOne) SetGitTag(s string) *ServiceConfigUpdateOne {
-	scuo.mutation.SetGitTag(s)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetGitTag(v string) *ServiceConfigUpdateOne {
+	_u.mutation.SetGitTag(v)
+	return _u
 }
 
 // SetNillableGitTag sets the "git_tag" field if the given value is not nil.
-func (scuo *ServiceConfigUpdateOne) SetNillableGitTag(s *string) *ServiceConfigUpdateOne {
-	if s != nil {
-		scuo.SetGitTag(*s)
+func (_u *ServiceConfigUpdateOne) SetNillableGitTag(v *string) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetGitTag(*v)
 	}
-	return scuo
+	return _u
 }
 
 // ClearGitTag clears the value of the "git_tag" field.
-func (scuo *ServiceConfigUpdateOne) ClearGitTag() *ServiceConfigUpdateOne {
-	scuo.mutation.ClearGitTag()
-	return scuo
+func (_u *ServiceConfigUpdateOne) ClearGitTag() *ServiceConfigUpdateOne {
+	_u.mutation.ClearGitTag()
+	return _u
 }
 
 // SetHosts sets the "hosts" field.
-func (scuo *ServiceConfigUpdateOne) SetHosts(ss []schema.HostSpec) *ServiceConfigUpdateOne {
-	scuo.mutation.SetHosts(ss)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetHosts(v []schema.HostSpec) *ServiceConfigUpdateOne {
+	_u.mutation.SetHosts(v)
+	return _u
 }
 
-// AppendHosts appends ss to the "hosts" field.
-func (scuo *ServiceConfigUpdateOne) AppendHosts(ss []schema.HostSpec) *ServiceConfigUpdateOne {
-	scuo.mutation.AppendHosts(ss)
-	return scuo
+// AppendHosts appends value to the "hosts" field.
+func (_u *ServiceConfigUpdateOne) AppendHosts(v []schema.HostSpec) *ServiceConfigUpdateOne {
+	_u.mutation.AppendHosts(v)
+	return _u
 }
 
 // ClearHosts clears the value of the "hosts" field.
-func (scuo *ServiceConfigUpdateOne) ClearHosts() *ServiceConfigUpdateOne {
-	scuo.mutation.ClearHosts()
-	return scuo
+func (_u *ServiceConfigUpdateOne) ClearHosts() *ServiceConfigUpdateOne {
+	_u.mutation.ClearHosts()
+	return _u
 }
 
 // SetPorts sets the "ports" field.
-func (scuo *ServiceConfigUpdateOne) SetPorts(ss []schema.PortSpec) *ServiceConfigUpdateOne {
-	scuo.mutation.SetPorts(ss)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetPorts(v []schema.PortSpec) *ServiceConfigUpdateOne {
+	_u.mutation.SetPorts(v)
+	return _u
 }
 
-// AppendPorts appends ss to the "ports" field.
-func (scuo *ServiceConfigUpdateOne) AppendPorts(ss []schema.PortSpec) *ServiceConfigUpdateOne {
-	scuo.mutation.AppendPorts(ss)
-	return scuo
+// AppendPorts appends value to the "ports" field.
+func (_u *ServiceConfigUpdateOne) AppendPorts(v []schema.PortSpec) *ServiceConfigUpdateOne {
+	_u.mutation.AppendPorts(v)
+	return _u
 }
 
 // ClearPorts clears the value of the "ports" field.
-func (scuo *ServiceConfigUpdateOne) ClearPorts() *ServiceConfigUpdateOne {
-	scuo.mutation.ClearPorts()
-	return scuo
+func (_u *ServiceConfigUpdateOne) ClearPorts() *ServiceConfigUpdateOne {
+	_u.mutation.ClearPorts()
+	return _u
 }
 
 // SetReplicas sets the "replicas" field.
-func (scuo *ServiceConfigUpdateOne) SetReplicas(i int32) *ServiceConfigUpdateOne {
-	scuo.mutation.ResetReplicas()
-	scuo.mutation.SetReplicas(i)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetReplicas(v int32) *ServiceConfigUpdateOne {
+	_u.mutation.ResetReplicas()
+	_u.mutation.SetReplicas(v)
+	return _u
 }
 
 // SetNillableReplicas sets the "replicas" field if the given value is not nil.
-func (scuo *ServiceConfigUpdateOne) SetNillableReplicas(i *int32) *ServiceConfigUpdateOne {
-	if i != nil {
-		scuo.SetReplicas(*i)
+func (_u *ServiceConfigUpdateOne) SetNillableReplicas(v *int32) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetReplicas(*v)
 	}
-	return scuo
+	return _u
 }
 
-// AddReplicas adds i to the "replicas" field.
-func (scuo *ServiceConfigUpdateOne) AddReplicas(i int32) *ServiceConfigUpdateOne {
-	scuo.mutation.AddReplicas(i)
-	return scuo
+// AddReplicas adds value to the "replicas" field.
+func (_u *ServiceConfigUpdateOne) AddReplicas(v int32) *ServiceConfigUpdateOne {
+	_u.mutation.AddReplicas(v)
+	return _u
 }
 
 // SetAutoDeploy sets the "auto_deploy" field.
-func (scuo *ServiceConfigUpdateOne) SetAutoDeploy(b bool) *ServiceConfigUpdateOne {
-	scuo.mutation.SetAutoDeploy(b)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetAutoDeploy(v bool) *ServiceConfigUpdateOne {
+	_u.mutation.SetAutoDeploy(v)
+	return _u
 }
 
 // SetNillableAutoDeploy sets the "auto_deploy" field if the given value is not nil.
-func (scuo *ServiceConfigUpdateOne) SetNillableAutoDeploy(b *bool) *ServiceConfigUpdateOne {
-	if b != nil {
-		scuo.SetAutoDeploy(*b)
+func (_u *ServiceConfigUpdateOne) SetNillableAutoDeploy(v *bool) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetAutoDeploy(*v)
 	}
-	return scuo
+	return _u
 }
 
 // SetRailpackBuilderInstallCommand sets the "railpack_builder_install_command" field.
-func (scuo *ServiceConfigUpdateOne) SetRailpackBuilderInstallCommand(s string) *ServiceConfigUpdateOne {
-	scuo.mutation.SetRailpackBuilderInstallCommand(s)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetRailpackBuilderInstallCommand(v string) *ServiceConfigUpdateOne {
+	_u.mutation.SetRailpackBuilderInstallCommand(v)
+	return _u
 }
 
 // SetNillableRailpackBuilderInstallCommand sets the "railpack_builder_install_command" field if the given value is not nil.
-func (scuo *ServiceConfigUpdateOne) SetNillableRailpackBuilderInstallCommand(s *string) *ServiceConfigUpdateOne {
-	if s != nil {
-		scuo.SetRailpackBuilderInstallCommand(*s)
+func (_u *ServiceConfigUpdateOne) SetNillableRailpackBuilderInstallCommand(v *string) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetRailpackBuilderInstallCommand(*v)
 	}
-	return scuo
+	return _u
 }
 
 // ClearRailpackBuilderInstallCommand clears the value of the "railpack_builder_install_command" field.
-func (scuo *ServiceConfigUpdateOne) ClearRailpackBuilderInstallCommand() *ServiceConfigUpdateOne {
-	scuo.mutation.ClearRailpackBuilderInstallCommand()
-	return scuo
+func (_u *ServiceConfigUpdateOne) ClearRailpackBuilderInstallCommand() *ServiceConfigUpdateOne {
+	_u.mutation.ClearRailpackBuilderInstallCommand()
+	return _u
 }
 
 // SetRailpackBuilderBuildCommand sets the "railpack_builder_build_command" field.
-func (scuo *ServiceConfigUpdateOne) SetRailpackBuilderBuildCommand(s string) *ServiceConfigUpdateOne {
-	scuo.mutation.SetRailpackBuilderBuildCommand(s)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetRailpackBuilderBuildCommand(v string) *ServiceConfigUpdateOne {
+	_u.mutation.SetRailpackBuilderBuildCommand(v)
+	return _u
 }
 
 // SetNillableRailpackBuilderBuildCommand sets the "railpack_builder_build_command" field if the given value is not nil.
-func (scuo *ServiceConfigUpdateOne) SetNillableRailpackBuilderBuildCommand(s *string) *ServiceConfigUpdateOne {
-	if s != nil {
-		scuo.SetRailpackBuilderBuildCommand(*s)
+func (_u *ServiceConfigUpdateOne) SetNillableRailpackBuilderBuildCommand(v *string) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetRailpackBuilderBuildCommand(*v)
 	}
-	return scuo
+	return _u
 }
 
 // ClearRailpackBuilderBuildCommand clears the value of the "railpack_builder_build_command" field.
-func (scuo *ServiceConfigUpdateOne) ClearRailpackBuilderBuildCommand() *ServiceConfigUpdateOne {
-	scuo.mutation.ClearRailpackBuilderBuildCommand()
-	return scuo
+func (_u *ServiceConfigUpdateOne) ClearRailpackBuilderBuildCommand() *ServiceConfigUpdateOne {
+	_u.mutation.ClearRailpackBuilderBuildCommand()
+	return _u
 }
 
 // SetRunCommand sets the "run_command" field.
-func (scuo *ServiceConfigUpdateOne) SetRunCommand(s string) *ServiceConfigUpdateOne {
-	scuo.mutation.SetRunCommand(s)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetRunCommand(v string) *ServiceConfigUpdateOne {
+	_u.mutation.SetRunCommand(v)
+	return _u
 }
 
 // SetNillableRunCommand sets the "run_command" field if the given value is not nil.
-func (scuo *ServiceConfigUpdateOne) SetNillableRunCommand(s *string) *ServiceConfigUpdateOne {
-	if s != nil {
-		scuo.SetRunCommand(*s)
+func (_u *ServiceConfigUpdateOne) SetNillableRunCommand(v *string) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetRunCommand(*v)
 	}
-	return scuo
+	return _u
 }
 
 // ClearRunCommand clears the value of the "run_command" field.
-func (scuo *ServiceConfigUpdateOne) ClearRunCommand() *ServiceConfigUpdateOne {
-	scuo.mutation.ClearRunCommand()
-	return scuo
+func (_u *ServiceConfigUpdateOne) ClearRunCommand() *ServiceConfigUpdateOne {
+	_u.mutation.ClearRunCommand()
+	return _u
 }
 
 // SetIsPublic sets the "is_public" field.
-func (scuo *ServiceConfigUpdateOne) SetIsPublic(b bool) *ServiceConfigUpdateOne {
-	scuo.mutation.SetIsPublic(b)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetIsPublic(v bool) *ServiceConfigUpdateOne {
+	_u.mutation.SetIsPublic(v)
+	return _u
 }
 
 // SetNillableIsPublic sets the "is_public" field if the given value is not nil.
-func (scuo *ServiceConfigUpdateOne) SetNillableIsPublic(b *bool) *ServiceConfigUpdateOne {
-	if b != nil {
-		scuo.SetIsPublic(*b)
+func (_u *ServiceConfigUpdateOne) SetNillableIsPublic(v *bool) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetIsPublic(*v)
 	}
-	return scuo
+	return _u
 }
 
 // SetImage sets the "image" field.
-func (scuo *ServiceConfigUpdateOne) SetImage(s string) *ServiceConfigUpdateOne {
-	scuo.mutation.SetImage(s)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetImage(v string) *ServiceConfigUpdateOne {
+	_u.mutation.SetImage(v)
+	return _u
 }
 
 // SetNillableImage sets the "image" field if the given value is not nil.
-func (scuo *ServiceConfigUpdateOne) SetNillableImage(s *string) *ServiceConfigUpdateOne {
-	if s != nil {
-		scuo.SetImage(*s)
+func (_u *ServiceConfigUpdateOne) SetNillableImage(v *string) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetImage(*v)
 	}
-	return scuo
+	return _u
 }
 
 // ClearImage clears the value of the "image" field.
-func (scuo *ServiceConfigUpdateOne) ClearImage() *ServiceConfigUpdateOne {
-	scuo.mutation.ClearImage()
-	return scuo
+func (_u *ServiceConfigUpdateOne) ClearImage() *ServiceConfigUpdateOne {
+	_u.mutation.ClearImage()
+	return _u
 }
 
 // SetDefinitionVersion sets the "definition_version" field.
-func (scuo *ServiceConfigUpdateOne) SetDefinitionVersion(s string) *ServiceConfigUpdateOne {
-	scuo.mutation.SetDefinitionVersion(s)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetDefinitionVersion(v string) *ServiceConfigUpdateOne {
+	_u.mutation.SetDefinitionVersion(v)
+	return _u
 }
 
 // SetNillableDefinitionVersion sets the "definition_version" field if the given value is not nil.
-func (scuo *ServiceConfigUpdateOne) SetNillableDefinitionVersion(s *string) *ServiceConfigUpdateOne {
-	if s != nil {
-		scuo.SetDefinitionVersion(*s)
+func (_u *ServiceConfigUpdateOne) SetNillableDefinitionVersion(v *string) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetDefinitionVersion(*v)
 	}
-	return scuo
+	return _u
 }
 
 // ClearDefinitionVersion clears the value of the "definition_version" field.
-func (scuo *ServiceConfigUpdateOne) ClearDefinitionVersion() *ServiceConfigUpdateOne {
-	scuo.mutation.ClearDefinitionVersion()
-	return scuo
+func (_u *ServiceConfigUpdateOne) ClearDefinitionVersion() *ServiceConfigUpdateOne {
+	_u.mutation.ClearDefinitionVersion()
+	return _u
 }
 
 // SetDatabaseConfig sets the "database_config" field.
-func (scuo *ServiceConfigUpdateOne) SetDatabaseConfig(sc *schema.DatabaseConfig) *ServiceConfigUpdateOne {
-	scuo.mutation.SetDatabaseConfig(sc)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetDatabaseConfig(v *schema.DatabaseConfig) *ServiceConfigUpdateOne {
+	_u.mutation.SetDatabaseConfig(v)
+	return _u
 }
 
 // ClearDatabaseConfig clears the value of the "database_config" field.
-func (scuo *ServiceConfigUpdateOne) ClearDatabaseConfig() *ServiceConfigUpdateOne {
-	scuo.mutation.ClearDatabaseConfig()
-	return scuo
+func (_u *ServiceConfigUpdateOne) ClearDatabaseConfig() *ServiceConfigUpdateOne {
+	_u.mutation.ClearDatabaseConfig()
+	return _u
 }
 
 // SetS3BackupSourceID sets the "s3_backup_source_id" field.
-func (scuo *ServiceConfigUpdateOne) SetS3BackupSourceID(u uuid.UUID) *ServiceConfigUpdateOne {
-	scuo.mutation.SetS3BackupSourceID(u)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetS3BackupSourceID(v uuid.UUID) *ServiceConfigUpdateOne {
+	_u.mutation.SetS3BackupSourceID(v)
+	return _u
 }
 
 // SetNillableS3BackupSourceID sets the "s3_backup_source_id" field if the given value is not nil.
-func (scuo *ServiceConfigUpdateOne) SetNillableS3BackupSourceID(u *uuid.UUID) *ServiceConfigUpdateOne {
-	if u != nil {
-		scuo.SetS3BackupSourceID(*u)
+func (_u *ServiceConfigUpdateOne) SetNillableS3BackupSourceID(v *uuid.UUID) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetS3BackupSourceID(*v)
 	}
-	return scuo
+	return _u
 }
 
 // ClearS3BackupSourceID clears the value of the "s3_backup_source_id" field.
-func (scuo *ServiceConfigUpdateOne) ClearS3BackupSourceID() *ServiceConfigUpdateOne {
-	scuo.mutation.ClearS3BackupSourceID()
-	return scuo
+func (_u *ServiceConfigUpdateOne) ClearS3BackupSourceID() *ServiceConfigUpdateOne {
+	_u.mutation.ClearS3BackupSourceID()
+	return _u
 }
 
 // SetS3BackupBucket sets the "s3_backup_bucket" field.
-func (scuo *ServiceConfigUpdateOne) SetS3BackupBucket(s string) *ServiceConfigUpdateOne {
-	scuo.mutation.SetS3BackupBucket(s)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetS3BackupBucket(v string) *ServiceConfigUpdateOne {
+	_u.mutation.SetS3BackupBucket(v)
+	return _u
 }
 
 // SetNillableS3BackupBucket sets the "s3_backup_bucket" field if the given value is not nil.
-func (scuo *ServiceConfigUpdateOne) SetNillableS3BackupBucket(s *string) *ServiceConfigUpdateOne {
-	if s != nil {
-		scuo.SetS3BackupBucket(*s)
+func (_u *ServiceConfigUpdateOne) SetNillableS3BackupBucket(v *string) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetS3BackupBucket(*v)
 	}
-	return scuo
+	return _u
 }
 
 // ClearS3BackupBucket clears the value of the "s3_backup_bucket" field.
-func (scuo *ServiceConfigUpdateOne) ClearS3BackupBucket() *ServiceConfigUpdateOne {
-	scuo.mutation.ClearS3BackupBucket()
-	return scuo
+func (_u *ServiceConfigUpdateOne) ClearS3BackupBucket() *ServiceConfigUpdateOne {
+	_u.mutation.ClearS3BackupBucket()
+	return _u
 }
 
 // SetBackupSchedule sets the "backup_schedule" field.
-func (scuo *ServiceConfigUpdateOne) SetBackupSchedule(s string) *ServiceConfigUpdateOne {
-	scuo.mutation.SetBackupSchedule(s)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetBackupSchedule(v string) *ServiceConfigUpdateOne {
+	_u.mutation.SetBackupSchedule(v)
+	return _u
 }
 
 // SetNillableBackupSchedule sets the "backup_schedule" field if the given value is not nil.
-func (scuo *ServiceConfigUpdateOne) SetNillableBackupSchedule(s *string) *ServiceConfigUpdateOne {
-	if s != nil {
-		scuo.SetBackupSchedule(*s)
+func (_u *ServiceConfigUpdateOne) SetNillableBackupSchedule(v *string) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetBackupSchedule(*v)
 	}
-	return scuo
+	return _u
 }
 
 // SetBackupRetentionCount sets the "backup_retention_count" field.
-func (scuo *ServiceConfigUpdateOne) SetBackupRetentionCount(i int) *ServiceConfigUpdateOne {
-	scuo.mutation.ResetBackupRetentionCount()
-	scuo.mutation.SetBackupRetentionCount(i)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetBackupRetentionCount(v int) *ServiceConfigUpdateOne {
+	_u.mutation.ResetBackupRetentionCount()
+	_u.mutation.SetBackupRetentionCount(v)
+	return _u
 }
 
 // SetNillableBackupRetentionCount sets the "backup_retention_count" field if the given value is not nil.
-func (scuo *ServiceConfigUpdateOne) SetNillableBackupRetentionCount(i *int) *ServiceConfigUpdateOne {
-	if i != nil {
-		scuo.SetBackupRetentionCount(*i)
+func (_u *ServiceConfigUpdateOne) SetNillableBackupRetentionCount(v *int) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetBackupRetentionCount(*v)
 	}
-	return scuo
+	return _u
 }
 
-// AddBackupRetentionCount adds i to the "backup_retention_count" field.
-func (scuo *ServiceConfigUpdateOne) AddBackupRetentionCount(i int) *ServiceConfigUpdateOne {
-	scuo.mutation.AddBackupRetentionCount(i)
-	return scuo
+// AddBackupRetentionCount adds value to the "backup_retention_count" field.
+func (_u *ServiceConfigUpdateOne) AddBackupRetentionCount(v int) *ServiceConfigUpdateOne {
+	_u.mutation.AddBackupRetentionCount(v)
+	return _u
 }
 
 // SetVolumes sets the "volumes" field.
-func (scuo *ServiceConfigUpdateOne) SetVolumes(sv []schema.ServiceVolume) *ServiceConfigUpdateOne {
-	scuo.mutation.SetVolumes(sv)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetVolumes(v []schema.ServiceVolume) *ServiceConfigUpdateOne {
+	_u.mutation.SetVolumes(v)
+	return _u
 }
 
-// AppendVolumes appends sv to the "volumes" field.
-func (scuo *ServiceConfigUpdateOne) AppendVolumes(sv []schema.ServiceVolume) *ServiceConfigUpdateOne {
-	scuo.mutation.AppendVolumes(sv)
-	return scuo
+// AppendVolumes appends value to the "volumes" field.
+func (_u *ServiceConfigUpdateOne) AppendVolumes(v []schema.ServiceVolume) *ServiceConfigUpdateOne {
+	_u.mutation.AppendVolumes(v)
+	return _u
 }
 
 // ClearVolumes clears the value of the "volumes" field.
-func (scuo *ServiceConfigUpdateOne) ClearVolumes() *ServiceConfigUpdateOne {
-	scuo.mutation.ClearVolumes()
-	return scuo
+func (_u *ServiceConfigUpdateOne) ClearVolumes() *ServiceConfigUpdateOne {
+	_u.mutation.ClearVolumes()
+	return _u
 }
 
 // SetSecurityContext sets the "security_context" field.
-func (scuo *ServiceConfigUpdateOne) SetSecurityContext(sc *schema.SecurityContext) *ServiceConfigUpdateOne {
-	scuo.mutation.SetSecurityContext(sc)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetSecurityContext(v *schema.SecurityContext) *ServiceConfigUpdateOne {
+	_u.mutation.SetSecurityContext(v)
+	return _u
 }
 
 // ClearSecurityContext clears the value of the "security_context" field.
-func (scuo *ServiceConfigUpdateOne) ClearSecurityContext() *ServiceConfigUpdateOne {
-	scuo.mutation.ClearSecurityContext()
-	return scuo
+func (_u *ServiceConfigUpdateOne) ClearSecurityContext() *ServiceConfigUpdateOne {
+	_u.mutation.ClearSecurityContext()
+	return _u
 }
 
 // SetHealthCheck sets the "health_check" field.
-func (scuo *ServiceConfigUpdateOne) SetHealthCheck(sc *schema.HealthCheck) *ServiceConfigUpdateOne {
-	scuo.mutation.SetHealthCheck(sc)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetHealthCheck(v *schema.HealthCheck) *ServiceConfigUpdateOne {
+	_u.mutation.SetHealthCheck(v)
+	return _u
 }
 
 // ClearHealthCheck clears the value of the "health_check" field.
-func (scuo *ServiceConfigUpdateOne) ClearHealthCheck() *ServiceConfigUpdateOne {
-	scuo.mutation.ClearHealthCheck()
-	return scuo
+func (_u *ServiceConfigUpdateOne) ClearHealthCheck() *ServiceConfigUpdateOne {
+	_u.mutation.ClearHealthCheck()
+	return _u
 }
 
 // SetVariableMounts sets the "variable_mounts" field.
-func (scuo *ServiceConfigUpdateOne) SetVariableMounts(sm []*schema.VariableMount) *ServiceConfigUpdateOne {
-	scuo.mutation.SetVariableMounts(sm)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetVariableMounts(v []*schema.VariableMount) *ServiceConfigUpdateOne {
+	_u.mutation.SetVariableMounts(v)
+	return _u
 }
 
-// AppendVariableMounts appends sm to the "variable_mounts" field.
-func (scuo *ServiceConfigUpdateOne) AppendVariableMounts(sm []*schema.VariableMount) *ServiceConfigUpdateOne {
-	scuo.mutation.AppendVariableMounts(sm)
-	return scuo
+// AppendVariableMounts appends value to the "variable_mounts" field.
+func (_u *ServiceConfigUpdateOne) AppendVariableMounts(v []*schema.VariableMount) *ServiceConfigUpdateOne {
+	_u.mutation.AppendVariableMounts(v)
+	return _u
 }
 
 // ClearVariableMounts clears the value of the "variable_mounts" field.
-func (scuo *ServiceConfigUpdateOne) ClearVariableMounts() *ServiceConfigUpdateOne {
-	scuo.mutation.ClearVariableMounts()
-	return scuo
+func (_u *ServiceConfigUpdateOne) ClearVariableMounts() *ServiceConfigUpdateOne {
+	_u.mutation.ClearVariableMounts()
+	return _u
 }
 
 // SetProtectedVariables sets the "protected_variables" field.
-func (scuo *ServiceConfigUpdateOne) SetProtectedVariables(s []string) *ServiceConfigUpdateOne {
-	scuo.mutation.SetProtectedVariables(s)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetProtectedVariables(v []string) *ServiceConfigUpdateOne {
+	_u.mutation.SetProtectedVariables(v)
+	return _u
 }
 
-// AppendProtectedVariables appends s to the "protected_variables" field.
-func (scuo *ServiceConfigUpdateOne) AppendProtectedVariables(s []string) *ServiceConfigUpdateOne {
-	scuo.mutation.AppendProtectedVariables(s)
-	return scuo
+// AppendProtectedVariables appends value to the "protected_variables" field.
+func (_u *ServiceConfigUpdateOne) AppendProtectedVariables(v []string) *ServiceConfigUpdateOne {
+	_u.mutation.AppendProtectedVariables(v)
+	return _u
 }
 
 // ClearProtectedVariables clears the value of the "protected_variables" field.
-func (scuo *ServiceConfigUpdateOne) ClearProtectedVariables() *ServiceConfigUpdateOne {
-	scuo.mutation.ClearProtectedVariables()
-	return scuo
+func (_u *ServiceConfigUpdateOne) ClearProtectedVariables() *ServiceConfigUpdateOne {
+	_u.mutation.ClearProtectedVariables()
+	return _u
 }
 
 // SetInitContainers sets the "init_containers" field.
-func (scuo *ServiceConfigUpdateOne) SetInitContainers(sc []*schema.InitContainer) *ServiceConfigUpdateOne {
-	scuo.mutation.SetInitContainers(sc)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetInitContainers(v []*schema.InitContainer) *ServiceConfigUpdateOne {
+	_u.mutation.SetInitContainers(v)
+	return _u
 }
 
-// AppendInitContainers appends sc to the "init_containers" field.
-func (scuo *ServiceConfigUpdateOne) AppendInitContainers(sc []*schema.InitContainer) *ServiceConfigUpdateOne {
-	scuo.mutation.AppendInitContainers(sc)
-	return scuo
+// AppendInitContainers appends value to the "init_containers" field.
+func (_u *ServiceConfigUpdateOne) AppendInitContainers(v []*schema.InitContainer) *ServiceConfigUpdateOne {
+	_u.mutation.AppendInitContainers(v)
+	return _u
 }
 
 // ClearInitContainers clears the value of the "init_containers" field.
-func (scuo *ServiceConfigUpdateOne) ClearInitContainers() *ServiceConfigUpdateOne {
-	scuo.mutation.ClearInitContainers()
-	return scuo
+func (_u *ServiceConfigUpdateOne) ClearInitContainers() *ServiceConfigUpdateOne {
+	_u.mutation.ClearInitContainers()
+	return _u
 }
 
 // SetResources sets the "resources" field.
-func (scuo *ServiceConfigUpdateOne) SetResources(s *schema.Resources) *ServiceConfigUpdateOne {
-	scuo.mutation.SetResources(s)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetResources(v *schema.Resources) *ServiceConfigUpdateOne {
+	_u.mutation.SetResources(v)
+	return _u
 }
 
 // ClearResources clears the value of the "resources" field.
-func (scuo *ServiceConfigUpdateOne) ClearResources() *ServiceConfigUpdateOne {
-	scuo.mutation.ClearResources()
-	return scuo
+func (_u *ServiceConfigUpdateOne) ClearResources() *ServiceConfigUpdateOne {
+	_u.mutation.ClearResources()
+	return _u
 }
 
 // SetService sets the "service" edge to the Service entity.
-func (scuo *ServiceConfigUpdateOne) SetService(s *Service) *ServiceConfigUpdateOne {
-	return scuo.SetServiceID(s.ID)
+func (_u *ServiceConfigUpdateOne) SetService(v *Service) *ServiceConfigUpdateOne {
+	return _u.SetServiceID(v.ID)
 }
 
 // SetS3BackupSourcesID sets the "s3_backup_sources" edge to the S3 entity by ID.
-func (scuo *ServiceConfigUpdateOne) SetS3BackupSourcesID(id uuid.UUID) *ServiceConfigUpdateOne {
-	scuo.mutation.SetS3BackupSourcesID(id)
-	return scuo
+func (_u *ServiceConfigUpdateOne) SetS3BackupSourcesID(id uuid.UUID) *ServiceConfigUpdateOne {
+	_u.mutation.SetS3BackupSourcesID(id)
+	return _u
 }
 
 // SetNillableS3BackupSourcesID sets the "s3_backup_sources" edge to the S3 entity by ID if the given value is not nil.
-func (scuo *ServiceConfigUpdateOne) SetNillableS3BackupSourcesID(id *uuid.UUID) *ServiceConfigUpdateOne {
+func (_u *ServiceConfigUpdateOne) SetNillableS3BackupSourcesID(id *uuid.UUID) *ServiceConfigUpdateOne {
 	if id != nil {
-		scuo = scuo.SetS3BackupSourcesID(*id)
+		_u = _u.SetS3BackupSourcesID(*id)
 	}
-	return scuo
+	return _u
 }
 
 // SetS3BackupSources sets the "s3_backup_sources" edge to the S3 entity.
-func (scuo *ServiceConfigUpdateOne) SetS3BackupSources(s *S3) *ServiceConfigUpdateOne {
-	return scuo.SetS3BackupSourcesID(s.ID)
+func (_u *ServiceConfigUpdateOne) SetS3BackupSources(v *S3) *ServiceConfigUpdateOne {
+	return _u.SetS3BackupSourcesID(v.ID)
 }
 
 // Mutation returns the ServiceConfigMutation object of the builder.
-func (scuo *ServiceConfigUpdateOne) Mutation() *ServiceConfigMutation {
-	return scuo.mutation
+func (_u *ServiceConfigUpdateOne) Mutation() *ServiceConfigMutation {
+	return _u.mutation
 }
 
 // ClearService clears the "service" edge to the Service entity.
-func (scuo *ServiceConfigUpdateOne) ClearService() *ServiceConfigUpdateOne {
-	scuo.mutation.ClearService()
-	return scuo
+func (_u *ServiceConfigUpdateOne) ClearService() *ServiceConfigUpdateOne {
+	_u.mutation.ClearService()
+	return _u
 }
 
 // ClearS3BackupSources clears the "s3_backup_sources" edge to the S3 entity.
-func (scuo *ServiceConfigUpdateOne) ClearS3BackupSources() *ServiceConfigUpdateOne {
-	scuo.mutation.ClearS3BackupSources()
-	return scuo
+func (_u *ServiceConfigUpdateOne) ClearS3BackupSources() *ServiceConfigUpdateOne {
+	_u.mutation.ClearS3BackupSources()
+	return _u
 }
 
 // Where appends a list predicates to the ServiceConfigUpdate builder.
-func (scuo *ServiceConfigUpdateOne) Where(ps ...predicate.ServiceConfig) *ServiceConfigUpdateOne {
-	scuo.mutation.Where(ps...)
-	return scuo
+func (_u *ServiceConfigUpdateOne) Where(ps ...predicate.ServiceConfig) *ServiceConfigUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (scuo *ServiceConfigUpdateOne) Select(field string, fields ...string) *ServiceConfigUpdateOne {
-	scuo.fields = append([]string{field}, fields...)
-	return scuo
+func (_u *ServiceConfigUpdateOne) Select(field string, fields ...string) *ServiceConfigUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated ServiceConfig entity.
-func (scuo *ServiceConfigUpdateOne) Save(ctx context.Context) (*ServiceConfig, error) {
-	scuo.defaults()
-	return withHooks(ctx, scuo.sqlSave, scuo.mutation, scuo.hooks)
+func (_u *ServiceConfigUpdateOne) Save(ctx context.Context) (*ServiceConfig, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (scuo *ServiceConfigUpdateOne) SaveX(ctx context.Context) *ServiceConfig {
-	node, err := scuo.Save(ctx)
+func (_u *ServiceConfigUpdateOne) SaveX(ctx context.Context) *ServiceConfig {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -1596,71 +1596,71 @@ func (scuo *ServiceConfigUpdateOne) SaveX(ctx context.Context) *ServiceConfig {
 }
 
 // Exec executes the query on the entity.
-func (scuo *ServiceConfigUpdateOne) Exec(ctx context.Context) error {
-	_, err := scuo.Save(ctx)
+func (_u *ServiceConfigUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (scuo *ServiceConfigUpdateOne) ExecX(ctx context.Context) {
-	if err := scuo.Exec(ctx); err != nil {
+func (_u *ServiceConfigUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (scuo *ServiceConfigUpdateOne) defaults() {
-	if _, ok := scuo.mutation.UpdatedAt(); !ok {
+func (_u *ServiceConfigUpdateOne) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := serviceconfig.UpdateDefaultUpdatedAt()
-		scuo.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (scuo *ServiceConfigUpdateOne) check() error {
-	if v, ok := scuo.mutation.Builder(); ok {
+func (_u *ServiceConfigUpdateOne) check() error {
+	if v, ok := _u.mutation.Builder(); ok {
 		if err := serviceconfig.BuilderValidator(v); err != nil {
 			return &ValidationError{Name: "builder", err: fmt.Errorf(`ent: validator failed for field "ServiceConfig.builder": %w`, err)}
 		}
 	}
-	if v, ok := scuo.mutation.RailpackProvider(); ok {
+	if v, ok := _u.mutation.RailpackProvider(); ok {
 		if err := serviceconfig.RailpackProviderValidator(v); err != nil {
 			return &ValidationError{Name: "railpack_provider", err: fmt.Errorf(`ent: validator failed for field "ServiceConfig.railpack_provider": %w`, err)}
 		}
 	}
-	if v, ok := scuo.mutation.RailpackFramework(); ok {
+	if v, ok := _u.mutation.RailpackFramework(); ok {
 		if err := serviceconfig.RailpackFrameworkValidator(v); err != nil {
 			return &ValidationError{Name: "railpack_framework", err: fmt.Errorf(`ent: validator failed for field "ServiceConfig.railpack_framework": %w`, err)}
 		}
 	}
-	if v, ok := scuo.mutation.HealthCheck(); ok {
+	if v, ok := _u.mutation.HealthCheck(); ok {
 		if err := v.Validate(); err != nil {
 			return &ValidationError{Name: "health_check", err: fmt.Errorf(`ent: validator failed for field "ServiceConfig.health_check": %w`, err)}
 		}
 	}
-	if scuo.mutation.ServiceCleared() && len(scuo.mutation.ServiceIDs()) > 0 {
+	if _u.mutation.ServiceCleared() && len(_u.mutation.ServiceIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "ServiceConfig.service"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (scuo *ServiceConfigUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ServiceConfigUpdateOne {
-	scuo.modifiers = append(scuo.modifiers, modifiers...)
-	return scuo
+func (_u *ServiceConfigUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ServiceConfigUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (scuo *ServiceConfigUpdateOne) sqlSave(ctx context.Context) (_node *ServiceConfig, err error) {
-	if err := scuo.check(); err != nil {
+func (_u *ServiceConfigUpdateOne) sqlSave(ctx context.Context) (_node *ServiceConfig, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(serviceconfig.Table, serviceconfig.Columns, sqlgraph.NewFieldSpec(serviceconfig.FieldID, field.TypeUUID))
-	id, ok := scuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "ServiceConfig.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := scuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, serviceconfig.FieldID)
 		for _, f := range fields {
@@ -1672,206 +1672,206 @@ func (scuo *ServiceConfigUpdateOne) sqlSave(ctx context.Context) (_node *Service
 			}
 		}
 	}
-	if ps := scuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := scuo.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(serviceconfig.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := scuo.mutation.Builder(); ok {
+	if value, ok := _u.mutation.Builder(); ok {
 		_spec.SetField(serviceconfig.FieldBuilder, field.TypeEnum, value)
 	}
-	if value, ok := scuo.mutation.Icon(); ok {
+	if value, ok := _u.mutation.Icon(); ok {
 		_spec.SetField(serviceconfig.FieldIcon, field.TypeString, value)
 	}
-	if value, ok := scuo.mutation.DockerBuilderDockerfilePath(); ok {
+	if value, ok := _u.mutation.DockerBuilderDockerfilePath(); ok {
 		_spec.SetField(serviceconfig.FieldDockerBuilderDockerfilePath, field.TypeString, value)
 	}
-	if scuo.mutation.DockerBuilderDockerfilePathCleared() {
+	if _u.mutation.DockerBuilderDockerfilePathCleared() {
 		_spec.ClearField(serviceconfig.FieldDockerBuilderDockerfilePath, field.TypeString)
 	}
-	if value, ok := scuo.mutation.DockerBuilderBuildContext(); ok {
+	if value, ok := _u.mutation.DockerBuilderBuildContext(); ok {
 		_spec.SetField(serviceconfig.FieldDockerBuilderBuildContext, field.TypeString, value)
 	}
-	if scuo.mutation.DockerBuilderBuildContextCleared() {
+	if _u.mutation.DockerBuilderBuildContextCleared() {
 		_spec.ClearField(serviceconfig.FieldDockerBuilderBuildContext, field.TypeString)
 	}
-	if value, ok := scuo.mutation.RailpackProvider(); ok {
+	if value, ok := _u.mutation.RailpackProvider(); ok {
 		_spec.SetField(serviceconfig.FieldRailpackProvider, field.TypeEnum, value)
 	}
-	if scuo.mutation.RailpackProviderCleared() {
+	if _u.mutation.RailpackProviderCleared() {
 		_spec.ClearField(serviceconfig.FieldRailpackProvider, field.TypeEnum)
 	}
-	if value, ok := scuo.mutation.RailpackFramework(); ok {
+	if value, ok := _u.mutation.RailpackFramework(); ok {
 		_spec.SetField(serviceconfig.FieldRailpackFramework, field.TypeEnum, value)
 	}
-	if scuo.mutation.RailpackFrameworkCleared() {
+	if _u.mutation.RailpackFrameworkCleared() {
 		_spec.ClearField(serviceconfig.FieldRailpackFramework, field.TypeEnum)
 	}
-	if value, ok := scuo.mutation.GitBranch(); ok {
+	if value, ok := _u.mutation.GitBranch(); ok {
 		_spec.SetField(serviceconfig.FieldGitBranch, field.TypeString, value)
 	}
-	if scuo.mutation.GitBranchCleared() {
+	if _u.mutation.GitBranchCleared() {
 		_spec.ClearField(serviceconfig.FieldGitBranch, field.TypeString)
 	}
-	if value, ok := scuo.mutation.GitTag(); ok {
+	if value, ok := _u.mutation.GitTag(); ok {
 		_spec.SetField(serviceconfig.FieldGitTag, field.TypeString, value)
 	}
-	if scuo.mutation.GitTagCleared() {
+	if _u.mutation.GitTagCleared() {
 		_spec.ClearField(serviceconfig.FieldGitTag, field.TypeString)
 	}
-	if value, ok := scuo.mutation.Hosts(); ok {
+	if value, ok := _u.mutation.Hosts(); ok {
 		_spec.SetField(serviceconfig.FieldHosts, field.TypeJSON, value)
 	}
-	if value, ok := scuo.mutation.AppendedHosts(); ok {
+	if value, ok := _u.mutation.AppendedHosts(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, serviceconfig.FieldHosts, value)
 		})
 	}
-	if scuo.mutation.HostsCleared() {
+	if _u.mutation.HostsCleared() {
 		_spec.ClearField(serviceconfig.FieldHosts, field.TypeJSON)
 	}
-	if value, ok := scuo.mutation.Ports(); ok {
+	if value, ok := _u.mutation.Ports(); ok {
 		_spec.SetField(serviceconfig.FieldPorts, field.TypeJSON, value)
 	}
-	if value, ok := scuo.mutation.AppendedPorts(); ok {
+	if value, ok := _u.mutation.AppendedPorts(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, serviceconfig.FieldPorts, value)
 		})
 	}
-	if scuo.mutation.PortsCleared() {
+	if _u.mutation.PortsCleared() {
 		_spec.ClearField(serviceconfig.FieldPorts, field.TypeJSON)
 	}
-	if value, ok := scuo.mutation.Replicas(); ok {
+	if value, ok := _u.mutation.Replicas(); ok {
 		_spec.SetField(serviceconfig.FieldReplicas, field.TypeInt32, value)
 	}
-	if value, ok := scuo.mutation.AddedReplicas(); ok {
+	if value, ok := _u.mutation.AddedReplicas(); ok {
 		_spec.AddField(serviceconfig.FieldReplicas, field.TypeInt32, value)
 	}
-	if value, ok := scuo.mutation.AutoDeploy(); ok {
+	if value, ok := _u.mutation.AutoDeploy(); ok {
 		_spec.SetField(serviceconfig.FieldAutoDeploy, field.TypeBool, value)
 	}
-	if value, ok := scuo.mutation.RailpackBuilderInstallCommand(); ok {
+	if value, ok := _u.mutation.RailpackBuilderInstallCommand(); ok {
 		_spec.SetField(serviceconfig.FieldRailpackBuilderInstallCommand, field.TypeString, value)
 	}
-	if scuo.mutation.RailpackBuilderInstallCommandCleared() {
+	if _u.mutation.RailpackBuilderInstallCommandCleared() {
 		_spec.ClearField(serviceconfig.FieldRailpackBuilderInstallCommand, field.TypeString)
 	}
-	if value, ok := scuo.mutation.RailpackBuilderBuildCommand(); ok {
+	if value, ok := _u.mutation.RailpackBuilderBuildCommand(); ok {
 		_spec.SetField(serviceconfig.FieldRailpackBuilderBuildCommand, field.TypeString, value)
 	}
-	if scuo.mutation.RailpackBuilderBuildCommandCleared() {
+	if _u.mutation.RailpackBuilderBuildCommandCleared() {
 		_spec.ClearField(serviceconfig.FieldRailpackBuilderBuildCommand, field.TypeString)
 	}
-	if value, ok := scuo.mutation.RunCommand(); ok {
+	if value, ok := _u.mutation.RunCommand(); ok {
 		_spec.SetField(serviceconfig.FieldRunCommand, field.TypeString, value)
 	}
-	if scuo.mutation.RunCommandCleared() {
+	if _u.mutation.RunCommandCleared() {
 		_spec.ClearField(serviceconfig.FieldRunCommand, field.TypeString)
 	}
-	if value, ok := scuo.mutation.IsPublic(); ok {
+	if value, ok := _u.mutation.IsPublic(); ok {
 		_spec.SetField(serviceconfig.FieldIsPublic, field.TypeBool, value)
 	}
-	if value, ok := scuo.mutation.Image(); ok {
+	if value, ok := _u.mutation.Image(); ok {
 		_spec.SetField(serviceconfig.FieldImage, field.TypeString, value)
 	}
-	if scuo.mutation.ImageCleared() {
+	if _u.mutation.ImageCleared() {
 		_spec.ClearField(serviceconfig.FieldImage, field.TypeString)
 	}
-	if value, ok := scuo.mutation.DefinitionVersion(); ok {
+	if value, ok := _u.mutation.DefinitionVersion(); ok {
 		_spec.SetField(serviceconfig.FieldDefinitionVersion, field.TypeString, value)
 	}
-	if scuo.mutation.DefinitionVersionCleared() {
+	if _u.mutation.DefinitionVersionCleared() {
 		_spec.ClearField(serviceconfig.FieldDefinitionVersion, field.TypeString)
 	}
-	if value, ok := scuo.mutation.DatabaseConfig(); ok {
+	if value, ok := _u.mutation.DatabaseConfig(); ok {
 		_spec.SetField(serviceconfig.FieldDatabaseConfig, field.TypeJSON, value)
 	}
-	if scuo.mutation.DatabaseConfigCleared() {
+	if _u.mutation.DatabaseConfigCleared() {
 		_spec.ClearField(serviceconfig.FieldDatabaseConfig, field.TypeJSON)
 	}
-	if value, ok := scuo.mutation.S3BackupBucket(); ok {
+	if value, ok := _u.mutation.S3BackupBucket(); ok {
 		_spec.SetField(serviceconfig.FieldS3BackupBucket, field.TypeString, value)
 	}
-	if scuo.mutation.S3BackupBucketCleared() {
+	if _u.mutation.S3BackupBucketCleared() {
 		_spec.ClearField(serviceconfig.FieldS3BackupBucket, field.TypeString)
 	}
-	if value, ok := scuo.mutation.BackupSchedule(); ok {
+	if value, ok := _u.mutation.BackupSchedule(); ok {
 		_spec.SetField(serviceconfig.FieldBackupSchedule, field.TypeString, value)
 	}
-	if value, ok := scuo.mutation.BackupRetentionCount(); ok {
+	if value, ok := _u.mutation.BackupRetentionCount(); ok {
 		_spec.SetField(serviceconfig.FieldBackupRetentionCount, field.TypeInt, value)
 	}
-	if value, ok := scuo.mutation.AddedBackupRetentionCount(); ok {
+	if value, ok := _u.mutation.AddedBackupRetentionCount(); ok {
 		_spec.AddField(serviceconfig.FieldBackupRetentionCount, field.TypeInt, value)
 	}
-	if value, ok := scuo.mutation.Volumes(); ok {
+	if value, ok := _u.mutation.Volumes(); ok {
 		_spec.SetField(serviceconfig.FieldVolumes, field.TypeJSON, value)
 	}
-	if value, ok := scuo.mutation.AppendedVolumes(); ok {
+	if value, ok := _u.mutation.AppendedVolumes(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, serviceconfig.FieldVolumes, value)
 		})
 	}
-	if scuo.mutation.VolumesCleared() {
+	if _u.mutation.VolumesCleared() {
 		_spec.ClearField(serviceconfig.FieldVolumes, field.TypeJSON)
 	}
-	if value, ok := scuo.mutation.SecurityContext(); ok {
+	if value, ok := _u.mutation.SecurityContext(); ok {
 		_spec.SetField(serviceconfig.FieldSecurityContext, field.TypeJSON, value)
 	}
-	if scuo.mutation.SecurityContextCleared() {
+	if _u.mutation.SecurityContextCleared() {
 		_spec.ClearField(serviceconfig.FieldSecurityContext, field.TypeJSON)
 	}
-	if value, ok := scuo.mutation.HealthCheck(); ok {
+	if value, ok := _u.mutation.HealthCheck(); ok {
 		_spec.SetField(serviceconfig.FieldHealthCheck, field.TypeJSON, value)
 	}
-	if scuo.mutation.HealthCheckCleared() {
+	if _u.mutation.HealthCheckCleared() {
 		_spec.ClearField(serviceconfig.FieldHealthCheck, field.TypeJSON)
 	}
-	if value, ok := scuo.mutation.VariableMounts(); ok {
+	if value, ok := _u.mutation.VariableMounts(); ok {
 		_spec.SetField(serviceconfig.FieldVariableMounts, field.TypeJSON, value)
 	}
-	if value, ok := scuo.mutation.AppendedVariableMounts(); ok {
+	if value, ok := _u.mutation.AppendedVariableMounts(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, serviceconfig.FieldVariableMounts, value)
 		})
 	}
-	if scuo.mutation.VariableMountsCleared() {
+	if _u.mutation.VariableMountsCleared() {
 		_spec.ClearField(serviceconfig.FieldVariableMounts, field.TypeJSON)
 	}
-	if value, ok := scuo.mutation.ProtectedVariables(); ok {
+	if value, ok := _u.mutation.ProtectedVariables(); ok {
 		_spec.SetField(serviceconfig.FieldProtectedVariables, field.TypeJSON, value)
 	}
-	if value, ok := scuo.mutation.AppendedProtectedVariables(); ok {
+	if value, ok := _u.mutation.AppendedProtectedVariables(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, serviceconfig.FieldProtectedVariables, value)
 		})
 	}
-	if scuo.mutation.ProtectedVariablesCleared() {
+	if _u.mutation.ProtectedVariablesCleared() {
 		_spec.ClearField(serviceconfig.FieldProtectedVariables, field.TypeJSON)
 	}
-	if value, ok := scuo.mutation.InitContainers(); ok {
+	if value, ok := _u.mutation.InitContainers(); ok {
 		_spec.SetField(serviceconfig.FieldInitContainers, field.TypeJSON, value)
 	}
-	if value, ok := scuo.mutation.AppendedInitContainers(); ok {
+	if value, ok := _u.mutation.AppendedInitContainers(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, serviceconfig.FieldInitContainers, value)
 		})
 	}
-	if scuo.mutation.InitContainersCleared() {
+	if _u.mutation.InitContainersCleared() {
 		_spec.ClearField(serviceconfig.FieldInitContainers, field.TypeJSON)
 	}
-	if value, ok := scuo.mutation.Resources(); ok {
+	if value, ok := _u.mutation.Resources(); ok {
 		_spec.SetField(serviceconfig.FieldResources, field.TypeJSON, value)
 	}
-	if scuo.mutation.ResourcesCleared() {
+	if _u.mutation.ResourcesCleared() {
 		_spec.ClearField(serviceconfig.FieldResources, field.TypeJSON)
 	}
-	if scuo.mutation.ServiceCleared() {
+	if _u.mutation.ServiceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -1884,7 +1884,7 @@ func (scuo *ServiceConfigUpdateOne) sqlSave(ctx context.Context) (_node *Service
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := scuo.mutation.ServiceIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ServiceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -1900,7 +1900,7 @@ func (scuo *ServiceConfigUpdateOne) sqlSave(ctx context.Context) (_node *Service
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if scuo.mutation.S3BackupSourcesCleared() {
+	if _u.mutation.S3BackupSourcesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -1913,7 +1913,7 @@ func (scuo *ServiceConfigUpdateOne) sqlSave(ctx context.Context) (_node *Service
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := scuo.mutation.S3BackupSourcesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.S3BackupSourcesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -1929,11 +1929,11 @@ func (scuo *ServiceConfigUpdateOne) sqlSave(ctx context.Context) (_node *Service
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(scuo.modifiers...)
-	_node = &ServiceConfig{config: scuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &ServiceConfig{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, scuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{serviceconfig.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -1941,6 +1941,6 @@ func (scuo *ServiceConfigUpdateOne) sqlSave(ctx context.Context) (_node *Service
 		}
 		return nil, err
 	}
-	scuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

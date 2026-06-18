@@ -24,73 +24,73 @@ type RegistryUpdate struct {
 }
 
 // Where appends a list predicates to the RegistryUpdate builder.
-func (ru *RegistryUpdate) Where(ps ...predicate.Registry) *RegistryUpdate {
-	ru.mutation.Where(ps...)
-	return ru
+func (_u *RegistryUpdate) Where(ps ...predicate.Registry) *RegistryUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (ru *RegistryUpdate) SetUpdatedAt(t time.Time) *RegistryUpdate {
-	ru.mutation.SetUpdatedAt(t)
-	return ru
+func (_u *RegistryUpdate) SetUpdatedAt(v time.Time) *RegistryUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetHost sets the "host" field.
-func (ru *RegistryUpdate) SetHost(s string) *RegistryUpdate {
-	ru.mutation.SetHost(s)
-	return ru
+func (_u *RegistryUpdate) SetHost(v string) *RegistryUpdate {
+	_u.mutation.SetHost(v)
+	return _u
 }
 
 // SetNillableHost sets the "host" field if the given value is not nil.
-func (ru *RegistryUpdate) SetNillableHost(s *string) *RegistryUpdate {
-	if s != nil {
-		ru.SetHost(*s)
+func (_u *RegistryUpdate) SetNillableHost(v *string) *RegistryUpdate {
+	if v != nil {
+		_u.SetHost(*v)
 	}
-	return ru
+	return _u
 }
 
 // SetKubernetesSecret sets the "kubernetes_secret" field.
-func (ru *RegistryUpdate) SetKubernetesSecret(s string) *RegistryUpdate {
-	ru.mutation.SetKubernetesSecret(s)
-	return ru
+func (_u *RegistryUpdate) SetKubernetesSecret(v string) *RegistryUpdate {
+	_u.mutation.SetKubernetesSecret(v)
+	return _u
 }
 
 // SetNillableKubernetesSecret sets the "kubernetes_secret" field if the given value is not nil.
-func (ru *RegistryUpdate) SetNillableKubernetesSecret(s *string) *RegistryUpdate {
-	if s != nil {
-		ru.SetKubernetesSecret(*s)
+func (_u *RegistryUpdate) SetNillableKubernetesSecret(v *string) *RegistryUpdate {
+	if v != nil {
+		_u.SetKubernetesSecret(*v)
 	}
-	return ru
+	return _u
 }
 
 // SetIsDefault sets the "is_default" field.
-func (ru *RegistryUpdate) SetIsDefault(b bool) *RegistryUpdate {
-	ru.mutation.SetIsDefault(b)
-	return ru
+func (_u *RegistryUpdate) SetIsDefault(v bool) *RegistryUpdate {
+	_u.mutation.SetIsDefault(v)
+	return _u
 }
 
 // SetNillableIsDefault sets the "is_default" field if the given value is not nil.
-func (ru *RegistryUpdate) SetNillableIsDefault(b *bool) *RegistryUpdate {
-	if b != nil {
-		ru.SetIsDefault(*b)
+func (_u *RegistryUpdate) SetNillableIsDefault(v *bool) *RegistryUpdate {
+	if v != nil {
+		_u.SetIsDefault(*v)
 	}
-	return ru
+	return _u
 }
 
 // Mutation returns the RegistryMutation object of the builder.
-func (ru *RegistryUpdate) Mutation() *RegistryMutation {
-	return ru.mutation
+func (_u *RegistryUpdate) Mutation() *RegistryMutation {
+	return _u.mutation
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (ru *RegistryUpdate) Save(ctx context.Context) (int, error) {
-	ru.defaults()
-	return withHooks(ctx, ru.sqlSave, ru.mutation, ru.hooks)
+func (_u *RegistryUpdate) Save(ctx context.Context) (int, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ru *RegistryUpdate) SaveX(ctx context.Context) int {
-	affected, err := ru.Save(ctx)
+func (_u *RegistryUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -98,29 +98,29 @@ func (ru *RegistryUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (ru *RegistryUpdate) Exec(ctx context.Context) error {
-	_, err := ru.Save(ctx)
+func (_u *RegistryUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ru *RegistryUpdate) ExecX(ctx context.Context) {
-	if err := ru.Exec(ctx); err != nil {
+func (_u *RegistryUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (ru *RegistryUpdate) defaults() {
-	if _, ok := ru.mutation.UpdatedAt(); !ok {
+func (_u *RegistryUpdate) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := registry.UpdateDefaultUpdatedAt()
-		ru.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ru *RegistryUpdate) check() error {
-	if v, ok := ru.mutation.Host(); ok {
+func (_u *RegistryUpdate) check() error {
+	if v, ok := _u.mutation.Host(); ok {
 		if err := registry.HostValidator(v); err != nil {
 			return &ValidationError{Name: "host", err: fmt.Errorf(`ent: validator failed for field "Registry.host": %w`, err)}
 		}
@@ -129,37 +129,37 @@ func (ru *RegistryUpdate) check() error {
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (ru *RegistryUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *RegistryUpdate {
-	ru.modifiers = append(ru.modifiers, modifiers...)
-	return ru
+func (_u *RegistryUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *RegistryUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (ru *RegistryUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := ru.check(); err != nil {
-		return n, err
+func (_u *RegistryUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(registry.Table, registry.Columns, sqlgraph.NewFieldSpec(registry.FieldID, field.TypeUUID))
-	if ps := ru.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := ru.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(registry.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := ru.mutation.Host(); ok {
+	if value, ok := _u.mutation.Host(); ok {
 		_spec.SetField(registry.FieldHost, field.TypeString, value)
 	}
-	if value, ok := ru.mutation.KubernetesSecret(); ok {
+	if value, ok := _u.mutation.KubernetesSecret(); ok {
 		_spec.SetField(registry.FieldKubernetesSecret, field.TypeString, value)
 	}
-	if value, ok := ru.mutation.IsDefault(); ok {
+	if value, ok := _u.mutation.IsDefault(); ok {
 		_spec.SetField(registry.FieldIsDefault, field.TypeBool, value)
 	}
-	_spec.AddModifiers(ru.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, ru.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{registry.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -167,8 +167,8 @@ func (ru *RegistryUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	ru.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // RegistryUpdateOne is the builder for updating a single Registry entity.
@@ -181,80 +181,80 @@ type RegistryUpdateOne struct {
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (ruo *RegistryUpdateOne) SetUpdatedAt(t time.Time) *RegistryUpdateOne {
-	ruo.mutation.SetUpdatedAt(t)
-	return ruo
+func (_u *RegistryUpdateOne) SetUpdatedAt(v time.Time) *RegistryUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetHost sets the "host" field.
-func (ruo *RegistryUpdateOne) SetHost(s string) *RegistryUpdateOne {
-	ruo.mutation.SetHost(s)
-	return ruo
+func (_u *RegistryUpdateOne) SetHost(v string) *RegistryUpdateOne {
+	_u.mutation.SetHost(v)
+	return _u
 }
 
 // SetNillableHost sets the "host" field if the given value is not nil.
-func (ruo *RegistryUpdateOne) SetNillableHost(s *string) *RegistryUpdateOne {
-	if s != nil {
-		ruo.SetHost(*s)
+func (_u *RegistryUpdateOne) SetNillableHost(v *string) *RegistryUpdateOne {
+	if v != nil {
+		_u.SetHost(*v)
 	}
-	return ruo
+	return _u
 }
 
 // SetKubernetesSecret sets the "kubernetes_secret" field.
-func (ruo *RegistryUpdateOne) SetKubernetesSecret(s string) *RegistryUpdateOne {
-	ruo.mutation.SetKubernetesSecret(s)
-	return ruo
+func (_u *RegistryUpdateOne) SetKubernetesSecret(v string) *RegistryUpdateOne {
+	_u.mutation.SetKubernetesSecret(v)
+	return _u
 }
 
 // SetNillableKubernetesSecret sets the "kubernetes_secret" field if the given value is not nil.
-func (ruo *RegistryUpdateOne) SetNillableKubernetesSecret(s *string) *RegistryUpdateOne {
-	if s != nil {
-		ruo.SetKubernetesSecret(*s)
+func (_u *RegistryUpdateOne) SetNillableKubernetesSecret(v *string) *RegistryUpdateOne {
+	if v != nil {
+		_u.SetKubernetesSecret(*v)
 	}
-	return ruo
+	return _u
 }
 
 // SetIsDefault sets the "is_default" field.
-func (ruo *RegistryUpdateOne) SetIsDefault(b bool) *RegistryUpdateOne {
-	ruo.mutation.SetIsDefault(b)
-	return ruo
+func (_u *RegistryUpdateOne) SetIsDefault(v bool) *RegistryUpdateOne {
+	_u.mutation.SetIsDefault(v)
+	return _u
 }
 
 // SetNillableIsDefault sets the "is_default" field if the given value is not nil.
-func (ruo *RegistryUpdateOne) SetNillableIsDefault(b *bool) *RegistryUpdateOne {
-	if b != nil {
-		ruo.SetIsDefault(*b)
+func (_u *RegistryUpdateOne) SetNillableIsDefault(v *bool) *RegistryUpdateOne {
+	if v != nil {
+		_u.SetIsDefault(*v)
 	}
-	return ruo
+	return _u
 }
 
 // Mutation returns the RegistryMutation object of the builder.
-func (ruo *RegistryUpdateOne) Mutation() *RegistryMutation {
-	return ruo.mutation
+func (_u *RegistryUpdateOne) Mutation() *RegistryMutation {
+	return _u.mutation
 }
 
 // Where appends a list predicates to the RegistryUpdate builder.
-func (ruo *RegistryUpdateOne) Where(ps ...predicate.Registry) *RegistryUpdateOne {
-	ruo.mutation.Where(ps...)
-	return ruo
+func (_u *RegistryUpdateOne) Where(ps ...predicate.Registry) *RegistryUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (ruo *RegistryUpdateOne) Select(field string, fields ...string) *RegistryUpdateOne {
-	ruo.fields = append([]string{field}, fields...)
-	return ruo
+func (_u *RegistryUpdateOne) Select(field string, fields ...string) *RegistryUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated Registry entity.
-func (ruo *RegistryUpdateOne) Save(ctx context.Context) (*Registry, error) {
-	ruo.defaults()
-	return withHooks(ctx, ruo.sqlSave, ruo.mutation, ruo.hooks)
+func (_u *RegistryUpdateOne) Save(ctx context.Context) (*Registry, error) {
+	_u.defaults()
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ruo *RegistryUpdateOne) SaveX(ctx context.Context) *Registry {
-	node, err := ruo.Save(ctx)
+func (_u *RegistryUpdateOne) SaveX(ctx context.Context) *Registry {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -262,29 +262,29 @@ func (ruo *RegistryUpdateOne) SaveX(ctx context.Context) *Registry {
 }
 
 // Exec executes the query on the entity.
-func (ruo *RegistryUpdateOne) Exec(ctx context.Context) error {
-	_, err := ruo.Save(ctx)
+func (_u *RegistryUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ruo *RegistryUpdateOne) ExecX(ctx context.Context) {
-	if err := ruo.Exec(ctx); err != nil {
+func (_u *RegistryUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (ruo *RegistryUpdateOne) defaults() {
-	if _, ok := ruo.mutation.UpdatedAt(); !ok {
+func (_u *RegistryUpdateOne) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		v := registry.UpdateDefaultUpdatedAt()
-		ruo.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ruo *RegistryUpdateOne) check() error {
-	if v, ok := ruo.mutation.Host(); ok {
+func (_u *RegistryUpdateOne) check() error {
+	if v, ok := _u.mutation.Host(); ok {
 		if err := registry.HostValidator(v); err != nil {
 			return &ValidationError{Name: "host", err: fmt.Errorf(`ent: validator failed for field "Registry.host": %w`, err)}
 		}
@@ -293,22 +293,22 @@ func (ruo *RegistryUpdateOne) check() error {
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (ruo *RegistryUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *RegistryUpdateOne {
-	ruo.modifiers = append(ruo.modifiers, modifiers...)
-	return ruo
+func (_u *RegistryUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *RegistryUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (ruo *RegistryUpdateOne) sqlSave(ctx context.Context) (_node *Registry, err error) {
-	if err := ruo.check(); err != nil {
+func (_u *RegistryUpdateOne) sqlSave(ctx context.Context) (_node *Registry, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(registry.Table, registry.Columns, sqlgraph.NewFieldSpec(registry.FieldID, field.TypeUUID))
-	id, ok := ruo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Registry.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := ruo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, registry.FieldID)
 		for _, f := range fields {
@@ -320,30 +320,30 @@ func (ruo *RegistryUpdateOne) sqlSave(ctx context.Context) (_node *Registry, err
 			}
 		}
 	}
-	if ps := ruo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := ruo.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(registry.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := ruo.mutation.Host(); ok {
+	if value, ok := _u.mutation.Host(); ok {
 		_spec.SetField(registry.FieldHost, field.TypeString, value)
 	}
-	if value, ok := ruo.mutation.KubernetesSecret(); ok {
+	if value, ok := _u.mutation.KubernetesSecret(); ok {
 		_spec.SetField(registry.FieldKubernetesSecret, field.TypeString, value)
 	}
-	if value, ok := ruo.mutation.IsDefault(); ok {
+	if value, ok := _u.mutation.IsDefault(); ok {
 		_spec.SetField(registry.FieldIsDefault, field.TypeBool, value)
 	}
-	_spec.AddModifiers(ruo.modifiers...)
-	_node = &Registry{config: ruo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &Registry{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, ruo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{registry.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -351,6 +351,6 @@ func (ruo *RegistryUpdateOne) sqlSave(ctx context.Context) (_node *Registry, err
 		}
 		return nil, err
 	}
-	ruo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }
