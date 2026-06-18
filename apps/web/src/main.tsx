@@ -6,6 +6,7 @@ import { createRoot } from "react-dom/client";
 import { loadConfig } from "@/lib/config";
 import "@/globals.css";
 import { routeTree } from "./routeTree.gen";
+import { DEFAULT_INTENT_DELAY_MS } from "@/lib/hooks/use-intent";
 
 const queryClient = new QueryClient();
 
@@ -14,7 +15,7 @@ const router = createRouter({
   context: { queryClient },
   defaultPreload: "intent",
   defaultPreloadStaleTime: 0,
-  defaultPreloadDelay: 25,
+  defaultPreloadDelay: DEFAULT_INTENT_DELAY_MS,
   scrollRestoration: true,
 });
 

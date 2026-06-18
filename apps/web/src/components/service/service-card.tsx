@@ -7,6 +7,10 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { TServiceShallow } from "@/lib/queries/services";
 import { ReactNode } from "react";
+import { useIntent } from "@/lib/hooks/use-intent";
+import { useQueryClient } from "@tanstack/react-query";
+import { deploymentsListQuery } from "@/lib/queries/deployments";
+import { serviceQuery } from "@/lib/queries/services";
 
 type TProps = {
   className?: string;
@@ -47,7 +51,22 @@ export default function ServiceCard({
     ? ({ isPlaceholder: true } as const)
     : { teamId, projectId, environmentId, service };
 
+  const queryClient = useQueryClient();
   const volumes = service?.config.volumes;
+  const buttonIntentProps = useIntent({
+    onIntent: () => {
+      if (isPlaceholder) return;
+      const input = {
+        teamId,
+        projectId,
+        environmentId,
+        serviceId: service.id,
+      };
+      queryClient.prefetchQuery(deploymentsListQuery(input));
+      queryClient.prefetchQuery(serviceQuery(input));
+    },
+    enabled: !isPlaceholder,
+  });
 
   return (
     <li
@@ -62,6 +81,7 @@ export default function ServiceCard({
             classNameCard,
             volumes && volumes.length > 0 && "rounded-b-none border-b-0",
           )}
+          {...buttonIntentProps}
         >
           {service && <NewEntityIndicator id={service.id} />}
           <div className="flex w-full items-center justify-start gap-2">
