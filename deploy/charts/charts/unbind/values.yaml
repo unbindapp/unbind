@@ -122,7 +122,7 @@ api:
     - name: LOKI_ENDPOINT
       value: http://loki-gateway.unbind-system.svc.cluster.local
     - name: PROMETHEUS_ENDPOINT
-      value: http://kube-prometheus-stack-prometheus.unbind-system:9090
+      value: http://vmsingle-victoria-metrics-k8s-stack.unbind-system:8428
   startupProbe:
     enabled: true
     failureThreshold: 30

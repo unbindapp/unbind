@@ -9,8 +9,6 @@ repositories:
     url: https://kubernetes.github.io/ingress-nginx
   - name: jetstack
     url: https://charts.jetstack.io
-  - name: bitnami
-    url: https://charts.bitnami.com/bitnami
   - name: fluxcd-community
     url: https://fluxcd-community.github.io/helm-charts
   - name: vm
@@ -97,7 +95,7 @@ releases:
   - name: victoria-metrics-k8s-stack
     namespace: {{ .Values.namespace }}
     chart: vm/victoria-metrics-k8s-stack
-    version: 0.52.0
+    version: 0.84.0
     values:
       - values/victoria-metrics-k8s-stack.yaml
       - vmsingle:
@@ -115,7 +113,7 @@ releases:
   - name: alloy
     namespace: {{ .Values.namespace }}
     chart: grafana/alloy
-    version: 1.1.1
+    version: 1.10.0
     values:
       -
         alloy:
@@ -199,7 +197,7 @@ releases:
   - name: loki
     namespace: {{ .Values.namespace }}
     chart: grafana/loki
-    version: 6.30.1
+    version: 7.0.0
     values:
       -
         loki:
@@ -382,30 +380,25 @@ releases:
 
   - name: redis
     namespace: {{ .Values.namespace }}
-    chart: bitnami/redis
-    version: 21.2.1
+    chart: oci://registry-1.docker.io/cloudpirates/redis
+    version: 0.30.4
     values:
       - architecture: standalone
         auth:
           enabled: false
-        commonConfiguration: |-
+        persistence:
+          enabled: true
+          size: 512Mi
+        resources:
+          requests:
+            memory: 10Mi
+            cpu: 10m
+          limits:
+            memory: 192Mi
+            cpu: 150m
+        extraConfig: |
           appendonly yes
           protected-mode no
-        master:
-          replicaCount: 1
-          persistence:
-            enabled: true
-            size: 512Mi
-          resourcesPreset: "none"
-          resources:
-            requests:
-              memory: 10Mi
-              cpu: 10m
-            limits:
-              memory: 192Mi
-              cpu: 150m
-        replica:
-          replicaCount: 0
     labels:
       component: redis
     installed: {{ .Values | get "components.redis.enabled" true }}
@@ -511,7 +504,7 @@ releases:
   - name: ingress-nginx
     namespace: {{ .Values.namespace }}
     chart: ingress-nginx/ingress-nginx
-    version: 4.12.3
+    version: 4.15.1
     values:
       -
         controller:
@@ -522,7 +515,7 @@ releases:
             # ! Overriding this because, have had issues with 403 from the default registry (they may block some hetzner IPs)
             registry: ghcr.io
             image: unbindapp/ingress-nginx/controller
-            tag: "v1.12.3"
+            tag: "v1.15.1"
           replicaCount: 2
           ingressClassResource:
             name: nginx
@@ -772,7 +765,7 @@ releases:
             - name: LOKI_ENDPOINT
               value: {{ .Values | get "overrides.unbind.api.loki.endpoint" (printf "http://loki-gateway.%s.svc.cluster.local" .Values.namespace) }}
             - name: PROMETHEUS_ENDPOINT
-              value: {{ .Values | get "overrides.unbind.api.prometheus.endpoint" (printf "http://vmsingle-victoria-metrics-k8s-stack.%s:8429" .Values.namespace) }}
+              value: {{ .Values | get "overrides.unbind.api.prometheus.endpoint" (printf "http://vmsingle-victoria-metrics-k8s-stack.%s:8428" .Values.namespace) }}
 
       - serviceAccount:
           create: true
