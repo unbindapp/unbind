@@ -350,6 +350,19 @@ memorySwap:
 		},
 
 		{
+			Description: "Preparing K3S data directory",
+			Progress:    0.047,
+			Action: func(ctx context.Context) error {
+				// With an explicit sqlite --datastore-endpoint, k3s runs kine in
+				// external-datastore mode and does not create the db directory itself,
+				// so the sqlite file can't be opened on a fresh machine. Create it.
+				if err := os.MkdirAll("/var/lib/rancher/k3s/server/db", 0700); err != nil {
+					return fmt.Errorf("failed to create k3s datastore directory: %w", err)
+				}
+				return nil
+			},
+		},
+		{
 			Description: "Downloading K3S installation script",
 			Progress:    0.05,
 			Action: func(ctx context.Context) error {
