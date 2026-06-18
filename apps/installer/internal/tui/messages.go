@@ -75,6 +75,10 @@ type dnsValidationCompleteMsg struct {
 	mainResolved     bool
 	mainResolvedIP   string
 	credentialsValid bool
+
+	// wildcardProxied is true when the wildcard domain resolves through a
+	// Cloudflare proxy, which breaks per-service HTTPS without Cloudflare ACM.
+	wildcardProxied bool
 }
 
 type dnsValidationTimeoutMsg struct{}

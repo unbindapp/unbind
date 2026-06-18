@@ -7,7 +7,9 @@ require (
 	github.com/charmbracelet/bubbletea v1.3.5
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/stretchr/testify v1.10.0
+	golang.org/x/net v0.41.0
 	helm.sh/helm/v3 v3.18.2
+	k8s.io/apimachinery v0.33.1
 	k8s.io/client-go v0.33.1
 )
 
@@ -74,7 +76,6 @@ require (
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
-	golang.org/x/net v0.41.0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
 	golang.org/x/sync v0.15.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
@@ -87,7 +88,6 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/api v0.33.1 // indirect
 	k8s.io/apiextensions-apiserver v0.33.1 // indirect
-	k8s.io/apimachinery v0.33.1 // indirect
 	k8s.io/cli-runtime v0.33.1 // indirect
 	k8s.io/component-base v0.33.1 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect

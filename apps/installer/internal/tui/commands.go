@@ -9,6 +9,8 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"golang.org/x/net/publicsuffix"
+
 	"github.com/unbindapp/unbind-installer/internal/errdefs"
 	unbindInstaller "github.com/unbindapp/unbind-installer/internal/installer"
 	"github.com/unbindapp/unbind-installer/internal/k3s"
@@ -209,16 +211,29 @@ func (self Model) validateConfig() tea.Cmd {
 		result.mainResolvedIP = strings.Join(network.LookupIPs(base), ", ")
 		result.cloudflare = unbindCF
 
-		// Wildcard detection via an arbitrary sub-domain (informational).
+		// Wildcard detection via an arbitrary sub-domain (informational only:
+		// it records whether per-service subdomains will work, but must NOT
+		// substitute for the base domain check below).
 		wildcardValid, wildcardCF := self.detectWildcard(base)
 		if wildcardValid {
 			self.dnsInfo.IsWildcard = true
 		}
 		if wildcardCF {
 			result.cloudflare = true
+			// Cloudflare's free Universal SSL covers the zone apex and a single-level
+			// wildcard (*.example.com) but NOT deeper wildcards (*.sub.example.com).
+			// Only the deeper case breaks per-service HTTPS when proxied.
+			if isDeepWildcard(base) {
+				result.wildcardProxied = true
+				self.log("Warning: the wildcard *." + base + " is proxied through Cloudflare and sits below the zone apex, which Universal SSL does not cover. Per-service HTTPS will fail unless you have Cloudflare Advanced Certificate Manager — set the *." + base + " record to DNS-only (grey cloud).")
+			}
 		}
 
-		mainOK := unbindValid || unbindCF || wildcardValid
+		// The dashboard/API are served on the base domain itself, so it must
+		// resolve to this server (or to Cloudflare when proxied). A resolving
+		// wildcard does not imply the base record exists, so it cannot stand in
+		// for this check.
+		mainOK := unbindValid || unbindCF
 		result.mainResolved = mainOK
 
 		// Registry check depends on the chosen registry type.
@@ -242,6 +257,18 @@ func (self Model) validateConfig() tea.Cmd {
 		}
 		return result
 	}
+}
+
+// isDeepWildcard reports whether base sits below its registrable domain, so a
+// "*."+base wildcard is NOT covered by Cloudflare's free Universal SSL (which only
+// covers the zone apex and a single-level wildcard). Returns false when the
+// registrable domain cannot be determined, to avoid false warnings.
+func isDeepWildcard(base string) bool {
+	etld1, err := publicsuffix.EffectiveTLDPlusOne(base)
+	if err != nil {
+		return false
+	}
+	return !strings.EqualFold(base, etld1)
 }
 
 // validateDomain checks whether the domain resolves to the expected IP and whether it is

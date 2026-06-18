@@ -508,7 +508,7 @@ releases:
       component: registry
     installed: {{ if .Values | get "externalRegistry.enabled" false }}false{{ else }}{{ .Values | get "components.registry.enabled" true }}{{ end }}
 
-  # NOTE: upstream kubernetes/ingress-nginx was archived in March 2026; plan a migration to its successor (InGate). We ship our own controller image fork below.
+  # NOTE: upstream kubernetes/ingress-nginx was archived in March 2026; plan a migration to its successor (InGate).
   - name: ingress-nginx
     namespace: {{ .Values.namespace }}
     chart: ingress-nginx/ingress-nginx
@@ -519,11 +519,6 @@ releases:
           priorityClassName: unbind-high-priority
           kind: Deployment
           allowSnippetAnnotations: true
-          image:
-            # ! Overriding this because, have had issues with 403 from the default registry (they may block some hetzner IPs)
-            registry: ghcr.io
-            image: unbindapp/ingress-nginx/controller
-            tag: "v1.15.1"
           replicaCount: 2
           ingressClassResource:
             name: nginx

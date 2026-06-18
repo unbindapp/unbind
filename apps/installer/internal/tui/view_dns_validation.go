@@ -120,6 +120,7 @@ func (m Model) updateDNSValidationState(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case dnsValidationCompleteMsg:
 		m.dnsInfo.ValidationSuccess = msg.success
 		m.dnsInfo.CloudflareDetected = msg.cloudflare
+		m.dnsInfo.WildcardProxied = msg.wildcardProxied
 		m.dnsInfo.MainResolved = msg.mainResolved
 		m.dnsInfo.MainResolvedIP = msg.mainResolvedIP
 		m.dnsInfo.ValidationDuration = time.Since(m.dnsInfo.TestingStartTime)
@@ -214,6 +215,23 @@ func viewDNSSuccess(m Model) string {
 		s.WriteString(m.styles.Bold.Render("Points to: "))
 		s.WriteString(m.styles.Normal.Render(m.dnsInfo.ExternalIP))
 		s.WriteString("\n")
+	}
+
+	if m.dnsInfo.WildcardProxied {
+		s.WriteString("\n")
+		s.WriteString(m.styles.Warning.Render("⚠ Wildcard is proxied through Cloudflare"))
+		s.WriteString("\n")
+		warnLines := []string{
+			"Per-service HTTPS (e.g. myapp." + strings.TrimPrefix(m.dnsInfo.Domain, "*.") + ") will fail unless",
+			"you have Cloudflare Advanced Certificate Manager. Recommended: set",
+			"the *." + strings.TrimPrefix(m.dnsInfo.Domain, "*.") + " DNS record to DNS-only (grey cloud).",
+		}
+		for _, w := range warnLines {
+			for _, line := range wrapText(w, maxWidth) {
+				s.WriteString(m.styles.Subtle.Render(line))
+				s.WriteString("\n")
+			}
+		}
 	}
 
 	// Registry Configuration details

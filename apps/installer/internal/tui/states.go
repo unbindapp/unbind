@@ -52,6 +52,7 @@ type dnsInfo struct {
 	ValidationStarted  bool
 	ValidationSuccess  bool
 	CloudflareDetected bool
+	WildcardProxied    bool
 	TestingStartTime   time.Time
 	ValidationDuration time.Duration
 

@@ -21,7 +21,7 @@ import (
 
 const (
 	// ConfigMap details
-	BuildkitDeploymentName = "buildkitd"
+	BuildkitDeploymentName = "buildkit"
 	BuildkitConfigName     = "buildkit-config"
 	BuildkitConfigKey      = "buildkitd.toml"
 

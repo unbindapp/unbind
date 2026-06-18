@@ -474,6 +474,13 @@ func (self *UnbindInstaller) SyncHelmfileWithSteps(ctx context.Context, opts Syn
 			},
 		},
 		{
+			Description: "Verifying components are healthy",
+			Progress:    0.92,
+			Action: func(ctx context.Context) error {
+				return self.VerifyWorkloadsHealthy(ctx, dependencyName, "unbind-system", 10*time.Minute)
+			},
+		},
+		{
 			Description: "Cleaning up temporary files",
 			Progress:    0.95,
 			Action: func(ctx context.Context) error {
@@ -554,64 +561,47 @@ func isErrorMessage(message string) bool {
 	return false
 }
 
-// updateProgressBasedOnOutput updates the progress based on the output line
+// updateProgressBasedOnOutput maps helmfile output lines to user-facing progress.
+// helmfile tags most lines with "release=<name>" (and "chart=<name>"); surfacing
+// that name is what lets the install screen show exactly which component it is on.
 func (self *UnbindInstaller) updateProgressBasedOnOutput(dependency string, output string) {
-	// Match known output lines to update progress and description
+	if release := parseHelmfileToken(output, "release="); release != "" {
+		switch {
+		case containsString(output, "Building dependency"):
+			self.logProgress(dependency, 0.30, "Building dependencies for "+release, nil, StatusInstalling)
+		case containsString(output, "Comparing"):
+			self.logProgress(dependency, 0.45, "Comparing "+release, nil, StatusInstalling)
+		case containsString(output, "Deleting"):
+			self.logProgress(dependency, 0.90, "Removing "+release, nil, StatusInstalling)
+		case containsString(output, "Upgrading"), containsString(output, "Installing"):
+			self.logProgress(dependency, 0.60, "Installing "+release, nil, StatusInstalling)
+		default:
+			self.logProgress(dependency, 0.55, "Processing "+release, nil, StatusInstalling)
+		}
+		return
+	}
+
 	switch {
-	case containsString(output, "Processing chart"):
-		// Extract chart name if possible
-		parts := strings.Split(output, "Processing chart ")
-		chartName := "helm chart"
-		if len(parts) > 1 {
-			chartName = strings.TrimSpace(strings.Split(parts[1], " ")[0])
-		}
-		self.logProgress(dependency, 0.25, fmt.Sprintf("Processing %s", chartName), nil, StatusInstalling)
-
-	case containsString(output, "Installing chart"):
-		// Extract chart name if possible
-		parts := strings.Split(output, "Installing chart ")
-		chartName := "helm chart"
-		if len(parts) > 1 {
-			chartName = strings.TrimSpace(strings.Split(parts[1], " ")[0])
-		}
-		self.logProgress(dependency, 0.40, fmt.Sprintf("Installing %s", chartName), nil, StatusInstalling)
-
-	case containsString(output, "Installing release"):
-		// Extract release name if possible
-		parts := strings.Split(output, "Installing release ")
-		releaseName := "component"
-		if len(parts) > 1 {
-			releaseName = strings.TrimSpace(strings.Split(parts[1], " ")[0])
-		}
-		self.logProgress(dependency, 0.55, fmt.Sprintf("Installing %s", releaseName), nil, StatusInstalling)
-
-	case containsString(output, "Building dependency release"):
-		self.logProgress(dependency, 0.65, "Building dependency releases", nil, StatusInstalling)
-
-	case containsString(output, "Upgrading release"):
-		// Extract release name if possible
-		parts := strings.Split(output, "Upgrading release ")
-		releaseName := "component"
-		if len(parts) > 1 {
-			releaseName = strings.TrimSpace(strings.Split(parts[1], " ")[0])
-		}
-		self.logProgress(dependency, 0.75, fmt.Sprintf("Upgrading %s", releaseName), nil, StatusInstalling)
-
 	case containsString(output, "UPDATED RELEASES:"):
-		self.logProgress(dependency, 0.85, "Finalizing release updates", nil, StatusInstalling)
-
-	case containsString(output, "Deleting release"):
-		// Extract release name if possible
-		parts := strings.Split(output, "Deleting release ")
-		releaseName := "component"
-		if len(parts) > 1 {
-			releaseName = strings.TrimSpace(strings.Split(parts[1], " ")[0])
-		}
-		self.logProgress(dependency, 0.90, fmt.Sprintf("Cleaning up %s", releaseName), nil, StatusInstalling)
-
-	case containsString(output, "DELETED RELEASES:") || containsString(output, "Listing releases matching"):
+		self.logProgress(dependency, 0.85, "Finalizing releases", nil, StatusInstalling)
+	case containsString(output, "DELETED RELEASES:"), containsString(output, "Listing releases matching"):
 		self.logProgress(dependency, 0.95, "Verifying installation", nil, StatusInstalling)
 	}
+}
+
+// parseHelmfileToken extracts the value following a "key=" token (e.g. "release=")
+// from a helmfile log line, stopping at the next comma or whitespace. Returns ""
+// when the token is absent.
+func parseHelmfileToken(line, key string) string {
+	_, rest, found := strings.Cut(line, key)
+	if !found {
+		return ""
+	}
+	rest = strings.TrimSpace(rest)
+	if i := strings.IndexAny(rest, ", \t"); i >= 0 {
+		rest = rest[:i]
+	}
+	return rest
 }
 
 // containsString is a helper function to check if a string contains a substring
