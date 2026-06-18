@@ -1,0 +1,24 @@
+name: Build operator binary
+description: Build the operator manager binary on the runner
+inputs:
+  arch:
+    description: Target GOARCH (matches the native runner, so no emulation)
+    required: true
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-go@v5
+      with:
+        go-version-file: ./apps/operator/go.mod
+
+    # GOWORK=off so the `replace => ../api` directive drives resolution, matching
+    # the in-Docker build (go.work would otherwise override it).
+    - name: Build manager
+      shell: bash
+      working-directory: ./apps/operator
+      env:
+        GOWORK: "off"
+        CGO_ENABLED: "0"
+        GOOS: linux
+        GOARCH: ${{ inputs.arch }}
+      run: go build -ldflags "-s -w" -o manager cmd/main.go

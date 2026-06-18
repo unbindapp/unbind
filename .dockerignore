@@ -6,9 +6,6 @@ deploy
 apps/web/dist
 apps/web/.tanstack
 apps/api/internal/web/dist
-apps/api/cmd/api/api
-apps/api/cmd/cli/cli
-apps/api/cmd/builder/builder
 **/*.out
 **/.data
 **/.DS_Store

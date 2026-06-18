@@ -40,6 +40,15 @@ jobs:
       VERSION: ${{ needs.version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Build app artifacts
+        id: artifacts
+        uses: ./.github/actions/build-app
+        with:
+          arch: ${{ matrix.arch }}
+          version: ${{ env.VERSION }}
+          build_image: ghcr.io/unbindapp/unbind-builder:${{ env.VERSION }}
+
       - uses: docker/setup-buildx-action@v3
       - uses: docker/login-action@v3
         with:
@@ -56,11 +65,8 @@ jobs:
           provenance: false
           push: true
           build-args: |
-            VERSION=${{ env.VERSION }}
-            BUILD_IMAGE=ghcr.io/unbindapp/unbind-builder:${{ env.VERSION }}
+            MISE_VERSION=${{ steps.artifacts.outputs.mise_version }}
           tags: ghcr.io/unbindapp/unbind:${{ env.VERSION }}-${{ matrix.arch }}
-          cache-from: type=gha,scope=app-${{ matrix.arch }}
-          cache-to: type=gha,mode=max,scope=app-${{ matrix.arch }}
 
       - name: Builder image
         uses: docker/build-push-action@v6
@@ -70,11 +76,12 @@ jobs:
           platforms: ${{ matrix.platform }}
           provenance: false
           push: true
-          build-args: |
-            VERSION=${{ env.VERSION }}
           tags: ghcr.io/unbindapp/unbind-builder:${{ env.VERSION }}-${{ matrix.arch }}
-          cache-from: type=gha,scope=builder-${{ matrix.arch }}
-          cache-to: type=gha,mode=max,scope=builder-${{ matrix.arch }}
+
+      - name: Build operator binary
+        uses: ./.github/actions/build-operator
+        with:
+          arch: ${{ matrix.arch }}
 
       - name: Operator image
         uses: docker/build-push-action@v6
@@ -85,8 +92,6 @@ jobs:
           provenance: false
           push: true
           tags: ghcr.io/unbindapp/unbind-operator:${{ env.VERSION }}-${{ matrix.arch }}
-          cache-from: type=gha,scope=operator-${{ matrix.arch }}
-          cache-to: type=gha,mode=max,scope=operator-${{ matrix.arch }}
 
   manifests:
     name: 📦 Multi-arch manifests

@@ -1,0 +1,66 @@
+name: Build app artifacts
+description: Build the SPA bundle and Go binaries (api, cli, builder) on the runner
+inputs:
+  arch:
+    description: Target GOARCH (matches the native runner, so no emulation)
+    required: true
+  version:
+    description: Version stamped into the binaries via ldflags
+    required: true
+  build_image:
+    description: Builder image reference baked into the api binary
+    required: false
+    default: ghcr.io/unbindapp/unbind-builder:latest
+outputs:
+  mise_version:
+    description: mise version railpack pins, for the runtime image to pre-seed
+    value: ${{ steps.mise.outputs.version }}
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-go@v5
+      with:
+        go-version-file: ./apps/api/go.mod
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: "22"
+        cache: "npm"
+        cache-dependency-path: apps/web/package-lock.json
+
+    - name: Build SPA
+      shell: bash
+      working-directory: ./apps/web
+      run: |
+        npm ci
+        npm run build
+        rm -rf ../api/internal/web/dist
+        cp -r dist ../api/internal/web/dist
+
+    - name: Build Go binaries
+      shell: bash
+      working-directory: ./apps/api
+      env:
+        GOWORK: "off"
+        CGO_ENABLED: "0"
+        GOARCH: ${{ inputs.arch }}
+        VERSION: ${{ inputs.version }}
+        BUILD_IMAGE: ${{ inputs.build_image }}
+      run: |
+        go build -trimpath \
+          -ldflags "-s -w -X main.Version=${VERSION} -X main.BuildImage=${BUILD_IMAGE}" \
+          -o ./cmd/api/api ./cmd/api
+        go build -trimpath -ldflags "-s -w" -o ./cmd/cli/cli ./cmd/cli
+        go build -trimpath \
+          -ldflags "-s -w -X main.Version=${VERSION}" \
+          -o ./cmd/builder/builder ./cmd/builder
+
+    - name: Capture mise version
+      id: mise
+      shell: bash
+      working-directory: ./apps/api
+      env:
+        GOWORK: "off"
+      run: |
+        RAILPACK_DIR="$(go list -m -f '{{.Dir}}' github.com/railwayapp/railpack)"
+        echo "version=$(tr -d '[:space:]' < "$RAILPACK_DIR/core/mise/version.txt")" >> "$GITHUB_OUTPUT"
