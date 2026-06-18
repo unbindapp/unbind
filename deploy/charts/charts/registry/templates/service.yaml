@@ -4,11 +4,15 @@ metadata:
   name: docker-registry
   namespace: {{ .Release.Namespace }}
 spec:
+  {{- if .Values.service.clusterIP }}
+  clusterIP: {{ .Values.service.clusterIP }}
+  {{- end }}
   selector:
     app: registry
   ports:
     - port: 5000
       targetPort: 5000
+{{- if .Values.service.nodePort.enabled }}
 ---
 apiVersion: v1
 kind: Service
@@ -22,4 +26,5 @@ spec:
   ports:
   - port: 5000
     targetPort: 5000
-    nodePort: {{ .Values.service.nodePort }}
+    nodePort: {{ .Values.service.nodePort.port }}
+{{- end }}

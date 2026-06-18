@@ -76,20 +76,20 @@ func (f *FactRotator) GetNext() string {
 
 // SyncHelmfileOptions defines options for the Helmfile sync operation
 type SyncHelmfileOptions struct {
-	BaseDomain           string
-	UnbindDomain         string
-	UnbindRegistryDomain string
-	AdditionalValues     map[string]interface{}
-	RepoURL              string
-	HelmfilePath         string // path to the helmfile within the repo
-	SparseDir            string // checkout only this subtree (empty = full checkout)
-	Ref                  string // git tag/branch to check out (empty or "dev" = default branch)
+	BaseDomain       string
+	UnbindDomain     string
+	AdditionalValues map[string]interface{}
+	RepoURL          string
+	HelmfilePath     string // path to the helmfile within the repo
+	SparseDir        string // checkout only this subtree (empty = full checkout)
+	Ref              string // git tag/branch to check out (empty or "dev" = default branch)
 
 	// Registry configuration
-	DisableRegistry  bool   // Whether to disable the local registry component
-	RegistryUsername string // External registry username
-	RegistryPassword string // External registry password
-	RegistryHost     string // External registry host
+	DisableRegistry   bool   // Whether to disable the local registry component
+	RegistryClusterIP string // Pinned ClusterIP for the self-hosted in-cluster registry
+	RegistryUsername  string // External registry username
+	RegistryPassword  string // External registry password
+	RegistryHost      string // External registry host
 }
 
 // SyncHelmfileWithSteps performs a helmfile sync operation using the charts in the unbind monorepo (deploy/charts)
@@ -290,7 +290,6 @@ func (self *UnbindInstaller) SyncHelmfileWithSteps(ctx context.Context, opts Syn
 				args := []string{
 					"--file", filepath.Join(repoDir, opts.HelmfilePath),
 					"--state-values-set", "unbindDomain=" + opts.UnbindDomain,
-					"--state-values-set", "unbindRegistryDomain=" + opts.UnbindRegistryDomain,
 					"--state-values-set", "wildcardBaseDomain=" + opts.BaseDomain,
 					"--state-values-set", "unbindVersion=" + unbindVersion,
 				}
@@ -316,8 +315,11 @@ func (self *UnbindInstaller) SyncHelmfileWithSteps(ctx context.Context, opts Syn
 						args = append(args, "--state-values-set", "externalRegistry.password="+opts.RegistryPassword)
 					}
 				} else {
-					// Use self-hosted registry
+					// Use self-hosted in-cluster registry
 					args = append(args, "--state-values-set", "externalRegistry.enabled=false")
+					if opts.RegistryClusterIP != "" {
+						args = append(args, "--state-values-set", "registryClusterIP="+opts.RegistryClusterIP)
+					}
 				}
 
 				// Add any additional values if present

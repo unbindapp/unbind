@@ -65,8 +65,6 @@ overrides:
     replicaCount: 1
     persistence:
       size: 4Gi
-    service:
-      nodePort: 31571
     cleanup:
       threshold: 3Gi # This should be around 80% of the total size, this is for the auto cleanup job
 

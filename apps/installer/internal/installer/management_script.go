@@ -173,12 +173,31 @@ handle_add_node() {
 
     server_url="https://${cluster_ip}:6443"
 
+    # When the cluster uses the self-hosted registry, the primary has a registries.yaml
+    # pointing containerd at it. New nodes need the same file, or their pulls will fail.
+    registries_content=""
+    if [ -f /etc/rancher/k3s/registries.yaml ]; then
+        registries_content=$(cat /etc/rancher/k3s/registries.yaml)
+    fi
+
     print_banner
     print_box "Add Node Instructions" "$BLUE"
-    echo -e "${BOLD}To add a new node to your Unbind cluster, run the following command on the new server:${NC}"
+    echo -e "${BOLD}To add a new node to your Unbind cluster, run the following on the new server:${NC}"
     echo ""
 
-    # Build the command with version if available
+    step=1
+    if [ -n "$registries_content" ]; then
+        echo -e "${BOLD}${step}. Point containerd at the Unbind registry:${NC}"
+        echo ""
+        echo -e "${CYAN}sudo mkdir -p /etc/rancher/k3s && sudo tee /etc/rancher/k3s/registries.yaml > /dev/null <<'REGEOF'"
+        echo "$registries_content"
+        echo -e "REGEOF${NC}"
+        echo ""
+        step=2
+    fi
+
+    echo -e "${BOLD}${step}. Join the cluster:${NC}"
+    echo ""
     if [ -n "$k3s_version" ]; then
         echo -e "${CYAN}curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=$k3s_version K3S_URL=$server_url K3S_TOKEN=$token sh -${NC}"
         echo ""

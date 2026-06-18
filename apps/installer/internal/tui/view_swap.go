@@ -25,6 +25,51 @@ func viewCheckingSwap(m Model) string {
 	return renderWithLayout(m, s.String())
 }
 
+// viewSwapPrompt offers optional swap creation, with a warning about running swap
+// under Kubernetes.
+func viewSwapPrompt(m Model) string {
+	s := strings.Builder{}
+	s.WriteString(getResponsiveBanner(m))
+	s.WriteString("\n\n")
+
+	maxWidth := getUsableWidth(m.width)
+
+	s.WriteString(m.styles.Bold.Render("Swap is not enabled on this machine"))
+	s.WriteString("\n\n")
+
+	intro := fmt.Sprintf("Unbind can create and enable a %dGB swap file to reduce the risk of out-of-memory kills on smaller machines.", m.swapSizeGB)
+	for _, line := range wrapText(intro, maxWidth) {
+		s.WriteString(m.styles.Normal.Render(line))
+		s.WriteString("\n")
+	}
+	s.WriteString("\n")
+
+	s.WriteString(m.styles.Bold.Render("Note about swap on Kubernetes:"))
+	s.WriteString("\n")
+	warnings := []string{
+		"• Swap support (NodeSwap) is relatively new and can cause unpredictable performance.",
+		"• Workloads may run slowly instead of being evicted, and memory limits/eviction behave differently.",
+		"• Recommended only for memory-constrained single-node setups; skip it if you have ample RAM.",
+	}
+	for _, w := range warnings {
+		for _, line := range wrapText(w, maxWidth) {
+			s.WriteString(m.styles.Subtle.Render(line))
+			s.WriteString("\n")
+		}
+	}
+	s.WriteString("\n")
+
+	s.WriteString(m.styles.Bold.Render("Options:"))
+	s.WriteString("\n")
+	s.WriteString(m.styles.Normal.Render(fmt.Sprintf("• Press 'y' to create a %dGB swap file", m.swapSizeGB)))
+	s.WriteString("\n")
+	s.WriteString(m.styles.Normal.Render("• Press 'n' to continue without swap (default)"))
+	s.WriteString("\n\n")
+	s.WriteString(m.styles.Subtle.Render("Press 'Ctrl+c' to quit"))
+
+	return renderWithLayout(m, s.String())
+}
+
 // viewCreatingSwap shows progress while the swap file is being created.
 func viewCreatingSwap(m Model) string {
 	s := strings.Builder{}
@@ -128,8 +173,11 @@ func (m Model) updateCheckingSwapState(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.logChan <- "Sufficient memory and/or limited disk; skipping swap creation"
 			return m.transition(StateInstallingPackages, true, m.installRequiredPackages())
 		}
+		// Swap is opt-in: present the recommendation and let the user decide.
 		m.swapSizeGB = msg.sizeGB
-		return m.transition(StateCreatingSwap, true, m.createSwapCommand(msg.sizeGB))
+		m.isLoading = false
+		m.state = StateSwapPrompt
+		return m, m.listenForLogs()
 
 	case errMsg:
 		// Handle error with our error helper
@@ -149,6 +197,22 @@ func (m Model) updateCheckingSwapState(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q":
+			return m, tea.Quit
+		}
+	}
+	return m, m.listenForLogs()
+}
+
+func (m Model) updateSwapPromptState(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if keyMsg, ok := msg.(tea.KeyMsg); ok {
+		switch keyMsg.String() {
+		case "y", "Y":
+			m.logChan <- fmt.Sprintf("Creating %dGB swap file", m.swapSizeGB)
+			return m.transition(StateCreatingSwap, true, m.createSwapCommand(m.swapSizeGB))
+		case "n", "N", "enter":
+			m.logChan <- "Continuing without swap"
+			return m.transition(StateInstallingPackages, true, m.installRequiredPackages())
+		case "q", "ctrl+c":
 			return m, tea.Quit
 		}
 	}

@@ -16,6 +16,32 @@ import (
 
 const K3S_VERSION = "v1.36.1+k3s1"
 
+const (
+	// RegistryInternalHost is the in-cluster address of the self-hosted registry.
+	// Images are pushed and pulled under this name, so it never needs a public domain.
+	RegistryInternalHost = "docker-registry.unbind-system:5000"
+
+	// RegistryClusterIP must match registryClusterIP in deploy/charts/helmfile.yaml.gotmpl.
+	// Each node's containerd is pointed here via registries.yaml, since it cannot resolve
+	// cluster DNS and the registry is served over plain HTTP.
+	RegistryClusterIP = "10.43.255.250"
+)
+
+// RegistriesYAML returns the /etc/rancher/k3s/registries.yaml contents that let a node's
+// containerd pull from the self-hosted registry by rewriting its in-cluster name to the
+// pinned ClusterIP over HTTP.
+func RegistriesYAML() string {
+	return fmt.Sprintf(`mirrors:
+  "%s":
+    endpoint:
+      - "http://%s:5000"
+configs:
+  "%s:5000":
+    tls:
+      insecure_skip_verify: true
+`, RegistryInternalHost, RegistryClusterIP, RegistryClusterIP)
+}
+
 // Educational facts about the platform being installed
 var platformFacts = []string{
 	"Kubernetes open-source container orchestration system that automates deployment, scaling, and management of containerized applications.",
@@ -208,7 +234,7 @@ func (self *Installer) sendFact(fact string) {
 }
 
 // Install sets up k3s and returns the kubeconfig path
-func (self *Installer) Install(ctx context.Context) (string, error) {
+func (self *Installer) Install(ctx context.Context, selfHostedRegistry bool) (string, error) {
 	k3sInstallFlags := "--disable=traefik --disable=local-storage " +
 		"--kubelet-arg=fail-swap-on=false " +
 		"--kubelet-arg=config=/etc/rancher/k3s/kubelet-config.yaml " +
@@ -302,6 +328,23 @@ memorySwap:
 				if err := os.WriteFile(configPath, []byte(kubeletConfig), 0644); err != nil {
 					return fmt.Errorf("failed to write kubelet config file: %w", err)
 				}
+				return nil
+			},
+		},
+		{
+			Description: "Configuring container registry access for nodes",
+			Progress:    0.045,
+			Action: func(ctx context.Context) error {
+				if !selfHostedRegistry {
+					return nil
+				}
+				if err := os.MkdirAll("/etc/rancher/k3s", 0755); err != nil {
+					return fmt.Errorf("failed to create registry config directory: %w", err)
+				}
+				if err := os.WriteFile("/etc/rancher/k3s/registries.yaml", []byte(RegistriesYAML()), 0644); err != nil {
+					return fmt.Errorf("failed to write registries.yaml: %w", err)
+				}
+				self.log("Configured containerd to pull from the in-cluster registry at " + RegistryInternalHost)
 				return nil
 			},
 		},

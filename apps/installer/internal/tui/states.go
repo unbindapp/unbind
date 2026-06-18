@@ -15,6 +15,7 @@ const (
 	StateRootDetection
 	StateOSInfo
 	StateCheckingSwap
+	StateSwapPrompt
 	StateCreatingSwap
 	StateSwapCreated
 	StateInstallingPackages
@@ -26,10 +27,7 @@ const (
 	StateDNSSuccess
 	StateDNSFailed
 	StateRegistryTypeSelection
-	StateRegistryDomainInput
-	StateRegistryDNSValidation
 	StateExternalRegistryInput
-	StateExternalRegistryValidation
 	StateInstallingK3S
 	StateInstallingUnbind
 	StateInstallationComplete
@@ -47,7 +45,6 @@ const (
 type dnsInfo struct {
 	Domain             string // The base domain or wildcard domain
 	UnbindDomain       string // unbind.yourdomain.com
-	RegistryDomain     string // unbind-registry.yourdomain.com
 	IsWildcard         bool   // Whether wildcard was specified
 	InternalIP         string
 	ExternalIP         string
@@ -55,9 +52,13 @@ type dnsInfo struct {
 	ValidationStarted  bool
 	ValidationSuccess  bool
 	CloudflareDetected bool
-	RegistryIssue      bool
 	TestingStartTime   time.Time
 	ValidationDuration time.Duration
+
+	// Per-check results captured during the combined validation pass, surfaced
+	// on the failure screen.
+	MainResolved   bool
+	MainResolvedIP string
 
 	// Registry configuration
 	RegistryType         RegistryType

@@ -68,9 +68,13 @@ type dnsValidationMsg struct{}
 type autoAdvanceMsg struct{}
 
 type dnsValidationCompleteMsg struct {
-	success       bool
-	cloudflare    bool
-	registryIssue bool
+	success    bool
+	cloudflare bool
+
+	// Per-check detail so the failure screen can show exactly what failed.
+	mainResolved     bool
+	mainResolvedIP   string
+	credentialsValid bool
 }
 
 type dnsValidationTimeoutMsg struct{}
@@ -98,11 +102,6 @@ type k3sUninstallCompleteMsg struct {
 // Dependencies
 // unbindInstallCompleteMsg signals all deps installed
 type unbindInstallCompleteMsg struct{}
-
-// registryValidationCompleteMsg for credential check
-type registryValidationCompleteMsg struct {
-	success bool
-}
 
 // Educational fact message
 type factMsg struct {

@@ -98,7 +98,7 @@ func viewDNSConfig(m Model) string {
 	s.WriteString("\n")
 
 	// Continue button
-	continueText := " Press Enter to validate DNS "
+	continueText := " Press Enter to continue "
 	continuePrompt := m.styles.HighlightButton.Render(continueText)
 
 	// Center the button if we have enough width
@@ -129,24 +129,17 @@ func (m Model) updateDNSConfigState(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 	m.dnsInfo.Domain = m.domainInput.Value()
 
-	// If Enter was pressed with a valid domain, start validation
+	// On Enter, capture the domain and move on to registry configuration.
+	// Nothing is validated here; all input is gathered first and validated in a
+	// single pass once the registry choice is known.
 	if keyMsg, ok := msg.(tea.KeyMsg); ok && keyMsg.String() == "enter" {
 		if m.dnsInfo.Domain != "" {
-			// Parse the domain and determine if it's a wildcard
-			domain := m.dnsInfo.Domain
-			m.dnsInfo.UnbindDomain = strings.TrimPrefix(domain, "*.")
+			m.dnsInfo.UnbindDomain = strings.TrimPrefix(m.dnsInfo.Domain, "*.")
+			m.dnsInfo.IsWildcard = strings.HasPrefix(m.dnsInfo.Domain, "*.")
 
-			m.state = StateDNSValidation
-			m.isLoading = true
-			m.dnsInfo.ValidationStarted = true
-			m.dnsInfo.TestingStartTime = time.Now()
-
-			return m, tea.Batch(
-				m.spinner.Tick,
-				m.startMainDNSValidation(),
-				dnsValidationTimeout(30*time.Second),
-				m.listenForLogs(),
-			)
+			m.state = StateRegistryTypeSelection
+			m.registryCountdown = 8
+			return m, tea.Batch(countdownTick(), m.listenForLogs())
 		}
 	}
 

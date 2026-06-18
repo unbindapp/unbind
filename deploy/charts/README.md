@@ -38,48 +38,27 @@ kube-state-metrics:
 
 ### registry
 
-At this time, unbind does not support external registries (for local builds) - but it will in the near future.
+Unbind supports two registry modes, chosen during installation:
 
-For now, unbind uses a private internal docker registry for builds from source code.
+- **Self-hosted (default):** an in-cluster docker registry, used for builds from source. It needs **no domain** and is reachable only inside the cluster on a pinned ClusterIP (`registryClusterIP`, default `10.43.255.250`) over plain HTTP — it is never exposed externally.
+- **External:** Docker Hub, GHCR, Quay, or any other registry, configured with credentials.
 
-By default, your kubernetes distribution will not be able to pull from this registry.
+For the self-hosted registry, a node's containerd cannot resolve the in-cluster name (`docker-registry.unbind-system:5000`) on its own, so each node needs a `registries.yaml` pointing it at the pinned ClusterIP. **The installer writes this automatically** on the primary node, and `unbind add-node` prints the same file for new nodes.
 
-An example of configuring this for k3s would be:
-
-/etc/rancher/k3s/registries.yaml
+If you bring your own cluster (k3s) and deploy the self-hosted registry directly via this chart, create `/etc/rancher/k3s/registries.yaml` on every node before/while joining:
 
 ```yaml
 mirrors:
-  docker-registry.unbind-system:5000:
+  "docker-registry.unbind-system:5000":
     endpoint:
-      - 'http://{any node IP for nodeport service}:31571'
+      - "http://10.43.255.250:5000"
 configs:
-  'docker-registry.unbind-system:5000':
+  "10.43.255.250:5000":
     tls:
       insecure_skip_verify: true
 ```
 
-**NodePort**
-
-A node port service is required for the internal registry, so that the node host can resolve it.
-
-It'd recommended to block incoming access to this port via a firewall.
-
-Example with ufw:
-
-```bash
-sudo ufw default allow outgoing
-sudo ufw default allow incoming
-sudo ufw deny 31571/tcp
-sudo ufw deny 31571/udp
-sudo ufw allow from 192.168.1.0/24 to any port 31571
-```
-
-If running a multi-node cluster, and you have a private network, you'll want to allow access from all of the nodes, it may be like:
-
-```bash
-sudo ufw allow from10.0.0.0/24 to any port 31571
-```
+The ClusterIP must match `registryClusterIP` and fall within your cluster's service CIDR (k3s default `10.43.0.0/16`). No NodePort, ingress, domain, or firewall rules are required.
 
 ### buildkitd
 

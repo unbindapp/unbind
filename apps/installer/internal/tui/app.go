@@ -47,7 +47,6 @@ type Model struct {
 	// Feature-specific data
 	dnsInfo           *dnsInfo
 	domainInput       textinput.Model
-	registryInput     textinput.Model
 	usernameInput     textinput.Model
 	passwordInput     textinput.Model
 	registryHostInput textinput.Model
@@ -91,9 +90,6 @@ func NewModel(version string) Model {
 	// Initialize domain input
 	domainInput := initializeDomainInput()
 
-	// Initialize registry input
-	registryInput := initializeRegistryInput()
-
 	// Initialize username and password inputs
 	usernameInput := initializeUsernameInput()
 	passwordInput := initializePasswordInput()
@@ -133,7 +129,6 @@ func NewModel(version string) Model {
 			isComplete: false,
 		},
 		domainInput:         domainInput,
-		registryInput:       registryInput,
 		usernameInput:       usernameInput,
 		passwordInput:       passwordInput,
 		registryHostInput:   registryHostInput,
@@ -165,7 +160,7 @@ func (self Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c":
 			return self, tea.Quit
 		case "ctrl+d":
-			if self.state != StateDNSConfig && self.state != StateExternalRegistryInput && self.state != StateRegistryDomainInput {
+			if self.state != StateDNSConfig && self.state != StateExternalRegistryInput {
 				// Toggle debug logs view
 				self.showDebugLogs = !self.showDebugLogs
 				return self, nil
@@ -233,6 +228,8 @@ func (self Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		model, cmd = self.updateOSInfoState(msg)
 	case StateCheckingSwap:
 		model, cmd = self.updateCheckingSwapState(msg)
+	case StateSwapPrompt:
+		model, cmd = self.updateSwapPromptState(msg)
 	case StateCreatingSwap:
 		model, cmd = self.updateCreatingSwapState(msg)
 	case StateSwapCreated:
@@ -253,14 +250,8 @@ func (self Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		model, cmd = self.updateDNSFailedState(msg)
 	case StateRegistryTypeSelection:
 		model, cmd = self.updateRegistryTypeSelectionState(msg)
-	case StateRegistryDomainInput:
-		model, cmd = self.updateRegistryDomainInputState(msg)
-	case StateRegistryDNSValidation:
-		model, cmd = self.updateRegistryDNSValidationState(msg)
 	case StateExternalRegistryInput:
 		model, cmd = self.updateExternalRegistryInputState(msg)
-	case StateExternalRegistryValidation:
-		model, cmd = self.updateExternalRegistryValidationState(msg)
 	case StateError:
 		model, cmd = self.updateErrorState(msg)
 	case StateInstallingK3S:
@@ -334,6 +325,8 @@ func (self Model) View() string {
 			content = viewOSInfo(self)
 		case StateCheckingSwap:
 			content = viewCheckingSwap(self)
+		case StateSwapPrompt:
+			content = viewSwapPrompt(self)
 		case StateCreatingSwap:
 			content = viewCreatingSwap(self)
 		case StateSwapCreated:
@@ -360,14 +353,8 @@ func (self Model) View() string {
 			content = viewInstallationComplete(self)
 		case StateRegistryTypeSelection:
 			content = viewRegistryTypeSelection(self)
-		case StateRegistryDomainInput:
-			content = viewRegistryDomainInput(self)
-		case StateRegistryDNSValidation:
-			content = viewRegistryDNSValidation(self)
 		case StateExternalRegistryInput:
 			content = viewExternalRegistryInput(self)
-		case StateExternalRegistryValidation:
-			content = viewExternalRegistryValidation(self)
 		default:
 			content = viewWelcome(self)
 		}

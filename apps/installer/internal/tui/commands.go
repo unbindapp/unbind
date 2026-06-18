@@ -171,104 +171,76 @@ func (self Model) startDetectingIPs() tea.Cmd {
 	}
 }
 
-// startMainDNSValidation launches the DNS validation process.
+// startConfigValidation enters the single combined validation pass over all
+// gathered configuration (main domain + registry) and returns the commands that
+// run it.
+func (self Model) startConfigValidation() (tea.Model, tea.Cmd) {
+	self.state = StateDNSValidation
+	self.isLoading = true
+	self.dnsInfo.ValidationStarted = true
+	self.dnsInfo.TestingStartTime = time.Now()
+	return self, tea.Batch(
+		self.spinner.Tick,
+		self.validateConfig(),
+		dnsValidationTimeout(30*time.Second),
+		self.listenForLogs(),
+	)
+}
+
+// validateConfig validates everything the user configured in one pass:
+//  1. the main domain resolves (wildcard is detected and marked)
+//  2. self-hosted: the registry domain resolves and is NOT behind a Cloudflare
+//     proxy; external: the registry credentials are valid
 //
-// Validation rules:
-//  1. <domain> must resolve
-//  2. If wildcard DNS is detected, mark it
-//  3. Always proceed to registry selection afterward
-func (self Model) startMainDNSValidation() tea.Cmd {
+// success is true only when both the main domain and the registry check pass.
+func (self Model) validateConfig() tea.Cmd {
 	return func() tea.Msg {
 		if self.dnsInfo == nil || self.dnsInfo.UnbindDomain == "" {
-			return errMsg{err: nil}
+			return dnsValidationCompleteMsg{success: false}
 		}
 
-		self.log("Starting DNS validation…")
+		self.log("Validating configuration…")
 
 		base := strings.TrimPrefix(self.dnsInfo.Domain, "*.")
+		result := dnsValidationCompleteMsg{}
 
-		/* -------------------------------------------------------------------- */
-		// 1. unbind domain
-		/* -------------------------------------------------------------------- */
+		// Main domain (Cloudflare proxy allowed here).
 		unbindValid, unbindCF := self.validateDomain(base, true)
+		result.mainResolvedIP = strings.Join(network.LookupIPs(base), ", ")
+		result.cloudflare = unbindCF
 
-		/* -------------------------------------------------------------------- */
-		// 2. Wildcard detection via arbitrary sub‑domain
-		/* -------------------------------------------------------------------- */
+		// Wildcard detection via an arbitrary sub-domain (informational).
 		wildcardValid, wildcardCF := self.detectWildcard(base)
 		if wildcardValid {
 			self.dnsInfo.IsWildcard = true
 		}
-
-		/* -------------------------------------------------------------------- */
-		// Do not detect registry domain - we'll always prompt for it later
-		/* -------------------------------------------------------------------- */
-
-		// Always clear registry domain to force manual registry configuration
-		self.dnsInfo.RegistryDomain = ""
-
-		/* -------------------------------------------------------------------- */
-		// Final decision matrix
-		/* -------------------------------------------------------------------- */
-
-		// If wildcard domain is valid, always return success
-		if wildcardValid {
-			self.log("Wildcard domain detected and validated successfully")
-			return dnsValidationCompleteMsg{
-				success:    true,
-				cloudflare: wildcardCF || unbindCF,
-			}
+		if wildcardCF {
+			result.cloudflare = true
 		}
 
-		// If main domain is valid but no wildcard, return success
-		if unbindValid || unbindCF {
-			self.log("Main domain validated successfully")
-			return dnsValidationCompleteMsg{
-				success:    true,
-				cloudflare: unbindCF,
-			}
+		mainOK := unbindValid || unbindCF || wildcardValid
+		result.mainResolved = mainOK
+
+		// Registry check depends on the chosen registry type.
+		registryOK := false
+		switch self.dnsInfo.RegistryType {
+		case RegistrySelfHosted:
+			// The self-hosted registry runs in-cluster with no domain, so there is
+			// nothing to resolve; it is provisioned during the install.
+			registryOK = true
+
+		case RegistryExternal:
+			result.credentialsValid = self.checkRegistryCredentials()
+			registryOK = result.credentialsValid
 		}
 
-		// Otherwise validation failed
-		self.log("DNS validation failed")
-		return dnsValidationCompleteMsg{
-			success:    false,
-			cloudflare: unbindCF || wildcardCF,
-		}
-	}
-}
-
-// startRegistryDNSValidation validates just the registry domain
-func (self Model) startRegistryDNSValidation() tea.Cmd {
-	return func() tea.Msg {
-		if self.dnsInfo == nil || self.dnsInfo.RegistryDomain == "" {
-			return errMsg{err: nil}
-		}
-
-		self.log("Starting registry domain validation…")
-
-		// Validate registry domain (CF proxy *not* allowed)
-		registryValid, registryCF := self.validateDomain(self.dnsInfo.RegistryDomain, false)
-
-		if registryValid && !registryCF {
-			self.log("Registry domain validated successfully")
-			return dnsValidationCompleteMsg{
-				success:    true,
-				cloudflare: false,
-			}
+		result.success = mainOK && registryOK
+		if result.success {
+			self.log("Configuration validated successfully")
 		} else {
-			// If validation fails, don't show errors, just return false
-			if registryCF {
-				self.log("Registry domain is behind Cloudflare proxy, which is not allowed")
-			} else {
-				self.log("Registry domain validation failed")
-			}
-
-			return dnsValidationCompleteMsg{
-				success:    false,
-				cloudflare: registryCF,
-			}
+			self.log("Configuration validation failed")
 		}
+		return result
 	}
 }
 
@@ -313,7 +285,7 @@ func (self Model) installK3S() tea.Cmd {
 		defer cancel() // Ensure resources are cleaned up
 
 		// Install K3S
-		kubeConfig, err := installer.Install(ctx)
+		kubeConfig, err := installer.Install(ctx, self.dnsInfo.RegistryType == RegistrySelfHosted)
 		if err != nil {
 			self.log(fmt.Sprintf("K3S installation failed: %s", err.Error()))
 			return errMsg{err: errdefs.NewCustomError(errdefs.ErrTypeK3sInstallFailed, fmt.Sprintf("K3S installation failed: %s", err.Error()))}
@@ -363,10 +335,11 @@ func (self Model) installUnbind() tea.Cmd {
 
 		// Handle different registry configurations
 		if self.dnsInfo.RegistryType == RegistrySelfHosted {
-			// Self-hosted registry
-			opts.UnbindRegistryDomain = self.dnsInfo.RegistryDomain
+			// Self-hosted registry: in-cluster, no domain. Each node's containerd is
+			// pointed at it via registries.yaml written during the K3S install.
 			opts.DisableRegistry = false
-			self.log("Using self-hosted registry at: " + self.dnsInfo.RegistryDomain)
+			opts.RegistryClusterIP = k3s.RegistryClusterIP
+			self.log("Using self-hosted in-cluster registry at " + k3s.RegistryInternalHost)
 		} else {
 			// External registry
 			opts.RegistryUsername = self.dnsInfo.RegistryUsername
@@ -397,83 +370,49 @@ func (self Model) log(msg string) {
 	self.logChan <- msg
 }
 
-// validateRegistryCredentials checks if the provided Docker registry credentials are valid
-func (self Model) validateRegistryCredentials() tea.Cmd {
-	return func() tea.Msg {
-		if self.dnsInfo == nil || self.dnsInfo.RegistryUsername == "" || self.dnsInfo.RegistryPassword == "" {
-			return errMsg{err: nil}
-		}
-
-		username := self.dnsInfo.RegistryUsername
-		password := self.dnsInfo.RegistryPassword
-		host := self.dnsInfo.RegistryHost
-
-		self.log(fmt.Sprintf("Validating registry credentials for %s on %s...", username, host))
-
-		// Registry-specific authentication method
-		var authURL string
-		var client *http.Client
-		var req *http.Request
-		var err error
-
-		// Default is Docker Hub
-		if host == "docker.io" {
-			// Docker Hub authentication URL
-			authURL = "https://auth.docker.io/token?service=registry.docker.io&scope=repository:library/alpine:pull"
-
-			// Create HTTP client
-			client = &http.Client{
-				Timeout: 10 * time.Second,
-			}
-
-			// Create the request
-			req, err = http.NewRequest("GET", authURL, nil)
-			if err != nil {
-				self.log(fmt.Sprintf("Error creating request: %s", err.Error()))
-				return registryValidationCompleteMsg{success: false}
-			}
-
-			// Add basic auth header
-			req.SetBasicAuth(username, password)
-		} else {
-			// Generic registry API check
-			self.log(fmt.Sprintf("Using generic authentication for %s", host))
-
-			// Use the catalog endpoint as a generic check
-			authURL = fmt.Sprintf("https://%s/v2/_catalog", host)
-
-			// Create HTTP client
-			client = &http.Client{
-				Timeout: 10 * time.Second,
-			}
-
-			// Create the request
-			req, err = http.NewRequest("GET", authURL, nil)
-			if err != nil {
-				self.log(fmt.Sprintf("Error creating request: %s", err.Error()))
-				return registryValidationCompleteMsg{success: false}
-			}
-
-			// Add basic auth header
-			req.SetBasicAuth(username, password)
-		}
-
-		// Make the request
-		self.log(fmt.Sprintf("Connecting to %s...", host))
-		resp, err := client.Do(req)
-		if err != nil {
-			self.log(fmt.Sprintf("Connection error: %s", err.Error()))
-			return registryValidationCompleteMsg{success: false}
-		}
-		defer resp.Body.Close()
-
-		// Check response status
-		if resp.StatusCode == 200 || resp.StatusCode == 401 && resp.Header.Get("Www-Authenticate") != "" {
-			self.log("Authentication successful!")
-			return registryValidationCompleteMsg{success: true}
-		} else {
-			self.log(fmt.Sprintf("Authentication failed with status: %d", resp.StatusCode))
-			return registryValidationCompleteMsg{success: false}
-		}
+// checkRegistryCredentials reports whether the configured external registry
+// credentials are valid. Runs synchronously as part of validateConfig.
+func (self Model) checkRegistryCredentials() bool {
+	if self.dnsInfo == nil || self.dnsInfo.RegistryUsername == "" || self.dnsInfo.RegistryPassword == "" {
+		return false
 	}
+
+	username := self.dnsInfo.RegistryUsername
+	password := self.dnsInfo.RegistryPassword
+	host := self.dnsInfo.RegistryHost
+
+	self.log(fmt.Sprintf("Validating registry credentials for %s on %s...", username, host))
+
+	// Docker Hub uses a dedicated token endpoint; everything else falls back to
+	// the generic v2 catalog endpoint.
+	authURL := fmt.Sprintf("https://%s/v2/_catalog", host)
+	if host == "docker.io" {
+		authURL = "https://auth.docker.io/token?service=registry.docker.io&scope=repository:library/alpine:pull"
+	} else {
+		self.log(fmt.Sprintf("Using generic authentication for %s", host))
+	}
+
+	req, err := http.NewRequest("GET", authURL, nil)
+	if err != nil {
+		self.log(fmt.Sprintf("Error creating request: %s", err.Error()))
+		return false
+	}
+	req.SetBasicAuth(username, password)
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	self.log(fmt.Sprintf("Connecting to %s...", host))
+	resp, err := client.Do(req)
+	if err != nil {
+		self.log(fmt.Sprintf("Connection error: %s", err.Error()))
+		return false
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == 200 || resp.StatusCode == 401 && resp.Header.Get("Www-Authenticate") != "" {
+		self.log("Authentication successful!")
+		return true
+	}
+
+	self.log(fmt.Sprintf("Authentication failed with status: %d", resp.StatusCode))
+	return false
 }

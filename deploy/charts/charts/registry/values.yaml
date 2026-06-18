@@ -2,11 +2,16 @@ replicaCount: 1
 persistence:
   size: 5Gi
 service:
-  nodePort: 31571
+  # Pin a stable in-cluster address so each node's containerd can be pointed at it
+  # via registries.yaml. Empty lets Kubernetes assign one dynamically.
+  clusterIP: ""
+  nodePort:
+    enabled: false
+    port: 31571
 cleanup:
   threshold: 4Gi # This should be around 80% of the total size, this is for the auto cleanup job
 ingress:
-  enabled: true
+  enabled: false
   host: registry.unbind.cloud
   authSecret: registry-basic-auth
   tls:

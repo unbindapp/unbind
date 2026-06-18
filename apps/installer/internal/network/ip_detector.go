@@ -366,6 +366,16 @@ func fetchIPRanges(url string) ([]string, error) {
 	return cleanRanges, nil
 }
 
+// LookupIPs returns the IP addresses a domain resolves to, or an empty slice if
+// it does not resolve. Used to show resolved-vs-expected detail on failure.
+func LookupIPs(domain string) []string {
+	ips, err := net.LookupHost(domain)
+	if err != nil {
+		return nil
+	}
+	return ips
+}
+
 // ValidateDNS verifies DNS record points to expected IP
 func ValidateDNS(domain string, expectedIP string, logFn func(string)) bool {
 	logFn(fmt.Sprintf("Validating DNS for %s...", domain))

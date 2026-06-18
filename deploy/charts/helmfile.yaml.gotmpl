@@ -18,11 +18,12 @@ repositories:
 
 values:
  - unbindDomain: unbind.example.com
- - unbindRegistryDomain: unbind-registry.example.com
  - wildcardBaseDomain: ""
  - namespace: unbind-system
  - tlsSecretName: unbind-domain-tls
- - registryTlsSecretName: unbind-registry-domain-tls
+ # Pinned in-cluster address for the self-hosted registry. Nodes' containerd are
+ # pointed here via /etc/rancher/k3s/registries.yaml, so the registry needs no domain.
+ - registryClusterIP: 10.43.255.250
  - unbindVersion: latest
  - externalRegistry:
      enabled: false
@@ -486,11 +487,11 @@ releases:
     values:
       -
         ingress:
-          enabled: true
-          host: {{ .Values.unbindRegistryDomain }}
-          authSecret: registry-basic-auth
-          tls:
-            secretName: {{ .Values.registryTlsSecretName }}
+          enabled: false
+        service:
+          clusterIP: {{ .Values.registryClusterIP }}
+          nodePort:
+            enabled: false
         replicaCount: {{ .Values | get "overrides.registry.replicaCount" }}
         persistence:
           size: {{ .Values | get "overrides.registry.persistence.size" }}
@@ -746,7 +747,7 @@ releases:
             - name: BUILDER_NAMESPACE
               value: {{ .Values.namespace }}
             - name: BOOTSTRAP_CONTAINER_REGISTRY_HOST
-              value: {{ if .Values | get "externalRegistry.enabled" false }}{{ .Values | get "externalRegistry.host" "docker.io" }}{{ else }}{{ .Values | get "overrides.unbind.api.registry.host" .Values.unbindRegistryDomain }}{{ end }}
+              value: {{ if .Values | get "externalRegistry.enabled" false }}{{ .Values | get "externalRegistry.host" "docker.io" }}{{ else }}{{ .Values | get "overrides.unbind.api.registry.host" (printf "docker-registry.%s:5000" .Values.namespace) }}{{ end }}
             - name: BOOTSTRAP_CONTAINER_REGISTRY_USER
               valueFrom:
                 secretKeyRef:

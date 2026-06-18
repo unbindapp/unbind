@@ -238,12 +238,12 @@ func viewInstallComplete(m Model) string {
 func (m Model) updateInstallCompleteState(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case autoAdvanceMsg:
-		// Start IP detection for DNS configuration
-		m.state = StateDetectingIPs
+		// Prerequisites are installed; continue the headless install with K3S.
+		m.state = StateInstallingK3S
 		m.isLoading = true
 		return m.processStateUpdate(
 			m.spinner.Tick,
-			m.startDetectingIPs(),
+			m.installK3S(),
 		)
 
 	case errMsg:

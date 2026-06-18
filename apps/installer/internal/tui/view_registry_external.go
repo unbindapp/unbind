@@ -3,9 +3,7 @@ package tui
 import (
 	"fmt"
 	"strings"
-	"time"
 
-	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -41,7 +39,7 @@ func viewRegistryTypeSelection(m Model) string {
 		s.WriteString(m.styles.Normal.Render(line))
 		s.WriteString("\n")
 	}
-	option1Note := "   - Requires DNS name pointing to your server"
+	option1Note := "   - Runs in-cluster, no domain or extra DNS records needed"
 	for _, line := range wrapText(option1Note, maxWidth) {
 		s.WriteString(m.styles.Subtle.Render(line))
 		s.WriteString("\n")
@@ -90,35 +88,16 @@ func viewRegistryTypeSelection(m Model) string {
 	return renderWithLayout(m, s.String())
 }
 
-// selectSelfHostedRegistry configures a self-hosted registry. For wildcard domains the
-// registry domain is derived and validated automatically; otherwise the user is prompted.
+// selectSelfHostedRegistry configures the self-hosted registry. It runs in-cluster
+// with no domain, so there is nothing to enter or validate here — proceed straight
+// to the combined configuration validation pass.
 func (m Model) selectSelfHostedRegistry() (tea.Model, tea.Cmd) {
 	if m.dnsInfo == nil {
 		m.dnsInfo = &dnsInfo{}
 	}
 	m.dnsInfo.RegistryType = RegistrySelfHosted
 	m.dnsInfo.DisableLocalRegistry = false
-
-	if !m.dnsInfo.IsWildcard {
-		m.state = StateRegistryDomainInput
-		m.registryInput.Focus()
-		return m, m.listenForLogs()
-	}
-
-	base := strings.TrimPrefix(m.dnsInfo.Domain, "*.")
-	m.dnsInfo.RegistryDomain = "unbind-registry." + base
-	m.registryInput.SetValue(m.dnsInfo.RegistryDomain)
-	m.state = StateRegistryDNSValidation
-	m.isLoading = true
-	m.dnsInfo.ValidationStarted = true
-	m.dnsInfo.TestingStartTime = time.Now()
-	m.log(fmt.Sprintf("Using derived registry domain %s", m.dnsInfo.RegistryDomain))
-	return m, tea.Batch(
-		m.spinner.Tick,
-		m.startRegistryDNSValidation(),
-		dnsValidationTimeout(30*time.Second),
-		m.listenForLogs(),
-	)
+	return m.startConfigValidation()
 }
 
 // updateRegistryTypeSelectionState handles selection of registry type
@@ -418,14 +397,7 @@ func (m Model) updateExternalRegistryInputState(msg tea.Msg) (tea.Model, tea.Cmd
 			} else if m.passwordInput.Focused() {
 				// Only submit if all fields are filled
 				if m.dnsInfo.RegistryUsername != "" && m.dnsInfo.RegistryPassword != "" && m.dnsInfo.RegistryHost != "" {
-					m.state = StateExternalRegistryValidation
-					m.isLoading = true
-					m.dnsInfo.TestingStartTime = time.Now()
-					return m, tea.Batch(
-						m.spinner.Tick,
-						m.validateRegistryCredentials(),
-						m.listenForLogs(),
-					)
+					return m.startConfigValidation()
 				}
 				return m, m.listenForLogs()
 			}
@@ -438,14 +410,7 @@ func (m Model) updateExternalRegistryInputState(msg tea.Msg) (tea.Model, tea.Cmd
 				return m, nil
 			} else if m.passwordInput.Focused() {
 				if m.dnsInfo.RegistryUsername != "" && m.dnsInfo.RegistryPassword != "" {
-					m.state = StateExternalRegistryValidation
-					m.isLoading = true
-					m.dnsInfo.TestingStartTime = time.Now()
-					return m, tea.Batch(
-						m.spinner.Tick,
-						m.validateRegistryCredentials(),
-						m.listenForLogs(),
-					)
+					return m.startConfigValidation()
 				}
 				return m, m.listenForLogs()
 			}
@@ -459,102 +424,6 @@ func (m Model) updateExternalRegistryInputState(msg tea.Msg) (tea.Model, tea.Cmd
 
 	// For any other message, keep updating the input and listening for logs
 	return m, tea.Batch(cmd, m.listenForLogs())
-}
-
-// viewExternalRegistryValidation shows validation of external registry credentials
-func viewExternalRegistryValidation(m Model) string {
-	s := strings.Builder{}
-
-	// Banner
-	s.WriteString(getBanner(m))
-	s.WriteString("\n\n")
-
-	// Show current action
-	s.WriteString(m.spinner.View())
-	s.WriteString(" ")
-	s.WriteString(m.styles.Bold.Render("Validating Registry Credentials..."))
-	s.WriteString("\n\n")
-
-	// Display what we're testing
-	s.WriteString(m.styles.Bold.Render("Verifying:"))
-	s.WriteString("\n")
-	s.WriteString(fmt.Sprintf("  • Username: %s\n", m.styles.Normal.Render(m.dnsInfo.RegistryUsername)))
-	s.WriteString(fmt.Sprintf("  • Registry: %s\n", m.styles.Normal.Render(getRegistryDisplayName(m.dnsInfo.RegistryHost))))
-	s.WriteString("\n")
-
-	// Process logs
-	if len(m.logMessages) > 0 {
-		s.WriteString(m.styles.Bold.Render("Connection logs:"))
-		s.WriteString("\n")
-
-		// Show the last few log messages
-		startIdx := 0
-		if len(m.logMessages) > 8 {
-			startIdx = len(m.logMessages) - 8
-		}
-
-		for _, msg := range m.logMessages[startIdx:] {
-			// Truncate the message if it's too long
-			const maxLength = 80 // Reasonable terminal width
-
-			displayMsg := msg
-			if len(msg) > maxLength {
-				displayMsg = msg[:maxLength-3] + "..."
-			}
-
-			s.WriteString(fmt.Sprintf(" %s\n", m.styles.Subtle.Render(displayMsg)))
-		}
-	}
-
-	// Status bar at the bottom
-	s.WriteString("\n")
-	s.WriteString(m.styles.StatusBar.Render("Press Ctrl+c to quit"))
-
-	return s.String()
-}
-
-// updateExternalRegistryValidationState handles updates in the external registry validation state
-func (m Model) updateExternalRegistryValidationState(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case spinner.TickMsg:
-		var cmd tea.Cmd
-		m.spinner, cmd = m.spinner.Update(msg)
-		return m, tea.Batch(cmd, m.listenForLogs())
-
-	case registryValidationCompleteMsg:
-		m.dnsInfo.ValidationDuration = time.Since(m.dnsInfo.TestingStartTime)
-
-		if msg.success {
-			// If registry validation is successful, proceed to success state
-			m.state = StateDNSSuccess
-			m.isLoading = false
-
-			// Schedule automatic advancement after 1 second
-			return m, tea.Batch(
-				m.listenForLogs(),
-				tea.Tick(1*time.Second, func(time.Time) tea.Msg {
-					return autoAdvanceMsg{}
-				}),
-			)
-		} else {
-			// If validation fails, go back to registry input
-			m.state = StateExternalRegistryInput
-			m.isLoading = false
-			m.logChan <- "Registry credentials validation failed. Please try again."
-
-			// Focus username field
-			m.usernameInput.Focus()
-
-			return m, m.listenForLogs()
-		}
-
-	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
-		return m, m.listenForLogs()
-	}
-
-	return m, m.listenForLogs()
 }
 
 // getRegistryDisplayName returns a user-friendly display name for registry hosts
@@ -587,22 +456,6 @@ func initializeDomainInput() textinput.Model {
 			return nil
 		}
 
-		// Handle regular domain
-		if !utils.IsDNSName(s) {
-			return fmt.Errorf("%s is not a valid domain", s)
-		}
-		return nil
-	}
-	ti.PromptStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#009900"))
-	return ti
-}
-
-// initializeRegistryInput initializes the text input for registry domain entry
-func initializeRegistryInput() textinput.Model {
-	ti := textinput.New()
-	ti.Placeholder = "registry.yourdomain.com"
-	ti.Width = 30
-	ti.Validate = func(s string) error {
 		// Handle regular domain
 		if !utils.IsDNSName(s) {
 			return fmt.Errorf("%s is not a valid domain", s)

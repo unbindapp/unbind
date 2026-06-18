@@ -339,11 +339,14 @@ func viewOSInfo(m Model) string {
 func (m Model) updateOSInfoState(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case installPackagesMsg:
-		m.state = StateCheckingSwap
+		// Gather all configuration before touching the host: detect network
+		// info next, then prompt for domain/registry. The install only starts
+		// once configuration is validated.
+		m.state = StateDetectingIPs
 		m.isLoading = true
 		return m, tea.Batch(
 			m.spinner.Tick,
-			m.checkSwapCommand(),
+			m.startDetectingIPs(),
 			m.listenForLogs(),
 		)
 
