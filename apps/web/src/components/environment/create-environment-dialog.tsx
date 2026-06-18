@@ -4,7 +4,6 @@ import { useEnvironmentsUtils } from "@/components/environment/environments-prov
 import ErrorLine from "@/components/error-line";
 import { useProject, useProjectUtils } from "@/components/project/project-provider";
 import { useProjectsUtils } from "@/components/project/projects-provider";
-import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,6 +22,7 @@ import {
   EnvironmentNameSchema,
 } from "@/lib/queries/environments";
 import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import { ResultAsync } from "neverthrow";
 import {
   ButtonHTMLAttributes,
@@ -54,7 +54,7 @@ export function CreateEnvironmentDialog({
     error: createEnvironmentError,
     reset: createEnvironmentReset,
   } = useMutation({ mutationFn: createEnvironmentFn });
-  const { asyncPush } = useAsyncPush();
+  const router = useRouter();
   const { invalidate: invalidateProjects } = useProjectsUtils({ teamId });
   const { invalidate: invalidateProject } = useProjectUtils({ teamId, projectId });
   const { invalidate: invalidateEnvironments } = useEnvironmentsUtils({ teamId, projectId });
@@ -88,13 +88,17 @@ export function CreateEnvironmentDialog({
       setOpen(false);
       onFormSubmitSuccessful?.();
 
-      const asyncPushRes = await ResultAsync.fromPromise(
-        asyncPush(`/${teamId}/project/${projectId}?environment=${environmentId}`),
+      const navigateRes = await ResultAsync.fromPromise(
+        router.navigate({
+          to: "/$team_id/project/$project_id",
+          params: { team_id: teamId, project_id: projectId },
+          search: { environment: environmentId },
+        }),
         () => new Error("Failed to navigate"),
       );
-      if (asyncPushRes.isErr()) {
+      if (navigateRes.isErr()) {
         toast.error("Failed to navigate to project", {
-          description: asyncPushRes.error.message,
+          description: navigateRes.error.message,
         });
         return;
       }

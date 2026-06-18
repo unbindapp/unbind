@@ -3,10 +3,10 @@ import { useCommandPanelStore } from "@/components/command-panel/store/command-p
 import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
 import { useProjectsUtils } from "@/components/project/projects-provider";
-import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { createProject as createProjectFn } from "@/lib/queries/projects";
 import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import { FolderPlusIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
@@ -21,7 +21,7 @@ export default function useNewProjectItem({ context }: TProps) {
 
   const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
 
-  const { asyncPush } = useAsyncPush();
+  const router = useRouter();
   const { invalidate: invalidateProjects } = useProjectsUtils({ teamId: context.teamId });
   const { closePanel } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
@@ -62,13 +62,17 @@ export default function useNewProjectItem({ context }: TProps) {
         return;
       }
 
-      const asyncPushRes = await ResultAsync.fromPromise(
-        asyncPush(`/${context.teamId}/project/${projectId}?environment=${environmentId}`),
+      const navigateRes = await ResultAsync.fromPromise(
+        router.navigate({
+          to: "/$team_id/project/$project_id",
+          params: { team_id: context.teamId, project_id: projectId },
+          search: { environment: environmentId },
+        }),
         () => new Error("Failed to navigate to project"),
       );
-      if (asyncPushRes.isErr()) {
+      if (navigateRes.isErr()) {
         toast.error("Failed to navigate to project", {
-          description: asyncPushRes.error.message,
+          description: navigateRes.error.message,
         });
         setIsPendingId(null);
         return;

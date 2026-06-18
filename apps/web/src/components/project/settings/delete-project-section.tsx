@@ -2,10 +2,10 @@
 
 import { useProject } from "@/components/project/project-provider";
 import { useProjectsUtils } from "@/components/project/projects-provider";
-import { useAsyncPush } from "@/components/providers/async-push-provider";
 import DeleteCard from "@/components/settings/delete-card";
 import { deleteProject as deleteProjectFn } from "@/lib/queries/projects";
 import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 
 type Props = {
   className?: string;
@@ -30,7 +30,7 @@ export default function DeleteProjectSection({ className }: Props) {
     },
   });
 
-  const { asyncPush } = useAsyncPush();
+  const router = useRouter();
 
   return (
     <DeleteCard
@@ -43,7 +43,7 @@ export default function DeleteProjectSection({ className }: Props) {
       onDialogClose={reset}
       onSubmit={async () => {
         await deleteProject({ teamId, projectId });
-        await asyncPush(`/${teamId}`);
+        await router.navigate({ to: "/$team_id", params: { team_id: teamId } });
       }}
       className={className}
     />

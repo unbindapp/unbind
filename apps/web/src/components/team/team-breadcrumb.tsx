@@ -2,7 +2,6 @@
 
 import { BreadcrumbItem } from "@/components/navigation/breadcrumb-item";
 import { BreadcrumbWrapper } from "@/components/navigation/breadcrumb-wrapper";
-import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { useTeams } from "@/components/team/teams-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { useRouter } from "@tanstack/react-router";
@@ -13,7 +12,6 @@ type TProps = {
 };
 
 export default function TeamBreadcrumb({ className }: TProps) {
-  const { asyncPush } = useAsyncPush();
   const router = useRouter();
   const { teamId: teamIdFromPathname } = useIdsFromPathname();
 
@@ -30,32 +28,19 @@ export default function TeamBreadcrumb({ className }: TProps) {
       ? teamData?.teams.find((t) => t.id === selectedTeamId) || null
       : undefined;
 
-  const getHrefForTeamId = useCallback(
-    (id: string) => {
-      const team = teamData?.teams.find((t) => t.id === id);
-      if (!team) return null;
-      return `/${team.id}`;
-    },
-    [teamData],
-  );
-
   const onTeamIdSelect = useCallback(
     async (id: string) => {
       setSelectedTeamId(id);
-      const href = getHrefForTeamId(id);
-      if (!href) return;
-      await asyncPush(href);
+      await router.navigate({ to: "/$team_id", params: { team_id: id } });
     },
-    [asyncPush, getHrefForTeamId],
+    [router],
   );
 
-  const onTeamIdHover = useCallback(
+  const onTeamIdIntent = useCallback(
     (id: string) => {
-      const href = getHrefForTeamId(id);
-      if (!href) return;
-      void router.preloadRoute({ to: href } as Parameters<typeof router.preloadRoute>[0]);
+      void router.preloadRoute({ to: "/$team_id", params: { team_id: id } });
     },
-    [getHrefForTeamId, router],
+    [router],
   );
 
   return (
@@ -66,7 +51,7 @@ export default function TeamBreadcrumb({ className }: TProps) {
         selectedItem={selectedTeam}
         items={teamData?.teams}
         onSelect={onTeamIdSelect}
-        onHover={onTeamIdHover}
+        onIntent={onTeamIdIntent}
         newItemTitle="New Team"
         newItemIsPending={false}
         newItemComingSoon={true}

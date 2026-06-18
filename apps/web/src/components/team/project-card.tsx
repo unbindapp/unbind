@@ -1,12 +1,12 @@
 import BrandIcon from "@/components/icons/brand";
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import { useProjectsUtils } from "@/components/project/projects-provider";
-import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import { Button, LinkButton, TButtonVariants } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { deleteProject as deleteProjectFn, type TProjectShallow } from "@/lib/queries/projects";
 import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import { ReactNode } from "react";
 
 type TProps = {
@@ -127,7 +127,7 @@ function ConditionalButton({
       invalidate();
     },
   });
-  const { asyncPush } = useAsyncPush();
+  const router = useRouter();
 
   if (linkProps === undefined) {
     return (
@@ -147,7 +147,7 @@ function ConditionalButton({
         onSubmit={async () => {
           if (!project) return;
           await deleteProject({ teamId: project.team_id, projectId: project.id });
-          await asyncPush(`/${project.team_id}`);
+          await router.navigate({ to: "/$team_id", params: { team_id: project.team_id } });
         }}
         error={error}
       >

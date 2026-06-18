@@ -41,18 +41,18 @@ type TProps<T> = {
   selectedItem: TBreadcrumbItem<T> | undefined | null;
   items: TBreadcrumbItem<T>[] | undefined;
   onSelect: (id: string) => void;
-  onHover: (id: string) => void;
+  onIntent: (id: string) => void;
   IconItem?: FC<{ id: string; className?: string }>;
   flipChevronOnSm?: boolean;
   showArrow?: (i: T) => boolean;
   children?: ReactNode;
   sideOffset?: number;
 } & (
-  | { manageItemTitle?: never; onSelectManageItem?: never; onHoverManageItem?: never }
+  | { manageItemTitle?: never; onSelectManageItem?: never; onIntentManageItem?: never }
   | {
       manageItemTitle: string;
       onSelectManageItem: (id: string) => void;
-      onHoverManageItem?: (id: string) => void;
+      onIntentManageItem?: (id: string) => void;
     }
 ) &
   (
@@ -80,7 +80,7 @@ export function BreadcrumbItem<T>({
   selectedItem,
   items,
   onSelect,
-  onHover,
+  onIntent,
   IconItem,
   flipChevronOnSm,
   newItemTitle,
@@ -91,7 +91,7 @@ export function BreadcrumbItem<T>({
   onSelectNewItem,
   manageItemTitle,
   onSelectManageItem,
-  onHoverManageItem,
+  onIntentManageItem,
   showArrow,
   open: openProp,
   setOpen: setOpenProp,
@@ -165,7 +165,7 @@ export function BreadcrumbItem<T>({
             );
           })}
           {((newItemTitle && newItem) ||
-            (onSelectManageItem && onHoverManageItem && manageItem)) && (
+            (onSelectManageItem && onIntentManageItem && manageItem)) && (
             <>
               <div className="bg-border pointer-events-none my-2 h-px w-full shrink-0 rounded-full" />
               {newItemTitle && newItem && (
@@ -185,7 +185,7 @@ export function BreadcrumbItem<T>({
                   />
                 </ConditionalNewItemWrapper>
               )}
-              {onSelectManageItem && onHoverManageItem && manageItem && (
+              {onSelectManageItem && onIntentManageItem && manageItem && (
                 <SheetItem
                   item={manageItem}
                   onSelect={onSelectManageItem}
@@ -211,7 +211,7 @@ export function BreadcrumbItem<T>({
                 item={i}
                 key={i.id}
                 onSelect={onSelect}
-                onHover={onHover}
+                onIntent={onIntent}
                 setOpen={setOpen}
                 selectedItem={selectedItem}
                 lastHoveredItem={lastHoveredItem}
@@ -222,7 +222,7 @@ export function BreadcrumbItem<T>({
             );
           })}
         </DropdownMenuGroup>
-        {((newItemTitle && newItem) || (onSelectManageItem && onHoverManageItem && manageItem)) && (
+        {((newItemTitle && newItem) || (onSelectManageItem && onIntentManageItem && manageItem)) && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
@@ -243,10 +243,10 @@ export function BreadcrumbItem<T>({
                   />
                 </ConditionalNewItemWrapper>
               )}
-              {onSelectManageItem && onHoverManageItem && manageItem && (
+              {onSelectManageItem && onIntentManageItem && manageItem && (
                 <DropdownItem
                   onSelect={onSelectManageItem}
-                  onHover={onHoverManageItem}
+                  onIntent={onIntentManageItem}
                   item={manageItem}
                   isPending={false}
                   setOpen={setOpen}
@@ -362,7 +362,7 @@ type TDropdownItemProps<T> = {
   setOpen: (open: boolean) => void;
   dontCloseMenuOnSelect?: boolean;
   onSelect: (id: string) => void;
-  onHover?: (id: string) => void;
+  onIntent?: (id: string) => void;
   lastHoveredItem: TBreadcrumbItem<T> | null | undefined;
   setLastHoveredItem: Dispatch<SetStateAction<TBreadcrumbItem<T> | null | undefined>>;
   showArrow?: (i: TBreadcrumbItem<T>) => boolean;
@@ -378,7 +378,7 @@ function DropdownItem<T>({
   setOpen,
   dontCloseMenuOnSelect,
   onSelect,
-  onHover,
+  onIntent,
   lastHoveredItem,
   setLastHoveredItem,
   showArrow,
@@ -390,8 +390,8 @@ function DropdownItem<T>({
   ...rest
 }: TDropdownItemProps<T>) {
   const menuIntentProps = useIntent({
-    onIntent: () => onHover?.(item.id),
-    enabled: !comingSoon && !!onHover,
+    onIntent: () => onIntent?.(item.id),
+    enabled: !comingSoon && !!onIntent,
   });
   return (
     <DropdownMenuItem

@@ -2,7 +2,6 @@ import { contextCommandPanelRootPage } from "@/components/command-panel/constant
 import { useCommandPanelStore } from "@/components/command-panel/store/command-panel-store-provider";
 import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
-import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import {
   ArchiveIcon,
@@ -30,11 +29,7 @@ type TProps = {
 export default function useGoToItem({ context }: TProps) {
   const mainPageId = "go-to";
   const subpageId = "go-to_subpage";
-  const { asyncPush } = useAsyncPush();
   const router = useRouter();
-  // TanStack preloads on intent; expose a prefetch shim matching the old call sites.
-  const prefetch = (href: string) =>
-    void router.preloadRoute({ to: href } as Parameters<typeof router.preloadRoute>[0]);
 
   const { environmentId } = useIdsFromPathname();
   const setIsPendingId = useCommandPanelStore((s) => s.setIsPendingId);
@@ -42,10 +37,20 @@ export default function useGoToItem({ context }: TProps) {
     defaultPageId: contextCommandPanelRootPage,
   });
 
+  // Wraps a typesafe `router.navigate(...)` call with the command-panel
+  // pending state, error toast, and panel close behavior.
   const navigateTo = useCallback(
-    async ({ url, isPendingId, error }: { url: string; isPendingId: string; error: string }) => {
+    async ({
+      run,
+      isPendingId,
+      error,
+    }: {
+      run: () => Promise<unknown>;
+      isPendingId: string;
+      error: string;
+    }) => {
       setIsPendingId(isPendingId);
-      const res = await ResultAsync.fromPromise(asyncPush(url), () => new Error(error));
+      const res = await ResultAsync.fromPromise(run(), () => new Error(error));
       if (res.isErr()) {
         toast.error("Failed to navigate", {
           description: res.error.message,
@@ -57,19 +62,78 @@ export default function useGoToItem({ context }: TProps) {
       setIsPendingId(null);
       closePanel();
     },
-    [asyncPush, closePanel, setIsPendingId],
+    [closePanel, setIsPendingId],
+  );
+
+  // Typesafe navigation options for a settings page. Project and team settings
+  // live under different route trees, so branch on the context type.
+  const settingsNav = useCallback(
+    (suffix: "" | "/environments" | "/storage" | "/variables" | "/members" | "/webhooks" | "/danger-zone") => {
+      if (context.contextType === "project" || context.contextType === "new-service") {
+        const params = { team_id: context.teamId, project_id: context.projectId };
+        const search = { environment: environmentId ?? undefined };
+        switch (suffix) {
+          case "/environments":
+            return { to: "/$team_id/project/$project_id/settings/environments", params, search } as const;
+          case "/variables":
+            return { to: "/$team_id/project/$project_id/settings/variables", params, search } as const;
+          case "/members":
+            return { to: "/$team_id/project/$project_id/settings/members", params, search } as const;
+          case "/webhooks":
+            return { to: "/$team_id/project/$project_id/settings/webhooks", params, search } as const;
+          case "/danger-zone":
+            return { to: "/$team_id/project/$project_id/settings/danger-zone", params, search } as const;
+          default:
+            return { to: "/$team_id/project/$project_id/settings", params, search } as const;
+        }
+      }
+      if (context.contextType === "team") {
+        const params = { team_id: context.teamId };
+        switch (suffix) {
+          case "/storage":
+            return { to: "/$team_id/settings/storage", params } as const;
+          case "/variables":
+            return { to: "/$team_id/settings/variables", params } as const;
+          case "/members":
+            return { to: "/$team_id/settings/members", params } as const;
+          case "/webhooks":
+            return { to: "/$team_id/settings/webhooks", params } as const;
+          case "/danger-zone":
+            return { to: "/$team_id/settings/danger-zone", params } as const;
+          default:
+            return { to: "/$team_id/settings", params } as const;
+        }
+      }
+      return null;
+    },
+    [context, environmentId],
   );
 
   const navigateToSettings = useCallback(
-    async ({ pathname, isPendingId }: { pathname: string; isPendingId: string }) => {
+    async ({
+      suffix,
+      isPendingId,
+    }: {
+      suffix: Parameters<typeof settingsNav>[0];
+      isPendingId: string;
+    }) => {
+      const nav = settingsNav(suffix);
+      if (!nav) return;
       await navigateTo({
-        url: getSettingsPageHref({ pathname, context, environmentId }),
+        run: () => router.navigate(nav),
         isPendingId,
         error: "Failed to navigate to settings",
       });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [navigateTo, environmentId],
+    [navigateTo, settingsNav, router],
+  );
+
+  const prefetchSettings = useCallback(
+    (suffix: Parameters<typeof settingsNav>[0]) => {
+      const nav = settingsNav(suffix);
+      if (nav) void router.preloadRoute(nav);
+    },
+    [settingsNav, router],
   );
 
   const goToKeywords = useMemo(() => ["go to", "navigate to", "jump to"], []);
@@ -104,15 +168,22 @@ export default function useGoToItem({ context }: TProps) {
                   Icon: CpuIcon,
                   onSelect: async () => {
                     navigateTo({
-                      url: `/${context.teamId}/project/${context.projectId}?environment=${environmentId}`,
+                      run: () =>
+                        router.navigate({
+                          to: "/$team_id/project/$project_id",
+                          params: { team_id: context.teamId, project_id: context.projectId },
+                          search: { environment: environmentId ?? undefined },
+                        }),
                       isPendingId: `${subpageId}_services`,
                       error: "Failed to navigate to services",
                     });
                   },
                   onHighlight: () => {
-                    prefetch(
-                      `/${context.teamId}/project/${context.projectId}?environment=${environmentId}`,
-                    );
+                    void router.preloadRoute({
+                      to: "/$team_id/project/$project_id",
+                      params: { team_id: context.teamId, project_id: context.projectId },
+                      search: { environment: environmentId ?? undefined },
+                    });
                   },
                   keywords: ["project", "home page", ...goToKeywords],
                 },
@@ -123,15 +194,22 @@ export default function useGoToItem({ context }: TProps) {
                   Icon: TextSearchIcon,
                   onSelect: async () => {
                     navigateTo({
-                      url: `/${context.teamId}/project/${context.projectId}/logs?environment=${environmentId}`,
+                      run: () =>
+                        router.navigate({
+                          to: "/$team_id/project/$project_id/logs",
+                          params: { team_id: context.teamId, project_id: context.projectId },
+                          search: { environment: environmentId ?? undefined },
+                        }),
                       isPendingId: `${subpageId}_logs`,
                       error: "Failed to navigate to logs",
                     });
                   },
                   onHighlight: () => {
-                    prefetch(
-                      `/${context.teamId}/project/${context.projectId}/logs?environment=${environmentId}`,
-                    );
+                    void router.preloadRoute({
+                      to: "/$team_id/project/$project_id/logs",
+                      params: { team_id: context.teamId, project_id: context.projectId },
+                      search: { environment: environmentId ?? undefined },
+                    });
                   },
                   keywords: ["logs", "errors", "warnings", "status", "project", ...goToKeywords],
                 },
@@ -142,15 +220,22 @@ export default function useGoToItem({ context }: TProps) {
                   Icon: ChartColumnIcon,
                   onSelect: async () => {
                     navigateTo({
-                      url: `/${context.teamId}/project/${context.projectId}/metrics?environment=${environmentId}`,
+                      run: () =>
+                        router.navigate({
+                          to: "/$team_id/project/$project_id/metrics",
+                          params: { team_id: context.teamId, project_id: context.projectId },
+                          search: { environment: environmentId ?? undefined },
+                        }),
                       isPendingId: `${subpageId}_metrics`,
                       error: "Failed to navigate to metrics",
                     });
                   },
                   onHighlight: () => {
-                    prefetch(
-                      `/${context.teamId}/project/${context.projectId}/metrics?environment=${environmentId}`,
-                    );
+                    void router.preloadRoute({
+                      to: "/$team_id/project/$project_id/metrics",
+                      params: { team_id: context.teamId, project_id: context.projectId },
+                      search: { environment: environmentId ?? undefined },
+                    });
                   },
                   keywords: ["metrics", "usage", "system", "project", ...goToKeywords],
                 },
@@ -164,13 +249,14 @@ export default function useGoToItem({ context }: TProps) {
                     Icon: FolderIcon,
                     onSelect: async () => {
                       navigateTo({
-                        url: `/${context.teamId}`,
+                        run: () =>
+                          router.navigate({ to: "/$team_id", params: { team_id: context.teamId } }),
                         isPendingId: `${subpageId}_projects`,
                         error: "Failed to navigate to projects",
                       });
                     },
                     onHighlight: () => {
-                      prefetch(`/${context.teamId}`);
+                      void router.preloadRoute({ to: "/$team_id", params: { team_id: context.teamId } });
                     },
                     keywords: ["projects", "home page", "team", ...goToKeywords],
                   },
@@ -181,10 +267,10 @@ export default function useGoToItem({ context }: TProps) {
             title: context.contextType === "project" ? "Settings" : "Settings",
             titleSuffix: ` | ${context.contextType === "project" ? "Project" : "Team"}`,
             onSelect: () => {
-              navigateToSettings({ pathname: "", isPendingId: `${subpageId}_/settings` });
+              navigateToSettings({ suffix: "", isPendingId: `${subpageId}_/settings` });
             },
             onHighlight: () => {
-              prefetch(getSettingsPageHref({ pathname: "", context, environmentId }));
+              prefetchSettings("");
             },
             Icon: SettingsIcon,
             keywords: [
@@ -209,18 +295,12 @@ export default function useGoToItem({ context }: TProps) {
                   titleSuffix: ` | ${settingsTitle}`,
                   onSelect: () => {
                     navigateToSettings({
-                      pathname: "/environments",
+                      suffix: "/environments",
                       isPendingId: `${subpageId}_/settings/environments`,
                     });
                   },
                   onHighlight: () => {
-                    prefetch(
-                      getSettingsPageHref({
-                        pathname: "/environments",
-                        context,
-                        environmentId,
-                      }),
-                    );
+                    prefetchSettings("/environments");
                   },
                   Icon: BoxIcon,
                   keywords: [
@@ -241,17 +321,12 @@ export default function useGoToItem({ context }: TProps) {
                   titleSuffix: ` | ${settingsTitle}`,
                   onSelect: () => {
                     navigateToSettings({
-                      pathname: "/storage",
+                      suffix: "/storage",
                       isPendingId: `${subpageId}_/settings/storage`,
                     });
                   },
                   onHighlight: () => {
-                    prefetch(
-                      getSettingsPageHref({
-                        pathname: "/storage",
-                        context,
-                      }),
-                    );
+                    prefetchSettings("/storage");
                   },
                   Icon: ArchiveIcon,
                   keywords: ["s3", "r2", "backup", "source", "storage", ...goToKeywords],
@@ -269,12 +344,12 @@ export default function useGoToItem({ context }: TProps) {
             titleSuffix: ` | ${settingsTitle}`,
             onSelect: () => {
               navigateToSettings({
-                pathname: "/variables",
+                suffix: "/variables",
                 isPendingId: `${subpageId}_/settings/variables`,
               });
             },
             onHighlight: () => {
-              prefetch(getSettingsPageHref({ pathname: "/variables", context, environmentId }));
+              prefetchSettings("/variables");
             },
             Icon: KeyIcon,
             keywords: [
@@ -292,12 +367,12 @@ export default function useGoToItem({ context }: TProps) {
             titleSuffix: ` | ${settingsTitle}`,
             onSelect: () => {
               navigateToSettings({
-                pathname: "/members",
+                suffix: "/members",
                 isPendingId: `${subpageId}_/settings/members`,
               });
             },
             onHighlight: () => {
-              prefetch(getSettingsPageHref({ pathname: "/members", context, environmentId }));
+              prefetchSettings("/members");
             },
             Icon: UsersIcon,
             keywords: ["person", "people", "group", ...goToKeywords],
@@ -308,12 +383,12 @@ export default function useGoToItem({ context }: TProps) {
             titleSuffix: ` | ${settingsTitle}`,
             onSelect: () => {
               navigateToSettings({
-                pathname: "/webhooks",
+                suffix: "/webhooks",
                 isPendingId: `${subpageId}_/settings/webhooks`,
               });
             },
             onHighlight: () => {
-              prefetch(getSettingsPageHref({ pathname: "/webhooks", context, environmentId }));
+              prefetchSettings("/webhooks");
             },
             Icon: WebhookIcon,
             keywords: [
@@ -333,12 +408,12 @@ export default function useGoToItem({ context }: TProps) {
             titleSuffix: ` | ${settingsTitle}`,
             onSelect: () => {
               navigateToSettings({
-                pathname: "/danger-zone",
+                suffix: "/danger-zone",
                 isPendingId: `${subpageId}_/settings/danger-zone`,
               });
             },
             onHighlight: () => {
-              prefetch(getSettingsPageHref({ pathname: "/danger-zone", context, environmentId }));
+              prefetchSettings("/danger-zone");
             },
             Icon: TriangleAlertIcon,
             keywords: ["delete", "danger", ...goToKeywords],
@@ -346,8 +421,16 @@ export default function useGoToItem({ context }: TProps) {
         ],
       },
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigateToSettings, context, settingsTitle, goToKeywords, environmentId, navigateTo]);
+  }, [
+    navigateToSettings,
+    prefetchSettings,
+    context,
+    settingsTitle,
+    goToKeywords,
+    environmentId,
+    navigateTo,
+    router,
+  ]);
 
   const value = useMemo(
     () => ({
@@ -357,18 +440,4 @@ export default function useGoToItem({ context }: TProps) {
   );
 
   return value;
-}
-
-function getSettingsPageHref({
-  pathname,
-  context,
-  environmentId,
-}: {
-  pathname: string;
-  context: TContextCommandPanelContext;
-  environmentId?: string | null;
-}) {
-  return context.contextType === "project" || context.contextType === "new-service"
-    ? `/${context.teamId}/project/${context.projectId}/settings${pathname}?environment=${environmentId}`
-    : `/${context.teamId}/settings${pathname}`;
 }

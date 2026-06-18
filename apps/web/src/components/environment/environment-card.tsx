@@ -5,7 +5,6 @@ import ErrorLine from "@/components/error-line";
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import { useProject, useProjectUtils } from "@/components/project/project-provider";
 import { useProjectsUtils } from "@/components/project/projects-provider";
-import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
@@ -41,6 +40,7 @@ import {
   updateEnvironment as updateEnvironmentFn,
 } from "@/lib/queries/environments";
 import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import { CheckIcon, EllipsisVerticalIcon, PenIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { ReactNode, useRef, useState } from "react";
@@ -76,7 +76,7 @@ export default function EnvironmentCard({
   onClick: onClickProp,
   disableDelete,
 }: TProps) {
-  const { asyncPush } = useAsyncPush();
+  const router = useRouter();
 
   return (
     <li className="relative w-full p-1 sm:w-1/2">
@@ -91,9 +91,11 @@ export default function EnvironmentCard({
           onClick={() => {
             if (!environment) return;
             onClickProp?.();
-            asyncPush(
-              `/${teamId}/project/${projectId}/settings/environments?environment=${environment?.id}`,
-            );
+            router.navigate({
+              to: "/$team_id/project/$project_id/settings/environments",
+              params: { team_id: teamId, project_id: projectId },
+              search: { environment: environment.id },
+            });
           }}
           className="has-hover:group-hover/item:bg-background-hover flex w-full flex-row items-center justify-start gap-2.5 py-3 pr-12 pl-4 font-medium"
         >
@@ -214,7 +216,7 @@ function DeleteTrigger({
   closeDropdown: () => void;
   children: ReactNode;
 }) {
-  const { asyncPush } = useAsyncPush();
+  const router = useRouter();
   const { environmentId } = useIdsFromPathname();
 
   const {
@@ -269,9 +271,11 @@ function DeleteTrigger({
                 : null;
 
           const navigateRes = await ResultAsync.fromPromise(
-            asyncPush(
-              `/${teamId}/project/${projectId}/settings/environments${environmentIdToNavigateTo ? `?environment=${environmentIdToNavigateTo}` : ""}`,
-            ),
+            router.navigate({
+              to: "/$team_id/project/$project_id/settings/environments",
+              params: { team_id: teamId, project_id: projectId },
+              search: { environment: environmentIdToNavigateTo ?? undefined },
+            }),
             () => new Error("Failed to navigate to environments"),
           );
 
@@ -385,7 +389,7 @@ export function NewEnvironmentCard({ teamId, projectId }: { teamId: string; proj
       invalidateProjects();
     },
   });
-  const { asyncPush } = useAsyncPush();
+  const router = useRouter();
 
   const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
 
@@ -432,9 +436,11 @@ export function NewEnvironmentCard({ teamId, projectId }: { teamId: string; proj
       }
 
       const navigateRes = await ResultAsync.fromPromise(
-        asyncPush(
-          `/${teamId}/project/${projectId}/settings/environments?environment=${newEnvironmentId}`,
-        ),
+        router.navigate({
+          to: "/$team_id/project/$project_id/settings/environments",
+          params: { team_id: teamId, project_id: projectId },
+          search: { environment: newEnvironmentId },
+        }),
         () => new Error("Failed to navigate to environments"),
       );
       if (navigateRes.isErr()) {

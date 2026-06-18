@@ -6,7 +6,6 @@ import {
 } from "@/components/environment/create-environment-dialog";
 import { BreadcrumbItem, TBreadcrumbItem } from "@/components/navigation/breadcrumb-item";
 import { useProjects } from "@/components/project/projects-provider";
-import { useAsyncPush } from "@/components/providers/async-push-provider";
 import { Button, TButtonProps } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
@@ -17,7 +16,6 @@ import { useRouter } from "@tanstack/react-router";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 
 export default function EnvironmentSelector() {
-  const { asyncPush } = useAsyncPush();
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -49,31 +47,17 @@ export default function EnvironmentSelector() {
     (e) => e.id === selectedEnvironmentId,
   );
 
-  const getHrefForEnvironmentId = useCallback(
-    (id: string) => {
-      const project = projectsData?.projects.find((p) => p.id === selectedProjectId);
-      const environment = project?.environments.find((e) => e.id === id);
-      if (!project || !environment) return null;
-      const newUrl = new URL(window.location.href);
-      newUrl.searchParams.set("environment", environment.id);
-      // Return a relative href. An absolute URL (with origin) makes TanStack
-      // Router treat the navigation as external and hard-reload the document.
-      return `${newUrl.pathname}${newUrl.search}${newUrl.hash}`;
-    },
-    [projectsData, selectedProjectId],
-  );
-
+  // Switching environment stays on the current route and only swaps the
+  // `environment` search param, preserving any other search params.
   const onEnvironmentIdSelect = useCallback(
     async (id: string) => {
       setSelectedEnvironmentId(id);
-      const href = getHrefForEnvironmentId(id);
-      if (!href) return;
-      await asyncPush(href);
+      await router.navigate({ to: ".", search: (prev) => ({ ...prev, environment: id }) });
     },
-    [getHrefForEnvironmentId, asyncPush],
+    [router],
   );
 
-  const onEnvironmentIdHover = useCallback(
+  const onEnvironmentIdIntent = useCallback(
     (id: string) => {
       if (!teamIdFromPathname || !selectedProjectId) return;
       void queryClient.prefetchQuery(
@@ -87,20 +71,24 @@ export default function EnvironmentSelector() {
     [queryClient, teamIdFromPathname, selectedProjectId],
   );
 
-  const getHrefForEnvironmentManageItem = useCallback(() => {
-    return `/${teamIdFromPathname}/project/${selectedProjectId}/settings/environments?environment=${environmentIdFromPathname || selectedEnvironmentId}`;
+  const getEnvironmentManageItemNav = useCallback(() => {
+    if (!teamIdFromPathname || !selectedProjectId) return null;
+    return {
+      to: "/$team_id/project/$project_id/settings/environments",
+      params: { team_id: teamIdFromPathname, project_id: selectedProjectId },
+      search: { environment: environmentIdFromPathname || selectedEnvironmentId || undefined },
+    } as const;
   }, [teamIdFromPathname, selectedProjectId, environmentIdFromPathname, selectedEnvironmentId]);
 
-  const onSelectEnvironmentManageItem = useCallback(
-    () => asyncPush(getHrefForEnvironmentManageItem()),
-    [getHrefForEnvironmentManageItem, asyncPush],
-  );
+  const onSelectEnvironmentManageItem = useCallback(() => {
+    const nav = getEnvironmentManageItemNav();
+    if (nav) void router.navigate(nav);
+  }, [getEnvironmentManageItemNav, router]);
 
-  const onHoverEnvironmentManageItem = useCallback(() => {
-    const href = getHrefForEnvironmentManageItem();
-    if (!href) return;
-    void router.preloadRoute({ to: href } as Parameters<typeof router.preloadRoute>[0]);
-  }, [getHrefForEnvironmentManageItem, router]);
+  const onIntentEnvironmentManageItem = useCallback(() => {
+    const nav = getEnvironmentManageItemNav();
+    if (nav) void router.preloadRoute(nav);
+  }, [getEnvironmentManageItemNav, router]);
 
   const CreateEnvironmentDialogMemoized: (
     props: Omit<TCreateEnvironmentDialogProps, "onFormSubmitSuccessful">,
@@ -126,7 +114,7 @@ export default function EnvironmentSelector() {
       open={isEnvironmentsMenuOpen}
       setOpen={setIsEnvironmentsMenuOpen}
       onSelect={onEnvironmentIdSelect}
-      onHover={onEnvironmentIdHover}
+      onIntent={onEnvironmentIdIntent}
       newItemTitle="New Environment"
       newItemIsPending={false}
       NewItemWrapper={CreateEnvironmentDialogMemoized}
@@ -134,7 +122,7 @@ export default function EnvironmentSelector() {
       onSelectNewItem={() => null}
       manageItemTitle="Manage"
       onSelectManageItem={onSelectEnvironmentManageItem}
-      onHoverManageItem={onHoverEnvironmentManageItem}
+      onIntentManageItem={onIntentEnvironmentManageItem}
       sideOffset={4}
     >
       <Trigger item={selectedEnvironment} isOpen={isEnvironmentsMenuOpen} />
