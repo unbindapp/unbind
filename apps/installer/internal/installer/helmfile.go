@@ -83,6 +83,7 @@ type SyncHelmfileOptions struct {
 	RepoURL              string
 	HelmfilePath         string // path to the helmfile within the repo
 	SparseDir            string // checkout only this subtree (empty = full checkout)
+	Ref                  string // git tag/branch to check out (empty or "dev" = default branch)
 
 	// Registry configuration
 	DisableRegistry  bool   // Whether to disable the local registry component
@@ -130,7 +131,11 @@ func (self *UnbindInstaller) SyncHelmfileWithSteps(ctx context.Context, opts Syn
 			Description: "Cloning repository",
 			Progress:    0.05,
 			Action: func(ctx context.Context) error {
-				self.logProgress(dependencyName, 0.05, fmt.Sprintf("Preparing to clone from %s", opts.RepoURL), nil, StatusInstalling)
+				cloneRef := opts.Ref
+				if cloneRef == "" || cloneRef == "dev" {
+					cloneRef = "default branch"
+				}
+				self.logProgress(dependencyName, 0.05, fmt.Sprintf("Preparing to clone %s from %s", cloneRef, opts.RepoURL), nil, StatusInstalling)
 
 				// First check if git is installed
 				checkCmd := exec.CommandContext(ctx, "git", "--version")
@@ -187,6 +192,9 @@ func (self *UnbindInstaller) SyncHelmfileWithSteps(ctx context.Context, opts Syn
 				cloneArgs := []string{"clone", "--depth=1"}
 				if opts.SparseDir != "" {
 					cloneArgs = append(cloneArgs, "--filter=blob:none", "--sparse")
+				}
+				if ref := opts.Ref; ref != "" && ref != "dev" {
+					cloneArgs = append(cloneArgs, "--branch", ref)
 				}
 				cloneArgs = append(cloneArgs, opts.RepoURL, repoDir)
 				cmd := exec.CommandContext(cloneCtx, "git", cloneArgs...)
@@ -271,12 +279,20 @@ func (self *UnbindInstaller) SyncHelmfileWithSteps(ctx context.Context, opts Syn
 			Description: "Running helmfile sync",
 			Progress:    0.15,
 			Action: func(ctx context.Context) error {
+				// Pin the unbind image tag to the same channel as the cloned charts:
+				// a tagged installer installs that tag, a dev/master build tracks latest.
+				unbindVersion := opts.Ref
+				if unbindVersion == "" || unbindVersion == "dev" {
+					unbindVersion = "latest"
+				}
+
 				// Construct arguments for helmfile command
 				args := []string{
 					"--file", filepath.Join(repoDir, opts.HelmfilePath),
 					"--state-values-set", "unbindDomain=" + opts.UnbindDomain,
 					"--state-values-set", "unbindRegistryDomain=" + opts.UnbindRegistryDomain,
 					"--state-values-set", "wildcardBaseDomain=" + opts.BaseDomain,
+					"--state-values-set", "unbindVersion=" + unbindVersion,
 				}
 
 				// Add registry configuration options
