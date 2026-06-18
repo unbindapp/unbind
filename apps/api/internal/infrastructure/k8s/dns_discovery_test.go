@@ -281,7 +281,7 @@ func TestDiscoverEndpointsByLabels(t *testing.T) {
 	}
 }
 
-func TestCreateVerificationIngress(t *testing.T) {
+func TestCreateVerificationRoute(t *testing.T) {
 	tests := []struct {
 		name          string
 		domain        string
@@ -311,12 +311,13 @@ func TestCreateVerificationIngress(t *testing.T) {
 			// Mock config
 			mockConfig := &mocks_config.ConfigMock{}
 			mockConfig.On("GetSystemNamespace").Return("unbind-system")
+			mockConfig.On("GetNetworkingProvider").Return("nginx")
 
 			kubeClient := &KubeClient{
 				config: mockConfig,
 			}
 
-			ingress, path, err := kubeClient.CreateVerificationIngress(
+			name, path, err := kubeClient.CreateVerificationRoute(
 				context.Background(),
 				tt.domain,
 				fakeClient,
@@ -326,25 +327,32 @@ func TestCreateVerificationIngress(t *testing.T) {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
-				require.NotNil(t, ingress)
+				assert.NotEmpty(t, name)
 				assert.NotEmpty(t, path)
 
-				// Verify ingress properties
-				assert.Equal(t, "unbind-system", ingress.Namespace)
+				ingress, err := fakeClient.NetworkingV1().Ingresses("unbind-system").Get(
+					context.Background(),
+					name,
+					metav1.GetOptions{},
+				)
+				require.NoError(t, err)
+
+				// Verify route properties
 				assert.Equal(t, "unbind-verification", ingress.Labels["app"])
 				assert.Equal(t, "domain-verification", ingress.Labels["type"])
 				assert.Equal(t, tt.domain, ingress.Labels["domain"])
 				assert.Equal(t, "true", ingress.Labels["temporary"])
 
-				// Verify ingress spec
 				require.Len(t, ingress.Spec.Rules, 1)
 				assert.Equal(t, tt.domain, ingress.Spec.Rules[0].Host)
 				assert.NotNil(t, ingress.Spec.IngressClassName)
 				assert.Equal(t, "nginx", *ingress.Spec.IngressClassName)
 
-				// Verify annotations
-				assert.Contains(t, ingress.Annotations, "nginx.ingress.kubernetes.io/ssl-redirect")
-				assert.Contains(t, ingress.Annotations, "nginx.ingress.kubernetes.io/configuration-snippet")
+				// Routes target the shared challenge responder, no nginx snippet
+				require.NotNil(t, ingress.Spec.Rules[0].HTTP)
+				backend := ingress.Spec.Rules[0].HTTP.Paths[0].Backend.Service
+				assert.Equal(t, challengeResponderService, backend.Name)
+				assert.NotContains(t, ingress.Annotations, "nginx.ingress.kubernetes.io/configuration-snippet")
 			}
 
 			mockConfig.AssertExpectations(t)
@@ -352,20 +360,20 @@ func TestCreateVerificationIngress(t *testing.T) {
 	}
 }
 
-func TestDeleteVerificationIngress(t *testing.T) {
+func TestDeleteVerificationRoute(t *testing.T) {
 	tests := []struct {
 		name          string
-		ingressName   string
+		routeName     string
 		setupObjects  []runtime.Object
 		expectedError bool
 	}{
 		{
-			name:        "Delete existing ingress",
-			ingressName: "test-ingress",
+			name:      "Delete existing route",
+			routeName: "test-route",
 			setupObjects: []runtime.Object{
 				&networkingv1.Ingress{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-ingress",
+						Name:      "test-route",
 						Namespace: "unbind-system",
 					},
 				},
@@ -373,10 +381,10 @@ func TestDeleteVerificationIngress(t *testing.T) {
 			expectedError: false,
 		},
 		{
-			name:          "Delete non-existent ingress",
-			ingressName:   "nonexistent-ingress",
+			name:          "Delete non-existent route is a no-op",
+			routeName:     "nonexistent-route",
 			setupObjects:  []runtime.Object{},
-			expectedError: true,
+			expectedError: false,
 		},
 	}
 
@@ -391,9 +399,9 @@ func TestDeleteVerificationIngress(t *testing.T) {
 				config: mockConfig,
 			}
 
-			err := kubeClient.DeleteVerificationIngress(
+			err := kubeClient.DeleteVerificationRoute(
 				context.Background(),
-				tt.ingressName,
+				tt.routeName,
 				fakeClient,
 			)
 
@@ -402,10 +410,10 @@ func TestDeleteVerificationIngress(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 
-				// Verify ingress was deleted
+				// Verify route was deleted
 				_, err := fakeClient.NetworkingV1().Ingresses("unbind-system").Get(
 					context.Background(),
-					tt.ingressName,
+					tt.routeName,
 					metav1.GetOptions{},
 				)
 				assert.Error(t, err) // Should be NotFound error
@@ -416,7 +424,7 @@ func TestDeleteVerificationIngress(t *testing.T) {
 	}
 }
 
-func TestDeleteOldVerificationIngresses(t *testing.T) {
+func TestDeleteOldVerificationRoutes(t *testing.T) {
 	now := time.Now()
 	oldTime := now.Add(-15 * time.Minute)   // 15 minutes ago
 	recentTime := now.Add(-5 * time.Minute) // 5 minutes ago
@@ -470,7 +478,7 @@ func TestDeleteOldVerificationIngresses(t *testing.T) {
 		config: mockConfig,
 	}
 
-	err := kubeClient.DeleteOldVerificationIngresses(
+	err := kubeClient.DeleteOldVerificationRoutes(
 		context.Background(),
 		fakeClient,
 	)

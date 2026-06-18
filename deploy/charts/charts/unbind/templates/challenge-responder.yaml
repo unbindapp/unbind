@@ -1,0 +1,74 @@
+{{- /*
+Provider-agnostic DNS verification backend. Verification routes (Ingress or
+HTTPRoute, per the active networking provider) point a challenge path at this
+service, which answers any /.unbind-challenge/* request with an X-DNS-Check
+header. Replaces the legacy nginx configuration-snippet trick.
+*/}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: unbind-challenge-responder
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "unbind.labels" . | nindent 4 }}
+data:
+  default.conf: |
+    server {
+      listen 80;
+      location / {
+        add_header X-DNS-Check "resolved" always;
+        add_header Content-Type text/plain always;
+        return 200 "Domain verification successful";
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unbind-challenge-responder
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "unbind.labels" . | nindent 4 }}
+    app.kubernetes.io/component: challenge-responder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: unbind-challenge-responder
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: unbind-challenge-responder
+    spec:
+      containers:
+        - name: responder
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 32Mi
+          volumeMounts:
+            - name: config
+              mountPath: /etc/nginx/conf.d
+      volumes:
+        - name: config
+          configMap:
+            name: unbind-challenge-responder
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unbind-challenge-responder
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "unbind.labels" . | nindent 4 }}
+spec:
+  selector:
+    app.kubernetes.io/name: unbind-challenge-responder
+  ports:
+    - port: 80
+      targetPort: 80

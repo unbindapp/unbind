@@ -62,8 +62,12 @@ func (rb *ResourceBuilder) BuildServices() ([]*corev1.Service, error) {
 
 	// Create ClusterIP service if needed
 	if len(clusterIPPorts) > 0 {
+		meta := rb.buildObjectMeta()
+		if annotations := rb.provider.ServiceAnnotations(rb.service); len(annotations) > 0 {
+			meta.Annotations = annotations
+		}
 		clusterIPService := &corev1.Service{
-			ObjectMeta: rb.buildObjectMeta(),
+			ObjectMeta: meta,
 			Spec: corev1.ServiceSpec{
 				Selector: rb.getLabelSelectors(),
 				Ports:    clusterIPPorts,

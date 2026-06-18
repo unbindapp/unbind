@@ -36,6 +36,10 @@ spec:
             - containerPort: 8089
           imagePullPolicy: "Always"
           env:
+            # This cluster runs ingress-nginx; pin the provider so routing and
+            # controller discovery never depend on auto-detection.
+            - name: NETWORKING_PROVIDER
+              value: "nginx"
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:

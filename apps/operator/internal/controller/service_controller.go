@@ -24,6 +24,7 @@ import (
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
 	"github.com/unbindapp/unbind-operator/internal/operator"
 	"github.com/unbindapp/unbind-operator/internal/resourcebuilder"
+	"github.com/unbindapp/unbind-operator/internal/resourcebuilder/networking"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -33,6 +34,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 const serviceFinalizer = "service.unbind.unbind.app/finalizer"
@@ -40,12 +42,15 @@ const serviceFinalizer = "service.unbind.unbind.app/finalizer"
 // ServiceReconciler reconciles a Service object
 type ServiceReconciler struct {
 	client.Client
-	Scheme          *runtime.Scheme
-	OperatorManager *operator.OperatorManager
+	Scheme             *runtime.Scheme
+	OperatorManager    *operator.OperatorManager
+	NetworkingProvider networking.Provider
+	NetworkingConfig   networking.Config
 }
 
 func (r *ServiceReconciler) newResourceBuilder(service *v1.Service) resourcebuilder.ResourceBuilderInterface {
-	return resourcebuilder.NewResourceBuilder(service, r.Scheme)
+	provider := networking.New(r.NetworkingProvider, r.NetworkingConfig)
+	return resourcebuilder.NewResourceBuilder(service, r.Scheme, provider)
 }
 
 // +kubebuilder:rbac:groups=unbind.unbind.app,resources=services,verbs=get;list;watch;create;update;patch;delete
@@ -58,6 +63,11 @@ func (r *ServiceReconciler) newResourceBuilder(service *v1.Service) resourcebuil
 // +kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=networking.k8s.io,resources=ingresses,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=networking.k8s.io,resources=ingressclasses,verbs=get;list;watch
+// +kubebuilder:rbac:groups=gateway.networking.k8s.io,resources=httproutes;gateways,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=gateway.networking.k8s.io,resources=gatewayclasses,verbs=get;list;watch
+// +kubebuilder:rbac:groups=gateway.envoyproxy.io,resources=backendtrafficpolicies,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=traefik.io,resources=middlewares,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=batch,resources=cronjobs,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=acid.zalan.do,resources=postgresqls,verbs=get;list;watch;create;update;patch;delete
@@ -137,8 +147,8 @@ func (r *ServiceReconciler) reconcileResources(ctx context.Context, service *v1.
 		logger.Error(err, "Failed to reconcile Service")
 		return err
 	}
-	if err := r.reconcileIngress(ctx, rb, *service); err != nil {
-		logger.Error(err, "Failed to reconcile Ingress")
+	if err := r.reconcileRoutes(ctx, rb, *service); err != nil {
+		logger.Error(err, "Failed to reconcile routes")
 		return err
 	}
 	return nil
@@ -179,7 +189,6 @@ func (r *ServiceReconciler) finalizeService(ctx context.Context, service *v1.Ser
 	objects := []client.Object{
 		&appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{Name: service.Name, Namespace: service.Namespace}},
 		&corev1.Service{ObjectMeta: metav1.ObjectMeta{Name: service.Name, Namespace: service.Namespace}},
-		&networkingv1.Ingress{ObjectMeta: metav1.ObjectMeta{Name: service.Name, Namespace: service.Namespace}},
 	}
 	for _, obj := range objects {
 		if err := r.Delete(ctx, obj); client.IgnoreNotFound(err) != nil {
@@ -187,16 +196,27 @@ func (r *ServiceReconciler) finalizeService(ctx context.Context, service *v1.Ser
 		}
 	}
 
+	if err := r.cleanupStaleRoutes(ctx, service, nil); err != nil {
+		return fmt.Errorf("failed to delete routes: %w", err)
+	}
+
 	logger.Info("Service finalization complete")
 	return nil
 }
 
-// SetupWithManager sets up the controller with the Manager
+// SetupWithManager sets up the controller with the Manager. The HTTPRoute watch
+// is only registered when the gateway provider is active, since the Gateway API
+// CRDs are absent on legacy ingress-nginx/traefik clusters.
 func (r *ServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
+	builder := ctrl.NewControllerManagedBy(mgr).
 		For(&v1.Service{}).
 		Owns(&appsv1.Deployment{}).
 		Owns(&corev1.Service{}).
-		Owns(&networkingv1.Ingress{}).
-		Complete(r)
+		Owns(&networkingv1.Ingress{})
+
+	if r.NetworkingProvider == networking.ProviderGateway {
+		builder = builder.Owns(&gwapiv1.HTTPRoute{}).Owns(&gwapiv1.Gateway{})
+	}
+
+	return builder.Complete(r)
 }

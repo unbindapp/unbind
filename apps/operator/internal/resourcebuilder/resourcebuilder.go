@@ -1,23 +1,24 @@
 package resourcebuilder
 
 import (
-	"fmt"
-
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
+	"github.com/unbindapp/unbind-operator/internal/resourcebuilder/networking"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // Resourcebuilder is responsible for building native k8s resources
 type ResourceBuilder struct {
-	service *v1.Service
-	scheme  *runtime.Scheme
+	service  *v1.Service
+	scheme   *runtime.Scheme
+	provider networking.NetworkingProvider
 }
 
-func NewResourceBuilder(service *v1.Service, scheme *runtime.Scheme) *ResourceBuilder {
+func NewResourceBuilder(service *v1.Service, scheme *runtime.Scheme, provider networking.NetworkingProvider) *ResourceBuilder {
 	return &ResourceBuilder{
-		service: service,
-		scheme:  scheme,
+		service:  service,
+		scheme:   scheme,
+		provider: provider,
 	}
 }
 
@@ -61,22 +62,4 @@ func (rb *ResourceBuilder) getCommonLabels() map[string]string {
 
 func (rb *ResourceBuilder) buildPodAnnotations() map[string]string {
 	return map[string]string{}
-}
-
-func (rb *ResourceBuilder) buildIngressAnnotations() map[string]string {
-	return map[string]string{
-		"kubernetes.io/tls-acme":                             "true",
-		"nginx.ingress.kubernetes.io/eventsource":            "true",
-		"nginx.ingress.kubernetes.io/add-base-url":           "true",
-		"nginx.ingress.kubernetes.io/ssl-redirect":           "true",
-		"nginx.ingress.kubernetes.io/websocket-services":     fmt.Sprintf("%s-service", rb.service.Name),
-		"nginx.ingress.kubernetes.io/proxy-send-timeout":     "1800",
-		"nginx.ingress.kubernetes.io/proxy-read-timeout":     "21600",
-		"nginx.ingress.kubernetes.io/proxy-body-size":        "10m",
-		"nginx.ingress.kubernetes.io/upstream-hash-by":       "$realip_remote_addr",
-		"nginx.ingress.kubernetes.io/affinity":               "cookie",
-		"nginx.ingress.kubernetes.io/session-cookie-name":    fmt.Sprintf("%s-session", rb.service.Name),
-		"nginx.ingress.kubernetes.io/session-cookie-expires": "172800",
-		"nginx.ingress.kubernetes.io/session-cookie-max-age": "172800",
-	}
 }

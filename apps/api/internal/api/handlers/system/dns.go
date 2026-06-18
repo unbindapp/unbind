@@ -70,19 +70,19 @@ func (self *HandlerGroup) CheckDNSResolution(ctx context.Context, input *DnsChec
 	}
 
 	if dnsCheck.IsCloudflare {
-		// Spin up an ingress to verify
-		testIngress, testPath, err := self.srv.KubeClient.CreateVerificationIngress(ctx, input.Domain, self.srv.KubeClient.GetInternalClient())
+		// Spin up a verification route to confirm the domain reaches the cluster
+		routeName, testPath, err := self.srv.KubeClient.CreateVerificationRoute(ctx, input.Domain, self.srv.KubeClient.GetInternalClient())
 		if err != nil {
-			log.Warnf("Error creating ingress test for domain %s: %v", input.Domain, err)
+			log.Warnf("Error creating verification route for domain %s: %v", input.Domain, err)
 		} else {
 			defer func() {
-				err := self.srv.KubeClient.DeleteVerificationIngress(ctx, testIngress.Name, self.srv.KubeClient.GetInternalClient())
+				err := self.srv.KubeClient.DeleteVerificationRoute(ctx, routeName, self.srv.KubeClient.GetInternalClient())
 				if err != nil {
-					log.Warnf("Error deleting ingress test for domain %s: %v", input.Domain, err)
+					log.Warnf("Error deleting verification route for domain %s: %v", input.Domain, err)
 				}
 			}()
 
-			url := fmt.Sprintf("https://%s/.unbind-challenge/%s", input.Domain, testPath)
+			url := fmt.Sprintf("https://%s%s", input.Domain, testPath)
 
 			// Create a new request with context
 			req, err := http.NewRequestWithContext(ctx, "GET", url, nil)

@@ -83,29 +83,50 @@ func isIPv6(ip string) bool {
 	return strings.Count(ip, ":") >= 2
 }
 
-// GetIngressNginxIP is a convenience function to get the IP of the ingress-nginx controller
+// GetIngressNginxIP returns the external IP of the active ingress/gateway
+// controller's LoadBalancer service. Named for backwards compatibility; the
+// controller is resolved from the active networking provider.
 func (self *KubeClient) GetIngressNginxIP(ctx context.Context) (*LoadBalancerAddresses, error) {
-	// Common label for ingress-nginx controller
-	labelSelector := "app.kubernetes.io/name=ingress-nginx"
+	return self.GetActiveControllerIP(ctx)
+}
+
+// GetActiveControllerIP finds the LoadBalancer address fronting the active
+// networking provider's controller (ingress-nginx, traefik, or the gateway's
+// data plane).
+func (self *KubeClient) GetActiveControllerIP(ctx context.Context) (*LoadBalancerAddresses, error) {
+	provider := self.NetworkingProvider(ctx)
+	labelSelector, nameMatch := controllerServiceSelector(provider)
 
 	addresses, err := self.GetLoadBalancerIPs(ctx, labelSelector)
 	if err != nil {
 		return nil, err
 	}
 
-	// Filter further for the controller service if needed
 	for _, addr := range addresses {
-		if addr.Name == "ingress-nginx-controller" {
+		if nameMatch == "" || strings.Contains(addr.Name, nameMatch) {
 			return &addr, nil
 		}
 	}
 
-	// If we didn't find the specific controller name, return the first match if available
 	if len(addresses) > 0 {
 		return &addresses[0], nil
 	}
 
-	return nil, fmt.Errorf("no ingress-nginx load balancer found")
+	return nil, fmt.Errorf("no load balancer found for networking provider %q", provider)
+}
+
+// controllerServiceSelector maps a provider to the label selector and service
+// name fragment that identify its LoadBalancer service. Envoy Gateway generates
+// the service name, so it is matched by the managed-by label alone.
+func controllerServiceSelector(provider string) (labelSelector, nameMatch string) {
+	switch provider {
+	case providerTraefik:
+		return "app.kubernetes.io/name=traefik", "traefik"
+	case providerGateway:
+		return "app.kubernetes.io/managed-by=envoy-gateway", ""
+	default:
+		return "app.kubernetes.io/name=ingress-nginx", "ingress-nginx-controller"
+	}
 }
 
 // GetUnusedNodePort returns an unused NodePort, determined by letting kubernetes allocate one then deleting the temp service

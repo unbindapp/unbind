@@ -16,7 +16,10 @@ import (
 	"github.com/unbindapp/unbind-api/internal/models"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -311,6 +314,13 @@ func (self *KubeClient) DiscoverEndpointsByLabels(ctx context.Context, namespace
 		}
 	}
 
+	// Gateway clusters route via HTTPRoutes rather than Ingresses
+	if self.NetworkingProvider(ctx) == providerGateway {
+		if err := self.appendGatewayEndpoints(ctx, namespace, labelSelector, discovery); err != nil {
+			return nil, err
+		}
+	}
+
 	// If there are any ingresses in "Attempting" state, fetch their CertificateRequest conditions
 	if len(ingressesToCheck) > 0 && self.certmanagerclient != nil {
 		// List all CertificateRequests
@@ -358,6 +368,84 @@ func (self *KubeClient) DiscoverEndpointsByLabels(ctx context.Context, namespace
 	return discovery, nil
 }
 
+// appendGatewayEndpoints lists HTTPRoutes matching the labels and appends them as
+// external endpoints. TLS is terminated at the shared gateway, so routes that exist
+// are treated as TLS-issued.
+func (self *KubeClient) appendGatewayEndpoints(ctx context.Context, namespace, labelSelector string, discovery *models.EndpointDiscovery) error {
+	if self.client == nil {
+		return nil
+	}
+	routes, err := self.client.Resource(httpRouteGVR).Namespace(namespace).List(ctx, metav1.ListOptions{LabelSelector: labelSelector})
+	if err != nil {
+		if meta.IsNoMatchError(err) {
+			return nil
+		}
+		return fmt.Errorf("failed to list httproutes with labels %s: %w", labelSelector, err)
+	}
+
+	for i := range routes.Items {
+		route := &routes.Items[i]
+		labels := route.GetLabels()
+		teamID, _ := uuid.Parse(labels["unbind-team"])
+		projectID, _ := uuid.Parse(labels["unbind-project"])
+		environmentID, _ := uuid.Parse(labels["unbind-environment"])
+		serviceID, _ := uuid.Parse(labels["unbind-service"])
+
+		hostnames, _, _ := unstructured.NestedStringSlice(route.Object, "spec", "hostnames")
+		rules, _, _ := unstructured.NestedSlice(route.Object, "spec", "rules")
+		path, port := gatewayRoutePathPort(rules)
+
+		for _, host := range hostnames {
+			discovery.External = append(discovery.External, models.IngressEndpoint{
+				KubernetesName: route.GetName(),
+				IsIngress:      true,
+				Host:           host,
+				Path:           path,
+				TargetPort: &schema.PortSpec{
+					Port:     port,
+					Protocol: utils.ToPtr(schema.ProtocolTCP),
+				},
+				DNSStatus:     models.DNSStatusUnknown,
+				TlsStatus:     models.TlsStatusIssued,
+				TeamID:        teamID,
+				ProjectID:     projectID,
+				EnvironmentID: environmentID,
+				ServiceID:     serviceID,
+			})
+		}
+	}
+	return nil
+}
+
+func gatewayRoutePathPort(rules []any) (string, int32) {
+	path := "/"
+	var port int32 = 443
+	if len(rules) == 0 {
+		return path, port
+	}
+	rule, ok := rules[0].(map[string]any)
+	if !ok {
+		return path, port
+	}
+	if matches, ok := rule["matches"].([]any); ok && len(matches) > 0 {
+		if match, ok := matches[0].(map[string]any); ok {
+			if p, ok := match["path"].(map[string]any); ok {
+				if v, ok := p["value"].(string); ok && v != "" {
+					path = v
+				}
+			}
+		}
+	}
+	if backends, ok := rule["backendRefs"].([]any); ok && len(backends) > 0 {
+		if backend, ok := backends[0].(map[string]any); ok {
+			if v, ok := backend["port"].(int64); ok {
+				port = int32(v)
+			}
+		}
+	}
+	return path, port
+}
+
 // isCertificateIssued checks if a TLS secret contains valid certificate data
 func isCertificateIssued(secret *corev1.Secret) bool {
 	if secret == nil {
@@ -383,132 +471,170 @@ func isCertificateIssued(secret *corev1.Secret) bool {
 	return hasCert && hasKey && len(secret.Data["tls.crt"]) > 0 && len(secret.Data["tls.key"]) > 0 && hasCertManagerAnnotation
 }
 
-// CreateVerificationIngress creates an ingress with a configuration snippet to help verify
-// that a domain is pointing to the Kubernetes cluster
-func (self *KubeClient) CreateVerificationIngress(
+const (
+	challengeResponderService = "unbind-challenge-responder"
+	verificationPathPrefix    = "/.unbind-challenge/"
+	verificationLabelSelector = "app=unbind-verification,type=domain-verification,temporary=true"
+)
+
+func verificationLabels(domain string) map[string]string {
+	return map[string]string{
+		"app":       "unbind-verification",
+		"type":      "domain-verification",
+		"domain":    domain,
+		"temporary": "true",
+	}
+}
+
+// CreateVerificationRoute creates a temporary route (Ingress or HTTPRoute, per the
+// active networking provider) that points a challenge path at the shared
+// challenge-responder service, used to verify a domain resolves to the cluster
+// even behind a Cloudflare proxy. Returns the route name and challenge path.
+func (self *KubeClient) CreateVerificationRoute(
 	ctx context.Context,
 	domain string,
 	client kubernetes.Interface,
-) (*networkingv1.Ingress, string, error) {
-	pathType := networkingv1.PathTypeImplementationSpecific
-	ingressClassName := "nginx"
-
+) (string, string, error) {
 	name, err := utils.GenerateSlug(domain)
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to generate slug for domain %s: %w", domain, err)
+		return "", "", fmt.Errorf("failed to generate slug for domain %s: %w", domain, err)
 	}
+	path := verificationPathPrefix + uuid.NewString()
 
-	path := fmt.Sprintf("/.unbind-challenge/dns-check/%s", uuid.NewString())
-
-	// Create the ingress specification
-	ingress := &networkingv1.Ingress{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: self.config.GetSystemNamespace(),
-			Annotations: map[string]string{
-				"nginx.ingress.kubernetes.io/ssl-redirect": "false",
-				"nginx.ingress.kubernetes.io/configuration-snippet": `
-add_header X-DNS-Check "resolved" always;
-return 200 "Domain verification successful: CloudFlare connection to Kubernetes confirmed";
-add_header Content-Type text/plain;
-`,
-			},
-			Labels: map[string]string{
-				"app":       "unbind-verification",
-				"type":      "domain-verification",
-				"domain":    domain,
-				"temporary": "true",
-			},
-		},
-		Spec: networkingv1.IngressSpec{
-			IngressClassName: &ingressClassName,
-			Rules: []networkingv1.IngressRule{
-				{
-					Host: domain,
-					IngressRuleValue: networkingv1.IngressRuleValue{
-						HTTP: &networkingv1.HTTPIngressRuleValue{
-							Paths: []networkingv1.HTTPIngressPath{
-								{
-									Path:     path,
-									PathType: &pathType,
-									Backend: networkingv1.IngressBackend{
-										Service: &networkingv1.IngressServiceBackend{
-											Name: "dummy-service",
-											Port: networkingv1.ServiceBackendPort{
-												Number: 80,
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
+	switch self.NetworkingProvider(ctx) {
+	case providerGateway:
+		err = self.createVerificationHTTPRoute(ctx, name, domain, path)
+	default:
+		err = self.createVerificationIngress(ctx, name, domain, path, self.NetworkingProvider(ctx), client)
 	}
-
-	// Create the ingress in the cluster
-	ing, err := client.NetworkingV1().Ingresses(self.config.GetSystemNamespace()).Create(ctx, ingress, metav1.CreateOptions{})
-	return ing, path, err
+	if err != nil {
+		return "", "", err
+	}
+	return name, path, nil
 }
 
-// DeleteVerificationIngress deletes the verification ingress for a domain
-func (self *KubeClient) DeleteVerificationIngress(
+func (self *KubeClient) createVerificationIngress(ctx context.Context, name, domain, path, className string, client kubernetes.Interface) error {
+	pathType := networkingv1.PathTypePrefix
+	ingress := &networkingv1.Ingress{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        name,
+			Namespace:   self.config.GetSystemNamespace(),
+			Labels:      verificationLabels(domain),
+			Annotations: map[string]string{"kubernetes.io/tls-acme": "false"},
+		},
+		Spec: networkingv1.IngressSpec{
+			IngressClassName: &className,
+			Rules: []networkingv1.IngressRule{{
+				Host: domain,
+				IngressRuleValue: networkingv1.IngressRuleValue{
+					HTTP: &networkingv1.HTTPIngressRuleValue{
+						Paths: []networkingv1.HTTPIngressPath{{
+							Path:     path,
+							PathType: &pathType,
+							Backend: networkingv1.IngressBackend{
+								Service: &networkingv1.IngressServiceBackend{
+									Name: challengeResponderService,
+									Port: networkingv1.ServiceBackendPort{Number: 80},
+								},
+							},
+						}},
+					},
+				},
+			}},
+		},
+	}
+	_, err := client.NetworkingV1().Ingresses(self.config.GetSystemNamespace()).Create(ctx, ingress, metav1.CreateOptions{})
+	return err
+}
+
+func (self *KubeClient) createVerificationHTTPRoute(ctx context.Context, name, domain, path string) error {
+	route := &unstructured.Unstructured{}
+	route.SetAPIVersion("gateway.networking.k8s.io/v1")
+	route.SetKind("HTTPRoute")
+	route.SetName(name)
+	route.SetNamespace(self.config.GetSystemNamespace())
+	route.SetLabels(verificationLabels(domain))
+	route.Object["spec"] = map[string]any{
+		"parentRefs": []any{map[string]any{
+			"group":     "gateway.networking.k8s.io",
+			"kind":      "Gateway",
+			"name":      self.config.GetGatewayName(),
+			"namespace": self.config.GetGatewayNamespace(),
+		}},
+		"hostnames": []any{domain},
+		"rules": []any{map[string]any{
+			"matches": []any{map[string]any{
+				"path": map[string]any{"type": "PathPrefix", "value": path},
+			}},
+			"backendRefs": []any{map[string]any{
+				"name": challengeResponderService,
+				"port": int64(80),
+			}},
+		}},
+	}
+	_, err := self.client.Resource(httpRouteGVR).Namespace(self.config.GetSystemNamespace()).Create(ctx, route, metav1.CreateOptions{})
+	return err
+}
+
+// DeleteVerificationRoute removes a verification route by name, covering both the
+// Ingress and HTTPRoute kinds and treating a missing object as success.
+func (self *KubeClient) DeleteVerificationRoute(
 	ctx context.Context,
-	ingressName string,
+	name string,
 	client kubernetes.Interface,
 ) error {
-	// Delete the ingress
-	err := client.NetworkingV1().Ingresses(self.config.GetSystemNamespace()).Delete(ctx, ingressName, metav1.DeleteOptions{})
-	if err != nil {
-		return fmt.Errorf("failed to delete verification ingress %s: %w", ingressName, err)
+	namespace := self.config.GetSystemNamespace()
+	if err := client.NetworkingV1().Ingresses(namespace).Delete(ctx, name, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+		return fmt.Errorf("failed to delete verification ingress %s: %w", name, err)
 	}
-
+	if self.client != nil {
+		err := self.client.Resource(httpRouteGVR).Namespace(namespace).Delete(ctx, name, metav1.DeleteOptions{})
+		if err != nil && !apierrors.IsNotFound(err) && !meta.IsNoMatchError(err) {
+			return fmt.Errorf("failed to delete verification httproute %s: %w", name, err)
+		}
+	}
 	return nil
 }
 
-// DeleteOldVerificationIngresses deletes verification ingresses created more than 10 minutes ago
-func (self *KubeClient) DeleteOldVerificationIngresses(
+// DeleteOldVerificationRoutes deletes verification routes (Ingress + HTTPRoute)
+// created more than 10 minutes ago.
+func (self *KubeClient) DeleteOldVerificationRoutes(
 	ctx context.Context,
 	client kubernetes.Interface,
 ) error {
-	// Create a label selector for the verification ingresses
-	labelSelector := "app=unbind-verification,type=domain-verification,temporary=true"
+	namespace := self.config.GetSystemNamespace()
+	cutoff := time.Now().Add(-10 * time.Minute)
 
-	// Get the list of ingresses matching the label selector
-	ingresses, err := client.NetworkingV1().Ingresses(self.config.GetSystemNamespace()).List(
-		ctx,
-		metav1.ListOptions{
-			LabelSelector: labelSelector,
-		},
-	)
+	ingresses, err := client.NetworkingV1().Ingresses(namespace).List(ctx, metav1.ListOptions{LabelSelector: verificationLabelSelector})
 	if err != nil {
 		return fmt.Errorf("failed to list verification ingresses: %w", err)
 	}
-
-	// Get the current time to compare against creation time
-	currentTime := time.Now()
-	cutoffTime := currentTime.Add(-10 * time.Minute)
-
-	// Delete each matching ingress that is older than 10 minutes
 	for _, ingress := range ingresses.Items {
-		creationTime := ingress.GetCreationTimestamp().Time
-
-		// Skip ingresses that are less than 10 minutes old
-		if creationTime.After(cutoffTime) {
+		if ingress.GetCreationTimestamp().After(cutoff) {
 			continue
 		}
-
-		err := client.NetworkingV1().Ingresses(self.config.GetSystemNamespace()).Delete(
-			ctx,
-			ingress.Name,
-			metav1.DeleteOptions{},
-		)
-		if err != nil {
+		if err := client.NetworkingV1().Ingresses(namespace).Delete(ctx, ingress.Name, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
 			return fmt.Errorf("failed to delete old verification ingress %s: %w", ingress.Name, err)
 		}
 	}
 
+	if self.client == nil {
+		return nil
+	}
+	routes, err := self.client.Resource(httpRouteGVR).Namespace(namespace).List(ctx, metav1.ListOptions{LabelSelector: verificationLabelSelector})
+	if err != nil {
+		if meta.IsNoMatchError(err) {
+			return nil
+		}
+		return fmt.Errorf("failed to list verification httproutes: %w", err)
+	}
+	for _, route := range routes.Items {
+		if route.GetCreationTimestamp().After(cutoff) {
+			continue
+		}
+		if err := self.client.Resource(httpRouteGVR).Namespace(namespace).Delete(ctx, route.GetName(), metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+			return fmt.Errorf("failed to delete old verification httproute %s: %w", route.GetName(), err)
+		}
+	}
 	return nil
 }

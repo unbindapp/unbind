@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"flag"
 	"os"
@@ -32,6 +33,7 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/certwatcher"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/metrics/filters"
@@ -45,7 +47,9 @@ import (
 	unbindv1 "github.com/unbindapp/unbind-operator/api/v1"
 	"github.com/unbindapp/unbind-operator/internal/controller"
 	"github.com/unbindapp/unbind-operator/internal/operator"
+	"github.com/unbindapp/unbind-operator/internal/resourcebuilder/networking"
 	postgresv1 "github.com/zalando/postgres-operator/pkg/apis/acid.zalan.do/v1"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -62,6 +66,7 @@ func init() {
 	utilruntime.Must(sourcev1.AddToScheme(scheme))
 	utilruntime.Must(mocov1beta2.AddToScheme(scheme))
 	utilruntime.Must(altinityv1.AddToScheme(scheme))
+	utilruntime.Must(gwapiv1.Install(scheme))
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -92,6 +97,13 @@ func main() {
 	flag.StringVar(&metricsCertKey, "metrics-cert-key", "tls.key", "The name of the metrics server key file.")
 	flag.BoolVar(&enableHTTP2, "enable-http2", false,
 		"If set, HTTP/2 will be enabled for the metrics and webhook servers")
+	var networkingProvider, gatewayClass, clusterIssuer string
+	flag.StringVar(&networkingProvider, "networking-provider", "auto",
+		"Networking provider to generate routing resources for: nginx|traefik|gateway|auto")
+	flag.StringVar(&gatewayClass, "gateway-class", "unbind",
+		"GatewayClass the per-service Gateways attach to (gateway provider)")
+	flag.StringVar(&clusterIssuer, "cluster-issuer", "letsencrypt-prod",
+		"cert-manager ClusterIssuer that issues per-host certs for service Gateways")
 	opts := zap.Options{
 		Development: true,
 	}
@@ -220,10 +232,23 @@ func main() {
 		os.Exit(1)
 	}
 
+	directClient, err := client.New(mgr.GetConfig(), client.Options{Scheme: scheme})
+	if err != nil {
+		setupLog.Error(err, "unable to create client for provider detection")
+		os.Exit(1)
+	}
+	provider, networkingConfig := networking.Resolve(context.Background(), directClient,
+		networking.Provider(networkingProvider),
+		networking.Config{GatewayClassName: gatewayClass, ClusterIssuer: clusterIssuer},
+	)
+	setupLog.Info("resolved networking provider", "requested", networkingProvider, "provider", provider)
+
 	serviceReconciler := &controller.ServiceReconciler{
-		Client:          mgr.GetClient(),
-		Scheme:          mgr.GetScheme(),
-		OperatorManager: operator.NewOperatorManager(mgr.GetClient(), mgr.GetScheme(), discoveryClient),
+		Client:             mgr.GetClient(),
+		Scheme:             mgr.GetScheme(),
+		OperatorManager:    operator.NewOperatorManager(mgr.GetClient(), mgr.GetScheme(), discoveryClient),
+		NetworkingProvider: provider,
+		NetworkingConfig:   networkingConfig,
 	}
 
 	if err = serviceReconciler.SetupWithManager(mgr); err != nil {

@@ -20,8 +20,15 @@ components:
     enabled: true
   registry:
     enabled: true
-  ingressNginx:
-    enabled: true
+  # Networking data plane. By default the installed controller derives from the
+  # top-level networkingProvider value: gateway -> Envoy Gateway, nginx ->
+  # ingress-nginx. Set components.{envoyGateway,ingressNginx,traefik}.enabled to
+  # override explicitly.
+  #
+  # MIGRATION: existing ingress-nginx clusters MUST set the top-level
+  #   networkingProvider: nginx
+  # before upgrading, otherwise ingress-nginx is uninstalled in favour of the
+  # gateway provider.
   certManager:
     enabled: true
 

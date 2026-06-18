@@ -11,7 +11,6 @@ import (
 	"github.com/unbindapp/unbind-api/internal/models"
 	unbindv1 "github.com/unbindapp/unbind-operator/api/v1"
 	corev1 "k8s.io/api/core/v1"
-	networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes"
 )
@@ -31,13 +30,14 @@ type KubeClientInterface interface {
 	// DiscoverEndpointsByLabels returns both internal (services) and external (ingresses) endpoints
 	// matching the provided labels in a namespace
 	DiscoverEndpointsByLabels(ctx context.Context, namespace string, labels map[string]string, checkDNS bool, client kubernetes.Interface) (*models.EndpointDiscovery, error)
-	// CreateVerificationIngress creates an ingress with a configuration snippet to help verify
-	// that a domain is pointing to the Kubernetes cluster
-	CreateVerificationIngress(ctx context.Context, domain string, client kubernetes.Interface) (*networkingv1.Ingress, string, error)
-	// DeleteVerificationIngress deletes the verification ingress for a domain
-	DeleteVerificationIngress(ctx context.Context, ingressName string, client kubernetes.Interface) error
-	// DeleteOldVerificationIngresses deletes verification ingresses created more than 10 minutes ago
-	DeleteOldVerificationIngresses(ctx context.Context, client kubernetes.Interface) error
+	// CreateVerificationRoute creates a temporary route (Ingress or HTTPRoute, per the
+	// active networking provider) pointing a challenge path at the challenge-responder
+	// service, returning the route name and challenge path.
+	CreateVerificationRoute(ctx context.Context, domain string, client kubernetes.Interface) (string, string, error)
+	// DeleteVerificationRoute deletes a verification route by name (Ingress + HTTPRoute)
+	DeleteVerificationRoute(ctx context.Context, name string, client kubernetes.Interface) error
+	// DeleteOldVerificationRoutes deletes verification routes created more than 10 minutes ago
+	DeleteOldVerificationRoutes(ctx context.Context, client kubernetes.Interface) error
 	CreateDeployment(ctx context.Context, deploymentID string, env map[string]string) (jobName string, err error)
 	// For canceling jobs.
 	CancelJobsByServiceID(ctx context.Context, serviceID string) error

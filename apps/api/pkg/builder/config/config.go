@@ -141,6 +141,18 @@ func (self *Config) GetBuildkitHost() string {
 	return self.BuildkitHost
 }
 
+func (self *Config) GetNetworkingProvider() string {
+	return "auto"
+}
+
+func (self *Config) GetGatewayName() string {
+	return "unbind-gateway"
+}
+
+func (self *Config) GetGatewayNamespace() string {
+	return "unbind-system"
+}
+
 // Parse environment variables into a Config struct
 func NewConfig() *Config {
 	cfg := Config{}

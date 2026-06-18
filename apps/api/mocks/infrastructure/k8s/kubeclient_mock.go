@@ -19,8 +19,6 @@ import (
 
 	models "github.com/unbindapp/unbind-api/internal/models"
 
-	networkingv1 "k8s.io/api/networking/v1"
-
 	unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	uuid "github.com/google/uuid"
@@ -672,26 +670,24 @@ func (_c *KubeClientMock_CreatePersistentVolumeClaim_Call) RunAndReturn(run func
 	return _c
 }
 
-// CreateVerificationIngress provides a mock function with given fields: ctx, domain, client
-func (_m *KubeClientMock) CreateVerificationIngress(ctx context.Context, domain string, client kubernetes.Interface) (*networkingv1.Ingress, string, error) {
+// CreateVerificationRoute provides a mock function with given fields: ctx, domain, client
+func (_m *KubeClientMock) CreateVerificationRoute(ctx context.Context, domain string, client kubernetes.Interface) (string, string, error) {
 	ret := _m.Called(ctx, domain, client)
 
 	if len(ret) == 0 {
-		panic("no return value specified for CreateVerificationIngress")
+		panic("no return value specified for CreateVerificationRoute")
 	}
 
-	var r0 *networkingv1.Ingress
+	var r0 string
 	var r1 string
 	var r2 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, kubernetes.Interface) (*networkingv1.Ingress, string, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, kubernetes.Interface) (string, string, error)); ok {
 		return rf(ctx, domain, client)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string, kubernetes.Interface) *networkingv1.Ingress); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, kubernetes.Interface) string); ok {
 		r0 = rf(ctx, domain, client)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*networkingv1.Ingress)
-		}
+		r0 = ret.Get(0).(string)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string, kubernetes.Interface) string); ok {
@@ -709,42 +705,42 @@ func (_m *KubeClientMock) CreateVerificationIngress(ctx context.Context, domain 
 	return r0, r1, r2
 }
 
-// KubeClientMock_CreateVerificationIngress_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateVerificationIngress'
-type KubeClientMock_CreateVerificationIngress_Call struct {
+// KubeClientMock_CreateVerificationRoute_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateVerificationRoute'
+type KubeClientMock_CreateVerificationRoute_Call struct {
 	*mock.Call
 }
 
-// CreateVerificationIngress is a helper method to define mock.On call
+// CreateVerificationRoute is a helper method to define mock.On call
 //   - ctx context.Context
 //   - domain string
 //   - client kubernetes.Interface
-func (_e *KubeClientMock_Expecter) CreateVerificationIngress(ctx interface{}, domain interface{}, client interface{}) *KubeClientMock_CreateVerificationIngress_Call {
-	return &KubeClientMock_CreateVerificationIngress_Call{Call: _e.mock.On("CreateVerificationIngress", ctx, domain, client)}
+func (_e *KubeClientMock_Expecter) CreateVerificationRoute(ctx interface{}, domain interface{}, client interface{}) *KubeClientMock_CreateVerificationRoute_Call {
+	return &KubeClientMock_CreateVerificationRoute_Call{Call: _e.mock.On("CreateVerificationRoute", ctx, domain, client)}
 }
 
-func (_c *KubeClientMock_CreateVerificationIngress_Call) Run(run func(ctx context.Context, domain string, client kubernetes.Interface)) *KubeClientMock_CreateVerificationIngress_Call {
+func (_c *KubeClientMock_CreateVerificationRoute_Call) Run(run func(ctx context.Context, domain string, client kubernetes.Interface)) *KubeClientMock_CreateVerificationRoute_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string), args[2].(kubernetes.Interface))
 	})
 	return _c
 }
 
-func (_c *KubeClientMock_CreateVerificationIngress_Call) Return(_a0 *networkingv1.Ingress, _a1 string, _a2 error) *KubeClientMock_CreateVerificationIngress_Call {
+func (_c *KubeClientMock_CreateVerificationRoute_Call) Return(_a0 string, _a1 string, _a2 error) *KubeClientMock_CreateVerificationRoute_Call {
 	_c.Call.Return(_a0, _a1, _a2)
 	return _c
 }
 
-func (_c *KubeClientMock_CreateVerificationIngress_Call) RunAndReturn(run func(context.Context, string, kubernetes.Interface) (*networkingv1.Ingress, string, error)) *KubeClientMock_CreateVerificationIngress_Call {
+func (_c *KubeClientMock_CreateVerificationRoute_Call) RunAndReturn(run func(context.Context, string, kubernetes.Interface) (string, string, error)) *KubeClientMock_CreateVerificationRoute_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// DeleteOldVerificationIngresses provides a mock function with given fields: ctx, client
-func (_m *KubeClientMock) DeleteOldVerificationIngresses(ctx context.Context, client kubernetes.Interface) error {
+// DeleteOldVerificationRoutes provides a mock function with given fields: ctx, client
+func (_m *KubeClientMock) DeleteOldVerificationRoutes(ctx context.Context, client kubernetes.Interface) error {
 	ret := _m.Called(ctx, client)
 
 	if len(ret) == 0 {
-		panic("no return value specified for DeleteOldVerificationIngresses")
+		panic("no return value specified for DeleteOldVerificationRoutes")
 	}
 
 	var r0 error
@@ -757,31 +753,31 @@ func (_m *KubeClientMock) DeleteOldVerificationIngresses(ctx context.Context, cl
 	return r0
 }
 
-// KubeClientMock_DeleteOldVerificationIngresses_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteOldVerificationIngresses'
-type KubeClientMock_DeleteOldVerificationIngresses_Call struct {
+// KubeClientMock_DeleteOldVerificationRoutes_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteOldVerificationRoutes'
+type KubeClientMock_DeleteOldVerificationRoutes_Call struct {
 	*mock.Call
 }
 
-// DeleteOldVerificationIngresses is a helper method to define mock.On call
+// DeleteOldVerificationRoutes is a helper method to define mock.On call
 //   - ctx context.Context
 //   - client kubernetes.Interface
-func (_e *KubeClientMock_Expecter) DeleteOldVerificationIngresses(ctx interface{}, client interface{}) *KubeClientMock_DeleteOldVerificationIngresses_Call {
-	return &KubeClientMock_DeleteOldVerificationIngresses_Call{Call: _e.mock.On("DeleteOldVerificationIngresses", ctx, client)}
+func (_e *KubeClientMock_Expecter) DeleteOldVerificationRoutes(ctx interface{}, client interface{}) *KubeClientMock_DeleteOldVerificationRoutes_Call {
+	return &KubeClientMock_DeleteOldVerificationRoutes_Call{Call: _e.mock.On("DeleteOldVerificationRoutes", ctx, client)}
 }
 
-func (_c *KubeClientMock_DeleteOldVerificationIngresses_Call) Run(run func(ctx context.Context, client kubernetes.Interface)) *KubeClientMock_DeleteOldVerificationIngresses_Call {
+func (_c *KubeClientMock_DeleteOldVerificationRoutes_Call) Run(run func(ctx context.Context, client kubernetes.Interface)) *KubeClientMock_DeleteOldVerificationRoutes_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(kubernetes.Interface))
 	})
 	return _c
 }
 
-func (_c *KubeClientMock_DeleteOldVerificationIngresses_Call) Return(_a0 error) *KubeClientMock_DeleteOldVerificationIngresses_Call {
+func (_c *KubeClientMock_DeleteOldVerificationRoutes_Call) Return(_a0 error) *KubeClientMock_DeleteOldVerificationRoutes_Call {
 	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *KubeClientMock_DeleteOldVerificationIngresses_Call) RunAndReturn(run func(context.Context, kubernetes.Interface) error) *KubeClientMock_DeleteOldVerificationIngresses_Call {
+func (_c *KubeClientMock_DeleteOldVerificationRoutes_Call) RunAndReturn(run func(context.Context, kubernetes.Interface) error) *KubeClientMock_DeleteOldVerificationRoutes_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -981,17 +977,17 @@ func (_c *KubeClientMock_DeleteUnbindService_Call) RunAndReturn(run func(context
 	return _c
 }
 
-// DeleteVerificationIngress provides a mock function with given fields: ctx, ingressName, client
-func (_m *KubeClientMock) DeleteVerificationIngress(ctx context.Context, ingressName string, client kubernetes.Interface) error {
-	ret := _m.Called(ctx, ingressName, client)
+// DeleteVerificationRoute provides a mock function with given fields: ctx, name, client
+func (_m *KubeClientMock) DeleteVerificationRoute(ctx context.Context, name string, client kubernetes.Interface) error {
+	ret := _m.Called(ctx, name, client)
 
 	if len(ret) == 0 {
-		panic("no return value specified for DeleteVerificationIngress")
+		panic("no return value specified for DeleteVerificationRoute")
 	}
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, string, kubernetes.Interface) error); ok {
-		r0 = rf(ctx, ingressName, client)
+		r0 = rf(ctx, name, client)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -999,32 +995,32 @@ func (_m *KubeClientMock) DeleteVerificationIngress(ctx context.Context, ingress
 	return r0
 }
 
-// KubeClientMock_DeleteVerificationIngress_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteVerificationIngress'
-type KubeClientMock_DeleteVerificationIngress_Call struct {
+// KubeClientMock_DeleteVerificationRoute_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteVerificationRoute'
+type KubeClientMock_DeleteVerificationRoute_Call struct {
 	*mock.Call
 }
 
-// DeleteVerificationIngress is a helper method to define mock.On call
+// DeleteVerificationRoute is a helper method to define mock.On call
 //   - ctx context.Context
-//   - ingressName string
+//   - name string
 //   - client kubernetes.Interface
-func (_e *KubeClientMock_Expecter) DeleteVerificationIngress(ctx interface{}, ingressName interface{}, client interface{}) *KubeClientMock_DeleteVerificationIngress_Call {
-	return &KubeClientMock_DeleteVerificationIngress_Call{Call: _e.mock.On("DeleteVerificationIngress", ctx, ingressName, client)}
+func (_e *KubeClientMock_Expecter) DeleteVerificationRoute(ctx interface{}, name interface{}, client interface{}) *KubeClientMock_DeleteVerificationRoute_Call {
+	return &KubeClientMock_DeleteVerificationRoute_Call{Call: _e.mock.On("DeleteVerificationRoute", ctx, name, client)}
 }
 
-func (_c *KubeClientMock_DeleteVerificationIngress_Call) Run(run func(ctx context.Context, ingressName string, client kubernetes.Interface)) *KubeClientMock_DeleteVerificationIngress_Call {
+func (_c *KubeClientMock_DeleteVerificationRoute_Call) Run(run func(ctx context.Context, name string, client kubernetes.Interface)) *KubeClientMock_DeleteVerificationRoute_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string), args[2].(kubernetes.Interface))
 	})
 	return _c
 }
 
-func (_c *KubeClientMock_DeleteVerificationIngress_Call) Return(_a0 error) *KubeClientMock_DeleteVerificationIngress_Call {
+func (_c *KubeClientMock_DeleteVerificationRoute_Call) Return(_a0 error) *KubeClientMock_DeleteVerificationRoute_Call {
 	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *KubeClientMock_DeleteVerificationIngress_Call) RunAndReturn(run func(context.Context, string, kubernetes.Interface) error) *KubeClientMock_DeleteVerificationIngress_Call {
+func (_c *KubeClientMock_DeleteVerificationRoute_Call) RunAndReturn(run func(context.Context, string, kubernetes.Interface) error) *KubeClientMock_DeleteVerificationRoute_Call {
 	_c.Call.Return(run)
 	return _c
 }

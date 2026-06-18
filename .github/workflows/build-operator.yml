@@ -98,3 +98,39 @@ jobs:
             docker manifest annotate --arch arm64 --os linux "$IMAGE:$TAG" "$IMAGE:$REF-arm64"
             docker manifest push "$IMAGE:$TAG"
           done
+
+  deploy_prod:
+    name: 🚀 Deploy Operator (PROD)
+    runs-on: ubuntu-24.04
+    needs:
+      - setup_env
+      - create_manifest
+    env:
+      GITHUB_RUN_ID: ${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # kubebuilder v4 config/ requires kustomize v5 (the v3 action used elsewhere
+      # cannot parse it).
+      - name: Install kustomize v5
+        run: |
+          curl -sfL "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash -s 5.4.3
+          sudo install -m 0755 kustomize /usr/local/bin/kustomize
+
+      # Render the full operator install (CRD + RBAC + manager + metrics) from the
+      # kubebuilder config so generated manifests (e.g. updated RBAC) ship too.
+      - name: Set operator image
+        working-directory: ./apps/operator/config/manager
+        run: kustomize edit set image controller=ghcr.io/unbindapp/unbind-operator:${{ needs.setup_env.outputs.branch_name }}-${{ env.GITHUB_RUN_ID }}
+
+      - name: Render manifests
+        run: kustomize build ./apps/operator/config/default > ./apps/operator/operator-ci.yaml
+
+      # Server-side apply: the Service CRD is large and RBAC was previously applied
+      # client-side, so force-conflicts adopts ownership cleanly.
+      - name: Deploy operator to k8s cluster
+        uses: bbedward/kubectl@master
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.K3S_KUBE_CONFIG }}
+        with:
+          args: apply -f ./apps/operator/operator-ci.yaml --server-side --force-conflicts

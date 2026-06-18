@@ -2,12 +2,14 @@ package controller
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 	"reflect"
 
 	"github.com/go-logr/logr"
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
 	"github.com/unbindapp/unbind-operator/internal/resourcebuilder"
+	"github.com/unbindapp/unbind-operator/internal/resourcebuilder/networking"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -15,6 +17,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 // reconcileDeployment ensures the Deployment exists and matches the desired spec,
@@ -132,26 +135,75 @@ func kubeServiceNeedsUpdate(logger logr.Logger, desired, existing *corev1.Servic
 	}
 }
 
-// reconcileIngress ensures the Ingress exists and matches the desired spec,
-// deleting any existing Ingress when one is no longer needed.
-func (r *ServiceReconciler) reconcileIngress(ctx context.Context, rb resourcebuilder.ResourceBuilderInterface, service v1.Service) error {
-	desired, err := rb.BuildIngress()
-	if err == resourcebuilder.ErrIngressNotNeeded {
-		return r.deleteIfExists(ctx, &networkingv1.Ingress{}, service.Name, service.Namespace)
-	}
-	if err != nil {
-		return fmt.Errorf("building ingress: %w", err)
+// reconcileRoutes reconciles the heterogeneous set of routing objects produced by
+// the active networking provider (Ingress, HTTPRoute, Middleware, ...), garbage
+// collecting any owned routing objects of any kind that are no longer desired so
+// switching providers self-heals.
+func (r *ServiceReconciler) reconcileRoutes(ctx context.Context, rb resourcebuilder.ResourceBuilderInterface, service v1.Service) error {
+	desired, err := rb.BuildRoutes()
+	if err != nil && !stderrors.Is(err, networking.ErrRouteNotNeeded) {
+		return fmt.Errorf("building routes: %w", err)
 	}
 
-	return reconcileResource(ctx, r, desired, &service, maxReconcileRetries,
-		func(existing, desired *networkingv1.Ingress) bool {
-			return !reflect.DeepEqual(existing.Spec, desired.Spec)
-		},
-		func(existing, desired *networkingv1.Ingress) {
-			existing.Spec = desired.Spec
-		},
-		nil,
-	)
+	desiredKeys := make(map[string]bool, len(desired))
+	for _, obj := range desired {
+		key, keyErr := r.routeKey(obj)
+		if keyErr != nil {
+			return keyErr
+		}
+		desiredKeys[key] = true
+		if err := r.reconcileRouteObject(ctx, obj, &service); err != nil {
+			return err
+		}
+	}
+
+	return r.cleanupStaleRoutes(ctx, &service, desiredKeys)
+}
+
+// reconcileRouteObject applies a single routing object. Typed built-in/Gateway
+// API kinds go through the get/update path; CRD kinds delivered as unstructured
+// (Traefik Middleware, Envoy BackendTrafficPolicy) use server-side apply.
+func (r *ServiceReconciler) reconcileRouteObject(ctx context.Context, desired client.Object, owner *v1.Service) error {
+	switch obj := desired.(type) {
+	case *networkingv1.Ingress:
+		return reconcileResource(ctx, r, obj, owner, maxReconcileRetries,
+			func(existing, desired *networkingv1.Ingress) bool {
+				return !reflect.DeepEqual(existing.Spec, desired.Spec)
+			},
+			func(existing, desired *networkingv1.Ingress) {
+				existing.Spec = desired.Spec
+			},
+			nil,
+		)
+	case *gwapiv1.HTTPRoute:
+		return reconcileResource(ctx, r, obj, owner, maxReconcileRetries,
+			func(existing, desired *gwapiv1.HTTPRoute) bool {
+				return !reflect.DeepEqual(existing.Spec, desired.Spec) ||
+					!reflect.DeepEqual(existing.Labels, desired.Labels)
+			},
+			func(existing, desired *gwapiv1.HTTPRoute) {
+				existing.Spec = desired.Spec
+				existing.Labels = desired.Labels
+			},
+			nil,
+		)
+	case *gwapiv1.Gateway:
+		return reconcileResource(ctx, r, obj, owner, maxReconcileRetries,
+			func(existing, desired *gwapiv1.Gateway) bool {
+				return !reflect.DeepEqual(existing.Spec, desired.Spec) ||
+					!reflect.DeepEqual(existing.Labels, desired.Labels) ||
+					!reflect.DeepEqual(existing.Annotations, desired.Annotations)
+			},
+			func(existing, desired *gwapiv1.Gateway) {
+				existing.Spec = desired.Spec
+				existing.Labels = desired.Labels
+				existing.Annotations = desired.Annotations
+			},
+			nil,
+		)
+	default:
+		return r.applyRoute(ctx, desired, owner)
+	}
 }
 
 // deleteIfExists deletes the named object, treating a missing object as success.

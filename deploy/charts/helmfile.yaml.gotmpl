@@ -21,6 +21,11 @@ values:
  - wildcardBaseDomain: ""
  - namespace: unbind-system
  - tlsSecretName: unbind-domain-tls
+ # Networking provider: nginx|traefik|gateway|auto. auto resolves to the installed
+ # controller (gateway/Envoy Gateway on fresh installs, nginx on legacy clusters).
+ - networkingProvider: auto
+ - gatewayName: unbind-gateway
+ - gatewayClassName: unbind
  # Pinned in-cluster address for the self-hosted registry. Nodes' containerd are
  # pointed here via /etc/rancher/k3s/registries.yaml, so the registry needs no domain.
  - registryClusterIP: 10.43.255.250
@@ -62,6 +67,12 @@ hooks:
         echo "PriorityClass 'unbind-high-priority' created successfully"
 
 ---
+{{- /* Resolve the networking provider for chart-render decisions. "auto" can't
+       probe the cluster at render time, so it resolves to the fresh-install
+       default (gateway). Existing nginx clusters must pin networkingProvider: nginx. */}}
+{{- $certProvider := .Values | get "networkingProvider" "auto" }}
+{{- if eq $certProvider "auto" }}{{ $certProvider = "gateway" }}{{ end }}
+
 releases:
   - name: flux
     namespace: {{ .Values.namespace }}
@@ -545,12 +556,91 @@ releases:
           create: true
     labels:
       component: ingress
-    installed: {{ .Values | get "components.ingressNginx.enabled" true }}
+    installed: {{ .Values | get "components.ingressNginx.enabled" (eq $certProvider "nginx") }}
+
+  # Envoy Gateway is the default modern data plane (Gateway API). It bundles the
+  # standard Gateway API CRDs and runs alongside the existing CNI.
+  - name: envoy-gateway
+    namespace: {{ .Values.namespace }}
+    chart: oci://docker.io/envoyproxy/gateway-helm
+    version: v1.2.6
+    hooks:
+      - events: ["postsync"]
+        showlogs: true
+        command: "/bin/sh"
+        args:
+          - "-c"
+          - |
+            cat <<EOF | kubectl apply -f -
+            # mergeGateways: every Gateway under this class shares ONE Envoy fleet
+            # and one LoadBalancer IP. The operator creates a per-service Gateway
+            # (one HTTPS listener + per-host cert) for each public service, and they
+            # all land on this single IP — so wildcard DNS (*.domain -> server) plus
+            # per-host HTTP-01 certs works exactly like ingress-nginx did.
+            apiVersion: gateway.envoyproxy.io/v1alpha1
+            kind: EnvoyProxy
+            metadata:
+              name: unbind-proxy-config
+              namespace: {{ .Values.namespace }}
+            spec:
+              mergeGateways: true
+            ---
+            apiVersion: gateway.networking.k8s.io/v1
+            kind: GatewayClass
+            metadata:
+              name: {{ .Values | get "gatewayClassName" "unbind" }}
+            spec:
+              controllerName: gateway.envoyproxy.io/gatewayclass-controller
+              parametersRef:
+                group: gateway.envoyproxy.io
+                kind: EnvoyProxy
+                name: unbind-proxy-config
+                namespace: {{ .Values.namespace }}
+            ---
+            apiVersion: gateway.networking.k8s.io/v1
+            kind: Gateway
+            metadata:
+              name: {{ .Values | get "gatewayName" "unbind-gateway" }}
+              namespace: {{ .Values.namespace }}
+              annotations:
+                cert-manager.io/cluster-issuer: letsencrypt-prod
+            spec:
+              gatewayClassName: {{ .Values | get "gatewayClassName" "unbind" }}
+              listeners:
+              # Shared HTTP listener: serves ACME HTTP-01 challenges for ALL hosts
+              # (cert-manager routes challenges here). Hostname-agnostic.
+              - name: http
+                protocol: HTTP
+                port: 80
+                allowedRoutes:
+                  namespaces:
+                    from: All
+              # The platform's own domain gets a dedicated HTTPS listener; its cert
+              # is issued per-host over HTTP-01 via the gateway-shim (annotation above).
+              - name: https-main
+                protocol: HTTPS
+                port: 443
+                hostname: "{{ .Values.unbindDomain }}"
+                tls:
+                  mode: Terminate
+                  certificateRefs:
+                  - name: {{ .Values.tlsSecretName }}
+                allowedRoutes:
+                  namespaces:
+                    from: All
+            EOF
+    labels:
+      component: gateway
+    installed: {{ .Values | get "components.envoyGateway.enabled" (eq $certProvider "gateway") }}
 
   - name: cert-manager
     namespace: {{ .Values.namespace }}
     chart: jetstack/cert-manager
     version: 1.20.2
+    {{- if eq $certProvider "gateway" }}
+    needs:
+      - {{ .Values.namespace }}/envoy-gateway
+    {{- end }}
     hooks:
       - events: ["presync"]
         showlogs: true
@@ -579,15 +669,29 @@ releases:
                 privateKeySecretRef:
                   name: letsencrypt-prod
                 solvers:
+            {{- if eq $certProvider "gateway" }}
+                - http01:
+                    gatewayHTTPRoute:
+                      parentRefs:
+                      - name: {{ .Values | get "gatewayName" "unbind-gateway" }}
+                        namespace: {{ .Values.namespace }}
+                        kind: Gateway
+                        group: gateway.networking.k8s.io
+            {{- else }}
                 - http01:
                     ingress:
-                      class: nginx
+                      class: {{ $certProvider }}
+            {{- end }}
             EOF
     values:
       -
         crds:
           enabled: false
         replicaCount: {{ .Values | get "overrides.certManager.replicaCount" 1 }}
+        {{- if eq $certProvider "gateway" }}
+        extraArgs:
+          - --enable-gateway-api
+        {{- end }}
         ingressShim:
           defaultIssuerName: letsencrypt-prod
           defaultIssuerKind: ClusterIssuer
@@ -606,6 +710,15 @@ releases:
             image:
               repository: {{ .Values | get "overrides.unbind.operator.repository" "ghcr.io/unbindapp/unbind-operator" }}
               tag: {{ .Values.unbindVersion }}
+            # Pin the provider explicitly so the operator never races GatewayClass
+            # detection at startup on a fresh install.
+            args:
+              - "--leader-elect"
+              - "--metrics-bind-address=:8443"
+              - "--health-probe-bind-address=:8081"
+              - "--networking-provider={{ $certProvider }}"
+              - "--gateway-class={{ .Values | get "gatewayClassName" "unbind" }}"
+              - "--cluster-issuer=letsencrypt-prod"
     labels:
       component: unbind-operator
     installed: true
@@ -681,6 +794,9 @@ releases:
       - global:
           namespace: '{{ .Values.namespace }}'
 
+      - networkingProvider: '{{ $certProvider }}'
+      - gatewayName: '{{ .Values | get "gatewayName" "unbind-gateway" }}'
+
       - ingress:
           enabled: true
           host: {{ .Values.unbindDomain }}
@@ -716,6 +832,12 @@ releases:
           env:
             - name: SYSTEM_NAMESPACE
               value: {{ .Values.namespace }}
+            - name: NETWORKING_PROVIDER
+              value: {{ .Values | get "networkingProvider" "auto" | quote }}
+            - name: GATEWAY_NAME
+              value: {{ .Values | get "gatewayName" "unbind-gateway" | quote }}
+            - name: GATEWAY_NAMESPACE
+              value: {{ .Values.namespace | quote }}
             - name: EXTERNAL_UI_URL
               value: {{ printf "https://%s" .Values.unbindDomain }}
             - name: EXTERNAL_API_URL

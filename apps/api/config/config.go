@@ -21,6 +21,9 @@ type ConfigInterface interface {
 	GetSystemNamespace() string
 	GetBuildkitHost() string
 	GetBuildImage() string
+	GetNetworkingProvider() string
+	GetGatewayName() string
+	GetGatewayNamespace() string
 }
 
 type Config struct {
@@ -71,6 +74,11 @@ type Config struct {
 	BuildImage string
 	// Override the release repository for testing
 	ReleaseRepoOverride string `env:"RELEASE_REPO_OVERRIDE"`
+	// Networking provider used to generate and discover routing resources:
+	// nginx|traefik|gateway|auto (auto-detects from installed controllers).
+	NetworkingProvider string `env:"NETWORKING_PROVIDER" envDefault:"auto"`
+	GatewayName        string `env:"GATEWAY_NAME" envDefault:"unbind-gateway"`
+	GatewayNamespace   string `env:"GATEWAY_NAMESPACE" envDefault:"unbind-system"`
 }
 
 func (self *Config) GetPostgresHost() string {
@@ -111,6 +119,18 @@ func (self *Config) GetBuildkitHost() string {
 
 func (self *Config) GetBuildImage() string {
 	return self.BuildImage
+}
+
+func (self *Config) GetNetworkingProvider() string {
+	return self.NetworkingProvider
+}
+
+func (self *Config) GetGatewayName() string {
+	return self.GatewayName
+}
+
+func (self *Config) GetGatewayNamespace() string {
+	return self.GatewayNamespace
 }
 
 // Parse environment variables into a Config struct

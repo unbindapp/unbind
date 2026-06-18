@@ -62,6 +62,141 @@ func (_c *ConfigMock_GetBuildImage_Call) RunAndReturn(run func() string) *Config
 	return _c
 }
 
+// GetNetworkingProvider provides a mock function with no fields
+func (_m *ConfigMock) GetNetworkingProvider() string {
+	ret := _m.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetNetworkingProvider")
+	}
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
+// ConfigMock_GetNetworkingProvider_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetNetworkingProvider'
+type ConfigMock_GetNetworkingProvider_Call struct {
+	*mock.Call
+}
+
+// GetNetworkingProvider is a helper method to define mock.On call
+func (_e *ConfigMock_Expecter) GetNetworkingProvider() *ConfigMock_GetNetworkingProvider_Call {
+	return &ConfigMock_GetNetworkingProvider_Call{Call: _e.mock.On("GetNetworkingProvider")}
+}
+
+func (_c *ConfigMock_GetNetworkingProvider_Call) Run(run func()) *ConfigMock_GetNetworkingProvider_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *ConfigMock_GetNetworkingProvider_Call) Return(_a0 string) *ConfigMock_GetNetworkingProvider_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *ConfigMock_GetNetworkingProvider_Call) RunAndReturn(run func() string) *ConfigMock_GetNetworkingProvider_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetGatewayName provides a mock function with no fields
+func (_m *ConfigMock) GetGatewayName() string {
+	ret := _m.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetGatewayName")
+	}
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
+// ConfigMock_GetGatewayName_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetGatewayName'
+type ConfigMock_GetGatewayName_Call struct {
+	*mock.Call
+}
+
+// GetGatewayName is a helper method to define mock.On call
+func (_e *ConfigMock_Expecter) GetGatewayName() *ConfigMock_GetGatewayName_Call {
+	return &ConfigMock_GetGatewayName_Call{Call: _e.mock.On("GetGatewayName")}
+}
+
+func (_c *ConfigMock_GetGatewayName_Call) Run(run func()) *ConfigMock_GetGatewayName_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *ConfigMock_GetGatewayName_Call) Return(_a0 string) *ConfigMock_GetGatewayName_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *ConfigMock_GetGatewayName_Call) RunAndReturn(run func() string) *ConfigMock_GetGatewayName_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetGatewayNamespace provides a mock function with no fields
+func (_m *ConfigMock) GetGatewayNamespace() string {
+	ret := _m.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetGatewayNamespace")
+	}
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
+// ConfigMock_GetGatewayNamespace_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetGatewayNamespace'
+type ConfigMock_GetGatewayNamespace_Call struct {
+	*mock.Call
+}
+
+// GetGatewayNamespace is a helper method to define mock.On call
+func (_e *ConfigMock_Expecter) GetGatewayNamespace() *ConfigMock_GetGatewayNamespace_Call {
+	return &ConfigMock_GetGatewayNamespace_Call{Call: _e.mock.On("GetGatewayNamespace")}
+}
+
+func (_c *ConfigMock_GetGatewayNamespace_Call) Run(run func()) *ConfigMock_GetGatewayNamespace_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *ConfigMock_GetGatewayNamespace_Call) Return(_a0 string) *ConfigMock_GetGatewayNamespace_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *ConfigMock_GetGatewayNamespace_Call) RunAndReturn(run func() string) *ConfigMock_GetGatewayNamespace_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetBuildkitHost provides a mock function with no fields
 func (_m *ConfigMock) GetBuildkitHost() string {
 	ret := _m.Called()

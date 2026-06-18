@@ -486,9 +486,9 @@ func startAPI(cfg *config.Config) {
 		gocron.DurationJob(10*time.Minute),
 		gocron.NewTask(
 			func(ctx context.Context) {
-				log.Infof("Cleaning up ingress tests.")
-				if err := kubeClient.DeleteOldVerificationIngresses(ctx, kubeClient.GetInternalClient()); err != nil {
-					log.Error("Failed to delete old verification ingresses", "err", err)
+				log.Infof("Cleaning up verification routes.")
+				if err := kubeClient.DeleteOldVerificationRoutes(ctx, kubeClient.GetInternalClient()); err != nil {
+					log.Error("Failed to delete old verification routes", "err", err)
 				}
 			},
 			ctx,

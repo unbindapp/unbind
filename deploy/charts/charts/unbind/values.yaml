@@ -2,6 +2,11 @@
 global:
   namespace: "unbind-system"
 
+# Networking provider the platform's own routes are rendered for:
+# nginx|traefik|gateway. Set by helmfile from the resolved networkingProvider.
+networkingProvider: "nginx"
+gatewayName: "unbind-gateway"
+
 # ServiceAccount
 serviceAccount:
   create: true
