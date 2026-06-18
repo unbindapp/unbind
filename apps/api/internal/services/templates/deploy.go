@@ -135,8 +135,23 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 			validatedInputs[defInput.ID] = strconv.Itoa(int(portMap[defInput.ID]))
 		}
 
-		// Resolve Node IP inputs
+		// Resolve Node IP inputs. On gateway clusters L4 is fronted by the shared
+		// Envoy LoadBalancer, so the public address is the controller LB IP; on
+		// NodePort-based providers it is a node's external IP.
 		if defInput.Type == schema.InputTypeGeneratedNodeIP {
+			if self.k8s.NetworkingProvider(ctx) == "gateway" {
+				lb, err := self.k8s.GetIngressNginxIP(ctx)
+				if err != nil {
+					return nil, fmt.Errorf("failed to resolve gateway load balancer IP: %w", err)
+				}
+				ip := lb.IPv4
+				if ip == "" {
+					ip = lb.IPv6
+				}
+				validatedInputs[defInput.ID] = ip
+				continue
+			}
+
 			nodes, err := self.k8s.GetInternalClient().CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
 			if err != nil {
 				return nil, fmt.Errorf("failed to list nodes: %w", err)

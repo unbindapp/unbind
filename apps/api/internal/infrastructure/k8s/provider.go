@@ -14,9 +14,20 @@ const (
 	providerAuto    = "auto"
 )
 
+// NetworkingCapabilities reports the exposure modes the active provider can deploy.
+// TCP/UDP are universal (NodePort fallback); only TLS passthrough is gateway-only,
+// so it is the capability that actually gates templates.
+func (self *KubeClient) NetworkingCapabilities(ctx context.Context) []string {
+	if self.NetworkingProvider(ctx) == providerGateway {
+		return []string{"http", "grpc", "tcp", "udp", "tls"}
+	}
+	return []string{"http", "grpc", "tcp", "udp"}
+}
+
 var (
 	gatewayClassGVR = schema.GroupVersionResource{Group: "gateway.networking.k8s.io", Version: "v1", Resource: "gatewayclasses"}
 	httpRouteGVR    = schema.GroupVersionResource{Group: "gateway.networking.k8s.io", Version: "v1", Resource: "httproutes"}
+	gatewayGVR      = schema.GroupVersionResource{Group: "gateway.networking.k8s.io", Version: "v1", Resource: "gateways"}
 )
 
 // NetworkingProvider resolves the active ingress/gateway controller. An explicit

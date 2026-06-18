@@ -12,19 +12,37 @@ import (
 
 // * Custom kubernetes-like types
 type HostSpec struct {
-	PrevHost   *string `json:"prev_host,omitempty" required:"false" doc:"Previous host for the service, used for upserting key"`
-	Host       string  `json:"host"`
-	Path       string  `json:"path"`
-	TargetPort *int32  `json:"target_port,omitempty" required:"false"`
+	PrevHost   *string       `json:"prev_host,omitempty" required:"false" doc:"Previous host for the service, used for upserting key"`
+	Host       string        `json:"host"`
+	Path       string        `json:"path"`
+	TargetPort *int32        `json:"target_port,omitempty" required:"false"`
+	Protocol   *HostProtocol `json:"protocol,omitempty" required:"false" doc:"Application protocol for the domain: http (default) or grpc"`
+}
+
+// HostProtocol is the application-layer protocol for a domain route.
+type HostProtocol string
+
+const (
+	HostProtocolHTTP HostProtocol = "http"
+	HostProtocolGRPC HostProtocol = "grpc"
+)
+
+func (s HostProtocol) Values() (kinds []string) {
+	return []string{string(HostProtocolHTTP), string(HostProtocolGRPC)}
 }
 
 func AsV1HostSpecs(hosts []HostSpec) []v1.HostSpec {
 	v1Hosts := make([]v1.HostSpec, len(hosts))
 	for i, host := range hosts {
+		protocol := ""
+		if host.Protocol != nil {
+			protocol = string(*host.Protocol)
+		}
 		v1Hosts[i] = v1.HostSpec{
-			Host: host.Host,
-			Path: host.Path,
-			Port: host.TargetPort,
+			Host:     host.Host,
+			Path:     host.Path,
+			Port:     host.TargetPort,
+			Protocol: protocol,
 		}
 	}
 	return v1Hosts

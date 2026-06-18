@@ -1,6 +1,7 @@
 package databases
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -1936,4 +1937,44 @@ spec:
 		require.NoError(t, err)
 		assert.Len(t, objects, 1)
 	})
+}
+
+// TestCloudPiratesImageTagIsString renders the real embedded CloudPirates
+// (Helm) database definitions with default parameters and asserts image.tag
+// renders as a quoted string. These charts ship a values.schema.json that
+// requires image.tag to be a string; an unquoted value like 8.2 is parsed by
+// YAML as a number and the Helm install fails schema validation (this is what
+// left MongoDB stuck "launching").
+func TestCloudPiratesImageTagIsString(t *testing.T) {
+	provider := NewDatabaseProvider()
+	renderer := NewDatabaseRenderer()
+
+	cases := []struct {
+		dbType  string
+		wantTag string
+	}{
+		{"mongodb", "8.3"},
+		{"redis", "8.8"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.dbType, func(t *testing.T) {
+			def, err := provider.FetchDatabaseDefinition(context.Background(), "", tc.dbType)
+			require.NoError(t, err)
+
+			result, err := renderer.Render(def, &RenderContext{
+				Name:      "test-" + tc.dbType,
+				Namespace: "default",
+				Parameters: map[string]any{
+					"existingSecretName": "test-secret",
+					"secretName":         "test-secret",
+					"secretKey":          "password",
+				},
+			})
+			require.NoError(t, err)
+
+			// Must be quoted; an unquoted `tag: 8.3` would fail the chart schema.
+			assert.Contains(t, result, `tag: "`+tc.wantTag+`"`, "image.tag must render as a quoted string")
+			assert.NotContains(t, result, "tag: "+tc.wantTag+"\n", "image.tag must not render as a bare number")
+		})
+	}
 }

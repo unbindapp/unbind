@@ -53,6 +53,10 @@ type KubeClientInterface interface {
 	GetLoadBalancerIPs(ctx context.Context, labelSelector string) ([]LoadBalancerAddresses, error)
 	// GetIngressNginxIP is a convenience function to get the IP of the ingress-nginx controller
 	GetIngressNginxIP(ctx context.Context) (*LoadBalancerAddresses, error)
+	// NetworkingProvider resolves the active ingress/gateway controller
+	NetworkingProvider(ctx context.Context) string
+	// NetworkingCapabilities reports the exposure modes the active provider supports
+	NetworkingCapabilities(ctx context.Context) []string
 	// GetUnusedNodePort returns an unused NodePort, determined by letting kubernetes allocate one then deleting the temp service
 	GetUnusedNodePort(ctx context.Context) (int32, error)
 	// StreamPodLogs streams logs from a pod to the provided writer with filtering

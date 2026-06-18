@@ -50,6 +50,7 @@ import (
 	"github.com/unbindapp/unbind-operator/internal/resourcebuilder/networking"
 	postgresv1 "github.com/zalando/postgres-operator/pkg/apis/acid.zalan.do/v1"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
+	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -67,6 +68,7 @@ func init() {
 	utilruntime.Must(mocov1beta2.AddToScheme(scheme))
 	utilruntime.Must(altinityv1.AddToScheme(scheme))
 	utilruntime.Must(gwapiv1.Install(scheme))
+	utilruntime.Must(gwapiv1a2.Install(scheme))
 	// +kubebuilder:scaffold:scheme
 }
 

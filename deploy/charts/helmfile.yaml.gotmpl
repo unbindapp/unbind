@@ -602,8 +602,6 @@ releases:
             metadata:
               name: {{ .Values | get "gatewayName" "unbind-gateway" }}
               namespace: {{ .Values.namespace }}
-              annotations:
-                cert-manager.io/cluster-issuer: letsencrypt-prod
             spec:
               gatewayClassName: {{ .Values | get "gatewayClassName" "unbind" }}
               listeners:
@@ -615,8 +613,13 @@ releases:
                 allowedRoutes:
                   namespaces:
                     from: All
-              # The platform's own domain gets a dedicated HTTPS listener; its cert
-              # is issued per-host over HTTP-01 via the gateway-shim (annotation above).
+              # The platform's own domain gets a dedicated HTTPS listener. Its cert
+              # is issued over HTTP-01 by the explicit Certificate created in the
+              # cert-manager hook below, which carries the issue-temporary-certificate
+              # annotation so this listener programs immediately (self-signed) and stays
+              # up even while ACME is slow/unreachable — cert-manager swaps in the real
+              # cert once it issues. Relying on the gateway-shim instead would leave 443
+              # closed until first issuance, which makes the origin unreachable (CF 521).
               - name: https-main
                 protocol: HTTPS
                 port: 443
@@ -683,6 +686,32 @@ releases:
                       class: {{ $certProvider }}
             {{- end }}
             EOF
+            {{- if eq $certProvider "gateway" }}
+            # Explicit Certificate for the platform domain. We create it ourselves
+            # (rather than letting the gateway-shim auto-create one from a Gateway
+            # annotation) so we can set issue-temporary-certificate: the secret is
+            # populated with a self-signed cert immediately, so the gateway's https-main
+            # listener programs right away and the origin is reachable on :443 even
+            # before — or during an outage of — ACME. cert-manager overwrites it with
+            # the real Let's Encrypt cert once issuance succeeds.
+            cat <<EOF | kubectl apply -f -
+            apiVersion: cert-manager.io/v1
+            kind: Certificate
+            metadata:
+              name: {{ .Values.tlsSecretName }}
+              namespace: {{ .Values.namespace }}
+              annotations:
+                cert-manager.io/issue-temporary-certificate: "true"
+            spec:
+              secretName: {{ .Values.tlsSecretName }}
+              dnsNames:
+                - {{ .Values.unbindDomain }}
+              issuerRef:
+                name: letsencrypt-prod
+                kind: ClusterIssuer
+                group: cert-manager.io
+            EOF
+            {{- end }}
     values:
       -
         crds:

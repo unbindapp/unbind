@@ -15,12 +15,18 @@ type traefikProvider struct{}
 func (traefikProvider) Name() Provider { return ProviderTraefik }
 
 func (traefikProvider) ServiceAnnotations(svc *v1.Service) map[string]string {
-	return map[string]string{
+	annotations := map[string]string{
 		"traefik.ingress.kubernetes.io/service.sticky.cookie":        "true",
 		"traefik.ingress.kubernetes.io/service.sticky.cookie.name":   fmt.Sprintf("%s-session", svc.Name),
 		"traefik.ingress.kubernetes.io/service.sticky.cookie.maxage": "172800",
 	}
+	if hasGRPCHost(svc) {
+		annotations["traefik.ingress.kubernetes.io/service.serversscheme"] = "h2c"
+	}
+	return annotations
 }
+
+func (traefikProvider) ExposesL4ViaGateway() bool { return false }
 
 func (traefikProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 	svc := in.Service

@@ -183,6 +183,13 @@ spec:
                         port:
                           format: int32
                           type: integer
+                        protocol:
+                          description: 'Protocol is the application protocol for domain
+                            routing: "http" (default) or "grpc".'
+                          enum:
+                          - http
+                          - grpc
+                          type: string
                       required:
                       - host
                       - path

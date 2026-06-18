@@ -18,10 +18,12 @@ type StorageResponse struct {
 }
 
 type SystemMeta struct {
-	ExternalIPV6   string                                 `json:"external_ipv6" nullable:"false"`
-	ExternalIPV4   string                                 `json:"external_ipv4" nullable:"false"`
-	Storage        *k8s.StorageMetadata                   `json:"storage" nullable:"false"`
-	SystemSettings *system_service.SystemSettingsResponse `json:"system_settings" nullable:"false"`
+	ExternalIPV6           string                                 `json:"external_ipv6" nullable:"false"`
+	ExternalIPV4           string                                 `json:"external_ipv4" nullable:"false"`
+	Storage                *k8s.StorageMetadata                   `json:"storage" nullable:"false"`
+	SystemSettings         *system_service.SystemSettingsResponse `json:"system_settings" nullable:"false"`
+	NetworkingProvider     string                                 `json:"networking_provider" nullable:"false"`
+	NetworkingCapabilities []string                               `json:"networking_capabilities" nullable:"false"`
 }
 
 type SystemMetaResponse struct {
@@ -51,9 +53,11 @@ func (self *HandlerGroup) GetSystemInformation(ctx context.Context, input *serve
 
 	// Get system meta
 	meta := &SystemMeta{
-		ExternalIPV6: ips.IPv6,
-		ExternalIPV4: ips.IPv4,
-		Storage:      storageMetadata,
+		ExternalIPV6:           ips.IPv6,
+		ExternalIPV4:           ips.IPv4,
+		Storage:                storageMetadata,
+		NetworkingProvider:     self.srv.KubeClient.NetworkingProvider(ctx),
+		NetworkingCapabilities: self.srv.KubeClient.NetworkingCapabilities(ctx),
 	}
 
 	// Get buildkit settings

@@ -13,12 +13,27 @@ func (nginxProvider) Name() Provider { return ProviderNginx }
 
 func (nginxProvider) ServiceAnnotations(*v1.Service) map[string]string { return nil }
 
+func (nginxProvider) ExposesL4ViaGateway() bool { return false }
+
 func (nginxProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 	if !needsRoutes(in.Service) {
 		return nil, ErrRouteNotNeeded
 	}
-	ingress := buildIngress(in, "nginx", nginxAnnotations(in.Service.Name))
+	annotations := nginxAnnotations(in.Service.Name)
+	if hasGRPCHost(in.Service) {
+		annotations["nginx.ingress.kubernetes.io/backend-protocol"] = "GRPC"
+	}
+	ingress := buildIngress(in, "nginx", annotations)
 	return []client.Object{ingress}, nil
+}
+
+func hasGRPCHost(svc *v1.Service) bool {
+	for _, h := range svc.Spec.Config.Hosts {
+		if h.Protocol == "grpc" {
+			return true
+		}
+	}
+	return false
 }
 
 func nginxAnnotations(name string) map[string]string {

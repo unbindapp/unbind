@@ -143,6 +143,9 @@ rules:
   - gateway.networking.k8s.io
   resources:
   - httproutes
+  - grpcroutes
+  - tcproutes
+  - udproutes
   - gateways
   verbs:
   - create
@@ -159,6 +162,18 @@ rules:
   verbs:
   - get
   - list
+  - watch
+- apiGroups:
+  - cert-manager.io
+  resources:
+  - certificates
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
   - watch
 - apiGroups:
   - gateway.envoyproxy.io

@@ -17,7 +17,10 @@ func (rb *ResourceBuilder) BuildServices() ([]*corev1.Service, error) {
 		return nil, ErrServiceNotNeeded
 	}
 
-	// Group ports by service type (NodePort vs ClusterIP)
+	// Group ports by service type (NodePort vs ClusterIP). When the provider routes
+	// L4 via the gateway, external ports stay ClusterIP and are fronted by TCP/UDP
+	// routes instead of a NodePort Service.
+	viaGateway := rb.provider.ExposesL4ViaGateway()
 	nodePortPorts := []corev1.ServicePort{}
 	clusterIPPorts := []corev1.ServicePort{}
 
@@ -34,8 +37,7 @@ func (rb *ResourceBuilder) BuildServices() ([]*corev1.Service, error) {
 			TargetPort: intstr.FromInt32(port.Port),
 		}
 
-		// If NodePort is specified, add it to the nodePortPorts slice
-		if port.NodePort != nil {
+		if port.NodePort != nil && !viaGateway {
 			servicePort.NodePort = *port.NodePort
 			nodePortPorts = append(nodePortPorts, servicePort)
 		} else {

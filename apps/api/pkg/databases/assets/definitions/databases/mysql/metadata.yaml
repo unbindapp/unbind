@@ -1,5 +1,5 @@
 name: "MySQL Database"
-description: "Standard MySQL database using Oracle MySQL Operator"
+description: "Standard MySQL database using the MOCO (cybozu-go) operator"
 type: "mysql-operator"
 version: "1.0.0"
 port: 3306

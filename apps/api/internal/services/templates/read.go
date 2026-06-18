@@ -17,8 +17,30 @@ func (self *TemplatesService) GetAvailable(ctx context.Context) ([]*models.Templ
 		return nil, err
 	}
 
-	// Transform the entities into response models
-	return models.TransformTemplateEntities(templates), nil
+	// Hide templates whose required networking capabilities the cluster's provider
+	// can't satisfy (e.g. TLS passthrough on ingress-nginx).
+	capable := map[string]bool{}
+	for _, c := range self.k8s.NetworkingCapabilities(ctx) {
+		capable[c] = true
+	}
+
+	transformed := models.TransformTemplateEntities(templates)
+	supported := make([]*models.TemplateWithDefinitionResponse, 0, len(transformed))
+	for _, t := range transformed {
+		if capabilitiesSatisfied(t.Definition.RequiredCapabilities, capable) {
+			supported = append(supported, t)
+		}
+	}
+	return supported, nil
+}
+
+func capabilitiesSatisfied(required []string, capable map[string]bool) bool {
+	for _, c := range required {
+		if !capable[c] {
+			return false
+		}
+	}
+	return true
 }
 
 func (self *TemplatesService) GetByID(ctx context.Context, id uuid.UUID) (*models.TemplateWithDefinitionResponse, error) {

@@ -168,6 +168,9 @@ type HostSpec struct {
 	Host string `json:"host"`
 	Path string `json:"path"`
 	Port *int32 `json:"port,omitempty" required:"false"`
+	// Protocol is the application protocol for domain routing: "http" (default) or "grpc".
+	// +kubebuilder:validation:Enum=http;grpc
+	Protocol string `json:"protocol,omitempty" required:"false"`
 }
 
 type VolumeSpec struct {

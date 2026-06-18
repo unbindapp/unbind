@@ -18,6 +18,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
+	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 )
 
 // reconcileDeployment ensures the Deployment exists and matches the desired spec,
@@ -198,6 +199,39 @@ func (r *ServiceReconciler) reconcileRouteObject(ctx context.Context, desired cl
 				existing.Spec = desired.Spec
 				existing.Labels = desired.Labels
 				existing.Annotations = desired.Annotations
+			},
+			nil,
+		)
+	case *gwapiv1.GRPCRoute:
+		return reconcileResource(ctx, r, obj, owner, maxReconcileRetries,
+			func(existing, desired *gwapiv1.GRPCRoute) bool {
+				return !reflect.DeepEqual(existing.Spec, desired.Spec) || !reflect.DeepEqual(existing.Labels, desired.Labels)
+			},
+			func(existing, desired *gwapiv1.GRPCRoute) {
+				existing.Spec = desired.Spec
+				existing.Labels = desired.Labels
+			},
+			nil,
+		)
+	case *gwapiv1a2.TCPRoute:
+		return reconcileResource(ctx, r, obj, owner, maxReconcileRetries,
+			func(existing, desired *gwapiv1a2.TCPRoute) bool {
+				return !reflect.DeepEqual(existing.Spec, desired.Spec) || !reflect.DeepEqual(existing.Labels, desired.Labels)
+			},
+			func(existing, desired *gwapiv1a2.TCPRoute) {
+				existing.Spec = desired.Spec
+				existing.Labels = desired.Labels
+			},
+			nil,
+		)
+	case *gwapiv1a2.UDPRoute:
+		return reconcileResource(ctx, r, obj, owner, maxReconcileRetries,
+			func(existing, desired *gwapiv1a2.UDPRoute) bool {
+				return !reflect.DeepEqual(existing.Spec, desired.Spec) || !reflect.DeepEqual(existing.Labels, desired.Labels)
+			},
+			func(existing, desired *gwapiv1a2.UDPRoute) {
+				existing.Spec = desired.Spec
+				existing.Labels = desired.Labels
 			},
 			nil,
 		)

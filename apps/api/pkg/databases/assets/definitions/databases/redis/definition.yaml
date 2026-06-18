@@ -1,8 +1,10 @@
 # definitions/databases/redis/definition.yaml
 # Helm values for CloudPirates Redis chart
 
-# Set a variable for the total requested nodes, applying the default from base.yaml (which is 1)
-{{- $requestedReplicas := .Parameters.common.replicas | default 1 -}}
+# Set a variable for the total requested nodes, applying the default from base.yaml (which is 1).
+# Coerce to int: schema-default numbers arrive as float64, and `gt` below requires
+# matching types (float64 vs int otherwise errors at render time).
+{{- $requestedReplicas := .Parameters.common.replicas | default 1 | int -}}
 
 # Apply common labels to all resources created by the chart
 commonLabels:
@@ -13,11 +15,11 @@ commonLabels:
   {{ $key }}: {{ $value | quote }}
   {{- end }}
 
-# Image configuration - Redis 8.8
+# Image configuration - tag follows the selected version (default 8.8)
 image:
   registry: docker.io
   repository: redis
-  tag: "8.8"
+  tag: {{ .Parameters.version | default "8.8" | quote }}
 
 # Authentication
 auth:
@@ -42,18 +44,21 @@ architecture: standalone
 {{- end }}
 
 # Persistence configuration
+# Quote string-typed values: the CloudPirates chart schema requires
+# persistence.size to be a string, and an unquoted value like "10" would render
+# as a YAML number. Same reasoning for the resource quantities below.
 persistence:
   enabled: true
-  size: {{ .Parameters.common.storage | default "1Gi" }}
+  size: {{ .Parameters.common.storage | default "1Gi" | quote }}
 
 # Resource configuration
 resources:
   requests:
-    cpu: {{ .Parameters.common.resources.requests.cpu | default "100m" }}
-    memory: {{ .Parameters.common.resources.requests.memory | default "128Mi" }}
+    cpu: {{ .Parameters.common.resources.requests.cpu | default "100m" | quote }}
+    memory: {{ .Parameters.common.resources.requests.memory | default "128Mi" | quote }}
   limits:
-    cpu: {{ .Parameters.common.resources.limits.cpu | default "500m" }}
-    memory: {{ .Parameters.common.resources.limits.memory | default "256Mi" }}
+    cpu: {{ .Parameters.common.resources.limits.cpu | default "500m" | quote }}
+    memory: {{ .Parameters.common.resources.limits.memory | default "256Mi" | quote }}
 
 # Disable metrics
 metrics:

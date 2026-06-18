@@ -25,9 +25,11 @@ schema:
       required: true
     version:
       type: "string"
+      # Default stays on 26.3 (current LTS). 26.5 is the newest stable; 24.12 is
+      # the prior LTS, kept for existing deployments.
       description: "ClickHouse version"
       default: "26.3"
-      enum: ["24.12", "25.5", "26.3"]
+      enum: ["24.12", "25.5", "26.3", "26.5"]
     shardsCount:
       type: "integer"
       description: "Number of shards"

@@ -74,6 +74,18 @@ rules:
   - patch
   - update
 - apiGroups:
+  - cert-manager.io
+  resources:
+  - certificates
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - clickhouse.altinity.com
   resources:
   - clickhouseinstallations
@@ -109,7 +121,10 @@ rules:
   - gateway.networking.k8s.io
   resources:
   - gateways
+  - grpcroutes
   - httproutes
+  - tcproutes
+  - udproutes
   verbs:
   - create
   - delete

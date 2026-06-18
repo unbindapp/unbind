@@ -23,6 +23,13 @@ schema:
       type: "string"
       description: "Key in the secret that contains the redis password"
       required: true
+    version:
+      type: "string"
+      # 8.x only: Redis returned to an open license (AGPLv3) starting at 8.0;
+      # the 7.x line was under the restrictive SSPL/RSAL, so we don't offer it.
+      description: "Redis version"
+      default: "8.8"
+      enum: ["8.4", "8.6", "8.8"]
     common:
       $ref: "#/imports/base"
     labels:

@@ -319,6 +319,9 @@ func (self *KubeClient) DiscoverEndpointsByLabels(ctx context.Context, namespace
 		if err := self.appendGatewayEndpoints(ctx, namespace, labelSelector, discovery); err != nil {
 			return nil, err
 		}
+		if err := self.appendGatewayL4Endpoints(ctx, namespace, labelSelector, discovery); err != nil {
+			return nil, err
+		}
 	}
 
 	// If there are any ingresses in "Attempting" state, fetch their CertificateRequest conditions
@@ -407,6 +410,72 @@ func (self *KubeClient) appendGatewayEndpoints(ctx context.Context, namespace, l
 				},
 				DNSStatus:     models.DNSStatusUnknown,
 				TlsStatus:     models.TlsStatusIssued,
+				TeamID:        teamID,
+				ProjectID:     projectID,
+				EnvironmentID: environmentID,
+				ServiceID:     serviceID,
+			})
+		}
+	}
+	return nil
+}
+
+// appendGatewayL4Endpoints reports raw TCP/UDP exposure from per-service Gateways'
+// L4 listeners as LB-IP:port endpoints (the gateway equivalent of NodePort).
+func (self *KubeClient) appendGatewayL4Endpoints(ctx context.Context, namespace, labelSelector string, discovery *models.EndpointDiscovery) error {
+	if self.client == nil {
+		return nil
+	}
+	gateways, err := self.client.Resource(gatewayGVR).Namespace(namespace).List(ctx, metav1.ListOptions{LabelSelector: labelSelector})
+	if err != nil {
+		if meta.IsNoMatchError(err) {
+			return nil
+		}
+		return fmt.Errorf("failed to list gateways with labels %s: %w", labelSelector, err)
+	}
+	if len(gateways.Items) == 0 {
+		return nil
+	}
+
+	lb, err := self.GetActiveControllerIP(ctx)
+	host := ""
+	if err == nil {
+		host = lb.IPv4
+		if host == "" {
+			host = lb.IPv6
+		}
+	}
+
+	for i := range gateways.Items {
+		gw := &gateways.Items[i]
+		labels := gw.GetLabels()
+		teamID, _ := uuid.Parse(labels["unbind-team"])
+		projectID, _ := uuid.Parse(labels["unbind-project"])
+		environmentID, _ := uuid.Parse(labels["unbind-environment"])
+		serviceID, _ := uuid.Parse(labels["unbind-service"])
+
+		listeners, _, _ := unstructured.NestedSlice(gw.Object, "spec", "listeners")
+		for _, l := range listeners {
+			listener, ok := l.(map[string]any)
+			if !ok {
+				continue
+			}
+			proto, _, _ := unstructured.NestedString(listener, "protocol")
+			if proto != "TCP" && proto != "UDP" {
+				continue
+			}
+			portNum, _, _ := unstructured.NestedInt64(listener, "port")
+			discovery.External = append(discovery.External, models.IngressEndpoint{
+				KubernetesName: gw.GetName(),
+				IsIngress:      false,
+				Host:           host,
+				Path:           "",
+				TargetPort: &schema.PortSpec{
+					Port:     int32(portNum),
+					Protocol: utils.ToPtr(schema.Protocol(proto)),
+				},
+				DNSStatus:     models.DNSStatusUnknown,
+				TlsStatus:     models.TlsStatusNotAvailable,
 				TeamID:        teamID,
 				ProjectID:     projectID,
 				EnvironmentID: environmentID,

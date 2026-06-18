@@ -87,6 +87,9 @@ type TemplateDefinition struct {
 	Version                 int                             `json:"version"`
 	Services                []TemplateService               `json:"services" nullable:"false"`
 	Inputs                  []TemplateInput                 `json:"inputs" nullable:"false"`
+	// RequiredCapabilities are networking exposure modes (e.g. "tls") the cluster's
+	// provider must support for this template to be deployable. Empty = works anywhere.
+	RequiredCapabilities []string `json:"required_capabilities,omitempty" nullable:"false"`
 }
 
 // TemplateResourceRecommendations represents resource recommendations for a template

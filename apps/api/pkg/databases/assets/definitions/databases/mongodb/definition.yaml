@@ -14,7 +14,9 @@ commonLabels:
 image:
   registry: docker.io
   repository: mongo
-  tag: {{ if eq (.Parameters.version | default "8.2") "8.2" }}8.2{{ else if eq .Parameters.version "7.0" }}7.0{{ else }}8.2{{ end }}
+  # Quote the tag: the CloudPirates chart schema requires image.tag to be a
+  # string, and an unquoted value like 8.2 is parsed by YAML as a number.
+  tag: {{ .Parameters.version | default "8.3" | quote }}
   extraArgs:
     - "--wiredTigerCacheSizeGB=0.25"
     - "--maxConns=100"
@@ -86,7 +88,7 @@ extraObjects:
             spec:
               containers:
               - name: mongodump-s3
-                image: {{ if eq (.Parameters.version | default "8.0") "8.0" }}mongo:8.2{{ else if eq .Parameters.version "7.0" }}mongo:7.0{{ else if eq .Parameters.version "6.0" }}mongo:6.0{{ else }}mongo:8.2{{ end }}
+                image: mongo:{{ .Parameters.version | default "8.3" }}
                 command:
                 - /bin/sh
                 - -c
@@ -209,7 +211,7 @@ extraObjects:
         spec:
           containers:
           - name: mongorestore-s3
-            image: {{ if eq (.Parameters.version | default "8.0") "8.0" }}mongo:8.0{{ else if eq .Parameters.version "7.0" }}mongo:7.0{{ else if eq .Parameters.version "6.0" }}mongo:6.0{{ else }}mongo:8.0{{ end }}
+            image: mongo:{{ .Parameters.version | default "8.3" }}
             command:
             - /bin/sh
             - -c
