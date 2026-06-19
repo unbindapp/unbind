@@ -193,33 +193,35 @@ function VariableEditorOrPlaceholder({
   onEditorValueChange,
   recentlySucceeded,
 }: Omit<TVariableEditorProps, "variables"> & { variables?: TVariableShallow[] }) {
-  if (variables) {
+  if (!variables) {
     return (
-      <VariableEditor
-        variables={variables}
-        editorValue={editorValue}
-        onEditorValueChange={onEditorValueChange}
-        recentlySucceeded={recentlySucceeded}
-      />
+      <div
+        style={{ paddingLeft: 14, paddingRight: 14, paddingTop: 10, paddingBottom: 10 }}
+        className="bg-background-hover flex flex-1 flex-col gap-1 overflow-hidden rounded-lg border font-mono"
+      >
+        {Array.from({ length: 20 }).map((_, i) => (
+          <div
+            key={i}
+            className="pointer-events-none flex w-full items-center gap-1 text-transparent select-none"
+          >
+            <span className="bg-foreground animate-skeleton flex-1 rounded-md leading-tight">
+              N
+            </span>
+            <span className="bg-muted-more-foreground animate-skeleton flex-2 rounded-md leading-tight">
+              V
+            </span>
+          </div>
+        ))}
+      </div>
     );
   }
   return (
-    <div
-      style={{ paddingLeft: 14, paddingRight: 14, paddingTop: 10, paddingBottom: 10 }}
-      className="bg-background-hover flex flex-1 flex-col gap-1 overflow-hidden rounded-lg border font-mono"
-    >
-      {Array.from({ length: 20 }).map((_, i) => (
-        <div
-          key={i}
-          className="pointer-events-none flex w-full items-center gap-1 text-transparent select-none"
-        >
-          <span className="bg-foreground animate-skeleton flex-1 rounded-md leading-tight">N</span>
-          <span className="bg-muted-more-foreground animate-skeleton flex-[2] rounded-md leading-tight">
-            V
-          </span>
-        </div>
-      ))}
-    </div>
+    <VariableEditor
+      variables={variables}
+      editorValue={editorValue}
+      onEditorValueChange={onEditorValueChange}
+      recentlySucceeded={recentlySucceeded}
+    />
   );
 }
 

@@ -23,6 +23,10 @@ type TProps = {
   onStatusChange: (status: TTerminalStatus) => void;
 };
 
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function buildWsUrl(apiUrl: string, params: URLSearchParams) {
   const url = new URL(apiUrl, window.location.origin);
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
@@ -93,12 +97,17 @@ const PodTerminal = forwardRef<TPodTerminalHandle, TProps>(function PodTerminal(
     const term = new Terminal({
       cursorBlink: true,
       fontSize: 13,
+      lineHeight: 1.2,
       fontFamily: "var(--font-mono), ui-monospace, monospace",
       theme: readTheme(element),
     });
     const fit = new FitAddon();
     term.loadAddon(fit);
     term.open(element);
+    // Pad the terminal's own box (not the host) so the gap is part of the terminal:
+    // the last line always clears the bottom edge and the scrollbar stays flush to the
+    // panel edge. FitAddon reads this element's padding, so the grid stays correct.
+    if (term.element) term.element.style.padding = "0.5rem";
     fit.fit();
 
     const themeObserver = new MutationObserver(() => {
@@ -116,6 +125,15 @@ const PodTerminal = forwardRef<TPodTerminalHandle, TProps>(function PodTerminal(
     let attempt = 0;
     let disposed = false;
     let ended = false;
+
+    // The shell's prompt streams in as "user@<podName>:/path# " — strip the
+    // "user@<podName>" so only the short ":/path# " renders. Per-chunk decode is
+    // fine: the prompt is emitted as a single write.
+    const decoder = new TextDecoder();
+    const promptRegex = new RegExp(`\\S*@${escapeRegExp(podName)}`, "g");
+    const writeOutput = (bytes: Uint8Array) => {
+      term.write(decoder.decode(bytes, { stream: true }).replace(promptRegex, ""));
+    };
 
     const setStatus = (status: TTerminalStatus) => onStatusChangeRef.current(status);
     const send = (msg: object) => {
@@ -153,7 +171,7 @@ const PodTerminal = forwardRef<TPodTerminalHandle, TProps>(function PodTerminal(
 
       ws.onmessage = (e) => {
         if (typeof e.data !== "string") {
-          term.write(new Uint8Array(e.data as ArrayBuffer));
+          writeOutput(new Uint8Array(e.data as ArrayBuffer));
           return;
         }
         let msg: { type?: string; message?: string };
@@ -264,7 +282,7 @@ const PodTerminal = forwardRef<TPodTerminalHandle, TProps>(function PodTerminal(
     };
   }, [apiUrl, teamId, projectId, environmentId, serviceId, podName, container]);
 
-  return <div ref={elementRef} className="min-h-0 w-full flex-1 overflow-hidden p-2" />;
+  return <div ref={elementRef} className="bg-background min-h-0 w-full flex-1 overflow-hidden" />;
 });
 
 export default PodTerminal;

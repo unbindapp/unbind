@@ -1,3 +1,4 @@
+import { BlockItemButtonLike } from "@/components/block";
 import { useDeployment } from "@/components/deployment/deployment-provider";
 import PodTerminal, {
   type TPodTerminalHandle,
@@ -8,17 +9,13 @@ import TerminalStatus, {
 import ErrorCard from "@/components/error-card";
 import NoItemsCard from "@/components/no-items-card";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import DropdownSelect from "@/components/ui/dropdown-select";
+import { cn } from "@/components/ui/utils";
 import { instancesListQuery } from "@/lib/queries/instances";
 import { useQuery } from "@tanstack/react-query";
 import {
   BoxIcon,
+  LoaderIcon,
   Maximize2Icon,
   Minimize2Icon,
   RotateCwIcon,
@@ -34,8 +31,6 @@ export default function Terminal() {
   // the terminal onto a different instance mid-session.
   const { data, isPending, error } = useQuery({
     ...instancesListQuery({ teamId, projectId, environmentId, serviceId }),
-    refetchOnWindowFocus: false,
-    staleTime: 15_000,
   });
 
   const pods = useMemo(() => data?.data ?? [], [data]);
@@ -95,12 +90,16 @@ export default function Terminal() {
   }, [containers, selectedContainer]);
 
   if (isPending) {
-    return <CenteredMessage>Loading instances…</CenteredMessage>;
+    return (
+      <div className="flex w-full flex-1 flex-col items-center justify-center pb-4">
+        <LoaderIcon className="text-muted-more-foreground size-6 animate-spin" />
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <div className="w-full p-3">
+      <div className="flex w-full flex-col p-3">
         <ErrorCard message={error.message} />
       </div>
     );
@@ -108,60 +107,86 @@ export default function Terminal() {
 
   if (!activePod || !activeContainer) {
     return (
-      <CenteredMessage>
+      <div className="flex w-full flex-col p-3">
         <NoItemsCard Icon={TerminalIcon}>No running instances to connect to</NoItemsCard>
-      </CenteredMessage>
+      </div>
     );
   }
 
+  const compactTriggerClassName = "w-fit min-w-0 shrink gap-1.5 px-2.5 py-1.5 text-sm rounded-md";
+
   return (
-    <div ref={wrapperRef} className="bg-background flex min-h-0 w-full flex-1 flex-col">
-      <div className="flex w-full items-center gap-1.5 border-b px-2 py-2 sm:px-2.5">
-        <div className="flex min-w-0 flex-1 items-center gap-1.5">
+    <div
+      ref={wrapperRef}
+      className="bg-background flex min-h-0 w-full flex-1 flex-col overflow-hidden sm:rounded-bl-2xl"
+    >
+      <div className="flex w-full items-center justify-between gap-1.5 border-b px-2 py-2 sm:px-2.5">
+        <div className="flex min-w-0 shrink items-center gap-1.5">
           {pods.length > 1 ? (
-            <Select value={activePod.kubernetes_name} onValueChange={setSelectedPod}>
-              <SelectTrigger className="h-8 max-w-full" classNameInnerContainer="items-center">
-                <ServerIcon className="text-muted-foreground size-3.5 shrink-0" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {pods.map((p, i) => (
-                  <SelectItem key={p.kubernetes_name} value={p.kubernetes_name}>
-                    Instance {i + 1}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <DropdownSelect
+              items={pods.map((p, i) => ({
+                value: p.kubernetes_name,
+                label: `Instance ${i + 1}`,
+              }))}
+              value={activePod.kubernetes_name}
+              onChange={setSelectedPod}
+              classNameContent="w-auto"
+              align="start"
+            >
+              {({ isOpen }) => (
+                <BlockItemButtonLike
+                  asElement="button"
+                  text={`Instance ${pods.findIndex((p) => p.kubernetes_name === activePod.kubernetes_name) + 1}`}
+                  Icon={({ className }) => <ServerIcon className={cn("scale-90", className)} />}
+                  variant="outline"
+                  open={isOpen}
+                  className={compactTriggerClassName}
+                  classNameChevron="size-4"
+                  classNameIcon="size-4"
+                />
+              )}
+            </DropdownSelect>
           ) : (
-            <div className="text-muted-foreground flex h-8 items-center gap-1.5 rounded-lg border px-3 text-sm font-bold">
-              <ServerIcon className="size-3.5 shrink-0" />
-              <span className="min-w-0 truncate">Instance 1</span>
+            <div className="flex min-w-0 shrink items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium">
+              <ServerIcon className="-ml-0.5 size-3.5 shrink-0" />
+              <p className="min-w-0 shrink truncate">Instance 1</p>
             </div>
           )}
           {containers.length > 1 && (
-            <Select value={activeContainer} onValueChange={setSelectedContainer}>
-              <SelectTrigger className="h-8 max-w-full" classNameInnerContainer="items-center">
-                <BoxIcon className="text-muted-foreground size-3.5 shrink-0" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {containers.map((c) => (
-                  <SelectItem key={c} value={c}>
-                    {c}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <DropdownSelect
+              items={containers.map((c) => ({ value: c, label: c }))}
+              value={activeContainer}
+              onChange={setSelectedContainer}
+              classNameContent="w-auto"
+              align="start"
+            >
+              {({ isOpen }) => (
+                <BlockItemButtonLike
+                  asElement="button"
+                  text={activeContainer}
+                  Icon={({ className }) => <BoxIcon className={cn("scale-90", className)} />}
+                  variant="outline"
+                  open={isOpen}
+                  className={compactTriggerClassName}
+                  classNameChevron="size-4"
+                />
+              )}
+            </DropdownSelect>
           )}
-        </div>
-        <div className="flex shrink-0 items-center gap-1.5">
           <TerminalStatus status={status} />
           {status === "disconnected" && (
-            <Button size="sm" variant="outline" onClick={() => terminalRef.current?.reconnect()}>
-              <RotateCwIcon className="-ml-0.5 size-4" />
-              Reconnect
+            <Button
+              className="min-w-0 shrink"
+              size="sm"
+              variant="outline"
+              onClick={() => terminalRef.current?.reconnect()}
+            >
+              <RotateCwIcon className="-ml-1.5 size-4" />
+              <p className="truncate">Reconnect</p>
             </Button>
           )}
+        </div>
+        <div className="flex min-w-0 shrink items-center gap-1.5">
           <Button
             size="icon"
             variant="ghost"
@@ -188,14 +213,6 @@ export default function Terminal() {
         container={activeContainer}
         onStatusChange={setStatus}
       />
-    </div>
-  );
-}
-
-function CenteredMessage({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="text-muted-foreground flex min-h-0 w-full flex-1 items-center justify-center p-6 text-center text-sm">
-      {children}
     </div>
   );
 }

@@ -137,6 +137,7 @@ type TBlockItemButtonLikeProps = {
   href?: string;
   classNameText?: string;
   classNameChevron?: string;
+  classNameIcon?: string;
   SuffixComponent?: FC<{ className?: string }>;
 } & (
   | ({
@@ -162,6 +163,7 @@ export function BlockItemButtonLike({
   className,
   classNameText,
   classNameChevron,
+  classNameIcon,
   hideChevron,
   href,
   SuffixComponent,
@@ -192,22 +194,30 @@ export function BlockItemButtonLike({
     >
       <div className="group-data-pending/button:animate-skeleton flex min-w-0 flex-1 items-start justify-start gap-2">
         {asElement === "LinkButton" && href !== undefined && Icon ? (
-          <div className="relative size-5 shrink-0 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45">
+          <div
+            className={cn(
+              "relative size-5 shrink-0 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45",
+              classNameIcon,
+            )}
+          >
             <Icon className="size-full group-active/button:opacity-0 has-hover:group-hover/button:opacity-0" />
             <ExternalLinkIcon className="absolute top-0 left-0 size-full scale-90 -rotate-45 opacity-0 group-active/button:opacity-100 has-hover:group-hover/button:opacity-100" />
           </div>
         ) : (
           Icon && (
             <Icon
-              className="group-data-pending/button:bg-foreground size-5 shrink-0 group-data-pending/button:rounded-full"
+              className={cn(
+                "group-data-pending/button:bg-foreground size-5 shrink-0 group-data-pending/button:rounded-full",
+                classNameIcon,
+              )}
               isEditing={isEditing}
             />
           )
         )}
-        <div className="flex w-full min-w-0 shrink flex-col items-start gap-1">
+        <div className="flex w-full min-w-0 shrink flex-col items-start gap-1 overflow-hidden">
           <p
             className={cn(
-              "group-data-pending/button:bg-foreground min-w-0 shrink truncate leading-tight font-medium select-text group-data-pending/button:rounded-md",
+              "group-data-pending/button:bg-foreground w-full min-w-0 truncate leading-tight font-medium select-text group-data-pending/button:rounded-md",
               classNameText,
             )}
           >
