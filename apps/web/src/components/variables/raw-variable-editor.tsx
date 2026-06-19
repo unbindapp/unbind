@@ -24,9 +24,14 @@ import { ResultAsync } from "neverthrow";
 import Prism, { highlight } from "prismjs";
 import "prismjs/components/prism-ini";
 import { ReactNode, useEffect, useRef, useState } from "react";
-import Editor from "react-simple-code-editor";
+import EditorImport from "react-simple-code-editor";
 import { toast } from "sonner";
 import { z } from "zod";
+
+// Vite 8 / Rolldown mis-handles this CJS package's __esModule default export,
+// yielding the module namespace object instead of the component. Unwrap defensively.
+const Editor = ((EditorImport as unknown as { default?: typeof EditorImport }).default ??
+  EditorImport) as typeof EditorImport;
 
 type TProps = {
   children: ReactNode;
