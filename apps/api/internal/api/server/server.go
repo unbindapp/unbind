@@ -26,6 +26,7 @@ import (
 	system_service "github.com/unbindapp/unbind-api/internal/services/system"
 	team_service "github.com/unbindapp/unbind-api/internal/services/team"
 	template_service "github.com/unbindapp/unbind-api/internal/services/templates"
+	terminal_service "github.com/unbindapp/unbind-api/internal/services/terminal"
 	variables_service "github.com/unbindapp/unbind-api/internal/services/variables"
 	webhooks_service "github.com/unbindapp/unbind-api/internal/services/webooks"
 	"github.com/unbindapp/unbind-api/pkg/databases"
@@ -72,6 +73,7 @@ type Server struct {
 	StorageService      *storage_service.StorageService
 	TemplateService     *template_service.TemplatesService
 	ServiceGroupService *servicegroup_service.ServiceGroupService
+	TerminalService     *terminal_service.TerminalService
 }
 
 func (self *Server) GetUserFromContext(ctx context.Context) (user *ent.User, found bool) {

@@ -37,6 +37,7 @@ import (
 	system_handler "github.com/unbindapp/unbind-api/internal/api/handlers/system"
 	teams_handler "github.com/unbindapp/unbind-api/internal/api/handlers/teams"
 	template_handler "github.com/unbindapp/unbind-api/internal/api/handlers/templates"
+	terminal_handler "github.com/unbindapp/unbind-api/internal/api/handlers/terminal"
 	unbindwebhooks_handler "github.com/unbindapp/unbind-api/internal/api/handlers/unbindwebhooks"
 	user_handler "github.com/unbindapp/unbind-api/internal/api/handlers/user"
 	variables_handler "github.com/unbindapp/unbind-api/internal/api/handlers/variables"
@@ -70,6 +71,7 @@ import (
 	system_service "github.com/unbindapp/unbind-api/internal/services/system"
 	team_service "github.com/unbindapp/unbind-api/internal/services/team"
 	templates_service "github.com/unbindapp/unbind-api/internal/services/templates"
+	terminal_service "github.com/unbindapp/unbind-api/internal/services/terminal"
 	variables_service "github.com/unbindapp/unbind-api/internal/services/variables"
 	webhooks_service "github.com/unbindapp/unbind-api/internal/services/webooks"
 	"github.com/unbindapp/unbind-api/internal/web"
@@ -284,6 +286,7 @@ func startAPI(cfg *config.Config) {
 	storageService := storage_service.NewStorageService(cfg, repo, kubeClient, promClient, serviceService)
 	templateService := templates_service.NewTemplatesService(cfg, repo, kubeClient, dbProvider, deploymentController)
 	serviceGroupService := servicegroup_service.NewServiceGroupService(cfg, repo, kubeClient, deploymentController)
+	terminalService := terminal_service.NewTerminalService(repo, kubeClient)
 
 	stringCache := cache.NewStringCache(redisClient, "unbind")
 
@@ -321,6 +324,7 @@ func startAPI(cfg *config.Config) {
 		StorageService:       storageService,
 		TemplateService:      templateService,
 		ServiceGroupService:  serviceGroupService,
+		TerminalService:      terminalService,
 		TokenManager:         tokenManager,
 	}
 
@@ -447,6 +451,10 @@ func startAPI(cfg *config.Config) {
 		register("/instances", "Instances", true, instances_handler.RegisterHandlers)
 		register("/storage", "Storage", true, storage_handler.RegisterHandlers)
 		register("/templates", "Templates", true, template_handler.RegisterHandlers)
+
+		// Pod terminal: raw chi websocket route (huma can't upgrade) with its own auth.
+		terminalHandler := terminal_handler.NewHandler(srvImpl, allowedOrigins)
+		r.With(mw.AuthenticateHTTP).Get("/terminal/exec", terminalHandler.Exec)
 	})
 
 	// Serve the embedded SPA for any path the API doesn't claim. In the deployed

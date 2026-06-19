@@ -31,13 +31,20 @@ type KubeClientInterface interface {
 	// matching the provided labels in a namespace
 	DiscoverEndpointsByLabels(ctx context.Context, namespace string, labels map[string]string, checkDNS bool, client kubernetes.Interface) (*models.EndpointDiscovery, error)
 	// CreateVerificationRoute creates a temporary route (Ingress or HTTPRoute, per the
-	// active networking provider) pointing a challenge path at the challenge-responder
-	// service, returning the route name and challenge path.
+	// active networking provider) that points a challenge path at the shared
+	// challenge-responder service, used to verify a domain resolves to the cluster
+	// even behind a Cloudflare proxy. Returns the route name and challenge path.
 	CreateVerificationRoute(ctx context.Context, domain string, client kubernetes.Interface) (string, string, error)
-	// DeleteVerificationRoute deletes a verification route by name (Ingress + HTTPRoute)
+	// DeleteVerificationRoute removes a verification route by name, covering both the
+	// Ingress and HTTPRoute kinds and treating a missing object as success.
 	DeleteVerificationRoute(ctx context.Context, name string, client kubernetes.Interface) error
-	// DeleteOldVerificationRoutes deletes verification routes created more than 10 minutes ago
+	// DeleteOldVerificationRoutes deletes verification routes (Ingress + HTTPRoute)
+	// created more than 10 minutes ago.
 	DeleteOldVerificationRoutes(ctx context.Context, client kubernetes.Interface) error
+	// ExecInPod runs a command in a pod container and streams stdio over the provided
+	// reader/writers. The session acts as the token's user via impersonation, so the
+	// cluster's RBAC bindings apply exactly as they would for kubectl exec.
+	ExecInPod(ctx context.Context, token string, opts ExecOptions) error
 	CreateDeployment(ctx context.Context, deploymentID string, env map[string]string) (jobName string, err error)
 	// For canceling jobs.
 	CancelJobsByServiceID(ctx context.Context, serviceID string) error
@@ -45,18 +52,26 @@ type KubeClientInterface interface {
 	GetJobStatus(ctx context.Context, jobName string) (JobStatus, error)
 	// This function is used to manage unbind-system resources
 	GetInternalClient() kubernetes.Interface
+	// SetTokenVerifier wires the token verifier used to derive per-user impersonating
+	// clients. It is set after construction because the token manager is built later.
+	SetTokenVerifier(verifier TokenVerifier)
+	// CreateClientWithToken returns a client that acts as the token's user via Kubernetes
+	// impersonation, backed by the API's own ServiceAccount. The username and groups match
+	// what the JWT carries, so the cluster's RBAC bindings apply unchanged.
 	CreateClientWithToken(token string) (kubernetes.Interface, error)
 	// ApplyYAML applies a YAML document to the cluster
 	ApplyYAML(ctx context.Context, yaml []byte) error
 	// GetLoadBalancerIPs returns the external IP addresses for load balancer services
 	// If labelSelector is provided, it will filter services based on the selector (e.g. "app.kubernetes.io/name=ingress-nginx")
 	GetLoadBalancerIPs(ctx context.Context, labelSelector string) ([]LoadBalancerAddresses, error)
-	// GetIngressNginxIP is a convenience function to get the IP of the ingress-nginx controller
+	// GetIngressNginxIP returns the external IP of the active ingress/gateway
+	// controller's LoadBalancer service. Named for backwards compatibility; the
+	// controller is resolved from the active networking provider.
 	GetIngressNginxIP(ctx context.Context) (*LoadBalancerAddresses, error)
-	// NetworkingProvider resolves the active ingress/gateway controller
-	NetworkingProvider(ctx context.Context) string
-	// NetworkingCapabilities reports the exposure modes the active provider supports
-	NetworkingCapabilities(ctx context.Context) []string
+	// GetActiveControllerIP finds the LoadBalancer address fronting the active
+	// networking provider's controller (ingress-nginx, traefik, or the gateway's
+	// data plane).
+	GetActiveControllerIP(ctx context.Context) (*LoadBalancerAddresses, error)
 	// GetUnusedNodePort returns an unused NodePort, determined by letting kubernetes allocate one then deleting the temp service
 	GetUnusedNodePort(ctx context.Context) (int32, error)
 	// StreamPodLogs streams logs from a pod to the provided writer with filtering
@@ -87,6 +102,14 @@ type KubeClientInterface interface {
 	RollingRestartPodsByLabel(ctx context.Context, namespace string, labelKey string, labelValue string, client kubernetes.Interface) error
 	// DeleteStatefulSetsWithOrphanCascade deletes StatefulSets matching the label selector with orphan cascade
 	DeleteStatefulSetsWithOrphanCascade(ctx context.Context, namespace string, labels map[string]string, client kubernetes.Interface) error
+	// NetworkingCapabilities reports the exposure modes the active provider can deploy.
+	// TCP/UDP are universal (NodePort fallback); only TLS passthrough is gateway-only,
+	// so it is the capability that actually gates templates.
+	NetworkingCapabilities(ctx context.Context) []string
+	// NetworkingProvider resolves the active ingress/gateway controller. An explicit
+	// config value short-circuits; "auto" detects from the installed IngressClasses /
+	// GatewayClasses.
+	NetworkingProvider(ctx context.Context) string
 	// CreateMultiRegistryCredentials creates or updates a kubernetes.io/dockerconfigjson secret for multiple container registries
 	CreateMultiRegistryCredentials(ctx context.Context, name, namespace string, credentials []RegistryCredential, client kubernetes.Interface) (*corev1.Secret, error)
 	// After you've retrieved the credentials Secret

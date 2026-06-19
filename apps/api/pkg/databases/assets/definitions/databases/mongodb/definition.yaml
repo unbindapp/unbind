@@ -52,13 +52,14 @@ resources:
     cpu: {{ .Parameters.common.resources.limits.cpu | default "500m" | quote }}
     memory: {{ .Parameters.common.resources.limits.memory | default "256Mi" | quote }}
 
-# Optional: Inject environment variables from parameters
-{{- if .Parameters.environment }}
+# MongoDB 8.x won't start on Linux kernel >=6.19 (SERVER-121912: a TCMalloc/rseq
+# ABI conflict). Enabling glibc's rseq sidesteps it; harmless on older kernels.
 extraEnvVars:
+  - name: GLIBC_TUNABLES
+    value: "glibc.pthread.rseq=1"
 {{- range $k, $v := .Parameters.environment }}
   - name: {{ $k | quote }}
     value: {{ $v | quote }}
-{{- end }}
 {{- end }}
 
 # Service configuration for external access

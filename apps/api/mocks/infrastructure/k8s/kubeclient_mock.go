@@ -1155,6 +1155,112 @@ func (_c *KubeClientMock_DiscoverEndpointsByLabels_Call) RunAndReturn(run func(c
 	return _c
 }
 
+// ExecInPod provides a mock function with given fields: ctx, token, opts
+func (_m *KubeClientMock) ExecInPod(ctx context.Context, token string, opts k8s.ExecOptions) error {
+	ret := _m.Called(ctx, token, opts)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ExecInPod")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, k8s.ExecOptions) error); ok {
+		r0 = rf(ctx, token, opts)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// KubeClientMock_ExecInPod_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ExecInPod'
+type KubeClientMock_ExecInPod_Call struct {
+	*mock.Call
+}
+
+// ExecInPod is a helper method to define mock.On call
+//   - ctx context.Context
+//   - token string
+//   - opts k8s.ExecOptions
+func (_e *KubeClientMock_Expecter) ExecInPod(ctx interface{}, token interface{}, opts interface{}) *KubeClientMock_ExecInPod_Call {
+	return &KubeClientMock_ExecInPod_Call{Call: _e.mock.On("ExecInPod", ctx, token, opts)}
+}
+
+func (_c *KubeClientMock_ExecInPod_Call) Run(run func(ctx context.Context, token string, opts k8s.ExecOptions)) *KubeClientMock_ExecInPod_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(k8s.ExecOptions))
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_ExecInPod_Call) Return(_a0 error) *KubeClientMock_ExecInPod_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *KubeClientMock_ExecInPod_Call) RunAndReturn(run func(context.Context, string, k8s.ExecOptions) error) *KubeClientMock_ExecInPod_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetActiveControllerIP provides a mock function with given fields: ctx
+func (_m *KubeClientMock) GetActiveControllerIP(ctx context.Context) (*k8s.LoadBalancerAddresses, error) {
+	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetActiveControllerIP")
+	}
+
+	var r0 *k8s.LoadBalancerAddresses
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) (*k8s.LoadBalancerAddresses, error)); ok {
+		return rf(ctx)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context) *k8s.LoadBalancerAddresses); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*k8s.LoadBalancerAddresses)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// KubeClientMock_GetActiveControllerIP_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetActiveControllerIP'
+type KubeClientMock_GetActiveControllerIP_Call struct {
+	*mock.Call
+}
+
+// GetActiveControllerIP is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *KubeClientMock_Expecter) GetActiveControllerIP(ctx interface{}) *KubeClientMock_GetActiveControllerIP_Call {
+	return &KubeClientMock_GetActiveControllerIP_Call{Call: _e.mock.On("GetActiveControllerIP", ctx)}
+}
+
+func (_c *KubeClientMock_GetActiveControllerIP_Call) Run(run func(ctx context.Context)) *KubeClientMock_GetActiveControllerIP_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_GetActiveControllerIP_Call) Return(_a0 *k8s.LoadBalancerAddresses, _a1 error) *KubeClientMock_GetActiveControllerIP_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *KubeClientMock_GetActiveControllerIP_Call) RunAndReturn(run func(context.Context) (*k8s.LoadBalancerAddresses, error)) *KubeClientMock_GetActiveControllerIP_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetAllSecrets provides a mock function with given fields: ctx, teamID, teamSecret, projectID, projectSecret, environmentID, environmentSecret, serviceSecrets, client, namespace
 func (_m *KubeClientMock) GetAllSecrets(ctx context.Context, teamID uuid.UUID, teamSecret string, projectID uuid.UUID, projectSecret string, environmentID uuid.UUID, environmentSecret string, serviceSecrets map[uuid.UUID]string, client kubernetes.Interface, namespace string) ([]models.SecretData, error) {
 	ret := _m.Called(ctx, teamID, teamSecret, projectID, projectSecret, environmentID, environmentSecret, serviceSecrets, client, namespace)
@@ -2299,6 +2405,100 @@ func (_c *KubeClientMock_ListPersistentVolumeClaims_Call) RunAndReturn(run func(
 	return _c
 }
 
+// NetworkingCapabilities provides a mock function with given fields: ctx
+func (_m *KubeClientMock) NetworkingCapabilities(ctx context.Context) []string {
+	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for NetworkingCapabilities")
+	}
+
+	var r0 []string
+	if rf, ok := ret.Get(0).(func(context.Context) []string); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	return r0
+}
+
+// KubeClientMock_NetworkingCapabilities_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'NetworkingCapabilities'
+type KubeClientMock_NetworkingCapabilities_Call struct {
+	*mock.Call
+}
+
+// NetworkingCapabilities is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *KubeClientMock_Expecter) NetworkingCapabilities(ctx interface{}) *KubeClientMock_NetworkingCapabilities_Call {
+	return &KubeClientMock_NetworkingCapabilities_Call{Call: _e.mock.On("NetworkingCapabilities", ctx)}
+}
+
+func (_c *KubeClientMock_NetworkingCapabilities_Call) Run(run func(ctx context.Context)) *KubeClientMock_NetworkingCapabilities_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_NetworkingCapabilities_Call) Return(_a0 []string) *KubeClientMock_NetworkingCapabilities_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *KubeClientMock_NetworkingCapabilities_Call) RunAndReturn(run func(context.Context) []string) *KubeClientMock_NetworkingCapabilities_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// NetworkingProvider provides a mock function with given fields: ctx
+func (_m *KubeClientMock) NetworkingProvider(ctx context.Context) string {
+	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for NetworkingProvider")
+	}
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(context.Context) string); ok {
+		r0 = rf(ctx)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
+// KubeClientMock_NetworkingProvider_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'NetworkingProvider'
+type KubeClientMock_NetworkingProvider_Call struct {
+	*mock.Call
+}
+
+// NetworkingProvider is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *KubeClientMock_Expecter) NetworkingProvider(ctx interface{}) *KubeClientMock_NetworkingProvider_Call {
+	return &KubeClientMock_NetworkingProvider_Call{Call: _e.mock.On("NetworkingProvider", ctx)}
+}
+
+func (_c *KubeClientMock_NetworkingProvider_Call) Run(run func(ctx context.Context)) *KubeClientMock_NetworkingProvider_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_NetworkingProvider_Call) Return(_a0 string) *KubeClientMock_NetworkingProvider_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *KubeClientMock_NetworkingProvider_Call) RunAndReturn(run func(context.Context) string) *KubeClientMock_NetworkingProvider_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // OverwriteSecretValues provides a mock function with given fields: ctx, name, namespace, values, client
 func (_m *KubeClientMock) OverwriteSecretValues(ctx context.Context, name string, namespace string, values map[string][]byte, client kubernetes.Interface) (*v1.Secret, error) {
 	ret := _m.Called(ctx, name, namespace, values, client)
@@ -2471,6 +2671,39 @@ func (_c *KubeClientMock_RollingRestartPodsByLabel_Call) Return(_a0 error) *Kube
 
 func (_c *KubeClientMock_RollingRestartPodsByLabel_Call) RunAndReturn(run func(context.Context, string, string, string, kubernetes.Interface) error) *KubeClientMock_RollingRestartPodsByLabel_Call {
 	_c.Call.Return(run)
+	return _c
+}
+
+// SetTokenVerifier provides a mock function with given fields: verifier
+func (_m *KubeClientMock) SetTokenVerifier(verifier k8s.TokenVerifier) {
+	_m.Called(verifier)
+}
+
+// KubeClientMock_SetTokenVerifier_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetTokenVerifier'
+type KubeClientMock_SetTokenVerifier_Call struct {
+	*mock.Call
+}
+
+// SetTokenVerifier is a helper method to define mock.On call
+//   - verifier k8s.TokenVerifier
+func (_e *KubeClientMock_Expecter) SetTokenVerifier(verifier interface{}) *KubeClientMock_SetTokenVerifier_Call {
+	return &KubeClientMock_SetTokenVerifier_Call{Call: _e.mock.On("SetTokenVerifier", verifier)}
+}
+
+func (_c *KubeClientMock_SetTokenVerifier_Call) Run(run func(verifier k8s.TokenVerifier)) *KubeClientMock_SetTokenVerifier_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(k8s.TokenVerifier))
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_SetTokenVerifier_Call) Return() *KubeClientMock_SetTokenVerifier_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *KubeClientMock_SetTokenVerifier_Call) RunAndReturn(run func(k8s.TokenVerifier)) *KubeClientMock_SetTokenVerifier_Call {
+	_c.Run(run)
 	return _c
 }
 
@@ -2894,96 +3127,6 @@ func (_c *KubeClientMock_UpsertSecretValues_Call) Return(_a0 *v1.Secret, _a1 err
 }
 
 func (_c *KubeClientMock_UpsertSecretValues_Call) RunAndReturn(run func(context.Context, string, string, map[string][]byte, kubernetes.Interface) (*v1.Secret, error)) *KubeClientMock_UpsertSecretValues_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// NetworkingProvider provides a mock function with given fields: ctx
-func (_m *KubeClientMock) NetworkingProvider(ctx context.Context) string {
-	ret := _m.Called(ctx)
-
-	if len(ret) == 0 {
-		panic("no return value specified for NetworkingProvider")
-	}
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func(context.Context) string); ok {
-		r0 = rf(ctx)
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	return r0
-}
-
-// KubeClientMock_NetworkingProvider_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'NetworkingProvider'
-type KubeClientMock_NetworkingProvider_Call struct {
-	*mock.Call
-}
-
-func (_e *KubeClientMock_Expecter) NetworkingProvider(ctx interface{}) *KubeClientMock_NetworkingProvider_Call {
-	return &KubeClientMock_NetworkingProvider_Call{Call: _e.mock.On("NetworkingProvider", ctx)}
-}
-
-func (_c *KubeClientMock_NetworkingProvider_Call) Run(run func(ctx context.Context)) *KubeClientMock_NetworkingProvider_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context))
-	})
-	return _c
-}
-
-func (_c *KubeClientMock_NetworkingProvider_Call) Return(_a0 string) *KubeClientMock_NetworkingProvider_Call {
-	_c.Call.Return(_a0)
-	return _c
-}
-
-func (_c *KubeClientMock_NetworkingProvider_Call) RunAndReturn(run func(context.Context) string) *KubeClientMock_NetworkingProvider_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// NetworkingCapabilities provides a mock function with given fields: ctx
-func (_m *KubeClientMock) NetworkingCapabilities(ctx context.Context) []string {
-	ret := _m.Called(ctx)
-
-	if len(ret) == 0 {
-		panic("no return value specified for NetworkingCapabilities")
-	}
-
-	var r0 []string
-	if rf, ok := ret.Get(0).(func(context.Context) []string); ok {
-		r0 = rf(ctx)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]string)
-		}
-	}
-
-	return r0
-}
-
-// KubeClientMock_NetworkingCapabilities_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'NetworkingCapabilities'
-type KubeClientMock_NetworkingCapabilities_Call struct {
-	*mock.Call
-}
-
-func (_e *KubeClientMock_Expecter) NetworkingCapabilities(ctx interface{}) *KubeClientMock_NetworkingCapabilities_Call {
-	return &KubeClientMock_NetworkingCapabilities_Call{Call: _e.mock.On("NetworkingCapabilities", ctx)}
-}
-
-func (_c *KubeClientMock_NetworkingCapabilities_Call) Run(run func(ctx context.Context)) *KubeClientMock_NetworkingCapabilities_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context))
-	})
-	return _c
-}
-
-func (_c *KubeClientMock_NetworkingCapabilities_Call) Return(_a0 []string) *KubeClientMock_NetworkingCapabilities_Call {
-	_c.Call.Return(_a0)
-	return _c
-}
-
-func (_c *KubeClientMock_NetworkingCapabilities_Call) RunAndReturn(run func(context.Context) []string) *KubeClientMock_NetworkingCapabilities_Call {
 	_c.Call.Return(run)
 	return _c
 }
