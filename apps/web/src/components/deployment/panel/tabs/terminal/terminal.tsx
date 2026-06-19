@@ -142,7 +142,7 @@ export default function Terminal() {
                   open={isOpen}
                   className={compactTriggerClassName}
                   classNameChevron="size-4"
-                  classNameIcon="size-4"
+                  classNameIcon="size-4 -ml-0.5"
                 />
               )}
             </DropdownSelect>

@@ -24,6 +24,39 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="preload" href="/fonts/DMSansVF.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/GeistMonoVF.woff2" as="font" type="font/woff2" crossorigin />
+    <!-- Paint the themed background on the first frame so there is no white flash
+         before the JS bundle and globals.css load. Keep these --background values
+         in sync with `.dark`/`:root` in src/globals.css. -->
+    <style>
+      html {
+        background-color: hsl(120 9% 6%);
+      } /* dark (default) */
+      html:not(.dark) {
+        background-color: hsl(120 35% 95%);
+      } /* light */
+    </style>
+    <!-- Resolve the stored theme before first paint, matching next-themes
+         (attribute="class", storageKey="theme", defaultTheme="dark"). -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("theme");
+          var resolved =
+            stored === "light" || stored === "dark"
+              ? stored
+              : !stored || stored === "system"
+                ? window.matchMedia("(prefers-color-scheme: light)").matches
+                  ? "light"
+                  : "dark"
+                : "dark";
+          document.documentElement.classList.add(resolved);
+          document.documentElement.style.colorScheme = resolved;
+        } catch (e) {
+          document.documentElement.classList.add("dark");
+          document.documentElement.style.colorScheme = "dark";
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

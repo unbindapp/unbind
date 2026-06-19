@@ -57,6 +57,7 @@
   --dialog-bottom-padding-sm: calc(var(--safe-screen-height) * 0.06 + 3rem);
   --radius: 0.5rem;
 
+  /* If you change --background, also update the anti-flash <style> in index.html */
   --background: hsl(120 35% 95%);
   --background-hover: hsl(120 35% 95%);
   --foreground: hsl(120 90% 5%);
@@ -158,6 +159,7 @@
 }
 
 .dark {
+  /* If you change --background, also update the anti-flash <style> in index.html */
   --background: hsl(120 9% 6%);
   --background-hover: hsl(120 7% 8%);
   --foreground: hsl(120 100% 97%);
