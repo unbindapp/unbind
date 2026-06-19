@@ -1,4 +1,5 @@
 import TabIndicator from "@/components/navigation/tab-indicator";
+import OverscrollIndicator from "@/components/overscroll-indicator";
 import { Button } from "@/components/ui/button";
 import { useIntent } from "@/lib/hooks/use-intent";
 import { useScrollOverflow } from "@/lib/hooks/use-scroll-overflow";
@@ -45,12 +46,7 @@ export default function PanelNavbar<T, V extends string>({
           ))}
         </div>
       </nav>
-      <div
-        data-visible={canScrollRight || undefined}
-        className="from-background via-background to-background/0 pointer-events-none absolute top-0 right-0 flex h-[calc(100%-1px)] translate-x-full flex-col items-center justify-center bg-linear-to-l pr-1.5 pl-10 opacity-0 transition data-visible:translate-x-0 data-visible:opacity-100"
-      >
-        <ChevronRight className="text-muted-more-foreground size-5" />
-      </div>
+      <OverscrollIndicator canScrollRight={canScrollRight} />
     </div>
   );
 }
