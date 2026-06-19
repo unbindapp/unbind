@@ -70,21 +70,36 @@ function DrawerContent({
 }) {
   const { hideHandle } = useDrawerContext();
 
+  // Radix dropdowns/selects/popovers render their content in a portal outside
+  // the drawer's DOM, so dismissing one with an outside click also reaches the
+  // drawer's dismissable layer and closes it. If such a popper is open, the
+  // click belongs to it (it's the top-most layer) and the drawer must stay open.
+  // We can't detect this inside `onPointerDownOutside`: vaul reports it deferred
+  // (on the `click`), by which point the popper has already closed/unmounted. So
+  // we record whether a popper was open at `pointerdown`, while it's still mounted.
+  const popperWasOpenOnPointerDownRef = React.useRef(false);
+  React.useEffect(() => {
+    const onPointerDown = () => {
+      popperWasOpenOnPointerDownRef.current =
+        document.querySelector("[data-radix-popper-content-wrapper]") !== null;
+    };
+    document.addEventListener("pointerdown", onPointerDown, true);
+    return () => document.removeEventListener("pointerdown", onPointerDown, true);
+  }, []);
+
   return (
     <DrawerPortal>
       <DrawerOverlay transparent={transparentOverlay} />
       <DrawerPrimitive.Content
-        onPointerDownOutside={
-          props.onPointerDownOutside
-            ? props.onPointerDownOutside
-            : (e) => {
-                const target = e.currentTarget as HTMLElement;
-                if (target && typeof target.closest === "function") {
-                  const isSonner = target.closest("[data-sonner-toast]") !== null;
-                  if (isSonner) e.preventDefault();
-                }
-              }
-        }
+        onPointerDownOutside={(e) => {
+          const target = e.detail.originalEvent.target;
+          if (
+            popperWasOpenOnPointerDownRef.current ||
+            (target instanceof Element && target.closest("[data-sonner-toast]"))
+          ) {
+            e.preventDefault();
+          }
+        }}
         className={cn(
           `bg-background ring-border fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-2xl ring-1 focus:outline-hidden focus-visible:outline-hidden`,
           className,
@@ -93,7 +108,7 @@ function DrawerContent({
       >
         {hasHandle && (
           <DrawerPrimitive.Handle
-            data-hide-handle={hideHandle ? true : undefined}
+            data-hide-handle={hideHandle || undefined}
             className="bg-muted-more-foreground! absolute! left-1/2 h-1.5! w-[calc(min(33.3%,5rem))]! -translate-x-1/2 -translate-y-3.5! opacity-100! transition duration-100! data-hide-handle:translate-y-1.5!"
           ></DrawerPrimitive.Handle>
         )}

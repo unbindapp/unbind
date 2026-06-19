@@ -42,7 +42,7 @@ const DomainPortBlock = withForm({
                     }
                     field.handleChange(newIsPublic);
                   }}
-                  data-private={!field.state.value ? true : undefined}
+                  data-private={!field.state.value || undefined}
                   className="group/button has-hover:hover:bg-border -my-1 -mr-0.5 ml-auto flex cursor-pointer items-center justify-center gap-2.5 rounded-full py-1 pr-1 pl-2.5 font-medium"
                 >
                   <p className="text-muted-foreground group-data-private/button:text-foreground has-hover:group-hover/button:text-foreground min-w-0 shrink">
@@ -68,7 +68,7 @@ const DomainPortBlock = withForm({
                     <field.DomainInput
                       disabled={!isPublic}
                       fadeOnDisabled={!isPublic ? false : undefined}
-                      data-private={!isPublic ? true : undefined}
+                      data-private={!isPublic || undefined}
                       classNameInput="data-private:text-muted-foreground"
                       Icon={!isPublic ? EyeOffIcon : undefined}
                       classNameIcon="text-muted-foreground"
@@ -105,7 +105,7 @@ const DomainPortBlock = withForm({
                 if (!isPublic) return null;
                 return (
                   <div
-                    data-detected={detectedPort !== undefined ? true : undefined}
+                    data-detected={detectedPort !== undefined || undefined}
                     className="bg-warning/10 text-warning border-warning/10 data-detected:text-success data-detected:bg-success/10 data-detected:border-success/10 -my-1 ml-auto flex min-w-0 shrink items-center justify-start gap-1.5 rounded-full border px-2 py-0.5"
                   >
                     {detectedPort !== undefined ? (
@@ -140,7 +140,7 @@ const DomainPortBlock = withForm({
                     <field.TextField
                       disabled={!isPublic}
                       fadeOnDisabled={!isPublic ? false : undefined}
-                      data-private={!isPublic ? true : undefined}
+                      data-private={!isPublic || undefined}
                       classNameInput="data-private:text-muted-foreground"
                       Icon={!isPublic ? EyeOffIcon : undefined}
                       classNameIcon="text-muted-foreground"

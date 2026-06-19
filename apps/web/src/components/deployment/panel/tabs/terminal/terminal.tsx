@@ -120,9 +120,9 @@ export default function Terminal() {
       ref={wrapperRef}
       className="bg-background flex min-h-0 w-full flex-1 flex-col overflow-hidden sm:rounded-bl-2xl"
     >
-      <div className="flex w-full items-center justify-between gap-1.5 border-b px-2 py-2 sm:px-2.5">
+      <div className="flex w-full items-center justify-between gap-1.5 border-b p-2 sm:p-2.5">
         <div className="flex min-w-0 shrink items-center gap-1.5">
-          {pods.length > 1 ? (
+          {pods.length > 0 && (
             <DropdownSelect
               items={pods.map((p, i) => ({
                 value: p.kubernetes_name,
@@ -146,11 +146,6 @@ export default function Terminal() {
                 />
               )}
             </DropdownSelect>
-          ) : (
-            <div className="flex min-w-0 shrink items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium">
-              <ServerIcon className="-ml-0.5 size-3.5 shrink-0" />
-              <p className="min-w-0 shrink truncate">Instance 1</p>
-            </div>
           )}
           {containers.length > 1 && (
             <DropdownSelect
@@ -169,6 +164,7 @@ export default function Terminal() {
                   open={isOpen}
                   className={compactTriggerClassName}
                   classNameChevron="size-4"
+                  classNameIcon="size-4"
                 />
               )}
             </DropdownSelect>

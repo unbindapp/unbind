@@ -159,11 +159,11 @@ export default function VariableCard({
 
   return (
     <Element
-      data-placeholder={isPlaceholder ? true : undefined}
-      data-value-visible={isValueVisible ? true : undefined}
-      data-not-editing={!isEditingVariable ? true : undefined}
+      data-placeholder={isPlaceholder || undefined}
+      data-value-visible={isValueVisible || undefined}
+      data-not-editing={!isEditingVariable || undefined}
       data-type={variable?.variable_type}
-      data-reference-error={referenceError ? true : undefined}
+      data-reference-error={referenceError || undefined}
       className="data-reference-error:bg-destructive/4 group/card data-reference-error:border-destructive/12 relative flex w-full flex-col rounded-xl border px-3 py-0.75 data-placeholder:text-transparent sm:flex-row sm:items-start sm:rounded-lg sm:pr-0.75"
     >
       {variable && (
@@ -196,7 +196,7 @@ export default function VariableCard({
               classNameIcon="size-4"
             />
             <Button
-              data-visible={isValueVisible ? true : undefined}
+              data-visible={isValueVisible || undefined}
               onClick={() => setIsValueVisible((prev) => !prev)}
               variant="ghost"
               forceMinSize="medium"
@@ -233,7 +233,7 @@ export default function VariableCard({
                         : variable.variable_type === "reference"
                           ? variableValueParts.map((part, index) => (
                               <span
-                                data-token={part.token !== null ? true : undefined}
+                                data-token={part.token !== null || undefined}
                                 key={index}
                                 className="data-token:bg-process/10 data-token:ring-process/20 data-token:text-process data-token:rounded-2px data-token:ring-1"
                               >
@@ -392,7 +392,7 @@ function ThreeDotButton({
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button
-          data-open={isOpen ? true : undefined}
+          data-open={isOpen || undefined}
           fadeOnDisabled={false}
           variant="ghost"
           size="icon"
@@ -415,10 +415,10 @@ function ThreeDotButton({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        data-locked={isLocked ? true : undefined}
+        data-locked={isLocked || undefined}
         className="z-50 w-40 data-locked:w-68"
         sideOffset={-1}
-        data-open={isOpen ? true : undefined}
+        data-open={isOpen || undefined}
         align="end"
         forceMount={true}
       >

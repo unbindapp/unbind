@@ -108,7 +108,7 @@ export function DeleteEntityTrigger({
           </DialogDescription>
         </DialogHeader>
         <form
-          data-confirmation-disabled={disableConfirmationInput ? true : undefined}
+          data-confirmation-disabled={disableConfirmationInput || undefined}
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -148,7 +148,7 @@ export function DeleteEntityTrigger({
                 })}
                 children={({ canSubmit, isSubmitting, values }) => (
                   <form.SubmitButton
-                    data-submitting={isSubmitting ? true : undefined}
+                    data-submitting={isSubmitting || undefined}
                     variant="destructive"
                     disabled={
                       !disableConfirmationInput &&

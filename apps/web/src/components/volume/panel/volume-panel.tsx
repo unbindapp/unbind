@@ -53,7 +53,7 @@ export default function VolumePanel({
       <DrawerTrigger asChild>{children}</DrawerTrigger>
       <DrawerContent
         hasHandle={isExtraSmall}
-        className="flex h-[calc(100%-1.3rem)] w-full flex-col sm:top-0 sm:right-0 sm:my-0 sm:ml-auto sm:h-full sm:w-256 sm:max-w-[calc(100%-4rem)] sm:rounded-l-2xl sm:rounded-r-none"
+        className="flex h-[calc(100%-1.3rem)] w-full flex-col sm:top-0 sm:right-0 sm:my-0 sm:ml-auto sm:h-full sm:w-5xl sm:max-w-[calc(100%-4rem)] sm:rounded-l-2xl sm:rounded-r-none"
       >
         <div className="flex w-full items-start justify-start px-5 pt-4 sm:px-8 sm:pt-6">
           <DrawerHeader className="flex min-w-0 flex-1 items-center justify-start p-0">

@@ -140,8 +140,8 @@ function Trigger<T>({
     <Button
       {...rest}
       variant="outline"
-      data-open={isOpen ? true : undefined}
-      data-pending={item === undefined ? true : undefined}
+      data-open={isOpen || undefined}
+      data-pending={item === undefined || undefined}
       className={cn(
         "group/button text-muted-foreground max-w-32 gap-1 rounded-md px-2.25 py-1.25 text-sm leading-tight font-medium",
         className,

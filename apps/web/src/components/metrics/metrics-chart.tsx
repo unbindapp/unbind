@@ -144,15 +144,15 @@ export default function MetricsChart({
       )}
       {!noLegends && dataKeys.length >= 1 && (
         <ol
-          data-no-data-keys={allDataKeysAreNull ? true : undefined}
-          data-has-active={activeDataKey ? true : undefined}
+          data-no-data-keys={allDataKeysAreNull || undefined}
+          data-has-active={activeDataKey || undefined}
           className="group/list z-0 -ml-1.5 flex w-[calc(100%+0.75rem)] flex-wrap pt-1.5 data-no-data-keys:pointer-events-none data-no-data-keys:opacity-0 sm:-ml-1 sm:w-[calc(100%+0.5rem)]"
         >
           {dataKeys.map((dataKey) => (
             <li key={dataKey} className="max-w-full">
               <Button
                 disabled={allDataKeysAreNull}
-                data-active={activeDataKey === dataKey ? true : undefined}
+                data-active={activeDataKey === dataKey || undefined}
                 onClick={() => toggleDataKey(dataKey)}
                 variant="ghost"
                 key={dataKey}

@@ -146,7 +146,7 @@ function Button({
   const isText = typeof children === "string";
   return (
     <Comp
-      data-pending={isPending ? true : undefined}
+      data-pending={isPending || undefined}
       className={cn(
         buttonVariants({
           variant,

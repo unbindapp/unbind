@@ -203,7 +203,7 @@ function DropdownMenuCheckboxItem({
         className,
       )}
       checked={checked}
-      data-checked={checked ? true : undefined}
+      data-checked={checked || undefined}
       onSelect={
         onSelect
           ? onSelect

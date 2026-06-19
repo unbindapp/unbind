@@ -271,7 +271,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                   {({ isOpen }) => (
                     <BlockItemButtonLike
                       asElement="button"
-                      data-not-none={field.state.value !== "none" ? true : undefined}
+                      data-not-none={field.state.value !== "none" || undefined}
                       className="data-not-none:rounded-b-none data-not-none:border-b-0"
                       text={healthCheckTypeToName(field.state.value)}
                       Icon={({ className }) => (
@@ -553,10 +553,7 @@ function MiniSection({
   children: ReactNode;
 }) {
   return (
-    <div
-      data-changed={hasChanges ? true : undefined}
-      className="group/div flex flex-1 flex-col gap-2"
-    >
+    <div data-changed={hasChanges || undefined} className="group/div flex flex-1 flex-col gap-2">
       <p className="group-data-changed/div:text-process px-1.5 leading-tight font-medium">
         {title}
       </p>

@@ -36,14 +36,14 @@ export default function LogLine({
       {...rest}
       suppressHydrationWarning
       data-level={logLine?.level || "info"}
-      data-wrap={viewPreferences.includes(logViewPreferenceKeys.lineWrapping) ? true : undefined}
-      data-extra-columns={hasExtraColumns ? true : undefined}
+      data-wrap={viewPreferences.includes(logViewPreferenceKeys.lineWrapping) || undefined}
+      data-extra-columns={hasExtraColumns || undefined}
       className={cn(
         `group/line flex w-full items-stretch py-px font-mono text-xs data-first:pt-3 data-last:pb-[calc(1rem+var(--safe-area-inset-bottom))] data-[container=page]:data-last:pb-4 data-[container=sheet]:data-last:pb-[calc(1rem+var(--safe-area-inset-bottom))] sm:data-last:pb-[calc(1.5rem+var(--safe-area-inset-bottom))] sm:data-[container=page]:data-last:pb-[calc(1.5rem+var(--safe-area-inset-bottom))] sm:data-[container=sheet]:data-last:pb-[calc(1.5rem+var(--safe-area-inset-bottom))]`,
         className,
       )}
-      data-placeholder={isPlaceholder ? true : undefined}
-      data-real={!isPlaceholder ? true : undefined}
+      data-placeholder={isPlaceholder || undefined}
+      data-real={!isPlaceholder || undefined}
     >
       <div
         className={cn(

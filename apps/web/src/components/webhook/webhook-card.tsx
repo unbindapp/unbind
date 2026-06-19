@@ -43,7 +43,7 @@ export default function WebhookCard({ type, webhook, teamId, projectId }: TProps
 
   return (
     <div
-      data-placeholder={type === "placeholder" ? true : undefined}
+      data-placeholder={type === "placeholder" || undefined}
       className="group/item relative flex flex-col items-start justify-start gap-3 rounded-xl border p-3 sm:p-4 sm:pt-3.5"
     >
       {webhook && <NewEntityIndicator id={webhook.id} />}
@@ -105,7 +105,7 @@ function ThreeDotButton({
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button
-          data-open={isOpen ? true : undefined}
+          data-open={isOpen || undefined}
           fadeOnDisabled={false}
           variant="ghost"
           size="icon"
@@ -120,7 +120,7 @@ function ThreeDotButton({
       <DropdownMenuContent
         className="z-50 w-40"
         sideOffset={-1}
-        data-open={isOpen ? true : undefined}
+        data-open={isOpen || undefined}
         align="end"
         forceMount={true}
       >

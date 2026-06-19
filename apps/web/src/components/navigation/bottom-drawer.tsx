@@ -64,7 +64,7 @@ export default function BottomDrawer({
         hasHandle
       >
         <div
-          data-hide-header={hideHeader ? true : undefined}
+          data-hide-header={hideHeader || undefined}
           className="flex w-full items-center justify-start gap-1 border-b data-hide-header:sr-only"
         >
           <DrawerHeader

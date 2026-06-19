@@ -108,7 +108,7 @@ function SettingsButton({ logType, className }: { logType: TLogType; className?:
     <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
       <DropdownMenuTrigger asChild>
         <Button
-          data-open={isDropdownOpen ? true : undefined}
+          data-open={isDropdownOpen || undefined}
           aria-label="Log View Preferences"
           type="button"
           size="icon"
@@ -116,7 +116,7 @@ function SettingsButton({ logType, className }: { logType: TLogType; className?:
           className={cn("touch-manipulation", className)}
         >
           <div
-            data-show={!isDefaultState ? true : undefined}
+            data-show={!isDefaultState || undefined}
             className="bg-warning pointer-events-none absolute top-1.25 right-1.25 size-1.25 scale-75 rounded-full opacity-0 transition data-show:scale-100 data-show:opacity-100"
           />
           <div className="relative size-5 transition-transform group-data-open/button:rotate-90">
@@ -176,7 +176,7 @@ function SettingsButton({ logType, className }: { logType: TLogType; className?:
               className="py-3.5 sm:py-2.25"
             >
               <RotateCcwIcon
-                data-default={isDefaultState ? true : undefined}
+                data-default={isDefaultState || undefined}
                 className="-my-1 size-4.5 shrink-0 transform transition-transform data-default:-rotate-90"
               />
               <p className="min-w-0 shrink">Reset</p>

@@ -555,9 +555,9 @@ function Item({
   return (
     <CommandItem
       id={item.id}
-      data-placeholder={isPlaceholder ? true : undefined}
-      data-pending={isItemPending ? true : undefined}
-      data-has-description={item.description ? true : undefined}
+      data-placeholder={isPlaceholder || undefined}
+      data-pending={isItemPending || undefined}
+      data-has-description={item.description || undefined}
       value={item.title}
       keywords={item.keywords}
       className="group/item active:bg-border flex w-full flex-row items-center justify-between gap-6 px-3.5 py-3 text-left font-medium data-has-description:py-2.75 data-placeholder:text-transparent"

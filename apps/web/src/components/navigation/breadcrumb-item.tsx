@@ -222,7 +222,8 @@ export function BreadcrumbItem<T>({
             );
           })}
         </DropdownMenuGroup>
-        {((newItemTitle && newItem) || (onSelectManageItem && onIntentManageItem && manageItem)) && (
+        {((newItemTitle && newItem) ||
+          (onSelectManageItem && onIntentManageItem && manageItem)) && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
@@ -303,11 +304,11 @@ function SheetItem<T>({
         }
         onSelect(item.id);
       }}
-      data-pending={isPending ? true : undefined}
-      data-last-hovered={lastHoveredItem?.id === item.id ? true : undefined}
+      data-pending={isPending || undefined}
+      data-last-hovered={lastHoveredItem?.id === item.id || undefined}
       onMouseEnter={() => setLastHoveredItem(item)}
       onTouchStart={() => setLastHoveredItem(item)}
-      data-show-arrow={showArrow?.(item) ? true : undefined}
+      data-show-arrow={showArrow?.(item) || undefined}
       variant="ghost"
       className={cn(
         `data-last-hovered:bg-border data-highlighted:group-has-[*[data-highlighted]]/list:bg-border group/item data-highlighted:text-foreground flex w-full cursor-default items-center justify-between gap-3 rounded-lg px-3 py-3.5 text-left font-medium group-has-[*[data-highlighted]]/list:bg-transparent`,
@@ -403,10 +404,10 @@ function DropdownItem<T>({
         }
         onSelect(item.id);
       }}
-      data-show-arrow={showArrow?.(item) ? true : undefined}
-      data-last-hovered={lastHoveredItem?.id === item.id ? true : undefined}
+      data-show-arrow={showArrow?.(item) || undefined}
+      data-last-hovered={lastHoveredItem?.id === item.id || undefined}
       className={cn(`group/item`, className)}
-      data-pending={isPending ? true : undefined}
+      data-pending={isPending || undefined}
       {...menuIntentProps}
       onMouseEnter={() => {
         if (comingSoon) return;
@@ -476,8 +477,8 @@ function Trigger<T>({
       variant="ghost"
       size="sm"
       forceMinSize={false}
-      data-no-icon={Icon === undefined ? true : undefined}
-      data-pending={item == undefined ? true : undefined}
+      data-no-icon={Icon === undefined || undefined}
+      data-pending={item == undefined || undefined}
       className={cn(
         `group/button relative flex max-w-32 min-w-0 shrink items-center justify-start gap-2 rounded border-none px-1.5 py-3.5 text-sm font-medium focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent data-no-icon:pl-2.75`,
         className,
@@ -492,7 +493,7 @@ function Trigger<T>({
         {item == undefined ? "Loading" : item?.name}
       </p>
       <ChevronDownIcon
-        data-flip-chevron-sm={flipChevronOnSm ? true : undefined}
+        data-flip-chevron-sm={flipChevronOnSm || undefined}
         className="text-muted-more-foreground relative -my-1 -ml-1 size-4 transition group-data-[state=open]/button:rotate-180 data-flip-chevron-sm:rotate-180 group-data-[state=open]/button:data-flip-chevron-sm:rotate-360 sm:data-flip-chevron-sm:rotate-0 sm:group-data-[state=open]/button:data-flip-chevron-sm:rotate-180"
       />
     </Button>

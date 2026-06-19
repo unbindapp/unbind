@@ -202,7 +202,7 @@ export default function DomainPortCard({
   return (
     <div className="flex w-full flex-col gap-2">
       <div
-        data-editing={isEditing ? true : undefined}
+        data-editing={isEditing || undefined}
         className="data-editing:border-process/25 group/field flex w-full flex-col overflow-hidden rounded-lg border"
       >
         <BlockItemButtonLike
@@ -370,9 +370,7 @@ export default function DomainPortCard({
                             >
                               {({ isOpen }) => (
                                 <BlockItemButtonLike
-                                  data-is-custom={
-                                    field.state.value === customPortText ? true : undefined
-                                  }
+                                  data-is-custom={field.state.value === customPortText || undefined}
                                   className="data-is-custom:rounded-b-none data-is-custom:border-b-0"
                                   asElement="button"
                                   text={

@@ -174,7 +174,7 @@ export function CreateEnvironmentDialog({
               selector={(state) => ({ isSubmitting: state.isSubmitting })}
               children={({ isSubmitting }) => (
                 <form.SubmitButton
-                  data-submitting={isSubmitting ? true : undefined}
+                  data-submitting={isSubmitting || undefined}
                   isPending={isSubmitting ? true : false}
                 >
                   Create

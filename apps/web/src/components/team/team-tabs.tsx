@@ -48,7 +48,7 @@ export default function TeamTabs({
     <div className={cn("flex items-stretch justify-start px-0 sm:px-3 lg:px-0", className)}>
       {tabs.map((tab) => (
         <LinkButton
-          data-active={isActive(tab, activeTabPath) ? true : undefined}
+          data-active={isActive(tab, activeTabPath) || undefined}
           key={tab.title}
           className={cn(
             `text-muted-foreground group/button data-active:text-foreground max-w-36 rounded px-3 py-3.5 text-sm leading-none font-medium focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent`,

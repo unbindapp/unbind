@@ -75,7 +75,7 @@ export const VariablesFormField = withForm({
                     {i !== 0 && <div className="bg-border h-px w-full md:hidden" />}
                     <div
                       key={`secret-${i}`}
-                      data-first={i === 0 ? true : undefined}
+                      data-first={i === 0 || undefined}
                       className="relative flex w-full flex-col gap-2 p-3 md:flex-row md:items-start md:px-4 md:py-0.5"
                     >
                       <form.AppField key={`variables[${i}].name`} name={`variables[${i}].name`}>

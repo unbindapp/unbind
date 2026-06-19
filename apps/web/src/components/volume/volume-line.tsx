@@ -62,7 +62,7 @@ export default function VolumeLine({
         <div className="text-muted-foreground group-data-[usage=high]/line:text-warning flex w-full items-center justify-between gap-4 px-4">
           <div className="relative flex w-full items-center justify-between gap-4 leading-tight font-medium">
             <div
-              data-truncate={usagePercentage === undefined ? true : undefined}
+              data-truncate={usagePercentage === undefined || undefined}
               className="group/line flex min-w-0 shrink items-center gap-1.5"
             >
               {volume.is_pending_resize ? (

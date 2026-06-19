@@ -29,7 +29,7 @@ export default function ErrorCard({ className, message, variant, asElement = "di
   const Element = asElement === "li" ? "li" : "div";
   return (
     <Element
-      data-has-message={message ? true : undefined}
+      data-has-message={message || undefined}
       className={cn(
         cardVariants({
           variant,

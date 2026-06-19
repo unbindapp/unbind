@@ -26,7 +26,7 @@ export default function MetricsIntervalDropdown({ className }: TProps) {
     <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
       <DropdownMenuTrigger asChild className="px-3">
         <Button
-          data-open={isDropdownOpen ? true : undefined}
+          data-open={isDropdownOpen || undefined}
           aria-label="Metrics Interval"
           type="button"
           variant="outline"
@@ -47,7 +47,7 @@ export default function MetricsIntervalDropdown({ className }: TProps) {
                 onSelect={() => setInterval(i.value)}
                 key={i.value}
                 className="group/item gap-4 py-3.5 sm:py-2.25"
-                data-selected={i.value === interval.value ? true : undefined}
+                data-selected={i.value === interval.value || undefined}
               >
                 <p className="min-w-0 flex-1">{i.label}</p>
                 <div className="-mr-1 size-4.5">

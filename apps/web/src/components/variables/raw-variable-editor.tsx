@@ -265,7 +265,7 @@ function VariableEditor({
       </ScrollArea>
       <div className="pointer-events-none absolute right-0 bottom-0 z-10 flex w-full overflow-hidden rounded-b-xl">
         <div
-          data-open={recentlySucceeded ? true : undefined}
+          data-open={recentlySucceeded || undefined}
           className="group/badge bg-background/80 flex w-full translate-y-full items-end justify-end rounded-b-xl opacity-0 transition duration-200 data-open:translate-y-0 data-open:opacity-100"
         >
           <div className="bg-success/20 border-success/20 flex w-full items-end justify-end rounded-b-xl border-t p-2 sm:p-3">

@@ -34,7 +34,7 @@ export default function DeploymentStatusChip({
 
   return (
     <div
-      data-placeholder={isPlaceholder ? true : undefined}
+      data-placeholder={isPlaceholder || undefined}
       data-color={getDeploymentStatusChipColor({ deployment, isPlaceholder })}
       className={cn(
         "bg-foreground/8 text-muted-foreground data-[color=wait]:bg-wait/12 data-[color=destructive]:bg-destructive/12 data-[color=destructive]:text-destructive data-[color=wait]:text-wait data-[color=process]:bg-process/12 data-[color=process]:text-process data-[color=success]:bg-success/12 data-[color=success]:text-success data-placeholder:bg-muted-more-foreground data-placeholder:animate-skeleton flex min-w-0 shrink items-center justify-start gap-1.5 rounded-md px-2 py-1.25 text-sm font-medium data-placeholder:text-transparent",

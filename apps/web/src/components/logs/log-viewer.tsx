@@ -217,8 +217,8 @@ function Logs({
           type={type}
           key={index}
           data-container={containerType}
-          data-first={index === 0 ? true : undefined}
-          data-last={index === placeholderArray.length - 1 ? true : undefined}
+          data-first={index === 0 || undefined}
+          data-last={index === placeholderArray.length - 1 || undefined}
           classNameInner="min-[80.25rem]:group-data-[container=page]/line:rounded-sm"
         />
       ));
@@ -228,8 +228,8 @@ function Logs({
         key={index}
         type={type}
         data-container={containerType}
-        data-first={index === 0 ? true : undefined}
-        data-last={index === logs.length - 1 ? true : undefined}
+        data-first={index === 0 || undefined}
+        data-last={index === logs.length - 1 || undefined}
         classNameInner="min-[80.25rem]:group-data-[container=page]/line:rounded-sm"
         logLine={logLine}
         serviceName={

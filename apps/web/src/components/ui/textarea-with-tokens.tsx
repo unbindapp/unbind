@@ -300,7 +300,7 @@ export default function TextareaWithTokens<T>({
                 <p className="w-full">
                   {textParts.map((part, index) => (
                     <span
-                      data-token={part.token !== null ? true : undefined}
+                      data-token={part.token !== null || undefined}
                       key={index}
                       className="data-token:bg-process/10 data-token:ring-process/20 data-token:text-process data-token:rounded-[4px] data-token:ring-1"
                     >
@@ -366,7 +366,7 @@ export default function TextareaWithTokens<T>({
           {/* Dropdown button */}
           {!tokensDisabled && (DropdownButtonIcon || dropdownButtonText) && (
             <Button
-              data-has-value={textareaValue ? true : undefined}
+              data-has-value={textareaValue || undefined}
               size="sm"
               variant="outline"
               onClick={() => {
@@ -385,7 +385,7 @@ export default function TextareaWithTokens<T>({
               {DropdownButtonIcon && <DropdownButtonIcon className="size-4" />}
               {dropdownButtonText && (
                 <p
-                  data-has-icon={DropdownButtonIcon ? true : undefined}
+                  data-has-icon={DropdownButtonIcon || undefined}
                   className="min-w-0 shrink truncate px-0.5 leading-tight data-has-icon:group-data-has-value/button:hidden"
                 >
                   {dropdownButtonText}

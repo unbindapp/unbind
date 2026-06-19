@@ -176,9 +176,9 @@ export function BlockItemButtonLike({
   return (
     <Element
       {...(asElement === "button" ? { variant: "outline" } : {})}
-      data-open={open ? true : undefined}
-      data-pending={isPending ? true : undefined}
-      data-editing={isEditing ? true : undefined}
+      data-open={open || undefined}
+      data-pending={isPending || undefined}
+      data-editing={isEditing || undefined}
       className={cn(
         // External anchors apply the button styling here since a plain <a> can't
         // take the `variant` prop.

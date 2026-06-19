@@ -65,8 +65,8 @@ export default function UserAvatar({ email, className }: TProps) {
     >
       <DropdownOrDrawerTrigger>
         <Button
-          data-open={open ? true : undefined}
-          data-pending={isPendingSignOut ? true : undefined}
+          data-open={open || undefined}
+          data-pending={isPendingSignOut || undefined}
           size="icon"
           variant="ghost"
           fadeOnDisabled={false}
@@ -116,9 +116,9 @@ export default function UserAvatar({ email, className }: TProps) {
           </Button>
         </div>
         <div
-          data-pending={isPendingUpdatesResult ? true : undefined}
+          data-pending={isPendingUpdatesResult || undefined}
           data-error={
-            !updatesData && !isPendingUpdatesResult && isErrorUpdatesResult ? true : undefined
+            (!updatesData && !isPendingUpdatesResult && isErrorUpdatesResult) || undefined
           }
           className="group/version bg-background absolute bottom-(--safe-area-inset-bottom) z-10 flex w-full items-center justify-start gap-1.25 border-t px-4.25 py-3"
         >
@@ -175,9 +175,9 @@ export default function UserAvatar({ email, className }: TProps) {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <div
-          data-pending={isPendingUpdatesResult ? true : undefined}
+          data-pending={isPendingUpdatesResult || undefined}
           data-error={
-            !updatesData && !isPendingUpdatesResult && isErrorUpdatesResult ? true : undefined
+            (!updatesData && !isPendingUpdatesResult && isErrorUpdatesResult) || undefined
           }
           className="group/version flex w-full items-center justify-start gap-1.25 px-4 py-2.5"
         >

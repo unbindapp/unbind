@@ -26,10 +26,10 @@ export default function Indicator({
 }) {
   return (
     <div
-      data-has-data={hasData ? true : undefined}
-      data-error={isError && !isPending && !isRefetching ? true : undefined}
-      data-refetching={isRefetching ? true : undefined}
-      data-pending={isPending ? true : undefined}
+      data-has-data={hasData || undefined}
+      data-error={(isError && !isPending && !isRefetching) || undefined}
+      data-refetching={isRefetching || undefined}
+      data-pending={isPending || undefined}
       className={cn("group/indicator absolute top-0 left-0 z-10 p-1.75", className)}
     >
       <div

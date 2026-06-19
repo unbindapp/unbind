@@ -37,7 +37,7 @@ export default function SettingsTabs({ tabs }: TProps) {
             search={(prev) => prev}
             forceMinSize={false}
             key={tab.matchPath}
-            data-active={isActive(tab, activeTabPath) ? true : undefined}
+            data-active={isActive(tab, activeTabPath) || undefined}
             onClick={() => setActiveTabPath(tab.matchPath)}
             variant="ghost"
             className="text-muted-foreground data-active:text-foreground group/button shrink-0 justify-start gap-1.5 rounded-lg px-3 py-4.25 text-left text-sm font-medium focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent sm:py-4 md:w-full md:gap-2.5 md:px-4 md:py-4 md:text-base"

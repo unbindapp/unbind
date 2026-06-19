@@ -77,7 +77,7 @@ export default function S3SourceCard({ s3Source, teamId, isPlaceholder }: TProps
   return (
     <li className="relative w-full p-1 md:max-w-3xl">
       <div
-        data-pending={isPlaceholder ? true : undefined}
+        data-pending={isPlaceholder || undefined}
         className="group/item relative flex w-full items-center justify-start"
       >
         <S3SourceDialogConditional s3Source={s3Source} teamId={teamId}>
@@ -311,7 +311,7 @@ function ThreeDotButton({
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button
-          data-open={isOpen ? true : undefined}
+          data-open={isOpen || undefined}
           fadeOnDisabled={false}
           variant="ghost"
           size="icon"
@@ -326,7 +326,7 @@ function ThreeDotButton({
       <DropdownMenuContent
         className="z-50 w-40"
         sideOffset={-1}
-        data-open={isOpen ? true : undefined}
+        data-open={isOpen || undefined}
         align="end"
         forceMount={true}
       >
@@ -379,7 +379,7 @@ function Bucket({
 }) {
   return (
     <div
-      data-placeholder={isPlaceholder ? true : undefined}
+      data-placeholder={isPlaceholder || undefined}
       className={cn(
         "group/card text-muted-foreground flex max-w-1/2 items-center justify-start gap-1.25 px-2 py-1 text-left text-xs leading-tight font-normal data-placeholder:text-transparent sm:max-w-1/3 md:max-w-1/2 lg:max-w-1/3",
         className,
@@ -739,7 +739,7 @@ export function NewS3SourceTrigger({ teamId, children }: { children: ReactNode; 
               selector={(state) => ({ isSubmitting: state.isSubmitting })}
               children={({ isSubmitting }) => (
                 <form.SubmitButton
-                  data-submitting={isSubmitting ? true : undefined}
+                  data-submitting={isSubmitting || undefined}
                   isPending={isSubmitting ? true : false}
                 >
                   Create

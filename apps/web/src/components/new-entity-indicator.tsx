@@ -15,7 +15,7 @@ export function NewEntityIndicator({ id, className }: { id: string; className?: 
 
   return (
     <div
-      data-show={showIndicator ? true : undefined}
+      data-show={showIndicator || undefined}
       className={cn(
         "group/indicator pointer-events-none absolute -top-px left-0 flex h-full w-full items-start justify-center overflow-hidden px-2 opacity-0 transition-opacity duration-500 data-show:opacity-100",
         className,

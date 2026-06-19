@@ -84,7 +84,7 @@ function CommandInput({
       cmdk-input-wrapper=""
     >
       <div
-        data-show-spinner={showSpinner ? true : undefined}
+        data-show-spinner={showSpinner || undefined}
         className="text-muted-foreground group pointer-events-none absolute left-3.5 size-4 shrink-0"
       >
         {!showSpinner &&

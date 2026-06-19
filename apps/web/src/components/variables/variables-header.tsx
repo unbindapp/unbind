@@ -53,7 +53,7 @@ export default function VariablesHeader({ tokensDisabled }: { tokensDisabled?: b
   return (
     <div
       data-type={type}
-      data-pending={isPending ? true : undefined}
+      data-pending={isPending || undefined}
       className="group/header flex w-full flex-col gap-2 pt-1 pb-1 data-[type=project]:pt-0 data-[type=team]:pt-0 sm:pt-0"
     >
       <div className="flex w-full flex-col items-start justify-start gap-2.5 sm:flex-row sm:items-start sm:justify-between">
@@ -77,8 +77,8 @@ export default function VariablesHeader({ tokensDisabled }: { tokensDisabled?: b
           <Button
             disabled={isPending}
             fadeOnDisabled={false}
-            data-open={isOpen ? true : undefined}
-            data-closed={!isOpen ? true : undefined}
+            data-open={isOpen || undefined}
+            data-closed={!isOpen || undefined}
             className="group/button group-data-pending/header:bg-muted-more-foreground group-data-pending/header:animate-skeleton order-first shrink-0 gap-1.5 px-3 py-2 font-semibold group-data-pending/header:text-transparent sm:order-none"
             onClick={() => setIsOpen((o) => !o)}
             variant="outline"

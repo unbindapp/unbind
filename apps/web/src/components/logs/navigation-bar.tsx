@@ -29,7 +29,7 @@ export default function NavigationBar({
     >
       <Button
         disabled={isAtTop}
-        data-disabled={isAtTop ? true : undefined}
+        data-disabled={isAtTop || undefined}
         fadeOnDisabled={false}
         variant="ghost"
         size="icon"
@@ -41,7 +41,7 @@ export default function NavigationBar({
       <div className="bg-border pointer-events-none h-px w-full" />
       <Button
         disabled={isAtBottom}
-        data-disabled={isAtBottom ? true : undefined}
+        data-disabled={isAtBottom || undefined}
         fadeOnDisabled={false}
         variant="ghost"
         size="icon"

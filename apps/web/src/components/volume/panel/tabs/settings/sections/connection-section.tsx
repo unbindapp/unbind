@@ -34,7 +34,7 @@ export default function ConnectionSection({ volume }: TProps) {
       Icon={UnplugIcon}
     >
       <div
-        data-pending={isPending ? true : undefined}
+        data-pending={isPending || undefined}
         className="group/section flex w-full flex-col gap-2.5"
       >
         <p className="text-muted-foreground w-full px-1.5">

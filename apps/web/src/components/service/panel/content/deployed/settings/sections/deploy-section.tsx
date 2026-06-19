@@ -291,7 +291,7 @@ function ValueTitle({
 }) {
   return (
     <p
-      data-changed={hasChanges ? true : undefined}
+      data-changed={hasChanges || undefined}
       className={cn(
         "text-muted-foreground data-changed:text-process w-full px-3.5 pt-2.5 pb-1 leading-tight font-medium",
         className,

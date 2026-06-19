@@ -19,7 +19,7 @@ export default function NavbarScrollArea({ className, children }: TProps) {
       )}
     >
       <ScrollArea
-        data-touchscreen={isTouchscreen ? true : undefined}
+        data-touchscreen={isTouchscreen || undefined}
         scrollBarClassName="group-data-touchscreen/scrollarea:hidden"
         orientation="horizontal"
         className="group/scrollarea min-w-0 overflow-auto"

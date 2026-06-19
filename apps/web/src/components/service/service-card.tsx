@@ -70,7 +70,7 @@ export default function ServiceCard({
 
   return (
     <li
-      data-placeholder={isPlaceholder ? true : undefined}
+      data-placeholder={isPlaceholder || undefined}
       className={cn("group/item flex min-h-38 w-full flex-col p-1", className)}
     >
       <ServicePanelOrPlaceholder {...panelProps}>

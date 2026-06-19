@@ -48,7 +48,7 @@ export default function UsageSection({ volume }: TProps) {
           <div className="absolute top-0 left-0 h-full w-full">
             <div
               data-has-usage={
-                usagePercentage !== undefined && usagePercentage !== null ? true : undefined
+                (usagePercentage !== undefined && usagePercentage !== null) || undefined
               }
               style={
                 usagePercentage !== undefined && usagePercentage !== null

@@ -81,7 +81,7 @@ export default function EnvironmentCard({
   return (
     <li className="relative w-full p-1 sm:w-1/2">
       <div
-        data-pending={isPlaceholder ? true : undefined}
+        data-pending={isPlaceholder || undefined}
         className="group/item relative flex w-full items-center justify-start"
       >
         <Button
@@ -148,7 +148,7 @@ function ThreeDotButton({
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button
-          data-open={isOpen ? true : undefined}
+          data-open={isOpen || undefined}
           fadeOnDisabled={false}
           variant="ghost"
           size="icon"
@@ -163,7 +163,7 @@ function ThreeDotButton({
       <DropdownMenuContent
         className="z-50 w-40"
         sideOffset={-1}
-        data-open={isOpen ? true : undefined}
+        data-open={isOpen || undefined}
         align="end"
         forceMount={true}
       >
@@ -529,7 +529,7 @@ export function NewEnvironmentCard({ teamId, projectId }: { teamId: string; proj
               selector={(state) => ({ isSubmitting: state.isSubmitting })}
               children={({ isSubmitting }) => (
                 <form.SubmitButton
-                  data-submitting={isSubmitting ? true : undefined}
+                  data-submitting={isSubmitting || undefined}
                   isPending={isSubmitting ? true : false}
                 >
                   Create

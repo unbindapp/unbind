@@ -42,7 +42,7 @@ export default function ServiceUrl({
           <Popover open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <PopoverTrigger asChild>
               <Button
-                data-open={isDropdownOpen ? true : undefined}
+                data-open={isDropdownOpen || undefined}
                 className="text-muted-foreground group/button min-w-0 shrink px-2.25 py-1 text-left font-medium"
                 variant="ghost"
                 size="sm"
@@ -86,7 +86,7 @@ export default function ServiceUrl({
         <Popover open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
           <PopoverTrigger asChild>
             <Button
-              data-open={isDropdownOpen ? true : undefined}
+              data-open={isDropdownOpen || undefined}
               className="text-muted-foreground group/button min-w-0 shrink px-2.25 py-1 text-left font-medium"
               variant="ghost"
               size="sm"
@@ -103,7 +103,7 @@ export default function ServiceUrl({
             </Button>
           </PopoverTrigger>
           <PopoverContent
-            data-unresolved={endpoint.dns_status === "unresolved" ? true : undefined}
+            data-unresolved={endpoint.dns_status === "unresolved" || undefined}
             align="start"
             className="group/popover flex w-72 flex-col gap-0.5 overflow-hidden p-0 data-unresolved:w-90"
           >

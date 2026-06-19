@@ -106,7 +106,7 @@ const VariablesBlock = withForm({
 
     return (
       <div
-        data-open={isOpen ? true : undefined}
+        data-open={isOpen || undefined}
         className={cn("group/section mt-1 flex w-full flex-col rounded-lg border", className)}
       >
         <Button

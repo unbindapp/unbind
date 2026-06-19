@@ -35,13 +35,12 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
     return undefined;
   }, [deploymentsData]);
 
-  const filteredDeployments: TDeploymentShallow[] | undefined =
-    useMemo(() => {
-      if (!deploymentsData?.deployments) return undefined;
-      return deploymentsData.deployments.filter((d) =>
-        currentOrLastDeployment ? currentOrLastDeployment.id !== d.id : true,
-      );
-    }, [deploymentsData, currentOrLastDeployment]);
+  const filteredDeployments: TDeploymentShallow[] | undefined = useMemo(() => {
+    if (!deploymentsData?.deployments) return undefined;
+    return deploymentsData.deployments.filter((d) =>
+      currentOrLastDeployment ? currentOrLastDeployment.id !== d.id : true,
+    );
+  }, [deploymentsData, currentOrLastDeployment]);
 
   const hasNoDeployment =
     deploymentsData?.deployments && deploymentsData.deployments.length === 0 ? true : false;
@@ -66,7 +65,7 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
         )}
         {(isPending || !hasNoDeployment) && (
           <div
-            data-pending={isPending ? true : undefined}
+            data-pending={isPending || undefined}
             className="group/header flex w-full items-center justify-start px-2 pb-1"
           >
             <h3 className="text-muted-foreground group-data-pending/header:bg-muted-foreground group-data-pending/header:animate-skeleton leading-tight font-medium group-data-pending/header:rounded-md group-data-pending/header:text-transparent">

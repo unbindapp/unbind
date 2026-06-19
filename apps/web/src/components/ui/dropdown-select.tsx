@@ -90,7 +90,7 @@ export default function DropdownSelect({
                     onChange(item.value);
                     setIsOpen(false);
                   }}
-                  data-checked={value === item.value ? true : undefined}
+                  data-checked={value === item.value || undefined}
                   className={cn(
                     "group/item",
                     typeof classNameItem === "function"

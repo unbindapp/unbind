@@ -68,7 +68,10 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort, service
     isPending: isPendingTags,
     error: errorTags,
   } = useQuery({
-    ...dockerTagsQuery({ repository: image, search: commandInputValue ? search : commandInputValue }),
+    ...dockerTagsQuery({
+      repository: image,
+      search: commandInputValue ? search : commandInputValue,
+    }),
     enabled: !imageIsNonDockerHub,
   });
 
@@ -300,7 +303,7 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort, service
         {/* @ts-expect-error: This type is completely fine. The form here encapculates the variable only form but it doesn't work for some reason */}
         <VariablesBlock form={form} onTokensChanged={onTokensChanged} />
         <div
-          data-open={isAdvancedSettingsOpen ? true : undefined}
+          data-open={isAdvancedSettingsOpen || undefined}
           className="group/section -mt-2 flex w-full flex-col rounded-lg border md:-mt-3"
         >
           <Button

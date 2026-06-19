@@ -27,7 +27,7 @@ export default function PanelNavbar<T, V extends string>({
             key={tab.value}
             variant="ghost"
             onClick={() => onTabClick(tab.value)}
-            data-active={tab.value === currentTabId ? true : undefined}
+            data-active={tab.value === currentTabId || undefined}
             className="group/button text-muted-foreground data-active:text-foreground min-w-0 shrink rounded-t-md rounded-b-none px-3 pt-2.5 pb-4.5 font-medium active:bg-transparent has-hover:hover:bg-transparent"
           >
             {tab.value === currentTabId && <TabIndicator layoutId={layoutId} />}

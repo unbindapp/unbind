@@ -49,7 +49,7 @@ export function SettingsSection({
 
   return (
     <Wrapper
-      data-changed={changeCount !== undefined && changeCount > 0 ? true : undefined}
+      data-changed={(changeCount !== undefined && changeCount > 0) || undefined}
       className={cn("group/wrapper data-changed:border-process/25", className)}
       {...rest}
     >

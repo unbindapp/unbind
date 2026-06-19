@@ -76,7 +76,7 @@ function InputWithInfo({
       <Input
         ref={inputRef}
         {...rest}
-        data-show-undo={showUndo ? true : undefined}
+        data-show-undo={showUndo || undefined}
         className={cn("w-full data-show-undo:pr-11", Icon && "pl-10", classNameInput)}
       />
       {showUndo && (
@@ -182,8 +182,8 @@ function DomainInput({
       <Input
         ref={ref}
         {...rest}
-        data-show-reset={showReset ? true : undefined}
-        data-show-generated={showCardType === "auto-generated" ? true : undefined}
+        data-show-reset={showReset || undefined}
+        data-show-generated={showCardType === "auto-generated" || undefined}
         className={cn(
           "relative z-10 w-full data-show-generated:pr-22 data-show-reset:pr-11",
           Icon && "pl-10",
@@ -433,7 +433,7 @@ function AsyncCommandDropdown({
                           value={item.value}
                           key={item.value}
                           className="group/item px-3"
-                          data-checked={field.state.value === item.value ? true : undefined}
+                          data-checked={field.state.value === item.value || undefined}
                         >
                           {CommandItemElement ? (
                             <CommandItemElement item={item} />
@@ -621,7 +621,7 @@ function AsyncInputWithItems({
                             value={item.value}
                             key={item.value}
                             className="group/item px-3"
-                            data-checked={value === item.value ? true : undefined}
+                            data-checked={value === item.value || undefined}
                           >
                             {CommandItemElement ? (
                               <CommandItemElement item={item} />
@@ -735,7 +735,7 @@ function AsyncDropdownMenu({
                       onChange(item.value);
                       setIsOpen(false);
                     }}
-                    data-checked={value === item.value ? true : undefined}
+                    data-checked={value === item.value || undefined}
                     className={cn(
                       "group/item",
                       typeof classNameItem === "function"

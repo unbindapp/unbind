@@ -133,7 +133,7 @@ function ThreeDotButton({
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button
-          data-open={isOpen ? true : undefined}
+          data-open={isOpen || undefined}
           fadeOnDisabled={false}
           variant="ghost"
           size="icon"
@@ -148,7 +148,7 @@ function ThreeDotButton({
       <DropdownMenuContent
         className="z-50 w-40"
         sideOffset={-1}
-        data-open={isOpen ? true : undefined}
+        data-open={isOpen || undefined}
         align="end"
         forceMount={true}
       >

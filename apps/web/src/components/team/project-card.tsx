@@ -47,7 +47,7 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
 
   return (
     <li
-      data-placeholder={isPlaceholder ? true : undefined}
+      data-placeholder={isPlaceholder || undefined}
       className={cn("group/item flex w-full flex-col p-1", className)}
     >
       <ConditionalButton

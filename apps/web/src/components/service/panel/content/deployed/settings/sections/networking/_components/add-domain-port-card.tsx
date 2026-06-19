@@ -303,7 +303,7 @@ export default function AddDomainPortCard({
                                   {({ isOpen }) => (
                                     <BlockItemButtonLike
                                       data-is-custom={
-                                        field.state.value === customPortText ? true : undefined
+                                        field.state.value === customPortText || undefined
                                       }
                                       className="data-is-custom:rounded-b-none data-is-custom:border-b-0"
                                       asElement="button"
@@ -405,7 +405,7 @@ export default function AddDomainPortCard({
 function PlusOrChevron({ className, isEditing }: { className?: string; isEditing?: boolean }) {
   return (
     <div
-      data-editing={isEditing ? true : undefined}
+      data-editing={isEditing || undefined}
       className={cn(
         className,
         "group/div relative size-5 shrink-0 transition-transform data-editing:rotate-45",

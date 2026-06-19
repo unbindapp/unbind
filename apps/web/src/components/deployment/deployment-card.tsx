@@ -101,7 +101,7 @@ export default function DeploymentCard({
     <div
       {...rest}
       data-color={getDeploymentStatusChipColor({ deployment, isPlaceholder })}
-      data-placeholder={isPlaceholder ? true : undefined}
+      data-placeholder={isPlaceholder || undefined}
       className="group/card relative flex w-full flex-row items-stretch rounded-xl"
     >
       <button
@@ -126,7 +126,7 @@ export default function DeploymentCard({
           <div className="flex w-full flex-col gap-1.25 pb-0.5">
             <div className="flex w-full flex-col items-start justify-start">
               <p
-                data-no-title={titleNotFound ? true : undefined}
+                data-no-title={titleNotFound || undefined}
                 className="data-no-title:bg-border data-no-title:text-muted-foreground group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton max-w-full min-w-0 shrink leading-tight group-data-placeholder/card:rounded-md group-data-placeholder/card:text-transparent data-no-title:-my-px data-no-title:rounded data-no-title:px-1.5 data-no-title:py-px"
               >
                 {title}
@@ -170,40 +170,31 @@ function ThreeDotButton({
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
+          data-open={isOpen || undefined}
           size="icon"
           variant="ghost"
-          className="text-muted-more-foreground active:bg-foreground/6 has-hover:hover:bg-foreground/6 focus-visible:bg-foreground/6"
+          className="text-muted-more-foreground group/button active:bg-foreground/6 has-hover:hover:bg-foreground/6 focus-visible:bg-foreground/6"
         >
-          <EllipsisVerticalIcon className="size-6" />
+          {/* When radix thing is open rotate the three dots */}
+          <EllipsisVerticalIcon className="size-6 transition group-data-open/button:rotate-90" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         className="z-50 w-40"
         sideOffset={-1}
-        data-open={isOpen ? true : undefined}
+        data-open={isOpen || undefined}
         align="end"
         forceMount={true}
       >
         <ScrollArea>
           <DropdownMenuGroup>
             {isCurrentDeployment && (
-              <>
-                <DropdownMenuItem
-                  onSelect={() => {
-                    setIsOpen(false);
-                    openPanel(deployment.id, "terminal");
-                  }}
-                >
-                  <TerminalIcon className="-ml-0.5 size-5" />
-                  <p className="min-w-0 shrink leading-tight">Terminal</p>
+              <RestartTrigger closeDropdown={() => setIsOpen(false)}>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                  <RotateCcwIcon className="-ml-0.5 size-5" />
+                  <p className="min-w-0 shrink leading-tight">Restart</p>
                 </DropdownMenuItem>
-                <RestartTrigger closeDropdown={() => setIsOpen(false)}>
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                    <RotateCcwIcon className="-ml-0.5 size-5" />
-                    <p className="min-w-0 shrink leading-tight">Restart</p>
-                  </DropdownMenuItem>
-                </RestartTrigger>
-              </>
+              </RestartTrigger>
             )}
             {deployment.status === "removed" && (
               <RedeployTrigger
@@ -230,6 +221,17 @@ function ThreeDotButton({
                 <p className="min-w-0 shrink leading-tight">Redeploy</p>
               </DropdownMenuItem>
             </RedeployTrigger>
+            {isCurrentDeployment && (
+              <DropdownMenuItem
+                onSelect={() => {
+                  setIsOpen(false);
+                  openPanel(deployment.id, "terminal");
+                }}
+              >
+                <TerminalIcon className="-ml-0.5 size-5" />
+                <p className="min-w-0 shrink leading-tight">Terminal</p>
+              </DropdownMenuItem>
+            )}
           </DropdownMenuGroup>
         </ScrollArea>
       </DropdownMenuContent>
@@ -435,7 +437,7 @@ function RedeployTrigger({
                     onClick={() => {
                       field.handleChange(!field.state.value);
                     }}
-                    data-checked={field.state.value ? true : undefined}
+                    data-checked={field.state.value || undefined}
                     className="group/button has-hover:hover:bg-border -my-2 flex cursor-pointer items-center justify-between gap-4 py-2 pr-2 pl-2.5 text-left font-semibold"
                   >
                     <p className="min-w-0 shrink">Skip build if possible</p>
@@ -556,7 +558,7 @@ function DeploymentInfo({ deployment, service, isPlaceholder, className }: TDepl
 
   return (
     <div
-      data-placeholder={isPlaceholder ? true : undefined}
+      data-placeholder={isPlaceholder || undefined}
       className={cn(
         "group/div flex min-w-0 shrink flex-col flex-wrap justify-start gap-0.5 font-mono text-sm leading-tight lg:flex-row lg:items-center lg:space-x-1.5",
         className,
