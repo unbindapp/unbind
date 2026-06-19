@@ -133,6 +133,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: ./apps/installer/go.mod
+          cache-dependency-path: ./apps/installer/go.sum
       - name: Build, compress, checksum
         run: |
           for ARCH in amd64 arm64; do

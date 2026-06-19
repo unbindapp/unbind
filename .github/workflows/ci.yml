@@ -42,6 +42,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: ./apps/api/go.mod
+          cache-dependency-path: ./apps/api/go.sum
       - run: go test ./...
 
   web:
@@ -78,6 +79,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: ./apps/operator/go.mod
+          cache-dependency-path: ./apps/operator/go.sum
       - run: go build ./...
       # Controller tests use envtest (etcd/kube-apiserver); set those up and skip
       # the e2e suite (needs a Kind cluster + docker build).
@@ -101,4 +103,5 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: ./apps/installer/go.mod
+          cache-dependency-path: ./apps/installer/go.sum
       - run: go build ./...
