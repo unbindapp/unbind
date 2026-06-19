@@ -217,7 +217,7 @@ export function BlockItemButtonLike({
         <div className="flex w-full min-w-0 shrink flex-col items-start gap-1 overflow-hidden">
           <p
             className={cn(
-              "group-data-pending/button:bg-foreground w-full min-w-0 truncate leading-tight font-medium select-text group-data-pending/button:rounded-md",
+              "group-data-pending/button:bg-foreground max-w-full min-w-0 truncate leading-tight font-medium select-text group-data-pending/button:rounded-md",
               classNameText,
             )}
           >

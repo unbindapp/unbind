@@ -5,7 +5,8 @@ import { TServicePanelTab } from "@/components/service/panel/content/service-pan
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useService } from "@/components/service/service-provider";
 import { TServiceShallow } from "@/lib/queries/services";
-import { HTMLAttributes } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { HTMLAttributes, useMemo } from "react";
 
 type TProps = {
   tabs: TServicePanelTab[];
@@ -23,11 +24,31 @@ export default function ServicePanelContentDeployed({
 }: TProps) {
   const { teamId, projectId, environmentId } = useService();
   const { currentTabId, setCurrentTabId } = useServicePanel();
+  const queryClient = useQueryClient();
+
+  const navTabs = useMemo(
+    () =>
+      tabs.map((tab) => ({
+        ...tab,
+        onIntent: tab.onIntent
+          ? () =>
+              tab.onIntent!({
+                queryClient,
+                teamId,
+                projectId,
+                environmentId,
+                serviceId: service.id,
+                service,
+              })
+          : undefined,
+      })),
+    [tabs, queryClient, teamId, projectId, environmentId, service],
+  );
 
   return (
     <PanelContentWrapper className={className} {...rest}>
       <PanelNavbar
-        tabs={tabs}
+        tabs={navTabs}
         currentTabId={currentTabId}
         onTabClick={(value) => setCurrentTabId(value)}
         layoutId="service-panel-tab"

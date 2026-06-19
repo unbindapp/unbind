@@ -24,8 +24,19 @@ import VariablesProvider, {
   useVariables,
   useVariablesUtils,
 } from "@/components/variables/variables-provider";
-import { TMetricsIntervalEnum } from "@/lib/queries/metrics";
+import {
+  getAgeBasedDefaultIntervalEnum,
+  metricsIntervalSearchParamKey,
+  resolveMetricsIntervalEnum,
+} from "@/components/metrics/metrics-state-provider";
+import { deploymentsListQuery } from "@/lib/queries/deployments";
+import { metricsListQuery } from "@/lib/queries/metrics";
 import { TServiceShallow } from "@/lib/queries/services";
+import {
+  availableVariableReferencesQuery,
+  variablesListQuery,
+} from "@/lib/queries/variables";
+import { QueryClient } from "@tanstack/react-query";
 import { FC, ReactNode, useEffect } from "react";
 
 type TServicePage = FC<{ service: TServiceShallow }>;
@@ -37,6 +48,7 @@ export type TServicePanelTab = {
   Page: TServicePage;
   Provider: TServicePageProvider;
   noScrollArea?: boolean;
+  onIntent?: (params: { queryClient: QueryClient } & TServiceProps) => void;
 };
 
 type TServiceProps = {
@@ -54,25 +66,41 @@ type TServicePageProviderProps = {
 const EmptyProvider = ({ children }: TServicePageProviderProps) => children;
 
 const tabs: TServicePanelTab[] = [
-  { title: "Deployments", value: "deployments", Page: Deployments, Provider: DeploymentsProvider },
+  {
+    title: "Deployments",
+    value: "deployments",
+    Page: Deployments,
+    Provider: DeploymentsProvider,
+    onIntent: ({ queryClient, teamId, projectId, environmentId, serviceId }) => {
+      queryClient.prefetchQuery(
+        deploymentsListQuery({ teamId, projectId, environmentId, serviceId }),
+      );
+    },
+  },
   { title: "Logs", value: "logs", Page: Logs, Provider: EmptyProvider, noScrollArea: true },
   {
     title: "Metrics",
     value: "metrics",
     Page: Metrics,
     Provider: (props: TServicePageProviderProps) => {
-      let defaultIntervalEnum: TMetricsIntervalEnum | undefined = undefined;
-      const serviceCreatedAtTimestamp = new Date(props.service.created_at).getTime();
-      const now = Date.now();
-      if (now - serviceCreatedAtTimestamp <= 5 * 1000 * 60) defaultIntervalEnum = "5m";
-      else if (now - serviceCreatedAtTimestamp <= 15 * 1000 * 60) defaultIntervalEnum = "15m";
-      else if (now - serviceCreatedAtTimestamp <= 60 * 1000 * 60) defaultIntervalEnum = "1h";
-      else if (now - serviceCreatedAtTimestamp <= 6 * 60 * 1000 * 60) defaultIntervalEnum = "6h";
+      const defaultIntervalEnum = getAgeBasedDefaultIntervalEnum(props.service.created_at);
 
       return (
         <MetricsStateProvider defaultIntervalEnum={defaultIntervalEnum}>
           <MetricsProvider type="service" {...props} />
         </MetricsStateProvider>
+      );
+    },
+    onIntent: ({ queryClient, teamId, projectId, environmentId, serviceId, service }) => {
+      const searchParamValue = new URLSearchParams(window.location.search).get(
+        metricsIntervalSearchParamKey,
+      );
+      const interval = resolveMetricsIntervalEnum({
+        searchParamValue,
+        ageBasedDefault: getAgeBasedDefaultIntervalEnum(service.created_at),
+      });
+      queryClient.prefetchQuery(
+        metricsListQuery({ type: "service", teamId, projectId, environmentId, serviceId, interval }),
       );
     },
   },
@@ -87,6 +115,14 @@ const tabs: TServicePanelTab[] = [
         </VariableReferencesProvider>
       </VariablesProvider>
     ),
+    onIntent: ({ queryClient, teamId, projectId, environmentId, serviceId }) => {
+      queryClient.prefetchQuery(
+        variablesListQuery({ teamId, projectId, environmentId, serviceId, type: "service" }),
+      );
+      queryClient.prefetchQuery(
+        availableVariableReferencesQuery({ teamId, projectId, environmentId, serviceId }),
+      );
+    },
   },
   { title: "Settings", value: "settings", Page: Settings, Provider: EmptyProvider },
 ];
