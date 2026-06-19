@@ -30,7 +30,7 @@ func TestEmbeddedPostgresDefinitionPG18(t *testing.T) {
 
 	dockerImageProp, ok := def.Schema.Properties["dockerImage"]
 	require.True(t, ok, "postgres schema should expose a dockerImage property")
-	assert.Equal(t, "ghcr.io/unbindapp/spilo:18-27713048842", dockerImageProp.Default)
+	assert.Equal(t, "", dockerImageProp.Default)
 
 	assert.Contains(t, def.Content, "spilo:%s-27713048842")
 }

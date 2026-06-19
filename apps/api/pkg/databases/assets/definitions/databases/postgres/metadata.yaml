@@ -21,7 +21,7 @@ schema:
     dockerImage:
       type: "string"
       description: "Spilo image version"
-      default: "ghcr.io/unbindapp/spilo:18-27713048842"
+      default: ""
     defaultDatabaseName:
       type: "string"
       description: "The default database used to generate secrets (DATABASE_URL, etc.)"
