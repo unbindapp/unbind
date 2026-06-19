@@ -25,7 +25,7 @@ export default function PanelNavbar<T, V extends string>({
   layoutId,
 }: TProps<T, V>) {
   const navRef = useRef<HTMLElement>(null);
-  const { canScrollRight } = useScrollOverflow({ ref: navRef, offset: 40 });
+  const { canScrollRight } = useScrollOverflow({ ref: navRef, offset: 52 });
 
   return (
     <div className="relative w-full overflow-hidden">
