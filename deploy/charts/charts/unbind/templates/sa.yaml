@@ -134,7 +134,7 @@ metadata:
 rules:
   # Core API resources
   - apiGroups: [""]
-    resources: ["configmaps", "endpoints", "events", "persistentvolumeclaims", "pods", "pods/log", "secrets", "services"]
+    resources: ["configmaps", "endpoints", "events", "persistentvolumeclaims", "pods", "pods/log", "pods/exec", "secrets", "services"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
   # Apps API resources
   - apiGroups: ["apps"]
