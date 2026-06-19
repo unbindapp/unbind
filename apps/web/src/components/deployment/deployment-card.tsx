@@ -127,7 +127,7 @@ export default function DeploymentCard({
             <div className="flex w-full flex-col items-start justify-start">
               <p
                 data-no-title={titleNotFound || undefined}
-                className="data-no-title:bg-border data-no-title:text-muted-foreground group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton max-w-full min-w-0 shrink leading-tight group-data-placeholder/card:rounded-md group-data-placeholder/card:text-transparent data-no-title:-my-px data-no-title:rounded data-no-title:px-1.5 data-no-title:py-px"
+                className="data-no-title:bg-border data-no-title:text-muted-foreground group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton max-w-full min-w-0 shrink leading-tight wrap-break-word group-data-placeholder/card:rounded-md group-data-placeholder/card:text-transparent data-no-title:-my-px data-no-title:rounded data-no-title:px-1.5 data-no-title:py-px"
               >
                 {title}
               </p>

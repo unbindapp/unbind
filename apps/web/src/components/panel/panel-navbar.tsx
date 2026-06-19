@@ -1,6 +1,9 @@
 import TabIndicator from "@/components/navigation/tab-indicator";
 import { Button } from "@/components/ui/button";
 import { useIntent } from "@/lib/hooks/use-intent";
+import { useScrollOverflow } from "@/lib/hooks/use-scroll-overflow";
+import { ChevronRight } from "lucide-react";
+import { useRef } from "react";
 
 type TProps<T, V extends string> = {
   tabs: TGenericTab<T, V>[];
@@ -21,20 +24,34 @@ export default function PanelNavbar<T, V extends string>({
   currentTabId,
   layoutId,
 }: TProps<T, V>) {
+  const navRef = useRef<HTMLElement>(null);
+  const { canScrollRight } = useScrollOverflow({ ref: navRef, offset: 32 });
+
   return (
-    <nav className="touch:scrollbar-hidden flex w-full justify-start overflow-auto border-b">
-      <div className="flex justify-start px-2 pt-2 sm:px-4.5 sm:pt-3">
-        {tabs.map((tab) => (
-          <PanelNavbarTab
-            key={tab.value}
-            tab={tab}
-            isActive={tab.value === currentTabId}
-            onTabClick={onTabClick}
-            layoutId={layoutId}
-          />
-        ))}
+    <div className="relative w-full overflow-hidden">
+      <nav
+        ref={navRef}
+        className="touch:scrollbar-hidden flex w-full justify-start overflow-auto border-b pr-6"
+      >
+        <div className="flex justify-start px-2 pt-2 sm:px-4.5 sm:pt-3">
+          {tabs.map((tab) => (
+            <PanelNavbarTab
+              key={tab.value}
+              tab={tab}
+              isActive={tab.value === currentTabId}
+              onTabClick={onTabClick}
+              layoutId={layoutId}
+            />
+          ))}
+        </div>
+      </nav>
+      <div
+        data-visible={canScrollRight || undefined}
+        className="from-background via-background to-background/0 pointer-events-none absolute top-0 right-0 flex h-[calc(100%-1px)] translate-x-full flex-col items-center justify-center bg-linear-to-l pr-1.5 pl-10 opacity-0 transition data-visible:translate-x-0 data-visible:opacity-100"
+      >
+        <ChevronRight className="text-muted-more-foreground size-5" />
       </div>
-    </nav>
+    </div>
   );
 }
 
