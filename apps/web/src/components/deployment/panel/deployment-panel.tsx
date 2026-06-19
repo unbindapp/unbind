@@ -4,6 +4,7 @@ import { DeploymentPanelContent } from "@/components/deployment/panel/deployment
 import { useDeploymentPanel } from "@/components/deployment/panel/deployment-panel-provider";
 import BuildLogs from "@/components/deployment/panel/tabs/build-logs/build-logs";
 import DeployLogs from "@/components/deployment/panel/tabs/deploy-logs/deploy-logs";
+import Terminal from "@/components/deployment/panel/tabs/terminal/terminal";
 import DeploymentStatusChip, {
   getDeploymentStatusChipColor,
 } from "@/components/deployment/deployment-status-chip";
@@ -63,6 +64,13 @@ const tabs: TDeploymentPanelTab[] = [
     title: "Build Logs",
     value: "build-logs",
     Page: BuildLogs,
+    Provider: EmptyProvider,
+    noScrollArea: true,
+  },
+  {
+    title: "Terminal",
+    value: "terminal",
+    Page: Terminal,
     Provider: EmptyProvider,
     noScrollArea: true,
   },

@@ -104,6 +104,9 @@ func (self *RBACManager) createOrUpdateRole(ctx context.Context, roleName, names
 
 		// Observability resources
 		"events", "endpoints", "pods/log",
+
+		// Interactive terminal (create verb; editor/admin only)
+		"pods/exec",
 	}
 
 	// Build rules for the Role
@@ -199,7 +202,7 @@ func filterResourcesByAPIGroup(resources []string, apiGroup string) []string {
 		coreResources := []string{
 			"pods", "services", "configmaps", "secrets",
 			"persistentvolumeclaims", "events", "endpoints",
-			"namespaces", "pods/log",
+			"namespaces", "pods/log", "pods/exec",
 		}
 		for _, r := range resources {
 			for _, cr := range coreResources {

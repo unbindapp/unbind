@@ -23,6 +23,8 @@ export default defineConfig({
         target: apiTarget,
         changeOrigin: true,
         secure: true,
+        // Forward websocket upgrades (e.g. the pod terminal at /terminal/exec) too.
+        ws: true,
         cookieDomainRewrite: "",
         rewrite: (path) => path.replace(/^\/api\/go/, ""),
       },

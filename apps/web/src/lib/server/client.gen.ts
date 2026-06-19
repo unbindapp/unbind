@@ -388,6 +388,7 @@ export const HostSpecSchema = z
     host: z.string(),
     path: z.string(),
     prev_host: z.string().optional(), // Previous host for the service, used for upserting key
+    protocol: z.string().optional(), // Application protocol for the domain: http (default) or grpc
     target_port: z.number().optional(),
   })
   .strip();
@@ -1118,6 +1119,7 @@ export const TemplateDefinitionSchema = z
     inputs: z.array(TemplateInputSchema),
     keywords: z.array(z.string()).nullable().optional(),
     name: z.string(),
+    required_capabilities: z.array(z.string()).optional(),
     resource_recommendations: TemplateResourceRecommendationsSchema.optional(),
     services: z.array(TemplateServiceSchema),
     version: z.number(),
@@ -1460,7 +1462,7 @@ export const ListEnvironmentsOutputBodySchema = z
   })
   .strip();
 
-export const PodPhaseSchema = z.enum(['Pending', 'Running', 'Succeeded', 'Failed', 'Unknown']);
+export const PodPhaseSchema = z.enum(['pending', 'running', 'succeeded', 'failed', 'unknown']);
 
 export const PodContainerStatusSchema = z
   .object({
@@ -1773,6 +1775,8 @@ export const SystemMetaSchema = z
   .object({
     external_ipv4: z.string(),
     external_ipv6: z.string(),
+    networking_capabilities: z.array(z.string()),
+    networking_provider: z.string(),
     storage: StorageMetadataSchema,
     system_settings: SystemSettingsResponseSchema,
   })
