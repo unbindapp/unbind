@@ -23,10 +23,6 @@ type TProps = {
   onStatusChange: (status: TTerminalStatus) => void;
 };
 
-function escapeRegExp(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
 function buildWsUrl(apiUrl: string, params: URLSearchParams) {
   const url = new URL(apiUrl, window.location.origin);
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
@@ -126,13 +122,10 @@ const PodTerminal = forwardRef<TPodTerminalHandle, TProps>(function PodTerminal(
     let disposed = false;
     let ended = false;
 
-    // The shell's prompt streams in as "user@<podName>:/path# " — strip the
-    // "user@<podName>" so only the short ":/path# " renders. Per-chunk decode is
-    // fine: the prompt is emitted as a single write.
+    // The server sets a short CWD-only prompt at exec, so just stream output through.
     const decoder = new TextDecoder();
-    const promptRegex = new RegExp(`\\S*@${escapeRegExp(podName)}:`, "g");
     const writeOutput = (bytes: Uint8Array) => {
-      term.write(decoder.decode(bytes, { stream: true }).replace(promptRegex, ""));
+      term.write(decoder.decode(bytes, { stream: true }));
     };
 
     const setStatus = (status: TTerminalStatus) => onStatusChangeRef.current(status);

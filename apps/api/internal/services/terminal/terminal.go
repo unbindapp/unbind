@@ -18,8 +18,14 @@ import (
 // fine-tune via the permission APIs, without other changes.
 const RequiredAction = schema.ActionEditor
 
-// Attempt bash, fall back to sh so slim images still work.
-var defaultShellCommand = []string{"/bin/sh", "-c", "if command -v bash >/dev/null 2>&1; then exec bash; else exec sh; fi"}
+// Shorten bash terminal prompts to just CWD, truncated to 2 levels.
+var defaultShellCommand = []string{"/bin/sh", "-c", `
+export PROMPT_DIRTRIM=2
+export PROMPT_COMMAND='PS1='\''\w\$ '\'''
+if command -v bash >/dev/null 2>&1; then exec bash -i; fi
+export PS1='$PWD$ '
+exec sh -i
+`}
 
 type TerminalService struct {
 	repo repositories.RepositoriesInterface
