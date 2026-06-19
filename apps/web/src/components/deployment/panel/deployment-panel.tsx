@@ -64,6 +64,7 @@ export default function DeploymentPanel({ service, currentDeployment }: TProps) 
     currentTabId,
     currentDeployment: currentDeploymentInPanel,
     currentDeploymentId: currentDeploymentIdInPanel,
+    isTerminalFullscreen,
   } = useDeploymentPanel();
 
   const tabs = useMemo(() => {
@@ -128,6 +129,11 @@ export default function DeploymentPanel({ service, currentDeployment }: TProps) 
       <DrawerContent
         transparentOverlay
         hasHandle={isExtraSmall}
+        // While the terminal is maximized, Esc exits fullscreen (handled in the terminal) instead
+        // of closing the drawer. Radix dismisses on Esc unless the event is defaultPrevented here.
+        onEscapeKeyDown={(e) => {
+          if (isTerminalFullscreen) e.preventDefault();
+        }}
         data-color={
           currentDeploymentInPanel
             ? getDeploymentStatusChipColor({

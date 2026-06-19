@@ -1,5 +1,6 @@
 import { BlockItemButtonLike } from "@/components/block";
 import { useDeployment } from "@/components/deployment/deployment-provider";
+import { useDeploymentPanel } from "@/components/deployment/panel/deployment-panel-provider";
 import PodTerminal, {
   type TPodTerminalHandle,
 } from "@/components/deployment/panel/tabs/terminal/pod-terminal";
@@ -12,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import DropdownSelect from "@/components/ui/dropdown-select";
 import { cn } from "@/components/ui/utils";
 import { instancesListQuery } from "@/lib/queries/instances";
+import { useHotkey } from "@tanstack/react-hotkeys";
 import { useQuery } from "@tanstack/react-query";
 import {
   BoxIcon,
@@ -41,21 +43,32 @@ export default function Terminal() {
 
   const terminalRef = useRef<TPodTerminalHandle>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const { isTerminalFullscreen: isFullscreen, setIsTerminalFullscreen } = useDeploymentPanel();
+
+  const toggleFullscreen = useCallback(
+    () => setIsTerminalFullscreen(!isFullscreen),
+    [isFullscreen, setIsTerminalFullscreen],
+  );
+
+  useHotkey("Escape", () => setIsTerminalFullscreen(false), { enabled: isFullscreen });
+  useEffect(() => () => setIsTerminalFullscreen(false), [setIsTerminalFullscreen]);
 
   useEffect(() => {
-    const onChange = () => setIsFullscreen(document.fullscreenElement === wrapperRef.current);
-    document.addEventListener("fullscreenchange", onChange);
-    return () => document.removeEventListener("fullscreenchange", onChange);
-  }, []);
+    if (!isFullscreen) return;
 
-  const toggleFullscreen = useCallback(() => {
-    if (document.fullscreenElement) {
-      void document.exitFullscreen();
-      return;
-    }
-    void wrapperRef.current?.requestFullscreen().catch(() => {});
-  }, []);
+    // The terminal sits inside a vaul Drawer whose root has `will-change: transform`, which makes
+    // a `position: fixed` child size to the drawer instead of the viewport. Dropping it while
+    // maximized lets `fixed inset-0` fill the browser tab. The drawer has no transform at rest, so
+    // this is invisible (and we restore it on exit for a smooth close animation).
+    const drawer = wrapperRef.current?.closest<HTMLElement>("[data-vaul-drawer]");
+    if (!drawer) return;
+    const prevWillChange = drawer.style.willChange;
+    drawer.style.willChange = "auto";
+    return () => {
+      drawer.style.willChange = prevWillChange;
+    };
+  }, [isFullscreen]);
 
   // Pin the instance so a background refetch can't silently move us to another pod.
   useEffect(() => {
@@ -118,7 +131,10 @@ export default function Terminal() {
   return (
     <div
       ref={wrapperRef}
-      className="bg-background flex min-h-0 w-full flex-1 flex-col overflow-hidden sm:rounded-bl-2xl"
+      className={cn(
+        "bg-background flex min-h-0 w-full flex-1 flex-col overflow-hidden sm:rounded-bl-2xl",
+        isFullscreen && "fixed inset-0 z-50 rounded-none sm:rounded-none",
+      )}
     >
       <div className="flex w-full items-center justify-between gap-1.5 border-b p-2 sm:p-2.5">
         <div className="flex min-w-0 shrink items-center gap-1.5">

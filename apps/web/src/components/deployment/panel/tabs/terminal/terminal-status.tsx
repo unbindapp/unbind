@@ -26,7 +26,7 @@ export default function TerminalStatus({
     <div
       data-status={toDataStatus(status)}
       className={cn(
-        "group/status text-muted-foreground bg-foreground/6 border-foreground/6 data-[status=connected]:border-success/8 data-[status=connected]:bg-success/8 data-[status=error]:border-destructive/8 data-[status=error]:bg-destructive/8 data-[status=pending]:border-warning/8 data-[status=pending]:bg-warning/8 text-ms flex min-w-0 shrink items-center gap-1.25 rounded-md px-2.25 py-1.75 text-xs font-medium",
+        "group/status text-ms flex min-w-0 shrink items-center gap-1.25 rounded-md px-2 py-1.75 text-xs font-medium",
         className,
       )}
     >
