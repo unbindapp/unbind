@@ -3,7 +3,6 @@ import OverscrollIndicator from "@/components/overscroll-indicator";
 import { Button } from "@/components/ui/button";
 import { useIntent } from "@/lib/hooks/use-intent";
 import { useScrollOverflow } from "@/lib/hooks/use-scroll-overflow";
-import { ChevronRight } from "lucide-react";
 import { useRef } from "react";
 
 type TProps<T, V extends string> = {
