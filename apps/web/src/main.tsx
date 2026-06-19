@@ -8,13 +8,17 @@ import "@/globals.css";
 import { routeTree } from "./routeTree.gen";
 import { DEFAULT_INTENT_DELAY_MS } from "@/lib/hooks/use-intent";
 
-const queryClient = new QueryClient();
+const DEFAULT_STALE_TIME_MS = 5 * 1000;
+
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { staleTime: DEFAULT_STALE_TIME_MS } },
+});
 
 const router = createRouter({
   routeTree,
   context: { queryClient },
   defaultPreload: "intent",
-  defaultPreloadStaleTime: 0,
+  defaultPreloadStaleTime: DEFAULT_STALE_TIME_MS,
   defaultPreloadDelay: DEFAULT_INTENT_DELAY_MS,
   scrollRestoration: true,
 });
