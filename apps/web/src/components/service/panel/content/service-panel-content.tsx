@@ -14,6 +14,7 @@ import Deployments from "@/components/service/panel/content/deployed/deployments
 import Logs from "@/components/service/panel/content/deployed/logs/logs";
 import Metrics from "@/components/service/panel/content/deployed/metrics/metrics";
 import Settings from "@/components/service/panel/content/deployed/settings/settings";
+import Terminal from "@/components/service/panel/content/deployed/terminal/terminal";
 import Variables from "@/components/service/panel/content/deployed/variables/variables";
 import { useService } from "@/components/service/service-provider";
 import VariableReferencesProvider, {
@@ -123,6 +124,13 @@ const tabs: TServicePanelTab[] = [
         availableVariableReferencesQuery({ teamId, projectId, environmentId, serviceId }),
       );
     },
+  },
+  {
+    title: "Terminal",
+    value: "terminal",
+    Page: Terminal,
+    Provider: EmptyProvider,
+    noScrollArea: true,
   },
   { title: "Settings", value: "settings", Page: Settings, Provider: EmptyProvider },
 ];

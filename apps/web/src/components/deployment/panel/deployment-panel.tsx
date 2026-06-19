@@ -4,7 +4,6 @@ import { DeploymentPanelContent } from "@/components/deployment/panel/deployment
 import { useDeploymentPanel } from "@/components/deployment/panel/deployment-panel-provider";
 import BuildLogs from "@/components/deployment/panel/tabs/build-logs/build-logs";
 import DeployLogs from "@/components/deployment/panel/tabs/deploy-logs/deploy-logs";
-import Terminal from "@/components/deployment/panel/tabs/terminal/terminal";
 import DeploymentStatusChip, {
   getDeploymentStatusChipColor,
 } from "@/components/deployment/deployment-status-chip";
@@ -54,17 +53,15 @@ const EmptyProvider = ({ children }: TDeploymentPageProviderProps) => children;
 
 type TProps = {
   service: TServiceShallow;
-  currentDeployment: TDeploymentShallow | undefined;
 };
 
-export default function DeploymentPanel({ service, currentDeployment }: TProps) {
+export default function DeploymentPanel({ service }: TProps) {
   const { teamId, projectId, environmentId, serviceId } = useService();
   const {
     closePanel,
     currentTabId,
     currentDeployment: currentDeploymentInPanel,
     currentDeploymentId: currentDeploymentIdInPanel,
-    isTerminalFullscreen,
   } = useDeploymentPanel();
 
   const tabs = useMemo(() => {
@@ -83,22 +80,9 @@ export default function DeploymentPanel({ service, currentDeployment }: TProps) 
         Provider: EmptyProvider,
         noScrollArea: true,
       },
-      ...(currentDeployment &&
-      currentDeploymentInPanel &&
-      currentDeployment.id === currentDeploymentInPanel.id
-        ? ([
-            {
-              title: "Terminal",
-              value: "terminal",
-              Page: Terminal,
-              Provider: EmptyProvider,
-              noScrollArea: true,
-            },
-          ] satisfies TDeploymentPanelTab[])
-        : []),
     ];
     return tabs;
-  }, [currentDeployment, currentDeploymentInPanel]);
+  }, []);
 
   const currentTab = tabs.find((tab) => tab.value === currentTabId);
 
@@ -129,11 +113,6 @@ export default function DeploymentPanel({ service, currentDeployment }: TProps) 
       <DrawerContent
         transparentOverlay
         hasHandle={isExtraSmall}
-        // While the terminal is maximized, Esc exits fullscreen (handled in the terminal) instead
-        // of closing the drawer. Radix dismisses on Esc unless the event is defaultPrevented here.
-        onEscapeKeyDown={(e) => {
-          if (isTerminalFullscreen) e.preventDefault();
-        }}
         data-color={
           currentDeploymentInPanel
             ? getDeploymentStatusChipColor({

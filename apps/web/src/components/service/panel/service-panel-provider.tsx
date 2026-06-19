@@ -10,7 +10,7 @@ import {
 import { drawerAnimationMs } from "@/lib/constants";
 import useEffectAfterMount from "@/lib/hooks/use-effect-after-mount";
 import { useSearchParam } from "@/lib/hooks/use-search-param";
-import { createContext, ReactNode, useContext, useMemo, useRef } from "react";
+import { createContext, ReactNode, useContext, useMemo, useRef, useState } from "react";
 
 type TServicePanelContext = {
   currentTabId: TServicePanelTabEnum;
@@ -20,6 +20,10 @@ type TServicePanelContext = {
   resetCurrentTabId: () => void;
   closePanel: () => void;
   openPanel: (serviceId: string, tabId?: TServicePanelTabEnum) => void;
+  // The terminal tab can maximize to fill the viewport; while it does, Esc should exit
+  // fullscreen instead of closing the drawer, so the drawer needs to know.
+  isTerminalFullscreen: boolean;
+  setIsTerminalFullscreen: (value: boolean) => void;
 };
 
 const ServicePanelContext = createContext<TServicePanelContext | null>(null);
@@ -34,6 +38,8 @@ export const ServicePanelProvider: React.FC<{
   );
 
   const [currentServiceId, setCurrentServiceId] = useSearchParam(servicePanelServiceIdKey);
+
+  const [isTerminalFullscreen, setIsTerminalFullscreen] = useState(false);
 
   useEffectAfterMount(() => {
     setDeploymentPanelId(null);
@@ -59,8 +65,10 @@ export const ServicePanelProvider: React.FC<{
         }, drawerAnimationMs);
       },
       resetCurrentTabId: () => setCurrentTabId(servicePanelDefaultTabId),
+      isTerminalFullscreen,
+      setIsTerminalFullscreen,
     }),
-    [currentTabId, setCurrentTabId, currentServiceId, setCurrentServiceId],
+    [currentTabId, setCurrentTabId, currentServiceId, setCurrentServiceId, isTerminalFullscreen],
   );
 
   return <ServicePanelContext.Provider value={value}>{children}</ServicePanelContext.Provider>;

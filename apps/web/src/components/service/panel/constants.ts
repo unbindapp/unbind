@@ -5,6 +5,7 @@ export const ServicePanelTabEnum = z.enum([
   "variables",
   "logs",
   "metrics",
+  "terminal",
   "settings",
 ]);
 export type TServicePanelTabEnum = z.infer<typeof ServicePanelTabEnum>;

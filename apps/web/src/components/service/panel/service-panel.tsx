@@ -34,7 +34,8 @@ export default function ServicePanel({
   service,
   children,
 }: TProps) {
-  const { closePanel, currentServiceId, setCurrentServiceId } = useServicePanel();
+  const { closePanel, currentServiceId, setCurrentServiceId, isTerminalFullscreen } =
+    useServicePanel();
 
   const open = currentServiceId === service.id;
   const setOpen = (open: boolean) => {
@@ -56,6 +57,11 @@ export default function ServicePanel({
       <DrawerTrigger asChild>{children}</DrawerTrigger>
       <DrawerContent
         hasHandle={isExtraSmall}
+        // While the terminal is maximized, Esc exits fullscreen (handled in the terminal) instead
+        // of closing the drawer. Radix dismisses on Esc unless the event is defaultPrevented here.
+        onEscapeKeyDown={(e) => {
+          if (isTerminalFullscreen) e.preventDefault();
+        }}
         className="flex h-[calc(100%-1.3rem)] w-full flex-col sm:top-0 sm:right-0 sm:my-0 sm:ml-auto sm:h-full sm:w-5xl sm:max-w-[calc(100%-4rem)] sm:rounded-l-2xl sm:rounded-r-none"
       >
         <ServiceProvider

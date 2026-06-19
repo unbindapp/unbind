@@ -1,7 +1,7 @@
 import "@xterm/xterm/css/xterm.css";
 
 import { useAppConfig } from "@/components/providers/app-config-provider";
-import { TTerminalStatus } from "@/components/deployment/panel/tabs/terminal/terminal-status";
+import { TTerminalStatus } from "@/components/service/panel/content/deployed/terminal/terminal-status";
 import { FitAddon } from "@xterm/addon-fit";
 import { Terminal } from "@xterm/xterm";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";

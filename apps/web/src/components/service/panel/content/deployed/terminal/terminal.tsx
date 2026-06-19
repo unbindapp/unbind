@@ -1,12 +1,12 @@
 import { BlockItemButtonLike } from "@/components/block";
-import { useDeployment } from "@/components/deployment/deployment-provider";
-import { useDeploymentPanel } from "@/components/deployment/panel/deployment-panel-provider";
 import PodTerminal, {
   type TPodTerminalHandle,
-} from "@/components/deployment/panel/tabs/terminal/pod-terminal";
+} from "@/components/service/panel/content/deployed/terminal/pod-terminal";
 import TerminalStatus, {
   type TTerminalStatus,
-} from "@/components/deployment/panel/tabs/terminal/terminal-status";
+} from "@/components/service/panel/content/deployed/terminal/terminal-status";
+import { useServicePanel } from "@/components/service/panel/service-panel-provider";
+import { useService } from "@/components/service/service-provider";
 import ErrorCard from "@/components/error-card";
 import NoItemsCard from "@/components/no-items-card";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export default function Terminal() {
-  const { teamId, projectId, environmentId, serviceId } = useDeployment();
+  const { teamId, projectId, environmentId, serviceId } = useService();
 
   // No focus refetch — alt-tabbing to copy something would otherwise refetch and yank
   // the terminal onto a different instance mid-session.
@@ -44,7 +44,7 @@ export default function Terminal() {
   const terminalRef = useRef<TPodTerminalHandle>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const { isTerminalFullscreen: isFullscreen, setIsTerminalFullscreen } = useDeploymentPanel();
+  const { isTerminalFullscreen: isFullscreen, setIsTerminalFullscreen } = useServicePanel();
 
   const toggleFullscreen = useCallback(
     () => setIsTerminalFullscreen(!isFullscreen),

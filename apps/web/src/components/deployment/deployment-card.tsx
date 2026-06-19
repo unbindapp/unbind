@@ -46,7 +46,6 @@ import {
   RewindIcon,
   RocketIcon,
   RotateCcwIcon,
-  TerminalIcon,
 } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { HTMLAttributes, ReactNode, useRef, useState } from "react";
@@ -164,7 +163,6 @@ function ThreeDotButton({
   isCurrentDeployment: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const { openPanel } = useDeploymentPanel();
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
@@ -221,17 +219,6 @@ function ThreeDotButton({
                 <p className="min-w-0 shrink leading-tight">Redeploy</p>
               </DropdownMenuItem>
             </RedeployTrigger>
-            {isCurrentDeployment && (
-              <DropdownMenuItem
-                onSelect={() => {
-                  setIsOpen(false);
-                  openPanel(deployment.id, "terminal");
-                }}
-              >
-                <TerminalIcon className="-ml-0.5 size-5" />
-                <p className="min-w-0 shrink leading-tight">Terminal</p>
-              </DropdownMenuItem>
-            )}
           </DropdownMenuGroup>
         </ScrollArea>
       </DropdownMenuContent>

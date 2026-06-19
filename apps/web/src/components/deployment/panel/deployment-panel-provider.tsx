@@ -20,10 +20,6 @@ type TDeploymentPanelContext = {
   resetCurrentTabId: () => void;
   closePanel: () => void;
   openPanel: (deploymentId: string, tabId?: TDeploymentPanelTabEnum) => void;
-  // The terminal tab can maximize to fill the viewport; while it does, Esc should exit
-  // fullscreen instead of closing the drawer, so the drawer needs to know.
-  isTerminalFullscreen: boolean;
-  setIsTerminalFullscreen: (value: boolean) => void;
 };
 
 const DeploymentPanelContext = createContext<TDeploymentPanelContext | null>(null);
@@ -41,8 +37,6 @@ export const DeploymentPanelProvider: React.FC<{
   const [currentDeploymentId, setCurrentDeploymentId] = useSearchParam(
     deploymentPanelDeploymentIdKey,
   );
-
-  const [isTerminalFullscreen, setIsTerminalFullscreen] = useState(false);
 
   const timeout = useRef<NodeJS.Timeout | null>(null);
   const tabTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -82,8 +76,6 @@ export const DeploymentPanelProvider: React.FC<{
         }, drawerAnimationMs);
       },
       resetCurrentTabId: () => setCurrentTabId(deploymentPanelDefaultTabId),
-      isTerminalFullscreen,
-      setIsTerminalFullscreen,
     }),
     [
       currentTabId,
@@ -91,7 +83,6 @@ export const DeploymentPanelProvider: React.FC<{
       currentDeploymentId,
       setCurrentDeploymentId,
       currentDeployment,
-      isTerminalFullscreen,
     ],
   );
 
