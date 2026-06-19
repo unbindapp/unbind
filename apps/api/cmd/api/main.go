@@ -451,10 +451,9 @@ func startAPI(cfg *config.Config) {
 		register("/instances", "Instances", true, instances_handler.RegisterHandlers)
 		register("/storage", "Storage", true, storage_handler.RegisterHandlers)
 		register("/templates", "Templates", true, template_handler.RegisterHandlers)
-
-		// Pod terminal: raw chi websocket route (huma can't upgrade) with its own auth.
-		terminalHandler := terminal_handler.NewHandler(srvImpl, allowedOrigins)
-		r.With(mw.AuthenticateHTTP).Get("/terminal/exec", terminalHandler.Exec)
+		register("/terminal", "Terminal", true, func(srv *server.Server, grp *huma.Group) {
+			terminal_handler.RegisterHandlers(srv, grp, allowedOrigins)
+		})
 	})
 
 	// Serve the embedded SPA for any path the API doesn't claim. In the deployed

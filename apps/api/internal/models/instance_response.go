@@ -31,6 +31,7 @@ func (e EventType) Schema(r huma.Registry) *huma.Schema {
 		schemaRef.Enum = append(schemaRef.Enum, string(EventTypeContainerCreated))
 		schemaRef.Enum = append(schemaRef.Enum, string(EventTypeContainerStarted))
 		schemaRef.Enum = append(schemaRef.Enum, string(EventTypeContainerStopped))
+		schemaRef.Enum = append(schemaRef.Enum, string(EventTypeImagePullBackOff))
 		schemaRef.Enum = append(schemaRef.Enum, string(EventTypeNodeNotReady))
 		schemaRef.Enum = append(schemaRef.Enum, string(EventTypeSchedulingFailed))
 		schemaRef.Enum = append(schemaRef.Enum, string(EventTypeUnknown))

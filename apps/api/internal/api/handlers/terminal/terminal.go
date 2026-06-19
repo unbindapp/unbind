@@ -1,17 +1,17 @@
 package terminal_handler
 
 import (
-	"errors"
+	"context"
 	"net/http"
 	"slices"
 
+	"github.com/danielgtaylor/huma/v2"
+	"github.com/danielgtaylor/huma/v2/adapters/humachi"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 
-	"github.com/unbindapp/unbind-api/ent"
-	"github.com/unbindapp/unbind-api/internal/api/middleware"
+	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
-	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	terminal_service "github.com/unbindapp/unbind-api/internal/services/terminal"
 )
@@ -21,108 +21,79 @@ type HandlerGroup struct {
 	upgrader websocket.Upgrader
 }
 
-// allowedOrigins gates the upgrade in lieu of CSRF, which websockets can't carry.
-func NewHandler(srv *server.Server, allowedOrigins []string) *HandlerGroup {
-	return &HandlerGroup{
+type ExecInput struct {
+	server.BaseAuthInput
+	TeamID        uuid.UUID `query:"team_id" required:"true" format:"uuid"`
+	ProjectID     uuid.UUID `query:"project_id" required:"true" format:"uuid"`
+	EnvironmentID uuid.UUID `query:"environment_id" required:"true" format:"uuid"`
+	ServiceID     uuid.UUID `query:"service_id" required:"true" format:"uuid"`
+	PodName       string    `query:"pod_name" required:"false"`
+	Container     string    `query:"container" required:"false"`
+}
+
+// RegisterHandlers documents the operation in the OpenAPI spec and routes it
+// through the huma group. The upgrade itself runs inside a huma.StreamResponse,
+// which hands the handler the raw response to hijack (allowedOrigins gates the
+// upgrade in lieu of CSRF, which websockets can't carry).
+func RegisterHandlers(srv *server.Server, grp *huma.Group, allowedOrigins []string) {
+	handlers := &HandlerGroup{
 		srv: srv,
 		upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
 				origin := r.Header.Get("Origin")
-				if origin == "" {
-					return false
-				}
-				return slices.Contains(allowedOrigins, origin)
+				return origin != "" && slices.Contains(allowedOrigins, origin)
 			},
 		},
 	}
+
+	op := huma.Operation{
+		OperationID: "exec-terminal",
+		Method:      http.MethodGet,
+		Path:        "/exec",
+		Summary:     "Exec Terminal",
+		Description: "Upgrade to a WebSocket and attach an interactive shell to a service pod.",
+		Responses: map[string]*huma.Response{
+			"101": {Description: "Switching Protocols"},
+		},
+	}
+	oapi.Apply(oapi.Invoke, &op)
+
+	huma.Register(grp, op, handlers.Exec)
 }
 
-// Exec authorizes, upgrades to a websocket, and attaches a shell to the target pod.
-func (self *HandlerGroup) Exec(w http.ResponseWriter, r *http.Request) {
-	user, ok := middleware.UserFromRequest(r)
-	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
+// Exec authorizes before the upgrade so denials surface as normal HTTP errors,
+// then hijacks the connection and attaches the shell.
+func (self *HandlerGroup) Exec(ctx context.Context, input *ExecInput) (*huma.StreamResponse, error) {
+	user, found := self.srv.GetUserFromContext(ctx)
+	if !found {
+		return nil, huma.Error401Unauthorized("Unauthorized")
 	}
-	bearerToken, ok := middleware.BearerTokenFromRequest(r)
-	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	input, err := parseExecInput(r)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+	bearerToken, found := self.srv.GetBearerTokenFromContext(ctx)
+	if !found {
+		return nil, huma.Error401Unauthorized("Unauthorized")
 	}
 
-	target, err := self.srv.TerminalService.Resolve(r.Context(), user.ID, bearerToken, input)
+	target, err := self.srv.TerminalService.Resolve(ctx, user.ID, bearerToken, &terminal_service.ExecInput{
+		TeamID:        input.TeamID,
+		ProjectID:     input.ProjectID,
+		EnvironmentID: input.EnvironmentID,
+		ServiceID:     input.ServiceID,
+		PodName:       input.PodName,
+		Container:     input.Container,
+	})
 	if err != nil {
-		status, message := httpErrorFor(err)
-		http.Error(w, message, status)
-		return
+		return nil, oapi.MapError(err)
 	}
 
-	ws, err := self.upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Warnf("terminal websocket upgrade failed: %v", err)
-		return
-	}
-
-	self.srv.TerminalService.Attach(r.Context(), ws, bearerToken, target)
-}
-
-func parseExecInput(r *http.Request) (*terminal_service.ExecInput, error) {
-	q := r.URL.Query()
-
-	teamID, err := uuid.Parse(q.Get("team_id"))
-	if err != nil {
-		return nil, errInvalid("team_id")
-	}
-	projectID, err := uuid.Parse(q.Get("project_id"))
-	if err != nil {
-		return nil, errInvalid("project_id")
-	}
-	environmentID, err := uuid.Parse(q.Get("environment_id"))
-	if err != nil {
-		return nil, errInvalid("environment_id")
-	}
-	serviceID, err := uuid.Parse(q.Get("service_id"))
-	if err != nil {
-		return nil, errInvalid("service_id")
-	}
-
-	return &terminal_service.ExecInput{
-		TeamID:        teamID,
-		ProjectID:     projectID,
-		EnvironmentID: environmentID,
-		ServiceID:     serviceID,
-		PodName:       q.Get("pod_name"),
-		Container:     q.Get("container"),
+	return &huma.StreamResponse{
+		Body: func(hctx huma.Context) {
+			r, w := humachi.Unwrap(hctx)
+			ws, err := self.upgrader.Upgrade(w, r, nil)
+			if err != nil {
+				log.Warnf("terminal websocket upgrade failed: %v", err)
+				return
+			}
+			self.srv.TerminalService.Attach(r.Context(), ws, bearerToken, target)
+		},
 	}, nil
-}
-
-func errInvalid(field string) error {
-	return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid or missing "+field)
-}
-
-func httpErrorFor(err error) (int, string) {
-	var ce *errdefs.CustomError
-	switch {
-	case errors.As(err, &ce):
-		switch ce.Type {
-		case errdefs.ErrTypeInvalidInput:
-			return http.StatusBadRequest, ce.Message
-		case errdefs.ErrTypeNotFound:
-			return http.StatusNotFound, ce.Message
-		case errdefs.ErrTypeConflict:
-			return http.StatusConflict, ce.Message
-		}
-	case errors.Is(err, errdefs.ErrUnauthorized):
-		return http.StatusForbidden, "Forbidden"
-	case ent.IsNotFound(err):
-		return http.StatusNotFound, "Not found"
-	}
-	log.Errorf("terminal: unhandled error: %v", err)
-	return http.StatusInternalServerError, "Internal server error"
 }
