@@ -582,12 +582,12 @@ const (
 	PodUnknown   PodPhase = "unknown"
 )
 
-var allPodPhases = []corev1.PodPhase{
-	corev1.PodPending,
-	corev1.PodRunning,
-	corev1.PodSucceeded,
-	corev1.PodFailed,
-	corev1.PodUnknown,
+var allPodPhases = []PodPhase{
+	PodPending,
+	PodRunning,
+	PodSucceeded,
+	PodFailed,
+	PodUnknown,
 }
 
 func (u PodPhase) Schema(r huma.Registry) *huma.Schema {
