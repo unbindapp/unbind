@@ -130,7 +130,7 @@ const PodTerminal = forwardRef<TPodTerminalHandle, TProps>(function PodTerminal(
     // "user@<podName>" so only the short ":/path# " renders. Per-chunk decode is
     // fine: the prompt is emitted as a single write.
     const decoder = new TextDecoder();
-    const promptRegex = new RegExp(`\\S*@${escapeRegExp(podName)}`, "g");
+    const promptRegex = new RegExp(`\\S*@${escapeRegExp(podName)}:`, "g");
     const writeOutput = (bytes: Uint8Array) => {
       term.write(decoder.decode(bytes, { stream: true }).replace(promptRegex, ""));
     };

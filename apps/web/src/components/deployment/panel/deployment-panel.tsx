@@ -28,7 +28,7 @@ import { getDurationStr } from "@/lib/hooks/use-time-difference";
 import { TDeploymentShallow } from "@/lib/queries/deployments";
 import { TServiceShallow } from "@/lib/queries/services";
 import { RocketIcon, XIcon } from "lucide-react";
-import { FC, ReactNode } from "react";
+import { FC, ReactNode, useMemo } from "react";
 
 export type TDeploymentPanelTab = {
   title: string;
@@ -52,41 +52,56 @@ type TDeploymentPageProviderProps = {
 
 const EmptyProvider = ({ children }: TDeploymentPageProviderProps) => children;
 
-const tabs: TDeploymentPanelTab[] = [
-  {
-    title: "Deploy Logs",
-    value: "deploy-logs",
-    Page: DeployLogs,
-    Provider: EmptyProvider,
-    noScrollArea: true,
-  },
-  {
-    title: "Build Logs",
-    value: "build-logs",
-    Page: BuildLogs,
-    Provider: EmptyProvider,
-    noScrollArea: true,
-  },
-  {
-    title: "Terminal",
-    value: "terminal",
-    Page: Terminal,
-    Provider: EmptyProvider,
-    noScrollArea: true,
-  },
-];
-
 type TProps = {
   service: TServiceShallow;
+  currentDeployment: TDeploymentShallow | undefined;
 };
 
-export default function DeploymentPanel({ service }: TProps) {
+export default function DeploymentPanel({ service, currentDeployment }: TProps) {
   const { teamId, projectId, environmentId, serviceId } = useService();
-  const { closePanel, currentTabId, currentDeployment, currentDeploymentId } = useDeploymentPanel();
+  const {
+    closePanel,
+    currentTabId,
+    currentDeployment: currentDeploymentInPanel,
+    currentDeploymentId: currentDeploymentIdInPanel,
+  } = useDeploymentPanel();
+
+  const tabs = useMemo(() => {
+    const tabs: TDeploymentPanelTab[] = [
+      {
+        title: "Deploy Logs",
+        value: "deploy-logs",
+        Page: DeployLogs,
+        Provider: EmptyProvider,
+        noScrollArea: true,
+      },
+      {
+        title: "Build Logs",
+        value: "build-logs",
+        Page: BuildLogs,
+        Provider: EmptyProvider,
+        noScrollArea: true,
+      },
+      ...(currentDeployment &&
+      currentDeploymentInPanel &&
+      currentDeployment.id === currentDeploymentInPanel.id
+        ? ([
+            {
+              title: "Terminal",
+              value: "terminal",
+              Page: Terminal,
+              Provider: EmptyProvider,
+              noScrollArea: true,
+            },
+          ] satisfies TDeploymentPanelTab[])
+        : []),
+    ];
+    return tabs;
+  }, [currentDeployment, currentDeploymentInPanel]);
 
   const currentTab = tabs.find((tab) => tab.value === currentTabId);
 
-  const open = currentDeploymentId !== null;
+  const open = currentDeploymentIdInPanel !== null;
 
   const onOpenChange = (open: boolean) => {
     if (!open) {
@@ -96,12 +111,12 @@ export default function DeploymentPanel({ service }: TProps) {
   const { isExtraSmall } = useDeviceSize();
 
   const showCurrentDeploymentProgress =
-    currentDeployment?.status === "build-queued" ||
-    currentDeployment?.status === "build-pending" ||
-    currentDeployment?.status === "build-running" ||
-    currentDeployment?.status === "build-succeeded" ||
-    currentDeployment?.status === "launching" ||
-    currentDeployment?.status === "launch-error";
+    currentDeploymentInPanel?.status === "build-queued" ||
+    currentDeploymentInPanel?.status === "build-pending" ||
+    currentDeploymentInPanel?.status === "build-running" ||
+    currentDeploymentInPanel?.status === "build-succeeded" ||
+    currentDeploymentInPanel?.status === "launching" ||
+    currentDeploymentInPanel?.status === "launch-error";
 
   return (
     <Drawer
@@ -114,15 +129,15 @@ export default function DeploymentPanel({ service }: TProps) {
         transparentOverlay
         hasHandle={isExtraSmall}
         data-color={
-          currentDeployment
+          currentDeploymentInPanel
             ? getDeploymentStatusChipColor({
-                deployment: currentDeployment,
+                deployment: currentDeploymentInPanel,
               })
             : "default"
         }
         className="group/content flex h-[calc(100%-1.3rem)] w-full flex-col sm:top-0 sm:right-0 sm:my-0 sm:ml-auto sm:h-full sm:w-5xl sm:max-w-[calc(100%-4rem)] sm:rounded-l-2xl sm:rounded-r-none"
       >
-        {!currentDeployment && (
+        {!currentDeploymentInPanel && (
           <>
             <div className="flex w-full items-start justify-start gap-4 border-b px-5 pt-4 pb-4 sm:px-8 sm:pt-6 sm:pb-6">
               <DrawerHeader className="flex min-w-0 flex-1 items-center justify-start p-0">
@@ -162,13 +177,13 @@ export default function DeploymentPanel({ service }: TProps) {
             </ScrollArea>
           </>
         )}
-        {currentDeployment && (
+        {currentDeploymentInPanel && (
           <DeploymentProvider
             teamId={teamId}
             projectId={projectId}
             environmentId={environmentId}
             serviceId={serviceId}
-            deploymentId={currentDeployment.id}
+            deploymentId={currentDeploymentInPanel.id}
           >
             <div className="flex w-full items-start justify-start gap-4 px-5 pt-4 sm:px-8 sm:pt-6">
               <DrawerHeader className="flex min-w-0 flex-1 items-center justify-start p-0">
@@ -186,16 +201,16 @@ export default function DeploymentPanel({ service }: TProps) {
                   </div>
                   <div className="text-foreground group-data-[color=destructive]/content:text-destructive group-data-[color=success]/content:text-success group-data-[color=process]/content:text-process group-data-[color=wait]/content:text-wait flex w-full items-center justify-start gap-1.5 text-left text-xl leading-tight font-semibold sm:text-2xl">
                     <p className="min-w-0 shrink truncate pr-1">
-                      {currentDeployment.id.slice(0, 6)}
+                      {currentDeploymentInPanel.id.slice(0, 6)}
                     </p>
                     <DeploymentStatusChip
                       className="shrink-0 px-1.75 py-0.75 sm:text-base"
                       iconClassName="sm:size-4"
-                      deployment={currentDeployment}
+                      deployment={currentDeploymentInPanel}
                       isPlaceholder={false}
                     />
                     {showCurrentDeploymentProgress && (
-                      <DeploymentProgress deployment={currentDeployment} />
+                      <DeploymentProgress deployment={currentDeploymentInPanel} />
                     )}
                   </div>
                 </DrawerTitle>
@@ -213,7 +228,7 @@ export default function DeploymentPanel({ service }: TProps) {
               )}
             </div>
             <DeploymentPanelContent
-              deployment={currentDeployment}
+              deployment={currentDeploymentInPanel}
               tabs={tabs}
               currentTab={currentTab}
             />
