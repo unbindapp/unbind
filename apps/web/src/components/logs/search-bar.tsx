@@ -125,7 +125,7 @@ function SettingsButton({ logType, className }: { logType: TLogType; className?:
           </div>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[768px] sm:w-56">
+      <DropdownMenuContent align="end" className="w-3xl sm:w-56">
         <ScrollArea>
           {logViewPreferences.map((group, index) => (
             <div key={group.label} className="flex w-full flex-col">
@@ -168,17 +168,15 @@ function SettingsButton({ logType, className }: { logType: TLogType; className?:
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem
+              data-not-default={!isDefaultState || undefined}
               disabled={isDefaultState}
               onSelect={(e) => {
                 e.preventDefault();
                 resetPreferences();
               }}
-              className="py-3.5 sm:py-2.25"
+              className="group/item data-not-default:text-warning data-not-default:focus:bg-warning/10 data-not-default:active:bg-warning/10 py-3.5 sm:py-2.25"
             >
-              <RotateCcwIcon
-                data-default={isDefaultState || undefined}
-                className="-my-1 size-4.5 shrink-0 transform transition-transform data-default:-rotate-90"
-              />
+              <RotateCcwIcon className="-my-1 size-4.5 shrink-0 -rotate-90 transform transition-transform group-data-not-default/item:rotate-0" />
               <p className="min-w-0 shrink">Reset</p>
             </DropdownMenuItem>
           </DropdownMenuGroup>
