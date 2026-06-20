@@ -126,6 +126,7 @@
   --rust: hsl(10 79% 51%);
   --svelte: hsl(10 100% 45%);
   --clickhouse: hsl(60 100% 25%);
+  --convex: hsl(2 85% 52%);
   --docker: hsl(220 81% 46%);
   --strapi: hsl(241 100% 64%);
   --mongodb: hsl(145 100% 35%);
@@ -228,6 +229,7 @@
   --rust: hsl(10 79% 51%);
   --svelte: hsl(10 100% 65%);
   --clickhouse: hsl(62 100% 71%);
+  --convex: hsl(2 90% 63%);
   --docker: hsl(220 81% 60%);
   --strapi: hsl(241 100% 75%);
   --mongodb: hsl(145 100% 47%);
@@ -459,6 +461,7 @@
   --color-rust: var(--rust);
   --color-svelte: var(--svelte);
   --color-clickhouse: var(--clickhouse);
+  --color-convex: var(--convex);
   --color-docker: var(--docker);
   --color-strapi: var(--strapi);
   --color-mongodb: var(--mongodb);

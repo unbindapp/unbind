@@ -32,5 +32,6 @@ func (self *Templater) AvailableTemplates() []*schema.TemplateDefinition {
 		nocodbTemplate(),
 		teableTemplate(),
 		formbricksTemplate(),
+		convexTemplate(),
 	}
 }

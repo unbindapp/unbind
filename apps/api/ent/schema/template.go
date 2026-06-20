@@ -153,6 +153,7 @@ const (
 	GeneratorTypeInput          GeneratorType = "input"
 	GeneratorTypeJWT            GeneratorType = "jwt"
 	GeneratorTypeStringReplace  GeneratorType = "string_replace"
+	GeneratorTypeConvexAdminKey GeneratorType = "convex_admin_key"
 )
 
 // Register enum in OpenAPI specification
@@ -169,6 +170,7 @@ func (u GeneratorType) Schema(r huma.Registry) *huma.Schema {
 				string(GeneratorTypeInput),
 				string(GeneratorTypeJWT),
 				string(GeneratorTypeStringReplace),
+				string(GeneratorTypeConvexAdminKey),
 			}...)
 		r.Map()["GeneratorType"] = schemaRef
 	}
@@ -183,6 +185,15 @@ type JWTParams struct {
 	ServiceOutputKey string
 }
 
+// ConvexAdminKeyParams represents the parameters for Convex admin key generation.
+// The generator mints a fresh instance secret and a matching admin key, emitting
+// both as variables named by SecretOutputKey and AdminKeyOutputKey.
+type ConvexAdminKeyParams struct {
+	InstanceName      string
+	SecretOutputKey   string
+	AdminKeyOutputKey string
+}
+
 // ValueGenerator represents how to generate a value
 type ValueGenerator struct {
 	Type       GeneratorType  `json:"type"`
@@ -191,6 +202,8 @@ type ValueGenerator struct {
 	AddPrefix  string         `json:"add_prefix,omitempty"`  // Add a prefix to the generated value
 	HashType   *ValueHashType `json:"hash_type,omitempty"`   // Hash the generated value
 	JWTParams  *JWTParams     `json:"jwt_params,omitempty"`  // JWT parameters
+
+	ConvexParams *ConvexAdminKeyParams `json:"convex_params,omitempty"` // Convex admin key parameters
 }
 
 type ValueHashType string
@@ -327,6 +340,22 @@ func (self *ValueGenerator) Generate(inputs map[string]string) (*GenerateRespons
 
 		return &GenerateResponse{
 			JWTValues: resp,
+		}, nil
+	case GeneratorTypeConvexAdminKey:
+		if self.ConvexParams == nil {
+			return nil, fmt.Errorf("convex parameters are required for convex admin key generator")
+		}
+
+		secretHex, adminKey, err := GenerateConvexInstanceSecretAndAdminKey(self.ConvexParams.InstanceName)
+		if err != nil {
+			return nil, err
+		}
+
+		return &GenerateResponse{
+			JWTValues: map[string]string{
+				self.ConvexParams.SecretOutputKey:   secretHex,
+				self.ConvexParams.AdminKeyOutputKey: adminKey,
+			},
 		}, nil
 	default:
 		return nil, fmt.Errorf("unknown generator type: %s", self.Type)

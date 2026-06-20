@@ -292,6 +292,21 @@ func (self *Templater) resolveGeneratedVariables(template *schema.TemplateDefini
 							},
 						}...)
 					}
+					if v.Generator.Type == schema.GeneratorTypeConvexAdminKey {
+						// The host variable becomes a placeholder; the secret and
+						// admin key are injected as their own variables.
+						v.Value = fmt.Sprintf("generated-%s-%s", v.Generator.ConvexParams.SecretOutputKey, v.Generator.ConvexParams.AdminKeyOutputKey)
+						additionalVars = append(additionalVars, []schema.TemplateVariable{
+							{
+								Name:  v.Generator.ConvexParams.SecretOutputKey,
+								Value: res.JWTValues[v.Generator.ConvexParams.SecretOutputKey],
+							},
+							{
+								Name:  v.Generator.ConvexParams.AdminKeyOutputKey,
+								Value: res.JWTValues[v.Generator.ConvexParams.AdminKeyOutputKey],
+							},
+						}...)
+					}
 				}
 			}
 		}

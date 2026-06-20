@@ -1,0 +1,240 @@
+package templates
+
+import (
+	"github.com/unbindapp/unbind-api/ent/schema"
+	"github.com/unbindapp/unbind-api/internal/common/utils"
+)
+
+// convexTemplate returns the predefined Convex template.
+//
+// Convex self-hosts as a Rust backend (API on 3210, HTTP actions on 3211) plus a
+// Next.js dashboard (6791), backed by Postgres. The backend connects to Postgres with
+// POSTGRES_URL stripped of the database name and query params; it targets a database
+// named after INSTANCE_NAME with "-" replaced by "_" (convex-self-hosted -> convex_self_hosted),
+// which the database service pre-creates via DefaultDatabaseName.
+//
+// After deploy, generate an admin key for the dashboard/CLI by running
+// `./generate_admin_key.sh` in the backend service terminal.
+func convexTemplate() *schema.TemplateDefinition {
+	return &schema.TemplateDefinition{
+		Name:        "Convex",
+		DisplayRank: uint(21000),
+		Icon:        "convex",
+		Keywords:    []string{"convex", "backend", "database", "reactive", "realtime", "serverless", "typescript", "baas", "firebase", "supabase"},
+		Description: "Open-source reactive backend with a database, functions, and realtime sync.",
+		Version:     1,
+		ResourceRecommendations: schema.TemplateResourceRecommendations{
+			MinimumCPUs:  2,
+			MinimumRAMGB: 2,
+		},
+		Inputs: []schema.TemplateInput{
+			{
+				ID:          "input_api_domain",
+				Name:        "API Domain",
+				Type:        schema.InputTypeHost,
+				Description: "Domain for the Convex backend API and websocket sync (used by the client SDK and CLI).",
+				Required:    true,
+				TargetPort:  utils.ToPtr(3210),
+			},
+			{
+				ID:          "input_http_actions_domain",
+				Name:        "HTTP Actions Domain",
+				Type:        schema.InputTypeHost,
+				Description: "Domain for the Convex backend HTTP actions endpoint.",
+				Required:    true,
+				TargetPort:  utils.ToPtr(3211),
+			},
+			{
+				ID:          "input_dashboard_domain",
+				Name:        "Dashboard Domain",
+				Type:        schema.InputTypeHost,
+				Description: "Domain for the Convex dashboard.",
+				Required:    true,
+				TargetPort:  utils.ToPtr(6791),
+			},
+			{
+				ID:          "input_database_size",
+				Name:        "Database Size",
+				Type:        schema.InputTypeDatabaseSize,
+				Description: "Size of the storage for the PostgreSQL database.",
+				Required:    true,
+				Default:     utils.ToPtr("1"),
+			},
+			{
+				ID:   "input_storage_size",
+				Name: "Storage Size",
+				Type: schema.InputTypeVolumeSize,
+				Volume: &schema.TemplateVolume{
+					Name:      "convex-data",
+					MountPath: "/convex/data",
+				},
+				Description: "Disk for Convex file storage, exports, and search indexes.",
+				Required:    true,
+				Default:     utils.ToPtr("1"),
+			},
+		},
+		Services: []schema.TemplateService{
+			{
+				ID:           "service_postgres",
+				Name:         "PostgreSQL",
+				InputIDs:     []string{"input_database_size"},
+				Type:         schema.ServiceTypeDatabase,
+				Builder:      schema.ServiceBuilderDatabase,
+				DatabaseType: utils.ToPtr("postgres"),
+				DatabaseConfig: &schema.DatabaseConfig{
+					DefaultDatabaseName: "convex_self_hosted",
+					Version:             "17",
+				},
+			},
+			{
+				ID:        "service_backend",
+				Name:      "Convex Backend",
+				Icon:      "convex",
+				DependsOn: []string{"service_postgres"},
+				InputIDs:  []string{"input_api_domain", "input_http_actions_domain", "input_storage_size"},
+				Type:      schema.ServiceTypeDockerimage,
+				Builder:   schema.ServiceBuilderDocker,
+				Image:     utils.ToPtr("ghcr.io/get-convex/convex-backend@sha256:edd7959f3464ed661f6663f646db205d5d61bda606c969b074dfb3c69ed71463"),
+				Resources: &schema.Resources{
+					CPURequestsMillicores:   50,
+					CPULimitsMillicores:     1000,
+					MemoryRequestsMegabytes: 256,
+					MemoryLimitsMegabytes:   2048,
+				},
+				Ports: []schema.PortSpec{
+					{
+						Port:     3210,
+						Protocol: utils.ToPtr(schema.ProtocolTCP),
+					},
+					{
+						Port:     3211,
+						Protocol: utils.ToPtr(schema.ProtocolTCP),
+					},
+				},
+				HealthCheck: &schema.HealthCheck{
+					Type:                    utils.ToPtr(schema.HealthCheckTypeHTTP),
+					Path:                    "/version",
+					Port:                    utils.ToPtr(int32(3210)),
+					StartupPeriodSeconds:    utils.ToPtr(int32(5)),
+					StartupTimeoutSeconds:   utils.ToPtr(int32(5)),
+					StartupFailureThreshold: utils.ToPtr(int32(20)),
+					HealthPeriodSeconds:     utils.ToPtr(int32(10)),
+					HealthTimeoutSeconds:    utils.ToPtr(int32(5)),
+					HealthFailureThreshold:  utils.ToPtr(int32(5)),
+				},
+				ProtectedVariables: []string{"INSTANCE_SECRET", "CONVEX_SELF_HOSTED_ADMIN_KEY"},
+				VariableReferences: []schema.TemplateVariableReference{
+					{
+						SourceID:                  "service_postgres",
+						SourceName:                "DATABASE_HOST",
+						TargetName:                "POSTGRES_URL",
+						AdditionalTemplateSources: []string{"DATABASE_USERNAME", "DATABASE_PASSWORD"},
+						TemplateString:            "postgresql://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@${DATABASE_HOST}:5432",
+					},
+				},
+				Variables: []schema.TemplateVariable{
+					{
+						Name:  "INSTANCE_NAME",
+						Value: "convex-self-hosted",
+					},
+					{
+						// Mints the instance secret and a matching admin key at
+						// deploy time so the user never has to exec into the pod to
+						// run generate_admin_key.sh. Emits INSTANCE_SECRET and
+						// CONVEX_SELF_HOSTED_ADMIN_KEY.
+						Name: "CONVEX_GENERATED_KEYS",
+						Generator: &schema.ValueGenerator{
+							Type: schema.GeneratorTypeConvexAdminKey,
+							ConvexParams: &schema.ConvexAdminKeyParams{
+								InstanceName:      "convex-self-hosted",
+								SecretOutputKey:   "INSTANCE_SECRET",
+								AdminKeyOutputKey: "CONVEX_SELF_HOSTED_ADMIN_KEY",
+							},
+						},
+					},
+					{
+						Name:  "DO_NOT_REQUIRE_SSL",
+						Value: "1",
+					},
+					{
+						Name:  "DISABLE_BEACON",
+						Value: "true",
+					},
+					{
+						Name:  "RUST_LOG",
+						Value: "info",
+					},
+					{
+						Name: "CONVEX_CLOUD_ORIGIN",
+						Generator: &schema.ValueGenerator{
+							Type:      schema.GeneratorTypeInput,
+							InputID:   "input_api_domain",
+							AddPrefix: "https://",
+						},
+					},
+					{
+						Name: "CONVEX_SITE_ORIGIN",
+						Generator: &schema.ValueGenerator{
+							Type:      schema.GeneratorTypeInput,
+							InputID:   "input_http_actions_domain",
+							AddPrefix: "https://",
+						},
+					},
+					{
+						// Convenience for the user's CLI .env.local, alongside
+						// CONVEX_SELF_HOSTED_ADMIN_KEY.
+						Name: "CONVEX_SELF_HOSTED_URL",
+						Generator: &schema.ValueGenerator{
+							Type:      schema.GeneratorTypeInput,
+							InputID:   "input_api_domain",
+							AddPrefix: "https://",
+						},
+					},
+				},
+			},
+			{
+				ID:        "service_dashboard",
+				Name:      "Convex Dashboard",
+				Icon:      "convex",
+				DependsOn: []string{"service_backend"},
+				InputIDs:  []string{"input_dashboard_domain"},
+				Type:      schema.ServiceTypeDockerimage,
+				Builder:   schema.ServiceBuilderDocker,
+				Image:     utils.ToPtr("ghcr.io/get-convex/convex-dashboard@sha256:bbc4d2c43d19fd6f2791dd6c5153a76e127f3eea489c1639e5acf66999c216bf"),
+				Resources: &schema.Resources{
+					CPURequestsMillicores:   20,
+					CPULimitsMillicores:     400,
+					MemoryRequestsMegabytes: 128,
+					MemoryLimitsMegabytes:   512,
+				},
+				Ports: []schema.PortSpec{
+					{
+						Port:     6791,
+						Protocol: utils.ToPtr(schema.ProtocolTCP),
+					},
+				},
+				HealthCheck: &schema.HealthCheck{
+					Type:                    utils.ToPtr(schema.HealthCheckTypeHTTP),
+					Path:                    "/",
+					Port:                    utils.ToPtr(int32(6791)),
+					StartupPeriodSeconds:    utils.ToPtr(int32(5)),
+					StartupTimeoutSeconds:   utils.ToPtr(int32(5)),
+					StartupFailureThreshold: utils.ToPtr(int32(15)),
+					HealthPeriodSeconds:     utils.ToPtr(int32(10)),
+					HealthTimeoutSeconds:    utils.ToPtr(int32(5)),
+					HealthFailureThreshold:  utils.ToPtr(int32(5)),
+				},
+				Variables: []schema.TemplateVariable{
+					{
+						Name: "NEXT_PUBLIC_DEPLOYMENT_URL",
+						Generator: &schema.ValueGenerator{
+							Type:      schema.GeneratorTypeInput,
+							InputID:   "input_api_domain",
+							AddPrefix: "https://",
+						},
+					},
+				},
+			},
+		},
+	}
+}

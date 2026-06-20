@@ -1372,6 +1372,16 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 						TargetName: "POSTGRES_PASSWORD",
 					},
 					{
+						SourceID:   "service_postgresql",
+						SourceName: "DATABASE_HOST",
+						TargetName: "POSTGRES_HOST",
+					},
+					{
+						SourceID:   "service_postgresql",
+						SourceName: "DATABASE_PORT",
+						TargetName: "POSTGRES_PORT",
+					},
+					{
 						SourceID:   "service_kong",
 						TargetName: "SUPABASE_URL",
 						IsHost:     true,
@@ -1405,6 +1415,14 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 							InputID:   "input_domain",
 							AddPrefix: "https://",
 						},
+					},
+					{
+						Name:  "POSTGRES_DB",
+						Value: "postgres",
+					},
+					{
+						Name:  "POSTGRES_USER_READ_WRITE",
+						Value: "postgres",
 					},
 					{
 						Name:  "NEXT_PUBLIC_ENABLE_LOGS",
@@ -1790,7 +1808,7 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 					{
 						Name: "main_index_ts",
 						Value: `import { serve } from 'https://raw.githubusercontent.com/denoland/deno_std/0.131.0/http/server.ts'
-import * as jose from 'https://cdn.skypack.dev/jose@v4.14.4'
+import * as jose from 'https://esm.sh/jose@4.14.4'
 
 console.log('main function started')
 
