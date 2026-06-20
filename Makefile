@@ -1,4 +1,4 @@
-.PHONY: help dev-infra dev-infra-down dev-api dev-web web embed app run clean
+.PHONY: help dev-infra dev-infra-down dev-api dev-web web embed app run clean gen-web-types check-web-types
 
 WEB_DIR := apps/web
 API_DIR := apps/api
@@ -17,6 +17,10 @@ help:
 	@echo "  make embed            - Copy the SPA build into $(EMBED_DIR)"
 	@echo "  make app              - web + embed + build $(API_DIR)/bin/unbind"
 	@echo "  make run              - Build the single binary and run it on :8089"
+	@echo ""
+	@echo "Web client types (generated from the API's OpenAPI spec, no server needed):"
+	@echo "  make gen-web-types    - Regenerate apps/web client types from the local API code"
+	@echo "  make check-web-types  - Fail if the committed web types are out of sync with the API"
 
 # --- Local infra ---
 dev-infra:
@@ -49,3 +53,10 @@ run: app
 clean:
 	rm -rf $(WEB_DIR)/dist $(API_DIR)/bin
 	git checkout -- $(EMBED_DIR)/index.html 2>/dev/null || true
+
+# --- Web client type generation ---
+gen-web-types:
+	./scripts/gen-web-types.sh
+
+check-web-types:
+	./scripts/check-web-types.sh

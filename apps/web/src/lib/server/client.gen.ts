@@ -64,6 +64,14 @@ export const ContainerStateSchema = z.enum([
   'starting',
 ]);
 
+export const ConvexAdminKeyParamsSchema = z
+  .object({
+    AdminKeyOutputKey: z.string(),
+    InstanceName: z.string(),
+    SecretOutputKey: z.string(),
+  })
+  .strip();
+
 export const CookieSchema = z
   .object({
     Domain: z.string(),
@@ -108,6 +116,7 @@ export const EventTypeSchema = z.enum([
   'container_created',
   'container_started',
   'container_stopped',
+  'image_pull_back_off',
   'node_not_ready',
   'scheduling_failed',
   'unknown',
@@ -788,6 +797,21 @@ export const DnsCheckResponseBodySchema = z
   })
   .strip();
 
+export const DockerImageSchema = z
+  .object({
+    pull_count: z.number(),
+    repo_name: z.string(),
+  })
+  .strip();
+
+export const DockerTagSchema = z
+  .object({
+    full_size: z.number().optional(),
+    name: z.string(),
+    tag_last_pushed: z.string().optional(),
+  })
+  .strip();
+
 export const TlsDetailsSchema = z
   .object({
     condition: CertManagerConditionSchema,
@@ -835,6 +859,25 @@ export const EndpointDiscoverySchema = z
   })
   .strip();
 
+export const ErrorDetailSchema = z
+  .object({
+    location: z.string().optional(), // Where the error occurred, e.g. 'body.items[3].tags' or 'path.thing-id'
+    message: z.string().optional(), // Error message text
+    value: z.any().optional(), // The value at the given location
+  })
+  .strip();
+
+export const ErrorModelSchema = z
+  .object({
+    detail: z.string().optional(), // A human-readable explanation specific to this occurrence of the problem.
+    errors: z.array(ErrorDetailSchema).nullable().optional(), // Optional list of individual error details
+    instance: z.string().optional(), // A URI reference that identifies the specific occurrence of the problem.
+    status: z.number().optional(), // HTTP status code
+    title: z.string().optional(), // A short, human-readable summary of the problem type. This value should not change between occurrences of the error.
+    type: z.string().optional(), // A URI reference to human-readable documentation for the error.
+  })
+  .strip();
+
 export const GenerateWildcardDomainInputBodySchema = z
   .object({
     name: z.string(), // The base name of the wildcard domain
@@ -854,6 +897,7 @@ export const GeneratorTypeSchema = z.enum([
   'input',
   'jwt',
   'string_replace',
+  'convex_admin_key',
 ]);
 
 export const GetDatabaseResponseBodySchema = z
@@ -1069,6 +1113,7 @@ export const ValueGeneratorSchema = z
   .object({
     add_prefix: z.string().optional(),
     base_domain: z.string().optional(),
+    convex_params: ConvexAdminKeyParamsSchema.optional(),
     hash_type: ValueHashTypeSchema.optional(),
     input_id: z.string().optional(),
     jwt_params: JWTParamsSchema.optional(),
@@ -1525,6 +1570,12 @@ export const ListServiceResponseBodySchema = z
   })
   .strip();
 
+export const ListTagsResponseBodySchema = z
+  .object({
+    data: z.array(DockerTagSchema),
+  })
+  .strip();
+
 export const ListTemplatesResponseBodySchema = z
   .object({
     data: z.array(TemplateWithDefinitionResponseSchema),
@@ -1647,25 +1698,6 @@ export const ResolveVariableReferenceResponseBodySchema = z
   })
   .strip();
 
-export const ResponseErrorSchema = z
-  .object({
-    details: z.array(z.string()).nullable().optional(), // Optional actionable details, e.g. which field failed validation
-    message: z.string(), // Human-readable summary of what went wrong
-    status: z.number(), // HTTP status code
-    type: z.enum([
-      'bad_request',
-      'unauthorized',
-      'forbidden',
-      'not_found',
-      'conflict',
-      'validation_error',
-      'rate_limited',
-      'internal_error',
-      'error',
-    ]), // Stable, machine-readable error code
-  })
-  .strip();
-
 export const RestartInstancesInputBodySchema = z
   .object({
     environment_id: z.string(),
@@ -1702,6 +1734,12 @@ export const S3TestResultSchema = z
   .object({
     error: z.string().optional(),
     valid: z.boolean(),
+  })
+  .strip();
+
+export const SearchImagesResponseBodySchema = z
+  .object({
+    data: z.array(DockerImageSchema),
   })
   .strip();
 
@@ -2135,6 +2173,7 @@ export type CertManagerCondition = z.infer<typeof CertManagerConditionSchema>;
 export type CollisionOutput = z.infer<typeof CollisionOutputSchema>;
 export type CheckUniqueDomainOutputBody = z.infer<typeof CheckUniqueDomainOutputBodySchema>;
 export type ContainerState = z.infer<typeof ContainerStateSchema>;
+export type ConvexAdminKeyParams = z.infer<typeof ConvexAdminKeyParamsSchema>;
 export type Cookie = z.infer<typeof CookieSchema>;
 export type CreateBuildInputBody = z.infer<typeof CreateBuildInputBodySchema>;
 export type ServiceBuilder = z.infer<typeof ServiceBuilderSchema>;
@@ -2214,11 +2253,15 @@ export type DeleteWebhookInputBody = z.infer<typeof DeleteWebhookInputBodySchema
 export type DeleteWebhookResponseBody = z.infer<typeof DeleteWebhookResponseBodySchema>;
 export type DnsCheck = z.infer<typeof DnsCheckSchema>;
 export type DnsCheckResponseBody = z.infer<typeof DnsCheckResponseBodySchema>;
+export type DockerImage = z.infer<typeof DockerImageSchema>;
+export type DockerTag = z.infer<typeof DockerTagSchema>;
 export type TlsDetails = z.infer<typeof TlsDetailsSchema>;
 export type TlsStatus = z.infer<typeof TlsStatusSchema>;
 export type IngressEndpoint = z.infer<typeof IngressEndpointSchema>;
 export type ServiceEndpoint = z.infer<typeof ServiceEndpointSchema>;
 export type EndpointDiscovery = z.infer<typeof EndpointDiscoverySchema>;
+export type ErrorDetail = z.infer<typeof ErrorDetailSchema>;
+export type ErrorModel = z.infer<typeof ErrorModelSchema>;
 export type GenerateWildcardDomainInputBody = z.infer<typeof GenerateWildcardDomainInputBodySchema>;
 export type GenerateWildcardDomainOutputBody = z.infer<
   typeof GenerateWildcardDomainOutputBodySchema
@@ -2306,6 +2349,7 @@ export type ListRegistriesResponseBody = z.infer<typeof ListRegistriesResponseBo
 export type ListS3SourceOutputBody = z.infer<typeof ListS3SourceOutputBodySchema>;
 export type ListServiceGroupResponseBody = z.infer<typeof ListServiceGroupResponseBodySchema>;
 export type ListServiceResponseBody = z.infer<typeof ListServiceResponseBodySchema>;
+export type ListTagsResponseBody = z.infer<typeof ListTagsResponseBodySchema>;
 export type ListTemplatesResponseBody = z.infer<typeof ListTemplatesResponseBodySchema>;
 export type ListWebhooksResponseBody = z.infer<typeof ListWebhooksResponseBodySchema>;
 export type LogMetadata = z.infer<typeof LogMetadataSchema>;
@@ -2330,12 +2374,12 @@ export type ResolveAvailableVariableReferenceResponseBody = z.infer<
 export type ResolveVariableReferenceResponseBody = z.infer<
   typeof ResolveVariableReferenceResponseBodySchema
 >;
-export type ResponseError = z.infer<typeof ResponseErrorSchema>;
 export type RestartInstancesInputBody = z.infer<typeof RestartInstancesInputBodySchema>;
 export type Restarted = z.infer<typeof RestartedSchema>;
 export type RestartServicesResponseBody = z.infer<typeof RestartServicesResponseBodySchema>;
 export type S3BackendCreateInput = z.infer<typeof S3BackendCreateInputSchema>;
 export type S3TestResult = z.infer<typeof S3TestResultSchema>;
+export type SearchImagesResponseBody = z.infer<typeof SearchImagesResponseBodySchema>;
 export type SessionUser = z.infer<typeof SessionUserSchema>;
 export type SessionResponseBody = z.infer<typeof SessionResponseBodySchema>;
 export type SetDefaultRegistryInput = z.infer<typeof SetDefaultRegistryInputSchema>;
@@ -2406,6 +2450,19 @@ export const list_deploymentsQuerySchema = z
     environment_id: z.string(), // The ID of the environment
     service_id: z.string(), // The ID of the service
     statuses: z.array(DeploymentStatusSchema).nullable().optional(), // Filter by status
+  })
+  .passthrough();
+
+export const search_docker_imagesQuerySchema = z
+  .object({
+    query: z.string().optional(),
+  })
+  .passthrough();
+
+export const list_docker_tagsQuerySchema = z
+  .object({
+    repository: z.string(),
+    search: z.string().optional(),
   })
   .passthrough();
 
@@ -2655,6 +2712,17 @@ export const get_teamQuerySchema = z
 export const get_templateQuerySchema = z
   .object({
     id: z.string(),
+  })
+  .passthrough();
+
+export const exec_terminalQuerySchema = z
+  .object({
+    team_id: z.string(),
+    project_id: z.string(),
+    environment_id: z.string(),
+    service_id: z.string(),
+    pod_name: z.string().optional(),
+    container: z.string().optional(),
   })
   .passthrough();
 
@@ -3084,6 +3152,134 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           const data = await response.json();
           const { data: parsedData, error } = RedeployOutputBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+    },
+    docker: {
+      search: async (
+        params: z.infer<typeof search_docker_imagesQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<SearchImagesResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/docker/search`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+          const validatedQuery = search_docker_imagesQuerySchema.parse(params);
+          const queryKeys = ['query'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = SearchImagesResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      tags: async (
+        params: z.infer<typeof list_docker_tagsQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<ListTagsResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/docker/tags`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+          const validatedQuery = list_docker_tagsQuerySchema.parse(params);
+          const queryKeys = ['repository', 'search'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = ListTagsResponseBodySchema.safeParse(data);
           if (error) {
             console.error('Response validation error:', error);
             console.error('Response data:', data);
@@ -7319,6 +7515,72 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             throw new Error(error.message);
           }
           return parsedData;
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+    },
+    terminal: {
+      exec: async (
+        params: z.infer<typeof exec_terminalQuerySchema>,
+        fetchOptions?: RequestInit,
+      ) => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/terminal/exec`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+          const validatedQuery = exec_terminalQuerySchema.parse(params);
+          const queryKeys = [
+            'team_id',
+            'project_id',
+            'environment_id',
+            'service_id',
+            'pod_name',
+            'container',
+          ];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
+          }
+          const data = await response.json();
+          return data;
         } catch (error) {
           console.error('Error in API request:', error);
           throw error;
