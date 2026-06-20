@@ -109,6 +109,11 @@ export default function DeploymentPanel({ service }: TProps) {
       onOpenChange={onOpenChange}
       direction={isExtraSmall ? "bottom" : "right"}
       handleOnly={!isExtraSmall}
+      // Vaul's input repositioning is for the mobile keyboard. On desktop (right
+      // direction) it fires on any visualViewport resize while an input is focused
+      // and pins an inline pixel height that overrides `sm:h-full`, leaving the
+      // drawer stuck at the wrong height. Only enable it on the mobile bottom drawer.
+      repositionInputs={isExtraSmall}
     >
       <DrawerContent
         transparentOverlay
