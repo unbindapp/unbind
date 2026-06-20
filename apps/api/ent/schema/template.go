@@ -185,9 +185,7 @@ type JWTParams struct {
 	ServiceOutputKey string
 }
 
-// ConvexAdminKeyParams represents the parameters for Convex admin key generation.
-// The generator mints a fresh instance secret and a matching admin key, emitting
-// both as variables named by SecretOutputKey and AdminKeyOutputKey.
+// ConvexAdminKeyParams configures the Convex admin key generator.
 type ConvexAdminKeyParams struct {
 	InstanceName      string
 	SecretOutputKey   string

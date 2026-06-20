@@ -5,16 +5,9 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 )
 
-// convexTemplate returns the predefined Convex template.
-//
-// Convex self-hosts as a Rust backend (API on 3210, HTTP actions on 3211) plus a
-// Next.js dashboard (6791), backed by Postgres. The backend connects to Postgres with
-// POSTGRES_URL stripped of the database name and query params; it targets a database
-// named after INSTANCE_NAME with "-" replaced by "_" (convex-self-hosted -> convex_self_hosted),
-// which the database service pre-creates via DefaultDatabaseName.
-//
-// After deploy, generate an admin key for the dashboard/CLI by running
-// `./generate_admin_key.sh` in the backend service terminal.
+// convexTemplate returns the predefined Convex template. INSTANCE_NAME stays
+// underscore-free so the derived DB name matches the Zalando credentials secret
+// (Zalando rewrites "_" to "-"). POSTGRES_URL omits the db name and query params.
 func convexTemplate() *schema.TemplateDefinition {
 	return &schema.TemplateDefinition{
 		Name:        "Convex",
@@ -32,17 +25,9 @@ func convexTemplate() *schema.TemplateDefinition {
 				ID:          "input_api_domain",
 				Name:        "API Domain",
 				Type:        schema.InputTypeHost,
-				Description: "Domain for the Convex backend API and websocket sync (used by the client SDK and CLI).",
+				Description: "Domain for the Convex backend. Serves the API and websocket sync at /, and HTTP actions at /http.",
 				Required:    true,
 				TargetPort:  utils.ToPtr(3210),
-			},
-			{
-				ID:          "input_http_actions_domain",
-				Name:        "HTTP Actions Domain",
-				Type:        schema.InputTypeHost,
-				Description: "Domain for the Convex backend HTTP actions endpoint.",
-				Required:    true,
-				TargetPort:  utils.ToPtr(3211),
 			},
 			{
 				ID:          "input_dashboard_domain",
@@ -82,7 +67,7 @@ func convexTemplate() *schema.TemplateDefinition {
 				Builder:      schema.ServiceBuilderDatabase,
 				DatabaseType: utils.ToPtr("postgres"),
 				DatabaseConfig: &schema.DatabaseConfig{
-					DefaultDatabaseName: "convex_self_hosted",
+					DefaultDatabaseName: "convex",
 					Version:             "17",
 				},
 			},
@@ -91,7 +76,7 @@ func convexTemplate() *schema.TemplateDefinition {
 				Name:      "Convex Backend",
 				Icon:      "convex",
 				DependsOn: []string{"service_postgres"},
-				InputIDs:  []string{"input_api_domain", "input_http_actions_domain", "input_storage_size"},
+				InputIDs:  []string{"input_api_domain", "input_storage_size"},
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
 				Image:     utils.ToPtr("ghcr.io/get-convex/convex-backend@sha256:edd7959f3464ed661f6663f646db205d5d61bda606c969b074dfb3c69ed71463"),
@@ -104,10 +89,6 @@ func convexTemplate() *schema.TemplateDefinition {
 				Ports: []schema.PortSpec{
 					{
 						Port:     3210,
-						Protocol: utils.ToPtr(schema.ProtocolTCP),
-					},
-					{
-						Port:     3211,
 						Protocol: utils.ToPtr(schema.ProtocolTCP),
 					},
 				},
@@ -135,18 +116,15 @@ func convexTemplate() *schema.TemplateDefinition {
 				Variables: []schema.TemplateVariable{
 					{
 						Name:  "INSTANCE_NAME",
-						Value: "convex-self-hosted",
+						Value: "convex",
 					},
 					{
-						// Mints the instance secret and a matching admin key at
-						// deploy time so the user never has to exec into the pod to
-						// run generate_admin_key.sh. Emits INSTANCE_SECRET and
-						// CONVEX_SELF_HOSTED_ADMIN_KEY.
+						// Emits INSTANCE_SECRET and CONVEX_SELF_HOSTED_ADMIN_KEY.
 						Name: "CONVEX_GENERATED_KEYS",
 						Generator: &schema.ValueGenerator{
 							Type: schema.GeneratorTypeConvexAdminKey,
 							ConvexParams: &schema.ConvexAdminKeyParams{
-								InstanceName:      "convex-self-hosted",
+								InstanceName:      "convex",
 								SecretOutputKey:   "INSTANCE_SECRET",
 								AdminKeyOutputKey: "CONVEX_SELF_HOSTED_ADMIN_KEY",
 							},
@@ -173,16 +151,14 @@ func convexTemplate() *schema.TemplateDefinition {
 						},
 					},
 					{
+						// HTTP actions live at /http on the API domain.
 						Name: "CONVEX_SITE_ORIGIN",
 						Generator: &schema.ValueGenerator{
-							Type:      schema.GeneratorTypeInput,
-							InputID:   "input_http_actions_domain",
-							AddPrefix: "https://",
+							Type: schema.GeneratorTypeStringReplace,
 						},
+						Value: "https://${INPUT_API_DOMAIN_VALUE}/http",
 					},
 					{
-						// Convenience for the user's CLI .env.local, alongside
-						// CONVEX_SELF_HOSTED_ADMIN_KEY.
 						Name: "CONVEX_SELF_HOSTED_URL",
 						Generator: &schema.ValueGenerator{
 							Type:      schema.GeneratorTypeInput,

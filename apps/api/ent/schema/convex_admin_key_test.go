@@ -9,10 +9,7 @@ import (
 	siv "github.com/secure-io/siv-go"
 )
 
-// These vectors were produced by the real Convex generate_key binary
-// (ghcr.io/get-convex/convex-backend) with the given instance names and
-// secrets. Decrypting them with our implementation proves the key derivation,
-// AES-128-GCM-SIV parameters, AAD, and protobuf layout match the backend.
+// Vectors produced by the real Convex generate_key binary.
 var convexRealKeyVectors = []struct {
 	instanceName string
 	secretHex    string
@@ -35,8 +32,6 @@ var convexRealKeyVectors = []struct {
 	},
 }
 
-// decryptConvexAdminKey reverses generateConvexAdminKey, returning the decoded
-// issued_s and member_id. It mirrors the backend's check_admin_key decrypt path.
 func decryptConvexAdminKey(t *testing.T, adminKey, secretHex string) (issuedS, memberID uint64) {
 	t.Helper()
 	secret, err := hex.DecodeString(secretHex)
@@ -71,8 +66,6 @@ func decryptConvexAdminKey(t *testing.T, adminKey, secretHex string) (issuedS, m
 	return issuedS, memberID
 }
 
-// TestConvexAdminKey_DecryptsRealKeys confirms our crypto matches keys minted by
-// the real backend binary.
 func TestConvexAdminKey_DecryptsRealKeys(t *testing.T) {
 	for _, v := range convexRealKeyVectors {
 		issued, member := decryptConvexAdminKey(t, v.adminKey, v.secretHex)
@@ -85,8 +78,6 @@ func TestConvexAdminKey_DecryptsRealKeys(t *testing.T) {
 	}
 }
 
-// TestConvexAdminKey_RoundTrip confirms a key we mint decrypts back to the same
-// fields with the matching secret.
 func TestConvexAdminKey_RoundTrip(t *testing.T) {
 	secretHex, adminKey, err := GenerateConvexInstanceSecretAndAdminKey("convex-self-hosted")
 	if err != nil {
