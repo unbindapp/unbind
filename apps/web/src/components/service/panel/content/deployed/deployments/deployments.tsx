@@ -121,7 +121,7 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
 
 function InfoRow() {
   return (
-    <div className="-mt-1.5 flex w-full items-center">
+    <div className="-mt-2 flex w-full items-center">
       <InstancesButton />
     </div>
   );
