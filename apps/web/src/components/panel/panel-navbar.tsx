@@ -1,5 +1,5 @@
 import TabIndicator from "@/components/navigation/tab-indicator";
-import OverscrollIndicator from "@/components/overscroll-indicator";
+import ScrollOverflowIndicator from "@/components/scroll-overflow-indicator";
 import { Button } from "@/components/ui/button";
 import { useIntent } from "@/lib/hooks/use-intent";
 import { useScrollOverflow } from "@/lib/hooks/use-scroll-overflow";
@@ -45,7 +45,7 @@ export default function PanelNavbar<T, V extends string>({
           ))}
         </div>
       </nav>
-      <OverscrollIndicator canScrollRight={canScrollRight} />
+      <ScrollOverflowIndicator canScrollRight={canScrollRight} />
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import SettingsTabIcon, { TSettingsTabVariant } from "@/components/icons/settings-tab-icon";
 import TabIndicator from "@/components/navigation/tab-indicator";
-import OverscrollIndicator from "@/components/overscroll-indicator";
+import ScrollOverflowIndicator from "@/components/scroll-overflow-indicator";
 import { LinkButton } from "@/components/ui/button";
 import { useScrollOverflow } from "@/lib/hooks/use-scroll-overflow";
 import { useLocation, type LinkProps } from "@tanstack/react-router";
@@ -71,7 +71,7 @@ export default function SettingsTabs({ tabs }: TProps) {
           ))}
         </div>
       </nav>
-      <OverscrollIndicator canScrollRight={canScrollRight} className="md:hidden" />
+      <ScrollOverflowIndicator canScrollRight={canScrollRight} className="md:hidden" />
     </div>
   );
 }

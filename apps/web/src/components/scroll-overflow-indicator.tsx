@@ -6,7 +6,7 @@ type TProps = {
   canScrollRight?: boolean;
 };
 
-export default function OverscrollIndicator({ canScrollRight, className }: TProps) {
+export default function ScrollOverflowIndicator({ canScrollRight, className }: TProps) {
   return (
     <div
       data-visible={canScrollRight || undefined}
