@@ -609,6 +609,9 @@
   #root {
     @apply bg-background text-foreground flex min-h-svh flex-col;
   }
+  p {
+    @apply wrap-break-word;
+  }
 }
 
 /* The xterm canvas only paints its content box, so the padding we add on .xterm

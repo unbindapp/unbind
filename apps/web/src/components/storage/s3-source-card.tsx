@@ -233,10 +233,10 @@ function S3SourceDialogInnerContent({
     <>
       <div
         data-status={connectionStatus}
-        className="group/status bg-foreground/6 border-foreground/6 data-[status=pending]:border-warning/8 data-[status=pending]:bg-warning/8 data-[status=connected]:bg-success/8 data-[status=connected]:border-success/8 data-[status=error]:bg-destructive/8 data-[status=error]:border-destructive/8 flex w-full items-start justify-start gap-2 border-t border-b px-5 py-2 text-sm leading-tight font-medium"
+        className="group/status bg-foreground/6 border-foreground/6 data-[status=pending]:border-warning/8 data-[status=pending]:bg-warning/8 data-[status=connected]:bg-success/8 data-[status=connected]:border-success/8 data-[status=error]:bg-destructive/8 data-[status=error]:border-destructive/8 flex w-full items-center justify-start gap-2 border-t border-b px-5 py-2 text-sm leading-tight font-medium"
       >
-        <div className="bg-foreground group-data-[status=connected]/status:bg-success group-data-[status=error]/status:bg-destructive group-data-[status=pending]/status:bg-warning mt-[0.2rem] size-2.5 shrink-0 rounded-full group-data-[status=pending]/status:animate-ping" />
-        <p className="group-data-[status=connected]/status:text-success group-data-[status=error]/status:text-destructive group-data-[status=pending]/status:text-warning min-w-0 shrink">
+        <div className="bg-foreground group-data-[status=connected]/status:bg-success group-data-[status=error]/status:bg-destructive group-data-[status=pending]/status:bg-warning size-2 shrink-0 rounded-full group-data-[status=pending]/status:animate-ping" />
+        <p className="group-data-[status=connected]/status:text-success group-data-[status=error]/status:text-destructive group-data-[status=pending]/status:text-warning min-w-0 shrink leading-tight">
           {connectionStatusString}
         </p>
       </div>
