@@ -185,18 +185,18 @@ export default function Terminal() {
               )}
             </DropdownSelect>
           )}
-          <TerminalStatus status={status} />
           {status === "disconnected" && (
             <Button
-              className="min-w-0 shrink"
+              className="min-w-0 shrink py-1.5"
               size="sm"
               variant="outline"
               onClick={() => terminalRef.current?.reconnect()}
             >
               <RotateCwIcon className="-ml-1.5 size-4" />
-              <p className="truncate">Reconnect</p>
+              <p className="truncate leading-tight">Reconnect</p>
             </Button>
           )}
+          <TerminalStatus status={status} />
         </div>
         <div className="flex min-w-0 shrink items-center gap-1.5">
           <Button
