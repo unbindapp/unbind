@@ -1,6 +1,7 @@
 import PanelContentWrapper from "@/components/panel/panel-content-wrapper";
 import PanelNavbar from "@/components/panel/panel-navbar";
 import PanelTabWrapper from "@/components/panel/panel-tab-wrapper";
+import { servicePanelTabKey } from "@/components/service/panel/constants";
 import { TServicePanelTab } from "@/components/service/panel/content/service-panel-content";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useService } from "@/components/service/service-provider";
@@ -23,7 +24,7 @@ export default function ServicePanelContentDeployed({
   ...rest
 }: TProps) {
   const { teamId, projectId, environmentId } = useService();
-  const { currentTabId, setCurrentTabId } = useServicePanel();
+  const { currentTabId } = useServicePanel();
   const queryClient = useQueryClient();
 
   const navTabs = useMemo(
@@ -49,8 +50,8 @@ export default function ServicePanelContentDeployed({
     <PanelContentWrapper className={className} {...rest}>
       <PanelNavbar
         tabs={navTabs}
+        searchKey={servicePanelTabKey}
         currentTabId={currentTabId}
-        onTabClick={(value) => setCurrentTabId(value)}
         layoutId="service-panel-tab"
       />
       <PanelTabWrapper noScrollArea={currentTab?.noScrollArea}>

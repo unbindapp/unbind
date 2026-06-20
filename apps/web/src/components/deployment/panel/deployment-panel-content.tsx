@@ -1,4 +1,5 @@
 import { useDeployment } from "@/components/deployment/deployment-provider";
+import { deploymentPanelTabKey } from "@/components/deployment/panel/constants";
 import { TDeploymentPanelTab } from "@/components/deployment/panel/deployment-panel";
 import { useDeploymentPanel } from "@/components/deployment/panel/deployment-panel-provider";
 import PanelContentWrapper from "@/components/panel/panel-content-wrapper";
@@ -22,14 +23,14 @@ export function DeploymentPanelContent({
   ...rest
 }: TProps) {
   const { teamId, projectId, environmentId, serviceId, deploymentId } = useDeployment();
-  const { currentTabId, setCurrentTabId } = useDeploymentPanel();
+  const { currentTabId } = useDeploymentPanel();
 
   return (
     <PanelContentWrapper className={className} {...rest}>
       <PanelNavbar
         tabs={tabs}
+        searchKey={deploymentPanelTabKey}
         currentTabId={currentTabId}
-        onTabClick={(value) => setCurrentTabId(value)}
         layoutId="deployment-panel-tab"
       />
       <PanelTabWrapper noScrollArea={currentTab?.noScrollArea}>
@@ -54,14 +55,14 @@ export function DeploymentPanelContentPlaceholder({
   className,
   ...rest
 }: Omit<TProps, "deployment" | "currentTab">) {
-  const { currentTabId, setCurrentTabId } = useDeploymentPanel();
+  const { currentTabId } = useDeploymentPanel();
 
   return (
     <PanelContentWrapper className={className} {...rest}>
       <PanelNavbar
         tabs={tabs}
+        searchKey={deploymentPanelTabKey}
         currentTabId={currentTabId}
-        onTabClick={(value) => setCurrentTabId(value)}
         layoutId="deployment-panel-tab"
       />
       <PanelTabWrapper noScrollArea={true} />

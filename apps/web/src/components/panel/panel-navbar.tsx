@@ -1,16 +1,21 @@
+import { TDeploymentPanelTabEnum } from "@/components/deployment/panel/constants";
 import TabIndicator from "@/components/navigation/tab-indicator";
 import ScrollOverflowIndicator from "@/components/scroll-overflow-indicator";
-import { Button } from "@/components/ui/button";
+import { TServicePanelTabEnum } from "@/components/service/panel/constants";
+import { LinkButton } from "@/components/ui/button";
+import { TVolumePanelTabEnum } from "@/components/volume/panel/constants";
 import { useIntent } from "@/lib/hooks/use-intent";
 import { useScrollOverflow } from "@/lib/hooks/use-scroll-overflow";
 import { useRef } from "react";
 
-type TProps<T, V extends string> = {
-  tabs: TGenericTab<T, V>[];
-  onTabClick: (value: V) => void;
-  currentTabId: string;
-  layoutId: string;
+// Each panel writes its active tab to its own search param; this maps the param
+// key to the enum its value must be, so `tab.value` is type-checked per panel.
+type TPanelTabValueByKey = {
+  service_tab: TServicePanelTabEnum;
+  deployment_tab: TDeploymentPanelTabEnum;
+  volume_tab: TVolumePanelTabEnum;
 };
+type TPanelTabKey = keyof TPanelTabValueByKey;
 
 type TGenericTab<T, V extends string> = T & {
   title: string;
@@ -18,12 +23,19 @@ type TGenericTab<T, V extends string> = T & {
   onIntent?: () => void;
 };
 
-export default function PanelNavbar<T, V extends string>({
+type TProps<T, K extends TPanelTabKey> = {
+  tabs: TGenericTab<T, TPanelTabValueByKey[K]>[];
+  searchKey: K;
+  currentTabId: TPanelTabValueByKey[K];
+  layoutId: string;
+};
+
+export default function PanelNavbar<T, K extends TPanelTabKey>({
   tabs,
-  onTabClick,
+  searchKey,
   currentTabId,
   layoutId,
-}: TProps<T, V>) {
+}: TProps<T, K>) {
   const navRef = useRef<HTMLElement>(null);
   const { canScrollRight } = useScrollOverflow({ ref: navRef, offset: 52 });
 
@@ -38,8 +50,8 @@ export default function PanelNavbar<T, V extends string>({
             <PanelNavbarTab
               key={tab.value}
               tab={tab}
+              searchKey={searchKey}
               isActive={tab.value === currentTabId}
-              onTabClick={onTabClick}
               layoutId={layoutId}
             />
           ))}
@@ -50,15 +62,15 @@ export default function PanelNavbar<T, V extends string>({
   );
 }
 
-function PanelNavbarTab<T, V extends string>({
+function PanelNavbarTab<T, K extends TPanelTabKey>({
   tab,
+  searchKey,
   isActive,
-  onTabClick,
   layoutId,
 }: {
-  tab: TGenericTab<T, V>;
+  tab: TGenericTab<T, TPanelTabValueByKey[K]>;
+  searchKey: K;
   isActive: boolean;
-  onTabClick: (value: V) => void;
   layoutId: string;
 }) {
   const intentProps = useIntent({
@@ -67,9 +79,10 @@ function PanelNavbarTab<T, V extends string>({
   });
 
   return (
-    <Button
+    <LinkButton
+      from="/$team_id/project/$project_id"
+      search={(prev) => ({ ...prev, [searchKey]: tab.value })}
       variant="ghost"
-      onClick={() => onTabClick(tab.value)}
       data-active={isActive || undefined}
       className="group/button text-muted-foreground data-active:text-foreground min-w-0 shrink rounded-t-md rounded-b-none px-3 pt-2.5 pb-4.5 font-medium active:bg-transparent has-hover:hover:bg-transparent"
       {...intentProps}
@@ -79,6 +92,6 @@ function PanelNavbarTab<T, V extends string>({
         <div className="bg-border/0 has-hover:group-hover/button:bg-border group-active/button:bg-border h-full w-full rounded-lg" />
       </div>
       <p className="relative min-w-0 shrink leading-none">{tab.title}</p>
-    </Button>
+    </LinkButton>
   );
 }

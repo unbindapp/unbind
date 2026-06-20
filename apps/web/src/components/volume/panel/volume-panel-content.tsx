@@ -1,7 +1,7 @@
 import PanelContentWrapper from "@/components/panel/panel-content-wrapper";
 import PanelNavbar from "@/components/panel/panel-navbar";
 import PanelTabWrapper from "@/components/panel/panel-tab-wrapper";
-import { TVolumePanelTabEnum } from "@/components/volume/panel/constants";
+import { TVolumePanelTabEnum, volumePanelTabKey } from "@/components/volume/panel/constants";
 import Settings from "@/components/volume/panel/tabs/settings/settings";
 import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
 import { TVolumeShallow } from "@/lib/queries/services";
@@ -50,15 +50,15 @@ export default function VolumePanelContent({
   className,
   ...rest
 }: TProps) {
-  const { currentTabId, setCurrentTabId } = useVolumePanel();
+  const { currentTabId } = useVolumePanel();
   const currentTab = tabs.find((tab) => tab.value === currentTabId);
 
   return (
     <PanelContentWrapper className={className} {...rest}>
       <PanelNavbar
         tabs={tabs}
+        searchKey={volumePanelTabKey}
         currentTabId={currentTabId}
-        onTabClick={(value) => setCurrentTabId(value)}
         layoutId="volume-panel-tab"
       />
       <PanelTabWrapper noScrollArea={currentTab?.noScrollArea}>
