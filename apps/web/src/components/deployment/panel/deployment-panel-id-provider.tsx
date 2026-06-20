@@ -1,8 +1,10 @@
 "use client";
 
 import { deploymentPanelDeploymentIdKey } from "@/components/deployment/panel/constants";
-import { useSearchParam } from "@/lib/hooks/use-search-param";
-import { createContext, ReactNode, useContext, useMemo } from "react";
+import { getRouteApi, useNavigate } from "@tanstack/react-router";
+import { createContext, ReactNode, useCallback, useContext, useMemo } from "react";
+
+const routeApi = getRouteApi("/$team_id/project/$project_id");
 
 type TDeploymentPanelIdContext = {
   deploymentPanelId: string | null;
@@ -14,7 +16,19 @@ const DeploymentPanelIdContext = createContext<TDeploymentPanelIdContext | null>
 export const DeploymentPanelIdProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
-  const [deploymentPanelId, setDeploymentPanelId] = useSearchParam(deploymentPanelDeploymentIdKey);
+  const navigate = useNavigate();
+  const deploymentPanelId = routeApi.useSearch({
+    select: (s) => s[deploymentPanelDeploymentIdKey] ?? null,
+  });
+  const setDeploymentPanelId = useCallback(
+    (value: string | null) =>
+      navigate({
+        to: ".",
+        search: (prev) => ({ ...prev, [deploymentPanelDeploymentIdKey]: value ?? undefined }),
+        replace: true,
+      }),
+    [navigate],
+  );
 
   const value: TDeploymentPanelIdContext = useMemo(
     () => ({

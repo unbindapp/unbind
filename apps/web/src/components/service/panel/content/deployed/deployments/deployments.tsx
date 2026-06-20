@@ -10,8 +10,10 @@ import DeploymentCard from "@/components/deployment/deployment-card";
 import { useService } from "@/components/service/service-provider";
 import { TDeploymentShallow } from "@/lib/queries/deployments";
 import { TServiceShallow } from "@/lib/queries/services";
-import { HistoryIcon, RocketIcon } from "lucide-react";
+import { HistoryIcon, RocketIcon, ServerIcon } from "lucide-react";
 import { useMemo } from "react";
+import { useInstanceHealth } from "@/components/instances/instance-health-provider";
+import { LinkButton } from "@/components/ui/button";
 
 export default function Deployments({ service }: { service: TServiceShallow }) {
   const {
@@ -51,6 +53,7 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
         deployments={deploymentsData?.deployments || null}
         isPending={isPendingDeployments}
       >
+        <InfoRow />
         <DeploymentPanel service={service} />
         {(isPending || currentOrLastDeployment) && (
           <div className="w-full pb-3">
@@ -113,5 +116,42 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
         {!hasData && !isPending && error && <ErrorCard message={error.message} />}
       </DeploymentPanelProvider>
     </TabWrapper>
+  );
+}
+
+function InfoRow() {
+  return (
+    <div className="-mt-1.5 flex w-full items-center">
+      <InstancesButton />
+    </div>
+  );
+}
+
+function InstancesButton() {
+  const { teamId, projectId, serviceId } = useService();
+  const { data, isPending, isError } = useInstanceHealth();
+
+  const text = useMemo(() => {
+    if (isPending) return "1 Instance";
+    if (isError) return "Error";
+    const instanceCount = data.data.instances.length;
+    return `${instanceCount} Instance${instanceCount !== 1 ? "s" : ""}`;
+  }, [data, isPending, isError]);
+
+  return (
+    <LinkButton
+      to="/$team_id/project/$project_id"
+      params={{ team_id: teamId, project_id: projectId }}
+      search={{ service: serviceId, service_tab: "settings" }}
+      data-pending={isPending || undefined}
+      data-error={isError || undefined}
+      variant="ghost"
+      className="group/button data-error:text-destructive text-muted-foreground flex items-center justify-start gap-1.5 px-2.5 py-1.5 text-sm font-medium"
+    >
+      <ServerIcon className="group-data-pending/button:bg-muted-foreground group-data-pending/button:animate-skeleton size-4 group-data-pending/button:rounded-sm" />
+      <p className="group-data-pending/button:bg-muted-foreground group-data-pending/button:animate-skeleton min-w-0 shrink truncate leading-tight group-data-pending/button:rounded-md group-data-pending/button:text-transparent">
+        {text}
+      </p>
+    </LinkButton>
   );
 }

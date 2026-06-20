@@ -7,9 +7,20 @@ import {
   TDeploymentPanelTabEnum,
 } from "@/components/deployment/panel/constants";
 import { drawerAnimationMs } from "@/lib/constants";
-import { useSearchParam } from "@/lib/hooks/use-search-param";
 import { TDeploymentShallow } from "@/lib/queries/deployments";
-import { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { getRouteApi, useNavigate } from "@tanstack/react-router";
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+
+const routeApi = getRouteApi("/$team_id/project/$project_id");
 
 type TDeploymentPanelContext = {
   currentTabId: TDeploymentPanelTabEnum;
@@ -31,13 +42,28 @@ export const DeploymentPanelProvider: React.FC<{
   isPending: boolean;
 }> = ({ deployments, isPending, children }) => {
   const [currentDeployment, setCurrentDeployment] = useState<TDeploymentShallow | null>(null);
-  const [currentTabId, setCurrentTabId] = useSearchParam<TDeploymentPanelTabEnum>(
-    deploymentPanelTabKey,
-    deploymentPanelDefaultTabId,
-  );
+  const navigate = useNavigate();
+  const search = routeApi.useSearch();
+  const currentTabId = search[deploymentPanelTabKey] ?? deploymentPanelDefaultTabId;
+  const currentDeploymentId = search[deploymentPanelDeploymentIdKey] ?? null;
 
-  const [currentDeploymentId, setCurrentDeploymentId] = useSearchParam(
-    deploymentPanelDeploymentIdKey,
+  const setCurrentTabId = useCallback(
+    (value: TDeploymentPanelTabEnum | null) =>
+      navigate({
+        to: ".",
+        search: (prev) => ({ ...prev, [deploymentPanelTabKey]: value ?? undefined }),
+        replace: true,
+      }),
+    [navigate],
+  );
+  const setCurrentDeploymentId = useCallback(
+    (value: string | null) =>
+      navigate({
+        to: ".",
+        search: (prev) => ({ ...prev, [deploymentPanelDeploymentIdKey]: value ?? undefined }),
+        replace: true,
+      }),
+    [navigate],
   );
 
   const timeout = useRef<NodeJS.Timeout | null>(null);

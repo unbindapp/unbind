@@ -3,6 +3,25 @@ import { createFileRoute, Navigate, Outlet } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { z } from "zod";
 
+import {
+  deploymentPanelDeploymentIdKey,
+  deploymentPanelTabKey,
+  DeploymentPanelTabEnum,
+} from "@/components/deployment/panel/constants";
+import { logViewPreferencesKey } from "@/components/logs/log-view-preferences-provider";
+import { metricsIntervalSearchParamKey } from "@/components/metrics/metrics-state-provider";
+import {
+  servicePanelServiceIdKey,
+  servicePanelTabKey,
+  ServicePanelTabEnum,
+} from "@/components/service/panel/constants";
+import { templateDraftPanelTemplateDraftIdKey } from "@/components/templates/panel/constants";
+import {
+  volumePanelTabKey,
+  VolumePanelTabEnum,
+  volumePanelVolumeIdKey,
+} from "@/components/volume/panel/constants";
+import { MetricsIntervalEnum } from "@/lib/queries/metrics";
 import { projectQuery, projectsListQuery } from "@/lib/queries/projects";
 import { systemQuery } from "@/lib/queries/system";
 import { templatesListQuery } from "@/lib/queries/templates";
@@ -19,7 +38,28 @@ import TemplatesProvider from "@/components/templates/templates-provider";
 import { UpdateToastProvider } from "@/components/update/check-for-updates-provider";
 import VolumePanelProvider from "@/components/volume/panel/volume-panel-provider";
 
-const searchSchema = z.object({ environment: z.string().optional() });
+// All search params owned by the project area live here — every panel/logs/metrics
+// consumer is mounted within this route's subtree, so this is their common ancestor.
+const searchSchema = z.object({
+  environment: z.string().optional(),
+  // Service panel
+  [servicePanelServiceIdKey]: z.string().optional(),
+  [servicePanelTabKey]: ServicePanelTabEnum.optional(),
+  // Volume panel
+  [volumePanelVolumeIdKey]: z.string().optional(),
+  [volumePanelTabKey]: VolumePanelTabEnum.optional(),
+  // Deployment panel
+  [deploymentPanelDeploymentIdKey]: z.string().optional(),
+  [deploymentPanelTabKey]: DeploymentPanelTabEnum.optional(),
+  // Template draft panel
+  [templateDraftPanelTemplateDraftIdKey]: z.string().optional(),
+  // Metrics
+  [metricsIntervalSearchParamKey]: MetricsIntervalEnum.optional(),
+  // Logs
+  q: z.string().optional(),
+  dropdown: z.string().optional(),
+  [logViewPreferencesKey]: z.string().optional(),
+});
 
 export const Route = createFileRoute("/$team_id/project/$project_id")({
   validateSearch: zodValidator(searchSchema),

@@ -8,8 +8,10 @@ import {
   TServicePanelTabEnum,
 } from "@/components/service/panel/constants";
 import { drawerAnimationMs } from "@/lib/constants";
-import { useSearchParam } from "@/lib/hooks/use-search-param";
-import { createContext, ReactNode, useContext, useMemo, useRef, useState } from "react";
+import { getRouteApi, useNavigate } from "@tanstack/react-router";
+import { createContext, ReactNode, useCallback, useContext, useMemo, useRef, useState } from "react";
+
+const routeApi = getRouteApi("/$team_id/project/$project_id");
 
 type TServicePanelContext = {
   currentTabId: TServicePanelTabEnum;
@@ -31,12 +33,29 @@ export const ServicePanelProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
   const { setDeploymentPanelId } = useDeploymentPanelId();
-  const [currentTabId, setCurrentTabId] = useSearchParam<TServicePanelTabEnum>(
-    servicePanelTabKey,
-    servicePanelDefaultTabId,
-  );
+  const navigate = useNavigate();
+  const search = routeApi.useSearch();
+  const currentTabId = search[servicePanelTabKey] ?? servicePanelDefaultTabId;
+  const currentServiceId = search[servicePanelServiceIdKey] ?? null;
 
-  const [currentServiceId, setCurrentServiceId] = useSearchParam(servicePanelServiceIdKey);
+  const setCurrentTabId = useCallback(
+    (value: TServicePanelTabEnum | null) =>
+      navigate({
+        to: ".",
+        search: (prev) => ({ ...prev, [servicePanelTabKey]: value ?? undefined }),
+        replace: true,
+      }),
+    [navigate],
+  );
+  const setCurrentServiceId = useCallback(
+    (value: string | null) =>
+      navigate({
+        to: ".",
+        search: (prev) => ({ ...prev, [servicePanelServiceIdKey]: value ?? undefined }),
+        replace: true,
+      }),
+    [navigate],
+  );
 
   const [isTerminalFullscreen, setIsTerminalFullscreen] = useState(false);
 

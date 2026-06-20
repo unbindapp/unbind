@@ -1,7 +1,9 @@
 "use client";
 
-import { useSearchParam } from "@/lib/hooks/use-search-param";
+import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { createContext, ReactNode, useCallback, useContext, useMemo } from "react";
+
+const routeApi = getRouteApi("/$team_id/project/$project_id");
 
 type TLogViewPreferencesContext = {
   preferences: string[];
@@ -87,17 +89,25 @@ export const LogViewPreferencesProvider: React.FC<{
   const defaultState = hideServiceByDefault ? defaultStateWithoutService : defaultStateNormal;
 
   // Stored in the URL as a comma-joined string (array semantics preserved here).
-  const [preferencesStr, setPreferencesStr] = useSearchParam(
-    logViewPreferencesKey,
-    defaultState.join(","),
-  );
+  const navigate = useNavigate();
+  const preferencesStr = routeApi.useSearch({
+    select: (s) => s[logViewPreferencesKey] ?? defaultState.join(","),
+  });
   const preferences = useMemo(
     () => (preferencesStr ? preferencesStr.split(",") : []),
     [preferencesStr],
   );
   const setPreferences = useCallback(
-    (next: string[] | null) => setPreferencesStr(next === null ? null : next.join(",")),
-    [setPreferencesStr],
+    (next: string[] | null) =>
+      navigate({
+        to: ".",
+        search: (prev) => ({
+          ...prev,
+          [logViewPreferencesKey]: next === null ? undefined : next.join(","),
+        }),
+        replace: true,
+      }),
+    [navigate],
   );
 
   const isDefaultState =

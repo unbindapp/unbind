@@ -1,1 +1,1 @@
-export const templateDraftPanelTemplateDraftIdKey = "template-draft";
+export const templateDraftPanelTemplateDraftIdKey = "template_draft";

@@ -1,8 +1,10 @@
 "use client";
 
 import { templateDraftPanelTemplateDraftIdKey } from "@/components/templates/panel/constants";
-import { useSearchParam } from "@/lib/hooks/use-search-param";
-import { createContext, ReactNode, useContext, useMemo } from "react";
+import { getRouteApi, useNavigate } from "@tanstack/react-router";
+import { createContext, ReactNode, useCallback, useContext, useMemo } from "react";
+
+const routeApi = getRouteApi("/$team_id/project/$project_id");
 
 type TTemplateDraftPanelContext = {
   currentTemplateDraftId: string | null;
@@ -15,8 +17,18 @@ const TemplateDraftPanelContext = createContext<TTemplateDraftPanelContext | nul
 export const TemplateDraftPanelProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
-  const [currentTemplateDraftId, setCurrentTemplateDraftId] = useSearchParam(
-    templateDraftPanelTemplateDraftIdKey,
+  const navigate = useNavigate();
+  const currentTemplateDraftId = routeApi.useSearch({
+    select: (s) => s[templateDraftPanelTemplateDraftIdKey] ?? null,
+  });
+  const setCurrentTemplateDraftId = useCallback(
+    (value: string | null) =>
+      navigate({
+        to: ".",
+        search: (prev) => ({ ...prev, [templateDraftPanelTemplateDraftIdKey]: value ?? undefined }),
+        replace: true,
+      }),
+    [navigate],
   );
 
   const value: TTemplateDraftPanelContext = useMemo(

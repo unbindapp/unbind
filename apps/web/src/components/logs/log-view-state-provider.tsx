@@ -1,7 +1,9 @@
 "use client";
 
-import { useSearchParam } from "@/lib/hooks/use-search-param";
-import { createContext, ReactNode, useContext, useMemo } from "react";
+import { getRouteApi, useNavigate } from "@tanstack/react-router";
+import { createContext, ReactNode, useCallback, useContext, useMemo } from "react";
+
+const routeApi = getRouteApi("/$team_id/project/$project_id");
 
 type TLogViewStateContext = {
   search: string;
@@ -13,7 +15,17 @@ const LogViewStateContext = createContext<TLogViewStateContext | null>(null);
 export const LogViewStateProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
-  const [search, setSearch] = useSearchParam<string>("q", "");
+  const navigate = useNavigate();
+  const search = routeApi.useSearch({ select: (s) => s.q ?? "" });
+  const setSearch = useCallback(
+    (value: string | null) =>
+      navigate({
+        to: ".",
+        search: (prev) => ({ ...prev, q: value || undefined }),
+        replace: true,
+      }),
+    [navigate],
+  );
 
   const value = useMemo(
     () => ({

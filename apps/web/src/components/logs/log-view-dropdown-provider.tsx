@@ -1,7 +1,9 @@
 "use client";
 
-import { useSearchParam } from "@/lib/hooks/use-search-param";
+import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { createContext, ReactNode, useCallback, useContext, useMemo } from "react";
+
+const routeApi = getRouteApi("/$team_id/project/$project_id");
 
 type TLogViewDropdownContext = [boolean, (open: boolean | ((open: boolean) => boolean)) => void];
 
@@ -12,7 +14,17 @@ export const logViewPreferencesDropdownId = "log_view_preferences";
 export const LogViewDropdownProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
-  const [dropdown, setDropdown] = useSearchParam("dropdown");
+  const navigate = useNavigate();
+  const dropdown = routeApi.useSearch({ select: (s) => s.dropdown ?? null });
+  const setDropdown = useCallback(
+    (value: string | null) =>
+      navigate({
+        to: ".",
+        search: (prev) => ({ ...prev, dropdown: value ?? undefined }),
+        replace: true,
+      }),
+    [navigate],
+  );
 
   const open = dropdown === logViewPreferencesDropdownId;
 

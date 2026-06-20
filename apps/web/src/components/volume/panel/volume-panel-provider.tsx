@@ -7,8 +7,10 @@ import {
   volumePanelVolumeIdKey,
 } from "@/components/volume/panel/constants";
 import { drawerAnimationMs } from "@/lib/constants";
-import { useSearchParam } from "@/lib/hooks/use-search-param";
-import { createContext, ReactNode, useContext, useMemo, useRef } from "react";
+import { getRouteApi, useNavigate } from "@tanstack/react-router";
+import { createContext, ReactNode, useCallback, useContext, useMemo, useRef } from "react";
+
+const routeApi = getRouteApi("/$team_id/project/$project_id");
 
 type TVolumePanelContext = {
   currentTabId: TVolumePanelTabEnum;
@@ -25,12 +27,29 @@ const VolumePanelContext = createContext<TVolumePanelContext | null>(null);
 export const VolumePanelProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
-  const [currentTabId, setCurrentTabId] = useSearchParam<TVolumePanelTabEnum>(
-    volumePanelTabKey,
-    volumePanelDefaultTabId,
-  );
+  const navigate = useNavigate();
+  const search = routeApi.useSearch();
+  const currentTabId = search[volumePanelTabKey] ?? volumePanelDefaultTabId;
+  const currentVolumeId = search[volumePanelVolumeIdKey] ?? null;
 
-  const [currentVolumeId, setCurrentVolumeId] = useSearchParam(volumePanelVolumeIdKey);
+  const setCurrentTabId = useCallback(
+    (value: TVolumePanelTabEnum | null) =>
+      navigate({
+        to: ".",
+        search: (prev) => ({ ...prev, [volumePanelTabKey]: value ?? undefined }),
+        replace: true,
+      }),
+    [navigate],
+  );
+  const setCurrentVolumeId = useCallback(
+    (value: string | null) =>
+      navigate({
+        to: ".",
+        search: (prev) => ({ ...prev, [volumePanelVolumeIdKey]: value ?? undefined }),
+        replace: true,
+      }),
+    [navigate],
+  );
 
   const timeout = useRef<NodeJS.Timeout | null>(null);
 
