@@ -3,6 +3,7 @@ package logs_service
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2/sse"
@@ -85,6 +86,12 @@ func (self *LogsService) StreamLogs(ctx context.Context, requesterUserID uuid.UU
 		Start:      input.Start,
 	}
 
+	// Resume after the client's Last-Event-Id instead of replaying history.
+	if cursor, ok := parseEventCursor(input.LastEventID); ok {
+		lokiLogOptions.Start = cursor
+		lokiLogOptions.Since = 0
+	}
+
 	// Stream from Loki
 	go func() {
 		defer func() {
@@ -113,9 +120,34 @@ func (self *LogsService) StreamLogs(ctx context.Context, requesterUserID uuid.UU
 	for {
 		select {
 		case event := <-eventChan:
-			_ = send.Data(event)
+			_ = send(sse.Message{ID: latestEventID(event), Data: event})
 		case <-ctx.Done():
 			return nil
 		}
 	}
+}
+
+func parseEventCursor(lastEventID string) (time.Time, bool) {
+	if lastEventID == "" {
+		return time.Time{}, false
+	}
+	nanos, err := strconv.ParseInt(lastEventID, 10, 64)
+	if err != nil {
+		return time.Time{}, false
+	}
+	return time.Unix(0, nanos+1), true
+}
+
+// latestEventID returns 0 for non-log batches so heartbeats/errors don't advance the cursor.
+func latestEventID(event loki.LogEvents) int {
+	if event.MessageType != loki.LogEventsMessageTypeLog {
+		return 0
+	}
+	var latest int64
+	for _, l := range event.Logs {
+		if ns := l.Timestamp.UnixNano(); ns > latest {
+			latest = ns
+		}
+	}
+	return int(latest)
 }

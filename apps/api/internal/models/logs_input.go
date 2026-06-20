@@ -56,6 +56,7 @@ type LogStreamInput struct {
 	Limit         int64     `query:"limit" default:"100" doc:"Number of lines to get from the end"`
 	Timestamps    bool      `query:"timestamps" default:"true" doc:"Include timestamps in logs"`
 	Filters       string    `query:"filters" doc:"Optional logql filter string"`
+	LastEventID   string    `header:"Last-Event-Id" doc:"Resume cursor (nanosecond timestamp); set automatically by the SSE client on reconnect"`
 }
 
 // LogQueryInput defines the query parameters for log fetching
