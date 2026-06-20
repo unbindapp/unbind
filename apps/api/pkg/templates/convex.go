@@ -110,7 +110,7 @@ func convexTemplate() *schema.TemplateDefinition {
 						SourceName:                "DATABASE_HOST",
 						TargetName:                "POSTGRES_URL",
 						AdditionalTemplateSources: []string{"DATABASE_USERNAME", "DATABASE_PASSWORD"},
-						TemplateString:            "postgresql://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@${DATABASE_HOST}:5432",
+						TemplateString:            "postgresql://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@${DATABASE_HOST}:5432?sslmode=disable",
 					},
 				},
 				Variables: []schema.TemplateVariable{
