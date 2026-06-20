@@ -50,7 +50,7 @@ export function SettingsSection({
   return (
     <Wrapper
       data-changed={(changeCount !== undefined && changeCount > 0) || undefined}
-      className={cn("group/wrapper data-changed:border-process/25", className)}
+      className={cn("group/wrapper data-changed:border-process/25 scroll-mt-4", className)}
       {...rest}
     >
       <div
@@ -179,7 +179,7 @@ function ResetTrigger({
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent hideXButton className="w-128 max-w-full">
+      <DialogContent hideXButton className="w-lg max-w-full">
         <DialogHeader>
           <DialogTitle>Revert Changes: {changeCount}</DialogTitle>
           <DialogDescription>Are you sure you want to revert the changes?</DialogDescription>

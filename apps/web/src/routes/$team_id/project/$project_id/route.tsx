@@ -93,7 +93,9 @@ function ProjectLayout() {
           <Navigate
             to="/$team_id/project/$project_id"
             params={{ team_id: teamId, project_id: projectId }}
-            search={{ environment: fallback }}
+            // Preserve the rest of the search (open panels etc.) — replacing it
+            // wholesale would close any deep-linked service/deployment panel.
+            search={(prev) => ({ ...prev, environment: fallback })}
             replace
           />
         );

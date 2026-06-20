@@ -128,7 +128,7 @@ function InfoRow() {
 }
 
 function InstancesButton() {
-  const { teamId, projectId, serviceId } = useService();
+  const { teamId, projectId } = useService();
   const { data, isPending, isError } = useInstanceHealth();
 
   const text = useMemo(() => {
@@ -142,7 +142,8 @@ function InstancesButton() {
     <LinkButton
       to="/$team_id/project/$project_id"
       params={{ team_id: teamId, project_id: projectId }}
-      search={{ service: serviceId, service_tab: "settings" }}
+      search={(prev) => ({ ...prev, service_tab: "settings" })}
+      hash={"deploy"}
       data-pending={isPending || undefined}
       data-error={isError || undefined}
       variant="ghost"
