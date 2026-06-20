@@ -6,7 +6,6 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 )
 
-// Parses detected providers into Provider
 func ParseProvider(detectedProviders []string) Provider {
 	if len(detectedProviders) == 0 {
 		return UnknownProvider
@@ -48,7 +47,6 @@ func ParseProvider(detectedProviders []string) Provider {
 	}
 }
 
-// Provider represents the detected provider
 type Provider string
 
 const (

@@ -46,6 +46,8 @@ func (self *PortDetector) DetectPort() (*int, error) {
 			port = utils.ToPtr(5173)
 		case enum.Angular:
 			port = utils.ToPtr(4200)
+		case enum.Expo:
+			port = utils.ToPtr(8081)
 		// Python
 		case enum.Django:
 			port = utils.ToPtr(8000)

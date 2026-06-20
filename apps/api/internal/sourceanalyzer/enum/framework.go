@@ -36,6 +36,8 @@ func DetectFramework(provider Provider, ctx *generate.GenerateContext) Framework
 			return ReactRouter
 		case "bun":
 			return BunFW
+		case "expo":
+			return Expo
 		case "static":
 			return StaticFW
 		}
@@ -98,6 +100,7 @@ const (
 	TanstackStart    Framework = "tanstack-start"
 	ReactRouter      Framework = "react-router"
 	BunFW            Framework = "bun"
+	Expo             Framework = "expo"
 	StaticFW         Framework = "static"
 	Sveltekit        Framework = "sveltekit"
 	Svelte           Framework = "svelte"
@@ -117,7 +120,7 @@ const (
 )
 
 var allFrameworks = []Framework{
-	Next, Nuxt, Astro, Vite, CRA, Angular, Remix, TanstackStart, ReactRouter, BunFW, StaticFW,
+	Next, Nuxt, Astro, Vite, CRA, Angular, Remix, TanstackStart, ReactRouter, BunFW, Expo, StaticFW,
 	Sveltekit, Svelte, Solid, Hono, Express,
 	Django, Flask, FastAPI, FastHTML,
 	Gin,
