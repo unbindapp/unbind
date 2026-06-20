@@ -141,15 +141,15 @@ function InstancesButton() {
   return (
     <LinkButton
       to="/$team_id/project/$project_id"
+      hash="deploy"
       params={{ team_id: teamId, project_id: projectId }}
       search={(prev) => ({ ...prev, service_tab: "settings" })}
-      hash={"deploy"}
       data-pending={isPending || undefined}
       data-error={isError || undefined}
       variant="ghost"
       className="group/button data-error:text-destructive text-muted-foreground flex items-center justify-start gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium"
     >
-      <ServerIcon className="group-data-pending/button:bg-muted-foreground group-data-pending/button:animate-skeleton size-4 group-data-pending/button:rounded-sm" />
+      <ServerIcon className="group-data-pending/button:bg-muted-foreground group-data-pending/button:animate-skeleton -ml-px size-4 group-data-pending/button:rounded-sm" />
       <p className="group-data-pending/button:bg-muted-foreground group-data-pending/button:animate-skeleton min-w-0 shrink truncate leading-tight group-data-pending/button:rounded-sm group-data-pending/button:text-transparent">
         {text}
       </p>

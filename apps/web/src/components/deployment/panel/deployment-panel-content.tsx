@@ -33,7 +33,7 @@ export function DeploymentPanelContent({
         currentTabId={currentTabId}
         layoutId="deployment-panel-tab"
       />
-      <PanelTabWrapper noScrollArea={currentTab?.noScrollArea}>
+      <PanelTabWrapper noScrollArea={currentTab?.noScrollArea} key={currentTab?.value}>
         {currentTab && (
           <currentTab.Provider
             teamId={teamId}
@@ -65,7 +65,7 @@ export function DeploymentPanelContentPlaceholder({
         currentTabId={currentTabId}
         layoutId="deployment-panel-tab"
       />
-      <PanelTabWrapper noScrollArea={true} />
+      <PanelTabWrapper noScrollArea={true} key="placeholder" />
     </PanelContentWrapper>
   );
 }

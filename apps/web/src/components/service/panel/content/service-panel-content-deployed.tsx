@@ -54,7 +54,7 @@ export default function ServicePanelContentDeployed({
         currentTabId={currentTabId}
         layoutId="service-panel-tab"
       />
-      <PanelTabWrapper noScrollArea={currentTab?.noScrollArea}>
+      <PanelTabWrapper noScrollArea={currentTab?.noScrollArea} key={currentTab?.value}>
         {currentTab && (
           <currentTab.Provider
             teamId={teamId}

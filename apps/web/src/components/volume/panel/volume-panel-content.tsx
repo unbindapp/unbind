@@ -61,7 +61,7 @@ export default function VolumePanelContent({
         currentTabId={currentTabId}
         layoutId="volume-panel-tab"
       />
-      <PanelTabWrapper noScrollArea={currentTab?.noScrollArea}>
+      <PanelTabWrapper noScrollArea={currentTab?.noScrollArea} key={currentTab?.value}>
         {currentTab && (
           <currentTab.Provider
             teamId={teamId}
