@@ -50,11 +50,10 @@ export function DeploymentPanelContent({
 }
 
 export function DeploymentPanelContentPlaceholder({
-  currentTab,
   tabs,
   className,
   ...rest
-}: Omit<TProps, "deployment">) {
+}: Omit<TProps, "deployment" | "currentTab">) {
   const { currentTabId, setCurrentTabId } = useDeploymentPanel();
 
   return (

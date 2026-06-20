@@ -156,7 +156,7 @@ export default function DeploymentPanel({ service }: TProps) {
               isPlaceholder={true}
               isExtraSmall={isExtraSmall}
             />
-            <DeploymentPanelContentPlaceholder tabs={tabs} currentTab={currentTab} />
+            <DeploymentPanelContentPlaceholder tabs={tabs} />
           </>
         ) : (
           <>
