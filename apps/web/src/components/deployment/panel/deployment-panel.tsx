@@ -1,12 +1,15 @@
 import DeploymentProvider from "@/components/deployment/deployment-provider";
-import { TDeploymentPanelTabEnum } from "@/components/deployment/panel/constants";
-import { DeploymentPanelContent } from "@/components/deployment/panel/deployment-panel-content";
-import { useDeploymentPanel } from "@/components/deployment/panel/deployment-panel-provider";
-import BuildLogs from "@/components/deployment/panel/tabs/build-logs/build-logs";
-import DeployLogs from "@/components/deployment/panel/tabs/deploy-logs/deploy-logs";
 import DeploymentStatusChip, {
   getDeploymentStatusChipColor,
 } from "@/components/deployment/deployment-status-chip";
+import { TDeploymentPanelTabEnum } from "@/components/deployment/panel/constants";
+import {
+  DeploymentPanelContent,
+  DeploymentPanelContentPlaceholder,
+} from "@/components/deployment/panel/deployment-panel-content";
+import { useDeploymentPanel } from "@/components/deployment/panel/deployment-panel-provider";
+import BuildLogs from "@/components/deployment/panel/tabs/build-logs/build-logs";
+import DeployLogs from "@/components/deployment/panel/tabs/deploy-logs/deploy-logs";
 import AnimatedTimerIcon from "@/components/icons/animated-timer";
 import TabWrapper from "@/components/navigation/tab-wrapper";
 import NoItemsCard from "@/components/no-items-card";
@@ -23,6 +26,7 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/components/ui/utils";
 import { getDurationStr } from "@/lib/hooks/use-time-difference";
 import { TDeploymentShallow } from "@/lib/queries/deployments";
 import { TServiceShallow } from "@/lib/queries/services";
@@ -62,6 +66,7 @@ export default function DeploymentPanel({ service }: TProps) {
     currentTabId,
     currentDeployment: currentDeploymentInPanel,
     currentDeploymentId: currentDeploymentIdInPanel,
+    isPending,
   } = useDeploymentPanel();
 
   const tabs = useMemo(() => {
@@ -88,20 +93,18 @@ export default function DeploymentPanel({ service }: TProps) {
 
   const open = currentDeploymentIdInPanel !== null;
 
+  // The drawer opens as soon as the URL points at a deployment, which on a fresh
+  // deep-link reload happens before the deployments list has loaded. Until it
+  // does we can't resolve the deployment, so show a skeleton instead of the
+  // "Deployment not found" state, which should only appear once we know it's missing.
+  const isLoading = open && !currentDeploymentInPanel && isPending;
+
   const onOpenChange = (open: boolean) => {
     if (!open) {
       closePanel();
     }
   };
   const { isExtraSmall } = useDeviceSize();
-
-  const showCurrentDeploymentProgress =
-    currentDeploymentInPanel?.status === "build-queued" ||
-    currentDeploymentInPanel?.status === "build-pending" ||
-    currentDeploymentInPanel?.status === "build-running" ||
-    currentDeploymentInPanel?.status === "build-succeeded" ||
-    currentDeploymentInPanel?.status === "launching" ||
-    currentDeploymentInPanel?.status === "launch-error";
 
   return (
     <Drawer
@@ -127,47 +130,7 @@ export default function DeploymentPanel({ service }: TProps) {
         }
         className="group/content flex h-[calc(100%-1.3rem)] w-full flex-col sm:top-0 sm:right-0 sm:my-0 sm:ml-auto sm:h-full sm:w-5xl sm:max-w-[calc(100%-4rem)] sm:rounded-l-2xl sm:rounded-r-none"
       >
-        {!currentDeploymentInPanel && (
-          <>
-            <div className="flex w-full items-start justify-start gap-4 border-b px-5 pt-4 pb-4 sm:px-8 sm:pt-6 sm:pb-6">
-              <DrawerHeader className="flex min-w-0 flex-1 items-center justify-start p-0">
-                <DrawerTitle className="flex w-full flex-col items-start justify-start gap-1.5">
-                  <div className="text-muted-foreground flex w-full items-center gap-1.25 text-left text-sm leading-tight font-medium sm:text-base">
-                    <ServiceIcon
-                      service={service}
-                      color="monochrome"
-                      className="-ml-px size-4 sm:size-4.5"
-                    />
-                    <p className="min-w-0 shrink truncate">
-                      {service.name} <span className="text-muted-more-foreground">/</span>{" "}
-                      Deployment
-                    </p>
-                  </div>
-                  <div className="text-foreground group-data-[color=destructive]/content:text-destructive group-data-[color=success]/content:text-success group-data-[color=process]/content:text-process group-data-[color=wait]/content:text-wait flex w-full items-center justify-start gap-1.5 text-left text-xl leading-tight font-semibold sm:text-2xl">
-                    <p className="min-w-0 shrink truncate pr-1">Unknown</p>
-                  </div>
-                </DrawerTitle>
-              </DrawerHeader>
-              {!isExtraSmall && (
-                <DrawerClose asChild>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="text-muted-more-foreground -mt-2.25 -mr-3 shrink-0 rounded-lg sm:-mt-3 sm:-mr-5"
-                  >
-                    <XIcon className="size-5" />
-                  </Button>
-                </DrawerClose>
-              )}
-            </div>
-            <ScrollArea>
-              <TabWrapper>
-                <NoItemsCard Icon={RocketIcon}>Deployment not found</NoItemsCard>
-              </TabWrapper>
-            </ScrollArea>
-          </>
-        )}
-        {currentDeploymentInPanel && (
+        {currentDeploymentInPanel ? (
           <DeploymentProvider
             teamId={teamId}
             projectId={projectId}
@@ -175,57 +138,117 @@ export default function DeploymentPanel({ service }: TProps) {
             serviceId={serviceId}
             deploymentId={currentDeploymentInPanel.id}
           >
-            <div className="flex w-full items-start justify-start gap-4 px-5 pt-4 sm:px-8 sm:pt-6">
-              <DrawerHeader className="flex min-w-0 flex-1 items-center justify-start p-0">
-                <DrawerTitle className="flex w-full flex-col items-start justify-start gap-1.5">
-                  <div className="text-muted-foreground flex w-full items-center gap-1.25 text-left text-sm leading-tight font-medium sm:text-base">
-                    <ServiceIcon
-                      service={service}
-                      color="monochrome"
-                      className="-ml-px size-4 sm:size-4.5"
-                    />
-                    <p className="min-w-0 shrink truncate">
-                      {service.name} <span className="text-muted-more-foreground">/</span>{" "}
-                      Deployment
-                    </p>
-                  </div>
-                  <div className="text-foreground group-data-[color=destructive]/content:text-destructive group-data-[color=success]/content:text-success group-data-[color=process]/content:text-process group-data-[color=wait]/content:text-wait flex w-full items-center justify-start gap-1.5 text-left text-xl leading-tight font-semibold sm:text-2xl">
-                    <p className="min-w-0 shrink truncate pr-1">
-                      {currentDeploymentInPanel.id.slice(0, 6)}
-                    </p>
-                    <DeploymentStatusChip
-                      className="shrink-0 px-1.75 py-0.75 sm:text-base"
-                      iconClassName="sm:size-4"
-                      deployment={currentDeploymentInPanel}
-                      isPlaceholder={false}
-                    />
-                    {showCurrentDeploymentProgress && (
-                      <DeploymentProgress deployment={currentDeploymentInPanel} />
-                    )}
-                  </div>
-                </DrawerTitle>
-              </DrawerHeader>
-              {!isExtraSmall && (
-                <DrawerClose asChild>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="text-muted-more-foreground -mt-2.25 -mr-3 shrink-0 rounded-lg sm:-mt-3 sm:-mr-5"
-                  >
-                    <XIcon className="size-5" />
-                  </Button>
-                </DrawerClose>
-              )}
-            </div>
+            <DeploymentPanelHeader
+              service={service}
+              deployment={currentDeploymentInPanel}
+              isExtraSmall={isExtraSmall}
+            />
             <DeploymentPanelContent
               deployment={currentDeploymentInPanel}
               tabs={tabs}
               currentTab={currentTab}
             />
           </DeploymentProvider>
+        ) : isLoading ? (
+          <>
+            <DeploymentPanelHeader
+              service={service}
+              isPlaceholder={true}
+              isExtraSmall={isExtraSmall}
+            />
+            <DeploymentPanelContentPlaceholder tabs={tabs} currentTab={currentTab} />
+          </>
+        ) : (
+          <>
+            <DeploymentPanelHeader service={service} isExtraSmall={isExtraSmall} bordered />
+            <ScrollArea>
+              <TabWrapper>
+                <NoItemsCard Icon={RocketIcon}>Deployment not found</NoItemsCard>
+              </TabWrapper>
+            </ScrollArea>
+          </>
         )}
       </DrawerContent>
     </Drawer>
+  );
+}
+
+function DeploymentPanelHeader({
+  service,
+  deployment,
+  isPlaceholder,
+  isExtraSmall,
+  bordered,
+}: {
+  service: TServiceShallow;
+  deployment?: TDeploymentShallow;
+  isPlaceholder?: boolean;
+  isExtraSmall: boolean;
+  // The not-found state has no navbar below it, so the header carries the separator itself.
+  bordered?: boolean;
+}) {
+  const showProgress =
+    deployment?.status === "build-queued" ||
+    deployment?.status === "build-pending" ||
+    deployment?.status === "build-running" ||
+    deployment?.status === "build-succeeded" ||
+    deployment?.status === "launching" ||
+    deployment?.status === "launch-error";
+
+  return (
+    <div
+      className={cn(
+        "flex w-full items-start justify-start gap-4 px-5 pt-4 sm:px-8 sm:pt-6",
+        bordered && "border-b pb-4 sm:pb-6",
+      )}
+    >
+      <DrawerHeader className="flex min-w-0 flex-1 items-center justify-start p-0">
+        <DrawerTitle className="flex w-full flex-col items-start justify-start gap-1.5">
+          <div className="text-muted-foreground flex w-full items-center gap-1.25 text-left text-sm leading-tight font-medium sm:text-base">
+            <ServiceIcon
+              service={service}
+              color="monochrome"
+              className="-ml-px size-4 sm:size-4.5"
+            />
+            <p className="min-w-0 shrink truncate">
+              {service.name} <span className="text-muted-more-foreground">/</span> Deployment
+            </p>
+          </div>
+          <div
+            data-placeholder={isPlaceholder || undefined}
+            className="group/title text-foreground group-data-[color=destructive]/content:text-destructive group-data-[color=success]/content:text-success group-data-[color=process]/content:text-process group-data-[color=wait]/content:text-wait flex w-full items-center justify-start gap-1.5 text-left text-xl leading-tight font-semibold sm:text-2xl"
+          >
+            {deployment || isPlaceholder ? (
+              <>
+                <p className="group-data-placeholder/title:bg-muted-more-foreground group-data-placeholder/title:animate-skeleton min-w-0 shrink truncate rounded-md pr-1 group-data-placeholder/title:text-transparent">
+                  {deployment ? deployment.id.slice(0, 6) : "000000"}
+                </p>
+                <DeploymentStatusChip
+                  className="shrink-0 px-1.75 py-0.75 sm:text-base"
+                  iconClassName="sm:size-4"
+                  deployment={deployment}
+                  isPlaceholder={isPlaceholder}
+                />
+                {showProgress && deployment && <DeploymentProgress deployment={deployment} />}
+              </>
+            ) : (
+              <p className="min-w-0 shrink truncate pr-1">Unknown</p>
+            )}
+          </div>
+        </DrawerTitle>
+      </DrawerHeader>
+      {!isExtraSmall && (
+        <DrawerClose asChild>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="text-muted-more-foreground -mt-2.25 -mr-3 shrink-0 rounded-lg sm:-mt-3 sm:-mr-5"
+          >
+            <XIcon className="size-5" />
+          </Button>
+        </DrawerClose>
+      )}
+    </div>
   );
 }
 

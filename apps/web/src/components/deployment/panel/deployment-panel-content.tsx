@@ -48,3 +48,24 @@ export function DeploymentPanelContent({
     </PanelContentWrapper>
   );
 }
+
+export function DeploymentPanelContentPlaceholder({
+  currentTab,
+  tabs,
+  className,
+  ...rest
+}: Omit<TProps, "deployment">) {
+  const { currentTabId, setCurrentTabId } = useDeploymentPanel();
+
+  return (
+    <PanelContentWrapper className={className} {...rest}>
+      <PanelNavbar
+        tabs={tabs}
+        currentTabId={currentTabId}
+        onTabClick={(value) => setCurrentTabId(value)}
+        layoutId="deployment-panel-tab"
+      />
+      <PanelTabWrapper noScrollArea={true} />
+    </PanelContentWrapper>
+  );
+}

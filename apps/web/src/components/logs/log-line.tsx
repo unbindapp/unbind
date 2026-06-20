@@ -54,13 +54,13 @@ export default function LogLine({
         <div className="flex shrink-0 self-stretch py-1 pr-1.5">
           <div className="bg-muted-more-foreground/50 group-data-[level=warn]/line:bg-warning group-data-[level=error]/line:bg-destructive w-0.75 self-stretch rounded-full" />
         </div>
-        <div className="flex min-w-0 flex-1 [mask-image:linear-gradient(to_left,transparent,black_1rem)]">
+        <div className="flex min-w-0 flex-1 mask-[linear-gradient(to_left,transparent,black_1rem)]">
           <ConditionalScrollArea>
             <div className="flex flex-col items-start gap-0.5 py-0.5 group-data-wrap/line:w-full lg:flex-row lg:py-px">
               {/* Timestamp and service name */}
               {hasExtraColumns && (
                 <div className="sticky left-0 z-10 flex items-center justify-start py-1 group-data-wrap/line:relative group-data-wrap/line:left-auto group-data-wrap/line:w-full md:group-data-wrap/line:w-auto">
-                  <div className="bg-background flex min-w-0 flex-1 [mask-image:linear-gradient(to_left,transparent,black_1rem)] md:min-w-auto">
+                  <div className="bg-background flex min-w-0 flex-1 mask-[linear-gradient(to_left,transparent,black_1rem)] md:min-w-auto">
                     <div className="bg-background group-data-real/line:group-hover/line:bg-border group-data-[level=warn]/line:bg-warning/10 group-data-[level=error]/line:bg-destructive/10 group-data-[level=warn]/line:group-data-real/line:group-hover/line:bg-warning/20 group-data-[level=error]/line:group-data-real/line:group-hover/line:bg-destructive/20 flex min-w-0 flex-1 items-center justify-start md:min-w-auto">
                       {viewPreferences.includes(logViewPreferenceKeys.timestamp) && (
                         <div className="w-36 min-w-0 shrink overflow-hidden pr-4 pl-1">

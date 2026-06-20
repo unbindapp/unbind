@@ -8,7 +8,6 @@ import {
   TServicePanelTabEnum,
 } from "@/components/service/panel/constants";
 import { drawerAnimationMs } from "@/lib/constants";
-import useEffectAfterMount from "@/lib/hooks/use-effect-after-mount";
 import { useSearchParam } from "@/lib/hooks/use-search-param";
 import { createContext, ReactNode, useContext, useMemo, useRef, useState } from "react";
 
@@ -41,10 +40,6 @@ export const ServicePanelProvider: React.FC<{
 
   const [isTerminalFullscreen, setIsTerminalFullscreen] = useState(false);
 
-  useEffectAfterMount(() => {
-    setDeploymentPanelId(null);
-  }, [currentServiceId]);
-
   const timeout = useRef<NodeJS.Timeout | null>(null);
 
   const value: TServicePanelContext = useMemo(
@@ -54,10 +49,13 @@ export const ServicePanelProvider: React.FC<{
       currentServiceId,
       setCurrentServiceId,
       openPanel: (serviceId: string, tabId?: TServicePanelTabEnum) => {
+        // Opening a different service must drop the previous service's deployment context.
+        setDeploymentPanelId(null);
         setCurrentTabId(tabId ?? servicePanelDefaultTabId);
         setCurrentServiceId(serviceId);
       },
       closePanel: () => {
+        setDeploymentPanelId(null);
         setCurrentServiceId(null);
         if (timeout.current) clearTimeout(timeout.current);
         timeout.current = setTimeout(() => {
@@ -68,7 +66,14 @@ export const ServicePanelProvider: React.FC<{
       isTerminalFullscreen,
       setIsTerminalFullscreen,
     }),
-    [currentTabId, setCurrentTabId, currentServiceId, setCurrentServiceId, isTerminalFullscreen],
+    [
+      currentTabId,
+      setCurrentTabId,
+      currentServiceId,
+      setCurrentServiceId,
+      setDeploymentPanelId,
+      isTerminalFullscreen,
+    ],
   );
 
   return <ServicePanelContext.Provider value={value}>{children}</ServicePanelContext.Provider>;

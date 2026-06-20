@@ -17,6 +17,7 @@ type TDeploymentPanelContext = {
   currentDeploymentId: string | null;
   setCurrentDeploymentId: (value: string | null) => void;
   currentDeployment: TDeploymentShallow | null;
+  isPending: boolean;
   resetCurrentTabId: () => void;
   closePanel: () => void;
   openPanel: (deploymentId: string, tabId?: TDeploymentPanelTabEnum) => void;
@@ -27,7 +28,8 @@ const DeploymentPanelContext = createContext<TDeploymentPanelContext | null>(nul
 export const DeploymentPanelProvider: React.FC<{
   children: ReactNode;
   deployments: TDeploymentShallow[] | null;
-}> = ({ deployments, children }) => {
+  isPending: boolean;
+}> = ({ deployments, isPending, children }) => {
   const [currentDeployment, setCurrentDeployment] = useState<TDeploymentShallow | null>(null);
   const [currentTabId, setCurrentTabId] = useSearchParam<TDeploymentPanelTabEnum>(
     deploymentPanelTabKey,
@@ -64,6 +66,7 @@ export const DeploymentPanelProvider: React.FC<{
       currentDeploymentId,
       setCurrentDeploymentId,
       currentDeployment,
+      isPending,
       openPanel: (deploymentId: string, tabId?: TDeploymentPanelTabEnum) => {
         setCurrentTabId(tabId ?? deploymentPanelDefaultTabId);
         setCurrentDeploymentId(deploymentId);
@@ -83,6 +86,7 @@ export const DeploymentPanelProvider: React.FC<{
       currentDeploymentId,
       setCurrentDeploymentId,
       currentDeployment,
+      isPending,
     ],
   );
 

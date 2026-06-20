@@ -4,7 +4,7 @@ import { ReactNode } from "react";
 
 type TProps = {
   noScrollArea?: boolean;
-  children: ReactNode;
+  children?: ReactNode;
   className?: string;
 };
 
