@@ -39,6 +39,8 @@ export const useProjectUtils = ({ teamId, projectId }: { teamId: string; project
   return {
     invalidate: () =>
       queryClient.invalidateQueries({ queryKey: queryKeyProjects.detail({ teamId, projectId }) }),
+    refetch: () =>
+      queryClient.refetchQueries({ queryKey: queryKeyProjects.detail({ teamId, projectId }) }),
   };
 };
 

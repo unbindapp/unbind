@@ -10,7 +10,7 @@ import { useProjects, useProjectsUtils } from "@/components/project/projects-pro
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { createProject as createProjectFn } from "@/lib/queries/projects";
 import { useMutation } from "@tanstack/react-query";
-import { ResultAsync } from "neverthrow";
+import { errAsync, ResultAsync } from "neverthrow";
 import { useLocation, useRouter } from "@tanstack/react-router";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -177,18 +177,33 @@ export default function ProjectBreadcrumb({ className }: TProps) {
   });
 
   const CreateEnvironmentDialogMemoized: (
-    props: Omit<TCreateEnvironmentDialogProps, "onFormSubmitSuccessful">,
+    props: Omit<
+      TCreateEnvironmentDialogProps,
+      "onFormSubmitSuccessful" | "asyncOnFormSubmitSuccessful"
+    >,
   ) => ReactNode = useCallback(
     (props) => (
       <CreateEnvironmentDialog
         {...props}
         onFormSubmitSuccessful={() => setIsEnvironmentsMenuOpen(false)}
+        asyncOnFormSubmitSuccessful={({ environment }) => {
+          if (!teamIdFromPathname || !selectedProjectId) {
+            return errAsync(new Error("Team or project ID is missing"));
+          }
+          return ResultAsync.fromPromise(
+            router.navigate({
+              to: ".",
+              search: { environment: environment.id },
+            }),
+            () => new Error("Failed to navigate to project"),
+          );
+        }}
         dialogOnOpenChange={(o) => {
           if (!o) setIsEnvironmentsMenuOpen(false);
         }}
       />
     ),
-    [],
+    [teamIdFromPathname, selectedProjectId, router],
   );
 
   return (

@@ -20,9 +20,9 @@ import {
   createEnvironment as createEnvironmentFn,
   environmentNameMaxLength,
   EnvironmentNameSchema,
+  type TEnvironmentShallow,
 } from "@/lib/queries/environments";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "@tanstack/react-router";
 import { ResultAsync } from "neverthrow";
 import {
   ButtonHTMLAttributes,
@@ -39,12 +39,16 @@ import { z } from "zod";
 export type TCreateEnvironmentDialogProps = {
   children: ReactNode;
   onFormSubmitSuccessful?: () => void;
+  asyncOnFormSubmitSuccessful?: (args: {
+    environment: TEnvironmentShallow;
+  }) => ResultAsync<unknown, Error>;
   dialogOnOpenChange?: (open: boolean) => void;
 } & ButtonHTMLAttributes<HTMLButtonElement>;
 
 export function CreateEnvironmentDialog({
   children,
   onFormSubmitSuccessful,
+  asyncOnFormSubmitSuccessful,
   dialogOnOpenChange,
   ...rest
 }: TCreateEnvironmentDialogProps) {
@@ -54,7 +58,6 @@ export function CreateEnvironmentDialog({
     error: createEnvironmentError,
     reset: createEnvironmentReset,
   } = useMutation({ mutationFn: createEnvironmentFn });
-  const router = useRouter();
   const { invalidate: invalidateProjects } = useProjectsUtils({ teamId });
   const { invalidate: invalidateProject } = useProjectUtils({ teamId, projectId });
   const { invalidate: invalidateEnvironments } = useEnvironmentsUtils({ teamId, projectId });
@@ -80,27 +83,33 @@ export function CreateEnvironmentDialog({
         projectId,
       });
 
-      const environmentId = res.data.id;
-      invalidateProject();
-      invalidateProjects();
-      invalidateEnvironments();
+      // The project route guard validates the `environment` search param against
+      // the project query's cached environments and redirects to a fallback when
+      // it isn't found. Await the refetches (especially the project query) before
+      // navigating so the freshly created environment is present and the
+      // navigation actually sticks instead of bouncing to the default one.
+      const invalidateRes = await ResultAsync.fromPromise(
+        Promise.all([invalidateProject(), invalidateProjects(), invalidateEnvironments()]),
+        () => new Error("Invalidation failed, reload the page to see the new environment"),
+      );
+      if (invalidateRes.isErr()) {
+        toast.error("Failed to refresh data", {
+          description: invalidateRes.error.message,
+        });
+        return;
+      }
 
       setOpen(false);
       onFormSubmitSuccessful?.();
 
-      const navigateRes = await ResultAsync.fromPromise(
-        router.navigate({
-          to: "/$team_id/project/$project_id",
-          params: { team_id: teamId, project_id: projectId },
-          search: { environment: environmentId },
-        }),
-        () => new Error("Failed to navigate"),
-      );
-      if (navigateRes.isErr()) {
-        toast.error("Failed to navigate to project", {
-          description: navigateRes.error.message,
-        });
-        return;
+      if (asyncOnFormSubmitSuccessful) {
+        const result = await asyncOnFormSubmitSuccessful({ environment: res.data });
+        if (result.isErr()) {
+          toast.error("Something went wrong", {
+            description: result.error.message,
+          });
+          return;
+        }
       }
 
       formApi.reset();

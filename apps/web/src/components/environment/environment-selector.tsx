@@ -13,6 +13,7 @@ import { servicesListQuery } from "@/lib/queries/services";
 import { ChevronDownIcon } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
+import { errAsync, ResultAsync } from "neverthrow";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 
 export default function EnvironmentSelector() {
@@ -91,18 +92,33 @@ export default function EnvironmentSelector() {
   }, [getEnvironmentManageItemNav, router]);
 
   const CreateEnvironmentDialogMemoized: (
-    props: Omit<TCreateEnvironmentDialogProps, "onFormSubmitSuccessful">,
+    props: Omit<
+      TCreateEnvironmentDialogProps,
+      "onFormSubmitSuccessful" | "asyncOnFormSubmitSuccessful"
+    >,
   ) => ReactNode = useCallback(
     (props) => (
       <CreateEnvironmentDialog
         {...props}
         onFormSubmitSuccessful={() => setIsEnvironmentsMenuOpen(false)}
+        asyncOnFormSubmitSuccessful={({ environment }) => {
+          if (!teamIdFromPathname || !selectedProjectId) {
+            return errAsync(new Error("Team or project ID is missing"));
+          }
+          return ResultAsync.fromPromise(
+            router.navigate({
+              to: ".",
+              search: (prev) => ({ ...prev, environment: environment.id }),
+            }),
+            () => new Error("Failed to navigate to project"),
+          );
+        }}
         dialogOnOpenChange={(o) => {
           if (!o) setIsEnvironmentsMenuOpen(false);
         }}
       />
     ),
-    [],
+    [teamIdFromPathname, selectedProjectId, router],
   );
 
   return (

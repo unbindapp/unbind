@@ -17,11 +17,7 @@ import { SettingsSection } from "@/components/settings/settings-section";
 import { TGitSectionProps } from "@/components/settings/types";
 import { Toggleable, Toggled, Untoggled } from "@/components/toggleable";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import {
-  GitServiceBuilderEnum,
-  TGitServiceBuilder,
-  TServiceShallow,
-} from "@/lib/queries/services";
+import { GitServiceBuilderEnum, TGitServiceBuilder, TServiceShallow } from "@/lib/queries/services";
 import { useStore } from "@tanstack/react-form";
 import { PlusIcon, WrenchIcon } from "lucide-react";
 import { useMemo, useRef } from "react";

@@ -1,6 +1,10 @@
 "use client";
 
-import { environmentsListQuery, queryKeyEnvironments, type TEnvironmentShallow } from "@/lib/queries/environments";
+import {
+  environmentsListQuery,
+  queryKeyEnvironments,
+  type TEnvironmentShallow,
+} from "@/lib/queries/environments";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
@@ -52,5 +56,7 @@ export const useEnvironmentsUtils = ({
   return {
     invalidate: () =>
       queryClient.invalidateQueries({ queryKey: queryKeyEnvironments.list({ teamId, projectId }) }),
+    refetch: () =>
+      queryClient.refetchQueries({ queryKey: queryKeyEnvironments.list({ teamId, projectId }) }),
   };
 };

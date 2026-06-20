@@ -277,7 +277,10 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
     isPending: isPendingTags,
     error: errorTags,
   } = useQuery({
-    ...dockerTagsQuery({ repository: image, search: commandInputValue ? search : commandInputValue }),
+    ...dockerTagsQuery({
+      repository: image,
+      search: commandInputValue ? search : commandInputValue,
+    }),
     enabled: !imageIsNonDockerHub,
   });
 

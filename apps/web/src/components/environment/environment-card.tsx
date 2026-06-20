@@ -92,9 +92,8 @@ export default function EnvironmentCard({
             if (!environment) return;
             onClickProp?.();
             router.navigate({
-              to: "/$team_id/project/$project_id/settings/environments",
-              params: { team_id: teamId, project_id: projectId },
-              search: { environment: environment.id },
+              to: ".",
+              search: (prev) => ({ ...prev, environment: environment.id }),
             });
           }}
           className="has-hover:group-hover/item:bg-background-hover flex w-full flex-row items-center justify-start gap-2.5 py-3 pr-12 pl-4 font-medium"
@@ -272,9 +271,8 @@ function DeleteTrigger({
 
           const navigateRes = await ResultAsync.fromPromise(
             router.navigate({
-              to: "/$team_id/project/$project_id/settings/environments",
-              params: { team_id: teamId, project_id: projectId },
-              search: { environment: environmentIdToNavigateTo ?? undefined },
+              to: ".",
+              search: (prev) => ({ ...prev, environment: environmentIdToNavigateTo ?? undefined }),
             }),
             () => new Error("Failed to navigate to environments"),
           );
@@ -437,9 +435,8 @@ export function NewEnvironmentCard({ teamId, projectId }: { teamId: string; proj
 
       const navigateRes = await ResultAsync.fromPromise(
         router.navigate({
-          to: "/$team_id/project/$project_id/settings/environments",
-          params: { team_id: teamId, project_id: projectId },
-          search: { environment: newEnvironmentId },
+          to: ".",
+          search: (prev) => ({ ...prev, environment: newEnvironmentId }),
         }),
         () => new Error("Failed to navigate to environments"),
       );
