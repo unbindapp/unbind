@@ -15,7 +15,7 @@ func convexTemplate() *schema.TemplateDefinition {
 		Icon:        "convex",
 		Keywords:    []string{"convex", "backend", "database", "reactive", "realtime", "serverless", "typescript", "baas", "firebase", "supabase"},
 		Description: "Open-source reactive backend with a database, functions, and realtime sync.",
-		Version:     1,
+		Version:     2,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumCPUs:  2,
 			MinimumRAMGB: 2,
