@@ -8,7 +8,7 @@ import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
-import { Button } from "@/components/ui/button";
+import { Button, LinkButton } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -73,29 +73,22 @@ export default function EnvironmentCard({
   projectId,
   isPlaceholder,
   isSelected,
-  onClick: onClickProp,
+  onClick,
   disableDelete,
 }: TProps) {
-  const router = useRouter();
-
   return (
     <li className="relative w-full p-1 sm:w-1/2">
       <div
         data-pending={isPlaceholder || undefined}
         className="group/item relative flex w-full items-center justify-start"
       >
-        <Button
+        <LinkButton
           disabled={isPlaceholder}
           fadeOnDisabled={false}
           variant="outline-muted"
-          onClick={() => {
-            if (!environment) return;
-            onClickProp?.();
-            router.navigate({
-              to: ".",
-              search: (prev) => ({ ...prev, environment: environment.id }),
-            });
-          }}
+          to={"."}
+          search={(prev) => ({ ...prev, environment: environment?.id })}
+          onClick={onClick}
           className="has-hover:group-hover/item:bg-background-hover flex w-full flex-row items-center justify-start gap-2.5 py-3 pr-12 pl-4 font-medium"
         >
           {environment && <NewEntityIndicator id={environment.id} />}
@@ -107,7 +100,7 @@ export default function EnvironmentCard({
           <p className="group-data-pending/item:bg-foreground group-data-pending/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-pending/item:rounded-md group-data-pending/item:text-transparent">
             {isPlaceholder ? "Loading" : environment.name}
           </p>
-        </Button>
+        </LinkButton>
         <div className="absolute top-1/2 right-1.25 size-9 -translate-y-1/2">
           {isPlaceholder ? (
             <div className="flex size-full items-center justify-center">
