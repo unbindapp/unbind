@@ -21,7 +21,7 @@ const searchSchema = z.object({
   highlight_id: z.string().optional(),
 });
 
-// Routes reachable while signed out. Everything else (incl. /sign-out) requires auth.
+// Routes reachable while signed out. Everything else requires auth.
 const PUBLIC_PATHS = new Set(["/sign-in", "/welcome"]);
 
 export const Route = createRootRouteWithContext<RouterContext>()({
