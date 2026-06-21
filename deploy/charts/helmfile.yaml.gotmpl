@@ -513,6 +513,7 @@ releases:
           size: {{ .Values | get "overrides.registry.persistence.size" }}
         cleanup:
           threshold: {{ .Values | get "overrides.registry.cleanup.threshold" }}
+          schedule: {{ .Values | get "overrides.registry.cleanup.schedule" "0 * * * *" | quote }}
 
     # Update the labels in registry component
     labels:

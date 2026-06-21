@@ -35,6 +35,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/infrastructure/loki"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/prometheus"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/registry"
+	"github.com/unbindapp/unbind-api/internal/infrastructure/registrycache"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/updater"
 	"github.com/unbindapp/unbind-api/internal/integrations/github"
 	"github.com/unbindapp/unbind-api/internal/repositories/repositories"
@@ -162,6 +163,8 @@ func startAPI(cfg *config.Config) {
 	// Create registry tester
 	registryTester := registry.NewRegistryTester(cfg, repo, kubeClient)
 
+	registryCacheManager := registrycache.NewManager(cfg, kubeClient)
+
 	// Create services
 	teamService := team_service.NewTeamService(repo, kubeClient)
 	projectService := project_service.NewProjectService(cfg, repo, kubeClient, webhooksService, deploymentController)
@@ -169,7 +172,8 @@ func startAPI(cfg *config.Config) {
 	logService := logs_service.NewLogsService(repo, kubeClient, lokiQuerier)
 	deploymentService := deployments_service.NewDeploymentService(repo, kubeClient, deploymentController, githubClient, lokiQuerier, registryTester, variableService)
 	serviceService := service_service.NewServiceService(cfg, repo, githubClient, kubeClient, deploymentController, dbProvider, webhooksService, variableService, promClient, deploymentService)
-	systemService := system_service.NewSystemService(cfg, repo, buildkitSettings, registryTester, kubeClient)
+	systemService := system_service.NewSystemService(cfg, repo, buildkitSettings, registryTester, registryCacheManager, kubeClient)
+	systemService.ReconcileRegistryCache(ctx)
 	metricsService := metric_service.NewMetricService(promClient, repo, kubeClient)
 	instanceService := instance_service.NewInstanceService(cfg, repo, kubeClient)
 	storageService := storage_service.NewStorageService(cfg, repo, kubeClient, promClient, serviceService)

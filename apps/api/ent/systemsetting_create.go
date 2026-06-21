@@ -73,6 +73,12 @@ func (_c *SystemSettingCreate) SetBuildkitSettings(v *schema.BuildkitSettings) *
 	return _c
 }
 
+// SetRegistryCacheSettings sets the "registry_cache_settings" field.
+func (_c *SystemSettingCreate) SetRegistryCacheSettings(v *schema.RegistryCacheSettings) *SystemSettingCreate {
+	_c.mutation.SetRegistryCacheSettings(v)
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *SystemSettingCreate) SetID(v uuid.UUID) *SystemSettingCreate {
 	_c.mutation.SetID(v)
@@ -196,6 +202,10 @@ func (_c *SystemSettingCreate) createSpec() (*SystemSetting, *sqlgraph.CreateSpe
 		_spec.SetField(systemsetting.FieldBuildkitSettings, field.TypeJSON, value)
 		_node.BuildkitSettings = value
 	}
+	if value, ok := _c.mutation.RegistryCacheSettings(); ok {
+		_spec.SetField(systemsetting.FieldRegistryCacheSettings, field.TypeJSON, value)
+		_node.RegistryCacheSettings = value
+	}
 	return _node, _spec
 }
 
@@ -293,6 +303,24 @@ func (u *SystemSettingUpsert) UpdateBuildkitSettings() *SystemSettingUpsert {
 // ClearBuildkitSettings clears the value of the "buildkit_settings" field.
 func (u *SystemSettingUpsert) ClearBuildkitSettings() *SystemSettingUpsert {
 	u.SetNull(systemsetting.FieldBuildkitSettings)
+	return u
+}
+
+// SetRegistryCacheSettings sets the "registry_cache_settings" field.
+func (u *SystemSettingUpsert) SetRegistryCacheSettings(v *schema.RegistryCacheSettings) *SystemSettingUpsert {
+	u.Set(systemsetting.FieldRegistryCacheSettings, v)
+	return u
+}
+
+// UpdateRegistryCacheSettings sets the "registry_cache_settings" field to the value that was provided on create.
+func (u *SystemSettingUpsert) UpdateRegistryCacheSettings() *SystemSettingUpsert {
+	u.SetExcluded(systemsetting.FieldRegistryCacheSettings)
+	return u
+}
+
+// ClearRegistryCacheSettings clears the value of the "registry_cache_settings" field.
+func (u *SystemSettingUpsert) ClearRegistryCacheSettings() *SystemSettingUpsert {
+	u.SetNull(systemsetting.FieldRegistryCacheSettings)
 	return u
 }
 
@@ -400,6 +428,27 @@ func (u *SystemSettingUpsertOne) UpdateBuildkitSettings() *SystemSettingUpsertOn
 func (u *SystemSettingUpsertOne) ClearBuildkitSettings() *SystemSettingUpsertOne {
 	return u.Update(func(s *SystemSettingUpsert) {
 		s.ClearBuildkitSettings()
+	})
+}
+
+// SetRegistryCacheSettings sets the "registry_cache_settings" field.
+func (u *SystemSettingUpsertOne) SetRegistryCacheSettings(v *schema.RegistryCacheSettings) *SystemSettingUpsertOne {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.SetRegistryCacheSettings(v)
+	})
+}
+
+// UpdateRegistryCacheSettings sets the "registry_cache_settings" field to the value that was provided on create.
+func (u *SystemSettingUpsertOne) UpdateRegistryCacheSettings() *SystemSettingUpsertOne {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.UpdateRegistryCacheSettings()
+	})
+}
+
+// ClearRegistryCacheSettings clears the value of the "registry_cache_settings" field.
+func (u *SystemSettingUpsertOne) ClearRegistryCacheSettings() *SystemSettingUpsertOne {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.ClearRegistryCacheSettings()
 	})
 }
 
@@ -674,6 +723,27 @@ func (u *SystemSettingUpsertBulk) UpdateBuildkitSettings() *SystemSettingUpsertB
 func (u *SystemSettingUpsertBulk) ClearBuildkitSettings() *SystemSettingUpsertBulk {
 	return u.Update(func(s *SystemSettingUpsert) {
 		s.ClearBuildkitSettings()
+	})
+}
+
+// SetRegistryCacheSettings sets the "registry_cache_settings" field.
+func (u *SystemSettingUpsertBulk) SetRegistryCacheSettings(v *schema.RegistryCacheSettings) *SystemSettingUpsertBulk {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.SetRegistryCacheSettings(v)
+	})
+}
+
+// UpdateRegistryCacheSettings sets the "registry_cache_settings" field to the value that was provided on create.
+func (u *SystemSettingUpsertBulk) UpdateRegistryCacheSettings() *SystemSettingUpsertBulk {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.UpdateRegistryCacheSettings()
+	})
+}
+
+// ClearRegistryCacheSettings clears the value of the "registry_cache_settings" field.
+func (u *SystemSettingUpsertBulk) ClearRegistryCacheSettings() *SystemSettingUpsertBulk {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.ClearRegistryCacheSettings()
 	})
 }
 

@@ -22,6 +22,8 @@ const (
 	FieldWildcardBaseURL = "wildcard_base_url"
 	// FieldBuildkitSettings holds the string denoting the buildkit_settings field in the database.
 	FieldBuildkitSettings = "buildkit_settings"
+	// FieldRegistryCacheSettings holds the string denoting the registry_cache_settings field in the database.
+	FieldRegistryCacheSettings = "registry_cache_settings"
 	// Table holds the table name of the systemsetting in the database.
 	Table = "system_settings"
 )
@@ -33,6 +35,7 @@ var Columns = []string{
 	FieldUpdatedAt,
 	FieldWildcardBaseURL,
 	FieldBuildkitSettings,
+	FieldRegistryCacheSettings,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

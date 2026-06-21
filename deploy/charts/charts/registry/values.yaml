@@ -10,6 +10,7 @@ service:
     port: 31571
 cleanup:
   threshold: 4Gi # This should be around 80% of the total size, this is for the auto cleanup job
+  schedule: "0 * * * *" # Cron schedule for the auto cleanup job
 ingress:
   enabled: false
   host: registry.unbind.cloud

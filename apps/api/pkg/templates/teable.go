@@ -13,7 +13,7 @@ func teableTemplate() *schema.TemplateDefinition {
 		Icon:        "teable",
 		Keywords:    []string{"airtable", "teable", "no-code", "database", "visual", "interface", "relational", "sql", "postgresql"},
 		Description: "The next-gen Airtable alternative.",
-		Version:     2,
+		Version:     1,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumCPUs:  1,
 			MinimumRAMGB: 2,

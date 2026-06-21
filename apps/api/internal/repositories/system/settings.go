@@ -20,8 +20,9 @@ func (self *SystemRepository) GetSystemSettings(ctx context.Context, tx reposito
 }
 
 type SystemSettingUpdateInput struct {
-	WildcardDomain   *string                  `json:"wildcard_domain" doc:"Wildcard domain for the system"`
-	BuildkitSettings *schema.BuildkitSettings `json:"buildkit_settings" doc:"Buildkit settings"`
+	WildcardDomain        *string                       `json:"wildcard_domain" doc:"Wildcard domain for the system"`
+	BuildkitSettings      *schema.BuildkitSettings      `json:"buildkit_settings" doc:"Buildkit settings"`
+	RegistryCacheSettings *schema.RegistryCacheSettings `json:"registry_cache_settings" doc:"Registry cache cleanup settings"`
 }
 
 func (self *SystemRepository) UpdateSystemSettings(ctx context.Context, input *SystemSettingUpdateInput) (settings *ent.SystemSetting, err error) {
@@ -54,6 +55,10 @@ func (self *SystemRepository) UpdateSystemSettings(ctx context.Context, input *S
 
 		if input.BuildkitSettings != nil {
 			m.SetBuildkitSettings(input.BuildkitSettings)
+		}
+
+		if input.RegistryCacheSettings != nil {
+			m.SetRegistryCacheSettings(input.RegistryCacheSettings)
 		}
 
 		// Save system settings

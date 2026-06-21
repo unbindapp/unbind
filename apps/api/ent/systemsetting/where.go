@@ -235,6 +235,16 @@ func BuildkitSettingsNotNil() predicate.SystemSetting {
 	return predicate.SystemSetting(sql.FieldNotNull(FieldBuildkitSettings))
 }
 
+// RegistryCacheSettingsIsNil applies the IsNil predicate on the "registry_cache_settings" field.
+func RegistryCacheSettingsIsNil() predicate.SystemSetting {
+	return predicate.SystemSetting(sql.FieldIsNull(FieldRegistryCacheSettings))
+}
+
+// RegistryCacheSettingsNotNil applies the NotNil predicate on the "registry_cache_settings" field.
+func RegistryCacheSettingsNotNil() predicate.SystemSetting {
+	return predicate.SystemSetting(sql.FieldNotNull(FieldRegistryCacheSettings))
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.SystemSetting) predicate.SystemSetting {
 	return predicate.SystemSetting(sql.AndPredicates(predicates...))

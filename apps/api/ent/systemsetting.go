@@ -29,7 +29,9 @@ type SystemSetting struct {
 	WildcardBaseURL *string `json:"wildcard_base_url,omitempty"`
 	// Buildkit settings
 	BuildkitSettings *schema.BuildkitSettings `json:"buildkit_settings,omitempty"`
-	selectValues     sql.SelectValues
+	// Registry cache cleanup settings
+	RegistryCacheSettings *schema.RegistryCacheSettings `json:"registry_cache_settings,omitempty"`
+	selectValues          sql.SelectValues
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -37,7 +39,7 @@ func (*SystemSetting) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case systemsetting.FieldBuildkitSettings:
+		case systemsetting.FieldBuildkitSettings, systemsetting.FieldRegistryCacheSettings:
 			values[i] = new([]byte)
 		case systemsetting.FieldWildcardBaseURL:
 			values[i] = new(sql.NullString)
@@ -93,6 +95,14 @@ func (_m *SystemSetting) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field buildkit_settings: %w", err)
 				}
 			}
+		case systemsetting.FieldRegistryCacheSettings:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field registry_cache_settings", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.RegistryCacheSettings); err != nil {
+					return fmt.Errorf("unmarshal field registry_cache_settings: %w", err)
+				}
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -142,6 +152,9 @@ func (_m *SystemSetting) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("buildkit_settings=")
 	builder.WriteString(fmt.Sprintf("%v", _m.BuildkitSettings))
+	builder.WriteString(", ")
+	builder.WriteString("registry_cache_settings=")
+	builder.WriteString(fmt.Sprintf("%v", _m.RegistryCacheSettings))
 	builder.WriteByte(')')
 	return builder.String()
 }

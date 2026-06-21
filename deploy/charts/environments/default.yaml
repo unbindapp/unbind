@@ -74,6 +74,7 @@ overrides:
       size: 4Gi
     cleanup:
       threshold: 3Gi # This should be around 80% of the total size, this is for the auto cleanup job
+      schedule: "0 * * * *" # Cron schedule for the auto cleanup job
 
   certManager:
     replicaCount: 2

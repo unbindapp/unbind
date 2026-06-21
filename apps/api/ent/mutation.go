@@ -17530,17 +17530,18 @@ func (m *ServiceGroupMutation) ResetEdge(name string) error {
 // SystemSettingMutation represents an operation that mutates the SystemSetting nodes in the graph.
 type SystemSettingMutation struct {
 	config
-	op                Op
-	typ               string
-	id                *uuid.UUID
-	created_at        *time.Time
-	updated_at        *time.Time
-	wildcard_base_url *string
-	buildkit_settings **schema.BuildkitSettings
-	clearedFields     map[string]struct{}
-	done              bool
-	oldValue          func(context.Context) (*SystemSetting, error)
-	predicates        []predicate.SystemSetting
+	op                      Op
+	typ                     string
+	id                      *uuid.UUID
+	created_at              *time.Time
+	updated_at              *time.Time
+	wildcard_base_url       *string
+	buildkit_settings       **schema.BuildkitSettings
+	registry_cache_settings **schema.RegistryCacheSettings
+	clearedFields           map[string]struct{}
+	done                    bool
+	oldValue                func(context.Context) (*SystemSetting, error)
+	predicates              []predicate.SystemSetting
 }
 
 var _ ent.Mutation = (*SystemSettingMutation)(nil)
@@ -17817,6 +17818,55 @@ func (m *SystemSettingMutation) ResetBuildkitSettings() {
 	delete(m.clearedFields, systemsetting.FieldBuildkitSettings)
 }
 
+// SetRegistryCacheSettings sets the "registry_cache_settings" field.
+func (m *SystemSettingMutation) SetRegistryCacheSettings(scs *schema.RegistryCacheSettings) {
+	m.registry_cache_settings = &scs
+}
+
+// RegistryCacheSettings returns the value of the "registry_cache_settings" field in the mutation.
+func (m *SystemSettingMutation) RegistryCacheSettings() (r *schema.RegistryCacheSettings, exists bool) {
+	v := m.registry_cache_settings
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRegistryCacheSettings returns the old "registry_cache_settings" field's value of the SystemSetting entity.
+// If the SystemSetting object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemSettingMutation) OldRegistryCacheSettings(ctx context.Context) (v *schema.RegistryCacheSettings, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRegistryCacheSettings is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRegistryCacheSettings requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRegistryCacheSettings: %w", err)
+	}
+	return oldValue.RegistryCacheSettings, nil
+}
+
+// ClearRegistryCacheSettings clears the value of the "registry_cache_settings" field.
+func (m *SystemSettingMutation) ClearRegistryCacheSettings() {
+	m.registry_cache_settings = nil
+	m.clearedFields[systemsetting.FieldRegistryCacheSettings] = struct{}{}
+}
+
+// RegistryCacheSettingsCleared returns if the "registry_cache_settings" field was cleared in this mutation.
+func (m *SystemSettingMutation) RegistryCacheSettingsCleared() bool {
+	_, ok := m.clearedFields[systemsetting.FieldRegistryCacheSettings]
+	return ok
+}
+
+// ResetRegistryCacheSettings resets all changes to the "registry_cache_settings" field.
+func (m *SystemSettingMutation) ResetRegistryCacheSettings() {
+	m.registry_cache_settings = nil
+	delete(m.clearedFields, systemsetting.FieldRegistryCacheSettings)
+}
+
 // Where appends a list predicates to the SystemSettingMutation builder.
 func (m *SystemSettingMutation) Where(ps ...predicate.SystemSetting) {
 	m.predicates = append(m.predicates, ps...)
@@ -17851,7 +17901,7 @@ func (m *SystemSettingMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SystemSettingMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.created_at != nil {
 		fields = append(fields, systemsetting.FieldCreatedAt)
 	}
@@ -17863,6 +17913,9 @@ func (m *SystemSettingMutation) Fields() []string {
 	}
 	if m.buildkit_settings != nil {
 		fields = append(fields, systemsetting.FieldBuildkitSettings)
+	}
+	if m.registry_cache_settings != nil {
+		fields = append(fields, systemsetting.FieldRegistryCacheSettings)
 	}
 	return fields
 }
@@ -17880,6 +17933,8 @@ func (m *SystemSettingMutation) Field(name string) (ent.Value, bool) {
 		return m.WildcardBaseURL()
 	case systemsetting.FieldBuildkitSettings:
 		return m.BuildkitSettings()
+	case systemsetting.FieldRegistryCacheSettings:
+		return m.RegistryCacheSettings()
 	}
 	return nil, false
 }
@@ -17897,6 +17952,8 @@ func (m *SystemSettingMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldWildcardBaseURL(ctx)
 	case systemsetting.FieldBuildkitSettings:
 		return m.OldBuildkitSettings(ctx)
+	case systemsetting.FieldRegistryCacheSettings:
+		return m.OldRegistryCacheSettings(ctx)
 	}
 	return nil, fmt.Errorf("unknown SystemSetting field %s", name)
 }
@@ -17934,6 +17991,13 @@ func (m *SystemSettingMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetBuildkitSettings(v)
 		return nil
+	case systemsetting.FieldRegistryCacheSettings:
+		v, ok := value.(*schema.RegistryCacheSettings)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRegistryCacheSettings(v)
+		return nil
 	}
 	return fmt.Errorf("unknown SystemSetting field %s", name)
 }
@@ -17970,6 +18034,9 @@ func (m *SystemSettingMutation) ClearedFields() []string {
 	if m.FieldCleared(systemsetting.FieldBuildkitSettings) {
 		fields = append(fields, systemsetting.FieldBuildkitSettings)
 	}
+	if m.FieldCleared(systemsetting.FieldRegistryCacheSettings) {
+		fields = append(fields, systemsetting.FieldRegistryCacheSettings)
+	}
 	return fields
 }
 
@@ -17990,6 +18057,9 @@ func (m *SystemSettingMutation) ClearField(name string) error {
 	case systemsetting.FieldBuildkitSettings:
 		m.ClearBuildkitSettings()
 		return nil
+	case systemsetting.FieldRegistryCacheSettings:
+		m.ClearRegistryCacheSettings()
+		return nil
 	}
 	return fmt.Errorf("unknown SystemSetting nullable field %s", name)
 }
@@ -18009,6 +18079,9 @@ func (m *SystemSettingMutation) ResetField(name string) error {
 		return nil
 	case systemsetting.FieldBuildkitSettings:
 		m.ResetBuildkitSettings()
+		return nil
+	case systemsetting.FieldRegistryCacheSettings:
+		m.ResetRegistryCacheSettings()
 		return nil
 	}
 	return fmt.Errorf("unknown SystemSetting field %s", name)

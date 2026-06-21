@@ -4,7 +4,7 @@ metadata:
   name: registry-cleanup
   namespace: {{ .Release.Namespace }}
 spec:
-  schedule: "0 * * * *"  # Run hourly
+  schedule: "{{ .Values.cleanup.schedule | default "0 * * * *" }}"
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3

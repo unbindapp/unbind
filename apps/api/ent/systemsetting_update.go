@@ -68,6 +68,18 @@ func (_u *SystemSettingUpdate) ClearBuildkitSettings() *SystemSettingUpdate {
 	return _u
 }
 
+// SetRegistryCacheSettings sets the "registry_cache_settings" field.
+func (_u *SystemSettingUpdate) SetRegistryCacheSettings(v *schema.RegistryCacheSettings) *SystemSettingUpdate {
+	_u.mutation.SetRegistryCacheSettings(v)
+	return _u
+}
+
+// ClearRegistryCacheSettings clears the value of the "registry_cache_settings" field.
+func (_u *SystemSettingUpdate) ClearRegistryCacheSettings() *SystemSettingUpdate {
+	_u.mutation.ClearRegistryCacheSettings()
+	return _u
+}
+
 // Mutation returns the SystemSettingMutation object of the builder.
 func (_u *SystemSettingUpdate) Mutation() *SystemSettingMutation {
 	return _u.mutation
@@ -139,6 +151,12 @@ func (_u *SystemSettingUpdate) sqlSave(ctx context.Context) (_node int, err erro
 	if _u.mutation.BuildkitSettingsCleared() {
 		_spec.ClearField(systemsetting.FieldBuildkitSettings, field.TypeJSON)
 	}
+	if value, ok := _u.mutation.RegistryCacheSettings(); ok {
+		_spec.SetField(systemsetting.FieldRegistryCacheSettings, field.TypeJSON, value)
+	}
+	if _u.mutation.RegistryCacheSettingsCleared() {
+		_spec.ClearField(systemsetting.FieldRegistryCacheSettings, field.TypeJSON)
+	}
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -196,6 +214,18 @@ func (_u *SystemSettingUpdateOne) SetBuildkitSettings(v *schema.BuildkitSettings
 // ClearBuildkitSettings clears the value of the "buildkit_settings" field.
 func (_u *SystemSettingUpdateOne) ClearBuildkitSettings() *SystemSettingUpdateOne {
 	_u.mutation.ClearBuildkitSettings()
+	return _u
+}
+
+// SetRegistryCacheSettings sets the "registry_cache_settings" field.
+func (_u *SystemSettingUpdateOne) SetRegistryCacheSettings(v *schema.RegistryCacheSettings) *SystemSettingUpdateOne {
+	_u.mutation.SetRegistryCacheSettings(v)
+	return _u
+}
+
+// ClearRegistryCacheSettings clears the value of the "registry_cache_settings" field.
+func (_u *SystemSettingUpdateOne) ClearRegistryCacheSettings() *SystemSettingUpdateOne {
+	_u.mutation.ClearRegistryCacheSettings()
 	return _u
 }
 
@@ -299,6 +329,12 @@ func (_u *SystemSettingUpdateOne) sqlSave(ctx context.Context) (_node *SystemSet
 	}
 	if _u.mutation.BuildkitSettingsCleared() {
 		_spec.ClearField(systemsetting.FieldBuildkitSettings, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.RegistryCacheSettings(); ok {
+		_spec.SetField(systemsetting.FieldRegistryCacheSettings, field.TypeJSON, value)
+	}
+	if _u.mutation.RegistryCacheSettingsCleared() {
+		_spec.ClearField(systemsetting.FieldRegistryCacheSettings, field.TypeJSON)
 	}
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &SystemSetting{config: _u.config}

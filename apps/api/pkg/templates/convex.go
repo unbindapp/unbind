@@ -5,9 +5,9 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 )
 
-// convexTemplate returns the predefined Convex template. INSTANCE_NAME stays
+// convexTemplate returns the predefined Convex template. INSTANCE_NAME must stay
 // underscore-free so the derived DB name matches the Zalando credentials secret
-// (Zalando rewrites "_" to "-"). POSTGRES_URL omits the db name and query params.
+// (Zalando rewrites "_" to "-").
 func convexTemplate() *schema.TemplateDefinition {
 	return &schema.TemplateDefinition{
 		Name:        "Convex",
@@ -15,20 +15,12 @@ func convexTemplate() *schema.TemplateDefinition {
 		Icon:        "convex",
 		Keywords:    []string{"convex", "backend", "database", "reactive", "realtime", "serverless", "typescript", "baas", "firebase", "supabase"},
 		Description: "Open-source reactive backend with a database, functions, and realtime sync.",
-		Version:     2,
+		Version:     1,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumCPUs:  2,
 			MinimumRAMGB: 2,
 		},
 		Inputs: []schema.TemplateInput{
-			{
-				ID:          "input_api_domain",
-				Name:        "API Domain",
-				Type:        schema.InputTypeHost,
-				Description: "Domain for the Convex backend.",
-				Required:    true,
-				TargetPort:  utils.ToPtr(3210),
-			},
 			{
 				ID:          "input_dashboard_domain",
 				Name:        "Dashboard Domain",
@@ -38,10 +30,26 @@ func convexTemplate() *schema.TemplateDefinition {
 				TargetPort:  utils.ToPtr(6791),
 			},
 			{
+				ID:          "input_api_domain",
+				Name:        "Cloud Domain",
+				Type:        schema.InputTypeHost,
+				Description: "Domain for the Convex cloud API and sync.",
+				Required:    true,
+				TargetPort:  utils.ToPtr(3210),
+			},
+			{
+				ID:          "input_http_actions_domain",
+				Name:        "HTTP Actions Domain",
+				Type:        schema.InputTypeHost,
+				Description: "Domain for Convex HTTP actions.",
+				Required:    true,
+				TargetPort:  utils.ToPtr(3211),
+			},
+			{
 				ID:          "input_database_size",
 				Name:        "Database Size",
 				Type:        schema.InputTypeDatabaseSize,
-				Description: "Size of the storage for the PostgreSQL database.",
+				Description: "PostgreSQL storage size.",
 				Required:    true,
 				Default:     utils.ToPtr("1"),
 			},
@@ -53,7 +61,7 @@ func convexTemplate() *schema.TemplateDefinition {
 					Name:      "convex-data",
 					MountPath: "/convex/data",
 				},
-				Description: "Disk for Convex file storage, exports, and search indexes.",
+				Description: "Disk for file storage, exports, and indexes.",
 				Required:    true,
 				Default:     utils.ToPtr("1"),
 			},
@@ -76,7 +84,7 @@ func convexTemplate() *schema.TemplateDefinition {
 				Name:      "Convex Backend",
 				Icon:      "convex",
 				DependsOn: []string{"service_postgres"},
-				InputIDs:  []string{"input_api_domain", "input_storage_size"},
+				InputIDs:  []string{"input_api_domain", "input_http_actions_domain", "input_storage_size"},
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
 				Image:     utils.ToPtr("ghcr.io/get-convex/convex-backend@sha256:edd7959f3464ed661f6663f646db205d5d61bda606c969b074dfb3c69ed71463"),
@@ -89,6 +97,10 @@ func convexTemplate() *schema.TemplateDefinition {
 				Ports: []schema.PortSpec{
 					{
 						Port:     3210,
+						Protocol: utils.ToPtr(schema.ProtocolTCP),
+					},
+					{
+						Port:     3211,
 						Protocol: utils.ToPtr(schema.ProtocolTCP),
 					},
 				},
@@ -151,12 +163,12 @@ func convexTemplate() *schema.TemplateDefinition {
 						},
 					},
 					{
-						// HTTP actions live at /http on the API domain.
 						Name: "CONVEX_SITE_ORIGIN",
 						Generator: &schema.ValueGenerator{
-							Type: schema.GeneratorTypeStringReplace,
+							Type:      schema.GeneratorTypeInput,
+							InputID:   "input_http_actions_domain",
+							AddPrefix: "https://",
 						},
-						Value: "https://${INPUT_API_DOMAIN_VALUE}/http",
 					},
 					{
 						Name: "CONVEX_SELF_HOSTED_URL",

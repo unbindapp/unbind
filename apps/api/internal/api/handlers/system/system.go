@@ -120,4 +120,28 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Path:        "/registries/set-default",
 		Method:      http.MethodPost,
 	}, handlers.SetDefaultRegistry)
+
+	oapi.Register(grp, oapi.Read, huma.Operation{
+		OperationID: "get-registry-cache-config",
+		Summary:     "Get Registry Cache Config",
+		Description: "Get the configurable settings of the self-hosted registry cache (build cache + images).",
+		Path:        "/cache/registry/config",
+		Method:      http.MethodGet,
+	}, handlers.GetRegistryCacheConfig)
+
+	oapi.Register(grp, oapi.Read, huma.Operation{
+		OperationID: "get-registry-cache-stats",
+		Summary:     "Get Registry Cache Stats",
+		Description: "Get usage statistics and last cleanup status for the self-hosted registry cache.",
+		Path:        "/cache/registry/stats",
+		Method:      http.MethodGet,
+	}, handlers.GetRegistryCacheStats)
+
+	oapi.Register(grp, oapi.Update, huma.Operation{
+		OperationID: "update-registry-cache",
+		Summary:     "Update Registry Cache",
+		Description: "Update the self-hosted registry cache cleanup threshold, schedule, or volume size.",
+		Path:        "/cache/registry/update",
+		Method:      http.MethodPut,
+	}, handlers.UpdateRegistryCache)
 }

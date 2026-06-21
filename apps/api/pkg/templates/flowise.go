@@ -13,7 +13,7 @@ func flowiseTemplate() *schema.TemplateDefinition {
 		Icon:        "flowise",
 		Keywords:    []string{"llm", "ai", "chatbot", "langchain", "flow", "workflow", "automation", "low code", "low-code", "no code", "no-code", "chatbot", "ai"},
 		Description: "Low code tool for building LLM flows.",
-		Version:     2,
+		Version:     1,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumCPUs:  1,
 			MinimumRAMGB: 2,

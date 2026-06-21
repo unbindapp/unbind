@@ -14,10 +14,11 @@ func TestConvexTemplateResolves(t *testing.T) {
 	templater := NewTemplater(&config.Config{ExternalUIUrl: "https://example.com"})
 
 	inputs := map[string]string{
-		"input_api_domain":       "api.convex.example.com",
-		"input_dashboard_domain": "dashboard.convex.example.com",
-		"input_database_size":    "1",
-		"input_storage_size":     "1",
+		"input_api_domain":          "api.convex.example.com",
+		"input_http_actions_domain": "actions.convex.example.com",
+		"input_dashboard_domain":    "dashboard.convex.example.com",
+		"input_database_size":       "1",
+		"input_storage_size":        "1",
 	}
 	kubeNameMap := map[string]string{
 		"service_postgres":  "convex-postgres",
@@ -52,7 +53,7 @@ func TestConvexTemplateResolves(t *testing.T) {
 	assert.Regexp(t, regexp.MustCompile(`^[0-9a-f]{64}$`), vars["INSTANCE_SECRET"])
 	assert.Regexp(t, regexp.MustCompile(`^convex\|[0-9a-f]+$`), vars["CONVEX_SELF_HOSTED_ADMIN_KEY"])
 	assert.Equal(t, "https://api.convex.example.com", vars["CONVEX_CLOUD_ORIGIN"])
-	assert.Equal(t, "https://api.convex.example.com/http", vars["CONVEX_SITE_ORIGIN"])
+	assert.Equal(t, "https://actions.convex.example.com", vars["CONVEX_SITE_ORIGIN"])
 	assert.Equal(t, "convex", vars["INSTANCE_NAME"])
 	assert.Equal(t, "1", vars["DO_NOT_REQUIRE_SSL"])
 

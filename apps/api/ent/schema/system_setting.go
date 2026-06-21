@@ -14,6 +14,13 @@ type BuildkitSettings struct {
 	Replicas       int `json:"replicas"`
 }
 
+// RegistryCacheSettings holds the desired configuration for the self-hosted
+// registry cleanup job (build cache + images share a single registry volume).
+type RegistryCacheSettings struct {
+	CleanupThresholdGB float64 `json:"cleanup_threshold_gb"`
+	CleanupSchedule    string  `json:"cleanup_schedule"`
+}
+
 // SystemSetting holds the schema definition for the SystemSetting entity.
 type SystemSetting struct {
 	ent.Schema
@@ -34,6 +41,9 @@ func (SystemSetting) Fields() []ent.Field {
 		field.JSON("buildkit_settings", &BuildkitSettings{}).
 			Optional().
 			Comment("Buildkit settings"),
+		field.JSON("registry_cache_settings", &RegistryCacheSettings{}).
+			Optional().
+			Comment("Registry cache cleanup settings"),
 	}
 }
 

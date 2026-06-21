@@ -440,7 +440,7 @@ var (
 		{Name: "docker_builder_dockerfile_path", Type: field.TypeString, Nullable: true},
 		{Name: "docker_builder_build_context", Type: field.TypeString, Nullable: true},
 		{Name: "railpack_provider", Type: field.TypeEnum, Nullable: true, Enums: []string{"node", "deno", "bun", "go", "java", "php", "python", "ruby", "rust", "elixir", "staticfile", "dotnet", "cpp", "gleam", "shell", "unknown"}},
-		{Name: "railpack_framework", Type: field.TypeEnum, Nullable: true, Enums: []string{"next", "nuxt", "astro", "vite", "cra", "angular", "remix", "tanstack-start", "react-router", "bun", "static", "sveltekit", "svelte", "solid", "hono", "express", "django", "flask", "fastapi", "fasthtml", "gin", "spring-boot", "laravel", "rails", "rocket", "unknown"}},
+		{Name: "railpack_framework", Type: field.TypeEnum, Nullable: true, Enums: []string{"next", "nuxt", "astro", "vite", "cra", "angular", "remix", "tanstack-start", "react-router", "bun", "expo", "static", "sveltekit", "svelte", "solid", "hono", "express", "django", "flask", "fastapi", "fasthtml", "gin", "spring-boot", "laravel", "rails", "rocket", "unknown"}},
 		{Name: "git_branch", Type: field.TypeString, Nullable: true},
 		{Name: "git_tag", Type: field.TypeString, Nullable: true},
 		{Name: "hosts", Type: field.TypeJSON, Nullable: true},
@@ -518,6 +518,7 @@ var (
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "wildcard_base_url", Type: field.TypeString, Nullable: true},
 		{Name: "buildkit_settings", Type: field.TypeJSON, Nullable: true},
+		{Name: "registry_cache_settings", Type: field.TypeJSON, Nullable: true},
 	}
 	// SystemSettingsTable holds the schema information for the "system_settings" table.
 	SystemSettingsTable = &schema.Table{
