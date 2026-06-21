@@ -140,6 +140,9 @@ export function BlockItemContent({
 
 const routeApi = getRouteApi("__root__");
 
+const highlightDelayMs = 200;
+const highlightDurationMs = 2500;
+
 export function BlockItemContentHighlightable({
   id,
   className,
@@ -158,9 +161,9 @@ export function BlockItemContentHighlightable({
         setIsHighlighted(true);
         const timeout = setTimeout(() => {
           setIsHighlighted(false);
-        }, 3000);
+        }, highlightDurationMs);
         return () => clearTimeout(timeout);
-      }, 200);
+      }, highlightDelayMs);
       return () => clearTimeout(timeout);
     }
   }, [highlight_id, id]);
