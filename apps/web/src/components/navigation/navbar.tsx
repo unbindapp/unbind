@@ -2,28 +2,24 @@ import { BreadcrumbSeparator } from "@/components/navigation/breadcrumb-wrapper"
 import LogoLink from "@/components/navigation/logo-link";
 import NavbarScrollArea from "@/components/navigation/navbar-scroll-area";
 import UserAvatarOrSignIn from "@/components/navigation/user-avatar-or-sign-in";
+import { hasChildRole, withChildRole } from "@/components/ui/child-role";
 import { cn } from "@/components/ui/utils";
-import { Children, isValidElement, ReactNode } from "react";
+import { Children, ReactNode } from "react";
+
+const NAVBAR_ROLE = {
+  breadcrumb: "navbar.breadcrumb",
+  tabsLg: "navbar.tabs-lg",
+  tabsMd: "navbar.tabs-md",
+  tabsSm: "navbar.tabs-sm",
+} as const;
 
 export function Navbar({ children, className }: { className?: string; children?: ReactNode }) {
   // Filter children by component type
   const childrenArray = Children.toArray(children);
-  const breadcrumb = childrenArray.find(
-    (child) =>
-      isValidElement(child) && typeof child.type === "function" && child.type === NavbarBreadcrumb,
-  );
-  const tabsLg = childrenArray.find(
-    (child) =>
-      isValidElement(child) && typeof child.type === "function" && child.type === NavbarTabsLg,
-  );
-  const tabsMd = childrenArray.find(
-    (child) =>
-      isValidElement(child) && typeof child.type === "function" && child.type === NavbarTabsMd,
-  );
-  const tabsSm = childrenArray.find(
-    (child) =>
-      isValidElement(child) && typeof child.type === "function" && child.type === NavbarTabsSm,
-  );
+  const breadcrumb = childrenArray.find((child) => hasChildRole(child, NAVBAR_ROLE.breadcrumb));
+  const tabsLg = childrenArray.find((child) => hasChildRole(child, NAVBAR_ROLE.tabsLg));
+  const tabsMd = childrenArray.find((child) => hasChildRole(child, NAVBAR_ROLE.tabsMd));
+  const tabsSm = childrenArray.find((child) => hasChildRole(child, NAVBAR_ROLE.tabsSm));
 
   return (
     <nav
@@ -67,17 +63,21 @@ export function Navbar({ children, className }: { className?: string; children?:
 function NavbarBreadcrumb({ children }: { children: ReactNode }) {
   return children;
 }
+withChildRole(NavbarBreadcrumb, NAVBAR_ROLE.breadcrumb);
 
 function NavbarTabsLg({ children }: { children: ReactNode }) {
   return children;
 }
+withChildRole(NavbarTabsLg, NAVBAR_ROLE.tabsLg);
 
 function NavbarTabsMd({ children }: { children: ReactNode }) {
   return children;
 }
+withChildRole(NavbarTabsMd, NAVBAR_ROLE.tabsMd);
 
 function NavbarTabsSm({ children }: { children: ReactNode }) {
   return children;
 }
+withChildRole(NavbarTabsSm, NAVBAR_ROLE.tabsSm);
 
 export { NavbarBreadcrumb, NavbarTabsLg, NavbarTabsMd, NavbarTabsSm };

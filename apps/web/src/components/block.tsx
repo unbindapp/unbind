@@ -1,4 +1,5 @@
 import { Button, buttonVariants, TButtonProps } from "@/components/ui/button";
+import { hasChildRole, withChildRole } from "@/components/ui/child-role";
 import { cn } from "@/components/ui/utils";
 import { getRouteApi } from "@tanstack/react-router";
 import { ChevronDownIcon, ExternalLinkIcon } from "lucide-react";
@@ -12,6 +13,11 @@ import {
   useEffect,
   useState,
 } from "react";
+
+const BLOCK_ROLE = {
+  header: "block.header",
+  content: "block.content",
+} as const;
 
 export function Block({
   className,
@@ -55,6 +61,7 @@ export function BlockItemHeader({
     </div>
   );
 }
+withChildRole(BlockItemHeader, BLOCK_ROLE.header);
 
 export function BlockItemTitle({
   hasChanges,
@@ -96,16 +103,8 @@ export function BlockItem({
   ...rest
 }: { className?: string; children: ReactNode } & HTMLAttributes<HTMLDivElement>) {
   const childrenArray = Children.toArray(children);
-  const Header = childrenArray.find(
-    (child) =>
-      isValidElement(child) && typeof child.type === "function" && child.type === BlockItemHeader,
-  );
-  const Content = childrenArray.find(
-    (child) =>
-      isValidElement(child) &&
-      typeof child.type === "function" &&
-      (child.type === BlockItemContent || child.type === BlockItemContentHighlightable),
-  );
+  const Header = childrenArray.find((child) => hasChildRole(child, BLOCK_ROLE.header));
+  const Content = childrenArray.find((child) => hasChildRole(child, BLOCK_ROLE.content));
   return (
     <div className={cn("flex w-full flex-col gap-1 px-2 md:w-1/2 md:px-2.5", className)} {...rest}>
       {Header}
@@ -137,6 +136,7 @@ export function BlockItemContent({
   }
   return children;
 }
+withChildRole(BlockItemContent, BLOCK_ROLE.content);
 
 const routeApi = getRouteApi("__root__");
 
@@ -181,6 +181,7 @@ export function BlockItemContentHighlightable({
     </div>
   );
 }
+withChildRole(BlockItemContentHighlightable, BLOCK_ROLE.content);
 
 type TBlockItemButtonLikeProps = {
   Icon?: FC<{ className?: string; isEditing?: boolean }>;

@@ -5,9 +5,15 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { hasChildRole, withChildRole } from "@/components/ui/child-role";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { Children, cloneElement, FC, isValidElement, ReactNode } from "react";
+
+const BOTTOM_DRAWER_ROLE = {
+  trigger: "bottom-drawer.trigger",
+  content: "bottom-drawer.content",
+} as const;
 
 type TProps = {
   title: string;
@@ -37,18 +43,8 @@ export default function BottomDrawer({
   onEscapeKeyDown,
 }: TProps) {
   const childrenArray = Children.toArray(children);
-  const Trigger = childrenArray.find(
-    (child) =>
-      isValidElement(child) &&
-      typeof child.type === "function" &&
-      child.type === BottomDrawerTrigger,
-  );
-  const Content = childrenArray.find(
-    (child) =>
-      isValidElement(child) &&
-      typeof child.type === "function" &&
-      child.type === BottomDrawerContent,
-  );
+  const Trigger = childrenArray.find((child) => hasChildRole(child, BOTTOM_DRAWER_ROLE.trigger));
+  const Content = childrenArray.find((child) => hasChildRole(child, BOTTOM_DRAWER_ROLE.content));
 
   return (
     <Drawer
@@ -118,6 +114,7 @@ function BottomDrawerTrigger({
   }
   return children;
 }
+withChildRole(BottomDrawerTrigger, BOTTOM_DRAWER_ROLE.trigger);
 
 function BottomDrawerContent({
   children,
@@ -132,5 +129,6 @@ function BottomDrawerContent({
   }
   return children;
 }
+withChildRole(BottomDrawerContent, BOTTOM_DRAWER_ROLE.content);
 
 export { BottomDrawerTrigger, BottomDrawerContent };

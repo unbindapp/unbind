@@ -1,5 +1,11 @@
+import { hasChildRole, withChildRole } from "@/components/ui/child-role";
 import { cn } from "@/components/ui/utils";
 import { Children, cloneElement, isValidElement, ReactNode, useState } from "react";
+
+const TOGGLEABLE_ROLE = {
+  untoggled: "toggleable.untoggled",
+  toggled: "toggleable.toggled",
+} as const;
 
 export function Toggleable({
   children,
@@ -16,13 +22,12 @@ export function Toggleable({
     setToggled((current) => (toggled !== undefined ? toggled : !current));
   };
 
-  const UntoggledChild = childrenArray.find(
-    (child) =>
-      isValidElement(child) && typeof child.type === "function" && child.type === Untoggled,
+  const UntoggledChild = childrenArray.find((child) =>
+    hasChildRole(child, TOGGLEABLE_ROLE.untoggled),
   );
 
-  const ToggledChild = childrenArray.find(
-    (child) => isValidElement(child) && typeof child.type === "function" && child.type === Toggled,
+  const ToggledChild = childrenArray.find((child) =>
+    hasChildRole(child, TOGGLEABLE_ROLE.toggled),
   );
 
   if (!toggled && UntoggledChild && isValidElement(UntoggledChild)) {
@@ -71,6 +76,8 @@ export function Untoggled({
 
   return renderedChildren;
 }
+withChildRole(Untoggled, TOGGLEABLE_ROLE.untoggled);
+withChildRole(Toggled, TOGGLEABLE_ROLE.toggled);
 
 export function Toggled({
   children,

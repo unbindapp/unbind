@@ -3,6 +3,7 @@ import BottomDrawer, {
   BottomDrawerTrigger,
 } from "@/components/navigation/bottom-drawer";
 import { useDeviceSize } from "@/components/providers/device-size-provider";
+import { hasChildRole, withChildRole } from "@/components/ui/child-role";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +12,12 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { Children, cloneElement, FC, isValidElement, ReactNode } from "react";
+
+const DROPDOWN_OR_DRAWER_ROLE = {
+  trigger: "dropdown-or-drawer.trigger",
+  contentForDrawer: "dropdown-or-drawer.content-for-drawer",
+  contentForDropdown: "dropdown-or-drawer.content-for-dropdown",
+} as const;
 
 export type TDropdownOrDrawerProps = {
   title: string;
@@ -38,23 +45,14 @@ export function DropdownOrDrawer({
   const { isExtraSmall } = useDeviceSize();
 
   const childrenArray = Children.toArray(children);
-  const Trigger = childrenArray.find(
-    (child) =>
-      isValidElement(child) &&
-      typeof child.type === "function" &&
-      child.type === DropdownOrDrawerTrigger,
+  const Trigger = childrenArray.find((child) =>
+    hasChildRole(child, DROPDOWN_OR_DRAWER_ROLE.trigger),
   );
-  const ContentForDrawer = childrenArray.find(
-    (child) =>
-      isValidElement(child) &&
-      typeof child.type === "function" &&
-      child.type === DropdownOrDrawerContentForDrawer,
+  const ContentForDrawer = childrenArray.find((child) =>
+    hasChildRole(child, DROPDOWN_OR_DRAWER_ROLE.contentForDrawer),
   );
-  const ContentForDropdown = childrenArray.find(
-    (child) =>
-      isValidElement(child) &&
-      typeof child.type === "function" &&
-      child.type === DropdownOrDrawerContentForDropdown,
+  const ContentForDropdown = childrenArray.find((child) =>
+    hasChildRole(child, DROPDOWN_OR_DRAWER_ROLE.contentForDropdown),
   );
 
   if (isExtraSmall) {
@@ -112,6 +110,7 @@ function DropdownOrDrawerTrigger({
   }
   return children;
 }
+withChildRole(DropdownOrDrawerTrigger, DROPDOWN_OR_DRAWER_ROLE.trigger);
 
 function DropdownOrDrawerContentForDropdown({
   children,
@@ -126,6 +125,7 @@ function DropdownOrDrawerContentForDropdown({
   }
   return children;
 }
+withChildRole(DropdownOrDrawerContentForDropdown, DROPDOWN_OR_DRAWER_ROLE.contentForDropdown);
 
 function DropdownOrDrawerContentForDrawer({
   children,
@@ -140,6 +140,7 @@ function DropdownOrDrawerContentForDrawer({
   }
   return children;
 }
+withChildRole(DropdownOrDrawerContentForDrawer, DROPDOWN_OR_DRAWER_ROLE.contentForDrawer);
 
 export {
   DropdownOrDrawerContentForDrawer,
