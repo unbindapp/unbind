@@ -1,4 +1,4 @@
-import { createFileRoute, Link, redirect, useRouter } from "@tanstack/react-router";
+import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
 
 import { teamsListQuery } from "@/lib/queries/teams";
 import { getGoClient } from "@/lib/server/client";
