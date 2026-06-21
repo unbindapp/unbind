@@ -588,7 +588,7 @@ function healthCheckTypeToName(type: THealthCheckType | (string & {})) {
 }
 
 function getEntityId(service: TServiceShallow): string {
-  return `health-${service.id}`;
+  return `health_${service.id}`;
 }
 
 function validateHealthCheckEndpoint(value: string) {

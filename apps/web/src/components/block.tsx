@@ -1,7 +1,18 @@
 import { Button, buttonVariants, TButtonProps } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
+import { useMounted } from "@/lib/hooks/use-mounted";
+import { getRouteApi, useSearch } from "@tanstack/react-router";
 import { ChevronDownIcon, ExternalLinkIcon } from "lucide-react";
-import { Children, cloneElement, FC, HTMLAttributes, isValidElement, ReactNode } from "react";
+import {
+  Children,
+  cloneElement,
+  FC,
+  HTMLAttributes,
+  isValidElement,
+  ReactNode,
+  useEffect,
+  useState,
+} from "react";
 
 export function Block({
   className,
@@ -244,5 +255,46 @@ export function BlockItemButtonLike({
         />
       )}
     </Element>
+  );
+}
+
+const routeApi = getRouteApi("__root__");
+
+export function BlockItemHighlightable({
+  id,
+  className,
+  children,
+}: {
+  id: string;
+  className?: string;
+  children?: React.ReactNode;
+}) {
+  const [isHighlighted, setIsHighlighted] = useState(false);
+  const { highlight_id } = routeApi.useSearch();
+
+  useEffect(() => {
+    if (highlight_id === id) {
+      const timeout = setTimeout(() => {
+        setIsHighlighted(true);
+        const timeout = setTimeout(() => {
+          setIsHighlighted(false);
+        }, 2500);
+        return () => clearTimeout(timeout);
+      }, 200);
+      return () => clearTimeout(timeout);
+    }
+  }, [highlight_id]);
+
+  return (
+    <div
+      data-highlight={isHighlighted || undefined}
+      id={id}
+      className={cn(
+        "data-highlight:shadow-block-card-highlight-active shadow-block-card-highlight-idle shadow-success/75 transition-shadow duration-300",
+        className,
+      )}
+    >
+      {children}
+    </div>
   );
 }

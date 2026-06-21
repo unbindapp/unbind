@@ -4,7 +4,18 @@ import { extendTailwindMerge } from "tailwind-merge";
 const twMerge = extendTailwindMerge({
   extend: {
     classGroups: {
-      shadow: [{ shadow: ["navbar", "dialog", "card-highlight", "md"] }],
+      shadow: [
+        {
+          shadow: [
+            "navbar",
+            "dialog",
+            "card-highlight",
+            "md",
+            "block-card-highlight-active",
+            "block-card-highlight-idle",
+          ],
+        },
+      ],
     },
   },
 });

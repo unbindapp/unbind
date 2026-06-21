@@ -18,6 +18,7 @@ export type RouterContext = {
 const searchSchema = z.object({
   [commandPanelKey]: z.string().optional(),
   [commandPanelPageKey]: z.string().optional(),
+  highlight_id: z.string().optional(),
 });
 
 // Routes reachable while signed out. Everything else (incl. /sign-out) requires auth.

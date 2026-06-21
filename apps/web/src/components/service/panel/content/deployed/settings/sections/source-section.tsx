@@ -435,5 +435,5 @@ function DatabaseSection({ type, version, service }: TDatabaseSectionProps) {
 }
 
 function getEntityId(service: TServiceShallow): string {
-  return `source-${service.id}`;
+  return `source_${service.id}`;
 }

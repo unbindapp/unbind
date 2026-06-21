@@ -287,6 +287,9 @@
   --shadow-dialog: 0rem 0.5rem 1rem 0rem;
   --shadow-card-highlight: inset 0rem 0rem 0rem 4px;
   --shadow-underline: inset 0rem -3px 0rem 0rem;
+  --shadow-block-card-highlight-active:
+    0rem 0rem 0rem 1px, 0rem 0rem 0.4rem 0rem, 0rem 0rem 0.8rem 0rem;
+  --shadow-block-card-highlight-idle: 0rem 0rem 0rem 0px, 0rem 0rem 0rem 0rem, 0rem 0rem 0rem 0rem;
 
   --opacity-barrier: var(--opacity-barrier);
   --opacity-shadow-opacity: var(--opacity-shadow);

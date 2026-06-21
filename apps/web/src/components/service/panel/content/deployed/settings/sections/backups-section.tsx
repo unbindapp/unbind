@@ -250,5 +250,5 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
 }
 
 function getEntityId(service: TServiceShallow): string {
-  return `backups-${service.id}`;
+  return `backups_${service.id}`;
 }

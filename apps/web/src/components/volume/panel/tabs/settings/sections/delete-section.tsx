@@ -84,5 +84,5 @@ export default function DeleteSection({ volume, className }: TProps) {
 }
 
 function getEntityId(volume: TVolumeShallow): string {
-  return `danger-${volume.id}`;
+  return `danger_${volume.id}`;
 }

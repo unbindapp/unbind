@@ -4,6 +4,7 @@ import {
   BlockItemContent,
   BlockItemDescription,
   BlockItemHeader,
+  BlockItemHighlightable,
   BlockItemTitle,
 } from "@/components/block";
 import useUpdateService, {
@@ -21,6 +22,8 @@ import { useMemo } from "react";
 type TProps = {
   service: TServiceShallow;
 };
+
+export const deploySectionInstanceSliderId = getDeploySectionEntityId("instance_slider");
 
 export default function DeploySection({ service }: TProps) {
   if (service.type === "github") {
@@ -66,7 +69,7 @@ const memoryLimits = {
 };
 
 function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
-  const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
+  const sectionHighlightId = useMemo(() => getDeploySectionId(service), [service]);
 
   const {
     mutateAsync: updateService,
@@ -156,7 +159,10 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                 </BlockItemDescription>
               </BlockItemHeader>
               <BlockItemContent>
-                <div className="flex w-full flex-col rounded-lg border pb-1.5">
+                <BlockItemHighlightable
+                  id={deploySectionInstanceSliderId}
+                  className="flex w-full flex-col rounded-lg border pb-1.5"
+                >
                   <ValueTitle
                     title="Instances"
                     value={field.state.value ? field.state.value.toString() : "1"}
@@ -176,7 +182,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                       field.handleChange(value[0]);
                     }}
                   />
-                </div>
+                </BlockItemHighlightable>
               </BlockItemContent>
             </BlockItem>
           )}
@@ -303,6 +309,10 @@ function ValueTitle({
   );
 }
 
-function getEntityId(service: TServiceShallow): string {
-  return `deploy-${service.id}`;
+function getDeploySectionId(service: TServiceShallow): string {
+  return `deploy_${service.id}`;
+}
+
+function getDeploySectionEntityId(entity: string): string {
+  return `deploy_${entity}`;
 }

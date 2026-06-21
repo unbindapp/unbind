@@ -64,5 +64,5 @@ export default function DeleteSection({ service, className }: Props) {
 }
 
 function getEntityId(service: TServiceShallow): string {
-  return `danger-${service.id}`;
+  return `danger_${service.id}`;
 }

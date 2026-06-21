@@ -14,6 +14,7 @@ import { HistoryIcon, RocketIcon, ServerIcon } from "lucide-react";
 import { useMemo } from "react";
 import { useInstanceHealth } from "@/components/instances/instance-health-provider";
 import { LinkButton } from "@/components/ui/button";
+import { deploySectionInstanceSliderId } from "@/components/service/panel/content/deployed/settings/sections/deploy-section";
 
 export default function Deployments({ service }: { service: TServiceShallow }) {
   const {
@@ -121,7 +122,7 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
 
 function InfoRow() {
   return (
-    <div className="-mt-2 flex w-full items-center">
+    <div className="-mt-1 flex w-full items-center sm:-mt-2">
       <InstancesButton />
     </div>
   );
@@ -143,7 +144,11 @@ function InstancesButton() {
       to="/$team_id/project/$project_id"
       hash="deploy"
       params={{ team_id: teamId, project_id: projectId }}
-      search={(prev) => ({ ...prev, service_tab: "settings" })}
+      search={(prev) => ({
+        ...prev,
+        service_tab: "settings",
+        highlight_id: deploySectionInstanceSliderId,
+      })}
       data-pending={isPending || undefined}
       data-error={isError || undefined}
       variant="ghost"

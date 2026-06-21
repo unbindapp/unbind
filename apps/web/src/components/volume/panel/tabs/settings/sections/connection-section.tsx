@@ -57,7 +57,7 @@ export default function ConnectionSection({ volume }: TProps) {
           )}
         </p>
         <div className="relative w-full">
-          <FolderClosedIcon className="text-muted-foreground group-data-pending/section:animate-skeleton group-data-pending/section:bg-muted-foreground absolute top-1/2 left-3.25 z-[1] size-5 -translate-y-1/2 group-data-pending/section:rounded-md" />
+          <FolderClosedIcon className="text-muted-foreground group-data-pending/section:animate-skeleton group-data-pending/section:bg-muted-foreground absolute top-1/2 left-3.25 z-1 size-5 -translate-y-1/2 group-data-pending/section:rounded-md" />
           <Input
             disabled
             fadeOnDisabled={false}
@@ -89,5 +89,5 @@ export default function ConnectionSection({ volume }: TProps) {
 }
 
 function getEntityId(volume: TVolumeShallow): string {
-  return `connection-${volume.id}`;
+  return `connection_${volume.id}`;
 }

@@ -535,5 +535,5 @@ function GitSection({ service }: TGitSectionProps) {
 }
 
 function getEntityId(service: TServiceShallow): string {
-  return `build-${service.id}`;
+  return `build_${service.id}`;
 }

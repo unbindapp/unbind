@@ -354,5 +354,5 @@ function ExpandDialogTrigger({
 }
 
 function getEntityId(volume: TVolumeShallow): string {
-  return `expand-${volume.id}`;
+  return `expand_${volume.id}`;
 }
