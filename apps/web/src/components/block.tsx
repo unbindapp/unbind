@@ -103,7 +103,9 @@ export function BlockItem({
   );
   const Content = childrenArray.find(
     (child) =>
-      isValidElement(child) && typeof child.type === "function" && child.type === BlockItemContent,
+      isValidElement(child) &&
+      typeof child.type === "function" &&
+      (child.type === BlockItemContent || child.type === BlockItemContentHighlightable),
   );
   return (
     <div className={cn("flex w-full flex-col gap-1 px-2 md:w-1/2 md:px-2.5", className)} {...rest}>
@@ -135,6 +137,47 @@ export function BlockItemContent({
     return cloneElement(children, mergedProps);
   }
   return children;
+}
+
+const routeApi = getRouteApi("__root__");
+
+export function BlockItemContentHighlightable({
+  id,
+  className,
+  children,
+}: {
+  id: string;
+  className?: string;
+  children?: React.ReactNode;
+}) {
+  const [isHighlighted, setIsHighlighted] = useState(false);
+  const { highlight_id } = routeApi.useSearch();
+
+  useEffect(() => {
+    if (highlight_id === id) {
+      const timeout = setTimeout(() => {
+        setIsHighlighted(true);
+        const timeout = setTimeout(() => {
+          setIsHighlighted(false);
+        }, 3000);
+        return () => clearTimeout(timeout);
+      }, 300);
+      return () => clearTimeout(timeout);
+    }
+  }, [highlight_id]);
+
+  return (
+    <div
+      data-highlight={isHighlighted || undefined}
+      id={id}
+      className={cn(
+        "data-highlight:shadow-block-card-highlight-active shadow-block-card-highlight-idle shadow-success/75 transition-shadow duration-300",
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
 }
 
 type TBlockItemButtonLikeProps = {
@@ -255,46 +298,5 @@ export function BlockItemButtonLike({
         />
       )}
     </Element>
-  );
-}
-
-const routeApi = getRouteApi("__root__");
-
-export function BlockItemHighlightable({
-  id,
-  className,
-  children,
-}: {
-  id: string;
-  className?: string;
-  children?: React.ReactNode;
-}) {
-  const [isHighlighted, setIsHighlighted] = useState(false);
-  const { highlight_id } = routeApi.useSearch();
-
-  useEffect(() => {
-    if (highlight_id === id) {
-      const timeout = setTimeout(() => {
-        setIsHighlighted(true);
-        const timeout = setTimeout(() => {
-          setIsHighlighted(false);
-        }, 2500);
-        return () => clearTimeout(timeout);
-      }, 200);
-      return () => clearTimeout(timeout);
-    }
-  }, [highlight_id]);
-
-  return (
-    <div
-      data-highlight={isHighlighted || undefined}
-      id={id}
-      className={cn(
-        "data-highlight:shadow-block-card-highlight-active shadow-block-card-highlight-idle shadow-success/75 transition-shadow duration-300",
-        className,
-      )}
-    >
-      {children}
-    </div>
   );
 }

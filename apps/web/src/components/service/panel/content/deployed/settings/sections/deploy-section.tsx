@@ -4,7 +4,7 @@ import {
   BlockItemContent,
   BlockItemDescription,
   BlockItemHeader,
-  BlockItemHighlightable,
+  BlockItemContentHighlightable,
   BlockItemTitle,
 } from "@/components/block";
 import useUpdateService, {
@@ -158,32 +158,30 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                   The number of instances/replicas to run for this service.
                 </BlockItemDescription>
               </BlockItemHeader>
-              <BlockItemContent>
-                <BlockItemHighlightable
-                  id={deploySectionInstanceSliderId}
-                  className="flex w-full flex-col rounded-lg border pb-1.5"
-                >
-                  <ValueTitle
-                    title="Instances"
-                    value={field.state.value ? field.state.value.toString() : "1"}
-                    hasChanges={!field.state.meta.isDefaultValue}
-                  />
-                  <field.StorageSizeInput
-                    field={field}
-                    className="w-full px-3.5 py-3"
-                    onBlur={field.handleBlur}
-                    min={1}
-                    max={10}
-                    step={1}
-                    hideMinMax
-                    defaultValue={[service.config.replicas]}
-                    value={field.state.value ? [field.state.value] : undefined}
-                    onValueChange={(value) => {
-                      field.handleChange(value[0]);
-                    }}
-                  />
-                </BlockItemHighlightable>
-              </BlockItemContent>
+              <BlockItemContentHighlightable
+                id={deploySectionInstanceSliderId}
+                className="flex w-full flex-col rounded-lg border pb-1.5"
+              >
+                <ValueTitle
+                  title="Instances"
+                  value={field.state.value ? field.state.value.toString() : "1"}
+                  hasChanges={!field.state.meta.isDefaultValue}
+                />
+                <field.StorageSizeInput
+                  field={field}
+                  className="w-full px-3.5 py-3"
+                  onBlur={field.handleBlur}
+                  min={1}
+                  max={10}
+                  step={1}
+                  hideMinMax
+                  defaultValue={[service.config.replicas]}
+                  value={field.state.value ? [field.state.value] : undefined}
+                  onValueChange={(value) => {
+                    field.handleChange(value[0]);
+                  }}
+                />
+              </BlockItemContentHighlightable>
             </BlockItem>
           )}
         />
