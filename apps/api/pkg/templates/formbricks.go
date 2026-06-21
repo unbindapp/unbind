@@ -13,7 +13,7 @@ func formbricksTemplate() *schema.TemplateDefinition {
 		Icon:        "formbricks",
 		Keywords:    []string{"forms", "surveys", "feedback", "analytics", "open source", "typeform alternative"},
 		Description: "Typeform alternative for user feedback and surveys.",
-		Version:     1,
+		Version:     2,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumCPUs:  1,
 			MinimumRAMGB: 2,

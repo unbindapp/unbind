@@ -13,7 +13,7 @@ func wireGuardTemplate() *schema.TemplateDefinition {
 		Icon:        "wireguard",
 		Keywords:    []string{"wireguard", "vpn", "tcp tunnel", "udp2raw", "openvpn"},
 		Description: "Fast, modern, and open source VPN.",
-		Version:     1,
+		Version:     2,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumCPUs:  1,
 			MinimumRAMGB: 0.25,

@@ -14,7 +14,7 @@ func supabaseTemplate() *schema.TemplateDefinition {
 		Icon:        "supabase",
 		Keywords:    []string{"database", "auth", "storage", "supabase", "postgres", "pocketbase"},
 		Description: "The open source Firebase alternative.",
-		Version:     1,
+		Version:     2,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumCPUs:  2,
 			MinimumRAMGB: 4,

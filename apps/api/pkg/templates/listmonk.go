@@ -13,7 +13,7 @@ func listmonkTemplate() *schema.TemplateDefinition {
 		Icon:        "listmonk",
 		Keywords:    []string{"newsletter", "email", "mailing list", "campaign", "marketing", "smtp"},
 		Description: "Newsletter and mailing list manager.",
-		Version:     1,
+		Version:     2,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumCPUs:  1,
 			MinimumRAMGB: 0.25,
