@@ -1458,6 +1458,16 @@ func ProtectedVariablesNotNil() predicate.ServiceConfig {
 	return predicate.ServiceConfig(sql.FieldNotNull(FieldProtectedVariables))
 }
 
+// VariableMetadataIsNil applies the IsNil predicate on the "variable_metadata" field.
+func VariableMetadataIsNil() predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldIsNull(FieldVariableMetadata))
+}
+
+// VariableMetadataNotNil applies the NotNil predicate on the "variable_metadata" field.
+func VariableMetadataNotNil() predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldNotNull(FieldVariableMetadata))
+}
+
 // InitContainersIsNil applies the IsNil predicate on the "init_containers" field.
 func InitContainersIsNil() predicate.ServiceConfig {
 	return predicate.ServiceConfig(sql.FieldIsNull(FieldInitContainers))

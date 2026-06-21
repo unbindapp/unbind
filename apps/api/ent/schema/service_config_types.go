@@ -17,6 +17,17 @@ type HostSpec struct {
 	Path       string        `json:"path"`
 	TargetPort *int32        `json:"target_port,omitempty" required:"false"`
 	Protocol   *HostProtocol `json:"protocol,omitempty" required:"false" doc:"Application protocol for the domain: http (default) or grpc"`
+	// Template input metadata, snapshotted at deploy time and preserved across edits
+	TemplateInputID *string `json:"template_input_id,omitempty" required:"false"`
+	DisplayName     *string `json:"display_name,omitempty" required:"false" doc:"Human label from the template input, e.g. Cloud Domain"`
+	Description     *string `json:"description,omitempty" required:"false"`
+}
+
+// VariableMetadata describes a deployed variable, sourced from a template input.
+type VariableMetadata struct {
+	TemplateInputID *string `json:"template_input_id,omitempty"`
+	DisplayName     string  `json:"display_name,omitempty"`
+	Description     string  `json:"description,omitempty"`
 }
 
 // HostProtocol is the application-layer protocol for a domain route.

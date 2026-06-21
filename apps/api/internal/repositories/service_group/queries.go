@@ -32,3 +32,16 @@ func (self *ServiceGroupRepository) GetServices(ctx context.Context, id uuid.UUI
 		).
 		All(ctx)
 }
+
+// Get all services in a service group with config and template loaded
+func (self *ServiceGroupRepository) GetServicesWithDetails(ctx context.Context, id uuid.UUID) ([]*ent.Service, error) {
+	return self.base.DB.ServiceGroup.Query().
+		Where(servicegroup.ID(id)).
+		QueryServices().
+		WithServiceConfig().
+		WithTemplate().
+		Order(
+			ent.Desc(service.FieldCreatedAt),
+		).
+		All(ctx)
+}

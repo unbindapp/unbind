@@ -1356,6 +1356,55 @@ func (_c *ServiceRepositoryMock_UpdateDatabaseStorageSize_Call) RunAndReturn(run
 	return _c
 }
 
+// UpdateVariableMetadata provides a mock function with given fields: ctx, tx, serviceID, metadata
+func (_m *ServiceRepositoryMock) UpdateVariableMetadata(ctx context.Context, tx repository.TxInterface, serviceID uuid.UUID, metadata map[string]schema.VariableMetadata) error {
+	ret := _m.Called(ctx, tx, serviceID, metadata)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateVariableMetadata")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, map[string]schema.VariableMetadata) error); ok {
+		r0 = rf(ctx, tx, serviceID, metadata)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// ServiceRepositoryMock_UpdateVariableMetadata_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateVariableMetadata'
+type ServiceRepositoryMock_UpdateVariableMetadata_Call struct {
+	*mock.Call
+}
+
+// UpdateVariableMetadata is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - serviceID uuid.UUID
+//   - metadata map[string]schema.VariableMetadata
+func (_e *ServiceRepositoryMock_Expecter) UpdateVariableMetadata(ctx interface{}, tx interface{}, serviceID interface{}, metadata interface{}) *ServiceRepositoryMock_UpdateVariableMetadata_Call {
+	return &ServiceRepositoryMock_UpdateVariableMetadata_Call{Call: _e.mock.On("UpdateVariableMetadata", ctx, tx, serviceID, metadata)}
+}
+
+func (_c *ServiceRepositoryMock_UpdateVariableMetadata_Call) Run(run func(ctx context.Context, tx repository.TxInterface, serviceID uuid.UUID, metadata map[string]schema.VariableMetadata)) *ServiceRepositoryMock_UpdateVariableMetadata_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(repository.TxInterface), args[2].(uuid.UUID), args[3].(map[string]schema.VariableMetadata))
+	})
+	return _c
+}
+
+func (_c *ServiceRepositoryMock_UpdateVariableMetadata_Call) Return(_a0 error) *ServiceRepositoryMock_UpdateVariableMetadata_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *ServiceRepositoryMock_UpdateVariableMetadata_Call) RunAndReturn(run func(context.Context, repository.TxInterface, uuid.UUID, map[string]schema.VariableMetadata) error) *ServiceRepositoryMock_UpdateVariableMetadata_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // UpdateVariableMounts provides a mock function with given fields: ctx, tx, serviceID, variableMounts
 func (_m *ServiceRepositoryMock) UpdateVariableMounts(ctx context.Context, tx repository.TxInterface, serviceID uuid.UUID, variableMounts []*schema.VariableMount) error {
 	ret := _m.Called(ctx, tx, serviceID, variableMounts)

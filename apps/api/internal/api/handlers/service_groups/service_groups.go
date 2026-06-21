@@ -33,6 +33,14 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Method:      http.MethodGet,
 	}, handlers.GetServiceGroup)
 
+	oapi.Register(grp, oapi.Read, huma.Operation{
+		OperationID: "get-service-group-info",
+		Summary:     "Get Service Group Info",
+		Description: "Get a template-creation-screen style summary of a deployed service group, with labeled hosts and variables.",
+		Path:        "/info",
+		Method:      http.MethodGet,
+	}, handlers.GetServiceGroupInfo)
+
 	oapi.Register(grp, oapi.Create, huma.Operation{
 		OperationID: "create-service-group",
 		Summary:     "Create Service Group",

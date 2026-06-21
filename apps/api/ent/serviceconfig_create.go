@@ -374,6 +374,12 @@ func (_c *ServiceConfigCreate) SetProtectedVariables(v []string) *ServiceConfigC
 	return _c
 }
 
+// SetVariableMetadata sets the "variable_metadata" field.
+func (_c *ServiceConfigCreate) SetVariableMetadata(v map[string]schema.VariableMetadata) *ServiceConfigCreate {
+	_c.mutation.SetVariableMetadata(v)
+	return _c
+}
+
 // SetInitContainers sets the "init_containers" field.
 func (_c *ServiceConfigCreate) SetInitContainers(v []*schema.InitContainer) *ServiceConfigCreate {
 	_c.mutation.SetInitContainers(v)
@@ -699,6 +705,10 @@ func (_c *ServiceConfigCreate) createSpec() (*ServiceConfig, *sqlgraph.CreateSpe
 	if value, ok := _c.mutation.ProtectedVariables(); ok {
 		_spec.SetField(serviceconfig.FieldProtectedVariables, field.TypeJSON, value)
 		_node.ProtectedVariables = value
+	}
+	if value, ok := _c.mutation.VariableMetadata(); ok {
+		_spec.SetField(serviceconfig.FieldVariableMetadata, field.TypeJSON, value)
+		_node.VariableMetadata = value
 	}
 	if value, ok := _c.mutation.InitContainers(); ok {
 		_spec.SetField(serviceconfig.FieldInitContainers, field.TypeJSON, value)
@@ -1289,6 +1299,24 @@ func (u *ServiceConfigUpsert) UpdateProtectedVariables() *ServiceConfigUpsert {
 // ClearProtectedVariables clears the value of the "protected_variables" field.
 func (u *ServiceConfigUpsert) ClearProtectedVariables() *ServiceConfigUpsert {
 	u.SetNull(serviceconfig.FieldProtectedVariables)
+	return u
+}
+
+// SetVariableMetadata sets the "variable_metadata" field.
+func (u *ServiceConfigUpsert) SetVariableMetadata(v map[string]schema.VariableMetadata) *ServiceConfigUpsert {
+	u.Set(serviceconfig.FieldVariableMetadata, v)
+	return u
+}
+
+// UpdateVariableMetadata sets the "variable_metadata" field to the value that was provided on create.
+func (u *ServiceConfigUpsert) UpdateVariableMetadata() *ServiceConfigUpsert {
+	u.SetExcluded(serviceconfig.FieldVariableMetadata)
+	return u
+}
+
+// ClearVariableMetadata clears the value of the "variable_metadata" field.
+func (u *ServiceConfigUpsert) ClearVariableMetadata() *ServiceConfigUpsert {
+	u.SetNull(serviceconfig.FieldVariableMetadata)
 	return u
 }
 
@@ -1957,6 +1985,27 @@ func (u *ServiceConfigUpsertOne) UpdateProtectedVariables() *ServiceConfigUpsert
 func (u *ServiceConfigUpsertOne) ClearProtectedVariables() *ServiceConfigUpsertOne {
 	return u.Update(func(s *ServiceConfigUpsert) {
 		s.ClearProtectedVariables()
+	})
+}
+
+// SetVariableMetadata sets the "variable_metadata" field.
+func (u *ServiceConfigUpsertOne) SetVariableMetadata(v map[string]schema.VariableMetadata) *ServiceConfigUpsertOne {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.SetVariableMetadata(v)
+	})
+}
+
+// UpdateVariableMetadata sets the "variable_metadata" field to the value that was provided on create.
+func (u *ServiceConfigUpsertOne) UpdateVariableMetadata() *ServiceConfigUpsertOne {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.UpdateVariableMetadata()
+	})
+}
+
+// ClearVariableMetadata clears the value of the "variable_metadata" field.
+func (u *ServiceConfigUpsertOne) ClearVariableMetadata() *ServiceConfigUpsertOne {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.ClearVariableMetadata()
 	})
 }
 
@@ -2798,6 +2847,27 @@ func (u *ServiceConfigUpsertBulk) UpdateProtectedVariables() *ServiceConfigUpser
 func (u *ServiceConfigUpsertBulk) ClearProtectedVariables() *ServiceConfigUpsertBulk {
 	return u.Update(func(s *ServiceConfigUpsert) {
 		s.ClearProtectedVariables()
+	})
+}
+
+// SetVariableMetadata sets the "variable_metadata" field.
+func (u *ServiceConfigUpsertBulk) SetVariableMetadata(v map[string]schema.VariableMetadata) *ServiceConfigUpsertBulk {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.SetVariableMetadata(v)
+	})
+}
+
+// UpdateVariableMetadata sets the "variable_metadata" field to the value that was provided on create.
+func (u *ServiceConfigUpsertBulk) UpdateVariableMetadata() *ServiceConfigUpsertBulk {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.UpdateVariableMetadata()
+	})
+}
+
+// ClearVariableMetadata clears the value of the "variable_metadata" field.
+func (u *ServiceConfigUpsertBulk) ClearVariableMetadata() *ServiceConfigUpsertBulk {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.ClearVariableMetadata()
 	})
 }
 

@@ -96,6 +96,7 @@ type MutateConfigInput struct {
 	AddVariableMounts             []*schema.VariableMount
 	RemoveVariableMounts          []*schema.VariableMount
 	ProtectedVariables            *[]string
+	VariableMetadata              map[string]schema.VariableMetadata
 	OverwriteVolumes              []schema.ServiceVolume
 	AddVolumes                    []schema.ServiceVolume
 	RemoveVolumes                 []schema.ServiceVolume
@@ -172,6 +173,10 @@ func (self *ServiceRepository) CreateConfig(
 
 	if input.ProtectedVariables != nil {
 		c.SetProtectedVariables(*input.ProtectedVariables)
+	}
+
+	if len(input.VariableMetadata) > 0 {
+		c.SetVariableMetadata(input.VariableMetadata)
 	}
 
 	if len(input.OverwriteVariableMounts) > 0 {
@@ -482,6 +487,12 @@ func (self *ServiceRepository) UpdateConfig(
 	} else if len(input.UpsertHosts) > 0 || len(input.RemoveHosts) > 0 {
 		hosts := existingConfig.Hosts
 
+		// Index existing hosts so we can carry template metadata forward across edits
+		existingByHost := make(map[string]schema.HostSpec, len(hosts))
+		for _, host := range hosts {
+			existingByHost[host.Host] = host
+		}
+
 		// Create a map of hosts to remove for efficient lookup
 		toRemove := make(map[string]bool)
 
@@ -505,8 +516,25 @@ func (self *ServiceRepository) UpdateConfig(
 			}
 		}
 
-		// Append all AddHosts to the filtered list
-		filteredHosts = append(filteredHosts, input.UpsertHosts...)
+		// Append upserts, preserving template metadata from the matched previous host
+		for _, upsertHost := range input.UpsertHosts {
+			matchKey := upsertHost.Host
+			if upsertHost.PrevHost != nil {
+				matchKey = *upsertHost.PrevHost
+			}
+			if prev, ok := existingByHost[matchKey]; ok {
+				if upsertHost.TemplateInputID == nil {
+					upsertHost.TemplateInputID = prev.TemplateInputID
+				}
+				if upsertHost.DisplayName == nil {
+					upsertHost.DisplayName = prev.DisplayName
+				}
+				if upsertHost.Description == nil {
+					upsertHost.Description = prev.Description
+				}
+			}
+			filteredHosts = append(filteredHosts, upsertHost)
+		}
 
 		if len(filteredHosts) == 0 {
 			upd.ClearHosts()
@@ -578,6 +606,18 @@ func (self *ServiceRepository) UpdateVariableMounts(ctx context.Context, tx repo
 	return db.ServiceConfig.Update().
 		Where(serviceconfig.ServiceID(serviceID)).
 		SetVariableMounts(variableMounts).
+		Exec(ctx)
+}
+
+func (self *ServiceRepository) UpdateVariableMetadata(ctx context.Context, tx repository.TxInterface, serviceID uuid.UUID, metadata map[string]schema.VariableMetadata) error {
+	db := self.base.DB
+	if tx != nil {
+		db = tx.Client()
+	}
+
+	return db.ServiceConfig.Update().
+		Where(serviceconfig.ServiceID(serviceID)).
+		SetVariableMetadata(metadata).
 		Exec(ctx)
 }
 

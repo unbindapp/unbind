@@ -72,3 +72,37 @@ func (self *HandlerGroup) GetServiceGroup(ctx context.Context, input *GetService
 	resp.Body.Data = serviceGroup
 	return resp, nil
 }
+
+// Service group info / summary
+type GetServiceGroupInfoInput struct {
+	server.BaseAuthInput
+	models.GetServiceGroupInput
+}
+
+type GetServiceGroupInfoResponse struct {
+	Body struct {
+		Data *models.ServiceGroupInfoResponse `json:"data"`
+	}
+}
+
+// GetServiceGroupInfo handles GET /service_groups/info
+func (self *HandlerGroup) GetServiceGroupInfo(ctx context.Context, input *GetServiceGroupInfoInput) (*GetServiceGroupInfoResponse, error) {
+	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := self.srv.ServiceGroupService.GetServiceGroupInfo(
+		ctx,
+		user.ID,
+		bearerToken,
+		&input.GetServiceGroupInput,
+	)
+	if err != nil {
+		return nil, oapi.MapError(err)
+	}
+
+	resp := &GetServiceGroupInfoResponse{}
+	resp.Body.Data = info
+	return resp, nil
+}

@@ -86,6 +86,8 @@ type ServiceConfig struct {
 	VariableMounts []*schema.VariableMount `json:"variable_mounts,omitempty"`
 	// List of protected variables (can be edited, not deleted)
 	ProtectedVariables []string `json:"protected_variables,omitempty"`
+	// Per-variable metadata keyed by variable name, sourced from template inputs
+	VariableMetadata map[string]schema.VariableMetadata `json:"variable_metadata,omitempty"`
 	// Init containers to run before the main container
 	InitContainers []*schema.InitContainer `json:"init_containers,omitempty"`
 	// Resource limits for the service containers
@@ -136,7 +138,7 @@ func (*ServiceConfig) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case serviceconfig.FieldS3BackupSourceID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case serviceconfig.FieldHosts, serviceconfig.FieldPorts, serviceconfig.FieldDatabaseConfig, serviceconfig.FieldVolumes, serviceconfig.FieldSecurityContext, serviceconfig.FieldHealthCheck, serviceconfig.FieldVariableMounts, serviceconfig.FieldProtectedVariables, serviceconfig.FieldInitContainers, serviceconfig.FieldResources:
+		case serviceconfig.FieldHosts, serviceconfig.FieldPorts, serviceconfig.FieldDatabaseConfig, serviceconfig.FieldVolumes, serviceconfig.FieldSecurityContext, serviceconfig.FieldHealthCheck, serviceconfig.FieldVariableMounts, serviceconfig.FieldProtectedVariables, serviceconfig.FieldVariableMetadata, serviceconfig.FieldInitContainers, serviceconfig.FieldResources:
 			values[i] = new([]byte)
 		case serviceconfig.FieldAutoDeploy, serviceconfig.FieldIsPublic:
 			values[i] = new(sql.NullBool)
@@ -383,6 +385,14 @@ func (_m *ServiceConfig) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field protected_variables: %w", err)
 				}
 			}
+		case serviceconfig.FieldVariableMetadata:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field variable_metadata", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.VariableMetadata); err != nil {
+					return fmt.Errorf("unmarshal field variable_metadata: %w", err)
+				}
+			}
 		case serviceconfig.FieldInitContainers:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field init_containers", values[i])
@@ -561,6 +571,9 @@ func (_m *ServiceConfig) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("protected_variables=")
 	builder.WriteString(fmt.Sprintf("%v", _m.ProtectedVariables))
+	builder.WriteString(", ")
+	builder.WriteString("variable_metadata=")
+	builder.WriteString(fmt.Sprintf("%v", _m.VariableMetadata))
 	builder.WriteString(", ")
 	builder.WriteString("init_containers=")
 	builder.WriteString(fmt.Sprintf("%v", _m.InitContainers))

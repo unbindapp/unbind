@@ -131,6 +131,21 @@ func (self *VariablesService) UpdateVariables(
 						return err
 					}
 				}
+
+				// Drop template metadata for variables removed by the overwrite
+				variableMetadata := service.Edges.ServiceConfig.VariableMetadata
+				metadataNeedsUpdate := false
+				for name := range variableMetadata {
+					if _, ok := newVariables[name]; !ok {
+						delete(variableMetadata, name)
+						metadataNeedsUpdate = true
+					}
+				}
+				if metadataNeedsUpdate {
+					if err := self.repo.Service().UpdateVariableMetadata(ctx, tx, service.ID, variableMetadata); err != nil {
+						return err
+					}
+				}
 			}
 
 			_, err = self.k8s.OverwriteSecretValues(ctx, secretName, team.Namespace, newVariables, client)

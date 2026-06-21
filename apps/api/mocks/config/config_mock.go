@@ -62,12 +62,12 @@ func (_c *ConfigMock_GetBuildImage_Call) RunAndReturn(run func() string) *Config
 	return _c
 }
 
-// GetNetworkingProvider provides a mock function with no fields
-func (_m *ConfigMock) GetNetworkingProvider() string {
+// GetBuildkitHost provides a mock function with no fields
+func (_m *ConfigMock) GetBuildkitHost() string {
 	ret := _m.Called()
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetNetworkingProvider")
+		panic("no return value specified for GetBuildkitHost")
 	}
 
 	var r0 string
@@ -80,29 +80,29 @@ func (_m *ConfigMock) GetNetworkingProvider() string {
 	return r0
 }
 
-// ConfigMock_GetNetworkingProvider_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetNetworkingProvider'
-type ConfigMock_GetNetworkingProvider_Call struct {
+// ConfigMock_GetBuildkitHost_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetBuildkitHost'
+type ConfigMock_GetBuildkitHost_Call struct {
 	*mock.Call
 }
 
-// GetNetworkingProvider is a helper method to define mock.On call
-func (_e *ConfigMock_Expecter) GetNetworkingProvider() *ConfigMock_GetNetworkingProvider_Call {
-	return &ConfigMock_GetNetworkingProvider_Call{Call: _e.mock.On("GetNetworkingProvider")}
+// GetBuildkitHost is a helper method to define mock.On call
+func (_e *ConfigMock_Expecter) GetBuildkitHost() *ConfigMock_GetBuildkitHost_Call {
+	return &ConfigMock_GetBuildkitHost_Call{Call: _e.mock.On("GetBuildkitHost")}
 }
 
-func (_c *ConfigMock_GetNetworkingProvider_Call) Run(run func()) *ConfigMock_GetNetworkingProvider_Call {
+func (_c *ConfigMock_GetBuildkitHost_Call) Run(run func()) *ConfigMock_GetBuildkitHost_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run()
 	})
 	return _c
 }
 
-func (_c *ConfigMock_GetNetworkingProvider_Call) Return(_a0 string) *ConfigMock_GetNetworkingProvider_Call {
+func (_c *ConfigMock_GetBuildkitHost_Call) Return(_a0 string) *ConfigMock_GetBuildkitHost_Call {
 	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *ConfigMock_GetNetworkingProvider_Call) RunAndReturn(run func() string) *ConfigMock_GetNetworkingProvider_Call {
+func (_c *ConfigMock_GetBuildkitHost_Call) RunAndReturn(run func() string) *ConfigMock_GetBuildkitHost_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -197,51 +197,6 @@ func (_c *ConfigMock_GetGatewayNamespace_Call) RunAndReturn(run func() string) *
 	return _c
 }
 
-// GetBuildkitHost provides a mock function with no fields
-func (_m *ConfigMock) GetBuildkitHost() string {
-	ret := _m.Called()
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetBuildkitHost")
-	}
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func() string); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	return r0
-}
-
-// ConfigMock_GetBuildkitHost_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetBuildkitHost'
-type ConfigMock_GetBuildkitHost_Call struct {
-	*mock.Call
-}
-
-// GetBuildkitHost is a helper method to define mock.On call
-func (_e *ConfigMock_Expecter) GetBuildkitHost() *ConfigMock_GetBuildkitHost_Call {
-	return &ConfigMock_GetBuildkitHost_Call{Call: _e.mock.On("GetBuildkitHost")}
-}
-
-func (_c *ConfigMock_GetBuildkitHost_Call) Run(run func()) *ConfigMock_GetBuildkitHost_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run()
-	})
-	return _c
-}
-
-func (_c *ConfigMock_GetBuildkitHost_Call) Return(_a0 string) *ConfigMock_GetBuildkitHost_Call {
-	_c.Call.Return(_a0)
-	return _c
-}
-
-func (_c *ConfigMock_GetBuildkitHost_Call) RunAndReturn(run func() string) *ConfigMock_GetBuildkitHost_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // GetKubeConfig provides a mock function with no fields
 func (_m *ConfigMock) GetKubeConfig() string {
 	ret := _m.Called()
@@ -283,6 +238,51 @@ func (_c *ConfigMock_GetKubeConfig_Call) Return(_a0 string) *ConfigMock_GetKubeC
 }
 
 func (_c *ConfigMock_GetKubeConfig_Call) RunAndReturn(run func() string) *ConfigMock_GetKubeConfig_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetNetworkingProvider provides a mock function with no fields
+func (_m *ConfigMock) GetNetworkingProvider() string {
+	ret := _m.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetNetworkingProvider")
+	}
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
+// ConfigMock_GetNetworkingProvider_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetNetworkingProvider'
+type ConfigMock_GetNetworkingProvider_Call struct {
+	*mock.Call
+}
+
+// GetNetworkingProvider is a helper method to define mock.On call
+func (_e *ConfigMock_Expecter) GetNetworkingProvider() *ConfigMock_GetNetworkingProvider_Call {
+	return &ConfigMock_GetNetworkingProvider_Call{Call: _e.mock.On("GetNetworkingProvider")}
+}
+
+func (_c *ConfigMock_GetNetworkingProvider_Call) Run(run func()) *ConfigMock_GetNetworkingProvider_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *ConfigMock_GetNetworkingProvider_Call) Return(_a0 string) *ConfigMock_GetNetworkingProvider_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *ConfigMock_GetNetworkingProvider_Call) RunAndReturn(run func() string) *ConfigMock_GetNetworkingProvider_Call {
 	_c.Call.Return(run)
 	return _c
 }

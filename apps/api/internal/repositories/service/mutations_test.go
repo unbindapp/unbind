@@ -597,6 +597,66 @@ func (suite *ServiceMutationsSuite) TestUpdateConfig() {
 		suite.Equal("api2.example.com", api2Host.Host, "Host should be updated to api2.example.com")
 	})
 
+	suite.Run("UpdateConfig Hosts preserve template metadata across edits", func() {
+		// Seed a host carrying template metadata
+		seed := &MutateConfigInput{
+			ServiceID: suite.testService.ID,
+			OverwriteHosts: []schema.HostSpec{
+				{
+					Host:            "cloud.example.com",
+					Path:            "/",
+					TargetPort:      new(int32(8080)),
+					TemplateInputID: new("input_cloud_domain"),
+					DisplayName:     new("Cloud Domain"),
+					Description:     new("Domain for the cloud API"),
+				},
+			},
+		}
+		suite.NoError(suite.serviceRepo.UpdateConfig(suite.Ctx, nil, seed))
+
+		// Edit the host value without resending metadata (mirrors the UI)
+		edit := &MutateConfigInput{
+			ServiceID: suite.testService.ID,
+			UpsertHosts: []schema.HostSpec{
+				{PrevHost: new("cloud.example.com"), Host: "cloud2.example.com", Path: "/", TargetPort: new(int32(8080))},
+			},
+		}
+		suite.NoError(suite.serviceRepo.UpdateConfig(suite.Ctx, nil, edit))
+
+		updated, err := suite.DB.ServiceConfig.Query().
+			Where(serviceconfig.ServiceID(suite.testService.ID)).
+			Only(suite.Ctx)
+		suite.NoError(err)
+
+		var edited *schema.HostSpec
+		for _, host := range updated.Hosts {
+			if host.Host == "cloud2.example.com" {
+				edited = &host
+				break
+			}
+		}
+		suite.NotNil(edited, "edited host should exist")
+		suite.NotNil(edited.DisplayName, "metadata should be carried forward")
+		suite.Equal("Cloud Domain", *edited.DisplayName)
+		suite.Equal("input_cloud_domain", *edited.TemplateInputID)
+		suite.Equal("Domain for the cloud API", *edited.Description)
+
+		// Removing the host drops its metadata entirely
+		remove := &MutateConfigInput{
+			ServiceID:   suite.testService.ID,
+			RemoveHosts: []schema.HostSpec{{Host: "cloud2.example.com"}},
+		}
+		suite.NoError(suite.serviceRepo.UpdateConfig(suite.Ctx, nil, remove))
+
+		afterRemove, err := suite.DB.ServiceConfig.Query().
+			Where(serviceconfig.ServiceID(suite.testService.ID)).
+			Only(suite.Ctx)
+		suite.NoError(err)
+		for _, host := range afterRemove.Hosts {
+			suite.NotEqual("cloud2.example.com", host.Host)
+		}
+	})
+
 	suite.Run("UpdateConfig Resources", func() {
 		resources := &schema.Resources{
 			CPULimitsMillicores:     2000,

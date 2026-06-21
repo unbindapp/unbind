@@ -86,11 +86,14 @@ func (self *VariablesService) DeleteVariablesByKey(ctx context.Context, userID u
 			return err
 		}
 
-		// For updating var mounts
+		// For updating var mounts and template metadata
 		var variableMounts []*schema.VariableMount
+		var variableMetadata map[string]schema.VariableMetadata
 		variableMountsNeedsUpdate := false
+		variableMetadataNeedsUpdate := false
 		if service != nil && service.Edges.ServiceConfig != nil {
 			variableMounts = service.Edges.ServiceConfig.VariableMounts
+			variableMetadata = service.Edges.ServiceConfig.VariableMetadata
 		}
 
 		for _, secretKey := range keys {
@@ -112,11 +115,23 @@ func (self *VariablesService) DeleteVariablesByKey(ctx context.Context, userID u
 				variableMountsNeedsUpdate = true
 				variableMounts = append(variableMounts[:indexToDelete], variableMounts[indexToDelete+1:]...)
 			}
+
+			// Drop template metadata for the deleted variable
+			if _, ok := variableMetadata[secretKey.Name]; ok {
+				delete(variableMetadata, secretKey.Name)
+				variableMetadataNeedsUpdate = true
+			}
 			delete(secrets, secretKey.Name)
 		}
 
 		if variableMountsNeedsUpdate {
 			if err := self.repo.Service().UpdateVariableMounts(ctx, tx, service.ID, variableMounts); err != nil {
+				return err
+			}
+		}
+
+		if variableMetadataNeedsUpdate {
+			if err := self.repo.Service().UpdateVariableMetadata(ctx, tx, service.ID, variableMetadata); err != nil {
 				return err
 			}
 		}

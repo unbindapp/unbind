@@ -553,6 +553,18 @@ func (_u *ServiceConfigUpdate) ClearProtectedVariables() *ServiceConfigUpdate {
 	return _u
 }
 
+// SetVariableMetadata sets the "variable_metadata" field.
+func (_u *ServiceConfigUpdate) SetVariableMetadata(v map[string]schema.VariableMetadata) *ServiceConfigUpdate {
+	_u.mutation.SetVariableMetadata(v)
+	return _u
+}
+
+// ClearVariableMetadata clears the value of the "variable_metadata" field.
+func (_u *ServiceConfigUpdate) ClearVariableMetadata() *ServiceConfigUpdate {
+	_u.mutation.ClearVariableMetadata()
+	return _u
+}
+
 // SetInitContainers sets the "init_containers" field.
 func (_u *ServiceConfigUpdate) SetInitContainers(v []*schema.InitContainer) *ServiceConfigUpdate {
 	_u.mutation.SetInitContainers(v)
@@ -880,6 +892,12 @@ func (_u *ServiceConfigUpdate) sqlSave(ctx context.Context) (_node int, err erro
 	}
 	if _u.mutation.ProtectedVariablesCleared() {
 		_spec.ClearField(serviceconfig.FieldProtectedVariables, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.VariableMetadata(); ok {
+		_spec.SetField(serviceconfig.FieldVariableMetadata, field.TypeJSON, value)
+	}
+	if _u.mutation.VariableMetadataCleared() {
+		_spec.ClearField(serviceconfig.FieldVariableMetadata, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.InitContainers(); ok {
 		_spec.SetField(serviceconfig.FieldInitContainers, field.TypeJSON, value)
@@ -1496,6 +1514,18 @@ func (_u *ServiceConfigUpdateOne) ClearProtectedVariables() *ServiceConfigUpdate
 	return _u
 }
 
+// SetVariableMetadata sets the "variable_metadata" field.
+func (_u *ServiceConfigUpdateOne) SetVariableMetadata(v map[string]schema.VariableMetadata) *ServiceConfigUpdateOne {
+	_u.mutation.SetVariableMetadata(v)
+	return _u
+}
+
+// ClearVariableMetadata clears the value of the "variable_metadata" field.
+func (_u *ServiceConfigUpdateOne) ClearVariableMetadata() *ServiceConfigUpdateOne {
+	_u.mutation.ClearVariableMetadata()
+	return _u
+}
+
 // SetInitContainers sets the "init_containers" field.
 func (_u *ServiceConfigUpdateOne) SetInitContainers(v []*schema.InitContainer) *ServiceConfigUpdateOne {
 	_u.mutation.SetInitContainers(v)
@@ -1853,6 +1883,12 @@ func (_u *ServiceConfigUpdateOne) sqlSave(ctx context.Context) (_node *ServiceCo
 	}
 	if _u.mutation.ProtectedVariablesCleared() {
 		_spec.ClearField(serviceconfig.FieldProtectedVariables, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.VariableMetadata(); ok {
+		_spec.SetField(serviceconfig.FieldVariableMetadata, field.TypeJSON, value)
+	}
+	if _u.mutation.VariableMetadataCleared() {
+		_spec.ClearField(serviceconfig.FieldVariableMetadata, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.InitContainers(); ok {
 		_spec.SetField(serviceconfig.FieldInitContainers, field.TypeJSON, value)

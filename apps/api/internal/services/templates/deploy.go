@@ -230,6 +230,12 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 			return fmt.Errorf("failed to create service group: %w", err)
 		}
 
+		// Index template inputs so deployed variables can carry their metadata
+		inputByID := make(map[string]schema.TemplateInput, len(generatedTemplate.Inputs))
+		for _, in := range generatedTemplate.Inputs {
+			inputByID[in.ID] = in
+		}
+
 		for _, templateService := range generatedTemplate.Services {
 			// Fetch DB metadata (if a database)
 			var dbVersion *string
@@ -304,8 +310,23 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 
 			// Add variables to the secret
 			secretData := make(map[string][]byte)
+			variableMetadata := make(map[string]schema.VariableMetadata)
 			for _, variable := range templateService.Variables {
 				secretData[variable.Name] = []byte(variable.Value)
+
+				// Snapshot template input metadata for variables sourced from a user input
+				if variable.Generator == nil || variable.Generator.Type != schema.GeneratorTypeInput {
+					continue
+				}
+				in, ok := inputByID[variable.Generator.InputID]
+				if !ok || in.Type != schema.InputTypeVariable || in.Hidden {
+					continue
+				}
+				variableMetadata[variable.Name] = schema.VariableMetadata{
+					TemplateInputID: new(in.ID),
+					DisplayName:     in.Name,
+					Description:     in.Description,
+				}
 			}
 
 			// Resolve any references that should be treated as local
@@ -433,6 +454,7 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 				SecurityContext:         templateService.SecurityContext,
 				HealthCheck:             templateService.HealthCheck,
 				OverwriteVariableMounts: templateService.VariablesMounts,
+				VariableMetadata:        variableMetadata,
 				InitContainers:          templateService.InitContainers,
 				Resources:               templateService.Resources,
 			}
@@ -679,6 +701,7 @@ func (self *TemplatesService) resolveHostInputs(
 				return nil, nil, err
 			}
 			hostVal = spec.Host
+			applyHostInputMetadata(spec, in)
 			hostSpecByID[in.ID] = *spec // we already have the full spec
 			valueByID[in.ID] = hostVal
 			continue
@@ -715,11 +738,20 @@ func (self *TemplatesService) resolveHostInputs(
 					}
 				}
 			}
-			hostSpecByID[in.ID] = schema.HostSpec{Host: hostVal, Path: "/", TargetPort: port}
+			spec := schema.HostSpec{Host: hostVal, Path: "/", TargetPort: port}
+			applyHostInputMetadata(&spec, in)
+			hostSpecByID[in.ID] = spec
 			valueByID[in.ID] = hostVal
 		}
 	}
 	return hostSpecByID, valueByID, nil
+}
+
+// applyHostInputMetadata snapshots template input metadata onto a deployed host.
+func applyHostInputMetadata(spec *schema.HostSpec, in schema.TemplateInput) {
+	spec.TemplateInputID = new(in.ID)
+	spec.DisplayName = new(in.Name)
+	spec.Description = new(in.Description)
 }
 
 func (self *TemplatesService) isHostInput(def *schema.TemplateDefinition, inputID string) bool {

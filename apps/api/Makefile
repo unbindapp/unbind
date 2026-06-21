@@ -1,5 +1,8 @@
 .PHONY: migrate migrate\:checksum interfaces ent tests fmt help
 
+# ent/ifacemaker generators use -mod=mod, which is incompatible with workspace mode
+export GOWORK=off
+
 help:
 	@echo "Available commands:"
 	@echo "  make tests                           - Run tests"
@@ -15,11 +18,11 @@ migrate:
 		exit 1; \
 	fi
 	@echo "Creating migration: $(NAME)"
-	@GOWORK=off go run -mod=mod ./ent/migrate/main.go -name=$(NAME)
+	@go run -mod=mod ./ent/migrate/main.go -name=$(NAME)
 
 migrate\:checksum:
 	@echo "Regenerating checksum..."
-	@GOWORK=off go run -mod=mod ./ent/migrate/main.go -checksum
+	@go run -mod=mod ./ent/migrate/main.go -checksum
 
 interfaces:
 	@echo "Generating interfaces..."
@@ -27,6 +30,8 @@ interfaces:
 	@go generate ./internal/infrastructure/...
 	@go generate ./internal/services/...
 	@go generate ./internal/deployctl/...
+	@echo "Stripping test-only imports from generated interfaces..."
+	@find internal/repositories -name '*_iface.go' -exec sed -i '/repositories\/repositorytest"/d' {} +
 	@echo "Generating mocks..."
 	@go run github.com/vektra/mockery/v2@latest
 

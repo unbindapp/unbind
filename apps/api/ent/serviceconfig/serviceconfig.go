@@ -80,6 +80,8 @@ const (
 	FieldVariableMounts = "variable_mounts"
 	// FieldProtectedVariables holds the string denoting the protected_variables field in the database.
 	FieldProtectedVariables = "protected_variables"
+	// FieldVariableMetadata holds the string denoting the variable_metadata field in the database.
+	FieldVariableMetadata = "variable_metadata"
 	// FieldInitContainers holds the string denoting the init_containers field in the database.
 	FieldInitContainers = "init_containers"
 	// FieldResources holds the string denoting the resources field in the database.
@@ -140,6 +142,7 @@ var Columns = []string{
 	FieldHealthCheck,
 	FieldVariableMounts,
 	FieldProtectedVariables,
+	FieldVariableMetadata,
 	FieldInitContainers,
 	FieldResources,
 }

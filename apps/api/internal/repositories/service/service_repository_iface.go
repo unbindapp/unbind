@@ -15,16 +15,14 @@ import (
 
 // ServiceRepositoryInterface ...
 type ServiceRepositoryInterface interface {
-	// Create the service
 	Create(ctx context.Context, tx repository.TxInterface, input *CreateServiceInput) (*ent.Service, error)
 	CreateConfig(ctx context.Context, tx repository.TxInterface, input *MutateConfigInput) (*ent.ServiceConfig, error)
-	// Update the service
 	Update(ctx context.Context, tx repository.TxInterface, serviceID uuid.UUID, name *string, description *string) error
-	// Update service config
 	UpdateConfig(ctx context.Context, tx repository.TxInterface, input *MutateConfigInput) error
 	Delete(ctx context.Context, tx repository.TxInterface, serviceID uuid.UUID) error
 	SetCurrentDeployment(ctx context.Context, tx repository.TxInterface, serviceID uuid.UUID, deploymentID uuid.UUID) error
 	UpdateVariableMounts(ctx context.Context, tx repository.TxInterface, serviceID uuid.UUID, variableMounts []*schema.VariableMount) error
+	UpdateVariableMetadata(ctx context.Context, tx repository.TxInterface, serviceID uuid.UUID, metadata map[string]schema.VariableMetadata) error
 	UpdateDatabaseStorageSize(ctx context.Context, tx repository.TxInterface, serviceID uuid.UUID, newSize string) (*schema.DatabaseConfig, error)
 	GetByID(ctx context.Context, serviceID uuid.UUID) (svc *ent.Service, err error)
 	GetByIDsAndEnvironment(ctx context.Context, serviceIDs []uuid.UUID, environmentID uuid.UUID) ([]*ent.Service, error)

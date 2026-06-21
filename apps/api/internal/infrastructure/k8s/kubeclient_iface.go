@@ -41,9 +41,8 @@ type KubeClientInterface interface {
 	// DeleteOldVerificationRoutes deletes verification routes (Ingress + HTTPRoute)
 	// created more than 10 minutes ago.
 	DeleteOldVerificationRoutes(ctx context.Context, client kubernetes.Interface) error
-	// ExecInPod runs a command in a pod container and streams stdio over the provided
-	// reader/writers. The session acts as the token's user via impersonation, so the
-	// cluster's RBAC bindings apply exactly as they would for kubectl exec.
+	// ExecInPod runs a command in a pod container as the token's user via impersonation,
+	// so the cluster's RBAC bindings apply as they would for kubectl exec.
 	ExecInPod(ctx context.Context, token string, opts ExecOptions) error
 	CreateDeployment(ctx context.Context, deploymentID string, env map[string]string) (jobName string, err error)
 	// For canceling jobs.
@@ -80,7 +79,6 @@ type KubeClientInterface interface {
 	CreatePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, displayName string, labels map[string]string, storageRequest string, accessModes []corev1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface) (*models.PVCInfo, error)
 	// UpdatePersistentVolumeClaim updates an existing PersistentVolumeClaim with new parameters (size, name)
 	UpdatePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, newSize *string, client kubernetes.Interface) (*models.PVCInfo, error)
-	// GetPersistentVolumeClaim retrieves a specific PersistentVolumeClaim by its name and namespace.
 	GetPersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, client kubernetes.Interface) (*models.PVCInfo, error)
 	// ListPersistentVolumeClaims lists all PersistentVolumeClaims in a given namespace, optionally filtered by a label selector,
 	ListPersistentVolumeClaims(ctx context.Context, namespace string, labels map[string]string, client kubernetes.Interface) ([]*models.PVCInfo, error)
@@ -112,7 +110,6 @@ type KubeClientInterface interface {
 	NetworkingProvider(ctx context.Context) string
 	// CreateMultiRegistryCredentials creates or updates a kubernetes.io/dockerconfigjson secret for multiple container registries
 	CreateMultiRegistryCredentials(ctx context.Context, name, namespace string, credentials []RegistryCredential, client kubernetes.Interface) (*corev1.Secret, error)
-	// After you've retrieved the credentials Secret
 	ParseRegistryCredentials(secret *corev1.Secret) (string, string, error)
 	// GetOrCreateSecret retrieves an existing secret or creates a new one if it doesn't exist
 	// Returns the secret and a boolean indicating if it was created (true) or retrieved (false)

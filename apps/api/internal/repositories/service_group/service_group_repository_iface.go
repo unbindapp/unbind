@@ -21,4 +21,6 @@ type ServiceGroupRepositoryInterface interface {
 	GetByEnvironmentID(ctx context.Context, environmentID uuid.UUID) ([]*ent.ServiceGroup, error)
 	// Get all services in a service group
 	GetServices(ctx context.Context, id uuid.UUID) ([]*ent.Service, error)
+	// Get all services in a service group with config and template loaded
+	GetServicesWithDetails(ctx context.Context, id uuid.UUID) ([]*ent.Service, error)
 }

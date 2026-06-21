@@ -8,15 +8,15 @@ import (
 
 // BaseRepositoryInterface ...
 type BaseRepositoryInterface interface {
-	// WithTx runs a function in a transaction
+	// WithTx runs fn inside a transaction, rolling back on error or panic.
+	//
 	// Usage example:
 	//
-	//	if err := r.WithTx(func(tx *ent.Tx) error {
-	//		 Do stuff with tx
+	//	if err := r.WithTx(ctx, func(tx TxInterface) error {
+	//		// Do stuff with tx
 	//		return nil
 	//	}); err != nil {
-	//
-	//		 Handle error
+	//		// Handle error
 	//	}
 	WithTx(ctx context.Context, fn func(tx TxInterface) error) error
 }
