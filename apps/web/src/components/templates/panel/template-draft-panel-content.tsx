@@ -48,6 +48,14 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
     [templateDraft.template.definition.inputs],
   );
 
+  const sortedServices = useMemo(
+    () =>
+      [...templateDraft.template.definition.services].sort(
+        (a, b) => (a.display_rank ?? 0) - (b.display_rank ?? 0),
+      ),
+    [templateDraft.template.definition.services],
+  );
+
   const { data: systemData } = useSystem();
 
   const wildcardDomain = systemData?.data.system_settings.wildcard_domain;
@@ -289,7 +297,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
           <div className="flex w-full flex-col gap-2 pt-1">
             <h3 className="w-full px-1.5 text-xl leading-tight font-bold">Services</h3>
             <ol className="-mx-1 flex w-[calc(100%+0.5rem)] flex-wrap">
-              {templateDraft.template.definition.services.map((service) => (
+              {sortedServices.map((service) => (
                 <TemplateServiceCard key={service.id} service={service} className="md:w-1/2" />
               ))}
             </ol>

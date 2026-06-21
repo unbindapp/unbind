@@ -40,6 +40,7 @@ func wordPressTemplate() *schema.TemplateDefinition {
 				ID:           "service_mysql",
 				Name:         "MySQL",
 				InputIDs:     []string{"input_database_size"},
+				DisplayRank:  100,
 				Type:         schema.ServiceTypeDatabase,
 				Builder:      schema.ServiceBuilderDatabase,
 				DatabaseType: utils.ToPtr("mysql"),

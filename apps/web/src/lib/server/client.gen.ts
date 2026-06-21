@@ -859,6 +859,25 @@ export const EndpointDiscoverySchema = z
   })
   .strip();
 
+export const ErrorDetailSchema = z
+  .object({
+    location: z.string().optional(), // Where the error occurred, e.g. 'body.items[3].tags' or 'path.thing-id'
+    message: z.string().optional(), // Error message text
+    value: z.any().optional(), // The value at the given location
+  })
+  .strip();
+
+export const ErrorModelSchema = z
+  .object({
+    detail: z.string().optional(), // A human-readable explanation specific to this occurrence of the problem.
+    errors: z.array(ErrorDetailSchema).nullable().optional(), // Optional list of individual error details
+    instance: z.string().optional(), // A URI reference that identifies the specific occurrence of the problem.
+    status: z.number().optional(), // HTTP status code
+    title: z.string().optional(), // A short, human-readable summary of the problem type. This value should not change between occurrences of the error.
+    type: z.string().optional(), // A URI reference to human-readable documentation for the error.
+  })
+  .strip();
+
 export const GenerateWildcardDomainInputBodySchema = z
   .object({
     name: z.string(), // The base name of the wildcard domain
@@ -1116,6 +1135,7 @@ export const TemplateServiceSchema = z
     database_config: DatabaseConfigSchema.optional(),
     database_type: z.string().optional(),
     depends_on: z.array(z.string()),
+    display_rank: z.number(),
     health_check: HealthCheckSchema.optional(),
     icon: z.string(),
     id: z.string(),
@@ -1667,6 +1687,59 @@ export const ReferenceableVariablesResponseBodySchema = z
   })
   .strip();
 
+export const RegistryCacheCleanupRunSchema = z
+  .object({
+    finished_at: z.string().datetime().nullable(),
+    started_at: z.string().datetime().nullable(),
+    status: z.string(), // running, succeeded, or failed
+  })
+  .strip();
+
+export const RegistryCacheConfigSchema = z
+  .object({
+    can_expand: z.boolean(), // Whether the storage class supports growing the volume
+    cleanup_schedule: z.string(), // Cron schedule for the cleanup job
+    cleanup_threshold_gb: z.number(), // Cache size at which cleanup begins pruning
+    managed: z.boolean(), // False when an external registry is used; cache config does not apply
+    maximum_storage_gb: z.number(),
+    minimum_storage_gb: z.number(),
+    pvc_capacity_gb: z.number(), // Provisioned size of the registry volume
+    storage_class: z.string(), // Storage class backing the registry volume
+    storage_step_gb: z.number(),
+  })
+  .strip();
+
+export const RegistryCacheConfigResponseBodySchema = z
+  .object({
+    data: RegistryCacheConfigSchema,
+  })
+  .strip();
+
+export const RegistryCacheSettingsSchema = z
+  .object({
+    cleanup_schedule: z.string(),
+    cleanup_threshold_gb: z.number(),
+  })
+  .strip();
+
+export const RegistryCacheStatsSchema = z
+  .object({
+    cleanup_threshold_gb: z.number(),
+    last_cleanup: RegistryCacheCleanupRunSchema.optional(), // Most recent cleanup run, omitted if none
+    managed: z.boolean(),
+    pvc_capacity_gb: z.number(),
+    repository_count: z.number(),
+    tag_count: z.number(),
+    used_bytes: z.number(),
+  })
+  .strip();
+
+export const RegistryCacheStatsResponseBodySchema = z
+  .object({
+    data: RegistryCacheStatsSchema,
+  })
+  .strip();
+
 export const ResolveAvailableVariableReferenceResponseBodySchema = z
   .object({
     data: z.string(),
@@ -1676,25 +1749,6 @@ export const ResolveAvailableVariableReferenceResponseBodySchema = z
 export const ResolveVariableReferenceResponseBodySchema = z
   .object({
     data: z.string(),
-  })
-  .strip();
-
-export const ResponseErrorSchema = z
-  .object({
-    details: z.array(z.string()).nullable().optional(), // Optional actionable details, e.g. which field failed validation
-    message: z.string(), // Human-readable summary of what went wrong
-    status: z.number(), // HTTP status code
-    type: z.enum([
-      'bad_request',
-      'unauthorized',
-      'forbidden',
-      'not_found',
-      'conflict',
-      'validation_error',
-      'rate_limited',
-      'internal_error',
-      'error',
-    ]), // Stable, machine-readable error code
   })
   .strip();
 
@@ -1829,6 +1883,7 @@ export const SystemMetaResponseBodySchema = z
 export const SystemSettingUpdateInputSchema = z
   .object({
     buildkit_settings: BuildkitSettingsSchema, // Buildkit settings
+    registry_cache_settings: RegistryCacheSettingsSchema, // Registry cache cleanup settings
     wildcard_domain: z.string().nullable(), // Wildcard domain for the system
   })
   .strip();
@@ -1953,6 +2008,14 @@ export const UpdateProjectInputSchema = z
 export const UpdateProjectResponseBodySchema = z
   .object({
     data: ProjectResponseSchema,
+  })
+  .strip();
+
+export const UpdateRegistryCacheInputSchema = z
+  .object({
+    cleanup_schedule: z.string().optional(),
+    cleanup_threshold_gb: z.number().optional(),
+    pvc_capacity_gb: z.number().optional(), // New volume size; can only grow
   })
   .strip();
 
@@ -2260,6 +2323,8 @@ export type TlsStatus = z.infer<typeof TlsStatusSchema>;
 export type IngressEndpoint = z.infer<typeof IngressEndpointSchema>;
 export type ServiceEndpoint = z.infer<typeof ServiceEndpointSchema>;
 export type EndpointDiscovery = z.infer<typeof EndpointDiscoverySchema>;
+export type ErrorDetail = z.infer<typeof ErrorDetailSchema>;
+export type ErrorModel = z.infer<typeof ErrorModelSchema>;
 export type GenerateWildcardDomainInputBody = z.infer<typeof GenerateWildcardDomainInputBodySchema>;
 export type GenerateWildcardDomainOutputBody = z.infer<
   typeof GenerateWildcardDomainOutputBodySchema
@@ -2366,13 +2431,18 @@ export type RedeployOutputBody = z.infer<typeof RedeployOutputBodySchema>;
 export type ReferenceableVariablesResponseBody = z.infer<
   typeof ReferenceableVariablesResponseBodySchema
 >;
+export type RegistryCacheCleanupRun = z.infer<typeof RegistryCacheCleanupRunSchema>;
+export type RegistryCacheConfig = z.infer<typeof RegistryCacheConfigSchema>;
+export type RegistryCacheConfigResponseBody = z.infer<typeof RegistryCacheConfigResponseBodySchema>;
+export type RegistryCacheSettings = z.infer<typeof RegistryCacheSettingsSchema>;
+export type RegistryCacheStats = z.infer<typeof RegistryCacheStatsSchema>;
+export type RegistryCacheStatsResponseBody = z.infer<typeof RegistryCacheStatsResponseBodySchema>;
 export type ResolveAvailableVariableReferenceResponseBody = z.infer<
   typeof ResolveAvailableVariableReferenceResponseBodySchema
 >;
 export type ResolveVariableReferenceResponseBody = z.infer<
   typeof ResolveVariableReferenceResponseBodySchema
 >;
-export type ResponseError = z.infer<typeof ResponseErrorSchema>;
 export type RestartInstancesInputBody = z.infer<typeof RestartInstancesInputBodySchema>;
 export type Restarted = z.infer<typeof RestartedSchema>;
 export type RestartServicesResponseBody = z.infer<typeof RestartServicesResponseBodySchema>;
@@ -2409,6 +2479,7 @@ export type UpdatePVCInput = z.infer<typeof UpdatePVCInputSchema>;
 export type UpdatePVCResponseBody = z.infer<typeof UpdatePVCResponseBodySchema>;
 export type UpdateProjectInput = z.infer<typeof UpdateProjectInputSchema>;
 export type UpdateProjectResponseBody = z.infer<typeof UpdateProjectResponseBodySchema>;
+export type UpdateRegistryCacheInput = z.infer<typeof UpdateRegistryCacheInputSchema>;
 export type UpdateS3SourceInputBody = z.infer<typeof UpdateS3SourceInputBodySchema>;
 export type UpdateS3SourceResponseBody = z.infer<typeof UpdateS3SourceResponseBodySchema>;
 export type UpdateServiceGroupInput = z.infer<typeof UpdateServiceGroupInputSchema>;
@@ -6415,6 +6486,182 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
       },
     },
     system: {
+      cache: {
+        registry: {
+          config: async (
+            params?: undefined,
+            fetchOptions?: RequestInit,
+          ): Promise<RegistryCacheConfigResponseBody> => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
+              }
+              const url = new URL(
+                `${apiUrl}/system/cache/registry/config`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
+
+              const options: RequestInit = {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                ...fetchOptions,
+              };
+
+              const response = await fetchFn(url.toString(), options);
+              if (!response.ok) {
+                console.log(
+                  `GO API request failed with status ${response.status}: ${response.statusText}`,
+                );
+                const data = await response.json();
+                console.log(`GO API request error`, data);
+                console.log(`Request URL is:`, url.toString());
+
+                let errorMessage =
+                  '`GO API request failed with status ${response.status}: ${response.statusText}`';
+                if (
+                  data &&
+                  Array.isArray(data.details) &&
+                  data.details.length > 0 &&
+                  typeof data.details[0] === 'string'
+                ) {
+                  errorMessage = data.details[0];
+                }
+                throw new Error(errorMessage);
+              }
+              const data = await response.json();
+              const { data: parsedData, error } =
+                RegistryCacheConfigResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
+            } catch (error) {
+              console.error('Error in API request:', error);
+              throw error;
+            }
+          },
+          stats: async (
+            params?: undefined,
+            fetchOptions?: RequestInit,
+          ): Promise<RegistryCacheStatsResponseBody> => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
+              }
+              const url = new URL(
+                `${apiUrl}/system/cache/registry/stats`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
+
+              const options: RequestInit = {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                ...fetchOptions,
+              };
+
+              const response = await fetchFn(url.toString(), options);
+              if (!response.ok) {
+                console.log(
+                  `GO API request failed with status ${response.status}: ${response.statusText}`,
+                );
+                const data = await response.json();
+                console.log(`GO API request error`, data);
+                console.log(`Request URL is:`, url.toString());
+
+                let errorMessage =
+                  '`GO API request failed with status ${response.status}: ${response.statusText}`';
+                if (
+                  data &&
+                  Array.isArray(data.details) &&
+                  data.details.length > 0 &&
+                  typeof data.details[0] === 'string'
+                ) {
+                  errorMessage = data.details[0];
+                }
+                throw new Error(errorMessage);
+              }
+              const data = await response.json();
+              const { data: parsedData, error } =
+                RegistryCacheStatsResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
+            } catch (error) {
+              console.error('Error in API request:', error);
+              throw error;
+            }
+          },
+          update: async (
+            params: UpdateRegistryCacheInput,
+            fetchOptions?: RequestInit,
+          ): Promise<RegistryCacheConfigResponseBody> => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
+              }
+              const url = new URL(
+                `${apiUrl}/system/cache/registry/update`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
+
+              const options: RequestInit = {
+                method: 'PUT',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                ...fetchOptions,
+              };
+              const validatedBody = UpdateRegistryCacheInputSchema.parse(params);
+              options.body = JSON.stringify(validatedBody);
+              const response = await fetchFn(url.toString(), options);
+              if (!response.ok) {
+                console.log(
+                  `GO API request failed with status ${response.status}: ${response.statusText}`,
+                );
+                const data = await response.json();
+                console.log(`GO API request error`, data);
+                console.log(`Request URL is:`, url.toString());
+                console.log(`Request body is:`, validatedBody);
+                let errorMessage =
+                  '`GO API request failed with status ${response.status}: ${response.statusText}`';
+                if (
+                  data &&
+                  Array.isArray(data.details) &&
+                  data.details.length > 0 &&
+                  typeof data.details[0] === 'string'
+                ) {
+                  errorMessage = data.details[0];
+                }
+                throw new Error(errorMessage);
+              }
+              const data = await response.json();
+              const { data: parsedData, error } =
+                RegistryCacheConfigResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
+            } catch (error) {
+              console.error('Error in API request:', error);
+              throw error;
+            }
+          },
+        },
+      },
       dns: {
         check: async (
           params: z.infer<typeof check_dns_resolutionQuerySchema>,

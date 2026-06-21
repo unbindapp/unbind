@@ -70,6 +70,7 @@ func convexTemplate() *schema.TemplateDefinition {
 			{
 				ID:           "service_postgres",
 				Name:         "PostgreSQL",
+				DisplayRank:  100,
 				InputIDs:     []string{"input_database_size"},
 				Type:         schema.ServiceTypeDatabase,
 				Builder:      schema.ServiceBuilderDatabase,

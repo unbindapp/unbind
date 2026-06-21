@@ -102,6 +102,7 @@ type TemplateResourceRecommendations struct {
 type TemplateService struct {
 	ID                 string                      `json:"id"`
 	DependsOn          []string                    `json:"depends_on" nullable:"false"` // IDs of services that must be started before this one
+	DisplayRank        uint                        `json:"display_rank"`                // Rank for ordering in the UI, lower ranks display first
 	Name               string                      `json:"name"`
 	Icon               string                      `json:"icon"`
 	Type               ServiceType                 `json:"type"`

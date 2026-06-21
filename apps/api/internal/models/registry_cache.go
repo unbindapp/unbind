@@ -31,7 +31,7 @@ type RegistryCacheStats struct {
 	ThresholdGB     float64                  `json:"cleanup_threshold_gb"`
 	RepositoryCount int                      `json:"repository_count"`
 	TagCount        int                      `json:"tag_count"`
-	LastCleanup     *RegistryCacheCleanupRun `json:"last_cleanup" nullable:"true" doc:"Most recent cleanup run, null if none"`
+	LastCleanup     *RegistryCacheCleanupRun `json:"last_cleanup,omitempty" doc:"Most recent cleanup run, omitted if none"`
 }
 
 // UpdateRegistryCacheInput configures the registry cache. Nil fields are unchanged.

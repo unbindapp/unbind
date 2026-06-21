@@ -52,6 +52,7 @@ func formbricksTemplate() *schema.TemplateDefinition {
 				ID:           "service_postgresql",
 				Name:         "PostgreSQL",
 				InputIDs:     []string{"input_database_size"},
+				DisplayRank:  100,
 				Type:         schema.ServiceTypeDatabase,
 				Builder:      schema.ServiceBuilderDatabase,
 				DatabaseType: utils.ToPtr("postgres"),
