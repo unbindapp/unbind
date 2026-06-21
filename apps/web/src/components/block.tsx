@@ -1,7 +1,6 @@
 import { Button, buttonVariants, TButtonProps } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import { useMounted } from "@/lib/hooks/use-mounted";
-import { getRouteApi, useSearch } from "@tanstack/react-router";
+import { getRouteApi } from "@tanstack/react-router";
 import { ChevronDownIcon, ExternalLinkIcon } from "lucide-react";
 import {
   Children,
@@ -164,7 +163,7 @@ export function BlockItemContentHighlightable({
       }, 300);
       return () => clearTimeout(timeout);
     }
-  }, [highlight_id]);
+  }, [highlight_id, id]);
 
   return (
     <div
