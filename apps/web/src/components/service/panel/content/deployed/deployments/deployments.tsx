@@ -134,7 +134,9 @@ function InstancesButton() {
 
   const text = useMemo(() => {
     if (isPending) return "1 Instance";
-    if (isError) return "Error";
+    if (!data && isError) {
+      return "Error";
+    }
     const instanceCount = data.data.instances.length;
     return `${instanceCount} Instance${instanceCount !== 1 ? "s" : ""}`;
   }, [data, isPending, isError]);
