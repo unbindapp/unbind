@@ -160,7 +160,7 @@ export function BlockItemContentHighlightable({
           setIsHighlighted(false);
         }, 3000);
         return () => clearTimeout(timeout);
-      }, 300);
+      }, 200);
       return () => clearTimeout(timeout);
     }
   }, [highlight_id, id]);
