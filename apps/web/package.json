@@ -9,8 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "gen": "../../scripts/gen-web-types.sh",
-    "gen:prod": "bun run ./scripts/generate-go-client/main.ts -i https://api.unbind.app/openapi.yaml",
+    "gen": "bun run ./scripts/generate-go-client/main.ts -i https://api.unbind.app/openapi.yaml",
     "gen-data": "bun run ./scripts/generate-data/main.ts"
   },
   "dependencies": {

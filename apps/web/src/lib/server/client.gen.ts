@@ -859,25 +859,6 @@ export const EndpointDiscoverySchema = z
   })
   .strip();
 
-export const ErrorDetailSchema = z
-  .object({
-    location: z.string().optional(), // Where the error occurred, e.g. 'body.items[3].tags' or 'path.thing-id'
-    message: z.string().optional(), // Error message text
-    value: z.any().optional(), // The value at the given location
-  })
-  .strip();
-
-export const ErrorModelSchema = z
-  .object({
-    detail: z.string().optional(), // A human-readable explanation specific to this occurrence of the problem.
-    errors: z.array(ErrorDetailSchema).nullable().optional(), // Optional list of individual error details
-    instance: z.string().optional(), // A URI reference that identifies the specific occurrence of the problem.
-    status: z.number().optional(), // HTTP status code
-    title: z.string().optional(), // A short, human-readable summary of the problem type. This value should not change between occurrences of the error.
-    type: z.string().optional(), // A URI reference to human-readable documentation for the error.
-  })
-  .strip();
-
 export const GenerateWildcardDomainInputBodySchema = z
   .object({
     name: z.string(), // The base name of the wildcard domain
@@ -1698,6 +1679,25 @@ export const ResolveVariableReferenceResponseBodySchema = z
   })
   .strip();
 
+export const ResponseErrorSchema = z
+  .object({
+    details: z.array(z.string()).nullable().optional(), // Optional actionable details, e.g. which field failed validation
+    message: z.string(), // Human-readable summary of what went wrong
+    status: z.number(), // HTTP status code
+    type: z.enum([
+      'bad_request',
+      'unauthorized',
+      'forbidden',
+      'not_found',
+      'conflict',
+      'validation_error',
+      'rate_limited',
+      'internal_error',
+      'error',
+    ]), // Stable, machine-readable error code
+  })
+  .strip();
+
 export const RestartInstancesInputBodySchema = z
   .object({
     environment_id: z.string(),
@@ -2260,8 +2260,6 @@ export type TlsStatus = z.infer<typeof TlsStatusSchema>;
 export type IngressEndpoint = z.infer<typeof IngressEndpointSchema>;
 export type ServiceEndpoint = z.infer<typeof ServiceEndpointSchema>;
 export type EndpointDiscovery = z.infer<typeof EndpointDiscoverySchema>;
-export type ErrorDetail = z.infer<typeof ErrorDetailSchema>;
-export type ErrorModel = z.infer<typeof ErrorModelSchema>;
 export type GenerateWildcardDomainInputBody = z.infer<typeof GenerateWildcardDomainInputBodySchema>;
 export type GenerateWildcardDomainOutputBody = z.infer<
   typeof GenerateWildcardDomainOutputBodySchema
@@ -2374,6 +2372,7 @@ export type ResolveAvailableVariableReferenceResponseBody = z.infer<
 export type ResolveVariableReferenceResponseBody = z.infer<
   typeof ResolveVariableReferenceResponseBodySchema
 >;
+export type ResponseError = z.infer<typeof ResponseErrorSchema>;
 export type RestartInstancesInputBody = z.infer<typeof RestartInstancesInputBodySchema>;
 export type Restarted = z.infer<typeof RestartedSchema>;
 export type RestartServicesResponseBody = z.infer<typeof RestartServicesResponseBodySchema>;
