@@ -39,7 +39,7 @@ func (self *ServiceService) GetServicesInEnvironment(ctx context.Context, reques
 		return nil, fmt.Errorf("error fetching services for environment %s: %w", environmentID, err)
 	}
 
-	volumeMap, err := self.getVolumesForServices(ctx, project.Edges.Team.Namespace, project.Edges.Team.ID, services)
+	volumeMap, err := self.GetVolumesForServices(ctx, project.Edges.Team.Namespace, project.Edges.Team.ID, services)
 	if err != nil {
 		log.Errorf("Error getting volumes for services in environment %s: %v", environmentID, err)
 		return nil, err
@@ -97,7 +97,7 @@ func (self *ServiceService) GetServiceByID(ctx context.Context, requesterUserID 
 		return nil, err
 	}
 
-	volumeMap, err := self.getVolumesForServices(ctx, project.Edges.Team.Namespace, project.Edges.Team.ID, []*ent.Service{
+	volumeMap, err := self.GetVolumesForServices(ctx, project.Edges.Team.Namespace, project.Edges.Team.ID, []*ent.Service{
 		service,
 	})
 	if err != nil {

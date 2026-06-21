@@ -490,7 +490,7 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 
 	namespace := service.Edges.Environment.Edges.Project.Edges.Team.Namespace
 	teamID := service.Edges.Environment.Edges.Project.Edges.Team.ID
-	volumeMap, err := self.getVolumesForServices(ctx, namespace, teamID, []*ent.Service{
+	volumeMap, err := self.GetVolumesForServices(ctx, namespace, teamID, []*ent.Service{
 		service,
 	})
 	if err != nil {

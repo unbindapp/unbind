@@ -493,7 +493,7 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		}
 	}()
 
-	volumeMap, err := self.getVolumesForServices(ctx, project.Edges.Team.Namespace, project.Edges.Team.ID, []*ent.Service{
+	volumeMap, err := self.GetVolumesForServices(ctx, project.Edges.Team.Namespace, project.Edges.Team.ID, []*ent.Service{
 		service,
 	})
 	if err != nil {

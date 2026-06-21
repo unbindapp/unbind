@@ -2,7 +2,6 @@ package models
 
 import (
 	"github.com/google/uuid"
-	"github.com/unbindapp/unbind-api/ent/schema"
 )
 
 // ServiceGroupInfoResponse mirrors the template creation screen for a deployed service group.
@@ -18,7 +17,7 @@ type ServiceGroupServiceInfo struct {
 	Icon      string                      `json:"icon"`
 	Hosts     []*ServiceGroupHostInfo     `json:"hosts" nullable:"false"`
 	Variables []*ServiceGroupVariableInfo `json:"variables" nullable:"false"`
-	Volumes   []schema.ServiceVolume      `json:"volumes" nullable:"false"`
+	Volumes   []*PVCInfo                  `json:"volumes" nullable:"false"`
 }
 
 type ServiceGroupHostInfo struct {

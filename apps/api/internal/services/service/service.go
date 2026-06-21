@@ -198,7 +198,8 @@ func (self *ServiceService) validatePVC(ctx context.Context, teamID, projectID, 
 }
 
 // Add volumes to service config
-func (self *ServiceService) getVolumesForServices(ctx context.Context, namespace string, teamID uuid.UUID, services []*ent.Service) (map[uuid.UUID][]*models.PVCInfo, error) {
+// GetVolumesForServices returns the PVCs (including database volumes) mounted on each service.
+func (self *ServiceService) GetVolumesForServices(ctx context.Context, namespace string, teamID uuid.UUID, services []*ent.Service) (map[uuid.UUID][]*models.PVCInfo, error) {
 	if len(services) == 0 {
 		return nil, nil
 	}

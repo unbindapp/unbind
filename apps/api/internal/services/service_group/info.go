@@ -56,6 +56,11 @@ func (self *ServiceGroupService) GetServiceGroupInfo(ctx context.Context, reques
 		return nil, err
 	}
 
+	volumesByService, err := self.serviceService.GetVolumesForServices(ctx, project.Edges.Team.Namespace, input.TeamID, services)
+	if err != nil {
+		return nil, err
+	}
+
 	resp := &models.ServiceGroupInfoResponse{
 		ServiceGroup: models.TransformServiceGroupEntity(grp),
 		Services:     make([]*models.ServiceGroupServiceInfo, 0, len(services)),
@@ -68,19 +73,22 @@ func (self *ServiceGroupService) GetServiceGroupInfo(ctx context.Context, reques
 
 		inputOrder := templateInputOrder(service.Edges.Template)
 
+		volumes := volumesByService[service.ID]
+		if volumes == nil {
+			volumes = []*models.PVCInfo{}
+		}
 		info := &models.ServiceGroupServiceInfo{
 			ServiceID: service.ID,
 			Name:      service.Name,
 			Hosts:     []*models.ServiceGroupHostInfo{},
 			Variables: []*models.ServiceGroupVariableInfo{},
-			Volumes:   []schema.ServiceVolume{},
+			Volumes:   volumes,
 		}
 
 		config := service.Edges.ServiceConfig
 		if config != nil {
 			info.Icon = config.Icon
 			info.Hosts = hostInfos(config.Hosts, inputOrder)
-			info.Volumes = config.Volumes
 			info.Variables, err = self.variableInfos(ctx, client, project.Edges.Team.Namespace, service, config.VariableMetadata, inputOrder)
 			if err != nil {
 				return nil, err
