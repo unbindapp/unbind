@@ -132,14 +132,16 @@ function InstancesButton() {
   const { teamId, projectId } = useService();
   const { data, isPending, isError } = useInstanceHealth();
 
+  const isHardError = !data && isError;
+
   const text = useMemo(() => {
     if (isPending) return "1 Instance";
-    if (!data && isError) {
+    if (isHardError) {
       return "Error";
     }
     const instanceCount = data.data.instances.length;
     return `${instanceCount} Instance${instanceCount !== 1 ? "s" : ""}`;
-  }, [data, isPending, isError]);
+  }, [data, isPending, isHardError]);
 
   return (
     <LinkButton
@@ -152,7 +154,7 @@ function InstancesButton() {
         highlight_id: deploySectionInstanceSliderId,
       })}
       data-pending={isPending || undefined}
-      data-error={isError || undefined}
+      data-error={isHardError || undefined}
       variant="ghost"
       className="group/button data-error:text-destructive text-muted-foreground flex items-center justify-start gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium"
     >
