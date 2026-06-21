@@ -151,7 +151,7 @@ func (s *NodeMetricsFilterTestSuite) TestNodeMetricsFilter_VariousNodeNameFormat
 func (s *NodeMetricsFilterTestSuite) TestNodeMetricsFilter_LargeNumberOfNodes() {
 	// Test with a large number of node names
 	nodeNames := make([]string, 100)
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		nodeNames[i] = fmt.Sprintf("node-%03d", i)
 	}
 

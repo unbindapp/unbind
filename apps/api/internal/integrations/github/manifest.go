@@ -38,7 +38,6 @@ type DefaultPermissions struct {
 
 // CreateAppManifest generates the GitHub App manifest
 func (self *GithubClient) CreateAppManifest(redirectUrl string, setupUrl string, forOrganization bool) (manifest *GitHubAppManifest, appName string, err error) {
-	// Generate a random suffix
 	suffixRand, err := utils.GenerateRandomSimpleID(5)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to generate random suffix: %w", err)

@@ -36,7 +36,7 @@ func appsmithTemplate() *schema.TemplateDefinition {
 				},
 				Description: "Size of the storage for the Appsmith data.",
 				Required:    true,
-				Default:     utils.ToPtr("1"),
+				Default:     new("1"),
 			},
 		},
 		Services: []schema.TemplateService{
@@ -46,7 +46,7 @@ func appsmithTemplate() *schema.TemplateDefinition {
 				Name:     "Appsmith",
 				Type:     schema.ServiceTypeDockerimage,
 				Builder:  schema.ServiceBuilderDocker,
-				Image:    utils.ToPtr("appsmith/appsmith-ee:v2.1.1"),
+				Image:    new("appsmith/appsmith-ee:v2.1.1"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
 					CPULimitsMillicores:   400,
@@ -60,13 +60,13 @@ func appsmithTemplate() *schema.TemplateDefinition {
 				HealthCheck: &schema.HealthCheck{
 					Type:                    utils.ToPtr(schema.HealthCheckTypeHTTP),
 					Path:                    "/",
-					Port:                    utils.ToPtr(int32(80)),
-					StartupPeriodSeconds:    utils.ToPtr(int32(5)),
-					StartupTimeoutSeconds:   utils.ToPtr(int32(20)),
-					StartupFailureThreshold: utils.ToPtr(int32(10)),
-					HealthPeriodSeconds:     utils.ToPtr(int32(10)),
-					HealthTimeoutSeconds:    utils.ToPtr(int32(5)),
-					HealthFailureThreshold:  utils.ToPtr(int32(5)),
+					Port:                    new(int32(80)),
+					StartupPeriodSeconds:    new(int32(5)),
+					StartupTimeoutSeconds:   new(int32(20)),
+					StartupFailureThreshold: new(int32(10)),
+					HealthPeriodSeconds:     new(int32(10)),
+					HealthTimeoutSeconds:    new(int32(5)),
+					HealthFailureThreshold:  new(int32(5)),
 				},
 				Variables: []schema.TemplateVariable{
 					{

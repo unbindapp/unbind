@@ -23,12 +23,10 @@ func (self *MetricsService) GetVolumeMetrics(ctx context.Context, requesterUserI
 		},
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return nil, err
 	}
 
-	// Get team
 	team, err := self.repo.Team().GetByID(ctx, input.TeamID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -37,7 +35,6 @@ func (self *MetricsService) GetVolumeMetrics(ctx context.Context, requesterUserI
 		return nil, err
 	}
 
-	// Get start
 	var start time.Time
 	if input.Start.IsZero() {
 		// Default to 24 hours ago
@@ -46,7 +43,6 @@ func (self *MetricsService) GetVolumeMetrics(ctx context.Context, requesterUserI
 		start = input.Start
 	}
 
-	// Get end
 	var end time.Time
 	if input.End.IsZero() {
 		// Default to now
@@ -55,7 +51,6 @@ func (self *MetricsService) GetVolumeMetrics(ctx context.Context, requesterUserI
 		end = input.End
 	}
 
-	// Calculate step size
 	duration := end.Sub(start)
 	step := chooseStep(duration, 30, []time.Duration{
 		1 * time.Minute,
@@ -70,12 +65,10 @@ func (self *MetricsService) GetVolumeMetrics(ctx context.Context, requesterUserI
 		1 * 24 * time.Hour,
 	})
 
-	// Get metrics
 	rawMetrics, err := self.promClient.GetVolumeStatsWithHistory(ctx, input.PVCID, start, end, step, team.Namespace, self.k8s.GetInternalClient())
 	if err != nil {
 		return nil, fmt.Errorf("error getting metrics: %w", err)
 	}
 
-	// Convert to our format
 	return models.TransformVolumeStatsEntity(rawMetrics, step), nil
 }

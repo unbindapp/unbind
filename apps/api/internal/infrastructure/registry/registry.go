@@ -80,7 +80,6 @@ func ParseImageString(image string) (registry, imageName, tag string) {
 
 // CanPullImage checks if the given image can be pulled using any of the configured registries
 func (self *RegistryTester) CanPullImage(ctx context.Context, image string) (bool, error) {
-	// Parse the image string
 	registryHost, imageName, tag := ParseImageString(image)
 
 	// First, try without credentials (public image)
@@ -103,13 +102,11 @@ func (self *RegistryTester) CanPullImage(ctx context.Context, image string) (boo
 				continue // Skip if can't get secret
 			}
 
-			// Parse credentials
 			username, password, err := self.kubeClient.ParseRegistryCredentials(secret)
 			if err != nil {
 				continue // Skip if can't parse credentials
 			}
 
-			// Check if image exists with credentials
 			exists, err := self.checkImageExistsInRegistry(ctx, registry.Host, imageName, tag, username, password)
 			if err == nil && exists {
 				return true, nil

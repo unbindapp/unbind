@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/k8s"
 	"github.com/unbindapp/unbind-api/internal/models"
 )
@@ -18,7 +17,6 @@ func (self *InstanceService) GetInstanceStatuses(ctx context.Context, requesterU
 		return nil, err
 	}
 
-	// Determine labels
 	labels := make(map[string]string)
 	switch input.Type {
 	case models.InstanceTypeService:
@@ -33,7 +31,6 @@ func (self *InstanceService) GetInstanceStatuses(ctx context.Context, requesterU
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid instance type")
 	}
 
-	// Create kubernetes client
 	client, err := self.k8s.CreateClientWithToken(bearerToken)
 	if err != nil {
 		return nil, err
@@ -54,12 +51,10 @@ func (self *InstanceService) GetInstanceHealth(ctx context.Context, requesterUse
 		return nil, err
 	}
 
-	// Determine labels
 	labels := map[string]string{
 		"unbind-service": service.ID.String(),
 	}
 
-	// Create kubernetes client
 	client, err := self.k8s.CreateClientWithToken(bearerToken)
 	if err != nil {
 		return nil, err
@@ -69,7 +64,7 @@ func (self *InstanceService) GetInstanceHealth(ctx context.Context, requesterUse
 	// This will override checking kubernetes state for replicas (DBs are complicated and may not match)
 	var expectedReplicas *int
 	if service.Type != schema.ServiceTypeDatabase {
-		expectedReplicas = utils.ToPtr(int(service.Edges.ServiceConfig.Replicas))
+		expectedReplicas = new(int(service.Edges.ServiceConfig.Replicas))
 	}
 	return self.k8s.GetSimpleHealthStatus(ctx, team.Namespace, labels, expectedReplicas, client)
 }

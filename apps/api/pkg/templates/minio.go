@@ -25,7 +25,7 @@ func minioTemplate() *schema.TemplateDefinition {
 				Type:        schema.InputTypeHost,
 				Description: "The domain to use for the MinIO API.",
 				Required:    true,
-				TargetPort:  utils.ToPtr(9000),
+				TargetPort:  new(9000),
 			},
 			{
 				ID:          "input_domain_ui",
@@ -33,7 +33,7 @@ func minioTemplate() *schema.TemplateDefinition {
 				Type:        schema.InputTypeHost,
 				Description: "The domain to use for the MinIO UI.",
 				Required:    true,
-				TargetPort:  utils.ToPtr(9001),
+				TargetPort:  new(9001),
 			},
 			{
 				ID:   "input_storage_size",
@@ -45,7 +45,7 @@ func minioTemplate() *schema.TemplateDefinition {
 				},
 				Description: "Size of the storage for the MinIO data.",
 				Required:    true,
-				Default:     utils.ToPtr("1"),
+				Default:     new("1"),
 			},
 		},
 		Services: []schema.TemplateService{
@@ -55,7 +55,7 @@ func minioTemplate() *schema.TemplateDefinition {
 				Type:     schema.ServiceTypeDockerimage,
 				Builder:  schema.ServiceBuilderDocker,
 				InputIDs: []string{"input_domain_api", "input_domain_ui", "input_storage_size"},
-				Image:    utils.ToPtr("minio/minio:RELEASE.2025-09-07T16-13-09Z"),
+				Image:    new("minio/minio:RELEASE.2025-09-07T16-13-09Z"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
 					CPULimitsMillicores:   400,
@@ -70,16 +70,16 @@ func minioTemplate() *schema.TemplateDefinition {
 						Protocol: utils.ToPtr(schema.ProtocolTCP),
 					},
 				},
-				RunCommand: utils.ToPtr("minio server /data --console-address ':9001'"),
+				RunCommand: new("minio server /data --console-address ':9001'"),
 				HealthCheck: &schema.HealthCheck{
 					Type:                    utils.ToPtr(schema.HealthCheckTypeExec),
 					Command:                 "mc ready local",
-					StartupPeriodSeconds:    utils.ToPtr(int32(5)),
-					StartupTimeoutSeconds:   utils.ToPtr(int32(20)),
-					StartupFailureThreshold: utils.ToPtr(int32(10)),
-					HealthPeriodSeconds:     utils.ToPtr(int32(10)),
-					HealthTimeoutSeconds:    utils.ToPtr(int32(5)),
-					HealthFailureThreshold:  utils.ToPtr(int32(5)),
+					StartupPeriodSeconds:    new(int32(5)),
+					StartupTimeoutSeconds:   new(int32(20)),
+					StartupFailureThreshold: new(int32(10)),
+					HealthPeriodSeconds:     new(int32(10)),
+					HealthTimeoutSeconds:    new(int32(5)),
+					HealthFailureThreshold:  new(int32(5)),
 				},
 				Variables: []schema.TemplateVariable{
 					{

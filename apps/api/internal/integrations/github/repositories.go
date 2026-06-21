@@ -72,15 +72,12 @@ func (self *GithubClient) ReadUserAdminRepositories(ctx context.Context, install
 		})
 	}
 
-	// Wait for all goroutines to complete
 	if err := g.Wait(); err != nil {
 		return nil, err
 	}
 
-	// Sort
 	sortRepositories(allAdminRepos)
 
-	// Remove any duplicates
 	return removeDuplicateRepositories(allAdminRepos), nil
 }
 
@@ -95,20 +92,17 @@ func (self *GithubClient) fetchUserAdminRepos(ctx context.Context, client *githu
 	}
 
 	for {
-		// Check if context is canceled
 		select {
 		case <-ctx.Done():
 			return nil, ctx.Err()
 		default:
 		}
 
-		// Get user's repositories with pagination
 		ghRepositories, resp, err := client.Repositories.ListByUser(ctx, inst.AccountLogin, opts)
 		if err != nil {
 			return nil, fmt.Errorf("error getting repositories for user %s: %v", inst.AccountLogin, err)
 		}
 
-		// Filter admin repositories
 		for _, repo := range ghRepositories {
 			isAdmin := false
 
@@ -118,7 +112,6 @@ func (self *GithubClient) fetchUserAdminRepos(ctx context.Context, client *githu
 				}
 			}
 
-			// Check permissions
 			if !isAdmin {
 				if perms := repo.GetPermissions(); perms != nil {
 					if admin, ok := perms["admin"]; ok && admin {
@@ -132,12 +125,10 @@ func (self *GithubClient) fetchUserAdminRepos(ctx context.Context, client *githu
 			}
 		}
 
-		// Check if there are more pages
 		if resp.NextPage == 0 {
 			break
 		}
 
-		// Set up for next page
 		opts.Page = resp.NextPage
 	}
 
@@ -154,20 +145,17 @@ func (self *GithubClient) fetchOrganizationAdminRepos(ctx context.Context, clien
 	}
 
 	for {
-		// Check if context is canceled
 		select {
 		case <-ctx.Done():
 			return nil, ctx.Err()
 		default:
 		}
 
-		// Get user's repositories with pagination
 		ghRepositories, resp, err := client.Repositories.ListByOrg(ctx, inst.AccountLogin, opts)
 		if err != nil {
 			return nil, fmt.Errorf("error getting repositories for user %s: %v", inst.AccountLogin, err)
 		}
 
-		// Filter admin repositories
 		for _, repo := range ghRepositories {
 			// TODO: Check if the user is an admin
 			isAdmin := true
@@ -176,12 +164,10 @@ func (self *GithubClient) fetchOrganizationAdminRepos(ctx context.Context, clien
 			}
 		}
 
-		// Check if there are more pages
 		if resp.NextPage == 0 {
 			break
 		}
 
-		// Set up for next page
 		opts.Page = resp.NextPage
 	}
 
@@ -315,14 +301,12 @@ func (self *GithubClient) GetRepositoryDetail(ctx context.Context, installation 
 	timeoutCtx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 
-	// Get authenticated client
 	authenticatedClient, err := self.GetAuthenticatedClient(timeoutCtx, installation.GithubAppID, installation.ID, installation.Edges.GithubApp.PrivateKey)
 	if err != nil {
 		return nil, fmt.Errorf("error getting authenticated client for %s: %v", installation.AccountLogin, err)
 	}
 	defer authenticatedClient.Client().CloseIdleConnections()
 
-	// Get repository information
 	ghRepo, _, err := authenticatedClient.Repositories.Get(ctx, owner, repo)
 	if err != nil {
 		return nil, fmt.Errorf("error getting repository %s/%s: %v", owner, repo, err)
@@ -354,7 +338,6 @@ func (self *GithubClient) GetRepositoryDetail(ctx context.Context, installation 
 
 	wg.Wait()
 
-	// Format the response
 	repoDetail := &GithubRepositoryDetail{
 		ID:              ghRepo.GetID(),
 		InstallationID:  installation.ID,
@@ -381,7 +364,6 @@ func (self *GithubClient) GetRepositoryDetail(ctx context.Context, installation 
 		Tags:            tags,
 	}
 
-	// Add owner information if available
 	if ghRepo.Owner != nil {
 		repoDetail.Owner = &GithubRepositoryOwner{
 			ID:        ghRepo.Owner.GetID(),
@@ -404,7 +386,6 @@ func (self *GithubClient) getRepositoryBranches(ctx context.Context, client *git
 
 	var allBranches []*GithubBranch
 	for {
-		// Check if context is canceled
 		select {
 		case <-ctx.Done():
 			return allBranches, ctx.Err()
@@ -443,7 +424,6 @@ func (self *GithubClient) getRepositoryTags(ctx context.Context, client *github.
 
 	var allTags []*GithubTag
 	for {
-		// Check if context is canceled
 		select {
 		case <-ctx.Done():
 			return allTags, ctx.Err()
@@ -483,17 +463,14 @@ func (self *GithubClient) VerifyRepositoryAccess(ctx context.Context, installati
 	timeoutCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
-	// Get authenticated client
 	authenticatedClient, err := self.GetAuthenticatedClient(timeoutCtx, installation.GithubAppID, installation.ID, installation.Edges.GithubApp.PrivateKey)
 	if err != nil {
 		return false, "", "", fmt.Errorf("error getting authenticated client for %s: %v", installation.AccountLogin, err)
 	}
 	defer authenticatedClient.Client().CloseIdleConnections()
 
-	// See if we can access the repository
 	repoResult, resp, err := authenticatedClient.Repositories.Get(ctx, owner, repo)
 	if err == nil {
-		// Repository found and accessible
 		return true, repoResult.GetCloneURL(), repoResult.GetDefaultBranch(), nil
 	}
 
@@ -517,7 +494,6 @@ func (self *GithubClient) GetCommitSummary(ctx context.Context, installation *en
 	timeoutCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
-	// Get authenticated client
 	authenticatedClient, err := self.GetAuthenticatedClient(timeoutCtx, installation.GithubAppID, installation.ID, installation.Edges.GithubApp.PrivateKey)
 	if err != nil {
 		return "", "", nil, fmt.Errorf("error getting authenticated client for %s: %v", installation.AccountLogin, err)
@@ -528,7 +504,6 @@ func (self *GithubClient) GetCommitSummary(ctx context.Context, installation *en
 
 	if isCommitSHA {
 		commitSHA = branchOrSHA
-		// Get commit by SHA
 		repoCommit, _, err = authenticatedClient.Repositories.GetCommit(ctx, owner, repo, branchOrSHA, nil)
 		if err != nil {
 			return "", "", nil, fmt.Errorf("error getting commit %s for repository %s/%s: %v", branchOrSHA, owner, repo, err)
@@ -539,9 +514,7 @@ func (self *GithubClient) GetCommitSummary(ctx context.Context, installation *en
 		if err != nil {
 			return "", "", nil, fmt.Errorf("error getting branch %s for repository %s/%s: %v", branchOrSHA, owner, repo, err)
 		}
-		// Get the commit SHA from the branch
 		commitSHA = branchInfo.GetCommit().GetSHA()
-		// Use the commit SHA to get the full commit information
 		repoCommit, _, err = authenticatedClient.Repositories.GetCommit(ctx, owner, repo, commitSHA, nil)
 		if err != nil {
 			return "", "", nil, fmt.Errorf("error getting commit %s for repository %s/%s: %v", commitSHA, owner, repo, err)

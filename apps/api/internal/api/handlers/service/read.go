@@ -3,11 +3,9 @@ package service_handler
 import (
 	"context"
 
-	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
-	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/models"
 )
 
@@ -26,11 +24,9 @@ type ListServiceResponse struct {
 
 // ListServices handles GET /services/list
 func (self *HandlerGroup) ListServices(ctx context.Context, input *ListServiceInput) (*ListServiceResponse, error) {
-	// Get caller
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		log.Error("Error getting user from context")
-		return nil, huma.Error401Unauthorized("Unable to retrieve user")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	services, err := self.srv.ServiceService.GetServicesInEnvironment(
@@ -67,11 +63,9 @@ type GetServiceResponse struct {
 
 // GetService handles GET /services/get
 func (self *HandlerGroup) GetService(ctx context.Context, input *GetServiceInput) (*GetServiceResponse, error) {
-	// Get caller
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		log.Error("Error getting user from context")
-		return nil, huma.Error401Unauthorized("Unable to retrieve user")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	service, err := self.srv.ServiceService.GetServiceByID(

@@ -70,54 +70,6 @@ func (self *DeploymentService) AttachInstanceDataToServices(ctx context.Context,
 	return result, nil
 }
 
-// AttachInstanceDataToServicesWithKubernetesEvents efficiently attaches instance data with full Kubernetes Events API
-// This version includes both inferred events and Kubernetes Events API data for detailed views
-func (self *DeploymentService) AttachInstanceDataToServicesWithKubernetesEvents(ctx context.Context, services []*ent.Service, namespace string) (map[uuid.UUID]*ServiceInstanceData, error) {
-	if len(services) == 0 {
-		return make(map[uuid.UUID]*ServiceInstanceData), nil
-	}
-
-	// Get all pod statuses for the environment in a single call with full Kubernetes Events API
-	statuses, err := self.k8s.GetPodContainerStatusByLabelsWithOptions(
-		ctx,
-		namespace,
-		map[string]string{
-			"unbind-environment": services[0].EnvironmentID.String(),
-		},
-		self.k8s.GetInternalClient(),
-		k8s.PodStatusOptions{
-			IncludeKubernetesEvents: true, // Include full Kubernetes Events API for detailed views
-		},
-	)
-	if err != nil {
-		log.Error("Error getting pod container status for environment", "err", err, "environment_id", services[0].EnvironmentID)
-		return nil, err
-	}
-
-	// Group statuses by service ID
-	serviceStatuses := make(map[uuid.UUID][]k8s.PodContainerStatus)
-	for _, status := range statuses {
-		// The ServiceID is already parsed and stored in the PodContainerStatus struct
-		if status.ServiceID != uuid.Nil {
-			serviceStatuses[status.ServiceID] = append(serviceStatuses[status.ServiceID], status)
-		}
-	}
-
-	// Calculate instance data for each service
-	result := make(map[uuid.UUID]*ServiceInstanceData)
-	for _, service := range services {
-		if service.Edges.CurrentDeployment == nil || service.Edges.ServiceConfig == nil {
-			continue
-		}
-
-		statuses := serviceStatuses[service.ID]
-		instanceData := self.calculateInstanceData(statuses, service.Edges.ServiceConfig.Replicas)
-		result[service.ID] = instanceData
-	}
-
-	return result, nil
-}
-
 // calculateInstanceData processes pod statuses to determine deployment status and events
 func (self *DeploymentService) calculateInstanceData(statuses []k8s.PodContainerStatus, expectedReplicas int32) *ServiceInstanceData {
 	events := []models.EventRecord{}
@@ -128,14 +80,12 @@ func (self *DeploymentService) calculateInstanceData(statuses []k8s.PodContainer
 	hasPending := false
 	readyCount := int32(0)
 
-	// Process each pod status
 	for _, status := range statuses {
 		// Check if any containers are crashing at pod level
 		if status.HasCrashingInstances {
 			hasCrashing = true
 		}
 
-		// Process container instances
 		for _, instance := range status.Instances {
 			restartCount += instance.RestartCount
 			// Always collect events from all containers

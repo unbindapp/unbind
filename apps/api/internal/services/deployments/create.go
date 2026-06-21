@@ -37,7 +37,6 @@ func (self *DeploymentService) CreateManualDeployment(ctx context.Context, reque
 	var gitBranch string
 
 	if service.GithubInstallationID != nil && service.GitRepository != nil && service.Edges.ServiceConfig.GitBranch != nil {
-		// Get installation
 		installation, err := self.repo.Github().GetInstallationByID(ctx, *service.GithubInstallationID)
 		if err != nil {
 			if ent.IsNotFound(err) {
@@ -47,7 +46,6 @@ func (self *DeploymentService) CreateManualDeployment(ctx context.Context, reque
 			return nil, err
 		}
 
-		// Branch or sha
 		gitBranch = *service.Edges.ServiceConfig.GitBranch
 		summaryTarget := gitBranch
 		isCommitHash := false
@@ -68,7 +66,6 @@ func (self *DeploymentService) CreateManualDeployment(ctx context.Context, reque
 			return nil, err
 		}
 	}
-	// Enqueue build job
 	env, err := self.deploymentController.PopulateBuildEnvironment(ctx, input.ServiceID, nil, nil)
 	if err != nil {
 		return nil, err

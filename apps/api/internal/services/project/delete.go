@@ -30,12 +30,10 @@ func (self *ProjectService) DeleteProject(ctx context.Context, requesterUserID u
 		},
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return err
 	}
 
-	// Check if the team exists
 	team, err := self.repo.Team().GetByID(ctx, input.TeamID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -56,7 +54,6 @@ func (self *ProjectService) DeleteProject(ctx context.Context, requesterUserID u
 		return errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Project not found")
 	}
 
-	// Create kubernetes client
 	k8sClient, err := self.k8s.CreateClientWithToken(bearerToken)
 	if err != nil {
 		return err
@@ -67,7 +64,6 @@ func (self *ProjectService) DeleteProject(ctx context.Context, requesterUserID u
 		return err
 	}
 
-	// Create kubernetes client
 	client, err := self.k8s.CreateClientWithToken(bearerToken)
 	if err != nil {
 		return err
@@ -75,11 +71,8 @@ func (self *ProjectService) DeleteProject(ctx context.Context, requesterUserID u
 
 	// Delete the project in cascading fashion
 	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
-		// Delete environments
 		for _, environment := range environments {
-			// Delete services
 			for _, service := range environment.Edges.Services {
-				// Cancel deployments
 				if err := self.deployCtl.CancelExistingJobs(ctx, service.ID); err != nil {
 					log.Warnf("Error cancelling jobs for service %s: %v", service.KubernetesName, err)
 				}
@@ -90,7 +83,6 @@ func (self *ProjectService) DeleteProject(ctx context.Context, requesterUserID u
 					return err
 				}
 
-				// Delete secret
 				if err := self.k8s.DeleteSecret(ctx, service.KubernetesSecret, team.Namespace, client); err != nil {
 					log.Error("Error deleting secret from k8s", "secret", service.KubernetesSecret, "err", err)
 					return err
@@ -106,7 +98,6 @@ func (self *ProjectService) DeleteProject(ctx context.Context, requesterUserID u
 				return err
 			}
 
-			// Delete environment
 			if err := self.k8s.DeleteSecret(ctx, environment.KubernetesSecret, team.Namespace, client); err != nil {
 				log.Error("Error deleting secret", "secret", environment.KubernetesSecret, "err", err)
 			}
@@ -121,7 +112,6 @@ func (self *ProjectService) DeleteProject(ctx context.Context, requesterUserID u
 			return err
 		}
 
-		// Delete project by ID
 		if err := self.repo.Project().Delete(ctx, tx, input.ProjectID); err != nil {
 			return err
 		}
@@ -136,9 +126,7 @@ func (self *ProjectService) DeleteProject(ctx context.Context, requesterUserID u
 		event := schema.WebhookEventProjectDeleted
 		level := webhooks_service.WebhookLevelError
 
-		// Construct URL
 		url, _ := utils.JoinURLPaths(self.cfg.ExternalUIUrl, project.TeamID.String())
-		// Get user
 		user, err := self.repo.User().GetByID(context.Background(), requesterUserID)
 		if err != nil {
 			log.Errorf("Failed to get user %s: %v", requesterUserID.String(), err)

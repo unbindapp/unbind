@@ -14,7 +14,6 @@ import (
 
 // Changing name basically
 func (self *ServiceGroupService) UpdateServiceGroup(ctx context.Context, requesterUserID uuid.UUID, input *models.UpdateServiceGroupInput) (*models.ServiceGroupResponse, error) {
-	// Check permissions
 	permissionChecks := []permissions_repo.PermissionCheck{
 		// Has permission to manage teams
 		{
@@ -28,7 +27,6 @@ func (self *ServiceGroupService) UpdateServiceGroup(ctx context.Context, request
 		return nil, err
 	}
 
-	// Verify inputs
 	environment, _, err := self.VerifyInputs(ctx, input.TeamID, input.ProjectID, input.EnvironmentID)
 	if err != nil {
 		return nil, err
@@ -88,7 +86,6 @@ func (self *ServiceGroupService) UpdateServiceGroup(ctx context.Context, request
 		}
 	}
 
-	// Execute update
 	grp, err := self.repo.ServiceGroup().Update(ctx, input)
 	if err != nil {
 		if ent.IsNotFound(err) {

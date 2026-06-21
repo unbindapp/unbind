@@ -18,13 +18,11 @@ type GithubAdminRepositoryListResponse struct {
 }
 
 func (self *HandlerGroup) HandleListGithubAdminRepositories(ctx context.Context, input *server.BaseAuthInput) (*GithubAdminRepositoryListResponse, error) {
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		log.Error("Error getting user from context")
-		return nil, huma.Error401Unauthorized("Unable to retrieve user")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	// Get owned installations
 	// ! TODO - group RBAC
 	installations, err := self.srv.Repository.Github().GetInstallationsByCreator(ctx, user.ID)
 	if err != nil {
@@ -67,7 +65,6 @@ type GithubRepositoryDetailResponse struct {
 }
 
 func (self *HandlerGroup) HandleGetGithubRepositoryDetail(ctx context.Context, input *GithubRepositoryDetailInput) (*GithubRepositoryDetailResponse, error) {
-	// Get the installation by ID
 	installationID := input.InstallationID
 	installation, err := self.srv.Repository.Github().GetInstallationByID(ctx, installationID)
 	if err != nil {
@@ -78,7 +75,6 @@ func (self *HandlerGroup) HandleGetGithubRepositoryDetail(ctx context.Context, i
 		return nil, huma.Error500InternalServerError("Failed to get github installation")
 	}
 
-	// Get repository details
 	repoDetail, err := self.srv.GithubClient.GetRepositoryDetail(ctx, installation, input.Owner, input.RepoName)
 	if err != nil {
 		log.Error("Error getting repository detail", "err", err, "owner", input.Owner, "repo", input.RepoName)

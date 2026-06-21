@@ -25,34 +25,6 @@ func (self *TeamService) ListTeams(ctx context.Context, userID uuid.UUID, bearer
 		return nil, fmt.Errorf("error getting all teams: %w", err)
 	}
 
-	// ! Doesn't work with Role/RoleBinding
-	// namespaceNames := make([]string, len(dbTeams))
-	// for i, team := range dbTeams {
-	// 	namespaceNames[i] = team.Namespace
-	// }
-
-	// // Get namespaces from kubernetes
-	// namespaces, err := self.k8s.GetNamespaces(ctx, namespaceNames, bearerToken)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// // Create a map of k8s namespaces
-	// k8sNamespaces := make(map[string]bool)
-	// for _, team := range namespaces {
-	// 	k8sNamespaces[team.Namespace] = true
-	// }
-
-	// // Filter dbTeams to only include those with namespaces in k8sNamespaces
-	// var filteredTeams []*ent.Team
-	// for _, team := range dbTeams {
-	// 	_, namespaceExists := k8sNamespaces[team.Namespace]
-	// 	if !namespaceExists {
-	// 		continue
-	// 	}
-	// 	filteredTeams = append(filteredTeams, team)
-	// }
-
 	return models.TransformTeamEntities(dbTeams), nil
 }
 
@@ -74,7 +46,6 @@ func (self *TeamService) GetTeamByID(ctx context.Context, userID, teamID uuid.UU
 		return nil, err
 	}
 
-	// Get team by ID
 	dbTeam, err := self.repo.Team().GetByID(ctx, teamID)
 	if err != nil {
 		if ent.IsNotFound(err) {

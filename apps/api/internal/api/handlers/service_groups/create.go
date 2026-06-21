@@ -3,10 +3,8 @@ package servicegroups_handler
 import (
 	"context"
 
-	"github.com/danielgtaylor/huma/v2"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
-	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/models"
 )
 
@@ -22,11 +20,9 @@ type CreateServiceGroupResponse struct {
 }
 
 func (self *HandlerGroup) CreateServiceGroup(ctx context.Context, input *CreateServiceGroupInput) (*CreateServiceGroupResponse, error) {
-	// Get caller
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		log.Error("Error getting user from context")
-		return nil, huma.Error401Unauthorized("Unable to retrieve user")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	createdServiceGroup, err := self.srv.ServiceGroupService.CreateServiceGroup(ctx, user.ID, input.Body)

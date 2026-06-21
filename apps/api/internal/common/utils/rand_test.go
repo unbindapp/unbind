@@ -32,7 +32,7 @@ func TestGenerateRandomSimpleID(t *testing.T) {
 		results := make(map[string]bool)
 
 		// Generate 100 strings to have a statistically significant sample
-		for i := 0; i < 100; i++ {
+		for range 100 {
 			str, err := GenerateRandomSimpleID(5)
 			require.NoError(t, err)
 			results[str] = true
@@ -116,14 +116,14 @@ func TestGenerateSlugUniqueness(t *testing.T) {
 	numSlugs := 10
 	slugs := make([]string, numSlugs)
 
-	for i := 0; i < numSlugs; i++ {
+	for i := range numSlugs {
 		slug, err := GenerateSlug(displayName)
 		assert.NoError(t, err)
 		slugs[i] = slug
 	}
 
 	// Check that all generated slugs are unique
-	for i := 0; i < numSlugs; i++ {
+	for i := range numSlugs {
 		for j := i + 1; j < numSlugs; j++ {
 			assert.NotEqual(t, slugs[i], slugs[j], "Generated slugs should be unique")
 		}
@@ -133,7 +133,7 @@ func TestGenerateSlugUniqueness(t *testing.T) {
 func TestGenerateSecurePassword(t *testing.T) {
 	// Test complex passwords (with special characters)
 	t.Run("complex passwords", func(t *testing.T) {
-		for i := 0; i < 100; i++ { // Run multiple times to ensure consistency
+		for range 100 { // Run multiple times to ensure consistency
 			length := 12
 			password, err := GenerateSecurePassword(length, false)
 			if err != nil {
@@ -187,7 +187,7 @@ func TestGenerateSecurePassword(t *testing.T) {
 
 	// Test simple passwords (alphanumeric only)
 	t.Run("simple passwords", func(t *testing.T) {
-		for i := 0; i < 100; i++ { // Run multiple times to ensure consistency
+		for range 100 { // Run multiple times to ensure consistency
 			length := 12
 			password, err := GenerateSecurePassword(length, true)
 			if err != nil {
@@ -241,7 +241,7 @@ func TestGenerateSecurePassword(t *testing.T) {
 
 	t.Run("random source never duplicates", func(t *testing.T) {
 		results := make(map[string]bool)
-		for i := 0; i < 100; i++ {
+		for range 100 {
 			password, err := GenerateSecurePassword(12, false)
 			assert.NoError(t, err)
 			assert.NotContains(t, results, password)

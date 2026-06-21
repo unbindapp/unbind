@@ -27,20 +27,17 @@ type SystemSettingUpdateInput struct {
 
 func (self *SystemRepository) UpdateSystemSettings(ctx context.Context, input *SystemSettingUpdateInput) (settings *ent.SystemSetting, err error) {
 	if err := self.base.WithTx(ctx, func(tx repository.TxInterface) error {
-		// Get system settings
 		settings, err = self.GetSystemSettings(ctx, tx)
 		if err != nil && !ent.IsNotFound(err) {
 			return err
 		}
 		if ent.IsNotFound(err) {
-			// Create system settings
 			settings, err = tx.Client().SystemSetting.Create().Save(ctx)
 			if err != nil {
 				return err
 			}
 		}
 
-		// Update system settings
 		m := tx.Client().SystemSetting.UpdateOneID(settings.ID)
 
 		if input.WildcardDomain != nil {
@@ -61,7 +58,6 @@ func (self *SystemRepository) UpdateSystemSettings(ctx context.Context, input *S
 			m.SetRegistryCacheSettings(input.RegistryCacheSettings)
 		}
 
-		// Save system settings
 		settings, err = m.Save(ctx)
 
 		if err != nil {

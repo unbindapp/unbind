@@ -12,7 +12,6 @@ type BootstrapRepository struct {
 	base *repository.BaseRepository
 }
 
-// NewBootstrapRepository creates a new repository
 func NewBootstrapRepository(db *ent.Client) *BootstrapRepository {
 	return &BootstrapRepository{
 		base: &repository.BaseRepository{DB: db},

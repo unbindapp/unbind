@@ -3,6 +3,7 @@ package release
 import (
 	"context"
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 
@@ -135,13 +136,7 @@ func (self *Manager) AvailableUpdates(ctx context.Context, currentVersion string
 
 		// If version has dependencies, check if current version is in them
 		if len(meta.DependsOn) > 0 {
-			canUpdate := false
-			for _, dep := range meta.DependsOn {
-				if dep == currentVersion {
-					canUpdate = true
-					break
-				}
-			}
+			canUpdate := slices.Contains(meta.DependsOn, currentVersion)
 			if !canUpdate {
 				continue
 			}

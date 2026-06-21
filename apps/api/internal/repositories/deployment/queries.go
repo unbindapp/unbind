@@ -11,7 +11,6 @@ import (
 	"github.com/unbindapp/unbind-api/ent/project"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/ent/team"
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 )
 
 func (self *DeploymentRepository) GetByID(ctx context.Context, deploymentID uuid.UUID) (*ent.Deployment, error) {
@@ -101,7 +100,7 @@ func (self *DeploymentRepository) GetByServiceIDPaginated(ctx context.Context, s
 
 	// If we have more than the perPage limit, we have a next page, get its cursot and truncate the results
 	if len(all) > perPage {
-		nextCursor = utils.ToPtr(all[perPage].CreatedAt)
+		nextCursor = new(all[perPage].CreatedAt)
 		all = all[:perPage]
 	}
 

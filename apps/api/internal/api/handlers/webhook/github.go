@@ -55,7 +55,6 @@ func (self *HandlerGroup) HandleGithubAppSave(ctx context.Context, input *Handle
 		return nil, huma.Error400BadRequest("Invalid state")
 	}
 
-	// Parse state as uuid
 	parsedState, err := uuid.Parse(state)
 	if err != nil {
 		log.Error("Error parsing state", "err", err)
@@ -317,7 +316,7 @@ func (self *HandlerGroup) HandleGithubWebhook(ctx context.Context, input *Github
 			var refToBuild *string
 			if config.GitBranch != nil {
 				if !strings.Contains(*config.GitBranch, "refs/heads/") {
-					refToBuild = utils.ToPtr("refs/heads/" + *config.GitBranch)
+					refToBuild = new("refs/heads/" + *config.GitBranch)
 				}
 			}
 
@@ -333,8 +332,8 @@ func (self *HandlerGroup) HandleGithubWebhook(ctx context.Context, input *Github
 
 		// Get the tag name if this is a tag push
 		var tagName *string
-		if strings.HasPrefix(ref, "refs/tags/") {
-			tag := strings.TrimPrefix(ref, "refs/tags/")
+		if after, ok := strings.CutPrefix(ref, "refs/tags/"); ok {
+			tag := after
 			tagName = &tag
 		}
 

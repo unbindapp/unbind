@@ -21,7 +21,6 @@ func (self *ServiceService) RestartServiceByID(ctx context.Context, requesterUse
 		},
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return err
 	}
@@ -31,7 +30,6 @@ func (self *ServiceService) RestartServiceByID(ctx context.Context, requesterUse
 		return err
 	}
 
-	// Get service
 	service, err := self.repo.Service().GetByID(ctx, serviceID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -44,7 +42,6 @@ func (self *ServiceService) RestartServiceByID(ctx context.Context, requesterUse
 		return errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Service not found")
 	}
 
-	// Restart pod
 	client, err := self.k8s.CreateClientWithToken(bearerToken)
 	if err != nil {
 		return err

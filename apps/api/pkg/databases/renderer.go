@@ -3,6 +3,8 @@ package databases
 import (
 	"bytes"
 	"fmt"
+	"maps"
+	"slices"
 	"strings"
 	"text/template"
 	"time"
@@ -267,8 +269,8 @@ func (r *DatabaseRenderer) RenderToObjects(renderedYAML string) ([]runtime.Objec
 	decoder := serializer.NewCodecFactory(r.scheme).UniversalDeserializer()
 
 	// Split YAML documents
-	docs := strings.Split(renderedYAML, "---")
-	for _, doc := range docs {
+	docs := strings.SplitSeq(renderedYAML, "---")
+	for doc := range docs {
 		doc = strings.TrimSpace(doc)
 		if doc == "" {
 			continue
@@ -366,13 +368,7 @@ func (r *DatabaseRenderer) validateProperty(name string, value any, prop Paramet
 		// Enum validation
 		if len(prop.Enum) > 0 {
 			strValue := value.(string)
-			valid := false
-			for _, enum := range prop.Enum {
-				if strValue == enum {
-					valid = true
-					break
-				}
-			}
+			valid := slices.Contains(prop.Enum, strValue)
 			if !valid {
 				return fmt.Errorf("field %s must be one of: %v", name, prop.Enum)
 			}
@@ -449,9 +445,7 @@ func (r *DatabaseRenderer) applyDefaults(params map[string]any, schema Definitio
 	result := make(map[string]any)
 
 	// Copy all provided parameters
-	for k, v := range params {
-		result[k] = v
-	}
+	maps.Copy(result, params)
 
 	// Apply defaults recursively for all properties in the schema
 	r.applyDefaultsRecursive(result, schema.Properties, "")

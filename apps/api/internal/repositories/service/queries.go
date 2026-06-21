@@ -140,7 +140,6 @@ func (self *ServiceRepository) GetByEnvironmentID(ctx context.Context, environme
 	}
 
 	if withLatestDeployment {
-		// Get the latest deployment for each service
 		for _, svc := range services {
 			latestDeployment, err := self.base.DB.Deployment.Query().
 				Where(deployment.ServiceIDEQ(svc.ID)).
@@ -223,12 +222,10 @@ func (self *ServiceRepository) CountDomainCollisons(ctx context.Context, tx repo
 	// Count matches in the hosts field manually
 	jsonCount := 0
 	for _, config := range configs {
-		// Skip empty hosts field
 		if len(config.Hosts) == 0 {
 			continue
 		}
 
-		// Check each host in the array
 		for _, host := range config.Hosts {
 			if strings.EqualFold(host.Host, lowerDomain) {
 				jsonCount++
@@ -260,7 +257,6 @@ func (self *ServiceRepository) SummarizeServices(ctx context.Context, environmen
 	// Maps to not duplicate icons
 	iconSets := make(map[uuid.UUID]map[string]struct{})
 
-	// Initialize sets for each environment ID
 	for _, envID := range environmentIDs {
 		iconSets[envID] = make(map[string]struct{})
 	}
@@ -287,14 +283,12 @@ func (self *ServiceRepository) SummarizeServices(ctx context.Context, environmen
 		}
 	}
 
-	// Convert to slices
 	icons = make(map[uuid.UUID][]string)
 
 	for envID, iconSet := range iconSets {
 		for icon := range iconSet {
 			icons[envID] = append(icons[envID], icon)
 		}
-		// Sort providers
 		slices.Sort(icons[envID])
 	}
 
@@ -330,7 +324,6 @@ func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent
 			service.Edges.CurrentDeployment = activeBuilds[0]
 		}
 	}
-	// See if a deployment is needed
 	// Create a an object with only fields we care to compare
 	if service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.Volumes == nil {
 		service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.Volumes = []v1.VolumeSpec{}
@@ -351,7 +344,6 @@ func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent
 			},
 		},
 	}
-	// Create a new CRD to compare it
 	var gitBranch string
 	if service.Edges.ServiceConfig.GitBranch != nil {
 		gitBranch = *service.Edges.ServiceConfig.GitBranch
@@ -373,7 +365,7 @@ func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent
 			Config: v1.ServiceConfigSpec{
 				GitBranch:      gitBranch,
 				Hosts:          schema.AsV1HostSpecs(service.Edges.ServiceConfig.Hosts),
-				Replicas:       utils.ToPtr(service.Edges.ServiceConfig.Replicas),
+				Replicas:       new(service.Edges.ServiceConfig.Replicas),
 				Ports:          schema.AsV1PortSpecs(service.Edges.ServiceConfig.Ports),
 				RunCommand:     service.Edges.ServiceConfig.RunCommand,
 				Public:         service.Edges.ServiceConfig.IsPublic,
@@ -506,7 +498,7 @@ func (self *ServiceRepository) GetPVCMountPaths(ctx context.Context, pvcs []*mod
 		for _, svc := range databaseServices {
 			mountPath := utils.InferOperatorPVCMountPath(*svc.Database)
 			if mountPath == nil {
-				mountPath = utils.ToPtr("/database")
+				mountPath = new("/database")
 			}
 
 			// Attach to PVC

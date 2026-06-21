@@ -36,7 +36,7 @@ func flowiseTemplate() *schema.TemplateDefinition {
 				},
 				Description: "Size of the storage for the Flowise app data.",
 				Required:    true,
-				Default:     utils.ToPtr("1"),
+				Default:     new("1"),
 			},
 			{
 				ID:          "input_database_size",
@@ -44,7 +44,7 @@ func flowiseTemplate() *schema.TemplateDefinition {
 				Type:        schema.InputTypeDatabaseSize,
 				Description: "Size of the storage for the PostgreSQL database.",
 				Required:    true,
-				Default:     utils.ToPtr("1"),
+				Default:     new("1"),
 			},
 		},
 		Services: []schema.TemplateService{
@@ -55,7 +55,7 @@ func flowiseTemplate() *schema.TemplateDefinition {
 				DisplayRank:  100,
 				Type:         schema.ServiceTypeDatabase,
 				Builder:      schema.ServiceBuilderDatabase,
-				DatabaseType: utils.ToPtr("postgres"),
+				DatabaseType: new("postgres"),
 			},
 			{
 				ID:         "service_flowise",
@@ -64,8 +64,8 @@ func flowiseTemplate() *schema.TemplateDefinition {
 				Name:       "Flowise",
 				Type:       schema.ServiceTypeDockerimage,
 				Builder:    schema.ServiceBuilderDocker,
-				Image:      utils.ToPtr("flowiseai/flowise:3.1.2"),
-				RunCommand: utils.ToPtr("flowise start"),
+				Image:      new("flowiseai/flowise:3.1.2"),
+				RunCommand: new("flowise start"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 40,
 					CPULimitsMillicores:   500,
@@ -79,13 +79,13 @@ func flowiseTemplate() *schema.TemplateDefinition {
 				HealthCheck: &schema.HealthCheck{
 					Type:                    utils.ToPtr(schema.HealthCheckTypeHTTP),
 					Path:                    "/api/v1/ping",
-					Port:                    utils.ToPtr(int32(3000)),
-					StartupPeriodSeconds:    utils.ToPtr(int32(5)),
-					StartupTimeoutSeconds:   utils.ToPtr(int32(5)),
-					StartupFailureThreshold: utils.ToPtr(int32(10)),
-					HealthPeriodSeconds:     utils.ToPtr(int32(10)),
-					HealthTimeoutSeconds:    utils.ToPtr(int32(5)),
-					HealthFailureThreshold:  utils.ToPtr(int32(5)),
+					Port:                    new(int32(3000)),
+					StartupPeriodSeconds:    new(int32(5)),
+					StartupTimeoutSeconds:   new(int32(5)),
+					StartupFailureThreshold: new(int32(10)),
+					HealthPeriodSeconds:     new(int32(10)),
+					HealthTimeoutSeconds:    new(int32(5)),
+					HealthFailureThreshold:  new(int32(5)),
 				},
 				Variables: []schema.TemplateVariable{
 					{

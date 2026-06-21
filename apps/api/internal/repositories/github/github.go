@@ -12,7 +12,6 @@ type GithubRepository struct {
 	base *repository.BaseRepository
 }
 
-// NewGithubRepository creates a new GitHub repository
 func NewGithubRepository(db *ent.Client) *GithubRepository {
 	return &GithubRepository{
 		base: &repository.BaseRepository{DB: db},

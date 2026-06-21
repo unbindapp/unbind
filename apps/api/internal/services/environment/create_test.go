@@ -11,7 +11,6 @@ import (
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/deployctl"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
@@ -77,7 +76,7 @@ func (suite *CreateEnvironmentSuite) SetupTest() {
 		KubernetesName:   "test-environment-abc123",
 		KubernetesSecret: "test-environment-secret",
 		ProjectID:        suite.testProjectID,
-		Description:      utils.ToPtr("Test environment description"),
+		Description:      new("Test environment description"),
 	}
 }
 
@@ -90,7 +89,7 @@ func (suite *CreateEnvironmentSuite) TestCreateEnvironment_Success() {
 		TeamID:      suite.testTeamID,
 		ProjectID:   suite.testProjectID,
 		Name:        "Test Environment",
-		Description: utils.ToPtr("Test environment description"),
+		Description: new("Test environment description"),
 	}
 
 	expectedPermissionChecks := []permissions_repo.PermissionCheck{

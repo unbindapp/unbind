@@ -14,7 +14,6 @@ import (
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 )
 
-// Delete a specific storage backend by ID
 func (self *StorageService) UpdateS3Storage(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, teamID, id uuid.UUID, name, accessKeyID, secretKey *string) (*models.S3Response, error) {
 	// Input validation
 	if name == nil && accessKeyID == nil && secretKey == nil {
@@ -30,12 +29,10 @@ func (self *StorageService) UpdateS3Storage(ctx context.Context, requesterUserID
 		},
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return nil, err
 	}
 
-	// Check if the team exists
 	team, err := self.repo.Team().GetByID(ctx, teamID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -44,7 +41,6 @@ func (self *StorageService) UpdateS3Storage(ctx context.Context, requesterUserID
 		return nil, err
 	}
 
-	// Get all s3 sources for this team
 	s3Source, err := self.repo.S3().GetByID(ctx, id)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -58,19 +54,16 @@ func (self *StorageService) UpdateS3Storage(ctx context.Context, requesterUserID
 
 	// Update secret
 	if accessKeyID != nil || secretKey != nil {
-		// Create kubernetes client
 		client, err := self.k8s.CreateClientWithToken(bearerToken)
 		if err != nil {
 			return nil, err
 		}
 
-		// Create secret for this project
 		secret, _, err := self.k8s.GetOrCreateSecret(ctx, s3Source.KubernetesSecret, team.Namespace, client)
 		if err != nil {
 			return nil, err
 		}
 
-		// Update data
 		if accessKeyID != nil {
 			secret.Data["access_key_id"] = []byte(*accessKeyID)
 		}
@@ -110,20 +103,17 @@ output = json
 			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
 		}
 
-		// Probe any bucket
 		err = s3Client.ProbeAnyBucketRW(ctx)
 		if err != nil {
 			// May be invalid credentials, etc.
 			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
 		}
 
-		// Update the secret
 		if _, err := self.k8s.UpdateSecret(ctx, secret.Name, team.Namespace, secret.Data, client); err != nil {
 			return nil, err
 		}
 	}
 
-	// Update name
 	if name != nil {
 		s3Source, err = self.repo.S3().Update(ctx, id, *name)
 		if err != nil {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"slices"
 	"strings"
 	"testing"
 
@@ -519,10 +520,8 @@ func validateConnectionString(connectionString string) (string, error) {
 	dbType := parts[0]
 	validTypes := []string{"postgresql", "mysql", "redis", "mongodb", "sqlite"}
 
-	for _, validType := range validTypes {
-		if dbType == validType {
-			return dbType, nil
-		}
+	if slices.Contains(validTypes, dbType) {
+		return dbType, nil
 	}
 
 	return "", fmt.Errorf("unsupported database type: %s", dbType)

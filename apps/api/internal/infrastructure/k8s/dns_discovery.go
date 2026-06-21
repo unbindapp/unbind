@@ -69,7 +69,7 @@ func (self *KubeClient) DiscoverEndpointsByLabels(ctx context.Context, namespace
 			for i, port := range svc.Spec.Ports {
 				endpoint.Ports[i] = schema.PortSpec{
 					Port:     port.Port,
-					Protocol: utils.ToPtr(schema.Protocol(port.Protocol)),
+					Protocol: new(schema.Protocol(port.Protocol)),
 				}
 			}
 
@@ -116,8 +116,8 @@ func (self *KubeClient) DiscoverEndpointsByLabels(ctx context.Context, namespace
 							TargetPort: &schema.PortSpec{
 								IsNodePort: true,
 								Port:       port.NodePort,
-								NodePort:   utils.ToPtr(port.NodePort),
-								Protocol:   utils.ToPtr(schema.Protocol(port.Protocol)),
+								NodePort:   new(port.NodePort),
+								Protocol:   new(schema.Protocol(port.Protocol)),
 							},
 							TlsStatus:     models.TlsStatusNotAvailable,
 							TeamID:        teamID,
@@ -146,8 +146,8 @@ func (self *KubeClient) DiscoverEndpointsByLabels(ctx context.Context, namespace
 									TargetPort: &schema.PortSpec{
 										IsNodePort: true,
 										Port:       port.NodePort,
-										NodePort:   utils.ToPtr(port.NodePort),
-										Protocol:   utils.ToPtr(schema.Protocol(port.Protocol)),
+										NodePort:   new(port.NodePort),
+										Protocol:   new(schema.Protocol(port.Protocol)),
 									},
 									DNSStatus:     models.DNSStatusUnknown,
 									TlsStatus:     models.TlsStatusNotAvailable,
@@ -472,7 +472,7 @@ func (self *KubeClient) appendGatewayL4Endpoints(ctx context.Context, namespace,
 				Path:           "",
 				TargetPort: &schema.PortSpec{
 					Port:     int32(portNum),
-					Protocol: utils.ToPtr(schema.Protocol(proto)),
+					Protocol: new(schema.Protocol(proto)),
 				},
 				DNSStatus:     models.DNSStatusUnknown,
 				TlsStatus:     models.TlsStatusNotAvailable,

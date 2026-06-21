@@ -31,7 +31,6 @@ func (self *UserRepository) Authenticate(ctx context.Context, email, password st
 		return nil, ErrInvalidUserInput
 	}
 
-	// Find the user by email
 	user, err := self.base.DB.User.
 		Query().
 		Where(user.EmailEQ(email)).

@@ -3,13 +3,13 @@ package prometheus
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
 	v1 "github.com/prometheus/client_golang/api/prometheus/v1"
 	"github.com/prometheus/common/model"
 	"github.com/unbindapp/unbind-api/internal/common/log"
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -107,19 +107,13 @@ func (self *PrometheusClient) getPrometheusUsageStats(ctx context.Context, pvcNa
 		value := float64(sample.Value)
 
 		// Ensure this pvcName is one we requested
-		isTargetPVC := false
-		for _, requestedName := range pvcNames {
-			if pvcNameFromMetric == requestedName {
-				isTargetPVC = true
-				break
-			}
-		}
+		isTargetPVC := slices.Contains(pvcNames, pvcNameFromMetric)
 
 		if !isTargetPVC {
 			continue
 		}
 
-		usageMap[pvcNameFromMetric] = utils.ToPtr(value)
+		usageMap[pvcNameFromMetric] = new(value)
 	}
 
 	return usageMap, nil

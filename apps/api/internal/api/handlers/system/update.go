@@ -42,18 +42,15 @@ type UpdateCheckResponse struct {
 }
 
 func (self *HandlerGroup) CheckForUpdates(ctx context.Context, input *server.BaseAuthInput) (*UpdateCheckResponse, error) {
-	// Get requester
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		return nil, huma.Error401Unauthorized("Unauthorized")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	// Check permissions
 	if err := self.CheckPermissions(ctx, user.ID); err != nil {
 		return nil, err
 	}
 
-	// Get all available versions
 	allUpdates, err := self.srv.UpdateManager.CheckForUpdates(ctx)
 	if err != nil {
 		// Log the error but return empty updates instead of error
@@ -104,18 +101,15 @@ type UpdateApplyResponse struct {
 }
 
 func (self *HandlerGroup) ApplyUpdate(ctx context.Context, input *UpdateApplyInput) (*UpdateApplyResponse, error) {
-	// Get requester
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		return nil, huma.Error401Unauthorized("Unauthorized")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	// Check permissions
 	if err := self.CheckPermissions(ctx, user.ID); err != nil {
 		return nil, err
 	}
 
-	// Get all available versions
 	availableUpdates, err := self.srv.UpdateManager.CheckForUpdates(ctx)
 	if err != nil {
 		// Log the error but return error since this is an apply operation
@@ -159,18 +153,15 @@ type UpdateStatusResponse struct {
 }
 
 func (self *HandlerGroup) GetUpdateStatus(ctx context.Context, input *server.BaseAuthInput) (*UpdateStatusResponse, error) {
-	// Get requester
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		return nil, huma.Error401Unauthorized("Unauthorized")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	// Check permissions
 	if err := self.CheckPermissions(ctx, user.ID); err != nil {
 		return nil, err
 	}
 
-	// Get update status from cache
 	cachedVersion, err := self.srv.StringCache.Get(ctx, updateKey)
 	clearCache := true
 	if err != nil {
@@ -178,7 +169,6 @@ func (self *HandlerGroup) GetUpdateStatus(ctx context.Context, input *server.Bas
 		log.Errorf("Failed to get cached update status: %v", err)
 		cachedVersion = self.srv.UpdateManager.CurrentVersion
 	}
-	// Get update status
 	ready, err := self.srv.UpdateManager.CheckDeploymentsReady(ctx, cachedVersion)
 	if err != nil {
 		return nil, huma.Error500InternalServerError("Failed to get update status: " + err.Error())

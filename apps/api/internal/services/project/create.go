@@ -32,12 +32,10 @@ func (self *ProjectService) CreateProject(ctx context.Context, requesterUserID u
 		},
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return nil, err
 	}
 
-	// Check if the team exists
 	team, err := self.repo.Team().GetByID(ctx, input.TeamID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -46,24 +44,20 @@ func (self *ProjectService) CreateProject(ctx context.Context, requesterUserID u
 		return nil, err
 	}
 
-	// Create kubernetes client
 	client, err := self.k8s.CreateClientWithToken(bearerToken)
 	if err != nil {
 		return nil, err
 	}
 
-	// Create the project
 	var project *ent.Project
 	var environment *ent.Environment
 	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
-		// Create a unique name
 		kubernetesName, err := utils.GenerateSlug(input.Name)
 		if err != nil {
 			log.Errorf("Failed to generate kubernetes name for project %s: %v", input.Name, err)
 			return err
 		}
 
-		// Create secret for this project
 		secret, _, err := self.k8s.GetOrCreateSecret(ctx, kubernetesName, team.Namespace, client)
 		if err != nil {
 			return err
@@ -92,8 +86,7 @@ func (self *ProjectService) CreateProject(ctx context.Context, requesterUserID u
 			return err
 		}
 
-		// Set as default
-		project, err = self.repo.Project().Update(ctx, tx, project.ID, utils.ToPtr(environment.ID), input.Name, nil)
+		project, err = self.repo.Project().Update(ctx, tx, project.ID, new(environment.ID), input.Name, nil)
 		if err != nil {
 			return err
 		}
@@ -109,16 +102,13 @@ func (self *ProjectService) CreateProject(ctx context.Context, requesterUserID u
 		event := schema.WebhookEventProjectCreated
 		level := webhooks_service.WebhookLevelInfo
 
-		// Get project with edges
 		project, err := self.repo.Project().GetByID(context.Background(), project.ID)
 		if err != nil {
 			log.Errorf("Failed to get project %s: %v", project.ID.String(), err)
 			return
 		}
 
-		// Construct URL
 		url, _ := utils.JoinURLPaths(self.cfg.ExternalUIUrl, project.TeamID.String(), "project", project.ID.String())
-		// Get user
 		user, err := self.repo.User().GetByID(context.Background(), requesterUserID)
 		if err != nil {
 			log.Errorf("Failed to get user %s: %v", requesterUserID.String(), err)

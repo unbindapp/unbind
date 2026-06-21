@@ -32,7 +32,7 @@ func wordPressTemplate() *schema.TemplateDefinition {
 				Type:        schema.InputTypeDatabaseSize,
 				Description: "Size of the storage for the MySQL database.",
 				Required:    true,
-				Default:     utils.ToPtr("1"),
+				Default:     new("1"),
 			},
 		},
 		Services: []schema.TemplateService{
@@ -43,7 +43,7 @@ func wordPressTemplate() *schema.TemplateDefinition {
 				DisplayRank:  100,
 				Type:         schema.ServiceTypeDatabase,
 				Builder:      schema.ServiceBuilderDatabase,
-				DatabaseType: utils.ToPtr("mysql"),
+				DatabaseType: new("mysql"),
 			},
 			{
 				ID:        "service_wordpress",
@@ -52,7 +52,7 @@ func wordPressTemplate() *schema.TemplateDefinition {
 				Name:      "WordPress",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     utils.ToPtr("wordpress:7.0"),
+				Image:     new("wordpress:7.0"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
 					CPULimitsMillicores:   400,
@@ -66,13 +66,13 @@ func wordPressTemplate() *schema.TemplateDefinition {
 				HealthCheck: &schema.HealthCheck{
 					Type:                    utils.ToPtr(schema.HealthCheckTypeHTTP),
 					Path:                    "/",
-					Port:                    utils.ToPtr(int32(80)),
-					StartupPeriodSeconds:    utils.ToPtr(int32(3)),
-					StartupTimeoutSeconds:   utils.ToPtr(int32(10)),
-					StartupFailureThreshold: utils.ToPtr(int32(10)),
-					HealthPeriodSeconds:     utils.ToPtr(int32(10)),
-					HealthTimeoutSeconds:    utils.ToPtr(int32(5)),
-					HealthFailureThreshold:  utils.ToPtr(int32(5)),
+					Port:                    new(int32(80)),
+					StartupPeriodSeconds:    new(int32(3)),
+					StartupTimeoutSeconds:   new(int32(10)),
+					StartupFailureThreshold: new(int32(10)),
+					HealthPeriodSeconds:     new(int32(10)),
+					HealthTimeoutSeconds:    new(int32(5)),
+					HealthFailureThreshold:  new(int32(5)),
 				},
 				VariableReferences: []schema.TemplateVariableReference{
 					{

@@ -26,7 +26,7 @@ func supabaseTemplate() *schema.TemplateDefinition {
 				Type:        schema.InputTypeHost,
 				Description: "The domain to use for the Supabase instance.",
 				Required:    true,
-				TargetPort:  utils.ToPtr(8000),
+				TargetPort:  new(8000),
 			},
 			{
 				ID:          "input_database_size",
@@ -34,7 +34,7 @@ func supabaseTemplate() *schema.TemplateDefinition {
 				Type:        schema.InputTypeDatabaseSize,
 				Description: "Size of the storage for the PostgreSQL database.",
 				Required:    true,
-				Default:     utils.ToPtr("1"),
+				Default:     new("1"),
 			},
 			{
 				ID:   "input_storage_size",
@@ -46,7 +46,7 @@ func supabaseTemplate() *schema.TemplateDefinition {
 				},
 				Description: "Size of the storage for the Supabase storage service.",
 				Required:    true,
-				Default:     utils.ToPtr("1"),
+				Default:     new("1"),
 			},
 			{
 				ID:          "input_internal_password",
@@ -64,7 +64,7 @@ func supabaseTemplate() *schema.TemplateDefinition {
 				DisplayRank:  100,
 				Type:         schema.ServiceTypeDatabase,
 				Builder:      schema.ServiceBuilderDatabase,
-				DatabaseType: utils.ToPtr("postgres"),
+				DatabaseType: new("postgres"),
 				InitDBReplacers: map[string]string{
 					"${REPLACEME}": "INPUT_INTERNAL_PASSWORD_VALUE",
 				},
@@ -1343,7 +1343,7 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				Name:      "Studio",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     utils.ToPtr("supabase/studio:2026.06.03-sha-0bca601"),
+				Image:     new("supabase/studio:2026.06.03-sha-0bca601"),
 				DependsOn: []string{"service_postgresql", "service_kong"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 50,
@@ -1358,13 +1358,13 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				HealthCheck: &schema.HealthCheck{
 					Type:                    utils.ToPtr(schema.HealthCheckTypeHTTP),
 					Path:                    "/api/platform/profile",
-					Port:                    utils.ToPtr(int32(3000)),
-					StartupPeriodSeconds:    utils.ToPtr(int32(5)),
-					StartupTimeoutSeconds:   utils.ToPtr(int32(5)),
-					StartupFailureThreshold: utils.ToPtr(int32(10)),
-					HealthPeriodSeconds:     utils.ToPtr(int32(10)),
-					HealthTimeoutSeconds:    utils.ToPtr(int32(5)),
-					HealthFailureThreshold:  utils.ToPtr(int32(5)),
+					Port:                    new(int32(3000)),
+					StartupPeriodSeconds:    new(int32(5)),
+					StartupTimeoutSeconds:   new(int32(5)),
+					StartupFailureThreshold: new(int32(10)),
+					HealthPeriodSeconds:     new(int32(10)),
+					HealthTimeoutSeconds:    new(int32(5)),
+					HealthFailureThreshold:  new(int32(5)),
 				},
 				VariableReferences: []schema.TemplateVariableReference{
 					{
@@ -1448,7 +1448,7 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				Name:      "Storage",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     utils.ToPtr("supabase/storage-api:v1.60.4"),
+				Image:     new("supabase/storage-api:v1.60.4"),
 				DependsOn: []string{"service_postgresql", "service_minio"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
@@ -1463,13 +1463,13 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				HealthCheck: &schema.HealthCheck{
 					Type:                    utils.ToPtr(schema.HealthCheckTypeHTTP),
 					Path:                    "/status",
-					Port:                    utils.ToPtr(int32(5000)),
-					StartupPeriodSeconds:    utils.ToPtr(int32(5)),
-					StartupTimeoutSeconds:   utils.ToPtr(int32(5)),
-					StartupFailureThreshold: utils.ToPtr(int32(10)),
-					HealthPeriodSeconds:     utils.ToPtr(int32(10)),
-					HealthTimeoutSeconds:    utils.ToPtr(int32(5)),
-					HealthFailureThreshold:  utils.ToPtr(int32(5)),
+					Port:                    new(int32(5000)),
+					StartupPeriodSeconds:    new(int32(5)),
+					StartupTimeoutSeconds:   new(int32(5)),
+					StartupFailureThreshold: new(int32(10)),
+					HealthPeriodSeconds:     new(int32(10)),
+					HealthTimeoutSeconds:    new(int32(5)),
+					HealthFailureThreshold:  new(int32(5)),
 				},
 				VariableReferences: []schema.TemplateVariableReference{
 					{
@@ -1529,8 +1529,8 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				InputIDs:   []string{"input_storage_size"},
 				Type:       schema.ServiceTypeDockerimage,
 				Builder:    schema.ServiceBuilderDocker,
-				Image:      utils.ToPtr("minio/minio:RELEASE.2025-09-07T16-13-09Z"),
-				RunCommand: utils.ToPtr("bash -c '/usr/bin/mc alias set supabase-minio http://localhost:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} 2>/dev/null || true && /usr/bin/mc mb --ignore-existing supabase-minio/stub 2>/dev/null || true && exec minio server /data --console-address \":9001\"'"),
+				Image:      new("minio/minio:RELEASE.2025-09-07T16-13-09Z"),
+				RunCommand: new("bash -c '/usr/bin/mc alias set supabase-minio http://localhost:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} 2>/dev/null || true && /usr/bin/mc mb --ignore-existing supabase-minio/stub 2>/dev/null || true && exec minio server /data --console-address \":9001\"'"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 50,
 					CPULimitsMillicores:   300,
@@ -1548,12 +1548,12 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				HealthCheck: &schema.HealthCheck{
 					Type:                    utils.ToPtr(schema.HealthCheckTypeExec),
 					Command:                 "mc ready local",
-					StartupPeriodSeconds:    utils.ToPtr(int32(5)),
-					StartupTimeoutSeconds:   utils.ToPtr(int32(20)),
-					StartupFailureThreshold: utils.ToPtr(int32(10)),
-					HealthPeriodSeconds:     utils.ToPtr(int32(10)),
-					HealthTimeoutSeconds:    utils.ToPtr(int32(5)),
-					HealthFailureThreshold:  utils.ToPtr(int32(5)),
+					StartupPeriodSeconds:    new(int32(5)),
+					StartupTimeoutSeconds:   new(int32(20)),
+					StartupFailureThreshold: new(int32(10)),
+					HealthPeriodSeconds:     new(int32(10)),
+					HealthTimeoutSeconds:    new(int32(5)),
+					HealthFailureThreshold:  new(int32(5)),
 				},
 				Variables: []schema.TemplateVariable{
 					{
@@ -1573,7 +1573,7 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				Name:      "PostgREST",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     utils.ToPtr("postgrest/postgrest:v14.12"),
+				Image:     new("postgrest/postgrest:v14.12"),
 				DependsOn: []string{"service_postgresql"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
@@ -1623,7 +1623,7 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				Name:      "Auth",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     utils.ToPtr("supabase/gotrue:v2.189.0"),
+				Image:     new("supabase/gotrue:v2.189.0"),
 				DependsOn: []string{"service_postgresql"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 20,
@@ -1638,13 +1638,13 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				HealthCheck: &schema.HealthCheck{
 					Type:                    utils.ToPtr(schema.HealthCheckTypeHTTP),
 					Path:                    "/health",
-					Port:                    utils.ToPtr(int32(9999)),
-					StartupPeriodSeconds:    utils.ToPtr(int32(5)),
-					StartupTimeoutSeconds:   utils.ToPtr(int32(5)),
-					StartupFailureThreshold: utils.ToPtr(int32(10)),
-					HealthPeriodSeconds:     utils.ToPtr(int32(10)),
-					HealthTimeoutSeconds:    utils.ToPtr(int32(5)),
-					HealthFailureThreshold:  utils.ToPtr(int32(5)),
+					Port:                    new(int32(9999)),
+					StartupPeriodSeconds:    new(int32(5)),
+					StartupTimeoutSeconds:   new(int32(5)),
+					StartupFailureThreshold: new(int32(10)),
+					HealthPeriodSeconds:     new(int32(10)),
+					HealthTimeoutSeconds:    new(int32(5)),
+					HealthFailureThreshold:  new(int32(5)),
 				},
 				VariableReferences: []schema.TemplateVariableReference{
 					{
@@ -1695,7 +1695,7 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				Name:      "Postgres Meta",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     utils.ToPtr("supabase/postgres-meta:v0.96.6"),
+				Image:     new("supabase/postgres-meta:v0.96.6"),
 				DependsOn: []string{"service_postgresql"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 20,
@@ -1744,7 +1744,7 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				Name:      "Functions",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     utils.ToPtr("supabase/edge-runtime:v1.74.0"),
+				Image:     new("supabase/edge-runtime:v1.74.0"),
 				DependsOn: []string{"service_postgresql", "service_kong"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 20,
@@ -1756,7 +1756,7 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 						Protocol: utils.ToPtr(schema.ProtocolTCP),
 					},
 				},
-				RunCommand: utils.ToPtr("edge-runtime start --main-service /home/deno/functions/main"),
+				RunCommand: new("edge-runtime start --main-service /home/deno/functions/main"),
 				VariablesMounts: []*schema.VariableMount{
 					{
 						Name: "main_index_ts",
@@ -1929,7 +1929,7 @@ serve(async () => {
 				Name:     "Kong",
 				Type:     schema.ServiceTypeDockerimage,
 				Builder:  schema.ServiceBuilderDocker,
-				Image:    utils.ToPtr("kong:3.9.1"),
+				Image:    new("kong:3.9.1"),
 				InputIDs: []string{"input_domain"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 50,

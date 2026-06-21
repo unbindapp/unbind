@@ -16,9 +16,7 @@ func (self *VariableRepository) UpdateReferences(ctx context.Context, tx reposit
 	if tx != nil {
 		db = tx.Client()
 	}
-	// Create variable reference
 	if behavior == models.VariableUpdateBehaviorOverwrite {
-		// Delete all existing references for the service
 		if _, err := db.VariableReference.Delete().
 			Where(variablereference.TargetServiceIDEQ(targetServiceID)).
 			Exec(ctx); err != nil {
@@ -28,7 +26,6 @@ func (self *VariableRepository) UpdateReferences(ctx context.Context, tx reposit
 
 	var references []*ent.VariableReference
 
-	// Create new variable references
 	for _, reference := range items {
 		ref := db.VariableReference.Create().
 			SetTargetServiceID(targetServiceID).
@@ -54,14 +51,12 @@ func (self *VariableRepository) UpdateReferences(ctx context.Context, tx reposit
 }
 
 func (self *VariableRepository) AttachError(ctx context.Context, id uuid.UUID, err error) (*ent.VariableReference, error) {
-	// Attach error to variable reference
 	return self.base.DB.VariableReference.UpdateOneID(id).
 		SetError(err.Error()).
 		Save(ctx)
 }
 
 func (self *VariableRepository) ClearError(ctx context.Context, id uuid.UUID) (*ent.VariableReference, error) {
-	// Clear error from variable reference
 	return self.base.DB.VariableReference.UpdateOneID(id).
 		ClearError().
 		Save(ctx)
@@ -72,7 +67,6 @@ func (self *VariableRepository) DeleteReferences(ctx context.Context, tx reposit
 	if tx != nil {
 		db = tx.Client()
 	}
-	// Delete all existing references for the service
 	return db.VariableReference.Delete().
 		Where(
 			variablereference.TargetServiceIDEQ(targetServiceID),

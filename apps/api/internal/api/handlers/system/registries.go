@@ -3,7 +3,6 @@ package system_handler
 import (
 	"context"
 
-	"github.com/danielgtaylor/huma/v2"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
 	"github.com/unbindapp/unbind-api/internal/models"
@@ -22,10 +21,9 @@ type CreateRegistryResponse struct {
 }
 
 func (self *HandlerGroup) CreateRegistry(ctx context.Context, input *CreateRegistryInput) (*CreateRegistryResponse, error) {
-	// Get requester
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		return nil, huma.Error401Unauthorized("Unauthorized")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	registry, err := self.srv.SystemService.CreateRegistry(ctx, user.ID, input.Body)
@@ -45,13 +43,12 @@ type DeleteRegistryInput struct {
 }
 
 func (self *HandlerGroup) DeleteRegistry(ctx context.Context, input *DeleteRegistryInput) (*server.DeletedResponse, error) {
-	// Get requester
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		return nil, huma.Error401Unauthorized("Unauthorized")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	err := self.srv.SystemService.DeleteRegistry(ctx, user.ID, input.Body)
+	err = self.srv.SystemService.DeleteRegistry(ctx, user.ID, input.Body)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}
@@ -75,10 +72,9 @@ type GetRegistryResponse struct {
 }
 
 func (self *HandlerGroup) GetRegistry(ctx context.Context, input *GetRegistryInput) (*GetRegistryResponse, error) {
-	// Get requester
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		return nil, huma.Error401Unauthorized("Unauthorized")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	registry, err := self.srv.SystemService.GetRegistry(ctx, user.ID, input.GetRegistryInput)
@@ -99,10 +95,9 @@ type ListRegistriesResponse struct {
 }
 
 func (self *HandlerGroup) ListRegistries(ctx context.Context, input *server.BaseAuthInput) (*ListRegistriesResponse, error) {
-	// Get requester
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		return nil, huma.Error401Unauthorized("Unauthorized")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	registries, err := self.srv.SystemService.ListRegistries(ctx, user.ID)
@@ -128,10 +123,9 @@ type SetDefaultRegistryResponse struct {
 }
 
 func (self *HandlerGroup) SetDefaultRegistry(ctx context.Context, input *SetDefaultRegistryInput) (*SetDefaultRegistryResponse, error) {
-	// Get requester
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		return nil, huma.Error401Unauthorized("Unauthorized")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	registry, err := self.srv.SystemService.SetDefaultRegistry(ctx, user.ID, input.Body)

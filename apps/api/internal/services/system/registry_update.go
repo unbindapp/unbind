@@ -35,7 +35,6 @@ func (self *SystemService) SetDefaultRegistry(ctx context.Context, requesterUser
 		return nil, err
 	}
 
-	// Get the registry username
 	registryCredentials, err := self.k8s.GetSecret(ctx, registry.KubernetesSecret, self.cfg.SystemNamespace, self.k8s.GetInternalClient())
 	if err != nil {
 		return nil, err

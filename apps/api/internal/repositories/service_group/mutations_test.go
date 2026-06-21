@@ -118,8 +118,8 @@ func (suite *ServiceGroupMutationsSuite) TestCreate() {
 			suite.Ctx,
 			nil,
 			"New Service Group",
-			utils.ToPtr("group"),
-			utils.ToPtr("New service group description"),
+			new("group"),
+			new("New service group description"),
 			suite.testEnvironment.ID,
 		)
 
@@ -156,8 +156,8 @@ func (suite *ServiceGroupMutationsSuite) TestCreate() {
 			suite.Ctx,
 			nil,
 			"Empty Optional Fields",
-			utils.ToPtr(""),
-			utils.ToPtr(""),
+			new(""),
+			new(""),
 			suite.testEnvironment.ID,
 		)
 
@@ -203,9 +203,9 @@ func (suite *ServiceGroupMutationsSuite) TestUpdate() {
 	suite.Run("Update All Fields", func() {
 		input := &models.UpdateServiceGroupInput{
 			ID:          suite.testServiceGroup.ID,
-			Name:        utils.ToPtr("Updated Service Group"),
-			Icon:        utils.ToPtr("updated-icon"),
-			Description: utils.ToPtr("Updated description"),
+			Name:        new("Updated Service Group"),
+			Icon:        new("updated-icon"),
+			Description: new("Updated description"),
 		}
 
 		serviceGroup, err := suite.serviceGroupRepo.Update(suite.Ctx, input)
@@ -225,7 +225,7 @@ func (suite *ServiceGroupMutationsSuite) TestUpdate() {
 
 		input := &models.UpdateServiceGroupInput{
 			ID:   suite.testServiceGroup.ID,
-			Name: utils.ToPtr("Name Only Update"),
+			Name: new("Name Only Update"),
 		}
 
 		serviceGroup, err := suite.serviceGroupRepo.Update(suite.Ctx, input)
@@ -247,7 +247,7 @@ func (suite *ServiceGroupMutationsSuite) TestUpdate() {
 	suite.Run("Update Clear Icon", func() {
 		input := &models.UpdateServiceGroupInput{
 			ID:   suite.testServiceGroup.ID,
-			Icon: utils.ToPtr(""),
+			Icon: new(""),
 		}
 
 		serviceGroup, err := suite.serviceGroupRepo.Update(suite.Ctx, input)
@@ -259,7 +259,7 @@ func (suite *ServiceGroupMutationsSuite) TestUpdate() {
 	suite.Run("Update Clear Description", func() {
 		input := &models.UpdateServiceGroupInput{
 			ID:          suite.testServiceGroup.ID,
-			Description: utils.ToPtr(""),
+			Description: new(""),
 		}
 
 		serviceGroup, err := suite.serviceGroupRepo.Update(suite.Ctx, input)
@@ -346,7 +346,7 @@ func (suite *ServiceGroupMutationsSuite) TestUpdate() {
 	suite.Run("Update Non-existent Service Group", func() {
 		input := &models.UpdateServiceGroupInput{
 			ID:   uuid.New(),
-			Name: utils.ToPtr("Non-existent"),
+			Name: new("Non-existent"),
 		}
 
 		_, err := suite.serviceGroupRepo.Update(suite.Ctx, input)
@@ -357,7 +357,7 @@ func (suite *ServiceGroupMutationsSuite) TestUpdate() {
 	suite.Run("Update Error when DB closed", func() {
 		input := &models.UpdateServiceGroupInput{
 			ID:   suite.testServiceGroup.ID,
-			Name: utils.ToPtr("Closed DB"),
+			Name: new("Closed DB"),
 		}
 
 		suite.DB.Close()

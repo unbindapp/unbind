@@ -27,24 +27,20 @@ func (self *EnvironmentService) UpdateEnvironment(ctx context.Context, requester
 		},
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return nil, err
 	}
 
-	// Verify inputs
 	_, environment, err := self.VerifyInputs(ctx, input.TeamID, input.ProjectID, input.EnvironmentID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Update the environment
 	updated, err := self.repo.Environment().Update(ctx, environment.ID, input.Name, input.Description)
 	if err != nil {
 		return nil, err
 	}
 
-	// Convert to response
 	resp := models.TransformEnvironmentEntity(updated)
 
 	// Summarizes services

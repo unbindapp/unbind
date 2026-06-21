@@ -32,7 +32,7 @@ func formbricksTemplate() *schema.TemplateDefinition {
 				Type:        schema.InputTypeDatabaseSize,
 				Description: "Size of the storage for the PostgreSQL database.",
 				Required:    true,
-				Default:     utils.ToPtr("1"),
+				Default:     new("1"),
 			},
 			{
 				ID:          "input_storage_size",
@@ -40,7 +40,7 @@ func formbricksTemplate() *schema.TemplateDefinition {
 				Type:        schema.InputTypeVolumeSize,
 				Description: "Size of the storage for Formbricks uploads.",
 				Required:    true,
-				Default:     utils.ToPtr("1"),
+				Default:     new("1"),
 				Volume: &schema.TemplateVolume{
 					Name:      "formbricks-uploads",
 					MountPath: "/home/nextjs/apps/web/uploads/",
@@ -55,7 +55,7 @@ func formbricksTemplate() *schema.TemplateDefinition {
 				DisplayRank:  100,
 				Type:         schema.ServiceTypeDatabase,
 				Builder:      schema.ServiceBuilderDatabase,
-				DatabaseType: utils.ToPtr("postgres"),
+				DatabaseType: new("postgres"),
 			},
 			{
 				ID:        "service_formbricks",
@@ -63,7 +63,7 @@ func formbricksTemplate() *schema.TemplateDefinition {
 				InputIDs:  []string{"input_domain", "input_storage_size"},
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     utils.ToPtr("ghcr.io/formbricks/formbricks:5.1.2"),
+				Image:     new("ghcr.io/formbricks/formbricks:5.1.2"),
 				DependsOn: []string{"service_postgresql"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
@@ -78,13 +78,13 @@ func formbricksTemplate() *schema.TemplateDefinition {
 				HealthCheck: &schema.HealthCheck{
 					Type:                    utils.ToPtr(schema.HealthCheckTypeHTTP),
 					Path:                    "/health",
-					Port:                    utils.ToPtr(int32(3000)),
-					StartupPeriodSeconds:    utils.ToPtr(int32(10)),
-					StartupTimeoutSeconds:   utils.ToPtr(int32(20)),
-					StartupFailureThreshold: utils.ToPtr(int32(35)),
-					HealthPeriodSeconds:     utils.ToPtr(int32(10)),
-					HealthTimeoutSeconds:    utils.ToPtr(int32(10)),
-					HealthFailureThreshold:  utils.ToPtr(int32(5)),
+					Port:                    new(int32(3000)),
+					StartupPeriodSeconds:    new(int32(10)),
+					StartupTimeoutSeconds:   new(int32(20)),
+					StartupFailureThreshold: new(int32(35)),
+					HealthPeriodSeconds:     new(int32(10)),
+					HealthTimeoutSeconds:    new(int32(10)),
+					HealthFailureThreshold:  new(int32(5)),
 				},
 				Variables: []schema.TemplateVariable{
 					{

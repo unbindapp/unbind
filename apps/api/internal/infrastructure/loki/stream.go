@@ -12,7 +12,6 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/unbindapp/unbind-api/internal/common/log"
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 )
 
 // StreamLokiPodLogs streams logs from Loki tail API using WebSocket for multiple pods using a single connection
@@ -23,12 +22,10 @@ func (self *LokiLogQuerier) StreamLokiPodLogs(
 ) error {
 	queryStr := fmt.Sprintf("{%s=\"%s\"}", opts.Label, opts.LabelValue)
 
-	// Add extra filters
 	if opts.RawFilter != "" {
 		queryStr = fmt.Sprintf("%s %s", queryStr, opts.RawFilter)
 	}
 
-	// Build the request URL with parameters
 	reqURL, err := url.Parse(self.endpoint)
 	if err != nil {
 		return fmt.Errorf("unable to parse loki query URL: %v", err)
@@ -45,7 +42,6 @@ func (self *LokiLogQuerier) StreamLokiPodLogs(
 	q := reqURL.Query()
 	q.Set("query", queryStr)
 
-	// Set time range
 	if !opts.Start.IsZero() {
 		q.Set("start", strconv.FormatInt(opts.Start.UnixNano(), 10))
 	} else if opts.Since > 0 {
@@ -53,7 +49,6 @@ func (self *LokiLogQuerier) StreamLokiPodLogs(
 		q.Set("start", strconv.FormatInt(startTime.UnixNano(), 10))
 	}
 
-	// Set limit
 	if opts.Limit > 0 {
 		if opts.Limit > 1000 {
 			opts.Limit = 1000
@@ -65,13 +60,12 @@ func (self *LokiLogQuerier) StreamLokiPodLogs(
 
 	log.Infof("Streaming logs with query: %s, URL: %s", queryStr, reqURL.String())
 
-	// First do no logs check
 	// First, check if there are any logs by performing a quick HTTP query
 	httpOpts := LokiLogHTTPOptions{
 		Label:      opts.Label,
 		LabelValue: opts.LabelValue,
 		RawFilter:  opts.RawFilter,
-		Limit:      utils.ToPtr(1),
+		Limit:      new(1),
 	}
 	if !opts.Start.IsZero() {
 		httpOpts.Start = &opts.Start
@@ -184,7 +178,6 @@ func (self *LokiLogQuerier) StreamLokiPodLogs(
 			// Continue with read
 		}
 
-		// Read from WebSocket
 		_, message, err := wsConn.ReadMessage()
 		if err != nil {
 			// Check for normal closure
@@ -217,18 +210,15 @@ func (self *LokiLogQuerier) StreamLokiPodLogs(
 		// Reset read deadline after successful read
 		_ = wsConn.SetReadDeadline(time.Now().Add(60 * time.Second))
 
-		// Parse the message
 		var streamResp LokiStreamResponse
 		if err := json.Unmarshal(message, &streamResp); err != nil {
 			log.Warnf("Failed to unmarshal Loki stream response: %v", err)
 			continue
 		}
 
-		// Process all logs from this response at once
 		var allEvents []LogEvent
 
 		for _, stream := range streamResp.Streams {
-			// Get metadata for this stream
 			instance, ok := stream.Stream["instance"]
 			if !ok {
 				log.Warnf("Stream missing instance label: %s", stream.Stream)
@@ -249,7 +239,6 @@ func (self *LokiLogQuerier) StreamLokiPodLogs(
 					continue
 				}
 
-				// Parse timestamp
 				var timestamp time.Time
 				if ts, err := strconv.ParseInt(entry[0], 10, 64); err == nil {
 					// Loki timestamps are in nanoseconds
@@ -260,10 +249,8 @@ func (self *LokiLogQuerier) StreamLokiPodLogs(
 					timestamp = time.Now()
 				}
 
-				// Get the message
 				message := entry[1]
 
-				// Create log event and add it to the collection
 				logEvent := LogEvent{
 					PodName:   instance,
 					Timestamp: timestamp,

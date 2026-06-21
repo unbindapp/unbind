@@ -13,7 +13,6 @@ import (
 
 // Get one
 func (self *ServiceGroupService) GetServiceGroupByID(ctx context.Context, requesterUserID uuid.UUID, input *models.GetServiceGroupInput) (*models.ServiceGroupResponse, error) {
-	// Check permissions
 	permissionChecks := []permissions_repo.PermissionCheck{
 		// Has permission to manage teams
 		{
@@ -27,7 +26,6 @@ func (self *ServiceGroupService) GetServiceGroupByID(ctx context.Context, reques
 		return nil, err
 	}
 
-	// Verify inputs
 	environment, _, err := self.VerifyInputs(ctx, input.TeamID, input.ProjectID, input.EnvironmentID)
 	if err != nil {
 		return nil, err
@@ -50,7 +48,6 @@ func (self *ServiceGroupService) GetServiceGroupByID(ctx context.Context, reques
 
 // Get many
 func (self *ServiceGroupService) GetServiceGroupByEnvironment(ctx context.Context, requesterUserID uuid.UUID, input *models.ListServiceGroupsInput) ([]*models.ServiceGroupResponse, error) {
-	// Check permissions
 	permissionChecks := []permissions_repo.PermissionCheck{
 		// Has permission to manage teams
 		{
@@ -64,7 +61,6 @@ func (self *ServiceGroupService) GetServiceGroupByEnvironment(ctx context.Contex
 		return nil, err
 	}
 
-	// Verify inputs
 	_, _, err := self.VerifyInputs(ctx, input.TeamID, input.ProjectID, input.EnvironmentID)
 	if err != nil {
 		return nil, err

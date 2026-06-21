@@ -30,7 +30,6 @@ type TestS3Output struct {
 }
 
 func (self *HandlerGroup) TestS3Access(ctx context.Context, input *TestS3AccessInput) (*TestS3Output, error) {
-	// Create client
 	s3client, err := s3.NewS3Client(
 		ctx,
 		input.Body.Endpoint,

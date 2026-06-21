@@ -10,12 +10,10 @@ import (
 )
 
 func (self *ServiceGroupRepository) GetByID(ctx context.Context, id uuid.UUID) (*ent.ServiceGroup, error) {
-	// Get the service group by ID
 	return self.base.DB.ServiceGroup.Get(ctx, id)
 }
 
 func (self *ServiceGroupRepository) GetByEnvironmentID(ctx context.Context, environmentID uuid.UUID) ([]*ent.ServiceGroup, error) {
-	// Get all service groups by environment ID
 	return self.base.DB.ServiceGroup.Query().
 		Where(servicegroup.EnvironmentID(environmentID)).
 		Order(
@@ -26,7 +24,6 @@ func (self *ServiceGroupRepository) GetByEnvironmentID(ctx context.Context, envi
 
 // Get all services in a service group
 func (self *ServiceGroupRepository) GetServices(ctx context.Context, id uuid.UUID) ([]*ent.Service, error) {
-	// Get all services in a service group
 	return self.base.DB.ServiceGroup.Query().
 		Where(servicegroup.ID(id)).
 		QueryServices().

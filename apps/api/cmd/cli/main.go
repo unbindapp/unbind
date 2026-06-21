@@ -57,7 +57,6 @@ type Command struct {
 }
 
 func main() {
-	// Load environment variables from .env file
 	if err := godotenv.Overload(); err != nil {
 		log.Warn("Error loading .env file:", err)
 	}
@@ -85,7 +84,6 @@ func main() {
 	versionFlagSet := flag.NewFlagSet("version", flag.ExitOnError)
 	helpFlagSet := flag.NewFlagSet("help", flag.ExitOnError)
 
-	// Define flag variables
 	email := userCreateFlagSet.String("email", "", "Email for the new user")
 	password := userCreateFlagSet.String("password", "", "Password for the new user")
 
@@ -306,7 +304,6 @@ func main() {
 
 	cmdName := os.Args[1]
 
-	// Execute the command
 	for _, cmd := range allCommands {
 		if cmd.Name == cmdName {
 			cmd.Handler()

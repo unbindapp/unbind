@@ -4,15 +4,15 @@ package utils
 func InferOperatorPVCMountPath(databaseType string) *string {
 	switch databaseType {
 	case "postgres":
-		return ToPtr("/home/postgres/pgdata")
+		return new("/home/postgres/pgdata")
 	case "redis":
-		return ToPtr("/data")
+		return new("/data")
 	case "mysql":
-		return ToPtr("/var/lib/mysql")
+		return new("/var/lib/mysql")
 	case "mongodb":
-		return ToPtr("/bitnami/mongodb")
+		return new("/bitnami/mongodb")
 	case "clickhouse":
-		return ToPtr("/var/lib/clickhouse")
+		return new("/var/lib/clickhouse")
 	}
 	return nil
 }

@@ -17,7 +17,6 @@ func (self *LogsService) QueryLogs(ctx context.Context, requesterUserID uuid.UUI
 		return nil, err
 	}
 
-	// Build labels to select
 	var label loki.LokiLabelName
 	var labelValue string
 	switch input.Type {
@@ -34,7 +33,6 @@ func (self *LogsService) QueryLogs(ctx context.Context, requesterUserID uuid.UUI
 		label = loki.LokiLabelService
 		labelValue = service.ID.String()
 	case models.LogTypeDeployment, models.LogTypeBuild:
-		// get deployment
 		deployment, err := self.repo.Deployment().GetByID(ctx, input.DeploymentID)
 		if err != nil {
 			if ent.IsNotFound(err) {
@@ -66,7 +64,6 @@ func (self *LogsService) QueryLogs(ctx context.Context, requesterUserID uuid.UUI
 		since = &sinceDuration
 	}
 
-	// Create loki options
 	var start *time.Time
 	var end *time.Time
 	var limit *int
@@ -94,6 +91,5 @@ func (self *LogsService) QueryLogs(ctx context.Context, requesterUserID uuid.UUI
 		Direction:  direction,
 	}
 
-	// Query logs
 	return self.lokiQuerier.QueryLokiLogs(ctx, lokiLogOptions)
 }

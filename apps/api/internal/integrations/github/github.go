@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/go-github/v69/github"
 	"github.com/unbindapp/unbind-api/config"
+	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 )
 
@@ -36,8 +37,13 @@ func NewGithubClient(githubURL string, cfg *config.Config) *GithubClient {
 		apiURL, _ := url.Parse(baseURL + "api/v3/")
 		uploadURL, _ := url.Parse(baseURL + "api/uploads/")
 
-		// Create a GitHub client with enterprise URLs
-		githubClient, _ = github.NewClient(httpClient).WithEnterpriseURLs(apiURL.String(), uploadURL.String())
+		enterpriseClient, err := github.NewClient(httpClient).WithEnterpriseURLs(apiURL.String(), uploadURL.String())
+		if err != nil {
+			log.Error("Failed to configure GitHub Enterprise client, falling back to default", "err", err)
+			githubClient = github.NewClient(httpClient)
+		} else {
+			githubClient = enterpriseClient
+		}
 	} else {
 		githubClient = github.NewClient(httpClient)
 	}
@@ -60,7 +66,6 @@ func (self *GithubClient) GetInstallationToken(ctx context.Context, appID int64,
 		return "", err
 	}
 
-	// Add token to client
 	client := self.client.WithAuthToken(bearerToken)
 
 	token, _, err := client.Apps.CreateInstallationToken(ctx, installationID, nil)

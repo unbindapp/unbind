@@ -15,7 +15,6 @@ func (self *ProjectRepository) Create(ctx context.Context, tx repository.TxInter
 	if tx != nil {
 		db = tx.Client()
 	}
-	// Create the project in the database
 	return db.Project.Create().
 		SetTeamID(teamID).
 		SetKubernetesName(kubernetesName).
@@ -68,7 +67,6 @@ func (self *ProjectRepository) Update(ctx context.Context, tx repository.TxInter
 		if !found {
 			return nil, &ent.NotFoundError{}
 		}
-		// Set the default environment
 		m.SetDefaultEnvironmentID(*defaultEnvironmentID)
 	}
 	return m.Save(ctx)

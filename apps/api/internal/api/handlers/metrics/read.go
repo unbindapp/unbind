@@ -3,10 +3,8 @@ package metrics_handler
 import (
 	"context"
 
-	"github.com/danielgtaylor/huma/v2"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
-	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/models"
 )
 
@@ -22,11 +20,9 @@ type GetMetricsResponse struct {
 }
 
 func (self *HandlerGroup) GetMetrics(ctx context.Context, input *GetMetricsInput) (*GetMetricsResponse, error) {
-	// Get caller
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		log.Error("Error getting user from context")
-		return nil, huma.Error401Unauthorized("Unable to retrieve user")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	metrics, err := self.srv.MetricsService.GetMetrics(ctx, user.ID, &input.MetricsQueryInput)
@@ -53,11 +49,9 @@ type GetNodeMetricsResponse struct {
 }
 
 func (self *HandlerGroup) GetNodeMetrics(ctx context.Context, input *GetNodeMetricsInput) (*GetNodeMetricsResponse, error) {
-	// Get caller
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		log.Error("Error getting user from context")
-		return nil, huma.Error401Unauthorized("Unable to retrieve user")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	metrics, err := self.srv.MetricsService.GetNodeMetrics(ctx, user.ID, &input.NodeMetricsQueryInput)
@@ -83,11 +77,9 @@ type GetVolumeMetricsResponse struct {
 }
 
 func (self *HandlerGroup) GetVolumeMetrics(ctx context.Context, input *GetVolumeMetricsInput) (*GetVolumeMetricsResponse, error) {
-	// Get caller
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		log.Error("Error getting user from context")
-		return nil, huma.Error401Unauthorized("Unable to retrieve user")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	metrics, err := self.srv.MetricsService.GetVolumeMetrics(ctx, user.ID, &input.MetricsVolumeQueryInput)

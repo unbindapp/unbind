@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 )
 
@@ -23,12 +24,10 @@ func FindFiles(rootDir string, pattern string) ([]string, error) {
 			return err
 		}
 
-		// Skip directories
 		if info.IsDir() {
 			return nil
 		}
 
-		// Check if file matches pattern
 		matched, err := filepath.Match(pattern, filepath.Base(path))
 		if err != nil {
 			return err
@@ -59,7 +58,6 @@ func FindFilesWithExclusions(rootDir string, pattern string, excludeDirs []strin
 			return err
 		}
 
-		// Check if current directory should be excluded
 		if info.IsDir() {
 			// Skip .git, node_modules, etc.
 			if containsAny(path, excludeDirs) {
@@ -68,7 +66,6 @@ func FindFilesWithExclusions(rootDir string, pattern string, excludeDirs []strin
 			return nil
 		}
 
-		// Check if file matches pattern
 		matched, err := filepath.Match(pattern, filepath.Base(path))
 		if err != nil {
 			return err
@@ -106,26 +103,22 @@ func ReadFile(path string) (string, error) {
 	// Maximum file size to read (10MB by default)
 	const maxSize = 10 * 1024 * 1024
 
-	// Open the file
 	file, err := os.Open(path)
 	if err != nil {
 		return "", fmt.Errorf("failed to open file %s: %w", path, err)
 	}
 	defer file.Close()
 
-	// Get file info to check size
 	info, err := file.Stat()
 	if err != nil {
 		return "", fmt.Errorf("failed to get file info for %s: %w", path, err)
 	}
 
-	// Check if file is too large
 	if info.Size() > maxSize {
 		return "", fmt.Errorf("file %s is too large (%d bytes), maximum allowed is %d bytes",
 			path, info.Size(), maxSize)
 	}
 
-	// Read the file content
 	content := make([]byte, info.Size())
 	_, err = io.ReadFull(file, content)
 	if err != nil {
@@ -137,26 +130,22 @@ func ReadFile(path string) (string, error) {
 
 // ReadFileWithLimit reads file content with a specified size limit
 func ReadFileWithLimit(path string, maxSizeBytes int64) (string, error) {
-	// Open the file
 	file, err := os.Open(path)
 	if err != nil {
 		return "", fmt.Errorf("failed to open file %s: %w", path, err)
 	}
 	defer file.Close()
 
-	// Get file info to check size
 	info, err := file.Stat()
 	if err != nil {
 		return "", fmt.Errorf("failed to get file info for %s: %w", path, err)
 	}
 
-	// Check if file is too large
 	if info.Size() > maxSizeBytes {
 		return "", fmt.Errorf("file %s is too large (%d bytes), maximum allowed is %d bytes",
 			path, info.Size(), maxSizeBytes)
 	}
 
-	// Read the file content
 	content := make([]byte, info.Size())
 	_, err = io.ReadFull(file, content)
 	if err != nil {
@@ -195,14 +184,7 @@ func IsTextFile(path string) bool {
 	sample = sample[:n]
 
 	// Check for NULL bytes which likely indicate binary file
-	for _, b := range sample {
-		if b == 0 {
-			return false
-		}
-	}
-
-	// If no NULL bytes were found, it's likely a text file
-	return true
+	return !slices.Contains(sample, 0)
 }
 
 // Returns true if the file exists

@@ -10,13 +10,11 @@ import (
 )
 
 func ExtractRepoName(gitURL string) (string, error) {
-	// Parse the URL
 	u, err := url.Parse(gitURL)
 	if err != nil || !u.IsAbs() || u.Scheme == "" || u.Host == "" {
 		return "", errors.New("invalid URL format")
 	}
 
-	// Check if path is empty
 	if u.Path == "" {
 		return "", errors.New("no repository path found in URL")
 	}

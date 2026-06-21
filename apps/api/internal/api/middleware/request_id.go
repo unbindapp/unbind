@@ -91,8 +91,3 @@ func GetReqID(ctx context.Context) string {
 	}
 	return ""
 }
-
-// NextRequestID generates the next request ID in the sequence.
-func NextRequestID() uint64 {
-	return atomic.AddUint64(&reqid, 1)
-}

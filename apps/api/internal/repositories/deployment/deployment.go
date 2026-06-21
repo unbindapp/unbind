@@ -12,7 +12,6 @@ type DeploymentRepository struct {
 	base *repository.BaseRepository
 }
 
-// NewDeploymentRepository creates a new repository
 func NewDeploymentRepository(db *ent.Client) *DeploymentRepository {
 	return &DeploymentRepository{
 		base: &repository.BaseRepository{DB: db},

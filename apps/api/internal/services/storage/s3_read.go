@@ -24,12 +24,10 @@ func (self *StorageService) GetS3StorageByID(ctx context.Context, requesterUserI
 		},
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return nil, err
 	}
 
-	// Check if the team exists
 	team, err := self.repo.Team().GetByID(ctx, teamID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -38,7 +36,6 @@ func (self *StorageService) GetS3StorageByID(ctx context.Context, requesterUserI
 		return nil, err
 	}
 
-	// Get all s3 sources for this team
 	s3Source, err := self.repo.S3().GetByID(ctx, id)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -50,13 +47,11 @@ func (self *StorageService) GetS3StorageByID(ctx context.Context, requesterUserI
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "S3 source not found")
 	}
 
-	// Create kubernetes client
 	client, err := self.k8s.CreateClientWithToken(bearerToken)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get the secret
 	secret, err := self.k8s.GetSecret(ctx, s3Source.KubernetesSecret, team.Namespace, client)
 	if err != nil {
 		log.Errorf("Failed to get secret %s for s3 %s: %v", s3Source.KubernetesSecret, s3Source.ID, err)
@@ -100,12 +95,10 @@ func (self *StorageService) ListS3StorageBackends(ctx context.Context, requester
 		},
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return nil, err
 	}
 
-	// Check if the team exists
 	team, err := self.repo.Team().GetByID(ctx, teamID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -114,7 +107,6 @@ func (self *StorageService) ListS3StorageBackends(ctx context.Context, requester
 		return nil, err
 	}
 
-	// Get all s3 sources for this team
 	s3Sources, err := self.repo.S3().GetByTeam(ctx, team.ID)
 	if err != nil {
 		return nil, err
@@ -123,18 +115,15 @@ func (self *StorageService) ListS3StorageBackends(ctx context.Context, requester
 		return []*models.S3Response{}, nil
 	}
 
-	// Create kubernetes client
 	client, err := self.k8s.CreateClientWithToken(bearerToken)
 	if err != nil {
 		return nil, err
 	}
 
-	// Create credential map
 	accessKeyMap := make(map[uuid.UUID]string)
 	secretKeyMap := make(map[uuid.UUID]string)
 	bucketsMap := make(map[uuid.UUID][]*models.S3Bucket)
 	for _, s3Source := range s3Sources {
-		// Get the secret
 		secret, err := self.k8s.GetSecret(ctx, s3Source.KubernetesSecret, team.Namespace, client)
 		if err != nil {
 			log.Errorf("Failed to get secret %s for s3 %s: %v", s3Source.KubernetesSecret, s3Source.ID, err)

@@ -232,7 +232,7 @@ func (s *MetricsFilterTestSuite) TestBuildLabelSelector_OrderConsistency() {
 	}
 
 	// Run multiple times to ensure consistent order
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		result := buildLabelSelector(filter)
 		expected := `{label_unbind_team="11111111-1111-1111-1111-111111111111", label_unbind_project="22222222-2222-2222-2222-222222222222", label_unbind_environment="33333333-3333-3333-3333-333333333333", label_unbind_service=~"44444444-4444-4444-4444-444444444444"}`
 		s.Equal(expected, result, "Iteration %d should produce consistent output", i)

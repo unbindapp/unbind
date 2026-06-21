@@ -3,6 +3,7 @@ package k8s
 import (
 	"context"
 	"fmt"
+	"slices"
 
 	"github.com/unbindapp/unbind-api/ent"
 	entSchema "github.com/unbindapp/unbind-api/ent/schema"
@@ -33,16 +34,13 @@ func (self *RBACManager) SyncGroupToK8s(ctx context.Context, group *ent.Group) e
 	var err error
 	// Create or update Role for each permission
 	for _, permission := range group.Edges.Permissions {
-		// Get teams
 		teams := []*ent.Team{}
 		if permission.ResourceSelector.Superuser {
-			// get all teams
 			teams, err = self.repo.Team().GetAll(ctx, nil)
 			if err != nil {
 				return fmt.Errorf("failed to get all teams: %w", err)
 			}
 		} else {
-			// Get team by ID
 			team, err := self.repo.Team().GetByID(ctx, permission.ResourceSelector.ID)
 			if err != nil {
 				return err
@@ -205,11 +203,8 @@ func filterResourcesByAPIGroup(resources []string, apiGroup string) []string {
 			"namespaces", "pods/log", "pods/exec",
 		}
 		for _, r := range resources {
-			for _, cr := range coreResources {
-				if r == cr {
-					filteredResources = append(filteredResources, r)
-					break
-				}
+			if slices.Contains(coreResources, r) {
+				filteredResources = append(filteredResources, r)
 			}
 		}
 	case "apps":
@@ -217,11 +212,8 @@ func filterResourcesByAPIGroup(resources []string, apiGroup string) []string {
 			"deployments", "statefulsets", "replicasets", "daemonsets",
 		}
 		for _, r := range resources {
-			for _, ar := range appsResources {
-				if r == ar {
-					filteredResources = append(filteredResources, r)
-					break
-				}
+			if slices.Contains(appsResources, r) {
+				filteredResources = append(filteredResources, r)
 			}
 		}
 	case "batch":
@@ -229,11 +221,8 @@ func filterResourcesByAPIGroup(resources []string, apiGroup string) []string {
 			"jobs", "cronjobs",
 		}
 		for _, r := range resources {
-			for _, br := range batchResources {
-				if r == br {
-					filteredResources = append(filteredResources, r)
-					break
-				}
+			if slices.Contains(batchResources, r) {
+				filteredResources = append(filteredResources, r)
 			}
 		}
 	case "networking.k8s.io":
@@ -241,11 +230,8 @@ func filterResourcesByAPIGroup(resources []string, apiGroup string) []string {
 			"ingresses", "networkpolicies", "ingressclasses",
 		}
 		for _, r := range resources {
-			for _, nr := range networkingResources {
-				if r == nr {
-					filteredResources = append(filteredResources, r)
-					break
-				}
+			if slices.Contains(networkingResources, r) {
+				filteredResources = append(filteredResources, r)
 			}
 		}
 	}
@@ -356,15 +342,12 @@ func (self *RBACManager) DeleteK8sRBAC(ctx context.Context, group *ent.Group) er
 	teams := []*ent.Team{}
 	var err error
 	for _, permission := range group.Edges.Permissions {
-		// Get teams
 		if permission.ResourceSelector.Superuser {
-			// get all teams
 			teams, err = self.repo.Team().GetAll(ctx, nil)
 			if err != nil {
 				return fmt.Errorf("failed to get all teams: %w", err)
 			}
 		} else {
-			// Get team by ID
 			team, err := self.repo.Team().GetByID(ctx, permission.ResourceSelector.ID)
 			if err != nil {
 				return err

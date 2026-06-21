@@ -28,7 +28,6 @@ func AnalyzeSourceCode(sourceDir string) (*AnalysisResult, error) {
 		return nil, err
 	}
 
-	// Get railpack config
 	// Get the full user config based on file config, env config, and options
 	logger := logger.NewLogger()
 	config, err := core.GetConfig(app, &a.Environment{}, &core.GenerateBuildPlanOptions{}, logger)
@@ -67,7 +66,6 @@ func AnalyzeSourceCode(sourceDir string) (*AnalysisResult, error) {
 		detectedFramework = DetectFramework(detectedProvider, sourceDir)
 	}
 
-	// Detect port
 	detector := &portdetector.PortDetector{
 		Provider:  detectedProvider,
 		Framework: detectedFramework,

@@ -36,12 +36,10 @@ type cli struct {
 }
 
 func NewCLI(cfg *config.Config) *cli {
-	// Load database
 	dbConnInfo, err := database.GetSqlDbConn(cfg, false)
 	if err != nil {
 		log.Fatalf("Failed to get database connection info: %v", err)
 	}
-	// Initialize ent client
 	db, _, err := database.NewEntClient(dbConnInfo)
 	if err != nil {
 		log.Fatalf("Failed to create ent client: %v", err)
@@ -70,14 +68,12 @@ func (self *cli) version() {
 
 // List all users in the database
 func (self *cli) listUsers() {
-	// Query all users
 	users, err := self.repository.Ent().User.Query().WithGroups().All(context.Background())
 	if err != nil {
 		fmt.Printf("Error querying users: %v\n", err)
 		return
 	}
 
-	// Print user information
 	fmt.Println("Users:")
 	fmt.Println("-------------------------------------")
 	for _, u := range users {
@@ -98,14 +94,12 @@ func (self *cli) listUsers() {
 func (self *cli) listGroups() {
 	ctx := context.Background()
 
-	// Query all groups
 	groups, err := self.repository.Ent().Group.Query().All(ctx)
 	if err != nil {
 		fmt.Printf("Error querying groups: %v\n", err)
 		return
 	}
 
-	// Print group information
 	fmt.Println("Groups:")
 	fmt.Println("-------------------------------------")
 	for _, g := range groups {
@@ -117,7 +111,6 @@ func (self *cli) listGroups() {
 			fmt.Printf("K8s Role: %s\n", *g.K8sRoleName)
 		}
 
-		// Get members count
 		members, err := self.repository.Ent().Group.QueryUsers(g).Count(ctx)
 		if err != nil {
 			fmt.Printf("Error counting members: %v\n", err)
@@ -125,7 +118,6 @@ func (self *cli) listGroups() {
 			fmt.Printf("Members: %d\n", members)
 		}
 
-		// Get permissions count
 		perms, err := self.repository.Ent().Group.QueryPermissions(g).Count(ctx)
 		if err != nil {
 			fmt.Printf("Error counting permissions: %v\n", err)
@@ -142,7 +134,6 @@ func (self *cli) listGroups() {
 func (self *cli) createTeam(name, displayName string) {
 	ctx := context.Background()
 
-	// Validate inputs
 	if name == "" {
 		log.Errorf("Error: name is required")
 		return
@@ -152,7 +143,6 @@ func (self *cli) createTeam(name, displayName string) {
 		displayName = name
 	}
 
-	// Check if team
 	exists, err := self.repository.Ent().Team.Query().
 		Where(team.KubernetesNameEQ(name)).
 		Exist(ctx)
@@ -174,7 +164,6 @@ func (self *cli) createTeam(name, displayName string) {
 		log.Fatalf("Error creating clientset: %v", err)
 	}
 
-	// Create the team
 	var team *ent.Team
 	if err := self.repository.WithTx(ctx, func(tx repository.TxInterface) error {
 		db := tx.Client()
@@ -207,13 +196,11 @@ func (self *cli) createTeam(name, displayName string) {
 func (self *cli) createGroup(name, description string) {
 	ctx := context.Background()
 
-	// Validate inputs
 	if name == "" {
 		log.Errorf("Error: group name is required")
 		return
 	}
 
-	// Check if group already exists
 	exists, err := self.repository.Ent().Group.Query().
 		Where(group.NameEQ(name)).
 		Exist(ctx)
@@ -226,12 +213,10 @@ func (self *cli) createGroup(name, description string) {
 		return
 	}
 
-	// Create the group
 	groupBuilder := self.repository.Ent().Group.Create().
 		SetName(name).
 		SetDescription(description)
 
-	// Save the group
 	group, err := groupBuilder.Save(ctx)
 	if err != nil {
 		fmt.Printf("Error creating group: %v\n", err)
@@ -248,14 +233,12 @@ func (self *cli) createGroup(name, description string) {
 func (self *cli) addUserToGroup(userEmail, groupName string) {
 	ctx := context.Background()
 
-	// Get the user
 	dbUser, err := self.repository.User().GetByEmail(ctx, userEmail)
 	if err != nil {
 		fmt.Printf("Error: User '%s' not found: %v\n", userEmail, err)
 		return
 	}
 
-	// Get the group
 	group, err := self.repository.Ent().Group.Query().
 		Where(group.NameEQ(groupName)).
 		Only(ctx)
@@ -264,7 +247,6 @@ func (self *cli) addUserToGroup(userEmail, groupName string) {
 		return
 	}
 
-	// Check if user is already in the group
 	inGroup, err := self.repository.Ent().Group.QueryUsers(group).
 		Where(user.IDEQ(dbUser.ID)).
 		Exist(ctx)
@@ -277,7 +259,6 @@ func (self *cli) addUserToGroup(userEmail, groupName string) {
 		return
 	}
 
-	// Add user to group
 	err = self.repository.Ent().Group.UpdateOne(group).
 		AddUserIDs(dbUser.ID).
 		Exec(ctx)
@@ -293,7 +274,6 @@ func (self *cli) addUserToGroup(userEmail, groupName string) {
 func (self *cli) listGroupPermissions(groupName string) {
 	ctx := context.Background()
 
-	// Get the group
 	group, err := self.repository.Ent().Group.Query().
 		Where(group.NameEQ(groupName)).
 		Only(ctx)
@@ -302,14 +282,12 @@ func (self *cli) listGroupPermissions(groupName string) {
 		return
 	}
 
-	// Get permissions
 	perms, err := self.repository.Ent().Group.QueryPermissions(group).All(ctx)
 	if err != nil {
 		fmt.Printf("Error querying permissions: %v\n", err)
 		return
 	}
 
-	// Print permissions
 	fmt.Printf("Permissions for group '%s':\n", groupName)
 	fmt.Println("-------------------------------------")
 	for i, p := range perms {
@@ -323,7 +301,6 @@ func (self *cli) listGroupPermissions(groupName string) {
 func (self *cli) grantPermission(groupName, action, resourceType, resourceID string) {
 	ctx := context.Background()
 
-	// Get the group
 	group, err := self.repository.Ent().Group.Query().
 		Where(group.NameEQ(groupName)).
 		Only(ctx)
@@ -332,7 +309,6 @@ func (self *cli) grantPermission(groupName, action, resourceType, resourceID str
 		return
 	}
 
-	// Parse action
 	var permAction schema.PermittedAction
 	switch strings.ToLower(action) {
 	case "view":
@@ -346,7 +322,6 @@ func (self *cli) grantPermission(groupName, action, resourceType, resourceID str
 		return
 	}
 
-	// Parse resource type
 	var permResourceType schema.ResourceType
 	switch strings.ToLower(resourceType) {
 	case "system":
@@ -444,13 +419,11 @@ func (self *cli) syncSecrets() {
 			return
 		}
 
-		// Create team secret
 		secret, _, err := self.k8s.GetOrCreateSecret(context.Background(), t.KubernetesName, t.Namespace, client)
 		if err != nil {
 			fmt.Printf("Error creating secret: %v\n", err)
 			return
 		}
-		// Update team
 		if _, err := self.repository.Ent().Team.UpdateOne(t).
 			SetKubernetesSecret(secret.Name).
 			Save(context.Background()); err != nil {
@@ -458,15 +431,12 @@ func (self *cli) syncSecrets() {
 			return
 		}
 
-		// Create project secrets
 		for _, p := range projects {
-			// Create secret
 			secret, _, err := self.k8s.GetOrCreateSecret(context.Background(), p.KubernetesName, t.Namespace, client)
 			if err != nil {
 				fmt.Printf("Error creating secret: %v\n", err)
 				return
 			}
-			// Update project
 			if _, err := self.repository.Ent().Project.UpdateOne(p).
 				SetKubernetesSecret(secret.Name).
 				Save(context.Background()); err != nil {
@@ -474,7 +444,6 @@ func (self *cli) syncSecrets() {
 				return
 			}
 
-			// Create environment secrets
 			for _, e := range p.Edges.Environments {
 				// Create secret
 				secret, _, err := self.k8s.GetOrCreateSecret(context.Background(), e.KubernetesName, t.Namespace, client)
@@ -482,7 +451,6 @@ func (self *cli) syncSecrets() {
 					fmt.Printf("Error creating secret: %v\n", err)
 					return
 				}
-				// Update environment
 				if _, err := self.repository.Ent().Environment.UpdateOne(e).
 					SetKubernetesSecret(secret.Name).
 					Save(context.Background()); err != nil {
@@ -490,7 +458,6 @@ func (self *cli) syncSecrets() {
 					return
 				}
 
-				// Create service secrets
 				for _, s := range e.Edges.Services {
 					// Create secret
 					secret, _, err := self.k8s.GetOrCreateSecret(context.Background(), s.KubernetesName, t.Namespace, client)
@@ -498,7 +465,6 @@ func (self *cli) syncSecrets() {
 						fmt.Printf("Error creating secret: %v\n", err)
 						return
 					}
-					// Update service
 					if _, err := self.repository.Ent().Service.UpdateOne(s).
 						SetKubernetesSecret(secret.Name).
 						Save(context.Background()); err != nil {
@@ -513,13 +479,11 @@ func (self *cli) syncSecrets() {
 
 // Create a new user
 func (self *cli) createUser(email, password string) {
-	// Validate inputs
 	if email == "" || password == "" {
 		log.Errorf("Error: email and password are required")
 		return
 	}
 
-	// Check if username already exists
 	_, checkErr := self.repository.User().GetByEmail(context.Background(), email)
 	if checkErr != nil {
 		if !ent.IsNotFound(checkErr) {
@@ -532,14 +496,12 @@ func (self *cli) createUser(email, password string) {
 		return
 	}
 
-	// Hash the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		fmt.Printf("Error hashing password: %v\n", err)
 		return
 	}
 
-	// Create the user
 	u, err := self.repository.Ent().User.Create().
 		SetEmail(email).
 		SetPasswordHash(string(hashedPassword)).
@@ -557,13 +519,11 @@ func (self *cli) createUser(email, password string) {
 
 // Change password for an existing user
 func (self *cli) changeUserPassword(email, password string) {
-	// Validate inputs
 	if email == "" || password == "" {
 		log.Errorf("Error: email and password are required")
 		return
 	}
 
-	// Check if username already exists
 	u, err := self.repository.User().GetByEmail(context.Background(), email)
 	if err != nil {
 		if !ent.IsNotFound(err) {
@@ -576,14 +536,12 @@ func (self *cli) changeUserPassword(email, password string) {
 		}
 	}
 
-	// Hash the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		fmt.Printf("Error hashing password: %v\n", err)
 		return
 	}
 
-	// Create the user
 	_, err = self.repository.Ent().User.UpdateOneID(u.ID).
 		SetPasswordHash(string(hashedPassword)).
 		Save(context.Background())

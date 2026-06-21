@@ -9,7 +9,6 @@ import (
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 	"github.com/unbindapp/unbind-api/internal/services"
 )
@@ -61,7 +60,7 @@ func (suite *UpdateEnvironmentSuite) SetupTest() {
 		KubernetesName:   "test-environment",
 		KubernetesSecret: "test-env-secret",
 		ProjectID:        suite.testProjectID,
-		Description:      utils.ToPtr("Original description"),
+		Description:      new("Original description"),
 	}
 
 	suite.testProject = &ent.Project{
@@ -89,8 +88,8 @@ func (suite *UpdateEnvironmentSuite) TestUpdateEnvironment_Success() {
 		TeamID:        suite.testTeamID,
 		ProjectID:     suite.testProjectID,
 		EnvironmentID: suite.testEnvironmentID,
-		Name:          utils.ToPtr("Updated Environment Name"),
-		Description:   utils.ToPtr("Updated description"),
+		Name:          new("Updated Environment Name"),
+		Description:   new("Updated description"),
 	}
 
 	updatedEnvironment := &ent.Environment{
@@ -99,7 +98,7 @@ func (suite *UpdateEnvironmentSuite) TestUpdateEnvironment_Success() {
 		KubernetesName:   "test-environment",
 		KubernetesSecret: "test-env-secret",
 		ProjectID:        suite.testProjectID,
-		Description:      utils.ToPtr("Updated description"),
+		Description:      new("Updated description"),
 	}
 
 	// Setup expectations
@@ -154,7 +153,7 @@ func (suite *UpdateEnvironmentSuite) TestUpdateEnvironment_NameOnly() {
 		TeamID:        suite.testTeamID,
 		ProjectID:     suite.testProjectID,
 		EnvironmentID: suite.testEnvironmentID,
-		Name:          utils.ToPtr("New Name Only"),
+		Name:          new("New Name Only"),
 		Description:   nil, // Not updating description
 	}
 
@@ -164,7 +163,7 @@ func (suite *UpdateEnvironmentSuite) TestUpdateEnvironment_NameOnly() {
 		KubernetesName:   "test-environment",
 		KubernetesSecret: "test-env-secret",
 		ProjectID:        suite.testProjectID,
-		Description:      utils.ToPtr("Original description"), // Unchanged
+		Description:      new("Original description"), // Unchanged
 	}
 
 	// Setup expectations
@@ -213,7 +212,7 @@ func (suite *UpdateEnvironmentSuite) TestUpdateEnvironment_DescriptionOnly() {
 		ProjectID:     suite.testProjectID,
 		EnvironmentID: suite.testEnvironmentID,
 		Name:          nil, // Not updating name
-		Description:   utils.ToPtr("New description only"),
+		Description:   new("New description only"),
 	}
 
 	updatedEnvironment := &ent.Environment{
@@ -222,7 +221,7 @@ func (suite *UpdateEnvironmentSuite) TestUpdateEnvironment_DescriptionOnly() {
 		KubernetesName:   "test-environment",
 		KubernetesSecret: "test-env-secret",
 		ProjectID:        suite.testProjectID,
-		Description:      utils.ToPtr("New description only"),
+		Description:      new("New description only"),
 	}
 
 	// Setup expectations
@@ -271,8 +270,8 @@ func (suite *UpdateEnvironmentSuite) TestUpdateEnvironment_PermissionDenied() {
 		TeamID:        suite.testTeamID,
 		ProjectID:     suite.testProjectID,
 		EnvironmentID: suite.testEnvironmentID,
-		Name:          utils.ToPtr("New Name"),
-		Description:   utils.ToPtr("New description"),
+		Name:          new("New Name"),
+		Description:   new("New description"),
 	}
 
 	// Setup expectations
@@ -295,8 +294,8 @@ func (suite *UpdateEnvironmentSuite) TestUpdateEnvironment_TeamNotFound() {
 		TeamID:        suite.testTeamID,
 		ProjectID:     suite.testProjectID,
 		EnvironmentID: suite.testEnvironmentID,
-		Name:          utils.ToPtr("New Name"),
-		Description:   utils.ToPtr("New description"),
+		Name:          new("New Name"),
+		Description:   new("New description"),
 	}
 
 	// Setup expectations
@@ -348,8 +347,8 @@ func (suite *UpdateEnvironmentSuite) TestUpdateEnvironment_EnvironmentNotFound()
 		TeamID:        suite.testTeamID,
 		ProjectID:     suite.testProjectID,
 		EnvironmentID: suite.testEnvironmentID,
-		Name:          utils.ToPtr("New Name"),
-		Description:   utils.ToPtr("New description"),
+		Name:          new("New Name"),
+		Description:   new("New description"),
 	}
 
 	// Setup expectations
@@ -377,8 +376,8 @@ func (suite *UpdateEnvironmentSuite) TestUpdateEnvironment_UpdateFails() {
 		TeamID:        suite.testTeamID,
 		ProjectID:     suite.testProjectID,
 		EnvironmentID: suite.testEnvironmentID,
-		Name:          utils.ToPtr("New Name"),
-		Description:   utils.ToPtr("New description"),
+		Name:          new("New Name"),
+		Description:   new("New description"),
 	}
 
 	// Setup expectations
@@ -413,8 +412,8 @@ func (suite *UpdateEnvironmentSuite) TestUpdateEnvironment_ServiceSummaryFails()
 		TeamID:        suite.testTeamID,
 		ProjectID:     suite.testProjectID,
 		EnvironmentID: suite.testEnvironmentID,
-		Name:          utils.ToPtr("New Name"),
-		Description:   utils.ToPtr("New description"),
+		Name:          new("New Name"),
+		Description:   new("New description"),
 	}
 
 	updatedEnvironment := &ent.Environment{
@@ -423,7 +422,7 @@ func (suite *UpdateEnvironmentSuite) TestUpdateEnvironment_ServiceSummaryFails()
 		KubernetesName:   "test-environment",
 		KubernetesSecret: "test-env-secret",
 		ProjectID:        suite.testProjectID,
-		Description:      utils.ToPtr("New description"),
+		Description:      new("New description"),
 	}
 
 	// Setup expectations

@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"github.com/unbindapp/unbind-api/ent"
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 	repository "github.com/unbindapp/unbind-api/internal/repositories/repositorytest"
 )
 
@@ -300,7 +299,7 @@ func (suite *EnvironmentMutationsSuite) TestUpdate() {
 			suite.Ctx,
 			testEnvironment.ID,
 			&newName,
-			utils.ToPtr(""),
+			new(""),
 		)
 		suite.NoError(err)
 		suite.NotNil(updated)

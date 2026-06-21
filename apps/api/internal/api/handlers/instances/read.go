@@ -3,10 +3,8 @@ package instances_handler
 import (
 	"context"
 
-	"github.com/danielgtaylor/huma/v2"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
-	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/k8s"
 	"github.com/unbindapp/unbind-api/internal/models"
 )
@@ -25,14 +23,10 @@ type ListInstancesResponse struct {
 
 // ListInstances gets pods/statuses for a service
 func (self *HandlerGroup) ListInstances(ctx context.Context, input *ListInstancesInput) (*ListInstancesResponse, error) {
-	// Get caller
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		log.Error("Error getting user from context")
-		return nil, huma.Error401Unauthorized("Unable to retrieve user")
+	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
-
-	bearerToken, _ := self.srv.GetBearerTokenFromContext(ctx)
 
 	containers, err := self.srv.InstanceService.GetInstanceStatuses(
 		ctx,
@@ -63,14 +57,10 @@ type GetInstanceHealthResponse struct {
 
 // GetInstanceHealth gets pod health for a service
 func (self *HandlerGroup) GetInstanceHealth(ctx context.Context, input *GetInstanceHealthInput) (*GetInstanceHealthResponse, error) {
-	// Get caller
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		log.Error("Error getting user from context")
-		return nil, huma.Error401Unauthorized("Unable to retrieve user")
+	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
-
-	bearerToken, _ := self.srv.GetBearerTokenFromContext(ctx)
 
 	health, err := self.srv.InstanceService.GetInstanceHealth(
 		ctx,

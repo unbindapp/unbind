@@ -3,11 +3,9 @@ package instances_handler
 import (
 	"context"
 
-	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
-	"github.com/unbindapp/unbind-api/internal/common/log"
 )
 
 // Restart instance
@@ -33,15 +31,12 @@ type RestartServicesResponse struct {
 
 // RestartInstances handles PUT /instances/restart
 func (self *HandlerGroup) RestartInstances(ctx context.Context, input *RestartInstancesInput) (*RestartServicesResponse, error) {
-	// Get caller
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		log.Error("Error getting user from context")
-		return nil, huma.Error401Unauthorized("Unable to retrieve user")
+	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
-	bearerToken, _ := self.srv.GetBearerTokenFromContext(ctx)
 
-	err := self.srv.ServiceService.RestartServiceByID(
+	err = self.srv.ServiceService.RestartServiceByID(
 		ctx,
 		user.ID,
 		bearerToken,

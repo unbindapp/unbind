@@ -84,19 +84,17 @@ func (self *HandlerGroup) CheckDNSResolution(ctx context.Context, input *DnsChec
 
 			url := fmt.Sprintf("https://%s%s", input.Domain, testPath)
 
-			// Create a new request with context
 			req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 			if err != nil {
 				log.Warnf("Error creating HTTP request for domain %s: %v", input.Domain, err)
 			} else {
 				// Retry delaying 200ms between tries
 				maxRetries := 20
-				for attempt := 0; attempt < maxRetries; attempt++ {
+				for attempt := range maxRetries {
 					if attempt > 0 {
 						time.Sleep(200 * time.Millisecond)
 					}
 
-					// Execute the request
 					resp, err := self.srv.HttpClient.Do(req)
 					if err != nil {
 						log.Warnf("Attempt %d: Error executing HTTP request for domain %s: %v", attempt+1, input.Domain, err)

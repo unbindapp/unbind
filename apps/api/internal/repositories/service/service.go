@@ -14,7 +14,6 @@ type ServiceRepository struct {
 	deploymentRepo deployment_repo.DeploymentRepositoryInterface
 }
 
-// NewServiceRepository creates a new repository
 func NewServiceRepository(db *ent.Client, deploymentRepo deployment_repo.DeploymentRepositoryInterface) *ServiceRepository {
 	return &ServiceRepository{
 		base:           &repository.BaseRepository{DB: db},

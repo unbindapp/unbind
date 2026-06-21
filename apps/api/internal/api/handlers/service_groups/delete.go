@@ -3,10 +3,8 @@ package servicegroups_handler
 import (
 	"context"
 
-	"github.com/danielgtaylor/huma/v2"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
-	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/models"
 )
 
@@ -22,15 +20,12 @@ type DeleteServiceGroupResponse struct {
 }
 
 func (self *HandlerGroup) DeleteServiceGroup(ctx context.Context, input *DeleteServiceGroupInput) (*DeleteServiceGroupResponse, error) {
-	// Get caller
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		log.Error("Error getting user from context")
-		return nil, huma.Error401Unauthorized("Unable to retrieve user")
+	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
-	bearerToken, _ := self.srv.GetBearerTokenFromContext(ctx)
 
-	err := self.srv.ServiceGroupService.DeleteServiceGroup(ctx, user.ID, bearerToken, input.Body)
+	err = self.srv.ServiceGroupService.DeleteServiceGroup(ctx, user.ID, bearerToken, input.Body)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}

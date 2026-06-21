@@ -369,7 +369,7 @@ func (suite *DeploymentQueriesSuite) TestGetByServiceIDPaginated() {
 	deployments := make([]*ent.Deployment, 5)
 	baseTime := time.Now().Add(-5 * time.Hour)
 
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		deployments[i] = suite.DB.Deployment.Create().
 			SetServiceID(suite.testService.ID).
 			SetCommitSha(fmt.Sprintf("commit%d", i)).

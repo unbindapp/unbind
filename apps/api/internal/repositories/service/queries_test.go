@@ -132,7 +132,7 @@ func (suite *ServiceQueriesSuite) SetupTest() {
 			{Port: 3000, Protocol: utils.ToPtr(schema.ProtocolTCP)},
 		}).
 		SetHosts([]schema.HostSpec{
-			{Host: "example.com", TargetPort: utils.ToPtr(int32(3000))},
+			{Host: "example.com", TargetPort: new(int32(3000))},
 		}).
 		SaveX(suite.Ctx)
 
@@ -158,7 +158,7 @@ func (suite *ServiceQueriesSuite) SetupTest() {
 				Config: v1.ServiceConfigSpec{
 					GitBranch: "refs/heads/main",
 					Hosts: []v1.HostSpec{
-						{Host: "example.com", Port: utils.ToPtr(int32(3000))},
+						{Host: "example.com", Port: new(int32(3000))},
 					},
 					Replicas: utils.ToPtr[int32](1),
 					Ports: []v1.PortSpec{
@@ -576,7 +576,7 @@ func (suite *ServiceQueriesSuite) TestCountDomainCollisions() {
 			SetBuilder(schema.ServiceBuilderRailpack).
 			SetIcon("nodejs").
 			SetHosts([]schema.HostSpec{
-				{Host: "example.com", TargetPort: utils.ToPtr(int32(3000))},
+				{Host: "example.com", TargetPort: new(int32(3000))},
 			}).
 			SaveX(suite.Ctx)
 

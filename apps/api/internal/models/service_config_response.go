@@ -95,12 +95,3 @@ func TransformServiceConfigEntity(entity *ent.ServiceConfig) *ServiceConfigRespo
 	}
 	return response
 }
-
-// TransformServiceConfigEntities transforms a slice of ent.ServiceConfig entities into a slice of ServiceConfigResponse
-func TransformServiceConfigEntities(entities []*ent.ServiceConfig) []*ServiceConfigResponse {
-	responses := make([]*ServiceConfigResponse, len(entities))
-	for i, entity := range entities {
-		responses[i] = TransformServiceConfigEntity(entity)
-	}
-	return responses
-}

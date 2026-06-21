@@ -471,17 +471,17 @@ func (suite *RepositoriesTestSuite) TestFormatRepositoryResponse() {
 	githubRepos := []*github.Repository{
 		{
 			ID:        github.Int64(12345),
-			Name:      github.String("test-repo"),
-			FullName:  github.String("testowner/test-repo"),
-			HTMLURL:   github.String("https://github.com/testowner/test-repo"),
-			CloneURL:  github.String("https://github.com/testowner/test-repo.git"),
-			Homepage:  github.String("https://example.com"),
+			Name:      new("test-repo"),
+			FullName:  new("testowner/test-repo"),
+			HTMLURL:   new("https://github.com/testowner/test-repo"),
+			CloneURL:  new("https://github.com/testowner/test-repo.git"),
+			Homepage:  new("https://example.com"),
 			UpdatedAt: &github.Timestamp{Time: updatedAt},
 			Owner: &github.User{
 				ID:        github.Int64(456),
-				Login:     github.String("testowner"),
-				Name:      github.String("Test Owner"),
-				AvatarURL: github.String("https://github.com/testowner.png"),
+				Login:     new("testowner"),
+				Name:      new("Test Owner"),
+				AvatarURL: new("https://github.com/testowner.png"),
 			},
 		},
 	}

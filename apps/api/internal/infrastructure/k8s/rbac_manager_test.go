@@ -3,6 +3,7 @@ package k8s
 import (
 	"context"
 	"fmt"
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -443,13 +444,7 @@ func validateSubject(subject rbacv1.Subject) bool {
 	}
 
 	validKinds := []string{"ServiceAccount", "User", "Group"}
-	for _, kind := range validKinds {
-		if subject.Kind == kind {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(validKinds, subject.Kind)
 }
 
 func filterRolesByLabel(roles []rbacv1.Role, labelKey, labelValue string) []rbacv1.Role {

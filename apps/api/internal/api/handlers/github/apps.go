@@ -32,14 +32,11 @@ type GithubAppCreateResponse struct {
 
 // Handler to render GitHub page with form submission
 func (self *HandlerGroup) HandleGithubAppCreate(ctx context.Context, input *GitHubAppCreateInput) (*GithubAppCreateResponse, error) {
-	// Get caller
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		log.Error("Error getting user from context")
-		return nil, huma.Error401Unauthorized("Unable to retrieve user")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	// Template for the GitHub form submission page
 	tmpl := `<!DOCTYPE html>
 <html>
 <head>
@@ -68,7 +65,6 @@ func (self *HandlerGroup) HandleGithubAppCreate(ctx context.Context, input *GitH
 </body>
 </html>`
 
-	// Build redirect
 	redirect, err := utils.JoinURLPaths(self.srv.Cfg.ExternalAPIURL, "/webhook/github/app/save")
 	if err != nil {
 		log.Error("Error building redirect URL", "err", err)
@@ -102,13 +98,11 @@ func (self *HandlerGroup) HandleGithubAppCreate(ctx context.Context, input *GitH
 		log.Error("Error setting state in cache", "err", err)
 		return nil, huma.Error500InternalServerError("Failed to set state in cache")
 	}
-	// Set a user ID in the cache
 	err = self.srv.StringCache.SetWithExpiration(ctx, state, user.ID.String(), 30*time.Minute)
 	if err != nil {
 		log.Error("Error setting user ID in cache", "err", err)
 		return nil, huma.Error500InternalServerError("Failed to set user ID in cache")
 	}
-	// Set organization in the cache
 	if input.Organization != "" {
 		err = self.srv.StringCache.SetWithExpiration(ctx, state+"-org", input.Organization, 30*time.Minute)
 		if err != nil {
@@ -126,26 +120,22 @@ func (self *HandlerGroup) HandleGithubAppCreate(ctx context.Context, input *GitH
 	githubUrl, _ = utils.JoinURLPaths(githubUrl, "settings", "apps", "new")
 	githubUrl = fmt.Sprintf("%s?%s", githubUrl, q.Encode())
 
-	// Create template data struct
 	type templateData struct {
 		PostURL      string
 		ManifestJSON template.JS
 	}
 
-	// Convert manifest to JSON
 	manifestJSON, err := json.Marshal(manifest)
 	if err != nil {
 		log.Error("Error marshaling manifest to JSON", "err", err)
 		return nil, huma.Error500InternalServerError("Failed to prepare manifest data")
 	}
 
-	// Create data for template
 	data := templateData{
 		PostURL:      githubUrl,
 		ManifestJSON: template.JS(string(manifestJSON)),
 	}
 
-	// Parse and execute the template
 	t, err := template.New("github-form").Parse(tmpl)
 	if err != nil {
 		log.Error("Error parsing template", "err", err)
@@ -158,7 +148,6 @@ func (self *HandlerGroup) HandleGithubAppCreate(ctx context.Context, input *GitH
 		return nil, huma.Error500InternalServerError("Failed to render HTML template")
 	}
 
-	// Create response
 	return &GithubAppCreateResponse{
 		Body: struct {
 			Data string `json:"data"`
@@ -205,7 +194,6 @@ type GithubAppGetResponse struct {
 }
 
 func (self *HandlerGroup) HandleGetGithubApp(ctx context.Context, input *GithubAppGetInput) (*GithubAppGetResponse, error) {
-	// Get app by ID
 	app, err := self.srv.Repository.Github().GetGithubAppByUUID(ctx, input.UUID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -224,7 +212,6 @@ func transformGithubAppEntity(entity *ent.GithubApp) *GithubAppAPIResponse {
 	installations := []*GithubInstallationAPIResponse{}
 	if len(entity.Edges.Installations) > 0 {
 		for _, installation := range entity.Edges.Installations {
-			// Add app to edge
 			installation.Edges.GithubApp = entity
 		}
 		installations = transformGithubInstallationEntities(entity.Edges.Installations)

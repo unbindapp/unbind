@@ -12,7 +12,6 @@ type ServiceGroupRepository struct {
 	base *repository.BaseRepository
 }
 
-// NewServiceGroupRepository creates a new repository
 func NewServiceGroupRepository(db *ent.Client) *ServiceGroupRepository {
 	return &ServiceGroupRepository{
 		base: &repository.BaseRepository{DB: db},

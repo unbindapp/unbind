@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"github.com/unbindapp/unbind-api/ent"
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 	repository "github.com/unbindapp/unbind-api/internal/repositories/repositorytest"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -52,7 +51,7 @@ func (suite *TeamMutationsSuite) TestUpdate() {
 			suite.Ctx,
 			suite.testTeam.ID,
 			"Updated Team Name",
-			utils.ToPtr("Updated description"),
+			new("Updated description"),
 		)
 
 		suite.NoError(err)
@@ -79,7 +78,7 @@ func (suite *TeamMutationsSuite) TestUpdate() {
 			suite.Ctx,
 			suite.testTeam.ID,
 			"",
-			utils.ToPtr(""),
+			new(""),
 		)
 
 		suite.NoError(err)

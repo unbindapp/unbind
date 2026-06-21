@@ -3,7 +3,6 @@ package variables_handler
 import (
 	"context"
 
-	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
@@ -28,20 +27,16 @@ type UpsertVariablesInput struct {
 }
 
 func (self *HandlerGroup) UpdateVariables(ctx context.Context, input *UpsertVariablesInput) (*VariablesResponse, error) {
-	// Get caller
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		log.Error("Error getting user from context")
-		return nil, huma.Error401Unauthorized("Unable to retrieve user")
+	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
-	bearerToken, _ := self.srv.GetBearerTokenFromContext(ctx)
 
 	variablesUpdateMap := make(map[string][]byte)
 	for _, variable := range input.Body.Variables {
 		variablesUpdateMap[variable.Name] = []byte(variable.Value)
 	}
 
-	// Update
 	variableMap, err := self.srv.VariablesService.UpdateVariables(
 		ctx,
 		user.ID,

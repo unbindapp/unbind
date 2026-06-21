@@ -204,7 +204,6 @@ func (self *VariablesService) ResolveAvailableReferenceValue(ctx context.Context
 		return "", errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid source type")
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return "", err
 	}
@@ -214,7 +213,6 @@ func (self *VariablesService) ResolveAvailableReferenceValue(ctx context.Context
 		return "", err
 	}
 
-	// Get team by ID
 	namespace, err := self.repo.Team().GetNamespace(ctx, input.TeamID)
 	if err != nil {
 		if ent.IsNotFound(err) {

@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"sync"
 
 	"github.com/google/uuid"
@@ -97,7 +98,6 @@ func (self *KubeClient) CreateMultiRegistryCredentials(ctx context.Context, name
 	}
 }
 
-// After you've retrieved the credentials Secret
 func (self *KubeClient) ParseRegistryCredentials(secret *corev1.Secret) (string, string, error) {
 	// Check if this is a dockerconfigjson type secret
 	if dockerConfigJSON, ok := secret.Data[".dockerconfigjson"]; ok {
@@ -135,8 +135,6 @@ func (self *KubeClient) ParseRegistryCredentials(secret *corev1.Secret) (string,
 
 	return username, password, nil
 }
-
-// Now you can use username and password
 
 // GetOrCreateSecret retrieves an existing secret or creates a new one if it doesn't exist
 // Returns the secret and a boolean indicating if it was created (true) or retrieved (false)
@@ -216,7 +214,6 @@ func (self *KubeClient) DeleteSecret(ctx context.Context, name, namespace string
 
 // UpsertSecretValues adds or updates specific keys in a secret without affecting other keys
 func (self *KubeClient) UpsertSecretValues(ctx context.Context, name, namespace string, values map[string][]byte, client kubernetes.Interface) (*corev1.Secret, error) {
-	// Get the current secret
 	secret, err := self.GetSecret(ctx, name, namespace, client)
 	if err != nil {
 		return nil, err
@@ -228,9 +225,7 @@ func (self *KubeClient) UpsertSecretValues(ctx context.Context, name, namespace 
 	}
 
 	// Update the values
-	for k, v := range values {
-		secret.Data[k] = v
-	}
+	maps.Copy(secret.Data, values)
 
 	return client.CoreV1().Secrets(namespace).Update(ctx, secret, metav1.UpdateOptions{})
 }
@@ -246,9 +241,7 @@ func (self *KubeClient) OverwriteSecretValues(ctx context.Context, name, namespa
 	secret.Data = make(map[string][]byte)
 
 	// Set the values
-	for k, v := range values {
-		secret.Data[k] = v
-	}
+	maps.Copy(secret.Data, values)
 
 	return client.CoreV1().Secrets(namespace).Update(ctx, secret, metav1.UpdateOptions{})
 }
@@ -274,9 +267,7 @@ func (self *KubeClient) GetAllSecrets(
 
 	// Process team secret
 	if teamSecret != "" {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			secretData, err := self.processSecretKeys(ctx, teamID, schema.VariableReferenceSourceTypeTeam, teamSecret, client, namespace)
 			if err != nil {
 				errOnce.Do(func() {
@@ -287,14 +278,12 @@ func (self *KubeClient) GetAllSecrets(
 			mu.Lock()
 			result = append(result, secretData)
 			mu.Unlock()
-		}()
+		})
 	}
 
 	// Process project secret
 	if projectSecret != "" {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			secretData, err := self.processSecretKeys(ctx, projectID, schema.VariableReferenceSourceTypeProject, projectSecret, client, namespace)
 			if err != nil {
 				errOnce.Do(func() {
@@ -305,14 +294,12 @@ func (self *KubeClient) GetAllSecrets(
 			mu.Lock()
 			result = append(result, secretData)
 			mu.Unlock()
-		}()
+		})
 	}
 
 	// Process environment secret
 	if environmentSecret != "" {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			secretData, err := self.processSecretKeys(ctx, environmentID, schema.VariableReferenceSourceTypeEnvironment, environmentSecret, client, namespace)
 			if err != nil {
 				errOnce.Do(func() {
@@ -323,7 +310,7 @@ func (self *KubeClient) GetAllSecrets(
 			mu.Lock()
 			result = append(result, secretData)
 			mu.Unlock()
-		}()
+		})
 	}
 
 	// Process service secrets
@@ -359,7 +346,6 @@ func (self *KubeClient) GetAllSecrets(
 }
 
 // Helper function to process a single secret and extract just its keys
-// This function remains unchanged from your original
 func (self *KubeClient) processSecretKeys(
 	ctx context.Context,
 	id uuid.UUID,

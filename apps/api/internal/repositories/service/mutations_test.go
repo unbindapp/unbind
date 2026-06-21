@@ -164,8 +164,8 @@ func (suite *ServiceMutationsSuite) TestCreate() {
 			Description:      "New test service",
 			EnvironmentID:    suite.testEnvironment.ID,
 			KubernetesSecret: "new-service-secret",
-			Database:         utils.ToPtr("postgresql"),
-			DatabaseVersion:  utils.ToPtr("14"),
+			Database:         new("postgresql"),
+			DatabaseVersion:  new("14"),
 			DetectedPorts: []schema.PortSpec{
 				{Port: 5432, Protocol: utils.ToPtr(schema.ProtocolTCP)},
 			},
@@ -196,8 +196,8 @@ func (suite *ServiceMutationsSuite) TestCreate() {
 			Description:          "Service with GitHub integration",
 			EnvironmentID:        suite.testEnvironment.ID,
 			GitHubInstallationID: &suite.testGithubInstallation.ID,
-			GitRepository:        utils.ToPtr("test-repo"),
-			GitRepositoryOwner:   utils.ToPtr("test-owner"),
+			GitRepository:        new("test-repo"),
+			GitRepositoryOwner:   new("test-owner"),
 			KubernetesSecret:     "github-service-secret",
 		}
 
@@ -265,18 +265,18 @@ func (suite *ServiceMutationsSuite) TestCreateConfig() {
 			Builder:   &builder,
 			Provider:  &provider,
 			Framework: &framework,
-			GitBranch: utils.ToPtr("main"),
-			Icon:      utils.ToPtr("nodejs"),
+			GitBranch: new("main"),
+			Icon:      new("nodejs"),
 			OverwritePorts: []schema.PortSpec{
 				{Port: 8080, Protocol: utils.ToPtr(schema.ProtocolTCP)},
 			},
 			OverwriteHosts: []schema.HostSpec{
-				{Host: "example.com", TargetPort: utils.ToPtr(int32(8080))},
+				{Host: "example.com", TargetPort: new(int32(8080))},
 			},
 			Replicas:   utils.ToPtr[int32](3),
-			AutoDeploy: utils.ToPtr(false),
-			Public:     utils.ToPtr(true),
-			Image:      utils.ToPtr("node:18"),
+			AutoDeploy: new(false),
+			Public:     new(true),
+			Image:      new("node:18"),
 		}
 
 		config, err := suite.serviceRepo.CreateConfig(suite.Ctx, nil, input)
@@ -487,8 +487,8 @@ func (suite *ServiceMutationsSuite) TestUpdateConfig() {
 		input := &MutateConfigInput{
 			ServiceID: suite.testService.ID,
 			UpsertHosts: []schema.HostSpec{
-				{Host: "api.example.com", TargetPort: utils.ToPtr(int32(8080))},
-				{Host: "admin.example.com", TargetPort: utils.ToPtr(int32(9090))},
+				{Host: "api.example.com", TargetPort: new(int32(8080))},
+				{Host: "admin.example.com", TargetPort: new(int32(9090))},
 			},
 		}
 
@@ -516,8 +516,8 @@ func (suite *ServiceMutationsSuite) TestUpdateConfig() {
 				{Port: 3000, Protocol: utils.ToPtr(schema.ProtocolTCP)}, // New port
 			},
 			UpsertHosts: []schema.HostSpec{
-				{Host: "api.example.com", TargetPort: utils.ToPtr(int32(3000))},     // Changed port
-				{Host: "newhost.example.com", TargetPort: utils.ToPtr(int32(3000))}, // New host
+				{Host: "api.example.com", TargetPort: new(int32(3000))},     // Changed port
+				{Host: "newhost.example.com", TargetPort: new(int32(3000))}, // New host
 			},
 		}
 
@@ -571,7 +571,7 @@ func (suite *ServiceMutationsSuite) TestUpdateConfig() {
 		input3 := &MutateConfigInput{
 			ServiceID: suite.testService.ID,
 			UpsertHosts: []schema.HostSpec{
-				{PrevHost: utils.ToPtr("api.example.com"), Host: "api2.example.com", TargetPort: utils.ToPtr(int32(3000))}, // Changed port
+				{PrevHost: new("api.example.com"), Host: "api2.example.com", TargetPort: new(int32(3000))}, // Changed port
 			},
 		}
 		err = suite.serviceRepo.UpdateConfig(suite.Ctx, nil, input3)

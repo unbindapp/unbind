@@ -11,7 +11,6 @@ import (
 )
 
 func (self *StorageService) DeletePVC(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *models.DeletePVCInput) error {
-	// Validate permissions and parse inputs
 	team, _, _, err := self.validatePermissionsAndParseInputs(ctx, schema.ActionEditor, requesterUserID, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID)
 	if err != nil {
 		return err
@@ -22,7 +21,6 @@ func (self *StorageService) DeletePVC(ctx context.Context, requesterUserID uuid.
 		return err
 	}
 
-	// Get the PVC
 	pvc, err := self.k8s.GetPersistentVolumeClaim(ctx, team.Namespace, input.ID, client)
 	if err != nil {
 		return err

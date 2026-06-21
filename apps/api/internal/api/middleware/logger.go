@@ -80,12 +80,6 @@ type LogEntry interface {
 	Write(status, bytes int, header http.Header, elapsed time.Duration, extra any)
 }
 
-// GetLogEntry returns the in-context LogEntry for a request.
-func GetLogEntry(r *http.Request) LogEntry {
-	entry, _ := r.Context().Value(LogEntryCtxKey).(LogEntry)
-	return entry
-}
-
 // WithLogEntry sets the in-context LogEntry for a request.
 func WithLogEntry(r *http.Request, entry LogEntry) *http.Request {
 	r = r.WithContext(context.WithValue(r.Context(), LogEntryCtxKey, entry))

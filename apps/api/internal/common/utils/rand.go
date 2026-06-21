@@ -23,7 +23,6 @@ func GenerateSecurePassword(length int, simple bool) (string, error) {
 		return "", fmt.Errorf("password length must be at least 3")
 	}
 
-	// Generate password
 	password := make([]byte, length)
 
 	// First character must be a letter
@@ -58,7 +57,7 @@ func GenerateSecurePassword(length int, simple bool) (string, error) {
 
 		// Find a position for uppercase that isn't already taken
 		var upperPos int64
-		for attempts := 0; attempts < 10; attempts++ { // Limit attempts to avoid infinite loop
+		for attempts := range 10 { // Limit attempts to avoid infinite loop
 			pos, err := randInt(int64(length - 1))
 			if err != nil {
 				return "", err
@@ -169,7 +168,7 @@ func GenerateRandomSimpleID(length int) (string, error) {
 	result := make([]byte, length)
 
 	// Fill the slice with random characters from the charset
-	for i := 0; i < length; i++ {
+	for i := range length {
 		randomIndex, err := rand.Int(rand.Reader, charsetLength)
 		if err != nil {
 			return "", err
@@ -182,14 +181,12 @@ func GenerateRandomSimpleID(length int) (string, error) {
 }
 
 func GenerateSlug(displayName string) (string, error) {
-	// Convert to lowercase
 	slug := strings.ToLower(displayName)
 
 	// Replace non-alphanumeric characters with hyphens
 	reg := regexp.MustCompile(`[^a-z0-9]+`)
 	slug = reg.ReplaceAllString(slug, "-")
 
-	// Trim leading and trailing hyphens
 	slug = strings.Trim(slug, "-")
 
 	// If slug is empty after cleaning, use a default
@@ -197,12 +194,10 @@ func GenerateSlug(displayName string) (string, error) {
 		slug = "untitled"
 	}
 
-	// Generate a random short ID
 	shortID, err := GenerateRandomSimpleID(12)
 	if err != nil {
 		return "", err
 	}
 
-	// Combine slug and short ID
 	return slug + "-" + shortID, nil
 }

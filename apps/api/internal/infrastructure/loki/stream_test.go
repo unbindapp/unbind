@@ -14,7 +14,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/suite"
 	"github.com/unbindapp/unbind-api/config"
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 )
 
 type StreamTestSuite struct {
@@ -289,7 +288,7 @@ func (suite *StreamTestSuite) TestStreamLokiPodLogs_NoInitialLogs() {
 			Label:      opts.Label,
 			LabelValue: opts.LabelValue,
 			RawFilter:  opts.RawFilter,
-			Limit:      utils.ToPtr(1),
+			Limit:      new(1),
 		}
 		logs, _ := suite.querier.QueryLokiLogs(ctx, httpOpts)
 

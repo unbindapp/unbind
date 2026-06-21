@@ -21,7 +21,6 @@ func (self *LogsService) StreamLogs(ctx context.Context, requesterUserID uuid.UU
 		return err
 	}
 
-	// Build labels to select
 	var label loki.LokiLabelName
 	var labelValue string
 	switch input.Type {
@@ -38,7 +37,6 @@ func (self *LogsService) StreamLogs(ctx context.Context, requesterUserID uuid.UU
 		label = loki.LokiLabelService
 		labelValue = service.ID.String()
 	case models.LogTypeDeployment, models.LogTypeBuild:
-		// get deployment
 		deployment, err := self.repo.Deployment().GetByID(ctx, input.DeploymentID)
 		if err != nil {
 			if ent.IsNotFound(err) {
@@ -76,7 +74,6 @@ func (self *LogsService) StreamLogs(ctx context.Context, requesterUserID uuid.UU
 	streamCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	// Create loki options
 	lokiLogOptions := loki.LokiLogStreamOptions{
 		Label:      label,
 		LabelValue: labelValue,

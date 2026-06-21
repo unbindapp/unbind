@@ -15,11 +15,11 @@ migrate:
 		exit 1; \
 	fi
 	@echo "Creating migration: $(NAME)"
-	@go run -mod=mod ./ent/migrate/main.go -name=$(NAME)
+	@GOWORK=off go run -mod=mod ./ent/migrate/main.go -name=$(NAME)
 
 migrate\:checksum:
 	@echo "Regenerating checksum..."
-	@go run -mod=mod ./ent/migrate/main.go -checksum
+	@GOWORK=off go run -mod=mod ./ent/migrate/main.go -checksum
 
 interfaces:
 	@echo "Generating interfaces..."

@@ -125,6 +125,40 @@ func (self *KubeClient) UpdatePersistentVolumeClaim(
 }
 
 // GetPersistentVolumeClaim retrieves a specific PersistentVolumeClaim by its name and namespace.
+// resolvePVCServiceBinding resolves which service (if any) a PVC belongs to via
+// its service-id label, falling back to a DB lookup of services referencing the
+// PVC. It returns the bound service ID and whether that service is a database.
+// A nil service ID means the PVC is unbound; parse failures are logged and
+// treated as unbound, while DB errors are returned for the caller to handle.
+func (self *KubeClient) resolvePVCServiceBinding(ctx context.Context, pvcName, serviceLabel string, pvcLabels map[string]string) (boundToServiceID *uuid.UUID, isDatabase bool, err error) {
+	serviceIDStr := pvcLabels[serviceLabel]
+	if serviceIDStr == "" {
+		services, err := self.repo.Service().GetServicesUsingPVC(ctx, pvcName)
+		if err != nil {
+			return nil, false, fmt.Errorf("failed to get services using PVC '%s': %w", pvcName, err)
+		}
+		if len(services) == 0 {
+			return nil, false, nil
+		}
+		return &services[0].ID, services[0].Type == schema.ServiceTypeDatabase, nil
+	}
+
+	serviceID, err := uuid.Parse(serviceIDStr)
+	if err != nil {
+		log.Errorf("invalid service ID in PVC label '%s': %v", pvcName, err)
+		return nil, false, nil
+	}
+
+	service, err := self.repo.Service().GetByID(ctx, serviceID)
+	if err != nil && !ent.IsNotFound(err) {
+		return nil, false, fmt.Errorf("failed to get service '%s': %w", serviceIDStr, err)
+	}
+	if service == nil {
+		return nil, false, nil
+	}
+	return &service.ID, service.Type == schema.ServiceTypeDatabase, nil
+}
+
 func (self *KubeClient) GetPersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, client kubernetes.Interface) (*models.PVCInfo, error) {
 	if namespace == "" {
 		return nil, fmt.Errorf("namespace cannot be empty")
@@ -217,41 +251,14 @@ func (self *KubeClient) GetPersistentVolumeClaim(ctx context.Context, namespace 
 
 	// Fall back to checking PVC labels
 	if !isBound {
-		serviceIDStr := pvcLabels[serviceLabel]
-		if serviceIDStr != "" {
-			serviceID, err := uuid.Parse(serviceIDStr)
-			if err != nil {
-				log.Errorf("invalid service ID in PVC label '%s': %v", pvcName, err)
-			} else {
-				// Fetch from database
-				service, err := self.repo.Service().GetByID(ctx, serviceID)
-				if err != nil && !ent.IsNotFound(err) {
-					return nil, fmt.Errorf("failed to get service '%s': %w", serviceIDStr, err)
-				} else if service != nil {
-					boundToServiceID = &service.ID
-					isBound = true
-
-					// See if the service is a database
-					if service.Type == schema.ServiceTypeDatabase {
-						isDatabase = true
-					}
-				}
-			}
-		} else {
-			// Get services using this PVC from DB
-			services, err := self.repo.Service().GetServicesUsingPVC(ctx, pvcName)
-			if err != nil {
-				return nil, fmt.Errorf("failed to get services using PVC '%s': %w", pvcName, err)
-			}
-			if len(services) > 0 {
-				isBound = true
-				boundToServiceID = &services[0].ID // Use the first service found
-
-				// Check if the service is a database
-				if services[0].Type == schema.ServiceTypeDatabase {
-					isDatabase = true
-				}
-			}
+		sid, db, err := self.resolvePVCServiceBinding(ctx, pvcName, serviceLabel, pvcLabels)
+		if err != nil {
+			return nil, err
+		}
+		if sid != nil {
+			boundToServiceID = sid
+			isBound = true
+			isDatabase = isDatabase || db
 		}
 	}
 
@@ -442,40 +449,13 @@ func (self *KubeClient) ListPersistentVolumeClaims(ctx context.Context, namespac
 
 		// Fall back to checking PVC labels
 		if !isBound {
-			serviceIDStr := pvcLabels[serviceLabel]
-			if serviceIDStr != "" {
-				serviceID, err := uuid.Parse(serviceIDStr)
-				if err != nil {
-					log.Errorf("invalid service ID in PVC label '%s': %v", pvc.Name, err)
-				} else {
-					// Fetch from database
-					service, err := self.repo.Service().GetByID(ctx, serviceID)
-					if err != nil && !ent.IsNotFound(err) {
-						log.Errorf("failed to get service '%s': %v", serviceIDStr, err)
-					} else if service != nil {
-						boundToServiceID = &service.ID
-						isBound = true
-
-						// See if the service is a database
-						if service.Type == schema.ServiceTypeDatabase {
-							isDatabase = true
-						}
-					}
-				}
-			} else {
-				// Get services using this PVC from DB
-				services, err := self.repo.Service().GetServicesUsingPVC(ctx, pvc.Name)
-				if err != nil {
-					log.Errorf("failed to get services using PVC '%s': %v", pvc.Name, err)
-				} else if len(services) > 0 {
-					isBound = true
-					boundToServiceID = &services[0].ID // Use the first service found
-
-					// Check if the service is a database
-					if services[0].Type == schema.ServiceTypeDatabase {
-						isDatabase = true
-					}
-				}
+			sid, db, err := self.resolvePVCServiceBinding(ctx, pvc.Name, serviceLabel, pvcLabels)
+			if err != nil {
+				log.Errorf("%v", err)
+			} else if sid != nil {
+				boundToServiceID = sid
+				isBound = true
+				isDatabase = isDatabase || db
 			}
 		}
 

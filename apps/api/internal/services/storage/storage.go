@@ -55,12 +55,10 @@ func (self *StorageService) validatePermissionsAndParseInputs(ctx context.Contex
 		},
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return nil, nil, nil, err
 	}
 
-	// Get namespace
 	team, err := self.repo.Team().GetByID(ctx, teamID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -69,7 +67,6 @@ func (self *StorageService) validatePermissionsAndParseInputs(ctx context.Contex
 		return nil, nil, nil, err
 	}
 
-	// Get project
 	var project *ent.Project
 	if pvcScope == models.PvcScopeProject ||
 		pvcScope == models.PvcScopeEnvironment {
@@ -86,7 +83,6 @@ func (self *StorageService) validatePermissionsAndParseInputs(ctx context.Contex
 		}
 	}
 
-	// Get environment
 	var environment *ent.Environment
 	if pvcScope == models.PvcScopeEnvironment {
 		// validate environment ID

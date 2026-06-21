@@ -29,7 +29,6 @@ func (k *KubeClient) GetNamespaces(ctx context.Context, namespaceNames []string,
 			continue
 		}
 
-		// Get the specific namespace
 		ns, err := client.CoreV1().Namespaces().Get(ctx, namespaceName, metav1.GetOptions{})
 		if err != nil {
 			// Log the error but continue with other namespaces
@@ -45,14 +44,12 @@ func (k *KubeClient) GetNamespaces(ctx context.Context, namespaceNames []string,
 
 // CreateNamespace creates a new namespace in the Kubernetes cluster
 func (k *KubeClient) CreateNamespace(ctx context.Context, namespaceName string, client kubernetes.Interface) (*corev1.Namespace, error) {
-	// Define the namespace object
 	namespace := &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: namespaceName,
 		},
 	}
 
-	// Create the namespace
 	createdNamespace, err := client.CoreV1().Namespaces().Create(ctx, namespace, metav1.CreateOptions{})
 	if err != nil {
 		log.Errorf("Error creating namespace %s: %v", namespaceName, err)

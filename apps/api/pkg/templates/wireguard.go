@@ -25,7 +25,7 @@ func wireGuardTemplate() *schema.TemplateDefinition {
 				Type:        schema.InputTypeHost,
 				Description: "Hostname to use for the WireGuard instance.",
 				Required:    true,
-				TargetPort:  utils.ToPtr(51821), // Target TCP port
+				TargetPort:  new(51821), // Target TCP port
 			},
 			{
 				ID:           "input_nodeport",
@@ -45,7 +45,7 @@ func wireGuardTemplate() *schema.TemplateDefinition {
 				},
 				Description: "Size of the storage for the WireGuard config data.",
 				Required:    true,
-				Default:     utils.ToPtr("1"),
+				Default:     new("1"),
 			},
 			{
 				ID:          "input_node_ip",
@@ -63,7 +63,7 @@ func wireGuardTemplate() *schema.TemplateDefinition {
 				Type:     schema.ServiceTypeDockerimage,
 				Builder:  schema.ServiceBuilderDocker,
 				InputIDs: []string{"input_domain", "input_nodeport", "input_storage_size"},
-				Image:    utils.ToPtr("ghcr.io/wg-easy/wg-easy:15.3.0"),
+				Image:    new("ghcr.io/wg-easy/wg-easy:15.3.0"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 20,
 					CPULimitsMillicores:   250,

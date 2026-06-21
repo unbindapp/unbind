@@ -3,11 +3,9 @@ package projects_handler
 import (
 	"context"
 
-	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
-	"github.com/unbindapp/unbind-api/internal/common/log"
 	project_service "github.com/unbindapp/unbind-api/internal/services/project"
 )
 
@@ -26,15 +24,12 @@ type DeleteProjectResponse struct {
 }
 
 func (self *HandlerGroup) DeleteProject(ctx context.Context, input *DeleteProjectInput) (*DeleteProjectResponse, error) {
-	// Get caller
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		log.Error("Error getting user from context")
-		return nil, huma.Error401Unauthorized("Unable to retrieve user")
+	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
-	bearerToken, _ := self.srv.GetBearerTokenFromContext(ctx)
 
-	err := self.srv.ProjectService.DeleteProject(ctx, user.ID, &project_service.DeleteProjectInput{
+	err = self.srv.ProjectService.DeleteProject(ctx, user.ID, &project_service.DeleteProjectInput{
 		TeamID:    input.Body.TeamID,
 		ProjectID: input.Body.ProjectID,
 	}, bearerToken)

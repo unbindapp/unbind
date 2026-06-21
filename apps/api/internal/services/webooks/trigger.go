@@ -10,7 +10,6 @@ import (
 
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/log"
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 )
 
 type WebhookData struct {
@@ -40,19 +39,19 @@ const (
 func (self *WebhookLevel) DecimalColor() *string {
 	switch *self {
 	case WebhookLevelDeploymentQueued:
-		return utils.ToPtr("13738823")
+		return new("13738823")
 	case WebhookLevelDeploymentBuilding:
-		return utils.ToPtr("6724095")
+		return new("6724095")
 	case WebhookLevelDeploymentFailed:
-		return utils.ToPtr("15692145")
+		return new("15692145")
 	case WebhookLevelDeploymentSucceeded:
-		return utils.ToPtr("7983737")
+		return new("7983737")
 	case WebhookLevelError:
-		return utils.ToPtr("15692145")
+		return new("15692145")
 	case WebhookLevelWarning:
-		return utils.ToPtr("13738823")
+		return new("13738823")
 	default:
-		return utils.ToPtr("7983737") // Success
+		return new("7983737") // Success
 	}
 }
 
@@ -60,11 +59,11 @@ func (self *WebhookLevel) DecimalColor() *string {
 func (level WebhookLevel) HexColor() *string {
 	switch level {
 	case WebhookLevelError:
-		return utils.ToPtr("#8B0000")
+		return new("#8B0000")
 	case WebhookLevelWarning:
-		return utils.ToPtr("#802000")
+		return new("#802000")
 	default:
-		return utils.ToPtr("#0C3B0C")
+		return new("#0C3B0C")
 	}
 }
 
@@ -110,7 +109,6 @@ func (self *WebhooksService) TriggerWebhooks(ctx context.Context, level WebhookL
 				Data:  message,
 			}
 
-			// Encode the payload
 			payload := new(bytes.Buffer)
 			err := json.NewEncoder(payload).Encode(msg)
 			if err != nil {
@@ -118,7 +116,6 @@ func (self *WebhooksService) TriggerWebhooks(ctx context.Context, level WebhookL
 				return err
 			}
 
-			// Create the request
 			req, err := http.NewRequest(http.MethodPost, webhook.URL, payload)
 			if err != nil {
 				log.Errorf("Failed to create slack webhook request: %v", err)
@@ -126,7 +123,6 @@ func (self *WebhooksService) TriggerWebhooks(ctx context.Context, level WebhookL
 			}
 			req.Header.Set("Content-Type", "application/json")
 
-			// Send the request
 			resp, err := self.httpClient.Do(req)
 			if err != nil {
 				log.Errorf("Failed to send slack webhook: %v", err)
@@ -134,7 +130,6 @@ func (self *WebhooksService) TriggerWebhooks(ctx context.Context, level WebhookL
 			}
 			defer resp.Body.Close()
 
-			// Check response
 			if resp.StatusCode != http.StatusOK {
 				bodyBytes, readErr := io.ReadAll(resp.Body)
 				if readErr != nil {

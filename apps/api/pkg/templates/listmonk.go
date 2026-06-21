@@ -32,7 +32,7 @@ func listmonkTemplate() *schema.TemplateDefinition {
 				Type:        schema.InputTypeDatabaseSize,
 				Description: "Size of the storage for the PostgreSQL database.",
 				Required:    true,
-				Default:     utils.ToPtr("1"),
+				Default:     new("1"),
 			},
 			{
 				ID:   "input_storage_size",
@@ -44,7 +44,7 @@ func listmonkTemplate() *schema.TemplateDefinition {
 				},
 				Description: "Size of the storage for the Listmonk uploads.",
 				Required:    true,
-				Default:     utils.ToPtr("1"),
+				Default:     new("1"),
 			},
 		},
 		Services: []schema.TemplateService{
@@ -55,7 +55,7 @@ func listmonkTemplate() *schema.TemplateDefinition {
 				DisplayRank:  100,
 				Type:         schema.ServiceTypeDatabase,
 				Builder:      schema.ServiceBuilderDatabase,
-				DatabaseType: utils.ToPtr("postgres"),
+				DatabaseType: new("postgres"),
 			},
 			{
 				ID:         "service_listmonk",
@@ -64,8 +64,8 @@ func listmonkTemplate() *schema.TemplateDefinition {
 				Name:       "Listmonk",
 				Type:       schema.ServiceTypeDockerimage,
 				Builder:    schema.ServiceBuilderDocker,
-				Image:      utils.ToPtr("listmonk/listmonk:v6.1.0"),
-				RunCommand: utils.ToPtr("./listmonk --install --idempotent --yes && ./listmonk --upgrade --yes && ./listmonk"),
+				Image:      new("listmonk/listmonk:v6.1.0"),
+				RunCommand: new("./listmonk --install --idempotent --yes && ./listmonk --upgrade --yes && ./listmonk"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
 					CPULimitsMillicores:   400,
@@ -79,13 +79,13 @@ func listmonkTemplate() *schema.TemplateDefinition {
 				HealthCheck: &schema.HealthCheck{
 					Type:                    utils.ToPtr(schema.HealthCheckTypeHTTP),
 					Path:                    "/",
-					Port:                    utils.ToPtr(int32(9000)),
-					StartupPeriodSeconds:    utils.ToPtr(int32(5)),
-					StartupTimeoutSeconds:   utils.ToPtr(int32(20)),
-					StartupFailureThreshold: utils.ToPtr(int32(10)),
-					HealthPeriodSeconds:     utils.ToPtr(int32(10)),
-					HealthTimeoutSeconds:    utils.ToPtr(int32(5)),
-					HealthFailureThreshold:  utils.ToPtr(int32(5)),
+					Port:                    new(int32(9000)),
+					StartupPeriodSeconds:    new(int32(5)),
+					StartupTimeoutSeconds:   new(int32(20)),
+					StartupFailureThreshold: new(int32(10)),
+					HealthPeriodSeconds:     new(int32(10)),
+					HealthTimeoutSeconds:    new(int32(5)),
+					HealthFailureThreshold:  new(int32(5)),
 				},
 				Variables: []schema.TemplateVariable{
 					{

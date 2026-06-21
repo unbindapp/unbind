@@ -13,7 +13,6 @@ import (
 )
 
 func (self *ServiceGroupService) DeleteServiceGroup(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *models.DeleteServiceGroupInput) error {
-	// Check permissions
 	permissionChecks := []permissions_repo.PermissionCheck{
 		// Has permission to manage teams
 		{
@@ -27,7 +26,6 @@ func (self *ServiceGroupService) DeleteServiceGroup(ctx context.Context, request
 		return err
 	}
 
-	// Verify inputs
 	env, project, err := self.VerifyInputs(ctx, input.TeamID, input.ProjectID, input.EnvironmentID)
 	if err != nil {
 		return err
@@ -38,13 +36,11 @@ func (self *ServiceGroupService) DeleteServiceGroup(ctx context.Context, request
 
 	// * Delete services too
 	if input.DeleteServices {
-		// Get services in this group
 		services, err := self.repo.ServiceGroup().GetServices(ctx, input.ID)
 		if err != nil {
 			return err
 		}
 
-		// Create kubernetes client
 		client, err := self.k8s.CreateClientWithToken(bearerToken)
 		if err != nil {
 			return err
@@ -53,9 +49,7 @@ func (self *ServiceGroupService) DeleteServiceGroup(ctx context.Context, request
 		// Delete kubernetes resources, db resource
 		if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
 			namespace := project.Edges.Team.Namespace
-			// Delete services
 			for _, service := range services {
-				// Cancel deployments
 				if err := self.deployCtl.CancelExistingJobs(ctx, service.ID); err != nil {
 					log.Warnf("Error cancelling jobs for service %s: %v", service.KubernetesName, err)
 				}
@@ -66,7 +60,6 @@ func (self *ServiceGroupService) DeleteServiceGroup(ctx context.Context, request
 					return err
 				}
 
-				// Delete secret
 				if err := self.k8s.DeleteSecret(ctx, service.KubernetesSecret, namespace, client); err != nil {
 					log.Error("Error deleting secret from k8s", "secret", service.KubernetesSecret, "err", err)
 					return err

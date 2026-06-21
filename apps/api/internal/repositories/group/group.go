@@ -14,7 +14,6 @@ type GroupRepository struct {
 	permissionsRepo permissions_repo.PermissionsRepositoryInterface
 }
 
-// NewGroupRepository creates a new GitHub repository
 func NewGroupRepository(db *ent.Client, permissionsRepo permissions_repo.PermissionsRepositoryInterface) *GroupRepository {
 	return &GroupRepository{
 		base:            &repository.BaseRepository{DB: db},

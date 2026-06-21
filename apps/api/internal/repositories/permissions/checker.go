@@ -3,6 +3,7 @@ package permissions_repo
 import (
 	"context"
 	"fmt"
+	"slices"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqljson"
@@ -201,12 +202,7 @@ func (self *PermissionsRepository) checkComprehensivePermission(
 
 // Helper function to check if a slice contains a value
 func contains(slice []entSchema.PermittedAction, item entSchema.PermittedAction) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(slice, item)
 }
 
 // ResourceHierarchyInfo represents a parent resource in the hierarchy

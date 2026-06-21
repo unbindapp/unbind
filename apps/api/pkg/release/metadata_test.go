@@ -9,7 +9,6 @@ import (
 
 	"github.com/google/go-github/v69/github"
 	"github.com/stretchr/testify/suite"
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 )
 
 type MetadataTestSuite struct {
@@ -61,18 +60,18 @@ func (s *MetadataTestSuite) SetupTest() {
 	mockClient := &mockGitHubClient{
 		listTagsFunc: func(ctx context.Context, owner, repo string, opts *github.ListOptions) ([]*github.RepositoryTag, *github.Response, error) {
 			return []*github.RepositoryTag{
-				{Name: utils.ToPtr("v0.1.0")},
-				{Name: utils.ToPtr("v0.2.0")},
-				{Name: utils.ToPtr("v0.3.0")},
-				{Name: utils.ToPtr("v0.4.0")},
+				{Name: new("v0.1.0")},
+				{Name: new("v0.2.0")},
+				{Name: new("v0.3.0")},
+				{Name: new("v0.4.0")},
 			}, nil, nil
 		},
 		listReleasesFunc: func(ctx context.Context, owner, repo string, opts *github.ListOptions) ([]*github.RepositoryRelease, *github.Response, error) {
 			return []*github.RepositoryRelease{
-				{TagName: utils.ToPtr("v0.1.0")},
-				{TagName: utils.ToPtr("v0.2.0")},
-				{TagName: utils.ToPtr("v0.3.0")},
-				{TagName: utils.ToPtr("v0.4.0")},
+				{TagName: new("v0.1.0")},
+				{TagName: new("v0.2.0")},
+				{TagName: new("v0.3.0")},
+				{TagName: new("v0.4.0")},
 			}, nil, nil
 		},
 	}

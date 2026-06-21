@@ -27,7 +27,6 @@ func (self *VariableRepository) GetReferencesForService(
 	ctx context.Context,
 	serviceID uuid.UUID,
 ) ([]*ent.VariableReference, error) {
-	// Get all references for a service
 	references, err := self.base.DB.VariableReference.Query().
 		Where(variablereference.TargetServiceIDEQ(serviceID)).
 		Order(

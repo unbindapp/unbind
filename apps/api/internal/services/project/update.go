@@ -29,12 +29,10 @@ func (self *ProjectService) UpdateProject(ctx context.Context, requesterUserID u
 		},
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return nil, err
 	}
 
-	// Check if the team exists
 	_, err := self.repo.Team().GetByID(ctx, input.TeamID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -55,7 +53,6 @@ func (self *ProjectService) UpdateProject(ctx context.Context, requesterUserID u
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Project not in team")
 	}
 
-	// Update the project
 	project, err = self.repo.Project().Update(ctx, nil, input.ProjectID, input.DefaultEnvironmentID, input.Name, input.Description)
 	if err != nil {
 		return nil, err
@@ -66,16 +63,13 @@ func (self *ProjectService) UpdateProject(ctx context.Context, requesterUserID u
 		event := schema.WebhookEventProjectUpdated
 		level := webhooks_service.WebhookLevelInfo
 
-		// Get project with edges
 		project, err := self.repo.Project().GetByID(context.Background(), project.ID)
 		if err != nil {
 			log.Errorf("Failed to get project %s: %v", project.ID.String(), err)
 			return
 		}
 
-		// Construct URL
 		url, _ := utils.JoinURLPaths(self.cfg.ExternalUIUrl, project.TeamID.String(), "project", project.ID.String())
-		// Get user
 		user, err := self.repo.User().GetByID(context.Background(), requesterUserID)
 		if err != nil {
 			log.Errorf("Failed to get user %s: %v", requesterUserID.String(), err)
@@ -89,7 +83,6 @@ func (self *ProjectService) UpdateProject(ctx context.Context, requesterUserID u
 		}
 
 		if input.DefaultEnvironmentID != nil {
-			// Get the environment name
 			env, err := self.repo.Environment().GetByID(context.Background(), *input.DefaultEnvironmentID)
 			if err != nil {
 				log.Warnf("Failed to get environment %s: %v", input.DefaultEnvironmentID.String(), err)
@@ -120,6 +113,5 @@ func (self *ProjectService) UpdateProject(ctx context.Context, requesterUserID u
 		}
 	}()
 
-	// Convert to response
 	return models.TransformProjectEntity(project), nil
 }

@@ -28,16 +28,11 @@ type Bootstrapper struct {
 func (self *Bootstrapper) Sync(ctx context.Context) error {
 	var multierr *multierror.Error
 
-	// Sync system settings
 	multierr = multierror.Append(multierr, self.syncSystemSettings(ctx))
 	multierr = multierror.Append(multierr, self.syncBuildkitdSettings(ctx))
-	// Bootstrap registry
 	multierr = multierror.Append(multierr, self.bootstrapRegistry(ctx))
-	// Bootstrap team
 	multierr = multierror.Append(multierr, self.bootstrapTeam(ctx))
-	// Bootstrap groups and permissions
 	multierr = multierror.Append(multierr, self.bootstrapGroupsAndPermissions(ctx))
-	// Sync RBAC
 	multierr = multierror.Append(multierr, self.syncK8sRBAC(ctx))
 
 	return multierr.ErrorOrNil()
@@ -50,50 +45,44 @@ func (self *Bootstrapper) syncSystemSettings(ctx context.Context) error {
 	var wildcardDomain *string
 
 	if self.cfg.BootstrapWildcardBaseURL != "" {
-		wildcardDomain = utils.ToPtr(self.cfg.BootstrapWildcardBaseURL)
+		wildcardDomain = new(self.cfg.BootstrapWildcardBaseURL)
 	}
 
 	_, err := self.repos.System().UpdateSystemSettings(ctx, &system_repo.SystemSettingUpdateInput{
 		WildcardDomain: wildcardDomain,
 	})
-
-	return err
+	if err != nil {
+		return fmt.Errorf("failed to update system settings: %w", err)
+	}
+	return nil
 }
 
 // * Buildkit
 func (self *Bootstrapper) syncBuildkitdSettings(ctx context.Context) error {
 	log.Infof("Syncing buildkitd settings")
 
-	// Get from kubernetes
 	_, err := self.buildkitSettingsManager.GetBuildkitConfig(ctx)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			log.Infof("Buildkitd config not found - assuming externally managed")
 			return nil
 		}
-		log.Errorf("Failed to get buildkitd settings from kubernetes: %v", err)
-		return err
+		return fmt.Errorf("failed to get buildkitd settings from kubernetes: %w", err)
 	}
 
-	// Get buildkit settings from DB
 	settings, err := self.repos.System().GetSystemSettings(ctx, nil)
 	if err != nil && !ent.IsNotFound(err) {
-		log.Errorf("Failed to get settings from DB: %v", err)
-		return err
+		return fmt.Errorf("failed to get system settings from DB: %w", err)
 	}
 
 	if ent.IsNotFound(err) {
-		// Create record
 		parallelism, err := self.buildkitSettingsManager.GetCurrentMaxParallelism(ctx)
 		if err != nil {
-			log.Errorf("Failed to get current max parallelism: %v", err)
-			return err
+			return fmt.Errorf("failed to get current max parallelism: %w", err)
 		}
-		// Get replicas
 		replicas, err := self.buildkitSettingsManager.GetCurrentReplicas(ctx)
 		if err != nil {
-			log.Errorf("Failed to get current replicas: %v", err)
-			return err
+			return fmt.Errorf("failed to get current replicas: %w", err)
 		}
 
 		log.Infof("Creating buildkitd settings in DB: replicas=%d, parallelism=%d", replicas, parallelism)
@@ -104,8 +93,7 @@ func (self *Bootstrapper) syncBuildkitdSettings(ctx context.Context) error {
 			},
 		})
 		if err != nil {
-			log.Errorf("Failed to create buildkit settings in DB: %v", err)
-			return err
+			return fmt.Errorf("failed to create buildkit settings in DB: %w", err)
 		}
 
 		log.Info("Updated buildkitd settings", "replicas", replicas, "parallelism", parallelism)
@@ -115,19 +103,15 @@ func (self *Bootstrapper) syncBuildkitdSettings(ctx context.Context) error {
 	// Sync with kubernetes
 	parallelism, err := self.buildkitSettingsManager.GetCurrentMaxParallelism(ctx)
 	if err != nil {
-		log.Errorf("Failed to get current max parallelism: %v", err)
-		return err
+		return fmt.Errorf("failed to get current max parallelism: %w", err)
 	}
 
-	// Get replicas
 	replicas, err := self.buildkitSettingsManager.GetCurrentReplicas(ctx)
 	if err != nil {
-		log.Errorf("Failed to get current replicas: %v", err)
-		return err
+		return fmt.Errorf("failed to get current replicas: %w", err)
 	}
 
 	if settings.BuildkitSettings == nil || settings.BuildkitSettings.MaxParallelism != parallelism || settings.BuildkitSettings.Replicas != replicas {
-		// Update record
 		log.Infof("Updating buildkitd settings in DB: replicas=%d, parallelism=%d", replicas, parallelism)
 		_, err = self.repos.System().UpdateSystemSettings(ctx, &system_repo.SystemSettingUpdateInput{
 			BuildkitSettings: &schema.BuildkitSettings{
@@ -136,8 +120,7 @@ func (self *Bootstrapper) syncBuildkitdSettings(ctx context.Context) error {
 			},
 		})
 		if err != nil {
-			log.Errorf("Failed to update buildkit settings in DB: %v", err)
-			return err
+			return fmt.Errorf("failed to update buildkit settings in DB: %w", err)
 		}
 
 		log.Info("Updated buildkitd settings", "replicas", replicas, "parallelism", parallelism)
@@ -157,7 +140,6 @@ func (self *Bootstrapper) bootstrapRegistry(ctx context.Context) error {
 		}
 	}
 	if regCount == 0 {
-		// Create initial registry
 		registryHost := self.cfg.BootstrapContainerRegistryHost
 		if registryHost == "" {
 			// Assume docker hub
@@ -175,7 +157,6 @@ func (self *Bootstrapper) bootstrapRegistry(ctx context.Context) error {
 				return fmt.Errorf("failed to generate slug for registry secret: %w", err)
 			}
 
-			// Create registry
 			_, err = self.repos.System().CreateRegistry(ctx, tx, registryHost, secretName, true)
 			if err != nil {
 				return fmt.Errorf("failed to create registry: %w", err)
@@ -224,7 +205,6 @@ func (self *Bootstrapper) bootstrapRegistry(ctx context.Context) error {
 func (self *Bootstrapper) bootstrapTeam(ctx context.Context) error {
 	log.Infof("Bootstrapping team if needed")
 
-	// See if team exists
 	teamCount, err := self.repos.Ent().Team.Query().Count(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to query team count: %w", err)
@@ -234,7 +214,6 @@ func (self *Bootstrapper) bootstrapTeam(ctx context.Context) error {
 		return self.syncRegistrySecretsToTeams(ctx)
 	}
 
-	// Create a team
 	name := "Default"
 	kubernetesName, err := utils.GenerateSlug(name)
 	if err != nil {
@@ -253,7 +232,6 @@ func (self *Bootstrapper) bootstrapTeam(ctx context.Context) error {
 			return fmt.Errorf("error creating team: %v", err)
 		}
 
-		// Create namespace
 		_, err = self.kubeClient.CreateNamespace(
 			ctx,
 			kubernetesName,
@@ -315,8 +293,7 @@ func (self *Bootstrapper) bootstrapTeam(ctx context.Context) error {
 
 		return nil
 	}); err != nil {
-		fmt.Printf("Error creating team: %v\n", err)
-		return err
+		return fmt.Errorf("failed to bootstrap team: %w", err)
 	}
 
 	// Sync registry secrets to the newly created team
@@ -367,7 +344,6 @@ func (self *Bootstrapper) bootstrapGroupsAndPermissions(ctx context.Context) err
 	if err := self.repos.WithTx(ctx, func(tx repository.TxInterface) error {
 		db := tx.Client()
 
-		// See if group exists
 		groupCount, err := db.Group.Query().Count(ctx)
 		if err != nil {
 			return fmt.Errorf("failed to query group count: %w", err)
@@ -376,7 +352,6 @@ func (self *Bootstrapper) bootstrapGroupsAndPermissions(ctx context.Context) err
 			return nil
 		}
 
-		// Create group
 		group, err := db.Group.Create().
 			SetName("superuser").
 			SetDescription("Default superuser group").
@@ -427,8 +402,7 @@ func (self *Bootstrapper) bootstrapGroupsAndPermissions(ctx context.Context) err
 
 		return nil
 	}); err != nil {
-		fmt.Printf("Error creating group: %v\n", err)
-		return err
+		return fmt.Errorf("failed to bootstrap groups and permissions: %w", err)
 	}
 
 	return nil
@@ -440,7 +414,6 @@ func (self *Bootstrapper) syncK8sRBAC(ctx context.Context) error {
 
 	rbacManager := k8s.NewRBACManager(self.repos, self.kubeClient)
 
-	// Get all groups
 	groups, err := self.repos.Ent().Group.Query().WithPermissions().All(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to query groups: %w", err)

@@ -15,13 +15,11 @@ import (
 
 // ClonePublicRepository clones a public repository without authentication
 func (self *GithubClient) ClonePublicRepository(ctx context.Context, repoURL string, refName string, commitSHA string) (string, error) {
-	// Make a temporary directory to clone to
 	tmpDir, err := os.MkdirTemp("", "unbind-api-clone")
 	if err != nil {
 		return "", err
 	}
 
-	// Set up the logger
 	logger := &loggerOutput{
 		logger: log.GetLogger(),
 	}
@@ -87,14 +85,12 @@ func (self *GithubClient) ClonePublicRepository(ctx context.Context, repoURL str
 			return "", fmt.Errorf("failed to get worktree: %v", err)
 		}
 
-		// Get the tag reference
 		tagName := strings.TrimPrefix(refName, "refs/tags/")
 		tag, err := repo.Tag(tagName)
 		if err != nil {
 			return "", fmt.Errorf("failed to get tag %s: %v", tagName, err)
 		}
 
-		// Checkout the tag
 		err = worktree.Checkout(&git.CheckoutOptions{
 			Hash: tag.Hash(),
 		})
@@ -118,13 +114,11 @@ func (self *GithubClient) CloneRepository(ctx context.Context, appID, installati
 		return "", err
 	}
 
-	// Make a temporary directory to clone to
 	tmpDir, err := os.MkdirTemp("", "unbind-api-clone")
 	if err != nil {
 		return "", err
 	}
 
-	// Set up the logger
 	logger := &loggerOutput{
 		logger: log.GetLogger(),
 	}
@@ -198,14 +192,12 @@ func (self *GithubClient) CloneRepository(ctx context.Context, appID, installati
 			return "", fmt.Errorf("failed to get worktree: %v", err)
 		}
 
-		// Get the tag reference
 		tagName := strings.TrimPrefix(refName, "refs/tags/")
 		tag, err := repo.Tag(tagName)
 		if err != nil {
 			return "", fmt.Errorf("failed to get tag %s: %v", tagName, err)
 		}
 
-		// Checkout the tag
 		err = worktree.Checkout(&git.CheckoutOptions{
 			Hash: tag.Hash(),
 		})

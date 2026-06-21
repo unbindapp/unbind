@@ -31,11 +31,9 @@ type UpdateTeamResponse struct {
 
 // UpdateTeam handles PUT /team/{team_id}
 func (self *HandlerGroup) UpdateTeam(ctx context.Context, input *UpdateTeamInput) (*UpdateTeamResponse, error) {
-	// Get caller
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		log.Error("Error getting user from context")
-		return nil, huma.Error401Unauthorized("Unable to retrieve user")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	updatedTeam, err := self.srv.TeamService.UpdateTeam(ctx, user.ID, &team_service.TeamUpdateInput{

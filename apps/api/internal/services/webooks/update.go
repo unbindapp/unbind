@@ -30,12 +30,10 @@ func (self *WebhooksService) UpdateWebhook(ctx context.Context, requesterUserID 
 		})
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return nil, err
 	}
 
-	// Get the webhook
 	webhook, err := self.repo.Webhooks().GetByID(ctx, input.ID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -51,7 +49,6 @@ func (self *WebhooksService) UpdateWebhook(ctx context.Context, requesterUserID 
 	if webhook.Type == schema.WebhookTypeProject && (input.ProjectID == nil || webhook.ProjectID == nil || *input.ProjectID != *webhook.ProjectID) {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Webhook not found")
 	}
-	// Update the webhook
 	webhook, err = self.repo.Webhooks().Update(ctx, input)
 	if err != nil {
 		return nil, err

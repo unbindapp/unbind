@@ -10,7 +10,6 @@ import (
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/deployctl"
 	"github.com/unbindapp/unbind-api/internal/models"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
@@ -19,7 +18,6 @@ import (
 )
 
 func (self *DeploymentService) resolveReferences(ctx context.Context, service *ent.Service) ([]corev1.EnvVar, error) {
-	// Resolve references
 	additionalEnv, err := self.variableService.ResolveAllReferences(ctx, service.ID)
 	if err != nil {
 		return nil, err
@@ -38,13 +36,11 @@ func (self *DeploymentService) resolveReferences(ctx context.Context, service *e
 }
 
 func (self *DeploymentService) redeployExistingImage(ctx context.Context, service *ent.Service, deployment *ent.Deployment) (*models.DeploymentResponse, error) {
-	// Update env
 	envVars, err := self.resolveReferences(ctx, service)
 	if err != nil {
 		return nil, err
 	}
 
-	// Copy deployment
 	newDeployment, err := self.repo.Deployment().CreateCopy(ctx, nil, deployment)
 	if err != nil {
 		return nil, err
@@ -62,10 +58,10 @@ func (self *DeploymentService) redeployExistingImage(ctx context.Context, servic
 	if service.Type == schema.ServiceTypeDockerimage {
 		if deployment.Image == nil {
 			newDeployment.ResourceDefinition.Spec.Config.Image = service.Edges.ServiceConfig.Image
-			newDeployment.Image = utils.ToPtr(service.Edges.ServiceConfig.Image)
+			newDeployment.Image = new(service.Edges.ServiceConfig.Image)
 		} else {
 			newDeployment.ResourceDefinition.Spec.Config.Image = *deployment.Image
-			newDeployment.Image = utils.ToPtr(*deployment.Image)
+			newDeployment.Image = new(*deployment.Image)
 		}
 	}
 
@@ -77,14 +73,12 @@ func (self *DeploymentService) redeployExistingImage(ctx context.Context, servic
 	// Deploy to kubernetes
 	_, _, err = self.k8s.DeployUnbindService(ctx, newDeployment.ResourceDefinition)
 	if err != nil {
-		// Mark failed
 		if _, err := self.repo.Deployment().MarkFailed(ctx, nil, newDeployment.ID, err.Error(), time.Now()); err != nil {
 			return nil, err
 		}
 		return nil, err
 	}
 
-	// Attach metadata
 	if _, err := self.repo.Deployment().AttachDeploymentMetadata(
 		ctx,
 		nil,
@@ -92,7 +86,6 @@ func (self *DeploymentService) redeployExistingImage(ctx context.Context, servic
 		newDeployment.ResourceDefinition.Spec.Config.Image,
 		newDeployment.ResourceDefinition,
 	); err != nil {
-		// Mark failed
 		if _, err := self.repo.Deployment().MarkFailed(ctx, nil, newDeployment.ID, err.Error(), time.Now()); err != nil {
 			return nil, err
 		}
@@ -100,7 +93,6 @@ func (self *DeploymentService) redeployExistingImage(ctx context.Context, servic
 		return nil, err
 	}
 
-	// Mark as succeeded
 	newDeployment, err = self.repo.Deployment().MarkSucceeded(ctx, nil, newDeployment.ID, time.Now())
 	if err != nil {
 		return nil, err
@@ -131,7 +123,6 @@ func (self *DeploymentService) CreateRedeployment(ctx context.Context, requester
 		return nil, err
 	}
 
-	// Get existing deployment
 	deployment, err := self.repo.Deployment().GetByID(ctx, input.DeploymentID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -160,7 +151,6 @@ func (self *DeploymentService) CreateRedeployment(ctx context.Context, requester
 		}
 	}
 
-	// Build a full deployment
 	// Get git information if applicable
 	var commitMessage string
 	var commitSha string
@@ -174,7 +164,6 @@ func (self *DeploymentService) CreateRedeployment(ctx context.Context, requester
 		gitBranch = *deployment.GitBranch
 	}
 
-	// Enqueue build job
 	env, err := self.deploymentController.PopulateBuildEnvironment(ctx, input.ServiceID, nil, deployment)
 	if err != nil {
 		return nil, err
@@ -214,7 +203,6 @@ func (self *DeploymentService) CreateCRDFromService(service *ent.Service) *ubv1.
 		}
 	}
 
-	// Metadata
 	crdToDeploy.Name = service.Edges.CurrentDeployment.ResourceDefinition.Name
 	crdToDeploy.Namespace = service.Edges.CurrentDeployment.ResourceDefinition.Namespace
 	crdToDeploy.Kind = service.Edges.CurrentDeployment.ResourceDefinition.Kind
@@ -235,7 +223,7 @@ func (self *DeploymentService) CreateCRDFromService(service *ent.Service) *ubv1.
 
 	crdToDeploy.Spec.Config.GitBranch = gitBranch
 	crdToDeploy.Spec.Config.Hosts = schema.AsV1HostSpecs(service.Edges.ServiceConfig.Hosts)
-	crdToDeploy.Spec.Config.Replicas = utils.ToPtr(service.Edges.ServiceConfig.Replicas)
+	crdToDeploy.Spec.Config.Replicas = new(service.Edges.ServiceConfig.Replicas)
 	crdToDeploy.Spec.Config.Ports = schema.AsV1PortSpecs(service.Edges.ServiceConfig.Ports)
 	crdToDeploy.Spec.Config.RunCommand = service.Edges.ServiceConfig.RunCommand
 	crdToDeploy.Spec.Config.Public = service.Edges.ServiceConfig.IsPublic

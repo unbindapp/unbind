@@ -229,7 +229,7 @@ func (s *RedisQueueTestSuite) TestPeek_EmptyQueue() {
 func (s *RedisQueueTestSuite) TestDequeueN_Success() {
 	// Enqueue multiple items
 	itemCount := 5
-	for i := 0; i < itemCount; i++ {
+	for i := range itemCount {
 		data := s.createTestData(fmt.Sprintf("item-%d", i), i)
 		err := s.queue.Enqueue(s.ctx, fmt.Sprintf("id-%d", i), data)
 		s.NoError(err)
@@ -256,7 +256,7 @@ func (s *RedisQueueTestSuite) TestDequeueN_Success() {
 
 func (s *RedisQueueTestSuite) TestDequeueN_MoreThanAvailable() {
 	// Enqueue 2 items
-	for i := 0; i < 2; i++ {
+	for i := range 2 {
 		data := s.createTestData(fmt.Sprintf("item-%d", i), i)
 		err := s.queue.Enqueue(s.ctx, fmt.Sprintf("id-%d", i), data)
 		s.NoError(err)
@@ -303,7 +303,7 @@ func (s *RedisQueueTestSuite) TestDequeueN_ZeroOrNegativeN() {
 func (s *RedisQueueTestSuite) TestGetAll_Success() {
 	// Enqueue multiple items
 	itemCount := 3
-	for i := 0; i < itemCount; i++ {
+	for i := range itemCount {
 		data := s.createTestData(fmt.Sprintf("item-%d", i), i)
 		err := s.queue.Enqueue(s.ctx, fmt.Sprintf("id-%d", i), data)
 		s.NoError(err)
@@ -342,7 +342,7 @@ func (s *RedisQueueTestSuite) TestSize_EmptyQueue() {
 
 func (s *RedisQueueTestSuite) TestSize_WithItems() {
 	itemCount := 5
-	for i := 0; i < itemCount; i++ {
+	for i := range itemCount {
 		data := s.createTestData(fmt.Sprintf("item-%d", i), i)
 		err := s.queue.Enqueue(s.ctx, fmt.Sprintf("id-%d", i), data)
 		s.NoError(err)
@@ -482,7 +482,7 @@ func (s *RedisQueueTestSuite) TestStartProcessor_Concurrency() {
 	s.queue.StartProcessor(processorCtx, processor, jobCounter)
 
 	// Enqueue items equal to queue concurrency
-	for i := 0; i < QUEUE_CONCURRENCY; i++ {
+	for i := range QUEUE_CONCURRENCY {
 		data := s.createTestData(fmt.Sprintf("item-%d", i), i)
 		err := s.queue.Enqueue(s.ctx, fmt.Sprintf("id-%d", i), data)
 		s.NoError(err)
@@ -519,7 +519,7 @@ func (s *RedisQueueTestSuite) TestStartProcessor_JobCounterLimitsProcessing() {
 	s.queue.StartProcessor(processorCtx, processor, jobCounter)
 
 	// Enqueue items
-	for i := 0; i < 3; i++ {
+	for i := range 3 {
 		data := s.createTestData(fmt.Sprintf("item-%d", i), i)
 		err := s.queue.Enqueue(s.ctx, fmt.Sprintf("id-%d", i), data)
 		s.NoError(err)

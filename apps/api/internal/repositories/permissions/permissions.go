@@ -22,7 +22,6 @@ type PermissionsRepository struct {
 	teamRepo        team_repo.TeamRepositoryInterface
 }
 
-// NewPermissionsRepository creates a new GitHub repository
 func NewPermissionsRepository(db *ent.Client, userRepo user_repo.UserRepositoryInterface, projectRepo project_repo.ProjectRepositoryInterface, environmentRepo environment_repo.EnvironmentRepositoryInterface, serviceRepo service_repo.ServiceRepositoryInterface, teamRepo team_repo.TeamRepositoryInterface) *PermissionsRepository {
 	return &PermissionsRepository{
 		base:            &repository.BaseRepository{DB: db},

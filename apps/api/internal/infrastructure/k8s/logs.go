@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/loki"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -39,7 +38,7 @@ func (self *KubeClient) StreamPodLogs(
 		Timestamps: true,
 	}
 	if opts.Since > 0 {
-		podLogOptions.SinceSeconds = utils.ToPtr(int64(opts.Since.Seconds()))
+		podLogOptions.SinceSeconds = new(int64(opts.Since.Seconds()))
 	}
 	if !opts.Start.IsZero() {
 		podLogOptions.SinceTime = &metav1.Time{
@@ -47,7 +46,7 @@ func (self *KubeClient) StreamPodLogs(
 		}
 	}
 	if opts.Limit > 0 {
-		podLogOptions.TailLines = utils.ToPtr(int64(opts.Limit))
+		podLogOptions.TailLines = new(int64(opts.Limit))
 	}
 
 	req := client.CoreV1().Pods(namespace).GetLogs(podName, podLogOptions)

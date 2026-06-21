@@ -34,8 +34,6 @@ func (self *Templater) ResolveTemplate(template *schema.TemplateDefinition, inpu
 		return nil, err
 	}
 
-	// Resolve input node IPs
-
 	// Build string replace map
 	stringReplaceMap := make(map[string]string)
 	stringReplaceMap["NAMESPACE"] = namespace
@@ -158,7 +156,7 @@ func (self *Templater) resolveNodePorts(template *schema.TemplateDefinition, inp
 
 				template.Services[i].Ports = append(template.Services[i].Ports, schema.PortSpec{
 					IsNodePort: true,
-					NodePort:   utils.ToPtr(int32(asInt)),
+					NodePort:   new(int32(asInt)),
 					Port:       int32(asInt),
 					Protocol:   protocol,
 				})
@@ -267,9 +265,9 @@ func (self *Templater) resolveGeneratedVariables(template *schema.TemplateDefini
 					v.Value = res.GeneratedValue
 					if v.Generator.Type == schema.GeneratorTypePasswordBcrypt {
 						// Inject the raw password into a variable with the same name but without the _HASH suffix
-						if strings.HasSuffix(v.Name, "_HASH") {
+						if before, ok := strings.CutSuffix(v.Name, "_HASH"); ok {
 							additionalVars = append(additionalVars, schema.TemplateVariable{
-								Name:  strings.TrimSuffix(v.Name, "_HASH") + "_PLAINTEXT",
+								Name:  before + "_PLAINTEXT",
 								Value: res.PlainValue,
 							})
 						}

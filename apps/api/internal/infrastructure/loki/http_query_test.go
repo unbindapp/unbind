@@ -11,7 +11,6 @@ import (
 
 	"github.com/stretchr/testify/suite"
 	"github.com/unbindapp/unbind-api/config"
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 )
 
 type HTTPQueryTestSuite struct {
@@ -79,8 +78,8 @@ func (suite *HTTPQueryTestSuite) TestQueryLokiLogs_Success_StreamsResult() {
 		Label:      LokiLabelTeam,
 		LabelValue: "team-1",
 		RawFilter:  "|= \"error\"",
-		Limit:      utils.ToPtr(100),
-		Direction:  utils.ToPtr(LokiDirectionBackward),
+		Limit:      new(100),
+		Direction:  new(LokiDirectionBackward),
 	}
 
 	events, err := suite.querier.QueryLokiLogs(context.Background(), opts)
@@ -222,8 +221,8 @@ func (suite *HTTPQueryTestSuite) TestQueryLokiLogs_WithTimeOptions() {
 		Start:      &start,
 		End:        &end,
 		Since:      &since,
-		Limit:      utils.ToPtr(500),
-		Direction:  utils.ToPtr(LokiDirectionForward),
+		Limit:      new(500),
+		Direction:  new(LokiDirectionForward),
 	}
 
 	_, err := suite.querier.QueryLokiLogs(context.Background(), opts)
@@ -311,8 +310,8 @@ func (suite *HTTPQueryTestSuite) TestQueryLokiLogs_WithSinceNoEnd() {
 	parts := strings.Split(capturedQuery, "&")
 	var startParam string
 	for _, part := range parts {
-		if strings.HasPrefix(part, "start=") {
-			startParam = strings.TrimPrefix(part, "start=")
+		if after, ok := strings.CutPrefix(part, "start="); ok {
+			startParam = after
 			break
 		}
 	}
@@ -339,7 +338,7 @@ func (suite *HTTPQueryTestSuite) TestQueryLokiLogs_LimitCapped() {
 	opts := LokiLogHTTPOptions{
 		Label:      LokiLabelTeam,
 		LabelValue: "team-1",
-		Limit:      utils.ToPtr(2000), // Above 1000 limit
+		Limit:      new(2000), // Above 1000 limit
 	}
 
 	_, err := suite.querier.QueryLokiLogs(context.Background(), opts)
@@ -373,7 +372,7 @@ func (suite *HTTPQueryTestSuite) TestQueryLokiLogs_ForwardDirection() {
 	opts := LokiLogHTTPOptions{
 		Label:      LokiLabelTeam,
 		LabelValue: "team-1",
-		Direction:  utils.ToPtr(LokiDirectionForward),
+		Direction:  new(LokiDirectionForward),
 	}
 
 	events, err := suite.querier.QueryLokiLogs(context.Background(), opts)
@@ -412,7 +411,7 @@ func (suite *HTTPQueryTestSuite) TestQueryLokiLogs_BackwardDirection() {
 	opts := LokiLogHTTPOptions{
 		Label:      LokiLabelTeam,
 		LabelValue: "team-1",
-		Direction:  utils.ToPtr(LokiDirectionBackward),
+		Direction:  new(LokiDirectionBackward),
 	}
 
 	events, err := suite.querier.QueryLokiLogs(context.Background(), opts)

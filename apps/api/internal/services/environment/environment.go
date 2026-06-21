@@ -47,7 +47,6 @@ func (self *EnvironmentService) VerifyInputs(ctx context.Context, teamID, projec
 		return nil, nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Project not found")
 	}
 
-	// Get environment
 	var environment *ent.Environment
 	for _, e := range project.Edges.Environments {
 		if e.ID == environmentID {

@@ -12,7 +12,6 @@ import (
 )
 
 func (self *EnvironmentService) DeleteEnvironmentByID(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, teamID, projectID, environmentID uuid.UUID) error {
-	// Check permissions
 	permissionChecks := []permissions_repo.PermissionCheck{
 		{
 			Action:       schema.ActionAdmin,
@@ -25,19 +24,16 @@ func (self *EnvironmentService) DeleteEnvironmentByID(ctx context.Context, reque
 		return err
 	}
 
-	// Verify inputs
 	team, environment, err := self.VerifyInputs(ctx, teamID, projectID, environmentID)
 	if err != nil {
 		return err
 	}
 
-	// Get services in this environment
 	services, err := self.repo.Service().GetByEnvironmentID(ctx, environmentID, nil, false)
 	if err != nil {
 		return err
 	}
 
-	// Create kubernetes client
 	client, err := self.k8s.CreateClientWithToken(bearerToken)
 	if err != nil {
 		return err
@@ -54,9 +50,7 @@ func (self *EnvironmentService) DeleteEnvironmentByID(ctx context.Context, reque
 			return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Cannot delete the last environment in a project")
 		}
 
-		// Delete services
 		for _, service := range services {
-			// Cancel deployments
 			if err := self.deployCtl.CancelExistingJobs(ctx, service.ID); err != nil {
 				log.Warnf("Error cancelling jobs for service %s: %v", service.KubernetesName, err)
 			}
@@ -67,7 +61,6 @@ func (self *EnvironmentService) DeleteEnvironmentByID(ctx context.Context, reque
 				return err
 			}
 
-			// Delete secret
 			if err := self.k8s.DeleteSecret(ctx, service.KubernetesSecret, team.Namespace, client); err != nil {
 				log.Error("Error deleting secret from k8s", "secret", service.KubernetesSecret, "err", err)
 				return err
@@ -83,7 +76,6 @@ func (self *EnvironmentService) DeleteEnvironmentByID(ctx context.Context, reque
 			return err
 		}
 
-		// Delete environment
 		if err := self.k8s.DeleteSecret(ctx, environment.KubernetesSecret, team.Namespace, client); err != nil {
 			log.Error("Error deleting secret", "secret", environment.KubernetesSecret, "err", err)
 		}

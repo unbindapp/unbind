@@ -12,7 +12,6 @@ type S3Repository struct {
 	base *repository.BaseRepository
 }
 
-// NewS3Repository creates a new repository
 func NewS3Repository(db *ent.Client) *S3Repository {
 	return &S3Repository{
 		base: &repository.BaseRepository{DB: db},

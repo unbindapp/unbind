@@ -20,7 +20,6 @@ func (self *StorageService) UpdatePVC(ctx context.Context, requesterUserID uuid.
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Size is required")
 	}
 
-	// Validate permissions and parse inputs
 	team, _, _, err := self.validatePermissionsAndParseInputs(ctx, schema.ActionEditor, requesterUserID, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID)
 	if err != nil {
 		return nil, err
@@ -31,7 +30,6 @@ func (self *StorageService) UpdatePVC(ctx context.Context, requesterUserID uuid.
 		return nil, err
 	}
 
-	// Get the PVC
 	pvc, err := self.k8s.GetPersistentVolumeClaim(ctx, team.Namespace, input.ID, client)
 	if err != nil {
 		return nil, err
@@ -55,8 +53,7 @@ func (self *StorageService) UpdatePVC(ctx context.Context, requesterUserID uuid.
 	// Size validation
 	var newCapacity *string
 	if input.CapacityGB != nil {
-		// Parse size
-		newCapacity = utils.ToPtr(fmt.Sprintf("%fGi", *input.CapacityGB))
+		newCapacity = new(fmt.Sprintf("%fGi", *input.CapacityGB))
 		newSize, err := utils.ValidateStorageQuantity(*newCapacity)
 		if err != nil {
 			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
@@ -95,7 +92,6 @@ func (self *StorageService) UpdatePVC(ctx context.Context, requesterUserID uuid.
 		if input.CapacityGB != nil {
 			// If database, then update database spec
 			if updatedPvc.IsDatabase && updatedPvc.MountedOnServiceID != nil {
-				// Update the database spec with new size
 				_, err := self.repo.Service().UpdateDatabaseStorageSize(
 					ctx,
 					tx,
@@ -123,7 +119,6 @@ func (self *StorageService) UpdatePVC(ctx context.Context, requesterUserID uuid.
 			return err
 		}
 
-		// Get latest metadata
 		pvcMetadata, err := self.repo.System().GetPVCMetadata(ctx, tx, []string{pvc.ID})
 		if err != nil {
 			return err

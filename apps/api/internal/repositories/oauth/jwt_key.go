@@ -13,7 +13,6 @@ import (
 )
 
 func (self *OauthRepository) GetOrGenerateJWTPrivateKey(ctx context.Context) (*rsa.PrivateKey, []byte, error) {
-	// Get the first key from the DB
 	key, err := self.base.DB.JWTKey.Query().First(ctx)
 	if err != nil && !ent.IsNotFound(err) {
 		return nil, nil, err
@@ -22,7 +21,6 @@ func (self *OauthRepository) GetOrGenerateJWTPrivateKey(ctx context.Context) (*r
 		return decodePrivateKey(key.PrivateKey)
 	}
 
-	// Generate a new RSA private key
 	rsaKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		log.Fatalf("failed to generate RSA key: %v", err)
@@ -36,7 +34,6 @@ func (self *OauthRepository) GetOrGenerateJWTPrivateKey(ctx context.Context) (*r
 	}
 	pemBytes := pem.EncodeToMemory(pemBlock) // []byte PEM
 
-	// Save key
 	newKey, err := self.base.DB.JWTKey.
 		Create().
 		SetLabel("unbind-default").
@@ -50,7 +47,6 @@ func (self *OauthRepository) GetOrGenerateJWTPrivateKey(ctx context.Context) (*r
 }
 
 func decodePrivateKey(pkey []byte) (*rsa.PrivateKey, []byte, error) {
-	// Decode the PEM block
 	block, _ := pem.Decode(pkey) // k.PrivateKey is []byte from the DB
 	if block == nil || block.Type != "RSA PRIVATE KEY" {
 		return nil, nil, fmt.Errorf("not a valid PEM block")

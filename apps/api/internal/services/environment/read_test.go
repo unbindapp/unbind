@@ -9,7 +9,6 @@ import (
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 	"github.com/unbindapp/unbind-api/internal/services"
 )
@@ -61,7 +60,7 @@ func (suite *ReadEnvironmentSuite) SetupTest() {
 		KubernetesName:   "test-environment",
 		KubernetesSecret: "test-env-secret",
 		ProjectID:        suite.testProjectID,
-		Description:      utils.ToPtr("Test environment description"),
+		Description:      new("Test environment description"),
 	}
 
 	suite.testProject = &ent.Project{
@@ -199,7 +198,7 @@ func (suite *ReadEnvironmentSuite) TestGetEnvironmentsByProjectID_Success() {
 		KubernetesName:   "dev-environment",
 		KubernetesSecret: "dev-env-secret",
 		ProjectID:        suite.testProjectID,
-		Description:      utils.ToPtr("Development environment"),
+		Description:      new("Development environment"),
 	}
 
 	env3 := &ent.Environment{
@@ -208,7 +207,7 @@ func (suite *ReadEnvironmentSuite) TestGetEnvironmentsByProjectID_Success() {
 		KubernetesName:   "staging-environment",
 		KubernetesSecret: "staging-env-secret",
 		ProjectID:        suite.testProjectID,
-		Description:      utils.ToPtr("Staging environment"),
+		Description:      new("Staging environment"),
 	}
 
 	// Setup expectations

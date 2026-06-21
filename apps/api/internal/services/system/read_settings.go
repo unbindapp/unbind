@@ -33,7 +33,6 @@ func (self *SystemService) GetSettings(ctx context.Context, requesterUserID uuid
 		return nil, err
 	}
 
-	// Get from system
 	canUpdateBuildkit := false
 	_, err := self.buildkitManager.GetBuildkitConfig(ctx)
 	canUpdateBuildkit = err == nil

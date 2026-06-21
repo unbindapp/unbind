@@ -12,7 +12,6 @@ type OauthRepository struct {
 	base *repository.BaseRepository
 }
 
-// NewOauthRepository creates a new repository
 func NewOauthRepository(db *ent.Client) *OauthRepository {
 	return &OauthRepository{
 		base: &repository.BaseRepository{DB: db},

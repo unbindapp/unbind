@@ -32,7 +32,6 @@ func (self *GroupService) CreateGroup(ctx context.Context, userID uuid.UUID, inp
 		return nil, err
 	}
 
-	// Start builder
 	groupCreate := self.repo.Ent().Group.Create().
 		SetName(input.Name).
 		SetDescription(input.Description)

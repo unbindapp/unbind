@@ -6,7 +6,6 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/pvcmetadata"
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 	repository "github.com/unbindapp/unbind-api/internal/repositories/repositorytest"
 )
 
@@ -29,8 +28,8 @@ func (suite *PVCMetadataSuite) TestUpsertPVCMetadata() {
 	suite.Run("Create New PVC Metadata", func() {
 		err := suite.systemRepo.UpsertPVCMetadata(
 			suite.Ctx, nil, "pvc-123",
-			utils.ToPtr("Test PVC"),
-			utils.ToPtr("Test description"),
+			new("Test PVC"),
+			new("Test description"),
 		)
 		suite.NoError(err)
 
@@ -48,16 +47,16 @@ func (suite *PVCMetadataSuite) TestUpsertPVCMetadata() {
 		// Create initial metadata
 		err := suite.systemRepo.UpsertPVCMetadata(
 			suite.Ctx, nil, "pvc-456",
-			utils.ToPtr("Initial Name"),
-			utils.ToPtr("Initial description"),
+			new("Initial Name"),
+			new("Initial description"),
 		)
 		suite.NoError(err)
 
 		// Update
 		err = suite.systemRepo.UpsertPVCMetadata(
 			suite.Ctx, nil, "pvc-456",
-			utils.ToPtr("Updated Name"),
-			utils.ToPtr("Updated description"),
+			new("Updated Name"),
+			new("Updated description"),
 		)
 		suite.NoError(err)
 
@@ -74,16 +73,16 @@ func (suite *PVCMetadataSuite) TestUpsertPVCMetadata() {
 		// Create with data
 		err := suite.systemRepo.UpsertPVCMetadata(
 			suite.Ctx, nil, "pvc-789",
-			utils.ToPtr("Name to clear"),
-			utils.ToPtr("Description to clear"),
+			new("Name to clear"),
+			new("Description to clear"),
 		)
 		suite.NoError(err)
 
 		// Clear fields
 		err = suite.systemRepo.UpsertPVCMetadata(
 			suite.Ctx, nil, "pvc-789",
-			utils.ToPtr(""),
-			utils.ToPtr(""),
+			new(""),
+			new(""),
 		)
 		suite.NoError(err)
 
@@ -100,15 +99,15 @@ func (suite *PVCMetadataSuite) TestUpsertPVCMetadata() {
 		// Create initial
 		err := suite.systemRepo.UpsertPVCMetadata(
 			suite.Ctx, nil, "pvc-partial",
-			utils.ToPtr("Original Name"),
-			utils.ToPtr("Original description"),
+			new("Original Name"),
+			new("Original description"),
 		)
 		suite.NoError(err)
 
 		// Update only name
 		err = suite.systemRepo.UpsertPVCMetadata(
 			suite.Ctx, nil, "pvc-partial",
-			utils.ToPtr("New Name"),
+			new("New Name"),
 			nil,
 		)
 		suite.NoError(err)
@@ -126,8 +125,8 @@ func (suite *PVCMetadataSuite) TestUpsertPVCMetadata() {
 		suite.DB.Close()
 		err := suite.systemRepo.UpsertPVCMetadata(
 			suite.Ctx, nil, "pvc-error",
-			utils.ToPtr("Name"),
-			utils.ToPtr("Description"),
+			new("Name"),
+			new("Description"),
 		)
 		suite.Error(err)
 		suite.ErrorContains(err, "database is closed")
@@ -137,9 +136,9 @@ func (suite *PVCMetadataSuite) TestUpsertPVCMetadata() {
 func (suite *PVCMetadataSuite) TestGetPVCMetadata() {
 	suite.Run("Get Multiple PVCs", func() {
 		// Create test data
-		suite.systemRepo.UpsertPVCMetadata(suite.Ctx, nil, "pvc-1", utils.ToPtr("PVC 1"), utils.ToPtr("Description 1"))
-		suite.systemRepo.UpsertPVCMetadata(suite.Ctx, nil, "pvc-2", utils.ToPtr("PVC 2"), utils.ToPtr("Description 2"))
-		suite.systemRepo.UpsertPVCMetadata(suite.Ctx, nil, "pvc-3", utils.ToPtr("PVC 3"), nil)
+		suite.systemRepo.UpsertPVCMetadata(suite.Ctx, nil, "pvc-1", new("PVC 1"), new("Description 1"))
+		suite.systemRepo.UpsertPVCMetadata(suite.Ctx, nil, "pvc-2", new("PVC 2"), new("Description 2"))
+		suite.systemRepo.UpsertPVCMetadata(suite.Ctx, nil, "pvc-3", new("PVC 3"), nil)
 
 		result, err := suite.systemRepo.GetPVCMetadata(suite.Ctx, nil, []string{"pvc-1", "pvc-2", "pvc-3"})
 		suite.NoError(err)
@@ -176,7 +175,7 @@ func (suite *PVCMetadataSuite) TestGetPVCMetadata() {
 func (suite *PVCMetadataSuite) TestDeletePVCMetadata() {
 	suite.Run("Delete Existing", func() {
 		// Create metadata
-		suite.systemRepo.UpsertPVCMetadata(suite.Ctx, nil, "pvc-delete", utils.ToPtr("To Delete"), nil)
+		suite.systemRepo.UpsertPVCMetadata(suite.Ctx, nil, "pvc-delete", new("To Delete"), nil)
 
 		err := suite.systemRepo.DeletePVCMetadata(suite.Ctx, nil, "pvc-delete")
 		suite.NoError(err)

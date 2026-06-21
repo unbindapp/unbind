@@ -106,7 +106,7 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		if input.DatabaseConfig != nil {
 			// check version
 			if input.DatabaseConfig.Version != "" {
-				dbVersion = utils.ToPtr(input.DatabaseConfig.Version)
+				dbVersion = new(input.DatabaseConfig.Version)
 			}
 			if input.DatabaseConfig.StorageSize == "" {
 				input.DatabaseConfig.StorageSize = "1Gi" // Default to 1Gi
@@ -130,7 +130,7 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			if ok {
 				dbVersionDefault, _ := versionProperty.Default.(string)
 				if dbVersionDefault != "" {
-					dbVersion = utils.ToPtr(dbVersionDefault)
+					dbVersion = new(dbVersionDefault)
 				}
 			}
 		}
@@ -138,7 +138,7 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		imageProperty, ok := dbDefinition.Schema.Properties["dockerImage"]
 		if ok {
 			if image, ok := imageProperty.Default.(string); ok {
-				input.Image = utils.ToPtr(image)
+				input.Image = new(image)
 			}
 		}
 
@@ -161,7 +161,6 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		}
 	}
 
-	// Check permissions
 	permissionChecks := []permissions_repo.PermissionCheck{
 		// Has permission to manage teams
 		{
@@ -175,7 +174,6 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		return nil, err
 	}
 
-	// Verify inputs
 	_, project, err := self.VerifyInputs(ctx, input.TeamID, input.ProjectID, input.EnvironmentID)
 	if err != nil {
 		return nil, err
@@ -190,7 +188,6 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 	// Only ad metadata if user is not providing ports
 	addDetectedPorts := len(input.Ports) == 0
 	if input.Type == schema.ServiceTypeGithub {
-		// Get GitHub installation
 		installation, err := self.repo.Github().GetInstallationByID(ctx, *input.GitHubInstallationID)
 		if err != nil {
 			if ent.IsNotFound(err) {
@@ -198,23 +195,20 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			}
 			return nil, err
 		}
-		// Set owner
-		gitOwnerName = utils.ToPtr(installation.AccountLogin)
+		gitOwnerName = new(installation.AccountLogin)
 
-		// Verify repository access
 		canAccess, cloneUrl, defaultBranch, err := self.githubClient.VerifyRepositoryAccess(ctx, installation, *input.RepositoryOwner, *input.RepositoryName)
 		if err != nil {
 			log.Error("Error verifying repository access", "err", err)
 			return nil, err
 		}
-		gitBranch = utils.ToPtr(defaultBranch)
+		gitBranch = new(defaultBranch)
 
 		if !canAccess {
 			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
 				"Repository not accessible with the specified GitHub installation")
 		}
 
-		// Clone repository to infer information
 		tmpDir, err := self.githubClient.CloneRepository(ctx, installation.GithubAppID, installation.ID, installation.Edges.GithubApp.PrivateKey, cloneUrl, fmt.Sprintf("refs/heads/%s", defaultBranch), "")
 		if err != nil {
 			log.Error("Error cloning repository", "err", err)
@@ -222,7 +216,6 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		}
 		defer os.RemoveAll(tmpDir)
 
-		// Perform analysis
 		analysisResult, err = sourceanalyzer.AnalyzeSourceCode(tmpDir)
 		if err != nil {
 			log.Error("Error analyzing source code", "err", err)
@@ -248,12 +241,11 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			}
 			input.Ports = append(input.Ports, schema.PortSpec{
 				Port:     int32(portInt),
-				Protocol: utils.ToPtr(proto),
+				Protocol: new(proto),
 			})
 		}
 	}
 
-	// Create kubernetes client
 	client, err := self.k8s.CreateClientWithToken(bearerToken)
 	if err != nil {
 		return nil, err
@@ -297,10 +289,10 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		if analysisResult != nil {
 			// Service core information
 			if analysisResult.Provider != enum.UnknownProvider {
-				provider = utils.ToPtr(analysisResult.Provider)
+				provider = new(analysisResult.Provider)
 			}
 			if analysisResult.Framework != enum.UnknownFramework {
-				framework = utils.ToPtr(analysisResult.Framework)
+				framework = new(analysisResult.Framework)
 			}
 
 			// Default configuration information
@@ -314,10 +306,9 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		// Validate health check
 		if input.HealthCheck != nil {
 			if input.HealthCheck.Port == nil && len(ports) > 0 {
-				// Find first TCP port
 				for _, port := range ports {
 					if port.Protocol == nil || *port.Protocol == schema.ProtocolTCP {
-						input.HealthCheck.Port = utils.ToPtr(port.Port)
+						input.HealthCheck.Port = new(port.Port)
 						break
 					}
 				}
@@ -335,7 +326,7 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		}
 
 		if len(ports) > 0 && input.IsPublic == nil {
-			isPublic = utils.ToPtr(true)
+			isPublic = new(true)
 		}
 
 		if len(hosts) == 0 && input.IsPublic != nil && *isPublic && input.Type != schema.ServiceTypeDatabase && len(ports) > 0 {
@@ -344,7 +335,7 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 				return fmt.Errorf("failed to generate wildcard host: %w", err)
 			}
 			if generatedHost == nil {
-				isPublic = utils.ToPtr(false)
+				isPublic = new(false)
 			} else {
 				hosts = append(hosts, *generatedHost)
 			}
@@ -370,19 +361,16 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			log.Errorf("Team not found")
 			return fmt.Errorf("team not found")
 		}
-		// Create kubernetes secrets
 		secret, _, err := self.k8s.GetOrCreateSecret(ctx, kubernetesName, project.Edges.Team.Namespace, client)
 		if err != nil {
 			return fmt.Errorf("failed to create secret: %v", err)
 		}
 
-		// Set detected ports
 		var detectedPorts []schema.PortSpec
 		if addDetectedPorts {
 			detectedPorts = ports
 		}
 
-		// Create the service
 		createService, err := self.repo.Service().Create(ctx, tx,
 			&service_repo.CreateServiceInput{
 				KubernetesName:       kubernetesName,
@@ -405,13 +393,12 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 
 		// Override public if hosts and ports exist
 		if len(hosts) > 0 && len(ports) > 0 {
-			isPublic = utils.ToPtr(true)
+			isPublic = new(true)
 		}
 
-		// Create the service config
 		createInput := &service_repo.MutateConfigInput{
 			ServiceID:                     service.ID,
-			Builder:                       utils.ToPtr(input.Builder),
+			Builder:                       new(input.Builder),
 			Provider:                      provider,
 			Framework:                     framework,
 			GitBranch:                     gitBranch,
@@ -426,7 +413,7 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			Image:                         input.Image,
 			DockerBuilderDockerfilePath:   input.DockerBuilderDockerfilePath,
 			DockerBuilderBuildContext:     input.DockerBuilderBuildContext,
-			CustomDefinitionVersion:       utils.ToPtr(self.cfg.UnbindServiceDefVersion),
+			CustomDefinitionVersion:       new(self.cfg.UnbindServiceDefVersion),
 			DatabaseConfig:                input.DatabaseConfig,
 			S3BackupSourceID:              input.S3BackupSourceID,
 			S3BackupBucket:                input.S3BackupBucket,
@@ -456,14 +443,12 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		event := schema.WebhookEventServiceCreated
 		level := webhooks_service.WebhookLevelInfo
 
-		// Get service with edges
 		service, err := self.repo.Service().GetByID(context.Background(), service.ID)
 		if err != nil {
 			log.Errorf("Failed to get service %s: %v", service.ID.String(), err)
 			return
 		}
 
-		// Construct URL
 		basePath, _ := utils.JoinURLPaths(
 			self.cfg.ExternalUIUrl,
 			project.TeamID.String(),
@@ -472,7 +457,6 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		)
 		url := basePath + "?environment=" + input.EnvironmentID.String() +
 			"&service=" + service.ID.String()
-		// Get user
 		user, err := self.repo.User().GetByID(context.Background(), requesterUserID)
 		if err != nil {
 			log.Errorf("Failed to get user %s: %v", requesterUserID.String(), err)
@@ -509,7 +493,6 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		}
 	}()
 
-	// Get volume map
 	volumeMap, err := self.getVolumesForServices(ctx, project.Edges.Team.Namespace, project.Edges.Team.ID, []*ent.Service{
 		service,
 	})
@@ -517,10 +500,8 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		return nil, err
 	}
 
-	// Convert to response
 	resp := models.TransformServiceEntity(service)
 
-	// Attach volumes
 	if volume, ok := volumeMap[service.ID]; ok {
 		resp.Config.Volumes = volume
 	}

@@ -12,7 +12,6 @@ type TeamRepository struct {
 	base *repository.BaseRepository
 }
 
-// NewTeamRepository creates a new GitHub repository
 func NewTeamRepository(db *ent.Client) *TeamRepository {
 	return &TeamRepository{
 		base: &repository.BaseRepository{DB: db},

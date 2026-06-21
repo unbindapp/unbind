@@ -43,6 +43,5 @@ func (self *GroupService) GetGroupMembers(ctx context.Context, requesterUserID, 
 		}
 	}
 
-	// Get the group members
 	return self.repo.Group().GetMembers(ctx, groupID)
 }

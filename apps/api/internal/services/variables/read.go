@@ -51,7 +51,6 @@ func (self *VariablesService) GetVariables(ctx context.Context, userID uuid.UUID
 		return nil, err
 	}
 
-	// Verify input
 	team, _, _, service, secretName, err := self.validateBaseInputs(ctx, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID)
 	if err != nil {
 		return nil, err
@@ -65,13 +64,11 @@ func (self *VariablesService) GetVariables(ctx context.Context, userID uuid.UUID
 		}
 	}
 
-	// Create kubernetes client
 	client, err := self.k8s.CreateClientWithToken(bearerToken)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get secrets
 	secrets, err := self.k8s.GetSecretMap(ctx, secretName, team.Namespace, client)
 	if err != nil {
 		return nil, err

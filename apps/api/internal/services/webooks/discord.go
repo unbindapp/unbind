@@ -10,11 +10,9 @@ import (
 
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/log"
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 )
 
 func (self *WebhooksService) sendDiscordWebhook(level WebhookLevel, event schema.WebhookEvent, data WebhookData, url string) error {
-	// Convert to discord format
 	fields := make([]DiscordField, len(data.Fields))
 	embed := DiscordEmbed{
 		Title:       &data.Title,
@@ -22,7 +20,7 @@ func (self *WebhooksService) sendDiscordWebhook(level WebhookLevel, event schema
 		Description: &data.Description,
 		Color:       level.DecimalColor(),
 		DiscordFooter: &DiscordFooter{
-			Text: utils.ToPtr(fmt.Sprintf("%s | %s", time.Now().Format(time.RFC1123), event)),
+			Text: new(fmt.Sprintf("%s | %s", time.Now().Format(time.RFC1123), event)),
 		},
 	}
 	for i, entry := range data.Fields {
@@ -33,7 +31,6 @@ func (self *WebhooksService) sendDiscordWebhook(level WebhookLevel, event schema
 	}
 	embed.DiscordFields = &fields
 
-	// Execute
 	msg := DiscordMessage{
 		DiscordEmbeds: &[]DiscordEmbed{
 			embed,
@@ -54,7 +51,6 @@ func (self *WebhooksService) sendDiscordWebhook(level WebhookLevel, event schema
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// Do
 	resp, err := self.httpClient.Do(req)
 	if err != nil {
 		log.Errorf("Failed to send discord webhook: %v", err)

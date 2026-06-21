@@ -3,11 +3,9 @@ package projects_handler
 import (
 	"context"
 
-	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
-	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/models"
 )
 
@@ -24,11 +22,9 @@ type ListProjectResponse struct {
 }
 
 func (self *HandlerGroup) ListProjects(ctx context.Context, input *ListProjectInput) (*ListProjectResponse, error) {
-	// Get caller
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		log.Error("Error getting user from context")
-		return nil, huma.Error401Unauthorized("Unable to retrieve user")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	projects, err := self.srv.ProjectService.GetProjectsInTeam(ctx, user.ID, input.TeamID, input.SortByField, input.SortOrder)
@@ -55,11 +51,9 @@ type GetProjectResponse struct {
 }
 
 func (self *HandlerGroup) GetProject(ctx context.Context, input *GetProjectInput) (*GetProjectResponse, error) {
-	// Get caller
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		log.Error("Error getting user from context")
-		return nil, huma.Error401Unauthorized("Unable to retrieve user")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	project, err := self.srv.ProjectService.GetProjectByID(ctx, user.ID, input.TeamID, input.ProjectID)

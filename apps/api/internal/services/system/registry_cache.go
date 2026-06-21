@@ -120,7 +120,7 @@ func (self *SystemService) UpdateRegistryCache(ctx context.Context, requesterUse
 		if _, err := utils.ValidateStorageQuantityGB(*input.CleanupThresholdGB); err != nil {
 			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
 		}
-		thresholdStr = utils.ToPtr(fmt.Sprintf("%.2fGi", *input.CleanupThresholdGB))
+		thresholdStr = new(fmt.Sprintf("%.2fGi", *input.CleanupThresholdGB))
 	}
 
 	if input.CleanupSchedule != nil && *input.CleanupSchedule == "" {
@@ -199,11 +199,11 @@ func (self *SystemService) ReconcileRegistryCache(ctx context.Context) {
 
 	var thresholdStr *string
 	if settings.RegistryCacheSettings.CleanupThresholdGB > 0 {
-		thresholdStr = utils.ToPtr(fmt.Sprintf("%.2fGi", settings.RegistryCacheSettings.CleanupThresholdGB))
+		thresholdStr = new(fmt.Sprintf("%.2fGi", settings.RegistryCacheSettings.CleanupThresholdGB))
 	}
 	var schedule *string
 	if settings.RegistryCacheSettings.CleanupSchedule != "" {
-		schedule = utils.ToPtr(settings.RegistryCacheSettings.CleanupSchedule)
+		schedule = new(settings.RegistryCacheSettings.CleanupSchedule)
 	}
 	if thresholdStr == nil && schedule == nil {
 		return

@@ -13,7 +13,6 @@ import (
 
 // SyncDatabaseSecrets syncs all database secrets with the operator logic
 func (self *KubeClient) SyncDatabaseSecrets(ctx context.Context) error {
-	// Get all database services
 	databaseServices, err := self.repo.Service().GetDatabases(ctx)
 	if err != nil {
 		return err
@@ -31,7 +30,6 @@ func (self *KubeClient) SyncDatabaseSecrets(ctx context.Context) error {
 
 // SyncDatabaseSecretForServiceID syncs the database secret for a specific service ID
 func (self *KubeClient) SyncDatabaseSecretForServiceID(ctx context.Context, serviceID uuid.UUID) error {
-	// Get the specific service
 	service, err := self.repo.Service().GetByID(ctx, serviceID)
 	if err != nil {
 		return fmt.Errorf("failed to get service %s: %w", serviceID, err)
@@ -55,7 +53,6 @@ func (self *KubeClient) SyncDatabaseSecretForService(ctx context.Context, servic
 
 	namespace := service.Edges.Environment.Edges.Project.Edges.Team.Namespace
 
-	// Get the existing secret
 	secret, err := self.GetSecret(ctx, service.KubernetesSecret, namespace, self.GetInternalClient())
 	if err != nil {
 		return fmt.Errorf("failed to get secret %s in namespace %s: %w", service.KubernetesSecret, namespace, err)
@@ -192,7 +189,6 @@ func (self *KubeClient) SyncDatabaseSecretForService(ctx context.Context, servic
 			secrets["DATABASE_HTTP_PORT"] = []byte("8123")
 		}
 	}
-	// Sync secret
 	_, err = self.UpsertSecretValues(ctx, secret.Name, namespace, secrets, self.GetInternalClient())
 	if err != nil {
 		return fmt.Errorf("failed to update secret %s in namespace %s: %w", secret.Name, namespace, err)

@@ -70,12 +70,10 @@ func (self *ProjectService) GetProjectByID(ctx context.Context, requesterUserID 
 		},
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return nil, err
 	}
 
-	// Check if the team exists
 	_, err := self.repo.Team().GetByID(ctx, teamID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -101,7 +99,6 @@ func (self *ProjectService) GetProjectByID(ctx context.Context, requesterUserID 
 		return nil, errdefs.ErrUnauthorized
 	}
 
-	// Convert to response
 	resp := models.TransformProjectEntity(projectEntity)
 
 	// Summarizes services

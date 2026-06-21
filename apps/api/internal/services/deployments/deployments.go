@@ -39,7 +39,6 @@ func NewDeploymentService(repo repositories.RepositoriesInterface, k8s k8s.KubeC
 }
 
 func (self *DeploymentService) validateInputs(ctx context.Context, input models.DeploymentInputRequirements) (*ent.Service, error) {
-	// Get team
 	team, err := self.repo.Team().GetByID(ctx, input.GetTeamID())
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -48,7 +47,6 @@ func (self *DeploymentService) validateInputs(ctx context.Context, input models.
 		return nil, err
 	}
 
-	// Validate project
 	var project *ent.Project
 	for _, proj := range team.Edges.Projects {
 		if proj.ID == input.GetProjectID() {
@@ -61,7 +59,6 @@ func (self *DeploymentService) validateInputs(ctx context.Context, input models.
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "project does not belong to team")
 	}
 
-	// Validate environment
 	var environment *ent.Environment
 	for _, env := range project.Edges.Environments {
 		if env.ID == input.GetEnvironmentID() {
@@ -74,7 +71,6 @@ func (self *DeploymentService) validateInputs(ctx context.Context, input models.
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "environment does not belong to project")
 	}
 
-	// Validate service
 	service, err := self.repo.Service().GetByID(ctx, input.GetServiceID())
 	if err != nil {
 		if ent.IsNotFound(err) {

@@ -30,16 +30,13 @@ func (self *TemplateRepository) GetAll(ctx context.Context) ([]*ent.Template, er
 	// Create a map to store the newest version of each template name
 	newestVersions := make(map[string]*ent.Template)
 
-	// Iterate through all templates
 	for _, tmpl := range templates {
-		// If this name hasn't been seen yet, or if this version is newer than the stored one
 		existingTmpl, exists := newestVersions[tmpl.Name]
 		if !exists || tmpl.Version > existingTmpl.Version {
 			newestVersions[tmpl.Name] = tmpl
 		}
 	}
 
-	// Convert the map back to a slice
 	result := make([]*ent.Template, 0, len(newestVersions))
 	for _, tmpl := range newestVersions {
 		result = append(result, tmpl)

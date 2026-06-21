@@ -12,7 +12,6 @@ type VariableRepository struct {
 	base *repository.BaseRepository
 }
 
-// NewVariableRepository creates a new repository
 func NewVariableRepository(db *ent.Client) *VariableRepository {
 	return &VariableRepository{
 		base: &repository.BaseRepository{DB: db},

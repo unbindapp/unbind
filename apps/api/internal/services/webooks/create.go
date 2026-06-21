@@ -33,12 +33,10 @@ func (self *WebhooksService) CreateWebhook(ctx context.Context, requesterUserID 
 		})
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return nil, err
 	}
 
-	// Create the webhook
 	webhook, err := self.repo.Webhooks().Create(ctx, input)
 	if err != nil {
 		return nil, err

@@ -13,7 +13,6 @@ func (self *S3Repository) Create(ctx context.Context, tx repository.TxInterface,
 	if tx != nil {
 		db = tx.Client()
 	}
-	// Create s3
 	return db.S3.Create().
 		SetTeamID(teamID).
 		SetName(name).
@@ -28,12 +27,10 @@ func (self *S3Repository) Delete(ctx context.Context, tx repository.TxInterface,
 	if tx != nil {
 		db = tx.Client()
 	}
-	// Delete s3
 	return db.S3.DeleteOneID(id).Exec(ctx)
 }
 
 func (self *S3Repository) Update(ctx context.Context, id uuid.UUID, name string) (*ent.S3, error) {
-	// Update s3
 	return self.base.DB.S3.UpdateOneID(id).
 		SetName(name).
 		Save(ctx)

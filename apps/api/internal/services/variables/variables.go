@@ -27,7 +27,6 @@ func NewVariablesService(repo repositories.RepositoriesInterface, k8s k8s.KubeCl
 }
 
 func (self *VariablesService) validateInputs(ctx context.Context, teamID, projectID, environmentID, serviceID uuid.UUID) (*ent.Team, *ent.Project, *ent.Environment, *ent.Service, error) {
-	// Get available variable references
 	service, err := self.repo.Service().GetByID(ctx, serviceID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -67,7 +66,6 @@ func (self *VariablesService) validateBaseInputs(ctx context.Context, variableTy
 			return nil, nil, nil, nil, "", errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Project ID is required")
 		}
 
-		// Get project
 		project, err := self.repo.Project().GetByID(ctx, projectID)
 		if err != nil {
 			if ent.IsNotFound(err) {
@@ -86,7 +84,6 @@ func (self *VariablesService) validateBaseInputs(ctx context.Context, variableTy
 			return nil, nil, nil, nil, "", errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Project ID and Environment ID are required")
 		}
 
-		// Get environment
 		environment, err := self.repo.Environment().GetByID(ctx, environmentID)
 		if err != nil {
 			if ent.IsNotFound(err) {
@@ -105,7 +102,6 @@ func (self *VariablesService) validateBaseInputs(ctx context.Context, variableTy
 			return nil, nil, nil, nil, "", errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Project ID, Environment ID and Service ID are required")
 		}
 
-		// Get service
 		service, err := self.repo.Service().GetByID(ctx, serviceID)
 		if err != nil {
 			if ent.IsNotFound(err) {

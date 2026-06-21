@@ -11,7 +11,6 @@ import (
 // It checks if the expression follows the standard cron format: minute hour day month weekday
 // Returns an error if the expression is invalid, nil if valid.
 func ValidateCronExpression(cron string) error {
-	// Split the cron expression into its components
 	parts := strings.Fields(cron)
 	if len(parts) != 5 {
 		return fmt.Errorf("invalid cron expression: must have exactly 5 fields (minute hour day month weekday), got %d", len(parts))
@@ -52,8 +51,8 @@ func ValidateCronExpression(cron string) error {
 		}
 
 		// Handle ranges and lists
-		values := strings.Split(part, ",")
-		for _, value := range values {
+		values := strings.SplitSeq(part, ",")
+		for value := range values {
 			if strings.Contains(value, "-") {
 				// Handle range (e.g., 1-5)
 				rangeParts := strings.Split(value, "-")

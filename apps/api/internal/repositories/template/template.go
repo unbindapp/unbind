@@ -12,7 +12,6 @@ type TemplateRepository struct {
 	base *repository.BaseRepository
 }
 
-// NewTemplateRepository creates a new repository
 func NewTemplateRepository(db *ent.Client) *TemplateRepository {
 	return &TemplateRepository{
 		base: &repository.BaseRepository{DB: db},

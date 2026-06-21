@@ -25,7 +25,7 @@ func meiliSearchTemplate() *schema.TemplateDefinition {
 				Type:        schema.InputTypeHost,
 				Description: "The domain to use for the Meilisearch API.",
 				Required:    true,
-				TargetPort:  utils.ToPtr(7700),
+				TargetPort:  new(7700),
 			},
 			{
 				ID:   "input_storage_size",
@@ -37,7 +37,7 @@ func meiliSearchTemplate() *schema.TemplateDefinition {
 				},
 				Description: "Size of the storage for the Meilisearch data.",
 				Required:    true,
-				Default:     utils.ToPtr("1"),
+				Default:     new("1"),
 			},
 		},
 		Services: []schema.TemplateService{
@@ -47,7 +47,7 @@ func meiliSearchTemplate() *schema.TemplateDefinition {
 				Type:     schema.ServiceTypeDockerimage,
 				Builder:  schema.ServiceBuilderDocker,
 				InputIDs: []string{"input_domain", "input_storage_size"},
-				Image:    utils.ToPtr("getmeili/meilisearch:v1.47.0"),
+				Image:    new("getmeili/meilisearch:v1.47.0"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 40,
 					CPULimitsMillicores:   300,
@@ -61,13 +61,13 @@ func meiliSearchTemplate() *schema.TemplateDefinition {
 				HealthCheck: &schema.HealthCheck{
 					Type:                    utils.ToPtr(schema.HealthCheckTypeHTTP),
 					Path:                    "/health",
-					Port:                    utils.ToPtr(int32(7700)),
-					StartupPeriodSeconds:    utils.ToPtr(int32(2)),
-					StartupTimeoutSeconds:   utils.ToPtr(int32(10)),
-					StartupFailureThreshold: utils.ToPtr(int32(15)),
-					HealthPeriodSeconds:     utils.ToPtr(int32(10)),
-					HealthTimeoutSeconds:    utils.ToPtr(int32(5)),
-					HealthFailureThreshold:  utils.ToPtr(int32(5)),
+					Port:                    new(int32(7700)),
+					StartupPeriodSeconds:    new(int32(2)),
+					StartupTimeoutSeconds:   new(int32(10)),
+					StartupFailureThreshold: new(int32(15)),
+					HealthPeriodSeconds:     new(int32(10)),
+					HealthTimeoutSeconds:    new(int32(5)),
+					HealthFailureThreshold:  new(int32(5)),
 				},
 				Variables: []schema.TemplateVariable{
 					{

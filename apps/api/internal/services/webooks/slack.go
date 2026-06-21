@@ -9,11 +9,9 @@ import (
 
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/log"
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 )
 
 func (self *WebhooksService) sendSlackWebhook(level WebhookLevel, event schema.WebhookEvent, data WebhookData, url string) error {
-	// Convert to slack format
 	fields := make([]*SlackField, len(data.Fields))
 	for i, entry := range data.Fields {
 		fields[i] = &SlackField{
@@ -23,10 +21,8 @@ func (self *WebhooksService) sendSlackWebhook(level WebhookLevel, event schema.W
 		}
 	}
 
-	// Create timestamp for footer
 	timestamp := time.Now().Unix()
 
-	// Create the attachment
 	attachment := SlackAttachment{
 		Fallback:    &data.Description,
 		Color:       level.HexColor(),
@@ -34,18 +30,16 @@ func (self *WebhooksService) sendSlackWebhook(level WebhookLevel, event schema.W
 		TitleLink:   &data.Url,
 		Text:        &data.Description,
 		SlackFields: fields,
-		Footer:      utils.ToPtr(string(event)),
+		Footer:      new(string(event)),
 		Timestamp:   &timestamp,
 		MarkdownIn:  &[]string{"text", "fields"},
 	}
 
-	// Create the payload
 	msg := SlackPayload{
 		SlackAttachments: []SlackAttachment{attachment},
 		Markdown:         true,
 	}
 
-	// Encode the payload
 	payload := new(bytes.Buffer)
 	err := json.NewEncoder(payload).Encode(msg)
 	if err != nil {
@@ -53,7 +47,6 @@ func (self *WebhooksService) sendSlackWebhook(level WebhookLevel, event schema.W
 		return err
 	}
 
-	// Create the request
 	req, err := http.NewRequest(http.MethodPost, url, payload)
 	if err != nil {
 		log.Errorf("Failed to create slack webhook request: %v", err)
@@ -61,7 +54,6 @@ func (self *WebhooksService) sendSlackWebhook(level WebhookLevel, event schema.W
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// Send the request
 	resp, err := self.httpClient.Do(req)
 	if err != nil {
 		log.Errorf("Failed to send slack webhook: %v", err)
@@ -69,7 +61,6 @@ func (self *WebhooksService) sendSlackWebhook(level WebhookLevel, event schema.W
 	}
 	defer resp.Body.Close()
 
-	// Check response
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to send slack webhook: %s", resp.Status)
 	}

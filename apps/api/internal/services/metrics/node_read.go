@@ -21,18 +21,15 @@ func (self *MetricsService) GetNodeMetrics(ctx context.Context, requesterUserID 
 		},
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return nil, err
 	}
 
-	// Build options
 	nodeMetricsFilters := prometheus.NodeMetricsFilter{}
 	if input.NodeName != "" {
 		nodeMetricsFilters.NodeName = []string{input.NodeName}
 	}
 
-	// Get start
 	var start time.Time
 	if input.Start.IsZero() {
 		// Default to 24 hours ago
@@ -41,7 +38,6 @@ func (self *MetricsService) GetNodeMetrics(ctx context.Context, requesterUserID 
 		start = input.Start
 	}
 
-	// Get end
 	var end time.Time
 	if input.End.IsZero() {
 		// Default to now
@@ -50,7 +46,6 @@ func (self *MetricsService) GetNodeMetrics(ctx context.Context, requesterUserID 
 		end = input.End
 	}
 
-	// Calculate step size
 	duration := end.Sub(start)
 	step := chooseStep(duration, 30, []time.Duration{
 		1 * time.Minute,
@@ -65,7 +60,6 @@ func (self *MetricsService) GetNodeMetrics(ctx context.Context, requesterUserID 
 		1 * 24 * time.Hour,
 	})
 
-	// Get metrics
 	var filter *prometheus.NodeMetricsFilter
 	if input.NodeName != "" || input.Zone != "" || input.Region != "" || input.ClusterName != "" {
 		filter = &nodeMetricsFilters
@@ -78,6 +72,5 @@ func (self *MetricsService) GetNodeMetrics(ctx context.Context, requesterUserID 
 		return nil, fmt.Errorf("error getting node metrics: %w", err)
 	}
 
-	// Convert to our format
 	return models.TransformNodeMetricsEntity(rawMetrics, step), nil
 }

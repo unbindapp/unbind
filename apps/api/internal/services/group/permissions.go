@@ -26,7 +26,6 @@ func (self *GroupService) GrantPermissionToGroup(
 	resourceType schema.ResourceType,
 	selector schema.ResourceSelector,
 ) (*ent.Permission, error) {
-	// Get the group
 	group, err := self.repo.Group().GetByID(ctx, groupID)
 	if err != nil {
 		// May be ent.NotFound
@@ -42,14 +41,12 @@ func (self *GroupService) GrantPermissionToGroup(
 		},
 	}
 
-	// Execute permission checks
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		if requesterUserID != SUPER_USER_ID {
 			return nil, err
 		}
 	}
 
-	// Create the permission
 	perm, err := self.repo.Permissions().Create(ctx, permAction, resourceType, selector)
 	if err != nil {
 		return nil, fmt.Errorf("error creating permission: %w", err)
@@ -83,13 +80,11 @@ func (self *GroupService) RevokePermissionFromGroup(
 	groupID uuid.UUID,
 	permissionID uuid.UUID,
 ) error {
-	// Get the group
 	group, err := self.repo.Group().GetByID(ctx, groupID)
 	if err != nil {
 		return err
 	}
 
-	// Get the permission
 	perm, err := self.repo.Permissions().GetByID(ctx, permissionID)
 	if err != nil {
 		return err
@@ -118,7 +113,6 @@ func (self *GroupService) RevokePermissionFromGroup(
 		},
 	}
 
-	// Execute permission checks
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return err
 	}
@@ -178,7 +172,6 @@ func (self *GroupService) GetGroupPermissions(
 	requesterUserID uuid.UUID,
 	groupID uuid.UUID,
 ) ([]*ent.Permission, error) {
-	// Get the group
 	group, err := self.repo.Group().GetByID(ctx, groupID)
 	if err != nil {
 		return nil, err
@@ -200,13 +193,11 @@ func (self *GroupService) GetGroupPermissions(
 			},
 		}
 
-		// Execute permission checks
 		if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 			return nil, err
 		}
 	}
 
-	// Get the group permissions
 	return self.repo.Group().GetPermissions(ctx, groupID)
 }
 
@@ -227,12 +218,10 @@ func (self *GroupService) GetUserGroups(
 			},
 		}
 
-		// Execute permission checks
 		if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 			return nil, err
 		}
 	}
 
-	// Get all groups the user belongs to
 	return self.repo.User().GetGroups(ctx, targetUserID)
 }

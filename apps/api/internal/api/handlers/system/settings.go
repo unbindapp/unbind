@@ -8,7 +8,6 @@ import (
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
 	"github.com/unbindapp/unbind-api/internal/common/log"
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 	system_repo "github.com/unbindapp/unbind-api/internal/repositories/system"
 	system_service "github.com/unbindapp/unbind-api/internal/services/system"
 )
@@ -25,11 +24,9 @@ type SettingsResponse struct {
 }
 
 func (self *HandlerGroup) UpdateBuildkitSettings(ctx context.Context, input *SettingsUpdateInput) (*SettingsResponse, error) {
-	// Get caller
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		log.Error("Error getting user from context")
-		return nil, huma.Error401Unauthorized("Unable to retrieve user")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	if input.Body.WildcardDomain != nil {
@@ -38,7 +35,6 @@ func (self *HandlerGroup) UpdateBuildkitSettings(ctx context.Context, input *Set
 		baseDomain = strings.ReplaceAll(baseDomain, "http://", "")
 		baseDomain = strings.ReplaceAll(baseDomain, "*.", "")
 
-		// Get IP
 		ips, err := self.srv.KubeClient.GetIngressNginxIP(ctx)
 		if err != nil {
 			log.Error("Error getting ingress nginx IP", "err", err)
@@ -69,7 +65,7 @@ func (self *HandlerGroup) UpdateBuildkitSettings(ctx context.Context, input *Set
 			return nil, huma.Error400BadRequest("Wildcard domain does not have DNS configured")
 		}
 
-		input.Body.WildcardDomain = utils.ToPtr(baseDomain)
+		input.Body.WildcardDomain = new(baseDomain)
 	}
 
 	settings, err := self.srv.SystemService.UpdateSettings(ctx, user.ID, input.Body)

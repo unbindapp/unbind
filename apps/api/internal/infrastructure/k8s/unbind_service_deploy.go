@@ -29,7 +29,6 @@ func (self *KubeClient) DeployUnbindService(ctx context.Context, service *unbind
 		Resource: "services", // plural name of the custom resource
 	}
 
-	// Create the custom resource in the target namespace
 	createdCR, err := self.client.Resource(serviceGVR).Namespace(service.Namespace).Create(ctx, unstructuredObj, metav1.CreateOptions{})
 	if err != nil {
 		// If the resource already exists, update it
@@ -45,7 +44,6 @@ func (self *KubeClient) DeployUnbindService(ctx context.Context, service *unbind
 
 // updateExistingServiceCR handles updating an existing Service custom resource
 func updateExistingServiceCR(ctx context.Context, client *KubeClient, gvr schema.GroupVersionResource, namespace string, newCR *unstructured.Unstructured) (*unstructured.Unstructured, error) {
-	// Retrieve the existing resource
 	existingCR, err := client.client.Resource(gvr).Namespace(namespace).Get(ctx, newCR.GetName(), metav1.GetOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve existing service: %v", err)
@@ -54,7 +52,6 @@ func updateExistingServiceCR(ctx context.Context, client *KubeClient, gvr schema
 	// Set the resourceVersion on the object to be updated
 	newCR.SetResourceVersion(existingCR.GetResourceVersion())
 
-	// Update the CR
 	updatedCR, err := client.client.Resource(gvr).Namespace(namespace).Update(ctx, newCR, metav1.UpdateOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to update service custom resource: %v", err)
@@ -69,16 +66,13 @@ func convertToUnstructured(obj runtime.Object) (*unstructured.Unstructured, erro
 		return nil, fmt.Errorf("cannot convert nil object to unstructured")
 	}
 
-	// Create a new unstructured object
 	unstructuredObj := &unstructured.Unstructured{}
 
-	// Convert the typed object to map[string]interface{}
 	data, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
 	if err != nil {
 		return nil, err
 	}
 
-	// Set the unstructured data
 	unstructuredObj.SetUnstructuredContent(data)
 
 	return unstructuredObj, nil

@@ -115,7 +115,7 @@ func (self *DeploymentController) startStatusSynchronizer() {
 		case <-self.ctx.Done():
 			return
 		case <-ticker.C:
-			if err := self.SyncJobStatuses(context.Background()); err != nil {
+			if err := self.SyncJobStatuses(self.ctx); err != nil {
 				log.Error("Failed to sync job statuses", "err", err)
 			}
 		}
@@ -125,13 +125,11 @@ func (self *DeploymentController) startStatusSynchronizer() {
 // Populate build environment, take tag separately so we can use it to build from tag
 // If deployment is provided, use stored deployment values for build configuration instead of service config values
 func (self *DeploymentController) PopulateBuildEnvironment(ctx context.Context, serviceID uuid.UUID, gitTag *string, deployment *ent.Deployment) (map[string]string, error) {
-	// Get the service
 	service, err := self.repo.Service().GetByID(ctx, serviceID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get deployment namespace
 	namespace, err := self.repo.Service().GetDeploymentNamespace(ctx, service.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get deployment namespace: %w", err)
@@ -140,24 +138,19 @@ func (self *DeploymentController) PopulateBuildEnvironment(ctx context.Context, 
 	// Get build secrets
 	buildSecrets, err := self.k8s.GetSecretMap(ctx, service.KubernetesSecret, namespace, self.k8s.GetInternalClient())
 	if err != nil {
-		log.Error("Error getting secrets", "err", err)
-		return nil, err
+		return nil, fmt.Errorf("failed to get build secrets: %w", err)
 	}
 
-	// Convert the byte arrays to base64 strings first
 	serializableSecrets := make(map[string]string)
 	for k, v := range buildSecrets {
 		serializableSecrets[k] = base64.StdEncoding.EncodeToString(v)
 	}
 
-	// Serialize the map to JSON
 	secretsJSON, err := json.Marshal(serializableSecrets)
 	if err != nil {
-		log.Error("Error marshalling secrets", "err", err)
-		return nil, err
+		return nil, fmt.Errorf("failed to marshal build secrets: %w", err)
 	}
 
-	// Populate environment
 	env := map[string]string{
 		"EXTERNAL_UI_URL":       self.cfg.ExternalUIUrl,
 		"DEPLOYMENT_NAMESPACE":  namespace,
@@ -182,7 +175,6 @@ func (self *DeploymentController) PopulateBuildEnvironment(ctx context.Context, 
 
 	// Volumes
 	if len(service.Edges.ServiceConfig.Volumes) > 0 {
-		// Serialize and b64 encode
 		marshalled, err := json.Marshal(schema.AsV1Volumes(service.Edges.ServiceConfig.Volumes))
 		if err != nil {
 			return nil, err
@@ -192,7 +184,6 @@ func (self *DeploymentController) PopulateBuildEnvironment(ctx context.Context, 
 
 	// Init containers
 	if len(service.Edges.ServiceConfig.InitContainers) > 0 {
-		// Serialize and b64 encode
 		marshalled, err := json.Marshal(schema.AsV1InitContainers(service.Edges.ServiceConfig.InitContainers))
 		if err != nil {
 			return nil, err
@@ -202,7 +193,6 @@ func (self *DeploymentController) PopulateBuildEnvironment(ctx context.Context, 
 
 	// Resources
 	if service.Edges.ServiceConfig.Resources != nil {
-		// Marshal as string
 		marshalled, err := json.Marshal(service.Edges.ServiceConfig.Resources.AsV1ResourceSpec())
 		if err != nil {
 			return nil, err
@@ -210,42 +200,8 @@ func (self *DeploymentController) PopulateBuildEnvironment(ctx context.Context, 
 		env["SERVICE_RESOURCES"] = base64.StdEncoding.EncodeToString(marshalled)
 	}
 
-	if service.Type == schema.ServiceTypeDatabase {
-		if service.Database == nil ||
-			service.Edges.ServiceConfig.DefinitionVersion == nil {
-			return nil, fmt.Errorf("service database name or definition is nil")
-		}
-
-		var config *v1.DatabaseConfigSpec
-		if service.Edges.ServiceConfig.DatabaseConfig != nil {
-			config = service.Edges.ServiceConfig.DatabaseConfig.AsV1DatabaseConfig()
-		}
-
-		// Marshal as string
-		marshalledConfig, err := json.Marshal(config)
-		if err != nil {
-			return nil, err
-		}
-
-		env["SERVICE_DATABASE_TYPE"] = *service.Database
-		env["SERVICE_DATABASE_USD_VERSION"] = *service.Edges.ServiceConfig.DefinitionVersion
-		env["SERVICE_DATABASE_CONFIG"] = base64.StdEncoding.EncodeToString(marshalledConfig)
-
-		// Pass S3 backup stuff
-		if service.Edges.ServiceConfig.S3BackupBucket != nil && service.Edges.ServiceConfig.S3BackupSourceID != nil {
-			// Get S3 source
-			s3Source, err := self.repo.S3().GetByID(ctx, *service.Edges.ServiceConfig.S3BackupSourceID)
-			if err != nil {
-				return nil, err
-			}
-
-			env["SERVICE_DATABASE_BACKUP_BUCKET"] = *service.Edges.ServiceConfig.S3BackupBucket
-			env["SERVICE_DATABASE_BACKUP_REGION"] = s3Source.Region
-			env["SERVICE_DATABASE_BACKUP_ENDPOINT"] = s3Source.Endpoint
-			env["SERVICE_DATABASE_BACKUP_SECRET_NAME"] = s3Source.KubernetesSecret
-			env["SERVICE_DATABASE_BACKUP_SCHEDULE"] = service.Edges.ServiceConfig.BackupSchedule
-			env["SERVICE_DATABASE_BACKUP_RETENTION"] = strconv.Itoa(service.Edges.ServiceConfig.BackupRetentionCount)
-		}
+	if err := self.populateDatabaseEnv(ctx, env, service); err != nil {
+		return nil, err
 	}
 
 	// Use deployment values for build configuration if available (for redeployments)
@@ -290,56 +246,8 @@ func (self *DeploymentController) PopulateBuildEnvironment(ctx context.Context, 
 		env["SERVICE_DOCKER_BUILDER_BUILD_CONTEXT"] = *buildContext
 	}
 
-	// Add Github fields
-	if service.GithubInstallationID != nil {
-		if service.GitRepository == nil || (service.Edges.ServiceConfig.GitBranch == nil && service.Edges.ServiceConfig.GitTag == nil) {
-			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Missing required fields for Github service - doesn't have repository or git branch/tag")
-		}
-		// Get private key for the service's github app.
-		// ! TODO - we can probably reduce these queries
-		privKey, err := self.repo.Service().GetGithubPrivateKey(ctx, service.ID)
-		if err != nil {
-			log.Error("Error getting github private key", "err", err)
-			return nil, err
-		}
-
-		env["GITHUB_APP_PRIVATE_KEY"] = privKey
-		env["GITHUB_INSTALLATION_ID"] = strconv.Itoa(int(*service.GithubInstallationID))
-		// Get GitHub installation
-		installation, err := self.repo.Github().GetInstallationByID(ctx, *service.GithubInstallationID)
-		if err != nil {
-			if ent.IsNotFound(err) {
-				return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "GitHub installation not found")
-			}
-			return nil, err
-		}
-		env["GITHUB_APP_ID"] = strconv.Itoa(int(installation.GithubAppID))
-
-		// Verify repository access
-		canAccess, cloneUrl, _, err := self.githubClient.VerifyRepositoryAccess(ctx, installation, installation.AccountLogin, *service.GitRepository)
-		if err != nil {
-			log.Error("Error verifying repository access", "err", err)
-			return nil, err
-		}
-
-		if !canAccess {
-			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Repository not accessible with the specified GitHub installation")
-		}
-
-		env["GITHUB_REPO_URL"] = cloneUrl
-
-		if gitTag != nil {
-			if !strings.HasPrefix(*gitTag, "refs/tags/") {
-				*gitTag = "refs/tags/" + *gitTag
-			}
-			env["GIT_REF"] = *gitTag
-		} else {
-			ref := *service.Edges.ServiceConfig.GitBranch
-			if !strings.HasPrefix(ref, "refs/head") {
-				ref = "refs/heads/" + ref
-			}
-			env["GIT_REF"] = ref
-		}
+	if err := self.populateGithubEnv(ctx, env, service, gitTag); err != nil {
+		return nil, err
 	}
 
 	if service.Edges.ServiceConfig.RailpackProvider != nil {
@@ -359,7 +267,6 @@ func (self *DeploymentController) PopulateBuildEnvironment(ctx context.Context, 
 		for i, port := range service.Edges.ServiceConfig.Ports {
 			asV1Ports[i] = port.AsV1PortSpec()
 		}
-		// Serialize
 		marshalled, err := json.Marshal(asV1Ports)
 		if err != nil {
 			return nil, err
@@ -375,7 +282,6 @@ func (self *DeploymentController) PopulateBuildEnvironment(ctx context.Context, 
 				prunedHosts = append(prunedHosts, host)
 			}
 		}
-		// Serialize
 		marshalled, err := json.Marshal(schema.AsV1HostSpecs(prunedHosts))
 		if err != nil {
 			return nil, err
@@ -396,7 +302,6 @@ func (self *DeploymentController) PopulateBuildEnvironment(ctx context.Context, 
 	}
 
 	if service.Edges.ServiceConfig.SecurityContext != nil {
-		// Marshal as string
 		marshalled, err := json.Marshal(service.Edges.ServiceConfig.SecurityContext.AsV1SecurityContext())
 		if err != nil {
 			return nil, err
@@ -407,7 +312,6 @@ func (self *DeploymentController) PopulateBuildEnvironment(ctx context.Context, 
 	if service.Edges.ServiceConfig.HealthCheck != nil &&
 		service.Edges.ServiceConfig.HealthCheck.Type != nil &&
 		*service.Edges.ServiceConfig.HealthCheck.Type != schema.HealthCheckTypeNone {
-		// Marshal as string
 		marshalled, err := json.Marshal(service.Edges.ServiceConfig.HealthCheck.AsV1HealthCheck())
 		if err != nil {
 			return nil, err
@@ -416,7 +320,6 @@ func (self *DeploymentController) PopulateBuildEnvironment(ctx context.Context, 
 	}
 
 	if len(service.Edges.ServiceConfig.VariableMounts) > 0 {
-		// Marshal as string
 		asV1Mounts := schema.AsV1VariableMounts(service.Edges.ServiceConfig.VariableMounts)
 		marshalled, err := json.Marshal(asV1Mounts)
 		if err != nil {
@@ -426,6 +329,98 @@ func (self *DeploymentController) PopulateBuildEnvironment(ctx context.Context, 
 	}
 
 	return env, nil
+}
+
+// populateDatabaseEnv adds database type/config and S3 backup settings to the
+// build environment for database services. It is a no-op for other service types.
+func (self *DeploymentController) populateDatabaseEnv(ctx context.Context, env map[string]string, service *ent.Service) error {
+	if service.Type != schema.ServiceTypeDatabase {
+		return nil
+	}
+	if service.Database == nil || service.Edges.ServiceConfig.DefinitionVersion == nil {
+		return fmt.Errorf("service database name or definition is nil")
+	}
+
+	var config *v1.DatabaseConfigSpec
+	if service.Edges.ServiceConfig.DatabaseConfig != nil {
+		config = service.Edges.ServiceConfig.DatabaseConfig.AsV1DatabaseConfig()
+	}
+	marshalledConfig, err := json.Marshal(config)
+	if err != nil {
+		return err
+	}
+
+	env["SERVICE_DATABASE_TYPE"] = *service.Database
+	env["SERVICE_DATABASE_USD_VERSION"] = *service.Edges.ServiceConfig.DefinitionVersion
+	env["SERVICE_DATABASE_CONFIG"] = base64.StdEncoding.EncodeToString(marshalledConfig)
+
+	if service.Edges.ServiceConfig.S3BackupBucket == nil || service.Edges.ServiceConfig.S3BackupSourceID == nil {
+		return nil
+	}
+	s3Source, err := self.repo.S3().GetByID(ctx, *service.Edges.ServiceConfig.S3BackupSourceID)
+	if err != nil {
+		return err
+	}
+	env["SERVICE_DATABASE_BACKUP_BUCKET"] = *service.Edges.ServiceConfig.S3BackupBucket
+	env["SERVICE_DATABASE_BACKUP_REGION"] = s3Source.Region
+	env["SERVICE_DATABASE_BACKUP_ENDPOINT"] = s3Source.Endpoint
+	env["SERVICE_DATABASE_BACKUP_SECRET_NAME"] = s3Source.KubernetesSecret
+	env["SERVICE_DATABASE_BACKUP_SCHEDULE"] = service.Edges.ServiceConfig.BackupSchedule
+	env["SERVICE_DATABASE_BACKUP_RETENTION"] = strconv.Itoa(service.Edges.ServiceConfig.BackupRetentionCount)
+	return nil
+}
+
+// populateGithubEnv resolves the GitHub app credentials, installation, repo
+// access and git ref for services deployed from a GitHub source. It is a no-op
+// for services without a GitHub installation.
+func (self *DeploymentController) populateGithubEnv(ctx context.Context, env map[string]string, service *ent.Service, gitTag *string) error {
+	if service.GithubInstallationID == nil {
+		return nil
+	}
+	if service.GitRepository == nil || (service.Edges.ServiceConfig.GitBranch == nil && service.Edges.ServiceConfig.GitTag == nil) {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Missing required fields for Github service - doesn't have repository or git branch/tag")
+	}
+
+	// ! TODO - we can probably reduce these queries
+	privKey, err := self.repo.Service().GetGithubPrivateKey(ctx, service.ID)
+	if err != nil {
+		return fmt.Errorf("failed to get github private key: %w", err)
+	}
+	env["GITHUB_APP_PRIVATE_KEY"] = privKey
+	env["GITHUB_INSTALLATION_ID"] = strconv.Itoa(int(*service.GithubInstallationID))
+
+	installation, err := self.repo.Github().GetInstallationByID(ctx, *service.GithubInstallationID)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return errdefs.NewCustomError(errdefs.ErrTypeNotFound, "GitHub installation not found")
+		}
+		return err
+	}
+	env["GITHUB_APP_ID"] = strconv.Itoa(int(installation.GithubAppID))
+
+	canAccess, cloneUrl, _, err := self.githubClient.VerifyRepositoryAccess(ctx, installation, installation.AccountLogin, *service.GitRepository)
+	if err != nil {
+		return fmt.Errorf("failed to verify repository access: %w", err)
+	}
+	if !canAccess {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Repository not accessible with the specified GitHub installation")
+	}
+	env["GITHUB_REPO_URL"] = cloneUrl
+
+	if gitTag != nil {
+		if !strings.HasPrefix(*gitTag, "refs/tags/") {
+			*gitTag = "refs/tags/" + *gitTag
+		}
+		env["GIT_REF"] = *gitTag
+		return nil
+	}
+
+	ref := *service.Edges.ServiceConfig.GitBranch
+	if !strings.HasPrefix(ref, "refs/head") {
+		ref = "refs/heads/" + ref
+	}
+	env["GIT_REF"] = ref
+	return nil
 }
 
 // EnqueueDeploymentJob adds a deployment to the queue
@@ -482,13 +477,11 @@ func (self *DeploymentController) EnqueueDeploymentJob(ctx context.Context, req 
 		return nil, self.failWithErr(ctx, "Error resolving environment variables", job.ID, err)
 	}
 
-	// Convert the byte arrays to base64 strings first
 	serializedReferences := make(map[string]string)
 	for k, v := range referencedEnv {
 		serializedReferences[k] = base64.StdEncoding.EncodeToString([]byte(v))
 	}
 
-	// Serialize the map to JSON
 	referencedEnvJSON, err := json.Marshal(serializedReferences)
 	if err != nil {
 		return nil, self.failWithErr(ctx, "Error marshalling referenced secrets", job.ID, err)
@@ -496,7 +489,6 @@ func (self *DeploymentController) EnqueueDeploymentJob(ctx context.Context, req 
 	// Add the referenced environment to the environment
 	req.Environment["ADDITIONAL_ENV"] = string(referencedEnvJSON)
 
-	// Get registry to use
 	registry, err := self.repo.System().GetDefaultRegistry(ctx)
 	if err != nil {
 		return nil, self.failWithErr(ctx, "Error getting default registry", job.ID, err)
@@ -516,7 +508,6 @@ func (self *DeploymentController) EnqueueDeploymentJob(ctx context.Context, req 
 	req.Environment["CONTAINER_REGISTRY_USER"] = username
 	req.Environment["CONTAINER_REGISTRY_PASSWORD"] = password
 
-	// Add image pull secrets
 	pullSecrets, err := self.repo.System().GetImagePullSecrets(ctx)
 	if err != nil {
 		return nil, self.failWithErr(ctx, "Error getting image pull secrets", job.ID, err)
@@ -526,7 +517,6 @@ func (self *DeploymentController) EnqueueDeploymentJob(ctx context.Context, req 
 		req.Environment["IMAGE_PULL_SECRETS"] = strings.Join(pullSecrets, ",")
 	}
 
-	// Add to the queue
 	err = self.jobQueue.Enqueue(ctx, job.ID.String(), req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to enqueue job: %w", err)
@@ -544,7 +534,6 @@ func (self *DeploymentController) EnqueueDeploymentJob(ctx context.Context, req 
 			return
 		}
 
-		// Construct URL
 		basePath, _ := utils.JoinURLPaths(
 			self.cfg.ExternalUIUrl,
 			service.Edges.Environment.Edges.Project.Edges.Team.ID.String(),
@@ -644,7 +633,6 @@ func (self *DeploymentController) CancelExistingJobs(ctx context.Context, servic
 				return
 			}
 
-			// Construct URL
 			url, _ := utils.JoinURLPaths(self.cfg.ExternalUIUrl, service.Edges.Environment.Edges.Project.Edges.Team.ID.String(), "project", service.Edges.Environment.Edges.Project.ID.String(), "?environment="+service.EnvironmentID.String(), "&service="+service.ID.String(), "&deployment="+jobID.String())
 			data := webhooks_service.WebhookData{
 				Title: "Deployment Cancelled",
@@ -827,7 +815,7 @@ func (self *DeploymentController) EnqueueDependentDeployment(ctx context.Context
 	if err != nil {
 		return nil, fmt.Errorf("failed to create dependent deployment record: %w", err)
 	}
-	req.ExistingJobID = utils.ToPtr(job.ID)
+	req.ExistingJobID = new(job.ID)
 	// Add to the dependent queue
 	return job, self.dependentQueue.Enqueue(ctx, uuid.New().String(), req)
 }

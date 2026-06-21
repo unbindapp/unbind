@@ -3,11 +3,9 @@ package storage_handler
 import (
 	"context"
 
-	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
-	"github.com/unbindapp/unbind-api/internal/common/log"
 )
 
 type DeleteS3SourceByIDInput struct {
@@ -25,15 +23,12 @@ type DeleteS3SourceByIDOutput struct {
 }
 
 func (self *HandlerGroup) DeleteS3Source(ctx context.Context, input *DeleteS3SourceByIDInput) (*DeleteS3SourceByIDOutput, error) {
-	// Get caller
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		log.Error("Error getting user from context")
-		return nil, huma.Error401Unauthorized("Unable to retrieve user")
+	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
-	bearerToken, _ := self.srv.GetBearerTokenFromContext(ctx)
 
-	err := self.srv.StorageService.DeleteS3StorageByID(
+	err = self.srv.StorageService.DeleteS3StorageByID(
 		ctx,
 		user.ID,
 		bearerToken,

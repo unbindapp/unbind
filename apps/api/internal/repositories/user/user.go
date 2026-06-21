@@ -12,7 +12,6 @@ type UserRepository struct {
 	base *repository.BaseRepository
 }
 
-// NewUserRepository creates a new repository
 func NewUserRepository(db *ent.Client) *UserRepository {
 	return &UserRepository{
 		base: &repository.BaseRepository{DB: db},

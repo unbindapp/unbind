@@ -1,7 +1,6 @@
 package portdetector
 
 import (
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/sourceanalyzer/enum"
 )
 
@@ -39,36 +38,36 @@ func (self *PortDetector) DetectPort() (*int, error) {
 		switch self.Framework {
 		// Node
 		case enum.Next, enum.CRA, enum.Express, enum.Hono, enum.Remix, enum.TanstackStart:
-			port = utils.ToPtr(3000)
+			port = new(3000)
 		case enum.Astro:
-			port = utils.ToPtr(4321)
+			port = new(4321)
 		case enum.Vite, enum.Sveltekit, enum.Solid:
-			port = utils.ToPtr(5173)
+			port = new(5173)
 		case enum.Angular:
-			port = utils.ToPtr(4200)
+			port = new(4200)
 		case enum.Expo:
-			port = utils.ToPtr(8081)
+			port = new(8081)
 		// Python
 		case enum.Django:
-			port = utils.ToPtr(8000)
+			port = new(8000)
 		case enum.Flask:
-			port = utils.ToPtr(5000)
+			port = new(5000)
 		case enum.FastAPI:
-			port = utils.ToPtr(8000)
+			port = new(8000)
 		case enum.FastHTML:
-			port = utils.ToPtr(8000)
+			port = new(8000)
 		// Java
 		case enum.SpringBoot:
-			port = utils.ToPtr(8080)
+			port = new(8080)
 		// PHP
 		case enum.Laravel:
-			port = utils.ToPtr(8000)
+			port = new(8000)
 		// Ruby
 		case enum.Rails:
-			port = utils.ToPtr(3000)
+			port = new(3000)
 		// Rust
 		case enum.Rocket:
-			port = utils.ToPtr(8000)
+			port = new(8000)
 		}
 	}
 

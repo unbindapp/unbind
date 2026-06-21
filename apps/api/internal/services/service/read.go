@@ -39,17 +39,14 @@ func (self *ServiceService) GetServicesInEnvironment(ctx context.Context, reques
 		return nil, fmt.Errorf("error fetching services for environment %s: %w", environmentID, err)
 	}
 
-	// Get volume map
 	volumeMap, err := self.getVolumesForServices(ctx, project.Edges.Team.Namespace, project.Edges.Team.ID, services)
 	if err != nil {
 		log.Errorf("Error getting volumes for services in environment %s: %v", environmentID, err)
 		return nil, err
 	}
 
-	// Convert to response
 	resp := models.TransformServiceEntities(services)
 
-	// Attach volumes
 	if len(volumeMap) > 0 {
 		for i := range resp {
 			volumes := volumeMap[resp[i].ID]
@@ -83,18 +80,15 @@ func (self *ServiceService) GetServiceByID(ctx context.Context, requesterUserID 
 		},
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return nil, err
 	}
 
-	// Verify inputs
 	_, project, err := self.VerifyInputs(ctx, teamID, projectID, environmentID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get services in environment
 	service, err := self.repo.Service().GetByID(ctx, serviceID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -103,7 +97,6 @@ func (self *ServiceService) GetServiceByID(ctx context.Context, requesterUserID 
 		return nil, err
 	}
 
-	// Get volume map
 	volumeMap, err := self.getVolumesForServices(ctx, project.Edges.Team.Namespace, project.Edges.Team.ID, []*ent.Service{
 		service,
 	})
@@ -111,10 +104,8 @@ func (self *ServiceService) GetServiceByID(ctx context.Context, requesterUserID 
 		return nil, err
 	}
 
-	// Convert to response
 	resp := models.TransformServiceEntity(service)
 
-	// Attach volumes
 	volumes := volumeMap[service.ID]
 	if volumes != nil {
 		resp.Config.Volumes = volumes

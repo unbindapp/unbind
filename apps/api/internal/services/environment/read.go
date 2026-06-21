@@ -22,18 +22,15 @@ func (self *EnvironmentService) GetEnvironmentByID(ctx context.Context, requeste
 		},
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return nil, err
 	}
 
-	// Verify inputs
 	_, environment, err := self.VerifyInputs(ctx, teamID, projectID, environmentID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Convert to response
 	resp := models.TransformEnvironmentEntity(environment)
 
 	// Summarizes services
@@ -74,6 +71,5 @@ func (self *EnvironmentService) GetEnvironmentsByProjectID(ctx context.Context, 
 		return nil, fmt.Errorf("error fetching environments for project %s: %w", projectID, err)
 	}
 
-	// Convert to response
 	return models.TransformEnvironmentEntitities(envs), nil
 }

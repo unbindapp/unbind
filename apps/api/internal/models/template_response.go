@@ -44,15 +44,6 @@ func TransformTemplateShortEntity(entity *ent.Template) *TemplateShortResponse {
 	return response
 }
 
-// TransformTemplateShortEntities transforms a slice of ent.Template entities into a slice of TemplateResponse
-func TransformTemplateShortEntities(entities []*ent.Template) []*TemplateShortResponse {
-	responses := make([]*TemplateShortResponse, len(entities))
-	for i, entity := range entities {
-		responses[i] = TransformTemplateShortEntity(entity)
-	}
-	return responses
-}
-
 // TemplateWithDefinitionResponse is the response model for a template with its definition
 type TemplateWithDefinitionResponse struct {
 	ID                      uuid.UUID                              `json:"id"`

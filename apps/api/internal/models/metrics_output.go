@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/prometheus/common/model"
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/prometheus"
 )
 
@@ -58,7 +57,6 @@ func TransformMetricsEntity(metrics map[string]*prometheus.ResourceMetrics, step
 		brokenDownBy = MetricsTypeService
 	}
 
-	// Collect all unique timestamps across all metrics and types
 	allTimestamps := collectAllTimestamps(metrics)
 
 	result := &MetricsResult{
@@ -77,7 +75,6 @@ func TransformMetricsEntity(metrics map[string]*prometheus.ResourceMetrics, step
 
 // collectAllTimestamps gathers all unique timestamps across all metric types
 func collectAllTimestamps(metrics map[string]*prometheus.ResourceMetrics) []time.Time {
-	// Use a map to collect unique timestamps
 	timestampMap := make(map[time.Time]struct{})
 
 	for _, metric := range metrics {
@@ -95,7 +92,6 @@ func collectAllTimestamps(metrics map[string]*prometheus.ResourceMetrics) []time
 		}
 	}
 
-	// Convert map keys to a slice
 	timestamps := make([]time.Time, len(timestampMap))
 	i := 0
 	for ts := range timestampMap {
@@ -103,7 +99,6 @@ func collectAllTimestamps(metrics map[string]*prometheus.ResourceMetrics) []time
 		i++
 	}
 
-	// Sort timestamps chronologically
 	sort.Slice(timestamps, func(i, j int) bool {
 		return timestamps[i].Before(timestamps[j])
 	})
@@ -121,7 +116,6 @@ const (
 )
 
 func aggregateMetricsByTime(metrics map[string]*prometheus.ResourceMetrics, metricType MetricType, allTimestamps []time.Time) []MetricDetail {
-	// Initialize result with all timestamps
 	result := make([]MetricDetail, len(allTimestamps))
 	for i, ts := range allTimestamps {
 		result[i] = MetricDetail{
@@ -130,19 +124,16 @@ func aggregateMetricsByTime(metrics map[string]*prometheus.ResourceMetrics, metr
 			Breakdown: make(map[string]*float64),
 		}
 
-		// Initialize breakdown map with nil values for all keys
 		for id := range metrics {
 			result[i].Breakdown[id] = nil
 		}
 	}
 
-	// Create a map for quick timestamp lookup
 	timestampIndexMap := make(map[time.Time]int)
 	for i, ts := range allTimestamps {
 		timestampIndexMap[ts] = i
 	}
 
-	// Fill in actual values
 	for id, samples := range metrics {
 		var samplePair []model.SamplePair
 		switch metricType {
@@ -161,7 +152,7 @@ func aggregateMetricsByTime(metrics map[string]*prometheus.ResourceMetrics, metr
 			idx := timestampIndexMap[ts]
 
 			value := float64(sample.Value)
-			result[idx].Breakdown[id] = utils.ToPtr(value)
+			result[idx].Breakdown[id] = new(value)
 			result[idx].Value += value
 		}
 	}
@@ -180,7 +171,6 @@ func TransformVolumeStatsEntity(volumeStats *prometheus.VolumeStatsWithHistory, 
 		}
 	}
 
-	// Convert history to MetricDetail format
 	history := make([]MetricDetail, len(volumeStats.History))
 	for i, sample := range volumeStats.History {
 		value := float64(sample.Value)
@@ -188,7 +178,7 @@ func TransformVolumeStatsEntity(volumeStats *prometheus.VolumeStatsWithHistory, 
 			Timestamp: sample.Timestamp.Time(),
 			Value:     value,
 			Breakdown: map[string]*float64{
-				volumeStats.Stats.PVCName: utils.ToPtr(value),
+				volumeStats.Stats.PVCName: new(value),
 			},
 		}
 	}

@@ -15,7 +15,6 @@ import (
 	"github.com/unbindapp/unbind-api/internal/models"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -377,10 +376,4 @@ func (self *Manager) getJSON(ctx context.Context, url string, headers map[string
 		return fmt.Errorf("registry returned %d: %s", resp.StatusCode, string(body))
 	}
 	return json.NewDecoder(resp.Body).Decode(out)
-}
-
-// IsNotFound reports whether an error from this manager indicates the registry
-// resources are absent (external registry).
-func IsNotFound(err error) bool {
-	return errors.IsNotFound(err)
 }

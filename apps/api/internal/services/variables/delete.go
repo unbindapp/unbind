@@ -58,13 +58,11 @@ func (self *VariablesService) DeleteVariablesByKey(ctx context.Context, userID u
 		return nil, err
 	}
 
-	// Verify input
 	team, _, _, service, secretName, err := self.validateBaseInputs(ctx, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Create kubernetes client
 	client, err := self.k8s.CreateClientWithToken(bearerToken)
 	if err != nil {
 		return nil, err
@@ -83,7 +81,6 @@ func (self *VariablesService) DeleteVariablesByKey(ctx context.Context, userID u
 			}
 		}
 
-		// Get secrets
 		secrets, err = self.k8s.GetSecretMap(ctx, secretName, team.Namespace, client)
 		if err != nil {
 			return err
@@ -96,7 +93,6 @@ func (self *VariablesService) DeleteVariablesByKey(ctx context.Context, userID u
 			variableMounts = service.Edges.ServiceConfig.VariableMounts
 		}
 
-		// Remove from map
 		for _, secretKey := range keys {
 			if input.Type == schema.VariableReferenceSourceTypeService {
 				if slices.Contains(service.Edges.ServiceConfig.ProtectedVariables, secretKey.Name) {
@@ -119,14 +115,12 @@ func (self *VariablesService) DeleteVariablesByKey(ctx context.Context, userID u
 			delete(secrets, secretKey.Name)
 		}
 
-		// Update variable mounts
 		if variableMountsNeedsUpdate {
 			if err := self.repo.Service().UpdateVariableMounts(ctx, tx, service.ID, variableMounts); err != nil {
 				return err
 			}
 		}
 
-		// Update secrets
 		_, err = self.k8s.UpdateSecret(ctx, secretName, team.Namespace, secrets, client)
 		if err != nil {
 			return err

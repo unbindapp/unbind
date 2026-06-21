@@ -10,13 +10,11 @@ func ContainsExactlyOneInterpolationMarker(s string) bool {
 	escaped := false
 
 	for i := 0; i < len(s); i++ {
-		// Check for escape character
 		if s[i] == '\\' {
 			escaped = true
 			continue
 		}
 
-		// Check for ${ sequence when not escaped
 		if !escaped && s[i] == '$' && i+2 < len(s) && s[i+1] == '{' && s[i+2] == '}' {
 			count++
 			i += 2 // Skip the next two characters ('{' and '}')
@@ -34,7 +32,6 @@ func IsValidGlobPattern(pattern string) bool {
 		return false
 	}
 
-	// Check for invalid characters
 	for _, c := range pattern {
 		isLower := c >= 'a' && c <= 'z'
 		isUpper := c >= 'A' && c <= 'Z'
@@ -45,12 +42,7 @@ func IsValidGlobPattern(pattern string) bool {
 		}
 	}
 
-	// Check for consecutive asterisks
-	if strings.Contains(pattern, "**") {
-		return false
-	}
-
-	return true
+	return !strings.Contains(pattern, "**")
 }
 
 // MatchesGlobPattern checks if a value matches a glob pattern
@@ -69,7 +61,6 @@ func MatchesGlobPattern(value, pattern string) bool {
 		return value == pattern
 	}
 
-	// Split pattern by asterisks
 	parts := strings.Split(pattern, "*")
 
 	// Handle single asterisk cases

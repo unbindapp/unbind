@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/prometheus/common/model"
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/prometheus"
 )
 
@@ -36,7 +35,6 @@ type NodeMetricsResult struct {
 }
 
 func TransformNodeMetricsEntity(metrics map[string]*prometheus.NodeMetrics, step time.Duration) *NodeMetricsResult {
-	// Collect all unique timestamps across all metrics and types
 	allTimestamps := collectAllNodeTimestamps(metrics)
 
 	result := &NodeMetricsResult{
@@ -56,11 +54,9 @@ func TransformNodeMetricsEntity(metrics map[string]*prometheus.NodeMetrics, step
 
 // collectAllNodeTimestamps gathers all unique timestamps across all node metric types
 func collectAllNodeTimestamps(metrics map[string]*prometheus.NodeMetrics) []time.Time {
-	// Use a map to collect unique timestamps
 	timestampMap := make(map[time.Time]struct{})
 
 	for _, metric := range metrics {
-		// Check each metric type
 		for _, sample := range metric.CPU {
 			timestampMap[sample.Timestamp.Time()] = struct{}{}
 		}
@@ -81,7 +77,6 @@ func collectAllNodeTimestamps(metrics map[string]*prometheus.NodeMetrics) []time
 		}
 	}
 
-	// Convert map keys to a slice
 	timestamps := make([]time.Time, len(timestampMap))
 	i := 0
 	for ts := range timestampMap {
@@ -89,7 +84,6 @@ func collectAllNodeTimestamps(metrics map[string]*prometheus.NodeMetrics) []time
 		i++
 	}
 
-	// Sort timestamps chronologically
 	sort.Slice(timestamps, func(i, j int) bool {
 		return timestamps[i].Before(timestamps[j])
 	})
@@ -109,16 +103,13 @@ const (
 )
 
 func aggregateNodeMetricsByTime(metrics map[string]*prometheus.NodeMetrics, metricType NodeMetricType, allTimestamps []time.Time) []MetricDetail {
-	// Initialize result with all timestamps
 	result := make([]MetricDetail, len(allTimestamps))
 
-	// Get all node IDs for the breakdown
 	nodeIDs := make([]string, 0, len(metrics))
 	for id := range metrics {
 		nodeIDs = append(nodeIDs, id)
 	}
 
-	// Initialize result entries
 	for i, ts := range allTimestamps {
 		result[i] = MetricDetail{
 			Timestamp: ts,
@@ -126,19 +117,16 @@ func aggregateNodeMetricsByTime(metrics map[string]*prometheus.NodeMetrics, metr
 			Breakdown: make(map[string]*float64),
 		}
 
-		// Initialize breakdown map with nil values for all nodes
 		for _, id := range nodeIDs {
 			result[i].Breakdown[id] = nil
 		}
 	}
 
-	// Create a map for quick timestamp lookup
 	timestampIndexMap := make(map[time.Time]int)
 	for i, ts := range allTimestamps {
 		timestampIndexMap[ts] = i
 	}
 
-	// Fill in actual values
 	for id, samples := range metrics {
 		var samplePair []model.SamplePair
 		switch metricType {
@@ -160,9 +148,8 @@ func aggregateNodeMetricsByTime(metrics map[string]*prometheus.NodeMetrics, metr
 			ts := sample.Timestamp.Time()
 			if idx, ok := timestampIndexMap[ts]; ok {
 				value := float64(sample.Value)
-				result[idx].Breakdown[id] = utils.ToPtr(value)
+				result[idx].Breakdown[id] = new(value)
 
-				// Update the aggregated value
 				result[idx].Value += value
 			}
 		}

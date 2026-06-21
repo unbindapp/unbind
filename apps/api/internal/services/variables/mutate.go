@@ -65,7 +65,6 @@ func (self *VariablesService) UpdateVariables(
 		return nil, err
 	}
 
-	// Verify input
 	team, _, _, service, secretName, err := self.validateBaseInputs(ctx, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID)
 	if err != nil {
 		return nil, err
@@ -78,7 +77,6 @@ func (self *VariablesService) UpdateVariables(
 		}
 	}
 
-	// Create kubernetes client
 	client, err := self.k8s.CreateClientWithToken(bearerToken)
 	if err != nil {
 		return nil, err
@@ -99,7 +97,6 @@ func (self *VariablesService) UpdateVariables(
 		}
 
 		if behavior == models.VariableUpdateBehaviorOverwrite && input.Type == schema.VariableReferenceSourceTypeService {
-			// Get existing secrets
 			existingSecrets, err := self.k8s.GetSecretMap(ctx, secretName, team.Namespace, client)
 			if err != nil {
 				return err
@@ -146,7 +143,6 @@ func (self *VariablesService) UpdateVariables(
 				return err
 			}
 		} else {
-			// make secrets
 			_, err = self.k8s.UpsertSecretValues(ctx, secretName, team.Namespace, newVariables, client)
 			if err != nil {
 				return err
@@ -158,7 +154,6 @@ func (self *VariablesService) UpdateVariables(
 		return nil, err
 	}
 
-	// Get secrets
 	secrets, err := self.k8s.GetSecretMap(ctx, secretName, team.Namespace, client)
 	if err != nil {
 		return nil, err

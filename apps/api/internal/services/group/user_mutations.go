@@ -18,7 +18,6 @@ func (self *GroupService) AddUserToGroup(ctx context.Context, requesterUserID, t
 		},
 	}
 
-	// Execute permission checks
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return err
 	}
@@ -33,7 +32,6 @@ func (self *GroupService) AddUserToGroup(ctx context.Context, requesterUserID, t
 		return nil // User is already a member, nothing to do
 	}
 
-	// Add the user to the group
 	return self.repo.Group().AddUser(ctx, groupID, targetUserID)
 }
 
@@ -53,7 +51,6 @@ func (self *GroupService) RemoveUserFromGroup(ctx context.Context, requesterUser
 		},
 	}
 
-	// Execute permission checks
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return err
 	}
@@ -68,6 +65,5 @@ func (self *GroupService) RemoveUserFromGroup(ctx context.Context, requesterUser
 		return nil // User is not a member, nothing to do
 	}
 
-	// Remove the user from the group
 	return self.repo.Group().RemoveUser(ctx, groupID, targetUserID)
 }

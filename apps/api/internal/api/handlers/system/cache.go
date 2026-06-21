@@ -3,7 +3,6 @@ package system_handler
 import (
 	"context"
 
-	"github.com/danielgtaylor/huma/v2"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
 	"github.com/unbindapp/unbind-api/internal/models"
@@ -17,9 +16,9 @@ type RegistryCacheConfigResponse struct {
 }
 
 func (self *HandlerGroup) GetRegistryCacheConfig(ctx context.Context, input *server.BaseAuthInput) (*RegistryCacheConfigResponse, error) {
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		return nil, huma.Error401Unauthorized("Unauthorized")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	config, err := self.srv.SystemService.GetRegistryCacheConfig(ctx, user.ID)
@@ -40,9 +39,9 @@ type RegistryCacheStatsResponse struct {
 }
 
 func (self *HandlerGroup) GetRegistryCacheStats(ctx context.Context, input *server.BaseAuthInput) (*RegistryCacheStatsResponse, error) {
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		return nil, huma.Error401Unauthorized("Unauthorized")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	stats, err := self.srv.SystemService.GetRegistryCacheStats(ctx, user.ID)
@@ -62,9 +61,9 @@ type UpdateRegistryCacheInput struct {
 }
 
 func (self *HandlerGroup) UpdateRegistryCache(ctx context.Context, input *UpdateRegistryCacheInput) (*RegistryCacheConfigResponse, error) {
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		return nil, huma.Error401Unauthorized("Unauthorized")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	config, err := self.srv.SystemService.UpdateRegistryCache(ctx, user.ID, &input.Body)

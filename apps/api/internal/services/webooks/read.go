@@ -29,12 +29,10 @@ func (self *WebhooksService) GetWebhookByID(ctx context.Context, requesterUserID
 		})
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return nil, err
 	}
 
-	// Get webhook by ID
 	webhook, err := self.repo.Webhooks().GetByID(ctx, input.ID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -83,7 +81,6 @@ func (self *WebhooksService) ListWebhooks(ctx context.Context, requesterUserID u
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Project ID is required for project webhooks")
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return nil, err
 	}

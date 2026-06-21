@@ -11,7 +11,6 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/unbindapp/unbind-api/config"
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 	mocks_promapi "github.com/unbindapp/unbind-api/mocks/promapi"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -297,7 +296,7 @@ func (s *VolumeQueryTestSuite) TestGetVolumeStatsWithHistory_Success() {
 
 	// Create historical data
 	samples := make([]model.SamplePair, 5)
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		timestamp := s.testStart.Add(time.Duration(i) * s.testStep)
 		samples[i] = model.SamplePair{
 			Timestamp: model.Time(timestamp.Unix() * 1000),
@@ -504,7 +503,7 @@ func (s *VolumeQueryTestSuite) TestPVCVolumeStats_Structure() {
 	// Test the structure of PVCVolumeStats
 	stats := &PVCVolumeStats{
 		PVCName:    "test-pvc",
-		UsedGB:     utils.ToPtr(5.5),
+		UsedGB:     new(5.5),
 		CapacityGB: 10.0,
 	}
 

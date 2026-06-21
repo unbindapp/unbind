@@ -54,12 +54,10 @@ func (self *MetricsService) validatePermissionsAndParseInputs(ctx context.Contex
 		},
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return nil, nil, nil, nil, err
 	}
 
-	// Get namespace
 	team, err := self.repo.Team().GetByID(ctx, input.TeamID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -68,7 +66,6 @@ func (self *MetricsService) validatePermissionsAndParseInputs(ctx context.Contex
 		return nil, nil, nil, nil, err
 	}
 
-	// Get project
 	var project *ent.Project
 	if input.Type == models.MetricsTypeProject ||
 		input.Type == models.MetricsTypeEnvironment ||
@@ -86,7 +83,6 @@ func (self *MetricsService) validatePermissionsAndParseInputs(ctx context.Contex
 		}
 	}
 
-	// Get environment
 	var environment *ent.Environment
 	if input.Type == models.MetricsTypeEnvironment ||
 		input.Type == models.MetricsTypeService {
@@ -103,7 +99,6 @@ func (self *MetricsService) validatePermissionsAndParseInputs(ctx context.Contex
 		}
 	}
 
-	// Get service
 	var service *ent.Service
 	if input.Type == models.MetricsTypeService {
 		service, err = self.repo.Service().GetByID(ctx, input.ServiceID)

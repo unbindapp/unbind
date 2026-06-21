@@ -25,7 +25,7 @@ func nocodbTemplate() *schema.TemplateDefinition {
 				Type:        schema.InputTypeHost,
 				Description: "The domain to use for the NocoDB instance.",
 				Required:    true,
-				TargetPort:  utils.ToPtr(8080),
+				TargetPort:  new(8080),
 			},
 			{
 				ID:          "input_database_size",
@@ -33,7 +33,7 @@ func nocodbTemplate() *schema.TemplateDefinition {
 				Type:        schema.InputTypeDatabaseSize,
 				Description: "Size of the storage for the PostgreSQL database.",
 				Required:    true,
-				Default:     utils.ToPtr("1"),
+				Default:     new("1"),
 			},
 			{
 				ID:   "input_storage_size",
@@ -45,7 +45,7 @@ func nocodbTemplate() *schema.TemplateDefinition {
 				},
 				Description: "Size of the storage for NocoDB data.",
 				Required:    true,
-				Default:     utils.ToPtr("1"),
+				Default:     new("1"),
 			},
 		},
 		Services: []schema.TemplateService{
@@ -56,7 +56,7 @@ func nocodbTemplate() *schema.TemplateDefinition {
 				DisplayRank:  100,
 				Type:         schema.ServiceTypeDatabase,
 				Builder:      schema.ServiceBuilderDatabase,
-				DatabaseType: utils.ToPtr("postgres"),
+				DatabaseType: new("postgres"),
 			},
 			{
 				ID:        "service_nocodb",
@@ -64,7 +64,7 @@ func nocodbTemplate() *schema.TemplateDefinition {
 				Name:      "NocoDB",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     utils.ToPtr("nocodb/nocodb:2026.06.1"),
+				Image:     new("nocodb/nocodb:2026.06.1"),
 				DependsOn: []string{"service_postgresql"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 40,
@@ -79,13 +79,13 @@ func nocodbTemplate() *schema.TemplateDefinition {
 				HealthCheck: &schema.HealthCheck{
 					Type:                    utils.ToPtr(schema.HealthCheckTypeHTTP),
 					Path:                    "/api/v1/health",
-					Port:                    utils.ToPtr(int32(8080)),
-					StartupPeriodSeconds:    utils.ToPtr(int32(5)),
-					StartupTimeoutSeconds:   utils.ToPtr(int32(20)),
-					StartupFailureThreshold: utils.ToPtr(int32(10)),
-					HealthPeriodSeconds:     utils.ToPtr(int32(10)),
-					HealthTimeoutSeconds:    utils.ToPtr(int32(5)),
-					HealthFailureThreshold:  utils.ToPtr(int32(5)),
+					Port:                    new(int32(8080)),
+					StartupPeriodSeconds:    new(int32(5)),
+					StartupTimeoutSeconds:   new(int32(20)),
+					StartupFailureThreshold: new(int32(10)),
+					HealthPeriodSeconds:     new(int32(10)),
+					HealthTimeoutSeconds:    new(int32(5)),
+					HealthFailureThreshold:  new(int32(5)),
 				},
 				VariableReferences: []schema.TemplateVariableReference{
 					{

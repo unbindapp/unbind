@@ -11,7 +11,6 @@ import (
 
 // GetGroupByID retrieves a group by its ID
 func (self *GroupService) GetGroupByID(ctx context.Context, userID uuid.UUID, groupID uuid.UUID) (*ent.Group, error) {
-	// Retrieve the group
 	group, err := self.repo.Group().GetByID(ctx, groupID)
 	if err != nil {
 		// May be entNotFound err
@@ -48,7 +47,6 @@ func (self *GroupService) GetGroupByID(ctx context.Context, userID uuid.UUID, gr
 
 // ListGroups retrieves all groups the user has permission to view
 func (self *GroupService) ListGroups(ctx context.Context, userID uuid.UUID) ([]*ent.Group, error) {
-	// Start with a base query
 	query := self.repo.Ent().Group.Query()
 
 	// Always give members access to their own team's groups
@@ -68,6 +66,5 @@ func (self *GroupService) ListGroups(ctx context.Context, userID uuid.UUID) ([]*
 		return nil, err
 	}
 
-	// Execute the query
 	return query.All(ctx)
 }

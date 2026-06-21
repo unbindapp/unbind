@@ -13,7 +13,6 @@ func (self *SystemRepository) UpsertPVCMetadata(ctx context.Context, tx reposito
 	if tx != nil {
 		db = tx.Client()
 	}
-	// See if pvc exists
 	existing, err := db.PVCMetadata.Query().Where(
 		pvcmetadata.PvcID(pvcID),
 	).Only(ctx)
@@ -23,7 +22,6 @@ func (self *SystemRepository) UpsertPVCMetadata(ctx context.Context, tx reposito
 	}
 
 	if ent.IsNotFound(err) {
-		// Create
 		_, err = db.PVCMetadata.Create().
 			SetPvcID(pvcID).
 			SetNillableName(name).
@@ -35,7 +33,6 @@ func (self *SystemRepository) UpsertPVCMetadata(ctx context.Context, tx reposito
 		return nil
 	}
 
-	// Update
 	m := db.PVCMetadata.UpdateOneID(existing.ID)
 	if name != nil {
 		if *name == "" {

@@ -33,12 +33,10 @@ func (self *WebhooksService) DeleteWebhook(ctx context.Context, requesterUserID 
 		})
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return err
 	}
 
-	// Get the webhook
 	webhook, err := self.repo.Webhooks().GetByID(ctx, id)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -55,7 +53,6 @@ func (self *WebhooksService) DeleteWebhook(ctx context.Context, requesterUserID 
 		return errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Webhook not found")
 	}
 
-	// Delete the webhook
 	if err := self.repo.Webhooks().Delete(ctx, id); err != nil {
 		return err
 	}

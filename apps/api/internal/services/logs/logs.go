@@ -54,12 +54,10 @@ func (self *LogsService) validatePermissionsAndParseInputs(ctx context.Context, 
 		},
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return nil, nil, nil, nil, err
 	}
 
-	// Get namespace
 	team, err := self.repo.Team().GetByID(ctx, teamID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -68,7 +66,6 @@ func (self *LogsService) validatePermissionsAndParseInputs(ctx context.Context, 
 		return nil, nil, nil, nil, err
 	}
 
-	// Get project
 	var project *ent.Project
 	if logType == models.LogTypeProject ||
 		logType == models.LogTypeEnvironment ||
@@ -87,7 +84,6 @@ func (self *LogsService) validatePermissionsAndParseInputs(ctx context.Context, 
 		}
 	}
 
-	// Get environment
 	var environment *ent.Environment
 	if logType == models.LogTypeEnvironment ||
 		logType == models.LogTypeService ||
@@ -105,7 +101,6 @@ func (self *LogsService) validatePermissionsAndParseInputs(ctx context.Context, 
 		}
 	}
 
-	// Get service
 	var service *ent.Service
 	if logType == models.LogTypeService || logType == models.LogTypeDeployment {
 		service, err = self.repo.Service().GetByID(ctx, serviceID)
@@ -127,15 +122,14 @@ func (self *LogsService) validateDeploymentInput(ctx context.Context, deployment
 	// Validation
 	validDeployment := false
 	var err error
-	if service != nil {
-		if deployment.ServiceID == service.ID {
-			validDeployment = true
-		}
-	} else if environment != nil {
+	switch {
+	case service != nil:
+		validDeployment = deployment.ServiceID == service.ID
+	case environment != nil:
 		validDeployment, err = self.repo.Deployment().ExistsInEnvironment(ctx, deployment.ID, environment.ID)
-	} else if project != nil {
+	case project != nil:
 		validDeployment, err = self.repo.Deployment().ExistsInProject(ctx, deployment.ID, project.ID)
-	} else if team != nil {
+	case team != nil:
 		validDeployment, err = self.repo.Deployment().ExistsInTeam(ctx, deployment.ID, team.ID)
 	}
 

@@ -15,7 +15,6 @@ type K8SClient struct {
 }
 
 func NewK8SClient(cfg config.ConfigInterface, builderConfig *builderConfig.Config, repo repositories.RepositoriesInterface) *K8SClient {
-	// Get client
 	kubeClient := k8s.NewKubeClient(cfg, repo)
 
 	return &K8SClient{

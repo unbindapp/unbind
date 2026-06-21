@@ -129,8 +129,8 @@ func (self *KubeClient) impersonationConfig(userName string, groups []string) *r
 // ApplyYAML applies a YAML document to the cluster
 func (self *KubeClient) ApplyYAML(ctx context.Context, yaml []byte) error {
 	// Split YAML documents
-	docs := strings.Split(string(yaml), "---")
-	for _, doc := range docs {
+	docs := strings.SplitSeq(string(yaml), "---")
+	for doc := range docs {
 		doc = strings.TrimSpace(doc)
 		if doc == "" {
 			continue

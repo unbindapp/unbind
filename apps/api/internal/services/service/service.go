@@ -127,12 +127,11 @@ func (self *ServiceService) generateWildcardHost(ctx context.Context, tx reposit
 	return &schema.HostSpec{
 		Host:       domain,
 		Path:       "/",
-		TargetPort: utils.ToPtr(ports[0].Port),
+		TargetPort: new(ports[0].Port),
 	}, nil
 }
 
 func (self *ServiceService) verifyS3Access(ctx context.Context, s3Source *ent.S3, bucket string, namespace string, client kubernetes.Interface) error {
-	// Retrieve secret from kubernetes
 	secret, err := self.k8s.GetSecret(ctx, s3Source.KubernetesSecret, namespace, client)
 	if err != nil {
 		return err
@@ -174,7 +173,6 @@ func (self *ServiceService) validatePVC(ctx context.Context, teamID, projectID, 
 		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "PVC is already in use by another service")
 	}
 
-	// Get the actual PVC from k8s
 	pvc, err := self.k8s.GetPersistentVolumeClaim(ctx, namespace, name, client)
 	if err != nil {
 		return err
@@ -295,13 +293,13 @@ func (self *ServiceService) getVolumesForServices(ctx context.Context, namespace
 				pvc.MountPath = utils.InferOperatorPVCMountPath(*service.Database)
 			}
 			if pvc.MountPath == nil {
-				pvc.MountPath = utils.ToPtr("/database")
+				pvc.MountPath = new("/database")
 			}
 		} else {
 			// For other services, use mount path from service config
 			for _, volumeMount := range service.Edges.ServiceConfig.Volumes {
 				if volumeMount.ID == pvc.ID {
-					pvc.MountPath = utils.ToPtr(volumeMount.MountPath)
+					pvc.MountPath = new(volumeMount.MountPath)
 				}
 			}
 		}

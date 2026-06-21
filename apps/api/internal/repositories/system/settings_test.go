@@ -6,7 +6,6 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 	repository "github.com/unbindapp/unbind-api/internal/repositories/repositorytest"
 )
 
@@ -59,7 +58,7 @@ func (suite *SettingsSuite) TestUpdateSystemSettings() {
 		suite.DB.SystemSetting.Delete().ExecX(suite.Ctx)
 
 		input := &SystemSettingUpdateInput{
-			WildcardDomain: utils.ToPtr("https://app.example.com"),
+			WildcardDomain: new("https://app.example.com"),
 		}
 
 		settings, err := suite.systemRepo.UpdateSystemSettings(suite.Ctx, input)
@@ -79,7 +78,7 @@ func (suite *SettingsSuite) TestUpdateSystemSettings() {
 			SaveX(suite.Ctx)
 
 		input := &SystemSettingUpdateInput{
-			WildcardDomain: utils.ToPtr("http://new.example.com"),
+			WildcardDomain: new("http://new.example.com"),
 		}
 
 		settings, err := suite.systemRepo.UpdateSystemSettings(suite.Ctx, input)
@@ -99,7 +98,7 @@ func (suite *SettingsSuite) TestUpdateSystemSettings() {
 			SaveX(suite.Ctx)
 
 		input := &SystemSettingUpdateInput{
-			WildcardDomain: utils.ToPtr(""),
+			WildcardDomain: new(""),
 		}
 
 		settings, err := suite.systemRepo.UpdateSystemSettings(suite.Ctx, input)
@@ -144,7 +143,7 @@ func (suite *SettingsSuite) TestUpdateSystemSettings() {
 			suite.DB.SystemSetting.Delete().ExecX(suite.Ctx)
 
 			input := &SystemSettingUpdateInput{
-				WildcardDomain: utils.ToPtr(tc.input),
+				WildcardDomain: new(tc.input),
 			}
 
 			settings, err := suite.systemRepo.UpdateSystemSettings(suite.Ctx, input)
@@ -155,7 +154,7 @@ func (suite *SettingsSuite) TestUpdateSystemSettings() {
 
 	suite.Run("Error when DB closed", func() {
 		input := &SystemSettingUpdateInput{
-			WildcardDomain: utils.ToPtr("test.example.com"),
+			WildcardDomain: new("test.example.com"),
 		}
 
 		suite.DB.Close()

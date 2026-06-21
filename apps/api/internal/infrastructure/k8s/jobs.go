@@ -16,7 +16,6 @@ func (self *KubeClient) CreateDeployment(ctx context.Context, deploymentID strin
 	// Build a unique job name
 	jobName = fmt.Sprintf("%s-deployment-%d", deploymentID, time.Now().Unix())
 
-	// Convert environment variables from map to slice
 	var envVars []corev1.EnvVar
 	for k, v := range env {
 		envVars = append(envVars, corev1.EnvVar{Name: k, Value: v})
@@ -28,7 +27,6 @@ func (self *KubeClient) CreateDeployment(ctx context.Context, deploymentID strin
 		"trigger-timestamp":       time.Now().Format(time.RFC3339),
 	}
 
-	// Define the Job object
 	// Define the Job object
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
@@ -105,7 +103,6 @@ exec /app/builder`, self.config.GetBuildkitHost(), self.config.GetBuildkitHost()
 			},
 		},
 	}
-	// Create the Job in Kubernetes
 	_, err = self.clientset.BatchV1().Jobs(self.config.GetSystemNamespace()).Create(ctx, job, metav1.CreateOptions{})
 	return jobName, err
 }

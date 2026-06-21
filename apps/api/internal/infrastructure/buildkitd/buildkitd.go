@@ -53,7 +53,6 @@ func NewBuildkitSettingsManager(cfg *config.Config, repo repositories.Repositori
 
 // GetOrCreateBuildkitConfig retrieves the existing buildkit ConfigMap, returns NotFound if it does not exist
 func (self *BuildkitSettingsManager) GetBuildkitConfig(ctx context.Context) (*corev1.ConfigMap, error) {
-	// Try to get the existing ConfigMap
 	cm, err := self.k8s.GetInternalClient().CoreV1().ConfigMaps(self.cfg.SystemNamespace).Get(ctx, BuildkitConfigName, metav1.GetOptions{})
 
 	if err != nil {
@@ -63,7 +62,6 @@ func (self *BuildkitSettingsManager) GetBuildkitConfig(ctx context.Context) (*co
 		return nil, err
 	}
 
-	// ConfigMap exists, return it
 	return cm, nil
 }
 
@@ -74,14 +72,12 @@ func (self *BuildkitSettingsManager) UpdateMaxParallelism(ctx context.Context, p
 		return err
 	}
 
-	// Get the current buildkitd.toml content
 	tomlContent, exists := cm.Data[BuildkitConfigKey]
 	if !exists {
 		// If the key doesn't exist, use the default config
 		tomlContent = fmt.Sprintf(DefaultBuildkitConfig, self.cfg.SystemNamespace)
 	}
 
-	// Update the max-parallelism value using regex
 	re := regexp.MustCompile(`(max-parallelism = )(\d+)`)
 	newTomlContent := re.ReplaceAllString(tomlContent, fmt.Sprintf("${1}%d", parallelism))
 
@@ -90,7 +86,6 @@ func (self *BuildkitSettingsManager) UpdateMaxParallelism(ctx context.Context, p
 		return fmt.Errorf("max-parallelism setting not found in buildkitd.toml")
 	}
 
-	// Update the ConfigMap
 	cm.Data[BuildkitConfigKey] = newTomlContent
 	_, err = self.k8s.GetInternalClient().CoreV1().ConfigMaps(self.cfg.SystemNamespace).Update(ctx, cm, metav1.UpdateOptions{})
 	if err != nil {
@@ -107,13 +102,11 @@ func (self *BuildkitSettingsManager) GetCurrentMaxParallelism(ctx context.Contex
 		return 0, err
 	}
 
-	// Get the current buildkitd.toml content
 	tomlContent, exists := cm.Data[BuildkitConfigKey]
 	if !exists {
 		return 0, fmt.Errorf("buildkitd.toml not found in ConfigMap")
 	}
 
-	// Extract the max-parallelism value using regex
 	re := regexp.MustCompile(`max-parallelism = (\d+)`)
 	matches := re.FindStringSubmatch(tomlContent)
 
@@ -121,7 +114,6 @@ func (self *BuildkitSettingsManager) GetCurrentMaxParallelism(ctx context.Contex
 		return 2, fmt.Errorf("max-parallelism setting not found in buildkitd.toml")
 	}
 
-	// Parse the value to int
 	value, err := strconv.Atoi(matches[1])
 	if err != nil {
 		return 2, fmt.Errorf("invalid max-parallelism value: %w", err)
@@ -132,7 +124,6 @@ func (self *BuildkitSettingsManager) GetCurrentMaxParallelism(ctx context.Contex
 
 // UpdateReplicas updates the number of replicas for the buildkitd deployment
 func (self *BuildkitSettingsManager) UpdateReplicas(ctx context.Context, replicas int) error {
-	// Create a patch operation to update the replicas
 	replicasInt32 := int32(replicas)
 	patchBytes, err := json.Marshal([]map[string]any{
 		{
@@ -145,7 +136,6 @@ func (self *BuildkitSettingsManager) UpdateReplicas(ctx context.Context, replica
 		return fmt.Errorf("failed to create patch for replicas update: %w", err)
 	}
 
-	// Apply the patch to the deployment
 	_, err = self.k8s.GetInternalClient().AppsV1().Deployments(self.cfg.SystemNamespace).Patch(
 		ctx,
 		BuildkitDeploymentName,
@@ -170,7 +160,6 @@ func (self *BuildkitSettingsManager) GetCurrentReplicas(ctx context.Context) (in
 		return 0, fmt.Errorf("failed to get buildkitd deployment: %w", err)
 	}
 
-	// Return the current replica count
 	return int(*deployment.Spec.Replicas), nil
 }
 
@@ -189,11 +178,9 @@ func (self *BuildkitSettingsManager) RestartBuildkitdPods(ctx context.Context) e
 		deployment.Spec.Template.Annotations = make(map[string]string)
 	}
 
-	// Add a restart timestamp annotation
 	timestamp := time.Now().UTC().Format(time.RFC3339)
 	deployment.Spec.Template.Annotations["kubectl.kubernetes.io/restartedAt"] = timestamp
 
-	// Update the deployment
 	_, err = self.k8s.GetInternalClient().AppsV1().Deployments(self.cfg.SystemNamespace).Update(ctx, deployment, metav1.UpdateOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to restart buildkitd pods: %w", err)

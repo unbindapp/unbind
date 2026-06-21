@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"slices"
 	"sort"
 	"strings"
 
@@ -27,7 +28,6 @@ type VersionMetadataMap map[string]VersionMetadata
 
 // GetVersionMetadata fetches the metadata for all versions
 func (m *Manager) GetVersionMetadata(ctx context.Context) (VersionMetadataMap, error) {
-	// Fetch the metadata file
 	resp, err := http.Get(m.metadataURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch metadata: %w", err)
@@ -187,11 +187,8 @@ func (self *Manager) GetUpdatePath(ctx context.Context, currentVersion, targetVe
 			canUpdate = true
 		} else if len(meta.DependsOn) > 0 {
 			// For breaking updates, check if current version is in dependencies
-			for _, dep := range meta.DependsOn {
-				if dep == currentVersion {
-					canUpdate = true
-					break
-				}
+			if slices.Contains(meta.DependsOn, currentVersion) {
+				canUpdate = true
 			}
 		}
 

@@ -31,7 +31,6 @@ func (self *SystemService) CreateRegistry(ctx context.Context, requesterUserID u
 		return nil, err
 	}
 
-	// Test registry
 	valid, err := self.registryTester.TestRegistryCredentials(ctx, input.Host, input.Username, input.Password)
 	if err != nil {
 		return nil, err
@@ -41,7 +40,6 @@ func (self *SystemService) CreateRegistry(ctx context.Context, requesterUserID u
 	}
 
 	var registry *ent.Registry
-	// Start transaction
 	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
 		// Create credentials first if needed
 		secretName, err := utils.GenerateSlug(input.Host)
@@ -49,7 +47,6 @@ func (self *SystemService) CreateRegistry(ctx context.Context, requesterUserID u
 			return fmt.Errorf("failed to generate slug for registry secret: %w", err)
 		}
 
-		// Create registry
 		registry, err = self.repo.System().CreateRegistry(ctx, tx, input.Host, secretName, false)
 		if err != nil {
 			return fmt.Errorf("failed to create registry: %w", err)

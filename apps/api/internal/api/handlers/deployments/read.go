@@ -3,10 +3,8 @@ package deployments_handler
 import (
 	"context"
 
-	"github.com/danielgtaylor/huma/v2"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
-	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/models"
 )
 
@@ -28,11 +26,9 @@ type ListDeploymentsResponse struct {
 }
 
 func (self *HandlerGroup) ListDeployments(ctx context.Context, input *ListDeploymentsInput) (*ListDeploymentsResponse, error) {
-	// Get caller
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		log.Error("Error getting user from context")
-		return nil, huma.Error401Unauthorized("Unable to retrieve user")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	response, currentDeployment, metadata, err := self.srv.DeploymentService.GetDeploymentsForService(ctx, user.ID, &input.GetDeploymentsInput)
@@ -66,11 +62,9 @@ type GetDeploymentResponse struct {
 }
 
 func (self *HandlerGroup) GetDeploymentByID(ctx context.Context, input *GetDeploymentInput) (*GetDeploymentResponse, error) {
-	// Get caller
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		log.Error("Error getting user from context")
-		return nil, huma.Error401Unauthorized("Unable to retrieve user")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	deployment, err := self.srv.DeploymentService.GetDeploymentByID(ctx, user.ID, &input.GetDeploymentByIDInput)

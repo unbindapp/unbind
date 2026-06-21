@@ -33,11 +33,9 @@ func markDeploymentSuccessful(ctx context.Context, cfg *config.Config, webhooksS
 		return err
 	}
 
-	// Trigger webhook
 	event := schema.WebhookEventDeploymentSucceeded
 	level := webhooks_service.WebhookLevelDeploymentSucceeded
 
-	// Get service with edges
 	serviceID, _ := uuid.Parse(cfg.ServiceRef)
 	service, err := repo.Service().GetByID(context.Background(), serviceID)
 	if err != nil {
@@ -45,7 +43,6 @@ func markDeploymentSuccessful(ctx context.Context, cfg *config.Config, webhooksS
 		return nil
 	}
 
-	// Construct URL
 	basePath, _ := utils.JoinURLPaths(
 		cfg.ExternalUIUrl,
 		service.Edges.Environment.Edges.Project.Edges.Team.ID.String(),
@@ -84,11 +81,9 @@ func markDeploymentFailed(ctx context.Context, cfg *config.Config, webhooksServi
 		return err
 	}
 
-	// Trigger webhook
 	event := schema.WebhookEventDeploymentFailed
 	level := webhooks_service.WebhookLevelDeploymentFailed
 
-	// Get service with edges
 	serviceID, _ := uuid.Parse(cfg.ServiceRef)
 	service, err := repo.Service().GetByID(context.Background(), serviceID)
 	if err != nil {
@@ -96,7 +91,6 @@ func markDeploymentFailed(ctx context.Context, cfg *config.Config, webhooksServi
 		return nil
 	}
 
-	// Construct URL
 	basePath, _ := utils.JoinURLPaths(
 		cfg.ExternalUIUrl,
 		service.Edges.Environment.Edges.Project.Edges.Team.ID.String(),
@@ -172,12 +166,10 @@ func main() {
 		log.Fatalf("Failed to parse service ID, ref must be a valid uuidv4: %v", err)
 	}
 
-	// Setup database
 	dbConnInfo, err := database.GetSqlDbConn(cfg, false)
 	if err != nil {
 		log.Fatalf("Failed to get database connection info: %v", err)
 	}
-	// Initialize ent client
 	db, _, err := database.NewEntClient(dbConnInfo)
 	if err != nil {
 		log.Fatalf("Failed to create ent client: %v", err)
@@ -185,12 +177,10 @@ func main() {
 	repo := repositories.NewRepositories(db)
 	webhooksService := webhooks_service.NewWebhooksService(repo)
 
-	// Trigger webhook
 	go func() {
 		event := schema.WebhookEventDeploymentBuilding
 		level := webhooks_service.WebhookLevelDeploymentBuilding
 
-		// Get service with edges
 		serviceID, _ := uuid.Parse(cfg.ServiceRef)
 		service, err := repo.Service().GetByID(context.Background(), serviceID)
 		if err != nil {
@@ -198,7 +188,6 @@ func main() {
 			return
 		}
 
-		// Construct URL
 		url, _ := utils.JoinURLPaths(cfg.ExternalUIUrl, service.Edges.Environment.Edges.Project.Edges.Team.ID.String(), "project", service.Edges.Environment.Edges.Project.ID.String(), "?environment="+service.EnvironmentID.String(), "&service="+service.ID.String(), "&deployment="+cfg.ServiceDeploymentID.String())
 		data := webhooks_service.WebhookData{
 			Title: "Deployment Building",
@@ -288,7 +277,6 @@ func main() {
 	if cfg.ServiceImage != "" || cfg.ServiceType == schema.ServiceTypeDatabase {
 		dockerImg = cfg.ServiceImage
 	} else {
-		// Parse build secrets from env
 		serializableSecrets := make(map[string]string)
 		if cfg.ServiceBuildSecrets != "" {
 			if err := json.Unmarshal([]byte(cfg.ServiceBuildSecrets), &serializableSecrets); err != nil {
@@ -298,7 +286,6 @@ func main() {
 				log.Fatalf("Failed to parse secrets: %v", err)
 			}
 
-			// Convert back to map[string][]byte
 			for k, v := range serializableSecrets {
 				data, err := base64.StdEncoding.DecodeString(v)
 				if err != nil {
@@ -309,7 +296,6 @@ func main() {
 			}
 		}
 
-		// Build with context
 		switch cfg.ServiceBuilder {
 		case schema.ServiceBuilderRailpack:
 			dockerImg, _, err = builder.BuildWithRailpack(ctx, buildSecrets)
@@ -349,7 +335,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Deploy to kubernetes with context
 	_, serviceSpec, err := k8s.DeployImage(ctx, crdName, dockerImg, additionalEnv, securityContext, healthCheck, variableMounts)
 	if err != nil {
 		if err := markDeploymentFailed(ctx, cfg, webhooksService, repo, fmt.Sprintf("failed to deploy image %v", err), cfg.ServiceDeploymentID); err != nil {
@@ -358,7 +343,6 @@ func main() {
 		log.Fatalf("Failed to deploy image: %v", err)
 	}
 
-	// Update deployment metadata in the DB
 	if err := repo.WithTx(ctx, func(tx repository.TxInterface) error {
 		if _, err = repo.Deployment().AttachDeploymentMetadata(
 			ctx,
@@ -370,7 +354,6 @@ func main() {
 			log.Error("Failed to attach deployment metadata", "deployment_id", cfg.ServiceDeploymentID, "err", err)
 		}
 
-		// Update active deployment
 		if err = repo.Service().SetCurrentDeployment(ctx, tx, serviceId, cfg.ServiceDeploymentID); err != nil {
 			log.Error("Failed to set current deployment", "service_id", serviceId, "deployment_id", cfg.ServiceDeploymentID, "err", err)
 		}

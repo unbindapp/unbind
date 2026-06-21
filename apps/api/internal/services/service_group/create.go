@@ -10,7 +10,6 @@ import (
 )
 
 func (self *ServiceGroupService) CreateServiceGroup(ctx context.Context, requesterUserID uuid.UUID, input *models.CreateServiceGroupInput) (*models.ServiceGroupResponse, error) {
-	// Check permissions
 	permissionChecks := []permissions_repo.PermissionCheck{
 		// Has permission to manage teams
 		{
@@ -24,7 +23,6 @@ func (self *ServiceGroupService) CreateServiceGroup(ctx context.Context, request
 		return nil, err
 	}
 
-	// Verify inputs
 	_, _, err := self.VerifyInputs(ctx, input.TeamID, input.ProjectID, input.EnvironmentID)
 	if err != nil {
 		return nil, err

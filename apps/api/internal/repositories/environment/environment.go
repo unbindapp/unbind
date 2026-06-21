@@ -12,7 +12,6 @@ type EnvironmentRepository struct {
 	base *repository.BaseRepository
 }
 
-// NewEnvironmentRepository creates a new GitHub repository
 func NewEnvironmentRepository(db *ent.Client) *EnvironmentRepository {
 	return &EnvironmentRepository{
 		base: &repository.BaseRepository{DB: db},

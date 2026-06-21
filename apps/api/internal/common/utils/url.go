@@ -24,13 +24,11 @@ func JoinURLPaths(baseURL string, paths ...string) (string, error) {
 // 3. Converts special characters to hyphens
 // Returns the transformed domain and an error if invalid
 func ValidateAndExtractDomain(urlStr string) (string, error) {
-	// Parse the URL
 	parsedURL, err := url.Parse(urlStr)
 	if err != nil {
 		return "", err
 	}
 
-	// Check if scheme is http or https
 	if parsedURL.Scheme != "http" && parsedURL.Scheme != "https" {
 		return "", fmt.Errorf("invalid URL scheme: %s", parsedURL.Scheme)
 	}
@@ -52,11 +50,9 @@ func ValidateAndExtractDomain(urlStr string) (string, error) {
 
 // transformDomain converts special characters to hyphens
 func transformDomain(domain string) string {
-	// Replace dots and other special characters with hyphens
 	reg := regexp.MustCompile(`[^a-zA-Z0-9]+`)
 	transformed := reg.ReplaceAllString(domain, "-")
 
-	// Remove leading and trailing hyphens
 	transformed = strings.Trim(transformed, "-")
 
 	return transformed
@@ -72,18 +68,14 @@ func GenerateSubdomain(name, externalURL string) (string, error) {
 
 	domain := u.Hostname()
 
-	// Sanitize name
 	sanitizedDisplay := sanitizeForSubdomain(name)
 
-	// Check if we have valid components
 	if sanitizedDisplay == "" {
 		return "", fmt.Errorf("could not generate subdomain: name sanitized to empty string")
 	}
 
-	// Create the subdomain pattern
 	subdomain := sanitizedDisplay
 
-	// Form the complete domain
 	fullDomain := fmt.Sprintf("%s.%s", subdomain, domain)
 
 	return fullDomain, nil
@@ -92,11 +84,9 @@ func GenerateSubdomain(name, externalURL string) (string, error) {
 // sanitizeForSubdomain converts a string to a valid subdomain part
 // by replacing spaces with hyphens, converting to lowercase and removing invalid characters
 func sanitizeForSubdomain(s string) string {
-	// Replace spaces and underscores with hyphens
 	s = strings.ReplaceAll(s, " ", "-")
 	s = strings.ReplaceAll(s, "_", "-")
 
-	// Convert to lowercase
 	s = strings.ToLower(s)
 
 	// Keep only alphanumeric characters and hyphens
@@ -107,7 +97,6 @@ func sanitizeForSubdomain(s string) string {
 	reg = regexp.MustCompile("-+")
 	s = reg.ReplaceAllString(s, "-")
 
-	// Remove leading and trailing hyphens
 	s = strings.Trim(s, "-")
 
 	return s
@@ -121,12 +110,10 @@ func CleanAndValidateHost(host string) (string, error) {
 	host = strings.TrimPrefix(host, "https://")
 	host = strings.TrimSuffix(host, "/")
 
-	// Basic domain validation
 	if !strings.Contains(host, ".") {
 		return "", fmt.Errorf("invalid domain: must contain at least one dot")
 	}
 
-	// Check for invalid characters
 	if strings.ContainsAny(host, "!@#$%^&*()_+{}|:\"<>?[]\\;',") {
 		return "", fmt.Errorf("invalid domain: contains invalid characters")
 	}

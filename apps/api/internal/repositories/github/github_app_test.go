@@ -179,11 +179,11 @@ func (suite *GithubAppSuite) TestCreateApp() {
 	suite.Run("CreateApp Success", func() {
 		appConfig := &github.AppConfig{
 			ID:            utils.ToPtr[int64](99999),
-			ClientID:      utils.ToPtr("new-client-id"),
-			ClientSecret:  utils.ToPtr("new-client-secret"),
-			WebhookSecret: utils.ToPtr("new-webhook-secret"),
-			PEM:           utils.ToPtr("new-private-key"),
-			Name:          utils.ToPtr("New App"),
+			ClientID:      new("new-client-id"),
+			ClientSecret:  new("new-client-secret"),
+			WebhookSecret: new("new-webhook-secret"),
+			PEM:           new("new-private-key"),
+			Name:          new("New App"),
 		}
 		uniqueUUID := uuid.New()
 
@@ -204,12 +204,12 @@ func (suite *GithubAppSuite) TestCreateApp() {
 
 	suite.Run("CreateApp Error - Duplicate ID", func() {
 		appConfig := &github.AppConfig{
-			ID:            utils.ToPtr[int64](suite.testApp.ID), // Same ID as existing app
-			ClientID:      utils.ToPtr("duplicate-client-id"),
-			ClientSecret:  utils.ToPtr("duplicate-client-secret"),
-			WebhookSecret: utils.ToPtr("duplicate-webhook-secret"),
-			PEM:           utils.ToPtr("duplicate-private-key"),
-			Name:          utils.ToPtr("Duplicate App"),
+			ID:            new(suite.testApp.ID), // Same ID as existing app
+			ClientID:      new("duplicate-client-id"),
+			ClientSecret:  new("duplicate-client-secret"),
+			WebhookSecret: new("duplicate-webhook-secret"),
+			PEM:           new("duplicate-private-key"),
+			Name:          new("Duplicate App"),
 		}
 		uniqueUUID := uuid.New()
 
@@ -221,11 +221,11 @@ func (suite *GithubAppSuite) TestCreateApp() {
 	suite.Run("CreateApp Error - Duplicate UUID", func() {
 		appConfig := &github.AppConfig{
 			ID:            utils.ToPtr[int64](88888),
-			ClientID:      utils.ToPtr("uuid-duplicate-client-id"),
-			ClientSecret:  utils.ToPtr("uuid-duplicate-client-secret"),
-			WebhookSecret: utils.ToPtr("uuid-duplicate-webhook-secret"),
-			PEM:           utils.ToPtr("uuid-duplicate-private-key"),
-			Name:          utils.ToPtr("UUID Duplicate App"),
+			ClientID:      new("uuid-duplicate-client-id"),
+			ClientSecret:  new("uuid-duplicate-client-secret"),
+			WebhookSecret: new("uuid-duplicate-webhook-secret"),
+			PEM:           new("uuid-duplicate-private-key"),
+			Name:          new("UUID Duplicate App"),
 		}
 
 		app, err := suite.githubRepo.CreateApp(suite.Ctx, suite.testApp.UUID, appConfig, suite.testUser.ID) // Same UUID
@@ -236,11 +236,11 @@ func (suite *GithubAppSuite) TestCreateApp() {
 	suite.Run("CreateApp Error - Invalid User ID", func() {
 		appConfig := &github.AppConfig{
 			ID:            utils.ToPtr[int64](77777),
-			ClientID:      utils.ToPtr("invalid-user-client-id"),
-			ClientSecret:  utils.ToPtr("invalid-user-client-secret"),
-			WebhookSecret: utils.ToPtr("invalid-user-webhook-secret"),
-			PEM:           utils.ToPtr("invalid-user-private-key"),
-			Name:          utils.ToPtr("Invalid User App"),
+			ClientID:      new("invalid-user-client-id"),
+			ClientSecret:  new("invalid-user-client-secret"),
+			WebhookSecret: new("invalid-user-webhook-secret"),
+			PEM:           new("invalid-user-private-key"),
+			Name:          new("Invalid User App"),
 		}
 		uniqueUUID := uuid.New()
 		invalidUserID := uuid.New()
@@ -253,11 +253,11 @@ func (suite *GithubAppSuite) TestCreateApp() {
 	suite.Run("CreateApp Error when DB closed", func() {
 		appConfig := &github.AppConfig{
 			ID:            utils.ToPtr[int64](66666),
-			ClientID:      utils.ToPtr("closed-db-client-id"),
-			ClientSecret:  utils.ToPtr("closed-db-client-secret"),
-			WebhookSecret: utils.ToPtr("closed-db-webhook-secret"),
-			PEM:           utils.ToPtr("closed-db-private-key"),
-			Name:          utils.ToPtr("Closed DB App"),
+			ClientID:      new("closed-db-client-id"),
+			ClientSecret:  new("closed-db-client-secret"),
+			WebhookSecret: new("closed-db-webhook-secret"),
+			PEM:           new("closed-db-private-key"),
+			Name:          new("Closed DB App"),
 		}
 		uniqueUUID := uuid.New()
 

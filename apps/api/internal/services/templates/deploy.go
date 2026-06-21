@@ -49,13 +49,11 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 		return nil, err
 	}
 
-	// Verify inputs
 	_, project, err := self.VerifyInputs(ctx, input.TeamID, input.ProjectID, input.EnvironmentID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get the template
 	template, err := self.repo.Template().GetByID(ctx, input.TemplateID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -116,7 +114,6 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 			// Ignore if input already exists
 			for _, inputValue := range input.Inputs {
 				if inputValue.ID == defInput.ID {
-					// Parse as int32
 					port, err := strconv.Atoi(inputValue.Value)
 					if err != nil {
 						return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("invalid node port %s for input %s", inputValue.Value, inputValue.ID))
@@ -126,7 +123,6 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 				}
 			}
 
-			// Generate a port
 			nodePort, err := self.k8s.GetUnusedNodePort(ctx)
 			if err != nil {
 				return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("failed to generate node port: %v", err))
@@ -216,13 +212,11 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 		}
 	}
 
-	// Create kubernetes client
 	client, err := self.k8s.CreateClientWithToken(bearerToken)
 	if err != nil {
 		return nil, err
 	}
 
-	// Create services
 	var secretNames []string
 	var newServices []*ent.Service
 	dbServiceMap := make(map[string]*ent.Service)
@@ -231,7 +225,7 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 	templateInstanceID := uuid.New()
 
 	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
-		serviceGroup, err := self.repo.ServiceGroup().Create(ctx, tx, input.GroupName, utils.ToPtr(generatedTemplate.Icon), input.GroupDescription, input.EnvironmentID)
+		serviceGroup, err := self.repo.ServiceGroup().Create(ctx, tx, input.GroupName, new(generatedTemplate.Icon), input.GroupDescription, input.EnvironmentID)
 		if err != nil {
 			return fmt.Errorf("failed to create service group: %w", err)
 		}
@@ -266,7 +260,7 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 				if ok {
 					dbVersionDefault, _ := versionProperty.Default.(string)
 					if dbVersionDefault != "" {
-						dbVersion = utils.ToPtr(dbVersionDefault)
+						dbVersion = new(dbVersionDefault)
 					}
 				}
 
@@ -274,7 +268,7 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 					if len(versionProperty.Enum) > 0 && !slices.Contains(versionProperty.Enum, templateService.DatabaseConfig.Version) {
 						return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("Database version %s not found for %s", templateService.DatabaseConfig.Version, *templateService.DatabaseType))
 					}
-					dbVersion = utils.ToPtr(templateService.DatabaseConfig.Version)
+					dbVersion = new(templateService.DatabaseConfig.Version)
 				}
 
 				if dbVersion == nil {
@@ -331,7 +325,6 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 				return fmt.Errorf("failed to update secret values: %v", err)
 			}
 
-			// Create the service
 			createService, err := self.repo.Service().Create(ctx, tx,
 				&service_repo.CreateServiceInput{
 					KubernetesName:     kubernetesName,
@@ -341,9 +334,9 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 					KubernetesSecret:   secret.Name,
 					Database:           templateService.DatabaseType,
 					DatabaseVersion:    dbVersion,
-					TemplateID:         utils.ToPtr(template.ID),
-					TemplateInstanceID: utils.ToPtr(templateInstanceID),
-					ServiceGroupID:     utils.ToPtr(serviceGroup.ID),
+					TemplateID:         new(template.ID),
+					TemplateInstanceID: new(templateInstanceID),
+					ServiceGroupID:     new(serviceGroup.ID),
 					DetectedPorts:      templateService.Ports,
 				})
 			if err != nil {
@@ -354,32 +347,28 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 			// Create volumes
 			var volumes []schema.ServiceVolume
 			for _, volume := range templateService.Volumes {
-				// Build labels to set
 				labels := map[string]string{
 					"unbind-team":        input.TeamID.String(),
 					"unbind-project":     input.ProjectID.String(),
 					"unbind-environment": input.EnvironmentID.String(),
 				}
 
-				//  Generate a name
 				pvcName, err := utils.GenerateSlug(volume.Name)
 				if err != nil {
 					return err
 				}
 
-				// Create metadata
 				err = self.repo.System().UpsertPVCMetadata(
 					ctx,
 					tx,
 					pvcName,
-					utils.ToPtr(volume.Name),
+					new(volume.Name),
 					nil,
 				)
 				if err != nil {
 					return err
 				}
 
-				// Get the PVCs
 				pvc, err := self.k8s.CreatePersistentVolumeClaim(ctx,
 					project.Edges.Team.Namespace,
 					pvcName,
@@ -395,7 +384,6 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 				}
 				pvc.Name = volume.Name
 
-				// Append
 				volumes = append(volumes, schema.ServiceVolume{
 					ID:        pvc.ID,
 					MountPath: volume.MountPath,
@@ -423,24 +411,23 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 				hosts = append(hosts, hostSpec)
 			}
 
-			// Create the service config
 			var isPublic *bool
 			for _, inputID := range templateService.InputIDs {
 				if self.isHostInput(&template.Definition, inputID) {
-					isPublic = utils.ToPtr(true)
+					isPublic = new(true)
 					break
 				}
 			}
 			createInput := &service_repo.MutateConfigInput{
 				ServiceID:               createService.ID,
-				Builder:                 utils.ToPtr(templateService.Builder),
+				Builder:                 new(templateService.Builder),
 				OverwritePorts:          templateService.Ports,
 				OverwriteHosts:          hosts,
 				Replicas:                utils.ToPtr[int32](1),
 				Public:                  isPublic,
 				DatabaseConfig:          templateService.DatabaseConfig,
 				Image:                   templateService.Image,
-				CustomDefinitionVersion: utils.ToPtr(self.cfg.UnbindServiceDefVersion),
+				CustomDefinitionVersion: new(self.cfg.UnbindServiceDefVersion),
 				OverwriteVolumes:        volumes,
 				RunCommand:              templateService.RunCommand,
 				SecurityContext:         templateService.SecurityContext,
@@ -456,7 +443,6 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 			}
 			createService.Edges.ServiceConfig = serviceConfig
 
-			// Append
 			newServices = append(newServices, createService)
 			dbServiceMap[templateService.ID] = createService
 		}
@@ -468,7 +454,6 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 				if variableReference.ResolveAsNormalVariable {
 					continue
 				}
-				// Get source
 				sourceService := dbServiceMap[variableReference.SourceID]
 				if sourceService == nil {
 					log.Error("failed to find service for variable reference", "serviceID", variableReference.SourceID, "template", templateService.Name)
@@ -776,7 +761,7 @@ func (self *TemplatesService) generateWildcardHost(ctx context.Context, tx repos
 	// Use targetPort if provided, otherwise use the first port from ports
 	port := targetPort
 	if port == nil && len(ports) > 0 {
-		port = utils.ToPtr(ports[0].Port)
+		port = new(ports[0].Port)
 	}
 
 	return &schema.HostSpec{

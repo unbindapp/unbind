@@ -30,7 +30,6 @@ func (self *SystemService) ListRegistries(ctx context.Context, requesterUserID u
 
 	usernameMap := make(map[uuid.UUID]string)
 	for _, registry := range registries {
-		// Get secret
 		secret, err := self.k8s.GetSecret(ctx, registry.KubernetesSecret, self.cfg.SystemNamespace, self.k8s.GetInternalClient())
 		if err != nil {
 			return nil, err
@@ -65,7 +64,6 @@ func (self *SystemService) GetRegistry(ctx context.Context, requesterUserID uuid
 		return nil, err
 	}
 
-	// Get secret
 	secret, err := self.k8s.GetSecret(ctx, registry.KubernetesSecret, self.cfg.SystemNamespace, self.k8s.GetInternalClient())
 	if err != nil {
 		return nil, err

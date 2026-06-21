@@ -11,7 +11,6 @@ import (
 
 // UpdateDeploymentImages updates container images in deployments based on the new version
 func (k *KubeClient) UpdateDeploymentImages(ctx context.Context, newVersion string) error {
-	// Get all deployments in the system namespace
 	deployments, err := k.clientset.AppsV1().Deployments(k.config.GetSystemNamespace()).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to list deployments: %w", err)
@@ -42,7 +41,6 @@ func (k *KubeClient) UpdateDeploymentImages(ctx context.Context, newVersion stri
 		}
 
 		if updated {
-			// Update the deployment
 			_, err := k.clientset.AppsV1().Deployments(k.config.GetSystemNamespace()).Update(ctx, &deployment, metav1.UpdateOptions{})
 			if err != nil {
 				return fmt.Errorf("failed to update deployment %s: %w", deployment.Name, err)
@@ -68,7 +66,6 @@ func (k *KubeClient) UpdateDeploymentImages(ctx context.Context, newVersion stri
 		}
 
 		if updated {
-			// Update the deployment
 			_, err := k.clientset.AppsV1().Deployments(k.config.GetSystemNamespace()).Update(ctx, &deployment, metav1.UpdateOptions{})
 			if err != nil {
 				return fmt.Errorf("failed to update deployment %s: %w", deployment.Name, err)
@@ -81,7 +78,6 @@ func (k *KubeClient) UpdateDeploymentImages(ctx context.Context, newVersion stri
 
 // CheckDeploymentsReady checks if all deployments with unbind images have at least one pod running with the specified version
 func (k *KubeClient) CheckDeploymentsReady(ctx context.Context, version string) (bool, error) {
-	// Get all deployments in the system namespace
 	deployments, err := k.clientset.AppsV1().Deployments(k.config.GetSystemNamespace()).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return false, fmt.Errorf("failed to list deployments: %w", err)

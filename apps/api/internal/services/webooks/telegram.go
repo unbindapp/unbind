@@ -31,13 +31,11 @@ func (self *WebhooksService) sendTelegramWebhook(level WebhookLevel, event schem
 	parsedURL.RawQuery = queryParams.Encode()
 	botURL = parsedURL.String()
 
-	// Header
 	messageText := fmt.Sprintf("%s <b>%s: %s</b>\n\n", level.Emoji(), string(level), event)
 
 	// Wrap in card
 	cardContent := ""
 
-	// Add title and URL if available
 	if data.Title != "" {
 		cardContent += fmt.Sprintf("Title: %s\n", data.Title)
 	}
@@ -45,12 +43,10 @@ func (self *WebhooksService) sendTelegramWebhook(level WebhookLevel, event schem
 		cardContent += fmt.Sprintf("Link: %s\n", data.Url)
 	}
 
-	// Add description if available
 	if data.Description != "" {
 		cardContent += fmt.Sprintf("\n%s\n", data.Description)
 	}
 
-	// Add fields
 	if len(data.Fields) > 0 {
 		cardContent += "\nDetails:\n"
 		for _, field := range data.Fields {
@@ -58,15 +54,12 @@ func (self *WebhooksService) sendTelegramWebhook(level WebhookLevel, event schem
 		}
 	}
 
-	// Add content
 	if cardContent != "" {
 		messageText += fmt.Sprintf("<pre>%s</pre>\n", cardContent)
 	}
 
-	// Add timestamp
 	messageText += fmt.Sprintf("<i>Sent: %s</i>", time.Now().Format(time.RFC1123))
 
-	// Create the payload
 	payload := TelegramPayload{
 		ChatID:                chatID,
 		Text:                  messageText,
@@ -74,7 +67,6 @@ func (self *WebhooksService) sendTelegramWebhook(level WebhookLevel, event schem
 		DisableWebPagePreview: true,
 	}
 
-	// Encode the payload
 	payloadBytes := new(bytes.Buffer)
 	err = json.NewEncoder(payloadBytes).Encode(payload)
 	if err != nil {
@@ -82,7 +74,6 @@ func (self *WebhooksService) sendTelegramWebhook(level WebhookLevel, event schem
 		return err
 	}
 
-	// Create the request
 	req, err := http.NewRequest(http.MethodPost, botURL, payloadBytes)
 	if err != nil {
 		log.Errorf("Failed to create Telegram webhook request: %v", err)
@@ -90,7 +81,6 @@ func (self *WebhooksService) sendTelegramWebhook(level WebhookLevel, event schem
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// Send the request
 	resp, err := self.httpClient.Do(req)
 	if err != nil {
 		log.Errorf("Failed to send Telegram webhook: %v", err)
@@ -98,7 +88,6 @@ func (self *WebhooksService) sendTelegramWebhook(level WebhookLevel, event schem
 	}
 	defer resp.Body.Close()
 
-	// Check response
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to send Telegram webhook: %s", resp.Status)
 	}

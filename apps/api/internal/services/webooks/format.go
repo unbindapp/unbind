@@ -48,9 +48,9 @@ func (self *WebhooksService) DetectTargetFromURL(urlStr string) (schema.WebhookT
 	// Example: https://api.telegram.org/bot1221212:dasdasd78dsdsa67das78/sendMessage?chat_id=156481231
 	if parsedURL.Host == "api.telegram.org" && parsedURL.Query().Has("chat_id") {
 		// Check for bot token in the path
-		pathSegments := strings.Split(parsedURL.Path, "/")
+		pathSegments := strings.SplitSeq(parsedURL.Path, "/")
 
-		for _, segment := range pathSegments {
+		for segment := range pathSegments {
 			if strings.HasPrefix(segment, "bot") {
 				// A valid token starts with "bot"
 				return schema.WebhookTargetTelegram, nil

@@ -12,7 +12,6 @@ type WebhookRepository struct {
 	base *repository.BaseRepository
 }
 
-// NewWebhookRepository creates a new repository
 func NewWebhookRepository(db *ent.Client) *WebhookRepository {
 	return &WebhookRepository{
 		base: &repository.BaseRepository{DB: db},

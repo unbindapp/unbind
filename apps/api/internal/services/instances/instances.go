@@ -54,12 +54,10 @@ func (self *InstanceService) validatePermissionsAndParseInputs(ctx context.Conte
 		},
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return nil, nil, nil, nil, err
 	}
 
-	// Get namespace
 	team, err := self.repo.Team().GetByID(ctx, teamID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -68,12 +66,10 @@ func (self *InstanceService) validatePermissionsAndParseInputs(ctx context.Conte
 		return nil, nil, nil, nil, err
 	}
 
-	// Get project
 	var project *ent.Project
 	if instanceType == models.InstanceTypeProject ||
 		instanceType == models.InstanceTypeEnvironment ||
 		instanceType == models.InstanceTypeService {
-		// validate project ID
 		project, err = self.repo.Project().GetByID(ctx, projectID)
 		if err != nil {
 			if ent.IsNotFound(err) {
@@ -86,11 +82,9 @@ func (self *InstanceService) validatePermissionsAndParseInputs(ctx context.Conte
 		}
 	}
 
-	// Get environment
 	var environment *ent.Environment
 	if instanceType == models.InstanceTypeEnvironment ||
 		instanceType == models.InstanceTypeService {
-		// validate environment ID
 		environment, err = self.repo.Environment().GetByID(ctx, environmentID)
 		if err != nil {
 			if ent.IsNotFound(err) {
@@ -103,7 +97,6 @@ func (self *InstanceService) validatePermissionsAndParseInputs(ctx context.Conte
 		}
 	}
 
-	// Get service
 	var service *ent.Service
 	if instanceType == models.InstanceTypeService {
 		service, err = self.repo.Service().GetByID(ctx, serviceID)

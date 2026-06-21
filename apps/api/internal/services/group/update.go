@@ -29,15 +29,12 @@ func (self *GroupService) UpdateGroup(ctx context.Context, userID uuid.UUID, gro
 		},
 	}
 
-	// Execute permission checks
 	if err := self.repo.Permissions().Check(ctx, userID, permissionChecks); err != nil {
 		return nil, err
 	}
 
-	// Create update builder
 	update := self.repo.Ent().Group.UpdateOneID(groupID)
 
-	// Update fields if provided
 	if input.Name != "" {
 		update.SetName(input.Name)
 	}
@@ -46,7 +43,6 @@ func (self *GroupService) UpdateGroup(ctx context.Context, userID uuid.UUID, gro
 		update.SetDescription(input.Description)
 	}
 
-	// Execute the update
 	updatedGroup, err := update.Save(ctx)
 	if err != nil {
 		if ent.IsConstraintError(err) {

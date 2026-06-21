@@ -15,7 +15,6 @@ import (
 )
 
 func (self *DeploymentService) GetDeploymentsForService(ctx context.Context, requesterUserId uuid.UUID, input *models.GetDeploymentsInput) ([]*models.DeploymentResponse, *models.DeploymentResponse, *models.PaginationResponseMetadata, error) {
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserId, []permissions_repo.PermissionCheck{
 		{
 			Action:       schema.ActionViewer,
@@ -36,7 +35,6 @@ func (self *DeploymentService) GetDeploymentsForService(ctx context.Context, req
 	if !input.Cursor.IsZero() {
 		cursor = &input.Cursor
 	}
-	// Get build jobs
 	deployments, nextCursor, err := self.repo.Deployment().GetByServiceIDPaginated(ctx, input.ServiceID, input.PerPage, cursor, input.Statuses)
 	if err != nil {
 		return nil, nil, nil, err
@@ -46,7 +44,6 @@ func (self *DeploymentService) GetDeploymentsForService(ctx context.Context, req
 		return nil, nil, nil, err
 	}
 
-	// Transform response
 	resp := models.TransformDeploymentEntities(deployments)
 
 	currentDeployment, err := self.AttachInstanceDataToCurrent(ctx, resp, service)
@@ -55,7 +52,6 @@ func (self *DeploymentService) GetDeploymentsForService(ctx context.Context, req
 		return nil, nil, nil, err
 	}
 
-	// Get pagination metadata
 	metadata := &models.PaginationResponseMetadata{
 		HasNext:        nextCursor != nil,
 		NextCursor:     nextCursor,
@@ -66,7 +62,6 @@ func (self *DeploymentService) GetDeploymentsForService(ctx context.Context, req
 }
 
 func (self *DeploymentService) GetDeploymentByID(ctx context.Context, requesterUserId uuid.UUID, input *models.GetDeploymentByIDInput) (*models.DeploymentResponse, error) {
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserId, []permissions_repo.PermissionCheck{
 		{
 			Action:       schema.ActionViewer,
@@ -82,7 +77,6 @@ func (self *DeploymentService) GetDeploymentByID(ctx context.Context, requesterU
 		return nil, err
 	}
 
-	// Get deployment
 	deployment, err := self.repo.Deployment().GetByID(ctx, input.DeploymentID)
 	if err != nil {
 		if ent.IsNotFound(err) {

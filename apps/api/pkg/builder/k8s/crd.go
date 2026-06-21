@@ -7,9 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	// Import the operator API package
 	"github.com/unbindapp/unbind-api/ent/schema"
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -135,7 +133,7 @@ func CreateServiceObject(params ServiceParams) (*v1.Service, error) {
 	}
 
 	if params.RunCommand != "" {
-		service.Spec.Config.RunCommand = utils.ToPtr(params.RunCommand)
+		service.Spec.Config.RunCommand = new(params.RunCommand)
 	}
 
 	// Add host configuration if provided
@@ -302,7 +300,6 @@ func (self *K8SClient) DeployImage(ctx context.Context, crdName, image string, a
 		params.GithubInstallationID = &installationID
 	}
 
-	// Create the Service object
 	service, err := CreateServiceObject(params)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create service object: %v", err)

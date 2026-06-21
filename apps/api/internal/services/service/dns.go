@@ -23,18 +23,15 @@ func (self *ServiceService) GetDNSForService(ctx context.Context, requesterUserI
 		},
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return nil, err
 	}
 
-	// Verify inputs
 	env, project, err := self.VerifyInputs(ctx, teamID, projectID, environmentID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get service
 	service, err := self.repo.Service().GetByID(ctx, serviceID)
 	if err != nil {
 		return nil, err
@@ -44,13 +41,11 @@ func (self *ServiceService) GetDNSForService(ctx context.Context, requesterUserI
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Service not found")
 	}
 
-	// Create kubernetes client
 	client, err := self.k8s.CreateClientWithToken(bearerToken)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get discovery
 	endpoints, err := self.k8s.DiscoverEndpointsByLabels(
 		ctx,
 		project.Edges.Team.Namespace,

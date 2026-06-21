@@ -35,7 +35,6 @@ func (self *SystemService) DeleteRegistry(ctx context.Context, requesterUserID u
 		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Default registry cannot be deleted")
 	}
 
-	// Delete registry
 	if err := self.repo.System().DeleteRegistry(ctx, input.ID); err != nil {
 		return err
 	}

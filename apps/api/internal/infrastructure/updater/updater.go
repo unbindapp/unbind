@@ -145,7 +145,6 @@ func (self *Updater) GetUpdatePath(ctx context.Context, targetVersion string) ([
 
 // UpdateToVersion updates the application to the specified version
 func (self *Updater) UpdateToVersion(ctx context.Context, targetVersion string) error {
-	// Get the update path
 	updatePath, err := self.GetUpdatePath(ctx, targetVersion)
 	if err != nil {
 		return fmt.Errorf("failed to get update path: %w", err)
@@ -176,7 +175,6 @@ func (self *Updater) UpdateToVersion(ctx context.Context, targetVersion string) 
 
 // applyKustomizeManifests applies Kustomize manifests for a specific version
 func (self *Updater) applyKustomizeManifests(ctx context.Context, version string) error {
-	// Get repository info
 	owner, repo := self.releaseManager.GetRepositoryInfo()
 
 	// Create a temporary directory for cloning
@@ -213,7 +211,6 @@ func (self *Updater) applyKustomizeManifests(ctx context.Context, version string
 	systemNamespace := self.cfg.GetSystemNamespace()
 	tempKustomizationPath := filepath.Join(versionDir, "kustomization.yaml.tmp")
 
-	// Read the original kustomization file
 	kustomizationContent, err := os.ReadFile(kustomizationPath)
 	if err != nil {
 		return fmt.Errorf("failed to read kustomization file: %w", err)
@@ -260,7 +257,6 @@ func (self *Updater) applyKustomizeManifests(ctx context.Context, version string
 
 // rollbackToVersion rolls back to a specific version
 func (self *Updater) rollbackToVersion(ctx context.Context, version string) error {
-	// Update deployment images to the rollback version
 	if err := self.k8sClient.UpdateDeploymentImages(ctx, version); err != nil {
 		return fmt.Errorf("failed to rollback deployment images: %w", err)
 	}

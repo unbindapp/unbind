@@ -16,7 +16,6 @@ import (
 )
 
 func (self *ServiceService) DeleteServiceByID(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, teamID, projectID, environmentID, serviceID uuid.UUID) error {
-	// Check permissions
 	permissionChecks := []permissions_repo.PermissionCheck{
 		// Has permission to admin service
 		{
@@ -36,7 +35,6 @@ func (self *ServiceService) DeleteServiceByID(ctx context.Context, requesterUser
 	}
 	team := project.Edges.Team
 
-	// Get the service
 	service, err := self.repo.Service().GetByID(ctx, serviceID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -45,7 +43,6 @@ func (self *ServiceService) DeleteServiceByID(ctx context.Context, requesterUser
 		return err
 	}
 
-	// Create kubernetes client
 	client, err := self.k8s.CreateClientWithToken(bearerToken)
 	if err != nil {
 		return err
@@ -53,7 +50,6 @@ func (self *ServiceService) DeleteServiceByID(ctx context.Context, requesterUser
 
 	// Delete kubernetes resources, db resource
 	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
-		// Cancel deployments
 		if err := self.deploymentController.CancelExistingJobs(ctx, service.ID); err != nil {
 			log.Warnf("Error cancelling jobs for service %s: %v", service.KubernetesName, err)
 		}
@@ -64,7 +60,6 @@ func (self *ServiceService) DeleteServiceByID(ctx context.Context, requesterUser
 			return err
 		}
 
-		// Delete secret
 		if err := self.k8s.DeleteSecret(ctx, service.KubernetesSecret, team.Namespace, client); err != nil {
 			log.Error("Error deleting secret from k8s", "secret", service.KubernetesSecret, "err", err)
 			return err
@@ -83,9 +78,7 @@ func (self *ServiceService) DeleteServiceByID(ctx context.Context, requesterUser
 		event := schema.WebhookEventServiceDeleted
 		level := webhooks_service.WebhookLevelError
 
-		// Construct URL
 		url, _ := utils.JoinURLPaths(self.cfg.ExternalUIUrl, project.TeamID.String(), "project", project.ID.String())
-		// Get user
 		user, err := self.repo.User().GetByID(context.Background(), requesterUserID)
 		if err != nil {
 			log.Errorf("Failed to get user %s: %v", requesterUserID.String(), err)

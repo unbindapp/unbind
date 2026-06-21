@@ -27,12 +27,10 @@ func (self *StorageService) CreateS3StorageBackend(ctx context.Context, requeste
 		},
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return nil, err
 	}
 
-	// Check if the team exists
 	team, err := self.repo.Team().GetByID(ctx, input.TeamID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -53,36 +51,30 @@ func (self *StorageService) CreateS3StorageBackend(ctx context.Context, requeste
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
 	}
 
-	// Probe any bucket
 	err = s3Client.ProbeAnyBucketRW(ctx)
 	if err != nil {
 		// May be invalid credentials, etc.
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
 	}
 
-	// Create kubernetes client
 	client, err := self.k8s.CreateClientWithToken(bearerToken)
 	if err != nil {
 		return nil, err
 	}
 
-	// Store our credentials
 	var s3 *ent.S3
 	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
-		// Create a unique name
 		kubernetesName, err := utils.GenerateSlug(fmt.Sprintf("s3-%s", input.Name))
 		if err != nil {
 			log.Errorf("Failed to generate kubernetes name for S3 source %s: %v", input.Name, err)
 			return err
 		}
 
-		// Create secret for this project
 		secret, _, err := self.k8s.GetOrCreateSecret(ctx, kubernetesName, team.Namespace, client)
 		if err != nil {
 			return err
 		}
 
-		// Store the credentials in the secret
 		// Aws config style
 		profile := "default"
 		region := strings.TrimSpace(input.Region)

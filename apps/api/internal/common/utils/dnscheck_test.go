@@ -5,6 +5,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"testing"
 	"time"
 
@@ -25,10 +26,8 @@ func (m *mockDNSChecker) IsPointingToIP(domain string, expectedIP string) (bool,
 		return false, err
 	}
 
-	for _, ip := range ips {
-		if ip == expectedIP {
-			return true, nil
-		}
+	if slices.Contains(ips, expectedIP) {
+		return true, nil
 	}
 
 	return false, nil

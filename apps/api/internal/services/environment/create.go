@@ -31,7 +31,6 @@ func (self *EnvironmentService) CreateEnvironment(ctx context.Context, requester
 		},
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return nil, err
 	}
@@ -46,7 +45,6 @@ func (self *EnvironmentService) CreateEnvironment(ctx context.Context, requester
 	}
 	team := project.Edges.Team
 
-	// Create kubernetes client
 	client, err := self.k8s.CreateClientWithToken(bearerToken)
 	if err != nil {
 		return nil, err
@@ -55,7 +53,6 @@ func (self *EnvironmentService) CreateEnvironment(ctx context.Context, requester
 	// Create the environment
 	var environment *ent.Environment
 	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
-		// Generate neme
 		kubernetesName, err := utils.GenerateSlug(input.Name)
 		if err != nil {
 			return err
@@ -85,7 +82,6 @@ func (self *EnvironmentService) CreateEnvironment(ctx context.Context, requester
 		return nil, err
 	}
 
-	// Convert to response
 	resp := models.TransformEnvironmentEntity(environment)
 
 	// Summarizes services

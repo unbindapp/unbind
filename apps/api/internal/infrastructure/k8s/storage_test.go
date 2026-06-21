@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"context"
+	"slices"
 	"strings"
 	"testing"
 
@@ -308,12 +309,12 @@ func TestVolumeExpansionSupport(t *testing.T) {
 	}{
 		{
 			name:                     "Expansion allowed",
-			allowVolumeExpansion:     boolPtr(true),
+			allowVolumeExpansion:     new(true),
 			expectedExpansionSupport: true,
 		},
 		{
 			name:                     "Expansion not allowed",
-			allowVolumeExpansion:     boolPtr(false),
+			allowVolumeExpansion:     new(false),
 			expectedExpansionSupport: false,
 		},
 		{
@@ -424,12 +425,7 @@ func isSupportedProvisioner(provisioner string) bool {
 		"kubernetes.io/azure-disk",
 	}
 
-	for _, supported := range supportedProvisioners {
-		if provisioner == supported {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(supportedProvisioners, provisioner)
 }
 
 func getStorageTypeFromParameters(params map[string]string) string {
@@ -462,6 +458,7 @@ func calculateTotalStorageQuota(requests []string) (resource.Quantity, error) {
 	return total, nil
 }
 
+//go:fix inline
 func boolPtr(b bool) *bool {
-	return &b
+	return new(b)
 }

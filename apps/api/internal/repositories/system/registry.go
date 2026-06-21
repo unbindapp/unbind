@@ -14,7 +14,6 @@ func (self *SystemRepository) CreateRegistry(ctx context.Context, tx repository.
 	if tx != nil {
 		db = tx.Client()
 	}
-	// Create registry
 	return db.Registry.Create().
 		SetHost(host).
 		SetKubernetesSecret(kubernetesSecret).
@@ -23,7 +22,6 @@ func (self *SystemRepository) CreateRegistry(ctx context.Context, tx repository.
 }
 
 func (self *SystemRepository) GetDefaultRegistry(ctx context.Context) (*ent.Registry, error) {
-	// Get default registry
 	return self.base.DB.Registry.Query().
 		Where(registry.IsDefault(true)).
 		Order(
@@ -54,7 +52,6 @@ func (self *SystemRepository) SetDefaultRegistry(ctx context.Context, id uuid.UU
 }
 
 func (self *SystemRepository) GetImagePullSecrets(ctx context.Context) ([]string, error) {
-	// Get all registries
 	registries, err := self.base.DB.Registry.Query().
 		Select(registry.FieldKubernetesSecret).
 		All(ctx)
@@ -70,12 +67,10 @@ func (self *SystemRepository) GetImagePullSecrets(ctx context.Context) ([]string
 }
 
 func (self *SystemRepository) GetRegistry(ctx context.Context, id uuid.UUID) (*ent.Registry, error) {
-	// Get registry
 	return self.base.DB.Registry.Get(ctx, id)
 }
 
 func (self *SystemRepository) GetAllRegistries(ctx context.Context) ([]*ent.Registry, error) {
-	// Get all registries
 	return self.base.DB.Registry.Query().
 		Order(
 			ent.Desc(registry.FieldCreatedAt),
@@ -84,6 +79,5 @@ func (self *SystemRepository) GetAllRegistries(ctx context.Context) ([]*ent.Regi
 }
 
 func (self *SystemRepository) DeleteRegistry(ctx context.Context, id uuid.UUID) error {
-	// Delete registry
 	return self.base.DB.Registry.DeleteOneID(id).Exec(ctx)
 }

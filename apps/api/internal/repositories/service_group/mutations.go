@@ -16,7 +16,6 @@ func (self *ServiceGroupRepository) Create(ctx context.Context, tx repository.Tx
 	if tx != nil {
 		db = tx.Client()
 	}
-	// Create service group
 	return db.ServiceGroup.Create().
 		SetName(name).
 		SetNillableIcon(icon).
@@ -26,7 +25,6 @@ func (self *ServiceGroupRepository) Create(ctx context.Context, tx repository.Tx
 }
 
 func (self *ServiceGroupRepository) Update(ctx context.Context, input *models.UpdateServiceGroupInput) (*ent.ServiceGroup, error) {
-	// Update service group
 	updateStmt := self.base.DB.ServiceGroup.UpdateOneID(input.ID)
 	if input.Name != nil {
 		updateStmt.SetName(*input.Name)

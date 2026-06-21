@@ -25,7 +25,6 @@ func (self *VariablesService) ResolveSingleReference(ctx context.Context, reques
 		},
 	}
 
-	// Check permissions
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return "", err
 	}
@@ -35,7 +34,6 @@ func (self *VariablesService) ResolveSingleReference(ctx context.Context, reques
 		return "", err
 	}
 
-	// Get the reference
 	reference, err := self.repo.Variables().GetReferenceByID(ctx, referenceID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -47,7 +45,6 @@ func (self *VariablesService) ResolveSingleReference(ctx context.Context, reques
 		return "", errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Variable reference not found")
 	}
 
-	// Get the namespace
 	namespace, err := self.repo.Service().GetDeploymentNamespace(ctx, serviceID)
 	if err != nil {
 		return "", err
@@ -57,7 +54,6 @@ func (self *VariablesService) ResolveSingleReference(ctx context.Context, reques
 
 // Resolve variable references into map[string]string
 func (self *VariablesService) ResolveAllReferences(ctx context.Context, serviceID uuid.UUID) (map[string]string, error) {
-	// Get all references
 	result := make(map[string]string)
 	references, err := self.repo.Variables().GetReferencesForService(ctx, serviceID)
 	if err != nil {
@@ -68,23 +64,19 @@ func (self *VariablesService) ResolveAllReferences(ctx context.Context, serviceI
 		return result, nil
 	}
 
-	// Get team namespace
 	namespace, err := self.repo.Service().GetDeploymentNamespace(ctx, serviceID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get our meta client
 	client := self.k8s.GetInternalClient()
 
 	for _, reference := range references {
-		// Resolve the reference
 		value, err := self.resolveReference(ctx, client, namespace, reference)
 		if err != nil {
 			return nil, err
 		}
 
-		// Add to our result map
 		result[reference.TargetName] = value
 	}
 
@@ -94,7 +86,6 @@ func (self *VariablesService) ResolveAllReferences(ctx context.Context, serviceI
 func (self *VariablesService) resolveSourceValue(ctx context.Context, client kubernetes.Interface, namespace string, source schema.VariableReferenceSource) (string, error) {
 	switch source.Type {
 	case schema.VariableReferenceTypeVariable:
-		// Get from kubernetes secret
 		secret, err := self.k8s.GetSecret(ctx, source.SourceKubernetesName, namespace, client)
 		if err != nil {
 			if errors.IsNotFound(err) {
@@ -103,7 +94,6 @@ func (self *VariablesService) resolveSourceValue(ctx context.Context, client kub
 			return "", err
 		}
 
-		// Get the value from the secret
 		value, ok := secret.Data[source.Key]
 		if !ok {
 			return "", errdefs.NewCustomError(errdefs.ErrTypeNotFound, fmt.Sprintf("Key not found in variable: %s", source.Key))

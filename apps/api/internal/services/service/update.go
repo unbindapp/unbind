@@ -20,14 +20,10 @@ import (
 
 // UpdateService updates a service and its configuration
 func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *models.UpdateServiceInput) (*models.ServiceResponse, error) {
-	// Verify tag if present
-	if input.GitTag != nil {
-		if !utils.IsValidGlobPattern(*input.GitTag) {
-			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid git tag")
-		}
+	if input.GitTag != nil && !utils.IsValidGlobPattern(*input.GitTag) {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid git tag")
 	}
 
-	// Check permissions
 	permissionChecks := []permissions_repo.PermissionCheck{
 		// Has permission to admin service
 		{
@@ -41,13 +37,11 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 		return nil, err
 	}
 
-	// Verify inputs
 	_, _, err := self.VerifyInputs(ctx, input.TeamID, input.ProjectID, input.EnvironmentID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Perform update
 	service, err := self.repo.Service().GetByID(ctx, input.ServiceID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -56,10 +50,8 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 		return nil, err
 	}
 
-	if service.Type == schema.ServiceTypeDockerimage || service.Type == schema.ServiceTypeDatabase {
-		if input.Builder != nil {
-			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Cannot update builder for docker image or database service")
-		}
+	if input.Builder != nil && (service.Type == schema.ServiceTypeDockerimage || service.Type == schema.ServiceTypeDatabase) {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Cannot update builder for docker image or database service")
 	}
 
 	// For database we don't want to set ports
@@ -92,17 +84,14 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 		}
 	}
 
-	// For database we can't set version if deployed
-	if service.Type == schema.ServiceTypeDatabase && input.DatabaseConfig != nil && service.DatabaseVersion != nil {
-		hasDeployment := len(service.Edges.Deployments) > 0
-		if hasDeployment {
-			// * special rule that you can't update version if there is a deployment
-			if input.DatabaseConfig.Version != "" {
-				if input.DatabaseConfig.Version != *service.DatabaseVersion {
-					return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Cannot update version for database service with existing deployment")
-				}
-			}
-		}
+	// A database with an existing deployment can't change its version.
+	if service.Type == schema.ServiceTypeDatabase &&
+		input.DatabaseConfig != nil &&
+		service.DatabaseVersion != nil &&
+		len(service.Edges.Deployments) > 0 &&
+		input.DatabaseConfig.Version != "" &&
+		input.DatabaseConfig.Version != *service.DatabaseVersion {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Cannot update version for database service with existing deployment")
 	}
 
 	// Verify storage size changes if applicable
@@ -137,7 +126,6 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 		}
 	}
 
-	// Create kubernetes client
 	client, err := self.k8s.CreateClientWithToken(bearerToken)
 	if err != nil {
 		return nil, err
@@ -192,7 +180,6 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 	}
 
 	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
-		// Update the service
 		if err := self.repo.Service().Update(ctx, tx, input.ServiceID, input.Name, input.Description); err != nil {
 			return fmt.Errorf("failed to update service: %w", err)
 		}
@@ -218,7 +205,7 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 				return fmt.Errorf("failed to generate wildcard host: %w", err)
 			}
 			if generatedHost == nil {
-				input.IsPublic = utils.ToPtr(false)
+				input.IsPublic = new(false)
 			} else {
 				input.OverwriteHosts = append(input.OverwriteHosts, *generatedHost)
 			}
@@ -229,7 +216,7 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 		hostCollisionsToCheck = append(hostCollisionsToCheck, input.UpsertHosts...)
 		for _, host := range hostCollisionsToCheck {
 			// Count domain collisions
-			domainCount, err := self.repo.Service().CountDomainCollisons(ctx, tx, host.Host, utils.ToPtr(service.ID))
+			domainCount, err := self.repo.Service().CountDomainCollisons(ctx, tx, host.Host, new(service.ID))
 			if err != nil {
 				return fmt.Errorf("failed to count domain collisions: %w", err)
 			}
@@ -242,7 +229,7 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 		if len(input.OverwritePorts) > 0 || len(input.AddPorts) > 0 || len(service.Edges.ServiceConfig.Ports) > 0 {
 			// Has ports, do we have hosts
 			if len(input.OverwriteHosts) > 0 || len(input.UpsertHosts) > 0 || len(service.Edges.ServiceConfig.Hosts) > 0 {
-				input.IsPublic = utils.ToPtr(true)
+				input.IsPublic = new(true)
 			}
 		}
 
@@ -295,10 +282,9 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 				}
 			}
 			if input.HealthCheck.Port == nil && len(service.Edges.ServiceConfig.Ports) > 0 {
-				// Find first TCP port
 				for _, port := range service.Edges.ServiceConfig.Ports {
 					if port.Protocol == nil || *port.Protocol == schema.ProtocolTCP {
-						input.HealthCheck.Port = utils.ToPtr(port.Port)
+						input.HealthCheck.Port = new(port.Port)
 						break
 					}
 				}
@@ -308,7 +294,6 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 			}
 		}
 
-		// Update the service config
 		updateInput := &service_repo.MutateConfigInput{
 			ServiceID:                     input.ServiceID,
 			Builder:                       input.Builder,
@@ -389,14 +374,12 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 		event := schema.WebhookEventServiceUpdated
 		level := webhooks_service.WebhookLevelInfo
 
-		// Get service with edges
 		service, err := self.repo.Service().GetByID(context.Background(), service.ID)
 		if err != nil {
 			log.Errorf("Failed to get service %s: %v", service.ID.String(), err)
 			return
 		}
 
-		// Construct URL
 		basePath, _ := utils.JoinURLPaths(
 			self.cfg.ExternalUIUrl,
 			input.TeamID.String(),
@@ -405,7 +388,6 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 		)
 		url := basePath + "?environment=" + input.EnvironmentID.String() +
 			"&service=" + service.ID.String()
-		// Get user
 		user, err := self.repo.User().GetByID(context.Background(), requesterUserID)
 		if err != nil {
 			log.Errorf("Failed to get user %s: %v", requesterUserID.String(), err)
@@ -506,7 +488,6 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 		}
 	}()
 
-	// Get volume map
 	namespace := service.Edges.Environment.Edges.Project.Edges.Team.Namespace
 	teamID := service.Edges.Environment.Edges.Project.Edges.Team.ID
 	volumeMap, err := self.getVolumesForServices(ctx, namespace, teamID, []*ent.Service{
@@ -516,10 +497,8 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 		return nil, err
 	}
 
-	// Convert to response
 	resp := models.TransformServiceEntity(service)
 
-	// Attach volumes
 	if volume, ok := volumeMap[service.ID]; ok {
 		resp.Config.Volumes = volume
 	}

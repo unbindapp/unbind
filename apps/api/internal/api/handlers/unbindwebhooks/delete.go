@@ -3,12 +3,10 @@ package unbindwebhooks_handler
 import (
 	"context"
 
-	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
-	"github.com/unbindapp/unbind-api/internal/common/log"
 )
 
 type DeleteWebhookInput struct {
@@ -29,14 +27,12 @@ type DeleteWebhookResponse struct {
 }
 
 func (self *HandlerGroup) DeleteWebhook(ctx context.Context, input *DeleteWebhookInput) (*DeleteWebhookResponse, error) {
-	// Get caller
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		log.Error("Error getting user from context")
-		return nil, huma.Error401Unauthorized("Unable to retrieve user")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	err := self.srv.WebhooksService.DeleteWebhook(ctx, user.ID, input.Body.Type, input.Body.ID, input.Body.TeamID, input.Body.ProjectID)
+	err = self.srv.WebhooksService.DeleteWebhook(ctx, user.ID, input.Body.Type, input.Body.ID, input.Body.TeamID, input.Body.ProjectID)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}

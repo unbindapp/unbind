@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/unbindapp/unbind-api/config"
 	"github.com/unbindapp/unbind-api/ent/schema"
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 )
 
 func TestResolveTemplate(t *testing.T) {
@@ -27,7 +26,7 @@ func TestResolveTemplate(t *testing.T) {
 				},
 				Description: "Size of the storage for the test data.",
 				Required:    true,
-				Default:     utils.ToPtr("1"),
+				Default:     new("1"),
 			},
 		},
 		Services: []schema.TemplateService{

@@ -12,14 +12,12 @@ import (
 
 // Delete a custom unbind service CRD
 func (k *KubeClient) DeleteUnbindService(ctx context.Context, namespace, name string) error {
-	// Define the GVR for the unbind service resource
 	resourceGVR := schema.GroupVersionResource{
 		Group:    "unbind.unbind.app",
 		Version:  "v1",
 		Resource: "services",
 	}
 
-	// Delete the specific resource
 	err := k.client.Resource(resourceGVR).Namespace(namespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {

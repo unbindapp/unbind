@@ -33,11 +33,9 @@ type SystemMetaResponse struct {
 }
 
 func (self *HandlerGroup) GetSystemInformation(ctx context.Context, input *server.BaseAuthInput) (*SystemMetaResponse, error) {
-	// Get caller
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		log.Error("Error getting user from context")
-		return nil, huma.Error401Unauthorized("Unable to retrieve user")
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	storageMetadata, err := self.srv.KubeClient.AvailableStorageBytes(ctx)
@@ -51,7 +49,6 @@ func (self *HandlerGroup) GetSystemInformation(ctx context.Context, input *serve
 		return nil, huma.Error500InternalServerError("Error getting ingress nginx IP")
 	}
 
-	// Get system meta
 	meta := &SystemMeta{
 		ExternalIPV6:           ips.IPv6,
 		ExternalIPV4:           ips.IPv4,

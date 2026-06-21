@@ -64,13 +64,9 @@ func RegisterHandlers(srv *server.Server, grp *huma.Group, allowedOrigins []stri
 // Exec authorizes before the upgrade so denials surface as normal HTTP errors,
 // then hijacks the connection and attaches the shell.
 func (self *HandlerGroup) Exec(ctx context.Context, input *ExecInput) (*huma.StreamResponse, error) {
-	user, found := self.srv.GetUserFromContext(ctx)
-	if !found {
-		return nil, huma.Error401Unauthorized("Unauthorized")
-	}
-	bearerToken, found := self.srv.GetBearerTokenFromContext(ctx)
-	if !found {
-		return nil, huma.Error401Unauthorized("Unauthorized")
+	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	target, err := self.srv.TerminalService.Resolve(ctx, user.ID, bearerToken, &terminal_service.ExecInput{

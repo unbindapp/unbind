@@ -27,7 +27,7 @@ func convexTemplate() *schema.TemplateDefinition {
 				Type:        schema.InputTypeHost,
 				Description: "Domain for the Convex dashboard.",
 				Required:    true,
-				TargetPort:  utils.ToPtr(6791),
+				TargetPort:  new(6791),
 			},
 			{
 				ID:          "input_api_domain",
@@ -35,7 +35,7 @@ func convexTemplate() *schema.TemplateDefinition {
 				Type:        schema.InputTypeHost,
 				Description: "Domain for the Convex cloud API and sync.",
 				Required:    true,
-				TargetPort:  utils.ToPtr(3210),
+				TargetPort:  new(3210),
 			},
 			{
 				ID:          "input_http_actions_domain",
@@ -43,7 +43,7 @@ func convexTemplate() *schema.TemplateDefinition {
 				Type:        schema.InputTypeHost,
 				Description: "Domain for Convex HTTP actions.",
 				Required:    true,
-				TargetPort:  utils.ToPtr(3211),
+				TargetPort:  new(3211),
 			},
 			{
 				ID:          "input_database_size",
@@ -51,7 +51,7 @@ func convexTemplate() *schema.TemplateDefinition {
 				Type:        schema.InputTypeDatabaseSize,
 				Description: "PostgreSQL storage size.",
 				Required:    true,
-				Default:     utils.ToPtr("1"),
+				Default:     new("1"),
 			},
 			{
 				ID:   "input_storage_size",
@@ -63,7 +63,7 @@ func convexTemplate() *schema.TemplateDefinition {
 				},
 				Description: "Disk for file storage, exports, and indexes.",
 				Required:    true,
-				Default:     utils.ToPtr("1"),
+				Default:     new("1"),
 			},
 		},
 		Services: []schema.TemplateService{
@@ -74,7 +74,7 @@ func convexTemplate() *schema.TemplateDefinition {
 				InputIDs:     []string{"input_database_size"},
 				Type:         schema.ServiceTypeDatabase,
 				Builder:      schema.ServiceBuilderDatabase,
-				DatabaseType: utils.ToPtr("postgres"),
+				DatabaseType: new("postgres"),
 				DatabaseConfig: &schema.DatabaseConfig{
 					DefaultDatabaseName: "convex",
 					Version:             "17",
@@ -89,7 +89,7 @@ func convexTemplate() *schema.TemplateDefinition {
 				InputIDs:    []string{"input_api_domain", "input_http_actions_domain", "input_storage_size"},
 				Type:        schema.ServiceTypeDockerimage,
 				Builder:     schema.ServiceBuilderDocker,
-				Image:       utils.ToPtr("ghcr.io/get-convex/convex-backend@sha256:edd7959f3464ed661f6663f646db205d5d61bda606c969b074dfb3c69ed71463"),
+				Image:       new("ghcr.io/get-convex/convex-backend@sha256:edd7959f3464ed661f6663f646db205d5d61bda606c969b074dfb3c69ed71463"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores:   50,
 					CPULimitsMillicores:     1000,
@@ -109,13 +109,13 @@ func convexTemplate() *schema.TemplateDefinition {
 				HealthCheck: &schema.HealthCheck{
 					Type:                    utils.ToPtr(schema.HealthCheckTypeHTTP),
 					Path:                    "/version",
-					Port:                    utils.ToPtr(int32(3210)),
-					StartupPeriodSeconds:    utils.ToPtr(int32(5)),
-					StartupTimeoutSeconds:   utils.ToPtr(int32(5)),
-					StartupFailureThreshold: utils.ToPtr(int32(20)),
-					HealthPeriodSeconds:     utils.ToPtr(int32(10)),
-					HealthTimeoutSeconds:    utils.ToPtr(int32(5)),
-					HealthFailureThreshold:  utils.ToPtr(int32(5)),
+					Port:                    new(int32(3210)),
+					StartupPeriodSeconds:    new(int32(5)),
+					StartupTimeoutSeconds:   new(int32(5)),
+					StartupFailureThreshold: new(int32(20)),
+					HealthPeriodSeconds:     new(int32(10)),
+					HealthTimeoutSeconds:    new(int32(5)),
+					HealthFailureThreshold:  new(int32(5)),
 				},
 				ProtectedVariables: []string{"INSTANCE_SECRET", "CONVEX_SELF_HOSTED_ADMIN_KEY"},
 				VariableReferences: []schema.TemplateVariableReference{
@@ -191,7 +191,7 @@ func convexTemplate() *schema.TemplateDefinition {
 				InputIDs:    []string{"input_dashboard_domain"},
 				Type:        schema.ServiceTypeDockerimage,
 				Builder:     schema.ServiceBuilderDocker,
-				Image:       utils.ToPtr("ghcr.io/get-convex/convex-dashboard@sha256:bbc4d2c43d19fd6f2791dd6c5153a76e127f3eea489c1639e5acf66999c216bf"),
+				Image:       new("ghcr.io/get-convex/convex-dashboard@sha256:bbc4d2c43d19fd6f2791dd6c5153a76e127f3eea489c1639e5acf66999c216bf"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores:   20,
 					CPULimitsMillicores:     400,
@@ -207,13 +207,13 @@ func convexTemplate() *schema.TemplateDefinition {
 				HealthCheck: &schema.HealthCheck{
 					Type:                    utils.ToPtr(schema.HealthCheckTypeHTTP),
 					Path:                    "/",
-					Port:                    utils.ToPtr(int32(6791)),
-					StartupPeriodSeconds:    utils.ToPtr(int32(5)),
-					StartupTimeoutSeconds:   utils.ToPtr(int32(5)),
-					StartupFailureThreshold: utils.ToPtr(int32(15)),
-					HealthPeriodSeconds:     utils.ToPtr(int32(10)),
-					HealthTimeoutSeconds:    utils.ToPtr(int32(5)),
-					HealthFailureThreshold:  utils.ToPtr(int32(5)),
+					Port:                    new(int32(6791)),
+					StartupPeriodSeconds:    new(int32(5)),
+					StartupTimeoutSeconds:   new(int32(5)),
+					StartupFailureThreshold: new(int32(15)),
+					HealthPeriodSeconds:     new(int32(10)),
+					HealthTimeoutSeconds:    new(int32(5)),
+					HealthFailureThreshold:  new(int32(5)),
 				},
 				Variables: []schema.TemplateVariable{
 					{

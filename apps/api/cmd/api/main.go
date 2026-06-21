@@ -63,11 +63,9 @@ var Version = "development"
 var BuildImage = "ghcr.io/unbindapp/unbind-builder:latest"
 
 func startAPI(cfg *config.Config) {
-	// Create a context with cancellation
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Set up signal handling
 	signalCh := make(chan os.Signal, 1)
 	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
@@ -76,7 +74,6 @@ func startAPI(cfg *config.Config) {
 		cancel() // This will propagate cancellation to all derived contexts
 	}()
 
-	// Initialize redis
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     cfg.RedisURL,
 		Password: "", // no password set
@@ -84,13 +81,11 @@ func startAPI(cfg *config.Config) {
 	})
 	defer redisClient.Close()
 
-	// Load database
 	dbConnInfo, err := database.GetSqlDbConn(cfg, false)
 	if err != nil {
 		log.Fatalf("Failed to get database connection info: %v", err)
 	}
 	log.Infof("Using PostgreSQL database %s@%s:%d", cfg.PostgresUser, cfg.PostgresHost, cfg.PostgresPort)
-	// Initialize ent client
 	db, sqlDB, err := database.NewEntClient(dbConnInfo)
 	if err != nil {
 		log.Fatalf("Failed to create ent client: %v", err)
@@ -116,31 +111,24 @@ func startAPI(cfg *config.Config) {
 		log.Errorf("Failed to upsert predefined templates: %v", err)
 	}
 
-	// Create kubernetes client
 	kubeClient := k8s.NewKubeClient(cfg, repo)
 
-	// Create github client
 	githubClient := github.NewGithubClient(cfg.GithubURL, cfg)
 
-	// Buildkit settings manager
 	buildkitSettings := buildkitd.NewBuildkitSettingsManager(cfg, repo, kubeClient)
 
-	// Loki log querier
 	lokiQuerier, err := loki.NewLokiLogger(cfg)
 	if err != nil {
 		log.Fatalf("Failed to create Loki log querier, invalid config: %v", err)
 	}
 
-	// Prometheus client
 	promClient, err := prometheus.NewPrometheusClient(cfg)
 	if err != nil {
 		log.Fatalf("Failed to create Prometheus client: %v", err)
 	}
 
-	// Database provider
 	dbProvider := databases.NewDatabaseProvider()
 
-	// Bootstrap
 	if !cfg.SkipBootstrap {
 		bootstrapper := &Bootstrapper{
 			cfg:                     cfg,
@@ -153,14 +141,11 @@ func startAPI(cfg *config.Config) {
 		}
 	}
 
-	// Create webhook service
 	variableService := variables_service.NewVariablesService(repo, kubeClient)
 	webhooksService := webhooks_service.NewWebhooksService(repo)
 
-	// Create deployment controller
 	deploymentController := deployctl.NewDeploymentController(ctx, cancel, cfg, kubeClient, redisClient, repo, githubClient, webhooksService, variableService)
 
-	// Create registry tester
 	registryTester := registry.NewRegistryTester(cfg, repo, kubeClient)
 
 	registryCacheManager := registrycache.NewManager(cfg, kubeClient)
@@ -221,7 +206,6 @@ func startAPI(cfg *config.Config) {
 		TokenManager:         tokenManager,
 	}
 
-	// New chi router
 	r := chi.NewRouter()
 
 	allowedOrigins := []string{
@@ -266,7 +250,6 @@ func startAPI(cfg *config.Config) {
 		r.Use(middleware.RealIP)
 		r.Use(middleware.Logger)
 
-		// Register huma error function
 		huma.NewError = errdefs.HumaErrorFunc
 
 		config := router.NewHumaConfig("Unbind API", "1.0.0", cfg.CookieSecure)
@@ -278,7 +261,6 @@ func startAPI(cfg *config.Config) {
 		}
 		api := humachi.New(r, config)
 
-		// Create middleware
 		mw := middleware.NewMiddleware(cfg, repo, api, tokenManager, allowedOrigins)
 
 		api.UseMiddleware(mw.Recoverer)
@@ -311,7 +293,6 @@ func startAPI(cfg *config.Config) {
 	// and match above; everything else (assets, client routes) falls through here.
 	r.NotFound(web.Handler().ServeHTTP)
 
-	// Start the server
 	addr := ":8089"
 	log.Infof("Starting server on %s\n", addr)
 
@@ -331,7 +312,6 @@ func startAPI(cfg *config.Config) {
 	deploymentController.StartAsync()
 
 	// Start cron jobs
-	// Initialize scheduler
 	scheduler, err := gocron.NewScheduler(gocron.WithLocation(time.UTC))
 	if err != nil {
 		log.Fatal("Failed to create scheduler", "err", err)
@@ -372,7 +352,6 @@ func startAPI(cfg *config.Config) {
 		log.Fatal("Failed to create database sync job", "err", err)
 	}
 
-	// Start the scheduler
 	scheduler.Start()
 	defer func() {
 		if err := scheduler.Shutdown(); err != nil {
@@ -382,7 +361,6 @@ func startAPI(cfg *config.Config) {
 		}
 	}()
 
-	// Start the server in a goroutine
 	go func() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("Server error: %v", err)
@@ -393,11 +371,9 @@ func startAPI(cfg *config.Config) {
 	<-ctx.Done()
 	log.Info("Shutting down server...")
 
-	// Create a shutdown context with timeout
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer shutdownCancel()
 
-	// Shutdown the HTTP server
 	if err := server.Shutdown(shutdownCtx); err != nil {
 		log.Fatalf("Server shutdown error: %v", err)
 	}
@@ -407,7 +383,6 @@ func startAPI(cfg *config.Config) {
 
 func main() {
 	log.Infof("Starting Unbind API version %s", Version)
-	// Load environment variables from .env file
 	err := godotenv.Overload()
 	if err != nil {
 		log.Warn("Error loading .env file:", err)

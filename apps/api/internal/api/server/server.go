@@ -4,8 +4,10 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/unbindapp/unbind-api/config"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/internal/api/apictx"
 	"github.com/unbindapp/unbind-api/internal/auth"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/deployctl"
@@ -77,13 +79,25 @@ type Server struct {
 }
 
 func (self *Server) GetUserFromContext(ctx context.Context) (user *ent.User, found bool) {
-	user, found = ctx.Value("user").(*ent.User)
+	user, found = ctx.Value(apictx.UserKey).(*ent.User)
 	return user, found
 }
 
 // GetBearerTokenFromContext returns the validated access token, used to impersonate
 // the user for per-user Kubernetes operations.
 func (self *Server) GetBearerTokenFromContext(ctx context.Context) (token string, found bool) {
-	token, found = ctx.Value("bearer_token").(string)
+	token, found = ctx.Value(apictx.BearerTokenKey).(string)
 	return token, found
+}
+
+// AuthenticatedUser returns the caller and their bearer token from the request
+// context. The auth middleware guarantees both are present on authenticated
+// routes; a missing user therefore yields a 401.
+func (self *Server) AuthenticatedUser(ctx context.Context) (*ent.User, string, error) {
+	user, found := self.GetUserFromContext(ctx)
+	if !found {
+		return nil, "", huma.Error401Unauthorized("Unable to retrieve user")
+	}
+	token, _ := self.GetBearerTokenFromContext(ctx)
+	return user, token, nil
 }

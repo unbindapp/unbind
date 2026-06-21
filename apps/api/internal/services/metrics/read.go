@@ -17,11 +17,9 @@ func (self *MetricsService) GetMetrics(ctx context.Context, requesterUserID uuid
 		return nil, err
 	}
 
-	// Build options
 	metricsFilters := prometheus.MetricsFilter{}
 	sumBy := prometheus.MetricsFilterSumByService
 
-	// Build labels to select
 	switch input.Type {
 	case models.MetricsTypeTeam:
 		sumBy = prometheus.MetricsFilterSumByProject
@@ -32,7 +30,6 @@ func (self *MetricsService) GetMetrics(ctx context.Context, requesterUserID uuid
 	case models.MetricsTypeEnvironment:
 		sumBy = prometheus.MetricsFilterSumByService
 		metricsFilters.EnvironmentID = environment.ID
-		// Get services in this environment
 		services, err := self.repo.Service().GetByEnvironmentID(ctx, environment.ID, nil, false)
 		if err != nil {
 			return nil, err
@@ -46,7 +43,6 @@ func (self *MetricsService) GetMetrics(ctx context.Context, requesterUserID uuid
 		metricsFilters.ServiceIDs = []uuid.UUID{service.ID}
 	}
 
-	// Get start
 	var start time.Time
 	if input.Start.IsZero() {
 		// Default to 24 hours ago
@@ -55,7 +51,6 @@ func (self *MetricsService) GetMetrics(ctx context.Context, requesterUserID uuid
 		start = input.Start
 	}
 
-	// Get end
 	var end time.Time
 	if input.End.IsZero() {
 		// Default to now
@@ -64,7 +59,6 @@ func (self *MetricsService) GetMetrics(ctx context.Context, requesterUserID uuid
 		end = input.End
 	}
 
-	// Calculate step size
 	duration := end.Sub(start)
 	step := chooseStep(duration, 30, []time.Duration{
 		10 * time.Second,
@@ -82,13 +76,11 @@ func (self *MetricsService) GetMetrics(ctx context.Context, requesterUserID uuid
 		1 * 24 * time.Hour,
 	})
 
-	// Get metrics
 	rawMetrics, err := self.promClient.GetResourceMetrics(ctx, sumBy, start, end, step, &metricsFilters)
 	if err != nil {
 		return nil, fmt.Errorf("error getting metrics: %w", err)
 	}
 
-	// Convert to our format
 	return models.TransformMetricsEntity(rawMetrics, step, sumBy), nil
 }
 

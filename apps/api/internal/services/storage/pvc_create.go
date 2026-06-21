@@ -23,14 +23,12 @@ func (self *StorageService) CreatePVC(ctx context.Context, requesterUserID uuid.
 		return nil, err
 	}
 
-	// Parse size
 	sizeStr := fmt.Sprintf("%fGi", input.CapacityGB)
 	_, err = utils.ValidateStorageQuantity(sizeStr)
 	if err != nil {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
 	}
 
-	// Build labels to set
 	labels := map[string]string{
 		"unbind-team": input.TeamID.String(),
 	}
@@ -42,25 +40,22 @@ func (self *StorageService) CreatePVC(ctx context.Context, requesterUserID uuid.
 		labels["unbind-environment"] = input.EnvironmentID.String()
 	}
 
-	//  Generate a name
 	kubernetesName, err := utils.GenerateSlug(input.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	// Create metadata
 	err = self.repo.System().UpsertPVCMetadata(
 		ctx,
 		nil,
 		kubernetesName,
-		utils.ToPtr(input.Name),
+		new(input.Name),
 		input.Description,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get the PVCs
 	createdPvc, err := self.k8s.CreatePersistentVolumeClaim(ctx,
 		team.Namespace,
 		kubernetesName,

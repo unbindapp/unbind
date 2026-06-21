@@ -18,7 +18,6 @@ import (
 // EnqueueFullBuildDeployments enqueues full deployment jobs for services that need a complete rebuild
 func (self *ServiceService) EnqueueFullBuildDeployments(ctx context.Context, services []*ent.Service) error {
 	for _, service := range services {
-		// Populate build environment
 		env, err := self.deploymentController.PopulateBuildEnvironment(ctx, service.ID, nil, nil)
 		if err != nil {
 			return fmt.Errorf("failed to populate build environment for service %s: %w", service.ID, err)
@@ -31,7 +30,6 @@ func (self *ServiceService) EnqueueFullBuildDeployments(ctx context.Context, ser
 
 		// Get git information if available
 		if service.GithubInstallationID != nil && service.GitRepository != nil && service.Edges.ServiceConfig.GitBranch != nil {
-			// Get installation
 			installation, err := self.repo.Github().GetInstallationByID(ctx, *service.GithubInstallationID)
 			if err != nil {
 				if ent.IsNotFound(err) {
@@ -54,7 +52,6 @@ func (self *ServiceService) EnqueueFullBuildDeployments(ctx context.Context, ser
 			}
 		}
 
-		// Enqueue deployment job
 		_, err = self.deploymentController.EnqueueDeploymentJob(ctx, deployctl.DeploymentJobRequest{
 			ServiceID:     service.ID,
 			Environment:   env,
@@ -96,7 +93,6 @@ func (self *ServiceService) deployAdhocService(ctx context.Context, service *ent
 		return nil, fmt.Errorf("service %s missing current deployment or config", service.ID)
 	}
 
-	// Create CRD to deploy
 	crdToDeploy := self.deploymentService.CreateCRDFromService(service)
 
 	var newDeployment *ent.Deployment
@@ -134,15 +130,12 @@ func (self *ServiceService) deployAdhocService(ctx context.Context, service *ent
 		}
 		crdToDeploy.Spec.DeploymentRef = newDeployment.ID.String()
 
-		// Mark the deployment as started
 		if _, err := self.repo.Deployment().MarkStarted(ctx, tx, newDeployment.ID, time.Now()); err != nil {
 			return err
 		}
 
-		// Resolve references
 		additionalEnv, err := self.variableService.ResolveAllReferences(ctx, service.ID)
 		if err != nil {
-			// Mark failed
 			if _, err := self.repo.Deployment().MarkFailed(ctx, tx, newDeployment.ID, err.Error(), time.Now()); err != nil {
 				return err
 			}
@@ -160,10 +153,8 @@ func (self *ServiceService) deployAdhocService(ctx context.Context, service *ent
 
 		crdToDeploy.Spec.EnvVars = envVars
 
-		// Deploy to kubernetes
 		_, newService, err := self.k8s.DeployUnbindService(ctx, crdToDeploy)
 		if err != nil {
-			// Mark failed
 			if _, err := self.repo.Deployment().MarkFailed(ctx, tx, newDeployment.ID, err.Error(), time.Now()); err != nil {
 				return err
 			}
@@ -171,7 +162,6 @@ func (self *ServiceService) deployAdhocService(ctx context.Context, service *ent
 			return nil
 		}
 
-		// Attach metadata
 		if _, err := self.repo.Deployment().AttachDeploymentMetadata(
 			ctx,
 			tx,
@@ -179,7 +169,6 @@ func (self *ServiceService) deployAdhocService(ctx context.Context, service *ent
 			crdToDeploy.Spec.Config.Image,
 			newService,
 		); err != nil {
-			// Mark failed
 			if _, err := self.repo.Deployment().MarkFailed(ctx, tx, newDeployment.ID, err.Error(), time.Now()); err != nil {
 				return err
 			}
@@ -187,12 +176,10 @@ func (self *ServiceService) deployAdhocService(ctx context.Context, service *ent
 			return nil
 		}
 
-		// Mark as succeeded
 		if _, err := self.repo.Deployment().MarkSucceeded(ctx, tx, newDeployment.ID, time.Now()); err != nil {
 			return err
 		}
 
-		// Update the service with the new deployment
 		if err := self.repo.Service().SetCurrentDeployment(ctx, tx, service.ID, newDeployment.ID); err != nil {
 			return err
 		}

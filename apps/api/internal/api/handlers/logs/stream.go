@@ -25,19 +25,16 @@ type GetLogInput struct {
 }
 
 func (self *HandlerGroup) GetLogsfunc(ctx context.Context, input *GetLogInput, send sse.Sender) {
-	// Get caller
 	user, found := self.srv.GetUserFromContext(ctx)
-	bearerToken, _ := self.srv.GetBearerTokenFromContext(ctx)
-
 	if !found {
 		log.Error("Error getting user from context")
-		_ = send.Data(
-			loki.LogEvents{
-				MessageType:  loki.LogEventsMessageTypeError,
-				ErrorMessage: "unauthorized",
-			},
-		)
+		_ = send.Data(loki.LogEvents{
+			MessageType:  loki.LogEventsMessageTypeError,
+			ErrorMessage: "unauthorized",
+		})
+		return
 	}
+	bearerToken, _ := self.srv.GetBearerTokenFromContext(ctx)
 
 	if err := self.srv.LogService.StreamLogs(ctx, user.ID, bearerToken, &input.LogStreamInput, send); err != nil {
 		self.handleSSEErr(err, send)

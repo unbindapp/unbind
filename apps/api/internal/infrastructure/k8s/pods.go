@@ -10,13 +10,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
-
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 )
 
 // GetPodsByLabels returns pods matching the provided labels in a namespace
 func (k *KubeClient) GetPodsByLabels(ctx context.Context, namespace string, labels map[string]string, client kubernetes.Interface) (*corev1.PodList, error) {
-	// Convert the labels map to a selector string
 	var labelSelectors []string
 	for key, value := range labels {
 		labelSelectors = append(labelSelectors, fmt.Sprintf("%s=%s", key, value))
@@ -37,12 +34,10 @@ func (k *KubeClient) RollingRestartPodsByLabel(
 	labelValue string,
 	client kubernetes.Interface,
 ) error {
-	// Create labels map for the selector
 	labels := map[string]string{
 		labelKey: labelValue,
 	}
 
-	// Get all pods matching the label
 	pods, err := k.GetPodsByLabels(ctx, namespace, labels, client)
 	if err != nil {
 		return fmt.Errorf("failed to get pods with label %s=%s: %w", labelKey, labelValue, err)
@@ -165,7 +160,6 @@ func (k *KubeClient) deletePod(ctx context.Context, namespace, name string, clie
 
 // DeleteStatefulSetsWithOrphanCascade deletes StatefulSets matching the label selector with orphan cascade
 func (self *KubeClient) DeleteStatefulSetsWithOrphanCascade(ctx context.Context, namespace string, labels map[string]string, client kubernetes.Interface) error {
-	// Convert the labels map to a selector string
 	var labelSelectors []string
 	for key, value := range labels {
 		labelSelectors = append(labelSelectors, fmt.Sprintf("%s=%s", key, value))
@@ -181,7 +175,7 @@ func (self *KubeClient) DeleteStatefulSetsWithOrphanCascade(ctx context.Context,
 
 	for _, sts := range statefulSets.Items {
 		err = client.AppsV1().StatefulSets(namespace).Delete(ctx, sts.Name, metav1.DeleteOptions{
-			OrphanDependents: utils.ToPtr(true),
+			OrphanDependents: new(true),
 		})
 		if err != nil {
 			return fmt.Errorf("failed to delete StatefulSet %s: %w", sts.Name, err)

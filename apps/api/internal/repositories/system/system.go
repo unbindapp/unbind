@@ -12,7 +12,6 @@ type SystemRepository struct {
 	base *repository.BaseRepository
 }
 
-// NewSystemRepository creates a new GitHub repository
 func NewSystemRepository(db *ent.Client) *SystemRepository {
 	return &SystemRepository{
 		base: &repository.BaseRepository{DB: db},

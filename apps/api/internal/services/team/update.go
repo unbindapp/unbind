@@ -39,7 +39,6 @@ func (self *TeamService) UpdateTeam(ctx context.Context, userID uuid.UUID, input
 		return nil, err
 	}
 
-	// Update the team in the database
 	updatedTeam, err := self.repo.Team().Update(ctx, input.ID, input.Name, input.Description)
 	if err != nil {
 		// May be ent.NotFound

@@ -119,7 +119,6 @@ func (fd *FrameworkDetector) isExpressApp() bool {
 	if utils.FileExists(packageJSONPath) {
 		content, err := utils.ReadFile(packageJSONPath)
 		if err == nil {
-			// Check if express is listed as a dependency
 			if strings.Contains(content, "\"express\":") || strings.Contains(content, "'express':") {
 				// Look for express app initialization pattern in JavaScript files
 				jsFiles, err := utils.FindFilesWithExclusions(fd.sourceDir, "*.js", []string{"node_modules", ".git"})
@@ -131,7 +130,6 @@ func (fd *FrameworkDetector) isExpressApp() bool {
 					for _, file := range jsFiles {
 						content, err := utils.ReadFile(file)
 						if err == nil {
-							// Check if file imports express and has listen method
 							if expressInitRegex.MatchString(content) && expressListenRegex.MatchString(content) {
 								log.Infof("Found Express app initialization in %s", file)
 								return true

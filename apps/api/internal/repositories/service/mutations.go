@@ -32,7 +32,6 @@ type CreateServiceInput struct {
 	DetectedPorts        []schema.PortSpec // This is used to store detected ports, not for creation
 }
 
-// Create the service
 func (self *ServiceRepository) Create(
 	ctx context.Context,
 	tx repository.TxInterface,
@@ -118,23 +117,22 @@ func (self *ServiceRepository) CreateConfig(
 		return nil, fmt.Errorf("builder is missing, but required")
 	}
 
-	// Get service
 	service, err := db.Service.Get(ctx, input.ServiceID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get high level icon
 	var icon string
-	if input.Icon != nil {
+	switch {
+	case input.Icon != nil:
 		icon = *input.Icon
-	} else if service.Database != nil {
+	case service.Database != nil:
 		icon = *service.Database
-	} else if input.Framework != nil {
+	case input.Framework != nil:
 		icon = string(*input.Framework)
-	} else if input.Provider != nil {
+	case input.Provider != nil:
 		icon = string(*input.Provider)
-	} else {
+	default:
 		icon = string(service.Type)
 	}
 
@@ -203,7 +201,6 @@ func (self *ServiceRepository) CreateConfig(
 	return c.Save(ctx)
 }
 
-// Update the service
 func (self *ServiceRepository) Update(
 	ctx context.Context,
 	tx repository.TxInterface,
@@ -222,7 +219,36 @@ func (self *ServiceRepository) Update(
 		Exec(ctx)
 }
 
-// Update service config
+// applyResourceUpdate clears resource limits when the input is fully zeroed,
+// otherwise backfills any unset (<1) field from the existing config before saving.
+func applyResourceUpdate(upd *ent.ServiceConfigUpdateOne, res, existing *schema.Resources) {
+	if res == nil {
+		return
+	}
+	if res.CPULimitsMillicores < 1 &&
+		res.CPURequestsMillicores < 1 &&
+		res.MemoryRequestsMegabytes < 1 &&
+		res.MemoryLimitsMegabytes < 1 {
+		upd.ClearResources()
+		return
+	}
+	if existing != nil {
+		if res.CPULimitsMillicores < 1 {
+			res.CPULimitsMillicores = existing.CPULimitsMillicores
+		}
+		if res.CPURequestsMillicores < 1 {
+			res.CPURequestsMillicores = existing.CPURequestsMillicores
+		}
+		if res.MemoryRequestsMegabytes < 1 {
+			res.MemoryRequestsMegabytes = existing.MemoryRequestsMegabytes
+		}
+		if res.MemoryLimitsMegabytes < 1 {
+			res.MemoryLimitsMegabytes = existing.MemoryLimitsMegabytes
+		}
+	}
+	upd.SetResources(res)
+}
+
 func (self *ServiceRepository) UpdateConfig(
 	ctx context.Context,
 	tx repository.TxInterface,
@@ -251,33 +277,7 @@ func (self *ServiceRepository) UpdateConfig(
 		SetNillableBackupSchedule(input.BackupSchedule).
 		SetNillableBackupRetentionCount(input.BackupRetentionCount)
 
-	if input.Resources != nil {
-		// If all values are < 1, we clear the resources
-		if input.Resources.CPULimitsMillicores < 1 &&
-			input.Resources.CPURequestsMillicores < 1 &&
-			input.Resources.MemoryRequestsMegabytes < 1 &&
-			input.Resources.MemoryLimitsMegabytes < 1 {
-			upd.ClearResources()
-		} else {
-			// Merge with existing resources
-			if existingConfig != nil && existingConfig.Resources != nil {
-				if input.Resources.CPULimitsMillicores < 1 {
-					input.Resources.CPULimitsMillicores = existingConfig.Resources.CPULimitsMillicores
-				}
-				if input.Resources.CPURequestsMillicores < 1 {
-					input.Resources.CPURequestsMillicores = existingConfig.Resources.CPURequestsMillicores
-				}
-				if input.Resources.MemoryRequestsMegabytes < 1 {
-					input.Resources.MemoryRequestsMegabytes = existingConfig.Resources.MemoryRequestsMegabytes
-				}
-				if input.Resources.MemoryLimitsMegabytes < 1 {
-					input.Resources.MemoryLimitsMegabytes = existingConfig.Resources.MemoryLimitsMegabytes
-				}
-			}
-
-			upd.SetResources(input.Resources)
-		}
-	}
+	applyResourceUpdate(upd, input.Resources, existingConfig.Resources)
 
 	if input.InitContainers != nil {
 		if len(input.InitContainers) > 0 {

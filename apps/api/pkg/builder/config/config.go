@@ -159,8 +159,13 @@ func NewConfig() *Config {
 	if err := env.Parse(&cfg); err != nil {
 		log.Fatal("Error parsing environment", "err", err)
 	}
-	cfg.Hosts, _ = parseHosts(&cfg)
-	cfg.Ports, _ = parsePorts(&cfg)
+	var err error
+	if cfg.Hosts, err = parseHosts(&cfg); err != nil {
+		log.Error("Error parsing hosts from environment", "err", err)
+	}
+	if cfg.Ports, err = parsePorts(&cfg); err != nil {
+		log.Error("Error parsing ports from environment", "err", err)
+	}
 	return &cfg
 }
 

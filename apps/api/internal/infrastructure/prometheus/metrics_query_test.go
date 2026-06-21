@@ -70,7 +70,7 @@ func (s *MetricsQueryTestSuite) createSampleMatrix(serviceName string, values []
 
 func (s *MetricsQueryTestSuite) createTestSamples() []model.SamplePair {
 	samples := make([]model.SamplePair, 5)
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		timestamp := s.testStart.Add(time.Duration(i) * s.testStep)
 		samples[i] = model.SamplePair{
 			Timestamp: model.Time(timestamp.Unix() * 1000),
@@ -284,7 +284,7 @@ func (s *MetricsQueryTestSuite) TestGetResourceMetrics_EmptyResults() {
 func (s *MetricsQueryTestSuite) TestGetResourceMetrics_MultipleServices() {
 	samples1 := s.createTestSamples()
 	samples2 := make([]model.SamplePair, 3)
-	for i := 0; i < 3; i++ {
+	for i := range 3 {
 		timestamp := s.testStart.Add(time.Duration(i) * s.testStep)
 		samples2[i] = model.SamplePair{
 			Timestamp: model.Time(timestamp.Unix() * 1000),

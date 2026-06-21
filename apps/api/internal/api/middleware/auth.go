@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/unbindapp/unbind-api/internal/api/apictx"
 	"github.com/unbindapp/unbind-api/internal/auth"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 )
@@ -65,8 +66,8 @@ func (self *Middleware) Authenticate(ctx huma.Context, next func(huma.Context)) 
 	csrfCookie := auth.CSRFCookie(auth.MintCSRFToken(self.tokenManager.CSRFSecret(), cookie.Value), time.Now().Add(auth.RefreshTokenTTL), self.cfg.CookieSecure)
 	ctx.AppendHeader("Set-Cookie", csrfCookie.String())
 
-	ctx = huma.WithValue(ctx, "user", user)
-	ctx = huma.WithValue(ctx, "bearer_token", accessToken)
+	ctx = huma.WithValue(ctx, apictx.UserKey, user)
+	ctx = huma.WithValue(ctx, apictx.BearerTokenKey, accessToken)
 	ctx = huma.WithValue(ctx, authMethodKey, authMethodCookie)
 	next(ctx)
 }
@@ -79,8 +80,8 @@ func (self *Middleware) proceed(ctx huma.Context, next func(huma.Context), email
 		return
 	}
 
-	ctx = huma.WithValue(ctx, "user", user)
-	ctx = huma.WithValue(ctx, "bearer_token", token)
+	ctx = huma.WithValue(ctx, apictx.UserKey, user)
+	ctx = huma.WithValue(ctx, apictx.BearerTokenKey, token)
 	ctx = huma.WithValue(ctx, authMethodKey, method)
 	next(ctx)
 }

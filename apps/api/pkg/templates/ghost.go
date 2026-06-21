@@ -32,7 +32,7 @@ func ghostTemplate() *schema.TemplateDefinition {
 				Type:        schema.InputTypeDatabaseSize,
 				Description: "Size of the storage for the MySQL database.",
 				Required:    true,
-				Default:     utils.ToPtr("1"),
+				Default:     new("1"),
 			},
 		},
 		Services: []schema.TemplateService{
@@ -43,7 +43,7 @@ func ghostTemplate() *schema.TemplateDefinition {
 				DisplayRank:  100,
 				Type:         schema.ServiceTypeDatabase,
 				Builder:      schema.ServiceBuilderDatabase,
-				DatabaseType: utils.ToPtr("mysql"),
+				DatabaseType: new("mysql"),
 			},
 			{
 				ID:        "service_ghost",
@@ -52,7 +52,7 @@ func ghostTemplate() *schema.TemplateDefinition {
 				Name:      "Ghost",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     utils.ToPtr("ghost:6.45.0"),
+				Image:     new("ghost:6.45.0"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
 					CPULimitsMillicores:   400,

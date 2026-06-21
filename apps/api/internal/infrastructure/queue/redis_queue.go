@@ -49,7 +49,6 @@ func (q *Queue[T]) Enqueue(ctx context.Context, id string, data T) error {
 		Priority:   0,
 	}
 
-	// Serialize item to JSON
 	itemData, err := json.Marshal(item)
 	if err != nil {
 		return err
@@ -76,13 +75,11 @@ func (q *Queue[T]) Dequeue(ctx context.Context) (*QueueItem[T], error) {
 		return nil, nil
 	}
 
-	// Deserialize item from JSON
 	var item QueueItem[T]
 	if err := json.Unmarshal([]byte(results[0]), &item); err != nil {
 		return nil, err
 	}
 
-	// Remove from queue
 	if err := q.client.ZRem(ctx, q.key, results[0]).Err(); err != nil {
 		return nil, err
 	}
@@ -101,7 +98,6 @@ func (q *Queue[T]) Peek(ctx context.Context) (*QueueItem[T], error) {
 		return nil, nil
 	}
 
-	// Deserialize item from JSON
 	var item QueueItem[T]
 	if err := json.Unmarshal([]byte(results[0]), &item); err != nil {
 		return nil, err
@@ -126,7 +122,6 @@ func (q *Queue[T]) DequeueN(ctx context.Context, n int) ([]*QueueItem[T], error)
 		return []*QueueItem[T]{}, nil
 	}
 
-	// Deserialize the items
 	items := make([]*QueueItem[T], 0, len(results))
 	for _, result := range results {
 		var item QueueItem[T]
@@ -152,7 +147,6 @@ func (q *Queue[T]) GetAll(ctx context.Context) ([]*QueueItem[T], error) {
 		return nil, fmt.Errorf("failed to get items from queue: %w", err)
 	}
 
-	// Deserialize the items
 	items := make([]*QueueItem[T], 0, len(results))
 	for _, result := range results {
 		var item QueueItem[T]

@@ -23,7 +23,6 @@ func (self *DatabaseProvider) ListDatabases(_ context.Context, _ string) ([]stri
 		return nil, fmt.Errorf("failed to read template index: %w", err)
 	}
 
-	// Parse the index
 	var index IndexResponse
 	if err := json.Unmarshal(indexBytes, &index); err != nil {
 		return nil, fmt.Errorf("failed to parse template index: %w", err)

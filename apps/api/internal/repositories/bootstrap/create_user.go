@@ -13,7 +13,6 @@ import (
 // Create initial bootstrap user, added to all groups
 func (self *BootstrapRepository) CreateUser(ctx context.Context, email, password string) (user *ent.User, err error) {
 	if err := self.base.WithTx(ctx, func(tx repository.TxInterface) error {
-		// Check if bootstrapped
 		userExists, bootstrapped, err := self.IsBootstrapped(ctx, tx)
 		if err != nil {
 			return err
@@ -22,14 +21,12 @@ func (self *BootstrapRepository) CreateUser(ctx context.Context, email, password
 			return errdefs.ErrAlreadyBootstrapped
 		}
 
-		// Hash the password
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 		if err != nil {
 			log.Errorf("Error hashing password: %v\n", err)
 			return err
 		}
 
-		// Create the user
 		user, err = tx.Client().User.Create().
 			SetEmail(email).
 			SetPasswordHash(string(hashedPassword)).
