@@ -37,7 +37,7 @@ export default function SettingsTabs({ tabs }: TProps) {
     <div className="sticky top-0 left-0 w-full overflow-hidden md:w-52">
       <nav
         ref={navRef}
-        className="bg-background max-md:touch:scrollbar-hidden pr-6\4 z-10 flex max-h-full w-full flex-row items-center overflow-auto border-b pr-6 sm:top-23.5 md:max-h-[calc(100svh-6rem)] md:flex-col md:items-start md:justify-start md:border-0 md:pr-0 lg:top-11.75 lg:max-h-[calc(100svh-3rem-1px)]"
+        className="bg-background max-md:touch:scrollbar-hidden z-10 flex max-h-full w-full flex-row items-center overflow-auto border-b pr-6 sm:top-23.5 md:max-h-[calc(100svh-6rem)] md:flex-col md:items-start md:justify-start md:border-0 md:pr-0 lg:top-11.75 lg:max-h-[calc(100svh-3rem-1px)]"
       >
         <div className="flex flex-row sm:px-3 md:flex-col md:p-1">
           {tabs.map((tab) => (
