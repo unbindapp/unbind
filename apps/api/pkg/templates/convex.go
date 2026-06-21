@@ -25,7 +25,7 @@ func convexTemplate() *schema.TemplateDefinition {
 				ID:          "input_api_domain",
 				Name:        "API Domain",
 				Type:        schema.InputTypeHost,
-				Description: "Domain for the Convex backend. Serves the API and websocket sync at /, and HTTP actions at /http.",
+				Description: "Domain for the Convex backend.",
 				Required:    true,
 				TargetPort:  utils.ToPtr(3210),
 			},
