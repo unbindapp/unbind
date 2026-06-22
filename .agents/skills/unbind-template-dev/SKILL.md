@@ -179,7 +179,14 @@ Inputs: []schema.TemplateInput{
 ```
 
 `Hidden: true` keeps an input out of the form (used for `InputTypeGeneratedPassword` shared
-secrets). `Default` is a `*string`; sizes are in GB without the `Gi` suffix.
+secrets). `Collapsed: true` keeps the input visible but tucked under a collapsed dropdown in
+the form — a softer alternative to `Hidden` for advanced/secondary fields. `Default` is a
+`*string`; sizes are in GB without the `Gi` suffix.
+
+**Storage collapse convention:** when a template has **2 or more** storage inputs
+(`InputTypeVolumeSize` and `InputTypeDatabaseSize` combined), mark every one of those storage
+inputs `Collapsed: true` so they don't crowd the form. A template with a single storage input
+leaves it expanded.
 
 ## Step 4: Variables and generators
 

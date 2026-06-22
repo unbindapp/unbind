@@ -89,6 +89,10 @@ from `template.definition.inputs`, skipping `hidden` inputs. Field by `type`:
 `required`, `default`, and `description` drive validation, prefill, and help text. You get
 the form for free by declaring inputs correctly — no frontend work needed beyond the icon.
 
+Visibility flags: `hidden` inputs are skipped entirely; `collapsed` inputs still render but
+sit under a collapsed dropdown (advanced/secondary fields, e.g. the storage inputs on
+multi-storage templates) rather than in the main form body.
+
 The services list in the panel renders each service's `icon`, `name`, and a subtitle (image
 tag, or `database_type:version`).
 

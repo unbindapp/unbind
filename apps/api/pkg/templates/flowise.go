@@ -13,7 +13,7 @@ func flowiseTemplate() *schema.TemplateDefinition {
 		Icon:        "flowise",
 		Keywords:    []string{"llm", "ai", "chatbot", "langchain", "flow", "workflow", "automation", "low code", "low-code", "no code", "no-code", "chatbot", "ai"},
 		Description: "Low code tool for building LLM flows.",
-		Version:     1,
+		Version:     2,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumCPUs:  1,
 			MinimumRAMGB: 2,
@@ -37,6 +37,7 @@ func flowiseTemplate() *schema.TemplateDefinition {
 				Description: "Size of the storage for the Flowise app data.",
 				Required:    true,
 				Default:     new("1"),
+				Collapsed:   true,
 			},
 			{
 				ID:          "input_database_size",
@@ -45,6 +46,7 @@ func flowiseTemplate() *schema.TemplateDefinition {
 				Description: "Size of the storage for the PostgreSQL database.",
 				Required:    true,
 				Default:     new("1"),
+				Collapsed:   true,
 			},
 		},
 		Services: []schema.TemplateService{

@@ -22,6 +22,19 @@ inputs, kubeNameMap, namespace)`, called from the deploy service.
 `input.Default` is `*string`; sizes are entered as GB integers without the `Gi` suffix
 (`utils.ToPtr("1")`).
 
+### Visibility: `Hidden` vs `Collapsed`
+
+Two independent visibility flags on `TemplateInput`:
+
+- `Hidden: true` — the input never renders in the form (used for shared generated secrets).
+- `Collapsed: true` — the input still renders, but tucked under a collapsed dropdown so it
+  doesn't crowd the default view.
+
+**Storage collapse convention:** when a template exposes **2 or more** storage inputs
+(`InputTypeVolumeSize` and `InputTypeDatabaseSize` combined), set `Collapsed: true` on every
+one of those storage inputs. A single storage input stays expanded. See `plausible.go`
+(two `database-size`) or `supabase_lite.go` (`database-size` + `volume-size`) for examples.
+
 ### The shared-secret pattern
 
 Supabase needs the same internal password baked into many connection strings. It declares a

@@ -13,7 +13,7 @@ func teableTemplate() *schema.TemplateDefinition {
 		Icon:        "teable",
 		Keywords:    []string{"airtable", "teable", "no-code", "database", "visual", "interface", "relational", "sql", "postgresql"},
 		Description: "The next-gen Airtable alternative.",
-		Version:     1,
+		Version:     2,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumCPUs:  1,
 			MinimumRAMGB: 2,
@@ -33,6 +33,7 @@ func teableTemplate() *schema.TemplateDefinition {
 				Description: "Size of the storage for the PostgreSQL database.",
 				Required:    true,
 				Default:     new("1"),
+				Collapsed:   true,
 			},
 			{
 				ID:          "input_teable_size",
@@ -41,6 +42,7 @@ func teableTemplate() *schema.TemplateDefinition {
 				Description: "Size of the storage for Teable assets.",
 				Required:    true,
 				Default:     new("1"),
+				Collapsed:   true,
 				Volume: &schema.TemplateVolume{
 					Name:      "teable-data",
 					MountPath: "/app/.assets",

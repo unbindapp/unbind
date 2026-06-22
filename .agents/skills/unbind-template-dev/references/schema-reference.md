@@ -83,6 +83,7 @@ You never declare these. Reference them via `TemplateVariableReference`.
 | `Description` | `string` | yes | Help text. |
 | `Required` | `bool` | yes | Enforced by the form. |
 | `Hidden` | `bool` | no | Keep out of the form (shared generated secrets). |
+| `Collapsed` | `bool` | no | Visible but tucked under a collapsed dropdown in the form. Convention: set on every storage input when a template has 2+ storage inputs. |
 | `Default` | `*string` | no | Prefilled value. Sizes are GB w/o `Gi`. |
 | `Volume` | `*TemplateVolume` | for volume-size | `Name` + `MountPath`. Required for `InputTypeVolumeSize`. |
 | `PortProtocol` | `*Protocol` | for nodeport | Defaults TCP. |

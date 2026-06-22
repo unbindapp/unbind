@@ -13,7 +13,7 @@ func formbricksTemplate() *schema.TemplateDefinition {
 		Icon:        "formbricks",
 		Keywords:    []string{"forms", "surveys", "feedback", "analytics", "open source", "typeform alternative"},
 		Description: "Typeform alternative for user feedback and surveys.",
-		Version:     1,
+		Version:     2,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumCPUs:  1,
 			MinimumRAMGB: 2,
@@ -33,6 +33,7 @@ func formbricksTemplate() *schema.TemplateDefinition {
 				Description: "Size of the storage for the PostgreSQL database.",
 				Required:    true,
 				Default:     new("1"),
+				Collapsed:   true,
 			},
 			{
 				ID:          "input_storage_size",
@@ -41,6 +42,7 @@ func formbricksTemplate() *schema.TemplateDefinition {
 				Description: "Size of the storage for Formbricks uploads.",
 				Required:    true,
 				Default:     new("1"),
+				Collapsed:   true,
 				Volume: &schema.TemplateVolume{
 					Name:      "formbricks-uploads",
 					MountPath: "/home/nextjs/apps/web/uploads/",

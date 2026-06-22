@@ -13,7 +13,7 @@ func plausibleTemplate() *schema.TemplateDefinition {
 		Icon:        "plausible",
 		Keywords:    []string{"analytics", "privacy-friendly", "open source", "Google Analytics", "umami"},
 		Description: "Privacy-friendly Google Analytics alternative.",
-		Version:     1,
+		Version:     2,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumCPUs:  1,
 			MinimumRAMGB: 2,
@@ -33,6 +33,7 @@ func plausibleTemplate() *schema.TemplateDefinition {
 				Description: "Size of the storage for the PostgreSQL database.",
 				Required:    true,
 				Default:     new("1"),
+				Collapsed:   true,
 			},
 			{
 				ID:          "input_clickhouse_size",
@@ -41,6 +42,7 @@ func plausibleTemplate() *schema.TemplateDefinition {
 				Description: "Size of the storage for the Clickhouse database.",
 				Required:    true,
 				Default:     new("1"),
+				Collapsed:   true,
 			},
 		},
 		Services: []schema.TemplateService{

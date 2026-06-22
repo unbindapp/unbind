@@ -13,7 +13,7 @@ func listmonkTemplate() *schema.TemplateDefinition {
 		Icon:        "listmonk",
 		Keywords:    []string{"newsletter", "email", "mailing list", "campaign", "marketing", "smtp"},
 		Description: "Newsletter and mailing list manager.",
-		Version:     1,
+		Version:     2,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumCPUs:  1,
 			MinimumRAMGB: 0.25,
@@ -33,6 +33,7 @@ func listmonkTemplate() *schema.TemplateDefinition {
 				Description: "Size of the storage for the PostgreSQL database.",
 				Required:    true,
 				Default:     new("1"),
+				Collapsed:   true,
 			},
 			{
 				ID:   "input_storage_size",
@@ -45,6 +46,7 @@ func listmonkTemplate() *schema.TemplateDefinition {
 				Description: "Size of the storage for the Listmonk uploads.",
 				Required:    true,
 				Default:     new("1"),
+				Collapsed:   true,
 			},
 		},
 		Services: []schema.TemplateService{

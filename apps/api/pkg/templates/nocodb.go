@@ -13,7 +13,7 @@ func nocodbTemplate() *schema.TemplateDefinition {
 		Icon:        "nocodb",
 		Keywords:    []string{"low code", "no code", "no-code", "database", "spreadsheet", "airtable alternative", "api builder", "sql", "postgresql"},
 		Description: "Build databases as spreadsheets.",
-		Version:     1,
+		Version:     2,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumCPUs:  1,
 			MinimumRAMGB: 1,
@@ -34,6 +34,7 @@ func nocodbTemplate() *schema.TemplateDefinition {
 				Description: "Size of the storage for the PostgreSQL database.",
 				Required:    true,
 				Default:     new("1"),
+				Collapsed:   true,
 			},
 			{
 				ID:   "input_storage_size",
@@ -46,6 +47,7 @@ func nocodbTemplate() *schema.TemplateDefinition {
 				Description: "Size of the storage for NocoDB data.",
 				Required:    true,
 				Default:     new("1"),
+				Collapsed:   true,
 			},
 		},
 		Services: []schema.TemplateService{

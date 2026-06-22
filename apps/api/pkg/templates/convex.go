@@ -15,7 +15,7 @@ func convexTemplate() *schema.TemplateDefinition {
 		Icon:        "convex",
 		Keywords:    []string{"convex", "backend", "database", "reactive", "realtime", "serverless", "typescript", "baas", "firebase", "supabase"},
 		Description: "Open-source reactive backend with a database, functions, and realtime sync.",
-		Version:     1,
+		Version:     2,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumCPUs:  2,
 			MinimumRAMGB: 2,
@@ -52,6 +52,7 @@ func convexTemplate() *schema.TemplateDefinition {
 				Description: "PostgreSQL storage size.",
 				Required:    true,
 				Default:     new("1"),
+				Collapsed:   true,
 			},
 			{
 				ID:   "input_storage_size",
@@ -64,6 +65,7 @@ func convexTemplate() *schema.TemplateDefinition {
 				Description: "Disk for file storage, exports, and indexes.",
 				Required:    true,
 				Default:     new("1"),
+				Collapsed:   true,
 			},
 		},
 		Services: []schema.TemplateService{

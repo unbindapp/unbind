@@ -413,6 +413,7 @@ type TemplateInput struct {
 	Default      *string           `json:"default,omitempty"`
 	Required     bool              `json:"required"`
 	Hidden       bool              `json:"hidden"`
+	Collapsed    bool              `json:"collapsed"` // Visible in the UI but collapsed under a dropdown by default
 	TargetPort   *int              `json:"target_port,omitempty"`
 }
 
