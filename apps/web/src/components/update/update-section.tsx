@@ -96,7 +96,7 @@ function UpdateSectionInner({
           <HourglassIcon className="animate-hourglass-long text-process touch: absolute top-0 left-0 size-full scale-80 opacity-0 transition group-data-[phase=updating]/section:opacity-100" />
           <CircleCheckBigIcon className="text-success absolute top-0 left-0 size-full opacity-0 transition group-data-[phase=succeeded]/section:opacity-100" />
         </div>
-        <h1 className="w-full px-2 text-center text-2xl leading-tight font-bold">
+        <h1 className="w-full px-2 text-center text-2xl leading-tight font-medium">
           {updatePhase === "idle" && (
             <span>
               Update to <span className="text-success font-bold">{latestVersion}</span>

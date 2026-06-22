@@ -39,7 +39,7 @@ function ProjectServicesPage() {
         <div className="flex w-full max-w-7xl flex-col">
           <div className="flex w-full flex-wrap items-center justify-between gap-4 px-1">
             <div className="flex min-w-0 flex-wrap items-center justify-start gap-2">
-              <h1 className="min-w-0 pr-1.5 pl-2 text-2xl leading-tight font-bold">Services</h1>
+              <h1 className="min-w-0 pr-1.5 pl-2 text-2xl leading-tight font-semibold">Services</h1>
               <EnvironmentSelector />
             </div>
             <NewServiceButton className="-my-2" />

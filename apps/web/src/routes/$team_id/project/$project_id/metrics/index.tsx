@@ -70,7 +70,9 @@ function MetricsPage() {
             <div className="flex w-full max-w-7xl flex-col">
               <div className="flex w-full flex-wrap items-center justify-between gap-4 px-1">
                 <div className="flex min-w-0 flex-wrap items-center justify-start gap-2">
-                  <h1 className="min-w-0 pr-1.5 pl-2 text-2xl leading-tight font-bold">Metrics</h1>
+                  <h1 className="min-w-0 pr-1.5 pl-2 text-2xl leading-tight font-semibold">
+                    Metrics
+                  </h1>
                   <EnvironmentSelector />
                 </div>
                 <MetricsIntervalDropdown className="-my-2" />

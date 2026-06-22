@@ -334,9 +334,9 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
           </div>
           {/* Services */}
           <div className="flex w-full flex-col gap-2 pt-1">
-            <h3 className="w-full px-1.5 text-xl leading-tight font-bold">
+            <h3 className="w-full px-1.5 text-xl leading-tight font-semibold">
               Services{" "}
-              <span className="text-muted-foreground text-lg font-medium">
+              <span className="text-muted-foreground text-lg font-normal">
                 ({sortedServices.length})
               </span>
             </h3>

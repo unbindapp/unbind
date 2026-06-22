@@ -58,7 +58,7 @@ export default function VariablesHeader({ tokensDisabled }: { tokensDisabled?: b
     >
       <div className="flex w-full flex-col items-start justify-start gap-2.5 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 shrink overflow-hidden px-1">
-          <h2 className="group-data-pending/header:bg-foreground group-data-pending/header:animate-skeleton min-w-0 shrink truncate text-lg leading-tight font-bold group-data-pending/header:rounded-md group-data-pending/header:text-transparent group-data-[type=project]/header:text-xl group-data-[type=team]/header:text-xl">
+          <h2 className="group-data-pending/header:bg-foreground group-data-pending/header:animate-skeleton min-w-0 shrink truncate text-lg leading-tight font-semibold group-data-pending/header:rounded-md group-data-pending/header:text-transparent group-data-[type=project]/header:text-xl group-data-[type=team]/header:text-xl">
             {title}
           </h2>
         </div>
@@ -79,7 +79,7 @@ export default function VariablesHeader({ tokensDisabled }: { tokensDisabled?: b
             fadeOnDisabled={false}
             data-open={isOpen || undefined}
             data-closed={!isOpen || undefined}
-            className="group/button group-data-pending/header:bg-muted-more-foreground group-data-pending/header:animate-skeleton order-first shrink-0 gap-1.5 px-3 py-2 font-semibold group-data-pending/header:text-transparent sm:order-none"
+            className="group/button group-data-pending/header:bg-muted-more-foreground group-data-pending/header:animate-skeleton order-first shrink-0 gap-1.5 px-3 py-2 font-semibold group-data-pending/header:text-transparent sm:order-0"
             onClick={() => setIsOpen((o) => !o)}
             variant="outline"
           >

@@ -32,7 +32,7 @@ function NoTeams() {
   return (
     <main className="flex min-h-svh w-full flex-col items-center justify-center gap-4 px-4 py-8 text-center md:px-8">
       <div className="flex max-w-full flex-col gap-0.5">
-        <h1 className="text-foreground text-2xl font-bold">No teams found</h1>
+        <h1 className="text-foreground text-2xl font-semibold">No teams found</h1>
         <p className="text-muted-foreground">{`This account isn't a member of any team yet`}</p>
       </div>
       <Button

@@ -20,7 +20,7 @@ function UpdatePage() {
       <Wrapper>
         <div className="flex w-full flex-col items-center gap-1.5 px-1">
           <CircleArrowUpIcon className="text-destructive size-8" />
-          <h1 className="text-destructive w-full px-2 text-center text-2xl leading-tight font-bold">
+          <h1 className="text-destructive w-full px-2 text-center text-2xl leading-tight font-semibold">
             {"Couldn't check for updates"}
           </h1>
           <p className="text-muted-foreground w-full text-center">
@@ -37,7 +37,7 @@ function UpdatePage() {
       <Wrapper data-pending={isPending || undefined} className="group/wrapper">
         <div className="flex w-full flex-col items-center gap-1.5 px-1">
           <CircleArrowUpIcon className="group-data-pending/wrapper:animate-skeleton group-data-pending/wrapper:bg-muted-foreground size-8 group-data-pending/wrapper:rounded-full group-data-pending/wrapper:text-transparent" />
-          <h1 className="group-data-pending/wrapper:animate-skeleton group-data-pending/wrapper:bg-muted-foreground max-w-full px-2 text-center text-2xl leading-tight font-bold group-data-pending/wrapper:rounded-md group-data-pending/wrapper:text-transparent">
+          <h1 className="group-data-pending/wrapper:animate-skeleton group-data-pending/wrapper:bg-muted-foreground max-w-full px-2 text-center text-2xl leading-tight font-semibold group-data-pending/wrapper:rounded-md group-data-pending/wrapper:text-transparent">
             No updates available
           </h1>
           <p className="text-muted-foreground group-data-pending/wrapper:animate-skeleton group-data-pending/wrapper:bg-muted-more-foreground max-w-full text-center group-data-pending/wrapper:rounded-md group-data-pending/wrapper:text-transparent">
@@ -46,9 +46,11 @@ function UpdatePage() {
         </div>
         <GoHome isPending={isPending} />
         <div className="flex w-full items-center justify-center px-1">
-          <p className="text-muted-foreground group-data-pending/wrapper:animate-skeleton group-data-pending/wrapper:bg-muted-more-foreground max-w-full rounded-full border px-2.5 py-0.5 text-center text-sm font-medium group-data-pending/wrapper:text-transparent">
+          <p className="text-muted-foreground group-data-pending/wrapper:animate-skeleton group-data-pending/wrapper:bg-muted-more-foreground max-w-full rounded-full border px-2.5 py-0.5 text-center text-sm group-data-pending/wrapper:text-transparent">
             Current version:{" "}
-            <span className="font-bold">{isPending ? "a1a1a1a" : data.data.current_version}</span>
+            <span className="font-semibold">
+              {isPending ? "a1a1a1a" : data.data.current_version}
+            </span>
           </p>
         </div>
       </Wrapper>
