@@ -295,7 +295,12 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
           </div>
           {/* Services */}
           <div className="flex w-full flex-col gap-2 pt-1">
-            <h3 className="w-full px-1.5 text-xl leading-tight font-bold">Services</h3>
+            <h3 className="w-full px-1.5 text-xl leading-tight font-bold">
+              Services{" "}
+              <span className="text-muted-foreground text-lg font-medium">
+                ({sortedServices.length})
+              </span>
+            </h3>
             <ol className="-mx-1 flex w-[calc(100%+0.5rem)] flex-wrap">
               {sortedServices.map((service) => (
                 <TemplateServiceCard key={service.id} service={service} className="md:w-1/2" />
