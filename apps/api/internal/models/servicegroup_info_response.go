@@ -38,9 +38,10 @@ type ServiceGroupVariableInfo struct {
 }
 
 type ServiceGroupTemplateInputsResponse struct {
-	TemplateID *uuid.UUID               `json:"template_id,omitempty" format:"uuid"`
-	Version    int                      `json:"version"`
-	Inputs     []*DeployedTemplateInput `json:"inputs" nullable:"false"`
+	ServiceGroupID uuid.UUID                `json:"service_group_id" format:"uuid"`
+	TemplateID     *uuid.UUID               `json:"template_id,omitempty" format:"uuid"`
+	Version        int                      `json:"version"`
+	Inputs         []*DeployedTemplateInput `json:"inputs" nullable:"false"`
 }
 
 // DeployedTemplateInput mirrors a template definition input plus its deployed value. Values transport as

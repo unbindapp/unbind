@@ -48,9 +48,10 @@ func (self *ServiceGroupService) GetTemplateInputs(ctx context.Context, requeste
 	}
 
 	resp := &models.ServiceGroupTemplateInputsResponse{
-		TemplateID: new(tc.template.ID),
-		Version:    tc.template.Version,
-		Inputs:     make([]*models.DeployedTemplateInput, 0, len(tc.resolved)),
+		ServiceGroupID: input.ID,
+		TemplateID:     new(tc.template.ID),
+		Version:        tc.template.Version,
+		Inputs:         make([]*models.DeployedTemplateInput, 0, len(tc.resolved)),
 	}
 	for _, r := range tc.resolved {
 		resp.Inputs = append(resp.Inputs, r.state)
@@ -254,8 +255,7 @@ func resolveInputs(def schema.TemplateDefinition, services []*ent.Service, secre
 	return resolved
 }
 
-// displayVariables surfaces annotated generated variables (e.g. admin keys) as read-only login hints,
-// mirroring the service group info endpoint. They have display metadata but no owning input.
+// displayVariables surfaces annotated generated variables (e.g. admin keys) as read-only login hints.
 func displayVariables(def schema.TemplateDefinition, serviceByName map[string]*ent.Service, secretsByService map[uuid.UUID]map[string][]byte) []*resolvedInput {
 	var out []*resolvedInput
 	for _, tsvc := range def.Services {
@@ -504,12 +504,23 @@ func (self *ServiceGroupService) UpdateTemplateInputs(ctx context.Context, reque
 	}
 
 	// Apply secret (variable + fan-out) changes.
+	hostServices := make(map[uuid.UUID]bool, len(hostEdits))
+	for _, he := range hostEdits {
+		hostServices[he.r.hostSvc.ID] = true
+	}
 	for svcID, values := range secretEdits {
 		svc := serviceByID[svcID]
 		if svc == nil || svc.KubernetesSecret == "" {
 			continue
 		}
 		if _, err := self.k8s.UpsertSecretValues(ctx, svc.KubernetesSecret, namespace, values, client); err != nil {
+			return nil, err
+		}
+		// Secret changes are invisible to NeedsDeployment; restart pods unless a host change redeploys them.
+		if hostServices[svcID] {
+			continue
+		}
+		if err := self.k8s.RollingRestartPodsByLabel(ctx, namespace, schema.VariableReferenceSourceTypeService.KubernetesLabel(), svcID.String(), client); err != nil {
 			return nil, err
 		}
 	}
@@ -529,8 +540,7 @@ func (self *ServiceGroupService) UpdateTemplateInputs(ctx context.Context, reque
 		}
 	}
 
-	// Re-fetch touched services so RedeployServices compares against the just-written config; the
-	// cached objects still hold the pre-edit hosts/variables and would be seen as needing no deploy.
+	// Re-fetch services so RedeployServices diffs against the just-written config, not the stale cache.
 	if len(touched) > 0 {
 		redeploy := make([]*ent.Service, 0, len(touched))
 		for id := range touched {
