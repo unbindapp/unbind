@@ -135,7 +135,7 @@ export default function VariablesList({ variableTypeProps }: TProps) {
         </div>
       )}
       {variables
-        .sort((a, b) => variablesSort(a, b, variableTypeProps))
+        .toSorted((a, b) => variablesSort(a, b, variableTypeProps))
         .map((variable) => (
           <VariableCard
             variable={variable}

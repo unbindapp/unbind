@@ -38,7 +38,7 @@ export default function DeploymentInstances({ isPending: isPendingProp, classNam
 
   if (data) {
     if (data.data.instances.length === 0) return null;
-    const orderedInstances = data.data.instances.sort((a, b) => {
+    const orderedInstances = data.data.instances.toSorted((a, b) => {
       return statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status);
     });
 

@@ -91,7 +91,7 @@ export default function TextareaWithTokens<T>({
   }, [tokens, tokenPrefix?.length, tokenSuffix?.length, tokensDisabled]);
 
   const [filteredItems, setFilteredItems] = useState(
-    tokens ? tokens.sort(tokensDefaultSort) : undefined,
+    tokens ? tokens.toSorted(tokensDefaultSort) : undefined,
   );
   const textParts: TSplitItem<T>[] = useMemo(
     () => (tokens ? splitByTokens(textareaValue, tokens) : [{ value: textareaValue, token: null }]),
@@ -252,7 +252,7 @@ export default function TextareaWithTokens<T>({
     if (!tokens) return;
 
     if (!search.trim()) {
-      setFilteredItems(tokens.sort((a, b) => a.value.localeCompare(b.value)));
+      setFilteredItems(tokens.toSorted((a, b) => a.value.localeCompare(b.value)));
       if (tokens.length > 0) {
         setSelectedCommandValue(tokens[0].value);
       }
@@ -302,7 +302,7 @@ export default function TextareaWithTokens<T>({
                     <span
                       data-token={part.token !== null || undefined}
                       key={index}
-                      className="data-token:bg-process/10 data-token:ring-process/20 data-token:text-process data-token:rounded-[4px] data-token:ring-1"
+                      className="data-token:bg-process/10 data-token:ring-process/20 data-token:text-process data-token:rounded-lg data-token:ring-1"
                     >
                       {!tokensDisabled && part.token !== null ? (
                         <>
@@ -501,7 +501,7 @@ export function splitByTokens<T>(str: string, tokens: TToken<T>[]): TSplitItem<T
     return [{ value: str, token: null }];
   }
 
-  const sortedTokens = [...tokens].sort((a, b) => b.value.length - a.value.length);
+  const sortedTokens = tokens.toSorted((a, b) => b.value.length - a.value.length);
   let result: TSplitItem<T>[] = [{ value: str, token: null }];
 
   for (const token of sortedTokens) {
@@ -610,7 +610,7 @@ function tokensDefaultSearch<T>(tokens: TToken<T>[], search: string) {
         token.value.toLowerCase().includes(search.toLowerCase()) ||
         search.toLowerCase().includes(token.value.toLowerCase()),
     )
-    .sort(tokensDefaultSort);
+    .toSorted(tokensDefaultSort);
 }
 
 export type TTokensEnabledProps<T> = {

@@ -111,7 +111,7 @@ export const LogViewPreferencesProvider: React.FC<{
   );
 
   const isDefaultState =
-    preferences.sort(logViewPreferencesSort).join(",") === defaultState.join(",");
+    preferences.toSorted(logViewPreferencesSort).join(",") === defaultState.join(",");
 
   const _setPreferences: (next: ((old: string[]) => string[] | null) | string[] | null) => void =
     useCallback(
@@ -121,9 +121,9 @@ export const LogViewPreferencesProvider: React.FC<{
         }
         if (typeof next === "function") {
           const pref = next(preferences);
-          return setPreferences(pref === null ? null : pref.sort(logViewPreferencesSort));
+          return setPreferences(pref === null ? null : pref.toSorted(logViewPreferencesSort));
         }
-        return setPreferences(next.sort(logViewPreferencesSort));
+        return setPreferences(next.toSorted(logViewPreferencesSort));
       },
       [setPreferences, preferences],
     );

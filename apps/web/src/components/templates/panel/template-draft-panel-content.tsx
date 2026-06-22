@@ -56,7 +56,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
 
   const sortedServices = useMemo(
     () =>
-      [...templateDraft.template.definition.services].sort(
+      templateDraft.template.definition.services.toSorted(
         (a, b) => (a.display_rank ?? 0) - (b.display_rank ?? 0),
       ),
     [templateDraft.template.definition.services],

@@ -66,7 +66,7 @@ export default function ServiceCardList() {
       ...(servicesOrGroups || []).map((s) => ({ type: "service", obj: s }) as const),
     ];
 
-    return allItems.sort((a, b) => {
+    return allItems.toSorted((a, b) => {
       const aTimestamp = new Date(
         a.type === "template-draft"
           ? a.obj.createdAt
