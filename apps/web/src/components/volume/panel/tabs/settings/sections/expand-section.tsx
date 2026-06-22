@@ -24,6 +24,7 @@ import { ResultAsync } from "neverthrow";
 import { ReactNode, useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+import StorageSizeChip from "@/components/storage-size-chip";
 
 type TProps = {
   volume: TVolumeShallow;
@@ -161,9 +162,7 @@ export default function ExpandSection({ volume }: TProps) {
             <div className="flex w-full justify-start px-1.5">
               <p className="min-w-0 shrink font-semibold">
                 <span className="pr-[0.6ch]">Size:</span>
-                <span className="text-foreground bg-foreground/6 border-foreground/6 rounded-md border px-1.25">
-                  {formatGB(Number(values.capacityGb))}
-                </span>
+                <StorageSizeChip>{formatGB(Number(values.capacityGb))}</StorageSizeChip>
               </p>
             </div>
           )}

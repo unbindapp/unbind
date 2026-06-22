@@ -29,6 +29,7 @@ import { HTMLAttributes, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import StorageSizeChip from "@/components/storage-size-chip";
 
 type TProps = {
   templateDraft: TTemplateDraft;
@@ -239,9 +240,9 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                                     visibleInputs[i].type === "volume-size") && (
                                     <>
                                       <span className="pr-[0.6ch]">{":"}</span>
-                                      <span className="text-foreground bg-foreground/6 border-foreground/6 rounded-md border px-1.25 py-px font-mono">
+                                      <StorageSizeChip>
                                         {formatGB(Number(values.inputs[i].value))}
-                                      </span>
+                                      </StorageSizeChip>
                                     </>
                                   )}
                                 </p>
