@@ -1,7 +1,7 @@
 import { Button, buttonVariants, TButtonProps } from "@/components/ui/button";
 import { hasChildRole, withChildRole } from "@/components/ui/child-role";
 import { cn } from "@/components/ui/utils";
-import { getRouteApi, useNavigate, useRouter } from "@tanstack/react-router";
+import { getRouteApi, useRouter } from "@tanstack/react-router";
 import { ChevronDownIcon, ExternalLinkIcon } from "lucide-react";
 import {
   Children,
@@ -168,6 +168,7 @@ export function BlockItemContentHighlightable({
       }, highlightDelayMs);
       return () => clearTimeout(timeout);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [highlight_id, id]);
 
   return (

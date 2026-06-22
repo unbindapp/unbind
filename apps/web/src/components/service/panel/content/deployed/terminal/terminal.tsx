@@ -1,4 +1,7 @@
 import { BlockItemButtonLike } from "@/components/block";
+import ErrorCard from "@/components/error-card";
+import TabWrapper from "@/components/navigation/tab-wrapper";
+import NoItemsCard from "@/components/no-items-card";
 import PodTerminal, {
   type TPodTerminalHandle,
 } from "@/components/service/panel/content/deployed/terminal/pod-terminal";
@@ -7,8 +10,6 @@ import TerminalStatus, {
 } from "@/components/service/panel/content/deployed/terminal/terminal-status";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useService } from "@/components/service/service-provider";
-import ErrorCard from "@/components/error-card";
-import NoItemsCard from "@/components/no-items-card";
 import { Button } from "@/components/ui/button";
 import DropdownSelect from "@/components/ui/dropdown-select";
 import { cn } from "@/components/ui/utils";
@@ -17,7 +18,6 @@ import { useHotkey } from "@tanstack/react-hotkeys";
 import { useQuery } from "@tanstack/react-query";
 import {
   BoxIcon,
-  LoaderIcon,
   Maximize2Icon,
   Minimize2Icon,
   RotateCwIcon,
@@ -25,7 +25,6 @@ import {
   TerminalIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import TabWrapper from "@/components/navigation/tab-wrapper";
 
 export default function Terminal() {
   const { teamId, projectId, environmentId, serviceId } = useService();
@@ -74,11 +73,11 @@ export default function Terminal() {
     if (!data) return;
     if (data.data.length === 0) return;
     setSelectedPod((prev) => {
-      if (prev && data?.data.some((p) => p.kubernetes_name === prev)) return prev;
-      return (data?.data.find((p) => p.instances.some((i) => i.ready)) ?? data?.data[0])
+      if (prev && data.data.some((p) => p.kubernetes_name === prev)) return prev;
+      return (data.data.find((p) => p.instances.some((i) => i.ready)) ?? data.data[0])
         .kubernetes_name;
     });
-  }, [data?.data]);
+  }, [data]);
 
   const activePod = useMemo(() => {
     if (!selectedPod || !data) return undefined;
