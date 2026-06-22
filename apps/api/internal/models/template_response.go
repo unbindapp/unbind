@@ -9,7 +9,7 @@ import (
 )
 
 type TemplateShortResponse struct {
-	ID                      uuid.UUID                              `json:"id"`
+	ID                      uuid.UUID                              `json:"id" format:"uuid"`
 	DisplayRank             uint                                   `json:"display_rank"`
 	ResourceRecommendations schema.TemplateResourceRecommendations `json:"resource_recommendations,omitempty"`
 	Name                    string                                 `json:"name"`
@@ -46,7 +46,7 @@ func TransformTemplateShortEntity(entity *ent.Template) *TemplateShortResponse {
 
 // TemplateWithDefinitionResponse is the response model for a template with its definition
 type TemplateWithDefinitionResponse struct {
-	ID                      uuid.UUID                              `json:"id"`
+	ID                      uuid.UUID                              `json:"id" format:"uuid"`
 	DisplayRank             uint                                   `json:"display_rank"`
 	Name                    string                                 `json:"name"`
 	Icon                    string                                 `json:"icon"`

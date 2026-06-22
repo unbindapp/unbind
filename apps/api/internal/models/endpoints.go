@@ -18,10 +18,10 @@ type ServiceEndpoint struct {
 	KubernetesName string            `json:"kubernetes_name"`
 	DNS            string            `json:"dns"`
 	Ports          []schema.PortSpec `json:"ports" nullable:"false"`
-	TeamID         uuid.UUID         `json:"team_id"`
-	ProjectID      uuid.UUID         `json:"project_id"`
-	EnvironmentID  uuid.UUID         `json:"environment_id"`
-	ServiceID      uuid.UUID         `json:"service_id"`
+	TeamID         uuid.UUID         `json:"team_id" format:"uuid"`
+	ProjectID      uuid.UUID         `json:"project_id" format:"uuid"`
+	EnvironmentID  uuid.UUID         `json:"environment_id" format:"uuid"`
+	ServiceID      uuid.UUID         `json:"service_id" format:"uuid"`
 }
 
 // IngressEndpoint represents external DNS information for a Kubernetes ingress
@@ -35,10 +35,10 @@ type IngressEndpoint struct {
 	IsCloudflare      bool             `json:"is_cloudflare"`
 	TlsStatus         TlsStatus        `json:"tls_status"`
 	TlsIssuerMessages []TlsDetails     `json:"tls_issuer_messages,omitempty"`
-	TeamID            uuid.UUID        `json:"team_id"`
-	ProjectID         uuid.UUID        `json:"project_id"`
-	EnvironmentID     uuid.UUID        `json:"environment_id"`
-	ServiceID         uuid.UUID        `json:"service_id"`
+	TeamID            uuid.UUID        `json:"team_id" format:"uuid"`
+	ProjectID         uuid.UUID        `json:"project_id" format:"uuid"`
+	EnvironmentID     uuid.UUID        `json:"environment_id" format:"uuid"`
+	ServiceID         uuid.UUID        `json:"service_id" format:"uuid"`
 }
 
 // DNSStatus

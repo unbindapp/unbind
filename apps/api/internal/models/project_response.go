@@ -9,14 +9,14 @@ import (
 )
 
 type ProjectResponse struct {
-	ID                   uuid.UUID              `json:"id"`
+	ID                   uuid.UUID              `json:"id" format:"uuid"`
 	KubernetesName       string                 `json:"kubernetes_name"`
 	Name                 string                 `json:"name"`
 	Description          *string                `json:"description"`
 	Status               string                 `json:"status"`
-	TeamID               uuid.UUID              `json:"team_id"`
+	TeamID               uuid.UUID              `json:"team_id" format:"uuid"`
 	CreatedAt            time.Time              `json:"created_at"`
-	DefaultEnvironmentID *uuid.UUID             `json:"default_environment_id,omitempty"`
+	DefaultEnvironmentID *uuid.UUID             `json:"default_environment_id,omitempty" format:"uuid"`
 	ServiceCount         int                    `json:"service_count,omitempty"`
 	ServiceIcons         []string               `json:"service_icons,omitempty" nullable:"false"`
 	Environments         []*EnvironmentResponse `json:"environments" nullable:"false"`

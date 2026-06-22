@@ -17,10 +17,10 @@ type PVCInfo struct {
 	MountPath          *string                    `json:"mount_path,omitempty"`
 	UsedGB             *float64                   `json:"used_gb,omitempty"` // e.g., "10"
 	CapacityGB         float64                    `json:"capacity_gb"`       // e.g., "10"
-	TeamID             uuid.UUID                  `json:"team_id"`
-	ProjectID          *uuid.UUID                 `json:"project_id,omitempty"`
-	EnvironmentID      *uuid.UUID                 `json:"environment_id,omitempty"`
-	MountedOnServiceID *uuid.UUID                 `json:"mounted_on_service_id,omitempty"`
+	TeamID             uuid.UUID                  `json:"team_id" format:"uuid"`
+	ProjectID          *uuid.UUID                 `json:"project_id,omitempty" format:"uuid"`
+	EnvironmentID      *uuid.UUID                 `json:"environment_id,omitempty" format:"uuid"`
+	MountedOnServiceID *uuid.UUID                 `json:"mounted_on_service_id,omitempty" format:"uuid"`
 	Status             PersistentVolumeClaimPhase `json:"status"` // e.g., "Bound", "Pending"
 	IsDatabase         bool                       `json:"is_database"`
 	IsAvailable        bool                       `json:"is_available"`

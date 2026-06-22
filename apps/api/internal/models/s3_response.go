@@ -34,7 +34,7 @@ func TransformBucketEntities(entities []types.Bucket) []*S3Bucket {
 
 // *ent.S3 transformed into a S3Response
 type S3Response struct {
-	ID        uuid.UUID   `json:"id"`
+	ID        uuid.UUID   `json:"id" format:"uuid"`
 	Name      string      `json:"name"`
 	Endpoint  string      `json:"endpoint"`
 	Region    string      `json:"region"`

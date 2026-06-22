@@ -9,12 +9,12 @@ import (
 )
 
 type WebhookResponse struct {
-	ID        uuid.UUID             `json:"id"`
+	ID        uuid.UUID             `json:"id" format:"uuid"`
 	URL       string                `json:"url"`
 	Type      schema.WebhookType    `json:"type"`
 	Events    []schema.WebhookEvent `json:"events" nullable:"false"`
-	TeamID    uuid.UUID             `json:"team_id"`
-	ProjectID *uuid.UUID            `json:"project_id,omitempty" required:"false"`
+	TeamID    uuid.UUID             `json:"team_id" format:"uuid"`
+	ProjectID *uuid.UUID            `json:"project_id,omitempty" required:"false" format:"uuid"`
 	CreatedAt time.Time             `json:"created_at"`
 }
 

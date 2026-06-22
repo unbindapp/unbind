@@ -6,7 +6,7 @@ import (
 )
 
 type RegistryResponse struct {
-	ID       uuid.UUID `json:"id"`
+	ID       uuid.UUID `json:"id" format:"uuid"`
 	Host     string    `json:"Host"`
 	Username string    `json:"username"`
 }

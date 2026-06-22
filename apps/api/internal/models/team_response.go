@@ -8,7 +8,7 @@ import (
 )
 
 type TeamResponse struct {
-	ID             uuid.UUID `json:"id"`
+	ID             uuid.UUID `json:"id" format:"uuid"`
 	KubernetesName string    `json:"kubernetes_name"`
 	Name           string    `json:"name"`
 	Description    *string   `json:"description"`

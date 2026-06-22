@@ -41,6 +41,22 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Method:      http.MethodGet,
 	}, handlers.GetServiceGroupInfo)
 
+	oapi.Register(grp, oapi.Read, huma.Operation{
+		OperationID: "get-service-group-template-inputs",
+		Summary:     "Get Service Group Template Inputs",
+		Description: "Get the deployed template's inputs in order with current values. Only valid for template-deployed groups.",
+		Path:        "/template-inputs",
+		Method:      http.MethodGet,
+	}, handlers.GetServiceGroupTemplateInputs)
+
+	oapi.Register(grp, oapi.Update, huma.Operation{
+		OperationID: "update-service-group-template-inputs",
+		Summary:     "Update Service Group Template Inputs",
+		Description: "Edit a deployed template's inputs (domains, sizes, variables), re-applying to the underlying services.",
+		Path:        "/template-inputs",
+		Method:      http.MethodPut,
+	}, handlers.UpdateServiceGroupTemplateInputs)
+
 	oapi.Register(grp, oapi.Create, huma.Operation{
 		OperationID: "create-service-group",
 		Summary:     "Create Service Group",

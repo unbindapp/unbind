@@ -16,8 +16,8 @@ type BaseVariablesInput struct {
 
 type BaseVariablesJSONInput struct {
 	Type          schema.VariableReferenceSourceType `json:"type" required:"true" doc:"The type of variable"`
-	TeamID        uuid.UUID                          `json:"team_id" required:"true"`
-	ProjectID     uuid.UUID                          `json:"project_id" required:"false" doc:"If present without environment_id, mutate team variables"`
-	EnvironmentID uuid.UUID                          `json:"environment_id" required:"false" doc:"If present without service_id, mutate environment variables - requires project_id"`
-	ServiceID     uuid.UUID                          `json:"service_id" required:"false" doc:"If present, mutate service variables - requires project_id and environment_id"`
+	TeamID        uuid.UUID                          `json:"team_id" required:"true" format:"uuid"`
+	ProjectID     uuid.UUID                          `json:"project_id" required:"false" doc:"If present without environment_id, mutate team variables" format:"uuid"`
+	EnvironmentID uuid.UUID                          `json:"environment_id" required:"false" doc:"If present without service_id, mutate environment variables - requires project_id" format:"uuid"`
+	ServiceID     uuid.UUID                          `json:"service_id" required:"false" doc:"If present, mutate service variables - requires project_id and environment_id" format:"uuid"`
 }

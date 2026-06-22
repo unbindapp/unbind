@@ -10,12 +10,12 @@ import (
 
 // ServiceResponse defines the response structure for service operations
 type ServiceResponse struct {
-	ID                       uuid.UUID              `json:"id"`
+	ID                       uuid.UUID              `json:"id" format:"uuid"`
 	Type                     schema.ServiceType     `json:"type"`
 	KubernetesName           string                 `json:"kubernetes_name"`
 	Name                     string                 `json:"name"`
 	Description              string                 `json:"description"`
-	EnvironmentID            uuid.UUID              `json:"environment_id"`
+	EnvironmentID            uuid.UUID              `json:"environment_id" format:"uuid"`
 	GitHubInstallationID     *int64                 `json:"github_installation_id,omitempty"`
 	GitRepository            *string                `json:"git_repository,omitempty"`
 	GitRepositoryOwner       *string                `json:"git_repository_owner,omitempty"`
@@ -28,7 +28,7 @@ type ServiceResponse struct {
 	DatabaseVersion          *string                `json:"database_version,omitempty"`
 	DatabaseType             *string                `json:"database_type,omitempty"`
 	Template                 *TemplateShortResponse `json:"template,omitempty"`
-	TemplateInstanceID       *uuid.UUID             `json:"template_instance_id,omitempty"`
+	TemplateInstanceID       *uuid.UUID             `json:"template_instance_id,omitempty" format:"uuid"`
 	ServiceGroup             *ServiceGroupResponse  `json:"service_group,omitempty"`
 	DetectedPorts            []schema.PortSpec      `json:"detected_ports" nullable:"false"`
 }

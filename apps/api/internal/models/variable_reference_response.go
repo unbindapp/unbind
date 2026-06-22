@@ -16,7 +16,7 @@ type AvailableVariableReference struct {
 	SourceName           string                             `json:"source_name"`
 	SourceIcon           string                             `json:"source_icon"`
 	SourceType           schema.VariableReferenceSourceType `json:"source_type"`
-	SourceID             uuid.UUID                          `json:"source_id"`
+	SourceID             uuid.UUID                          `json:"source_id" format:"uuid"`
 	Keys                 []string                           `json:"keys"`
 }
 
@@ -117,8 +117,8 @@ func TransformAvailableVariableResponse(secretData []SecretData, endpoints *Endp
 
 // The actual response object
 type VariableReferenceResponse struct {
-	ID              uuid.UUID                        `json:"id" doc:"The ID of the variable reference" required:"true"`
-	TargetServiceID uuid.UUID                        `json:"target_service_id" required:"true"`
+	ID              uuid.UUID                        `json:"id" doc:"The ID of the variable reference" required:"true" format:"uuid"`
+	TargetServiceID uuid.UUID                        `json:"target_service_id" required:"true" format:"uuid"`
 	Name            string                           `json:"name" required:"true"`
 	Error           *string                          `json:"error" required:"false"`
 	Sources         []schema.VariableReferenceSource `json:"sources" required:"true" nullable:"false"`

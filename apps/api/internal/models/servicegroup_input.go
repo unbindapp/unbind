@@ -43,3 +43,11 @@ type ListServiceGroupsInput struct {
 	ProjectID     uuid.UUID `json:"project_id" query:"project_id" required:"true" doc:"The ID of the project" format:"uuid"`
 	EnvironmentID uuid.UUID `json:"environment_id" query:"environment_id" required:"true" doc:"The ID of the environment" format:"uuid"`
 }
+
+type UpdateServiceGroupTemplateInputsInput struct {
+	ID            uuid.UUID            `json:"id" required:"true" doc:"The ID of the service group" format:"uuid"`
+	TeamID        uuid.UUID            `json:"team_id" required:"true" doc:"The ID of the team" format:"uuid"`
+	ProjectID     uuid.UUID            `json:"project_id" required:"true" doc:"The ID of the project" format:"uuid"`
+	EnvironmentID uuid.UUID            `json:"environment_id" required:"true" doc:"The ID of the environment" format:"uuid"`
+	Inputs        []TemplateInputValue `json:"inputs" required:"true" doc:"Template input values to update"`
+}

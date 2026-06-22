@@ -9,8 +9,8 @@ import (
 )
 
 type DeploymentResponse struct {
-	ID                            uuid.UUID               `json:"id"`
-	ServiceID                     uuid.UUID               `json:"service_id"`
+	ID                            uuid.UUID               `json:"id" format:"uuid"`
+	ServiceID                     uuid.UUID               `json:"service_id" format:"uuid"`
 	Status                        schema.DeploymentStatus `json:"status"`
 	CrashingReasons               []string                `json:"crashing_reasons" nullable:"false"`
 	InstanceEvents                []EventRecord           `json:"instance_events" nullable:"false"`

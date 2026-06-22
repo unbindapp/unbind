@@ -8,11 +8,11 @@ import (
 )
 
 type ServiceGroupResponse struct {
-	ID            uuid.UUID `json:"id"`
+	ID            uuid.UUID `json:"id" format:"uuid"`
 	Name          string    `json:"name"`
 	Icon          *string   `json:"icon,omitempty"`
 	Description   *string   `json:"description,omitempty"`
-	EnvironmentID uuid.UUID `json:"environment_id"`
+	EnvironmentID uuid.UUID `json:"environment_id" format:"uuid"`
 	CreatedAt     time.Time `json:"created_at"`
 }
 

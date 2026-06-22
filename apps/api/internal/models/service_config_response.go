@@ -25,7 +25,7 @@ type ServiceConfigResponse struct {
 	DockerBuilderDockerfilePath *string `json:"docker_builder_dockerfile_path,omitempty"`
 	DockerBuilderBuildContext   *string `json:"docker_builder_build_context,omitempty"`
 	// For backups
-	S3BackupSourceID     *uuid.UUID `json:"s3_backup_source_id,omitempty"`
+	S3BackupSourceID     *uuid.UUID `json:"s3_backup_source_id,omitempty" format:"uuid"`
 	S3BackupBucket       *string    `json:"s3_backup_bucket,omitempty"`
 	BackupSchedule       string     `json:"backup_schedule"`
 	BackupRetentionCount int        `json:"backup_retention_count"`
