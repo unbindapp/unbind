@@ -44,6 +44,9 @@ export const ServicePanelProvider: React.FC<{
         to: ".",
         search: (prev) => ({ ...prev, [servicePanelTabKey]: value ?? undefined }),
         replace: true,
+        // Opening/closing the panel writes a search param, which is a navigation.
+        // Without this, the router's default resetScroll jumps the page to the top.
+        resetScroll: false,
       }),
     [navigate],
   );
@@ -53,6 +56,7 @@ export const ServicePanelProvider: React.FC<{
         to: ".",
         search: (prev) => ({ ...prev, [servicePanelServiceIdKey]: value ?? undefined }),
         replace: true,
+        resetScroll: false,
       }),
     [navigate],
   );

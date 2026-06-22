@@ -38,6 +38,9 @@ export const VolumePanelProvider: React.FC<{
         to: ".",
         search: (prev) => ({ ...prev, [volumePanelTabKey]: value ?? undefined }),
         replace: true,
+        // Opening/closing the panel writes a search param, which is a navigation.
+        // Without this, the router's default resetScroll jumps the page to the top.
+        resetScroll: false,
       }),
     [navigate],
   );
@@ -47,6 +50,7 @@ export const VolumePanelProvider: React.FC<{
         to: ".",
         search: (prev) => ({ ...prev, [volumePanelVolumeIdKey]: value ?? undefined }),
         replace: true,
+        resetScroll: false,
       }),
     [navigate],
   );
