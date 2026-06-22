@@ -50,10 +50,6 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
     [templateDraft.template.definition.inputs],
   );
 
-  const nonCollapsedInputs = useMemo(
-    () => visibleInputs.filter((i) => !i.collapsed),
-    [visibleInputs],
-  );
   const collapsedInputs = useMemo(() => visibleInputs.filter((i) => i.collapsed), [visibleInputs]);
 
   const [isCollapsed, setIsCollapsed] = useState(true);
