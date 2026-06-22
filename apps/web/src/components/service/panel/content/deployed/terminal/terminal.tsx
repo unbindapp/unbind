@@ -25,6 +25,7 @@ import {
   TerminalIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import TabWrapper from "@/components/navigation/tab-wrapper";
 
 export default function Terminal() {
   const { teamId, projectId, environmentId, serviceId } = useService();
@@ -34,8 +35,6 @@ export default function Terminal() {
   const { data, isPending, error } = useQuery({
     ...instancesListQuery({ teamId, projectId, environmentId, serviceId }),
   });
-
-  const pods = useMemo(() => data?.data ?? [], [data]);
 
   const [selectedPod, setSelectedPod] = useState<string | null>(null);
   const [selectedContainer, setSelectedContainer] = useState<string | null>(null);
@@ -72,57 +71,54 @@ export default function Terminal() {
 
   // Pin the instance so a background refetch can't silently move us to another pod.
   useEffect(() => {
-    if (pods.length === 0) return;
+    if (!data) return;
+    if (data.data.length === 0) return;
     setSelectedPod((prev) => {
-      if (prev && pods.some((p) => p.kubernetes_name === prev)) return prev;
-      return (pods.find((p) => p.instances.some((i) => i.ready)) ?? pods[0]).kubernetes_name;
+      if (prev && data?.data.some((p) => p.kubernetes_name === prev)) return prev;
+      return (data?.data.find((p) => p.instances.some((i) => i.ready)) ?? data?.data[0])
+        .kubernetes_name;
     });
-  }, [pods]);
+  }, [data?.data]);
 
   const activePod = useMemo(() => {
+    if (!selectedPod || !data) return undefined;
     return (
-      pods.find((p) => p.kubernetes_name === selectedPod) ??
-      pods.find((p) => p.instances.some((i) => i.ready)) ??
-      pods[0]
+      data.data.find((p) => p.kubernetes_name === selectedPod) ??
+      data.data.find((p) => p.instances.some((i) => i.ready)) ??
+      data.data[0]
     );
-  }, [pods, selectedPod]);
+  }, [data, selectedPod]);
 
-  const containers = useMemo(
-    () => activePod?.instances.map((i) => i.kubernetes_name) ?? [],
-    [activePod],
-  );
+  const containers = useMemo(() => {
+    if (!activePod) return undefined;
+    return activePod.instances.map((i) => i.kubernetes_name);
+  }, [activePod]);
 
   useEffect(() => {
+    if (!containers) return;
     if (containers.length === 0) return;
     setSelectedContainer((prev) => (prev && containers.includes(prev) ? prev : containers[0]));
   }, [containers]);
 
   const activeContainer = useMemo(() => {
+    if (!containers || containers.length === 0) return;
     if (selectedContainer && containers.includes(selectedContainer)) return selectedContainer;
     return containers[0];
   }, [containers, selectedContainer]);
 
-  if (isPending) {
+  if (!data && !isPending && error) {
     return (
-      <div className="flex w-full flex-1 flex-col items-center justify-center pb-4">
-        <LoaderIcon className="text-muted-more-foreground size-6 animate-spin" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex w-full flex-col p-3">
+      <TabWrapper>
         <ErrorCard message={error.message} />
-      </div>
+      </TabWrapper>
     );
   }
 
-  if (!activePod || !activeContainer) {
+  if (data && (!activePod || !activeContainer)) {
     return (
-      <div className="flex w-full flex-col p-3">
-        <NoItemsCard Icon={TerminalIcon}>No running instances to connect to</NoItemsCard>
-      </div>
+      <TabWrapper>
+        <NoItemsCard Icon={TerminalIcon}>No instance running</NoItemsCard>
+      </TabWrapper>
     );
   }
 
@@ -138,13 +134,18 @@ export default function Terminal() {
     >
       <div className="flex w-full items-center justify-between gap-1.5 border-b p-2 sm:p-2.5">
         <div className="flex min-w-0 shrink items-center gap-1.5">
-          {pods.length > 0 && (
+          {(isPending || data.data.length > 0) && (
             <DropdownSelect
-              items={pods.map((p, i) => ({
-                value: p.kubernetes_name,
-                label: `Instance ${i + 1}`,
-              }))}
-              value={activePod.kubernetes_name}
+              isPending={isPending}
+              items={
+                isPending
+                  ? []
+                  : data.data.map((p, i) => ({
+                      value: p.kubernetes_name,
+                      label: `Instance ${i + 1}`,
+                    }))
+              }
+              value={isPending || !activePod ? "" : activePod.kubernetes_name}
               onChange={setSelectedPod}
               classNameContent="w-auto"
               align="start"
@@ -152,7 +153,12 @@ export default function Terminal() {
               {({ isOpen }) => (
                 <BlockItemButtonLike
                   asElement="button"
-                  text={`Instance ${pods.findIndex((p) => p.kubernetes_name === activePod.kubernetes_name) + 1}`}
+                  isPending={isPending}
+                  text={
+                    isPending || !activePod
+                      ? `Instance 1`
+                      : `Instance ${data.data.findIndex((p) => p.kubernetes_name === activePod.kubernetes_name) + 1}`
+                  }
                   Icon={({ className }) => <ServerIcon className={cn("scale-90", className)} />}
                   variant="outline"
                   open={isOpen}
@@ -163,7 +169,7 @@ export default function Terminal() {
               )}
             </DropdownSelect>
           )}
-          {containers.length > 1 && (
+          {containers && containers.length > 1 && activeContainer && (
             <DropdownSelect
               items={containers.map((c) => ({ value: c, label: c }))}
               value={activeContainer}
@@ -196,7 +202,7 @@ export default function Terminal() {
               <p className="truncate leading-tight">Reconnect</p>
             </Button>
           )}
-          <TerminalStatus status={status} />
+          <TerminalStatus status={status} isPending={isPending} />
         </div>
         <div className="flex min-w-0 shrink items-center gap-1.5">
           <Button
@@ -214,17 +220,19 @@ export default function Terminal() {
           </Button>
         </div>
       </div>
-      <PodTerminal
-        ref={terminalRef}
-        key={`${activePod.kubernetes_name}/${activeContainer}`}
-        teamId={teamId}
-        projectId={projectId}
-        environmentId={environmentId}
-        serviceId={serviceId}
-        podName={activePod.kubernetes_name}
-        container={activeContainer}
-        onStatusChange={setStatus}
-      />
+      {activePod && activeContainer && (
+        <PodTerminal
+          ref={terminalRef}
+          key={`${activePod.kubernetes_name}/${activeContainer}`}
+          teamId={teamId}
+          projectId={projectId}
+          environmentId={environmentId}
+          serviceId={serviceId}
+          podName={activePod.kubernetes_name}
+          container={activeContainer}
+          onStatusChange={setStatus}
+        />
+      )}
     </div>
   );
 }
