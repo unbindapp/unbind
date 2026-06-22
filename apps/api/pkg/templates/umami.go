@@ -23,7 +23,7 @@ func umamiTemplate() *schema.TemplateDefinition {
 				ID:          "input_domain",
 				Name:        "Domain",
 				Type:        schema.InputTypeHost,
-				Description: "The domain to use for the Umami instance.",
+				Description: "The domain for the Umami instance.",
 				Required:    true,
 			},
 			{

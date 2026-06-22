@@ -24,7 +24,7 @@ func supabaseTemplate() *schema.TemplateDefinition {
 				ID:          "input_domain",
 				Name:        "Domain",
 				Type:        schema.InputTypeHost,
-				Description: "The domain to use for the Supabase instance.",
+				Description: "The domain for the Supabase instance.",
 				Required:    true,
 				TargetPort:  new(8000),
 			},

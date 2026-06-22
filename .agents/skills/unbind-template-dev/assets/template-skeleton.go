@@ -30,7 +30,7 @@ func myAppTemplate() *schema.TemplateDefinition {
 				ID:          "input_domain",
 				Name:        "Domain",
 				Type:        schema.InputTypeHost,
-				Description: "The domain to use for MyApp.",
+				Description: "The domain for MyApp.",
 				Required:    true,
 			},
 			{

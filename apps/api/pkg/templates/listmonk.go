@@ -23,7 +23,7 @@ func listmonkTemplate() *schema.TemplateDefinition {
 				ID:          "input_domain",
 				Name:        "Domain",
 				Type:        schema.InputTypeHost,
-				Description: "The domain to use for the Listmonk instance.",
+				Description: "The domain for the Listmonk instance.",
 				Required:    true,
 			},
 			{
@@ -37,7 +37,7 @@ func listmonkTemplate() *schema.TemplateDefinition {
 			},
 			{
 				ID:   "input_storage_size",
-				Name: "Storage Size (Uploads)",
+				Name: "Storage Size",
 				Type: schema.InputTypeVolumeSize,
 				Volume: &schema.TemplateVolume{
 					Name:      "listmonk-uploads",

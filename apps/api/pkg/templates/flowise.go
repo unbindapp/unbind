@@ -23,7 +23,7 @@ func flowiseTemplate() *schema.TemplateDefinition {
 				ID:          "input_domain",
 				Name:        "Domain",
 				Type:        schema.InputTypeHost,
-				Description: "The domain to use for the Flowise instance.",
+				Description: "The domain for the Flowise instance.",
 				Required:    true,
 			},
 			{

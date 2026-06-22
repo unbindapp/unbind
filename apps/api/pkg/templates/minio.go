@@ -21,17 +21,17 @@ func minioTemplate() *schema.TemplateDefinition {
 		Inputs: []schema.TemplateInput{
 			{
 				ID:          "input_domain_api",
-				Name:        "Domain (API)",
+				Name:        "API Domain",
 				Type:        schema.InputTypeHost,
-				Description: "The domain to use for the MinIO API.",
+				Description: "The domain for the MinIO API.",
 				Required:    true,
 				TargetPort:  new(9000),
 			},
 			{
 				ID:          "input_domain_ui",
-				Name:        "Domain (UI)",
+				Name:        "Dashboard Domain",
 				Type:        schema.InputTypeHost,
-				Description: "The domain to use for the MinIO UI.",
+				Description: "The domain for the MinIO dashboard.",
 				Required:    true,
 				TargetPort:  new(9001),
 			},

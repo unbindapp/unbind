@@ -23,7 +23,7 @@ func nocodbTemplate() *schema.TemplateDefinition {
 				ID:          "input_domain",
 				Name:        "Domain",
 				Type:        schema.InputTypeHost,
-				Description: "The domain to use for the NocoDB instance.",
+				Description: "The domain for the NocoDB instance.",
 				Required:    true,
 				TargetPort:  new(8080),
 			},

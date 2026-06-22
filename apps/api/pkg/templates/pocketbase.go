@@ -23,7 +23,7 @@ func pocketBaseTemplate() *schema.TemplateDefinition {
 				ID:          "input_domain",
 				Name:        "Domain",
 				Type:        schema.InputTypeHost,
-				Description: "The domain to use for the PocketBase instance.",
+				Description: "The domain for the PocketBase instance.",
 				Required:    true,
 			},
 			{

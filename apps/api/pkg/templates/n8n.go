@@ -23,7 +23,7 @@ func n8nTemplate() *schema.TemplateDefinition {
 				ID:          "input_domain",
 				Name:        "Domain",
 				Type:        schema.InputTypeHost,
-				Description: "The domain to use for the n8n instance.",
+				Description: "The domain for the n8n instance.",
 				Required:    true,
 			},
 			{

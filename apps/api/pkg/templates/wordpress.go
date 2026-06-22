@@ -23,7 +23,7 @@ func wordPressTemplate() *schema.TemplateDefinition {
 				ID:          "input_domain",
 				Name:        "Domain",
 				Type:        schema.InputTypeHost,
-				Description: "The domain to use for the WordPress instance.",
+				Description: "The domain for the WordPress instance.",
 				Required:    true,
 			},
 			{

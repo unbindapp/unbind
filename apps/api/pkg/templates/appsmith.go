@@ -23,7 +23,7 @@ func appsmithTemplate() *schema.TemplateDefinition {
 				ID:          "input_domain",
 				Name:        "Domain",
 				Type:        schema.InputTypeHost,
-				Description: "The domain to use for the Appsmith instance.",
+				Description: "The domain for the Appsmith instance.",
 				Required:    true,
 			},
 			{

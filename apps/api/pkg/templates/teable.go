@@ -23,7 +23,7 @@ func teableTemplate() *schema.TemplateDefinition {
 				ID:          "input_domain",
 				Name:        "Domain",
 				Type:        schema.InputTypeHost,
-				Description: "The domain to use for the Teable instance.",
+				Description: "The domain for the Teable instance.",
 				Required:    true,
 			},
 			{

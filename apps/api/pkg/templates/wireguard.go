@@ -23,7 +23,7 @@ func wireGuardTemplate() *schema.TemplateDefinition {
 				ID:          "input_domain",
 				Name:        "Domain",
 				Type:        schema.InputTypeHost,
-				Description: "Hostname to use for the WireGuard instance.",
+				Description: "Domain for the WireGuard instance.",
 				Required:    true,
 				TargetPort:  new(51821), // Target TCP port
 			},
@@ -32,7 +32,7 @@ func wireGuardTemplate() *schema.TemplateDefinition {
 				Name:         "NodePort",
 				Type:         schema.InputTypeGeneratedNodePort,
 				PortProtocol: utils.ToPtr(schema.ProtocolUDP),
-				Description:  "The NodePort to use for the WireGuard TCP tunnel.",
+				Description:  "The NodePort for the WireGuard TCP tunnel.",
 				Hidden:       true,
 			},
 			{

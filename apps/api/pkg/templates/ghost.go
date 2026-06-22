@@ -23,7 +23,7 @@ func ghostTemplate() *schema.TemplateDefinition {
 				ID:          "input_domain",
 				Name:        "Domain",
 				Type:        schema.InputTypeHost,
-				Description: "The domain to use for the Ghost instance.",
+				Description: "The domain for the Ghost instance.",
 				Required:    true,
 			},
 			{

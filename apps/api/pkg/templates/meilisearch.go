@@ -23,7 +23,7 @@ func meiliSearchTemplate() *schema.TemplateDefinition {
 				ID:          "input_domain",
 				Name:        "Domain",
 				Type:        schema.InputTypeHost,
-				Description: "The domain to use for the Meilisearch API.",
+				Description: "The domain for the Meilisearch API.",
 				Required:    true,
 				TargetPort:  new(7700),
 			},
