@@ -40,23 +40,34 @@ func TestResolveInputs(t *testing.T) {
 			{Host: "cloud.example.com", TemplateInputID: new("input_api_domain")},
 			{Host: "sr.example.com", TemplateInputID: new("input_sr")},
 		},
-		VariableMetadata: map[string]schema.VariableMetadata{"SECRET_VAR": {TemplateInputID: new("input_secret")}},
+		VariableMetadata: map[string]schema.VariableMetadata{
+			"SECRET_VAR": {TemplateInputID: new("input_secret")},
+			"ADMIN_KEY":  {DisplayName: "Admin Key", Description: "Login key"},
+		},
 	}
 	db := &ent.Service{ID: uuid.New(), Name: "Postgres"}
 	db.Edges.ServiceConfig = &ent.ServiceConfig{DatabaseConfig: &schema.DatabaseConfig{StorageSize: "5Gi"}}
 
-	secrets := map[uuid.UUID]map[string][]byte{backend.ID: {"SECRET_VAR": []byte("mysecret")}}
+	secrets := map[uuid.UUID]map[string][]byte{backend.ID: {"SECRET_VAR": []byte("mysecret"), "ADMIN_KEY": []byte("key123")}}
 	volumes := map[uuid.UUID][]*models.PVCInfo{db.ID: {{ID: "pvc-db", IsDatabase: true, CapacityGB: 5}}}
 
 	resolved := resolveInputs(def, []*ent.Service{backend, db}, secrets, volumes)
-	require.Len(t, resolved, 5)
+	require.Len(t, resolved, 6) // 5 inputs + 1 read-only annotated generated variable
 
 	byID := map[string]*resolvedInput{}
 	for i, r := range resolved {
-		// order is preserved from def.Inputs
-		require.Equal(t, def.Inputs[i].ID, r.state.ID)
+		if i < len(def.Inputs) {
+			require.Equal(t, def.Inputs[i].ID, r.state.ID) // input order preserved
+		}
 		byID[r.state.ID] = r
 	}
+
+	admin := byID["ADMIN_KEY"]
+	require.NotNil(t, admin)
+	require.False(t, admin.state.Editable)
+	require.Equal(t, "Admin Key", admin.state.Name)
+	require.Equal(t, "key123", admin.state.CurrentValue)
+	require.NotNil(t, admin.state.EditableReason)
 
 	host := byID["input_api_domain"]
 	require.True(t, host.state.Editable)

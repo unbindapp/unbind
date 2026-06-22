@@ -3,6 +3,7 @@ package servicegroup_service
 import (
 	"context"
 	"fmt"
+	"maps"
 	"slices"
 	"strconv"
 	"strings"
@@ -124,8 +125,7 @@ func (self *ServiceGroupService) loadTemplateInputContext(ctx context.Context, r
 	return &templateInputContext{template: template, services: services, resolved: resolved}, nil
 }
 
-// newDeployedInput flattens a template definition input into the response shape. Size inputs additionally
-// expose their numeric GB default so the edit form can drive the same numeric controls as volume-resize.
+// newDeployedInput flattens a template input into the response shape, adding numeric GB for size inputs.
 func newDeployedInput(in schema.TemplateInput) *models.DeployedTemplateInput {
 	state := &models.DeployedTemplateInput{
 		ID:           in.ID,
@@ -216,19 +216,22 @@ func resolveInputs(def schema.TemplateDefinition, services []*ent.Service, secre
 			r.state.CurrentValueGB = new(pvc.CapacityGB)
 			r.state.Editable = true
 		case schema.InputTypeDatabaseSize:
-			if svc := ownerForInput(def, serviceByName, in.ID); svc != nil {
-				r.sizeKind = "database"
-				r.pvc = findDatabasePVC(volumesByService[svc.ID])
-				r.state.ServiceID = new(svc.ID)
-				if svc.Edges.ServiceConfig != nil && svc.Edges.ServiceConfig.DatabaseConfig != nil {
-					r.state.CurrentValue = strings.TrimSuffix(svc.Edges.ServiceConfig.DatabaseConfig.StorageSize, "Gi")
-				}
-				if r.pvc != nil {
-					r.state.CurrentValueGB = new(r.pvc.CapacityGB)
-				} else if gb, err := strconv.ParseFloat(r.state.CurrentValue, 64); err == nil && r.state.CurrentValue != "" {
-					r.state.CurrentValueGB = new(gb)
-				}
-				r.state.Editable = r.pvc != nil
+			svc := ownerForInput(def, serviceByName, in.ID)
+			if svc == nil {
+				break
+			}
+			r.sizeKind = "database"
+			r.pvc = findDatabasePVC(volumesByService[svc.ID])
+			r.state.ServiceID = new(svc.ID)
+			r.state.Editable = r.pvc != nil
+			cfg := svc.Edges.ServiceConfig
+			if cfg == nil || cfg.DatabaseConfig == nil {
+				break
+			}
+			// Use the configured size (desired) rather than the PVC capacity, which lags during resize.
+			if gb, err := parseSizeGB(cfg.DatabaseConfig.StorageSize); err == nil {
+				r.state.CurrentValue = strconv.FormatFloat(gb, 'f', -1, 64)
+				r.state.CurrentValueGB = new(gb)
 			}
 		}
 
@@ -246,7 +249,44 @@ func resolveInputs(def schema.TemplateDefinition, services []*ent.Service, secre
 
 		resolved = append(resolved, r)
 	}
+
+	resolved = append(resolved, displayVariables(def, serviceByName, secretsByService)...)
 	return resolved
+}
+
+// displayVariables surfaces annotated generated variables (e.g. admin keys) as read-only login hints,
+// mirroring the service group info endpoint. They have display metadata but no owning input.
+func displayVariables(def schema.TemplateDefinition, serviceByName map[string]*ent.Service, secretsByService map[uuid.UUID]map[string][]byte) []*resolvedInput {
+	var out []*resolvedInput
+	for _, tsvc := range def.Services {
+		svc := serviceByName[tsvc.Name]
+		if svc == nil || svc.Edges.ServiceConfig == nil {
+			continue
+		}
+		secrets := secretsByService[svc.ID]
+		for _, name := range slices.Sorted(maps.Keys(svc.Edges.ServiceConfig.VariableMetadata)) {
+			meta := svc.Edges.ServiceConfig.VariableMetadata[name]
+			value, ok := secrets[name]
+			if meta.TemplateInputID != nil || !ok {
+				continue
+			}
+			displayName := meta.DisplayName
+			if displayName == "" {
+				displayName = name
+			}
+			out = append(out, &resolvedInput{state: &models.DeployedTemplateInput{
+				ID:             name,
+				Name:           displayName,
+				Type:           schema.InputTypeVariable,
+				Description:    meta.Description,
+				ServiceID:      new(svc.ID),
+				CurrentValue:   string(value),
+				Editable:       false,
+				EditableReason: new("generated value, shown for reference"),
+			}})
+		}
+	}
+	return out
 }
 
 // stringReplacedInputs returns the set of input ids whose value is baked into other config via ${ID_VALUE}.
@@ -489,13 +529,16 @@ func (self *ServiceGroupService) UpdateTemplateInputs(ctx context.Context, reque
 		}
 	}
 
-	// One batched redeploy for config/secret edits.
+	// Re-fetch touched services so RedeployServices compares against the just-written config; the
+	// cached objects still hold the pre-edit hosts/variables and would be seen as needing no deploy.
 	if len(touched) > 0 {
 		redeploy := make([]*ent.Service, 0, len(touched))
 		for id := range touched {
-			if svc := serviceByID[id]; svc != nil {
-				redeploy = append(redeploy, svc)
+			svc, err := self.repo.Service().GetByID(ctx, id)
+			if err != nil {
+				return nil, err
 			}
+			redeploy = append(redeploy, svc)
 		}
 		if _, err := self.serviceService.RedeployServices(ctx, redeploy); err != nil {
 			return nil, err

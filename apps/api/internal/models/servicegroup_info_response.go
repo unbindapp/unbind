@@ -43,13 +43,8 @@ type ServiceGroupTemplateInputsResponse struct {
 	Inputs     []*DeployedTemplateInput `json:"inputs" nullable:"false"`
 }
 
-// DeployedTemplateInput mirrors a template definition input (so the UI renders it with the same
-// form components as the creation screen), flattened with the deployed current value and owning service.
-//
-// Input values are transported as generic strings (CurrentValue / Default), matching the polymorphic
-// template form system where every input type carries a string. For volume/database size inputs the
-// value is ALSO surfaced as a numeric GB (CurrentValueGB / DefaultGB) so the edit screen can drive the
-// same numeric controls the volume-resize flow uses, consistent with PVCInfo.CapacityGB.
+// DeployedTemplateInput mirrors a template definition input plus its deployed value. Values transport as
+// generic strings; size inputs also expose numeric GB (CurrentValueGB / DefaultGB) for resize controls.
 type DeployedTemplateInput struct {
 	ID           string                   `json:"id"`
 	Name         string                   `json:"name"`
@@ -70,8 +65,7 @@ type DeployedTemplateInput struct {
 	EditableReason *string    `json:"editable_reason,omitempty"`
 }
 
-// DeployedTemplateVolume carries the volume metadata for a size input. Capacity is intentionally not
-// duplicated here; the deployed size lives in DeployedTemplateInput.CurrentValueGB.
+// DeployedTemplateVolume carries volume metadata; the deployed size lives in CurrentValueGB.
 type DeployedTemplateVolume struct {
 	Name      string `json:"name"`
 	MountPath string `json:"mountPath"`

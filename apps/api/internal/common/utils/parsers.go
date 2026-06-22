@@ -4,10 +4,17 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 )
+
+// FormatStorageGB renders a GB value as a clean Kubernetes quantity string, avoiding the trailing
+// zeros that "%fGi" produces (e.g. 2 -> "2Gi", 2.5 -> "2.5Gi", not "2.000000Gi").
+func FormatStorageGB(gb float64) string {
+	return strconv.FormatFloat(gb, 'f', -1, 64) + "Gi"
+}
 
 func ExtractRepoName(gitURL string) (string, error) {
 	u, err := url.Parse(gitURL)

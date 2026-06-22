@@ -2,7 +2,6 @@ package storage_service
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/schema"
@@ -23,7 +22,7 @@ func (self *StorageService) CreatePVC(ctx context.Context, requesterUserID uuid.
 		return nil, err
 	}
 
-	sizeStr := fmt.Sprintf("%fGi", input.CapacityGB)
+	sizeStr := utils.FormatStorageGB(input.CapacityGB)
 	_, err = utils.ValidateStorageQuantity(sizeStr)
 	if err != nil {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())

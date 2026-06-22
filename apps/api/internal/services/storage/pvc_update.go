@@ -2,7 +2,6 @@ package storage_service
 
 import (
 	"context"
-	"fmt"
 	"slices"
 
 	"github.com/google/uuid"
@@ -53,7 +52,7 @@ func (self *StorageService) UpdatePVC(ctx context.Context, requesterUserID uuid.
 	// Size validation
 	var newCapacity *string
 	if input.CapacityGB != nil {
-		newCapacity = new(fmt.Sprintf("%fGi", *input.CapacityGB))
+		newCapacity = new(utils.FormatStorageGB(*input.CapacityGB))
 		newSize, err := utils.ValidateStorageQuantity(*newCapacity)
 		if err != nil {
 			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
