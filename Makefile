@@ -121,7 +121,7 @@ web-typecheck:
 	cd $(WEB_DIR) && npm run typecheck
 
 web-gen:
-	cd $(WEB_DIR) && npm run gen
+	cd $(WEB_DIR) && npm run generate-sdk
 
 # --- Operator (apps/operator) ---
 operator-generate:

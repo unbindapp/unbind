@@ -1,5 +1,5 @@
-import { safeTopologicalSort } from "./helpers";
-import { JSONSchema, OpenAPISpec } from "./types";
+import { safeTopologicalSort } from "./helpers.ts";
+import type { JSONSchema, OpenAPISpec } from "./types.ts";
 
 // To track which schemas require lazy wrapping
 const lazySchemas = new Set<string>();

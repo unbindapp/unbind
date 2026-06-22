@@ -1,4 +1,4 @@
-import { JSONSchema, OperationObject } from "./types";
+import type { JSONSchema, OperationObject } from "./types.ts";
 
 export function safeTopologicalSort(schemas: Record<string, JSONSchema>): string[] {
   const sorted: string[] = [];

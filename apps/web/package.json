@@ -9,8 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "gen": "bun run ./scripts/generate-go-client/main.ts -i https://api.unbind.app/openapi.yaml",
-    "gen-data": "bun run ./scripts/generate-data/main.ts"
+    "generate-sdk": "go -C ../api run ./cmd/openapi > /tmp/unbind-openapi.gen.yaml && node ./scripts/generate-sdk/main.ts -i /tmp/unbind-openapi.gen.yaml"
   },
   "dependencies": {
     "@fortaine/fetch-event-source": "^3.0.6",

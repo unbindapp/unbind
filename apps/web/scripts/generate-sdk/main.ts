@@ -3,9 +3,9 @@ import * as fs from "fs";
 import * as path from "path";
 import prettier from "prettier";
 import * as yaml from "yaml";
-import { JSONSchema, OpenAPISpec, OperationObject } from "./types";
-import { generateZodExpression, generateZodSchemas } from "./zod";
-import { createSchemaName, displayHelp, getSchemaName, toCamelCase } from "./helpers";
+import type { JSONSchema, OpenAPISpec, OperationObject } from "./types.ts";
+import { generateZodExpression, generateZodSchemas } from "./zod.ts";
+import { createSchemaName, displayHelp, getSchemaName, toCamelCase } from "./helpers.ts";
 
 // ---------------------------------------------------------------------
 // Types
@@ -479,6 +479,34 @@ function generateInlineInputSchemas(inlineSchemas: Record<string, JSONSchema>): 
 }
 
 // ---------------------------------------------------------------------
+// Databases enum generation
+// ---------------------------------------------------------------------
+
+// The database/service definitions ship inside the monorepo, embedded into the
+// API binary. We read that same source of truth to generate the enum, rather
+// than fetching the published copy over the network.
+const DATABASES_INDEX_PATH = "../api/pkg/databases/assets/index.json";
+
+/**
+ * Reads the embedded service-definition index and emits a Zod enum of the
+ * available database templates. Relies on `z` already being imported by the
+ * generated component schemas.
+ */
+function generateDatabasesEnum(indexFile: string): string {
+  const raw = fs.readFileSync(path.resolve(process.cwd(), indexFile), "utf8");
+  const index = JSON.parse(raw) as {
+    categories?: { name: string; templates: string[] }[];
+  };
+  const databases = index.categories?.find((category) => category.name === "databases");
+  if (!databases) {
+    throw new Error(`No "databases" category found in ${indexFile}`);
+  }
+  const values = databases.templates.map((d) => `'${d}'`).join(", ");
+  return `export const AvailableDatabaseEnum = z.enum([${values}]);
+export type TAvailableDatabase = z.infer<typeof AvailableDatabaseEnum>;`;
+}
+
+// ---------------------------------------------------------------------
 // CLI: Read OpenAPI spec, generate schemas + client, and write output file
 // ---------------------------------------------------------------------
 
@@ -491,6 +519,7 @@ async function main() {
 
   let inputFile: string | undefined;
   let outputFile = "./src/lib/server/client.gen.ts";
+  let databasesFile = DATABASES_INDEX_PATH;
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -499,6 +528,9 @@ async function main() {
       i++;
     } else if (arg === "-i" || arg === "--input") {
       inputFile = args[i + 1];
+      i++;
+    } else if (arg === "-d" || arg === "--databases") {
+      databasesFile = args[i + 1];
       i++;
     } else if (!inputFile && !arg.startsWith("-")) {
       inputFile = arg;
@@ -532,11 +564,15 @@ async function main() {
     const { clientTree, inlineSchemas } = generateClientFunctions(openApiSpec);
     const inlineSchemasOutput = generateInlineInputSchemas(inlineSchemas);
     const clientTreeOutput = generateTreeCode(clientTree);
+    // Database enum, generated from the embedded service definitions.
+    const databasesEnumOutput = generateDatabasesEnum(databasesFile);
 
     const outputContent =
       componentsSchemasOutput +
       "\n\n" +
       inlineSchemasOutput +
+      "\n\n" +
+      databasesEnumOutput +
       "\n\n" +
       `
         export type ClientOptions = {

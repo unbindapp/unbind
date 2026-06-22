@@ -15,7 +15,7 @@ import type {
   ServiceResponse,
   UpdateServiceInput,
 } from "@/lib/server/client.gen";
-import { AvailableDatabaseEnum } from "@/lib/server/data.gen";
+import { AvailableDatabaseEnum } from "@/lib/server/client.gen";
 
 export const queryKeyServices = {
   list: (input: { teamId: string; projectId: string; environmentId: string }) =>

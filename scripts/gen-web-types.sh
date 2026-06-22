@@ -12,6 +12,6 @@ echo "Generating OpenAPI spec from apps/api..."
 (cd "$ROOT/apps/api" && go run ./cmd/openapi) >"$SPEC"
 
 echo "Generating web client from spec..."
-(cd "$ROOT/apps/web" && bun run ./scripts/generate-go-client/main.ts -i "$SPEC")
+(cd "$ROOT/apps/web" && node ./scripts/generate-sdk/main.ts -i "$SPEC")
 
 echo "Done."

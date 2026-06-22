@@ -9,7 +9,7 @@ import { useServicesUtils } from "@/components/service/services-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import { TAvailableDatabase } from "@/lib/server/data.gen";
+import { TAvailableDatabase } from "@/lib/server/client.gen";
 import { createService as createServiceFn } from "@/lib/queries/services";
 import { useMutation } from "@tanstack/react-query";
 import { DatabaseIcon } from "lucide-react";

@@ -10,7 +10,7 @@ GENERATED="$(mktemp -t unbind-client.XXXXXX.ts)"
 trap 'rm -f "$SPEC" "$GENERATED"' EXIT
 
 (cd "$ROOT/apps/api" && go run ./cmd/openapi) >"$SPEC"
-(cd "$ROOT/apps/web" && bun run ./scripts/generate-go-client/main.ts -i "$SPEC" -o "$GENERATED") >/dev/null
+(cd "$ROOT/apps/web" && node ./scripts/generate-sdk/main.ts -i "$SPEC" -o "$GENERATED") >/dev/null
 
 if ! diff -q "$COMMITTED" "$GENERATED" >/dev/null 2>&1; then
 	echo "✘ Web client types are out of sync with the API."
