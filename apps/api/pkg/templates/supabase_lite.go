@@ -1947,6 +1947,13 @@ serve(async () => {
 						Path: "/home/kong/kong.yml",
 					},
 				},
+				VariableDisplays: []schema.TemplateVariableDisplay{
+					{Name: "DASHBOARD_USERNAME", DisplayName: "Dashboard Username", Description: "Username for the Supabase Studio dashboard."},
+					{Name: "DASHBOARD_PASSWORD", DisplayName: "Dashboard Password", Description: "Password for the Supabase Studio dashboard."},
+					{Name: "SUPABASE_ANON_KEY", DisplayName: "Anon Key", Description: "Public (anonymous) API key for client access."},
+					{Name: "SUPABASE_SERVICE_KEY", DisplayName: "Service Role Key", Description: "Privileged service role API key. Keep secret."},
+					{Name: "JWT_SECRET", DisplayName: "JWT Secret", Description: "Secret used to sign Supabase JWTs."},
+				},
 				Variables: []schema.TemplateVariable{
 					{
 						Name:  "KONG_DATABASE",

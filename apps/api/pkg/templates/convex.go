@@ -118,6 +118,13 @@ func convexTemplate() *schema.TemplateDefinition {
 					HealthFailureThreshold:  new(int32(5)),
 				},
 				ProtectedVariables: []string{"INSTANCE_SECRET", "CONVEX_SELF_HOSTED_ADMIN_KEY"},
+				VariableDisplays: []schema.TemplateVariableDisplay{
+					{
+						Name:        "CONVEX_SELF_HOSTED_ADMIN_KEY",
+						DisplayName: "Admin Key",
+						Description: "Admin key used to authenticate with the Convex dashboard and CLI.",
+					},
+				},
 				VariableReferences: []schema.TemplateVariableReference{
 					{
 						SourceID:                  "service_postgres",

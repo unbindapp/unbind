@@ -68,6 +68,10 @@ func pocketBaseTemplate() *schema.TemplateDefinition {
 					HealthTimeoutSeconds:    new(int32(5)),
 					HealthFailureThreshold:  new(int32(5)),
 				},
+				VariableDisplays: []schema.TemplateVariableDisplay{
+					{Name: "PB_ADMIN_EMAIL", DisplayName: "Admin Email", Description: "Email for the PocketBase admin login."},
+					{Name: "PB_ADMIN_PASSWORD", DisplayName: "Admin Password", Description: "Password for the PocketBase admin login."},
+				},
 				Variables: []schema.TemplateVariable{
 					{
 						Name: "PB_ADMIN_EMAIL",

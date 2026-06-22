@@ -87,6 +87,10 @@ func flowiseTemplate() *schema.TemplateDefinition {
 					HealthTimeoutSeconds:    new(int32(5)),
 					HealthFailureThreshold:  new(int32(5)),
 				},
+				VariableDisplays: []schema.TemplateVariableDisplay{
+					{Name: "FLOWISE_USERNAME", DisplayName: "Username", Description: "Username for the Flowise login."},
+					{Name: "FLOWISE_PASSWORD", DisplayName: "Password", Description: "Password for the Flowise login."},
+				},
 				Variables: []schema.TemplateVariable{
 					{
 						Name:  "DEBUG",

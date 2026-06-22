@@ -132,7 +132,6 @@ func (self *VariablesService) UpdateVariables(
 					}
 				}
 
-				// Drop template metadata for variables removed by the overwrite
 				variableMetadata := service.Edges.ServiceConfig.VariableMetadata
 				metadataNeedsUpdate := false
 				for name := range variableMetadata {

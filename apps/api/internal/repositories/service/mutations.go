@@ -487,7 +487,6 @@ func (self *ServiceRepository) UpdateConfig(
 	} else if len(input.UpsertHosts) > 0 || len(input.RemoveHosts) > 0 {
 		hosts := existingConfig.Hosts
 
-		// Index existing hosts so we can carry template metadata forward across edits
 		existingByHost := make(map[string]schema.HostSpec, len(hosts))
 		for _, host := range hosts {
 			existingByHost[host.Host] = host
@@ -516,7 +515,6 @@ func (self *ServiceRepository) UpdateConfig(
 			}
 		}
 
-		// Append upserts, preserving template metadata from the matched previous host
 		for _, upsertHost := range input.UpsertHosts {
 			matchKey := upsertHost.Host
 			if upsertHost.PrevHost != nil {

@@ -86,7 +86,6 @@ func (self *VariablesService) DeleteVariablesByKey(ctx context.Context, userID u
 			return err
 		}
 
-		// For updating var mounts and template metadata
 		var variableMounts []*schema.VariableMount
 		var variableMetadata map[string]schema.VariableMetadata
 		variableMountsNeedsUpdate := false
@@ -116,7 +115,6 @@ func (self *VariablesService) DeleteVariablesByKey(ctx context.Context, userID u
 				variableMounts = append(variableMounts[:indexToDelete], variableMounts[indexToDelete+1:]...)
 			}
 
-			// Drop template metadata for the deleted variable
 			if _, ok := variableMetadata[secretKey.Name]; ok {
 				delete(variableMetadata, secretKey.Name)
 				variableMetadataNeedsUpdate = true

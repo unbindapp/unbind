@@ -69,6 +69,9 @@ func meiliSearchTemplate() *schema.TemplateDefinition {
 					HealthTimeoutSeconds:    new(int32(5)),
 					HealthFailureThreshold:  new(int32(5)),
 				},
+				VariableDisplays: []schema.TemplateVariableDisplay{
+					{Name: "MEILI_MASTER_KEY", DisplayName: "Master Key", Description: "Master key for authenticating with the Meilisearch API."},
+				},
 				Variables: []schema.TemplateVariable{
 					{
 						Name: "MEILI_MASTER_KEY",

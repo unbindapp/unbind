@@ -1,7 +1,13 @@
-.PHONY: help dev-infra dev-infra-down dev-api dev-web web embed app run clean gen-web-types check-web-types
+.PHONY: help dev-infra dev-infra-down dev-api dev-web web embed app run clean gen-web-types check-web-types \
+	api-ent api-interfaces api-migrate api-migrate-checksum api-test api-fmt api-run \
+	web-build web-dev web-lint web-typecheck web-gen \
+	operator-generate operator-manifests operator-build operator-run operator-test \
+	installer-build installer-run
 
 WEB_DIR := apps/web
 API_DIR := apps/api
+OPERATOR_DIR := apps/operator
+INSTALLER_DIR := apps/installer
 EMBED_DIR := $(API_DIR)/internal/web/dist
 COMPOSE := deploy/compose/docker-compose.yaml
 
@@ -21,6 +27,24 @@ help:
 	@echo "Web client types (generated from the API's OpenAPI spec, no server needed):"
 	@echo "  make gen-web-types    - Regenerate apps/web client types from the local API code"
 	@echo "  make check-web-types  - Fail if the committed web types are out of sync with the API"
+	@echo ""
+	@echo "API (apps/api):"
+	@echo "  make api-ent          - Generate ent entities"
+	@echo "  make api-interfaces   - Generate interfaces and mocks"
+	@echo "  make api-migrate NAME=x - Create a migration"
+	@echo "  make api-migrate-checksum - Regenerate migration checksum"
+	@echo "  make api-test         - Run API tests"
+	@echo "  make api-fmt          - Format API code"
+	@echo "  make api-run          - Run the API"
+	@echo ""
+	@echo "Web (apps/web):"
+	@echo "  make web-build / web-dev / web-lint / web-typecheck / web-gen"
+	@echo ""
+	@echo "Operator (apps/operator):"
+	@echo "  make operator-generate / operator-manifests / operator-build / operator-run / operator-test"
+	@echo ""
+	@echo "Installer (apps/installer):"
+	@echo "  make installer-build / installer-run"
 
 # --- Local infra ---
 dev-infra:
@@ -60,3 +84,64 @@ gen-web-types:
 
 check-web-types:
 	./scripts/check-web-types.sh
+
+# --- API (apps/api) ---
+api-ent:
+	$(MAKE) -C $(API_DIR) ent
+
+api-interfaces:
+	$(MAKE) -C $(API_DIR) interfaces
+
+api-migrate:
+	$(MAKE) -C $(API_DIR) migrate NAME=$(NAME)
+
+api-migrate-checksum:
+	$(MAKE) -C $(API_DIR) migrate:checksum
+
+api-test:
+	$(MAKE) -C $(API_DIR) tests
+
+api-fmt:
+	$(MAKE) -C $(API_DIR) fmt
+
+api-run:
+	cd $(API_DIR) && go run ./cmd/api
+
+# --- Web (apps/web) ---
+web-build:
+	cd $(WEB_DIR) && npm run build
+
+web-dev:
+	cd $(WEB_DIR) && npm run dev
+
+web-lint:
+	cd $(WEB_DIR) && npm run lint
+
+web-typecheck:
+	cd $(WEB_DIR) && npm run typecheck
+
+web-gen:
+	cd $(WEB_DIR) && npm run gen
+
+# --- Operator (apps/operator) ---
+operator-generate:
+	$(MAKE) -C $(OPERATOR_DIR) generate
+
+operator-manifests:
+	$(MAKE) -C $(OPERATOR_DIR) manifests
+
+operator-build:
+	$(MAKE) -C $(OPERATOR_DIR) build
+
+operator-run:
+	$(MAKE) -C $(OPERATOR_DIR) run
+
+operator-test:
+	$(MAKE) -C $(OPERATOR_DIR) test
+
+# --- Installer (apps/installer) ---
+installer-build:
+	cd $(INSTALLER_DIR) && go build -o bin/installer ./cmd
+
+installer-run:
+	cd $(INSTALLER_DIR) && go run ./cmd

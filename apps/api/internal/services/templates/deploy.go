@@ -314,7 +314,6 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 			for _, variable := range templateService.Variables {
 				secretData[variable.Name] = []byte(variable.Value)
 
-				// Snapshot template input metadata for variables sourced from a user input
 				if variable.Generator == nil || variable.Generator.Type != schema.GeneratorTypeInput {
 					continue
 				}
@@ -339,6 +338,16 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 					}
 					// Add the reference to the secret data
 					secretData[ref.TargetName] = fmt.Appendf(nil, "%s.%s", sourceKubeName, project.Edges.Team.Namespace)
+				}
+			}
+
+			for _, vd := range templateService.VariableDisplays {
+				if _, ok := secretData[vd.Name]; !ok {
+					continue
+				}
+				variableMetadata[vd.Name] = schema.VariableMetadata{
+					DisplayName: vd.DisplayName,
+					Description: vd.Description,
 				}
 			}
 

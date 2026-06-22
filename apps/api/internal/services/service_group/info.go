@@ -15,8 +15,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// GetServiceGroupInfo returns a template-creation-screen style summary of a deployed group,
-// aggregating each service's labeled hosts and variables with their current values.
 func (self *ServiceGroupService) GetServiceGroupInfo(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *models.GetServiceGroupInput) (*models.ServiceGroupInfoResponse, error) {
 	permissionChecks := []permissions_repo.PermissionCheck{
 		{
@@ -101,7 +99,6 @@ func (self *ServiceGroupService) GetServiceGroupInfo(ctx context.Context, reques
 	return resp, nil
 }
 
-// templateInputOrder maps a template input ID to its position on the creation screen.
 func templateInputOrder(template *ent.Template) map[string]int {
 	order := make(map[string]int)
 	if template == nil {

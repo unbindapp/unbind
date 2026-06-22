@@ -81,6 +81,10 @@ func minioTemplate() *schema.TemplateDefinition {
 					HealthTimeoutSeconds:    new(int32(5)),
 					HealthFailureThreshold:  new(int32(5)),
 				},
+				VariableDisplays: []schema.TemplateVariableDisplay{
+					{Name: "MINIO_ROOT_USER", DisplayName: "Root User", Description: "Root user for the MinIO console and API."},
+					{Name: "MINIO_ROOT_PASSWORD", DisplayName: "Root Password", Description: "Root password for the MinIO console and API."},
+				},
 				Variables: []schema.TemplateVariable{
 					{
 						Name:  "MINIO_ROOT_USER",

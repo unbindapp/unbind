@@ -74,6 +74,10 @@ func wireGuardTemplate() *schema.TemplateDefinition {
 						Protocol: utils.ToPtr(schema.ProtocolTCP),
 					},
 				},
+				VariableDisplays: []schema.TemplateVariableDisplay{
+					{Name: "INIT_USERNAME", DisplayName: "Username", Description: "Username for the WireGuard (wg-easy) web UI."},
+					{Name: "INIT_PASSWORD", DisplayName: "Password", Description: "Password for the WireGuard (wg-easy) web UI."},
+				},
 				Variables: []schema.TemplateVariable{
 					{
 						Name:  "HOST",

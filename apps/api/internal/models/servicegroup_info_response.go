@@ -4,7 +4,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// ServiceGroupInfoResponse mirrors the template creation screen for a deployed service group.
 type ServiceGroupInfoResponse struct {
 	ServiceGroup *ServiceGroupResponse      `json:"service_group"`
 	TemplateID   *uuid.UUID                 `json:"template_id,omitempty"`

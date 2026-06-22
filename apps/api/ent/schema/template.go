@@ -123,6 +123,7 @@ type TemplateService struct {
 	ProtectedVariables []string                    `json:"protected_variables" nullable:"false"` // List of protected variables (can be edited, not deleted)
 	InitDBReplacers    map[string]string           `json:"init_db_replacers,omitempty"`          // Replacers for the init DB, will replace key with value in InitDB string
 	Resources          *Resources                  `json:"resources,omitempty"`                  // Resources for the service
+	VariableDisplays   []TemplateVariableDisplay   `json:"variable_displays,omitempty"`          // Variables (incl. generated) to surface in the service group summary
 }
 
 // TemplateVariable represents a configurable variable in a template
@@ -131,6 +132,12 @@ type TemplateVariable struct {
 	Value string `json:"value"`
 	// If set, the value will be generated using the generator
 	Generator *ValueGenerator `json:"generator,omitempty"`
+}
+
+type TemplateVariableDisplay struct {
+	Name        string `json:"name"`
+	DisplayName string `json:"display_name"`
+	Description string `json:"description,omitempty"`
 }
 
 // TenokateVariableReference represents a reference to a variable in a template
