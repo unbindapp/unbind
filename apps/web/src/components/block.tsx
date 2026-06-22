@@ -1,7 +1,7 @@
 import { Button, buttonVariants, TButtonProps } from "@/components/ui/button";
 import { hasChildRole, withChildRole } from "@/components/ui/child-role";
 import { cn } from "@/components/ui/utils";
-import { getRouteApi } from "@tanstack/react-router";
+import { getRouteApi, useNavigate, useRouter } from "@tanstack/react-router";
 import { ChevronDownIcon, ExternalLinkIcon } from "lucide-react";
 import {
   Children,
@@ -154,6 +154,7 @@ export function BlockItemContentHighlightable({
 }) {
   const [isHighlighted, setIsHighlighted] = useState(false);
   const { highlight_id } = routeApi.useSearch();
+  const router = useRouter();
 
   useEffect(() => {
     if (highlight_id === id) {
@@ -161,6 +162,7 @@ export function BlockItemContentHighlightable({
         setIsHighlighted(true);
         const timeout = setTimeout(() => {
           setIsHighlighted(false);
+          router.navigate({ to: ".", search: (old) => ({ ...old, highlight_id: undefined }) });
         }, highlightDurationMs);
         return () => clearTimeout(timeout);
       }, highlightDelayMs);
