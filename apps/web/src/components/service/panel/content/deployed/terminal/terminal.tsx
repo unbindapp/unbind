@@ -137,6 +137,7 @@ export default function Terminal() {
           {(isPending || data.data.length > 0) && (
             <DropdownSelect
               isPending={isPending}
+              disabled={isPending}
               items={
                 isPending
                   ? []

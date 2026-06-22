@@ -28,6 +28,7 @@ type TDropdownSelectProps = {
   ItemIcon?: FC<{ className?: string; value: string }>;
   ItemSuffix?: FC<{ className?: string; value: string }>;
   isPending?: boolean;
+  disabled?: boolean;
   error?: string;
   title?: string;
   align?: Parameters<typeof DropdownMenuContent>["0"]["align"];
@@ -44,6 +45,7 @@ export default function DropdownSelect({
   ItemIcon,
   ItemSuffix,
   isPending,
+  disabled,
   error,
   title,
   align,
@@ -56,7 +58,7 @@ export default function DropdownSelect({
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild className={className}>
+      <DropdownMenuTrigger asChild className={className} disabled={disabled}>
         {children({ isOpen })}
       </DropdownMenuTrigger>
       <DropdownMenuContent
