@@ -43,6 +43,7 @@ export const TemplateInputSchema = z.object({
 type TInput = z.infer<typeof TemplateInputSchema>;
 
 export const templateDraftMaxStorageGb = 100;
+const collapseServicesAfter = 4;
 
 export default function TemplateDraftPanelContent({ templateDraft, className, ...rest }: TProps) {
   const visibleInputs = useMemo(
@@ -52,14 +53,19 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
 
   const collapsedInputs = useMemo(() => visibleInputs.filter((i) => i.collapsed), [visibleInputs]);
 
-  const [isCollapsed, setIsCollapsed] = useState(true);
-
   const sortedServices = useMemo(
     () =>
       [...templateDraft.template.definition.services].sort(
         (a, b) => (a.display_rank ?? 0) - (b.display_rank ?? 0),
       ),
     [templateDraft.template.definition.services],
+  );
+
+  const [isInputsCollapsed, setIsInputsCollapsed] = useState(true);
+  const [isServicesCollapsed, setIsServicesCollapsed] = useState(true);
+  const collapsedServiceIds = useMemo(
+    () => sortedServices.slice(collapseServicesAfter).map((s) => s.id),
+    [sortedServices],
   );
 
   const { data: systemData } = useSystem();
@@ -213,7 +219,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                 mode="value"
                 children={(field) =>
                   field.state.value.map((_, i) => {
-                    if (isCollapsed && visibleInputs[i].collapsed) {
+                    if (isInputsCollapsed && visibleInputs[i].collapsed) {
                       return null;
                     }
                     return (
@@ -305,19 +311,21 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                 }
               />
               {collapsedInputs.length > 0 && (
-                <div className="flex w-full flex-col gap-2.5 px-1 pt-1 pb-4 md:w-1/2">
+                <div
+                  data-collapsed={isInputsCollapsed || undefined}
+                  className="group/wrapper flex w-full flex-col gap-2.5 px-1 pt-2 pb-4 data-collapsed:pt-1 md:w-1/2"
+                >
                   <Button
                     type="button"
-                    data-collapsed={isCollapsed || undefined}
                     variant="outline"
-                    className="group/button text-muted-foreground w-full font-medium"
-                    onClick={() => setIsCollapsed((c) => !c)}
+                    className="text-muted-foreground w-full font-medium"
+                    onClick={() => setIsInputsCollapsed((c) => !c)}
                   >
-                    <ChevronDownIcon className="size-5 shrink-0 rotate-180 transition group-data-collapsed/button:rotate-0" />
+                    <ChevronDownIcon className="size-5 shrink-0 rotate-180 transition group-data-collapsed/wrapper:rotate-0" />
                     <p className="min-w-0 shrink truncate">
-                      {isCollapsed
-                        ? `${collapsedInputs.length} more input${collapsedInputs.length !== 1 ? "s" : ""}`
-                        : `Collapse input${collapsedInputs.length !== 1 ? "s" : ""}`}
+                      {isInputsCollapsed
+                        ? `${collapsedInputs.length} more ${addSuffixS("input", collapsedInputs.length)}`
+                        : `Collapse ${addSuffixS("input", collapsedInputs.length)}`}
                     </p>
                   </Button>
                 </div>
@@ -333,10 +341,32 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
               </span>
             </h3>
             <ol className="-mx-1 flex w-[calc(100%+0.5rem)] flex-wrap">
-              {sortedServices.map((service) => (
-                <TemplateServiceCard key={service.id} service={service} className="md:w-1/2" />
-              ))}
+              {sortedServices
+                .filter(
+                  (service) => !isServicesCollapsed || !collapsedServiceIds.includes(service.id),
+                )
+                .map((service) => (
+                  <TemplateServiceCard key={service.id} service={service} className="md:w-1/2" />
+                ))}
             </ol>
+            {sortedServices.length > collapseServicesAfter && (
+              <div className="-mt-1 flex w-full">
+                <Button
+                  type="button"
+                  data-collapsed={isServicesCollapsed || undefined}
+                  variant="outline"
+                  className="group/button text-muted-foreground w-full font-medium"
+                  onClick={() => setIsServicesCollapsed((c) => !c)}
+                >
+                  <ChevronDownIcon className="size-5 shrink-0 rotate-180 transition group-data-collapsed/button:rotate-0" />
+                  <p className="min-w-0 shrink truncate">
+                    {isServicesCollapsed
+                      ? `${sortedServices.length - collapseServicesAfter} more ${addSuffixS("service", collapsedServiceIds.length)}`
+                      : `Collapse ${addSuffixS("service", collapsedServiceIds.length)}`}
+                  </p>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </ScrollArea>
@@ -370,6 +400,10 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
       </div>
     </form>
   );
+}
+
+function addSuffixS(str: string, count: number) {
+  return count === 1 ? str : `${str}s`;
 }
 
 function TemplateServiceCard({
