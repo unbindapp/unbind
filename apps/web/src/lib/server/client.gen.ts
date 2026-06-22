@@ -394,11 +394,14 @@ export const HealthCheckSchema = z
 
 export const HostSpecSchema = z
   .object({
+    description: z.string().optional(),
+    display_name: z.string().optional(), // Human label from the template input, e.g. Cloud Domain
     host: z.string(),
     path: z.string(),
     prev_host: z.string().optional(), // Previous host for the service, used for upserting key
     protocol: z.string().optional(), // Application protocol for the domain: http (default) or grpc
     target_port: z.number().optional(),
+    template_input_id: z.string().optional(),
   })
   .strip();
 
@@ -859,25 +862,6 @@ export const EndpointDiscoverySchema = z
   })
   .strip();
 
-export const ErrorDetailSchema = z
-  .object({
-    location: z.string().optional(), // Where the error occurred, e.g. 'body.items[3].tags' or 'path.thing-id'
-    message: z.string().optional(), // Error message text
-    value: z.any().optional(), // The value at the given location
-  })
-  .strip();
-
-export const ErrorModelSchema = z
-  .object({
-    detail: z.string().optional(), // A human-readable explanation specific to this occurrence of the problem.
-    errors: z.array(ErrorDetailSchema).nullable().optional(), // Optional list of individual error details
-    instance: z.string().optional(), // A URI reference that identifies the specific occurrence of the problem.
-    status: z.number().optional(), // HTTP status code
-    title: z.string().optional(), // A short, human-readable summary of the problem type. This value should not change between occurrences of the error.
-    type: z.string().optional(), // A URI reference to human-readable documentation for the error.
-  })
-  .strip();
-
 export const GenerateWildcardDomainInputBodySchema = z
   .object({
     name: z.string(), // The base name of the wildcard domain
@@ -1025,6 +1009,52 @@ export const GetS3SourceByIDOutputBodySchema = z
   })
   .strip();
 
+export const ServiceGroupHostInfoSchema = z
+  .object({
+    description: z.string().optional(),
+    display_name: z.string().optional(),
+    host: z.string(),
+    path: z.string(),
+    target_port: z.number().optional(),
+    template_input_id: z.string().optional(),
+  })
+  .strip();
+
+export const ServiceGroupVariableInfoSchema = z
+  .object({
+    description: z.string().optional(),
+    display_name: z.string().optional(),
+    name: z.string(),
+    template_input_id: z.string().optional(),
+    value: z.string(),
+  })
+  .strip();
+
+export const ServiceGroupServiceInfoSchema = z
+  .object({
+    hosts: z.array(ServiceGroupHostInfoSchema),
+    icon: z.string(),
+    name: z.string(),
+    service_id: z.string(),
+    variables: z.array(ServiceGroupVariableInfoSchema),
+    volumes: z.array(PVCInfoSchema),
+  })
+  .strip();
+
+export const ServiceGroupInfoResponseSchema = z
+  .object({
+    service_group: ServiceGroupResponseSchema,
+    services: z.array(ServiceGroupServiceInfoSchema),
+    template_id: z.string().optional(),
+  })
+  .strip();
+
+export const GetServiceGroupInfoResponseBodySchema = z
+  .object({
+    data: ServiceGroupInfoResponseSchema,
+  })
+  .strip();
+
 export const GetServiceGroupResponseBodySchema = z
   .object({
     data: ServiceGroupResponseSchema,
@@ -1084,6 +1114,14 @@ export const TemplateInputSchema = z
     target_port: z.number().optional(),
     type: TemplateInputTypeSchema,
     volume: TemplateVolumeSchema.optional(),
+  })
+  .strip();
+
+export const TemplateVariableDisplaySchema = z
+  .object({
+    description: z.string().optional(),
+    display_name: z.string(),
+    name: z.string(),
   })
   .strip();
 
@@ -1151,6 +1189,7 @@ export const TemplateServiceSchema = z
     run_command: z.string().optional(),
     security_context: SecurityContextSchema.optional(),
     type: ServiceTypeSchema,
+    variable_displays: z.array(TemplateVariableDisplaySchema).nullable().optional(),
     variable_references: z.array(TemplateVariableReferenceSchema),
     variables: z.array(TemplateVariableSchema),
     variables_mounts: z.array(VariableMountSchema),
@@ -1753,6 +1792,25 @@ export const ResolveVariableReferenceResponseBodySchema = z
   })
   .strip();
 
+export const ResponseErrorSchema = z
+  .object({
+    details: z.array(z.string()).nullable().optional(), // Optional actionable details, e.g. which field failed validation
+    message: z.string(), // Human-readable summary of what went wrong
+    status: z.number(), // HTTP status code
+    type: z.enum([
+      'bad_request',
+      'unauthorized',
+      'forbidden',
+      'not_found',
+      'conflict',
+      'validation_error',
+      'rate_limited',
+      'internal_error',
+      'error',
+    ]), // Stable, machine-readable error code
+  })
+  .strip();
+
 export const RestartInstancesInputBodySchema = z
   .object({
     environment_id: z.string(),
@@ -2324,8 +2382,6 @@ export type TlsStatus = z.infer<typeof TlsStatusSchema>;
 export type IngressEndpoint = z.infer<typeof IngressEndpointSchema>;
 export type ServiceEndpoint = z.infer<typeof ServiceEndpointSchema>;
 export type EndpointDiscovery = z.infer<typeof EndpointDiscoverySchema>;
-export type ErrorDetail = z.infer<typeof ErrorDetailSchema>;
-export type ErrorModel = z.infer<typeof ErrorModelSchema>;
 export type GenerateWildcardDomainInputBody = z.infer<typeof GenerateWildcardDomainInputBodySchema>;
 export type GenerateWildcardDomainOutputBody = z.infer<
   typeof GenerateWildcardDomainOutputBodySchema
@@ -2350,6 +2406,11 @@ export type GetPVCResponseBody = z.infer<typeof GetPVCResponseBodySchema>;
 export type GetProjectResponseBody = z.infer<typeof GetProjectResponseBodySchema>;
 export type GetRegistryResponseBody = z.infer<typeof GetRegistryResponseBodySchema>;
 export type GetS3SourceByIDOutputBody = z.infer<typeof GetS3SourceByIDOutputBodySchema>;
+export type ServiceGroupHostInfo = z.infer<typeof ServiceGroupHostInfoSchema>;
+export type ServiceGroupVariableInfo = z.infer<typeof ServiceGroupVariableInfoSchema>;
+export type ServiceGroupServiceInfo = z.infer<typeof ServiceGroupServiceInfoSchema>;
+export type ServiceGroupInfoResponse = z.infer<typeof ServiceGroupInfoResponseSchema>;
+export type GetServiceGroupInfoResponseBody = z.infer<typeof GetServiceGroupInfoResponseBodySchema>;
 export type GetServiceGroupResponseBody = z.infer<typeof GetServiceGroupResponseBodySchema>;
 export type GetServiceResponseBody = z.infer<typeof GetServiceResponseBodySchema>;
 export type TeamResponse = z.infer<typeof TeamResponseSchema>;
@@ -2357,6 +2418,7 @@ export type GetTeamResponseBody = z.infer<typeof GetTeamResponseBodySchema>;
 export type TemplateInputType = z.infer<typeof TemplateInputTypeSchema>;
 export type TemplateVolume = z.infer<typeof TemplateVolumeSchema>;
 export type TemplateInput = z.infer<typeof TemplateInputSchema>;
+export type TemplateVariableDisplay = z.infer<typeof TemplateVariableDisplaySchema>;
 export type TemplateVariableReference = z.infer<typeof TemplateVariableReferenceSchema>;
 export type ValueHashType = z.infer<typeof ValueHashTypeSchema>;
 export type JWTParams = z.infer<typeof JWTParamsSchema>;
@@ -2444,6 +2506,7 @@ export type ResolveAvailableVariableReferenceResponseBody = z.infer<
 export type ResolveVariableReferenceResponseBody = z.infer<
   typeof ResolveVariableReferenceResponseBodySchema
 >;
+export type ResponseError = z.infer<typeof ResponseErrorSchema>;
 export type RestartInstancesInputBody = z.infer<typeof RestartInstancesInputBodySchema>;
 export type Restarted = z.infer<typeof RestartedSchema>;
 export type RestartServicesResponseBody = z.infer<typeof RestartServicesResponseBodySchema>;
@@ -2679,6 +2742,15 @@ export const list_projectsQuerySchema = z
   .passthrough();
 
 export const get_service_groupQuerySchema = z
+  .object({
+    id: z.string(), // The ID of the service group
+    team_id: z.string(), // The ID of the team
+    project_id: z.string(), // The ID of the project
+    environment_id: z.string(), // The ID of the environment
+  })
+  .passthrough();
+
+export const get_service_group_infoQuerySchema = z
   .object({
     id: z.string(), // The ID of the service group
     team_id: z.string(), // The ID of the team
@@ -5095,6 +5167,69 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           const data = await response.json();
           const { data: parsedData, error } = GetServiceGroupResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      info: async (
+        params: z.infer<typeof get_service_group_infoQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<GetServiceGroupInfoResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/service_groups/info`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+          const validatedQuery = get_service_group_infoQuerySchema.parse(params);
+          const queryKeys = ['id', 'team_id', 'project_id', 'environment_id'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = GetServiceGroupInfoResponseBodySchema.safeParse(data);
           if (error) {
             console.error('Response validation error:', error);
             console.error('Response data:', data);

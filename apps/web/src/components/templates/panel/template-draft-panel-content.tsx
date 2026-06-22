@@ -18,15 +18,17 @@ import { deployTemplate as deployTemplateFn } from "@/lib/queries/templates";
 import { useMutation } from "@tanstack/react-query";
 import {
   ArchiveIcon,
+  ChevronDownIcon,
   DatabaseIcon,
   GlobeIcon,
   LoaderIcon,
   TextCursorInputIcon,
 } from "lucide-react";
 import { ResultAsync } from "neverthrow";
-import { HTMLAttributes, useMemo, useRef } from "react";
+import { HTMLAttributes, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { Button } from "@/components/ui/button";
 
 type TProps = {
   templateDraft: TTemplateDraft;
@@ -47,6 +49,14 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
     () => templateDraft.template.definition.inputs.filter((i) => !i.hidden),
     [templateDraft.template.definition.inputs],
   );
+
+  const nonCollapsedInputs = useMemo(
+    () => visibleInputs.filter((i) => !i.collapsed),
+    [visibleInputs],
+  );
+  const collapsedInputs = useMemo(() => visibleInputs.filter((i) => i.collapsed), [visibleInputs]);
+
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   const sortedServices = useMemo(
     () =>
@@ -206,91 +216,116 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                 name="inputs"
                 mode="value"
                 children={(field) =>
-                  field.state.value.map((_, i) => (
-                    <div
-                      key={`field[${i}]`}
-                      className="flex w-full flex-col gap-2.5 p-1 py-4 md:w-1/2"
-                    >
-                      <div className="flex w-full flex-col gap-1 px-1.5">
-                        <div className="flex w-full items-start gap-2">
-                          <TemplateInputIcon input={visibleInputs[i]} />
-                          <form.Subscribe
-                            selector={(state) => ({ values: state.values })}
-                            children={({ values }) => (
-                              <p className="-mt-0.5 min-w-0 shrink leading-tight font-semibold">
-                                {visibleInputs[i].name}
-                                {(visibleInputs[i].type === "database-size" ||
-                                  visibleInputs[i].type === "volume-size") && (
-                                  <>
-                                    <span className="pr-[0.6ch]">{":"}</span>
-                                    <span className="text-foreground bg-foreground/6 border-foreground/6 rounded-md border px-1.25 py-px font-mono">
-                                      {formatGB(Number(values.inputs[i].value))}
-                                    </span>
-                                  </>
-                                )}
-                              </p>
-                            )}
-                          />
-                        </div>
-                        <p className="text-muted-foreground w-full leading-snug">
-                          {visibleInputs[i].description}
-                        </p>
-                      </div>
-                      <form.AppField
-                        validators={{
-                          onChange: ({ value }) =>
-                            templateInputValidator({
-                              value,
-                              type: visibleInputs[i].type,
-                              minStorageGb,
-                              maxStorageGb,
-                            }),
-                        }}
-                        key={`inputs[${i}].name`}
-                        name={`inputs[${i}].value`}
+                  field.state.value.map((_, i) => {
+                    if (isCollapsed && visibleInputs[i].collapsed) {
+                      return null;
+                    }
+                    return (
+                      <div
+                        key={`field[${i}]`}
+                        className="flex w-full flex-col gap-2.5 p-1 py-4 md:w-1/2"
                       >
-                        {(field) => {
-                          const input = visibleInputs[i];
-                          if (input.type === "database-size" || input.type === "volume-size") {
+                        <div className="flex w-full flex-col gap-1 px-1.5">
+                          <div className="flex w-full items-start gap-2">
+                            <TemplateInputIcon input={visibleInputs[i]} />
+                            <form.Subscribe
+                              selector={(state) => ({ values: state.values })}
+                              children={({ values }) => (
+                                <p className="-mt-0.5 min-w-0 shrink leading-tight font-semibold">
+                                  {visibleInputs[i].name}
+                                  {(visibleInputs[i].type === "database-size" ||
+                                    visibleInputs[i].type === "volume-size") && (
+                                    <>
+                                      <span className="pr-[0.6ch]">{":"}</span>
+                                      <span className="text-foreground bg-foreground/6 border-foreground/6 rounded-md border px-1.25 py-px font-mono">
+                                        {formatGB(Number(values.inputs[i].value))}
+                                      </span>
+                                    </>
+                                  )}
+                                </p>
+                              )}
+                            />
+                          </div>
+                          <p className="text-muted-foreground w-full leading-snug">
+                            {visibleInputs[i].description}
+                          </p>
+                        </div>
+                        <form.AppField
+                          validators={{
+                            onChange: ({ value }) =>
+                              templateInputValidator({
+                                value,
+                                type: visibleInputs[i].type,
+                                minStorageGb,
+                                maxStorageGb,
+                              }),
+                          }}
+                          key={`inputs[${i}].name`}
+                          name={`inputs[${i}].value`}
+                        >
+                          {(field) => {
+                            const input = visibleInputs[i];
+                            if (input.type === "database-size" || input.type === "volume-size") {
+                              return (
+                                <field.StorageSizeInput
+                                  field={field}
+                                  className="w-full px-1.5 py-1.5"
+                                  onBlur={field.handleBlur}
+                                  min={minStorageGb}
+                                  max={maxStorageGb}
+                                  step={storageStepGb}
+                                  minMaxFormatter={formatGB}
+                                  defaultValue={[Number(visibleInputs[i].default || "10")]}
+                                  value={
+                                    field.state.value ? [Number(field.state.value)] : undefined
+                                  }
+                                  onValueChange={(value) => {
+                                    field.handleChange(String(value[0]));
+                                  }}
+                                />
+                              );
+                            }
                             return (
-                              <field.StorageSizeInput
+                              <field.DomainInput
                                 field={field}
-                                className="w-full px-1.5 py-1.5"
+                                value={field.state.value}
                                 onBlur={field.handleBlur}
-                                min={minStorageGb}
-                                max={maxStorageGb}
-                                step={storageStepGb}
-                                minMaxFormatter={formatGB}
-                                defaultValue={[Number(visibleInputs[i].default || "10")]}
-                                value={field.state.value ? [Number(field.state.value)] : undefined}
-                                onValueChange={(value) => {
-                                  field.handleChange(String(value[0]));
+                                onChange={(e) => {
+                                  field.handleChange(e.target.value);
                                 }}
+                                placeholder={input.name}
+                                autoCapitalize="off"
+                                autoCorrect="off"
+                                autoComplete="off"
+                                spellCheck="false"
+                                autoGeneratedDomain={autoGeneratedDomainsMap?.get(input.id)}
                               />
                             );
-                          }
-                          return (
-                            <field.DomainInput
-                              field={field}
-                              value={field.state.value}
-                              onBlur={field.handleBlur}
-                              onChange={(e) => {
-                                field.handleChange(e.target.value);
-                              }}
-                              placeholder={input.name}
-                              autoCapitalize="off"
-                              autoCorrect="off"
-                              autoComplete="off"
-                              spellCheck="false"
-                              autoGeneratedDomain={autoGeneratedDomainsMap?.get(input.id)}
-                            />
-                          );
-                        }}
-                      </form.AppField>
-                    </div>
-                  ))
+                          }}
+                        </form.AppField>
+                      </div>
+                    );
+                  })
                 }
               />
+              {collapsedInputs.length > 0 && (
+                <div className="flex w-full flex-col gap-2.5 px-1 pt-1 pb-4 md:w-1/2">
+                  <Button
+                    type="button"
+                    data-collapsed={isCollapsed || undefined}
+                    variant="outline"
+                    className="group/button text-muted-foreground w-full font-medium"
+                    onClick={() => setIsCollapsed((c) => !c)}
+                  >
+                    <ChevronDownIcon className="size-5 shrink-0 rotate-180 transition group-data-collapsed/button:rotate-0" />
+                    <p className="min-w-0 shrink truncate">
+                      {isCollapsed
+                        ? `${collapsedInputs.length} more input${collapsedInputs.length !== 1 ? "s" : ""}`
+                        : `Collapse input${collapsedInputs.length !== 1 ? "s" : ""}`}
+                    </p>
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
           {/* Services */}

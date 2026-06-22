@@ -42,7 +42,7 @@ const defaultInitState: TState = {
 };
 
 const version = 0.001;
-const maxTemplatesToStore = 10;
+const maxTemplatesToStore = 20;
 
 export const createTemplateDraftStore = (initState: TState = defaultInitState) => {
   return createStore<TTemplateDraftStore>()(
