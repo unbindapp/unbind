@@ -29,8 +29,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 export default function Terminal() {
   const { teamId, projectId, environmentId, serviceId } = useService();
 
-  // No focus refetch — alt-tabbing to copy something would otherwise refetch and yank
-  // the terminal onto a different instance mid-session.
   const { data, isPending, error } = useQuery({
     ...instancesListQuery({ teamId, projectId, environmentId, serviceId }),
   });
@@ -55,10 +53,6 @@ export default function Terminal() {
   useEffect(() => {
     if (!isFullscreen) return;
 
-    // The terminal sits inside a vaul Drawer whose root has `will-change: transform`, which makes
-    // a `position: fixed` child size to the drawer instead of the viewport. Dropping it while
-    // maximized lets `fixed inset-0` fill the browser tab. The drawer has no transform at rest, so
-    // this is invisible (and we restore it on exit for a smooth close animation).
     const drawer = wrapperRef.current?.closest<HTMLElement>("[data-vaul-drawer]");
     if (!drawer) return;
     const prevWillChange = drawer.style.willChange;
@@ -68,10 +62,6 @@ export default function Terminal() {
     };
   }, [isFullscreen]);
 
-  // `selectedPod`/`selectedContainer` are *user overrides* layered on top of a derived default —
-  // never the source of truth that has to be populated before anything renders. Resolving the
-  // active pod/container purely during render means there's no frame where `data` exists but the
-  // selection hasn't "caught up" yet, which is what used to flash the empty state.
   const pinnedPodRef = useRef<string | null>(null);
 
   const activePod = useMemo(() => {
