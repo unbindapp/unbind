@@ -225,7 +225,7 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 	templateInstanceID := uuid.New()
 
 	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
-		serviceGroup, err := self.repo.ServiceGroup().Create(ctx, tx, input.GroupName, new(generatedTemplate.Icon), input.GroupDescription, input.EnvironmentID)
+		serviceGroup, err := self.repo.ServiceGroup().Create(ctx, tx, input.GroupName, new(generatedTemplate.Icon), input.GroupDescription, input.EnvironmentID, &input.TemplateID)
 		if err != nil {
 			return fmt.Errorf("failed to create service group: %w", err)
 		}

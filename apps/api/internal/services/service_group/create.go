@@ -28,7 +28,7 @@ func (self *ServiceGroupService) CreateServiceGroup(ctx context.Context, request
 		return nil, err
 	}
 
-	grp, err := self.repo.ServiceGroup().Create(ctx, nil, input.Name, input.Icon, input.Description, input.EnvironmentID)
+	grp, err := self.repo.ServiceGroup().Create(ctx, nil, input.Name, input.Icon, input.Description, input.EnvironmentID, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -16829,6 +16829,7 @@ type ServiceGroupMutation struct {
 	name               *string
 	icon               *string
 	description        *string
+	template_id        *uuid.UUID
 	clearedFields      map[string]struct{}
 	environment        *uuid.UUID
 	clearedenvironment bool
@@ -17186,6 +17187,55 @@ func (m *ServiceGroupMutation) ResetEnvironmentID() {
 	m.environment = nil
 }
 
+// SetTemplateID sets the "template_id" field.
+func (m *ServiceGroupMutation) SetTemplateID(u uuid.UUID) {
+	m.template_id = &u
+}
+
+// TemplateID returns the value of the "template_id" field in the mutation.
+func (m *ServiceGroupMutation) TemplateID() (r uuid.UUID, exists bool) {
+	v := m.template_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTemplateID returns the old "template_id" field's value of the ServiceGroup entity.
+// If the ServiceGroup object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServiceGroupMutation) OldTemplateID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTemplateID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTemplateID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTemplateID: %w", err)
+	}
+	return oldValue.TemplateID, nil
+}
+
+// ClearTemplateID clears the value of the "template_id" field.
+func (m *ServiceGroupMutation) ClearTemplateID() {
+	m.template_id = nil
+	m.clearedFields[servicegroup.FieldTemplateID] = struct{}{}
+}
+
+// TemplateIDCleared returns if the "template_id" field was cleared in this mutation.
+func (m *ServiceGroupMutation) TemplateIDCleared() bool {
+	_, ok := m.clearedFields[servicegroup.FieldTemplateID]
+	return ok
+}
+
+// ResetTemplateID resets all changes to the "template_id" field.
+func (m *ServiceGroupMutation) ResetTemplateID() {
+	m.template_id = nil
+	delete(m.clearedFields, servicegroup.FieldTemplateID)
+}
+
 // ClearEnvironment clears the "environment" edge to the Environment entity.
 func (m *ServiceGroupMutation) ClearEnvironment() {
 	m.clearedenvironment = true
@@ -17301,7 +17351,7 @@ func (m *ServiceGroupMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ServiceGroupMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.created_at != nil {
 		fields = append(fields, servicegroup.FieldCreatedAt)
 	}
@@ -17319,6 +17369,9 @@ func (m *ServiceGroupMutation) Fields() []string {
 	}
 	if m.environment != nil {
 		fields = append(fields, servicegroup.FieldEnvironmentID)
+	}
+	if m.template_id != nil {
+		fields = append(fields, servicegroup.FieldTemplateID)
 	}
 	return fields
 }
@@ -17340,6 +17393,8 @@ func (m *ServiceGroupMutation) Field(name string) (ent.Value, bool) {
 		return m.Description()
 	case servicegroup.FieldEnvironmentID:
 		return m.EnvironmentID()
+	case servicegroup.FieldTemplateID:
+		return m.TemplateID()
 	}
 	return nil, false
 }
@@ -17361,6 +17416,8 @@ func (m *ServiceGroupMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldDescription(ctx)
 	case servicegroup.FieldEnvironmentID:
 		return m.OldEnvironmentID(ctx)
+	case servicegroup.FieldTemplateID:
+		return m.OldTemplateID(ctx)
 	}
 	return nil, fmt.Errorf("unknown ServiceGroup field %s", name)
 }
@@ -17412,6 +17469,13 @@ func (m *ServiceGroupMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetEnvironmentID(v)
 		return nil
+	case servicegroup.FieldTemplateID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTemplateID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown ServiceGroup field %s", name)
 }
@@ -17448,6 +17512,9 @@ func (m *ServiceGroupMutation) ClearedFields() []string {
 	if m.FieldCleared(servicegroup.FieldDescription) {
 		fields = append(fields, servicegroup.FieldDescription)
 	}
+	if m.FieldCleared(servicegroup.FieldTemplateID) {
+		fields = append(fields, servicegroup.FieldTemplateID)
+	}
 	return fields
 }
 
@@ -17467,6 +17534,9 @@ func (m *ServiceGroupMutation) ClearField(name string) error {
 		return nil
 	case servicegroup.FieldDescription:
 		m.ClearDescription()
+		return nil
+	case servicegroup.FieldTemplateID:
+		m.ClearTemplateID()
 		return nil
 	}
 	return fmt.Errorf("unknown ServiceGroup nullable field %s", name)
@@ -17493,6 +17563,9 @@ func (m *ServiceGroupMutation) ResetField(name string) error {
 		return nil
 	case servicegroup.FieldEnvironmentID:
 		m.ResetEnvironmentID()
+		return nil
+	case servicegroup.FieldTemplateID:
+		m.ResetTemplateID()
 		return nil
 	}
 	return fmt.Errorf("unknown ServiceGroup field %s", name)

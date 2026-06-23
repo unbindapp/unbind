@@ -27,6 +27,8 @@ const (
 	FieldDescription = "description"
 	// FieldEnvironmentID holds the string denoting the environment_id field in the database.
 	FieldEnvironmentID = "environment_id"
+	// FieldTemplateID holds the string denoting the template_id field in the database.
+	FieldTemplateID = "template_id"
 	// EdgeEnvironment holds the string denoting the environment edge name in mutations.
 	EdgeEnvironment = "environment"
 	// EdgeServices holds the string denoting the services edge name in mutations.
@@ -58,6 +60,7 @@ var Columns = []string{
 	FieldIcon,
 	FieldDescription,
 	FieldEnvironmentID,
+	FieldTemplateID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -117,6 +120,11 @@ func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 // ByEnvironmentID orders the results by the environment_id field.
 func ByEnvironmentID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEnvironmentID, opts...).ToFunc()
+}
+
+// ByTemplateID orders the results by the template_id field.
+func ByTemplateID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTemplateID, opts...).ToFunc()
 }
 
 // ByEnvironmentField orders the results by environment field.

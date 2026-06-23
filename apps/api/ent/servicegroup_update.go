@@ -106,6 +106,26 @@ func (_u *ServiceGroupUpdate) SetNillableEnvironmentID(v *uuid.UUID) *ServiceGro
 	return _u
 }
 
+// SetTemplateID sets the "template_id" field.
+func (_u *ServiceGroupUpdate) SetTemplateID(v uuid.UUID) *ServiceGroupUpdate {
+	_u.mutation.SetTemplateID(v)
+	return _u
+}
+
+// SetNillableTemplateID sets the "template_id" field if the given value is not nil.
+func (_u *ServiceGroupUpdate) SetNillableTemplateID(v *uuid.UUID) *ServiceGroupUpdate {
+	if v != nil {
+		_u.SetTemplateID(*v)
+	}
+	return _u
+}
+
+// ClearTemplateID clears the value of the "template_id" field.
+func (_u *ServiceGroupUpdate) ClearTemplateID() *ServiceGroupUpdate {
+	_u.mutation.ClearTemplateID()
+	return _u
+}
+
 // SetEnvironment sets the "environment" edge to the Environment entity.
 func (_u *ServiceGroupUpdate) SetEnvironment(v *Environment) *ServiceGroupUpdate {
 	return _u.SetEnvironmentID(v.ID)
@@ -237,6 +257,12 @@ func (_u *ServiceGroupUpdate) sqlSave(ctx context.Context) (_node int, err error
 	}
 	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(servicegroup.FieldDescription, field.TypeString)
+	}
+	if value, ok := _u.mutation.TemplateID(); ok {
+		_spec.SetField(servicegroup.FieldTemplateID, field.TypeUUID, value)
+	}
+	if _u.mutation.TemplateIDCleared() {
+		_spec.ClearField(servicegroup.FieldTemplateID, field.TypeUUID)
 	}
 	if _u.mutation.EnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -408,6 +434,26 @@ func (_u *ServiceGroupUpdateOne) SetNillableEnvironmentID(v *uuid.UUID) *Service
 	return _u
 }
 
+// SetTemplateID sets the "template_id" field.
+func (_u *ServiceGroupUpdateOne) SetTemplateID(v uuid.UUID) *ServiceGroupUpdateOne {
+	_u.mutation.SetTemplateID(v)
+	return _u
+}
+
+// SetNillableTemplateID sets the "template_id" field if the given value is not nil.
+func (_u *ServiceGroupUpdateOne) SetNillableTemplateID(v *uuid.UUID) *ServiceGroupUpdateOne {
+	if v != nil {
+		_u.SetTemplateID(*v)
+	}
+	return _u
+}
+
+// ClearTemplateID clears the value of the "template_id" field.
+func (_u *ServiceGroupUpdateOne) ClearTemplateID() *ServiceGroupUpdateOne {
+	_u.mutation.ClearTemplateID()
+	return _u
+}
+
 // SetEnvironment sets the "environment" edge to the Environment entity.
 func (_u *ServiceGroupUpdateOne) SetEnvironment(v *Environment) *ServiceGroupUpdateOne {
 	return _u.SetEnvironmentID(v.ID)
@@ -569,6 +615,12 @@ func (_u *ServiceGroupUpdateOne) sqlSave(ctx context.Context) (_node *ServiceGro
 	}
 	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(servicegroup.FieldDescription, field.TypeString)
+	}
+	if value, ok := _u.mutation.TemplateID(); ok {
+		_spec.SetField(servicegroup.FieldTemplateID, field.TypeUUID, value)
+	}
+	if _u.mutation.TemplateIDCleared() {
+		_spec.ClearField(servicegroup.FieldTemplateID, field.TypeUUID)
 	}
 	if _u.mutation.EnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{

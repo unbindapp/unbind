@@ -32,6 +32,8 @@ type ServiceGroup struct {
 	Description *string `json:"description,omitempty"`
 	// Reference to the environment this service group belongs to
 	EnvironmentID uuid.UUID `json:"environment_id,omitempty"`
+	// Set when the group was created by deploying a template
+	TemplateID *uuid.UUID `json:"template_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ServiceGroupQuery when eager-loading is set.
 	Edges        ServiceGroupEdges `json:"edges"`
@@ -74,6 +76,8 @@ func (*ServiceGroup) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case servicegroup.FieldTemplateID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case servicegroup.FieldName, servicegroup.FieldIcon, servicegroup.FieldDescription:
 			values[i] = new(sql.NullString)
 		case servicegroup.FieldCreatedAt, servicegroup.FieldUpdatedAt:
@@ -138,6 +142,13 @@ func (_m *ServiceGroup) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field environment_id", values[i])
 			} else if value != nil {
 				_m.EnvironmentID = *value
+			}
+		case servicegroup.FieldTemplateID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field template_id", values[i])
+			} else if value.Valid {
+				_m.TemplateID = new(uuid.UUID)
+				*_m.TemplateID = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -206,6 +217,11 @@ func (_m *ServiceGroup) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("environment_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.EnvironmentID))
+	builder.WriteString(", ")
+	if v := _m.TemplateID; v != nil {
+		builder.WriteString("template_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -94,6 +94,20 @@ func (_c *ServiceGroupCreate) SetEnvironmentID(v uuid.UUID) *ServiceGroupCreate 
 	return _c
 }
 
+// SetTemplateID sets the "template_id" field.
+func (_c *ServiceGroupCreate) SetTemplateID(v uuid.UUID) *ServiceGroupCreate {
+	_c.mutation.SetTemplateID(v)
+	return _c
+}
+
+// SetNillableTemplateID sets the "template_id" field if the given value is not nil.
+func (_c *ServiceGroupCreate) SetNillableTemplateID(v *uuid.UUID) *ServiceGroupCreate {
+	if v != nil {
+		_c.SetTemplateID(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *ServiceGroupCreate) SetID(v uuid.UUID) *ServiceGroupCreate {
 	_c.mutation.SetID(v)
@@ -249,6 +263,10 @@ func (_c *ServiceGroupCreate) createSpec() (*ServiceGroup, *sqlgraph.CreateSpec)
 	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(servicegroup.FieldDescription, field.TypeString, value)
 		_node.Description = &value
+	}
+	if value, ok := _c.mutation.TemplateID(); ok {
+		_spec.SetField(servicegroup.FieldTemplateID, field.TypeUUID, value)
+		_node.TemplateID = &value
 	}
 	if nodes := _c.mutation.EnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -407,6 +425,24 @@ func (u *ServiceGroupUpsert) UpdateEnvironmentID() *ServiceGroupUpsert {
 	return u
 }
 
+// SetTemplateID sets the "template_id" field.
+func (u *ServiceGroupUpsert) SetTemplateID(v uuid.UUID) *ServiceGroupUpsert {
+	u.Set(servicegroup.FieldTemplateID, v)
+	return u
+}
+
+// UpdateTemplateID sets the "template_id" field to the value that was provided on create.
+func (u *ServiceGroupUpsert) UpdateTemplateID() *ServiceGroupUpsert {
+	u.SetExcluded(servicegroup.FieldTemplateID)
+	return u
+}
+
+// ClearTemplateID clears the value of the "template_id" field.
+func (u *ServiceGroupUpsert) ClearTemplateID() *ServiceGroupUpsert {
+	u.SetNull(servicegroup.FieldTemplateID)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -539,6 +575,27 @@ func (u *ServiceGroupUpsertOne) SetEnvironmentID(v uuid.UUID) *ServiceGroupUpser
 func (u *ServiceGroupUpsertOne) UpdateEnvironmentID() *ServiceGroupUpsertOne {
 	return u.Update(func(s *ServiceGroupUpsert) {
 		s.UpdateEnvironmentID()
+	})
+}
+
+// SetTemplateID sets the "template_id" field.
+func (u *ServiceGroupUpsertOne) SetTemplateID(v uuid.UUID) *ServiceGroupUpsertOne {
+	return u.Update(func(s *ServiceGroupUpsert) {
+		s.SetTemplateID(v)
+	})
+}
+
+// UpdateTemplateID sets the "template_id" field to the value that was provided on create.
+func (u *ServiceGroupUpsertOne) UpdateTemplateID() *ServiceGroupUpsertOne {
+	return u.Update(func(s *ServiceGroupUpsert) {
+		s.UpdateTemplateID()
+	})
+}
+
+// ClearTemplateID clears the value of the "template_id" field.
+func (u *ServiceGroupUpsertOne) ClearTemplateID() *ServiceGroupUpsertOne {
+	return u.Update(func(s *ServiceGroupUpsert) {
+		s.ClearTemplateID()
 	})
 }
 
@@ -841,6 +898,27 @@ func (u *ServiceGroupUpsertBulk) SetEnvironmentID(v uuid.UUID) *ServiceGroupUpse
 func (u *ServiceGroupUpsertBulk) UpdateEnvironmentID() *ServiceGroupUpsertBulk {
 	return u.Update(func(s *ServiceGroupUpsert) {
 		s.UpdateEnvironmentID()
+	})
+}
+
+// SetTemplateID sets the "template_id" field.
+func (u *ServiceGroupUpsertBulk) SetTemplateID(v uuid.UUID) *ServiceGroupUpsertBulk {
+	return u.Update(func(s *ServiceGroupUpsert) {
+		s.SetTemplateID(v)
+	})
+}
+
+// UpdateTemplateID sets the "template_id" field to the value that was provided on create.
+func (u *ServiceGroupUpsertBulk) UpdateTemplateID() *ServiceGroupUpsertBulk {
+	return u.Update(func(s *ServiceGroupUpsert) {
+		s.UpdateTemplateID()
+	})
+}
+
+// ClearTemplateID clears the value of the "template_id" field.
+func (u *ServiceGroupUpsertBulk) ClearTemplateID() *ServiceGroupUpsertBulk {
+	return u.Update(func(s *ServiceGroupUpsert) {
+		s.ClearTemplateID()
 	})
 }
 

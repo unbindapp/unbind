@@ -496,6 +496,7 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "icon", Type: field.TypeString, Nullable: true},
 		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "template_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "environment_id", Type: field.TypeUUID},
 	}
 	// ServiceGroupsTable holds the schema information for the "service_groups" table.
@@ -506,7 +507,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "service_groups_environments_service_groups",
-				Columns:    []*schema.Column{ServiceGroupsColumns[6]},
+				Columns:    []*schema.Column{ServiceGroupsColumns[7]},
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

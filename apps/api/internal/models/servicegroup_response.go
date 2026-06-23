@@ -8,12 +8,13 @@ import (
 )
 
 type ServiceGroupResponse struct {
-	ID            uuid.UUID `json:"id" format:"uuid"`
-	Name          string    `json:"name"`
-	Icon          *string   `json:"icon,omitempty"`
-	Description   *string   `json:"description,omitempty"`
-	EnvironmentID uuid.UUID `json:"environment_id" format:"uuid"`
-	CreatedAt     time.Time `json:"created_at"`
+	ID            uuid.UUID  `json:"id" format:"uuid"`
+	Name          string     `json:"name"`
+	Icon          *string    `json:"icon,omitempty"`
+	Description   *string    `json:"description,omitempty"`
+	EnvironmentID uuid.UUID  `json:"environment_id" format:"uuid"`
+	TemplateID    *uuid.UUID `json:"template_id,omitempty" format:"uuid" doc:"Set when the group was created by deploying a template"`
+	CreatedAt     time.Time  `json:"created_at"`
 }
 
 // TransformServiceGroupEntity transforms an ent.ServiceGroup entity into a ServiceGroupResponse
@@ -26,6 +27,7 @@ func TransformServiceGroupEntity(entity *ent.ServiceGroup) *ServiceGroupResponse
 			Icon:          entity.Icon,
 			Description:   entity.Description,
 			EnvironmentID: entity.EnvironmentID,
+			TemplateID:    entity.TemplateID,
 			CreatedAt:     entity.CreatedAt,
 		}
 	}

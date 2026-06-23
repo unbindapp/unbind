@@ -30,6 +30,7 @@ func (ServiceGroup) Fields() []ent.Field {
 		field.String("icon").Optional().Nillable(),
 		field.String("description").Optional().Nillable().Comment("Description of the service group"),
 		field.UUID("environment_id", uuid.UUID{}).Comment("Reference to the environment this service group belongs to"),
+		field.UUID("template_id", uuid.UUID{}).Optional().Nillable().Comment("Set when the group was created by deploying a template"),
 	}
 }
 

@@ -121,6 +121,7 @@ func (suite *ServiceGroupMutationsSuite) TestCreate() {
 			new("group"),
 			new("New service group description"),
 			suite.testEnvironment.ID,
+			nil,
 		)
 
 		suite.NoError(err)
@@ -131,6 +132,24 @@ func (suite *ServiceGroupMutationsSuite) TestCreate() {
 		suite.NotNil(serviceGroup.Description)
 		suite.Equal("New service group description", *serviceGroup.Description)
 		suite.Equal(suite.testEnvironment.ID, serviceGroup.EnvironmentID)
+		suite.Nil(serviceGroup.TemplateID)
+	})
+
+	suite.Run("Create From Template", func() {
+		templateID := uuid.New()
+		serviceGroup, err := suite.serviceGroupRepo.Create(
+			suite.Ctx,
+			nil,
+			"Template Service Group",
+			nil,
+			nil,
+			suite.testEnvironment.ID,
+			&templateID,
+		)
+
+		suite.NoError(err)
+		suite.NotNil(serviceGroup.TemplateID)
+		suite.Equal(templateID, *serviceGroup.TemplateID)
 	})
 
 	suite.Run("Create With Minimal Fields", func() {
@@ -141,6 +160,7 @@ func (suite *ServiceGroupMutationsSuite) TestCreate() {
 			nil,
 			nil,
 			suite.testEnvironment.ID,
+			nil,
 		)
 
 		suite.NoError(err)
@@ -159,6 +179,7 @@ func (suite *ServiceGroupMutationsSuite) TestCreate() {
 			new(""),
 			new(""),
 			suite.testEnvironment.ID,
+			nil,
 		)
 
 		suite.NoError(err)
@@ -178,6 +199,7 @@ func (suite *ServiceGroupMutationsSuite) TestCreate() {
 			nil,
 			nil,
 			uuid.New(),
+			nil,
 		)
 
 		suite.Error(err)
@@ -192,6 +214,7 @@ func (suite *ServiceGroupMutationsSuite) TestCreate() {
 			nil,
 			nil,
 			suite.testEnvironment.ID,
+			nil,
 		)
 
 		suite.Error(err)

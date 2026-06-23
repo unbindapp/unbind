@@ -1,4 +1,4 @@
-h1:QWQUvzBBvQG9DE1vHmo0fj9B4T8ewVN7XLUVlgSzpJI=
+h1:0iLCqJO1VC5PBpFA/p38cFIxO1E0RGkUCNJqMZ4eTpE=
 20250519010757_initial_migration.sql h1:94lMwKemoNX/ichD+2Vzb7GmOHXVj4qVTfeBInQAe0g=
 20250519163449_add_init_containers.sql h1:7bt+zCbtmlYr1QDztgka0R5wUxdjD7XYUkrhL9GYYIQ=
 20250521202532_non_nillable_kubernetes_secret.sql h1:eDpMWyeBXh5cG4poavaUMeYs5QXddFBBIyYlxc+nq64=
@@ -15,3 +15,4 @@ h1:QWQUvzBBvQG9DE1vHmo0fj9B4T8ewVN7XLUVlgSzpJI=
 20260202191830_add_tags.sql h1:Jjb/rZXf/KeJ6hEBByGmio3HG1q1fHGkYcOTj2nAfy0=
 20260621142005_registry_cache_settings.sql h1:VGrsRD5G6vJkvPccBMubjn0TsjXtMSMBzG8TGCIhL6k=
 20260621194313_add_variable_metadata.sql h1:TtvclCJTuztKaChZaJtkVW21GrqfOl/73P8/kIpvDTM=
+20260623030849_service_group_template_id.sql h1:PIG7OPW3ERXLeBVebQftZBQb/P0/h2NGyy8fVTRaPTU=

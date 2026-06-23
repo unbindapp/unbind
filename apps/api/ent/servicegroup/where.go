@@ -86,6 +86,11 @@ func EnvironmentID(v uuid.UUID) predicate.ServiceGroup {
 	return predicate.ServiceGroup(sql.FieldEQ(FieldEnvironmentID, v))
 }
 
+// TemplateID applies equality check predicate on the "template_id" field. It's identical to TemplateIDEQ.
+func TemplateID(v uuid.UUID) predicate.ServiceGroup {
+	return predicate.ServiceGroup(sql.FieldEQ(FieldTemplateID, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.ServiceGroup {
 	return predicate.ServiceGroup(sql.FieldEQ(FieldCreatedAt, v))
@@ -399,6 +404,56 @@ func EnvironmentIDIn(vs ...uuid.UUID) predicate.ServiceGroup {
 // EnvironmentIDNotIn applies the NotIn predicate on the "environment_id" field.
 func EnvironmentIDNotIn(vs ...uuid.UUID) predicate.ServiceGroup {
 	return predicate.ServiceGroup(sql.FieldNotIn(FieldEnvironmentID, vs...))
+}
+
+// TemplateIDEQ applies the EQ predicate on the "template_id" field.
+func TemplateIDEQ(v uuid.UUID) predicate.ServiceGroup {
+	return predicate.ServiceGroup(sql.FieldEQ(FieldTemplateID, v))
+}
+
+// TemplateIDNEQ applies the NEQ predicate on the "template_id" field.
+func TemplateIDNEQ(v uuid.UUID) predicate.ServiceGroup {
+	return predicate.ServiceGroup(sql.FieldNEQ(FieldTemplateID, v))
+}
+
+// TemplateIDIn applies the In predicate on the "template_id" field.
+func TemplateIDIn(vs ...uuid.UUID) predicate.ServiceGroup {
+	return predicate.ServiceGroup(sql.FieldIn(FieldTemplateID, vs...))
+}
+
+// TemplateIDNotIn applies the NotIn predicate on the "template_id" field.
+func TemplateIDNotIn(vs ...uuid.UUID) predicate.ServiceGroup {
+	return predicate.ServiceGroup(sql.FieldNotIn(FieldTemplateID, vs...))
+}
+
+// TemplateIDGT applies the GT predicate on the "template_id" field.
+func TemplateIDGT(v uuid.UUID) predicate.ServiceGroup {
+	return predicate.ServiceGroup(sql.FieldGT(FieldTemplateID, v))
+}
+
+// TemplateIDGTE applies the GTE predicate on the "template_id" field.
+func TemplateIDGTE(v uuid.UUID) predicate.ServiceGroup {
+	return predicate.ServiceGroup(sql.FieldGTE(FieldTemplateID, v))
+}
+
+// TemplateIDLT applies the LT predicate on the "template_id" field.
+func TemplateIDLT(v uuid.UUID) predicate.ServiceGroup {
+	return predicate.ServiceGroup(sql.FieldLT(FieldTemplateID, v))
+}
+
+// TemplateIDLTE applies the LTE predicate on the "template_id" field.
+func TemplateIDLTE(v uuid.UUID) predicate.ServiceGroup {
+	return predicate.ServiceGroup(sql.FieldLTE(FieldTemplateID, v))
+}
+
+// TemplateIDIsNil applies the IsNil predicate on the "template_id" field.
+func TemplateIDIsNil() predicate.ServiceGroup {
+	return predicate.ServiceGroup(sql.FieldIsNull(FieldTemplateID))
+}
+
+// TemplateIDNotNil applies the NotNil predicate on the "template_id" field.
+func TemplateIDNotNil() predicate.ServiceGroup {
+	return predicate.ServiceGroup(sql.FieldNotNull(FieldTemplateID))
 }
 
 // HasEnvironment applies the HasEdge predicate on the "environment" edge.

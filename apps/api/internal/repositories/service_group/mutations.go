@@ -11,7 +11,7 @@ import (
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
 )
 
-func (self *ServiceGroupRepository) Create(ctx context.Context, tx repository.TxInterface, name string, icon, description *string, environmentID uuid.UUID) (*ent.ServiceGroup, error) {
+func (self *ServiceGroupRepository) Create(ctx context.Context, tx repository.TxInterface, name string, icon, description *string, environmentID uuid.UUID, templateID *uuid.UUID) (*ent.ServiceGroup, error) {
 	db := self.base.DB
 	if tx != nil {
 		db = tx.Client()
@@ -21,6 +21,7 @@ func (self *ServiceGroupRepository) Create(ctx context.Context, tx repository.Tx
 		SetNillableIcon(icon).
 		SetNillableDescription(description).
 		SetEnvironmentID(environmentID).
+		SetNillableTemplateID(templateID).
 		Save(ctx)
 }
 
