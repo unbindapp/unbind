@@ -98,11 +98,11 @@ export default function ServiceCard({
             <div className="-mx-0.5 flex w-[calc(100%+0.25rem)] items-center justify-between">
               {!isPlaceholder ? (
                 <LastDeploymentInfo
-                  className="min-w-0 shrink overflow-hidden text-sm font-medium text-ellipsis whitespace-nowrap"
+                  className="min-w-0 shrink overflow-hidden text-sm font-normal text-ellipsis whitespace-nowrap"
                   service={service}
                 />
               ) : (
-                <p className="bg-muted-foreground animate-skeleton min-w-0 shrink overflow-hidden rounded-md text-sm font-medium text-ellipsis whitespace-nowrap text-transparent">
+                <p className="bg-muted-foreground animate-skeleton min-w-0 shrink overflow-hidden rounded-md text-sm font-normal text-ellipsis whitespace-nowrap text-transparent">
                   10 min. ago via GitHub
                 </p>
               )}

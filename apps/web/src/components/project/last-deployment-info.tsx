@@ -23,7 +23,7 @@ export default function LastDeploymentInfo({ service, className }: TProps) {
   return (
     <div
       className={cn(
-        "text-muted-foreground flex w-full items-center justify-start gap-2",
+        "text-muted-foreground flex w-full items-center justify-start gap-1.75",
         className,
       )}
     >
