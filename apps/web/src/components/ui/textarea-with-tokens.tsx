@@ -302,7 +302,7 @@ export default function TextareaWithTokens<T>({
                     <span
                       data-token={part.token !== null || undefined}
                       key={index}
-                      className="data-token:bg-process/10 data-token:ring-process/20 data-token:text-process data-token:rounded-lg data-token:ring-1"
+                      className="data-token:bg-process/10 data-token:ring-process/20 data-token:text-process data-token:rounded-sm data-token:ring-1"
                     >
                       {!tokensDisabled && part.token !== null ? (
                         <>
