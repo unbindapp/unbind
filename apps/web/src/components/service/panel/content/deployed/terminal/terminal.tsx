@@ -68,36 +68,38 @@ export default function Terminal() {
     };
   }, [isFullscreen]);
 
-  // Pin the instance so a background refetch can't silently move us to another pod.
-  useEffect(() => {
-    if (!data) return;
-    if (data.data.length === 0) return;
-    setSelectedPod((prev) => {
-      if (prev && data.data.some((p) => p.kubernetes_name === prev)) return prev;
-      return (data.data.find((p) => p.instances.some((i) => i.ready)) ?? data.data[0])
-        .kubernetes_name;
-    });
-  }, [data]);
+  // `selectedPod`/`selectedContainer` are *user overrides* layered on top of a derived default —
+  // never the source of truth that has to be populated before anything renders. Resolving the
+  // active pod/container purely during render means there's no frame where `data` exists but the
+  // selection hasn't "caught up" yet, which is what used to flash the empty state.
+  const pinnedPodRef = useRef<string | null>(null);
 
   const activePod = useMemo(() => {
-    if (!selectedPod || !data) return undefined;
-    return (
-      data.data.find((p) => p.kubernetes_name === selectedPod) ??
-      data.data.find((p) => p.instances.some((i) => i.ready)) ??
-      data.data[0]
-    );
+    if (!data || data.data.length === 0) return undefined;
+    // 1. explicit user selection, if it still exists
+    if (selectedPod) {
+      const match = data.data.find((p) => p.kubernetes_name === selectedPod);
+      if (match) return match;
+    }
+    // 2. the pod we previously resolved to, so a background refetch can't silently move us
+    if (pinnedPodRef.current) {
+      const match = data.data.find((p) => p.kubernetes_name === pinnedPodRef.current);
+      if (match) return match;
+    }
+    // 3. first ready pod, else first pod
+    return data.data.find((p) => p.instances.some((i) => i.ready)) ?? data.data[0];
   }, [data, selectedPod]);
+
+  // Cache the resolved pod for the pin above. This only writes a ref — it never gates rendering,
+  // so it can't reintroduce the empty-state flash.
+  useEffect(() => {
+    if (activePod) pinnedPodRef.current = activePod.kubernetes_name;
+  }, [activePod]);
 
   const containers = useMemo(() => {
     if (!activePod) return undefined;
     return activePod.instances.map((i) => i.kubernetes_name);
   }, [activePod]);
-
-  useEffect(() => {
-    if (!containers) return;
-    if (containers.length === 0) return;
-    setSelectedContainer((prev) => (prev && containers.includes(prev) ? prev : containers[0]));
-  }, [containers]);
 
   const activeContainer = useMemo(() => {
     if (!containers || containers.length === 0) return;
