@@ -15,6 +15,7 @@ import { useMemo } from "react";
 import { useInstanceHealth } from "@/components/instances/instance-health-provider";
 import { LinkButton } from "@/components/ui/button";
 import { deploySectionInstanceSliderId } from "@/components/service/panel/content/deployed/settings/sections/deploy-section";
+import { shouldServiceSettingsHaveDeploySection } from "@/components/service/panel/content/deployed/settings/helpers";
 
 export default function Deployments({ service }: { service: TServiceShallow }) {
   const {
@@ -54,7 +55,7 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
         deployments={deploymentsData?.deployments || null}
         isPending={isPendingDeployments}
       >
-        <InfoRow />
+        {shouldServiceSettingsHaveDeploySection(service) && <InfoRow />}
         <DeploymentPanel service={service} />
         {(isPending || currentOrLastDeployment) && (
           <div className="w-full pb-3">
@@ -122,7 +123,7 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
 
 function InfoRow() {
   return (
-    <div className="-mt-1 flex w-full items-center sm:-mt-2">
+    <div className="flex w-full items-center sm:-mt-2">
       <InstancesButton />
     </div>
   );

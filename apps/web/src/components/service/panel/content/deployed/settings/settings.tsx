@@ -1,4 +1,10 @@
 import TabWrapper from "@/components/navigation/tab-wrapper";
+import {
+  shouldServiceSettingsHaveBackupsSection,
+  shouldServiceSettingsHaveBuildSection,
+  shouldServiceSettingsHaveDeploySection,
+  shouldServiceSettingsHaveHealthSection,
+} from "@/components/service/panel/content/deployed/settings/helpers";
 import BackupsSection from "@/components/service/panel/content/deployed/settings/sections/backups-section";
 import BuildSection from "@/components/service/panel/content/deployed/settings/sections/build-section";
 import DeleteSection from "@/components/service/panel/content/deployed/settings/sections/delete-section";
@@ -13,14 +19,10 @@ export default function Settings({ service }: { service: TServiceShallow }) {
     <TabWrapper className="gap-6">
       <SourceSection service={service} />
       <NetworkingSection service={service} />
-      {service.type === "database" && <BackupsSection service={service} />}
-      {service.type === "github" && <BuildSection service={service} />}
-      {(service.type === "github" || service.type === "docker-image") && (
-        <DeploySection service={service} />
-      )}
-      {(service.type === "github" || service.type === "docker-image") && (
-        <HealthSection service={service} />
-      )}
+      {shouldServiceSettingsHaveBackupsSection(service) && <BackupsSection service={service} />}
+      {shouldServiceSettingsHaveBuildSection(service) && <BuildSection service={service} />}
+      {shouldServiceSettingsHaveDeploySection(service) && <DeploySection service={service} />}
+      {shouldServiceSettingsHaveHealthSection(service) && <HealthSection service={service} />}
       <DeleteSection service={service} className="mt-1" />
     </TabWrapper>
   );
