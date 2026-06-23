@@ -157,17 +157,25 @@ export function BlockItemContentHighlightable({
   const router = useRouter();
 
   useEffect(() => {
-    if (highlight_id === id) {
-      const timeout = setTimeout(() => {
-        setIsHighlighted(true);
-        const timeout = setTimeout(() => {
-          setIsHighlighted(false);
-          router.navigate({ to: ".", search: (old) => ({ ...old, highlight_id: undefined }) });
-        }, highlightDurationMs);
-        return () => clearTimeout(timeout);
-      }, highlightDelayMs);
-      return () => clearTimeout(timeout);
-    }
+    if (highlight_id !== id) return;
+
+    const clearFromUrl = () =>
+      router.navigate({
+        to: ".",
+        search: (old) => (old.highlight_id === id ? { ...old, highlight_id: undefined } : old),
+      });
+
+    const onTimeout = setTimeout(() => setIsHighlighted(true), highlightDelayMs);
+    const offTimeout = setTimeout(() => {
+      setIsHighlighted(false);
+      clearFromUrl();
+    }, highlightDelayMs + highlightDurationMs);
+
+    return () => {
+      clearTimeout(onTimeout);
+      clearTimeout(offTimeout);
+      setIsHighlighted(false);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [highlight_id, id]);
 
