@@ -1,12 +1,15 @@
 import { TDeploymentPanelTabEnum } from "@/components/deployment/panel/constants";
 import TabIndicator from "@/components/navigation/tab-indicator";
-import ScrollOverflowIndicator from "@/components/scroll-overflow-indicator";
+import ScrollOverflowIndicator, {
+  SCROLL_OVERFLOW_INDICATOR_WIDTH,
+} from "@/components/scroll-overflow-indicator";
 import { TServicePanelTabEnum } from "@/components/service/panel/constants";
 import { LinkButton } from "@/components/ui/button";
 import { TVolumePanelTabEnum } from "@/components/volume/panel/constants";
 import { useIntent } from "@/lib/hooks/use-intent";
+import { useScrollActiveIntoView } from "@/lib/hooks/use-scroll-active-into-view";
 import { useScrollOverflow } from "@/lib/hooks/use-scroll-overflow";
-import { useRef } from "react";
+import { Ref, useRef } from "react";
 
 // Each panel writes its active tab to its own search param; this maps the param
 // key to the enum its value must be, so `tab.value` is type-checked per panel.
@@ -38,6 +41,11 @@ export default function PanelNavbar<T, K extends TPanelTabKey>({
 }: TProps<T, K>) {
   const navRef = useRef<HTMLElement>(null);
   const { canScrollRight } = useScrollOverflow({ ref: navRef, offset: 52 });
+  const { registerItem } = useScrollActiveIntoView({
+    containerRef: navRef,
+    activeKey: currentTabId,
+    endInset: SCROLL_OVERFLOW_INDICATOR_WIDTH,
+  });
 
   return (
     <div className="relative w-full overflow-hidden">
@@ -49,6 +57,7 @@ export default function PanelNavbar<T, K extends TPanelTabKey>({
           {tabs.map((tab) => (
             <PanelNavbarTab
               key={tab.value}
+              ref={registerItem(tab.value)}
               tab={tab}
               searchKey={searchKey}
               isActive={tab.value === currentTabId}
@@ -63,11 +72,13 @@ export default function PanelNavbar<T, K extends TPanelTabKey>({
 }
 
 function PanelNavbarTab<T, K extends TPanelTabKey>({
+  ref,
   tab,
   searchKey,
   isActive,
   layoutId,
 }: {
+  ref: Ref<HTMLAnchorElement>;
   tab: TGenericTab<T, TPanelTabValueByKey[K]>;
   searchKey: K;
   isActive: boolean;
@@ -80,6 +91,7 @@ function PanelNavbarTab<T, K extends TPanelTabKey>({
 
   return (
     <LinkButton
+      ref={ref}
       from="/$team_id/project/$project_id"
       search={(prev) => ({ ...prev, [searchKey]: tab.value })}
       resetScroll={false}
