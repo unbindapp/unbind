@@ -166,7 +166,7 @@ export const VariablesFormField = withForm({
                 <p className="min-w-0 shrink">Add Another</p>
               </Button>
             </div>
-            <div className="text-muted-foreground -mt-1 flex w-full items-center justify-start gap-1.5 px-3.25 pb-4 md:mt-1 md:px-4.25 md:pb-1">
+            <div className="text-muted-foreground -mt-1 flex w-full items-center justify-start gap-1.25 px-3.25 pb-4 md:mt-1 md:px-4.25 md:pb-1">
               <InfoIcon className="inline-block size-3.5 shrink-0 sm:size-4" />
               <p className="max-w-full min-w-0 shrink text-sm leading-tight">
                 You can paste a .env file or KEY=value pairs
