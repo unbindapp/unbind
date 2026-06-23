@@ -1,4 +1,6 @@
-with-expecter: true
+template: testify
+template-data:
+  unroll-variadic: true
 packages:
   github.com/unbindapp/unbind-operator/internal/resourcebuilder:
     config:
@@ -7,5 +9,5 @@ packages:
       ResourceBuilderInterface:
         config:
           filename: resourcebuilder_mock.go
-          mockName: ResourceBuilderMock
-          outpkg: mocks_resource_builder
+          structname: ResourceBuilderMock
+          pkgname: mocks_resource_builder

@@ -33,7 +33,7 @@ interfaces:
 	@echo "Stripping test-only imports from generated interfaces..."
 	@find internal/repositories -name '*_iface.go' -exec sed -i '/repositories\/repositorytest"/d' {} +
 	@echo "Generating mocks..."
-	@go run github.com/vektra/mockery/v2@latest
+	@go run github.com/vektra/mockery/v3@latest
 
 ent:
 	@echo "Generating entities..."
