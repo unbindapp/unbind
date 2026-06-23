@@ -173,10 +173,7 @@ function DomainInput({
     <div className={cn("relative flex flex-col", className)}>
       {Icon && (
         <Icon
-          className={cn(
-            "pointer-events-none absolute top-3 left-3.5 z-[11] size-4.5",
-            classNameIcon,
-          )}
+          className={cn("pointer-events-none absolute top-3 left-3.5 z-11 size-4.5", classNameIcon)}
         />
       )}
       <Input
@@ -704,7 +701,7 @@ function AsyncDropdownMenu({
         <DropdownMenuTrigger asChild>{children({ isOpen })}</DropdownMenuTrigger>
         <DropdownMenuContent
           animate={false}
-          className={cn("w-[var(--radix-popper-anchor-width)]", classNameDropdownContent)}
+          className={cn("w-(--radix-popper-anchor-width)", classNameDropdownContent)}
           align={dropdownMenuContentAlign}
         >
           <ScrollArea viewportRef={scrollAreaRef}>

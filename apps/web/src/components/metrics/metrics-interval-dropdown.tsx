@@ -39,7 +39,7 @@ export default function MetricsIntervalDropdown({ className }: TProps) {
           <ChevronDownIcon className="text-muted-more-foreground -mr-1 size-4.5 shrink-0 transition-transform group-data-open/button:rotate-180" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[var(--radix-popper-anchor-width)]">
+      <DropdownMenuContent align="end" className="w-(--radix-popper-anchor-width)">
         <ScrollArea>
           <DropdownMenuGroup>
             {intervals.map((i) => (
