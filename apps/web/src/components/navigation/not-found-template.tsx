@@ -24,8 +24,8 @@ export default function NotFoundTemplate({
           <Icon className="size-11 shrink-0" />
           <p className="min-w-0 shrink text-5xl font-bold">{code}</p>
         </div>
-        <h1 className="text-muted-foreground mt-1 text-lg leading-tight">{description}</h1>
-        <LinkButton to={buttonTo} className="mt-4">
+        <h1 className="text-muted-foreground mt-2 text-lg leading-tight">{description}</h1>
+        <LinkButton to={buttonTo} className="mt-5">
           {buttonText}
         </LinkButton>
       </div>

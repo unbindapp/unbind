@@ -27,8 +27,6 @@ export const TemplateDraftPanelProvider: React.FC<{
         to: ".",
         search: (prev) => ({ ...prev, [templateDraftPanelTemplateDraftIdKey]: value ?? undefined }),
         replace: true,
-        // Opening/closing the panel writes a search param, which is a navigation.
-        // Without this, the router's default resetScroll jumps the page to the top.
         resetScroll: false,
       }),
     [navigate],

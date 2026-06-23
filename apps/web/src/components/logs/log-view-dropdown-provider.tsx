@@ -21,6 +21,7 @@ export const LogViewDropdownProvider: React.FC<{
       navigate({
         to: ".",
         search: (prev) => ({ ...prev, dropdown: value ?? undefined }),
+        resetScroll: false,
         replace: true,
       }),
     [navigate],

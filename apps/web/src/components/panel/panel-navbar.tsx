@@ -82,6 +82,7 @@ function PanelNavbarTab<T, K extends TPanelTabKey>({
     <LinkButton
       from="/$team_id/project/$project_id"
       search={(prev) => ({ ...prev, [searchKey]: tab.value })}
+      resetScroll={false}
       variant="ghost"
       data-active={isActive || undefined}
       className="group/button text-muted-foreground data-active:text-foreground min-w-0 shrink rounded-t-md rounded-b-none px-3 pt-2.5 pb-4.5 font-medium active:bg-transparent has-hover:hover:bg-transparent"

@@ -9,7 +9,15 @@ import {
 } from "@/components/service/panel/constants";
 import { drawerAnimationMs } from "@/lib/constants";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
-import { createContext, ReactNode, useCallback, useContext, useMemo, useRef, useState } from "react";
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 const routeApi = getRouteApi("/$team_id/project/$project_id");
 
@@ -44,8 +52,6 @@ export const ServicePanelProvider: React.FC<{
         to: ".",
         search: (prev) => ({ ...prev, [servicePanelTabKey]: value ?? undefined }),
         replace: true,
-        // Opening/closing the panel writes a search param, which is a navigation.
-        // Without this, the router's default resetScroll jumps the page to the top.
         resetScroll: false,
       }),
     [navigate],
