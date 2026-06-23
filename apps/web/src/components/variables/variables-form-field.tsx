@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { TTokenProps } from "@/components/ui/textarea-with-tokens";
 import { withForm } from "@/lib/hooks/use-app-form";
 import { TAvailableVariableReference, TVariableForCreate } from "@/lib/queries/variables";
-import { Link2Icon, PlusIcon, Trash2Icon } from "lucide-react";
+import { InfoIcon, Link2Icon, PlusIcon, Trash2Icon } from "lucide-react";
 import { useCallback } from "react";
 
 const tokenProps: TTokenProps<TReferenceExtended> = {
@@ -165,6 +165,12 @@ export const VariablesFormField = withForm({
                 <PlusIcon className="-ml-1.25 size-5 shrink-0" />
                 <p className="min-w-0 shrink">Add Another</p>
               </Button>
+            </div>
+            <div className="text-muted-foreground -mt-1 flex w-full items-center justify-start gap-1 px-3 pb-4 sm:px-4 md:mt-1 md:pb-1">
+              <InfoIcon className="inline-block size-3.5 shrink-0 sm:size-4" />
+              <p className="max-w-full min-w-0 shrink text-sm leading-tight">
+                You can paste a .env file or KEY=value pairs
+              </p>
             </div>
           </div>
         )}
