@@ -3,17 +3,17 @@ import { RefObject, useCallback, useEffect, useRef } from "react";
 // Keeps the active item of a horizontally scrollable container in view. Scrolls
 // only as far as needed to make the item fully visible (never to the start), so
 // already-visible items don't jitter. The first activation scrolls instantly;
-// later ones animate. `endInset` (e.g. the width of an overflow indicator
-// overlaying the trailing edge) shrinks the visible region so the item clears it
-// too.
+// later ones animate. `endInsetRef` (e.g. an overflow indicator overlaying the
+// trailing edge) shrinks the visible region by its measured width so the item
+// clears it too.
 export function useScrollActiveIntoView<T extends string>({
   containerRef,
   activeKey,
-  endInset = 0,
+  endInsetRef,
 }: {
   containerRef: RefObject<HTMLElement | null>;
   activeKey: T;
-  endInset?: number;
+  endInsetRef?: RefObject<HTMLElement | null>;
 }) {
   const itemRefs = useRef(new Map<T, HTMLElement>());
   const isFirstRef = useRef(true);
@@ -33,6 +33,7 @@ export function useScrollActiveIntoView<T extends string>({
 
     const cRect = container.getBoundingClientRect();
     const eRect = el.getBoundingClientRect();
+    const endInset = endInsetRef?.current?.offsetWidth ?? 0;
     const visibleRight = cRect.right - endInset;
 
     const behavior: ScrollBehavior = isFirstRef.current ? "auto" : "smooth";
@@ -43,7 +44,7 @@ export function useScrollActiveIntoView<T extends string>({
     } else if (eRect.right > visibleRight) {
       container.scrollTo({ left: container.scrollLeft + (eRect.right - visibleRight), behavior });
     }
-  }, [containerRef, activeKey, endInset]);
+  }, [containerRef, activeKey, endInsetRef]);
 
   return { registerItem };
 }

@@ -4,6 +4,7 @@ import SettingsTabIcon, { TSettingsTabVariant } from "@/components/icons/setting
 import TabIndicator from "@/components/navigation/tab-indicator";
 import ScrollOverflowIndicator from "@/components/scroll-overflow-indicator";
 import { LinkButton } from "@/components/ui/button";
+import { useScrollActiveIntoView } from "@/lib/hooks/use-scroll-active-into-view";
 import { useScrollOverflow } from "@/lib/hooks/use-scroll-overflow";
 import { useLocation, type LinkProps } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
@@ -27,7 +28,13 @@ export default function SettingsTabs({ tabs }: TProps) {
   const [activeTabPath, setActiveTabPath] = useState<string | undefined>(pathname);
 
   const navRef = useRef<HTMLElement>(null);
+  const indicatorRef = useRef<HTMLDivElement>(null);
   const { canScrollRight } = useScrollOverflow({ ref: navRef, offset: 44 });
+  const { registerItem } = useScrollActiveIntoView({
+    containerRef: navRef,
+    activeKey: activeTabPath ?? "",
+    endInsetRef: indicatorRef,
+  });
 
   useEffect(() => {
     setActiveTabPath(pathname);
@@ -46,6 +53,7 @@ export default function SettingsTabs({ tabs }: TProps) {
               search={(prev) => prev}
               forceMinSize={false}
               key={tab.matchPath}
+              ref={registerItem(tab.matchPath)}
               data-active={isActive(tab, activeTabPath) || undefined}
               onClick={() => setActiveTabPath(tab.matchPath)}
               variant="ghost"
@@ -71,7 +79,11 @@ export default function SettingsTabs({ tabs }: TProps) {
           ))}
         </div>
       </nav>
-      <ScrollOverflowIndicator canScrollRight={canScrollRight} className="md:hidden" />
+      <ScrollOverflowIndicator
+        ref={indicatorRef}
+        canScrollRight={canScrollRight}
+        className="md:hidden"
+      />
     </div>
   );
 }

@@ -1,8 +1,6 @@
 import { TDeploymentPanelTabEnum } from "@/components/deployment/panel/constants";
 import TabIndicator from "@/components/navigation/tab-indicator";
-import ScrollOverflowIndicator, {
-  SCROLL_OVERFLOW_INDICATOR_WIDTH,
-} from "@/components/scroll-overflow-indicator";
+import ScrollOverflowIndicator from "@/components/scroll-overflow-indicator";
 import { TServicePanelTabEnum } from "@/components/service/panel/constants";
 import { LinkButton } from "@/components/ui/button";
 import { TVolumePanelTabEnum } from "@/components/volume/panel/constants";
@@ -40,11 +38,12 @@ export default function PanelNavbar<T, K extends TPanelTabKey>({
   layoutId,
 }: TProps<T, K>) {
   const navRef = useRef<HTMLElement>(null);
+  const indicatorRef = useRef<HTMLDivElement>(null);
   const { canScrollRight } = useScrollOverflow({ ref: navRef, offset: 52 });
   const { registerItem } = useScrollActiveIntoView({
     containerRef: navRef,
     activeKey: currentTabId,
-    endInset: SCROLL_OVERFLOW_INDICATOR_WIDTH,
+    endInsetRef: indicatorRef,
   });
 
   return (
@@ -66,7 +65,7 @@ export default function PanelNavbar<T, K extends TPanelTabKey>({
           ))}
         </div>
       </nav>
-      <ScrollOverflowIndicator canScrollRight={canScrollRight} />
+      <ScrollOverflowIndicator ref={indicatorRef} canScrollRight={canScrollRight} />
     </div>
   );
 }
