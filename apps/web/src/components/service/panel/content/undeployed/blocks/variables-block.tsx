@@ -11,7 +11,7 @@ import {
 } from "@/components/variables/variables-form-field";
 import { withForm } from "@/lib/hooks/use-app-form";
 import { useStore } from "@tanstack/react-form";
-import { ChevronUpIcon, KeyIcon, Link2Icon } from "lucide-react";
+import { ChevronDownIcon, KeyIcon, Link2Icon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 type TOnTokensChanged = (tokens: TToken<TReferenceExtended>[] | undefined) => void;
@@ -110,16 +110,15 @@ const VariablesBlock = withForm({
         className={cn("group/section mt-1 flex w-full flex-col rounded-lg border", className)}
       >
         <Button
+          data-open={isOpen || undefined}
           className="text-muted-foreground justify-start gap-2 rounded-md px-3 py-2.75 text-left font-semibold group-data-open/section:rounded-b-none"
           variant="ghost"
           type="button"
           onClick={() => setIsOpen((o) => !o)}
         >
-          <div className="relative size-5 shrink-0 transition-transform group-data-open/section:rotate-90">
-            <KeyIcon className="size-full scale-80 group-data-open/section:opacity-0" />
-            <ChevronUpIcon className="absolute top-0 left-0 size-full -rotate-90 opacity-0 group-data-open/section:opacity-100" />
-          </div>
+          <KeyIcon className="size-5 shrink-0 scale-90 transition group-data-open/button:rotate-90" />
           <p className="min-w-0 shrink">Environment Variables</p>
+          <ChevronDownIcon className="text-muted-foreground -mr-0.75 ml-auto size-5 shrink-0 transition group-data-open/button:rotate-180" />
         </Button>
         {isOpen && (
           <div className="flex w-full flex-col pb-1 md:pt-1 md:pb-3.5">

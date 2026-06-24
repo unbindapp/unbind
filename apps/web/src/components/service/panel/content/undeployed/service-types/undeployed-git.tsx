@@ -1,6 +1,3 @@
-import { builderEnumToName } from "@/components/command-panel/context-command-panel/items/git";
-import ErrorLine from "@/components/error-line";
-import BrandIcon from "@/components/icons/brand";
 import {
   Block,
   BlockItem,
@@ -9,19 +6,23 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/block";
+import { builderEnumToName } from "@/components/command-panel/context-command-panel/items/git";
+import ErrorLine from "@/components/error-line";
+import BrandIcon from "@/components/icons/brand";
 import DomainPortBlock from "@/components/service/panel/content/undeployed/blocks/domain-port-block";
 import VariablesBlock from "@/components/service/panel/content/undeployed/blocks/variables-block";
 import DeployButtonSection from "@/components/service/panel/content/undeployed/deploy-button-section";
+import AdvancedSettingsButton from "@/components/service/panel/content/undeployed/service-types/advanced-settings-button";
 import useCreateFirstDeployment from "@/components/service/panel/content/undeployed/use-create-first-deployment";
 import { softValidateVariables } from "@/components/service/panel/content/undeployed/validators";
 import { WrapperForm, WrapperInner } from "@/components/service/panel/content/undeployed/wrapper";
 import { useSystem } from "@/components/system/system-provider";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { getVariablesPair } from "@/components/variables/helpers";
 import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
 import { generateDomain } from "@/lib/helpers/generate-domain";
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
+import { gitRepositoryQuery } from "@/lib/queries/git";
 import {
   GitServiceBuilderEnum,
   TBuilderEnum,
@@ -29,10 +30,8 @@ import {
   TServiceShallow,
 } from "@/lib/queries/services";
 import { TVariableForCreate } from "@/lib/queries/variables";
-import { gitRepositoryQuery } from "@/lib/queries/git";
-import { useQuery } from "@tanstack/react-query";
-import { useMutation } from "@tanstack/react-query";
-import { ChevronUpIcon, CogIcon, GitBranchIcon } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { GitBranchIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -328,18 +327,10 @@ export function UndeployedContentGit({
           data-open={isAdvancedSettingsOpen || undefined}
           className="group/section -mt-2 flex w-full flex-col rounded-lg border md:-mt-3"
         >
-          <Button
-            className="text-muted-foreground justify-start gap-2 rounded-md px-3 py-2.75 text-left font-semibold group-data-open/section:rounded-b-none"
-            variant="ghost"
-            type="button"
+          <AdvancedSettingsButton
+            isOpen={isAdvancedSettingsOpen}
             onClick={() => setIsAdvancedSettingsOpen((o) => !o)}
-          >
-            <div className="relative size-5 shrink-0 transition-transform group-data-open/section:rotate-90">
-              <CogIcon className="size-full scale-90 group-data-open/section:opacity-0" />
-              <ChevronUpIcon className="absolute top-0 left-0 size-full -rotate-90 opacity-0 group-data-open/section:opacity-100" />
-            </div>
-            <p className="min-w-0 shrink">Advanced Settings</p>
-          </Button>
+          />
           {isAdvancedSettingsOpen && (
             <div className="flex w-full flex-col gap-6 px-2.5 py-3 sm:p-4 sm:pt-3">
               <Block>
