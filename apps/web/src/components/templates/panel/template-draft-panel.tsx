@@ -72,12 +72,12 @@ export default function TemplateDraftPanel({ templateDraft, children }: TProps) 
             <TitleButton templateDraft={templateDraft} />
           </DrawerHeader>
           <DrawerHeaderButtonsWrapper>
-            <ThreeDotButton templateDraft={templateDraft} className="rounded-xl sm:rounded-lg" />
+            <ThreeDotButton templateDraft={templateDraft} className="rounded-lg" />
             <DrawerClose asChild>
               <Button
                 size="icon"
                 variant="ghost"
-                className="text-muted-more-foreground shrink-0 rounded-xl sm:rounded-lg"
+                className="text-muted-more-foreground shrink-0 rounded-lg"
               >
                 <XIcon className="size-5" />
               </Button>
