@@ -1,5 +1,6 @@
 import { BlockItemButtonLike } from "@/components/block";
 import ErrorCard from "@/components/error-card";
+import { useInstances } from "@/components/instances/instances-provider";
 import TabWrapper from "@/components/navigation/tab-wrapper";
 import NoItemsCard from "@/components/no-items-card";
 import PodTerminal, {
@@ -13,9 +14,7 @@ import { useService } from "@/components/service/service-provider";
 import { Button } from "@/components/ui/button";
 import DropdownSelect from "@/components/ui/dropdown-select";
 import { cn } from "@/components/ui/utils";
-import { instancesListQuery } from "@/lib/queries/instances";
 import { useHotkey } from "@tanstack/react-hotkeys";
-import { useQuery } from "@tanstack/react-query";
 import {
   BoxIcon,
   Maximize2Icon,
@@ -29,9 +28,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 export default function Terminal() {
   const { teamId, projectId, environmentId, serviceId } = useService();
 
-  const { data, isPending, error } = useQuery({
-    ...instancesListQuery({ teamId, projectId, environmentId, serviceId }),
-  });
+  const { data, isPending, error } = useInstances();
 
   const [selectedPod, setSelectedPod] = useState<string | null>(null);
   const [selectedContainer, setSelectedContainer] = useState<string | null>(null);

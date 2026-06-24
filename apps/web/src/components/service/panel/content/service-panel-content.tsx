@@ -4,18 +4,23 @@ import DeploymentsProvider from "@/components/deployment/deployments-provider";
 import InstanceHealthProvider, {
   useInstanceHealth,
 } from "@/components/instances/instance-health-provider";
+import InstancesProvider from "@/components/instances/instances-provider";
 import MetricsProvider from "@/components/metrics/metrics-provider";
-import MetricsStateProvider from "@/components/metrics/metrics-state-provider";
+import MetricsStateProvider, {
+  getAgeBasedDefaultIntervalEnum,
+  metricsIntervalSearchParamKey,
+  resolveMetricsIntervalEnum,
+} from "@/components/metrics/metrics-state-provider";
 import { TServicePanelTabEnum } from "@/components/service/panel/constants";
-import ServicePanelContentDeployed from "@/components/service/panel/content/service-panel-content-deployed";
-import ServicePanelContentUndeployed from "@/components/service/panel/content/service-panel-content-undeployed";
-import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import Deployments from "@/components/service/panel/content/deployed/deployments/deployments";
 import Logs from "@/components/service/panel/content/deployed/logs/logs";
 import Metrics from "@/components/service/panel/content/deployed/metrics/metrics";
 import Settings from "@/components/service/panel/content/deployed/settings/settings";
 import Terminal from "@/components/service/panel/content/deployed/terminal/terminal";
 import Variables from "@/components/service/panel/content/deployed/variables/variables";
+import ServicePanelContentDeployed from "@/components/service/panel/content/service-panel-content-deployed";
+import ServicePanelContentUndeployed from "@/components/service/panel/content/service-panel-content-undeployed";
+import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useService } from "@/components/service/service-provider";
 import VariableReferencesProvider, {
   useVariableReferenceUtils,
@@ -25,18 +30,11 @@ import VariablesProvider, {
   useVariables,
   useVariablesUtils,
 } from "@/components/variables/variables-provider";
-import {
-  getAgeBasedDefaultIntervalEnum,
-  metricsIntervalSearchParamKey,
-  resolveMetricsIntervalEnum,
-} from "@/components/metrics/metrics-state-provider";
 import { deploymentsListQuery } from "@/lib/queries/deployments";
+import { instancesListQuery } from "@/lib/queries/instances";
 import { metricsListQuery } from "@/lib/queries/metrics";
 import { TServiceShallow } from "@/lib/queries/services";
-import {
-  availableVariableReferencesQuery,
-  variablesListQuery,
-} from "@/lib/queries/variables";
+import { availableVariableReferencesQuery, variablesListQuery } from "@/lib/queries/variables";
 import { QueryClient } from "@tanstack/react-query";
 import { FC, ReactNode, useEffect } from "react";
 
@@ -101,7 +99,14 @@ const tabs: TServicePanelTab[] = [
         ageBasedDefault: getAgeBasedDefaultIntervalEnum(service.created_at),
       });
       queryClient.prefetchQuery(
-        metricsListQuery({ type: "service", teamId, projectId, environmentId, serviceId, interval }),
+        metricsListQuery({
+          type: "service",
+          teamId,
+          projectId,
+          environmentId,
+          serviceId,
+          interval,
+        }),
       );
     },
   },
@@ -129,8 +134,15 @@ const tabs: TServicePanelTab[] = [
     title: "Terminal",
     value: "terminal",
     Page: Terminal,
-    Provider: EmptyProvider,
+    Provider: ({ children, ...rest }: TServicePageProviderProps) => (
+      <InstancesProvider {...rest}>{children}</InstancesProvider>
+    ),
     noScrollArea: true,
+    onIntent: ({ queryClient, teamId, projectId, environmentId, serviceId }) => {
+      queryClient.prefetchQuery(
+        instancesListQuery({ teamId, projectId, environmentId, serviceId }),
+      );
+    },
   },
   { title: "Settings", value: "settings", Page: Settings, Provider: EmptyProvider },
 ];
