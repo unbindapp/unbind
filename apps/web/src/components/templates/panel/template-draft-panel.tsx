@@ -12,6 +12,7 @@ import {
   DrawerClose,
   DrawerContent,
   DrawerHeader,
+  DrawerHeaderButtonsWrapper,
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
@@ -70,20 +71,18 @@ export default function TemplateDraftPanel({ templateDraft, children }: TProps) 
             <DrawerTitle className="sr-only">{templateDraft.name}</DrawerTitle>
             <TitleButton templateDraft={templateDraft} />
           </DrawerHeader>
-          <div className="-mt-2.25 -mr-3 flex items-center justify-end gap-1 sm:-mt-3 sm:-mr-5">
-            <ThreeDotButton templateDraft={templateDraft} />
-            {!isExtraSmall && (
-              <DrawerClose asChild>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="text-muted-more-foreground shrink-0 rounded-lg"
-                >
-                  <XIcon className="size-5" />
-                </Button>
-              </DrawerClose>
-            )}
-          </div>
+          <DrawerHeaderButtonsWrapper>
+            <ThreeDotButton templateDraft={templateDraft} className="rounded-xl sm:rounded-lg" />
+            <DrawerClose asChild>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="text-muted-more-foreground shrink-0 rounded-xl sm:rounded-lg"
+              >
+                <XIcon className="size-5" />
+              </Button>
+            </DrawerClose>
+          </DrawerHeaderButtonsWrapper>
         </div>
         {/* Content */}
         <TemplateDraftPanelContent data-vaul-no-drag templateDraft={templateDraft} />

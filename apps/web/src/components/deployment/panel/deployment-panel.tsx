@@ -23,6 +23,7 @@ import {
   DrawerClose,
   DrawerContent,
   DrawerHeader,
+  DrawerHeaderButtonsWrapper,
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -138,11 +139,7 @@ export default function DeploymentPanel({ service }: TProps) {
             serviceId={serviceId}
             deploymentId={currentDeploymentInPanel.id}
           >
-            <DeploymentPanelHeader
-              service={service}
-              deployment={currentDeploymentInPanel}
-              isExtraSmall={isExtraSmall}
-            />
+            <DeploymentPanelHeader service={service} deployment={currentDeploymentInPanel} />
             <DeploymentPanelContent
               deployment={currentDeploymentInPanel}
               tabs={tabs}
@@ -151,16 +148,12 @@ export default function DeploymentPanel({ service }: TProps) {
           </DeploymentProvider>
         ) : isLoading ? (
           <>
-            <DeploymentPanelHeader
-              service={service}
-              isPlaceholder={true}
-              isExtraSmall={isExtraSmall}
-            />
+            <DeploymentPanelHeader service={service} isPlaceholder={true} />
             <DeploymentPanelContentPlaceholder tabs={tabs} />
           </>
         ) : (
           <>
-            <DeploymentPanelHeader service={service} isExtraSmall={isExtraSmall} bordered />
+            <DeploymentPanelHeader service={service} bordered={true} />
             <ScrollArea>
               <TabWrapper>
                 <NoItemsCard Icon={RocketIcon}>Deployment not found</NoItemsCard>
@@ -177,13 +170,11 @@ function DeploymentPanelHeader({
   service,
   deployment,
   isPlaceholder,
-  isExtraSmall,
   bordered,
 }: {
   service: TServiceShallow;
   deployment?: TDeploymentShallow;
   isPlaceholder?: boolean;
-  isExtraSmall: boolean;
   // The not-found state has no navbar below it, so the header carries the separator itself.
   bordered?: boolean;
 }) {
@@ -237,17 +228,17 @@ function DeploymentPanelHeader({
           </div>
         </DrawerTitle>
       </DrawerHeader>
-      {!isExtraSmall && (
+      <DrawerHeaderButtonsWrapper>
         <DrawerClose asChild>
           <Button
             size="icon"
             variant="ghost"
-            className="text-muted-more-foreground -mt-2.25 -mr-3 shrink-0 rounded-lg sm:-mt-3 sm:-mr-5"
+            className="text-muted-more-foreground shrink-0 rounded-xl sm:rounded-lg"
           >
             <XIcon className="size-5" />
           </Button>
         </DrawerClose>
-      )}
+      </DrawerHeaderButtonsWrapper>
     </div>
   );
 }

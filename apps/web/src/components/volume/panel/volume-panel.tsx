@@ -7,6 +7,7 @@ import {
   DrawerClose,
   DrawerContent,
   DrawerHeader,
+  DrawerHeaderButtonsWrapper,
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
@@ -65,19 +66,17 @@ export default function VolumePanel({
             <DrawerTitle className="sr-only">{volume.id}</DrawerTitle>
             <TitleButton volume={volume} />
           </DrawerHeader>
-          <div className="-mt-2.25 -mr-3 flex items-center justify-end gap-1 sm:-mt-3 sm:-mr-5">
-            {!isExtraSmall && (
-              <DrawerClose asChild>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="text-muted-more-foreground shrink-0 rounded-lg"
-                >
-                  <XIcon className="size-5" />
-                </Button>
-              </DrawerClose>
-            )}
-          </div>
+          <DrawerHeaderButtonsWrapper>
+            <DrawerClose asChild>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="text-muted-more-foreground shrink-0 rounded-xl sm:rounded-lg"
+              >
+                <XIcon className="size-5" />
+              </Button>
+            </DrawerClose>
+          </DrawerHeaderButtonsWrapper>
         </div>
         <VolumePanelContent
           volume={volume}
