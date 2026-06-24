@@ -448,6 +448,16 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 					break
 				}
 			}
+			// Public databases are exposed over L4 on a unique allocated port.
+			if templateService.Type == schema.ServiceTypeDatabase && len(hosts) > 0 && len(templateService.Ports) > 0 {
+				nodePort, err := self.k8s.GetUnusedNodePort(ctx)
+				if err != nil {
+					return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("failed to generate node port: %v", err))
+				}
+				templateService.Ports[0].IsNodePort = true
+				templateService.Ports[0].NodePort = new(nodePort)
+			}
+
 			createInput := &service_repo.MutateConfigInput{
 				ServiceID:               createService.ID,
 				Builder:                 new(templateService.Builder),

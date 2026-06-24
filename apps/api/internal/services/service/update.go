@@ -18,6 +18,22 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
+// databasePortsWithNodePort returns a copy of ports with the external node port set
+// (public) or stripped (private). The container port is always preserved.
+func databasePortsWithNodePort(ports []schema.PortSpec, nodePort *int32) []schema.PortSpec {
+	out := make([]schema.PortSpec, len(ports))
+	for i, port := range ports {
+		port.IsNodePort = nodePort != nil
+		if nodePort != nil {
+			port.NodePort = new(*nodePort)
+		} else {
+			port.NodePort = nil
+		}
+		out[i] = port
+	}
+	return out
+}
+
 // UpdateService updates a service and its configuration
 func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *models.UpdateServiceInput) (*models.ServiceResponse, error) {
 	if input.GitTag != nil && !utils.IsValidGlobPattern(*input.GitTag) {
@@ -184,6 +200,34 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 			return fmt.Errorf("failed to update service: %w", err)
 		}
 
+		// Toggling a database public/private manages its L4 host and allocated port.
+		if service.Type == schema.ServiceTypeDatabase && input.IsPublic != nil {
+			existingPorts := service.Edges.ServiceConfig.Ports
+			if *input.IsPublic {
+				alreadyPublic := len(service.Edges.ServiceConfig.Hosts) > 0
+				hasIncomingHost := len(input.OverwriteHosts) > 0 || len(input.UpsertHosts) > 0
+				if !alreadyPublic && !hasIncomingHost && len(existingPorts) > 0 {
+					generatedHost, err := self.generateWildcardHost(ctx, tx, service.KubernetesName, existingPorts)
+					if err != nil {
+						return fmt.Errorf("failed to generate wildcard host: %w", err)
+					}
+					if generatedHost == nil {
+						input.IsPublic = new(false)
+					} else {
+						nodePort, err := self.k8s.GetUnusedNodePort(ctx)
+						if err != nil {
+							return fmt.Errorf("failed to allocate node port: %w", err)
+						}
+						input.OverwriteHosts = append(input.OverwriteHosts, *generatedHost)
+						input.OverwritePorts = databasePortsWithNodePort(existingPorts, &nodePort)
+					}
+				}
+			} else {
+				input.RemoveHosts = append(input.RemoveHosts, service.Edges.ServiceConfig.Hosts...)
+				input.OverwritePorts = databasePortsWithNodePort(existingPorts, nil)
+			}
+		}
+
 		if len(service.Edges.ServiceConfig.Hosts) < 1 &&
 			input.IsPublic != nil && *input.IsPublic && len(input.OverwriteHosts) < 1 && len(input.UpsertHosts) < 1 && service.Type != schema.ServiceTypeDatabase &&
 			(len(input.OverwritePorts) > 0 || len(input.AddPorts) > 0 || len(service.Edges.ServiceConfig.Ports) > 0) {
@@ -225,8 +269,9 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 			}
 		}
 
-		// Determine is public
-		if len(input.OverwritePorts) > 0 || len(input.AddPorts) > 0 || len(service.Edges.ServiceConfig.Ports) > 0 {
+		// Determine is public (databases manage this explicitly via the toggle above)
+		if service.Type != schema.ServiceTypeDatabase &&
+			(len(input.OverwritePorts) > 0 || len(input.AddPorts) > 0 || len(service.Edges.ServiceConfig.Ports) > 0) {
 			// Has ports, do we have hosts
 			if len(input.OverwriteHosts) > 0 || len(input.UpsertHosts) > 0 || len(service.Edges.ServiceConfig.Hosts) > 0 {
 				input.IsPublic = new(true)

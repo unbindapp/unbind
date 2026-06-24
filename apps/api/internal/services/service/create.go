@@ -341,6 +341,26 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			}
 		}
 
+		// Databases are public by default when a wildcard domain is configured,
+		// exposed over L4 on a unique allocated port.
+		if input.Type == schema.ServiceTypeDatabase && len(hosts) == 0 && isPublic != nil && *isPublic && len(ports) > 0 {
+			generatedHost, err := self.generateWildcardHost(ctx, tx, kubernetesName, ports)
+			if err != nil {
+				return fmt.Errorf("failed to generate wildcard host: %w", err)
+			}
+			if generatedHost == nil {
+				isPublic = new(false)
+			} else {
+				nodePort, err := self.k8s.GetUnusedNodePort(ctx)
+				if err != nil {
+					return fmt.Errorf("failed to allocate node port: %w", err)
+				}
+				ports[0].IsNodePort = true
+				ports[0].NodePort = new(nodePort)
+				hosts = append(hosts, *generatedHost)
+			}
+		}
+
 		// Validate hosts
 		for _, host := range hosts {
 			// Count domain collisions

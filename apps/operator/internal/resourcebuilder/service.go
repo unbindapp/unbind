@@ -17,6 +17,10 @@ func (rb *ResourceBuilder) BuildServices() ([]*corev1.Service, error) {
 		return nil, ErrServiceNotNeeded
 	}
 
+	if rb.isDatabase() {
+		return rb.buildDatabaseServices()
+	}
+
 	// Group ports by service type (NodePort vs ClusterIP). When the provider routes
 	// L4 via the gateway, external ports stay ClusterIP and are fronted by TCP/UDP
 	// routes instead of a NodePort Service.
@@ -79,4 +83,51 @@ func (rb *ResourceBuilder) BuildServices() ([]*corev1.Service, error) {
 	}
 
 	return services, nil
+}
+
+// buildDatabaseServices builds the external L4 bridge for a public database,
+// selecting the engine-managed pods. Returns ErrServiceNotNeeded when the database
+// is private (no NodePort-flagged port).
+func (rb *ResourceBuilder) buildDatabaseServices() ([]*corev1.Service, error) {
+	viaGateway := rb.provider.ExposesL4ViaGateway()
+
+	var ports []corev1.ServicePort
+	for _, port := range rb.service.Spec.Config.Ports {
+		if port.NodePort == nil {
+			continue
+		}
+		protocol := corev1.ProtocolTCP
+		if port.Protocol != nil {
+			protocol = *port.Protocol
+		}
+		servicePort := corev1.ServicePort{
+			Name:       strings.ToLower(fmt.Sprintf("%s-%d-%s", rb.service.Spec.Name, port.Port, protocol)),
+			Protocol:   protocol,
+			Port:       port.Port,
+			TargetPort: intstr.FromInt32(port.Port),
+		}
+		if !viaGateway {
+			servicePort.NodePort = *port.NodePort
+		}
+		ports = append(ports, servicePort)
+	}
+
+	if len(ports) < 1 {
+		return nil, ErrServiceNotNeeded
+	}
+
+	meta := rb.buildObjectMeta()
+	meta.Name = rb.databaseExposureName()
+	svc := &corev1.Service{
+		ObjectMeta: meta,
+		Spec: corev1.ServiceSpec{
+			Selector: rb.databaseSelector(),
+			Ports:    ports,
+		},
+	}
+	if !viaGateway {
+		svc.Spec.Type = corev1.ServiceTypeNodePort
+	}
+
+	return []*corev1.Service{svc}, nil
 }

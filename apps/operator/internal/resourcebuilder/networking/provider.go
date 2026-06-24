@@ -121,7 +121,19 @@ func RouteGVKs() []schema.GroupVersionKind {
 }
 
 func needsRoutes(svc *v1.Service) bool {
+	if svc.Spec.Type == "database" {
+		return false
+	}
 	return len(svc.Spec.Config.Hosts) >= 1 && len(svc.Spec.Config.Ports) >= 1 && svc.Spec.Config.Public
+}
+
+// l4BackendName is the Service an L4 route points at. Databases are fronted by the
+// operator-owned exposure Service rather than the engine's internal Service.
+func l4BackendName(svc *v1.Service) string {
+	if svc.Spec.Type == "database" {
+		return svc.Name + "-db"
+	}
+	return svc.Name
 }
 
 func resolveHostPort(svc *v1.Service, host v1.HostSpec) (int32, string) {

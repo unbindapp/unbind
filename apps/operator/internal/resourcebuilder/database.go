@@ -92,10 +92,6 @@ func (rb *ResourceBuilder) applyDbCommonConfig(dbConfig map[string]any, storage 
 	}
 	commonMap["replicas"] = replicaCount
 
-	if rb.service.Spec.Config.Public {
-		commonMap["exposeExternal"] = true
-	}
-
 	if res := rb.service.Spec.Config.Resources; res != nil {
 		resourcesMap := map[string]any{
 			"requests": make(map[string]string),
