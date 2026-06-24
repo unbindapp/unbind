@@ -131,6 +131,35 @@ func (self *ServiceService) generateWildcardHost(ctx context.Context, tx reposit
 	}, nil
 }
 
+// prepareDatabaseExposure decides public-by-default exposure for a database, gated on
+// a configured wildcard domain. It allocates an external node port; only gateway
+// clusters get a routable host (NodePort clusters are reached at node IP:port). Returns
+// (nil, nil, nil) when no wildcard is configured.
+func (self *ServiceService) prepareDatabaseExposure(ctx context.Context, tx repository.TxInterface, kubernetesName string, ports []schema.PortSpec) (*schema.HostSpec, *int32, error) {
+	settings, err := self.repo.System().GetSystemSettings(ctx, tx)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to get system settings: %w", err)
+	}
+	if settings.WildcardBaseURL == nil || *settings.WildcardBaseURL == "" {
+		return nil, nil, nil
+	}
+
+	nodePort, err := self.k8s.GetUnusedNodePort(ctx)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to allocate node port: %w", err)
+	}
+
+	var host *schema.HostSpec
+	if self.k8s.NetworkingProvider(ctx) == "gateway" {
+		host, err = self.generateWildcardHost(ctx, tx, kubernetesName, ports)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+
+	return host, &nodePort, nil
+}
+
 func (self *ServiceService) verifyS3Access(ctx context.Context, s3Source *ent.S3, bucket string, namespace string, client kubernetes.Interface) error {
 	secret, err := self.k8s.GetSecret(ctx, s3Source.KubernetesSecret, namespace, client)
 	if err != nil {

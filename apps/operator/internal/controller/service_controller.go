@@ -61,6 +61,7 @@ func (r *ServiceReconciler) newResourceBuilder(service *v1.Service) resourcebuil
 // +kubebuilder:rbac:groups=apps,resources=statefulsets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="",resources=persistentvolumeclaims,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch
+// +kubebuilder:rbac:groups="",resources=nodes,verbs=get;list;watch
 // +kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=networking.k8s.io,resources=ingresses,verbs=get;list;watch;create;update;patch;delete
@@ -144,6 +145,10 @@ func (r *ServiceReconciler) reconcileResources(ctx context.Context, service *v1.
 		}
 		if err := r.reconcileRoutes(ctx, rb, *service); err != nil {
 			logger.Error(err, "Failed to reconcile database routes")
+			return err
+		}
+		if err := r.reconcileExternalDatabaseURL(ctx, service); err != nil {
+			logger.Error(err, "Failed to reconcile external database URL")
 			return err
 		}
 		return nil

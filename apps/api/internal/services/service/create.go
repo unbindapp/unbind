@@ -65,6 +65,7 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			"DATABASE_PORT",
 			"DATABASE_DEFAULT_DB_NAME",
 			"DATABASE_URL",
+			"DATABASE_EXTERNAL_URL",
 			"DATABASE_HTTP_URL",
 			"DATABASE_HTTP_PORT",
 		}
@@ -342,22 +343,21 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		}
 
 		// Databases are public by default when a wildcard domain is configured,
-		// exposed over L4 on a unique allocated port.
+		// exposed over L4 on a unique allocated port. Gateway clusters also get a
+		// routable host; NodePort clusters are reached at node IP:port.
 		if input.Type == schema.ServiceTypeDatabase && len(hosts) == 0 && isPublic != nil && *isPublic && len(ports) > 0 {
-			generatedHost, err := self.generateWildcardHost(ctx, tx, kubernetesName, ports)
+			host, nodePort, err := self.prepareDatabaseExposure(ctx, tx, kubernetesName, ports)
 			if err != nil {
-				return fmt.Errorf("failed to generate wildcard host: %w", err)
+				return err
 			}
-			if generatedHost == nil {
+			if nodePort == nil {
 				isPublic = new(false)
 			} else {
-				nodePort, err := self.k8s.GetUnusedNodePort(ctx)
-				if err != nil {
-					return fmt.Errorf("failed to allocate node port: %w", err)
-				}
 				ports[0].IsNodePort = true
-				ports[0].NodePort = new(nodePort)
-				hosts = append(hosts, *generatedHost)
+				ports[0].NodePort = nodePort
+				if host != nil {
+					hosts = append(hosts, *host)
+				}
 			}
 		}
 

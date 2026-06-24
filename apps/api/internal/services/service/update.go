@@ -204,22 +204,26 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 		if service.Type == schema.ServiceTypeDatabase && input.IsPublic != nil {
 			existingPorts := service.Edges.ServiceConfig.Ports
 			if *input.IsPublic {
-				alreadyPublic := len(service.Edges.ServiceConfig.Hosts) > 0
-				hasIncomingHost := len(input.OverwriteHosts) > 0 || len(input.UpsertHosts) > 0
-				if !alreadyPublic && !hasIncomingHost && len(existingPorts) > 0 {
-					generatedHost, err := self.generateWildcardHost(ctx, tx, service.KubernetesName, existingPorts)
-					if err != nil {
-						return fmt.Errorf("failed to generate wildcard host: %w", err)
+				alreadyExposed := false
+				for _, port := range existingPorts {
+					if port.IsNodePort {
+						alreadyExposed = true
+						break
 					}
-					if generatedHost == nil {
+				}
+				hasIncomingHost := len(input.OverwriteHosts) > 0 || len(input.UpsertHosts) > 0
+				if !alreadyExposed && !hasIncomingHost && len(existingPorts) > 0 {
+					host, nodePort, err := self.prepareDatabaseExposure(ctx, tx, service.KubernetesName, existingPorts)
+					if err != nil {
+						return err
+					}
+					if nodePort == nil {
 						input.IsPublic = new(false)
 					} else {
-						nodePort, err := self.k8s.GetUnusedNodePort(ctx)
-						if err != nil {
-							return fmt.Errorf("failed to allocate node port: %w", err)
+						if host != nil {
+							input.OverwriteHosts = append(input.OverwriteHosts, *host)
 						}
-						input.OverwriteHosts = append(input.OverwriteHosts, *generatedHost)
-						input.OverwritePorts = databasePortsWithNodePort(existingPorts, &nodePort)
+						input.OverwritePorts = databasePortsWithNodePort(existingPorts, nodePort)
 					}
 				}
 			} else {

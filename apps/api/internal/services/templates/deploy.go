@@ -456,6 +456,9 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 				}
 				templateService.Ports[0].IsNodePort = true
 				templateService.Ports[0].NodePort = new(nodePort)
+				if self.k8s.NetworkingProvider(ctx) != "gateway" {
+					hosts = nil
+				}
 			}
 
 			createInput := &service_repo.MutateConfigInput{
