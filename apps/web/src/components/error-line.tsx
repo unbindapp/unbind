@@ -4,10 +4,11 @@ import { TriangleAlertIcon } from "lucide-react";
 type TProps = {
   message?: string;
   className?: string;
+  classNameMessage?: string;
   withIcon?: boolean;
 };
 
-export default function ErrorLine({ message, withIcon, className }: TProps) {
+export default function ErrorLine({ message, withIcon, className, classNameMessage }: TProps) {
   const finalMessage = message || "Something went wrong :(";
   return (
     <div
@@ -17,7 +18,7 @@ export default function ErrorLine({ message, withIcon, className }: TProps) {
       )}
     >
       {withIcon && <TriangleAlertIcon className="-ml-0.5 size-4.5 shrink-0" />}
-      <p className="min-w-0 flex-1">{finalMessage}</p>
+      <p className={cn("min-w-0 flex-1", classNameMessage)}>{finalMessage}</p>
     </div>
   );
 }

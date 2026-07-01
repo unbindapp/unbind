@@ -20,6 +20,24 @@ type TProps = {
 export default function DeploymentInstances({ isPending: isPendingProp, className }: TProps) {
   const { data, isPending, error } = useInstanceHealth();
 
+  if (!data && !isPending && error) {
+    return (
+      <div className="flex w-full justify-start">
+        <ErrorLine
+          message={error.message}
+          className={cn(
+            "border-destructive/8 w-auto min-w-0 shrink rounded-md border px-2 py-1 text-xs leading-tight",
+            className,
+          )}
+          classNameMessage="truncate whitespace-nowrap"
+        />
+        <IconWrapper className="shrink-0 border border-transparent">
+          <div className="h-3.5 w-0" />
+        </IconWrapper>
+      </div>
+    );
+  }
+
   if (isPending || isPendingProp) {
     return (
       <div className={cn("flex w-full flex-wrap gap-1.5", className)}>
@@ -36,34 +54,19 @@ export default function DeploymentInstances({ isPending: isPendingProp, classNam
     );
   }
 
-  if (data) {
-    if (data.data.instances.length === 0) return null;
-    const orderedInstances = data.data.instances.toSorted((a, b) => {
-      return statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status);
-    });
+  if (data.data.instances.length === 0) return null;
 
-    return (
-      <div className={cn("flex w-full flex-wrap gap-1.5", className)}>
-        {orderedInstances.map((instance, i) => (
-          <Instance key={i} instance={instance} />
-        ))}
-      </div>
-    );
-  }
+  const orderedInstances = data.data.instances.toSorted((a, b) => {
+    return statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status);
+  });
 
-  if (error) {
-    return (
-      <div className="flex w-full justify-start">
-        <ErrorLine
-          className={cn(
-            "border-destructive/8 w-auto max-w-full rounded-md border px-2 py-[0.21875rem] text-xs leading-tight",
-            className,
-          )}
-        />
-      </div>
-    );
-  }
-  return null;
+  return (
+    <div className={cn("flex w-full flex-wrap gap-1.5", className)}>
+      {orderedInstances.map((instance, i) => (
+        <Instance key={i} instance={instance} />
+      ))}
+    </div>
+  );
 }
 
 function Instance({ instance }: { instance: TInstanceFromHealth }) {
