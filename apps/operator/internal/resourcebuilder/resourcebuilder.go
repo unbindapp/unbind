@@ -63,3 +63,17 @@ func (rb *ResourceBuilder) getCommonLabels() map[string]string {
 func (rb *ResourceBuilder) buildPodAnnotations() map[string]string {
 	return map[string]string{}
 }
+
+func (rb *ResourceBuilder) isDatabase() bool {
+	return rb.service.Spec.Type == "database"
+}
+
+func (rb *ResourceBuilder) databaseExposureName() string {
+	return rb.service.Name + "-db"
+}
+
+func (rb *ResourceBuilder) databaseSelector() map[string]string {
+	return map[string]string{
+		"unbind-service": rb.service.Spec.ServiceRef,
+	}
+}

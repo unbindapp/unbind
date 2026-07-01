@@ -60,13 +60,21 @@ func transformDomain(domain string) string {
 
 // Generate a default subdomain
 func GenerateSubdomain(name, externalURL string) (string, error) {
-	// Extract the domain from externalURL (without protocol)
-	u, err := url.Parse(externalURL)
+	// The wildcard base is stored without a scheme; url.Parse needs one to populate Hostname.
+	parseTarget := externalURL
+	if !strings.Contains(parseTarget, "://") {
+		parseTarget = "https://" + parseTarget
+	}
+
+	u, err := url.Parse(parseTarget)
 	if err != nil {
 		return "", fmt.Errorf("invalid external URL: %w", err)
 	}
 
 	domain := u.Hostname()
+	if domain == "" {
+		return "", fmt.Errorf("could not resolve domain from external URL %q", externalURL)
+	}
 
 	sanitizedDisplay := sanitizeForSubdomain(name)
 

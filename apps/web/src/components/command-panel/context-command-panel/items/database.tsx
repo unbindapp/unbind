@@ -92,7 +92,6 @@ function useDatabaseItem({ context }: TProps) {
         team_id: context.teamId,
         project_id: projectId,
         environment_id: environmentId,
-        is_public: false,
         auto_deploy: false,
         replicas: 1,
       });

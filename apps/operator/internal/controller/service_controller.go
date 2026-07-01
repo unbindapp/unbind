@@ -61,6 +61,7 @@ func (r *ServiceReconciler) newResourceBuilder(service *v1.Service) resourcebuil
 // +kubebuilder:rbac:groups=apps,resources=statefulsets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="",resources=persistentvolumeclaims,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch
+// +kubebuilder:rbac:groups="",resources=nodes,verbs=get;list;watch
 // +kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=networking.k8s.io,resources=ingresses,verbs=get;list;watch;create;update;patch;delete
@@ -138,6 +139,18 @@ func (r *ServiceReconciler) reconcileResources(ctx context.Context, service *v1.
 			logger.Error(err, "Failed to reconcile database")
 			return err
 		}
+		if err := r.reconcileServices(ctx, rb, *service); err != nil {
+			logger.Error(err, "Failed to reconcile database exposure")
+			return err
+		}
+		if err := r.reconcileRoutes(ctx, rb, *service); err != nil {
+			logger.Error(err, "Failed to reconcile database routes")
+			return err
+		}
+		if err := r.reconcileExternalDatabaseURL(ctx, service); err != nil {
+			logger.Error(err, "Failed to reconcile external database URL")
+			return err
+		}
 		return nil
 	}
 
@@ -159,7 +172,7 @@ func (r *ServiceReconciler) reconcileResources(ctx context.Context, service *v1.
 // updateServiceStatus refreshes the Service status subresource when it has drifted.
 func (r *ServiceReconciler) updateServiceStatus(ctx context.Context, service *v1.Service) error {
 	var newURLs []string
-	if len(service.Spec.Config.Hosts) > 0 && service.Spec.Config.Public {
+	if len(service.Spec.Config.Hosts) > 0 && service.Spec.Config.Public && service.Spec.Type != "database" {
 		for _, host := range service.Spec.Config.Hosts {
 			newURLs = append(newURLs, fmt.Sprintf("https://%s", host.Host))
 		}
@@ -191,6 +204,9 @@ func (r *ServiceReconciler) finalizeService(ctx context.Context, service *v1.Ser
 	objects := []client.Object{
 		&appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{Name: service.Name, Namespace: service.Namespace}},
 		&corev1.Service{ObjectMeta: metav1.ObjectMeta{Name: service.Name, Namespace: service.Namespace}},
+	}
+	if service.Spec.Type == "database" {
+		objects = append(objects, &corev1.Service{ObjectMeta: metav1.ObjectMeta{Name: service.Name + "-db", Namespace: service.Namespace}})
 	}
 	for _, obj := range objects {
 		if err := r.Delete(ctx, obj); client.IgnoreNotFound(err) != nil {

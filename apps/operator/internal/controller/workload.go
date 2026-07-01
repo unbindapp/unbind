@@ -50,6 +50,9 @@ func (r *ServiceReconciler) reconcileDeployment(ctx context.Context, rb resource
 func (r *ServiceReconciler) reconcileServices(ctx context.Context, rb resourcebuilder.ResourceBuilderInterface, service v1.Service) error {
 	logger := log.FromContext(ctx)
 	managedNames := []string{service.Name, service.Name + "-nodeport"}
+	if service.Spec.Type == "database" {
+		managedNames = []string{service.Name + "-db"}
+	}
 
 	desiredServices, err := rb.BuildServices()
 	if err == resourcebuilder.ErrServiceNotNeeded {

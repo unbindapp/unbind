@@ -78,10 +78,17 @@ func (self *ServiceService) GetDNSForService(ctx context.Context, requesterUserI
 			}
 			var targetPort *schema.PortSpec
 			if host.TargetPort != nil {
-				targetPort = &schema.PortSpec{
+				matched := schema.PortSpec{
 					Port:     *host.TargetPort,
 					Protocol: utils.ToPtr(schema.ProtocolTCP),
 				}
+				for _, port := range service.Edges.ServiceConfig.Ports {
+					if port.Port == *host.TargetPort {
+						matched = port
+						break
+					}
+				}
+				targetPort = &matched
 			}
 			newHost := models.IngressEndpoint{
 				KubernetesName: service.KubernetesName,
@@ -107,10 +114,16 @@ func (self *ServiceService) GetDNSForService(ctx context.Context, requesterUserI
 
 	// Infer internal endpoints that should exist and merge with the discovered internal endpoints
 	for _, port := range service.Edges.ServiceConfig.Ports {
-		// ! Skipping node ports and UDP ports
-		if port.IsNodePort || (port.Protocol != nil && *port.Protocol == schema.ProtocolUDP) {
+		// Skip node ports (external-only) and UDP ports. A database's port is its
+		// internal port even when bridged externally, so it keeps an internal endpoint.
+		externalOnly := port.IsNodePort && service.Type != schema.ServiceTypeDatabase
+		if externalOnly || (port.Protocol != nil && *port.Protocol == schema.ProtocolUDP) {
 			continue
 		}
+
+		internalPort := port
+		internalPort.IsNodePort = false
+		internalPort.NodePort = nil
 
 		endpoint := fmt.Sprintf("%s.%s", service.KubernetesName, project.Edges.Team.Namespace)
 		exists := false
@@ -129,7 +142,7 @@ func (self *ServiceService) GetDNSForService(ctx context.Context, requesterUserI
 		if !exists {
 			endpoints.Internal = append(endpoints.Internal, models.ServiceEndpoint{
 				DNS:            endpoint,
-				Ports:          []schema.PortSpec{port},
+				Ports:          []schema.PortSpec{internalPort},
 				KubernetesName: service.KubernetesName,
 				TeamID:         project.Edges.Team.ID,
 				ProjectID:      project.ID,

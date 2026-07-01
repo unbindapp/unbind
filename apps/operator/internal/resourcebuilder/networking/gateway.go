@@ -178,7 +178,7 @@ func (p gatewayProvider) grpcRoute(svc *v1.Service, labels map[string]string, ho
 func (p gatewayProvider) l4Route(svc *v1.Service, labels map[string]string, port v1.PortSpec, section gwapiv1.SectionName, proto string) client.Object {
 	name := fmt.Sprintf("%s-%s-%d", svc.Name, "tcp", *port.NodePort)
 	backend := []gwapiv1a2.BackendRef{{BackendObjectReference: gwapiv1.BackendObjectReference{
-		Name: gwapiv1.ObjectName(svc.Name), Port: ptr.To(gwapiv1.PortNumber(port.Port)),
+		Name: gwapiv1.ObjectName(l4BackendName(svc)), Port: ptr.To(gwapiv1.PortNumber(port.Port)),
 	}}}
 	parents := []gwapiv1.ParentReference{p.parentRef(svc, &section)}
 
