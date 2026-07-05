@@ -47,7 +47,7 @@ export default function PanelNavbar<T, K extends TPanelTabKey>({
   });
 
   return (
-    <div className="relative w-full overflow-hidden">
+    <div data-vaul-no-drag className="relative w-full overflow-hidden">
       <nav
         ref={navRef}
         className="touch:scrollbar-hidden flex w-full justify-start overflow-auto border-b pr-6"
