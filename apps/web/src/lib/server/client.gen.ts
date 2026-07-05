@@ -1603,6 +1603,8 @@ export const GithubRepositoryDetailResponseBodySchema = z
   })
   .strip();
 
+export const ResourceTypeSchema = z.enum(['system', 'team', 'project', 'environment', 'service']);
+
 export const GrantGroupPermissionInputBodySchema = z
   .object({
     action: PermittedActionSchema,
@@ -2730,6 +2732,7 @@ export type GithubRepositoryDetail = z.infer<typeof GithubRepositoryDetailSchema
 export type GithubRepositoryDetailResponseBody = z.infer<
   typeof GithubRepositoryDetailResponseBodySchema
 >;
+export type ResourceType = z.infer<typeof ResourceTypeSchema>;
 export type GrantGroupPermissionInputBody = z.infer<typeof GrantGroupPermissionInputBodySchema>;
 export type ResourceSelector = z.infer<typeof ResourceSelectorSchema>;
 export type PermissionResponse = z.infer<typeof PermissionResponseSchema>;

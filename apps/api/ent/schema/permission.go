@@ -128,7 +128,7 @@ func (s ResourceType) Values() (kinds []string) {
 // Register enum in OpenAPI specification
 // https://github.com/danielgtaylor/huma/issues/621
 func (u ResourceType) Schema(r huma.Registry) *huma.Schema {
-	if r.Map()["PermittedAction"] == nil {
+	if r.Map()["ResourceType"] == nil {
 		schemaRef := r.Schema(reflect.TypeOf(""), true, "ResourceType")
 		schemaRef.Title = "ResourceType"
 		for _, v := range allResourceTypes {
