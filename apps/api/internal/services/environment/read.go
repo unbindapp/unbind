@@ -23,7 +23,7 @@ func (self *EnvironmentService) GetEnvironmentByID(ctx context.Context, requeste
 	}
 
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
-		return nil, err
+		return nil, errdefs.MaskAsNotFound(err, "Environment not found")
 	}
 
 	_, environment, err := self.VerifyInputs(ctx, teamID, projectID, environmentID)
@@ -31,7 +31,13 @@ func (self *EnvironmentService) GetEnvironmentByID(ctx context.Context, requeste
 		return nil, err
 	}
 
+	permSet, err := self.repo.Permissions().GetUserPermissionSet(ctx, requesterUserID)
+	if err != nil {
+		return nil, err
+	}
+
 	resp := models.TransformEnvironmentEntity(environment)
+	resp.Permissions = permSet.EnvironmentActions(teamID, projectID, environmentID)
 
 	// Summarizes services
 	counts, providerSummaries, err := self.repo.Service().SummarizeServices(ctx, []uuid.UUID{environmentID})
@@ -71,5 +77,15 @@ func (self *EnvironmentService) GetEnvironmentsByProjectID(ctx context.Context, 
 		return nil, fmt.Errorf("error fetching environments for project %s: %w", projectID, err)
 	}
 
-	return models.TransformEnvironmentEntitities(envs), nil
+	permSet, err := self.repo.Permissions().GetUserPermissionSet(ctx, requesterUserID)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := models.TransformEnvironmentEntitities(envs)
+	for _, env := range resp {
+		env.Permissions = permSet.EnvironmentActions(teamID, projectID, env.ID)
+	}
+
+	return resp, nil
 }

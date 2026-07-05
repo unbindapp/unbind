@@ -39,11 +39,18 @@ func (self *ProjectService) GetProjectsInTeam(ctx context.Context, requesterUser
 	// Transform response
 	resp := models.TransformProjectEntitities(projects)
 
+	permSet, err := self.repo.Permissions().GetUserPermissionSet(ctx, requesterUserID)
+	if err != nil {
+		return nil, err
+	}
+
 	// Summarizes services
 	for _, project := range resp {
+		project.Permissions = permSet.ProjectActions(teamID, project.ID)
 		environmentIDs := make([]uuid.UUID, len(project.Environments))
 		for i, environment := range project.Environments {
 			environmentIDs[i] = environment.ID
+			environment.Permissions = permSet.EnvironmentActions(teamID, project.ID, environment.ID)
 		}
 		counts, providerSummaries, err := self.repo.Service().SummarizeServices(ctx, environmentIDs)
 		if err != nil {
@@ -71,7 +78,7 @@ func (self *ProjectService) GetProjectByID(ctx context.Context, requesterUserID 
 	}
 
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
-		return nil, err
+		return nil, errdefs.MaskAsNotFound(err, "Project not found")
 	}
 
 	_, err := self.repo.Team().GetByID(ctx, teamID)
@@ -99,12 +106,19 @@ func (self *ProjectService) GetProjectByID(ctx context.Context, requesterUserID 
 		return nil, errdefs.ErrUnauthorized
 	}
 
+	permSet, err := self.repo.Permissions().GetUserPermissionSet(ctx, requesterUserID)
+	if err != nil {
+		return nil, err
+	}
+
 	resp := models.TransformProjectEntity(projectEntity)
+	resp.Permissions = permSet.ProjectActions(teamID, projectID)
 
 	// Summarizes services
 	environmentIDs := make([]uuid.UUID, len(resp.Environments))
 	for i, environment := range resp.Environments {
 		environmentIDs[i] = environment.ID
+		environment.Permissions = permSet.EnvironmentActions(teamID, projectID, environment.ID)
 	}
 	counts, providerSummaries, err := self.repo.Service().SummarizeServices(ctx, environmentIDs)
 	if err != nil {

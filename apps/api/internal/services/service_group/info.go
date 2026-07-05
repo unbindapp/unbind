@@ -25,7 +25,7 @@ func (self *ServiceGroupService) GetServiceGroupInfo(ctx context.Context, reques
 	}
 
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
-		return nil, err
+		return nil, errdefs.MaskAsNotFound(err, "Service group not found")
 	}
 
 	environment, project, err := self.VerifyInputs(ctx, input.TeamID, input.ProjectID, input.EnvironmentID)

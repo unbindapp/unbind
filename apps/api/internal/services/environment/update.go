@@ -41,7 +41,13 @@ func (self *EnvironmentService) UpdateEnvironment(ctx context.Context, requester
 		return nil, err
 	}
 
+	permSet, err := self.repo.Permissions().GetUserPermissionSet(ctx, requesterUserID)
+	if err != nil {
+		return nil, err
+	}
+
 	resp := models.TransformEnvironmentEntity(updated)
+	resp.Permissions = permSet.EnvironmentActions(input.TeamID, input.ProjectID, input.EnvironmentID)
 
 	// Summarizes services
 	counts, providerSummaries, err := self.repo.Service().SummarizeServices(ctx, []uuid.UUID{environment.ID})

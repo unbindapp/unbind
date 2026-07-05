@@ -12,9 +12,6 @@ import (
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 )
 
-// Skips permission checks
-var SUPER_USER_ID = uuid.MustParse("60303901-c88f-47f0-b888-ecf92988d9fc")
-
 // Handles permissions, grants, kubernetes RBAC, etc.
 
 // GrantPermissionToGroup grants a permission to a group
@@ -42,9 +39,7 @@ func (self *GroupService) GrantPermissionToGroup(
 	}
 
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
-		if requesterUserID != SUPER_USER_ID {
-			return nil, err
-		}
+		return nil, err
 	}
 
 	perm, err := self.repo.Permissions().Create(ctx, permAction, resourceType, selector)

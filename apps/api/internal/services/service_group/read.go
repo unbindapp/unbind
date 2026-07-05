@@ -23,7 +23,7 @@ func (self *ServiceGroupService) GetServiceGroupByID(ctx context.Context, reques
 	}
 
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
-		return nil, err
+		return nil, errdefs.MaskAsNotFound(err, "Service group not found")
 	}
 
 	environment, _, err := self.VerifyInputs(ctx, input.TeamID, input.ProjectID, input.EnvironmentID)
@@ -58,7 +58,7 @@ func (self *ServiceGroupService) GetServiceGroupByEnvironment(ctx context.Contex
 	}
 
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
-		return nil, err
+		return nil, errdefs.MaskAsNotFound(err, "Environment not found")
 	}
 
 	_, _, err := self.VerifyInputs(ctx, input.TeamID, input.ProjectID, input.EnvironmentID)

@@ -22,7 +22,7 @@ func (self *DeploymentService) GetDeploymentsForService(ctx context.Context, req
 			ResourceID:   input.ServiceID,
 		},
 	}); err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, errdefs.MaskAsNotFound(err, "Service not found")
 	}
 
 	service, err := self.validateInputs(ctx, input)
@@ -36,10 +36,6 @@ func (self *DeploymentService) GetDeploymentsForService(ctx context.Context, req
 		cursor = &input.Cursor
 	}
 	deployments, nextCursor, err := self.repo.Deployment().GetByServiceIDPaginated(ctx, input.ServiceID, input.PerPage, cursor, input.Statuses)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -69,7 +65,7 @@ func (self *DeploymentService) GetDeploymentByID(ctx context.Context, requesterU
 			ResourceID:   input.ServiceID,
 		},
 	}); err != nil {
-		return nil, err
+		return nil, errdefs.MaskAsNotFound(err, "Service not found")
 	}
 
 	service, err := self.validateInputs(ctx, input)

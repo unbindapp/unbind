@@ -32,6 +32,10 @@ func (self *PermissionsRepository) Check(
 	userID uuid.UUID,
 	checks []PermissionCheck,
 ) error {
+	if IsSystemCaller(ctx) {
+		return nil
+	}
+
 	// Nothing to check, so permission is granted by default
 	if len(checks) == 0 {
 		return nil

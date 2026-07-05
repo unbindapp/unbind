@@ -18,6 +18,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/infrastructure/database"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/k8s"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
+	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 	"github.com/unbindapp/unbind-api/internal/repositories/repositories"
 	group_service "github.com/unbindapp/unbind-api/internal/services/group"
 	"golang.org/x/crypto/bcrypt"
@@ -299,7 +300,7 @@ func (self *cli) listGroupPermissions(groupName string) {
 
 // Grant permission to a group
 func (self *cli) grantPermission(groupName, action, resourceType, resourceID string) {
-	ctx := context.Background()
+	ctx := permissions_repo.WithSystemCaller(context.Background())
 
 	group, err := self.repository.Ent().Group.Query().
 		Where(group.NameEQ(groupName)).
@@ -348,7 +349,7 @@ func (self *cli) grantPermission(groupName, action, resourceType, resourceID str
 
 	perm, err := self.groupService.GrantPermissionToGroup(
 		ctx,
-		group_service.SUPER_USER_ID,
+		uuid.Nil,
 		group.ID,
 		permAction,
 		permResourceType,

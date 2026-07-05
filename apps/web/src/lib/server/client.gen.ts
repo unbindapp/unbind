@@ -193,6 +193,8 @@ export const CreateEnvironmentInputSchema = z
   })
   .strip();
 
+export const PermittedActionSchema = z.enum(['admin', 'edit', 'view']);
+
 export const EnvironmentResponseSchema = z
   .object({
     active: z.boolean(),
@@ -201,6 +203,7 @@ export const EnvironmentResponseSchema = z
     id: z.string(),
     kubernetes_name: z.string(),
     name: z.string(),
+    permissions: z.array(PermittedActionSchema), // Actions the current user can perform on this resource
     service_count: z.number().optional(),
     service_icons: z.array(z.string()).optional(),
   })
@@ -209,6 +212,28 @@ export const EnvironmentResponseSchema = z
 export const CreateEnvironmentResponseBodySchema = z
   .object({
     data: EnvironmentResponseSchema,
+  })
+  .strip();
+
+export const CreateGroupInputBodySchema = z
+  .object({
+    description: z.string(),
+    name: z.string(),
+  })
+  .strip();
+
+export const GroupResponseSchema = z
+  .object({
+    created_at: z.string().datetime(),
+    description: z.string(),
+    id: z.string(),
+    name: z.string(),
+  })
+  .strip();
+
+export const CreateGroupResponseBodySchema = z
+  .object({
+    data: GroupResponseSchema,
   })
   .strip();
 
@@ -274,6 +299,7 @@ export const ProjectResponseSchema = z
     id: z.string(),
     kubernetes_name: z.string(),
     name: z.string(),
+    permissions: z.array(PermittedActionSchema), // Actions the current user can perform on this resource
     service_count: z.number().optional(),
     service_icons: z.array(z.string()).optional(),
     status: z.string(),
@@ -356,6 +382,7 @@ export const ServiceGroupResponseSchema = z
     icon: z.string().optional(),
     id: z.string(),
     name: z.string(),
+    template_id: z.string().optional(), // Set when the group was created by deploying a template
   })
   .strip();
 
@@ -563,6 +590,7 @@ export const ServiceResponseSchema = z
     last_deployment: DeploymentResponseSchema.optional(),
     last_successful_deployment: DeploymentResponseSchema.optional(),
     name: z.string(),
+    permissions: z.array(PermittedActionSchema), // Actions the current user can perform on this resource
     service_group: ServiceGroupResponseSchema.optional(),
     template: TemplateShortResponseSchema.optional(),
     template_instance_id: z.string().optional(),
@@ -675,6 +703,18 @@ export const DeleteEnvironmentResponseBodySchema = z
   })
   .strip();
 
+export const DeleteGroupInputBodySchema = z
+  .object({
+    group_id: z.string(),
+  })
+  .strip();
+
+export const DeleteGroupResponseBodySchema = z
+  .object({
+    data: DeletedResponseSchema,
+  })
+  .strip();
+
 export const DeletePVCInputSchema = z
   .object({
     environment_id: z.string().optional(),
@@ -754,6 +794,18 @@ export const DeleteServiceResponseBodySchema = z
   })
   .strip();
 
+export const DeleteUserInputBodySchema = z
+  .object({
+    user_id: z.string(),
+  })
+  .strip();
+
+export const DeleteUserResponseBodySchema = z
+  .object({
+    data: DeletedResponseSchema,
+  })
+  .strip();
+
 export const VariableDeleteInputSchema = z
   .object({
     name: z.string(),
@@ -784,6 +836,44 @@ export const DeleteWebhookInputBodySchema = z
 export const DeleteWebhookResponseBodySchema = z
   .object({
     data: DeletedResponseSchema,
+  })
+  .strip();
+
+export const TemplateInputTypeSchema = z.enum([
+  'variable',
+  'host',
+  'volume-size',
+  'database-size',
+  'generated-node-port',
+  'generated-password',
+  'generated-node-ip',
+]);
+
+export const DeployedTemplateVolumeSchema = z
+  .object({
+    mountPath: z.string(),
+    name: z.string(),
+  })
+  .strip();
+
+export const DeployedTemplateInputSchema = z
+  .object({
+    current_value: z.string(),
+    current_value_gb: z.number().optional(), // Numeric GB value for volume/database size inputs, consistent with PVCInfo.capacity_gb
+    default: z.string().optional(),
+    default_gb: z.number().optional(), // Numeric GB form of Default for volume/database size inputs
+    description: z.string(),
+    editable: z.boolean(),
+    editable_reason: z.string().optional(),
+    hidden: z.boolean(),
+    id: z.string(),
+    name: z.string(),
+    port_protocol: ProtocolSchema.optional(),
+    required: z.boolean(),
+    service_id: z.string().optional(),
+    target_port: z.number().optional(),
+    type: TemplateInputTypeSchema,
+    volume: DeployedTemplateVolumeSchema.optional(),
   })
   .strip();
 
@@ -918,6 +1008,12 @@ export const GetDeploymentResponseBodySchema = z
 export const GetEnvironmentOutputBodySchema = z
   .object({
     data: EnvironmentResponseSchema,
+  })
+  .strip();
+
+export const GetGroupResponseBodySchema = z
+  .object({
+    data: GroupResponseSchema,
   })
   .strip();
 
@@ -1080,6 +1176,21 @@ export const GetServiceGroupResponseBodySchema = z
   })
   .strip();
 
+export const ServiceGroupTemplateInputsResponseSchema = z
+  .object({
+    inputs: z.array(DeployedTemplateInputSchema),
+    service_group_id: z.string(),
+    template_id: z.string().optional(),
+    version: z.number(),
+  })
+  .strip();
+
+export const GetServiceGroupTemplateInputsResponseBodySchema = z
+  .object({
+    data: ServiceGroupTemplateInputsResponseSchema,
+  })
+  .strip();
+
 export const GetServiceResponseBodySchema = z
   .object({
     data: ServiceResponseSchema,
@@ -1093,6 +1204,7 @@ export const TeamResponseSchema = z
     id: z.string(),
     kubernetes_name: z.string(),
     name: z.string(),
+    permissions: z.array(PermittedActionSchema), // Actions the current user can perform on this resource
   })
   .strip();
 
@@ -1101,16 +1213,6 @@ export const GetTeamResponseBodySchema = z
     data: TeamResponseSchema,
   })
   .strip();
-
-export const TemplateInputTypeSchema = z.enum([
-  'variable',
-  'host',
-  'volume-size',
-  'database-size',
-  'generated-node-port',
-  'generated-password',
-  'generated-node-ip',
-]);
 
 export const TemplateVolumeSchema = z
   .object({
@@ -1501,6 +1603,60 @@ export const GithubRepositoryDetailResponseBodySchema = z
   })
   .strip();
 
+export const ResourceTypeSchema = z.enum(['system', 'team', 'project', 'environment', 'service']);
+
+export const GrantGroupPermissionInputBodySchema = z
+  .object({
+    action: PermittedActionSchema,
+    group_id: z.string(),
+    resource_id: z.string().optional(), // Specific resource to grant access to; omit when superuser is true
+    resource_type: ResourceTypeSchema,
+    superuser: z.boolean().optional(), // Grant access to every resource of this type
+  })
+  .strip();
+
+export const ResourceSelectorSchema = z
+  .object({
+    id: z.string(), // Specific resource ID
+    superuser: z.boolean(), // Access to every resource of this type
+  })
+  .strip();
+
+export const PermissionResponseSchema = z
+  .object({
+    action: PermittedActionSchema,
+    created_at: z.string().datetime(),
+    id: z.string(),
+    resource_selector: ResourceSelectorSchema,
+    resource_type: ResourceTypeSchema,
+  })
+  .strip();
+
+export const GrantGroupPermissionResponseBodySchema = z
+  .object({
+    data: PermissionResponseSchema,
+  })
+  .strip();
+
+export const GroupMemberInputBodySchema = z
+  .object({
+    group_id: z.string(),
+    user_id: z.string(),
+  })
+  .strip();
+
+export const SuccessResponseSchema = z
+  .object({
+    success: z.boolean(),
+  })
+  .strip();
+
+export const GroupMemberResponseBodySchema = z
+  .object({
+    data: SuccessResponseSchema,
+  })
+  .strip();
+
 export const InstanceStatusSchema = z
   .object({
     crash_loop_reason: z.string().optional(),
@@ -1564,6 +1720,33 @@ export const ListEndpointsResponseBodySchema = z
 export const ListEnvironmentsOutputBodySchema = z
   .object({
     data: z.array(EnvironmentResponseSchema),
+  })
+  .strip();
+
+export const UserResponseSchema = z
+  .object({
+    created_at: z.string().datetime(),
+    email: z.string(),
+    id: z.string(),
+    updated_at: z.string().datetime(),
+  })
+  .strip();
+
+export const ListGroupMembersResponseBodySchema = z
+  .object({
+    data: z.array(UserResponseSchema),
+  })
+  .strip();
+
+export const ListGroupPermissionsResponseBodySchema = z
+  .object({
+    data: z.array(PermissionResponseSchema),
+  })
+  .strip();
+
+export const ListGroupsResponseBodySchema = z
+  .object({
+    data: z.array(GroupResponseSchema),
   })
   .strip();
 
@@ -1642,6 +1825,18 @@ export const ListTemplatesResponseBodySchema = z
   })
   .strip();
 
+export const ListUserGroupsResponseBodySchema = z
+  .object({
+    data: z.array(GroupResponseSchema),
+  })
+  .strip();
+
+export const ListUsersResponseBodySchema = z
+  .object({
+    data: z.array(UserResponseSchema),
+  })
+  .strip();
+
 export const ListWebhooksResponseBodySchema = z
   .object({
     data: z.array(WebhookResponseSchema),
@@ -1701,18 +1896,9 @@ export const LogoutResponseBodySchema = z
 
 export const LokiDirectionSchema = z.enum(['forward', 'backward']);
 
-export const UserAPIResponseSchema = z
-  .object({
-    created_at: z.string().datetime().optional(),
-    email: z.string().optional(),
-    id: z.string(),
-    updated_at: z.string().datetime().optional(),
-  })
-  .strip();
-
 export const MeResponseBodySchema = z
   .object({
-    data: UserAPIResponseSchema,
+    data: UserResponseSchema,
   })
   .strip();
 
@@ -1829,6 +2015,19 @@ export const RestartedSchema = z
 export const RestartServicesResponseBodySchema = z
   .object({
     data: RestartedSchema,
+  })
+  .strip();
+
+export const RevokeGroupPermissionInputBodySchema = z
+  .object({
+    group_id: z.string(),
+    permission_id: z.string(),
+  })
+  .strip();
+
+export const RevokeGroupPermissionResponseBodySchema = z
+  .object({
+    data: DeletedResponseSchema,
   })
   .strip();
 
@@ -2035,6 +2234,20 @@ export const UpdateEnvironmentResponseBodySchema = z
   })
   .strip();
 
+export const UpdateGroupInputBodySchema = z
+  .object({
+    description: z.string(),
+    group_id: z.string(),
+    name: z.string(),
+  })
+  .strip();
+
+export const UpdateGroupResponseBodySchema = z
+  .object({
+    data: GroupResponseSchema,
+  })
+  .strip();
+
 export const UpdatePVCInputSchema = z
   .object({
     capacity_gb: z.number().nullable().optional(), // Size of the PVC in GB (e.g., '10')
@@ -2051,6 +2264,20 @@ export const UpdatePVCInputSchema = z
 export const UpdatePVCResponseBodySchema = z
   .object({
     data: PVCInfoSchema,
+  })
+  .strip();
+
+export const UpdatePasswordInputBodySchema = z
+  .object({
+    current_password: z.string().optional(), // Required when changing your own password
+    new_password: z.string(),
+    user_id: z.string().optional(), // Defaults to the authenticated user; changing another user's password requires system admin
+  })
+  .strip();
+
+export const UpdatePasswordResponseBodySchema = z
+  .object({
+    data: UserResponseSchema,
   })
   .strip();
 
@@ -2111,6 +2338,22 @@ export const UpdateServiceGroupInputSchema = z
 export const UpdateServiceGroupResponseBodySchema = z
   .object({
     data: ServiceGroupResponseSchema,
+  })
+  .strip();
+
+export const UpdateServiceGroupTemplateInputsInputSchema = z
+  .object({
+    environment_id: z.string(), // The ID of the environment
+    id: z.string(), // The ID of the service group
+    inputs: z.array(TemplateInputValueSchema).nullable(), // Template input values to update
+    project_id: z.string(), // The ID of the project
+    team_id: z.string(), // The ID of the team
+  })
+  .strip();
+
+export const UpdateServiceGroupTemplateInputsResponseBodySchema = z
+  .object({
+    data: ServiceGroupTemplateInputsResponseSchema,
   })
   .strip();
 
@@ -2219,6 +2462,19 @@ export const UpsertVariablesInputBodySchema = z
   })
   .strip();
 
+export const UserCreateInputBodySchema = z
+  .object({
+    email: z.string(),
+    password: z.string(),
+  })
+  .strip();
+
+export const UserCreateResponseBodySchema = z
+  .object({
+    data: UserResponseSchema,
+  })
+  .strip();
+
 export const VariableReferenceResponseSchema = z
   .object({
     created_at: z.string().datetime(),
@@ -2306,8 +2562,12 @@ export type DeploymentStatus = z.infer<typeof DeploymentStatusSchema>;
 export type DeploymentResponse = z.infer<typeof DeploymentResponseSchema>;
 export type CreateBuildOutputBody = z.infer<typeof CreateBuildOutputBodySchema>;
 export type CreateEnvironmentInput = z.infer<typeof CreateEnvironmentInputSchema>;
+export type PermittedAction = z.infer<typeof PermittedActionSchema>;
 export type EnvironmentResponse = z.infer<typeof EnvironmentResponseSchema>;
 export type CreateEnvironmentResponseBody = z.infer<typeof CreateEnvironmentResponseBodySchema>;
+export type CreateGroupInputBody = z.infer<typeof CreateGroupInputBodySchema>;
+export type GroupResponse = z.infer<typeof GroupResponseSchema>;
+export type CreateGroupResponseBody = z.infer<typeof CreateGroupResponseBodySchema>;
 export type PvcScope = z.infer<typeof PvcScopeSchema>;
 export type CreatePVCInput = z.infer<typeof CreatePVCInputSchema>;
 export type PersistentVolumeClaimPhase = z.infer<typeof PersistentVolumeClaimPhaseSchema>;
@@ -2358,6 +2618,8 @@ export type DatabaseConfigurables = z.infer<typeof DatabaseConfigurablesSchema>;
 export type DeleteEnvironmentInputBody = z.infer<typeof DeleteEnvironmentInputBodySchema>;
 export type DeletedResponse = z.infer<typeof DeletedResponseSchema>;
 export type DeleteEnvironmentResponseBody = z.infer<typeof DeleteEnvironmentResponseBodySchema>;
+export type DeleteGroupInputBody = z.infer<typeof DeleteGroupInputBodySchema>;
+export type DeleteGroupResponseBody = z.infer<typeof DeleteGroupResponseBodySchema>;
 export type DeletePVCInput = z.infer<typeof DeletePVCInputSchema>;
 export type DeletePVCResponseBody = z.infer<typeof DeletePVCResponseBodySchema>;
 export type DeleteProjectInputBody = z.infer<typeof DeleteProjectInputBodySchema>;
@@ -2369,10 +2631,15 @@ export type DeleteServiceGroupInput = z.infer<typeof DeleteServiceGroupInputSche
 export type DeleteServiceGroupResponseBody = z.infer<typeof DeleteServiceGroupResponseBodySchema>;
 export type DeleteServiceInputBody = z.infer<typeof DeleteServiceInputBodySchema>;
 export type DeleteServiceResponseBody = z.infer<typeof DeleteServiceResponseBodySchema>;
+export type DeleteUserInputBody = z.infer<typeof DeleteUserInputBodySchema>;
+export type DeleteUserResponseBody = z.infer<typeof DeleteUserResponseBodySchema>;
 export type VariableDeleteInput = z.infer<typeof VariableDeleteInputSchema>;
 export type DeleteVariablesInputBody = z.infer<typeof DeleteVariablesInputBodySchema>;
 export type DeleteWebhookInputBody = z.infer<typeof DeleteWebhookInputBodySchema>;
 export type DeleteWebhookResponseBody = z.infer<typeof DeleteWebhookResponseBodySchema>;
+export type TemplateInputType = z.infer<typeof TemplateInputTypeSchema>;
+export type DeployedTemplateVolume = z.infer<typeof DeployedTemplateVolumeSchema>;
+export type DeployedTemplateInput = z.infer<typeof DeployedTemplateInputSchema>;
 export type DnsCheck = z.infer<typeof DnsCheckSchema>;
 export type DnsCheckResponseBody = z.infer<typeof DnsCheckResponseBodySchema>;
 export type DockerImage = z.infer<typeof DockerImageSchema>;
@@ -2392,6 +2659,7 @@ export type GeneratorType = z.infer<typeof GeneratorTypeSchema>;
 export type GetDatabaseResponseBody = z.infer<typeof GetDatabaseResponseBodySchema>;
 export type GetDeploymentResponseBody = z.infer<typeof GetDeploymentResponseBodySchema>;
 export type GetEnvironmentOutputBody = z.infer<typeof GetEnvironmentOutputBodySchema>;
+export type GetGroupResponseBody = z.infer<typeof GetGroupResponseBodySchema>;
 export type InstanceHealth = z.infer<typeof InstanceHealthSchema>;
 export type SimpleInstanceStatus = z.infer<typeof SimpleInstanceStatusSchema>;
 export type SimpleHealthStatus = z.infer<typeof SimpleHealthStatusSchema>;
@@ -2414,10 +2682,15 @@ export type ServiceGroupServiceInfo = z.infer<typeof ServiceGroupServiceInfoSche
 export type ServiceGroupInfoResponse = z.infer<typeof ServiceGroupInfoResponseSchema>;
 export type GetServiceGroupInfoResponseBody = z.infer<typeof GetServiceGroupInfoResponseBodySchema>;
 export type GetServiceGroupResponseBody = z.infer<typeof GetServiceGroupResponseBodySchema>;
+export type ServiceGroupTemplateInputsResponse = z.infer<
+  typeof ServiceGroupTemplateInputsResponseSchema
+>;
+export type GetServiceGroupTemplateInputsResponseBody = z.infer<
+  typeof GetServiceGroupTemplateInputsResponseBodySchema
+>;
 export type GetServiceResponseBody = z.infer<typeof GetServiceResponseBodySchema>;
 export type TeamResponse = z.infer<typeof TeamResponseSchema>;
 export type GetTeamResponseBody = z.infer<typeof GetTeamResponseBodySchema>;
-export type TemplateInputType = z.infer<typeof TemplateInputTypeSchema>;
 export type TemplateVolume = z.infer<typeof TemplateVolumeSchema>;
 export type TemplateInput = z.infer<typeof TemplateInputSchema>;
 export type TemplateVariableDisplay = z.infer<typeof TemplateVariableDisplaySchema>;
@@ -2459,6 +2732,16 @@ export type GithubRepositoryDetail = z.infer<typeof GithubRepositoryDetailSchema
 export type GithubRepositoryDetailResponseBody = z.infer<
   typeof GithubRepositoryDetailResponseBodySchema
 >;
+export type ResourceType = z.infer<typeof ResourceTypeSchema>;
+export type GrantGroupPermissionInputBody = z.infer<typeof GrantGroupPermissionInputBodySchema>;
+export type ResourceSelector = z.infer<typeof ResourceSelectorSchema>;
+export type PermissionResponse = z.infer<typeof PermissionResponseSchema>;
+export type GrantGroupPermissionResponseBody = z.infer<
+  typeof GrantGroupPermissionResponseBodySchema
+>;
+export type GroupMemberInputBody = z.infer<typeof GroupMemberInputBodySchema>;
+export type SuccessResponse = z.infer<typeof SuccessResponseSchema>;
+export type GroupMemberResponseBody = z.infer<typeof GroupMemberResponseBodySchema>;
 export type InstanceStatus = z.infer<typeof InstanceStatusSchema>;
 export type InstanceType = z.infer<typeof InstanceTypeSchema>;
 export type Item = z.infer<typeof ItemSchema>;
@@ -2468,6 +2751,12 @@ export type ListDeploymentResponseData = z.infer<typeof ListDeploymentResponseDa
 export type ListDeploymentsResponseBody = z.infer<typeof ListDeploymentsResponseBodySchema>;
 export type ListEndpointsResponseBody = z.infer<typeof ListEndpointsResponseBodySchema>;
 export type ListEnvironmentsOutputBody = z.infer<typeof ListEnvironmentsOutputBodySchema>;
+export type UserResponse = z.infer<typeof UserResponseSchema>;
+export type ListGroupMembersResponseBody = z.infer<typeof ListGroupMembersResponseBodySchema>;
+export type ListGroupPermissionsResponseBody = z.infer<
+  typeof ListGroupPermissionsResponseBodySchema
+>;
+export type ListGroupsResponseBody = z.infer<typeof ListGroupsResponseBodySchema>;
 export type PodPhase = z.infer<typeof PodPhaseSchema>;
 export type PodContainerStatus = z.infer<typeof PodContainerStatusSchema>;
 export type ListInstancesResponseBody = z.infer<typeof ListInstancesResponseBodySchema>;
@@ -2479,6 +2768,8 @@ export type ListServiceGroupResponseBody = z.infer<typeof ListServiceGroupRespon
 export type ListServiceResponseBody = z.infer<typeof ListServiceResponseBodySchema>;
 export type ListTagsResponseBody = z.infer<typeof ListTagsResponseBodySchema>;
 export type ListTemplatesResponseBody = z.infer<typeof ListTemplatesResponseBodySchema>;
+export type ListUserGroupsResponseBody = z.infer<typeof ListUserGroupsResponseBodySchema>;
+export type ListUsersResponseBody = z.infer<typeof ListUsersResponseBodySchema>;
 export type ListWebhooksResponseBody = z.infer<typeof ListWebhooksResponseBodySchema>;
 export type LogMetadata = z.infer<typeof LogMetadataSchema>;
 export type LogEvent = z.infer<typeof LogEventSchema>;
@@ -2488,7 +2779,6 @@ export type LogType = z.infer<typeof LogTypeSchema>;
 export type LoginInputBody = z.infer<typeof LoginInputBodySchema>;
 export type LogoutResponseBody = z.infer<typeof LogoutResponseBodySchema>;
 export type LokiDirection = z.infer<typeof LokiDirectionSchema>;
-export type UserAPIResponse = z.infer<typeof UserAPIResponseSchema>;
 export type MeResponseBody = z.infer<typeof MeResponseBodySchema>;
 export type QueryLogsResponseBody = z.infer<typeof QueryLogsResponseBodySchema>;
 export type RedeployInputBody = z.infer<typeof RedeployInputBodySchema>;
@@ -2511,6 +2801,10 @@ export type ResolveVariableReferenceResponseBody = z.infer<
 export type RestartInstancesInputBody = z.infer<typeof RestartInstancesInputBodySchema>;
 export type Restarted = z.infer<typeof RestartedSchema>;
 export type RestartServicesResponseBody = z.infer<typeof RestartServicesResponseBodySchema>;
+export type RevokeGroupPermissionInputBody = z.infer<typeof RevokeGroupPermissionInputBodySchema>;
+export type RevokeGroupPermissionResponseBody = z.infer<
+  typeof RevokeGroupPermissionResponseBodySchema
+>;
 export type S3BackendCreateInput = z.infer<typeof S3BackendCreateInputSchema>;
 export type S3TestResult = z.infer<typeof S3TestResultSchema>;
 export type SearchImagesResponseBody = z.infer<typeof SearchImagesResponseBodySchema>;
@@ -2540,8 +2834,12 @@ export type UpdateApplyResponseBody = z.infer<typeof UpdateApplyResponseBodySche
 export type UpdateCheckResponseBody = z.infer<typeof UpdateCheckResponseBodySchema>;
 export type UpdateEnvironmentInput = z.infer<typeof UpdateEnvironmentInputSchema>;
 export type UpdateEnvironmentResponseBody = z.infer<typeof UpdateEnvironmentResponseBodySchema>;
+export type UpdateGroupInputBody = z.infer<typeof UpdateGroupInputBodySchema>;
+export type UpdateGroupResponseBody = z.infer<typeof UpdateGroupResponseBodySchema>;
 export type UpdatePVCInput = z.infer<typeof UpdatePVCInputSchema>;
 export type UpdatePVCResponseBody = z.infer<typeof UpdatePVCResponseBodySchema>;
+export type UpdatePasswordInputBody = z.infer<typeof UpdatePasswordInputBodySchema>;
+export type UpdatePasswordResponseBody = z.infer<typeof UpdatePasswordResponseBodySchema>;
 export type UpdateProjectInput = z.infer<typeof UpdateProjectInputSchema>;
 export type UpdateProjectResponseBody = z.infer<typeof UpdateProjectResponseBodySchema>;
 export type UpdateRegistryCacheInput = z.infer<typeof UpdateRegistryCacheInputSchema>;
@@ -2549,6 +2847,12 @@ export type UpdateS3SourceInputBody = z.infer<typeof UpdateS3SourceInputBodySche
 export type UpdateS3SourceResponseBody = z.infer<typeof UpdateS3SourceResponseBodySchema>;
 export type UpdateServiceGroupInput = z.infer<typeof UpdateServiceGroupInputSchema>;
 export type UpdateServiceGroupResponseBody = z.infer<typeof UpdateServiceGroupResponseBodySchema>;
+export type UpdateServiceGroupTemplateInputsInput = z.infer<
+  typeof UpdateServiceGroupTemplateInputsInputSchema
+>;
+export type UpdateServiceGroupTemplateInputsResponseBody = z.infer<
+  typeof UpdateServiceGroupTemplateInputsResponseBodySchema
+>;
 export type UpdateServiceInput = z.infer<typeof UpdateServiceInputSchema>;
 export type UpdateStatusResponseBody = z.infer<typeof UpdateStatusResponseBodySchema>;
 export type UpdateTeamInputBody = z.infer<typeof UpdateTeamInputBodySchema>;
@@ -2558,6 +2862,8 @@ export type VariableUpdateBehavior = z.infer<typeof VariableUpdateBehaviorSchema
 export type VariableReferenceSource = z.infer<typeof VariableReferenceSourceSchema>;
 export type VariableReferenceInputItem = z.infer<typeof VariableReferenceInputItemSchema>;
 export type UpsertVariablesInputBody = z.infer<typeof UpsertVariablesInputBodySchema>;
+export type UserCreateInputBody = z.infer<typeof UserCreateInputBodySchema>;
+export type UserCreateResponseBody = z.infer<typeof UserCreateResponseBodySchema>;
 export type VariableReferenceResponse = z.infer<typeof VariableReferenceResponseSchema>;
 export type VariableResponseItem = z.infer<typeof VariableResponseItemSchema>;
 export type VariableResponse = z.infer<typeof VariableResponseSchema>;
@@ -2640,6 +2946,24 @@ export const repo_detailQuerySchema = z
     installation_id: z.number(),
     owner: z.string(),
     repo_name: z.string(),
+  })
+  .passthrough();
+
+export const get_groupQuerySchema = z
+  .object({
+    group_id: z.string(),
+  })
+  .passthrough();
+
+export const list_group_membersQuerySchema = z
+  .object({
+    group_id: z.string(),
+  })
+  .passthrough();
+
+export const list_group_permissionsQuerySchema = z
+  .object({
+    group_id: z.string(),
   })
   .passthrough();
 
@@ -2768,6 +3092,15 @@ export const list_service_groupsQuerySchema = z
   })
   .passthrough();
 
+export const get_service_group_template_inputsQuerySchema = z
+  .object({
+    id: z.string(), // The ID of the service group
+    team_id: z.string(), // The ID of the team
+    project_id: z.string(), // The ID of the project
+    environment_id: z.string(), // The ID of the environment
+  })
+  .passthrough();
+
 export const get_database_definitionQuerySchema = z
   .object({
     type: z.string(),
@@ -2883,6 +3216,12 @@ export const list_webhooksQuerySchema = z
     type: WebhookTypeSchema,
     team_id: z.string(),
     project_id: z.string().optional(),
+  })
+  .passthrough();
+
+export const list_user_groupsQuerySchema = z
+  .object({
+    user_id: z.string().optional(), // Defaults to the authenticated user when omitted
   })
   .passthrough();
 
@@ -4180,6 +4519,663 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
         },
       ),
     },
+    groups: {
+      create: async (
+        params: CreateGroupInputBody,
+        fetchOptions?: RequestInit,
+      ): Promise<CreateGroupResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/groups/create`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = CreateGroupInputBodySchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = CreateGroupResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      delete: async (
+        params: DeleteGroupInputBody,
+        fetchOptions?: RequestInit,
+      ): Promise<DeleteGroupResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/groups/delete`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = DeleteGroupInputBodySchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = DeleteGroupResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      get: async (
+        params: z.infer<typeof get_groupQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<GetGroupResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/groups/get`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+          const validatedQuery = get_groupQuerySchema.parse(params);
+          const queryKeys = ['group_id'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = GetGroupResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      list: async (
+        params?: undefined,
+        fetchOptions?: RequestInit,
+      ): Promise<ListGroupsResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/groups/list`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = ListGroupsResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      members: Object.assign(
+        async (
+          params: z.infer<typeof list_group_membersQuerySchema>,
+          fetchOptions?: RequestInit,
+        ): Promise<ListGroupMembersResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/groups/members`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+            const validatedQuery = list_group_membersQuerySchema.parse(params);
+            const queryKeys = ['group_id'];
+            queryKeys.forEach((key) => {
+              const value = validatedQuery[key as keyof typeof validatedQuery];
+              if (value !== undefined && value !== null) {
+                url.searchParams.append(key, String(value));
+              }
+            });
+            const options: RequestInit = {
+              method: 'GET',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
+            }
+            const data = await response.json();
+            const { data: parsedData, error } = ListGroupMembersResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+        {
+          add: async (
+            params: GroupMemberInputBody,
+            fetchOptions?: RequestInit,
+          ): Promise<GroupMemberResponseBody> => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
+              }
+              const url = new URL(
+                `${apiUrl}/groups/members/add`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
+
+              const options: RequestInit = {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                ...fetchOptions,
+              };
+              const validatedBody = GroupMemberInputBodySchema.parse(params);
+              options.body = JSON.stringify(validatedBody);
+              const response = await fetchFn(url.toString(), options);
+              if (!response.ok) {
+                console.log(
+                  `GO API request failed with status ${response.status}: ${response.statusText}`,
+                );
+                const data = await response.json();
+                console.log(`GO API request error`, data);
+                console.log(`Request URL is:`, url.toString());
+                console.log(`Request body is:`, validatedBody);
+                let errorMessage =
+                  '`GO API request failed with status ${response.status}: ${response.statusText}`';
+                if (
+                  data &&
+                  Array.isArray(data.details) &&
+                  data.details.length > 0 &&
+                  typeof data.details[0] === 'string'
+                ) {
+                  errorMessage = data.details[0];
+                }
+                throw new Error(errorMessage);
+              }
+              const data = await response.json();
+              const { data: parsedData, error } = GroupMemberResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
+            } catch (error) {
+              console.error('Error in API request:', error);
+              throw error;
+            }
+          },
+          remove: async (
+            params: GroupMemberInputBody,
+            fetchOptions?: RequestInit,
+          ): Promise<GroupMemberResponseBody> => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
+              }
+              const url = new URL(
+                `${apiUrl}/groups/members/remove`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
+
+              const options: RequestInit = {
+                method: 'DELETE',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                ...fetchOptions,
+              };
+              const validatedBody = GroupMemberInputBodySchema.parse(params);
+              options.body = JSON.stringify(validatedBody);
+              const response = await fetchFn(url.toString(), options);
+              if (!response.ok) {
+                console.log(
+                  `GO API request failed with status ${response.status}: ${response.statusText}`,
+                );
+                const data = await response.json();
+                console.log(`GO API request error`, data);
+                console.log(`Request URL is:`, url.toString());
+                console.log(`Request body is:`, validatedBody);
+                let errorMessage =
+                  '`GO API request failed with status ${response.status}: ${response.statusText}`';
+                if (
+                  data &&
+                  Array.isArray(data.details) &&
+                  data.details.length > 0 &&
+                  typeof data.details[0] === 'string'
+                ) {
+                  errorMessage = data.details[0];
+                }
+                throw new Error(errorMessage);
+              }
+              const data = await response.json();
+              const { data: parsedData, error } = GroupMemberResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
+            } catch (error) {
+              console.error('Error in API request:', error);
+              throw error;
+            }
+          },
+        },
+      ),
+      permissions: Object.assign(
+        async (
+          params: z.infer<typeof list_group_permissionsQuerySchema>,
+          fetchOptions?: RequestInit,
+        ): Promise<ListGroupPermissionsResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/groups/permissions`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+            const validatedQuery = list_group_permissionsQuerySchema.parse(params);
+            const queryKeys = ['group_id'];
+            queryKeys.forEach((key) => {
+              const value = validatedQuery[key as keyof typeof validatedQuery];
+              if (value !== undefined && value !== null) {
+                url.searchParams.append(key, String(value));
+              }
+            });
+            const options: RequestInit = {
+              method: 'GET',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              console.log(
+                `GO API request failed with status ${response.status}: ${response.statusText}`,
+              );
+              const data = await response.json();
+              console.log(`GO API request error`, data);
+              console.log(`Request URL is:`, url.toString());
+
+              let errorMessage =
+                '`GO API request failed with status ${response.status}: ${response.statusText}`';
+              if (
+                data &&
+                Array.isArray(data.details) &&
+                data.details.length > 0 &&
+                typeof data.details[0] === 'string'
+              ) {
+                errorMessage = data.details[0];
+              }
+              throw new Error(errorMessage);
+            }
+            const data = await response.json();
+            const { data: parsedData, error } =
+              ListGroupPermissionsResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
+          } catch (error) {
+            console.error('Error in API request:', error);
+            throw error;
+          }
+        },
+        {
+          grant: async (
+            params: GrantGroupPermissionInputBody,
+            fetchOptions?: RequestInit,
+          ): Promise<GrantGroupPermissionResponseBody> => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
+              }
+              const url = new URL(
+                `${apiUrl}/groups/permissions/grant`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
+
+              const options: RequestInit = {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                ...fetchOptions,
+              };
+              const validatedBody = GrantGroupPermissionInputBodySchema.parse(params);
+              options.body = JSON.stringify(validatedBody);
+              const response = await fetchFn(url.toString(), options);
+              if (!response.ok) {
+                console.log(
+                  `GO API request failed with status ${response.status}: ${response.statusText}`,
+                );
+                const data = await response.json();
+                console.log(`GO API request error`, data);
+                console.log(`Request URL is:`, url.toString());
+                console.log(`Request body is:`, validatedBody);
+                let errorMessage =
+                  '`GO API request failed with status ${response.status}: ${response.statusText}`';
+                if (
+                  data &&
+                  Array.isArray(data.details) &&
+                  data.details.length > 0 &&
+                  typeof data.details[0] === 'string'
+                ) {
+                  errorMessage = data.details[0];
+                }
+                throw new Error(errorMessage);
+              }
+              const data = await response.json();
+              const { data: parsedData, error } =
+                GrantGroupPermissionResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
+            } catch (error) {
+              console.error('Error in API request:', error);
+              throw error;
+            }
+          },
+          revoke: async (
+            params: RevokeGroupPermissionInputBody,
+            fetchOptions?: RequestInit,
+          ): Promise<RevokeGroupPermissionResponseBody> => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
+              }
+              const url = new URL(
+                `${apiUrl}/groups/permissions/revoke`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
+
+              const options: RequestInit = {
+                method: 'DELETE',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                ...fetchOptions,
+              };
+              const validatedBody = RevokeGroupPermissionInputBodySchema.parse(params);
+              options.body = JSON.stringify(validatedBody);
+              const response = await fetchFn(url.toString(), options);
+              if (!response.ok) {
+                console.log(
+                  `GO API request failed with status ${response.status}: ${response.statusText}`,
+                );
+                const data = await response.json();
+                console.log(`GO API request error`, data);
+                console.log(`Request URL is:`, url.toString());
+                console.log(`Request body is:`, validatedBody);
+                let errorMessage =
+                  '`GO API request failed with status ${response.status}: ${response.statusText}`';
+                if (
+                  data &&
+                  Array.isArray(data.details) &&
+                  data.details.length > 0 &&
+                  typeof data.details[0] === 'string'
+                ) {
+                  errorMessage = data.details[0];
+                }
+                throw new Error(errorMessage);
+              }
+              const data = await response.json();
+              const { data: parsedData, error } =
+                RevokeGroupPermissionResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
+            } catch (error) {
+              console.error('Error in API request:', error);
+              throw error;
+            }
+          },
+        },
+      ),
+      update: async (
+        params: UpdateGroupInputBody,
+        fetchOptions?: RequestInit,
+      ): Promise<UpdateGroupResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/groups/update`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'PUT',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = UpdateGroupInputBodySchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = UpdateGroupResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+    },
     instances: {
       health: async (
         params: z.infer<typeof get_instance_healthQuerySchema>,
@@ -5303,6 +6299,64 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           const data = await response.json();
           const { data: parsedData, error } = ListServiceGroupResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      templateInputs: async (
+        params: UpdateServiceGroupTemplateInputsInput,
+        fetchOptions?: RequestInit,
+      ): Promise<UpdateServiceGroupTemplateInputsResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/service_groups/template-inputs`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'PUT',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = UpdateServiceGroupTemplateInputsInputSchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
+          }
+          const data = await response.json();
+          const { data: parsedData, error } =
+            UpdateServiceGroupTemplateInputsResponseBodySchema.safeParse(data);
           if (error) {
             console.error('Response validation error:', error);
             console.error('Response data:', data);
@@ -8279,6 +9333,239 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
       },
     },
     users: {
+      create: async (
+        params: UserCreateInputBody,
+        fetchOptions?: RequestInit,
+      ): Promise<UserCreateResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/users/create`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = UserCreateInputBodySchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = UserCreateResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      delete: async (
+        params: DeleteUserInputBody,
+        fetchOptions?: RequestInit,
+      ): Promise<DeleteUserResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/users/delete`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = DeleteUserInputBodySchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = DeleteUserResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      groups: async (
+        params: z.infer<typeof list_user_groupsQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<ListUserGroupsResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/users/groups`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+          const validatedQuery = list_user_groupsQuerySchema.parse(params);
+          const queryKeys = ['user_id'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = ListUserGroupsResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      list: async (
+        params?: undefined,
+        fetchOptions?: RequestInit,
+      ): Promise<ListUsersResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/users/list`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = ListUsersResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
       me: async (params?: undefined, fetchOptions?: RequestInit): Promise<MeResponseBody> => {
         try {
           if (!apiUrl || typeof apiUrl !== 'string') {
@@ -8321,6 +9608,63 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           const data = await response.json();
           const { data: parsedData, error } = MeResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          console.error('Error in API request:', error);
+          throw error;
+        }
+      },
+      updatePassword: async (
+        params: UpdatePasswordInputBody,
+        fetchOptions?: RequestInit,
+      ): Promise<UpdatePasswordResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/users/update-password`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'PUT',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = UpdatePasswordInputBodySchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            console.log(
+              `GO API request failed with status ${response.status}: ${response.statusText}`,
+            );
+            const data = await response.json();
+            console.log(`GO API request error`, data);
+            console.log(`Request URL is:`, url.toString());
+            console.log(`Request body is:`, validatedBody);
+            let errorMessage =
+              '`GO API request failed with status ${response.status}: ${response.statusText}`';
+            if (
+              data &&
+              Array.isArray(data.details) &&
+              data.details.length > 0 &&
+              typeof data.details[0] === 'string'
+            ) {
+              errorMessage = data.details[0];
+            }
+            throw new Error(errorMessage);
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = UpdatePasswordResponseBodySchema.safeParse(data);
           if (error) {
             console.error('Response validation error:', error);
             console.error('Response data:', data);

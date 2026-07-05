@@ -205,7 +205,7 @@ func (self *VariablesService) ResolveAvailableReferenceValue(ctx context.Context
 	}
 
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
-		return "", err
+		return "", errdefs.MaskAsNotFound(err, "Resource not found")
 	}
 
 	client, err := self.k8s.CreateClientWithToken(bearerToken)

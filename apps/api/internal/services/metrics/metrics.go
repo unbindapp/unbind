@@ -55,7 +55,7 @@ func (self *MetricsService) validatePermissionsAndParseInputs(ctx context.Contex
 	}
 
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, nil, errdefs.MaskAsNotFound(err, "Resource not found")
 	}
 
 	team, err := self.repo.Team().GetByID(ctx, input.TeamID)

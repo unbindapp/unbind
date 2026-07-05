@@ -100,6 +100,15 @@ func (e ErrorType) String() string {
 	return "ErrUnknown"
 }
 
+// MaskAsNotFound converts an authorization failure into a not-found error so
+// unviewable resources are indistinguishable from missing ones.
+func MaskAsNotFound(err error, message string) error {
+	if errors.Is(err, ErrUnauthorized) {
+		return NewCustomError(ErrTypeNotFound, message)
+	}
+	return err
+}
+
 type CustomError struct {
 	Type    ErrorType
 	Message string

@@ -10,33 +10,35 @@ import (
 
 // ServiceResponse defines the response structure for service operations
 type ServiceResponse struct {
-	ID                       uuid.UUID              `json:"id" format:"uuid"`
-	Type                     schema.ServiceType     `json:"type"`
-	KubernetesName           string                 `json:"kubernetes_name"`
-	Name                     string                 `json:"name"`
-	Description              string                 `json:"description"`
-	EnvironmentID            uuid.UUID              `json:"environment_id" format:"uuid"`
-	GitHubInstallationID     *int64                 `json:"github_installation_id,omitempty"`
-	GitRepository            *string                `json:"git_repository,omitempty"`
-	GitRepositoryOwner       *string                `json:"git_repository_owner,omitempty"`
-	CreatedAt                time.Time              `json:"created_at"`
-	UpdatedAt                time.Time              `json:"updated_at"`
-	CurrentDeployment        *DeploymentResponse    `json:"current_deployment,omitempty"`
-	LastDeployment           *DeploymentResponse    `json:"last_deployment,omitempty"`
-	LastSuccessfulDeployment *DeploymentResponse    `json:"last_successful_deployment,omitempty"`
-	Config                   *ServiceConfigResponse `json:"config"`
-	DatabaseVersion          *string                `json:"database_version,omitempty"`
-	DatabaseType             *string                `json:"database_type,omitempty"`
-	Template                 *TemplateShortResponse `json:"template,omitempty"`
-	TemplateInstanceID       *uuid.UUID             `json:"template_instance_id,omitempty" format:"uuid"`
-	ServiceGroup             *ServiceGroupResponse  `json:"service_group,omitempty"`
-	DetectedPorts            []schema.PortSpec      `json:"detected_ports" nullable:"false"`
+	ID                       uuid.UUID                `json:"id" format:"uuid"`
+	Type                     schema.ServiceType       `json:"type"`
+	KubernetesName           string                   `json:"kubernetes_name"`
+	Name                     string                   `json:"name"`
+	Description              string                   `json:"description"`
+	EnvironmentID            uuid.UUID                `json:"environment_id" format:"uuid"`
+	GitHubInstallationID     *int64                   `json:"github_installation_id,omitempty"`
+	GitRepository            *string                  `json:"git_repository,omitempty"`
+	GitRepositoryOwner       *string                  `json:"git_repository_owner,omitempty"`
+	CreatedAt                time.Time                `json:"created_at"`
+	UpdatedAt                time.Time                `json:"updated_at"`
+	CurrentDeployment        *DeploymentResponse      `json:"current_deployment,omitempty"`
+	LastDeployment           *DeploymentResponse      `json:"last_deployment,omitempty"`
+	LastSuccessfulDeployment *DeploymentResponse      `json:"last_successful_deployment,omitempty"`
+	Config                   *ServiceConfigResponse   `json:"config"`
+	DatabaseVersion          *string                  `json:"database_version,omitempty"`
+	DatabaseType             *string                  `json:"database_type,omitempty"`
+	Template                 *TemplateShortResponse   `json:"template,omitempty"`
+	TemplateInstanceID       *uuid.UUID               `json:"template_instance_id,omitempty" format:"uuid"`
+	ServiceGroup             *ServiceGroupResponse    `json:"service_group,omitempty"`
+	DetectedPorts            []schema.PortSpec        `json:"detected_ports" nullable:"false"`
+	Permissions              []schema.PermittedAction `json:"permissions" nullable:"false" doc:"Actions the current user can perform on this resource"`
 }
 
 // TransformServiceEntity transforms an ent.Service entity into a ServiceResponse
 func TransformServiceEntity(entity *ent.Service) *ServiceResponse {
 	response := &ServiceResponse{
 		DetectedPorts: []schema.PortSpec{},
+		Permissions:   []schema.PermittedAction{},
 	}
 	if entity != nil {
 		response = &ServiceResponse{

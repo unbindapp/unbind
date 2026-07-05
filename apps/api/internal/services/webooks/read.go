@@ -30,7 +30,7 @@ func (self *WebhooksService) GetWebhookByID(ctx context.Context, requesterUserID
 	}
 
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
-		return nil, err
+		return nil, errdefs.MaskAsNotFound(err, "Webhook not found")
 	}
 
 	webhook, err := self.repo.Webhooks().GetByID(ctx, input.ID)
@@ -82,7 +82,7 @@ func (self *WebhooksService) ListWebhooks(ctx context.Context, requesterUserID u
 	}
 
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
-		return nil, err
+		return nil, errdefs.MaskAsNotFound(err, "Team not found")
 	}
 
 	webhooks := []*ent.Webhook{}

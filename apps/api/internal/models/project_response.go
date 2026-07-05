@@ -6,21 +6,23 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/ent/schema"
 )
 
 type ProjectResponse struct {
-	ID                   uuid.UUID              `json:"id" format:"uuid"`
-	KubernetesName       string                 `json:"kubernetes_name"`
-	Name                 string                 `json:"name"`
-	Description          *string                `json:"description"`
-	Status               string                 `json:"status"`
-	TeamID               uuid.UUID              `json:"team_id" format:"uuid"`
-	CreatedAt            time.Time              `json:"created_at"`
-	DefaultEnvironmentID *uuid.UUID             `json:"default_environment_id,omitempty" format:"uuid"`
-	ServiceCount         int                    `json:"service_count,omitempty"`
-	ServiceIcons         []string               `json:"service_icons,omitempty" nullable:"false"`
-	Environments         []*EnvironmentResponse `json:"environments" nullable:"false"`
-	EnvironmentCount     int                    `json:"environment_count"`
+	ID                   uuid.UUID                `json:"id" format:"uuid"`
+	KubernetesName       string                   `json:"kubernetes_name"`
+	Name                 string                   `json:"name"`
+	Description          *string                  `json:"description"`
+	Status               string                   `json:"status"`
+	TeamID               uuid.UUID                `json:"team_id" format:"uuid"`
+	CreatedAt            time.Time                `json:"created_at"`
+	DefaultEnvironmentID *uuid.UUID               `json:"default_environment_id,omitempty" format:"uuid"`
+	ServiceCount         int                      `json:"service_count,omitempty"`
+	ServiceIcons         []string                 `json:"service_icons,omitempty" nullable:"false"`
+	Environments         []*EnvironmentResponse   `json:"environments" nullable:"false"`
+	EnvironmentCount     int                      `json:"environment_count"`
+	Permissions          []schema.PermittedAction `json:"permissions" nullable:"false" doc:"Actions the current user can perform on this resource"`
 }
 
 func (self *ProjectResponse) AttachServiceSummary(counts map[uuid.UUID]int, providerSummaries map[uuid.UUID][]string) {
@@ -65,6 +67,7 @@ func TransformProjectEntity(entity *ent.Project) *ProjectResponse {
 			CreatedAt:        entity.CreatedAt,
 			Environments:     TransformEnvironmentEntitities(entity.Edges.Environments),
 			EnvironmentCount: len(entity.Edges.Environments),
+			Permissions:      []schema.PermittedAction{},
 		}
 	}
 	return response

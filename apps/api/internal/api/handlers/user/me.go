@@ -2,16 +2,14 @@ package user_handler
 
 import (
 	"context"
-	"time"
 
-	"github.com/google/uuid"
-	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/internal/api/server"
+	"github.com/unbindapp/unbind-api/internal/models"
 )
 
 type MeResponse struct {
 	Body struct {
-		Data *UserAPIResponse `json:"data"`
+		Data *models.UserResponse `json:"data"`
 	}
 }
 
@@ -23,25 +21,6 @@ func (self *HandlerGroup) Me(ctx context.Context, _ *server.BaseAuthInput) (*MeR
 	}
 
 	resp := &MeResponse{}
-	resp.Body.Data = transformUserEntity(user)
+	resp.Body.Data = models.TransformUserEntity(user)
 	return resp, nil
-}
-
-func transformUserEntity(entity *ent.User) *UserAPIResponse {
-	return &UserAPIResponse{
-		ID:        entity.ID,
-		CreatedAt: entity.CreatedAt,
-		UpdatedAt: entity.UpdatedAt,
-		Email:     entity.Email,
-	}
-}
-
-type UserAPIResponse struct {
-	ID uuid.UUID `json:"id"`
-	// The time at which the entity was created.
-	CreatedAt time.Time `json:"created_at,omitempty"`
-	// The time at which the entity was last updated.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// Email holds the value of the "email" field.
-	Email string `json:"email,omitempty"`
 }

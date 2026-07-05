@@ -41,6 +41,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/repositories/repositories"
 	deployments_service "github.com/unbindapp/unbind-api/internal/services/deployments"
 	environment_service "github.com/unbindapp/unbind-api/internal/services/environment"
+	group_service "github.com/unbindapp/unbind-api/internal/services/group"
 	instance_service "github.com/unbindapp/unbind-api/internal/services/instances"
 	logs_service "github.com/unbindapp/unbind-api/internal/services/logs"
 	metric_service "github.com/unbindapp/unbind-api/internal/services/metrics"
@@ -52,6 +53,7 @@ import (
 	team_service "github.com/unbindapp/unbind-api/internal/services/team"
 	templates_service "github.com/unbindapp/unbind-api/internal/services/templates"
 	terminal_service "github.com/unbindapp/unbind-api/internal/services/terminal"
+	user_service "github.com/unbindapp/unbind-api/internal/services/user"
 	variables_service "github.com/unbindapp/unbind-api/internal/services/variables"
 	webhooks_service "github.com/unbindapp/unbind-api/internal/services/webooks"
 	"github.com/unbindapp/unbind-api/internal/web"
@@ -151,6 +153,9 @@ func startAPI(cfg *config.Config) {
 	registryCacheManager := registrycache.NewManager(cfg, kubeClient)
 
 	// Create services
+	rbacManager := k8s.NewRBACManager(repo, kubeClient)
+	groupService := group_service.NewGroupService(repo, rbacManager)
+	userService := user_service.NewUserService(repo)
 	teamService := team_service.NewTeamService(repo, kubeClient)
 	projectService := project_service.NewProjectService(cfg, repo, kubeClient, webhooksService, deploymentController)
 	environmentService := environment_service.NewEnvironmentService(repo, kubeClient, deploymentController)
@@ -188,6 +193,8 @@ func startAPI(cfg *config.Config) {
 		DatabaseProvider:     dbProvider,
 		DNSChecker:           utils.NewDNSChecker(),
 		UpdateManager:        updater.New(cfg, Version, kubeClient, redisClient),
+		GroupService:         groupService,
+		UserService:          userService,
 		TeamService:          teamService,
 		ProjectService:       projectService,
 		ServiceService:       serviceService,
