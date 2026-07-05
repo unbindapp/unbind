@@ -56,6 +56,9 @@ func (self *StorageService) validatePermissionsAndParseInputs(ctx context.Contex
 	}
 
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
+		if action == schema.ActionViewer {
+			return nil, nil, nil, errdefs.MaskAsNotFound(err, "Resource not found")
+		}
 		return nil, nil, nil, err
 	}
 

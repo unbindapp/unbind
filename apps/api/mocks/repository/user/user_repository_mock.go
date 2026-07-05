@@ -113,6 +113,199 @@ func (_c *UserRepositoryMock_Authenticate_Call) RunAndReturn(run func(ctx contex
 	return _c
 }
 
+// Create provides a mock function for the type UserRepositoryMock
+func (_mock *UserRepositoryMock) Create(ctx context.Context, email string, password string) (*ent.User, error) {
+	ret := _mock.Called(ctx, email, password)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Create")
+	}
+
+	var r0 *ent.User
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) (*ent.User, error)); ok {
+		return returnFunc(ctx, email, password)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) *ent.User); ok {
+		r0 = returnFunc(ctx, email, password)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.User)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = returnFunc(ctx, email, password)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// UserRepositoryMock_Create_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Create'
+type UserRepositoryMock_Create_Call struct {
+	*mock.Call
+}
+
+// Create is a helper method to define mock.On call
+//   - ctx context.Context
+//   - email string
+//   - password string
+func (_e *UserRepositoryMock_Expecter) Create(ctx any, email any, password any) *UserRepositoryMock_Create_Call {
+	return &UserRepositoryMock_Create_Call{Call: _e.mock.On("Create", ctx, email, password)}
+}
+
+func (_c *UserRepositoryMock_Create_Call) Run(run func(ctx context.Context, email string, password string)) *UserRepositoryMock_Create_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *UserRepositoryMock_Create_Call) Return(user *ent.User, err error) *UserRepositoryMock_Create_Call {
+	_c.Call.Return(user, err)
+	return _c
+}
+
+func (_c *UserRepositoryMock_Create_Call) RunAndReturn(run func(ctx context.Context, email string, password string) (*ent.User, error)) *UserRepositoryMock_Create_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Delete provides a mock function for the type UserRepositoryMock
+func (_mock *UserRepositoryMock) Delete(ctx context.Context, userID uuid.UUID) error {
+	ret := _mock.Called(ctx, userID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, userID)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// UserRepositoryMock_Delete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Delete'
+type UserRepositoryMock_Delete_Call struct {
+	*mock.Call
+}
+
+// Delete is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID uuid.UUID
+func (_e *UserRepositoryMock_Expecter) Delete(ctx any, userID any) *UserRepositoryMock_Delete_Call {
+	return &UserRepositoryMock_Delete_Call{Call: _e.mock.On("Delete", ctx, userID)}
+}
+
+func (_c *UserRepositoryMock_Delete_Call) Run(run func(ctx context.Context, userID uuid.UUID)) *UserRepositoryMock_Delete_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *UserRepositoryMock_Delete_Call) Return(err error) *UserRepositoryMock_Delete_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *UserRepositoryMock_Delete_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID) error) *UserRepositoryMock_Delete_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetAll provides a mock function for the type UserRepositoryMock
+func (_mock *UserRepositoryMock) GetAll(ctx context.Context) ([]*ent.User, error) {
+	ret := _mock.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetAll")
+	}
+
+	var r0 []*ent.User
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) ([]*ent.User, error)); ok {
+		return returnFunc(ctx)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context) []*ent.User); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.User)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = returnFunc(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// UserRepositoryMock_GetAll_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAll'
+type UserRepositoryMock_GetAll_Call struct {
+	*mock.Call
+}
+
+// GetAll is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *UserRepositoryMock_Expecter) GetAll(ctx any) *UserRepositoryMock_GetAll_Call {
+	return &UserRepositoryMock_GetAll_Call{Call: _e.mock.On("GetAll", ctx)}
+}
+
+func (_c *UserRepositoryMock_GetAll_Call) Run(run func(ctx context.Context)) *UserRepositoryMock_GetAll_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *UserRepositoryMock_GetAll_Call) Return(users []*ent.User, err error) *UserRepositoryMock_GetAll_Call {
+	_c.Call.Return(users, err)
+	return _c
+}
+
+func (_c *UserRepositoryMock_GetAll_Call) RunAndReturn(run func(ctx context.Context) ([]*ent.User, error)) *UserRepositoryMock_GetAll_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetByEmail provides a mock function for the type UserRepositoryMock
 func (_mock *UserRepositoryMock) GetByEmail(ctx context.Context, email string) (*ent.User, error) {
 	ret := _mock.Called(ctx, email)
@@ -313,6 +506,69 @@ func (_c *UserRepositoryMock_GetGroups_Call) Return(groups []*ent.Group, err err
 }
 
 func (_c *UserRepositoryMock_GetGroups_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID) ([]*ent.Group, error)) *UserRepositoryMock_GetGroups_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdatePassword provides a mock function for the type UserRepositoryMock
+func (_mock *UserRepositoryMock) UpdatePassword(ctx context.Context, userID uuid.UUID, password string) error {
+	ret := _mock.Called(ctx, userID, password)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdatePassword")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string) error); ok {
+		r0 = returnFunc(ctx, userID, password)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// UserRepositoryMock_UpdatePassword_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdatePassword'
+type UserRepositoryMock_UpdatePassword_Call struct {
+	*mock.Call
+}
+
+// UpdatePassword is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID uuid.UUID
+//   - password string
+func (_e *UserRepositoryMock_Expecter) UpdatePassword(ctx any, userID any, password any) *UserRepositoryMock_UpdatePassword_Call {
+	return &UserRepositoryMock_UpdatePassword_Call{Call: _e.mock.On("UpdatePassword", ctx, userID, password)}
+}
+
+func (_c *UserRepositoryMock_UpdatePassword_Call) Run(run func(ctx context.Context, userID uuid.UUID, password string)) *UserRepositoryMock_UpdatePassword_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *UserRepositoryMock_UpdatePassword_Call) Return(err error) *UserRepositoryMock_UpdatePassword_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *UserRepositoryMock_UpdatePassword_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, password string) error) *UserRepositoryMock_UpdatePassword_Call {
 	_c.Call.Return(run)
 	return _c
 }

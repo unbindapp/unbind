@@ -65,6 +65,9 @@ func (self *ServiceGroupService) loadTemplateInputContext(ctx context.Context, r
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, []permissions_repo.PermissionCheck{
 		{Action: action, ResourceType: schema.ResourceTypeEnvironment, ResourceID: environmentID},
 	}); err != nil {
+		if action == schema.ActionViewer {
+			return nil, errdefs.MaskAsNotFound(err, "Service group not found")
+		}
 		return nil, err
 	}
 

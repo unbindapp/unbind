@@ -17,6 +17,7 @@ import (
 	docker_handler "github.com/unbindapp/unbind-api/internal/api/handlers/docker"
 	environments_handler "github.com/unbindapp/unbind-api/internal/api/handlers/environments"
 	github_handler "github.com/unbindapp/unbind-api/internal/api/handlers/github"
+	groups_handler "github.com/unbindapp/unbind-api/internal/api/handlers/groups"
 	instances_handler "github.com/unbindapp/unbind-api/internal/api/handlers/instances"
 	logs_handler "github.com/unbindapp/unbind-api/internal/api/handlers/logs"
 	metrics_handler "github.com/unbindapp/unbind-api/internal/api/handlers/metrics"
@@ -141,6 +142,7 @@ func RegisterRoutes(api huma.API, srvImpl *server.Server, mw *middleware.Middlew
 	register("/webhook", "Webhook", false, webhook_handler.RegisterHandlers)
 	register("/system", "System", true, system_handler.RegisterHandlers)
 	register("/users", "Users", true, user_handler.RegisterHandlers)
+	register("/groups", "Groups", true, groups_handler.RegisterHandlers)
 	register("/github", "GitHub", true, github_handler.RegisterHandlers)
 	register("/teams", "Teams", true, teams_handler.RegisterHandlers)
 	register("/projects", "Projects", true, projects_handler.RegisterHandlers)

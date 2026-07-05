@@ -44,4 +44,6 @@ type PermissionsRepositoryInterface interface {
 	Delete(ctx context.Context, id uuid.UUID) error
 	RemoveFromGroup(ctx context.Context, groupID, permissionID uuid.UUID) error
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.Permission, error)
+	// GetUserPermissionSet loads all permissions granted through the user's groups in a single query.
+	GetUserPermissionSet(ctx context.Context, userID uuid.UUID) (*UserPermissionSet, error)
 }

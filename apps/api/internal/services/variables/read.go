@@ -48,7 +48,7 @@ func (self *VariablesService) GetVariables(ctx context.Context, userID uuid.UUID
 		userID,
 		permissionChecks,
 	); err != nil {
-		return nil, err
+		return nil, errdefs.MaskAsNotFound(err, "Resource not found")
 	}
 
 	team, _, _, service, secretName, err := self.validateBaseInputs(ctx, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID)

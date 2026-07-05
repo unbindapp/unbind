@@ -18,6 +18,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/repositories/repositories"
 	deployments_service "github.com/unbindapp/unbind-api/internal/services/deployments"
 	environment_service "github.com/unbindapp/unbind-api/internal/services/environment"
+	group_service "github.com/unbindapp/unbind-api/internal/services/group"
 	instance_service "github.com/unbindapp/unbind-api/internal/services/instances"
 	logs_service "github.com/unbindapp/unbind-api/internal/services/logs"
 	metric_service "github.com/unbindapp/unbind-api/internal/services/metrics"
@@ -29,6 +30,7 @@ import (
 	team_service "github.com/unbindapp/unbind-api/internal/services/team"
 	template_service "github.com/unbindapp/unbind-api/internal/services/templates"
 	terminal_service "github.com/unbindapp/unbind-api/internal/services/terminal"
+	user_service "github.com/unbindapp/unbind-api/internal/services/user"
 	variables_service "github.com/unbindapp/unbind-api/internal/services/variables"
 	webhooks_service "github.com/unbindapp/unbind-api/internal/services/webooks"
 	"github.com/unbindapp/unbind-api/pkg/databases"
@@ -47,6 +49,11 @@ type DeletedResponse struct {
 	Deleted bool   `json:"deleted"`
 }
 
+// SuccessResponse is used for mutations that return no resource.
+type SuccessResponse struct {
+	Success bool `json:"success"`
+}
+
 // Server implements generated.ServerInterface
 type Server struct {
 	KubeClient           *k8s.KubeClient
@@ -61,6 +68,8 @@ type Server struct {
 	TokenManager         *auth.TokenManager
 	UpdateManager        *updater.Updater
 	// Services
+	GroupService        *group_service.GroupService
+	UserService         *user_service.UserService
 	TeamService         *team_service.TeamService
 	ProjectService      *project_service.ProjectService
 	ServiceService      *service_service.ServiceService

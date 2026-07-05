@@ -24,7 +24,7 @@ func (self *MetricsService) GetVolumeMetrics(ctx context.Context, requesterUserI
 	}
 
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
-		return nil, err
+		return nil, errdefs.MaskAsNotFound(err, "Team not found")
 	}
 
 	team, err := self.repo.Team().GetByID(ctx, input.TeamID)

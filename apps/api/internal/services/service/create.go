@@ -520,7 +520,13 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		return nil, err
 	}
 
+	permSet, err := self.repo.Permissions().GetUserPermissionSet(ctx, requesterUserID)
+	if err != nil {
+		return nil, err
+	}
+
 	resp := models.TransformServiceEntity(service)
+	resp.Permissions = permSet.ServiceActions(input.TeamID, input.ProjectID, input.EnvironmentID, service.ID)
 
 	if volume, ok := volumeMap[service.ID]; ok {
 		resp.Config.Volumes = volume

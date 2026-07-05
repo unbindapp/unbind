@@ -55,7 +55,7 @@ func (self *InstanceService) validatePermissionsAndParseInputs(ctx context.Conte
 	}
 
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, nil, errdefs.MaskAsNotFound(err, "Resource not found")
 	}
 
 	team, err := self.repo.Team().GetByID(ctx, teamID)

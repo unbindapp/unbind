@@ -44,6 +44,9 @@ func (suite *CreateEnvironmentSuite) SetupTest() {
 		deployCtl: &deployctl.DeploymentController{}, // Can be nil or mock if needed
 	}
 
+	suite.MockPermissionsRepo.EXPECT().GetUserPermissionSet(mock.Anything, mock.Anything).
+		Return(&permissions_repo.UserPermissionSet{}, nil).Maybe()
+
 	// Test data
 	suite.testUserID = uuid.New()
 	suite.testTeamID = uuid.New()

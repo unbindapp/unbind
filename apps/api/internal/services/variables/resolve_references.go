@@ -26,7 +26,7 @@ func (self *VariablesService) ResolveSingleReference(ctx context.Context, reques
 	}
 
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
-		return "", err
+		return "", errdefs.MaskAsNotFound(err, "Service not found")
 	}
 
 	client, err := self.k8s.CreateClientWithToken(bearerToken)

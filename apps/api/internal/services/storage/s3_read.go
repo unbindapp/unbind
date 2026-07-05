@@ -25,7 +25,7 @@ func (self *StorageService) GetS3StorageByID(ctx context.Context, requesterUserI
 	}
 
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
-		return nil, err
+		return nil, errdefs.MaskAsNotFound(err, "S3 source not found")
 	}
 
 	team, err := self.repo.Team().GetByID(ctx, teamID)
@@ -96,7 +96,7 @@ func (self *StorageService) ListS3StorageBackends(ctx context.Context, requester
 	}
 
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
-		return nil, err
+		return nil, errdefs.MaskAsNotFound(err, "Team not found")
 	}
 
 	team, err := self.repo.Team().GetByID(ctx, teamID)

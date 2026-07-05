@@ -113,5 +113,16 @@ func (self *ProjectService) UpdateProject(ctx context.Context, requesterUserID u
 		}
 	}()
 
-	return models.TransformProjectEntity(project), nil
+	permSet, err := self.repo.Permissions().GetUserPermissionSet(ctx, requesterUserID)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := models.TransformProjectEntity(project)
+	resp.Permissions = permSet.ProjectActions(input.TeamID, project.ID)
+	for _, environment := range resp.Environments {
+		environment.Permissions = permSet.EnvironmentActions(input.TeamID, project.ID, environment.ID)
+	}
+
+	return resp, nil
 }

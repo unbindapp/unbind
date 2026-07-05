@@ -45,5 +45,13 @@ func (self *TeamService) UpdateTeam(ctx context.Context, userID uuid.UUID, input
 		return nil, err
 	}
 
-	return models.TransformTeamEntity(updatedTeam), nil
+	permSet, err := self.repo.Permissions().GetUserPermissionSet(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := models.TransformTeamEntity(updatedTeam)
+	resp.Permissions = permSet.TeamActions(input.ID)
+
+	return resp, nil
 }

@@ -24,7 +24,7 @@ func (self *ServiceService) GetDNSForService(ctx context.Context, requesterUserI
 	}
 
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
-		return nil, err
+		return nil, errdefs.MaskAsNotFound(err, "Service not found")
 	}
 
 	env, project, err := self.VerifyInputs(ctx, teamID, projectID, environmentID)

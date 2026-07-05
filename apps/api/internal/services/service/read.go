@@ -45,7 +45,15 @@ func (self *ServiceService) GetServicesInEnvironment(ctx context.Context, reques
 		return nil, err
 	}
 
+	permSet, err := self.repo.Permissions().GetUserPermissionSet(ctx, requesterUserID)
+	if err != nil {
+		return nil, err
+	}
+
 	resp := models.TransformServiceEntities(services)
+	for _, service := range resp {
+		service.Permissions = permSet.ServiceActions(teamID, projectID, environmentID, service.ID)
+	}
 
 	if len(volumeMap) > 0 {
 		for i := range resp {
@@ -81,7 +89,7 @@ func (self *ServiceService) GetServiceByID(ctx context.Context, requesterUserID 
 	}
 
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
-		return nil, err
+		return nil, errdefs.MaskAsNotFound(err, "Service not found")
 	}
 
 	_, project, err := self.VerifyInputs(ctx, teamID, projectID, environmentID)
@@ -104,7 +112,13 @@ func (self *ServiceService) GetServiceByID(ctx context.Context, requesterUserID 
 		return nil, err
 	}
 
+	permSet, err := self.repo.Permissions().GetUserPermissionSet(ctx, requesterUserID)
+	if err != nil {
+		return nil, err
+	}
+
 	resp := models.TransformServiceEntity(service)
+	resp.Permissions = permSet.ServiceActions(teamID, projectID, environmentID, serviceID)
 
 	volumes := volumeMap[service.ID]
 	if volumes != nil {

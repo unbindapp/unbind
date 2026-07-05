@@ -11,6 +11,10 @@ import (
 
 // UserRepositoryInterface ...
 type UserRepositoryInterface interface {
+	GetAll(ctx context.Context) ([]*ent.User, error)
+	Create(ctx context.Context, email, password string) (*ent.User, error)
+	UpdatePassword(ctx context.Context, userID uuid.UUID, password string) error
+	Delete(ctx context.Context, userID uuid.UUID) error
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.User, error)
 	GetByEmail(ctx context.Context, email string) (*ent.User, error)
 	// Authenticate verifies a user's credentials and returns the user if successful

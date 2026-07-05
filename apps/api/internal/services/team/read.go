@@ -25,7 +25,17 @@ func (self *TeamService) ListTeams(ctx context.Context, userID uuid.UUID, bearer
 		return nil, fmt.Errorf("error getting all teams: %w", err)
 	}
 
-	return models.TransformTeamEntities(dbTeams), nil
+	permSet, err := self.repo.Permissions().GetUserPermissionSet(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := models.TransformTeamEntities(dbTeams)
+	for _, team := range resp {
+		team.Permissions = permSet.TeamActions(team.ID)
+	}
+
+	return resp, nil
 }
 
 // GetTeamByID retrieves a team by ID
@@ -43,7 +53,7 @@ func (self *TeamService) GetTeamByID(ctx context.Context, userID, teamID uuid.UU
 		userID,
 		permissionChecks,
 	); err != nil {
-		return nil, err
+		return nil, errdefs.MaskAsNotFound(err, "Team not found")
 	}
 
 	dbTeam, err := self.repo.Team().GetByID(ctx, teamID)
@@ -54,5 +64,13 @@ func (self *TeamService) GetTeamByID(ctx context.Context, userID, teamID uuid.UU
 		return nil, err
 	}
 
-	return models.TransformTeamEntity(dbTeam), nil
+	permSet, err := self.repo.Permissions().GetUserPermissionSet(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := models.TransformTeamEntity(dbTeam)
+	resp.Permissions = permSet.TeamActions(teamID)
+
+	return resp, nil
 }
