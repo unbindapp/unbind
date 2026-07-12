@@ -169,7 +169,7 @@ export const VariablesFormField = withForm({
             <div className="text-muted-more-foreground -mt-2 flex w-full items-center justify-start gap-1.25 border-t px-3.25 pt-2.5 pb-2 md:mt-1.25 md:-mb-0.5 md:px-4.25 md:pt-2.5 md:pb-0">
               <InfoIcon className="inline-block size-3.5 shrink-0 sm:size-4" />
               <p className="max-w-full min-w-0 shrink text-sm leading-tight">
-                You can paste .env files or KEY=value pairs
+                You can paste multiple KEY=value pairs at once
               </p>
             </div>
           </div>
