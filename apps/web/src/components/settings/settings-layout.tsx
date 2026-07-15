@@ -1,5 +1,4 @@
 import SettingsTabs, { TSettingsTab } from "@/components/settings/settings-tabs";
-import { cn } from "@/components/ui/utils";
 import { ReactNode } from "react";
 
 type TProps = {
