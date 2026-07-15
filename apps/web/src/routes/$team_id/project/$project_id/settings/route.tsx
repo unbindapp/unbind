@@ -31,7 +31,6 @@ function ProjectSettingsLayout() {
       icon: "variables",
       matchPath: `${basePath}/variables`,
       link: linkOptions({ to: "/$team_id/project/$project_id/settings/variables", params }),
-      classNameChildrenWrapper: "gap-0",
     },
     {
       label: "Members",

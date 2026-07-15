@@ -12,7 +12,6 @@ import { useEffect, useRef, useState } from "react";
 export type TSettingsTab = {
   label: string;
   icon: TSettingsTabVariant;
-  classNameChildrenWrapper?: string;
   strictMatch?: boolean;
   matchPath: string;
   link: LinkProps;
