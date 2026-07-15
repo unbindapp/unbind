@@ -6,6 +6,7 @@ import { useVariables } from "@/components/variables/variables-provider";
 import { Button } from "@/components/ui/button";
 import { FilePenLineIcon, PlusIcon } from "lucide-react";
 import { useMemo, useState } from "react";
+import { cn } from "@/components/ui/utils";
 
 export default function VariablesHeader({ tokensDisabled }: { tokensDisabled?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -62,7 +63,7 @@ export default function VariablesHeader({ tokensDisabled }: { tokensDisabled?: b
             {title}
           </h2>
         </div>
-        <div className="flex shrink-0 flex-wrap items-center justify-start gap-1.5 pt-1 sm:-mt-1.5 sm:justify-end sm:pt-0">
+        <div className="-mb-1 flex shrink-0 flex-wrap items-center justify-start gap-1.5 pt-1 sm:-mt-1.5 sm:justify-end sm:pt-0">
           <RawVariableEditor>
             <Button
               disabled={isPending}
@@ -79,7 +80,7 @@ export default function VariablesHeader({ tokensDisabled }: { tokensDisabled?: b
             fadeOnDisabled={false}
             data-open={isOpen || undefined}
             data-closed={!isOpen || undefined}
-            className="group/button group-data-pending/header:bg-muted-more-foreground group-data-pending/header:animate-skeleton order-first shrink-0 gap-1.5 px-3 py-2 font-semibold group-data-pending/header:text-transparent sm:order-0"
+            className="group/button group-data-pending/header:bg-muted-more-foreground group-data-pending/header:animate-skeleton data-open:after:bg-background data-open:after:border-border data-open:has-hover:hover:after:bg-border data-open:active:after:bg-border relative order-first shrink-0 gap-1.5 px-3 py-2 font-semibold group-data-pending/header:text-transparent data-open:rounded-b-none data-open:after:absolute data-open:after:-bottom-2.5 data-open:after:-left-px data-open:after:h-2.5 data-open:after:w-[calc(100%+2px)] data-open:after:border-r data-open:after:border-l sm:order-0"
             onClick={() => setIsOpen((o) => !o)}
             variant="outline"
           >
@@ -92,6 +93,7 @@ export default function VariablesHeader({ tokensDisabled }: { tokensDisabled?: b
         tokensDisabled={tokensDisabled}
         afterSuccessfulSubmit={() => setIsOpen(false)}
         isOpen={isOpen}
+        className={cn("mt-1", isOpen && "rounded-tl-none sm:rounded-xl sm:rounded-tr-none")}
       />
     </div>
   );

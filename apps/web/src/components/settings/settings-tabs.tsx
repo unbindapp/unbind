@@ -12,9 +12,8 @@ import { useEffect, useRef, useState } from "react";
 export type TSettingsTab = {
   label: string;
   icon: TSettingsTabVariant;
+  classNameChildrenWrapper?: string;
   strictMatch?: boolean;
-  // Resolved pathname used only for active-tab matching (navigation uses `link`,
-  // built with TanStack's `linkOptions` helper at the call site for type safety).
   matchPath: string;
   link: LinkProps;
 };
