@@ -1,14 +1,13 @@
-import Providers from "@/components/providers/providers";
 import NotFoundTemplate from "@/components/navigation/not-found-template";
+import Providers from "@/components/providers/providers";
 import type { QueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext, Outlet, redirect } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 /* import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"; */
+import { commandPanelKey, commandPanelPageKey } from "@/components/command-panel/constants";
+import { meQuery } from "@/lib/queries/me";
 import { TriangleAlertIcon } from "lucide-react";
 import { z } from "zod";
-import { commandPanelKey, commandPanelPageKey } from "@/components/command-panel/constants";
-import useKeyboardInsetHeight from "@/lib/hooks/use-keyboard-inset-height";
-import { meQuery } from "@/lib/queries/me";
 
 export type RouterContext = {
   queryClient: QueryClient;
@@ -66,7 +65,6 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 });
 
 function RootComponent() {
-  useKeyboardInsetHeight();
   return (
     <Providers>
       <Outlet />
