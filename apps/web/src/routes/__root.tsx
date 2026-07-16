@@ -7,6 +7,7 @@ import { zodValidator } from "@tanstack/zod-adapter";
 import { TriangleAlertIcon } from "lucide-react";
 import { z } from "zod";
 import { commandPanelKey, commandPanelPageKey } from "@/components/command-panel/constants";
+import useKeyboardInsetHeight from "@/lib/hooks/use-keyboard-inset-height";
 import { meQuery } from "@/lib/queries/me";
 
 export type RouterContext = {
@@ -65,6 +66,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 });
 
 function RootComponent() {
+  useKeyboardInsetHeight();
   return (
     <Providers>
       <Outlet />
