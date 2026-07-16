@@ -150,7 +150,7 @@ export default function RawVariableEditor({ children }: TProps) {
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent
         hideXButton
-        className="h-[calc(var(--safe-screen-height)-var(--dialog-top-padding)-var(--dialog-bottom-padding))] max-h-200 min-h-72 sm:h-[calc(var(--safe-screen-height)-var(--dialog-bottom-padding)-var(--dialog-bottom-padding-sm))] sm:max-h-160"
+        className="h-[calc(var(--safe-screen-height)-var(--dialog-top-padding)-var(--dialog-bottom-padding))] max-h-200 min-h-72 sm:h-[calc(var(--safe-screen-height)-var(--dialog-top-padding-sm)-var(--dialog-bottom-padding-sm))]"
         classNameInnerWrapper="w-200 max-w-full h-full"
       >
         <DialogHeader className="sm:px-1">

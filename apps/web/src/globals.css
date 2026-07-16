@@ -47,14 +47,12 @@
 
 :root {
   --safe-area-inset-bottom: env(safe-area-inset-bottom);
-  /* This is for dev only to test safe area */
-  /* --safe-area-inset-bottom: 34px; */
-
   --safe-screen-height: calc(100svh - var(--safe-area-inset-bottom));
 
-  --dialog-top-padding: 3rem;
-  --dialog-bottom-padding: 3rem;
-  --dialog-bottom-padding-sm: calc(var(--safe-screen-height) * 0.06 + 3rem);
+  --dialog-top-padding: 2rem;
+  --dialog-bottom-padding: 2rem;
+  --dialog-top-padding-sm: 3rem;
+  --dialog-bottom-padding-sm: 3rem;
   --radius: 0.5rem;
 
   /* If you change --background, also update the anti-flash <style> in index.html */
