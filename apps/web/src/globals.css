@@ -47,12 +47,12 @@
 
 :root {
   --safe-area-inset-bottom: env(safe-area-inset-bottom);
-  /* Set by useKeyboardInsetHeight; stays 0px when no on-screen keyboard overlaps. */
   --keyboard-inset-height: 0px;
-  --safe-screen-height: calc(100svh - var(--safe-area-inset-bottom) - var(--keyboard-inset-height));
+  --safe-screen-height: calc(100svh - var(--safe-area-inset-bottom));
+  --safe-screen-height-keyboard: calc(var(--safe-screen-height) - var(--keyboard-inset-height));
 
-  --dialog-top-padding: 2rem;
-  --dialog-bottom-padding: 2rem;
+  --dialog-top-padding: 1.5rem;
+  --dialog-bottom-padding: 1.5rem;
   --dialog-top-padding-sm: 3rem;
   --dialog-bottom-padding-sm: 3rem;
   --radius: 0.5rem;

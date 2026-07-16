@@ -15,7 +15,7 @@ const DialogPortal = DialogPrimitive.Portal;
 const DialogClose = DialogPrimitive.Close;
 
 export const dialogOverlayVariants = cva(
-  "bg-barrier/barrier fixed inset-0 z-[1000] flex w-full justify-center overflow-auto px-2 pt-[var(--dialog-top-padding)] pb-[calc(var(--dialog-bottom-padding)+var(--keyboard-inset-height))] sm:pt-[var(--dialog-top-padding-sm)] sm:pb-[calc(var(--dialog-bottom-padding-sm)+var(--keyboard-inset-height))] data-no-x-padding:px-0 data-no-y-padding:py-0",
+  "bg-barrier/barrier fixed inset-0 z-[1000] flex w-full justify-center overflow-auto px-2 pt-[var(--dialog-top-padding)] sm:pt-[var(--dialog-top-padding-sm)] data-no-x-padding:px-0 data-no-y-padding:py-0",
   {
     variants: {
       animate: {
@@ -23,9 +23,14 @@ export const dialogOverlayVariants = cva(
           "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-200 data-[state=closed]:duration-200 data-[state=open]:duration-200",
         false: "",
       },
+      avoidKeyboard: {
+        true: "pb-[calc(var(--dialog-bottom-padding)+var(--keyboard-inset-height))] sm:pb-[calc(var(--dialog-bottom-padding-sm)+var(--keyboard-inset-height))]",
+        false: "pb-[var(--dialog-bottom-padding)] sm:pb-[var(--dialog-bottom-padding-sm)]",
+      },
     },
     defaultVariants: {
       animate: "default",
+      avoidKeyboard: false,
     },
   },
 );
@@ -37,6 +42,7 @@ function DialogOverlay({
   noXPadding,
   noYPadding,
   animate,
+  avoidKeyboard,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Overlay> & {
   noXPadding?: boolean;
@@ -46,7 +52,7 @@ function DialogOverlay({
     <DialogPrimitive.Overlay
       data-no-x-padding={noXPadding}
       data-no-y-padding={noYPadding}
-      className={cn(dialogOverlayVariants({ animate, className }))}
+      className={cn(dialogOverlayVariants({ animate, avoidKeyboard, className }))}
       {...props}
     />
   );
@@ -88,6 +94,7 @@ function DialogContent({
   noXPadding,
   noYPadding,
   hideXButton,
+  avoidKeyboard,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> &
   TDialogContentVariants & {
@@ -96,6 +103,7 @@ function DialogContent({
     noXPadding?: boolean;
     noYPadding?: boolean;
     hideXButton?: boolean;
+    avoidKeyboard?: boolean;
   }) {
   const isCloseFromKey = React.useRef<boolean>(false);
 
@@ -131,6 +139,7 @@ function DialogContent({
         noYPadding={noYPadding}
         noXPadding={noXPadding}
         animate={animate}
+        avoidKeyboard={avoidKeyboard}
         className={classNameOverlay}
       >
         <DialogPrimitive.Content
