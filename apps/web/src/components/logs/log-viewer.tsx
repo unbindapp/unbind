@@ -297,7 +297,7 @@ function Logs({
 
 function LogsStartIndicator() {
   return (
-    <div className="text-muted-foreground flex w-full items-center gap-2 px-2.5 py-3 font-mono text-xs sm:px-3.25">
+    <div className="text-muted-foreground flex w-full items-center gap-2 pt-3 pr-2.5 pb-2 pl-2 font-mono text-xs sm:pr-3 sm:pl-2.5 group-data-[container=page]/wrapper:xl:pr-[calc(0.75rem-((100vw-80rem)/2))] group-data-[container=page]/wrapper:xl:pl-[calc(0.625rem-((100vw-80rem)/2))]">
       <p className="left max-w-[calc(100%-4rem)] shrink-0 rounded-md border px-2 py-1">
         Start of the range
       </p>
