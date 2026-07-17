@@ -19,6 +19,8 @@ type TLogsContext = {
 
 const LogsContext = createContext<TLogsContext | null>(null);
 
+export const LOGS_LIMIT = 1000;
+
 export const MessageSchema = z.object({ type: z.string(), logs: LogEventSchema.array() }).strip();
 export type TMessage = z.infer<typeof MessageSchema>;
 
@@ -83,7 +85,6 @@ export const LogsProvider: React.FC<TProps> = ({
   const isFiniteQuery = !!start && !!end;
 
   const filtersStr = createSearchFilter(search);
-  const limit = 1000;
 
   const {
     data: httpData,
@@ -98,7 +99,7 @@ export const LogsProvider: React.FC<TProps> = ({
       serviceId,
       deploymentId,
       filters: filtersStr,
-      limit,
+      limit: LOGS_LIMIT,
       start,
       end: end!,
     }),
@@ -112,7 +113,7 @@ export const LogsProvider: React.FC<TProps> = ({
       team_id: teamId,
       project_id: projectId || "",
       environment_id: environmentId || "",
-      limit: limit.toString(),
+      limit: LOGS_LIMIT.toString(),
       start: start,
     });
     if (type === "service" || type === "deployment") {

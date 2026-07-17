@@ -223,23 +223,25 @@ function Logs({
         />
       ));
     }
-    return logs.map((logLine, index) => (
-      <LogLine
-        key={index}
-        type={type}
-        data-container={containerType}
-        data-first={index === 0 || undefined}
-        data-last={index === logs.length - 1 || undefined}
-        classNameInner="min-[80.25rem]:group-data-[container=page]/line:rounded-sm"
-        logLine={logLine}
-        serviceName={
-          servicesData.services.find((service) => service.id === logLine.metadata.service_id)
-            ?.name ||
-          logLine.metadata.service_id ||
-          "Unknown"
-        }
-      />
-    ));
+    return [
+      <LogsStartIndicator key="logs-start" />,
+      ...logs.map((logLine, index) => (
+        <LogLine
+          key={index}
+          type={type}
+          data-container={containerType}
+          data-last={index === logs.length - 1 || undefined}
+          classNameInner="min-[80.25rem]:group-data-[container=page]/line:rounded-sm"
+          logLine={logLine}
+          serviceName={
+            servicesData.services.find((service) => service.id === logLine.metadata.service_id)
+              ?.name ||
+            logLine.metadata.service_id ||
+            "Unknown"
+          }
+        />
+      )),
+    ];
   }, [logs, servicesData, containerType, error, isPending, type, shouldHaveLogs]);
 
   if (logs && logs.length === 0 && errorFromProp) {
@@ -290,6 +292,17 @@ function Logs({
         </div>
       </div>
     </LogViewStateProvider>
+  );
+}
+
+function LogsStartIndicator() {
+  return (
+    <div className="text-muted-foreground flex w-full items-center gap-2 px-2.5 py-3 font-mono text-xs sm:px-3.25">
+      <p className="left max-w-[calc(100%-4rem)] shrink-0 rounded-md border px-2 py-1">
+        Start of the range
+      </p>
+      <div className="mask-squiggle bg-muted-more-foreground h-1.5 min-w-0 flex-1" />
+    </div>
   );
 }
 
