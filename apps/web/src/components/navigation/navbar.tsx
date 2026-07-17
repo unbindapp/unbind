@@ -33,7 +33,7 @@ export function Navbar({ children, className }: { className?: string; children?:
           <NavbarScrollArea>{tabsSm}</NavbarScrollArea>
         </div>
       )}
-      <div className="flex w-full items-stretch justify-between gap-5 px-3">
+      <div className="flex w-full items-stretch justify-between gap-2 px-3">
         <div className="-ml-2 flex min-w-0 shrink items-stretch justify-start sm:-ml-1.5">
           <LogoLink />
           {breadcrumb && <BreadcrumbSeparator />}

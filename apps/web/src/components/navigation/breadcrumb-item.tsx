@@ -47,6 +47,7 @@ type TProps<T> = {
   showArrow?: (i: T) => boolean;
   children?: ReactNode;
   sideOffset?: number;
+  classNameTrigger?: string;
 } & (
   | { manageItemTitle?: never; onSelectManageItem?: never; onIntentManageItem?: never }
   | {
@@ -96,6 +97,7 @@ export function BreadcrumbItem<T>({
   open: openProp,
   setOpen: setOpenProp,
   sideOffset,
+  classNameTrigger,
   children,
 }: TProps<T>) {
   const [openLocal, setOpenLocal] = useState(false);
@@ -144,6 +146,7 @@ export function BreadcrumbItem<T>({
             item={selectedItem === null ? { name: "Not Found", id: "not-found" } : selectedItem}
             Icon={IconItem}
             flipChevronOnSm={flipChevronOnSm}
+            className={classNameTrigger}
           />
         )}
       </DropdownOrDrawerTrigger>
@@ -480,7 +483,7 @@ function Trigger<T>({
       data-no-icon={Icon === undefined || undefined}
       data-pending={item == undefined || undefined}
       className={cn(
-        `group/button relative flex max-w-32 min-w-0 shrink items-center justify-start gap-2 rounded border-none px-1.5 py-3.5 text-sm font-medium focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent data-no-icon:pl-2.75`,
+        `group/button relative flex max-w-44 min-w-0 shrink items-center justify-start gap-2 rounded border-none px-1.5 py-3.5 text-sm font-medium focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent data-no-icon:pl-2.75`,
         className,
       )}
       {...rest}

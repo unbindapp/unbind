@@ -210,6 +210,7 @@ export default function ProjectBreadcrumb({ className }: TProps) {
     <BreadcrumbWrapper className={className}>
       <BreadcrumbItem
         flipChevronOnSm
+        classNameTrigger="shrink-[20]"
         title="Projects"
         selectedItem={selectedProject}
         items={projectsData?.projects}
