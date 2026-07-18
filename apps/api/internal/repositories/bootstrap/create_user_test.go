@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/unbindapp/unbind-api/ent/group"
 	"github.com/unbindapp/unbind-api/ent/user"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	repository "github.com/unbindapp/unbind-api/internal/repositories/repositorytest"
@@ -74,6 +75,25 @@ func (suite *BSCreateUserSuite) TestCreateUser() {
 		suite.Error(err)
 		suite.ErrorContains(err, "database is closed")
 	})
+}
+
+func (suite *BSCreateUserSuite) TestCreateUserBootstrapsSuperuser() {
+	// No groups yet - the first user must end up superuser
+	suite.DB.Group.Delete().ExecX(suite.Ctx)
+
+	dbUser, err := suite.bootstrapRepo.CreateUser(suite.Ctx, "first@unbind.app", "password123")
+	suite.NoError(err)
+
+	groups := suite.DB.User.Query().Where(
+		user.IDEQ(dbUser.ID),
+	).QueryGroups().AllX(suite.Ctx)
+	suite.Len(groups, 1)
+	suite.Equal("superuser", groups[0].Name)
+
+	perms := suite.DB.Group.Query().Where(
+		group.IDEQ(groups[0].ID),
+	).QueryPermissions().AllX(suite.Ctx)
+	suite.Len(perms, 2)
 }
 
 func TestBSCreateUserSuite(t *testing.T) {

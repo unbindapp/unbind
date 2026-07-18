@@ -114,17 +114,36 @@ session cookie is first-party — no cross-site cookie/CORS handling needed.
 
 ## Local development
 
-You do **not** need Docker to run the app itself (only Postgres + Redis).
+Requires [Nix](https://nixos.org/download/) (flakes enabled) and Docker.
+
+```bash
+make dev           # everything: infra + k3d cluster + API on :8089 + Vite on :5173
+```
+
+First run is slow (nix shell + full cluster). Ctrl-C stops the API/UI; infra and cluster stay up.
+
+### 0. Toolchains
+
+```bash
+nix develop        # Go, Node, kubectl, helm, helmfile, k3d — all pinned
+```
+
+VS Code: install the direnv extension, or launch with `nix develop --command code .`.
 
 ### 1. Start infrastructure
 
 ```bash
-make dev-infra     # Postgres + Redis via deploy/compose/docker-compose.yaml
+make dev-infra     # Postgres + Redis (docker compose)
+make dev-cluster   # k3d cluster running the installer's helmfile stack (env: dev)
 ```
 
-Configure `apps/api/.env` (see `apps/api/config/config.go` for all keys). Migrations are
-embedded in the binary (`ent/migrate/embed.go`) and applied automatically on API startup —
-no separate migrate step.
+The dev cluster is the real platform stack minus database/redis/unbind-app — the host runs those.
+Kubeconfig lands at `apps/api/.data/kubernetes/k3d.kubeconfig.yaml`; the dev shell exports
+`KUBECONFIG` to it. Local dev never touches `~/.kube/config` or any other cluster — `make dev`
+pins `KUBECONFIG` in `apps/api/.env` to the k3d file. `.env` is created from
+`apps/api/.env.example` on first run; the API bootstraps the default team/group/registry on
+startup. `make operator-run` runs the operator against it. Migrations are embedded and applied
+on API startup — no separate migrate step.
 
 ### 2a. Two-process dev loop (recommended — hot reload for the UI)
 

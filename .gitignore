@@ -58,6 +58,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 .env*
+!.env.example
+!.envrc
+.direnv/
 .claude/*
 !.claude/skills
 MIGRATION_PLAN.md

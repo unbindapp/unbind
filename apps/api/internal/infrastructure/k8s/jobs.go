@@ -78,7 +78,7 @@ exec /app/builder`, self.config.GetBuildkitHost(), self.config.GetBuildkitHost()
 								},
 								{
 									Name:  "POSTGRES_HOST",
-									Value: self.config.GetPostgresHost(),
+									Value: self.config.GetBuilderPostgresHost(),
 								},
 								{
 									Name:  "POSTGRES_PORT",

@@ -75,7 +75,7 @@ export const ConvexAdminKeyParamsSchema = z
 export const CookieSchema = z
   .object({
     Domain: z.string(),
-    Expires: z.string().datetime(),
+    Expires: z.string().datetime({ offset: true }),
     HttpOnly: z.boolean(),
     MaxAge: z.number(),
     Name: z.string(),
@@ -155,9 +155,9 @@ export const DeploymentResponseSchema = z
     commit_author: GitCommitterSchema.optional(),
     commit_message: z.string().optional(),
     commit_sha: z.string().optional(),
-    completed_at: z.string().datetime().optional(),
+    completed_at: z.string().datetime({ offset: true }).optional(),
     crashing_reasons: z.array(z.string()),
-    created_at: z.string().datetime(),
+    created_at: z.string().datetime({ offset: true }),
     docker_builder_build_context: z.string().optional(),
     docker_builder_dockerfile_path: z.string().optional(),
     error: z.string().optional(),
@@ -167,14 +167,14 @@ export const DeploymentResponseSchema = z
     instance_events: z.array(EventRecordSchema),
     instance_restarts: z.number(),
     job_name: z.string(),
-    queued_at: z.string().datetime().optional(),
+    queued_at: z.string().datetime({ offset: true }).optional(),
     railpack_builder_build_command: z.string().optional(),
     railpack_builder_install_command: z.string().optional(),
     run_command: z.string().optional(),
     service_id: z.string(),
-    started_at: z.string().datetime().optional(),
+    started_at: z.string().datetime({ offset: true }).optional(),
     status: DeploymentStatusSchema,
-    updated_at: z.string().datetime(),
+    updated_at: z.string().datetime({ offset: true }),
   })
   .strip();
 
@@ -198,7 +198,7 @@ export const PermittedActionSchema = z.enum(['admin', 'edit', 'view']);
 export const EnvironmentResponseSchema = z
   .object({
     active: z.boolean(),
-    created_at: z.string().datetime(),
+    created_at: z.string().datetime({ offset: true }),
     description: z.string(),
     id: z.string(),
     kubernetes_name: z.string(),
@@ -224,7 +224,7 @@ export const CreateGroupInputBodySchema = z
 
 export const GroupResponseSchema = z
   .object({
-    created_at: z.string().datetime(),
+    created_at: z.string().datetime({ offset: true }),
     description: z.string(),
     id: z.string(),
     name: z.string(),
@@ -257,7 +257,7 @@ export const PVCInfoSchema = z
   .object({
     can_delete: z.boolean(),
     capacity_gb: z.number(),
-    created_at: z.string().datetime(),
+    created_at: z.string().datetime({ offset: true }),
     description: z.string().optional(),
     environment_id: z.string().optional(),
     id: z.string(),
@@ -291,7 +291,7 @@ export const CreateProjectInputSchema = z
 
 export const ProjectResponseSchema = z
   .object({
-    created_at: z.string().datetime(),
+    created_at: z.string().datetime({ offset: true }),
     default_environment_id: z.string().optional(),
     description: z.string().nullable(),
     environment_count: z.number(),
@@ -338,7 +338,7 @@ export const CreateRegistryResponseBodySchema = z
 export const S3BucketSchema = z
   .object({
     bucket_region: z.string(),
-    created_at: z.string().datetime(),
+    created_at: z.string().datetime({ offset: true }),
     name: z.string(),
   })
   .strip();
@@ -347,13 +347,13 @@ export const S3ResponseSchema = z
   .object({
     access_key: z.string(),
     buckets: z.array(S3BucketSchema),
-    created_at: z.string().datetime(),
+    created_at: z.string().datetime({ offset: true }),
     endpoint: z.string(),
     id: z.string(),
     name: z.string(),
     region: z.string(),
     secret_key: z.string(),
-    updated_at: z.string().datetime(),
+    updated_at: z.string().datetime({ offset: true }),
   })
   .strip();
 
@@ -376,7 +376,7 @@ export const CreateServiceGroupInputSchema = z
 
 export const ServiceGroupResponseSchema = z
   .object({
-    created_at: z.string().datetime(),
+    created_at: z.string().datetime({ offset: true }),
     description: z.string().optional(),
     environment_id: z.string(),
     icon: z.string().optional(),
@@ -559,7 +559,7 @@ export const TemplateResourceRecommendationsSchema = z
 
 export const TemplateShortResponseSchema = z
   .object({
-    created_at: z.string().datetime(),
+    created_at: z.string().datetime({ offset: true }),
     description: z.string(),
     display_rank: z.number(),
     icon: z.string(),
@@ -575,7 +575,7 @@ export const TemplateShortResponseSchema = z
 export const ServiceResponseSchema = z
   .object({
     config: ServiceConfigResponseSchema,
-    created_at: z.string().datetime(),
+    created_at: z.string().datetime({ offset: true }),
     current_deployment: DeploymentResponseSchema.optional(),
     database_type: z.string().optional(),
     database_version: z.string().optional(),
@@ -595,7 +595,7 @@ export const ServiceResponseSchema = z
     template: TemplateShortResponseSchema.optional(),
     template_instance_id: z.string().optional(),
     type: ServiceTypeSchema,
-    updated_at: z.string().datetime(),
+    updated_at: z.string().datetime({ offset: true }),
   })
   .strip();
 
@@ -645,7 +645,7 @@ export const WebhookTypeSchema = z.enum(['team', 'project']);
 
 export const WebhookResponseSchema = z
   .object({
-    created_at: z.string().datetime(),
+    created_at: z.string().datetime({ offset: true }),
     events: z.array(z.any()),
     id: z.string(),
     project_id: z.string().optional(),
@@ -1023,7 +1023,7 @@ export const SimpleInstanceStatusSchema = z
   .object({
     events: z.array(EventRecordSchema).optional(),
     kubernetes_name: z.string(),
-    pod_created_at: z.string().datetime().optional(),
+    pod_created_at: z.string().datetime({ offset: true }).optional(),
     restart_count: z.number(),
     status: ContainerStateSchema,
   })
@@ -1048,7 +1048,7 @@ export const MetricsTypeSchema = z.enum(['team', 'project', 'environment', 'serv
 export const MetricDetailSchema = z
   .object({
     breakdown: z.record(z.number().nullable()), // Map of IDs to their respective values
-    timestamp: z.string().datetime(),
+    timestamp: z.string().datetime({ offset: true }),
     value: z.number(), // Aggregated value for the timestamp
   })
   .strip();
@@ -1199,7 +1199,7 @@ export const GetServiceResponseBodySchema = z
 
 export const TeamResponseSchema = z
   .object({
-    created_at: z.string().datetime(),
+    created_at: z.string().datetime({ offset: true }),
     description: z.string().nullable(),
     id: z.string(),
     kubernetes_name: z.string(),
@@ -1335,7 +1335,7 @@ export const TemplateDefinitionSchema = z
 
 export const TemplateWithDefinitionResponseSchema = z
   .object({
-    created_at: z.string().datetime(),
+    created_at: z.string().datetime({ offset: true }),
     definition: TemplateDefinitionSchema,
     description: z.string(),
     display_rank: z.number(),
@@ -1480,7 +1480,7 @@ export const GithubRepositorySchema = z
     installation_id: z.number(),
     name: z.string(),
     owner: GithubRepositoryOwnerSchema,
-    updated_at: z.string().datetime(),
+    updated_at: z.string().datetime({ offset: true }),
   })
   .strip();
 
@@ -1504,25 +1504,25 @@ export const GithubInstallationAPIResponseSchema = z
     account_type: z.string().optional(),
     account_url: z.string().optional(),
     active: z.boolean().optional(),
-    created_at: z.string().datetime().optional(),
+    created_at: z.string().datetime({ offset: true }).optional(),
     events: z.array(z.string()).nullable().optional(),
     github_app_id: z.number().optional(),
     id: z.number().optional(),
     permissions: GithubInstallationPermissionsSchema.optional(),
     repository_selection: z.string().optional(),
     suspended: z.boolean().optional(),
-    updated_at: z.string().datetime().optional(),
+    updated_at: z.string().datetime({ offset: true }).optional(),
   })
   .strip();
 
 export const GithubAppAPIResponseSchema = z
   .object({
-    created_at: z.string().datetime(),
+    created_at: z.string().datetime({ offset: true }),
     created_by: z.string(),
     id: z.number(),
     installations: z.array(GithubInstallationAPIResponseSchema),
     name: z.string(),
-    updated_at: z.string().datetime(),
+    updated_at: z.string().datetime({ offset: true }),
     uuid: z.string(),
   })
   .strip();
@@ -1572,7 +1572,7 @@ export const GithubRepositoryDetailSchema = z
   .object({
     archived: z.boolean(),
     branches: z.array(GithubBranchSchema).nullable(),
-    createdAt: z.string().datetime(),
+    createdAt: z.string().datetime({ offset: true }),
     defaultBranch: z.string(),
     description: z.string(),
     disabled: z.boolean(),
@@ -1587,11 +1587,11 @@ export const GithubRepositoryDetailSchema = z
     openIssuesCount: z.number(),
     owner: GithubRepositoryOwnerSchema,
     private: z.boolean(),
-    pushedAt: z.string().datetime(),
+    pushedAt: z.string().datetime({ offset: true }),
     size: z.number(),
     stargazersCount: z.number(),
     tags: z.array(GithubTagSchema).nullable(),
-    updatedAt: z.string().datetime(),
+    updatedAt: z.string().datetime({ offset: true }),
     url: z.string(),
     watchersCount: z.number(),
   })
@@ -1625,7 +1625,7 @@ export const ResourceSelectorSchema = z
 export const PermissionResponseSchema = z
   .object({
     action: PermittedActionSchema,
-    created_at: z.string().datetime(),
+    created_at: z.string().datetime({ offset: true }),
     id: z.string(),
     resource_selector: ResourceSelectorSchema,
     resource_type: ResourceTypeSchema,
@@ -1665,7 +1665,7 @@ export const InstanceStatusSchema = z
     kubernetes_name: z.string(),
     last_exit_code: z.number().optional(),
     last_termination: z.string().optional(),
-    pod_created_at: z.string().datetime().optional(),
+    pod_created_at: z.string().datetime({ offset: true }).optional(),
     ready: z.boolean(),
     restart_count: z.number(),
     state: ContainerStateSchema,
@@ -1692,8 +1692,8 @@ export const ListDatabasesResponseBodySchema = z
 export const PaginationResponseMetadataSchema = z
   .object({
     has_next: z.boolean(),
-    next: z.string().datetime().optional(),
-    previous: z.string().datetime().optional(),
+    next: z.string().datetime({ offset: true }).optional(),
+    previous: z.string().datetime({ offset: true }).optional(),
   })
   .strip();
 
@@ -1725,10 +1725,10 @@ export const ListEnvironmentsOutputBodySchema = z
 
 export const UserResponseSchema = z
   .object({
-    created_at: z.string().datetime(),
+    created_at: z.string().datetime({ offset: true }),
     email: z.string(),
     id: z.string(),
-    updated_at: z.string().datetime(),
+    updated_at: z.string().datetime({ offset: true }),
   })
   .strip();
 
@@ -1754,7 +1754,7 @@ export const PodPhaseSchema = z.enum(['pending', 'running', 'succeeded', 'failed
 
 export const PodContainerStatusSchema = z
   .object({
-    created_at: z.string().datetime().optional(),
+    created_at: z.string().datetime({ offset: true }).optional(),
     environment_id: z.string(),
     has_crashing_instances: z.boolean(),
     instance_dependencies: z.array(InstanceStatusSchema),
@@ -1858,7 +1858,7 @@ export const LogEventSchema = z
     message: z.string(),
     metadata: LogMetadataSchema,
     pod_name: z.string(),
-    timestamp: z.string().datetime().optional(),
+    timestamp: z.string().datetime({ offset: true }).optional(),
   })
   .strip();
 
@@ -1934,8 +1934,8 @@ export const ReferenceableVariablesResponseBodySchema = z
 
 export const RegistryCacheCleanupRunSchema = z
   .object({
-    finished_at: z.string().datetime().nullable(),
-    started_at: z.string().datetime().nullable(),
+    finished_at: z.string().datetime({ offset: true }).nullable(),
+    started_at: z.string().datetime({ offset: true }).nullable(),
     status: z.string(), // running, succeeded, or failed
   })
   .strip();
@@ -2477,7 +2477,7 @@ export const UserCreateResponseBodySchema = z
 
 export const VariableReferenceResponseSchema = z
   .object({
-    created_at: z.string().datetime(),
+    created_at: z.string().datetime({ offset: true }),
     error: z.string().nullable().optional(),
     id: z.string(), // The ID of the variable reference
     name: z.string(),
@@ -2884,7 +2884,7 @@ export const get_deploymentQuerySchema = z
 
 export const list_deploymentsQuerySchema = z
   .object({
-    cursor: z.string().datetime().optional(),
+    cursor: z.string().datetime({ offset: true }).optional(),
     per_page: z.number(),
     team_id: z.string(), // The ID of the team
     project_id: z.string(), // The ID of the project
@@ -2995,8 +2995,8 @@ export const query_logsQuerySchema = z
     service_id: z.string().optional(),
     deployment_id: z.string().optional(),
     filters: z.string().optional(), // Optional logql filter string
-    start: z.string().datetime().optional(), // Start time for the query
-    end: z.string().datetime().optional(), // End time for the query
+    start: z.string().datetime({ offset: true }).optional(), // Start time for the query
+    end: z.string().datetime({ offset: true }).optional(), // End time for the query
     since: z.string().optional(), // Duration to look back (e.g., '1h', '30m')
     limit: z.number().optional(), // Number of log lines to get
     direction: LokiDirectionSchema.optional(), // Direction of the logs (forward or backward)
@@ -3011,7 +3011,7 @@ export const stream_logsQuerySchema = z
     environment_id: z.string().optional(),
     service_id: z.string().optional(),
     deployment_id: z.string().optional(),
-    start: z.string().datetime().optional(),
+    start: z.string().datetime({ offset: true }).optional(),
     since: z.string().optional(), // Duration to look back (e.g., '1h', '30m')
     limit: z.number().optional(), // Number of lines to get from the end
     timestamps: z.boolean().optional(), // Include timestamps in logs
@@ -3026,8 +3026,8 @@ export const get_metricsQuerySchema = z
     project_id: z.string().optional(),
     environment_id: z.string().optional(),
     service_id: z.string().optional(),
-    start: z.string().datetime().optional(), // Start time for the query, defaults to 1 week ago
-    end: z.string().datetime().optional(), // End time for the query, defaults to now
+    start: z.string().datetime({ offset: true }).optional(), // Start time for the query, defaults to 1 week ago
+    end: z.string().datetime({ offset: true }).optional(), // End time for the query, defaults to now
   })
   .passthrough();
 
@@ -3037,8 +3037,8 @@ export const get_system_metricsQuerySchema = z
     zone: z.string().optional(),
     region: z.string().optional(),
     cluster_name: z.string().optional(),
-    start: z.string().datetime().optional(), // Start time for the query, defaults to 24 hours ago
-    end: z.string().datetime().optional(), // End time for the query, defaults to now
+    start: z.string().datetime({ offset: true }).optional(), // Start time for the query, defaults to 24 hours ago
+    end: z.string().datetime({ offset: true }).optional(), // End time for the query, defaults to now
   })
   .passthrough();
 
@@ -3046,8 +3046,8 @@ export const get_volume_metricsQuerySchema = z
   .object({
     team_id: z.string(),
     pvc_id: z.string(),
-    start: z.string().datetime().optional(), // Start time for the query, defaults to 1 week ago
-    end: z.string().datetime().optional(), // End time for the query, defaults to now
+    start: z.string().datetime({ offset: true }).optional(), // Start time for the query, defaults to 1 week ago
+    end: z.string().datetime({ offset: true }).optional(), // End time for the query, defaults to now
   })
   .passthrough();
 

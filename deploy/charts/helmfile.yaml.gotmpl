@@ -40,6 +40,12 @@ environments:
   default:
     values:
       - environments/default.yaml
+  # Local development: the API/UI run on the host and Postgres/Redis come from
+  # docker compose, so only the in-cluster platform components are installed.
+  dev:
+    values:
+      - environments/default.yaml
+      - environments/dev.yaml
 
 helmDefaults:
   wait: false
@@ -270,6 +276,20 @@ releases:
 
         minio:
           enabled: false
+
+        # Without this, a restarted single-replica loki deadlocks: it needs its own
+        # memberlist DNS entry to become ready, which only exists once it is ready.
+        memberlist:
+          service:
+            publishNotReadyAddresses: true
+
+        sidecar:
+          rules:
+            enabled: {{ .Values | get "overrides.loki.rulesSidecar" true }}
+
+        gateway:
+          nginxConfig:
+            enableIPv6: {{ .Values | get "overrides.loki.gatewayEnableIPv6" true }}
 
         deploymentMode: SingleBinary
         singleBinary:
@@ -726,6 +746,8 @@ releases:
     chart: ./charts/unbind-operator
     values:
       -
+        crd:
+          enable: {{ .Values | get "overrides.unbindOperator.crd.enable" true }}
         controllerManager:
           container:
             image:
@@ -931,4 +953,4 @@ releases:
 
     labels:
       component: unbind-app
-    installed: true
+    installed: {{ .Values | get "components.unbindApp.enabled" true }}

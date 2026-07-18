@@ -1,0 +1,22 @@
+# environments/dev.yaml
+# Overlay for the local k3d cluster (scripts/dev-cluster.sh). Host provides the
+# API, UI, Postgres, and Redis; the cluster provides everything else.
+
+components:
+  database:
+    enabled: false
+  redis:
+    enabled: false
+  unbindApp:
+    enabled: false
+
+overrides:
+  # The dev cluster applies the CRD straight from apps/operator/config/crd, so
+  # the chart's copy must not fight over ownership.
+  unbindOperator:
+    crd:
+      enable: false
+  # k3d's docker network has no IPv6; the gateway nginx cannot bind [::].
+  loki:
+    gatewayEnableIPv6: false
+    rulesSidecar: false

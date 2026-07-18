@@ -105,6 +105,11 @@ func (self *Config) GetPostgresHost() string {
 	return self.PostgresHost
 }
 
+// The builder already receives the pod-reachable host as POSTGRES_HOST.
+func (self *Config) GetBuilderPostgresHost() string {
+	return self.PostgresHost
+}
+
 func (self *Config) GetPostgresPort() int {
 	return self.PostgresPort
 }

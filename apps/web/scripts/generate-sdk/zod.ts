@@ -65,7 +65,8 @@ export function jsonToZodString({
     let baseType: string;
     switch (typeValue) {
       case "string":
-        baseType = property.format === "date-time" ? "z.string().datetime()" : "z.string()";
+        baseType =
+          property.format === "date-time" ? "z.string().datetime({ offset: true })" : "z.string()";
         break;
       case "number":
       case "integer":

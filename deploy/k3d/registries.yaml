@@ -1,0 +1,6 @@
+# Mirrors the production k3s setup (see deploy/charts/environments/default.yaml):
+# nodes' containerd resolves the in-cluster registry via its pinned ClusterIP.
+mirrors:
+  "docker-registry.unbind-system:5000":
+    endpoint:
+      - http://10.43.255.250:5000

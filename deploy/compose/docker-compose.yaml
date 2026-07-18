@@ -6,6 +6,8 @@ services:
     user: '1000:20'
     ports:
       - '127.0.0.1:53337:5432'
+      # docker0 bridge address so k3d builder jobs can reach postgres; not LAN-exposed
+      - '172.17.0.1:53337:5432'
     restart: unless-stopped
     environment:
       - POSTGRES_USER=postgres

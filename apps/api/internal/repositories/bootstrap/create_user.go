@@ -21,6 +21,10 @@ func (self *BootstrapRepository) CreateUser(ctx context.Context, email, password
 			return errdefs.ErrAlreadyBootstrapped
 		}
 
+		if err := self.EnsureSuperuserGroup(ctx, tx); err != nil {
+			return err
+		}
+
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 		if err != nil {
 			log.Errorf("Error hashing password: %v\n", err)

@@ -58,6 +58,7 @@ func TransformServiceEntity(entity *ent.Service) *ServiceResponse {
 			Config:               TransformServiceConfigEntity(entity.Edges.ServiceConfig),
 			TemplateInstanceID:   entity.TemplateInstanceID,
 			DetectedPorts:        []schema.PortSpec{},
+			Permissions:          []schema.PermittedAction{},
 		}
 
 		if entity.DetectedPorts != nil {

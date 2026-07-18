@@ -659,7 +659,16 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 		}
 	}
 
-	return models.TransformServiceEntities(newServices), nil
+	responses := models.TransformServiceEntities(newServices)
+	permSet, err := self.repo.Permissions().GetUserPermissionSet(ctx, requesterUserID)
+	if err != nil {
+		return nil, err
+	}
+	for _, svc := range responses {
+		svc.Permissions = permSet.ServiceActions(input.TeamID, input.ProjectID, input.EnvironmentID, svc.ID)
+	}
+
+	return responses, nil
 }
 
 // returns: map[inputID]HostSpec, map[inputID]string (value to hand to the templater)

@@ -113,6 +113,63 @@ func (_c *BootstrapRepositoryMock_CreateUser_Call) RunAndReturn(run func(ctx con
 	return _c
 }
 
+// EnsureSuperuserGroup provides a mock function for the type BootstrapRepositoryMock
+func (_mock *BootstrapRepositoryMock) EnsureSuperuserGroup(ctx context.Context, tx repository.TxInterface) error {
+	ret := _mock.Called(ctx, tx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for EnsureSuperuserGroup")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface) error); ok {
+		r0 = returnFunc(ctx, tx)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// BootstrapRepositoryMock_EnsureSuperuserGroup_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'EnsureSuperuserGroup'
+type BootstrapRepositoryMock_EnsureSuperuserGroup_Call struct {
+	*mock.Call
+}
+
+// EnsureSuperuserGroup is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+func (_e *BootstrapRepositoryMock_Expecter) EnsureSuperuserGroup(ctx any, tx any) *BootstrapRepositoryMock_EnsureSuperuserGroup_Call {
+	return &BootstrapRepositoryMock_EnsureSuperuserGroup_Call{Call: _e.mock.On("EnsureSuperuserGroup", ctx, tx)}
+}
+
+func (_c *BootstrapRepositoryMock_EnsureSuperuserGroup_Call) Run(run func(ctx context.Context, tx repository.TxInterface)) *BootstrapRepositoryMock_EnsureSuperuserGroup_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *BootstrapRepositoryMock_EnsureSuperuserGroup_Call) Return(err error) *BootstrapRepositoryMock_EnsureSuperuserGroup_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *BootstrapRepositoryMock_EnsureSuperuserGroup_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface) error) *BootstrapRepositoryMock_EnsureSuperuserGroup_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // IsBootstrapped provides a mock function for the type BootstrapRepositoryMock
 func (_mock *BootstrapRepositoryMock) IsBootstrapped(ctx context.Context, tx repository.TxInterface) (bool, bool, error) {
 	ret := _mock.Called(ctx, tx)

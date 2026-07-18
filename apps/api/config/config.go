@@ -17,6 +17,7 @@ type ConfigInterface interface {
 	GetPostgresPassword() string
 	GetPostgresDB() string
 	GetPostgresSSLMode() string
+	GetBuilderPostgresHost() string
 	GetKubeConfig() string
 	GetSystemNamespace() string
 	GetBuildkitHost() string
@@ -32,7 +33,7 @@ type Config struct {
 	ExternalUIUrl  string `env:"EXTERNAL_UI_URL" envDefault:"http://localhost:3000"`
 	ExternalAPIURL string `env:"EXTERNAL_API_URL" envDefault:"http://localhost:8089"`
 	// This is for generating subdomains
-	BootstrapWildcardBaseURL string `env:"BOOTSTRAP_WILDCARD_BASE_URL" envDefault:"http://localhost:8089"`
+	BootstrapWildcardBaseURL string `env:"BOOTSTRAP_WILDCARD_BASE_URL"`
 	ExternalOauth2URL        string `env:"EXTERNAL_OAUTH2_URL" envDefault:"http://localhost:8090"`
 	// Records which embedded service-definition set shipped with this build.
 	// Definitions are no longer fetched per tag; this is informational only.
@@ -49,6 +50,9 @@ type Config struct {
 	PostgresPassword string `env:"POSTGRES_PASSWORD" envDefault:"postgres"`
 	PostgresDB       string `env:"POSTGRES_DB" envDefault:"unbind"`
 	PostgresSSLMode  string `env:"POSTGRES_SSL_MODE" envDefault:"disable"`
+	// Overrides the postgres host handed to in-cluster builder jobs, for setups where
+	// the API reaches postgres at an address pods cannot (local dev).
+	BuilderPostgresHost string `env:"BUILDER_POSTGRES_HOST"`
 	// Redis
 	RedisURL string `env:"REDIS_URL" envDefault:"localhost:6379"`
 	// Auth tokens. TokenAudience is the JWT "aud" claim minted into access tokens.
@@ -83,6 +87,13 @@ type Config struct {
 
 func (self *Config) GetPostgresHost() string {
 	return self.PostgresHost
+}
+
+func (self *Config) GetBuilderPostgresHost() string {
+	if self.BuilderPostgresHost == "" {
+		return self.PostgresHost
+	}
+	return self.BuilderPostgresHost
 }
 
 func (self *Config) GetPostgresPort() int {

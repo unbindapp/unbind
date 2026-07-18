@@ -1,4 +1,4 @@
-.PHONY: help dev-infra dev-infra-down dev-api dev-web web embed app run clean gen-web-types check-web-types \
+.PHONY: help dev dev-infra dev-infra-down dev-cluster dev-cluster-down dev-api dev-web web embed app run clean gen-web-types check-web-types \
 	api-ent api-interfaces api-migrate api-migrate-checksum api-test api-fmt api-run \
 	web-build web-dev web-lint web-typecheck web-gen \
 	operator-generate operator-manifests operator-build operator-run operator-test \
@@ -13,8 +13,11 @@ COMPOSE := deploy/compose/docker-compose.yaml
 
 help:
 	@echo "Local development (no Docker for the app itself):"
+	@echo "  make dev              - Everything: infra + cluster + API + Vite dev server (hot reload)"
 	@echo "  make dev-infra        - Start Postgres + Redis (docker compose)"
 	@echo "  make dev-infra-down   - Stop Postgres + Redis"
+	@echo "  make dev-cluster      - Create the local k3d cluster (full helmfile stack; SYNC=1 to re-sync charts)"
+	@echo "  make dev-cluster-down - Delete the local k3d cluster"
 	@echo "  make dev-api          - Run the API with hot reload-free Go (serves the stub SPA + API on :8089)"
 	@echo "  make dev-web          - Run the Vite dev server (:5173), proxying /api/go to the API"
 	@echo ""
@@ -46,12 +49,21 @@ help:
 	@echo "Installer (apps/installer):"
 	@echo "  make installer-build / installer-run"
 
+dev:
+	./scripts/dev.sh
+
 # --- Local infra ---
 dev-infra:
 	docker compose -f $(COMPOSE) up -d
 
 dev-infra-down:
 	docker compose -f $(COMPOSE) down
+
+dev-cluster:
+	SYNC=$(SYNC) ./scripts/dev-cluster.sh up
+
+dev-cluster-down:
+	./scripts/dev-cluster.sh down
 
 # --- Two-process dev loop (hot reload for the UI) ---
 dev-api:

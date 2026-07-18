@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"net"
 	"reflect"
 	"strings"
 	"time"
@@ -249,6 +250,9 @@ func (self *ValueGenerator) Generate(inputs map[string]string) (*GenerateRespons
 		domain := strings.TrimPrefix(self.BaseDomain, "http://")
 		domain = strings.TrimPrefix(domain, "https://")
 		domain = strings.TrimSuffix(domain, "/")
+		if host, _, err := net.SplitHostPort(domain); err == nil {
+			domain = host
+		}
 		if !strings.Contains(domain, ".") {
 			domain = domain + ".com"
 		}

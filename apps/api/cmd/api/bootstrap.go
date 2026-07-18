@@ -342,65 +342,7 @@ func (self *Bootstrapper) bootstrapGroupsAndPermissions(ctx context.Context) err
 	log.Infof("Bootstrapping groups and permissions if needed")
 
 	if err := self.repos.WithTx(ctx, func(tx repository.TxInterface) error {
-		db := tx.Client()
-
-		groupCount, err := db.Group.Query().Count(ctx)
-		if err != nil {
-			return fmt.Errorf("failed to query group count: %w", err)
-		}
-		if groupCount > 0 {
-			return nil
-		}
-
-		group, err := db.Group.Create().
-			SetName("superuser").
-			SetDescription("Default superuser group").
-			Save(ctx)
-		if err != nil {
-			return fmt.Errorf("error creating group: %v", err)
-		}
-
-		// Create permission (system)
-		perm, err := db.Permission.Create().
-			SetAction(schema.ActionAdmin).
-			SetResourceType(schema.ResourceTypeSystem).
-			SetResourceSelector(schema.ResourceSelector{
-				Superuser: true,
-			}).
-			Save(ctx)
-		if err != nil {
-			return fmt.Errorf("error creating permission: %w", err)
-		}
-
-		_, err = db.Group.UpdateOneID(group.ID).
-			AddPermissionIDs(perm.ID).
-			Save(ctx)
-
-		if err != nil {
-			return fmt.Errorf("error adding permission to group: %w", err)
-		}
-
-		// Create permission (team)
-		perm, err = db.Permission.Create().
-			SetAction(schema.ActionAdmin).
-			SetResourceType(schema.ResourceTypeTeam).
-			SetResourceSelector(schema.ResourceSelector{
-				Superuser: true,
-			}).
-			Save(ctx)
-		if err != nil {
-			return fmt.Errorf("error creating permission: %w", err)
-		}
-
-		_, err = db.Group.UpdateOneID(group.ID).
-			AddPermissionIDs(perm.ID).
-			Save(ctx)
-
-		if err != nil {
-			return fmt.Errorf("error adding permission to group: %w", err)
-		}
-
-		return nil
+		return self.repos.Bootstrap().EnsureSuperuserGroup(ctx, tx)
 	}); err != nil {
 		return fmt.Errorf("failed to bootstrap groups and permissions: %w", err)
 	}
