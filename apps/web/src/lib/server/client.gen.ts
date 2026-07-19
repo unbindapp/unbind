@@ -641,12 +641,14 @@ export const WebhookProjectEventSchema = z.enum([
   'deployment.cancelled',
 ]);
 
+export const WebhookEventSchema = z.union([WebhookTeamEventSchema, WebhookProjectEventSchema]);
+
 export const WebhookTypeSchema = z.enum(['team', 'project']);
 
 export const WebhookResponseSchema = z
   .object({
     created_at: z.string().datetime({ offset: true }),
-    events: z.array(z.any()),
+    events: z.array(WebhookEventSchema),
     id: z.string(),
     project_id: z.string().optional(),
     team_id: z.string(),
@@ -1862,7 +1864,7 @@ export const LogEventSchema = z
   })
   .strip();
 
-export const LogEventsMessageTypeSchema = z.enum(['log', 'heartbeat', 'error']);
+export const LogEventsMessageTypeSchema = z.enum(['log', 'error']);
 
 export const LogEventsSchema = z
   .object({
@@ -2510,7 +2512,7 @@ export const VariablesResponseBodySchema = z
 
 export const WebhookCreateInputSchema = z
   .object({
-    events: z.array(z.any()),
+    events: z.array(WebhookEventSchema),
     project_id: z.string().optional(), // required if type is project
     team_id: z.string(),
     type: WebhookTypeSchema,
@@ -2518,23 +2520,9 @@ export const WebhookCreateInputSchema = z
   })
   .strip();
 
-export const WebhookEventSchema = z.enum([
-  'project.created',
-  'project.updated',
-  'project.deleted',
-  'service.created',
-  'service.updated',
-  'service.deleted',
-  'deployment.queued',
-  'deployment.building',
-  'deployment.succeeded',
-  'deployment.failed',
-  'deployment.cancelled',
-]);
-
 export const WebhookUpdateInputSchema = z
   .object({
-    events: z.array(z.any()).nullable().optional(),
+    events: z.array(WebhookEventSchema).nullable().optional(),
     id: z.string(),
     project_id: z.string().optional(), // required if type is project
     team_id: z.string(),
@@ -2608,6 +2596,7 @@ export type UserData = z.infer<typeof UserDataSchema>;
 export type CreateUserResponseBody = z.infer<typeof CreateUserResponseBodySchema>;
 export type WebhookTeamEvent = z.infer<typeof WebhookTeamEventSchema>;
 export type WebhookProjectEvent = z.infer<typeof WebhookProjectEventSchema>;
+export type WebhookEvent = z.infer<typeof WebhookEventSchema>;
 export type WebhookType = z.infer<typeof WebhookTypeSchema>;
 export type WebhookResponse = z.infer<typeof WebhookResponseSchema>;
 export type CreateWebhookResponseBody = z.infer<typeof CreateWebhookResponseBodySchema>;
@@ -2869,7 +2858,6 @@ export type VariableResponseItem = z.infer<typeof VariableResponseItemSchema>;
 export type VariableResponse = z.infer<typeof VariableResponseSchema>;
 export type VariablesResponseBody = z.infer<typeof VariablesResponseBodySchema>;
 export type WebhookCreateInput = z.infer<typeof WebhookCreateInputSchema>;
-export type WebhookEvent = z.infer<typeof WebhookEventSchema>;
 export type WebhookUpdateInput = z.infer<typeof WebhookUpdateInputSchema>;
 
 export const get_deploymentQuerySchema = z

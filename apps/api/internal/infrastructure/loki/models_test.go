@@ -66,7 +66,6 @@ func (suite *ModelsTestSuite) TestLokiDirection_Schema() {
 func (suite *ModelsTestSuite) TestLogEventsMessageType_Constants() {
 	// Test that message type constants are properly defined
 	suite.Equal(LogEventsMessageType("log"), LogEventsMessageTypeLog)
-	suite.Equal(LogEventsMessageType("heartbeat"), LogEventsMessageTypeHeartbeat)
 	suite.Equal(LogEventsMessageType("error"), LogEventsMessageTypeError)
 }
 
@@ -83,9 +82,8 @@ func (suite *ModelsTestSuite) TestLogEventsMessageType_Schema() {
 	registeredSchema := registry.Map()["LogEventsMessageType"]
 	suite.NotNil(registeredSchema)
 	suite.Equal("LogEventsMessageType", registeredSchema.Title)
-	suite.Len(registeredSchema.Enum, 3)
+	suite.Len(registeredSchema.Enum, 2)
 	suite.Contains(registeredSchema.Enum, "log")
-	suite.Contains(registeredSchema.Enum, "heartbeat")
 	suite.Contains(registeredSchema.Enum, "error")
 }
 

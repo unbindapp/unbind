@@ -44,6 +44,14 @@ export function jsonToZodString({
     }
   }
 
+  if (Array.isArray(property.oneOf) && property.oneOf.length > 0) {
+    const members = property.oneOf.map((member) =>
+      jsonToZodString({ property: member, currentSchemaName, orderMap, lazySchemas }),
+    );
+    const expr = members.length === 1 ? members[0] : `z.union([${members.join(", ")}])`;
+    return isNullable ? `${expr}.nullable()` : expr;
+  }
+
   // Handle $ref references, now with explicit self-reference check.
   if (property.$ref) {
     const refMatch = property.$ref.match(/^#\/components\/schemas\/(.+)$/);

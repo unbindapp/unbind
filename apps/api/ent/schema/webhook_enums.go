@@ -121,22 +121,12 @@ func (s WebhookEvent) Values() (kinds []string) {
 
 // Schema registers the WebhookEvent schema in the OpenAPI specification
 func (u WebhookEvent) Schema(r huma.Registry) *huma.Schema {
-	// First register the base WebhookEvent enum type
-	if r.Map()["WebhookEvent"] == nil {
-		schemaRef := r.Schema(reflect.TypeOf(""), true, "WebhookEvent")
-		schemaRef.Title = "WebhookEvent"
-		for _, v := range allWebhookEvents {
-			schemaRef.Enum = append(schemaRef.Enum, string(v))
-		}
-		r.Map()["WebhookEvent"] = schemaRef
-	}
-
 	// Register WebhookTeamEvent schema with just team events
 	if r.Map()["WebhookTeamEvent"] == nil {
 		teamSchema := &huma.Schema{
 			Title: "WebhookTeamEvent",
 			Type:  "string",
-			Enum: []interface{}{
+			Enum: []any{
 				string(WebhookEventProjectCreated),
 				string(WebhookEventProjectUpdated),
 				string(WebhookEventProjectDeleted),
@@ -147,7 +137,7 @@ func (u WebhookEvent) Schema(r huma.Registry) *huma.Schema {
 
 	// Register WebhookProjectEvent schema with just project events
 	if r.Map()["WebhookProjectEvent"] == nil {
-		projectEvents := []interface{}{
+		projectEvents := []any{
 			string(WebhookEventServiceCreated),
 			string(WebhookEventServiceUpdated),
 			string(WebhookEventServiceDeleted),
@@ -166,11 +156,17 @@ func (u WebhookEvent) Schema(r huma.Registry) *huma.Schema {
 		r.Map()["WebhookProjectEvent"] = projectSchema
 	}
 
-	// Return a oneOf reference directly without creating an array
-	return &huma.Schema{
-		OneOf: []*huma.Schema{
-			{Ref: "#/components/schemas/WebhookTeamEvent"},
-			{Ref: "#/components/schemas/WebhookProjectEvent"},
-		},
+	// Named so the ref keeps it in the spec: huma v2.39.0 prunes unreferenced
+	// schemas (https://github.com/danielgtaylor/huma/pull/1032) and generated
+	// clients rely on the WebhookEvent name.
+	if r.Map()["WebhookEvent"] == nil {
+		r.Map()["WebhookEvent"] = &huma.Schema{
+			Title: "WebhookEvent",
+			OneOf: []*huma.Schema{
+				{Ref: "#/components/schemas/WebhookTeamEvent"},
+				{Ref: "#/components/schemas/WebhookProjectEvent"},
+			},
+		}
 	}
+	return &huma.Schema{Ref: "#/components/schemas/WebhookEvent"}
 }

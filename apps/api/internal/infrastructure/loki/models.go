@@ -21,13 +21,12 @@ const (
 
 // LokiLogStreamOptions represents options for filtering and streaming logs from Loki
 type LokiLogStreamOptions struct {
-	Label             LokiLabelName // Label to filter logs by
-	LabelValue        string        // Value of the label to filter logs by
-	RawFilter         string        // Raw logql filter string
-	Since             time.Duration // Get logs from this time ago
-	Limit             int           // Number of log lines to get
-	Start             time.Time     // Get logs from a specific time
-	HeartbeatInterval time.Duration // Interval for sending heartbeat messages (defaults to 10s if not set)
+	Label      LokiLabelName // Label to filter logs by
+	LabelValue string        // Value of the label to filter logs by
+	RawFilter  string        // Raw logql filter string
+	Since      time.Duration // Get logs from this time ago
+	Limit      int           // Number of log lines to get
+	Start      time.Time     // Get logs from a specific time
 }
 
 // LokiLogOptions represents options for querying logs from Loki query and query_range APIs
@@ -58,9 +57,8 @@ type LogMetadata struct {
 type LogEventsMessageType string
 
 const (
-	LogEventsMessageTypeLog       LogEventsMessageType = "log"
-	LogEventsMessageTypeHeartbeat LogEventsMessageType = "heartbeat"
-	LogEventsMessageTypeError     LogEventsMessageType = "error"
+	LogEventsMessageTypeLog   LogEventsMessageType = "log"
+	LogEventsMessageTypeError LogEventsMessageType = "error"
 )
 
 // Register enum in OpenAPI specification
@@ -70,7 +68,6 @@ func (u LogEventsMessageType) Schema(r huma.Registry) *huma.Schema {
 		schemaRef := r.Schema(reflect.TypeOf(""), true, "LogEventsMessageType")
 		schemaRef.Title = "LogEventsMessageType"
 		schemaRef.Enum = append(schemaRef.Enum, string(LogEventsMessageTypeLog))
-		schemaRef.Enum = append(schemaRef.Enum, string(LogEventsMessageTypeHeartbeat))
 		schemaRef.Enum = append(schemaRef.Enum, string(LogEventsMessageTypeError))
 		r.Map()["LogEventsMessageType"] = schemaRef
 	}

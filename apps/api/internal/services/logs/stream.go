@@ -111,13 +111,19 @@ func (self *LogsService) StreamLogs(ctx context.Context, requesterUserID uuid.UU
 			}
 		}
 	}()
-	// }
+
+	// Comment lines are the standard SSE keep-alive: clients must ignore them
+	// (https://html.spec.whatwg.org/multipage/server-sent-events.html#event-stream-interpretation).
+	keepAlive := time.NewTicker(10 * time.Second)
+	defer keepAlive.Stop()
 
 	// Send events to the client
 	for {
 		select {
 		case event := <-eventChan:
 			_ = send(sse.Message{ID: latestEventID(event), Data: event})
+		case <-keepAlive.C:
+			_ = send.Comment("keep-alive")
 		case <-ctx.Done():
 			return nil
 		}
@@ -135,7 +141,7 @@ func parseEventCursor(lastEventID string) (time.Time, bool) {
 	return time.Unix(0, nanos+1), true
 }
 
-// latestEventID returns 0 for non-log batches so heartbeats/errors don't advance the cursor.
+// latestEventID returns 0 for non-log batches so errors don't advance the cursor.
 func latestEventID(event loki.LogEvents) int {
 	if event.MessageType != loki.LogEventsMessageTypeLog {
 		return 0

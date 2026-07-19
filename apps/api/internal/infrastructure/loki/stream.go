@@ -135,14 +135,6 @@ func (self *LokiLogQuerier) StreamLokiPodLogs(
 	pingTicker := time.NewTicker(15 * time.Second)
 	defer pingTicker.Stop()
 
-	// Initialize a heartbeat ticker to send empty messages periodically to client
-	heartbeatInterval := opts.HeartbeatInterval
-	if heartbeatInterval <= 0 {
-		heartbeatInterval = 10 * time.Second // Default to 10 seconds
-	}
-	heartbeatTicker := time.NewTicker(heartbeatInterval)
-	defer heartbeatTicker.Stop()
-
 	// Main loop for handling the WebSocket connection
 	go func() {
 		for {
@@ -154,15 +146,6 @@ func (self *LokiLogQuerier) StreamLokiPodLogs(
 				err := wsConn.WriteControl(websocket.PingMessage, []byte{}, time.Now().Add(5*time.Second))
 				if err != nil {
 					log.Warnf("Failed to send ping: %v", err)
-				}
-			case <-heartbeatTicker.C:
-				// Send heartbeat message to keep the client side alive
-				select {
-				case eventChan <- LogEvents{MessageType: LogEventsMessageTypeHeartbeat}:
-				case <-done:
-					return
-				default:
-					log.Warn("Failed to send heartbeat to client (channel blocked)")
 				}
 			}
 		}

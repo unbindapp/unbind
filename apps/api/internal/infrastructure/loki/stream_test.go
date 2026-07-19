@@ -204,7 +204,7 @@ done:
 	// Should have received at least one event
 	suite.GreaterOrEqual(len(receivedEvents), 1)
 
-	// Find the log event (not heartbeat)
+	// Find the log event
 	var logEvent *LogEvents
 	for _, event := range receivedEvents {
 		if event.MessageType == LogEventsMessageTypeLog && len(event.Logs) > 0 {
@@ -883,69 +883,6 @@ func (suite *StreamTestSuite) TestStreamLokiPodLogs_InvalidURL() {
 	suite.Error(err)
 	suite.Contains(err.Error(), "unable to parse loki query URL")
 	close(eventChan)
-}
-
-func (suite *StreamTestSuite) TestStreamLokiPodLogs_HeartbeatMessages() {
-	// Setup a WebSocket server that doesn't send any log messages
-	// but keeps the connection alive
-	suite.testServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		conn, err := suite.wsUpgrader.Upgrade(w, r, nil)
-		if err != nil {
-			return
-		}
-		defer conn.Close()
-
-		// Keep connection alive for the duration of the test
-		// Read messages to keep connection active
-		for {
-			_, _, err := conn.ReadMessage()
-			if err != nil {
-				break
-			}
-		}
-	}))
-
-	wsURL := "ws" + strings.TrimPrefix(suite.testServer.URL, "http")
-	suite.querier.endpoint = wsURL
-
-	eventChan := make(chan LogEvents, 10)
-	ctx, cancel := context.WithTimeout(context.Background(), 150*time.Millisecond)
-	defer cancel()
-
-	opts := LokiLogStreamOptions{
-		Label:             LokiLabelTeam,
-		LabelValue:        "team-1",
-		HeartbeatInterval: 50 * time.Millisecond, // Very short interval for testing
-	}
-
-	go func() {
-		suite.querier.StreamLokiPodLogs(ctx, opts, eventChan)
-	}()
-
-	// Collect events - should receive heartbeat messages
-	var heartbeatReceived bool
-	timeout := time.After(100 * time.Millisecond) // Wait long enough for at least one heartbeat
-
-	for {
-		select {
-		case event := <-eventChan:
-			if event.MessageType == LogEventsMessageTypeHeartbeat {
-				heartbeatReceived = true
-				goto done // Exit as soon as we get a heartbeat
-			}
-		case <-timeout:
-			goto done
-		case <-ctx.Done():
-			goto done
-		}
-	}
-
-done:
-	cancel()
-	close(eventChan)
-
-	// Should have received at least one heartbeat
-	suite.True(heartbeatReceived, "Should receive heartbeat messages")
 }
 
 func (suite *StreamTestSuite) TestStreamLokiPodLogs_MalformedLogEntry() {
