@@ -6,7 +6,7 @@
 
 **Kubernetes-Based Platform as a Service**
 
-_Effortlessly deploy, scale, and manage applications on Kubernetes_
+_Effortlessly deploy, scale, and manage your applications on Kubernetes_
 
 [**Quick Start**](#quick-start) • [**Local Development**](#local-development) • [**Architecture**](#architecture) • [**Releases**](#builds--releases)
 
