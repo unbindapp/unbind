@@ -16,7 +16,7 @@ _Effortlessly deploy, scale, and manage your applications on Kubernetes_
 
 ## What is Unbind?
 
-Unbind is a **Platform as a Service (PaaS)** for managing all kinds of applications. It provides:
+Unbind is an open-source **Platform as a Service (PaaS)** for managing all kinds of applications. It provides:
 
 - **Zero-configuration deployments** from Git repositories and Docker images
 - **Intelligent build system** powered by [BuildKit](https://github.com/moby/buildkit) and [Railpack](https://github.com/railwayapp/railpack)
