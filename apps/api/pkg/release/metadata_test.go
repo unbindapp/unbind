@@ -47,7 +47,7 @@ func (s *MetadataTestSuite) SetupTest() {
 
 	// Create test server
 	s.server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/unbindapp/unbind-releases/master/metadata.json" {
+		if r.URL.Path == "/unbindapp/unbind/master/deploy/releases/metadata.json" {
 			data, _ := json.Marshal(s.metadata)
 			w.Header().Set("Content-Type", "application/json")
 			w.Write(data)
@@ -56,29 +56,14 @@ func (s *MetadataTestSuite) SetupTest() {
 		w.WriteHeader(http.StatusNotFound)
 	}))
 
-	// Create mock client that returns our test tags
 	mockClient := &mockGitHubClient{
-		listTagsFunc: func(ctx context.Context, owner, repo string, opts *github.ListOptions) ([]*github.RepositoryTag, *github.Response, error) {
-			return []*github.RepositoryTag{
-				{Name: new("v0.1.0")},
-				{Name: new("v0.2.0")},
-				{Name: new("v0.3.0")},
-				{Name: new("v0.4.0")},
-			}, nil, nil
-		},
 		listReleasesFunc: func(ctx context.Context, owner, repo string, opts *github.ListOptions) ([]*github.RepositoryRelease, *github.Response, error) {
-			return []*github.RepositoryRelease{
-				{TagName: new("v0.1.0")},
-				{TagName: new("v0.2.0")},
-				{TagName: new("v0.3.0")},
-				{TagName: new("v0.4.0")},
-			}, nil, nil
+			return releasesFor("v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0"), nil, nil
 		},
 	}
 
-	// Create manager with mock client and override the metadata URL
-	s.manager = NewManager(mockClient, "unbindapp/unbind-releases")
-	s.manager.metadataURL = s.server.URL + "/unbindapp/unbind-releases/master/metadata.json"
+	s.manager = NewManager(mockClient, "")
+	s.manager.metadataURL = s.server.URL + "/unbindapp/unbind/master/deploy/releases/metadata.json"
 }
 
 func (s *MetadataTestSuite) TearDownTest() {

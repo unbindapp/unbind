@@ -3,175 +3,141 @@ package k8s
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// UpdateDeploymentImages updates container images in deployments based on the new version
+const (
+	AppImageRepository      = "ghcr.io/unbindapp/unbind"
+	OperatorImageRepository = "ghcr.io/unbindapp/unbind-operator"
+)
+
+var versionedImageRepositories = []string{AppImageRepository, OperatorImageRepository}
+
+func versionedImage(image, version string) (string, bool) {
+	for _, repository := range versionedImageRepositories {
+		if strings.HasPrefix(image, repository+":") {
+			return repository + ":" + version, true
+		}
+	}
+	return "", false
+}
+
+func usesImageRepository(deployment *appsv1.Deployment, repository string) bool {
+	return slices.ContainsFunc(deployment.Spec.Template.Spec.Containers, func(container corev1.Container) bool {
+		return strings.HasPrefix(container.Image, repository+":")
+	})
+}
+
+// UpdateDeploymentImages retags every unbind image in the system namespace; the app deployment (which runs this API) rolls last.
 func (k *KubeClient) UpdateDeploymentImages(ctx context.Context, newVersion string) error {
 	deployments, err := k.clientset.AppsV1().Deployments(k.config.GetSystemNamespace()).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to list deployments: %w", err)
 	}
 
-	// Map of image prefixes to their new versions
-	imageUpdates := map[string]string{
-		"ghcr.io/unbindapp/unbind-ui":       fmt.Sprintf("ghcr.io/unbindapp/unbind-ui:%s", newVersion),
-		"ghcr.io/unbindapp/unbind-operator": fmt.Sprintf("ghcr.io/unbindapp/unbind-operator:%s", newVersion),
-		"ghcr.io/unbindapp/unbind-api":      fmt.Sprintf("ghcr.io/unbindapp/unbind-api:%s", newVersion),
-	}
-
-	// First update all non-api deployments
-	for _, deployment := range deployments.Items {
-		// Skip if this is the API deployment
-		if strings.Contains(deployment.Name, "api") {
+	var appDeployments []*appsv1.Deployment
+	for i := range deployments.Items {
+		deployment := &deployments.Items[i]
+		if usesImageRepository(deployment, AppImageRepository) {
+			appDeployments = append(appDeployments, deployment)
 			continue
 		}
-
-		updated := false
-		for i, container := range deployment.Spec.Template.Spec.Containers {
-			for prefix, newImage := range imageUpdates {
-				if strings.HasPrefix(container.Image, prefix+":") {
-					deployment.Spec.Template.Spec.Containers[i].Image = newImage
-					updated = true
-				}
-			}
-		}
-
-		if updated {
-			_, err := k.clientset.AppsV1().Deployments(k.config.GetSystemNamespace()).Update(ctx, &deployment, metav1.UpdateOptions{})
-			if err != nil {
-				return fmt.Errorf("failed to update deployment %s: %w", deployment.Name, err)
-			}
+		if err := k.retagDeployment(ctx, deployment, newVersion); err != nil {
+			return err
 		}
 	}
 
-	// Then update the API deployment
-	for _, deployment := range deployments.Items {
-		// Only process API deployment
-		if !strings.Contains(deployment.Name, "api") {
-			continue
-		}
-
-		updated := false
-		for i, container := range deployment.Spec.Template.Spec.Containers {
-			for prefix, newImage := range imageUpdates {
-				if strings.HasPrefix(container.Image, prefix+":") {
-					deployment.Spec.Template.Spec.Containers[i].Image = newImage
-					updated = true
-				}
-			}
-		}
-
-		if updated {
-			_, err := k.clientset.AppsV1().Deployments(k.config.GetSystemNamespace()).Update(ctx, &deployment, metav1.UpdateOptions{})
-			if err != nil {
-				return fmt.Errorf("failed to update deployment %s: %w", deployment.Name, err)
-			}
+	for _, deployment := range appDeployments {
+		if err := k.retagDeployment(ctx, deployment, newVersion); err != nil {
+			return err
 		}
 	}
 
 	return nil
 }
 
-// CheckDeploymentsReady checks if all deployments with unbind images have at least one pod running with the specified version
+func (k *KubeClient) retagDeployment(ctx context.Context, deployment *appsv1.Deployment, version string) error {
+	containers := deployment.Spec.Template.Spec.Containers
+	updated := false
+	for i := range containers {
+		image, ok := versionedImage(containers[i].Image, version)
+		if !ok {
+			continue
+		}
+		containers[i].Image = image
+		updated = true
+	}
+	if !updated {
+		return nil
+	}
+
+	if _, err := k.clientset.AppsV1().Deployments(deployment.Namespace).Update(ctx, deployment, metav1.UpdateOptions{}); err != nil {
+		return fmt.Errorf("failed to update deployment %s: %w", deployment.Name, err)
+	}
+	return nil
+}
+
+// CheckDeploymentsReady reports whether every deployment using an unbind image has a running pod on the given version.
 func (k *KubeClient) CheckDeploymentsReady(ctx context.Context, version string) (bool, error) {
 	deployments, err := k.clientset.AppsV1().Deployments(k.config.GetSystemNamespace()).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return false, fmt.Errorf("failed to list deployments: %w", err)
 	}
 
-	// Define the expected image base and version format
-	unbindImageBase := "ghcr.io/unbindapp/"
-	foundUnbindDeployments := false
-
-	// Expected images for each component with version
-	expectedImages := map[string]string{
-		"ghcr.io/unbindapp/unbind-ui":       fmt.Sprintf("ghcr.io/unbindapp/unbind-ui:%s", version),
-		"ghcr.io/unbindapp/unbind-operator": fmt.Sprintf("ghcr.io/unbindapp/unbind-operator:%s", version),
-		"ghcr.io/unbindapp/unbind-api":      fmt.Sprintf("ghcr.io/unbindapp/unbind-api:%s", version),
-	}
-
-	// Check each deployment
-	for _, deployment := range deployments.Items {
-		deploymentHasUnbindImage := false
-		requiredImages := make(map[string]bool)
-
-		// Check if this deployment has any unbind images
-		for _, container := range deployment.Spec.Template.Spec.Containers {
-			if strings.HasPrefix(container.Image, unbindImageBase) {
-				deploymentHasUnbindImage = true
-
-				// Extract the base image name (before the tag)
-				baseImage := container.Image
-				if tagIndex := strings.LastIndex(baseImage, ":"); tagIndex > 0 {
-					baseImage = baseImage[:tagIndex]
-				}
-
-				// Mark which images we need to find in running pods
-				if _, exists := expectedImages[baseImage]; exists {
-					requiredImages[baseImage] = false
-				}
-			}
-		}
-
-		// Skip if not an unbind deployment
-		if !deploymentHasUnbindImage {
+	found := false
+	for i := range deployments.Items {
+		deployment := &deployments.Items[i]
+		expected := expectedImages(deployment.Spec.Template.Spec.Containers, version)
+		if len(expected) == 0 {
 			continue
 		}
+		found = true
 
-		foundUnbindDeployments = true
-
-		// Get the pods for this deployment
-		pods, err := k.clientset.CoreV1().Pods(k.config.GetSystemNamespace()).List(ctx, metav1.ListOptions{
+		pods, err := k.clientset.CoreV1().Pods(deployment.Namespace).List(ctx, metav1.ListOptions{
 			LabelSelector: metav1.FormatLabelSelector(metav1.SetAsLabelSelector(deployment.Spec.Selector.MatchLabels)),
 		})
 		if err != nil {
 			return false, fmt.Errorf("failed to list pods for deployment %s: %w", deployment.Name, err)
 		}
-
-		// Check if at least one pod is running with the correct version for each image
-		for _, pod := range pods.Items {
-			// Skip pods that aren't running
-			if pod.Status.Phase != corev1.PodRunning {
-				continue
-			}
-
-			// Check each container in the pod
-			for _, container := range pod.Spec.Containers {
-				// Only check unbind containers
-				if strings.HasPrefix(container.Image, unbindImageBase) {
-					// Extract the base image name
-					baseImage := container.Image
-					if tagIndex := strings.LastIndex(baseImage, ":"); tagIndex > 0 {
-						baseImage = baseImage[:tagIndex]
-					}
-
-					// Check if this container has the correct version
-					if expectedImage, exists := expectedImages[baseImage]; exists {
-						if container.Image == expectedImage {
-							requiredImages[baseImage] = true
-						}
-					}
-				}
-			}
-		}
-
-		// Check if we found at least one running pod with the correct version for each required image
-		for _, found := range requiredImages {
-			if !found {
-				return false, nil
-			}
+		if !podsRunImages(pods.Items, expected) {
+			return false, nil
 		}
 	}
 
-	// If we found no unbind deployments, that's an error
-	if !foundUnbindDeployments {
+	if !found {
 		return false, fmt.Errorf("no deployments with unbind images found")
 	}
-
-	// All unbind deployments have at least one pod running with the correct version
 	return true, nil
+}
+
+func expectedImages(containers []corev1.Container, version string) []string {
+	var images []string
+	for _, container := range containers {
+		if image, ok := versionedImage(container.Image, version); ok {
+			images = append(images, image)
+		}
+	}
+	return images
+}
+
+func podsRunImages(pods []corev1.Pod, images []string) bool {
+	for _, image := range images {
+		running := slices.ContainsFunc(pods, func(pod corev1.Pod) bool {
+			if pod.Status.Phase != corev1.PodRunning {
+				return false
+			}
+			return slices.ContainsFunc(pod.Spec.Containers, func(container corev1.Container) bool {
+				return container.Image == image
+			})
+		})
+		if !running {
+			return false
+		}
+	}
+	return true
 }

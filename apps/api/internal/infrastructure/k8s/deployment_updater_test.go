@@ -5,223 +5,119 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	mocks_config "github.com/unbindapp/unbind-api/mocks/config"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
+	k8stesting "k8s.io/client-go/testing"
 )
+
+const testNamespace = "unbind-system"
+
+func testDeployment(name, image string) *appsv1.Deployment {
+	labels := map[string]string{"app": name}
+	return &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: testNamespace, Labels: labels},
+		Spec: appsv1.DeploymentSpec{
+			Selector: &metav1.LabelSelector{MatchLabels: labels},
+			Template: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{Containers: []corev1.Container{{Name: name, Image: image}}},
+			},
+		},
+	}
+}
+
+func testPod(deploymentName, image string, phase corev1.PodPhase) *corev1.Pod {
+	return &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{Name: deploymentName + "-pod", Namespace: testNamespace, Labels: map[string]string{"app": deploymentName}},
+		Spec:       corev1.PodSpec{Containers: []corev1.Container{{Name: deploymentName, Image: image}}},
+		Status:     corev1.PodStatus{Phase: phase},
+	}
+}
+
+func testKubeClient(t *testing.T, objects ...runtime.Object) (*KubeClient, *fake.Clientset) {
+	t.Helper()
+	mockConfig := &mocks_config.ConfigMock{}
+	mockConfig.On("GetSystemNamespace").Return(testNamespace)
+	fakeClient := fake.NewSimpleClientset(objects...)
+	return &KubeClient{clientset: fakeClient, config: mockConfig}, fakeClient
+}
+
+func deploymentImage(t *testing.T, client *fake.Clientset, name string) string {
+	t.Helper()
+	deployment, err := client.AppsV1().Deployments(testNamespace).Get(context.Background(), name, metav1.GetOptions{})
+	require.NoError(t, err)
+	return deployment.Spec.Template.Spec.Containers[0].Image
+}
 
 func TestUpdateDeploymentImages(t *testing.T) {
 	tests := []struct {
-		name            string
-		newVersion      string
-		deployments     []runtime.Object
-		expectedError   bool
-		validateUpdates func(t *testing.T, client *fake.Clientset)
+		name        string
+		newVersion  string
+		deployments []runtime.Object
+		expected    map[string]string
 	}{
 		{
-			name:       "Update UI and operator deployments",
+			name:       "retags app and operator",
 			newVersion: "v1.2.3",
 			deployments: []runtime.Object{
-				&appsv1.Deployment{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "unbind-ui",
-						Namespace: "unbind-system",
-					},
-					Spec: appsv1.DeploymentSpec{
-						Template: corev1.PodTemplateSpec{
-							Spec: corev1.PodSpec{
-								Containers: []corev1.Container{
-									{
-										Name:  "ui",
-										Image: "ghcr.io/unbindapp/unbind-ui:v1.2.2",
-									},
-								},
-							},
-						},
-					},
-				},
-				&appsv1.Deployment{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "unbind-operator",
-						Namespace: "unbind-system",
-					},
-					Spec: appsv1.DeploymentSpec{
-						Template: corev1.PodTemplateSpec{
-							Spec: corev1.PodSpec{
-								Containers: []corev1.Container{
-									{
-										Name:  "operator",
-										Image: "ghcr.io/unbindapp/unbind-operator:v1.2.2",
-									},
-								},
-							},
-						},
-					},
-				},
+				testDeployment("unbind-api-deployment", "ghcr.io/unbindapp/unbind:v1.2.2"),
+				testDeployment("unbind-operator-controller-manager", "ghcr.io/unbindapp/unbind-operator:v1.2.2"),
 			},
-			expectedError: false,
-			validateUpdates: func(t *testing.T, client *fake.Clientset) {
-				// Check UI deployment
-				deployment, err := client.AppsV1().Deployments("unbind-system").Get(
-					context.Background(), "unbind-ui", metav1.GetOptions{},
-				)
-				assert.NoError(t, err)
-				assert.Equal(t, "ghcr.io/unbindapp/unbind-ui:v1.2.3", deployment.Spec.Template.Spec.Containers[0].Image)
-
-				// Check operator deployment
-				deployment, err = client.AppsV1().Deployments("unbind-system").Get(
-					context.Background(), "unbind-operator", metav1.GetOptions{},
-				)
-				assert.NoError(t, err)
-				assert.Equal(t, "ghcr.io/unbindapp/unbind-operator:v1.2.3", deployment.Spec.Template.Spec.Containers[0].Image)
+			expected: map[string]string{
+				"unbind-api-deployment":              "ghcr.io/unbindapp/unbind:v1.2.3",
+				"unbind-operator-controller-manager": "ghcr.io/unbindapp/unbind-operator:v1.2.3",
 			},
 		},
 		{
-			name:       "Update API deployment after others",
-			newVersion: "v1.3.0",
-			deployments: []runtime.Object{
-				&appsv1.Deployment{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "unbind-api",
-						Namespace: "unbind-system",
-					},
-					Spec: appsv1.DeploymentSpec{
-						Template: corev1.PodTemplateSpec{
-							Spec: corev1.PodSpec{
-								Containers: []corev1.Container{
-									{
-										Name:  "api",
-										Image: "ghcr.io/unbindapp/unbind-api:v1.2.9",
-									},
-								},
-							},
-						},
-					},
-				},
-				&appsv1.Deployment{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "unbind-ui",
-						Namespace: "unbind-system",
-					},
-					Spec: appsv1.DeploymentSpec{
-						Template: corev1.PodTemplateSpec{
-							Spec: corev1.PodSpec{
-								Containers: []corev1.Container{
-									{
-										Name:  "ui",
-										Image: "ghcr.io/unbindapp/unbind-ui:v1.2.9",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			expectedError: false,
-			validateUpdates: func(t *testing.T, client *fake.Clientset) {
-				// Both should be updated
-				apiDeployment, err := client.AppsV1().Deployments("unbind-system").Get(
-					context.Background(), "unbind-api", metav1.GetOptions{},
-				)
-				assert.NoError(t, err)
-				assert.Equal(t, "ghcr.io/unbindapp/unbind-api:v1.3.0", apiDeployment.Spec.Template.Spec.Containers[0].Image)
-
-				uiDeployment, err := client.AppsV1().Deployments("unbind-system").Get(
-					context.Background(), "unbind-ui", metav1.GetOptions{},
-				)
-				assert.NoError(t, err)
-				assert.Equal(t, "ghcr.io/unbindapp/unbind-ui:v1.3.0", uiDeployment.Spec.Template.Spec.Containers[0].Image)
-			},
-		},
-		{
-			name:       "Skip non-unbind deployments",
+			name:       "leaves other images alone",
 			newVersion: "v1.4.0",
 			deployments: []runtime.Object{
-				&appsv1.Deployment{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "nginx-ingress",
-						Namespace: "unbind-system",
-					},
-					Spec: appsv1.DeploymentSpec{
-						Template: corev1.PodTemplateSpec{
-							Spec: corev1.PodSpec{
-								Containers: []corev1.Container{
-									{
-										Name:  "nginx",
-										Image: "nginx:1.21",
-									},
-								},
-							},
-						},
-					},
-				},
-				&appsv1.Deployment{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "unbind-ui",
-						Namespace: "unbind-system",
-					},
-					Spec: appsv1.DeploymentSpec{
-						Template: corev1.PodTemplateSpec{
-							Spec: corev1.PodSpec{
-								Containers: []corev1.Container{
-									{
-										Name:  "ui",
-										Image: "ghcr.io/unbindapp/unbind-ui:v1.3.9",
-									},
-								},
-							},
-						},
-					},
-				},
+				testDeployment("nginx-ingress", "nginx:1.21"),
+				testDeployment("unbind-challenge-responder", "nginx:1.27-alpine"),
+				testDeployment("unbind-api-deployment", "ghcr.io/unbindapp/unbind:v1.3.9"),
 			},
-			expectedError: false,
-			validateUpdates: func(t *testing.T, client *fake.Clientset) {
-				// nginx should not be updated
-				nginxDeployment, err := client.AppsV1().Deployments("unbind-system").Get(
-					context.Background(), "nginx-ingress", metav1.GetOptions{},
-				)
-				assert.NoError(t, err)
-				assert.Equal(t, "nginx:1.21", nginxDeployment.Spec.Template.Spec.Containers[0].Image)
-
-				// unbind-ui should be updated
-				uiDeployment, err := client.AppsV1().Deployments("unbind-system").Get(
-					context.Background(), "unbind-ui", metav1.GetOptions{},
-				)
-				assert.NoError(t, err)
-				assert.Equal(t, "ghcr.io/unbindapp/unbind-ui:v1.4.0", uiDeployment.Spec.Template.Spec.Containers[0].Image)
+			expected: map[string]string{
+				"nginx-ingress":              "nginx:1.21",
+				"unbind-challenge-responder": "nginx:1.27-alpine",
+				"unbind-api-deployment":      "ghcr.io/unbindapp/unbind:v1.4.0",
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fakeClient := fake.NewSimpleClientset(tt.deployments...)
+			kubeClient, fakeClient := testKubeClient(t, tt.deployments...)
 
-			mockConfig := &mocks_config.ConfigMock{}
-			mockConfig.On("GetSystemNamespace").Return("unbind-system")
+			require.NoError(t, kubeClient.UpdateDeploymentImages(context.Background(), tt.newVersion))
 
-			kubeClient := &KubeClient{
-				clientset: fakeClient,
-				config:    mockConfig,
+			for name, image := range tt.expected {
+				assert.Equal(t, image, deploymentImage(t, fakeClient, name), name)
 			}
-
-			err := kubeClient.UpdateDeploymentImages(context.Background(), tt.newVersion)
-
-			if tt.expectedError {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-				if tt.validateUpdates != nil {
-					tt.validateUpdates(t, fakeClient)
-				}
-			}
-
-			mockConfig.AssertExpectations(t)
 		})
 	}
+}
+
+func TestUpdateDeploymentImages_AppRollsLast(t *testing.T) {
+	kubeClient, fakeClient := testKubeClient(t,
+		testDeployment("unbind-api-deployment", "ghcr.io/unbindapp/unbind:v1.0.0"),
+		testDeployment("unbind-operator-controller-manager", "ghcr.io/unbindapp/unbind-operator:v1.0.0"),
+	)
+
+	var updated []string
+	fakeClient.PrependReactor("update", "deployments", func(action k8stesting.Action) (bool, runtime.Object, error) {
+		updated = append(updated, action.(k8stesting.UpdateAction).GetObject().(*appsv1.Deployment).Name)
+		return false, nil, nil
+	})
+
+	require.NoError(t, kubeClient.UpdateDeploymentImages(context.Background(), "v1.0.1"))
+
+	assert.Equal(t, []string{"unbind-operator-controller-manager", "unbind-api-deployment"}, updated)
+	assert.Equal(t, "ghcr.io/unbindapp/unbind:v1.0.1", deploymentImage(t, fakeClient, "unbind-api-deployment"))
+	assert.Equal(t, "ghcr.io/unbindapp/unbind-operator:v1.0.1", deploymentImage(t, fakeClient, "unbind-operator-controller-manager"))
 }
 
 func TestCheckDeploymentsReady(t *testing.T) {
@@ -233,248 +129,54 @@ func TestCheckDeploymentsReady(t *testing.T) {
 		expectedError bool
 	}{
 		{
-			name:    "All deployments ready with correct version",
+			name:    "all deployments ready on the target version",
 			version: "v1.2.3",
 			objects: []runtime.Object{
-				// UI Deployment
-				&appsv1.Deployment{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "unbind-ui",
-						Namespace: "unbind-system",
-						Labels: map[string]string{
-							"app": "unbind-ui",
-						},
-					},
-					Spec: appsv1.DeploymentSpec{
-						Selector: &metav1.LabelSelector{
-							MatchLabels: map[string]string{
-								"app": "unbind-ui",
-							},
-						},
-						Template: corev1.PodTemplateSpec{
-							Spec: corev1.PodSpec{
-								Containers: []corev1.Container{
-									{
-										Name:  "ui",
-										Image: "ghcr.io/unbindapp/unbind-ui:v1.2.3",
-									},
-								},
-							},
-						},
-					},
-				},
-				// UI Pod
-				&corev1.Pod{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "unbind-ui-pod",
-						Namespace: "unbind-system",
-						Labels: map[string]string{
-							"app": "unbind-ui",
-						},
-					},
-					Spec: corev1.PodSpec{
-						Containers: []corev1.Container{
-							{
-								Name:  "ui",
-								Image: "ghcr.io/unbindapp/unbind-ui:v1.2.3",
-							},
-						},
-					},
-					Status: corev1.PodStatus{
-						Phase: corev1.PodRunning,
-					},
-				},
-				// API Deployment
-				&appsv1.Deployment{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "unbind-api",
-						Namespace: "unbind-system",
-						Labels: map[string]string{
-							"app": "unbind-api",
-						},
-					},
-					Spec: appsv1.DeploymentSpec{
-						Selector: &metav1.LabelSelector{
-							MatchLabels: map[string]string{
-								"app": "unbind-api",
-							},
-						},
-						Template: corev1.PodTemplateSpec{
-							Spec: corev1.PodSpec{
-								Containers: []corev1.Container{
-									{
-										Name:  "api",
-										Image: "ghcr.io/unbindapp/unbind-api:v1.2.3",
-									},
-								},
-							},
-						},
-					},
-				},
-				// API Pod
-				&corev1.Pod{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "unbind-api-pod",
-						Namespace: "unbind-system",
-						Labels: map[string]string{
-							"app": "unbind-api",
-						},
-					},
-					Spec: corev1.PodSpec{
-						Containers: []corev1.Container{
-							{
-								Name:  "api",
-								Image: "ghcr.io/unbindapp/unbind-api:v1.2.3",
-							},
-						},
-					},
-					Status: corev1.PodStatus{
-						Phase: corev1.PodRunning,
-					},
-				},
+				testDeployment("unbind-api-deployment", "ghcr.io/unbindapp/unbind:v1.2.3"),
+				testPod("unbind-api-deployment", "ghcr.io/unbindapp/unbind:v1.2.3", corev1.PodRunning),
+				testDeployment("unbind-operator-controller-manager", "ghcr.io/unbindapp/unbind-operator:v1.2.3"),
+				testPod("unbind-operator-controller-manager", "ghcr.io/unbindapp/unbind-operator:v1.2.3", corev1.PodRunning),
 			},
 			expectedReady: true,
-			expectedError: false,
 		},
 		{
-			name:    "Deployment with wrong version",
+			name:    "pod still on the old version",
 			version: "v1.2.3",
 			objects: []runtime.Object{
-				&appsv1.Deployment{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "unbind-ui",
-						Namespace: "unbind-system",
-						Labels: map[string]string{
-							"app": "unbind-ui",
-						},
-					},
-					Spec: appsv1.DeploymentSpec{
-						Selector: &metav1.LabelSelector{
-							MatchLabels: map[string]string{
-								"app": "unbind-ui",
-							},
-						},
-						Template: corev1.PodTemplateSpec{
-							Spec: corev1.PodSpec{
-								Containers: []corev1.Container{
-									{
-										Name:  "ui",
-										Image: "ghcr.io/unbindapp/unbind-ui:v1.2.2", // Wrong version
-									},
-								},
-							},
-						},
-					},
-				},
-				&corev1.Pod{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "unbind-ui-pod",
-						Namespace: "unbind-system",
-						Labels: map[string]string{
-							"app": "unbind-ui",
-						},
-					},
-					Spec: corev1.PodSpec{
-						Containers: []corev1.Container{
-							{
-								Name:  "ui",
-								Image: "ghcr.io/unbindapp/unbind-ui:v1.2.2", // Wrong version
-							},
-						},
-					},
-					Status: corev1.PodStatus{
-						Phase: corev1.PodRunning,
-					},
-				},
+				testDeployment("unbind-api-deployment", "ghcr.io/unbindapp/unbind:v1.2.3"),
+				testPod("unbind-api-deployment", "ghcr.io/unbindapp/unbind:v1.2.2", corev1.PodRunning),
 			},
 			expectedReady: false,
-			expectedError: false,
 		},
 		{
-			name:    "Pod not in running state",
+			name:    "pod not running",
 			version: "v1.2.3",
 			objects: []runtime.Object{
-				&appsv1.Deployment{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "unbind-ui",
-						Namespace: "unbind-system",
-						Labels: map[string]string{
-							"app": "unbind-ui",
-						},
-					},
-					Spec: appsv1.DeploymentSpec{
-						Selector: &metav1.LabelSelector{
-							MatchLabels: map[string]string{
-								"app": "unbind-ui",
-							},
-						},
-						Template: corev1.PodTemplateSpec{
-							Spec: corev1.PodSpec{
-								Containers: []corev1.Container{
-									{
-										Name:  "ui",
-										Image: "ghcr.io/unbindapp/unbind-ui:v1.2.3",
-									},
-								},
-							},
-						},
-					},
-				},
-				&corev1.Pod{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "unbind-ui-pod",
-						Namespace: "unbind-system",
-						Labels: map[string]string{
-							"app": "unbind-ui",
-						},
-					},
-					Spec: corev1.PodSpec{
-						Containers: []corev1.Container{
-							{
-								Name:  "ui",
-								Image: "ghcr.io/unbindapp/unbind-ui:v1.2.3",
-							},
-						},
-					},
-					Status: corev1.PodStatus{
-						Phase: corev1.PodPending, // Not running
-					},
-				},
+				testDeployment("unbind-api-deployment", "ghcr.io/unbindapp/unbind:v1.2.3"),
+				testPod("unbind-api-deployment", "ghcr.io/unbindapp/unbind:v1.2.3", corev1.PodPending),
 			},
 			expectedReady: false,
-			expectedError: false,
 		},
 		{
-			name:          "No unbind deployments found",
+			name:          "no unbind deployments",
 			version:       "v1.2.3",
-			objects:       []runtime.Object{},
-			expectedReady: false,
+			objects:       []runtime.Object{testDeployment("nginx-ingress", "nginx:1.21")},
 			expectedError: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fakeClient := fake.NewSimpleClientset(tt.objects...)
-
-			mockConfig := &mocks_config.ConfigMock{}
-			mockConfig.On("GetSystemNamespace").Return("unbind-system")
-
-			kubeClient := &KubeClient{
-				clientset: fakeClient,
-				config:    mockConfig,
-			}
+			kubeClient, _ := testKubeClient(t, tt.objects...)
 
 			ready, err := kubeClient.CheckDeploymentsReady(context.Background(), tt.version)
 
 			if tt.expectedError {
 				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-				assert.Equal(t, tt.expectedReady, ready)
+				return
 			}
-
-			mockConfig.AssertExpectations(t)
+			require.NoError(t, err)
+			assert.Equal(t, tt.expectedReady, ready)
 		})
 	}
 }

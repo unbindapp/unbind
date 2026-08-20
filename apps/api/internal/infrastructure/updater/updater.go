@@ -14,11 +14,11 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/cache"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/k8s"
-	github_integration "github.com/unbindapp/unbind-api/internal/integrations/github"
 	"github.com/unbindapp/unbind-api/pkg/release"
 	"sigs.k8s.io/kustomize/api/krusty"
 	"sigs.k8s.io/kustomize/api/types"
 	"sigs.k8s.io/kustomize/kyaml/filesys"
+	"sigs.k8s.io/yaml"
 )
 
 // Updater handles the update process for the application
@@ -173,83 +173,63 @@ func (self *Updater) UpdateToVersion(ctx context.Context, targetVersion string) 
 	return nil
 }
 
-// applyKustomizeManifests applies Kustomize manifests for a specific version
+// applyKustomizeManifests applies the optional per-version kustomization shipped in the release repo.
 func (self *Updater) applyKustomizeManifests(ctx context.Context, version string) error {
-	owner, repo := self.releaseManager.GetRepositoryInfo()
-
-	// Create a temporary directory for cloning
-	tempDir, err := os.MkdirTemp("", "unbind-update-*")
+	dir, err := os.MkdirTemp("", "unbind-update-*")
 	if err != nil {
 		return fmt.Errorf("failed to create temp directory: %w", err)
 	}
-	defer os.RemoveAll(tempDir)
+	defer os.RemoveAll(dir)
 
-	// Clone the repository using the GitHub integration
-	ghClient := github_integration.NewGithubClient("https://github.com", nil)
-	cloneURL := fmt.Sprintf("https://github.com/%s/%s.git", owner, repo)
-	tmpDir, err := ghClient.CloneRepository(ctx, 0, 0, "", cloneURL, fmt.Sprintf("refs/tags/%s", version), "")
+	found, err := self.releaseManager.DownloadVersionManifests(ctx, version, dir)
 	if err != nil {
-		return fmt.Errorf("failed to clone repository: %w", err)
+		return err
 	}
-	defer os.RemoveAll(tmpDir)
-
-	// Check for version-specific directory
-	versionDir := filepath.Join(tmpDir, version)
-	if _, err := os.Stat(versionDir); os.IsNotExist(err) {
-		// No version-specific directory found, nothing to do
+	if !found {
 		return nil
 	}
 
-	// Check for kustomization.yaml
-	kustomizationPath := filepath.Join(versionDir, "kustomization.yaml")
-	if _, err := os.Stat(kustomizationPath); os.IsNotExist(err) {
-		// No kustomization.yaml found, nothing to do
-		return nil
+	if err := setKustomizationNamespace(filepath.Join(dir, release.KustomizationFile), self.cfg.GetSystemNamespace()); err != nil {
+		return err
 	}
 
-	// Create a temporary kustomization file with namespace override
-	systemNamespace := self.cfg.GetSystemNamespace()
-	tempKustomizationPath := filepath.Join(versionDir, "kustomization.yaml.tmp")
-
-	kustomizationContent, err := os.ReadFile(kustomizationPath)
-	if err != nil {
-		return fmt.Errorf("failed to read kustomization file: %w", err)
-	}
-
-	// Create a new kustomization file with namespace override
-	newContent := fmt.Sprintf("apiVersion: kustomize.config.k8s.io/v1beta1\nkind: Kustomization\nnamespace: %s\n\n%s",
-		systemNamespace, string(kustomizationContent))
-
-	if err := os.WriteFile(tempKustomizationPath, []byte(newContent), 0644); err != nil {
-		return fmt.Errorf("failed to write temporary kustomization file: %w", err)
-	}
-	defer os.Remove(tempKustomizationPath)
-
-	// Create a filesystem for Kustomize
-	fs := filesys.MakeFsOnDisk()
-
-	// Create a Kustomize options
 	opts := krusty.MakeDefaultOptions()
 	opts.LoadRestrictions = types.LoadRestrictionsNone
-
-	// Create a Kustomize instance
-	k := krusty.MakeKustomizer(opts)
-
-	// Build the kustomization
-	resMap, err := k.Run(fs, versionDir)
+	resMap, err := krusty.MakeKustomizer(opts).Run(filesys.MakeFsOnDisk(), dir)
 	if err != nil {
 		return fmt.Errorf("failed to build kustomization: %w", err)
 	}
 
-	// Convert the resources to YAML
 	yaml, err := resMap.AsYaml()
 	if err != nil {
 		return fmt.Errorf("failed to convert resources to YAML: %w", err)
 	}
 
-	// Apply the resources using our Kubernetes client
 	if err := self.k8sClient.ApplyYAML(ctx, yaml); err != nil {
 		return fmt.Errorf("failed to apply resources: %w", err)
+	}
+
+	return nil
+}
+
+func setKustomizationNamespace(path, namespace string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("failed to read kustomization file: %w", err)
+	}
+
+	var kustomization types.Kustomization
+	if err := yaml.Unmarshal(data, &kustomization); err != nil {
+		return fmt.Errorf("failed to parse kustomization file: %w", err)
+	}
+	kustomization.Namespace = namespace
+
+	data, err = yaml.Marshal(&kustomization)
+	if err != nil {
+		return fmt.Errorf("failed to encode kustomization file: %w", err)
+	}
+	if err := os.WriteFile(path, data, 0644); err != nil {
+		return fmt.Errorf("failed to write kustomization file: %w", err)
 	}
 
 	return nil

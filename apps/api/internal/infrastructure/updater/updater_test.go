@@ -39,9 +39,9 @@ func (m *MockReleaseManager) GetNextAvailableVersion(ctx context.Context, curren
 	return args.String(0), args.Error(1)
 }
 
-func (m *MockReleaseManager) GetRepositoryInfo() (string, string) {
-	args := m.Called()
-	return args.String(0), args.String(1)
+func (m *MockReleaseManager) DownloadVersionManifests(ctx context.Context, version, destDir string) (bool, error) {
+	args := m.Called(ctx, version, destDir)
+	return args.Bool(0), args.Error(1)
 }
 
 // MockRedisClient is a mock for Redis client
@@ -208,10 +208,6 @@ func (suite *UpdaterTestSuite) TestNew_ReleaseManagerInitialization() {
 	updater := New(suite.cfg, "v1.0.0", suite.mockK8sClient, suite.redisClient)
 
 	suite.NotNil(updater.releaseManager)
-	// Test that we can call GetRepositoryInfo (this doesn't require network access)
-	owner, repo := updater.releaseManager.GetRepositoryInfo()
-	suite.NotEmpty(owner)
-	suite.NotEmpty(repo)
 }
 
 // Test interface implementation

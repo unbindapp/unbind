@@ -3,203 +3,247 @@ package release
 import (
 	"context"
 	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"path/filepath"
 	"slices"
-	"sort"
 	"strings"
+	"time"
 
 	"github.com/google/go-github/v69/github"
 	"golang.org/x/mod/semver"
 )
 
 const (
-	// DefaultOwner is the GitHub organization name for Unbind
-	DefaultOwner = "unbindapp"
-	// DefaultRepo is the GitHub repository name for Unbind releases
-	DefaultRepo = "unbind-releases"
+	DefaultOwner  = "unbindapp"
+	DefaultRepo   = "unbind"
+	DefaultBranch = "master"
+	// MetadataPath is the repo-relative path of the release metadata, read from DefaultBranch.
+	MetadataPath = "deploy/releases/metadata.json"
+	// ManifestsDir holds optional per-version kustomizations (ManifestsDir/<version>/kustomization.yaml), read at the version's tag.
+	ManifestsDir      = "deploy/releases"
+	KustomizationFile = "kustomization.yaml"
 )
 
-// GitHubClientInterface defines the interface for GitHub client operations we need
 type GitHubClientInterface interface {
 	Repositories() RepositoriesServiceInterface
 }
 
-// RepositoriesServiceInterface defines the interface for GitHub repositories service
 type RepositoriesServiceInterface interface {
-	ListTags(ctx context.Context, owner, repo string, opts *github.ListOptions) ([]*github.RepositoryTag, *github.Response, error)
 	ListReleases(ctx context.Context, owner, repo string, opts *github.ListOptions) ([]*github.RepositoryRelease, *github.Response, error)
+	GetContents(ctx context.Context, owner, repo, path string, opts *github.RepositoryContentGetOptions) (*github.RepositoryContent, []*github.RepositoryContent, *github.Response, error)
 }
 
-// ManagerInterface defines the interface for release management operations
 type ManagerInterface interface {
 	AvailableUpdates(ctx context.Context, currentVersion string) ([]string, error)
 	GetLatestVersion(ctx context.Context) (string, error)
 	GetUpdatePath(ctx context.Context, currentVersion, targetVersion string) ([]string, error)
 	GetNextAvailableVersion(ctx context.Context, currentVersion string) (string, error)
-	GetRepositoryInfo() (string, string)
+	DownloadVersionManifests(ctx context.Context, version, destDir string) (bool, error)
 }
 
-// Manager handles release management functionality
 type Manager struct {
 	client      GitHubClientInterface
+	httpClient  *http.Client
+	owner       string
 	repo        string
 	metadataURL string
 }
 
-// NewManager creates a new release manager
-func NewManager(client GitHubClientInterface, releaseRepoOverride string) *Manager {
-	repo := DefaultRepo
-	if releaseRepoOverride != "" {
-		repo = releaseRepoOverride
+// NewManager creates a release manager for DefaultOwner/DefaultRepo; repoOverride may be "repo" or "owner/repo".
+func NewManager(client GitHubClientInterface, repoOverride string) *Manager {
+	owner, repo := DefaultOwner, DefaultRepo
+	if o, r, ok := strings.Cut(repoOverride, "/"); ok {
+		owner, repo = o, r
+	} else if repoOverride != "" {
+		repo = repoOverride
 	}
 
 	return &Manager{
 		client:      client,
+		httpClient:  &http.Client{Timeout: 30 * time.Second},
+		owner:       owner,
 		repo:        repo,
-		metadataURL: fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/master/metadata.json", DefaultOwner, repo),
+		metadataURL: fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/%s/%s", owner, repo, DefaultBranch, MetadataPath),
 	}
 }
 
-// getPublishedReleases returns a map of tag names to their release status
-func (self *Manager) getPublishedReleases(ctx context.Context) (map[string]bool, error) {
-	releases, _, err := self.client.Repositories().ListReleases(ctx, DefaultOwner, self.repo, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to list releases: %w", err)
+func normalizeVersion(version string) string {
+	if strings.HasPrefix(version, "v") {
+		return version
 	}
+	return "v" + version
+}
 
+func (self *Manager) publishedReleaseTags(ctx context.Context) (map[string]bool, error) {
 	published := make(map[string]bool)
-	for _, release := range releases {
-		if release.GetTagName() != "" {
-			published[release.GetTagName()] = true
+	opts := &github.ListOptions{PerPage: 100}
+	for {
+		releases, resp, err := self.client.Repositories().ListReleases(ctx, self.owner, self.repo, opts)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list releases: %w", err)
 		}
+		for _, release := range releases {
+			if tag := release.GetTagName(); tag != "" {
+				published[tag] = true
+			}
+		}
+		if resp == nil || resp.NextPage == 0 {
+			return published, nil
+		}
+		opts.Page = resp.NextPage
 	}
-
-	return published, nil
 }
 
-// AvailableUpdates returns a list of available updates from the current version
-// The list is ordered from the next version to the latest version
-func (self *Manager) AvailableUpdates(ctx context.Context, currentVersion string) ([]string, error) {
-	// Ensure current version has v prefix
-	if !strings.HasPrefix(currentVersion, "v") {
-		currentVersion = "v" + currentVersion
-	}
-
-	// Validate current version
-	if !semver.IsValid(currentVersion) {
-		return make([]string, 0), nil
-	}
-
-	// Get all tags from the repository
-	tags, _, err := self.client.Repositories().ListTags(ctx, DefaultOwner, self.repo, nil)
+// releasedVersions returns, in ascending semver order, every version that has both a published GitHub release and a metadata entry.
+func (self *Manager) releasedVersions(ctx context.Context) ([]string, VersionMetadataMap, error) {
+	published, err := self.publishedReleaseTags(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list tags: %w", err)
+		return nil, nil, err
 	}
 
-	// Get published releases
-	published, err := self.getPublishedReleases(ctx)
+	metadata, err := self.GetVersionMetadata(ctx)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to get version metadata: %w", err)
+	}
+
+	versions := make([]string, 0, len(published))
+	for tag := range published {
+		if !semver.IsValid(tag) {
+			continue
+		}
+		if _, ok := metadata[tag]; !ok {
+			continue
+		}
+		versions = append(versions, tag)
+	}
+	semver.Sort(versions)
+
+	return versions, metadata, nil
+}
+
+func canUpdateTo(meta VersionMetadata, currentVersion string) bool {
+	if len(meta.DependsOn) > 0 {
+		return slices.Contains(meta.DependsOn, currentVersion)
+	}
+	return !meta.Breaking
+}
+
+// AvailableUpdates returns the versions newer than currentVersion that it may update to, oldest first.
+func (self *Manager) AvailableUpdates(ctx context.Context, currentVersion string) ([]string, error) {
+	currentVersion = normalizeVersion(currentVersion)
+	if !semver.IsValid(currentVersion) {
+		return []string{}, nil
+	}
+
+	versions, metadata, err := self.releasedVersions(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get version metadata
-	metadata, err := self.GetVersionMetadata(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get version metadata: %w", err)
-	}
-
-	// Filter and sort valid semver tags that have published releases and metadata
-	validVersions := make([]string, 0, len(tags))
-	for _, tag := range tags {
-		version := tag.GetName()
-		if semver.IsValid(version) && published[version] {
-			// Only include versions that have metadata
-			if _, hasMetadata := metadata[version]; hasMetadata {
-				validVersions = append(validVersions, version)
-			}
-		}
-	}
-
-	// Sort versions
-	sort.Slice(validVersions, func(i, j int) bool {
-		return semver.Compare(validVersions[i], validVersions[j]) < 0
-	})
-
-	// Find versions that are available for update based on metadata
-	updates := make([]string, 0, len(validVersions))
-	for _, version := range validVersions {
-		// Skip versions older than or equal to current version
+	updates := make([]string, 0, len(versions))
+	for _, version := range versions {
 		if semver.Compare(version, currentVersion) <= 0 {
 			continue
 		}
-
-		meta := metadata[version]
-
-		// If version has dependencies, check if current version is in them
-		if len(meta.DependsOn) > 0 {
-			canUpdate := slices.Contains(meta.DependsOn, currentVersion)
-			if !canUpdate {
-				continue
-			}
-		} else if meta.Breaking {
-			// If no dependencies but breaking, skip it
+		if !canUpdateTo(metadata[version], currentVersion) {
 			continue
 		}
-
-		// If we get here, the version is either:
-		// 1. A non-breaking update
-		// 2. A breaking update that depends on our current version
 		updates = append(updates, version)
 	}
 
 	return updates, nil
 }
 
-// GetLatestVersion returns the latest available version
 func (self *Manager) GetLatestVersion(ctx context.Context) (string, error) {
-	// Get all tags from the repository
-	tags, _, err := self.client.Repositories().ListTags(ctx, DefaultOwner, self.repo, nil)
-	if err != nil {
-		return "", fmt.Errorf("failed to list tags: %w", err)
-	}
-
-	// Get published releases
-	published, err := self.getPublishedReleases(ctx)
+	versions, _, err := self.releasedVersions(ctx)
 	if err != nil {
 		return "", err
 	}
+	if len(versions) == 0 {
+		return "", fmt.Errorf("no versions found")
+	}
+	return versions[len(versions)-1], nil
+}
 
-	// Get version metadata
-	metadata, err := self.GetVersionMetadata(ctx)
-	if err != nil {
-		return "", fmt.Errorf("failed to get version metadata: %w", err)
+// GetUpdatePath returns the ordered versions to step through from currentVersion to targetVersion, or an empty list when unreachable.
+func (self *Manager) GetUpdatePath(ctx context.Context, currentVersion, targetVersion string) ([]string, error) {
+	currentVersion = normalizeVersion(currentVersion)
+	targetVersion = normalizeVersion(targetVersion)
+	if !semver.IsValid(currentVersion) || !semver.IsValid(targetVersion) {
+		return []string{}, nil
 	}
 
-	// Filter and sort valid semver tags that have published releases and metadata
-	validVersions := make([]string, 0, len(tags))
-	for _, tag := range tags {
-		version := tag.GetName()
-		if semver.IsValid(version) && published[version] {
-			// Only include versions that have metadata
-			if _, hasMetadata := metadata[version]; hasMetadata {
-				validVersions = append(validVersions, version)
-			}
+	versions, metadata, err := self.releasedVersions(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	currentIdx := slices.Index(versions, currentVersion)
+	targetIdx := slices.Index(versions, targetVersion)
+	if currentIdx == -1 || targetIdx == -1 || targetIdx <= currentIdx {
+		return []string{}, nil
+	}
+
+	path := make([]string, 0, targetIdx-currentIdx)
+	for _, version := range versions[currentIdx+1 : targetIdx+1] {
+		if !canUpdateTo(metadata[version], currentVersion) {
+			return []string{}, nil
+		}
+		path = append(path, version)
+		currentVersion = version
+	}
+
+	return path, nil
+}
+
+// DownloadVersionManifests copies ManifestsDir/<version> at the version's tag into destDir and reports whether it contained a kustomization.
+func (self *Manager) DownloadVersionManifests(ctx context.Context, version, destDir string) (bool, error) {
+	path := ManifestsDir + "/" + version
+	_, entries, resp, err := self.client.Repositories().GetContents(ctx, self.owner, self.repo, path, &github.RepositoryContentGetOptions{Ref: version})
+	if resp != nil && resp.StatusCode == http.StatusNotFound {
+		return false, nil
+	}
+	if err != nil {
+		return false, fmt.Errorf("failed to list manifests for %s: %w", version, err)
+	}
+
+	hasKustomization := false
+	for _, entry := range entries {
+		if entry.GetType() != "file" {
+			continue
+		}
+		if entry.GetName() == KustomizationFile {
+			hasKustomization = true
+		}
+		if err := self.downloadFile(ctx, entry.GetDownloadURL(), filepath.Join(destDir, entry.GetName())); err != nil {
+			return false, fmt.Errorf("failed to download %s/%s: %w", path, entry.GetName(), err)
 		}
 	}
 
-	// Sort versions
-	sort.Slice(validVersions, func(i, j int) bool {
-		return semver.Compare(validVersions[i], validVersions[j]) < 0
-	})
-
-	if len(validVersions) == 0 {
-		return "", fmt.Errorf("no versions found")
-	}
-
-	// Return the latest version
-	return validVersions[len(validVersions)-1], nil
+	return hasKustomization, nil
 }
 
-// GetRepositoryInfo returns the repository owner and name
-func (self *Manager) GetRepositoryInfo() (string, string) {
-	return DefaultOwner, self.repo
+func (self *Manager) downloadFile(ctx context.Context, url, dest string) error {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return err
+	}
+	resp, err := self.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("unexpected status %d", resp.StatusCode)
+	}
+
+	file, err := os.Create(dest)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	_, err = io.Copy(file, resp.Body)
+	return err
 }

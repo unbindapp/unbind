@@ -3,18 +3,21 @@ package release
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/google/go-github/v69/github"
 	"github.com/stretchr/testify/suite"
 )
 
-// mockGitHubClient is a mock implementation of the GitHub client
 type mockGitHubClient struct {
-	listTagsFunc     func(ctx context.Context, owner, repo string, opts *github.ListOptions) ([]*github.RepositoryTag, *github.Response, error)
 	listReleasesFunc func(ctx context.Context, owner, repo string, opts *github.ListOptions) ([]*github.RepositoryRelease, *github.Response, error)
+	getContentsFunc  func(ctx context.Context, owner, repo, path string, opts *github.RepositoryContentGetOptions) (*github.RepositoryContent, []*github.RepositoryContent, *github.Response, error)
 }
 
 func (m *mockGitHubClient) Repositories() RepositoriesServiceInterface {
@@ -25,12 +28,20 @@ type mockRepositoriesService struct {
 	client *mockGitHubClient
 }
 
-func (m *mockRepositoriesService) ListTags(ctx context.Context, owner, repo string, opts *github.ListOptions) ([]*github.RepositoryTag, *github.Response, error) {
-	return m.client.listTagsFunc(ctx, owner, repo, opts)
-}
-
 func (m *mockRepositoriesService) ListReleases(ctx context.Context, owner, repo string, opts *github.ListOptions) ([]*github.RepositoryRelease, *github.Response, error) {
 	return m.client.listReleasesFunc(ctx, owner, repo, opts)
+}
+
+func (m *mockRepositoriesService) GetContents(ctx context.Context, owner, repo, path string, opts *github.RepositoryContentGetOptions) (*github.RepositoryContent, []*github.RepositoryContent, *github.Response, error) {
+	return m.client.getContentsFunc(ctx, owner, repo, path, opts)
+}
+
+func releasesFor(tags ...string) []*github.RepositoryRelease {
+	releases := make([]*github.RepositoryRelease, 0, len(tags))
+	for _, tag := range tags {
+		releases = append(releases, &github.RepositoryRelease{TagName: new(tag)})
+	}
+	return releases
 }
 
 type ReleaseTestSuite struct {
@@ -68,7 +79,7 @@ func (s *ReleaseTestSuite) SetupTest() {
 
 	// Create test server
 	s.server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/unbindapp/unbind-releases/master/metadata.json" {
+		if r.URL.Path == "/unbindapp/unbind/master/deploy/releases/metadata.json" {
 			data, _ := json.Marshal(s.metadata)
 			w.Header().Set("Content-Type", "application/json")
 			w.Write(data)
@@ -77,29 +88,30 @@ func (s *ReleaseTestSuite) SetupTest() {
 		w.WriteHeader(http.StatusNotFound)
 	}))
 
-	// Create mock client that returns our test tags
 	mockClient := &mockGitHubClient{
-		listTagsFunc: func(ctx context.Context, owner, repo string, opts *github.ListOptions) ([]*github.RepositoryTag, *github.Response, error) {
-			return []*github.RepositoryTag{
-				{Name: new("v0.0.1")},
-				{Name: new("v0.0.2")},
-				{Name: new("v0.0.3")},
-				{Name: new("v0.1.0")},
-			}, nil, nil
-		},
 		listReleasesFunc: func(ctx context.Context, owner, repo string, opts *github.ListOptions) ([]*github.RepositoryRelease, *github.Response, error) {
-			return []*github.RepositoryRelease{
-				{TagName: new("v0.0.1")},
-				{TagName: new("v0.0.2")},
-				{TagName: new("v0.0.3")},
-				{TagName: new("v0.1.0")},
-			}, nil, nil
+			return releasesFor("v0.0.1", "v0.0.2", "v0.0.3", "v0.1.0"), nil, nil
 		},
 	}
 
-	// Create manager with mock client and override the metadata URL
-	s.manager = NewManager(mockClient, "unbindapp/unbind-releases")
-	s.manager.metadataURL = s.server.URL + "/unbindapp/unbind-releases/master/metadata.json"
+	s.manager = NewManager(mockClient, "")
+	s.manager.metadataURL = s.server.URL + "/unbindapp/unbind/master/deploy/releases/metadata.json"
+}
+
+func (s *ReleaseTestSuite) TestNewManager() {
+	m := NewManager(&mockGitHubClient{}, "")
+	s.Equal("unbindapp", m.owner)
+	s.Equal("unbind", m.repo)
+	s.Equal("https://raw.githubusercontent.com/unbindapp/unbind/master/deploy/releases/metadata.json", m.metadataURL)
+
+	m = NewManager(&mockGitHubClient{}, "fork")
+	s.Equal("unbindapp", m.owner)
+	s.Equal("fork", m.repo)
+
+	m = NewManager(&mockGitHubClient{}, "someone/fork")
+	s.Equal("someone", m.owner)
+	s.Equal("fork", m.repo)
+	s.Equal("https://raw.githubusercontent.com/someone/fork/master/deploy/releases/metadata.json", m.metadataURL)
 }
 
 func (s *ReleaseTestSuite) TearDownTest() {
@@ -173,60 +185,39 @@ func (s *ReleaseTestSuite) TestAvailableUpdates() {
 func (s *ReleaseTestSuite) TestGetLatestVersion() {
 	tests := []struct {
 		name         string
-		mockTags     []*github.RepositoryTag
 		mockReleases []*github.RepositoryRelease
 		expected     string
 		expectError  bool
 	}{
 		{
-			name: "valid tags with releases",
-			mockTags: []*github.RepositoryTag{
-				{Name: new("v0.0.1")},
-				{Name: new("v0.0.2")},
-				{Name: new("v0.0.3")},
-				{Name: new("v0.1.0")},
-			},
-			mockReleases: []*github.RepositoryRelease{
-				{TagName: new("v0.0.1")},
-				{TagName: new("v0.0.2")},
-				{TagName: new("v0.0.3")},
-				{TagName: new("v0.1.0")},
-			},
-			expected:    "v0.1.0",
-			expectError: false,
+			name:         "published releases with metadata",
+			mockReleases: releasesFor("v0.0.1", "v0.0.2", "v0.0.3", "v0.1.0"),
+			expected:     "v0.1.0",
 		},
 		{
-			name:         "no tags",
-			mockTags:     []*github.RepositoryTag{},
+			name:         "no releases",
 			mockReleases: []*github.RepositoryRelease{},
-			expected:     "",
 			expectError:  true,
 		},
 		{
 			name:         "only invalid tags",
-			mockTags:     []*github.RepositoryTag{{Name: new("invalid-tag")}},
-			mockReleases: []*github.RepositoryRelease{},
-			expected:     "",
+			mockReleases: releasesFor("invalid-tag"),
 			expectError:  true,
 		},
 		{
-			name: "tags without releases",
-			mockTags: []*github.RepositoryTag{
-				{Name: new("v0.0.1")},
-				{Name: new("v0.0.2")},
-			},
-			mockReleases: []*github.RepositoryRelease{},
-			expected:     "",
+			name:         "releases without metadata",
+			mockReleases: releasesFor("v0.0.9", "v0.2.0"),
 			expectError:  true,
+		},
+		{
+			name:         "latest ignores releases without metadata",
+			mockReleases: releasesFor("v0.0.1", "v0.0.2", "v0.2.0"),
+			expected:     "v0.0.2",
 		},
 	}
 
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			// Update mock client for this test
-			s.manager.client.(*mockGitHubClient).listTagsFunc = func(ctx context.Context, owner, repo string, opts *github.ListOptions) ([]*github.RepositoryTag, *github.Response, error) {
-				return tt.mockTags, nil, nil
-			}
 			s.manager.client.(*mockGitHubClient).listReleasesFunc = func(ctx context.Context, owner, repo string, opts *github.ListOptions) ([]*github.RepositoryRelease, *github.Response, error) {
 				return tt.mockReleases, nil, nil
 			}
@@ -304,22 +295,8 @@ func (s *ReleaseTestSuite) TestGetUpdatePath() {
 
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			// Reset mock client to default behavior for each test
-			s.manager.client.(*mockGitHubClient).listTagsFunc = func(ctx context.Context, owner, repo string, opts *github.ListOptions) ([]*github.RepositoryTag, *github.Response, error) {
-				return []*github.RepositoryTag{
-					{Name: new("v0.0.1")},
-					{Name: new("v0.0.2")},
-					{Name: new("v0.0.3")},
-					{Name: new("v0.1.0")},
-				}, nil, nil
-			}
 			s.manager.client.(*mockGitHubClient).listReleasesFunc = func(ctx context.Context, owner, repo string, opts *github.ListOptions) ([]*github.RepositoryRelease, *github.Response, error) {
-				return []*github.RepositoryRelease{
-					{TagName: new("v0.0.1")},
-					{TagName: new("v0.0.2")},
-					{TagName: new("v0.0.3")},
-					{TagName: new("v0.1.0")},
-				}, nil, nil
+				return releasesFor("v0.0.1", "v0.0.2", "v0.0.3", "v0.1.0"), nil, nil
 			}
 
 			path, err := s.manager.GetUpdatePath(context.Background(), tt.currentVersion, tt.targetVersion)
@@ -331,6 +308,71 @@ func (s *ReleaseTestSuite) TestGetUpdatePath() {
 			}
 		})
 	}
+}
+
+func (s *ReleaseTestSuite) TestDownloadVersionManifests() {
+	files := map[string]string{
+		"kustomization.yaml": "resources:\n  - role.yaml\n",
+		"role.yaml":          "kind: Role\n",
+	}
+	fileServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, ok := files[path.Base(r.URL.Path)]
+		if !ok {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		w.Write([]byte(body))
+	}))
+	defer fileServer.Close()
+
+	var requestedPath, requestedRef string
+	s.manager.client.(*mockGitHubClient).getContentsFunc = func(ctx context.Context, owner, repo, p string, opts *github.RepositoryContentGetOptions) (*github.RepositoryContent, []*github.RepositoryContent, *github.Response, error) {
+		requestedPath, requestedRef = p, opts.Ref
+		entries := []*github.RepositoryContent{
+			{Type: new("dir"), Name: new("nested")},
+		}
+		for name := range files {
+			entries = append(entries, &github.RepositoryContent{
+				Type:        new("file"),
+				Name:        new(name),
+				DownloadURL: new(fileServer.URL + "/" + name),
+			})
+		}
+		return nil, entries, nil, nil
+	}
+
+	dir := s.T().TempDir()
+	found, err := s.manager.DownloadVersionManifests(context.Background(), "v0.1.0", dir)
+	s.NoError(err)
+	s.True(found)
+	s.Equal("deploy/releases/v0.1.0", requestedPath)
+	s.Equal("v0.1.0", requestedRef)
+	for name, body := range files {
+		data, err := os.ReadFile(filepath.Join(dir, name))
+		s.NoError(err)
+		s.Equal(body, string(data))
+	}
+	s.NoFileExists(filepath.Join(dir, "nested"))
+}
+
+func (s *ReleaseTestSuite) TestDownloadVersionManifests_Missing() {
+	s.manager.client.(*mockGitHubClient).getContentsFunc = func(ctx context.Context, owner, repo, p string, opts *github.RepositoryContentGetOptions) (*github.RepositoryContent, []*github.RepositoryContent, *github.Response, error) {
+		return nil, nil, &github.Response{Response: &http.Response{StatusCode: http.StatusNotFound}}, errors.New("404 Not Found")
+	}
+
+	found, err := s.manager.DownloadVersionManifests(context.Background(), "v0.1.0", s.T().TempDir())
+	s.NoError(err)
+	s.False(found)
+}
+
+func (s *ReleaseTestSuite) TestDownloadVersionManifests_NoKustomization() {
+	s.manager.client.(*mockGitHubClient).getContentsFunc = func(ctx context.Context, owner, repo, p string, opts *github.RepositoryContentGetOptions) (*github.RepositoryContent, []*github.RepositoryContent, *github.Response, error) {
+		return nil, []*github.RepositoryContent{{Type: new("dir"), Name: new("nested")}}, nil, nil
+	}
+
+	found, err := s.manager.DownloadVersionManifests(context.Background(), "v0.1.0", s.T().TempDir())
+	s.NoError(err)
+	s.False(found)
 }
 
 func TestReleaseSuite(t *testing.T) {

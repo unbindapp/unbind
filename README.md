@@ -207,7 +207,15 @@ CI is path-aware — a change only triggers the work it affects:
 | `build-operator.yml` | push to `master` touching `apps/operator` | `unbind-operator` image (multi-arch) |
 | `release.yml` | push tag `v*.*.*` | all images at `:<tag>` **and** installer binaries, in one GitHub Release |
 
-Releases are driven entirely by tagging this repo — there is no cross-repo dispatch.
+Releases are driven entirely by tagging this repo — there is no cross-repo dispatch. The
+in-app updater reads [`deploy/releases/metadata.json`](deploy/releases/README.md) from `master`
+and offers a version once its GitHub Release exists **and** it has a metadata entry.
+
+Cutting a release:
+
+1. Add the new version to `deploy/releases/metadata.json` (and, if needed, `deploy/releases/<tag>/`), commit, push to `master`.
+2. `git tag vX.Y.Z && git push origin vX.Y.Z` — `release.yml` fails fast if the metadata entry is missing.
+3. When the workflow finishes, `install.sh` resolves the new version via `releases/latest` and running installs see it under **Update**.
 
 | Component | Image |
 | --- | --- |
@@ -218,7 +226,7 @@ Releases are driven entirely by tagging this repo — there is no cross-repo dis
 The installer is published as release assets and installed with:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/unbindapp/unbind/main/apps/installer/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/unbindapp/unbind/master/apps/installer/install.sh | sh
 ```
 
 ---

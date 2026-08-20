@@ -6,7 +6,7 @@ The first-party charts under `charts/` are also published as OCI artifacts to `o
 
 ## Namespace
 
-By default, and by the [unbind-installer](https://github.com/unbindapp/unbind-installer) all resources are tied to the same namespace.
+By default, and by the installer (`apps/installer`), all resources are tied to the same namespace.
 
 This gives the unbind service account access to all of its resources (as it has superuser permissions to its own namespace)
 

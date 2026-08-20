@@ -20,8 +20,15 @@ jobs:
     outputs:
       version: ${{ steps.v.outputs.version }}
     steps:
+      - uses: actions/checkout@v4
       - id: v
         run: echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+      - name: Require a metadata entry for this version
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          jq -e --arg v "$VERSION" 'has($v)' deploy/releases/metadata.json >/dev/null \
+            || { echo "::error::deploy/releases/metadata.json has no entry for $VERSION — add it on master, then re-tag"; exit 1; }
 
   images:
     name: 🔨 Build images
@@ -190,7 +197,7 @@ jobs:
             echo "### 🧰 Installer"
             echo ""
             echo '```bash'
-            echo "curl -fsSL https://raw.githubusercontent.com/unbindapp/unbind/main/apps/installer/install.sh | sh"
+            echo "curl -fsSL https://raw.githubusercontent.com/unbindapp/unbind/master/apps/installer/install.sh | sh"
             echo '```'
             echo ""
             echo "### 📝 What's Changed"
