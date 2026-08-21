@@ -871,13 +871,15 @@ LimitNPROC=65536
 					return fmt.Errorf("failed to update Helm repos: %w, output: %s", err, string(output))
 				}
 
-				// Remove default annotation from existing StorageClasses
+				// Drop the default-class annotation from k3s's built-in local-path so
+				// Longhorn can become the single default. kubectl patch cannot select
+				// by label, so target the class by name.
 				self.log("Removing default annotation from existing StorageClasses...")
-				patchCmd := exec.CommandContext(ctx, "kubectl", "patch", "storageclass", "--type=json", "-p",
-					`[{"op": "replace", "path": "/metadata/annotations/storageclass.kubernetes.io~1is-default-class", "value": "false"}]`,
-					"--selector=storageclass.kubernetes.io/is-default-class=true")
+				patchCmd := exec.CommandContext(ctx, "kubectl", "patch", "storageclass", "local-path", "--type=json", "-p",
+					`[{"op": "replace", "path": "/metadata/annotations/storageclass.kubernetes.io~1is-default-class", "value": "false"}]`)
+				patchCmd.Env = append(os.Environ(), fmt.Sprintf("KUBECONFIG=%s", kubeconfigPath))
 				if output, err := patchCmd.CombinedOutput(); err != nil {
-					self.log(fmt.Sprintf("Warning: Failed to remove default annotation from StorageClasses: %s", string(output)))
+					self.log(fmt.Sprintf("Warning: Failed to remove default annotation from local-path StorageClass: %s", string(output)))
 				}
 
 				// Install Longhorn
@@ -942,11 +944,9 @@ LimitNPROC=65536
 
 				// Wait for Longhorn to be ready
 				self.log("Waiting for Longhorn to be ready...")
-				waitCmd := exec.CommandContext(ctx, "kubectl", "wait", "--for=condition=ready", "pod", "-l", "app=longhorn-manager", "-n", "longhorn-system", "--timeout=300s")
-				waitCmd.Env = append(os.Environ(), fmt.Sprintf("KUBECONFIG=%s", kubeconfigPath))
-				if output, err := waitCmd.CombinedOutput(); err != nil {
+				if err := self.waitForLonghornReady(ctx, kubeconfigPath); err != nil {
 					close(factsDone)
-					return fmt.Errorf("failed waiting for Longhorn to be ready: %w, output: %s", err, string(output))
+					return err
 				}
 
 				// Remove default annotation from local-path storage class
@@ -1052,6 +1052,44 @@ LimitNPROC=65536
 	self.logProgress(1.0, "completed", "K3S installation completed successfully", nil)
 
 	return kubeconfigPath, nil
+}
+
+// waitForLonghornReady polls until the longhorn-manager pods are ready. A single
+// `kubectl wait` races the controllers that create those pods and exits
+// immediately with "no matching resources found" when none exist yet, so retry
+// with a short per-attempt timeout until they appear and become ready, or the
+// overall deadline passes.
+func (self *Installer) waitForLonghornReady(ctx context.Context, kubeconfigPath string) error {
+	deadline := time.Now().Add(6 * time.Minute)
+	env := append(os.Environ(), fmt.Sprintf("KUBECONFIG=%s", kubeconfigPath))
+
+	var lastErr error
+	var lastOutput string
+	for attempt := 1; time.Now().Before(deadline); attempt++ {
+		if ctx.Err() != nil {
+			return fmt.Errorf("failed waiting for Longhorn to be ready: %w", ctx.Err())
+		}
+
+		cmd := exec.CommandContext(ctx, "kubectl", "wait", "--for=condition=ready", "pod",
+			"-l", "app=longhorn-manager", "-n", "longhorn-system", "--timeout=30s")
+		cmd.Env = env
+		output, err := cmd.CombinedOutput()
+		if err == nil {
+			return nil
+		}
+
+		lastErr = err
+		lastOutput = strings.TrimSpace(string(output))
+		self.log(fmt.Sprintf("Longhorn not ready yet (attempt %d): %s", attempt, lastOutput))
+
+		select {
+		case <-time.After(5 * time.Second):
+		case <-ctx.Done():
+			return fmt.Errorf("failed waiting for Longhorn to be ready: %w", ctx.Err())
+		}
+	}
+
+	return fmt.Errorf("timed out waiting for Longhorn to be ready: %w, output: %s", lastErr, lastOutput)
 }
 
 // checkServiceStatus checks k3s service state
