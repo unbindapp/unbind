@@ -3,5 +3,10 @@
     "version": "v0.1.0",
     "description": "First release of the monorepo architecture: single app image (SPA + API), Envoy Gateway networking, installer and charts shipped from this repo.",
     "breaking": false
+  },
+  "v0.1.1": {
+    "version": "v0.1.1",
+    "description": "Release 0.1.1",
+    "breaking": false
   }
 }
