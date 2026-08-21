@@ -2,6 +2,7 @@ package registry
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -15,10 +16,11 @@ import (
 
 // RegistryTester provides methods to check if an image can be pulled from configured registries and to test registry credentials
 type RegistryTester struct {
-	cfg        *config.Config
-	repo       repositories.RepositoriesInterface
-	kubeClient k8s.KubeClientInterface
-	httpClient *http.Client
+	cfg                *config.Config
+	repo               repositories.RepositoriesInterface
+	kubeClient         k8s.KubeClientInterface
+	httpClient         *http.Client
+	insecureHTTPClient *http.Client
 }
 
 // NewRegistryTester creates a new RegistryTester instance (renamed from NewImageChecker)
@@ -29,6 +31,10 @@ func NewRegistryTester(cfg *config.Config, repo repositories.RepositoriesInterfa
 		kubeClient: kubeClient,
 		httpClient: &http.Client{
 			Timeout: 10 * time.Second,
+		},
+		insecureHTTPClient: &http.Client{
+			Timeout:   10 * time.Second,
+			Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}},
 		},
 	}
 }
@@ -233,7 +239,7 @@ func (self *RegistryTester) checkManifestWithBasicAuth(ctx context.Context, regi
 }
 
 // TestRegistryCredentials tests if the provided credentials are valid for a given registry (docker.io, ghcr, quay, or arbitrary URL)
-func (self *RegistryTester) TestRegistryCredentials(ctx context.Context, registryHost, username, password string) (bool, error) {
+func (self *RegistryTester) TestRegistryCredentials(ctx context.Context, registryHost, username, password string, insecure bool) (bool, error) {
 	// We'll try to access a known endpoint that requires authentication
 	// For Docker Hub, GHCR, Quay, and generic registries, we'll attempt to list repositories or get a token
 
@@ -262,15 +268,29 @@ func (self *RegistryTester) TestRegistryCredentials(ctx context.Context, registr
 		registryURL := "https://quay.io/v2"
 		return self.checkManifestWithBasicAuth(ctx, registryURL, testImage, testTag, username, password)
 	default:
-		// For arbitrary registries, try to access a manifest for a common image
-		var registryURL string
-		if !strings.HasPrefix(registryHost, "http") {
-			registryURL = "https://" + registryHost + "/v2"
-		} else {
-			registryURL = registryHost + "/v2"
+		if !insecure {
+			return self.pingWithBasicAuth(ctx, self.httpClient, "https://"+registryHost+"/v2/", username, password)
 		}
-		testImage = "busybox"
-		testTag = "latest"
-		return self.checkManifestWithBasicAuth(ctx, registryURL, testImage, testTag, username, password)
+		ok, err := self.pingWithBasicAuth(ctx, self.insecureHTTPClient, "https://"+registryHost+"/v2/", username, password)
+		if err == nil {
+			return ok, nil
+		}
+		return self.pingWithBasicAuth(ctx, self.insecureHTTPClient, "http://"+registryHost+"/v2/", username, password)
 	}
+}
+
+func (self *RegistryTester) pingWithBasicAuth(ctx context.Context, client *http.Client, url, username, password string) (bool, error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return false, err
+	}
+	req.SetBasicAuth(username, password)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+
+	return resp.StatusCode == http.StatusOK, nil
 }

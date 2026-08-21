@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/unbindapp/unbind-api/config"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/ent/registry"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
@@ -157,7 +158,7 @@ func (self *Bootstrapper) bootstrapRegistry(ctx context.Context) error {
 				return fmt.Errorf("failed to generate slug for registry secret: %w", err)
 			}
 
-			_, err = self.repos.System().CreateRegistry(ctx, tx, registryHost, secretName, true)
+			_, err = self.repos.System().CreateRegistry(ctx, tx, registryHost, secretName, true, self.cfg.BootstrapContainerRegistryInsecure)
 			if err != nil {
 				return fmt.Errorf("failed to create registry: %w", err)
 			}
@@ -197,6 +198,20 @@ func (self *Bootstrapper) bootstrapRegistry(ctx context.Context) error {
 		}); err != nil {
 			return fmt.Errorf("failed to bootstrap registry: %w", err)
 		}
+	}
+
+	if self.cfg.BootstrapContainerRegistryHost != "" {
+		err = self.repos.Ent().Registry.Update().
+			Where(registry.Host(self.cfg.BootstrapContainerRegistryHost)).
+			SetInsecure(self.cfg.BootstrapContainerRegistryInsecure).
+			Exec(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to sync bootstrap registry insecure flag: %w", err)
+		}
+	}
+
+	if err := self.buildkitSettingsManager.SyncInsecureRegistries(ctx); err != nil {
+		return fmt.Errorf("failed to sync insecure registries to buildkitd: %w", err)
 	}
 	return nil
 }

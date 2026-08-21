@@ -9,7 +9,7 @@ import (
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
 )
 
-func (self *SystemRepository) CreateRegistry(ctx context.Context, tx repository.TxInterface, host string, kubernetesSecret string, isDefault bool) (*ent.Registry, error) {
+func (self *SystemRepository) CreateRegistry(ctx context.Context, tx repository.TxInterface, host string, kubernetesSecret string, isDefault bool, insecure bool) (*ent.Registry, error) {
 	db := self.base.DB
 	if tx != nil {
 		db = tx.Client()
@@ -18,7 +18,25 @@ func (self *SystemRepository) CreateRegistry(ctx context.Context, tx repository.
 		SetHost(host).
 		SetKubernetesSecret(kubernetesSecret).
 		SetIsDefault(isDefault).
+		SetInsecure(insecure).
 		Save(ctx)
+}
+
+func (self *SystemRepository) GetInsecureRegistryHosts(ctx context.Context) ([]string, error) {
+	registries, err := self.base.DB.Registry.Query().
+		Where(registry.Insecure(true)).
+		Order(ent.Asc(registry.FieldCreatedAt)).
+		Select(registry.FieldHost).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	hosts := make([]string, len(registries))
+	for i, registry := range registries {
+		hosts[i] = registry.Host
+	}
+	return hosts, nil
 }
 
 func (self *SystemRepository) GetDefaultRegistry(ctx context.Context) (*ent.Registry, error) {

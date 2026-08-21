@@ -313,6 +313,10 @@ func init() {
 	registryDescHost := registryFields[0].Descriptor()
 	// registry.HostValidator is a validator for the "host" field. It is called by the builders before save.
 	registry.HostValidator = registryDescHost.Validators[0].(func(string) error)
+	// registryDescInsecure is the schema descriptor for insecure field.
+	registryDescInsecure := registryFields[3].Descriptor()
+	// registry.DefaultInsecure holds the default value on creation for the insecure field.
+	registry.DefaultInsecure = registryDescInsecure.Default.(bool)
 	// registryDescID is the schema descriptor for id field.
 	registryDescID := registryMixinFields0[0].Descriptor()
 	// registry.DefaultID holds the default value on creation for the id field.

@@ -112,6 +112,8 @@ api:
       value: unbind-system
     - name: BOOTSTRAP_CONTAINER_REGISTRY_HOST
       value: docker-registry.unbind-system:5000
+    - name: BOOTSTRAP_CONTAINER_REGISTRY_INSECURE
+      value: "true"
     - name: BOOTSTRAP_CONTAINER_REGISTRY_USER
       valueFrom:
         secretKeyRef:

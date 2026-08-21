@@ -39,5 +39,9 @@ func (self *SystemService) DeleteRegistry(ctx context.Context, requesterUserID u
 		return err
 	}
 
-	return nil
+	if !registry.Insecure {
+		return nil
+	}
+
+	return self.buildkitManager.SyncInsecureRegistries(ctx)
 }

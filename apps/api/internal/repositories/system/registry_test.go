@@ -30,7 +30,7 @@ func (suite *RegistrySuite) TestCreateRegistry() {
 			suite.Ctx, nil,
 			"registry.example.com",
 			"registry-secret",
-			true,
+			true, false,
 		)
 
 		suite.NoError(err)
@@ -45,7 +45,7 @@ func (suite *RegistrySuite) TestCreateRegistry() {
 			suite.Ctx, nil,
 			"private.registry.com",
 			"private-secret",
-			false,
+			false, false,
 		)
 
 		suite.NoError(err)
@@ -59,7 +59,7 @@ func (suite *RegistrySuite) TestCreateRegistry() {
 			suite.Ctx, nil,
 			"test.registry.com",
 			"test-secret",
-			false,
+			false, false,
 		)
 		suite.Error(err)
 		suite.ErrorContains(err, "database is closed")
@@ -73,7 +73,7 @@ func (suite *RegistrySuite) TestGetDefaultRegistry() {
 			suite.Ctx, nil,
 			"default.registry.com",
 			"default-secret",
-			true,
+			true, false,
 		)
 		suite.NoError(err)
 
@@ -104,9 +104,9 @@ func (suite *RegistrySuite) TestGetDefaultRegistry() {
 func (suite *RegistrySuite) TestSetDefaultRegistry() {
 	suite.Run("Set Default Success", func() {
 		// Create registries
-		reg1, err := suite.systemRepo.CreateRegistry(suite.Ctx, nil, "reg1.com", "secret1", true)
+		reg1, err := suite.systemRepo.CreateRegistry(suite.Ctx, nil, "reg1.com", "secret1", true, false)
 		suite.NoError(err)
-		reg2, err := suite.systemRepo.CreateRegistry(suite.Ctx, nil, "reg2.com", "secret2", false)
+		reg2, err := suite.systemRepo.CreateRegistry(suite.Ctx, nil, "reg2.com", "secret2", false, false)
 		suite.NoError(err)
 
 		// Set reg2 as default
@@ -138,9 +138,9 @@ func (suite *RegistrySuite) TestSetDefaultRegistry() {
 func (suite *RegistrySuite) TestGetImagePullSecrets() {
 	suite.Run("Get Secrets Success", func() {
 		// Create registries
-		suite.systemRepo.CreateRegistry(suite.Ctx, nil, "reg1.com", "secret1", true)
-		suite.systemRepo.CreateRegistry(suite.Ctx, nil, "reg2.com", "secret2", false)
-		suite.systemRepo.CreateRegistry(suite.Ctx, nil, "reg3.com", "secret3", false)
+		suite.systemRepo.CreateRegistry(suite.Ctx, nil, "reg1.com", "secret1", true, false)
+		suite.systemRepo.CreateRegistry(suite.Ctx, nil, "reg2.com", "secret2", false, false)
+		suite.systemRepo.CreateRegistry(suite.Ctx, nil, "reg3.com", "secret3", false, false)
 
 		secrets, err := suite.systemRepo.GetImagePullSecrets(suite.Ctx)
 		suite.NoError(err)
@@ -172,7 +172,7 @@ func (suite *RegistrySuite) TestGetRegistry() {
 			suite.Ctx, nil,
 			"get.registry.com",
 			"get-secret",
-			false,
+			false, false,
 		)
 		suite.NoError(err)
 
@@ -200,8 +200,8 @@ func (suite *RegistrySuite) TestGetRegistry() {
 func (suite *RegistrySuite) TestGetAllRegistries() {
 	suite.Run("Get All Success", func() {
 		// Create registries
-		suite.systemRepo.CreateRegistry(suite.Ctx, nil, "reg1.com", "secret1", true)
-		suite.systemRepo.CreateRegistry(suite.Ctx, nil, "reg2.com", "secret2", false)
+		suite.systemRepo.CreateRegistry(suite.Ctx, nil, "reg1.com", "secret1", true, false)
+		suite.systemRepo.CreateRegistry(suite.Ctx, nil, "reg2.com", "secret2", false, false)
 
 		registries, err := suite.systemRepo.GetAllRegistries(suite.Ctx)
 		suite.NoError(err)
@@ -236,7 +236,7 @@ func (suite *RegistrySuite) TestDeleteRegistry() {
 			suite.Ctx, nil,
 			"delete.registry.com",
 			"delete-secret",
-			false,
+			false, false,
 		)
 		suite.NoError(err)
 

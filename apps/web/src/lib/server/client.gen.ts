@@ -316,6 +316,7 @@ export const CreateProjectResponseBodySchema = z
 export const CreateRegistryInputSchema = z
   .object({
     host: z.string(),
+    insecure: z.boolean().optional(), // Registry is served over plain HTTP or with an untrusted TLS certificate
     password: z.string(),
     username: z.string(),
   })
@@ -325,6 +326,7 @@ export const RegistryResponseSchema = z
   .object({
     Host: z.string(),
     id: z.string(),
+    insecure: z.boolean(),
     username: z.string(),
   })
   .strip();

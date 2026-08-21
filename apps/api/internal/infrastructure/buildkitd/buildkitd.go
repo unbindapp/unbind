@@ -163,6 +163,58 @@ func (self *BuildkitSettingsManager) GetCurrentReplicas(ctx context.Context) (in
 	return int(*deployment.Spec.Replicas), nil
 }
 
+var registryBlockRe = regexp.MustCompile(`(?m)^\[registry\."[^"]+"\]\n(?:[a-z]+ = [^\n]*\n?)*\n?`)
+
+func renderInsecureRegistries(tomlContent string, hosts []string) string {
+	stripped := registryBlockRe.ReplaceAllString(tomlContent, "")
+	if len(hosts) == 0 {
+		return stripped
+	}
+
+	var blocks strings.Builder
+	for _, host := range hosts {
+		fmt.Fprintf(&blocks, "[registry.%q]\nhttp = true\ninsecure = true\n", host)
+	}
+
+	idx := strings.Index(stripped, "[frontend")
+	if idx < 0 {
+		return strings.TrimRight(stripped, "\n") + "\n" + blocks.String()
+	}
+	return stripped[:idx] + blocks.String() + "\n" + stripped[idx:]
+}
+
+func (self *BuildkitSettingsManager) SyncInsecureRegistries(ctx context.Context) error {
+	cm, err := self.GetBuildkitConfig(ctx)
+	if errors.IsNotFound(err) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+
+	hosts, err := self.Repo.System().GetInsecureRegistryHosts(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get insecure registries: %w", err)
+	}
+
+	tomlContent, exists := cm.Data[BuildkitConfigKey]
+	if !exists {
+		tomlContent = fmt.Sprintf(DefaultBuildkitConfig, self.cfg.SystemNamespace)
+	}
+
+	newTomlContent := renderInsecureRegistries(tomlContent, hosts)
+	if newTomlContent == tomlContent {
+		return nil
+	}
+
+	cm.Data[BuildkitConfigKey] = newTomlContent
+	if _, err := self.k8s.GetInternalClient().CoreV1().ConfigMaps(self.cfg.SystemNamespace).Update(ctx, cm, metav1.UpdateOptions{}); err != nil {
+		return fmt.Errorf("failed to update buildkit ConfigMap: %w", err)
+	}
+
+	return self.RestartBuildkitdPods(ctx)
+}
+
 // RestartBuildkitdPods restarts the buildkitd pods by adding a restart annotation to the deployment
 func (self *BuildkitSettingsManager) RestartBuildkitdPods(ctx context.Context) error {
 	deployment, err := self.k8s.GetInternalClient().AppsV1().Deployments(self.cfg.SystemNamespace).Get(ctx, BuildkitDeploymentName, metav1.GetOptions{})

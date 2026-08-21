@@ -428,7 +428,7 @@ func (suite *RegistryTesterTestSuite) TestTestRegistryCredentials_DockerHub() {
 	}
 
 	// Test valid credentials
-	isValid, err := suite.registryTester.TestRegistryCredentials(suite.ctx, "docker.io", "valid-user", "valid-token")
+	isValid, err := suite.registryTester.TestRegistryCredentials(suite.ctx, "docker.io", "valid-user", "valid-token", false)
 
 	suite.NoError(err)
 	suite.True(isValid)
@@ -447,7 +447,7 @@ func (suite *RegistryTesterTestSuite) TestTestRegistryCredentials_GHCR() {
 	}
 
 	// Test valid credentials
-	isValid, err := suite.registryTester.TestRegistryCredentials(suite.ctx, "ghcr.io", "valid-user", "valid-token")
+	isValid, err := suite.registryTester.TestRegistryCredentials(suite.ctx, "ghcr.io", "valid-user", "valid-token", false)
 
 	suite.NoError(err)
 	suite.True(isValid)
@@ -466,7 +466,7 @@ func (suite *RegistryTesterTestSuite) TestTestRegistryCredentials_Quay() {
 	}
 
 	// Test valid credentials
-	isValid, err := suite.registryTester.TestRegistryCredentials(suite.ctx, "quay.io", "valid-user", "valid-token")
+	isValid, err := suite.registryTester.TestRegistryCredentials(suite.ctx, "quay.io", "valid-user", "valid-token", false)
 
 	suite.NoError(err)
 	suite.True(isValid)
@@ -487,7 +487,7 @@ func (suite *RegistryTesterTestSuite) TestTestRegistryCredentials_InvalidCredent
 	}
 
 	// Test invalid credentials for Docker Hub
-	isValid, err := suite.registryTester.TestRegistryCredentials(suite.ctx, "docker.io", "invalid-user", "invalid-token")
+	isValid, err := suite.registryTester.TestRegistryCredentials(suite.ctx, "docker.io", "invalid-user", "invalid-token", false)
 
 	suite.NoError(err)
 	suite.False(isValid)
@@ -506,7 +506,7 @@ func (suite *RegistryTesterTestSuite) TestTestRegistryCredentials_ArbitraryRegis
 	}
 
 	// Test arbitrary registry
-	isValid, err := suite.registryTester.TestRegistryCredentials(suite.ctx, "my-registry.example.com", "admin", "secret")
+	isValid, err := suite.registryTester.TestRegistryCredentials(suite.ctx, "my-registry.example.com", "admin", "secret", false)
 
 	suite.NoError(err)
 	suite.True(isValid)

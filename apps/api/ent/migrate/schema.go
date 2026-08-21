@@ -320,6 +320,7 @@ var (
 		{Name: "host", Type: field.TypeString},
 		{Name: "kubernetes_secret", Type: field.TypeString},
 		{Name: "is_default", Type: field.TypeBool},
+		{Name: "insecure", Type: field.TypeBool, Default: false},
 	}
 	// RegistriesTable holds the schema information for the "registries" table.
 	RegistriesTable = &schema.Table{

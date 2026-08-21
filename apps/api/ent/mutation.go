@@ -10628,6 +10628,7 @@ type RegistryMutation struct {
 	host              *string
 	kubernetes_secret *string
 	is_default        *bool
+	insecure          *bool
 	clearedFields     map[string]struct{}
 	done              bool
 	oldValue          func(context.Context) (*Registry, error)
@@ -10918,6 +10919,42 @@ func (m *RegistryMutation) ResetIsDefault() {
 	m.is_default = nil
 }
 
+// SetInsecure sets the "insecure" field.
+func (m *RegistryMutation) SetInsecure(b bool) {
+	m.insecure = &b
+}
+
+// Insecure returns the value of the "insecure" field in the mutation.
+func (m *RegistryMutation) Insecure() (r bool, exists bool) {
+	v := m.insecure
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInsecure returns the old "insecure" field's value of the Registry entity.
+// If the Registry object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RegistryMutation) OldInsecure(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInsecure is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInsecure requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInsecure: %w", err)
+	}
+	return oldValue.Insecure, nil
+}
+
+// ResetInsecure resets all changes to the "insecure" field.
+func (m *RegistryMutation) ResetInsecure() {
+	m.insecure = nil
+}
+
 // Where appends a list predicates to the RegistryMutation builder.
 func (m *RegistryMutation) Where(ps ...predicate.Registry) {
 	m.predicates = append(m.predicates, ps...)
@@ -10952,7 +10989,7 @@ func (m *RegistryMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RegistryMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.created_at != nil {
 		fields = append(fields, registry.FieldCreatedAt)
 	}
@@ -10967,6 +11004,9 @@ func (m *RegistryMutation) Fields() []string {
 	}
 	if m.is_default != nil {
 		fields = append(fields, registry.FieldIsDefault)
+	}
+	if m.insecure != nil {
+		fields = append(fields, registry.FieldInsecure)
 	}
 	return fields
 }
@@ -10986,6 +11026,8 @@ func (m *RegistryMutation) Field(name string) (ent.Value, bool) {
 		return m.KubernetesSecret()
 	case registry.FieldIsDefault:
 		return m.IsDefault()
+	case registry.FieldInsecure:
+		return m.Insecure()
 	}
 	return nil, false
 }
@@ -11005,6 +11047,8 @@ func (m *RegistryMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldKubernetesSecret(ctx)
 	case registry.FieldIsDefault:
 		return m.OldIsDefault(ctx)
+	case registry.FieldInsecure:
+		return m.OldInsecure(ctx)
 	}
 	return nil, fmt.Errorf("unknown Registry field %s", name)
 }
@@ -11048,6 +11092,13 @@ func (m *RegistryMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetIsDefault(v)
+		return nil
+	case registry.FieldInsecure:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInsecure(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Registry field %s", name)
@@ -11112,6 +11163,9 @@ func (m *RegistryMutation) ResetField(name string) error {
 		return nil
 	case registry.FieldIsDefault:
 		m.ResetIsDefault()
+		return nil
+	case registry.FieldInsecure:
+		m.ResetInsecure()
 		return nil
 	}
 	return fmt.Errorf("unknown Registry field %s", name)

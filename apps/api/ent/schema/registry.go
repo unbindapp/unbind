@@ -73,6 +73,11 @@ func (Registry) Fields() []ent.Field {
 			Comment(
 				"If true, this is the registry that will be used for internal CI/CD",
 			),
+		field.Bool("insecure").
+			Default(false).
+			Comment(
+				"If true, the registry is reached over plain HTTP or with an untrusted TLS certificate",
+			),
 	}
 }
 

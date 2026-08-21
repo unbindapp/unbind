@@ -42,8 +42,8 @@ func (_m *SystemRepositoryMock) EXPECT() *SystemRepositoryMock_Expecter {
 }
 
 // CreateRegistry provides a mock function for the type SystemRepositoryMock
-func (_mock *SystemRepositoryMock) CreateRegistry(ctx context.Context, tx repository.TxInterface, host string, kubernetesSecret string, isDefault bool) (*ent.Registry, error) {
-	ret := _mock.Called(ctx, tx, host, kubernetesSecret, isDefault)
+func (_mock *SystemRepositoryMock) CreateRegistry(ctx context.Context, tx repository.TxInterface, host string, kubernetesSecret string, isDefault bool, insecure bool) (*ent.Registry, error) {
+	ret := _mock.Called(ctx, tx, host, kubernetesSecret, isDefault, insecure)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateRegistry")
@@ -51,18 +51,18 @@ func (_mock *SystemRepositoryMock) CreateRegistry(ctx context.Context, tx reposi
 
 	var r0 *ent.Registry
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, string, string, bool) (*ent.Registry, error)); ok {
-		return returnFunc(ctx, tx, host, kubernetesSecret, isDefault)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, string, string, bool, bool) (*ent.Registry, error)); ok {
+		return returnFunc(ctx, tx, host, kubernetesSecret, isDefault, insecure)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, string, string, bool) *ent.Registry); ok {
-		r0 = returnFunc(ctx, tx, host, kubernetesSecret, isDefault)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, string, string, bool, bool) *ent.Registry); ok {
+		r0 = returnFunc(ctx, tx, host, kubernetesSecret, isDefault, insecure)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*ent.Registry)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, string, string, bool) error); ok {
-		r1 = returnFunc(ctx, tx, host, kubernetesSecret, isDefault)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, string, string, bool, bool) error); ok {
+		r1 = returnFunc(ctx, tx, host, kubernetesSecret, isDefault, insecure)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -80,11 +80,12 @@ type SystemRepositoryMock_CreateRegistry_Call struct {
 //   - host string
 //   - kubernetesSecret string
 //   - isDefault bool
-func (_e *SystemRepositoryMock_Expecter) CreateRegistry(ctx any, tx any, host any, kubernetesSecret any, isDefault any) *SystemRepositoryMock_CreateRegistry_Call {
-	return &SystemRepositoryMock_CreateRegistry_Call{Call: _e.mock.On("CreateRegistry", ctx, tx, host, kubernetesSecret, isDefault)}
+//   - insecure bool
+func (_e *SystemRepositoryMock_Expecter) CreateRegistry(ctx any, tx any, host any, kubernetesSecret any, isDefault any, insecure any) *SystemRepositoryMock_CreateRegistry_Call {
+	return &SystemRepositoryMock_CreateRegistry_Call{Call: _e.mock.On("CreateRegistry", ctx, tx, host, kubernetesSecret, isDefault, insecure)}
 }
 
-func (_c *SystemRepositoryMock_CreateRegistry_Call) Run(run func(ctx context.Context, tx repository.TxInterface, host string, kubernetesSecret string, isDefault bool)) *SystemRepositoryMock_CreateRegistry_Call {
+func (_c *SystemRepositoryMock_CreateRegistry_Call) Run(run func(ctx context.Context, tx repository.TxInterface, host string, kubernetesSecret string, isDefault bool, insecure bool)) *SystemRepositoryMock_CreateRegistry_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -106,12 +107,17 @@ func (_c *SystemRepositoryMock_CreateRegistry_Call) Run(run func(ctx context.Con
 		if args[4] != nil {
 			arg4 = args[4].(bool)
 		}
+		var arg5 bool
+		if args[5] != nil {
+			arg5 = args[5].(bool)
+		}
 		run(
 			arg0,
 			arg1,
 			arg2,
 			arg3,
 			arg4,
+			arg5,
 		)
 	})
 	return _c
@@ -122,7 +128,7 @@ func (_c *SystemRepositoryMock_CreateRegistry_Call) Return(registry *ent.Registr
 	return _c
 }
 
-func (_c *SystemRepositoryMock_CreateRegistry_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, host string, kubernetesSecret string, isDefault bool) (*ent.Registry, error)) *SystemRepositoryMock_CreateRegistry_Call {
+func (_c *SystemRepositoryMock_CreateRegistry_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, host string, kubernetesSecret string, isDefault bool, insecure bool) (*ent.Registry, error)) *SystemRepositoryMock_CreateRegistry_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -429,6 +435,68 @@ func (_c *SystemRepositoryMock_GetImagePullSecrets_Call) Return(strings []string
 }
 
 func (_c *SystemRepositoryMock_GetImagePullSecrets_Call) RunAndReturn(run func(ctx context.Context) ([]string, error)) *SystemRepositoryMock_GetImagePullSecrets_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetInsecureRegistryHosts provides a mock function for the type SystemRepositoryMock
+func (_mock *SystemRepositoryMock) GetInsecureRegistryHosts(ctx context.Context) ([]string, error) {
+	ret := _mock.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetInsecureRegistryHosts")
+	}
+
+	var r0 []string
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) ([]string, error)); ok {
+		return returnFunc(ctx)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context) []string); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = returnFunc(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// SystemRepositoryMock_GetInsecureRegistryHosts_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetInsecureRegistryHosts'
+type SystemRepositoryMock_GetInsecureRegistryHosts_Call struct {
+	*mock.Call
+}
+
+// GetInsecureRegistryHosts is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *SystemRepositoryMock_Expecter) GetInsecureRegistryHosts(ctx any) *SystemRepositoryMock_GetInsecureRegistryHosts_Call {
+	return &SystemRepositoryMock_GetInsecureRegistryHosts_Call{Call: _e.mock.On("GetInsecureRegistryHosts", ctx)}
+}
+
+func (_c *SystemRepositoryMock_GetInsecureRegistryHosts_Call) Run(run func(ctx context.Context)) *SystemRepositoryMock_GetInsecureRegistryHosts_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *SystemRepositoryMock_GetInsecureRegistryHosts_Call) Return(strings []string, err error) *SystemRepositoryMock_GetInsecureRegistryHosts_Call {
+	_c.Call.Return(strings, err)
+	return _c
+}
+
+func (_c *SystemRepositoryMock_GetInsecureRegistryHosts_Call) RunAndReturn(run func(ctx context.Context) ([]string, error)) *SystemRepositoryMock_GetInsecureRegistryHosts_Call {
 	_c.Call.Return(run)
 	return _c
 }

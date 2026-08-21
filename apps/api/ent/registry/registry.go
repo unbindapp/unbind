@@ -24,6 +24,8 @@ const (
 	FieldKubernetesSecret = "kubernetes_secret"
 	// FieldIsDefault holds the string denoting the is_default field in the database.
 	FieldIsDefault = "is_default"
+	// FieldInsecure holds the string denoting the insecure field in the database.
+	FieldInsecure = "insecure"
 	// Table holds the table name of the registry in the database.
 	Table = "registries"
 )
@@ -36,6 +38,7 @@ var Columns = []string{
 	FieldHost,
 	FieldKubernetesSecret,
 	FieldIsDefault,
+	FieldInsecure,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -57,6 +60,8 @@ var (
 	UpdateDefaultUpdatedAt func() time.Time
 	// HostValidator is a validator for the "host" field. It is called by the builders before save.
 	HostValidator func(string) error
+	// DefaultInsecure holds the default value on creation for the "insecure" field.
+	DefaultInsecure bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -92,4 +97,9 @@ func ByKubernetesSecret(opts ...sql.OrderTermOption) OrderOption {
 // ByIsDefault orders the results by the is_default field.
 func ByIsDefault(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIsDefault, opts...).ToFunc()
+}
+
+// ByInsecure orders the results by the insecure field.
+func ByInsecure(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldInsecure, opts...).ToFunc()
 }

@@ -9,15 +9,12 @@ data:
     # Limit concurrency of build steps:
     max-parallelism = {{ .Values.maxParallelism }}
 
-    {{- /* Process registry entries */}}
-    {{- if .Values.registries }}
     {{- range .Values.registries }}
     [registry."{{ .url }}"]
-    http = {{ .http | default true }}
-    insecure = {{ .insecure | default true }}
+    http = {{ if hasKey . "http" }}{{ .http }}{{ else }}true{{ end }}
+    insecure = {{ if hasKey . "insecure" }}{{ .insecure }}{{ else }}true{{ end }}
     {{- if .ca }}
     ca = ["{{ .ca }}"]
-    {{- end }}
     {{- end }}
     {{- end }}
 

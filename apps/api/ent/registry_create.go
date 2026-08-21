@@ -70,6 +70,20 @@ func (_c *RegistryCreate) SetIsDefault(v bool) *RegistryCreate {
 	return _c
 }
 
+// SetInsecure sets the "insecure" field.
+func (_c *RegistryCreate) SetInsecure(v bool) *RegistryCreate {
+	_c.mutation.SetInsecure(v)
+	return _c
+}
+
+// SetNillableInsecure sets the "insecure" field if the given value is not nil.
+func (_c *RegistryCreate) SetNillableInsecure(v *bool) *RegistryCreate {
+	if v != nil {
+		_c.SetInsecure(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *RegistryCreate) SetID(v uuid.UUID) *RegistryCreate {
 	_c.mutation.SetID(v)
@@ -127,6 +141,10 @@ func (_c *RegistryCreate) defaults() {
 		v := registry.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := _c.mutation.Insecure(); !ok {
+		v := registry.DefaultInsecure
+		_c.mutation.SetInsecure(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := registry.DefaultID()
 		_c.mutation.SetID(v)
@@ -154,6 +172,9 @@ func (_c *RegistryCreate) check() error {
 	}
 	if _, ok := _c.mutation.IsDefault(); !ok {
 		return &ValidationError{Name: "is_default", err: errors.New(`ent: missing required field "Registry.is_default"`)}
+	}
+	if _, ok := _c.mutation.Insecure(); !ok {
+		return &ValidationError{Name: "insecure", err: errors.New(`ent: missing required field "Registry.insecure"`)}
 	}
 	return nil
 }
@@ -210,6 +231,10 @@ func (_c *RegistryCreate) createSpec() (*Registry, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.IsDefault(); ok {
 		_spec.SetField(registry.FieldIsDefault, field.TypeBool, value)
 		_node.IsDefault = value
+	}
+	if value, ok := _c.mutation.Insecure(); ok {
+		_spec.SetField(registry.FieldInsecure, field.TypeBool, value)
+		_node.Insecure = value
 	}
 	return _node, _spec
 }
@@ -308,6 +333,18 @@ func (u *RegistryUpsert) SetIsDefault(v bool) *RegistryUpsert {
 // UpdateIsDefault sets the "is_default" field to the value that was provided on create.
 func (u *RegistryUpsert) UpdateIsDefault() *RegistryUpsert {
 	u.SetExcluded(registry.FieldIsDefault)
+	return u
+}
+
+// SetInsecure sets the "insecure" field.
+func (u *RegistryUpsert) SetInsecure(v bool) *RegistryUpsert {
+	u.Set(registry.FieldInsecure, v)
+	return u
+}
+
+// UpdateInsecure sets the "insecure" field to the value that was provided on create.
+func (u *RegistryUpsert) UpdateInsecure() *RegistryUpsert {
+	u.SetExcluded(registry.FieldInsecure)
 	return u
 }
 
@@ -415,6 +452,20 @@ func (u *RegistryUpsertOne) SetIsDefault(v bool) *RegistryUpsertOne {
 func (u *RegistryUpsertOne) UpdateIsDefault() *RegistryUpsertOne {
 	return u.Update(func(s *RegistryUpsert) {
 		s.UpdateIsDefault()
+	})
+}
+
+// SetInsecure sets the "insecure" field.
+func (u *RegistryUpsertOne) SetInsecure(v bool) *RegistryUpsertOne {
+	return u.Update(func(s *RegistryUpsert) {
+		s.SetInsecure(v)
+	})
+}
+
+// UpdateInsecure sets the "insecure" field to the value that was provided on create.
+func (u *RegistryUpsertOne) UpdateInsecure() *RegistryUpsertOne {
+	return u.Update(func(s *RegistryUpsert) {
+		s.UpdateInsecure()
 	})
 }
 
@@ -689,6 +740,20 @@ func (u *RegistryUpsertBulk) SetIsDefault(v bool) *RegistryUpsertBulk {
 func (u *RegistryUpsertBulk) UpdateIsDefault() *RegistryUpsertBulk {
 	return u.Update(func(s *RegistryUpsert) {
 		s.UpdateIsDefault()
+	})
+}
+
+// SetInsecure sets the "insecure" field.
+func (u *RegistryUpsertBulk) SetInsecure(v bool) *RegistryUpsertBulk {
+	return u.Update(func(s *RegistryUpsert) {
+		s.SetInsecure(v)
+	})
+}
+
+// UpdateInsecure sets the "insecure" field to the value that was provided on create.
+func (u *RegistryUpsertBulk) UpdateInsecure() *RegistryUpsertBulk {
+	return u.Update(func(s *RegistryUpsert) {
+		s.UpdateInsecure()
 	})
 }
 

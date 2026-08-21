@@ -80,6 +80,11 @@ func IsDefault(v bool) predicate.Registry {
 	return predicate.Registry(sql.FieldEQ(FieldIsDefault, v))
 }
 
+// Insecure applies equality check predicate on the "insecure" field. It's identical to InsecureEQ.
+func Insecure(v bool) predicate.Registry {
+	return predicate.Registry(sql.FieldEQ(FieldInsecure, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Registry {
 	return predicate.Registry(sql.FieldEQ(FieldCreatedAt, v))
@@ -298,6 +303,16 @@ func IsDefaultEQ(v bool) predicate.Registry {
 // IsDefaultNEQ applies the NEQ predicate on the "is_default" field.
 func IsDefaultNEQ(v bool) predicate.Registry {
 	return predicate.Registry(sql.FieldNEQ(FieldIsDefault, v))
+}
+
+// InsecureEQ applies the EQ predicate on the "insecure" field.
+func InsecureEQ(v bool) predicate.Registry {
+	return predicate.Registry(sql.FieldEQ(FieldInsecure, v))
+}
+
+// InsecureNEQ applies the NEQ predicate on the "insecure" field.
+func InsecureNEQ(v bool) predicate.Registry {
+	return predicate.Registry(sql.FieldNEQ(FieldInsecure, v))
 }
 
 // And groups predicates with the AND operator between them.

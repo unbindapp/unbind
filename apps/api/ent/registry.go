@@ -28,7 +28,9 @@ type Registry struct {
 	// The name of the kubernetes registry credentials secret, should be located in the unbind system namespace
 	KubernetesSecret string `json:"kubernetes_secret,omitempty"`
 	// If true, this is the registry that will be used for internal CI/CD
-	IsDefault    bool `json:"is_default,omitempty"`
+	IsDefault bool `json:"is_default,omitempty"`
+	// If true, the registry is reached over plain HTTP or with an untrusted TLS certificate
+	Insecure     bool `json:"insecure,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -37,7 +39,7 @@ func (*Registry) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case registry.FieldIsDefault:
+		case registry.FieldIsDefault, registry.FieldInsecure:
 			values[i] = new(sql.NullBool)
 		case registry.FieldHost, registry.FieldKubernetesSecret:
 			values[i] = new(sql.NullString)
@@ -96,6 +98,12 @@ func (_m *Registry) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.IsDefault = value.Bool
 			}
+		case registry.FieldInsecure:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field insecure", values[i])
+			} else if value.Valid {
+				_m.Insecure = value.Bool
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -146,6 +154,9 @@ func (_m *Registry) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("is_default=")
 	builder.WriteString(fmt.Sprintf("%v", _m.IsDefault))
+	builder.WriteString(", ")
+	builder.WriteString("insecure=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Insecure))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -335,6 +335,12 @@ releases:
         resources: {}
         replicaCount: {{ .Values | get "overrides.buildkitd.replicas" }}
         image: {{ .Values | get "overrides.buildkitd.image" }}
+        {{- if not (.Values | get "externalRegistry.enabled" false) }}
+        registries:
+          - url: {{ .Values | get "overrides.unbind.api.registry.host" (printf "docker-registry.%s:5000" .Values.namespace) | quote }}
+            http: true
+            insecure: true
+        {{- end }}
 
     labels:
       component: build
@@ -913,6 +919,8 @@ releases:
               value: {{ .Values.namespace }}
             - name: BOOTSTRAP_CONTAINER_REGISTRY_HOST
               value: {{ if .Values | get "externalRegistry.enabled" false }}{{ .Values | get "externalRegistry.host" "docker.io" }}{{ else }}{{ .Values | get "overrides.unbind.api.registry.host" (printf "docker-registry.%s:5000" .Values.namespace) }}{{ end }}
+            - name: BOOTSTRAP_CONTAINER_REGISTRY_INSECURE
+              value: {{ not (.Values | get "externalRegistry.enabled" false) | quote }}
             - name: BOOTSTRAP_CONTAINER_REGISTRY_USER
               valueFrom:
                 secretKeyRef:

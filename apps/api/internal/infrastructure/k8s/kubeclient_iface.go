@@ -23,9 +23,9 @@ type KubeClientInterface interface {
 	SyncDatabaseSecretForServiceID(ctx context.Context, serviceID uuid.UUID) error
 	// SyncDatabaseSecretForService syncs the database secret for a specific service
 	SyncDatabaseSecretForService(ctx context.Context, service *ent.Service) error
-	// UpdateDeploymentImages updates container images in deployments based on the new version
+	// UpdateDeploymentImages retags every unbind image in the system namespace; the app deployment (which runs this API) rolls last.
 	UpdateDeploymentImages(ctx context.Context, newVersion string) error
-	// CheckDeploymentsReady checks if all deployments with unbind images have at least one pod running with the specified version
+	// CheckDeploymentsReady reports whether every deployment using an unbind image has a running pod on the given version.
 	CheckDeploymentsReady(ctx context.Context, version string) (bool, error)
 	// DiscoverEndpointsByLabels returns both internal (services) and external (ingresses) endpoints
 	// matching the provided labels in a namespace

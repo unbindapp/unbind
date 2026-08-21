@@ -9,6 +9,7 @@ type RegistryResponse struct {
 	ID       uuid.UUID `json:"id" format:"uuid"`
 	Host     string    `json:"Host"`
 	Username string    `json:"username"`
+	Insecure bool      `json:"insecure"`
 }
 
 func TransformRegistryEntity(entity *ent.Registry, username string) *RegistryResponse {
@@ -16,6 +17,7 @@ func TransformRegistryEntity(entity *ent.Registry, username string) *RegistryRes
 		ID:       entity.ID,
 		Host:     entity.Host,
 		Username: username,
+		Insecure: entity.Insecure,
 	}
 }
 

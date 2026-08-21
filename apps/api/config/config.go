@@ -65,6 +65,7 @@ type Config struct {
 	BootstrapContainerRegistryHost     string `env:"BOOTSTRAP_CONTAINER_REGISTRY_HOST"`
 	BootstrapContainerRegistryUser     string `env:"BOOTSTRAP_CONTAINER_REGISTRY_USER"`
 	BootstrapContainerRegistryPassword string `env:"BOOTSTRAP_CONTAINER_REGISTRY_PASSWORD"`
+	BootstrapContainerRegistryInsecure bool   `env:"BOOTSTRAP_CONTAINER_REGISTRY_INSECURE" envDefault:"false"`
 	// Buildkit
 	BuildkitHost string `env:"BUILDKIT_HOST" envDefault:"tcp://buildkitd.unbind-system:1234"`
 	// Logging

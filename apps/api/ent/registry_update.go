@@ -77,6 +77,20 @@ func (_u *RegistryUpdate) SetNillableIsDefault(v *bool) *RegistryUpdate {
 	return _u
 }
 
+// SetInsecure sets the "insecure" field.
+func (_u *RegistryUpdate) SetInsecure(v bool) *RegistryUpdate {
+	_u.mutation.SetInsecure(v)
+	return _u
+}
+
+// SetNillableInsecure sets the "insecure" field if the given value is not nil.
+func (_u *RegistryUpdate) SetNillableInsecure(v *bool) *RegistryUpdate {
+	if v != nil {
+		_u.SetInsecure(*v)
+	}
+	return _u
+}
+
 // Mutation returns the RegistryMutation object of the builder.
 func (_u *RegistryUpdate) Mutation() *RegistryMutation {
 	return _u.mutation
@@ -158,6 +172,9 @@ func (_u *RegistryUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.IsDefault(); ok {
 		_spec.SetField(registry.FieldIsDefault, field.TypeBool, value)
 	}
+	if value, ok := _u.mutation.Insecure(); ok {
+		_spec.SetField(registry.FieldInsecure, field.TypeBool, value)
+	}
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -224,6 +241,20 @@ func (_u *RegistryUpdateOne) SetIsDefault(v bool) *RegistryUpdateOne {
 func (_u *RegistryUpdateOne) SetNillableIsDefault(v *bool) *RegistryUpdateOne {
 	if v != nil {
 		_u.SetIsDefault(*v)
+	}
+	return _u
+}
+
+// SetInsecure sets the "insecure" field.
+func (_u *RegistryUpdateOne) SetInsecure(v bool) *RegistryUpdateOne {
+	_u.mutation.SetInsecure(v)
+	return _u
+}
+
+// SetNillableInsecure sets the "insecure" field if the given value is not nil.
+func (_u *RegistryUpdateOne) SetNillableInsecure(v *bool) *RegistryUpdateOne {
+	if v != nil {
+		_u.SetInsecure(*v)
 	}
 	return _u
 }
@@ -338,6 +369,9 @@ func (_u *RegistryUpdateOne) sqlSave(ctx context.Context) (_node *Registry, err 
 	}
 	if value, ok := _u.mutation.IsDefault(); ok {
 		_spec.SetField(registry.FieldIsDefault, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.Insecure(); ok {
+		_spec.SetField(registry.FieldInsecure, field.TypeBool, value)
 	}
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &Registry{config: _u.config}

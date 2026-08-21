@@ -31,7 +31,7 @@ func (self *SystemService) CreateRegistry(ctx context.Context, requesterUserID u
 		return nil, err
 	}
 
-	valid, err := self.registryTester.TestRegistryCredentials(ctx, input.Host, input.Username, input.Password)
+	valid, err := self.registryTester.TestRegistryCredentials(ctx, input.Host, input.Username, input.Password, input.Insecure)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (self *SystemService) CreateRegistry(ctx context.Context, requesterUserID u
 			return fmt.Errorf("failed to generate slug for registry secret: %w", err)
 		}
 
-		registry, err = self.repo.System().CreateRegistry(ctx, tx, input.Host, secretName, false)
+		registry, err = self.repo.System().CreateRegistry(ctx, tx, input.Host, secretName, false, input.Insecure)
 		if err != nil {
 			return fmt.Errorf("failed to create registry: %w", err)
 		}
@@ -86,6 +86,12 @@ func (self *SystemService) CreateRegistry(ctx context.Context, requesterUserID u
 		return nil
 	}); err != nil {
 		return nil, fmt.Errorf("failed to bootstrap registry: %w", err)
+	}
+
+	if input.Insecure {
+		if err := self.buildkitManager.SyncInsecureRegistries(ctx); err != nil {
+			return nil, fmt.Errorf("failed to configure buildkit for insecure registry: %w", err)
+		}
 	}
 
 	return models.TransformRegistryEntity(registry, input.Username), nil
