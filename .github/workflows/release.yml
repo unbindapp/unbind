@@ -21,14 +21,38 @@ jobs:
       version: ${{ steps.v.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: master
       - id: v
         run: echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
-      - name: Require a metadata entry for this version
+      - name: Ensure a metadata entry for this version on master
         env:
           VERSION: ${{ steps.v.outputs.version }}
         run: |
-          jq -e --arg v "$VERSION" 'has($v)' deploy/releases/metadata.json >/dev/null \
-            || { echo "::error::deploy/releases/metadata.json has no entry for $VERSION — add it on master, then re-tag"; exit 1; }
+          FILE=deploy/releases/metadata.json
+          git fetch --no-tags origin "refs/tags/${VERSION}:refs/tags/${VERSION}"
+          DESCRIPTION="Release $VERSION"
+          if [ "$(git cat-file -t "$VERSION")" = "tag" ]; then
+            DESCRIPTION=$(git tag -l --format='%(contents:subject)' "$VERSION")
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for attempt in 1 2 3; do
+            git fetch origin master
+            git reset --hard origin/master
+            if jq -e --arg v "$VERSION" 'has($v)' "$FILE" >/dev/null; then
+              echo "$FILE already has an entry for $VERSION"
+              exit 0
+            fi
+            jq --arg v "$VERSION" --arg d "$DESCRIPTION" \
+              '. + {($v): {version: $v, description: $d, breaking: false}}' "$FILE" > "$FILE.tmp"
+            mv "$FILE.tmp" "$FILE"
+            git add "$FILE"
+            git commit -m "releases: add metadata entry for $VERSION"
+            git push origin HEAD:master && exit 0
+          done
+          echo "::error::could not push a metadata entry for $VERSION to master — add it manually"
+          exit 1
 
   images:
     name: 🔨 Build images

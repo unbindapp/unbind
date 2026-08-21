@@ -213,8 +213,8 @@ and offers a version once its GitHub Release exists **and** it has a metadata en
 
 Cutting a release:
 
-1. Add the new version to `deploy/releases/metadata.json` (and, if needed, `deploy/releases/<tag>/`), commit, push to `master`.
-2. `git tag vX.Y.Z && git push origin vX.Y.Z` — `release.yml` fails fast if the metadata entry is missing.
+1. `git tag -a vX.Y.Z -m "What changed" && git push origin vX.Y.Z` — `release.yml` adds the `deploy/releases/metadata.json` entry to `master` from the tag message if it is missing.
+2. Breaking releases only: add the entry (with `breaking: true` and `depends_on`) and any `deploy/releases/<tag>/` manifests to `master` **before** tagging — the workflow leaves existing entries alone.
 3. When the workflow finishes, `install.sh` resolves the new version via `releases/latest` and running installs see it under **Update**.
 
 | Component | Image |

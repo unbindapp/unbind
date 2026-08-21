@@ -6,6 +6,10 @@ This directory is what a running Unbind reads to discover and apply in-app updat
 1. a `v*.*.*` git tag exists and `release.yml` has published its GitHub Release (images + installer built), and
 2. `metadata.json` on `master` has an entry for that tag.
 
+`release.yml` adds the entry to `master` itself when it is missing (`breaking: false`; the
+description is the annotated tag message, or `Release <tag>` for lightweight tags). Only
+breaking releases need the entry written by hand before tagging, so `depends_on` is set.
+
 ## metadata.json
 
 ```json
