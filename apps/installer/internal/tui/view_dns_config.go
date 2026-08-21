@@ -1,160 +1,114 @@
 package tui
 
 import (
+	"errors"
 	"fmt"
 	"strings"
-	"time"
 
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/unbindapp/unbind-installer/internal/utils"
 )
 
-// viewMainDomainInput shows the main domain configuration screen
+const domainPlaceholder = "unbind.yourdomain.com"
+
+func initializeDomainInput(styles Styles) textinput.Model {
+	ti := newInput(styles, domainPlaceholder)
+	ti.Validate = validateDomainInput
+	return ti
+}
+
+func validateDomainInput(domain string) error {
+	if strings.HasPrefix(domain, "*") {
+		return errors.New("Enter the Unbind domain without the wildcard, e.g. " + domainPlaceholder)
+	}
+	if !utils.IsDNSName(domain) {
+		return fmt.Errorf("%s is not a valid domain", domain)
+	}
+	return nil
+}
+
+func normalizeDomain(domain string) string {
+	return strings.TrimSuffix(strings.ToLower(strings.TrimSpace(domain)), ".")
+}
+
 func viewDNSConfig(m Model) string {
 	s := strings.Builder{}
-
-	// Banner
-	s.WriteString(getResponsiveBanner(m))
-	s.WriteString("\n\n")
-
 	maxWidth := getUsableWidth(m.width)
 
-	// Instructions
 	s.WriteString(m.styles.Bold.Render("Configure DNS for Unbind"))
 	s.WriteString("\n\n")
-
-	// Display detected IP addresses
-	if m.dnsInfo != nil {
-		if m.dnsInfo.ExternalIP != "" {
-			s.WriteString(m.styles.Bold.Render("External IP: "))
-			s.WriteString(m.styles.Key.Render(m.dnsInfo.ExternalIP))
-			s.WriteString("\n\n")
-		}
-	}
-
-	// DNS Configuration instructions
-	dnsText := "For Unbind to work properly, you need to configure DNS entries pointing to your external IP address."
-	for _, line := range wrapText(dnsText, maxWidth) {
-		s.WriteString(m.styles.Normal.Render(line))
-		s.WriteString("\n")
-	}
-	s.WriteString("\n")
-
-	s.WriteString(m.styles.Bold.Render("Option 1 (Recommended): Create a wildcard A record"))
-	s.WriteString("\n")
-
-	option1Text := "1. Create an 'A' record for *.yourdomain.com → " + m.dnsInfo.ExternalIP
-	for _, line := range wrapText(option1Text, maxWidth) {
-		s.WriteString(m.styles.Normal.Render(line))
-		s.WriteString("\n")
-	}
-	s.WriteString("\n")
-
-	s.WriteString(m.styles.Bold.Render("Option 2: Create a standalone A record"))
-	s.WriteString("\n")
-
-	option2Text1 := "1. Create an 'A' record for yourdomain.com → " + m.dnsInfo.ExternalIP
-	for _, line := range wrapText(option2Text1, maxWidth) {
-		s.WriteString(m.styles.Normal.Render(line))
-		s.WriteString("\n")
-	}
-
-	option2Text2 := "This is the domain you'll use to access Unbind."
-	for _, line := range wrapText(option2Text2, maxWidth) {
-		s.WriteString(m.styles.Normal.Render(line))
-		s.WriteString("\n")
-	}
-
-	warningText := " Note: Not using a wildcard A record will disable automatic domain generation for unbind services"
-	for _, line := range wrapText(warningText, maxWidth) {
-		s.WriteString(m.styles.Warning.Render(line))
-		s.WriteString("\n")
-	}
-	s.WriteString("\n")
-
-	// Domain input field
-	inputWidth := maxWidth - 8 // Account for border and padding
-	if inputWidth < 20 {
-		inputWidth = 20
-	}
-
-	domainInput := createStyledBox(
-		fmt.Sprintf("Domain: %s", m.domainInput.View()),
-		lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(lipgloss.Color("#009900")).
-			Padding(0, 1),
-		inputWidth,
-	)
-
-	s.WriteString(domainInput)
-	s.WriteString("\n")
-
-	placeholderText := "Enter your domain (e.g. yourdomain.com)"
-	for _, line := range wrapText(placeholderText, maxWidth) {
-		s.WriteString(m.styles.Subtle.Render(line))
-		s.WriteString("\n")
-	}
-	s.WriteString("\n")
-
-	// Continue button
-	continueText := " Press Enter to continue "
-	continuePrompt := m.styles.HighlightButton.Render(continueText)
-
-	// Center the button if we have enough width
-	if maxWidth > len(continueText) {
-		padding := (maxWidth - len(continueText)) / 2
-		if padding > 0 {
-			s.WriteString(strings.Repeat(" ", padding))
-		}
-	}
-	s.WriteString(continuePrompt)
+	s.WriteString(m.styles.Bold.Render("External IP: "))
+	s.WriteString(m.styles.Key.Render(m.dnsInfo.ExternalIP))
 	s.WriteString("\n\n")
 
-	// Status bar at the bottom
-	s.WriteString(m.styles.StatusBar.Render("Press Ctrl+c to quit"))
+	s.WriteString(renderInputBox(m, "Domain", m.domainInput))
+	s.WriteString("\n")
+	switch errText := m.domainInputError(); errText {
+	case "":
+		writeWrapped(&s, m.styles.Subtle, "The domain you'll use to access Unbind, e.g. "+domainPlaceholder, maxWidth)
+	default:
+		writeWrapped(&s, m.styles.Error, errText, maxWidth)
+	}
+	s.WriteString("\n")
 
-	return renderWithLayout(m, s.String())
+	writeWrapped(&s, m.styles.Normal, "Create these DNS records at your provider, pointing to your external IP:", maxWidth)
+	s.WriteString(renderDNSRecordsTable(m, m.previewDomain()))
+	s.WriteString("\n")
+	writeWrapped(&s, m.styles.Warning, "Wildcard record is optional. If not detected it'll disable automatic domain generation for your services", maxWidth)
+	s.WriteString("\n")
+
+	s.WriteString(continueButton(m))
+	s.WriteString("\n\n")
+	s.WriteString(quitHint(m))
+	return renderPage(m, s.String())
 }
 
-func (m Model) updateDNSConfigState(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) domainInputError() string {
+	if m.domainError != "" {
+		return m.domainError
+	}
+	if m.domainInput.Err != nil && m.domainInput.Value() != "" {
+		return m.domainInput.Err.Error()
+	}
+	return ""
+}
+
+func (m Model) previewDomain() string {
+	domain := normalizeDomain(m.domainInput.Value())
+	if domain == "" || validateDomainInput(domain) != nil {
+		return domainPlaceholder
+	}
+	return domain
+}
+
+func (m Model) updateDNSConfigState(msg tea.Msg) (Model, tea.Cmd) {
+	keyMsg, isKey := msg.(tea.KeyMsg)
+	if isKey && keyMsg.String() == "enter" {
+		return m.submitDomain()
+	}
+
 	var cmd tea.Cmd
-
-	// Handle text input updates
 	m.domainInput, cmd = m.domainInput.Update(msg)
-
-	// Store the domain value
-	if m.dnsInfo == nil {
-		m.dnsInfo = &dnsInfo{}
+	if isKey {
+		m.domainError = ""
 	}
-	m.dnsInfo.Domain = m.domainInput.Value()
-
-	// On Enter, capture the domain and move on to registry configuration.
-	// Nothing is validated here; all input is gathered first and validated in a
-	// single pass once the registry choice is known.
-	if keyMsg, ok := msg.(tea.KeyMsg); ok && keyMsg.String() == "enter" {
-		if m.dnsInfo.Domain != "" {
-			m.dnsInfo.UnbindDomain = strings.TrimPrefix(m.dnsInfo.Domain, "*.")
-			m.dnsInfo.IsWildcard = strings.HasPrefix(m.dnsInfo.Domain, "*.")
-
-			m.state = StateRegistryTypeSelection
-			m.registryCountdown = 8
-			return m, tea.Batch(countdownTick(), m.listenForLogs())
-		}
-	}
-
-	if _, ok := msg.(tea.WindowSizeMsg); ok {
-		// Handle window size changes
-		return m, tea.Batch(cmd, m.listenForLogs())
-	}
-
-	// For any other message, keep updating the input and listening for logs
-	return m, tea.Batch(cmd, m.listenForLogs())
+	return m, cmd
 }
 
-// dnsValidationTimeout generates a command that sends a timeout message after the specified duration
-func dnsValidationTimeout(d time.Duration) tea.Cmd {
-	return tea.Tick(d, func(time.Time) tea.Msg {
-		return dnsValidationTimeoutMsg{}
-	})
+func (m Model) submitDomain() (Model, tea.Cmd) {
+	domain := normalizeDomain(m.domainInput.Value())
+	if domain == "" {
+		m.domainError = "Enter a domain to continue"
+		return m, nil
+	}
+	if err := validateDomainInput(domain); err != nil {
+		m.domainError = err.Error()
+		return m, nil
+	}
+
+	m.domainInput.SetValue(domain)
+	m.dnsInfo.UnbindDomain = domain
+	m.state = StateRegistryTypeSelection
+	return m, nil
 }

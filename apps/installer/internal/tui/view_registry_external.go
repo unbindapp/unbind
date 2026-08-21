@@ -6,481 +6,234 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
-	"github.com/unbindapp/unbind-installer/internal/utils"
 )
 
-// viewRegistryTypeSelection shows a view for selecting registry type
+type registryOption struct {
+	key         string
+	host        string
+	displayName string
+}
+
+var registryOptions = []registryOption{
+	{key: "f1", host: "docker.io", displayName: "Docker Hub"},
+	{key: "f2", host: "ghcr.io", displayName: "GitHub Container Registry"},
+	{key: "f3", host: "quay.io", displayName: "Red Hat Quay"},
+	{key: "f4", host: "", displayName: "Custom Registry"},
+}
+
+const customRegistryIndex = 3
+
+func getRegistryDisplayName(host string) string {
+	for _, opt := range registryOptions {
+		if opt.host != "" && opt.host == host {
+			return opt.displayName
+		}
+	}
+	return host
+}
+
+func newInput(styles Styles, placeholder string) textinput.Model {
+	ti := textinput.New()
+	ti.Placeholder = placeholder
+	ti.Width = 30
+	ti.PromptStyle = styles.InputPrompt
+	return ti
+}
+
+func initializeUsernameInput(styles Styles) textinput.Model {
+	return newInput(styles, "username")
+}
+
+func initializePasswordInput(styles Styles) textinput.Model {
+	ti := newInput(styles, "password")
+	ti.EchoMode = textinput.EchoPassword
+	return ti
+}
+
+func initializeRegistryHostInput(styles Styles) textinput.Model {
+	return newInput(styles, "registry.example.com")
+}
+
 func viewRegistryTypeSelection(m Model) string {
 	s := strings.Builder{}
-
-	// Banner
-	s.WriteString(getResponsiveBanner(m))
-	s.WriteString("\n\n")
-
 	maxWidth := getUsableWidth(m.width)
 
-	// Instructions
 	s.WriteString(m.styles.Bold.Render("Select Registry Type for Unbind"))
 	s.WriteString("\n\n")
-
-	instructionText := "Unbind requires a container registry to store Docker images. You can:"
-	for _, line := range wrapText(instructionText, maxWidth) {
-		s.WriteString(m.styles.Normal.Render(line))
-		s.WriteString("\n")
-	}
+	writeWrapped(&s, m.styles.Normal, "Unbind requires a container registry to store Docker images. You can:", maxWidth)
 	s.WriteString("\n")
 
-	// Option 1: Self-hosted
 	s.WriteString(m.styles.Bold.Render("1. Self-hosted Registry"))
 	s.WriteString("\n")
-	option1Text := "   Allow Unbind to install a registry on your server"
-	for _, line := range wrapText(option1Text, maxWidth) {
-		s.WriteString(m.styles.Normal.Render(line))
-		s.WriteString("\n")
-	}
-	option1Note := "   - Runs in-cluster, no domain or extra DNS records needed"
-	for _, line := range wrapText(option1Note, maxWidth) {
-		s.WriteString(m.styles.Subtle.Render(line))
-		s.WriteString("\n")
-	}
+	writeIndented(&s, m.styles.Normal, "   ", "Allow Unbind to install a registry on your server", maxWidth)
+	writeIndented(&s, m.styles.Subtle, "   ", "- Runs in-cluster, no domain or extra DNS records needed", maxWidth)
 	s.WriteString("\n")
 
-	// Option 2: External registry
 	s.WriteString(m.styles.Bold.Render("2. External Registry"))
 	s.WriteString("\n")
-	option2Text := "   Use Docker Hub, GHCR, Quay, or another registry service"
-	for _, line := range wrapText(option2Text, maxWidth) {
-		s.WriteString(m.styles.Normal.Render(line))
-		s.WriteString("\n")
-	}
-	option2Note := "   - Requires existing account credentials"
-	for _, line := range wrapText(option2Note, maxWidth) {
-		s.WriteString(m.styles.Subtle.Render(line))
-		s.WriteString("\n")
-	}
+	writeIndented(&s, m.styles.Normal, "   ", "Use Docker Hub, GHCR, Quay, or another registry service", maxWidth)
+	writeIndented(&s, m.styles.Subtle, "   ", "- Requires existing account credentials", maxWidth)
 	s.WriteString("\n")
 
-	// Default + countdown
-	defaultText := fmt.Sprintf("Defaulting to self-hosted in %d seconds...", m.registryCountdown)
-	s.WriteString(m.styles.Bold.Render(defaultText))
+	s.WriteString(renderKeyHints(m,
+		keyHint{key: "1", desc: "Self-hosted registry"},
+		keyHint{key: "2", desc: "External registry"},
+		keyHint{key: "Ctrl+b", desc: "Back to DNS configuration"},
+	))
 	s.WriteString("\n\n")
-
-	// Navigation hints
-	s.WriteString(m.styles.Bold.Render("Navigation:"))
-	s.WriteString("\n")
-	s.WriteString(m.styles.Normal.Render("• Press "))
-	s.WriteString(m.styles.Key.Render("1"))
-	s.WriteString(m.styles.Normal.Render(" for Self-hosted Registry (default)"))
-	s.WriteString("\n")
-	s.WriteString(m.styles.Normal.Render("• Press "))
-	s.WriteString(m.styles.Key.Render("2"))
-	s.WriteString(m.styles.Normal.Render(" for External Registry"))
-	s.WriteString("\n")
-	s.WriteString(m.styles.Normal.Render("• Press "))
-	s.WriteString(m.styles.Key.Render("Ctrl+b"))
-	s.WriteString(m.styles.Normal.Render(" to go back to DNS configuration"))
-	s.WriteString("\n\n")
-
-	// Status bar at the bottom
-	s.WriteString(m.styles.StatusBar.Render("Press Ctrl+c to quit"))
-
-	return renderWithLayout(m, s.String())
+	s.WriteString(quitHint(m))
+	return renderPage(m, s.String())
 }
 
-// selectSelfHostedRegistry configures the self-hosted registry. It runs in-cluster
-// with no domain, so there is nothing to enter or validate here — proceed straight
-// to the combined configuration validation pass.
-func (m Model) selectSelfHostedRegistry() (tea.Model, tea.Cmd) {
-	if m.dnsInfo == nil {
-		m.dnsInfo = &dnsInfo{}
-	}
-	m.dnsInfo.RegistryType = RegistrySelfHosted
-	m.dnsInfo.DisableLocalRegistry = false
-	return m.startConfigValidation()
-}
-
-// updateRegistryTypeSelectionState handles selection of registry type
-func (m Model) updateRegistryTypeSelectionState(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case countdownTickMsg:
-		m.registryCountdown--
-		if m.registryCountdown <= 0 {
-			return m.selectSelfHostedRegistry()
-		}
-		return m, countdownTick()
-
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "1":
-			return m.selectSelfHostedRegistry()
-
-		case "2":
-			if m.dnsInfo == nil {
-				m.dnsInfo = &dnsInfo{}
-			}
-			m.dnsInfo.RegistryType = RegistryExternal
-			m.dnsInfo.DisableLocalRegistry = true
-			m.state = StateExternalRegistryInput
-			m.usernameInput.Focus()
-			return m, m.listenForLogs()
-
-		case "ctrl+b":
-			// Go back to DNS configuration; cancels the auto-default countdown
-			m.state = StateDNSConfig
-			m.domainInput.Focus()
-			return m, m.listenForLogs()
-		}
-	}
-
-	return m, m.listenForLogs()
-}
-
-// viewExternalRegistryInput shows the input screen for external registry credentials
-func viewExternalRegistryInput(m Model) string {
-	s := strings.Builder{}
-
-	// Banner
-	s.WriteString(getResponsiveBanner(m))
-	s.WriteString("\n\n")
-
-	maxWidth := getUsableWidth(m.width)
-
-	// Instructions
-	s.WriteString(m.styles.Bold.Render("Enter External Registry Credentials"))
-	s.WriteString("\n\n")
-
-	instructionText := "Please select a registry and enter your credentials:"
-	for _, line := range wrapText(instructionText, maxWidth) {
-		s.WriteString(m.styles.Normal.Render(line))
-		s.WriteString("\n")
-	}
-	s.WriteString("\n")
-
-	// Registry selection
-	s.WriteString(m.styles.Bold.Render("Select Registry:"))
-	s.WriteString("\n")
-
-	// Docker Hub
-	if m.selectedRegistry == 0 {
-		s.WriteString(m.styles.SelectedOption.Render("→ [F1] Docker Hub (docker.io)"))
-	} else {
-		s.WriteString(m.styles.Normal.Render("  [F1] Docker Hub (docker.io)"))
-	}
-	s.WriteString("\n")
-
-	// GitHub Container Registry
-	if m.selectedRegistry == 1 {
-		s.WriteString(m.styles.SelectedOption.Render("→ [F2] GitHub Container Registry (ghcr.io)"))
-	} else {
-		s.WriteString(m.styles.Normal.Render("  [F2] GitHub Container Registry (ghcr.io)"))
-	}
-	s.WriteString("\n")
-
-	// Red Hat Quay
-	if m.selectedRegistry == 2 {
-		s.WriteString(m.styles.SelectedOption.Render("→ [F3] Red Hat Quay (quay.io)"))
-	} else {
-		s.WriteString(m.styles.Normal.Render("  [F3] Red Hat Quay (quay.io)"))
-	}
-	s.WriteString("\n")
-
-	// Custom Registry
-	if m.selectedRegistry == 3 {
-		s.WriteString(m.styles.SelectedOption.Render("→ [F4] Custom Registry"))
-	} else {
-		s.WriteString(m.styles.Normal.Render("  [F4] Custom Registry"))
-	}
-	s.WriteString("\n\n")
-
-	// Custom registry field if selected
-	if m.selectedRegistry == 3 {
-		inputWidth := maxWidth - 8 // Account for border and padding
-		if inputWidth < 20 {
-			inputWidth = 20
-		}
-
-		customRegistryInput := createStyledBox(
-			fmt.Sprintf("Registry Host: %s", m.registryHostInput.View()),
-			lipgloss.NewStyle().
-				Border(lipgloss.RoundedBorder()).
-				BorderForeground(lipgloss.Color("#009900")).
-				Padding(0, 1),
-			inputWidth,
-		)
-
-		s.WriteString(customRegistryInput)
-		s.WriteString("\n\n")
-	}
-
-	// Show current registry
-	s.WriteString(m.styles.Bold.Render("Registry: "))
-	var registryHost string
-	switch m.selectedRegistry {
-	case 0:
-		registryHost = "docker.io"
-	case 1:
-		registryHost = "ghcr.io"
-	case 2:
-		registryHost = "quay.io"
-	case 3:
-		registryHost = m.registryHostInput.Value()
-		if registryHost == "" {
-			registryHost = "registry.example.com"
-		}
-	}
-	s.WriteString(m.styles.Normal.Render(getRegistryDisplayName(registryHost)))
-	s.WriteString("\n\n")
-
-	// Username input field
-	inputWidth := maxWidth - 8 // Account for border and padding
-	if inputWidth < 20 {
-		inputWidth = 20
-	}
-
-	usernameInput := createStyledBox(
-		fmt.Sprintf("Username: %s", m.usernameInput.View()),
-		lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(lipgloss.Color("#009900")).
-			Padding(0, 1),
-		inputWidth,
-	)
-
-	s.WriteString(usernameInput)
-	s.WriteString("\n\n")
-
-	// Password input field
-	passwordInput := createStyledBox(
-		fmt.Sprintf("Password: %s", m.passwordInput.View()),
-		lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(lipgloss.Color("#009900")).
-			Padding(0, 1),
-		inputWidth,
-	)
-
-	s.WriteString(passwordInput)
-	s.WriteString("\n\n")
-
-	validationText := "We'll validate these credentials before proceeding"
-	for _, line := range wrapText(validationText, maxWidth) {
-		s.WriteString(m.styles.Subtle.Render(line))
-		s.WriteString("\n")
-	}
-	s.WriteString("\n")
-
-	// Navigation hints
-	s.WriteString(m.styles.Bold.Render("Navigation:"))
-	s.WriteString("\n")
-
-	navHints := []string{
-		"• Press Tab to switch between fields",
-		"• Press F1 through F4 to select registry type",
-		"• Press Enter to validate credentials",
-		"• Press Ctrl+b to go back to registry type selection",
-	}
-
-	for _, hint := range navHints {
-		for _, line := range wrapText(hint, maxWidth) {
-			s.WriteString(m.styles.Normal.Render(line))
-			s.WriteString("\n")
-		}
-	}
-	s.WriteString("\n")
-
-	// Status bar at the bottom
-	s.WriteString(m.styles.StatusBar.Render("Press Ctrl+c to quit"))
-
-	return renderWithLayout(m, s.String())
-}
-
-// updateExternalRegistryInputState handles updates in the external registry input state
-func (m Model) updateExternalRegistryInputState(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
-
-	// Check if back button was pressed
-	if keyMsg, ok := msg.(tea.KeyMsg); ok && keyMsg.String() == "ctrl+b" {
-		// Go back to registry type selection
-		m.state = StateRegistryTypeSelection
-		return m, m.listenForLogs()
-	}
-
-	// Check for registry selection keys
-	if keyMsg, ok := msg.(tea.KeyMsg); ok {
-		switch keyMsg.String() {
-		case "f1":
-			// Docker Hub
-			m.selectedRegistry = 0
-		case "f2":
-			// GitHub Container Registry
-			m.selectedRegistry = 1
-		case "f3":
-			// Red Hat Quay
-			m.selectedRegistry = 2
-		case "f4":
-			// Custom Registry
-			m.selectedRegistry = 3
-		}
-	}
-
-	// Check if tab was pressed
-	if keyMsg, ok := msg.(tea.KeyMsg); ok && keyMsg.String() == "tab" {
-		// Toggle focus between inputs
-		if m.selectedRegistry == 3 {
-			// Custom registry has 3 fields
-			if m.registryHostInput.Focused() {
-				m.registryHostInput.Blur()
-				m.usernameInput.Focus()
-			} else if m.usernameInput.Focused() {
-				m.usernameInput.Blur()
-				m.passwordInput.Focus()
-			} else {
-				m.passwordInput.Blur()
-				m.registryHostInput.Focus()
-			}
-		} else {
-			// Other registries have 2 fields
-			if m.usernameInput.Focused() {
-				m.usernameInput.Blur()
-				m.passwordInput.Focus()
-			} else {
-				m.passwordInput.Blur()
-				m.usernameInput.Focus()
-			}
-		}
+func (m Model) updateRegistryTypeSelectionState(msg tea.Msg) (Model, tea.Cmd) {
+	keyMsg, ok := msg.(tea.KeyMsg)
+	if !ok {
 		return m, nil
 	}
 
-	// Update the focused input
-	if m.registryHostInput.Focused() {
+	switch keyMsg.String() {
+	case "1":
+		m.dnsInfo.RegistryType = RegistrySelfHosted
+		return m.startConfigValidation()
+	case "2":
+		m.dnsInfo.RegistryType = RegistryExternal
+		m.state = StateExternalRegistryInput
+		return m, m.usernameInput.Focus()
+	case "ctrl+b":
+		m.state = StateDNSConfig
+		return m, m.domainInput.Focus()
+	}
+	return m, nil
+}
+
+func viewExternalRegistryInput(m Model) string {
+	s := strings.Builder{}
+	maxWidth := getUsableWidth(m.width)
+
+	s.WriteString(m.styles.Bold.Render("Enter External Registry Credentials"))
+	s.WriteString("\n\n")
+	s.WriteString(m.styles.Bold.Render("Select Registry:"))
+	s.WriteString("\n")
+	for i, opt := range registryOptions {
+		label := fmt.Sprintf("[%s] %s", strings.ToUpper(opt.key), opt.displayName)
+		if opt.host != "" {
+			label += fmt.Sprintf(" (%s)", opt.host)
+		}
+		if i == m.selectedRegistry {
+			s.WriteString(m.styles.SelectedOption.Render("→ " + label))
+		} else {
+			s.WriteString(m.styles.Normal.Render("  " + label))
+		}
+		s.WriteString("\n")
+	}
+	s.WriteString("\n")
+
+	if m.selectedRegistry == customRegistryIndex {
+		s.WriteString(renderInputBox(m, "Registry Host", m.registryHostInput))
+		s.WriteString("\n\n")
+	}
+
+	s.WriteString(renderInputBox(m, "Username", m.usernameInput))
+	s.WriteString("\n\n")
+	s.WriteString(renderInputBox(m, "Password", m.passwordInput))
+	s.WriteString("\n\n")
+	writeWrapped(&s, m.styles.Subtle, "Fill in all fields; we'll validate these credentials before proceeding.", maxWidth)
+	s.WriteString("\n")
+
+	s.WriteString(renderKeyHints(m,
+		keyHint{key: "Tab", desc: "Next field"},
+		keyHint{key: "F1-F4", desc: "Select registry"},
+		keyHint{key: "Enter", desc: "Continue"},
+		keyHint{key: "Ctrl+b", desc: "Back"},
+	))
+	s.WriteString("\n\n")
+	s.WriteString(quitHint(m))
+	return renderPage(m, s.String())
+}
+
+func (m Model) updateExternalRegistryInputState(msg tea.Msg) (Model, tea.Cmd) {
+	keyMsg, isKey := msg.(tea.KeyMsg)
+	if !isKey {
+		return m.updateFocusedRegistryInput(msg)
+	}
+
+	switch key := keyMsg.String(); key {
+	case "ctrl+b":
+		m.state = StateRegistryTypeSelection
+		return m, nil
+	case "tab":
+		return m.focusNextRegistryField()
+	case "enter":
+		if !m.passwordInput.Focused() {
+			return m.focusNextRegistryField()
+		}
+		return m.submitRegistryCredentials()
+	}
+
+	for i, opt := range registryOptions {
+		if keyMsg.String() != opt.key {
+			continue
+		}
+		m.selectedRegistry = i
+		return m.syncRegistryFields(), nil
+	}
+
+	return m.updateFocusedRegistryInput(msg)
+}
+
+func (m Model) registryFields() []*textinput.Model {
+	fields := []*textinput.Model{&m.usernameInput, &m.passwordInput}
+	if m.selectedRegistry != customRegistryIndex {
+		return fields
+	}
+	return append([]*textinput.Model{&m.registryHostInput}, fields...)
+}
+
+func (m Model) focusNextRegistryField() (Model, tea.Cmd) {
+	fields := m.registryFields()
+	next := 0
+	for i, field := range fields {
+		if !field.Focused() {
+			continue
+		}
+		field.Blur()
+		next = (i + 1) % len(fields)
+		break
+	}
+	return m, fields[next].Focus()
+}
+
+func (m Model) updateFocusedRegistryInput(msg tea.Msg) (Model, tea.Cmd) {
+	var cmd tea.Cmd
+	switch {
+	case m.registryHostInput.Focused():
 		m.registryHostInput, cmd = m.registryHostInput.Update(msg)
-	} else if m.usernameInput.Focused() {
+	case m.usernameInput.Focused():
 		m.usernameInput, cmd = m.usernameInput.Update(msg)
-	} else {
+	default:
 		m.passwordInput, cmd = m.passwordInput.Update(msg)
 	}
+	return m.syncRegistryFields(), cmd
+}
 
-	// Store the values
-	if m.dnsInfo == nil {
-		m.dnsInfo = &dnsInfo{}
-	}
+func (m Model) syncRegistryFields() Model {
 	m.dnsInfo.RegistryUsername = m.usernameInput.Value()
 	m.dnsInfo.RegistryPassword = m.passwordInput.Value()
-
-	// Set registry host based on selection
-	switch m.selectedRegistry {
-	case 0:
-		m.dnsInfo.RegistryHost = "docker.io"
-	case 1:
-		m.dnsInfo.RegistryHost = "ghcr.io"
-	case 2:
-		m.dnsInfo.RegistryHost = "quay.io"
-	case 3:
-		m.dnsInfo.RegistryHost = m.registryHostInput.Value()
-	}
-
-	// If Enter was pressed, handle tabbing or submission
-	if keyMsg, ok := msg.(tea.KeyMsg); ok && keyMsg.String() == "enter" {
-		if m.selectedRegistry == 3 {
-			// Custom registry: 3 fields
-			if m.registryHostInput.Focused() {
-				// Move to username
-				m.registryHostInput.Blur()
-				m.usernameInput.Focus()
-				return m, nil
-			} else if m.usernameInput.Focused() {
-				// Move to password
-				m.usernameInput.Blur()
-				m.passwordInput.Focus()
-				return m, nil
-			} else if m.passwordInput.Focused() {
-				// Only submit if all fields are filled
-				if m.dnsInfo.RegistryUsername != "" && m.dnsInfo.RegistryPassword != "" && m.dnsInfo.RegistryHost != "" {
-					return m.startConfigValidation()
-				}
-				return m, m.listenForLogs()
-			}
-		} else {
-			// Other registries: 2 fields
-			if m.usernameInput.Focused() {
-				// Move to password
-				m.usernameInput.Blur()
-				m.passwordInput.Focus()
-				return m, nil
-			} else if m.passwordInput.Focused() {
-				if m.dnsInfo.RegistryUsername != "" && m.dnsInfo.RegistryPassword != "" {
-					return m.startConfigValidation()
-				}
-				return m, m.listenForLogs()
-			}
-		}
-	}
-
-	if _, ok := msg.(tea.WindowSizeMsg); ok {
-		// Handle window size changes
-		return m, tea.Batch(cmd, m.listenForLogs())
-	}
-
-	// For any other message, keep updating the input and listening for logs
-	return m, tea.Batch(cmd, m.listenForLogs())
+	m.dnsInfo.RegistryHost = m.selectedRegistryHost()
+	return m
 }
 
-// getRegistryDisplayName returns a user-friendly display name for registry hosts
-func getRegistryDisplayName(host string) string {
-	switch host {
-	case "docker.io":
-		return "Docker Hub"
-	case "ghcr.io":
-		return "GitHub Container Registry"
-	case "quay.io":
-		return "Red Hat Quay"
-	default:
-		return host
+func (m Model) selectedRegistryHost() string {
+	if m.selectedRegistry == customRegistryIndex {
+		return strings.TrimSpace(m.registryHostInput.Value())
 	}
+	return registryOptions[m.selectedRegistry].host
 }
 
-// initializeDomainInput initializes the text input for domain entry
-func initializeDomainInput() textinput.Model {
-	ti := textinput.New()
-	ti.Placeholder = "yourdomain.com"
-	ti.Focus()
-	ti.Width = 30
-	ti.Validate = func(s string) error {
-		// Handle wildcard domain
-		if strings.HasPrefix(s, "*.") {
-			baseDomain := strings.TrimPrefix(s, "*.")
-			if !utils.IsDNSName(baseDomain) {
-				return fmt.Errorf("%s is not a valid domain", baseDomain)
-			}
-			return nil
-		}
-
-		// Handle regular domain
-		if !utils.IsDNSName(s) {
-			return fmt.Errorf("%s is not a valid domain", s)
-		}
-		return nil
+func (m Model) submitRegistryCredentials() (Model, tea.Cmd) {
+	m = m.syncRegistryFields()
+	if m.dnsInfo.RegistryUsername == "" || m.dnsInfo.RegistryPassword == "" || m.dnsInfo.RegistryHost == "" {
+		return m, nil
 	}
-	ti.PromptStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#009900"))
-	return ti
-}
-
-// initializeUsernameInput initializes the text input for registry username entry
-func initializeUsernameInput() textinput.Model {
-	ti := textinput.New()
-	ti.Placeholder = "username"
-	ti.Width = 30
-	ti.PromptStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#009900"))
-	return ti
-}
-
-// initializePasswordInput initializes the text input for registry password entry
-func initializePasswordInput() textinput.Model {
-	ti := textinput.New()
-	ti.Placeholder = "password"
-	ti.Width = 30
-	ti.EchoMode = textinput.EchoPassword
-	ti.PromptStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#009900"))
-	return ti
+	return m.startConfigValidation()
 }

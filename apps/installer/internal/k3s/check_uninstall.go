@@ -121,7 +121,7 @@ cleanup:
 	time.Sleep(10 * time.Second)
 
 	// 1. Log out of any leftover iSCSI sessions
-	err = runCommand(logChan, "iscsiadm", "-m", "session", "|", "grep", "'io.longhorn'", "|", "awk", "'{print $2}'", "|", "sed", "'s/\\[\\([0-9]*\\)\\]/\\1/'", "|", "xargs", "-r", "-I{}", "iscsiadm", "-m", "session", "-u", "-r", "{}")
+	err = runCommand(logChan, "sh", "-c", "iscsiadm -m session | grep 'io.longhorn' | awk '{print $2}' | sed 's/\\[\\([0-9]*\\)\\]/\\1/' | xargs -r -I{} iscsiadm -m session -u -r {}")
 	if err != nil {
 		logChan <- "Warning: Failed to logout of iSCSI sessions, continuing anyway"
 	}

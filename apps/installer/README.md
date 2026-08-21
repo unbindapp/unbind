@@ -12,9 +12,17 @@ stack (via the helmfile in `deploy/charts`).
 4. Validates DNS for your domain and configures the container registry.
 5. Runs the helmfile sync to bring up Unbind.
 
-The installer prompts only for what it cannot infer: the domain, and external
-registry credentials when an external registry is chosen. Everything else uses
-sensible defaults with a brief, cancellable countdown.
+The installer prompts only for what it cannot infer: the domain, the registry
+choice (and credentials for an external registry), and whether to uninstall an
+existing K3s or create a swap file. Nothing is selected automatically.
+
+To look at a single screen without installing anything (no root needed):
+
+```sh
+go run ./cmd -screen dns-config -domain unbind.example.com
+```
+
+See `go run ./cmd -h` for the list of screens.
 
 ## Build & run
 

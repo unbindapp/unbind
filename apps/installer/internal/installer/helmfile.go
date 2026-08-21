@@ -501,52 +501,6 @@ func (self *UnbindInstaller) SyncHelmfileWithSteps(ctx context.Context, opts Syn
 	})
 }
 
-// writeCounter counts bytes written and updates progress
-type writeCounter struct {
-	Total         int64
-	Downloaded    int64
-	Installer     *UnbindInstaller
-	Dependency    string
-	LastProgress  float64
-	StartProgress float64
-	EndProgress   float64
-}
-
-func (wc *writeCounter) Write(p []byte) (int, error) {
-	n := len(p)
-	wc.Downloaded += int64(n)
-
-	// Calculate percentage
-	var percentage float64
-	if wc.Total > 0 {
-		percentage = float64(wc.Downloaded) / float64(wc.Total)
-	} else {
-		percentage = 0
-	}
-
-	// Scale the progress to our range
-	scaledProgress := wc.StartProgress + (percentage * (wc.EndProgress - wc.StartProgress))
-
-	// Only update every 1% to avoid flooding
-	if scaledProgress-wc.LastProgress >= 0.01 {
-		wc.Installer.logProgress(wc.Dependency, scaledProgress, "Downloading Helmfile", nil, StatusInstalling)
-		wc.LastProgress = scaledProgress
-	}
-
-	return n, nil
-}
-
-// Helper function to check if we can write to a directory
-func canWriteToDir(dir string) bool {
-	testFile := filepath.Join(dir, ".helmfile_write_test")
-	err := os.WriteFile(testFile, []byte("test"), 0644)
-	if err != nil {
-		return false
-	}
-	os.Remove(testFile)
-	return true
-}
-
 // isErrorMessage checks if a line is likely an error message
 func isErrorMessage(message string) bool {
 	lowercaseMsg := strings.ToLower(message)
@@ -567,13 +521,13 @@ func isErrorMessage(message string) bool {
 func (self *UnbindInstaller) updateProgressBasedOnOutput(dependency string, output string) {
 	if release := parseHelmfileToken(output, "release="); release != "" {
 		switch {
-		case containsString(output, "Building dependency"):
+		case strings.Contains(output, "Building dependency"):
 			self.logProgress(dependency, 0.30, "Building dependencies for "+release, nil, StatusInstalling)
-		case containsString(output, "Comparing"):
+		case strings.Contains(output, "Comparing"):
 			self.logProgress(dependency, 0.45, "Comparing "+release, nil, StatusInstalling)
-		case containsString(output, "Deleting"):
+		case strings.Contains(output, "Deleting"):
 			self.logProgress(dependency, 0.90, "Removing "+release, nil, StatusInstalling)
-		case containsString(output, "Upgrading"), containsString(output, "Installing"):
+		case strings.Contains(output, "Upgrading"), strings.Contains(output, "Installing"):
 			self.logProgress(dependency, 0.60, "Installing "+release, nil, StatusInstalling)
 		default:
 			self.logProgress(dependency, 0.55, "Processing "+release, nil, StatusInstalling)
@@ -582,9 +536,9 @@ func (self *UnbindInstaller) updateProgressBasedOnOutput(dependency string, outp
 	}
 
 	switch {
-	case containsString(output, "UPDATED RELEASES:"):
+	case strings.Contains(output, "UPDATED RELEASES:"):
 		self.logProgress(dependency, 0.85, "Finalizing releases", nil, StatusInstalling)
-	case containsString(output, "DELETED RELEASES:"), containsString(output, "Listing releases matching"):
+	case strings.Contains(output, "DELETED RELEASES:"), strings.Contains(output, "Listing releases matching"):
 		self.logProgress(dependency, 0.95, "Verifying installation", nil, StatusInstalling)
 	}
 }
@@ -602,9 +556,4 @@ func parseHelmfileToken(line, key string) string {
 		rest = rest[:i]
 	}
 	return rest
-}
-
-// containsString is a helper function to check if a string contains a substring
-func containsString(s, substr string) bool {
-	return strings.Contains(s, substr)
 }

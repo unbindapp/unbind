@@ -2,7 +2,6 @@ package tui
 
 import "time"
 
-// ApplicationState represents the current state of the application
 type ApplicationState int
 
 const (
@@ -10,9 +9,7 @@ const (
 	StateCheckK3s
 	StateConfirmUninstallK3s
 	StateUninstallingK3s
-	StateDebugLogs
 	StateLoading
-	StateRootDetection
 	StateOSInfo
 	StateCheckingSwap
 	StateSwapPrompt
@@ -24,8 +21,6 @@ const (
 	StateDetectingIPs
 	StateDNSConfig
 	StateDNSValidation
-	StateDNSSuccess
-	StateDNSFailed
 	StateRegistryTypeSelection
 	StateExternalRegistryInput
 	StateInstallingK3S
@@ -33,38 +28,36 @@ const (
 	StateInstallationComplete
 )
 
-// Registry type enum
 type RegistryType int
 
 const (
-	RegistrySelfHosted RegistryType = iota // Self-hosted registry
-	RegistryExternal                       // External registry like Docker Hub
+	RegistrySelfHosted RegistryType = iota
+	RegistryExternal
 )
 
-// Additional model fields for DNS setup
 type dnsInfo struct {
-	Domain             string // The base domain or wildcard domain
-	UnbindDomain       string // unbind.yourdomain.com
-	IsWildcard         bool   // Whether wildcard was specified
-	InternalIP         string
-	ExternalIP         string
-	CIDR               string
-	ValidationStarted  bool
-	ValidationSuccess  bool
-	CloudflareDetected bool
-	WildcardProxied    bool
-	TestingStartTime   time.Time
-	ValidationDuration time.Duration
+	UnbindDomain     string
+	WildcardResolved bool
+	InternalIP       string
+	ExternalIP       string
+	RegistryType     RegistryType
+	RegistryUsername string
+	RegistryPassword string
+	RegistryHost     string
+}
 
-	// Per-check results captured during the combined validation pass, surfaced
-	// on the failure screen.
-	MainResolved   bool
-	MainResolvedIP string
+type validationStatus struct {
+	gen          int
+	inFlight     bool
+	startedAt    time.Time
+	lastAt       time.Time
+	lastDuration time.Duration
+	result       *dnsValidationResultMsg
+}
 
-	// Registry configuration
-	RegistryType         RegistryType
-	RegistryUsername     string
-	RegistryPassword     string
-	RegistryHost         string
-	DisableLocalRegistry bool
+func (v validationStatus) ready(rt RegistryType) bool {
+	if v.result == nil || !v.result.mainResolved {
+		return false
+	}
+	return rt == RegistrySelfHosted || v.result.credentialsValid
 }

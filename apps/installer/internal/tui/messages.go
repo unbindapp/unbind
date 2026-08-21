@@ -3,14 +3,13 @@ package tui
 import (
 	"time"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/unbindapp/unbind-installer/internal/installer"
 	"github.com/unbindapp/unbind-installer/internal/k3s"
 	"github.com/unbindapp/unbind-installer/internal/network"
 	"github.com/unbindapp/unbind-installer/internal/osinfo"
-	"k8s.io/client-go/dynamic"
 )
 
-// Common message types
 type errMsg struct {
 	err error
 }
@@ -19,12 +18,16 @@ type logMsg struct {
 	message string
 }
 
-// OS check message
+type factMsg struct {
+	fact string
+}
+
+type autoAdvanceMsg struct{}
+
 type osInfoMsg struct {
 	info *osinfo.OSInfo
 }
 
-// Swap check messages
 type swapCheckResultMsg struct {
 	isEnabled bool
 	err       error
@@ -39,12 +42,6 @@ type swapCreateResultMsg struct {
 	err error
 }
 
-// countdownTickMsg drives the one-second auto-advance countdowns.
-type countdownTickMsg struct{}
-
-// Package manager messages
-type installPackagesMsg struct{}
-
 type installCompleteMsg struct{}
 
 type packageInstallProgressMsg struct {
@@ -56,41 +53,34 @@ type packageInstallProgressMsg struct {
 	endTime     time.Time
 }
 
-// DNS-related messages
-type detectIPsMsg struct{}
-
 type detectIPsCompleteMsg struct {
 	ipInfo *network.IPInfo
 }
 
-type dnsValidationMsg struct{}
-
-type autoAdvanceMsg struct{}
-
-type dnsValidationCompleteMsg struct {
-	success    bool
-	cloudflare bool
-
-	// Per-check detail so the failure screen can show exactly what failed.
-	mainResolved     bool
-	mainResolvedIP   string
-	credentialsValid bool
-
-	// wildcardProxied is true when the wildcard domain resolves through a
-	// Cloudflare proxy, which breaks per-service HTTPS without Cloudflare ACM.
-	wildcardProxied bool
+type dnsValidationResultMsg struct {
+	gen                int
+	mainResolved       bool
+	mainIPs            []string
+	mainCloudflare     bool
+	wildcardResolved   bool
+	wildcardCloudflare bool
+	wildcardProxied    bool
+	registryChecked    bool
+	credentialsValid   bool
+	credentialsErr     string
+	duration           time.Duration
 }
 
-type dnsValidationTimeoutMsg struct{}
+type revalidateTickMsg struct {
+	gen int
+}
 
-type manualContinueMsg struct{}
+const revalidateInterval = 10 * time.Second
 
-// K3S messages
-
-type k3sInstallCompleteMsg struct {
-	kubeConfig      string
-	kubeClient      *dynamic.DynamicClient
-	unbindInstaller *installer.UnbindInstaller
+func revalidateTick(gen int) tea.Cmd {
+	return tea.Tick(time.Second, func(time.Time) tea.Msg {
+		return revalidateTickMsg{gen: gen}
+	})
 }
 
 type k3sCheckResultMsg struct {
@@ -98,27 +88,12 @@ type k3sCheckResultMsg struct {
 	err         error
 }
 
-// k3sUninstallCompleteMsg for uninstall completion
 type k3sUninstallCompleteMsg struct {
 	err error
 }
 
-// Dependencies
-// unbindInstallCompleteMsg signals all deps installed
-type unbindInstallCompleteMsg struct{}
-
-// Educational fact message
-type factMsg struct {
-	fact string
+type k3sInstallCompleteMsg struct {
+	unbindInstaller *installer.UnbindInstaller
 }
 
-// Progress channel completion signals
-
-// k3sProgressCompletedMsg to stop progress listener
-type k3sProgressCompletedMsg struct{}
-
-// packageProgressCompletedMsg to stop progress listener
-type packageProgressCompletedMsg struct{}
-
-// unbindProgressCompletedMsg to stop progress listener
-type unbindProgressCompletedMsg struct{}
+type unbindInstallCompleteMsg struct{}

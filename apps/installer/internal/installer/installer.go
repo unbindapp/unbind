@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"helm.sh/helm/v3/pkg/cli"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -15,7 +14,6 @@ type UnbindInstaller struct {
 	kubeClient     *kubernetes.Clientset
 	LogChan        chan<- string
 	FactChan       chan<- string
-	helmEnv        *cli.EnvSettings
 	state          map[string]*dependencyState
 	kubeConfigPath string
 	// Fact rotator for educational information
@@ -60,7 +58,6 @@ func NewUnbindInstaller(kubeConfig string, logChan chan<- string, progressChan c
 		kubeClient:     clientset,
 		LogChan:        logChan,
 		FactChan:       factChan,
-		helmEnv:        cli.New(),
 		state:          make(map[string]*dependencyState),
 	}
 
@@ -148,13 +145,6 @@ type UnbindInstallUpdateMsg struct {
 	StepHistory []string  // History of steps executed
 }
 
-// DependencyInstallCompleteMsg signals installation finished
-type DependencyInstallCompleteMsg struct{}
-
-// Last time we sent a progress update for each dependency
-var lastProgressUpdateTimes = make(map[string]time.Time)
-var minProgressInterval = 50 * time.Millisecond // Reduced interval for smoother updates
-
 // logProgress handles all state/progress tracking
 func (self *UnbindInstaller) logProgress(name string, progress float64, description string, err error, status InstallerStatus) {
 	// Ensure state is initialized
@@ -218,10 +208,6 @@ func (self *UnbindInstaller) sendUpdateMessage(name string) {
 	}
 	copy(msg.StepHistory, state.stepHistory)
 
-	// Update the last update time
-	now := time.Now()
-	lastProgressUpdateTimes[name] = now
-
 	select {
 	case self.progressChan <- msg:
 		// Message sent successfully
@@ -248,29 +234,4 @@ func (self *UnbindInstaller) sendFact(fact string) {
 			// Channel is full, skip this fact
 		}
 	}
-}
-
-// GetDependencyState grabs status info for a component
-func (self *UnbindInstaller) GetDependencyState(name string) (InstallerStatus, time.Time, time.Time, []string) {
-	if state, exists := self.state[name]; exists {
-		return state.status, state.startTime, state.endTime, append([]string{}, state.stepHistory...)
-	}
-	return StatusPending, time.Time{}, time.Time{}, []string{}
-}
-
-// GetLastUpdateMessage grabs latest status
-func (self *UnbindInstaller) GetLastUpdateMessage(name string) UnbindInstallUpdateMsg {
-	if state, exists := self.state[name]; exists {
-		return UnbindInstallUpdateMsg{
-			Name:        state.name,
-			Status:      state.status,
-			Description: state.description,
-			Progress:    state.progress,
-			Error:       state.error,
-			StartTime:   state.startTime,
-			EndTime:     state.endTime,
-			StepHistory: append([]string{}, state.stepHistory...),
-		}
-	}
-	return UnbindInstallUpdateMsg{Name: name, Status: StatusPending}
 }

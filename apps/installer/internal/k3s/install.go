@@ -152,10 +152,6 @@ func NewInstaller(logChan chan<- string, updateChan chan<- K3SUpdateMessage, fac
 	return inst
 }
 
-// Last time we sent a progress update
-var lastProgressUpdateTime time.Time
-var minProgressInterval = 50 * time.Millisecond // Reduced interval for smoother updates
-
 // logProgress tracks install progress
 func (self *Installer) logProgress(progress float64, status string, description string, err error) {
 	// Send log message only if it's a new description
@@ -1058,16 +1054,6 @@ LimitNPROC=65536
 	self.logProgress(1.0, "completed", "K3S installation completed successfully", nil)
 
 	return kubeconfigPath, nil
-}
-
-// GetLastUpdateMessage returns current status
-func (self *Installer) GetLastUpdateMessage() K3SUpdateMessage {
-	return self.state.lastMsg
-}
-
-// GetInstallationState returns status with timing info
-func (self *Installer) GetInstallationState() (status string, startTime time.Time, endTime time.Time) {
-	return self.state.status, self.state.startTime, self.state.endTime
 }
 
 // checkServiceStatus checks k3s service state

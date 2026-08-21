@@ -5,43 +5,27 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// viewCheckingSwap shows progress while checking swap status.
 func viewCheckingSwap(m Model) string {
 	s := strings.Builder{}
-	s.WriteString(getResponsiveBanner(m))
-	s.WriteString("\n\n")
-
 	if m.isLoading {
 		s.WriteString(m.spinner.View())
-		s.WriteString(" ")
 	}
 	s.WriteString(m.styles.Bold.Render("Checking swap configuration..."))
 	s.WriteString("\n\n")
-	s.WriteString(m.styles.Subtle.Render("Press 'Ctrl+c' to quit"))
-	return renderWithLayout(m, s.String())
+	s.WriteString(quitHint(m))
+	return renderPage(m, s.String())
 }
 
-// viewSwapPrompt offers optional swap creation, with a warning about running swap
-// under Kubernetes.
 func viewSwapPrompt(m Model) string {
 	s := strings.Builder{}
-	s.WriteString(getResponsiveBanner(m))
-	s.WriteString("\n\n")
-
 	maxWidth := getUsableWidth(m.width)
 
 	s.WriteString(m.styles.Bold.Render("Swap is not enabled on this machine"))
 	s.WriteString("\n\n")
-
-	intro := fmt.Sprintf("Unbind can create and enable a %dGB swap file to reduce the risk of out-of-memory kills on smaller machines.", m.swapSizeGB)
-	for _, line := range wrapText(intro, maxWidth) {
-		s.WriteString(m.styles.Normal.Render(line))
-		s.WriteString("\n")
-	}
+	writeWrapped(&s, m.styles.Normal, fmt.Sprintf("Unbind can create and enable a %dGB swap file to reduce the risk of out-of-memory kills on smaller machines.", m.swapSizeGB), maxWidth)
 	s.WriteString("\n")
 
 	s.WriteString(m.styles.Bold.Render("Note about swap on Kubernetes:"))
@@ -52,234 +36,117 @@ func viewSwapPrompt(m Model) string {
 		"• Recommended only for memory-constrained single-node setups; skip it if you have ample RAM.",
 	}
 	for _, w := range warnings {
-		for _, line := range wrapText(w, maxWidth) {
-			s.WriteString(m.styles.Subtle.Render(line))
-			s.WriteString("\n")
-		}
+		writeWrapped(&s, m.styles.Subtle, w, maxWidth)
 	}
 	s.WriteString("\n")
 
-	s.WriteString(m.styles.Bold.Render("Options:"))
-	s.WriteString("\n")
-	s.WriteString(m.styles.Normal.Render(fmt.Sprintf("• Press 'y' to create a %dGB swap file", m.swapSizeGB)))
-	s.WriteString("\n")
-	s.WriteString(m.styles.Normal.Render("• Press 'n' to continue without swap (default)"))
+	s.WriteString(renderKeyHints(m,
+		keyHint{key: "y", desc: fmt.Sprintf("Create a %dGB swap file", m.swapSizeGB)},
+		keyHint{key: "n", desc: "Continue without swap"},
+	))
 	s.WriteString("\n\n")
-	s.WriteString(m.styles.Subtle.Render("Press 'Ctrl+c' to quit"))
-
-	return renderWithLayout(m, s.String())
+	s.WriteString(quitHint(m))
+	return renderPage(m, s.String())
 }
 
-// viewCreatingSwap shows progress while the swap file is being created.
 func viewCreatingSwap(m Model) string {
 	s := strings.Builder{}
-	s.WriteString(getResponsiveBanner(m))
-	s.WriteString("\n\n")
-
 	maxWidth := getUsableWidth(m.width)
 
 	if m.isLoading {
 		s.WriteString(m.spinner.View())
-		s.WriteString(" ")
 	}
-
-	createText := fmt.Sprintf("Creating %dGB swap file...", m.swapSizeGB)
-	s.WriteString(m.styles.Bold.Render(createText))
+	s.WriteString(m.styles.Bold.Render(fmt.Sprintf("Creating %dGB swap file...", m.swapSizeGB)))
 	s.WriteString("\n\n")
-
-	noteText1 := "This might take a few moments, especially if using the 'dd' fallback..."
-	for _, line := range wrapText(noteText1, maxWidth) {
-		s.WriteString(m.styles.Subtle.Render(line))
-		s.WriteString("\n")
-	}
-
-	noteText2 := "Check console output for 'dd' progress if applicable."
-	for _, line := range wrapText(noteText2, maxWidth) {
-		s.WriteString(m.styles.Subtle.Render(line))
-		s.WriteString("\n")
-	}
+	writeWrapped(&s, m.styles.Subtle, "This might take a few moments, especially if using the 'dd' fallback...", maxWidth)
 	s.WriteString("\n")
-
-	quitText := "Press 'Ctrl+c' to attempt to quit (may leave partial files)."
-	for _, line := range wrapText(quitText, maxWidth) {
-		s.WriteString(m.styles.Subtle.Render(line))
-		s.WriteString("\n")
-	}
-
-	return renderWithLayout(m, s.String())
+	writeWrapped(&s, m.styles.Subtle, "Press Ctrl+c to attempt to quit (may leave partial files).", maxWidth)
+	return renderPage(m, s.String())
 }
 
-// viewSwapCreated shows a success message after swap creation.
 func viewSwapCreated(m Model) string {
 	s := strings.Builder{}
-	s.WriteString(getResponsiveBanner(m))
-	s.WriteString("\n\n")
-
 	maxWidth := getUsableWidth(m.width)
 
 	s.WriteString(m.styles.Success.Render("✓ Swap File Created Successfully!"))
 	s.WriteString("\n\n")
-
-	successText := fmt.Sprintf("A %d GB swap file was created, activated, and configured to start on boot.", m.swapSizeGB)
-	for _, line := range wrapText(successText, maxWidth) {
-		s.WriteString(m.styles.Normal.Render(line))
-		s.WriteString("\n")
-	}
+	writeWrapped(&s, m.styles.Normal, fmt.Sprintf("A %d GB swap file was created, activated, and configured to start on boot.", m.swapSizeGB), maxWidth)
 	s.WriteString("\n")
-
-	autoText := "Continuing installation automatically in a few seconds..."
-	for _, line := range wrapText(autoText, maxWidth) {
-		s.WriteString(m.styles.Subtle.Render(line))
-		s.WriteString("\n")
-	}
+	writeWrapped(&s, m.styles.Subtle, "Continuing installation automatically in a few seconds...", maxWidth)
 	s.WriteString("\n")
-
-	continueText := "Press Enter to continue immediately, or 'Ctrl+c' to quit."
-	for _, line := range wrapText(continueText, maxWidth) {
-		s.WriteString(m.styles.Subtle.Render(line))
-		s.WriteString("\n")
-	}
-
-	return renderWithLayout(m, s.String())
+	writeWrapped(&s, m.styles.Subtle, "Press Enter to continue immediately, or Ctrl+c to quit.", maxWidth)
+	return renderPage(m, s.String())
 }
 
-func (m Model) updateCheckingSwapState(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) startPackageInstall() (Model, tea.Cmd) {
+	return m.transition(StateInstallingPackages, true, m.installRequiredPackages(), m.listenForPackageProgress())
+}
+
+func (m Model) updateCheckingSwapState(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case swapCheckResultMsg:
-		m.isLoading = false
 		if msg.err != nil {
-			// Handle error with our error helper
-			m.err = fmt.Errorf("Failed to check swap status: %w", msg.err)
-			m.state = StateError
-			m.logChan <- fmt.Sprintf("ERROR: %s", m.err.Error())
-			return m, m.listenForLogs()
+			return m.fail(fmt.Errorf("failed to check swap status: %w", msg.err))
 		}
-
 		if msg.isEnabled {
-			// Swap exists, skip creation flow and go to installing packages
-			return m.transition(StateInstallingPackages, true, m.installRequiredPackages())
+			return m.startPackageInstall()
 		}
-
-		// No swap: decide a size automatically from RAM and disk
 		m.isLoading = true
-		return m, tea.Batch(m.spinner.Tick, m.decideSwapCommand(), m.listenForLogs())
+		return m, m.decideSwapCommand()
 
 	case swapDecisionMsg:
 		if msg.err != nil {
-			m.logChan <- fmt.Sprintf("Could not determine swap recommendation (%v); skipping swap", msg.err)
-			return m.transition(StateInstallingPackages, true, m.installRequiredPackages())
+			m.log(fmt.Sprintf("Could not determine swap recommendation (%v); skipping swap", msg.err))
+			return m.startPackageInstall()
 		}
 		if msg.sizeGB <= 0 {
-			m.logChan <- "Sufficient memory and/or limited disk; skipping swap creation"
-			return m.transition(StateInstallingPackages, true, m.installRequiredPackages())
+			m.log("Sufficient memory and/or limited disk; skipping swap creation")
+			return m.startPackageInstall()
 		}
-		// Swap is opt-in: present the recommendation and let the user decide.
 		m.swapSizeGB = msg.sizeGB
-		m.isLoading = false
-		m.state = StateSwapPrompt
-		return m, m.listenForLogs()
+		return m.transition(StateSwapPrompt, false)
+	}
+	return m, nil
+}
 
-	case errMsg:
-		// Handle error with our error helper
-		m.err = fmt.Errorf("Error checking swap: %w", msg.err)
-		m.state = StateError
-		m.logChan <- fmt.Sprintf("ERROR: %s", m.err.Error())
-		return m, m.listenForLogs()
-
-	case spinner.TickMsg:
-		var cmd tea.Cmd
-		if m.isLoading {
-			m.spinner, cmd = m.spinner.Update(msg)
-			return m, cmd
-		}
+func (m Model) updateSwapPromptState(msg tea.Msg) (Model, tea.Cmd) {
+	keyMsg, ok := msg.(tea.KeyMsg)
+	if !ok {
 		return m, nil
-
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "q":
-			return m, tea.Quit
-		}
 	}
-	return m, m.listenForLogs()
+
+	switch strings.ToLower(keyMsg.String()) {
+	case "y":
+		m.log(fmt.Sprintf("Creating %dGB swap file", m.swapSizeGB))
+		return m.transition(StateCreatingSwap, true, m.createSwapCommand(m.swapSizeGB))
+	case "n", "enter":
+		m.log("Continuing without swap")
+		return m.startPackageInstall()
+	}
+	return m, nil
 }
 
-func (m Model) updateSwapPromptState(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if keyMsg, ok := msg.(tea.KeyMsg); ok {
-		switch keyMsg.String() {
-		case "y", "Y":
-			m.logChan <- fmt.Sprintf("Creating %dGB swap file", m.swapSizeGB)
-			return m.transition(StateCreatingSwap, true, m.createSwapCommand(m.swapSizeGB))
-		case "n", "N", "enter":
-			m.logChan <- "Continuing without swap"
-			return m.transition(StateInstallingPackages, true, m.installRequiredPackages())
-		case "q", "ctrl+c":
-			return m, tea.Quit
-		}
-	}
-	return m, m.listenForLogs()
-}
-
-func (m Model) updateCreatingSwapState(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case swapCreateResultMsg:
-		m.isLoading = false
-		if msg.err != nil {
-			// Handle error directly
-			m.err = fmt.Errorf("Failed to create swap file: %w", msg.err)
-			m.state = StateError
-			m.logChan <- fmt.Sprintf("ERROR: %s", m.err.Error())
-			return m, m.listenForLogs()
-		}
-		// Swap created successfully
-		m.state = StateSwapCreated
-		m.isLoading = false
-		return m, tea.Tick(3*time.Second, func(t time.Time) tea.Msg {
-			return autoAdvanceMsg{}
-		})
-
-	case errMsg:
-		// Handle error directly
-		m.err = fmt.Errorf("Error creating swap: %w", msg.err)
-		m.state = StateError
-		m.logChan <- fmt.Sprintf("ERROR: %s", m.err.Error())
-		return m, m.listenForLogs()
-
-	case spinner.TickMsg:
-		var cmd tea.Cmd
-		if m.isLoading {
-			m.spinner, cmd = m.spinner.Update(msg)
-			return m, cmd
-		}
+func (m Model) updateCreatingSwapState(msg tea.Msg) (Model, tea.Cmd) {
+	result, ok := msg.(swapCreateResultMsg)
+	if !ok {
 		return m, nil
-
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "q":
-			return m, tea.Quit
-		}
 	}
-	return m, m.listenForLogs()
+	if result.err != nil {
+		return m.fail(fmt.Errorf("failed to create swap file: %w", result.err))
+	}
+	m.state = StateSwapCreated
+	m.isLoading = false
+	return m, autoAdvanceAfter(3 * time.Second)
 }
 
-func (m Model) updateSwapCreatedState(msg tea.Msg) (tea.Model, tea.Cmd) {
-	// This state just shows success and waits for Enter or auto-advances
-	advance := func() (tea.Model, tea.Cmd) {
-		// Set state directly
-		m.state = StateInstallingPackages
-		m.isLoading = true
-		return m, tea.Batch(m.spinner.Tick, m.installRequiredPackages(), m.listenForLogs())
-	}
-
+func (m Model) updateSwapCreatedState(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "enter":
-			return advance()
-		case "q":
-			return m, tea.Quit
+		if msg.String() == "enter" {
+			return m.startPackageInstall()
 		}
 	case autoAdvanceMsg:
-		return advance()
+		return m.startPackageInstall()
 	}
-	return m, m.listenForLogs()
+	return m, nil
 }

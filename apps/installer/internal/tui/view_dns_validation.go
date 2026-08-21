@@ -5,461 +5,214 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// viewDNSValidation shows the DNS validation screen
-func viewDNSValidation(m Model) string {
-	s := strings.Builder{}
-
-	// Banner
-	s.WriteString(getResponsiveBanner(m))
-	s.WriteString("\n\n")
-
-	maxWidth := getUsableWidth(m.width)
-
-	// Show current action
-	s.WriteString(m.spinner.View())
-	s.WriteString(" ")
-	s.WriteString(m.styles.Bold.Render("Validating DNS configuration..."))
-	s.WriteString("\n\n")
-
-	// Display what we're testing
-	s.WriteString(m.styles.Bold.Render("Testing:"))
-	s.WriteString("\n")
-
-	if m.dnsInfo.IsWildcard {
-		testLine := fmt.Sprintf("• Wildcard: %s", m.dnsInfo.Domain)
-		for _, line := range wrapText(testLine, maxWidth-2) {
-			s.WriteString("  ")
-			s.WriteString(m.styles.Normal.Render(line))
-			s.WriteString("\n")
-		}
-	} else {
-		testLine := fmt.Sprintf("• Domain: %s", m.dnsInfo.Domain)
-		for _, line := range wrapText(testLine, maxWidth-2) {
-			s.WriteString("  ")
-			s.WriteString(m.styles.Normal.Render(line))
-			s.WriteString("\n")
-		}
-	}
-
-	unbindLine := fmt.Sprintf("• Unbind: %s", m.dnsInfo.UnbindDomain)
-	for _, line := range wrapText(unbindLine, maxWidth-2) {
-		s.WriteString("  ")
-		s.WriteString(m.styles.Normal.Render(line))
-		s.WriteString("\n")
-	}
-
-	registryLine := "• Registry: " + registrySummary(m)
-	for _, line := range wrapText(registryLine, maxWidth-2) {
-		s.WriteString("  ")
-		s.WriteString(m.styles.Normal.Render(line))
-		s.WriteString("\n")
-	}
-
-	ipLine := fmt.Sprintf("• Expected IP: %s", m.dnsInfo.ExternalIP)
-	for _, line := range wrapText(ipLine, maxWidth-2) {
-		s.WriteString("  ")
-		s.WriteString(m.styles.Key.Render(line))
-		s.WriteString("\n")
-	}
-	s.WriteString("\n")
-
-	dnsNote1 := "DNS changes can take up to 24-48 hours to propagate worldwide,"
-	for _, line := range wrapText(dnsNote1, maxWidth) {
-		s.WriteString(m.styles.Subtle.Render(line))
-		s.WriteString("\n")
-	}
-
-	dnsNote2 := "though they often take effect within minutes."
-	for _, line := range wrapText(dnsNote2, maxWidth) {
-		s.WriteString(m.styles.Subtle.Render(line))
-		s.WriteString("\n")
-	}
-	s.WriteString("\n")
-
-	// Process logs
-	if len(m.logMessages) > 0 {
-		s.WriteString(m.styles.Bold.Render("Validation Logs:"))
-		s.WriteString("\n")
-
-		// Show the last few log messages
-		startIdx := 0
-		if len(m.logMessages) > 8 {
-			startIdx = len(m.logMessages) - 8
-		}
-
-		for _, msg := range m.logMessages[startIdx:] {
-			// Use text wrapping instead of simple truncation
-			msgLines := wrapText(msg, maxWidth-1)
-			for _, line := range msgLines {
-				s.WriteString(" ")
-				s.WriteString(m.styles.Subtle.Render(line))
-				s.WriteString("\n")
-			}
-		}
-	}
-
-	// Status bar at the bottom
-	s.WriteString("\n")
-	s.WriteString(m.styles.StatusBar.Render("Press Ctrl+c to quit"))
-
-	return renderWithLayout(m, s.String())
-}
-
-// updateDNSValidationState handles updates in the DNS validation state
-func (m Model) updateDNSValidationState(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case spinner.TickMsg:
-		var cmd tea.Cmd
-		m.spinner, cmd = m.spinner.Update(msg)
-		return m, tea.Batch(cmd, m.listenForLogs())
-
-	case dnsValidationCompleteMsg:
-		m.dnsInfo.ValidationSuccess = msg.success
-		m.dnsInfo.CloudflareDetected = msg.cloudflare
-		m.dnsInfo.WildcardProxied = msg.wildcardProxied
-		m.dnsInfo.MainResolved = msg.mainResolved
-		m.dnsInfo.MainResolvedIP = msg.mainResolvedIP
-		m.dnsInfo.ValidationDuration = time.Since(m.dnsInfo.TestingStartTime)
-
-		if msg.success {
-			// Everything checks out; show the summary, then install.
-			m.state = StateDNSSuccess
-			m.isLoading = false
-			m.logChan <- "Configuration validated successfully."
-			return m, tea.Batch(
-				m.listenForLogs(),
-				tea.Tick(1*time.Second, func(time.Time) tea.Msg {
-					return autoAdvanceMsg{}
-				}),
-			)
-		}
-
-		m.state = StateDNSFailed
-		m.isLoading = false
-		return m, m.listenForLogs()
-
-	case dnsValidationTimeoutMsg:
-		m.dnsInfo.ValidationDuration = time.Since(m.dnsInfo.TestingStartTime)
-		m.state = StateDNSFailed
-		m.isLoading = false
-		m.logChan <- "DNS validation timed out after 30 seconds"
-		return m, m.listenForLogs()
-
-	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
-		return m, m.listenForLogs()
-	}
-
-	return m, m.listenForLogs()
-}
-
-// viewDNSSuccess shows the DNS success screen
-func viewDNSSuccess(m Model) string {
-	s := strings.Builder{}
-
-	// Banner
-	s.WriteString(getResponsiveBanner(m))
-	s.WriteString("\n\n")
-
-	maxWidth := getUsableWidth(m.width)
-
-	// Success message
-	s.WriteString(m.styles.Success.Render("✓ Configuration Successful!"))
-	s.WriteString("\n\n")
-
-	// DNS Configuration details
-	s.WriteString(m.styles.Bold.Render("DNS Configuration:"))
-	s.WriteString("\n")
-
-	if m.dnsInfo.CloudflareDetected {
-		cfLine := "• Cloudflare detected: Yes"
-		for _, line := range wrapText(cfLine, maxWidth) {
-			s.WriteString(m.styles.Normal.Render(line))
-			s.WriteString("\n")
-		}
-
-		var configText string
-		if m.dnsInfo.IsWildcard {
-			configText = "• Wildcard domain configured correctly with Cloudflare"
-		} else {
-			configText = "• Domains configured correctly with Cloudflare"
-		}
-
-		for _, line := range wrapText(configText, maxWidth) {
-			s.WriteString(m.styles.Normal.Render(line))
-			s.WriteString("\n")
-		}
-	} else {
-		s.WriteString(m.styles.Bold.Render("Configured domains:"))
-		s.WriteString("\n")
-
-		unbindLine := "• " + m.dnsInfo.UnbindDomain
-		for _, line := range wrapText(unbindLine, maxWidth) {
-			s.WriteString(m.styles.Normal.Render(line))
-			s.WriteString("\n")
-		}
-
-		if m.dnsInfo.IsWildcard {
-			wildcardLine := "• " + m.dnsInfo.Domain + " (wildcard)"
-			for _, line := range wrapText(wildcardLine, maxWidth) {
-				s.WriteString(m.styles.Normal.Render(line))
-				s.WriteString("\n")
-			}
-		}
-
-		s.WriteString(m.styles.Bold.Render("Points to: "))
-		s.WriteString(m.styles.Normal.Render(m.dnsInfo.ExternalIP))
-		s.WriteString("\n")
-	}
-
-	if m.dnsInfo.WildcardProxied {
-		s.WriteString("\n")
-		s.WriteString(m.styles.Warning.Render("⚠ Wildcard is proxied through Cloudflare"))
-		s.WriteString("\n")
-		warnLines := []string{
-			"Per-service HTTPS (e.g. myapp." + strings.TrimPrefix(m.dnsInfo.Domain, "*.") + ") will fail unless",
-			"you have Cloudflare Advanced Certificate Manager. Recommended: set",
-			"the *." + strings.TrimPrefix(m.dnsInfo.Domain, "*.") + " DNS record to DNS-only (grey cloud).",
-		}
-		for _, w := range warnLines {
-			for _, line := range wrapText(w, maxWidth) {
-				s.WriteString(m.styles.Subtle.Render(line))
-				s.WriteString("\n")
-			}
-		}
-	}
-
-	// Registry Configuration details
-	s.WriteString("\n\n")
-	s.WriteString(m.styles.Bold.Render("Registry Configuration:"))
-	s.WriteString("\n")
-
-	if m.dnsInfo.RegistryType == RegistrySelfHosted {
-		regText1 := "• Self-hosted registry (in-cluster, no domain required)"
-		for _, line := range wrapText(regText1, maxWidth) {
-			s.WriteString(m.styles.Success.Render(line))
-			s.WriteString("\n")
-		}
-
-		regText2 := "• Registry will be deployed as part of Unbind installation"
-		for _, line := range wrapText(regText2, maxWidth) {
-			s.WriteString(m.styles.Normal.Render(line))
-			s.WriteString("\n")
-		}
-	} else {
-		regText1 := "• External registry configured:"
-		for _, line := range wrapText(regText1, maxWidth) {
-			s.WriteString(m.styles.Normal.Render(line))
-			s.WriteString("\n")
-		}
-
-		regText2 := fmt.Sprintf("  %s account: %s",
-			getRegistryDisplayName(m.dnsInfo.RegistryHost),
-			m.dnsInfo.RegistryUsername)
-		for _, line := range wrapText(regText2, maxWidth) {
-			s.WriteString(m.styles.Success.Render(line))
-			s.WriteString("\n")
-		}
-
-		regText3 := "• Local registry component will be disabled"
-		for _, line := range wrapText(regText3, maxWidth) {
-			s.WriteString(m.styles.Normal.Render(line))
-			s.WriteString("\n")
-		}
-	}
-
-	// Validation details
-	s.WriteString("\n\n")
-	validationText := fmt.Sprintf("Validation completed in %.1f seconds", m.dnsInfo.ValidationDuration.Seconds())
-	for _, line := range wrapText(validationText, maxWidth) {
-		s.WriteString(m.styles.Subtle.Render(line))
-		s.WriteString("\n")
-	}
-	s.WriteString("\n")
-
-	completeText := "Your configuration is complete and Unbind can proceed with installation."
-	for _, line := range wrapText(completeText, maxWidth) {
-		s.WriteString(m.styles.Normal.Render(line))
-		s.WriteString("\n")
-	}
-	s.WriteString("\n")
-
-	// Continue button
-	continueText := " Press Enter to continue "
-	continuePrompt := m.styles.HighlightButton.Render(continueText)
-
-	// Center the button if we have enough width
-	if maxWidth > len(continueText) {
-		padding := (maxWidth - len(continueText)) / 2
-		if padding > 0 {
-			s.WriteString(strings.Repeat(" ", padding))
-		}
-	}
-	s.WriteString(continuePrompt)
-	s.WriteString("\n\n")
-
-	return renderWithLayout(m, s.String())
-}
-
-// startInstall begins the headless install chain (swap → packages → k3s →
-// unbind). Configuration is already gathered and validated at this point, so
-// nothing below prompts the user.
-func (m Model) startInstall() (tea.Model, tea.Cmd) {
-	m.state = StateCheckingSwap
+func (m Model) startConfigValidation() (Model, tea.Cmd) {
+	m.state = StateDNSValidation
 	m.isLoading = true
-	return m, tea.Batch(
-		m.spinner.Tick,
-		m.checkSwapCommand(),
-		m.listenForLogs(),
-	)
+	m.validation = validationStatus{gen: m.validation.gen + 1}
+	m, cmd := m.runValidation(true)
+	return m, tea.Batch(cmd, revalidateTick(m.validation.gen))
 }
 
-func (m Model) updateDNSSuccessState(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) runValidation(checkRegistry bool) (Model, tea.Cmd) {
+	m.validation.inFlight = true
+	m.validation.startedAt = time.Now()
+	return m, m.validateConfig(m.validation.gen, checkRegistry)
+}
+
+func (m Model) startInstall() (Model, tea.Cmd) {
+	return m.transition(StateCheckingSwap, true, m.checkSwapCommand())
+}
+
+func (m Model) updateDNSValidationState(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		if msg.String() == "enter" {
-			return m.startInstall()
+	case revalidateTickMsg:
+		if msg.gen != m.validation.gen {
+			return m, nil
 		}
-	case autoAdvanceMsg:
-		return m.startInstall()
-	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
-	}
+		var cmd tea.Cmd
+		if !m.validation.inFlight && time.Since(m.validation.lastAt) >= revalidateInterval {
+			m, cmd = m.runValidation(false)
+		}
+		return m, tea.Batch(cmd, revalidateTick(msg.gen))
 
-	return m, m.listenForLogs()
-}
+	case dnsValidationResultMsg:
+		return m.applyValidationResult(msg), nil
 
-// writeCheckResult renders a single pass/fail line with resolved-vs-expected
-// detail underneath when the check failed.
-func writeCheckResult(s *strings.Builder, m Model, label, target string, ok bool, resolvedIP, expectedIP string) {
-	if ok {
-		s.WriteString(m.styles.Success.Render("  ✓ " + label + ": " + target))
-		s.WriteString("\n")
-		return
-	}
-
-	s.WriteString(m.styles.Error.Render("  ✗ " + label + ": " + target))
-	s.WriteString("\n")
-	resolved := resolvedIP
-	if resolved == "" {
-		resolved = "(no record found)"
-	}
-	s.WriteString(m.styles.Subtle.Render("     resolved to: " + resolved))
-	s.WriteString("\n")
-	s.WriteString(m.styles.Subtle.Render("     expected:    " + expectedIP))
-	s.WriteString("\n")
-}
-
-// viewDNSFailed shows the configuration validation failure screen
-func viewDNSFailed(m Model) string {
-	s := strings.Builder{}
-
-	// Banner
-	s.WriteString(getBanner(m))
-	s.WriteString("\n\n")
-
-	// Error message
-	s.WriteString(m.styles.Error.Render("! Configuration Validation Failed"))
-	s.WriteString("\n\n")
-
-	// Per-check breakdown
-	s.WriteString(m.styles.Bold.Render("Checks:"))
-	s.WriteString("\n")
-
-	mainTarget := m.dnsInfo.UnbindDomain
-	if m.dnsInfo.IsWildcard {
-		mainTarget = m.dnsInfo.Domain + " (wildcard)"
-	}
-	writeCheckResult(&s, m, "Domain", mainTarget, m.dnsInfo.MainResolved, m.dnsInfo.MainResolvedIP, m.dnsInfo.ExternalIP)
-
-	// The self-hosted registry is in-cluster with nothing to validate, so only the
-	// external-registry credential check can fail here.
-	if m.dnsInfo.RegistryType == RegistryExternal {
-		s.WriteString(m.styles.Error.Render("  ✗ Registry credentials: " + getRegistryDisplayName(m.dnsInfo.RegistryHost)))
-		s.WriteString("\n")
-		s.WriteString(m.styles.Subtle.Render("     could not authenticate as " + m.dnsInfo.RegistryUsername))
-		s.WriteString("\n")
-	}
-	s.WriteString("\n")
-
-	// Validation details
-	s.WriteString(m.styles.Subtle.Render(fmt.Sprintf("Validation attempted for %.1f seconds", m.dnsInfo.ValidationDuration.Seconds())))
-	s.WriteString("\n")
-	s.WriteString(m.styles.Subtle.Render("DNS changes can take a few minutes (occasionally up to 24-48 hours) to propagate."))
-	s.WriteString("\n\n")
-
-	// Options
-	s.WriteString(m.styles.Bold.Render("Options:"))
-	s.WriteString("\n")
-	s.WriteString(m.styles.Normal.Render("• Press Ctrl+r to retry validation"))
-	s.WriteString("\n")
-	s.WriteString(m.styles.Normal.Render("• Press Ctrl+e to edit the domain"))
-	s.WriteString("\n")
-	s.WriteString(m.styles.Normal.Render("• Press Ctrl+g to edit the registry"))
-	s.WriteString("\n")
-	s.WriteString(m.styles.Normal.Render("• Press Enter to continue anyway (not recommended)"))
-	s.WriteString("\n\n")
-
-	// Status bar at the bottom
-	s.WriteString(m.styles.StatusBar.Render("Press Ctrl+c to quit"))
-
-	return s.String()
-}
-
-// updateDNSFailedState handles updates in the DNS failed state
-func (m Model) updateDNSFailedState(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if keyMsg, ok := msg.(tea.KeyMsg); ok {
-		switch keyMsg.String() {
+	case tea.KeyMsg:
+		switch msg.String() {
 		case "enter":
-			// Continue anyway despite validation failure and start the install.
-			m.logChan <- "Continuing without validated configuration..."
+			if !m.validation.ready(m.dnsInfo.RegistryType) {
+				return m, nil
+			}
 			return m.startInstall()
-
 		case "ctrl+r":
-			// Re-run the combined validation pass.
-			m.logChan <- "Retrying validation..."
-			return m.startConfigValidation()
-
+			if m.validation.inFlight {
+				return m, nil
+			}
+			return m.runValidation(true)
 		case "ctrl+e":
-			// Edit the domain.
 			m.state = StateDNSConfig
 			m.isLoading = false
-			m.domainInput.SetValue(m.dnsInfo.Domain)
-			m.domainInput.Focus()
-			return m, m.listenForLogs()
-
+			m.domainInput.SetValue(m.dnsInfo.UnbindDomain)
+			return m, m.domainInput.Focus()
 		case "ctrl+g":
-			// Edit the registry configuration.
 			m.isLoading = false
-			if m.dnsInfo.RegistryType == RegistryExternal {
-				m.state = StateExternalRegistryInput
-				m.usernameInput.Focus()
-			} else {
-				// Self-hosted has nothing to edit; return to the type selection.
+			if m.dnsInfo.RegistryType != RegistryExternal {
 				m.state = StateRegistryTypeSelection
+				return m, nil
 			}
-			return m, m.listenForLogs()
+			m.state = StateExternalRegistryInput
+			return m, m.usernameInput.Focus()
 		}
 	}
-
-	if msg, ok := msg.(tea.WindowSizeMsg); ok {
-		m.width = msg.Width
-		m.height = msg.Height
-	}
-
-	return m, m.listenForLogs()
+	return m, nil
 }
 
-// registrySummary describes the chosen registry for the validation summary screen.
-func registrySummary(m Model) string {
-	if m.dnsInfo.RegistryType == RegistryExternal {
-		return getRegistryDisplayName(m.dnsInfo.RegistryHost)
+func (m Model) applyValidationResult(msg dnsValidationResultMsg) Model {
+	if msg.gen != m.validation.gen {
+		return m
 	}
-	return "self-hosted (in-cluster, no domain)"
+
+	prev := m.validation.result
+	if !msg.registryChecked && prev != nil {
+		msg.registryChecked = prev.registryChecked
+		msg.credentialsValid = prev.credentialsValid
+		msg.credentialsErr = prev.credentialsErr
+	}
+
+	m.validation.inFlight = false
+	m.validation.lastAt = time.Now()
+	m.validation.lastDuration = msg.duration
+	m.validation.result = &msg
+	m.dnsInfo.WildcardResolved = msg.wildcardResolved
+	return m
+}
+
+func viewDNSValidation(m Model) string {
+	s := strings.Builder{}
+	maxWidth := getUsableWidth(m.width)
+	res := m.validation.result
+	external := m.dnsInfo.RegistryType == RegistryExternal
+	credentialsRejected := external && res != nil && res.registryChecked && !res.credentialsValid
+
+	switch {
+	case res == nil || !res.mainResolved:
+		if m.validation.inFlight {
+			s.WriteString(m.spinner.View())
+		}
+		s.WriteString(m.styles.Pending.Render("Waiting for the DNS records to appear…"))
+		s.WriteString("\n")
+	case credentialsRejected:
+		writeWrapped(&s, m.styles.Error, fmt.Sprintf("Registry credentials rejected by %s. Press Ctrl+g to fix them.", getRegistryDisplayName(m.dnsInfo.RegistryHost)), maxWidth)
+	case res.wildcardResolved:
+		s.WriteString(m.styles.Success.Render("✓ DNS records detected. Press Enter to continue."))
+		s.WriteString("\n")
+	default:
+		s.WriteString(m.styles.Success.Render("✓ Main DNS record detected. Press Enter to continue."))
+		s.WriteString("\n")
+		writeWrapped(&s, m.styles.Warning, "Wildcard record not detected yet. It's optional, but without it automatic domain generation for your services is disabled. You can continue now or wait for it to appear.", maxWidth)
+	}
+	s.WriteString("\n")
+
+	s.WriteString(renderDNSRecordsTable(m, m.dnsInfo.UnbindDomain))
+	s.WriteString("\n\n")
+
+	s.WriteString(m.styles.Bold.Render("Checks:"))
+	s.WriteString("\n")
+	s.WriteString(m.renderMainRecordCheck())
+	s.WriteString(m.renderWildcardRecordCheck())
+	if external {
+		s.WriteString(m.renderCredentialsCheck())
+	}
+	s.WriteString("\n")
+
+	writeWrapped(&s, m.styles.Subtle, m.validationTimingText(), maxWidth)
+	writeWrapped(&s, m.styles.Subtle, fmt.Sprintf("DNS changes can take a few minutes (occasionally up to 24-48 hours) to propagate. We re-check every %d seconds.", int(revalidateInterval.Seconds())), maxWidth)
+	s.WriteString("\n")
+
+	s.WriteString(m.styles.Bold.Render("Options:"))
+	s.WriteString("\n")
+	hints := []keyHint{}
+	if m.validation.ready(m.dnsInfo.RegistryType) {
+		hints = append(hints, keyHint{key: "Enter", desc: "Continue"})
+	}
+	hints = append(hints,
+		keyHint{key: "Ctrl+r", desc: "Re-check now"},
+		keyHint{key: "Ctrl+e", desc: "Edit domain"},
+		keyHint{key: "Ctrl+g", desc: "Edit registry"},
+	)
+	s.WriteString(renderKeyHints(m, hints...))
+	s.WriteString("\n\n")
+	s.WriteString(quitHint(m))
+	return renderPage(m, s.String())
+}
+
+func (m Model) renderMainRecordCheck() string {
+	label := m.dnsInfo.UnbindDomain + " (required)"
+	res := m.validation.result
+	switch {
+	case res == nil:
+		return renderCheckLine(m, checkPending, label, "checking…")
+	case res.mainResolved && res.mainCloudflare:
+		return renderCheckLine(m, checkOK, label, "proxied through Cloudflare")
+	case res.mainResolved:
+		return renderCheckLine(m, checkOK, label, "→ "+m.dnsInfo.ExternalIP)
+	case len(res.mainIPs) > 0:
+		return renderCheckLine(m, checkWarn, label, fmt.Sprintf("resolves to %s, expected %s", strings.Join(res.mainIPs, ", "), m.dnsInfo.ExternalIP))
+	default:
+		return renderCheckLine(m, checkPending, label, "no record found yet")
+	}
+}
+
+func (m Model) renderWildcardRecordCheck() string {
+	label := "*." + m.dnsInfo.UnbindDomain + " (optional)"
+	res := m.validation.result
+	switch {
+	case res == nil:
+		return renderCheckLine(m, checkPending, label, "checking…")
+	case res.wildcardProxied:
+		detail := fmt.Sprintf("Proxied through Cloudflare below the zone apex, which Universal SSL does not cover: per-service HTTPS will fail unless you have Cloudflare Advanced Certificate Manager. Recommended: set the *.%s record to DNS-only (grey cloud).", m.dnsInfo.UnbindDomain)
+		return renderCheckLine(m, checkWarn, label, detail)
+	case res.wildcardResolved && res.wildcardCloudflare:
+		return renderCheckLine(m, checkOK, label, "proxied through Cloudflare")
+	case res.wildcardResolved:
+		return renderCheckLine(m, checkOK, label, "→ "+m.dnsInfo.ExternalIP)
+	default:
+		return renderCheckLine(m, checkPending, label, "not detected yet — automatic service domains stay disabled until it is")
+	}
+}
+
+func (m Model) renderCredentialsCheck() string {
+	label := fmt.Sprintf("Registry credentials: %s (%s)", getRegistryDisplayName(m.dnsInfo.RegistryHost), m.dnsInfo.RegistryUsername)
+	res := m.validation.result
+	switch {
+	case res == nil || !res.registryChecked:
+		return renderCheckLine(m, checkPending, label, "checking…")
+	case res.credentialsValid:
+		return renderCheckLine(m, checkOK, label, "")
+	default:
+		return renderCheckLine(m, checkFail, label, res.credentialsErr)
+	}
+}
+
+func (m Model) validationTimingText() string {
+	v := m.validation
+	switch {
+	case v.inFlight && v.result == nil:
+		return "First check running…"
+	case v.inFlight:
+		return fmt.Sprintf("Validating… (last attempt took %s)", formatDuration(v.lastDuration))
+	default:
+		return fmt.Sprintf("Validation attempted %s ago (took %s)", time.Since(v.lastAt).Round(time.Second), formatDuration(v.lastDuration))
+	}
+}
+
+func formatDuration(d time.Duration) string {
+	if d < time.Second {
+		return d.Round(time.Millisecond).String()
+	}
+	return d.Round(100 * time.Millisecond).String()
 }
