@@ -117,7 +117,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.spinner, cmd = m.spinner.Update(msg)
 		return m, cmd
 	case logMsg:
-		m.logMessages = append(m.logMessages, msg.message)
+		m.logMessages = append(m.logMessages, msg.messages...)
 		return m, m.listenForLogs()
 	case factMsg:
 		m.currentFact = msg.fact
@@ -260,7 +260,18 @@ func (m Model) listenForLogs() tea.Cmd {
 		if !ok {
 			return nil
 		}
-		return logMsg{message: msg}
+		batch := []string{msg}
+		for {
+			select {
+			case next, ok := <-m.logChan:
+				if !ok {
+					return logMsg{messages: batch}
+				}
+				batch = append(batch, next)
+			default:
+				return logMsg{messages: batch}
+			}
+		}
 	}
 }
 

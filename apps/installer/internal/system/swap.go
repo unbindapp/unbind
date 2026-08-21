@@ -20,7 +20,7 @@ const sysctlConfPath = "/etc/sysctl.d/99-swap-tuning.conf" // Dedicated conf fil
 func runCommand(logChan chan<- string, name string, args ...string) (string, error) {
 	cmdStr := name + " " + strings.Join(args, " ")
 	if logChan != nil {
-		logChan <- fmt.Sprintf("Executing: %s", cmdStr)
+		nbSend(logChan, fmt.Sprintf("Executing: %s", cmdStr))
 	}
 
 	cmd := exec.Command(name, args...)
@@ -35,36 +35,36 @@ func runCommand(logChan chan<- string, name string, args ...string) (string, err
 
 	if logChan != nil {
 		if len(stdoutStr) > 0 {
-			logChan <- fmt.Sprintf("Stdout from '%s':\n%s", cmdStr, stdoutStr)
+			nbSend(logChan, fmt.Sprintf("Stdout from '%s':\n%s", cmdStr, stdoutStr))
 		}
 		if len(stderrStr) > 0 || err != nil {
-			logChan <- fmt.Sprintf("Stderr from '%s':\n%s", cmdStr, stderrStr)
+			nbSend(logChan, fmt.Sprintf("Stderr from '%s':\n%s", cmdStr, stderrStr))
 		}
 	}
 
 	if err != nil {
 		errMsg := fmt.Sprintf("failed to execute '%s': %v. Stderr: %s", cmdStr, err, stderrStr)
 		if logChan != nil {
-			logChan <- fmt.Sprintf("Error executing '%s': %v", cmdStr, err)
+			nbSend(logChan, fmt.Sprintf("Error executing '%s': %v", cmdStr, err))
 		}
 		return stdoutStr, fmt.Errorf("%s", errMsg)
 	}
 
 	if logChan != nil {
-		logChan <- fmt.Sprintf("Successfully executed: %s", cmdStr)
+		nbSend(logChan, fmt.Sprintf("Successfully executed: %s", cmdStr))
 	}
 	return stdoutStr, nil
 }
 
 func CheckSwapActive(logChan chan<- string) (bool, error) {
 	if logChan != nil {
-		logChan <- "Checking active swap using /proc/swaps..."
+		nbSend(logChan, "Checking active swap using /proc/swaps...")
 	}
 	file, err := os.Open("/proc/swaps")
 	if err != nil {
 		if os.IsNotExist(err) {
 			if logChan != nil {
-				logChan <- "/proc/swaps does not exist, assuming no swap."
+				nbSend(logChan, "/proc/swaps does not exist, assuming no swap.")
 			}
 			return false, nil
 		}
@@ -79,7 +79,7 @@ func CheckSwapActive(logChan chan<- string) (bool, error) {
 		// The first line is headers, more than one line means swap is active.
 		if lineCount > 1 {
 			if logChan != nil {
-				logChan <- "Found active swap entry in /proc/swaps."
+				nbSend(logChan, "Found active swap entry in /proc/swaps.")
 			}
 			return true, nil
 		}
@@ -90,14 +90,14 @@ func CheckSwapActive(logChan chan<- string) (bool, error) {
 	}
 
 	if logChan != nil {
-		logChan <- "No active swap entries found in /proc/swaps."
+		nbSend(logChan, "No active swap entries found in /proc/swaps.")
 	}
 	return false, nil
 }
 
 func GetAvailableDiskSpaceGB(logChan chan<- string) (float64, error) {
 	if logChan != nil {
-		logChan <- "Checking available disk space on / filesystem..."
+		nbSend(logChan, "Checking available disk space on / filesystem...")
 	}
 	// Use df -k to get output in kilobytes, targeting the root filesystem
 	// Using P flag to avoid issues with long device names wrapping lines
@@ -140,20 +140,20 @@ func GetAvailableDiskSpaceGB(logChan chan<- string) (float64, error) {
 	// Convert KB to GB
 	availableGB := float64(availableKB) / (1024 * 1024)
 	if logChan != nil {
-		logChan <- fmt.Sprintf("Available disk space: %.2f GB", availableGB)
+		nbSend(logChan, fmt.Sprintf("Available disk space: %.2f GB", availableGB))
 	}
 	return availableGB, nil
 }
 
 // applySysctlSettings manages kernel settings for swap
 func applySysctlSettings(logChan chan<- string, settings map[string]string, confFile string) error {
-	logChan <- fmt.Sprintf("Applying sysctl settings to %s...", confFile)
+	nbSend(logChan, fmt.Sprintf("Applying sysctl settings to %s...", confFile))
 	needsUpdate := false // Flag to track if sysctl -p needs running
 
 	// Ensure the directory exists
 	confDir := "/etc/sysctl.d"
 	if _, err := os.Stat(confDir); os.IsNotExist(err) {
-		logChan <- fmt.Sprintf("Creating directory %s", confDir)
+		nbSend(logChan, fmt.Sprintf("Creating directory %s", confDir))
 		if err := os.MkdirAll(confDir, 0755); err != nil {
 			return fmt.Errorf("failed to create directory %s: %w", confDir, err)
 		}
@@ -206,11 +206,11 @@ func applySysctlSettings(logChan chan<- string, settings map[string]string, conf
 		if desiredValue, ok := settings[key]; ok {
 			processedKeys[key] = true
 			if currentValue != desiredValue {
-				logChan <- fmt.Sprintf("Updating sysctl '%s': '%s' -> '%s' in %s", key, currentValue, desiredValue, confFile)
+				nbSend(logChan, fmt.Sprintf("Updating sysctl '%s': '%s' -> '%s' in %s", key, currentValue, desiredValue, confFile))
 				updatedLines = append(updatedLines, fmt.Sprintf("%s = %s", key, desiredValue))
 				needsUpdate = true
 			} else {
-				logChan <- fmt.Sprintf("Sysctl '%s = %s' already correctly set in %s", key, currentValue, confFile)
+				nbSend(logChan, fmt.Sprintf("Sysctl '%s = %s' already correctly set in %s", key, currentValue, confFile))
 				updatedLines = append(updatedLines, line) // Keep the existing line
 			}
 		} else {
@@ -222,7 +222,7 @@ func applySysctlSettings(logChan chan<- string, settings map[string]string, conf
 	// Append settings that were not found in the existing file
 	for key, value := range settings {
 		if !processedKeys[key] {
-			logChan <- fmt.Sprintf("Adding sysctl '%s = %s' to %s", key, value, confFile)
+			nbSend(logChan, fmt.Sprintf("Adding sysctl '%s = %s' to %s", key, value, confFile))
 			updatedLines = append(updatedLines, fmt.Sprintf("%s = %s", key, value))
 			needsUpdate = true
 		}
@@ -230,7 +230,7 @@ func applySysctlSettings(logChan chan<- string, settings map[string]string, conf
 
 	// Write the updated content back if changes were made
 	if needsUpdate {
-		logChan <- fmt.Sprintf("Writing updated configuration to %s...", confFile)
+		nbSend(logChan, fmt.Sprintf("Writing updated configuration to %s...", confFile))
 		// Write to temp file first, then rename for atomicity
 		tempFile, err := os.CreateTemp(confDir, fmt.Sprintf("%s.tmp", "99-unbind-k3s-tuning"))
 		if err != nil {
@@ -267,19 +267,19 @@ func applySysctlSettings(logChan chan<- string, settings map[string]string, conf
 			os.Remove(tempFilePath)
 			return fmt.Errorf("failed to rename temp sysctl config %s to %s: %w", tempFilePath, confFile, err)
 		}
-		logChan <- fmt.Sprintf("Successfully wrote sysctl configuration to %s", confFile)
+		nbSend(logChan, fmt.Sprintf("Successfully wrote sysctl configuration to %s", confFile))
 
 		// Apply the settings using sysctl -p <file>
-		logChan <- fmt.Sprintf("Applying sysctl settings from %s...", confFile)
+		nbSend(logChan, fmt.Sprintf("Applying sysctl settings from %s...", confFile))
 		if _, err := runCommand(logChan, "sysctl", "-p", confFile); err != nil {
 			// Log as warning, swap is already active, sysctl can be applied manually later
-			logChan <- fmt.Sprintf("Warning: Failed to apply sysctl settings via 'sysctl -p %s': %v", confFile, err)
-			logChan <- "Settings were written to the file but might require a reboot or manual 'sysctl -p' to take effect."
+			nbSend(logChan, fmt.Sprintf("Warning: Failed to apply sysctl settings via 'sysctl -p %s': %v", confFile, err))
+			nbSend(logChan, "Settings were written to the file but might require a reboot or manual 'sysctl -p' to take effect.")
 		} else {
-			logChan <- "Sysctl settings applied successfully."
+			nbSend(logChan, "Sysctl settings applied successfully.")
 		}
 	} else {
-		logChan <- fmt.Sprintf("No changes needed for sysctl settings in %s.", confFile)
+		nbSend(logChan, fmt.Sprintf("No changes needed for sysctl settings in %s.", confFile))
 	}
 
 	return nil
@@ -297,14 +297,14 @@ func CreateSwapFile(sizeGB int, logChan chan<- string) error {
 	sizeBytes := int64(sizeGB) * 1024 * 1024 * 1024
 	sizeHuman := fmt.Sprintf("%dG", sizeGB)
 
-	logChan <- fmt.Sprintf("Attempting to create %s swap file at %s...", sizeHuman, swapFilePath)
+	nbSend(logChan, fmt.Sprintf("Attempting to create %s swap file at %s...", sizeHuman, swapFilePath))
 
 	// 1. Check/Remove existing swapfile
 	if _, err := os.Stat(swapFilePath); err == nil {
-		logChan <- fmt.Sprintf("Warning: %s already exists. Attempting to remove it first.", swapFilePath)
+		nbSend(logChan, fmt.Sprintf("Warning: %s already exists. Attempting to remove it first.", swapFilePath))
 		if _, errRem := runCommand(logChan, "rm", "-f", swapFilePath); errRem != nil {
 			// Attempt to turn off swap if remove fails (might be in use)
-			logChan <- fmt.Sprintf("Failed to remove %s, attempting swapon -d %s", swapFilePath, swapFilePath)
+			nbSend(logChan, fmt.Sprintf("Failed to remove %s, attempting swapon -d %s", swapFilePath, swapFilePath))
 			_, _ = runCommand(logChan, "swapoff", swapFilePath) // Ignore error, try remove again
 			if _, errRem2 := runCommand(logChan, "rm", "-f", swapFilePath); errRem2 != nil {
 				return fmt.Errorf("failed to remove existing swapfile %s even after swapoff attempt: %w", swapFilePath, errRem2)
@@ -315,11 +315,11 @@ func CreateSwapFile(sizeGB int, logChan chan<- string) error {
 	}
 
 	// 2. Create file (fallocate with dd fallback)
-	logChan <- fmt.Sprintf("Allocating %s space for %s...", sizeHuman, swapFilePath)
+	nbSend(logChan, fmt.Sprintf("Allocating %s space for %s...", sizeHuman, swapFilePath))
 	if _, err := runCommand(logChan, "fallocate", "-l", fmt.Sprintf("%dB", sizeBytes), swapFilePath); err != nil {
-		logChan <- "fallocate failed, attempting fallback using dd (this might take a while)..."
+		nbSend(logChan, "fallocate failed, attempting fallback using dd (this might take a while)...")
 		ddCmd := fmt.Sprintf("dd if=/dev/zero of=%s bs=1M count=%d status=progress", swapFilePath, sizeGB*1024)
-		logChan <- fmt.Sprintf("Executing: %s", ddCmd)
+		nbSend(logChan, fmt.Sprintf("Executing: %s", ddCmd))
 		cmd := exec.Command("bash", "-c", ddCmd)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
@@ -330,25 +330,25 @@ func CreateSwapFile(sizeGB int, logChan chan<- string) error {
 	}
 
 	// 3. Set permissions
-	logChan <- fmt.Sprintf("Setting permissions (600) for %s...", swapFilePath)
+	nbSend(logChan, fmt.Sprintf("Setting permissions (600) for %s...", swapFilePath))
 	if _, err := runCommand(logChan, "chmod", "600", swapFilePath); err != nil {
 		return fmt.Errorf("failed to set permissions on %s: %w", swapFilePath, err)
 	}
 
 	// 4. Format as swap
-	logChan <- fmt.Sprintf("Formatting %s as swap...", swapFilePath)
+	nbSend(logChan, fmt.Sprintf("Formatting %s as swap...", swapFilePath))
 	if _, err := runCommand(logChan, "mkswap", swapFilePath); err != nil {
 		return fmt.Errorf("failed to format %s as swap: %w", swapFilePath, err)
 	}
 
 	// 5. Activate swap
-	logChan <- fmt.Sprintf("Activating swap on %s...", swapFilePath)
+	nbSend(logChan, fmt.Sprintf("Activating swap on %s...", swapFilePath))
 	if _, err := runCommand(logChan, "swapon", swapFilePath); err != nil {
 		return fmt.Errorf("failed to activate swap on %s: %w", swapFilePath, err)
 	}
 
 	// 6. Add to /etc/fstab
-	logChan <- fmt.Sprintf("Adding swap entry to %s...", fstabPath)
+	nbSend(logChan, fmt.Sprintf("Adding swap entry to %s...", fstabPath))
 	fstabEntry := fmt.Sprintf("%s none swap sw 0 0", swapFilePath)
 	entryExists := false
 	f, err := os.Open(fstabPath)
@@ -369,7 +369,7 @@ func CreateSwapFile(sizeGB int, logChan chan<- string) error {
 	}
 
 	if !entryExists {
-		logChan <- fmt.Sprintf("Appending entry to %s: '%s'", fstabPath, fstabEntry)
+		nbSend(logChan, fmt.Sprintf("Appending entry to %s: '%s'", fstabPath, fstabEntry))
 		fstabFile, err := os.OpenFile(fstabPath, os.O_APPEND|os.O_WRONLY, 0644)
 		if err != nil {
 			return fmt.Errorf("failed to open %s for appending: %w", fstabPath, err)
@@ -396,15 +396,15 @@ func CreateSwapFile(sizeGB int, logChan chan<- string) error {
 			return fmt.Errorf("failed to append swap entry to %s: %w", fstabPath, err)
 		}
 		fstabFile.Close()
-		logChan <- "Successfully appended swap entry to fstab."
+		nbSend(logChan, "Successfully appended swap entry to fstab.")
 	} else {
-		logChan <- "Swap entry already exists in fstab or a conflicting entry was found. Skipping append."
+		nbSend(logChan, "Swap entry already exists in fstab or a conflicting entry was found. Skipping append.")
 	}
 
 	// Calculate min_free_kbytes
 	minFreeKbytes, err := calculateMinFreeKbytes(logChan)
 	if err != nil {
-		logChan <- fmt.Sprintf("Warning: Failed to calculate min_free_kbytes: %v", err)
+		nbSend(logChan, fmt.Sprintf("Warning: Failed to calculate min_free_kbytes: %v", err))
 	}
 
 	// Apply Sysctl Settings
@@ -422,11 +422,11 @@ func CreateSwapFile(sizeGB int, logChan chan<- string) error {
 	}
 	if err := applySysctlSettings(logChan, desiredSettings, sysctlConfPath); err != nil {
 		// Log as a warning, swap creation itself succeeded
-		logChan <- fmt.Sprintf("Warning: Failed to apply sysctl settings: %v", err)
-		logChan <- "Swap file setup succeeded, but sysctl tuning failed. Manual configuration might be needed."
+		nbSend(logChan, fmt.Sprintf("Warning: Failed to apply sysctl settings: %v", err))
+		nbSend(logChan, "Swap file setup succeeded, but sysctl tuning failed. Manual configuration might be needed.")
 	}
 
-	logChan <- "Swap file created, activated, and tuned successfully."
+	nbSend(logChan, "Swap file created, activated, and tuned successfully.")
 	return nil
 }
 
@@ -480,8 +480,8 @@ func calculateMinFreeKbytes(logChan chan<- string) (string, error) {
 	}
 
 	if logChan != nil {
-		logChan <- fmt.Sprintf("Calculated min_free_kbytes: %d KB (%.1f%% of %d KB total RAM)",
-			minFreeKB, percentage*100, totalMemKB)
+		nbSend(logChan, fmt.Sprintf("Calculated min_free_kbytes: %d KB (%.1f%% of %d KB total RAM)",
+			minFreeKB, percentage*100, totalMemKB))
 	}
 
 	return strconv.FormatUint(minFreeKB, 10), nil
@@ -539,4 +539,14 @@ func RecommendSwapSizeGB(ramGB, availableDiskGB float64) int {
 		size--
 	}
 	return size
+}
+
+func nbSend(ch chan<- string, message string) {
+	if ch == nil {
+		return
+	}
+	select {
+	case ch <- message:
+	default:
+	}
 }

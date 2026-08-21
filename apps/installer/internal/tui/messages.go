@@ -15,7 +15,7 @@ type errMsg struct {
 }
 
 type logMsg struct {
-	message string
+	messages []string
 }
 
 type factMsg struct {

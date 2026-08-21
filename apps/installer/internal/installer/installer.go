@@ -42,13 +42,13 @@ type InstallationStep struct {
 func NewUnbindInstaller(kubeConfig string, logChan chan<- string, progressChan chan<- UnbindInstallUpdateMsg, factChan chan<- string) (*UnbindInstaller, error) {
 	config, err := clientcmd.BuildConfigFromFlags("", kubeConfig)
 	if err != nil {
-		logChan <- "Error creating kubeconfig: " + err.Error()
+		nbLog(logChan, "Error creating kubeconfig: "+err.Error())
 		return nil, err
 	}
 
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		logChan <- "Error creating Kubernetes client: " + err.Error()
+		nbLog(logChan, "Error creating Kubernetes client: "+err.Error())
 		return nil, err
 	}
 
@@ -219,8 +219,16 @@ func (self *UnbindInstaller) sendUpdateMessage(name string) {
 
 // sendLog outputs messages to the log channel
 func (self *UnbindInstaller) sendLog(message string) {
-	if self.LogChan != nil {
-		self.LogChan <- message
+	nbLog(self.LogChan, message)
+}
+
+func nbLog(ch chan<- string, message string) {
+	if ch == nil {
+		return
+	}
+	select {
+	case ch <- message:
+	default:
 	}
 }
 

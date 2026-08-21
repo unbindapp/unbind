@@ -125,7 +125,11 @@ func (self *AptInstaller) InstallPackages(ctx context.Context, packages []string
 
 // log writes to log channel
 func (self *AptInstaller) log(message string) {
-	if self.LogChan != nil {
-		self.LogChan <- message
+	if self.LogChan == nil {
+		return
+	}
+	select {
+	case self.LogChan <- message:
+	default:
 	}
 }

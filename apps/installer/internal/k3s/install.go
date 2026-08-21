@@ -182,9 +182,7 @@ func (self *Installer) logProgress(progress float64, status string, description 
 
 // log outputs a message to the channel
 func (self *Installer) log(message string) {
-	if self.LogChan != nil {
-		self.LogChan <- message
-	}
+	nbSend(self.LogChan, message)
 }
 
 // sendUpdateMessage pushes progress updates to UI
@@ -1140,4 +1138,17 @@ func canWriteToDir(dir string) bool {
 	}
 	os.Remove(testFile)
 	return true
+}
+
+// nbSend performs a non-blocking send so a slow or paused UI consumer can never
+// block an installer goroutine. Log lines are best-effort UI output; dropping a
+// line under flood is preferable to stalling the install.
+func nbSend(ch chan<- string, message string) {
+	if ch == nil {
+		return
+	}
+	select {
+	case ch <- message:
+	default:
+	}
 }

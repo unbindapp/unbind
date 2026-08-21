@@ -115,7 +115,11 @@ func (self *ZypperInstaller) InstallPackages(ctx context.Context, packages []str
 
 // log sends a message to the log channel if available
 func (self *ZypperInstaller) log(message string) {
-	if self.LogChan != nil {
-		self.LogChan <- message
+	if self.LogChan == nil {
+		return
+	}
+	select {
+	case self.LogChan <- message:
+	default:
 	}
 }

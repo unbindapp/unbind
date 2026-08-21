@@ -21,7 +21,10 @@ import (
 )
 
 func (m Model) log(msg string) {
-	m.logChan <- msg
+	select {
+	case m.logChan <- msg:
+	default:
+	}
 }
 
 func checkK3sCommand() tea.Cmd {
