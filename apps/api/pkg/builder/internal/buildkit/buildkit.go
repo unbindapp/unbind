@@ -3,7 +3,9 @@ package buildkit
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -12,6 +14,8 @@ import (
 	"github.com/docker/cli/cli/config/types"
 	"github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
+	"github.com/moby/buildkit/frontend/dockerfile/instructions"
+	"github.com/moby/buildkit/frontend/dockerfile/parser"
 	"github.com/moby/buildkit/session"
 	"github.com/moby/buildkit/session/auth/authprovider"
 	"github.com/moby/buildkit/session/secrets/secretsprovider"
@@ -201,11 +205,17 @@ func BuildWithBuildkitClient(cfg *config.Config, appDir string, opts BuildWithBu
 		// Always add the Dockerfile mount
 		solveOpts.LocalMounts["dockerfile"] = dockerfileFS
 
+		buildArgs, err := dockerfileBuildArgs(filepath.Join(dockerfileDir, dockerfileBasename), opts.Secrets)
+		if err != nil {
+			return fmt.Errorf("error reading Dockerfile build args: %w", err)
+		}
+
 		// Set the frontend to use Dockerfile
 		solveOpts.Frontend = "dockerfile.v0"
 		solveOpts.FrontendAttrs = map[string]string{
 			"filename": dockerfileBasename,
 		}
+		maps.Copy(solveOpts.FrontendAttrs, buildArgs)
 	} else if opts.RailpackBuildPlan != nil {
 		buildPlatform := opts.Platform
 		if buildPlatform.OS == "" {
@@ -314,4 +324,43 @@ func logBuildkitStatus(s *client.SolveStatus) {
 	for _, l := range s.Logs {
 		log.Infof("Buildkit log [%s]: %s", l.Vertex, string(l.Data))
 	}
+}
+
+// dockerfileBuildArgs returns build-arg frontend attrs for every ARG the Dockerfile
+// declares that has a matching secret. The dockerfile frontend only exposes secrets via
+// --mount=type=secret, so without this ARG/ENV-based Dockerfiles build with empty values.
+func dockerfileBuildArgs(path string, secrets map[string]string) (map[string]string, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	parsed, err := parser.Parse(f)
+	if err != nil {
+		return nil, err
+	}
+
+	attrs := map[string]string{}
+	for _, node := range parsed.AST.Children {
+		if !strings.EqualFold(node.Value, "arg") {
+			continue
+		}
+		cmd, err := instructions.ParseInstruction(node)
+		if err != nil {
+			return nil, err
+		}
+		argCmd, ok := cmd.(*instructions.ArgCommand)
+		if !ok {
+			continue
+		}
+		for _, arg := range argCmd.Args {
+			value, ok := secrets[arg.Key]
+			if !ok {
+				continue
+			}
+			attrs["build-arg:"+arg.Key] = value
+		}
+	}
+	return attrs, nil
 }
