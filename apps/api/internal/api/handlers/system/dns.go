@@ -2,7 +2,6 @@ package system_handler
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -71,7 +70,7 @@ func (self *HandlerGroup) CheckDNSResolution(ctx context.Context, input *DnsChec
 
 	if dnsCheck.IsCloudflare {
 		// Spin up a verification route to confirm the domain reaches the cluster
-		routeName, testPath, err := self.srv.KubeClient.CreateVerificationRoute(ctx, input.Domain, self.srv.KubeClient.GetInternalClient())
+		routeName, probeURL, err := self.srv.KubeClient.CreateVerificationRoute(ctx, input.Domain, self.srv.KubeClient.GetInternalClient())
 		if err != nil {
 			log.Warnf("Error creating verification route for domain %s: %v", input.Domain, err)
 		} else {
@@ -82,9 +81,7 @@ func (self *HandlerGroup) CheckDNSResolution(ctx context.Context, input *DnsChec
 				}
 			}()
 
-			url := fmt.Sprintf("https://%s%s", input.Domain, testPath)
-
-			req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+			req, err := http.NewRequestWithContext(ctx, "GET", probeURL, nil)
 			if err != nil {
 				log.Warnf("Error creating HTTP request for domain %s: %v", input.Domain, err)
 			} else {

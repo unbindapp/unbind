@@ -2,6 +2,14 @@ package k8s
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/pem"
+	"math/big"
+	"strings"
 	"testing"
 	"time"
 
@@ -17,80 +25,81 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
-func TestIsCertificateIssued(t *testing.T) {
+func testCertPEM(t *testing.T, issuerCN string, hosts ...string) []byte {
+	t.Helper()
+	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	require.NoError(t, err)
+	template := &x509.Certificate{
+		SerialNumber: big.NewInt(1),
+		Subject:      pkix.Name{CommonName: hosts[0]},
+		DNSNames:     hosts,
+		NotBefore:    time.Now().Add(-time.Hour),
+		NotAfter:     time.Now().Add(time.Hour),
+	}
+	issuer := &x509.Certificate{
+		SerialNumber: big.NewInt(2),
+		Subject:      pkix.Name{CommonName: issuerCN},
+	}
+	der, err := x509.CreateCertificate(rand.Reader, template, issuer, &key.PublicKey, key)
+	require.NoError(t, err)
+	return pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der})
+}
+
+func tlsSecret(name string, cert []byte) *corev1.Secret {
+	return &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: "default"},
+		Data:       map[string][]byte{"tls.crt": cert, "tls.key": []byte("key-data")},
+	}
+}
+
+func TestCertificateCoversHost(t *testing.T) {
 	tests := []struct {
 		name     string
 		secret   *corev1.Secret
+		host     string
 		expected bool
 	}{
 		{
 			name:     "Nil secret",
 			secret:   nil,
+			host:     "example.com",
 			expected: false,
 		},
 		{
-			name: "Secret without TLS data",
-			secret: &corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "test-secret",
-				},
-				Data: map[string][]byte{
-					"other": []byte("data"),
-				},
-			},
+			name:     "Secret without TLS data",
+			secret:   &corev1.Secret{Data: map[string][]byte{"other": []byte("data")}},
+			host:     "example.com",
 			expected: false,
 		},
 		{
-			name: "Secret with empty TLS cert",
-			secret: &corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "test-secret",
-					Annotations: map[string]string{
-						"cert-manager.io/issuer": "test-issuer",
-					},
-				},
-				Data: map[string][]byte{
-					"tls.crt": []byte(""),
-					"tls.key": []byte("test-key"),
-				},
-			},
+			name:     "Secret with non-PEM cert",
+			secret:   tlsSecret("test-secret", []byte("test-cert")),
+			host:     "example.com",
 			expected: false,
 		},
 		{
-			name: "Secret with valid TLS data but no cert-manager annotation",
-			secret: &corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "test-secret",
-				},
-				Data: map[string][]byte{
-					"tls.crt": []byte("test-cert"),
-					"tls.key": []byte("test-key"),
-				},
-			},
-			expected: false,
-		},
-		{
-			name: "Valid issued certificate",
-			secret: &corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "test-secret",
-					Annotations: map[string]string{
-						"cert-manager.io/issuer": "test-issuer",
-					},
-				},
-				Data: map[string][]byte{
-					"tls.crt": []byte("test-cert"),
-					"tls.key": []byte("test-key"),
-				},
-			},
+			name:     "Issued certificate covering host",
+			secret:   tlsSecret("test-secret", testCertPEM(t, "R3", "example.com", "other.example.com")),
+			host:     "other.example.com",
 			expected: true,
+		},
+		{
+			name:     "Issued certificate for a different host",
+			secret:   tlsSecret("test-secret", testCertPEM(t, "R3", "example.com")),
+			host:     "other.example.com",
+			expected: false,
+		},
+		{
+			name:     "Temporary cert-manager certificate",
+			secret:   tlsSecret("test-secret", testCertPEM(t, temporaryCertificateIssuer, "example.com")),
+			host:     "example.com",
+			expected: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := isCertificateIssued(tt.secret)
-			assert.Equal(t, tt.expected, result)
+			assert.Equal(t, tt.expected, certificateCoversHost(tt.secret, tt.host))
 		})
 	}
 }
@@ -219,19 +228,7 @@ func TestDiscoverEndpointsByLabels(t *testing.T) {
 						},
 					},
 				},
-				&corev1.Secret{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "example-tls",
-						Namespace: "default",
-						Annotations: map[string]string{
-							"cert-manager.io/issuer": "letsencrypt",
-						},
-					},
-					Data: map[string][]byte{
-						"tls.crt": []byte("cert-data"),
-						"tls.key": []byte("key-data"),
-					},
-				},
+				tlsSecret("example-tls", testCertPEM(t, "R3", "example.com")),
 			},
 			expectedError: false,
 			validateResult: func(t *testing.T, result *models.EndpointDiscovery) {
@@ -317,7 +314,7 @@ func TestCreateVerificationRoute(t *testing.T) {
 				config: mockConfig,
 			}
 
-			name, path, err := kubeClient.CreateVerificationRoute(
+			name, probeURL, err := kubeClient.CreateVerificationRoute(
 				context.Background(),
 				tt.domain,
 				fakeClient,
@@ -328,7 +325,7 @@ func TestCreateVerificationRoute(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.NotEmpty(t, name)
-				assert.NotEmpty(t, path)
+				assert.True(t, strings.HasPrefix(probeURL, "https://"+tt.domain+verificationPathPrefix), probeURL)
 
 				ingress, err := fakeClient.NetworkingV1().Ingresses("unbind-system").Get(
 					context.Background(),

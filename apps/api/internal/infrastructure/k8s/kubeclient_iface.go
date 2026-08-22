@@ -33,7 +33,7 @@ type KubeClientInterface interface {
 	// CreateVerificationRoute creates a temporary route (Ingress or HTTPRoute, per the
 	// active networking provider) that points a challenge path at the shared
 	// challenge-responder service, used to verify a domain resolves to the cluster
-	// even behind a Cloudflare proxy. Returns the route name and challenge path.
+	// even behind a Cloudflare proxy. Returns the route name and the URL to probe.
 	CreateVerificationRoute(ctx context.Context, domain string, client kubernetes.Interface) (string, string, error)
 	// DeleteVerificationRoute removes a verification route by name, covering both the
 	// Ingress and HTTPRoute kinds and treating a missing object as success.

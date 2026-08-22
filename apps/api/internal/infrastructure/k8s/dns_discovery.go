@@ -2,6 +2,8 @@ package k8s
 
 import (
 	"context"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"net/http"
 	"sort"
@@ -173,20 +175,10 @@ func (self *KubeClient) DiscoverEndpointsByLabels(ctx context.Context, namespace
 		return nil, fmt.Errorf("failed to list ingresses with labels %s: %w", labelSelector, err)
 	}
 
-	// Temp store for ingresses that need CR check
-	type attemptingIngressDetails struct {
-		Host       string
-		SecretName string
-	}
-	var ingressesToCheck []attemptingIngressDetails
+	var attempting []attemptingHost
 
 	// Process ingresses (external endpoints)
 	for _, ing := range ingresses.Items {
-		teamID, _ := uuid.Parse(ing.Labels["unbind-team"])
-		projectID, _ := uuid.Parse(ing.Labels["unbind-project"])
-		environmentID, _ := uuid.Parse(ing.Labels["unbind-environment"])
-		serviceID, _ := uuid.Parse(ing.Labels["unbind-service"])
-
 		// Make a map of paths and backend ports to iterate TLS
 		type backendInfo struct {
 			Path string
@@ -220,95 +212,13 @@ func (self *KubeClient) DiscoverEndpointsByLabels(ctx context.Context, namespace
 		for _, tls := range ing.Spec.TLS {
 			for _, host := range tls.Hosts {
 				backend := backendMap[host]
-				path := backend.Path
-				port := backend.Port
-
-				// Check if the secret is issued
-				issued := false
-				tlsStatus := models.TlsStatusAttempting
-
-				dnsStatus := models.DNSStatusUnknown
-				if tls.SecretName != "" {
-					secret, err := client.CoreV1().Secrets(namespace).Get(ctx, tls.SecretName, metav1.GetOptions{})
-					issued = err == nil && isCertificateIssued(secret)
+				status, err := self.hostStatus(ctx, namespace, host, tls.SecretName, checkDNS, client)
+				if err != nil {
+					return nil, err
 				}
-				if issued {
-					dnsStatus = models.DNSStatusResolved
-					tlsStatus = models.TlsStatusIssued
-				}
-
-				isCloudflare := false
-				if checkDNS && dnsStatus == models.DNSStatusUnknown {
-					ips, err := self.GetIngressNginxIP(ctx)
-					if err != nil {
-						return nil, fmt.Errorf("failed to get ingress nginx IP: %w", err)
-					}
-					// Check ipv4 first
-					dnsConfigured, _ := self.dnsChecker.IsPointingToIP(host, ips.IPv4)
-					if !dnsConfigured {
-						// Check ipv6
-						dnsConfigured, _ = self.dnsChecker.IsPointingToIP(host, ips.IPv6)
-					}
-					if !dnsConfigured {
-						// Check cloudflare
-						isCloudflare, _ = self.dnsChecker.IsUsingCloudflareProxy(host)
-
-						if isCloudflare {
-							url := fmt.Sprintf("https://%s", host)
-
-							// Create a new request with context
-							req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
-							if err != nil {
-								log.Warnf("Error creating HTTP request for domain %s: %v", host, err)
-							} else {
-								// Execute the request once to check DNS resolution
-								resp, err := self.httpClient.Do(req)
-								if err != nil {
-									log.Warnf("Error executing HTTP request for domain %s: %v", host, err)
-									// If request fails, DNS is not resolved
-									dnsConfigured = false
-								} else {
-									func() {
-										defer resp.Body.Close()
-										dnsConfigured = true
-									}()
-								}
-							}
-						}
-					}
-					dnsStatus = models.DNSStatusUnresolved
-					if dnsConfigured {
-						dnsStatus = models.DNSStatusResolved
-					}
-				} else if checkDNS {
-					isCloudflare, _ = self.dnsChecker.IsUsingCloudflareProxy(host)
-				}
-
-				endpoint := models.IngressEndpoint{
-					KubernetesName: ing.Name,
-					IsIngress:      true,
-					Host:           host,
-					Path:           path,
-					TargetPort: &schema.PortSpec{
-						Port:     port,
-						Protocol: utils.ToPtr(schema.ProtocolTCP),
-					},
-					DNSStatus:     dnsStatus,
-					IsCloudflare:  isCloudflare,
-					TlsStatus:     tlsStatus,
-					TeamID:        teamID,
-					ProjectID:     projectID,
-					EnvironmentID: environmentID,
-					ServiceID:     serviceID,
-				}
-				discovery.External = append(discovery.External, endpoint)
-
-				// For attempting ones dig into cert-manager to get the status
-				if tlsStatus == models.TlsStatusAttempting && tls.SecretName != "" {
-					ingressesToCheck = append(ingressesToCheck, attemptingIngressDetails{
-						Host:       host,
-						SecretName: tls.SecretName,
-					})
+				discovery.External = append(discovery.External, externalEndpoint(ing.Name, ing.Labels, host, backend.Path, backend.Port, status))
+				if status.TLS == models.TlsStatusAttempting && tls.SecretName != "" {
+					attempting = append(attempting, attemptingHost{Host: host, SecretName: tls.SecretName})
 				}
 			}
 		}
@@ -316,23 +226,27 @@ func (self *KubeClient) DiscoverEndpointsByLabels(ctx context.Context, namespace
 
 	// Gateway clusters route via HTTPRoutes rather than Ingresses
 	if self.NetworkingProvider(ctx) == providerGateway {
-		if err := self.appendGatewayEndpoints(ctx, namespace, labelSelector, discovery); err != nil {
+		gateways, err := self.listGateways(ctx, namespace, labelSelector)
+		if err != nil {
 			return nil, err
 		}
-		if err := self.appendGatewayL4Endpoints(ctx, namespace, labelSelector, discovery); err != nil {
+		gatewayAttempting, err := self.appendGatewayEndpoints(ctx, namespace, labelSelector, gatewayTLSSecrets(gateways), checkDNS, client, discovery)
+		if err != nil {
 			return nil, err
 		}
+		attempting = append(attempting, gatewayAttempting...)
+		self.appendGatewayL4Endpoints(ctx, gateways, discovery)
 	}
 
-	// If there are any ingresses in "Attempting" state, fetch their CertificateRequest conditions
-	if len(ingressesToCheck) > 0 && self.certmanagerclient != nil {
+	// If there are any hosts in "Attempting" state, fetch their CertificateRequest conditions
+	if len(attempting) > 0 && self.certmanagerclient != nil {
 		// List all CertificateRequests
 		allCrList, err := self.certmanagerclient.CertmanagerV1().CertificateRequests(namespace).List(ctx, metav1.ListOptions{})
 		if err == nil {
-			for _, ingress := range ingressesToCheck {
+			for _, host := range attempting {
 				var relevantCrs []certmanagerv1.CertificateRequest
 				for _, cr := range allCrList.Items {
-					if ann, ok := cr.Annotations["cert-manager.io/certificate-name"]; ok && ann == ingress.SecretName {
+					if ann, ok := cr.Annotations["cert-manager.io/certificate-name"]; ok && ann == host.SecretName {
 						relevantCrs = append(relevantCrs, cr)
 					}
 				}
@@ -354,9 +268,9 @@ func (self *KubeClient) DiscoverEndpointsByLabels(ctx context.Context, namespace
 						})
 					}
 					if len(messages) > 0 {
-						// Attach to the ingress
+						// Attach to the endpoint
 						for i := range discovery.External {
-							if discovery.External[i].Host == ingress.Host && discovery.External[i].TlsStatus == models.TlsStatusAttempting {
+							if discovery.External[i].Host == host.Host && discovery.External[i].TlsStatus == models.TlsStatusAttempting {
 								discovery.External[i].TlsIssuerMessages = messages
 							}
 						}
@@ -371,70 +285,187 @@ func (self *KubeClient) DiscoverEndpointsByLabels(ctx context.Context, namespace
 	return discovery, nil
 }
 
-// appendGatewayEndpoints lists HTTPRoutes matching the labels and appends them as
-// external endpoints. TLS is terminated at the shared gateway, so routes that exist
-// are treated as TLS-issued.
-func (self *KubeClient) appendGatewayEndpoints(ctx context.Context, namespace, labelSelector string, discovery *models.EndpointDiscovery) error {
+type attemptingHost struct {
+	Host       string
+	SecretName string
+}
+
+type hostStatus struct {
+	DNS        models.DNSStatus
+	TLS        models.TlsStatus
+	Cloudflare bool
+}
+
+// hostStatus resolves DNS and TLS state for one external host; an issued certificate
+// covering the host implies DNS resolved, otherwise the host is probed directly.
+func (self *KubeClient) hostStatus(ctx context.Context, namespace, host, secretName string, checkDNS bool, client kubernetes.Interface) (hostStatus, error) {
+	status := hostStatus{DNS: models.DNSStatusUnknown, TLS: models.TlsStatusAttempting}
+
+	if secretName != "" {
+		secret, err := client.CoreV1().Secrets(namespace).Get(ctx, secretName, metav1.GetOptions{})
+		if err == nil && certificateCoversHost(secret, host) {
+			status.DNS = models.DNSStatusResolved
+			status.TLS = models.TlsStatusIssued
+		}
+	}
+
+	if !checkDNS {
+		return status, nil
+	}
+
+	if status.DNS == models.DNSStatusResolved {
+		status.Cloudflare, _ = self.dnsChecker.IsUsingCloudflareProxy(host)
+		return status, nil
+	}
+
+	ips, err := self.GetIngressNginxIP(ctx)
+	if err != nil {
+		return status, fmt.Errorf("failed to get ingress nginx IP: %w", err)
+	}
+	configured, _ := self.dnsChecker.IsPointingToIP(host, ips.IPv4)
+	if !configured {
+		configured, _ = self.dnsChecker.IsPointingToIP(host, ips.IPv6)
+	}
+	if !configured {
+		status.Cloudflare, _ = self.dnsChecker.IsUsingCloudflareProxy(host)
+		if status.Cloudflare {
+			configured = self.reachableThroughCloudflare(ctx, host)
+		}
+	}
+
+	status.DNS = models.DNSStatusUnresolved
+	if configured {
+		status.DNS = models.DNSStatusResolved
+	}
+	return status, nil
+}
+
+func (self *KubeClient) reachableThroughCloudflare(ctx context.Context, host string) bool {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("https://%s", host), nil)
+	if err != nil {
+		log.Warnf("Error creating HTTP request for domain %s: %v", host, err)
+		return false
+	}
+	resp, err := self.httpClient.Do(req)
+	if err != nil {
+		log.Warnf("Error executing HTTP request for domain %s: %v", host, err)
+		return false
+	}
+	resp.Body.Close()
+	return true
+}
+
+func externalEndpoint(name string, labels map[string]string, host, path string, port int32, status hostStatus) models.IngressEndpoint {
+	teamID, _ := uuid.Parse(labels["unbind-team"])
+	projectID, _ := uuid.Parse(labels["unbind-project"])
+	environmentID, _ := uuid.Parse(labels["unbind-environment"])
+	serviceID, _ := uuid.Parse(labels["unbind-service"])
+
+	return models.IngressEndpoint{
+		KubernetesName: name,
+		IsIngress:      true,
+		Host:           host,
+		Path:           path,
+		TargetPort: &schema.PortSpec{
+			Port:     port,
+			Protocol: utils.ToPtr(schema.ProtocolTCP),
+		},
+		DNSStatus:     status.DNS,
+		IsCloudflare:  status.Cloudflare,
+		TlsStatus:     status.TLS,
+		TeamID:        teamID,
+		ProjectID:     projectID,
+		EnvironmentID: environmentID,
+		ServiceID:     serviceID,
+	}
+}
+
+func (self *KubeClient) listGateways(ctx context.Context, namespace, labelSelector string) ([]unstructured.Unstructured, error) {
 	if self.client == nil {
-		return nil
+		return nil, nil
+	}
+	gateways, err := self.client.Resource(gatewayGVR).Namespace(namespace).List(ctx, metav1.ListOptions{LabelSelector: labelSelector})
+	if err != nil {
+		if meta.IsNoMatchError(err) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to list gateways with labels %s: %w", labelSelector, err)
+	}
+	return gateways.Items, nil
+}
+
+// gatewayTLSSecrets maps each HTTPS listener hostname to the TLS secret it terminates with.
+func gatewayTLSSecrets(gateways []unstructured.Unstructured) map[string]string {
+	secrets := map[string]string{}
+	for i := range gateways {
+		listeners, _, _ := unstructured.NestedSlice(gateways[i].Object, "spec", "listeners")
+		for _, l := range listeners {
+			listener, ok := l.(map[string]any)
+			if !ok {
+				continue
+			}
+			proto, _, _ := unstructured.NestedString(listener, "protocol")
+			if proto != "HTTPS" {
+				continue
+			}
+			hostname, _, _ := unstructured.NestedString(listener, "hostname")
+			refs, _, _ := unstructured.NestedSlice(listener, "tls", "certificateRefs")
+			if hostname == "" || len(refs) == 0 {
+				continue
+			}
+			ref, ok := refs[0].(map[string]any)
+			if !ok {
+				continue
+			}
+			secretName, _, _ := unstructured.NestedString(ref, "name")
+			secrets[hostname] = secretName
+		}
+	}
+	return secrets
+}
+
+// appendGatewayEndpoints lists HTTPRoutes matching the labels and appends them as
+// external endpoints, resolving each hostname's status through the TLS secret of
+// the Gateway listener that terminates it.
+func (self *KubeClient) appendGatewayEndpoints(ctx context.Context, namespace, labelSelector string, tlsSecrets map[string]string, checkDNS bool, client kubernetes.Interface, discovery *models.EndpointDiscovery) ([]attemptingHost, error) {
+	if self.client == nil {
+		return nil, nil
 	}
 	routes, err := self.client.Resource(httpRouteGVR).Namespace(namespace).List(ctx, metav1.ListOptions{LabelSelector: labelSelector})
 	if err != nil {
 		if meta.IsNoMatchError(err) {
-			return nil
+			return nil, nil
 		}
-		return fmt.Errorf("failed to list httproutes with labels %s: %w", labelSelector, err)
+		return nil, fmt.Errorf("failed to list httproutes with labels %s: %w", labelSelector, err)
 	}
 
+	var attempting []attemptingHost
 	for i := range routes.Items {
 		route := &routes.Items[i]
-		labels := route.GetLabels()
-		teamID, _ := uuid.Parse(labels["unbind-team"])
-		projectID, _ := uuid.Parse(labels["unbind-project"])
-		environmentID, _ := uuid.Parse(labels["unbind-environment"])
-		serviceID, _ := uuid.Parse(labels["unbind-service"])
-
 		hostnames, _, _ := unstructured.NestedStringSlice(route.Object, "spec", "hostnames")
 		rules, _, _ := unstructured.NestedSlice(route.Object, "spec", "rules")
 		path, port := gatewayRoutePathPort(rules)
 
 		for _, host := range hostnames {
-			discovery.External = append(discovery.External, models.IngressEndpoint{
-				KubernetesName: route.GetName(),
-				IsIngress:      true,
-				Host:           host,
-				Path:           path,
-				TargetPort: &schema.PortSpec{
-					Port:     port,
-					Protocol: utils.ToPtr(schema.ProtocolTCP),
-				},
-				DNSStatus:     models.DNSStatusUnknown,
-				TlsStatus:     models.TlsStatusIssued,
-				TeamID:        teamID,
-				ProjectID:     projectID,
-				EnvironmentID: environmentID,
-				ServiceID:     serviceID,
-			})
+			secretName := tlsSecrets[host]
+			status, err := self.hostStatus(ctx, namespace, host, secretName, checkDNS, client)
+			if err != nil {
+				return nil, err
+			}
+			discovery.External = append(discovery.External, externalEndpoint(route.GetName(), route.GetLabels(), host, path, port, status))
+			if status.TLS == models.TlsStatusAttempting && secretName != "" {
+				attempting = append(attempting, attemptingHost{Host: host, SecretName: secretName})
+			}
 		}
 	}
-	return nil
+	return attempting, nil
 }
 
 // appendGatewayL4Endpoints reports raw TCP/UDP exposure from per-service Gateways'
 // L4 listeners as LB-IP:port endpoints (the gateway equivalent of NodePort).
-func (self *KubeClient) appendGatewayL4Endpoints(ctx context.Context, namespace, labelSelector string, discovery *models.EndpointDiscovery) error {
-	if self.client == nil {
-		return nil
-	}
-	gateways, err := self.client.Resource(gatewayGVR).Namespace(namespace).List(ctx, metav1.ListOptions{LabelSelector: labelSelector})
-	if err != nil {
-		if meta.IsNoMatchError(err) {
-			return nil
-		}
-		return fmt.Errorf("failed to list gateways with labels %s: %w", labelSelector, err)
-	}
-	if len(gateways.Items) == 0 {
-		return nil
+func (self *KubeClient) appendGatewayL4Endpoints(ctx context.Context, gateways []unstructured.Unstructured, discovery *models.EndpointDiscovery) {
+	if len(gateways) == 0 {
+		return
 	}
 
 	lb, err := self.GetActiveControllerIP(ctx)
@@ -446,8 +477,8 @@ func (self *KubeClient) appendGatewayL4Endpoints(ctx context.Context, namespace,
 		}
 	}
 
-	for i := range gateways.Items {
-		gw := &gateways.Items[i]
+	for i := range gateways {
+		gw := &gateways[i]
 		labels := gw.GetLabels()
 		teamID, _ := uuid.Parse(labels["unbind-team"])
 		projectID, _ := uuid.Parse(labels["unbind-project"])
@@ -483,7 +514,6 @@ func (self *KubeClient) appendGatewayL4Endpoints(ctx context.Context, namespace,
 			})
 		}
 	}
-	return nil
 }
 
 func gatewayRoutePathPort(rules []any) (string, int32) {
@@ -515,29 +545,28 @@ func gatewayRoutePathPort(rules []any) (string, int32) {
 	return path, port
 }
 
-// isCertificateIssued checks if a TLS secret contains valid certificate data
-func isCertificateIssued(secret *corev1.Secret) bool {
+// cert-manager signs issue-temporary-certificate placeholders with a throwaway CA
+// named cert-manager.local (cert-manager pkg/util/pki/temporarycertificate.go).
+const temporaryCertificateIssuer = "cert-manager.local"
+
+// certificateCoversHost reports whether the secret holds an issued (non-temporary)
+// certificate valid for host.
+func certificateCoversHost(secret *corev1.Secret, host string) bool {
 	if secret == nil {
 		return false
 	}
-
-	// Check if the secret contains the required TLS data
-	_, hasCert := secret.Data["tls.crt"]
-	_, hasKey := secret.Data["tls.key"]
-
-	// Check if the secret has any cert-manager annotations
-	hasCertManagerAnnotation := false
-	if secret.Annotations != nil {
-		for key := range secret.Annotations {
-			if strings.Contains(key, "cert-manager") {
-				hasCertManagerAnnotation = true
-				break
-			}
-		}
+	block, _ := pem.Decode(secret.Data[corev1.TLSCertKey])
+	if block == nil {
+		return false
 	}
-
-	// Both fields must exist and contain data, and it should have cert-manager annotations
-	return hasCert && hasKey && len(secret.Data["tls.crt"]) > 0 && len(secret.Data["tls.key"]) > 0 && hasCertManagerAnnotation
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return false
+	}
+	if cert.Issuer.CommonName == temporaryCertificateIssuer {
+		return false
+	}
+	return cert.VerifyHostname(host) == nil
 }
 
 const (
@@ -558,7 +587,7 @@ func verificationLabels(domain string) map[string]string {
 // CreateVerificationRoute creates a temporary route (Ingress or HTTPRoute, per the
 // active networking provider) that points a challenge path at the shared
 // challenge-responder service, used to verify a domain resolves to the cluster
-// even behind a Cloudflare proxy. Returns the route name and challenge path.
+// even behind a Cloudflare proxy. Returns the route name and the URL to probe.
 func (self *KubeClient) CreateVerificationRoute(
 	ctx context.Context,
 	domain string,
@@ -570,16 +599,23 @@ func (self *KubeClient) CreateVerificationRoute(
 	}
 	path := verificationPathPrefix + uuid.NewString()
 
-	switch self.NetworkingProvider(ctx) {
+	provider := self.NetworkingProvider(ctx)
+	scheme := "https"
+	switch provider {
 	case providerGateway:
+		// The platform gateway only accepts foreign hostnames on its :80 listener; on :443 the
+		// host's SNI is owned by the service's own Gateway, whose listeners allow same-namespace
+		// routes only (operator networking/gateway.go), so the probe must go over plain HTTP, the
+		// same path the ACME HTTP-01 solver takes.
+		scheme = "http"
 		err = self.createVerificationHTTPRoute(ctx, name, domain, path)
 	default:
-		err = self.createVerificationIngress(ctx, name, domain, path, self.NetworkingProvider(ctx), client)
+		err = self.createVerificationIngress(ctx, name, domain, path, provider, client)
 	}
 	if err != nil {
 		return "", "", err
 	}
-	return name, path, nil
+	return name, fmt.Sprintf("%s://%s%s", scheme, domain, path), nil
 }
 
 func (self *KubeClient) createVerificationIngress(ctx context.Context, name, domain, path, className string, client kubernetes.Interface) error {
