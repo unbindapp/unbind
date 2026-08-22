@@ -3,7 +3,10 @@ import { CircleArrowUpIcon } from "lucide-react";
 import { ReactNode } from "react";
 
 import { LinkButton } from "@/components/ui/button";
-import { useCheckForUpdates } from "@/components/update/check-for-updates-provider";
+import {
+  useCheckForUpdates,
+  useCheckNewVersion,
+} from "@/components/update/check-for-updates-provider";
 import UpdateSection from "@/components/update/update-section";
 import { cn } from "@/components/ui/utils";
 
@@ -13,6 +16,7 @@ export const Route = createFileRoute("/update/")({
 
 function UpdatePage() {
   const { data, isPending, error } = useCheckForUpdates();
+  const { hasUpdateAvailable, latestVersion } = useCheckNewVersion();
   const isHardError = !data && !isPending && error;
 
   if (isHardError) {
@@ -32,7 +36,7 @@ function UpdatePage() {
     );
   }
 
-  if (isPending || data.data.has_update_available || data.data.available_versions.length < 1) {
+  if (isPending || !hasUpdateAvailable) {
     return (
       <Wrapper data-pending={isPending || undefined} className="group/wrapper">
         <div className="flex w-full flex-col items-center gap-1.5 px-1">
@@ -57,13 +61,9 @@ function UpdatePage() {
     );
   }
 
-  const versions = data.data.available_versions;
   return (
     <Wrapper>
-      <UpdateSection
-        latestVersion={versions[versions.length - 1]}
-        currentVersion={data.data.current_version}
-      />
+      <UpdateSection latestVersion={latestVersion} currentVersion={data.data.current_version} />
     </Wrapper>
   );
 }

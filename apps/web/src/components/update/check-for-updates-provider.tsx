@@ -31,21 +31,24 @@ export const useCheckForUpdates = () => {
   return context;
 };
 
-export const useCheckNewVersion = () => {
-  const { data } = useCheckForUpdates();
-  const updateData = data?.data;
-  const availableVersions = updateData?.available_versions;
+type TNewVersion =
+  | { hasUpdateAvailable: true; latestVersion: string }
+  | { hasUpdateAvailable: false; latestVersion: null };
 
-  const hasUpdateAvailable = updateData?.has_update_available || false;
+// Single source of truth for "is there an update": the API sets has_update_available
+// iff available_versions is non-empty, so consumers get one check instead of re-deriving it.
+export const useCheckNewVersion = (): TNewVersion => {
+  const { data } = useCheckForUpdates();
+  const availableVersions = data?.data.available_versions;
+
   const latestVersion =
-    availableVersions && availableVersions.length > 0
+    data?.data.has_update_available && availableVersions && availableVersions.length > 0
       ? availableVersions[availableVersions.length - 1]
       : null;
 
-  return {
-    hasUpdateAvailable,
-    latestVersion,
-  };
+  return latestVersion !== null
+    ? { hasUpdateAvailable: true, latestVersion }
+    : { hasUpdateAvailable: false, latestVersion: null };
 };
 
 export default CheckForUpdatesProvider;
@@ -62,7 +65,7 @@ export function UpdateToastProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!mounted) return;
-    if (!hasUpdateAvailable || !latestVersion) return;
+    if (!hasUpdateAvailable) return;
     if (updateShownRef.current) return;
     if (lastDismissedVersion !== null && lastDismissedVersion === latestVersion) return;
 
@@ -75,7 +78,7 @@ export function UpdateToastProvider({ children }: { children: ReactNode }) {
           <LinkButton
             onClick={() => {
               toast.dismiss("update_toast");
-              if (latestVersion) setLastDismissedVersion(latestVersion);
+              setLastDismissedVersion(latestVersion);
             }}
             to="/update"
             size="sm"
@@ -86,7 +89,7 @@ export function UpdateToastProvider({ children }: { children: ReactNode }) {
         </div>
       ),
       onDismiss: () => {
-        if (latestVersion) setLastDismissedVersion(latestVersion);
+        setLastDismissedVersion(latestVersion);
       },
     });
 

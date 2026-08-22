@@ -88,7 +88,7 @@ export default function UserAvatar({ email, className }: TProps) {
       </DropdownOrDrawerTrigger>
       <DropdownOrDrawerContentForDrawer>
         <div className="group/list flex w-full flex-col px-2 pt-2 pb-[calc(var(--safe-area-inset-bottom)+4rem)]">
-          {hasUpdateAvailable && latestVersion && (
+          {hasUpdateAvailable && (
             <NewVersionCard
               className="pt-0 pb-1.5"
               version={latestVersion}
@@ -148,7 +148,7 @@ export default function UserAvatar({ email, className }: TProps) {
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          {hasUpdateAvailable && latestVersion && (
+          {hasUpdateAvailable && (
             <NewVersionCard
               className="px-0.5 pt-0.5 pb-1.5"
               version={latestVersion}
