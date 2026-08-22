@@ -8,5 +8,10 @@
     "version": "v0.1.1",
     "description": "Release 0.1.1",
     "breaking": false
+  },
+  "v0.1.2": {
+    "version": "v0.1.2",
+    "description": "Release 0.1.2",
+    "breaking": false
   }
 }
