@@ -38,7 +38,7 @@ func (self *Builder) BuildWithRailpack(ctx context.Context, buildSecrets map[str
 	defer os.RemoveAll(tmpDir)
 
 	// --- Railpack build
-	buildResult, app, _, err := GenerateBuildResult(tmpDir, buildSecrets)
+	buildResult, app, _, err := GenerateBuildResult(tmpDir, buildSecrets, self.config.ServiceRunCommand)
 	if err != nil {
 		return "", repoName, fmt.Errorf("failed to generate build result: %v", err)
 	}
@@ -68,7 +68,7 @@ func (self *Builder) BuildWithRailpack(ctx context.Context, buildSecrets map[str
 	return outputImage, repoName, nil
 }
 
-func GenerateBuildResult(directory string, buildSecrets map[string]string) (*core.BuildResult, *a.App, *a.Environment, error) {
+func GenerateBuildResult(directory string, buildSecrets map[string]string, runCommand string) (*core.BuildResult, *a.App, *a.Environment, error) {
 	app, err := a.NewApp(directory)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("error creating app: %w", err)
@@ -83,6 +83,13 @@ func GenerateBuildResult(directory string, buildSecrets map[string]string) (*cor
 	generateOptions := &core.GenerateBuildPlanOptions{
 		RailpackVersion:          "unbind-builder", // ! Add a version
 		ErrorMissingStartCommand: true,
+	}
+
+	// The custom start command has to reach the planner, otherwise ErrorMissingStartCommand
+	// fails the build for apps railpack can't infer a start command for (e.g. monorepos with
+	// no start script at the root), even though the user configured one.
+	if runCommand != "" {
+		generateOptions.StartCommand = runCommand
 	}
 
 	buildResult := core.GenerateBuildPlan(app, &env, generateOptions)
