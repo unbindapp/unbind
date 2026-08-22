@@ -3,6 +3,7 @@ package tui
 import (
 	"context"
 	"fmt"
+	"net"
 	"os"
 	"strings"
 	"time"
@@ -147,7 +148,9 @@ func (m Model) validateConfig(gen int, checkRegistry bool) tea.Cmd {
 			mainCloudflare:     main.Cloudflare,
 			wildcardResolved:   wildcard.Resolved(),
 			wildcardCloudflare: wildcard.Cloudflare,
-			wildcardProxied:    wildcard.Cloudflare && isDeepWildcard(info.UnbindDomain),
+		}
+		if wildcard.Cloudflare && isDeepWildcard(info.UnbindDomain) {
+			result.wildcardProxied = !network.ServesTLS(net.JoinHostPort(probe, "443"), probe, m.log)
 		}
 
 		if checkRegistry && info.RegistryType == RegistryExternal {

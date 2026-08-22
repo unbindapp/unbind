@@ -883,6 +883,7 @@ export const DeployedTemplateInputSchema = z
 
 export const DnsCheckSchema = z
   .object({
+    cloudflare_missing_certificate: z.boolean(),
     dns_status: DNSStatusSchema,
     is_cloudflare: z.boolean(),
   })
@@ -921,6 +922,7 @@ export const TlsStatusSchema = z.enum(['pending', 'attempting', 'issued', 'not_a
 
 export const IngressEndpointSchema = z
   .object({
+    cloudflare_missing_certificate: z.boolean(),
     dns_status: DNSStatusSchema,
     environment_id: z.string(),
     host: z.string(),

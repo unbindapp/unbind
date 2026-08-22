@@ -291,9 +291,10 @@ type attemptingHost struct {
 }
 
 type hostStatus struct {
-	DNS        models.DNSStatus
-	TLS        models.TlsStatus
-	Cloudflare bool
+	DNS                          models.DNSStatus
+	TLS                          models.TlsStatus
+	Cloudflare                   bool
+	CloudflareMissingCertificate bool
 }
 
 // hostStatus resolves DNS and TLS state for one external host; an issued certificate
@@ -315,6 +316,7 @@ func (self *KubeClient) hostStatus(ctx context.Context, namespace, host, secretN
 
 	if status.DNS == models.DNSStatusResolved {
 		status.Cloudflare, _ = self.dnsChecker.IsUsingCloudflareProxy(host)
+		status.CloudflareMissingCertificate = status.Cloudflare && !self.dnsChecker.ServesTLS(host)
 		return status, nil
 	}
 
@@ -329,7 +331,8 @@ func (self *KubeClient) hostStatus(ctx context.Context, namespace, host, secretN
 	if !configured {
 		status.Cloudflare, _ = self.dnsChecker.IsUsingCloudflareProxy(host)
 		if status.Cloudflare {
-			configured = self.reachableThroughCloudflare(ctx, host)
+			status.CloudflareMissingCertificate = !self.dnsChecker.ServesTLS(host)
+			configured = !status.CloudflareMissingCertificate && self.reachableThroughCloudflare(ctx, host)
 		}
 	}
 
@@ -370,13 +373,14 @@ func externalEndpoint(name string, labels map[string]string, host, path string, 
 			Port:     port,
 			Protocol: utils.ToPtr(schema.ProtocolTCP),
 		},
-		DNSStatus:     status.DNS,
-		IsCloudflare:  status.Cloudflare,
-		TlsStatus:     status.TLS,
-		TeamID:        teamID,
-		ProjectID:     projectID,
-		EnvironmentID: environmentID,
-		ServiceID:     serviceID,
+		DNSStatus:                    status.DNS,
+		IsCloudflare:                 status.Cloudflare,
+		CloudflareMissingCertificate: status.CloudflareMissingCertificate,
+		TlsStatus:                    status.TLS,
+		TeamID:                       teamID,
+		ProjectID:                    projectID,
+		EnvironmentID:                environmentID,
+		ServiceID:                    serviceID,
 	}
 }
 

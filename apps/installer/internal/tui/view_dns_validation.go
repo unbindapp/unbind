@@ -107,6 +107,10 @@ func viewDNSValidation(m Model) string {
 		s.WriteString("\n")
 	case credentialsRejected:
 		writeWrapped(&s, m.styles.Error, fmt.Sprintf("Registry credentials rejected by %s. Press Ctrl+g to fix them.", getRegistryDisplayName(m.dnsInfo.RegistryHost)), maxWidth)
+	case res.wildcardProxied:
+		s.WriteString(m.styles.Success.Render("✓ Main DNS record detected. Press Enter to continue."))
+		s.WriteString("\n")
+		writeWrapped(&s, m.styles.Warning, fmt.Sprintf("The *.%s record is proxied through Cloudflare, but Cloudflare has no certificate for names under it: HTTPS for every service domain will fail. Set that record to DNS-only (grey cloud) before continuing, or add Cloudflare Advanced Certificate Manager.", m.dnsInfo.UnbindDomain), maxWidth)
 	case res.wildcardResolved:
 		s.WriteString(m.styles.Success.Render("✓ DNS records detected. Press Enter to continue."))
 		s.WriteString("\n")
@@ -174,8 +178,8 @@ func (m Model) renderWildcardRecordCheck() string {
 	case res == nil:
 		return renderCheckLine(m, checkPending, label, "checking…")
 	case res.wildcardProxied:
-		detail := fmt.Sprintf("Proxied through Cloudflare below the zone apex, which Universal SSL does not cover: per-service HTTPS will fail unless you have Cloudflare Advanced Certificate Manager. Recommended: set the *.%s record to DNS-only (grey cloud).", m.dnsInfo.UnbindDomain)
-		return renderCheckLine(m, checkWarn, label, detail)
+		detail := fmt.Sprintf("proxied through Cloudflare with no edge certificate for *.%s (Universal SSL covers one level only) — set the record to DNS-only (grey cloud)", m.dnsInfo.UnbindDomain)
+		return renderCheckLine(m, checkFail, label, detail)
 	case res.wildcardResolved && res.wildcardCloudflare:
 		return renderCheckLine(m, checkOK, label, "proxied through Cloudflare")
 	case res.wildcardResolved:

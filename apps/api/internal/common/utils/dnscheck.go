@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"io"
 	"net"
@@ -47,6 +48,17 @@ func (self *DNSChecker) IsPointingToIP(domain string, expectedIP string) (bool, 
 	}
 
 	return false, nil
+}
+
+// ServesTLS is true when domain:443 presents any certificate for domain's SNI, trust is not checked
+func (self *DNSChecker) ServesTLS(domain string) bool {
+	dialer := &net.Dialer{Timeout: 5 * time.Second}
+	conn, err := tls.DialWithDialer(dialer, "tcp", net.JoinHostPort(domain, "443"), &tls.Config{ServerName: domain, InsecureSkipVerify: true})
+	if err != nil {
+		return false
+	}
+	conn.Close()
+	return true
 }
 
 // IsUsingCloudflareProxy checks if a domain is using Cloudflare proxy

@@ -6,6 +6,7 @@ import (
 	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -209,6 +210,9 @@ func BuildWithBuildkitClient(cfg *config.Config, appDir string, opts BuildWithBu
 		if err != nil {
 			return fmt.Errorf("error reading Dockerfile build args: %w", err)
 		}
+		if len(buildArgs) > 0 {
+			log.Warnf("Passing variables as build args for ARGs declared in the Dockerfile: %s. Build args are recorded in image history; use RUN --mount=type=secret,id=NAME for sensitive values.", strings.Join(buildArgNames(buildArgs), ", "))
+		}
 
 		// Set the frontend to use Dockerfile
 		solveOpts.Frontend = "dockerfile.v0"
@@ -363,4 +367,13 @@ func dockerfileBuildArgs(path string, secrets map[string]string) (map[string]str
 		}
 	}
 	return attrs, nil
+}
+
+func buildArgNames(attrs map[string]string) []string {
+	names := make([]string, 0, len(attrs))
+	for k := range attrs {
+		names = append(names, strings.TrimPrefix(k, "build-arg:"))
+	}
+	slices.Sort(names)
+	return names
 }

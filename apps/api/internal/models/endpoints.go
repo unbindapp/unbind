@@ -26,19 +26,20 @@ type ServiceEndpoint struct {
 
 // IngressEndpoint represents external DNS information for a Kubernetes ingress
 type IngressEndpoint struct {
-	KubernetesName    string           `json:"kubernetes_name"`
-	IsIngress         bool             `json:"is_ingress"`
-	Host              string           `json:"host"`
-	Path              string           `json:"path"`
-	TargetPort        *schema.PortSpec `json:"target_port,omitempty"`
-	DNSStatus         DNSStatus        `json:"dns_status"`
-	IsCloudflare      bool             `json:"is_cloudflare"`
-	TlsStatus         TlsStatus        `json:"tls_status"`
-	TlsIssuerMessages []TlsDetails     `json:"tls_issuer_messages,omitempty"`
-	TeamID            uuid.UUID        `json:"team_id" format:"uuid"`
-	ProjectID         uuid.UUID        `json:"project_id" format:"uuid"`
-	EnvironmentID     uuid.UUID        `json:"environment_id" format:"uuid"`
-	ServiceID         uuid.UUID        `json:"service_id" format:"uuid"`
+	KubernetesName               string           `json:"kubernetes_name"`
+	IsIngress                    bool             `json:"is_ingress"`
+	Host                         string           `json:"host"`
+	Path                         string           `json:"path"`
+	TargetPort                   *schema.PortSpec `json:"target_port,omitempty"`
+	DNSStatus                    DNSStatus        `json:"dns_status"`
+	IsCloudflare                 bool             `json:"is_cloudflare"`
+	CloudflareMissingCertificate bool             `json:"cloudflare_missing_certificate"`
+	TlsStatus                    TlsStatus        `json:"tls_status"`
+	TlsIssuerMessages            []TlsDetails     `json:"tls_issuer_messages,omitempty"`
+	TeamID                       uuid.UUID        `json:"team_id" format:"uuid"`
+	ProjectID                    uuid.UUID        `json:"project_id" format:"uuid"`
+	EnvironmentID                uuid.UUID        `json:"environment_id" format:"uuid"`
+	ServiceID                    uuid.UUID        `json:"service_id" format:"uuid"`
 }
 
 // DNSStatus

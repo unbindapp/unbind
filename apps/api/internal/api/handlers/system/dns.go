@@ -17,8 +17,9 @@ type DnsCheckInput struct {
 }
 
 type DnsCheck struct {
-	IsCloudflare bool             `json:"is_cloudflare"`
-	DnsStatus    models.DNSStatus `json:"dns_status"`
+	IsCloudflare                 bool             `json:"is_cloudflare"`
+	CloudflareMissingCertificate bool             `json:"cloudflare_missing_certificate"`
+	DnsStatus                    models.DNSStatus `json:"dns_status"`
 }
 
 type DnsCheckResponse struct {
@@ -69,6 +70,10 @@ func (self *HandlerGroup) CheckDNSResolution(ctx context.Context, input *DnsChec
 	}
 
 	if dnsCheck.IsCloudflare {
+		dnsCheck.CloudflareMissingCertificate = !self.srv.DNSChecker.ServesTLS(input.Domain)
+	}
+
+	if dnsCheck.IsCloudflare && !dnsCheck.CloudflareMissingCertificate {
 		// Spin up a verification route to confirm the domain reaches the cluster
 		routeName, probeURL, err := self.srv.KubeClient.CreateVerificationRoute(ctx, input.Domain, self.srv.KubeClient.GetInternalClient())
 		if err != nil {
