@@ -3,8 +3,18 @@ package pkgmanager
 import (
 	"context"
 	"fmt"
+	"os"
 	"os/exec"
 	"time"
+)
+
+// aptEnv runs apt fully non-interactively. needrestart otherwise opens a
+// debconf service-restart prompt on a TTY and blocks apt forever.
+// https://manpages.ubuntu.com/manpages/noble/man1/needrestart.1.html
+var aptEnv = append(os.Environ(),
+	"DEBIAN_FRONTEND=noninteractive",
+	"NEEDRESTART_MODE=a",
+	"NEEDRESTART_SUSPEND=1",
 )
 
 // AptInstaller for Debian-based systems
@@ -54,6 +64,8 @@ func (self *AptInstaller) InstallPackages(ctx context.Context, packages []string
 
 	// Execute each step with progress updates
 	for _, step := range steps {
+		step.cmd.Env = aptEnv
+
 		// Report starting this step
 		if progressFunc != nil {
 			progressFunc("", step.progress, step.step, false)
