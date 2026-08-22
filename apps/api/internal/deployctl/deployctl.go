@@ -213,8 +213,8 @@ func (self *DeploymentController) PopulateBuildEnvironment(ctx context.Context, 
 	var railpackBuildCommand *string
 	var runCommand *string
 
-	if deployment != nil {
-		// Use stored deployment build configuration
+	// A deployment that never got built has no build config worth pinning
+	if deployment != nil && deployment.ResourceDefinition != nil {
 		builder = deployment.Builder
 		dockerfilePath = deployment.DockerBuilderDockerfilePath
 		buildContext = deployment.DockerBuilderBuildContext
@@ -222,7 +222,6 @@ func (self *DeploymentController) PopulateBuildEnvironment(ctx context.Context, 
 		railpackBuildCommand = deployment.RailpackBuilderBuildCommand
 		runCommand = deployment.RunCommand
 	} else {
-		// Use current service configuration
 		builder = service.Edges.ServiceConfig.Builder
 		dockerfilePath = service.Edges.ServiceConfig.DockerBuilderDockerfilePath
 		buildContext = service.Edges.ServiceConfig.DockerBuilderBuildContext

@@ -2,8 +2,12 @@ package builders
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
+	"maps"
 	"os"
+	"slices"
 
 	"github.com/railwayapp/railpack/core"
 	a "github.com/railwayapp/railpack/core/app"
@@ -57,6 +61,7 @@ func (self *Builder) BuildWithRailpack(ctx context.Context, buildSecrets map[str
 			RailpackBuildPlan: buildResult.Plan,
 			CacheKey:          cacheKey,
 			Secrets:           buildSecrets,
+			SecretsHash:       secretsHash(buildSecrets),
 		},
 	)
 
@@ -95,4 +100,18 @@ func GenerateBuildResult(directory string, buildSecrets map[string]string, runCo
 	buildResult := core.GenerateBuildPlan(app, &env, generateOptions)
 
 	return buildResult, app, &env, nil
+}
+
+// secretsHash feeds railpack's secrets-hash mount so cached steps are invalidated
+// when a secret value changes, not only when the set of keys changes
+// (railpack buildkit/build_llb/build_graph.go).
+func secretsHash(secrets map[string]string) string {
+	h := sha256.New()
+	for _, k := range slices.Sorted(maps.Keys(secrets)) {
+		h.Write([]byte(k))
+		h.Write([]byte{0})
+		h.Write([]byte(secrets[k]))
+		h.Write([]byte{0})
+	}
+	return hex.EncodeToString(h.Sum(nil))
 }
