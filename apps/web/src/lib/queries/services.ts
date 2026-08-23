@@ -355,7 +355,6 @@ export const UpdateServiceInputSchema = z
     s3BackupSourceId: z.string().uuid().optional(),
     s3BackupBucket: z.string().optional(),
     builder: ServiceBuilderSchema.optional(),
-    installCommand: z.string().optional(),
     railpackBuilderInstallCommand: z.string().optional(),
     railpackBuilderBuildCommand: z.string().optional(),
     dockerBuilderDockerfilePath: z.string().optional(),

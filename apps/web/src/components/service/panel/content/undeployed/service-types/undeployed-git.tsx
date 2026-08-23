@@ -113,8 +113,10 @@ export function UndeployedContentGit({
 
       const extraProps: {
         builder?: TBuilderEnum;
-        installCommand?: string;
-        buildCommand?: string;
+        railpackBuilderInstallCommand?: string;
+        railpackBuilderBuildCommand?: string;
+        dockerBuilderDockerfilePath?: string;
+        dockerBuilderBuildContext?: string;
         startCommand?: string;
       } = {};
 
@@ -126,14 +128,27 @@ export function UndeployedContentGit({
         formValues.railpackBuilderInstallCommand !==
           (service.config.railpack_builder_install_command || "")
       ) {
-        extraProps.installCommand = formValues.railpackBuilderInstallCommand;
+        extraProps.railpackBuilderInstallCommand = formValues.railpackBuilderInstallCommand;
       }
       if (
         formValues.builder === "railpack" &&
         formValues.railpackBuilderBuildCommand !==
           (service.config.railpack_builder_build_command || "")
       ) {
-        extraProps.buildCommand = formValues.railpackBuilderBuildCommand;
+        extraProps.railpackBuilderBuildCommand = formValues.railpackBuilderBuildCommand;
+      }
+      if (
+        formValues.builder === "docker" &&
+        formValues.dockerBuilderDockerfilePath !==
+          (service.config.docker_builder_dockerfile_path || "")
+      ) {
+        extraProps.dockerBuilderDockerfilePath = formValues.dockerBuilderDockerfilePath;
+      }
+      if (
+        formValues.builder === "docker" &&
+        formValues.dockerBuilderBuildContext !== (service.config.docker_builder_build_context || "")
+      ) {
+        extraProps.dockerBuilderBuildContext = formValues.dockerBuilderBuildContext;
       }
       if (formValues.startCommand !== (service.config.run_command || "")) {
         extraProps.startCommand = formValues.startCommand;
