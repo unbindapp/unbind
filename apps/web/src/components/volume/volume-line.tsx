@@ -55,11 +55,11 @@ export default function VolumeLine({
               style={{
                 transform: `scaleX(${Math.ceil(usagePercentage)}%)`,
               }}
-              className="bg-foreground/6 group-data-[usage=high]/line:bg-warning/8 h-full w-full origin-left"
+              className="bg-foreground/6 group-data-[usage=high]/line:bg-warning/8 group-data-[usage=critical]/line:bg-destructive/8 h-full w-full origin-left"
             />
           </div>
         )}
-        <div className="text-muted-foreground group-data-[usage=high]/line:text-warning flex w-full items-center justify-between gap-4 px-4">
+        <div className="text-muted-foreground group-data-[usage=high]/line:text-warning group-data-[usage=critical]/line:text-destructive flex w-full items-center justify-between gap-4 px-4">
           <div className="relative flex w-full items-center justify-between gap-4 leading-tight font-medium">
             <div
               data-truncate={usagePercentage === undefined || undefined}

@@ -1,1 +1,1 @@
-export type TVolumeUsageLevel = "low" | "high";
+export type TVolumeUsageLevel = "low" | "high" | "critical";

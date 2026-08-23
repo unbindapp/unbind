@@ -6,6 +6,9 @@ export function getVolumeUsageLevel(percentage: number | null | undefined): TVol
     return "low";
   }
   if (percentage >= 85) {
+    return "critical";
+  }
+  if (percentage >= 70) {
     return "high";
   }
   return "low";
