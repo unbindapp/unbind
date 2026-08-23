@@ -24,7 +24,6 @@ import (
 	"github.com/unbindapp/unbind-api/internal/api/router"
 	"github.com/unbindapp/unbind-api/internal/api/server"
 	"github.com/unbindapp/unbind-api/internal/auth"
-	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/deployctl"
@@ -256,8 +255,6 @@ func startAPI(cfg *config.Config) {
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.RealIP)
 		r.Use(middleware.Logger)
-
-		huma.NewError = errdefs.HumaErrorFunc
 
 		config := router.NewHumaConfig("Unbind API", "1.0.0", cfg.CookieSecure)
 		config.DocsPath = ""

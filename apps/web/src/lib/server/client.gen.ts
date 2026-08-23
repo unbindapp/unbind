@@ -958,25 +958,6 @@ export const EndpointDiscoverySchema = z
   })
   .strip();
 
-export const ErrorDetailSchema = z
-  .object({
-    location: z.string().optional(), // Where the error occurred, e.g. 'body.items[3].tags' or 'path.thing-id'
-    message: z.string().optional(), // Error message text
-    value: z.any().optional(), // The value at the given location
-  })
-  .strip();
-
-export const ErrorModelSchema = z
-  .object({
-    detail: z.string().optional(), // A human-readable explanation specific to this occurrence of the problem.
-    errors: z.array(ErrorDetailSchema).nullable().optional(), // Optional list of individual error details
-    instance: z.string().optional(), // A URI reference that identifies the specific occurrence of the problem.
-    status: z.number().optional(), // HTTP status code
-    title: z.string().optional(), // A short, human-readable summary of the problem type. This value should not change between occurrences of the error.
-    type: z.string().optional(), // A URI reference to human-readable documentation for the error.
-  })
-  .strip();
-
 export const GenerateWildcardDomainInputBodySchema = z
   .object({
     name: z.string(), // The base name of the wildcard domain
@@ -2003,6 +1984,25 @@ export const ResolveVariableReferenceResponseBodySchema = z
   })
   .strip();
 
+export const ResponseErrorSchema = z
+  .object({
+    details: z.array(z.string()).nullable().optional(), // Optional actionable details, e.g. which field failed validation
+    message: z.string(), // Human-readable summary of what went wrong
+    status: z.number(), // HTTP status code
+    type: z.enum([
+      'bad_request',
+      'unauthorized',
+      'forbidden',
+      'not_found',
+      'conflict',
+      'validation_error',
+      'rate_limited',
+      'internal_error',
+      'error',
+    ]), // Stable, machine-readable error code
+  })
+  .strip();
+
 export const RestartInstancesInputBodySchema = z
   .object({
     environment_id: z.string(),
@@ -2642,8 +2642,6 @@ export type TlsStatus = z.infer<typeof TlsStatusSchema>;
 export type IngressEndpoint = z.infer<typeof IngressEndpointSchema>;
 export type ServiceEndpoint = z.infer<typeof ServiceEndpointSchema>;
 export type EndpointDiscovery = z.infer<typeof EndpointDiscoverySchema>;
-export type ErrorDetail = z.infer<typeof ErrorDetailSchema>;
-export type ErrorModel = z.infer<typeof ErrorModelSchema>;
 export type GenerateWildcardDomainInputBody = z.infer<typeof GenerateWildcardDomainInputBodySchema>;
 export type GenerateWildcardDomainOutputBody = z.infer<
   typeof GenerateWildcardDomainOutputBodySchema
@@ -2791,6 +2789,7 @@ export type ResolveAvailableVariableReferenceResponseBody = z.infer<
 export type ResolveVariableReferenceResponseBody = z.infer<
   typeof ResolveVariableReferenceResponseBodySchema
 >;
+export type ResponseError = z.infer<typeof ResponseErrorSchema>;
 export type RestartInstancesInputBody = z.infer<typeof RestartInstancesInputBodySchema>;
 export type Restarted = z.infer<typeof RestartedSchema>;
 export type RestartServicesResponseBody = z.infer<typeof RestartServicesResponseBodySchema>;
@@ -3270,6 +3269,104 @@ export const AvailableDatabaseEnum = z.enum([
 ]);
 export type TAvailableDatabase = z.infer<typeof AvailableDatabaseEnum>;
 
+/**
+ * Error thrown for any non-2xx API response. Extends Error so the
+ * existing `error.message` call sites keep working, while exposing the
+ * structured fields of the API's error envelope for callers that want to
+ * branch on them.
+ */
+export class ApiError extends Error {
+  readonly status: number;
+  readonly type: string;
+  readonly details: string[];
+  /** Parsed JSON body, or undefined when the response wasn't JSON. */
+  readonly body: unknown;
+  /** Unparsed response body, kept for non-JSON failures (proxies, gateways). */
+  readonly raw: string;
+
+  constructor(
+    message: string,
+    init: {
+      status: number;
+      type: string;
+      details: string[];
+      body: unknown;
+      raw: string;
+    },
+  ) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = init.status;
+    this.type = init.type;
+    this.details = init.details;
+    this.body = init.body;
+    this.raw = init.raw;
+  }
+}
+
+/**
+ * Non-JSON bodies come from proxies and gateways rather than the API. A
+ * short one-liner ("upstream connect error...") is worth surfacing; an
+ * HTML page or a truncated JSON fragment in a toast is not, and an
+ * unbounded body has no place in the DOM.
+ */
+function plainTextMessage(raw: string): string | undefined {
+  const text = raw.trim().replace(/\s+/g, ' ');
+  if (!text || text.length > 200) return undefined;
+  if (/^[<{[]/.test(text)) return undefined;
+  return text;
+}
+
+/**
+ * Builds an ApiError from a failed response. The body is best-effort:
+ * gateways and proxies can return HTML or nothing at all, so a body that
+ * fails to parse must not mask the underlying HTTP failure.
+ */
+async function parseApiError(response: Response, url: string): Promise<ApiError> {
+  // Read as text first and parse by hand: response.json() consumes the
+  // stream, so a parse failure would leave the body unrecoverable.
+  let raw = '';
+  try {
+    raw = await response.text();
+  } catch {
+    raw = '';
+  }
+
+  let body: unknown;
+  try {
+    body = raw ? JSON.parse(raw) : undefined;
+  } catch {
+    body = undefined;
+  }
+
+  // The documented envelope is ResponseError, but gateways and proxies can
+  // return anything, so fall back to a lenient read before giving up on
+  // the body entirely.
+  const parsed = ResponseErrorSchema.safeParse(body);
+  const envelope = parsed.success
+    ? parsed.data
+    : (body as { message?: unknown; type?: unknown; details?: unknown } | undefined);
+  const details = Array.isArray(envelope?.details)
+    ? envelope.details.filter((d): d is string => typeof d === 'string')
+    : [];
+  const message =
+    (typeof envelope?.message === 'string' && envelope.message) ||
+    details[0] ||
+    // Only echo the body when it wasn't JSON at all: a body that parsed
+    // but carried no message (null, {}, a bare array) is machine output,
+    // not something to show a user.
+    (body === undefined ? plainTextMessage(raw) : undefined) ||
+    `Request failed with status ${response.status}`;
+  const type = typeof envelope?.type === 'string' ? envelope.type : 'error';
+
+  if (import.meta.env.DEV) {
+    // Never log the request body: it can contain passwords and secrets.
+    console.error(`API ${response.status} ${url}`, body ?? (raw || '(empty body)'));
+  }
+
+  return new ApiError(message, { status: response.status, type, details, body, raw });
+}
+
 export type ClientOptions = {
   apiUrl: string;
   fetchFn?: typeof fetch;
@@ -3303,24 +3400,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = SessionResponseBodySchema.safeParse(data);
@@ -3331,7 +3411,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -3359,24 +3441,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = LogoutResponseBodySchema.safeParse(data);
@@ -3387,7 +3452,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -3418,24 +3485,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = CreateBuildOutputBodySchema.safeParse(data);
@@ -3446,7 +3496,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -3487,24 +3539,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = GetDeploymentResponseBodySchema.safeParse(data);
@@ -3515,7 +3550,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -3558,24 +3595,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = ListDeploymentsResponseBodySchema.safeParse(data);
@@ -3586,7 +3606,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -3615,24 +3637,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = RedeployOutputBodySchema.safeParse(data);
@@ -3643,7 +3648,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -3680,24 +3687,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = SearchImagesResponseBodySchema.safeParse(data);
@@ -3708,7 +3698,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -3743,24 +3735,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = ListTagsResponseBodySchema.safeParse(data);
@@ -3771,7 +3746,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -3802,24 +3779,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = CreateEnvironmentResponseBodySchema.safeParse(data);
@@ -3830,7 +3790,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -3859,24 +3821,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = DeleteEnvironmentResponseBodySchema.safeParse(data);
@@ -3887,7 +3832,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -3922,24 +3869,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = GetEnvironmentOutputBodySchema.safeParse(data);
@@ -3950,7 +3880,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -3985,24 +3917,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = ListEnvironmentsOutputBodySchema.safeParse(data);
@@ -4013,7 +3928,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -4042,24 +3959,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = UpdateEnvironmentResponseBodySchema.safeParse(data);
@@ -4070,7 +3970,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -4108,24 +4010,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } = GithubAppCreateResponseBodySchema.safeParse(data);
@@ -4136,7 +4021,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -4171,24 +4058,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } = GithubAppGetResponseBodySchema.safeParse(data);
@@ -4199,7 +4069,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -4235,24 +4107,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = GithubAppListResponseBodySchema.safeParse(data);
@@ -4263,7 +4118,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -4293,24 +4150,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
               const response = await fetchFn(url.toString(), options);
               if (!response.ok) {
-                console.log(
-                  `GO API request failed with status ${response.status}: ${response.statusText}`,
-                );
-                const data = await response.json();
-                console.log(`GO API request error`, data);
-                console.log(`Request URL is:`, url.toString());
-
-                let errorMessage =
-                  '`GO API request failed with status ${response.status}: ${response.statusText}`';
-                if (
-                  data &&
-                  Array.isArray(data.details) &&
-                  data.details.length > 0 &&
-                  typeof data.details[0] === 'string'
-                ) {
-                  errorMessage = data.details[0];
-                }
-                throw new Error(errorMessage);
+                throw await parseApiError(response, url.toString());
               }
               const data = await response.json();
               const { data: parsedData, error } =
@@ -4322,7 +4162,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               }
               return parsedData;
             } catch (error) {
-              console.error('Error in API request:', error);
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
               throw error;
             }
           },
@@ -4352,24 +4194,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } =
@@ -4381,7 +4206,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -4410,24 +4237,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } =
@@ -4439,7 +4249,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -4475,24 +4287,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
               const response = await fetchFn(url.toString(), options);
               if (!response.ok) {
-                console.log(
-                  `GO API request failed with status ${response.status}: ${response.statusText}`,
-                );
-                const data = await response.json();
-                console.log(`GO API request error`, data);
-                console.log(`Request URL is:`, url.toString());
-
-                let errorMessage =
-                  '`GO API request failed with status ${response.status}: ${response.statusText}`';
-                if (
-                  data &&
-                  Array.isArray(data.details) &&
-                  data.details.length > 0 &&
-                  typeof data.details[0] === 'string'
-                ) {
-                  errorMessage = data.details[0];
-                }
-                throw new Error(errorMessage);
+                throw await parseApiError(response, url.toString());
               }
               const data = await response.json();
               const { data: parsedData, error } =
@@ -4504,7 +4299,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               }
               return parsedData;
             } catch (error) {
-              console.error('Error in API request:', error);
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
               throw error;
             }
           },
@@ -4537,24 +4334,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = CreateGroupResponseBodySchema.safeParse(data);
@@ -4565,7 +4345,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -4594,24 +4376,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = DeleteGroupResponseBodySchema.safeParse(data);
@@ -4622,7 +4387,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -4657,24 +4424,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = GetGroupResponseBodySchema.safeParse(data);
@@ -4685,7 +4435,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -4713,24 +4465,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = ListGroupsResponseBodySchema.safeParse(data);
@@ -4741,7 +4476,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -4777,24 +4514,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } = ListGroupMembersResponseBodySchema.safeParse(data);
@@ -4805,7 +4525,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -4835,24 +4557,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               options.body = JSON.stringify(validatedBody);
               const response = await fetchFn(url.toString(), options);
               if (!response.ok) {
-                console.log(
-                  `GO API request failed with status ${response.status}: ${response.statusText}`,
-                );
-                const data = await response.json();
-                console.log(`GO API request error`, data);
-                console.log(`Request URL is:`, url.toString());
-                console.log(`Request body is:`, validatedBody);
-                let errorMessage =
-                  '`GO API request failed with status ${response.status}: ${response.statusText}`';
-                if (
-                  data &&
-                  Array.isArray(data.details) &&
-                  data.details.length > 0 &&
-                  typeof data.details[0] === 'string'
-                ) {
-                  errorMessage = data.details[0];
-                }
-                throw new Error(errorMessage);
+                throw await parseApiError(response, url.toString());
               }
               const data = await response.json();
               const { data: parsedData, error } = GroupMemberResponseBodySchema.safeParse(data);
@@ -4863,7 +4568,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               }
               return parsedData;
             } catch (error) {
-              console.error('Error in API request:', error);
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
               throw error;
             }
           },
@@ -4892,24 +4599,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               options.body = JSON.stringify(validatedBody);
               const response = await fetchFn(url.toString(), options);
               if (!response.ok) {
-                console.log(
-                  `GO API request failed with status ${response.status}: ${response.statusText}`,
-                );
-                const data = await response.json();
-                console.log(`GO API request error`, data);
-                console.log(`Request URL is:`, url.toString());
-                console.log(`Request body is:`, validatedBody);
-                let errorMessage =
-                  '`GO API request failed with status ${response.status}: ${response.statusText}`';
-                if (
-                  data &&
-                  Array.isArray(data.details) &&
-                  data.details.length > 0 &&
-                  typeof data.details[0] === 'string'
-                ) {
-                  errorMessage = data.details[0];
-                }
-                throw new Error(errorMessage);
+                throw await parseApiError(response, url.toString());
               }
               const data = await response.json();
               const { data: parsedData, error } = GroupMemberResponseBodySchema.safeParse(data);
@@ -4920,7 +4610,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               }
               return parsedData;
             } catch (error) {
-              console.error('Error in API request:', error);
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
               throw error;
             }
           },
@@ -4958,24 +4650,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } =
@@ -4987,7 +4662,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -5017,24 +4694,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               options.body = JSON.stringify(validatedBody);
               const response = await fetchFn(url.toString(), options);
               if (!response.ok) {
-                console.log(
-                  `GO API request failed with status ${response.status}: ${response.statusText}`,
-                );
-                const data = await response.json();
-                console.log(`GO API request error`, data);
-                console.log(`Request URL is:`, url.toString());
-                console.log(`Request body is:`, validatedBody);
-                let errorMessage =
-                  '`GO API request failed with status ${response.status}: ${response.statusText}`';
-                if (
-                  data &&
-                  Array.isArray(data.details) &&
-                  data.details.length > 0 &&
-                  typeof data.details[0] === 'string'
-                ) {
-                  errorMessage = data.details[0];
-                }
-                throw new Error(errorMessage);
+                throw await parseApiError(response, url.toString());
               }
               const data = await response.json();
               const { data: parsedData, error } =
@@ -5046,7 +4706,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               }
               return parsedData;
             } catch (error) {
-              console.error('Error in API request:', error);
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
               throw error;
             }
           },
@@ -5075,24 +4737,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               options.body = JSON.stringify(validatedBody);
               const response = await fetchFn(url.toString(), options);
               if (!response.ok) {
-                console.log(
-                  `GO API request failed with status ${response.status}: ${response.statusText}`,
-                );
-                const data = await response.json();
-                console.log(`GO API request error`, data);
-                console.log(`Request URL is:`, url.toString());
-                console.log(`Request body is:`, validatedBody);
-                let errorMessage =
-                  '`GO API request failed with status ${response.status}: ${response.statusText}`';
-                if (
-                  data &&
-                  Array.isArray(data.details) &&
-                  data.details.length > 0 &&
-                  typeof data.details[0] === 'string'
-                ) {
-                  errorMessage = data.details[0];
-                }
-                throw new Error(errorMessage);
+                throw await parseApiError(response, url.toString());
               }
               const data = await response.json();
               const { data: parsedData, error } =
@@ -5104,7 +4749,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               }
               return parsedData;
             } catch (error) {
-              console.error('Error in API request:', error);
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
               throw error;
             }
           },
@@ -5135,24 +4782,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = UpdateGroupResponseBodySchema.safeParse(data);
@@ -5163,7 +4793,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -5200,24 +4832,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = GetInstanceHealthResponseBodySchema.safeParse(data);
@@ -5228,7 +4843,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -5263,24 +4880,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = ListInstancesResponseBodySchema.safeParse(data);
@@ -5291,7 +4891,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -5320,24 +4922,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = RestartServicesResponseBodySchema.safeParse(data);
@@ -5348,7 +4933,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -5398,24 +4985,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = QueryLogsResponseBodySchema.safeParse(data);
@@ -5426,7 +4996,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -5473,29 +5045,14 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           return data;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -5540,24 +5097,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = GetMetricsResponseBodySchema.safeParse(data);
@@ -5568,7 +5108,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -5603,24 +5145,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = GetNodeMetricsResponseBodySchema.safeParse(data);
@@ -5631,7 +5156,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -5666,24 +5193,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = GetVolumeMetricsResponseBodySchema.safeParse(data);
@@ -5694,7 +5204,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -5725,24 +5237,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = CreateProjectResponseBodySchema.safeParse(data);
@@ -5753,7 +5248,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -5782,24 +5279,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = DeleteProjectResponseBodySchema.safeParse(data);
@@ -5810,7 +5290,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -5845,24 +5327,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = GetProjectResponseBodySchema.safeParse(data);
@@ -5873,7 +5338,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -5908,24 +5375,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = ListProjectResponseBodySchema.safeParse(data);
@@ -5936,7 +5386,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -5965,24 +5417,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = UpdateProjectResponseBodySchema.safeParse(data);
@@ -5993,7 +5428,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -6024,24 +5461,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = CreateServiceGroupResponseBodySchema.safeParse(data);
@@ -6052,7 +5472,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -6081,24 +5503,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = DeleteServiceGroupResponseBodySchema.safeParse(data);
@@ -6109,7 +5514,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -6144,24 +5551,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = GetServiceGroupResponseBodySchema.safeParse(data);
@@ -6172,7 +5562,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -6207,24 +5599,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = GetServiceGroupInfoResponseBodySchema.safeParse(data);
@@ -6235,7 +5610,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -6270,24 +5647,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = ListServiceGroupResponseBodySchema.safeParse(data);
@@ -6298,7 +5658,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -6327,24 +5689,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } =
@@ -6356,7 +5701,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -6385,24 +5732,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = UpdateServiceGroupResponseBodySchema.safeParse(data);
@@ -6413,7 +5743,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -6444,24 +5776,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = CreateServiceResponseBodySchema.safeParse(data);
@@ -6472,7 +5787,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -6509,24 +5826,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
               const response = await fetchFn(url.toString(), options);
               if (!response.ok) {
-                console.log(
-                  `GO API request failed with status ${response.status}: ${response.statusText}`,
-                );
-                const data = await response.json();
-                console.log(`GO API request error`, data);
-                console.log(`Request URL is:`, url.toString());
-
-                let errorMessage =
-                  '`GO API request failed with status ${response.status}: ${response.statusText}`';
-                if (
-                  data &&
-                  Array.isArray(data.details) &&
-                  data.details.length > 0 &&
-                  typeof data.details[0] === 'string'
-                ) {
-                  errorMessage = data.details[0];
-                }
-                throw new Error(errorMessage);
+                throw await parseApiError(response, url.toString());
               }
               const data = await response.json();
               const { data: parsedData, error } = GetDatabaseResponseBodySchema.safeParse(data);
@@ -6537,7 +5837,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               }
               return parsedData;
             } catch (error) {
-              console.error('Error in API request:', error);
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
               throw error;
             }
           },
@@ -6565,24 +5867,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
               const response = await fetchFn(url.toString(), options);
               if (!response.ok) {
-                console.log(
-                  `GO API request failed with status ${response.status}: ${response.statusText}`,
-                );
-                const data = await response.json();
-                console.log(`GO API request error`, data);
-                console.log(`Request URL is:`, url.toString());
-
-                let errorMessage =
-                  '`GO API request failed with status ${response.status}: ${response.statusText}`';
-                if (
-                  data &&
-                  Array.isArray(data.details) &&
-                  data.details.length > 0 &&
-                  typeof data.details[0] === 'string'
-                ) {
-                  errorMessage = data.details[0];
-                }
-                throw new Error(errorMessage);
+                throw await parseApiError(response, url.toString());
               }
               const data = await response.json();
               const { data: parsedData, error } = ListDatabasesResponseBodySchema.safeParse(data);
@@ -6593,7 +5878,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               }
               return parsedData;
             } catch (error) {
-              console.error('Error in API request:', error);
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
               throw error;
             }
           },
@@ -6624,24 +5911,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = DeleteServiceResponseBodySchema.safeParse(data);
@@ -6652,7 +5922,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -6688,24 +5960,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } = ListEndpointsResponseBodySchema.safeParse(data);
@@ -6716,7 +5971,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -6752,24 +6009,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = GetServiceResponseBodySchema.safeParse(data);
@@ -6780,7 +6020,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -6815,24 +6057,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = ListServiceResponseBodySchema.safeParse(data);
@@ -6843,7 +6068,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -6872,24 +6099,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = UpdatServiceResponseBodySchema.safeParse(data);
@@ -6900,7 +6110,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -6931,24 +6143,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = CreateUserResponseBodySchema.safeParse(data);
@@ -6959,7 +6154,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -6987,24 +6184,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = SetupStatusResponseBodySchema.safeParse(data);
@@ -7015,7 +6195,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -7047,24 +6229,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             options.body = JSON.stringify(validatedBody);
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-              console.log(`Request body is:`, validatedBody);
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } = CreatePVCResponseBodySchema.safeParse(data);
@@ -7075,7 +6240,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -7104,24 +6271,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             options.body = JSON.stringify(validatedBody);
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-              console.log(`Request body is:`, validatedBody);
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } = DeletePVCResponseBodySchema.safeParse(data);
@@ -7132,7 +6282,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -7167,24 +6319,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } = GetPVCResponseBodySchema.safeParse(data);
@@ -7195,7 +6330,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -7230,24 +6367,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } = ListPVCResponseBodySchema.safeParse(data);
@@ -7258,7 +6378,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -7287,24 +6409,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             options.body = JSON.stringify(validatedBody);
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-              console.log(`Request body is:`, validatedBody);
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } = UpdatePVCResponseBodySchema.safeParse(data);
@@ -7315,7 +6420,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -7346,24 +6453,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             options.body = JSON.stringify(validatedBody);
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-              console.log(`Request body is:`, validatedBody);
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } = CreateS3OutputBodySchema.safeParse(data);
@@ -7374,7 +6464,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -7403,24 +6495,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             options.body = JSON.stringify(validatedBody);
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-              console.log(`Request body is:`, validatedBody);
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } = DeleteS3SourceByIDOutputBodySchema.safeParse(data);
@@ -7431,7 +6506,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -7466,24 +6543,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } = GetS3SourceByIDOutputBodySchema.safeParse(data);
@@ -7494,7 +6554,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -7529,24 +6591,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } = ListS3SourceOutputBodySchema.safeParse(data);
@@ -7557,7 +6602,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -7586,24 +6633,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             options.body = JSON.stringify(validatedBody);
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-              console.log(`Request body is:`, validatedBody);
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } = TestS3OutputBodySchema.safeParse(data);
@@ -7614,7 +6644,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -7643,24 +6675,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             options.body = JSON.stringify(validatedBody);
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-              console.log(`Request body is:`, validatedBody);
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } = UpdateS3SourceResponseBodySchema.safeParse(data);
@@ -7671,7 +6686,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -7704,24 +6721,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
               const response = await fetchFn(url.toString(), options);
               if (!response.ok) {
-                console.log(
-                  `GO API request failed with status ${response.status}: ${response.statusText}`,
-                );
-                const data = await response.json();
-                console.log(`GO API request error`, data);
-                console.log(`Request URL is:`, url.toString());
-
-                let errorMessage =
-                  '`GO API request failed with status ${response.status}: ${response.statusText}`';
-                if (
-                  data &&
-                  Array.isArray(data.details) &&
-                  data.details.length > 0 &&
-                  typeof data.details[0] === 'string'
-                ) {
-                  errorMessage = data.details[0];
-                }
-                throw new Error(errorMessage);
+                throw await parseApiError(response, url.toString());
               }
               const data = await response.json();
               const { data: parsedData, error } =
@@ -7733,7 +6733,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               }
               return parsedData;
             } catch (error) {
-              console.error('Error in API request:', error);
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
               throw error;
             }
           },
@@ -7761,24 +6763,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
               const response = await fetchFn(url.toString(), options);
               if (!response.ok) {
-                console.log(
-                  `GO API request failed with status ${response.status}: ${response.statusText}`,
-                );
-                const data = await response.json();
-                console.log(`GO API request error`, data);
-                console.log(`Request URL is:`, url.toString());
-
-                let errorMessage =
-                  '`GO API request failed with status ${response.status}: ${response.statusText}`';
-                if (
-                  data &&
-                  Array.isArray(data.details) &&
-                  data.details.length > 0 &&
-                  typeof data.details[0] === 'string'
-                ) {
-                  errorMessage = data.details[0];
-                }
-                throw new Error(errorMessage);
+                throw await parseApiError(response, url.toString());
               }
               const data = await response.json();
               const { data: parsedData, error } =
@@ -7790,7 +6775,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               }
               return parsedData;
             } catch (error) {
-              console.error('Error in API request:', error);
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
               throw error;
             }
           },
@@ -7819,24 +6806,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               options.body = JSON.stringify(validatedBody);
               const response = await fetchFn(url.toString(), options);
               if (!response.ok) {
-                console.log(
-                  `GO API request failed with status ${response.status}: ${response.statusText}`,
-                );
-                const data = await response.json();
-                console.log(`GO API request error`, data);
-                console.log(`Request URL is:`, url.toString());
-                console.log(`Request body is:`, validatedBody);
-                let errorMessage =
-                  '`GO API request failed with status ${response.status}: ${response.statusText}`';
-                if (
-                  data &&
-                  Array.isArray(data.details) &&
-                  data.details.length > 0 &&
-                  typeof data.details[0] === 'string'
-                ) {
-                  errorMessage = data.details[0];
-                }
-                throw new Error(errorMessage);
+                throw await parseApiError(response, url.toString());
               }
               const data = await response.json();
               const { data: parsedData, error } =
@@ -7848,7 +6818,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               }
               return parsedData;
             } catch (error) {
-              console.error('Error in API request:', error);
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
               throw error;
             }
           },
@@ -7886,24 +6858,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } = DnsCheckResponseBodySchema.safeParse(data);
@@ -7914,7 +6869,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -7944,24 +6901,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } = CheckUniqueDomainOutputBodySchema.safeParse(data);
@@ -7972,7 +6912,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -8001,24 +6943,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             options.body = JSON.stringify(validatedBody);
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-              console.log(`Request body is:`, validatedBody);
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } =
@@ -8030,7 +6955,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -8059,24 +6986,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = SystemMetaResponseBodySchema.safeParse(data);
@@ -8087,7 +6997,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -8117,24 +7029,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             options.body = JSON.stringify(validatedBody);
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-              console.log(`Request body is:`, validatedBody);
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } = CreateRegistryResponseBodySchema.safeParse(data);
@@ -8145,7 +7040,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -8171,29 +7068,14 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             options.body = JSON.stringify(validatedBody);
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-              console.log(`Request body is:`, validatedBody);
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             return data;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -8228,24 +7110,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } = GetRegistryResponseBodySchema.safeParse(data);
@@ -8256,7 +7121,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -8284,24 +7151,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } = ListRegistriesResponseBodySchema.safeParse(data);
@@ -8312,7 +7162,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -8341,24 +7193,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             options.body = JSON.stringify(validatedBody);
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-              console.log(`Request body is:`, validatedBody);
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } =
@@ -8370,7 +7205,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -8401,24 +7238,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             options.body = JSON.stringify(validatedBody);
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-              console.log(`Request body is:`, validatedBody);
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } = SettingsResponseBodySchema.safeParse(data);
@@ -8429,7 +7249,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -8460,24 +7282,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             options.body = JSON.stringify(validatedBody);
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-              console.log(`Request body is:`, validatedBody);
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } = UpdateApplyResponseBodySchema.safeParse(data);
@@ -8488,7 +7293,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -8516,24 +7323,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } = UpdateCheckResponseBodySchema.safeParse(data);
@@ -8544,7 +7334,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -8572,24 +7364,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } = UpdateStatusResponseBodySchema.safeParse(data);
@@ -8600,7 +7375,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -8638,24 +7415,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = GetTeamResponseBodySchema.safeParse(data);
@@ -8666,7 +7426,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -8691,24 +7453,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = TeamResponseBodySchema.safeParse(data);
@@ -8719,7 +7464,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -8748,24 +7495,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = UpdateTeamResponseBodySchema.safeParse(data);
@@ -8776,7 +7506,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -8807,24 +7539,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = TemplateDeployResponseBodySchema.safeParse(data);
@@ -8835,7 +7550,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -8870,24 +7587,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = GetTemplateResponseBodySchema.safeParse(data);
@@ -8898,7 +7598,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -8926,24 +7628,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = ListTemplatesResponseBodySchema.safeParse(data);
@@ -8954,7 +7639,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -8998,29 +7685,14 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           return data;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -9051,24 +7723,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = CreateWebhookResponseBodySchema.safeParse(data);
@@ -9079,7 +7734,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -9108,24 +7765,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = DeleteWebhookResponseBodySchema.safeParse(data);
@@ -9136,7 +7776,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -9171,24 +7813,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = GetWebhookResponseBodySchema.safeParse(data);
@@ -9199,7 +7824,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -9234,24 +7861,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = ListWebhooksResponseBodySchema.safeParse(data);
@@ -9262,7 +7872,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -9291,24 +7903,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = UpdateWebhookResponseBodySchema.safeParse(data);
@@ -9319,7 +7914,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -9350,24 +7947,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = UserCreateResponseBodySchema.safeParse(data);
@@ -9378,7 +7958,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -9407,24 +7989,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = DeleteUserResponseBodySchema.safeParse(data);
@@ -9435,7 +8000,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -9470,24 +8037,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = ListUserGroupsResponseBodySchema.safeParse(data);
@@ -9498,7 +8048,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -9526,24 +8078,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = ListUsersResponseBodySchema.safeParse(data);
@@ -9554,7 +8089,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -9579,24 +8116,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = MeResponseBodySchema.safeParse(data);
@@ -9607,7 +8127,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -9636,24 +8158,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = UpdatePasswordResponseBodySchema.safeParse(data);
@@ -9664,7 +8169,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -9695,24 +8202,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = VariablesResponseBodySchema.safeParse(data);
@@ -9723,7 +8213,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -9758,24 +8250,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = VariablesResponseBodySchema.safeParse(data);
@@ -9786,7 +8261,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -9823,24 +8300,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
               const response = await fetchFn(url.toString(), options);
               if (!response.ok) {
-                console.log(
-                  `GO API request failed with status ${response.status}: ${response.statusText}`,
-                );
-                const data = await response.json();
-                console.log(`GO API request error`, data);
-                console.log(`Request URL is:`, url.toString());
-
-                let errorMessage =
-                  '`GO API request failed with status ${response.status}: ${response.statusText}`';
-                if (
-                  data &&
-                  Array.isArray(data.details) &&
-                  data.details.length > 0 &&
-                  typeof data.details[0] === 'string'
-                ) {
-                  errorMessage = data.details[0];
-                }
-                throw new Error(errorMessage);
+                throw await parseApiError(response, url.toString());
               }
               const data = await response.json();
               const { data: parsedData, error } =
@@ -9852,7 +8312,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               }
               return parsedData;
             } catch (error) {
-              console.error('Error in API request:', error);
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
               throw error;
             }
           },
@@ -9888,24 +8350,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
                 const response = await fetchFn(url.toString(), options);
                 if (!response.ok) {
-                  console.log(
-                    `GO API request failed with status ${response.status}: ${response.statusText}`,
-                  );
-                  const data = await response.json();
-                  console.log(`GO API request error`, data);
-                  console.log(`Request URL is:`, url.toString());
-
-                  let errorMessage =
-                    '`GO API request failed with status ${response.status}: ${response.statusText}`';
-                  if (
-                    data &&
-                    Array.isArray(data.details) &&
-                    data.details.length > 0 &&
-                    typeof data.details[0] === 'string'
-                  ) {
-                    errorMessage = data.details[0];
-                  }
-                  throw new Error(errorMessage);
+                  throw await parseApiError(response, url.toString());
                 }
                 const data = await response.json();
                 const { data: parsedData, error } =
@@ -9917,7 +8362,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
                 }
                 return parsedData;
               } catch (error) {
-                console.error('Error in API request:', error);
+                if (import.meta.env.DEV) {
+                  console.error('Error in API request:', error);
+                }
                 throw error;
               }
             },
@@ -9956,24 +8403,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             const { data: parsedData, error } =
@@ -9985,7 +8415,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             return parsedData;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -10015,24 +8447,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           options.body = JSON.stringify(validatedBody);
           const response = await fetchFn(url.toString(), options);
           if (!response.ok) {
-            console.log(
-              `GO API request failed with status ${response.status}: ${response.statusText}`,
-            );
-            const data = await response.json();
-            console.log(`GO API request error`, data);
-            console.log(`Request URL is:`, url.toString());
-            console.log(`Request body is:`, validatedBody);
-            let errorMessage =
-              '`GO API request failed with status ${response.status}: ${response.statusText}`';
-            if (
-              data &&
-              Array.isArray(data.details) &&
-              data.details.length > 0 &&
-              typeof data.details[0] === 'string'
-            ) {
-              errorMessage = data.details[0];
-            }
-            throw new Error(errorMessage);
+            throw await parseApiError(response, url.toString());
           }
           const data = await response.json();
           const { data: parsedData, error } = VariablesResponseBodySchema.safeParse(data);
@@ -10043,7 +8458,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           return parsedData;
         } catch (error) {
-          console.error('Error in API request:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
           throw error;
         }
       },
@@ -10071,29 +8488,14 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
-              console.log(
-                `GO API request failed with status ${response.status}: ${response.statusText}`,
-              );
-              const data = await response.json();
-              console.log(`GO API request error`, data);
-              console.log(`Request URL is:`, url.toString());
-
-              let errorMessage =
-                '`GO API request failed with status ${response.status}: ${response.statusText}`';
-              if (
-                data &&
-                Array.isArray(data.details) &&
-                data.details.length > 0 &&
-                typeof data.details[0] === 'string'
-              ) {
-                errorMessage = data.details[0];
-              }
-              throw new Error(errorMessage);
+              throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
             return data;
           } catch (error) {
-            console.error('Error in API request:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
             throw error;
           }
         },
@@ -10130,29 +8532,14 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
 
                 const response = await fetchFn(url.toString(), options);
                 if (!response.ok) {
-                  console.log(
-                    `GO API request failed with status ${response.status}: ${response.statusText}`,
-                  );
-                  const data = await response.json();
-                  console.log(`GO API request error`, data);
-                  console.log(`Request URL is:`, url.toString());
-
-                  let errorMessage =
-                    '`GO API request failed with status ${response.status}: ${response.statusText}`';
-                  if (
-                    data &&
-                    Array.isArray(data.details) &&
-                    data.details.length > 0 &&
-                    typeof data.details[0] === 'string'
-                  ) {
-                    errorMessage = data.details[0];
-                  }
-                  throw new Error(errorMessage);
+                  throw await parseApiError(response, url.toString());
                 }
                 const data = await response.json();
                 return data;
               } catch (error) {
-                console.error('Error in API request:', error);
+                if (import.meta.env.DEV) {
+                  console.error('Error in API request:', error);
+                }
                 throw error;
               }
             },

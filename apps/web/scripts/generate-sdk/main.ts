@@ -345,16 +345,7 @@ async ${paramSignature}${responseType ? `: Promise<${responseType}>` : ""} => {
     }
     const response = await fetchFn(url.toString(), options);
     if (!response.ok) {
-      console.log(\`GO API request failed with status \${response.status}: \${response.statusText}\`);
-      const data = await response.json();
-      console.log(\`GO API request error\`, data);
-      console.log(\`Request URL is:\`, url.toString());
-      ${requestType ? `console.log(\`Request body is:\`, validatedBody);` : ""}
-      let errorMessage = "\`GO API request failed with status \${response.status}: \${response.statusText}\`";
-      if (data && Array.isArray(data.details) && data.details.length > 0 && typeof data.details[0] === "string") {
-        errorMessage = data.details[0]
-      }
-      throw new Error(errorMessage);
+      throw await parseApiError(response, url.toString());
     }
     const data = await response.json();
     ${
@@ -369,7 +360,9 @@ async ${paramSignature}${responseType ? `: Promise<${responseType}>` : ""} => {
         : "return data;"
     }
   } catch (error) {
-    console.error('Error in API request:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error in API request:', error);
+    }
     throw error;
   }
 }`.trim();
@@ -575,6 +568,104 @@ async function main() {
       databasesEnumOutput +
       "\n\n" +
       `
+        /**
+         * Error thrown for any non-2xx API response. Extends Error so the
+         * existing \`error.message\` call sites keep working, while exposing the
+         * structured fields of the API's error envelope for callers that want to
+         * branch on them.
+         */
+        export class ApiError extends Error {
+          readonly status: number;
+          readonly type: string;
+          readonly details: string[];
+          /** Parsed JSON body, or undefined when the response wasn't JSON. */
+          readonly body: unknown;
+          /** Unparsed response body, kept for non-JSON failures (proxies, gateways). */
+          readonly raw: string;
+
+          constructor(
+            message: string,
+            init: {
+              status: number;
+              type: string;
+              details: string[];
+              body: unknown;
+              raw: string;
+            },
+          ) {
+            super(message);
+            this.name = 'ApiError';
+            this.status = init.status;
+            this.type = init.type;
+            this.details = init.details;
+            this.body = init.body;
+            this.raw = init.raw;
+          }
+        }
+
+        /**
+         * Non-JSON bodies come from proxies and gateways rather than the API. A
+         * short one-liner ("upstream connect error...") is worth surfacing; an
+         * HTML page or a truncated JSON fragment in a toast is not, and an
+         * unbounded body has no place in the DOM.
+         */
+        function plainTextMessage(raw: string): string | undefined {
+          const text = raw.trim().replace(/\\s+/g, ' ');
+          if (!text || text.length > 200) return undefined;
+          if (/^[<{[]/.test(text)) return undefined;
+          return text;
+        }
+
+        /**
+         * Builds an ApiError from a failed response. The body is best-effort:
+         * gateways and proxies can return HTML or nothing at all, so a body that
+         * fails to parse must not mask the underlying HTTP failure.
+         */
+        async function parseApiError(response: Response, url: string): Promise<ApiError> {
+          // Read as text first and parse by hand: response.json() consumes the
+          // stream, so a parse failure would leave the body unrecoverable.
+          let raw = '';
+          try {
+            raw = await response.text();
+          } catch {
+            raw = '';
+          }
+
+          let body: unknown;
+          try {
+            body = raw ? JSON.parse(raw) : undefined;
+          } catch {
+            body = undefined;
+          }
+
+          // The documented envelope is ResponseError, but gateways and proxies can
+          // return anything, so fall back to a lenient read before giving up on
+          // the body entirely.
+          const parsed = ResponseErrorSchema.safeParse(body);
+          const envelope = parsed.success
+            ? parsed.data
+            : (body as { message?: unknown; type?: unknown; details?: unknown } | undefined);
+          const details = Array.isArray(envelope?.details)
+            ? envelope.details.filter((d): d is string => typeof d === 'string')
+            : [];
+          const message =
+            (typeof envelope?.message === 'string' && envelope.message) ||
+            details[0] ||
+            // Only echo the body when it wasn't JSON at all: a body that parsed
+            // but carried no message (null, {}, a bare array) is machine output,
+            // not something to show a user.
+            (body === undefined ? plainTextMessage(raw) : undefined) ||
+            \`Request failed with status \${response.status}\`;
+          const type = typeof envelope?.type === 'string' ? envelope.type : 'error';
+
+          if (import.meta.env.DEV) {
+            // Never log the request body: it can contain passwords and secrets.
+            console.error(\`API \${response.status} \${url}\`, body ?? (raw || '(empty body)'));
+          }
+
+          return new ApiError(message, { status: response.status, type, details, body, raw });
+        }
+
         export type ClientOptions = {
           apiUrl: string;
           fetchFn?: typeof fetch;

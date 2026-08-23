@@ -11,6 +11,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/api/middleware"
 	"github.com/unbindapp/unbind-api/internal/api/server"
 	"github.com/unbindapp/unbind-api/internal/auth"
+	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 
 	auth_handler "github.com/unbindapp/unbind-api/internal/api/handlers/auth"
 	deployments_handler "github.com/unbindapp/unbind-api/internal/api/handlers/deployments"
@@ -71,6 +72,12 @@ var urlEncodedFormat = huma.Format{
 }
 
 func NewHumaConfig(title, version string, cookieSecure bool) huma.Config {
+	// Install the shared error envelope before any operation is registered, so
+	// both the served API and the OpenAPI spec dump (cmd/openapi) describe and
+	// return the same shape. Registering here rather than at each entrypoint
+	// keeps the two from drifting.
+	huma.NewError = errdefs.HumaErrorFunc
+
 	schemaPrefix := "#/components/schemas/"
 	schemasPath := "/schemas"
 
