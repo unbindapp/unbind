@@ -33,7 +33,7 @@ export default function UsageSection({ volume }: TProps) {
         <div className="text-muted-foreground flex w-full items-end justify-between px-1.5">
           <p className="max-w-1/2 truncate pr-2 font-medium">
             Used:{" "}
-            <span className="text-foreground group-data-error/section:text-destructive font-semibold">
+            <span className="text-foreground group-data-error/section:text-destructive group-data-[usage=high]/section:text-warning group-data-[usage=critical]/section:text-destructive font-semibold">
               {volume.used_gb !== undefined ? formatGB(volume.used_gb) : "Unknown"}
             </span>
           </p>
