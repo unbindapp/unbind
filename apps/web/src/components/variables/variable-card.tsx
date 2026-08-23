@@ -534,6 +534,10 @@ function EditVariableForm({
               placeholder="abc123"
               classNameInput="rounded-lg px-2.5 py-1.5 h-9 sm:rounded-md font-mono"
               classNameInfo="pt-1 pb-0.5 text-xs"
+              autoCapitalize="off"
+              autoCorrect="off"
+              autoComplete="off"
+              spellCheck="false"
             />
           )}
         />
