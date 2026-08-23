@@ -54,9 +54,17 @@ architecture: standalone
 
 # Persistence configuration
 # Quote values: CloudPirates' schema requires these as strings (unquoted "10" -> number).
+# The chart only labels volumeClaimTemplates with selectorLabels and persistence.labels, so the
+# unbind-* labels the platform uses to find PVCs must be passed here as well.
 persistence:
   enabled: true
   size: {{ .Parameters.common.storage | default "1Gi" | quote }}
+  labels:
+    {{- range $key, $value := .Parameters.labels }}
+    {{- if hasPrefix "unbind" $key }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+    {{- end }}
 
 # Resource configuration
 resources:
