@@ -118,6 +118,9 @@ func (self *KubeClient) UpdatePersistentVolumeClaim(
 	// Update the PVC in Kubernetes
 	_, err = client.CoreV1().PersistentVolumeClaims(namespace).Update(ctx, pvc, metav1.UpdateOptions{})
 	if err != nil {
+		if isRejectedByAPIServer(err) {
+			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("Failed to resize PersistentVolumeClaim '%s': %s", pvcName, err.Error()))
+		}
 		return nil, fmt.Errorf("failed to update PersistentVolumeClaim '%s' in namespace '%s': %w", pvcName, namespace, err)
 	}
 	// Return the updated PVC info using GetPersistentVolumeClaim
@@ -614,4 +617,10 @@ func (self *KubeClient) GetPodsUsingPVC(ctx context.Context, namespace string, p
 		}
 	}
 	return podsUsingPVC, nil
+}
+
+// isRejectedByAPIServer reports whether the API server (or an admission webhook) refused the
+// request for reasons the caller can act on, as opposed to transport or auth failures.
+func isRejectedByAPIServer(err error) bool {
+	return errors.IsInvalid(err) || errors.IsForbidden(err) || errors.IsBadRequest(err) || errors.IsInternalError(err)
 }

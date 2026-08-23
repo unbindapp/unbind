@@ -123,9 +123,9 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 			}
 		} else {
 			// Parse
-			newSizeTarget, err := resource.ParseQuantity(input.DatabaseConfig.StorageSize)
+			newSizeTarget, err := utils.ValidateStorageQuantity(input.DatabaseConfig.StorageSize)
 			if err != nil {
-				return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid storage size")
+				return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
 			}
 
 			// Parse existing (if present)

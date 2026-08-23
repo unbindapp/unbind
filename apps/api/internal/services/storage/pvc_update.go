@@ -49,24 +49,19 @@ func (self *StorageService) UpdatePVC(ctx context.Context, requesterUserID uuid.
 		}
 	}
 
-	// Size validation
-	var newCapacity *string
-	if input.CapacityGB != nil {
-		newCapacity = new(utils.FormatStorageGB(*input.CapacityGB))
-		newSize, err := utils.ValidateStorageQuantity(*newCapacity)
-		if err != nil {
-			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
-		}
+	newCapacity := new(utils.FormatStorageGB(*input.CapacityGB))
+	newSize, err := utils.ValidateStorageQuantity(*newCapacity)
+	if err != nil {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
+	}
 
-		existingSize, err := utils.ValidateStorageQuantityGB(pvc.CapacityGB)
-		if err != nil {
-			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
-		}
+	existingSize, err := utils.ValidateStorageQuantityGB(pvc.CapacityGB)
+	if err != nil {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
+	}
 
-		// Ensure new size is greater than existing size
-		if newSize.Cmp(existingSize) < 0 {
-			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "New size must be greater than existing size")
-		}
+	if newSize.Cmp(existingSize) < 0 {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "New size must be greater than existing size")
 	}
 
 	var targetService *ent.Service

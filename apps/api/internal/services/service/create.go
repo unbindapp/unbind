@@ -22,7 +22,6 @@ import (
 	"github.com/unbindapp/unbind-api/internal/sourceanalyzer"
 	"github.com/unbindapp/unbind-api/internal/sourceanalyzer/enum"
 	"github.com/unbindapp/unbind-api/pkg/databases"
-	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 // Also set default resources for database services
@@ -114,10 +113,9 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			} else {
 				// Validate
 				input.DatabaseConfig.StorageSize = utils.EnsureSuffix(input.DatabaseConfig.StorageSize, "Gi")
-				_, err := resource.ParseQuantity(input.DatabaseConfig.StorageSize)
+				_, err := utils.ValidateStorageQuantity(input.DatabaseConfig.StorageSize)
 				if err != nil {
-					return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
-						fmt.Sprintf("Invalid storage size: %s", err))
+					return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
 				}
 			}
 		} else {

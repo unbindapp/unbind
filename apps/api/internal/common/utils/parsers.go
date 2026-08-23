@@ -3,17 +3,21 @@ package utils
 import (
 	"errors"
 	"fmt"
+	"math"
 	"net/url"
-	"strconv"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
-// FormatStorageGB renders a GB value as a clean Kubernetes quantity string, avoiding the trailing
-// zeros that "%fGi" produces (e.g. 2 -> "2Gi", 2.5 -> "2.5Gi", not "2.000000Gi").
+const mebibyte = 1024 * 1024
+
+// FormatStorageGB renders a GiB value as a Kubernetes quantity rounded to whole mebibytes, so the
+// resulting byte count is always an integer (e.g. 2 -> "2Gi", 4.85 -> "4966Mi", 0.1 -> "102Mi").
+// Fractional byte counts are rejected by storage admission webhooks that convert sizes with AsInt64.
 func FormatStorageGB(gb float64) string {
-	return strconv.FormatFloat(gb, 'f', -1, 64) + "Gi"
+	mib := int64(math.Round(gb * 1024))
+	return resource.NewQuantity(mib*mebibyte, resource.BinarySI).String()
 }
 
 func ExtractRepoName(gitURL string) (string, error) {
@@ -45,59 +49,29 @@ func ExtractRepoName(gitURL string) (string, error) {
 	return repoName, nil
 }
 
-// validateStorageQuantity returns the parsed Quantity
-// or an error if the string isn’t a whole-byte storage unit.
+// ValidateStorageQuantity returns the parsed Quantity or an error if the string
+// isn't a whole-byte storage unit.
 func ValidateStorageQuantity(s string) (resource.Quantity, error) {
 	qty, err := resource.ParseQuantity(s)
 	if err != nil {
 		return resource.Quantity{}, fmt.Errorf("invalid resource quantity %q: %w", s, err)
 	}
 
+	if _, ok := qty.AsInt64(); !ok {
+		return resource.Quantity{}, fmt.Errorf(
+			"%q is not a whole number of bytes; use whole Ki, Mi, Gi, … or K/M/G values for storage", s)
+	}
+
 	switch qty.Format {
-	case resource.BinarySI:
-		// Gi, Mi, etc.
+	case resource.BinarySI, resource.DecimalSI:
 		return qty, nil
-
-	case resource.DecimalSI:
-		// Any negative scale (10^-n) means the user typed milli (`m`)
-		// or some other fractional unit; treat that as CPU-only.
-		if qty.AsDec().Scale() < 0 {
-			return resource.Quantity{}, fmt.Errorf(
-				"%q looks like a CPU value (milli units); use Ki, Mi, Gi, … or whole K/M/G for storage", s)
-		}
-		return qty, nil
-
 	default:
 		return resource.Quantity{}, fmt.Errorf(
 			"%q uses scientific notation; disallowed for storage sizes", s)
 	}
 }
 
-// validateStorageQuantity returns the parsed Quantity
-// or an error if the string isn’t a whole-byte storage unit.
+// ValidateStorageQuantityGB validates a GiB value after rounding it to whole mebibytes.
 func ValidateStorageQuantityGB(sizeGB float64) (resource.Quantity, error) {
-	s := fmt.Sprintf("%.2fGi", sizeGB)
-	qty, err := resource.ParseQuantity(s)
-	if err != nil {
-		return resource.Quantity{}, fmt.Errorf("invalid resource quantity %q: %w", s, err)
-	}
-
-	switch qty.Format {
-	case resource.BinarySI:
-		// Gi, Mi, etc.
-		return qty, nil
-
-	case resource.DecimalSI:
-		// Any negative scale (10^-n) means the user typed milli (`m`)
-		// or some other fractional unit; treat that as CPU-only.
-		if qty.AsDec().Scale() < 0 {
-			return resource.Quantity{}, fmt.Errorf(
-				"%q looks like a CPU value (milli units); use Ki, Mi, Gi, … or whole K/M/G for storage", s)
-		}
-		return qty, nil
-
-	default:
-		return resource.Quantity{}, fmt.Errorf(
-			"%q uses scientific notation; disallowed for storage sizes", s)
-	}
+	return ValidateStorageQuantity(FormatStorageGB(sizeGB))
 }

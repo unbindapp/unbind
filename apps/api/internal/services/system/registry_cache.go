@@ -12,6 +12,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/models"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 	system_repo "github.com/unbindapp/unbind-api/internal/repositories/system"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 const bytesPerGB = 1024 * 1024 * 1024
@@ -38,7 +39,7 @@ func (self *SystemService) GetRegistryCacheConfig(ctx context.Context, requester
 	cfg := &models.RegistryCacheConfig{Managed: true}
 
 	if threshold, err := self.registryCacheManager.GetThreshold(ctx); err == nil {
-		if qty, err := utils.ValidateStorageQuantity(threshold); err == nil {
+		if qty, err := resource.ParseQuantity(threshold); err == nil {
 			cfg.CleanupThresholdGB = float64(qty.Value()) / bytesPerGB
 		}
 	}
@@ -90,7 +91,7 @@ func (self *SystemService) GetRegistryCacheStats(ctx context.Context, requesterU
 	}
 
 	if threshold, err := self.registryCacheManager.GetThreshold(ctx); err == nil {
-		if qty, err := utils.ValidateStorageQuantity(threshold); err == nil {
+		if qty, err := resource.ParseQuantity(threshold); err == nil {
 			stats.ThresholdGB = float64(qty.Value()) / bytesPerGB
 		}
 	}
@@ -120,7 +121,7 @@ func (self *SystemService) UpdateRegistryCache(ctx context.Context, requesterUse
 		if _, err := utils.ValidateStorageQuantityGB(*input.CleanupThresholdGB); err != nil {
 			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
 		}
-		thresholdStr = new(fmt.Sprintf("%.2fGi", *input.CleanupThresholdGB))
+		thresholdStr = new(utils.FormatStorageGB(*input.CleanupThresholdGB))
 	}
 
 	if input.CleanupSchedule != nil && *input.CleanupSchedule == "" {
