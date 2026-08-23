@@ -13,5 +13,10 @@
     "version": "v0.1.2",
     "description": "Release 0.1.2",
     "breaking": false
+  },
+  "v0.1.3": {
+    "version": "v0.1.3",
+    "description": "Standardized API error responses, builder settings fixes, and update page improvements",
+    "breaking": false
   }
 }
