@@ -2,12 +2,8 @@ package builders
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
-	"maps"
 	"os"
-	"slices"
 
 	"github.com/railwayapp/railpack/core"
 	a "github.com/railwayapp/railpack/core/app"
@@ -17,8 +13,7 @@ import (
 )
 
 func (self *Builder) BuildWithRailpack(ctx context.Context, buildSecrets map[string]string) (imageName, repoName string, err error) {
-	// Metadata
-	repoName, outputImage, cacheKey := self.GenerateBuildMetadata()
+	repoName = self.RepoName()
 
 	// -- Create github client
 	ghClient := github.NewGithubClient(self.config.GithubURL, nil)
@@ -37,7 +32,7 @@ func (self *Builder) BuildWithRailpack(ctx context.Context, buildSecrets map[str
 	)
 	if err != nil {
 		log.Error("Error cloning repository", "err", err)
-		return "", "", err
+		return "", repoName, err
 	}
 	defer os.RemoveAll(tmpDir)
 
@@ -53,6 +48,10 @@ func (self *Builder) BuildWithRailpack(ctx context.Context, buildSecrets map[str
 		return "", repoName, fmt.Errorf("build failed")
 	}
 
+	// Metadata, resolved from the clone so the image ref covers the built commit
+	inputs := self.buildInputs(tmpDir, buildSecrets)
+	outputImage, cacheKey := self.GenerateBuildMetadata(inputs)
+
 	err = buildkit.BuildWithBuildkitClient(
 		self.config,
 		app.Source,
@@ -61,7 +60,7 @@ func (self *Builder) BuildWithRailpack(ctx context.Context, buildSecrets map[str
 			RailpackBuildPlan: buildResult.Plan,
 			CacheKey:          cacheKey,
 			Secrets:           buildSecrets,
-			SecretsHash:       secretsHash(buildSecrets),
+			SecretsHash:       inputs.SecretsHash,
 		},
 	)
 
@@ -100,18 +99,4 @@ func GenerateBuildResult(directory string, buildSecrets map[string]string, runCo
 	buildResult := core.GenerateBuildPlan(app, &env, generateOptions)
 
 	return buildResult, app, &env, nil
-}
-
-// secretsHash feeds railpack's secrets-hash mount so cached steps are invalidated
-// when a secret value changes, not only when the set of keys changes
-// (railpack buildkit/build_llb/build_graph.go).
-func secretsHash(secrets map[string]string) string {
-	h := sha256.New()
-	for _, k := range slices.Sorted(maps.Keys(secrets)) {
-		h.Write([]byte(k))
-		h.Write([]byte{0})
-		h.Write([]byte(secrets[k]))
-		h.Write([]byte{0})
-	}
-	return hex.EncodeToString(h.Sum(nil))
 }

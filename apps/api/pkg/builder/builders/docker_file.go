@@ -14,8 +14,7 @@ import (
 
 // Builds a Dockerfile from a git repository
 func (self *Builder) BuildDockerfile(ctx context.Context, buildSecrets map[string]string) (imageName, repoName string, err error) {
-	// Metadata
-	repoName, outputImage, cacheKey := self.GenerateBuildMetadata()
+	repoName = self.RepoName()
 
 	// -- Create github client
 	ghClient := github.NewGithubClient(self.config.GithubURL, nil)
@@ -33,7 +32,7 @@ func (self *Builder) BuildDockerfile(ctx context.Context, buildSecrets map[strin
 	)
 	if err != nil {
 		log.Error("Error cloning repository", "err", err)
-		return "", "", err
+		return "", repoName, err
 	}
 	defer os.RemoveAll(tmpDir)
 
@@ -53,6 +52,12 @@ func (self *Builder) BuildDockerfile(ctx context.Context, buildSecrets map[strin
 	if err != nil {
 		return "", repoName, fmt.Errorf("error creating app: %w", err)
 	}
+
+	// Metadata, resolved from the clone so the image ref covers the built commit.
+	// Computed after the dockerfile path default above, so an unset path and an
+	// explicit "Dockerfile" hash to the same build.
+	inputs := self.buildInputs(tmpDir, buildSecrets)
+	outputImage, cacheKey := self.GenerateBuildMetadata(inputs)
 
 	// Build using BuildKit
 	err = buildkit.BuildWithBuildkitClient(
