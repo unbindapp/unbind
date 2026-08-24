@@ -45,7 +45,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		OperationID: "read-variable-reference",
 		Summary:     "Resolve Variable Reference",
 		Description: "Resolve the current value a variable reference points to.",
-		Path:        "/referneces/get",
+		Path:        "/references/get",
 		Method:      http.MethodGet,
 	}, handlers.ResolveVariableReference)
 

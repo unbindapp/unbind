@@ -116,7 +116,7 @@ func (self *VariablesService) resolveSourceValue(ctx context.Context, client kub
 		if source.Type == schema.VariableReferenceTypeInternalEndpoint {
 			for _, endpoint := range endpoints.Internal {
 				if endpoint.KubernetesName == source.Key {
-					return self.resolveInternalEndpointURL(ctx, client, namespace, source, endpoint)
+					return self.resolveInternalEndpointURL(ctx, endpoint)
 				}
 			}
 		} else {
@@ -133,7 +133,7 @@ func (self *VariablesService) resolveSourceValue(ctx context.Context, client kub
 }
 
 // Helper function to resolve internal endpoint URL
-func (self *VariablesService) resolveInternalEndpointURL(ctx context.Context, client kubernetes.Interface, namespace string, source schema.VariableReferenceSource, endpoint models.ServiceEndpoint) (string, error) {
+func (self *VariablesService) resolveInternalEndpointURL(ctx context.Context, endpoint models.ServiceEndpoint) (string, error) {
 	// Figure out port
 	var targetPort *schema.PortSpec
 	for _, port := range endpoint.Ports {

@@ -123,6 +123,7 @@ type VariableReferenceResponse struct {
 	Error           *string                          `json:"error" required:"false"`
 	Sources         []schema.VariableReferenceSource `json:"sources" required:"true" nullable:"false"`
 	Value           string                           `json:"value" required:"true"`
+	ResolvedValue   *string                          `json:"resolved_value,omitempty" required:"false" doc:"The value the reference currently resolves to, null when resolution fails"`
 	CreatedAt       time.Time                        `json:"created_at" required:"true"`
 }
 

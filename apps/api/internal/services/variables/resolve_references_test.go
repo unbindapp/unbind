@@ -3,6 +3,7 @@ package variables_service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/google/uuid"
@@ -10,6 +11,8 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
+	"github.com/unbindapp/unbind-api/internal/common/utils"
+	"github.com/unbindapp/unbind-api/internal/models"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 	mocks_infrastructure_k8s "github.com/unbindapp/unbind-api/mocks/infrastructure/k8s"
 	mocks_repositories "github.com/unbindapp/unbind-api/mocks/repositories"
@@ -187,6 +190,90 @@ func (suite *ResolveReferencesSuite) TestResolveAllReferences_Success() {
 	result, err := suite.service.ResolveAllReferences(suite.ctx, suite.serviceID)
 	suite.NoError(err)
 	suite.Equal(map[string]string{"DB_URL": "resolved-value"}, result)
+}
+
+// internalEndpointRef mirrors what the UI stores when a user picks a service's
+// UNBIND_INTERNAL_URL: source kubernetes name and key are both the k8s Service name.
+func (suite *ResolveReferencesSuite) internalEndpointRef(targetName, kubeName string, sourceID uuid.UUID) *ent.VariableReference {
+	return &ent.VariableReference{
+		ID:              uuid.New(),
+		TargetServiceID: suite.serviceID,
+		TargetName:      targetName,
+		ValueTemplate:   fmt.Sprintf("${%s.%s}", kubeName, kubeName),
+		Sources: []schema.VariableReferenceSource{{
+			Type:                 schema.VariableReferenceTypeInternalEndpoint,
+			SourceType:           schema.VariableReferenceSourceTypeService,
+			SourceID:             sourceID,
+			SourceKubernetesName: kubeName,
+			Key:                  kubeName,
+		}},
+	}
+}
+
+func (suite *ResolveReferencesSuite) expectEndpointResolution(ref *ent.VariableReference, discovery *models.EndpointDiscovery) {
+	suite.varsRepo.EXPECT().GetReferencesForService(suite.ctx, suite.serviceID).Return([]*ent.VariableReference{ref}, nil).Once()
+	suite.svcRepo.EXPECT().GetDeploymentNamespace(suite.ctx, suite.serviceID).Return(suite.namespace, nil).Once()
+	suite.k8s.EXPECT().GetInternalClient().Return(suite.k8sClient).Once()
+	suite.k8s.EXPECT().DiscoverEndpointsByLabels(suite.ctx, suite.namespace,
+		map[string]string{"unbind-service": ref.Sources[0].SourceID.String()}, false, suite.k8sClient).
+		Return(discovery, nil).Once()
+}
+
+func (suite *ResolveReferencesSuite) TestResolveAllReferences_InternalEndpointDockerimage() {
+	sourceID := uuid.New()
+	ref := suite.internalEndpointRef("MEILI_URL", "meilisearch-abc123", sourceID)
+	discovery := &models.EndpointDiscovery{Internal: []models.ServiceEndpoint{{
+		KubernetesName: "meilisearch-abc123",
+		DNS:            "meilisearch-abc123.test-namespace",
+		Ports:          []schema.PortSpec{{Port: 7700, Protocol: utils.ToPtr(schema.ProtocolTCP)}},
+		ServiceID:      sourceID,
+	}}}
+
+	suite.expectEndpointResolution(ref, discovery)
+	suite.svcRepo.EXPECT().GetDatabaseType(suite.ctx, sourceID).Return("", nil).Once()
+
+	result, err := suite.service.ResolveAllReferences(suite.ctx, suite.serviceID)
+	suite.NoError(err)
+	suite.Equal(map[string]string{"MEILI_URL": "http://meilisearch-abc123.test-namespace:7700"}, result)
+}
+
+func (suite *ResolveReferencesSuite) TestResolveAllReferences_InternalEndpointDatabase() {
+	sourceID := uuid.New()
+	ref := suite.internalEndpointRef("DATABASE_HOST", "postgresql-abc123", sourceID)
+	discovery := &models.EndpointDiscovery{Internal: []models.ServiceEndpoint{{
+		KubernetesName: "postgresql-abc123",
+		DNS:            "postgresql-abc123.test-namespace",
+		Ports:          []schema.PortSpec{{Port: 5432, Protocol: utils.ToPtr(schema.ProtocolTCP)}},
+		ServiceID:      sourceID,
+	}}}
+
+	suite.expectEndpointResolution(ref, discovery)
+	suite.svcRepo.EXPECT().GetDatabaseType(suite.ctx, sourceID).Return("postgres", nil).Once()
+
+	result, err := suite.service.ResolveAllReferences(suite.ctx, suite.serviceID)
+	suite.NoError(err)
+	suite.Equal(map[string]string{"DATABASE_HOST": "postgresql-abc123.test-namespace"}, result)
+}
+
+func (suite *ResolveReferencesSuite) TestResolveAllReferences_InternalEndpointSkipsNonTCPPorts() {
+	sourceID := uuid.New()
+	ref := suite.internalEndpointRef("APP_URL", "app-abc123", sourceID)
+	discovery := &models.EndpointDiscovery{Internal: []models.ServiceEndpoint{{
+		KubernetesName: "app-abc123",
+		DNS:            "app-abc123.test-namespace",
+		Ports: []schema.PortSpec{
+			{Port: 9000, Protocol: utils.ToPtr(schema.ProtocolUDP)},
+			{Port: 8080, Protocol: utils.ToPtr(schema.ProtocolTCP)},
+		},
+		ServiceID: sourceID,
+	}}}
+
+	suite.expectEndpointResolution(ref, discovery)
+	suite.svcRepo.EXPECT().GetDatabaseType(suite.ctx, sourceID).Return("", nil).Once()
+
+	result, err := suite.service.ResolveAllReferences(suite.ctx, suite.serviceID)
+	suite.NoError(err)
+	suite.Equal(map[string]string{"APP_URL": "http://app-abc123.test-namespace:8080"}, result)
 }
 
 func TestResolveReferencesSuite(t *testing.T) {

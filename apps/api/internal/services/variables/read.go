@@ -96,23 +96,30 @@ func (self *VariablesService) GetVariables(ctx context.Context, userID uuid.UUID
 			return nil, err
 		}
 
-		// Check and clear errros for any references
+		// Resolve current values, clear stale errors on anything that resolves again
+		resolvedValues := make(map[uuid.UUID]string, len(references))
 		for _, ref := range references {
+			value, err := self.resolveReference(ctx, client, team.Namespace, ref)
+			if err != nil {
+				continue
+			}
+			resolvedValues[ref.ID] = value
+
 			if ref.Error != nil {
-				// Try to resolve
-				_, err := self.resolveReference(ctx, client, team.Namespace, ref)
-				if err == nil {
-					_, err = self.repo.Variables().ClearError(ctx, ref.ID)
-					if err != nil {
-						log.Errorf("Failed to clear error for variable reference %s: %v", ref.ID, err)
-					} else {
-						ref.Error = nil
-					}
+				if _, err := self.repo.Variables().ClearError(ctx, ref.ID); err != nil {
+					log.Errorf("Failed to clear error for variable reference %s: %v", ref.ID, err)
+				} else {
+					ref.Error = nil
 				}
 			}
 		}
 
 		variableResponse.VariableReferences = models.TransformVariableReferenceResponseEntities(references)
+		for _, ref := range variableResponse.VariableReferences {
+			if value, ok := resolvedValues[ref.ID]; ok {
+				ref.ResolvedValue = &value
+			}
+		}
 	}
 
 	return variableResponse, nil
