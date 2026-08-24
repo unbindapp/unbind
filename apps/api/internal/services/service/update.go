@@ -123,14 +123,15 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 			}
 		} else {
 			// Parse
-			newSizeTarget, err := utils.ValidateStorageQuantity(input.DatabaseConfig.StorageSize)
+			newSizeTarget, err := utils.ParseStorageQuantity(input.DatabaseConfig.StorageSize)
 			if err != nil {
 				return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
 			}
+			input.DatabaseConfig.StorageSize = newSizeTarget.String()
 
 			// Parse existing (if present)
 			if service.Edges.ServiceConfig.DatabaseConfig != nil && service.Edges.ServiceConfig.DatabaseConfig.StorageSize != "" {
-				existingSizeTarget, err := resource.ParseQuantity(service.Edges.ServiceConfig.DatabaseConfig.StorageSize)
+				existingSizeTarget, err := utils.ParseStorageQuantity(service.Edges.ServiceConfig.DatabaseConfig.StorageSize)
 				if err != nil {
 					existingSizeTarget = resource.MustParse("1Gi")
 				}

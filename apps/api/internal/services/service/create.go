@@ -112,11 +112,11 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 				input.DatabaseConfig.StorageSize = "1Gi" // Default to 1Gi
 			} else {
 				// Validate
-				input.DatabaseConfig.StorageSize = utils.EnsureSuffix(input.DatabaseConfig.StorageSize, "Gi")
-				_, err := utils.ValidateStorageQuantity(input.DatabaseConfig.StorageSize)
+				size, err := utils.NormalizeStorageQuantity(input.DatabaseConfig.StorageSize)
 				if err != nil {
 					return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
 				}
+				input.DatabaseConfig.StorageSize = size
 			}
 		} else {
 			input.DatabaseConfig = &schema.DatabaseConfig{

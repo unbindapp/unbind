@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"maps"
+	"math"
 	"slices"
 	"strconv"
 	"strings"
@@ -234,6 +235,7 @@ func resolveInputs(def schema.TemplateDefinition, services []*ent.Service, secre
 			}
 			// Use the configured size (desired) rather than the PVC capacity, which lags during resize.
 			if gb, err := parseSizeGB(cfg.DatabaseConfig.StorageSize); err == nil {
+				gb = roundGB(gb)
 				r.state.CurrentValue = strconv.FormatFloat(gb, 'f', -1, 64)
 				r.state.CurrentValueGB = new(gb)
 			}
@@ -566,10 +568,29 @@ func (self *ServiceGroupService) UpdateTemplateInputs(ctx context.Context, reque
 	})
 }
 
+const bytesPerGB = 1024 * 1024 * 1024
+
+// roundGB matches the two-decimal rounding KubeClient applies to PVCInfo.CapacityGB. Sizes stored
+// as mebibyte-rounded quantities ("10342Mi") are not whole hundredths of a GiB, so without this the
+// database branch would report 10.099609375 where the volume branch reports 10.1 — and the
+// shrink guard in UpdateTemplateInputs would reject an unchanged value as a shrink.
+func roundGB(gb float64) float64 {
+	return math.Round(gb*100) / 100
+}
+
+// parseSizeGB reads a stored or user-supplied storage size as a GiB number. Bare numbers (and the
+// legacy "GB" suffix) are already GiB; anything else is a Kubernetes quantity, which is where
+// mebibyte-rounded sizes like "10342Mi" come from.
 func parseSizeGB(value string) (float64, error) {
 	v := strings.TrimSpace(value)
-	v = strings.TrimSuffix(v, "Gi")
-	v = strings.TrimSuffix(v, "GB")
-	v = strings.TrimSpace(v)
-	return strconv.ParseFloat(v, 64)
+	bare := strings.TrimSpace(strings.TrimSuffix(v, "GB"))
+	if gb, err := strconv.ParseFloat(bare, 64); err == nil {
+		return gb, nil
+	}
+
+	qty, err := utils.ParseStorageQuantity(v)
+	if err != nil {
+		return 0, err
+	}
+	return float64(qty.Value()) / bytesPerGB, nil
 }

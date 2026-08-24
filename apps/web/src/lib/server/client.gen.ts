@@ -2487,6 +2487,7 @@ export const VariableReferenceResponseSchema = z
     error: z.string().nullable().optional(),
     id: z.string(), // The ID of the variable reference
     name: z.string(),
+    resolved_value: z.string().optional(), // The value the reference currently resolves to, null when resolution fails
     sources: z.array(VariableReferenceSourceSchema),
     target_service_id: z.string(),
     value: z.string(),
@@ -3349,9 +3350,13 @@ async function parseApiError(response: Response, url: string): Promise<ApiError>
   const details = Array.isArray(envelope?.details)
     ? envelope.details.filter((d): d is string => typeof d === 'string')
     : [];
+  const summary = (typeof envelope?.message === 'string' && envelope.message) || undefined;
+  // The summary is often a generic title ("Invalid input", "Not found") while the actionable
+  // text sits in `details`. Join them so the `error.message` call sites show the reason too.
+  const detail = details.find((d) => d && d !== summary);
   const message =
-    (typeof envelope?.message === 'string' && envelope.message) ||
-    details[0] ||
+    (summary && detail ? `${summary}: ${detail}` : summary) ||
+    detail ||
     // Only echo the body when it wasn't JSON at all: a body that parsed
     // but carried no message (null, {}, a bare array) is machine output,
     // not something to show a user.
@@ -8370,8 +8375,6 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             },
           },
         ),
-      },
-      referneces: {
         get: async (
           params: z.infer<typeof read_variable_referenceQuerySchema>,
           fetchOptions?: RequestInit,
@@ -8381,7 +8384,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               throw new Error('API URL is undefined or not a string');
             }
             const url = new URL(
-              `${apiUrl}/variables/referneces/get`,
+              `${apiUrl}/variables/references/get`,
               typeof window !== 'undefined' ? window.location.origin : undefined,
             );
             const validatedQuery = read_variable_referenceQuerySchema.parse(params);

@@ -648,9 +648,13 @@ async function main() {
           const details = Array.isArray(envelope?.details)
             ? envelope.details.filter((d): d is string => typeof d === 'string')
             : [];
+          const summary = (typeof envelope?.message === 'string' && envelope.message) || undefined;
+          // The summary is often a generic title ("Invalid input", "Not found") while the actionable
+          // text sits in \`details\`. Join them so the \`error.message\` call sites show the reason too.
+          const detail = details.find((d) => d && d !== summary);
           const message =
-            (typeof envelope?.message === 'string' && envelope.message) ||
-            details[0] ||
+            (summary && detail ? \`\${summary}: \${detail}\` : summary) ||
+            detail ||
             // Only echo the body when it wasn't JSON at all: a body that parsed
             // but carried no message (null, {}, a bare array) is machine output,
             // not something to show a user.

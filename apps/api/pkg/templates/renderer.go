@@ -106,9 +106,8 @@ func (self *Templater) resolveDatabaseSizes(template *schema.TemplateDefinition,
 					template.Services[i].DatabaseConfig = &schema.DatabaseConfig{}
 				}
 
-				size := inputs[inputID]
-				// Verify size
-				if _, err := utils.ValidateStorageQuantity(size); err != nil {
+				size, err := utils.NormalizeStorageQuantity(inputs[inputID])
+				if err != nil {
 					return template, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("input %s is of type DatabaseSize but has an invalid size: %s", input.Name, err.Error()))
 				}
 
@@ -193,9 +192,8 @@ func (self *Templater) resolveVolumes(template *schema.TemplateDefinition, input
 					template.Services[i].Volumes = []schema.TemplateVolume{}
 				}
 
-				size := utils.EnsureSuffix(inputs[inputID], "Gi")
-				// Verify size
-				if _, err := utils.ValidateStorageQuantity(size); err != nil {
+				size, err := utils.NormalizeStorageQuantity(inputs[inputID])
+				if err != nil {
 					return template, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("input %s is of type VolumeSize but has an invalid size: %s", input.Name, err.Error()))
 				}
 

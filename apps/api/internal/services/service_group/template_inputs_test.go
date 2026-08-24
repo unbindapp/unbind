@@ -1,6 +1,7 @@
 package servicegroup_service
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/google/uuid"
@@ -102,14 +103,33 @@ func TestResolveInputs(t *testing.T) {
 	require.NotNil(t, sr.state.EditableReason)
 }
 
+// Storage sizes reach this package in several shapes: bare GiB numbers from the sliders,
+// mebibyte-rounded quantities written by the PVC resize path, and the "0.25Gi" form persisted by
+// earlier template deploys. All of them have to read back as the GiB number the UI shows.
 func TestParseSizeGB(t *testing.T) {
-	for in, want := range map[string]float64{"5": 5, "10Gi": 10, "2GB": 2, " 3 ": 3} {
+	for in, want := range map[string]float64{
+		"5": 5, "10Gi": 10, "2GB": 2, " 3 ": 3,
+		"10342Mi": 10.099609375, "102Mi": 0.099609375, "256Mi": 0.25, "0.25Gi": 0.25,
+	} {
 		got, err := parseSizeGB(in)
 		require.NoError(t, err)
-		require.Equal(t, want, got)
+		require.InDelta(t, want, got, 1e-9)
 	}
 	_, err := parseSizeGB("abc")
 	require.Error(t, err)
+}
+
+// roundGB has to match the two-decimal rounding KubeClient applies to PVCInfo.CapacityGB, so the
+// database branch reports 10.1 like the volume branch does and the shrink guard in
+// UpdateTemplateInputs doesn't reject an unchanged value.
+func TestRoundGB(t *testing.T) {
+	for in, want := range map[string]string{
+		"10342Mi": "10.1", "102Mi": "0.1", "256Mi": "0.25", "10Gi": "10", "0.25Gi": "0.25",
+	} {
+		gb, err := parseSizeGB(in)
+		require.NoError(t, err)
+		require.Equal(t, want, strconv.FormatFloat(roundGB(gb), 'f', -1, 64))
+	}
 }
 
 func TestStringReplacedInputs(t *testing.T) {

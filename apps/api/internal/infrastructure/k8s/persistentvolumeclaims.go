@@ -306,10 +306,9 @@ func (self *KubeClient) GetPersistentVolumeClaim(ctx context.Context, namespace 
 			return nil, fmt.Errorf("failed to get database config for service '%s': %w", boundToServiceID.String(), err)
 		} else if dbSvcConfig != nil && dbSvcConfig.StorageSize != "" {
 			// Parse storage size
-			sizeGB := utils.EnsureSuffix(dbSvcConfig.StorageSize, "Gi")
-			qty, err := resource.ParseQuantity(sizeGB)
+			qty, err := utils.ParseStorageQuantity(dbSvcConfig.StorageSize)
 			if err != nil {
-				return nil, fmt.Errorf("failed to parse storage size '%s' for service '%s': %w", sizeGB, boundToServiceID.String(), err)
+				return nil, fmt.Errorf("failed to parse storage size '%s' for service '%s': %w", dbSvcConfig.StorageSize, boundToServiceID.String(), err)
 			}
 			if qty.Value() > bytesValueCapacity {
 				isPendingResize = true
@@ -503,10 +502,9 @@ func (self *KubeClient) ListPersistentVolumeClaims(ctx context.Context, namespac
 				return nil, fmt.Errorf("failed to get database config for service '%s': %w", boundToServiceID.String(), err)
 			} else if dbSvcConfig != nil && dbSvcConfig.StorageSize != "" {
 				// Parse storage size
-				sizeGB := utils.EnsureSuffix(dbSvcConfig.StorageSize, "Gi")
-				qty, err := resource.ParseQuantity(sizeGB)
+				qty, err := utils.ParseStorageQuantity(dbSvcConfig.StorageSize)
 				if err != nil {
-					return nil, fmt.Errorf("failed to parse storage size '%s' for service '%s': %w", sizeGB, boundToServiceID.String(), err)
+					return nil, fmt.Errorf("failed to parse storage size '%s' for service '%s': %w", dbSvcConfig.StorageSize, boundToServiceID.String(), err)
 				}
 				if qty.Value() > bytesValueCapacity {
 					isPendingResize = true

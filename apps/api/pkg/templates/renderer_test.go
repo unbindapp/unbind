@@ -128,3 +128,70 @@ func findVariable(vars []schema.TemplateVariable, name string) *schema.TemplateV
 	}
 	return nil
 }
+
+// Storage sliders step in fractions of a GiB (0.1 GiB minimum, 0.25 GiB steps on the local-path
+// provisioner), so a value like "10.1" must round to whole mebibytes rather than be handed to
+// Kubernetes as the unrepresentable "10.1Gi".
+func TestResolveTemplateFractionalStorageSizes(t *testing.T) {
+	newTemplate := func() *schema.TemplateDefinition {
+		return &schema.TemplateDefinition{
+			Name:    "test-template",
+			Version: 1,
+			Inputs: []schema.TemplateInput{
+				{
+					ID:   "input_storage_size",
+					Name: "Storage Size",
+					Type: schema.InputTypeVolumeSize,
+					Volume: &schema.TemplateVolume{
+						Name:      "test-data",
+						MountPath: "/data",
+					},
+					Required: true,
+				},
+				{
+					ID:       "input_database_size",
+					Name:     "Database Size",
+					Type:     schema.InputTypeDatabaseSize,
+					Required: true,
+				},
+			},
+			Services: []schema.TemplateService{
+				{
+					ID:       "service_testservice",
+					Name:     "TestService",
+					Type:     schema.ServiceTypeDockerimage,
+					Builder:  schema.ServiceBuilderDocker,
+					InputIDs: []string{"input_storage_size", "input_database_size"},
+				},
+			},
+		}
+	}
+
+	templater := NewTemplater(&config.Config{ExternalUIUrl: "https://example.com"})
+	kubeNameMap := map[string]string{"service_testservice": "test-service"}
+
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{input: "10.1", expected: "10342Mi"},
+		{input: "0.1", expected: "102Mi"},
+		{input: "5", expected: "5Gi"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			resolved, err := templater.ResolveTemplate(newTemplate(), map[string]string{
+				"input_storage_size":  tt.input,
+				"input_database_size": tt.input,
+			}, kubeNameMap, "test-namespace")
+			require.NoError(t, err)
+
+			service := resolved.Services[0]
+			require.Len(t, service.Volumes, 1)
+			assert.Equal(t, tt.expected, service.Volumes[0].CapacityGB)
+			require.NotNil(t, service.DatabaseConfig)
+			assert.Equal(t, tt.expected, service.DatabaseConfig.StorageSize)
+		})
+	}
+}

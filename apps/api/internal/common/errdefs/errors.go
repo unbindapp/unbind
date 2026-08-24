@@ -55,8 +55,8 @@ func errorCode(status int) string {
 var HumaErrorFunc = func(status int, message string, errs ...error) huma.StatusError {
 	details := make([]string, 0, len(errs))
 	for _, err := range errs {
-		if err != nil {
-			details = append(details, err.Error())
+		if detail := detailMessage(err); detail != "" {
+			details = append(details, detail)
 		}
 	}
 	return &ResponseError{
@@ -65,6 +65,20 @@ var HumaErrorFunc = func(status int, message string, errs ...error) huma.StatusE
 		Message: message,
 		Details: details,
 	}
+}
+
+// detailMessage renders an error for the client-facing Details field. A CustomError carries an
+// internal type prefix ("ErrInvalidInput: ...") that is noise to the caller, so only the message a
+// handler actually wrote is surfaced.
+func detailMessage(err error) string {
+	if err == nil {
+		return ""
+	}
+	var custom *CustomError
+	if errors.As(err, &custom) {
+		return custom.Message
+	}
+	return err.Error()
 }
 
 type ErrorType int

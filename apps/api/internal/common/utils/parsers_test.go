@@ -153,3 +153,46 @@ func TestValidateStorageQuantityGB(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, int64(4966*1024*1024), bytes)
 }
+
+func TestNormalizeStorageQuantity(t *testing.T) {
+	tests := []struct {
+		input       string
+		expected    string
+		expectError bool
+	}{
+		// Bare numbers are GiB and get rounded to whole mebibytes, which is what the
+		// storage sliders send (min 0.1 GiB, 0.25 GiB steps).
+		{input: "10.1", expected: "10342Mi"},
+		{input: "0.1", expected: "102Mi"},
+		{input: "0.25", expected: "256Mi"},
+		{input: "2", expected: "2Gi"},
+		// Whole-byte quantities pass through untouched.
+		{input: "10Gi", expected: "10Gi"},
+		{input: "10342Mi", expected: "10342Mi"},
+		{input: " 1Gi ", expected: "1Gi"},
+		// Fractional units are rounded to whole mebibytes rather than rejected: "0.25Gi" is what
+		// earlier template deploys persisted, so it still has to read back.
+		{input: "0.25Gi", expected: "256Mi"},
+		{input: "0.1Gi", expected: "102Mi"},
+		{input: "10.1Gi", expected: "10342Mi"},
+		{input: "1.5Gi", expected: "1536Mi"},
+		{input: "0", expectError: true},
+		{input: "500m", expectError: true},
+		{input: "-5", expectError: true},
+		{input: "", expectError: true},
+		{input: "abc", expectError: true},
+		{input: "NaN", expectError: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			got, err := NormalizeStorageQuantity(tt.input)
+			if tt.expectError {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expected, got)
+		})
+	}
+}

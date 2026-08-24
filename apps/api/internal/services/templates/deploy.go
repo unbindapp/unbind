@@ -290,9 +290,15 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 					templateService.DatabaseConfig.Version = *dbVersion
 				}
 
-				// Validate storage quantity
+				// Normalize the storage quantity. Template definitions carry bare GiB numbers
+				// (e.g. "0.25"), which Kubernetes will not accept as a quantity.
 				if templateService.DatabaseConfig.StorageSize != "" {
-					templateService.DatabaseConfig.StorageSize = utils.EnsureSuffix(templateService.DatabaseConfig.StorageSize, "Gi")
+					size, err := utils.NormalizeStorageQuantity(templateService.DatabaseConfig.StorageSize)
+					if err != nil {
+						return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
+							fmt.Sprintf("Invalid storage size for %s: %s", templateService.Name, err.Error()))
+					}
+					templateService.DatabaseConfig.StorageSize = size
 				}
 			}
 
