@@ -337,9 +337,17 @@ function ExpandDialogTrigger({
                 </Button>
               </DialogClose>
               <form.Subscribe
-                selector={(s) => ({ isSubmitting: s.isSubmitting })}
-                children={({ isSubmitting }) => (
-                  <form.SubmitButton isPending={isSubmitting || isPending} variant="warning">
+                selector={(s) => ({
+                  canSubmit: s.canSubmit,
+                  isSubmitting: s.isSubmitting,
+                  values: s.values,
+                })}
+                children={({ canSubmit, isSubmitting, values }) => (
+                  <form.SubmitButton
+                    isPending={isSubmitting || isPending}
+                    variant="warning"
+                    disabled={!canSubmit || values.textToConfirm !== textToConfirm}
+                  >
                     Expand
                   </form.SubmitButton>
                 )}
