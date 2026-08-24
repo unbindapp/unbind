@@ -165,7 +165,7 @@ function ThreeDotButton({
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button
           data-open={isOpen || undefined}
