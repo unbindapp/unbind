@@ -64,6 +64,13 @@ export default function UsageSection({ volume }: TProps) {
             {usageInfo}
           </p>
         </div>
+        {(usageLevel === "high" || usageLevel === "critical") && (
+          <p className="text-foreground group-data-[usage=high]/section:text-warning group-data-[usage=critical]/section:text-destructive w-full px-2 pt-px text-sm font-normal">
+            {usageLevel === "critical"
+              ? "This volume is almost full. Consider expanding it now."
+              : "This volume is filling up. Consider expanding it soon."}
+          </p>
+        )}
       </div>
     </SettingsSection>
   );
