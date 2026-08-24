@@ -341,6 +341,7 @@ func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent
 				Volumes:        service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.Volumes,
 				HealthCheck:    service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.HealthCheck,
 				VariableMounts: service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.VariableMounts,
+				Resources:      service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.Resources,
 			},
 		},
 	}
@@ -359,6 +360,10 @@ func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent
 	if len(service.Edges.ServiceConfig.VariableMounts) > 0 {
 		variableMounts = schema.AsV1VariableMounts(service.Edges.ServiceConfig.VariableMounts)
 	}
+	var resources *v1.ResourceSpec
+	if service.Edges.ServiceConfig.Resources != nil {
+		resources = service.Edges.ServiceConfig.Resources.AsV1ResourceSpec()
+	}
 	newCrd := &v1.Service{
 		Spec: v1.ServiceSpec{
 			Builder: string(service.Edges.ServiceConfig.Builder),
@@ -372,6 +377,7 @@ func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent
 				Volumes:        schema.AsV1Volumes(service.Edges.ServiceConfig.Volumes),
 				HealthCheck:    healthCheck,
 				VariableMounts: variableMounts,
+				Resources:      resources,
 			},
 		},
 	}

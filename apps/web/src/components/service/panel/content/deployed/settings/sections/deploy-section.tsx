@@ -7,6 +7,7 @@ import {
   BlockItemContentHighlightable,
   BlockItemTitle,
 } from "@/components/block";
+import { shouldDeploySectionHaveInstances } from "@/components/service/panel/content/deployed/settings/helpers";
 import useUpdateService, {
   TUpdateServiceInputSimple,
 } from "@/components/service/use-update-service";
@@ -38,7 +39,7 @@ export default function DeploySection({ service }: TProps) {
       );
     }
 
-    return <GitOrDockerImageSection service={service} />;
+    return <Section service={service} />;
   }
 
   if (service.type === "docker-image") {
@@ -48,7 +49,11 @@ export default function DeploySection({ service }: TProps) {
 
     if (!image || !tag) return <ErrorWithWrapper message="Image or tag is not found." />;
 
-    return <GitOrDockerImageSection service={service} />;
+    return <Section service={service} />;
+  }
+
+  if (service.type === "database") {
+    return <Section service={service} />;
   }
 
   return <ErrorWithWrapper message="Unsupported service type" />;
@@ -63,12 +68,13 @@ const cpuLimits = {
 
 const memoryLimits = {
   min: 200,
-  max: 16000,
+  max: 32000,
   step: 200,
-  unlimited: 16200,
+  unlimited: 32200,
 };
 
-function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
+function Section({ service }: { service: TServiceShallow }) {
+  const hasInstances = shouldDeploySectionHaveInstances(service);
   const sectionHighlightId = useMemo(() => getDeploySectionId(service), [service]);
 
   const {
@@ -93,7 +99,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
       let hasChanged = false;
       const changes: TUpdateServiceInputSimple = {};
 
-      if (formApi.getFieldMeta("instanceCount")?.isDefaultValue === false) {
+      if (hasInstances && formApi.getFieldMeta("instanceCount")?.isDefaultValue === false) {
         changes.instanceCount = value.instanceCount || 1;
         hasChanged = true;
       }
@@ -118,7 +124,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
 
   const changeCount = useStore(form.store, (s) => {
     let count = 0;
-    if (s.fieldMeta.instanceCount?.isDefaultValue === false) count++;
+    if (hasInstances && s.fieldMeta.instanceCount?.isDefaultValue === false) count++;
     if (s.fieldMeta.cpuLimitMillicores?.isDefaultValue === false) count++;
     if (s.fieldMeta.memoryLimitMb?.isDefaultValue === false) count++;
     return count;
@@ -145,47 +151,49 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
       error={errorUpdate?.message}
       entityId={sectionHighlightId}
     >
-      <Block>
-        <form.AppField
-          name="instanceCount"
-          children={(field) => (
-            <BlockItem className="group/item w-full md:w-full">
-              <BlockItemHeader className="group-data-changed/item:text-process" type="column">
-                <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
-                  Instances
-                </BlockItemTitle>
-                <BlockItemDescription>
-                  The number of instances/replicas to run for this service.
-                </BlockItemDescription>
-              </BlockItemHeader>
-              <BlockItemContentHighlightable
-                id={deploySectionInstanceSliderId}
-                className="flex w-full flex-col rounded-lg border pb-1.5"
-              >
-                <ValueTitle
-                  title="Instances"
-                  value={field.state.value ? field.state.value.toString() : "1"}
-                  hasChanges={!field.state.meta.isDefaultValue}
-                />
-                <field.StorageSizeInput
-                  field={field}
-                  className="w-full px-3.5 py-3"
-                  onBlur={field.handleBlur}
-                  min={1}
-                  max={10}
-                  step={1}
-                  hideMinMax
-                  defaultValue={[service.config.replicas]}
-                  value={field.state.value ? [field.state.value] : undefined}
-                  onValueChange={(value) => {
-                    field.handleChange(value[0]);
-                  }}
-                />
-              </BlockItemContentHighlightable>
-            </BlockItem>
-          )}
-        />
-      </Block>
+      {hasInstances && (
+        <Block>
+          <form.AppField
+            name="instanceCount"
+            children={(field) => (
+              <BlockItem className="group/item w-full md:w-full">
+                <BlockItemHeader className="group-data-changed/item:text-process" type="column">
+                  <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
+                    Instances
+                  </BlockItemTitle>
+                  <BlockItemDescription>
+                    The number of instances/replicas to run for this service.
+                  </BlockItemDescription>
+                </BlockItemHeader>
+                <BlockItemContentHighlightable
+                  id={deploySectionInstanceSliderId}
+                  className="flex w-full flex-col rounded-lg border pb-1.5"
+                >
+                  <ValueTitle
+                    title="Instances"
+                    value={field.state.value ? field.state.value.toString() : "1"}
+                    hasChanges={!field.state.meta.isDefaultValue}
+                  />
+                  <field.StorageSizeInput
+                    field={field}
+                    className="w-full px-3.5 py-3"
+                    onBlur={field.handleBlur}
+                    min={1}
+                    max={10}
+                    step={1}
+                    hideMinMax
+                    defaultValue={[service.config.replicas]}
+                    value={field.state.value ? [field.state.value] : undefined}
+                    onValueChange={(value) => {
+                      field.handleChange(value[0]);
+                    }}
+                  />
+                </BlockItemContentHighlightable>
+              </BlockItem>
+            )}
+          />
+        </Block>
+      )}
       <Block>
         <form.Subscribe
           selector={(s) => ({
