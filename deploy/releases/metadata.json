@@ -23,5 +23,10 @@
     "version": "v0.1.4",
     "description": "Volume usage fixes, PVC size rounding, and Redis chart PVC labeling",
     "breaking": false
+  },
+  "v0.1.5": {
+    "version": "v0.1.5",
+    "description": "Deterministic builder image tags and build caches",
+    "breaking": false
   }
 }
