@@ -28,5 +28,10 @@
     "version": "v0.1.5",
     "description": "Deterministic builder image tags and build caches",
     "breaking": false
+  },
+  "v0.1.6": {
+    "version": "v0.1.6",
+    "description": "Database deploy settings, resolved variable references, and volume usage polish",
+    "breaking": false
   }
 }
