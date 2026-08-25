@@ -36,7 +36,7 @@ export default function VolumeCard({
             {volume.is_deleting || volume.is_pending_resize ? (
               <HourglassIcon className="animate-hourglass -ml-1 size-6 scale-90" />
             ) : (
-              <HardDriveIcon className="-ml-1 size-6" />
+              <HardDriveIcon className="-ml-1 size-6 scale-90" />
             )}
             <h3 className="min-w-0 shrink overflow-hidden leading-tight text-ellipsis whitespace-nowrap">
               {volume.name}
