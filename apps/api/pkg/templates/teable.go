@@ -76,7 +76,7 @@ func teableTemplate() *schema.TemplateDefinition {
 				InputIDs:  []string{"input_domain", "input_teable_size"},
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     new("ghcr.io/teableio/teable:release.2026-06-15T04-43-24Z.1912"),
+				Image:     new("ghcr.io/teableio/teable:release.2026-08-25T14-19-49Z.2796"),
 				DependsOn: []string{"service_postgres", "service_redis"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 40,
