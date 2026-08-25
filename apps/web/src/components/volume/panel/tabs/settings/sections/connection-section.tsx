@@ -13,7 +13,7 @@ import { SettingsSection } from "@/components/settings/settings-section";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/components/ui/utils";
 import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
-import { useVolumesUtils } from "@/components/volume/use-volumes-utils";
+import { useVolumesUtils } from "@/components/volume/volumes-provider";
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
 import { updateService, TVolumeShallow } from "@/lib/queries/services";
 import { useStore } from "@tanstack/react-form";

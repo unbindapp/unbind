@@ -1,5 +1,10 @@
 import { TVolumeUsageLevel } from "@/components/volume/types";
+import { TVolumeShallow } from "@/lib/queries/services";
 import { appLocale } from "@/lib/constants";
+
+export function getVolumeDisplayName(volume: Pick<TVolumeShallow, "name" | "id">): string {
+  return volume.name || volume.id;
+}
 
 export function getVolumeUsageLevel(percentage: number | null | undefined): TVolumeUsageLevel {
   if (percentage === null || percentage === undefined) {

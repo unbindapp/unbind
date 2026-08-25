@@ -1,6 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import { getVolumeUsageLevel, percentageFormatter } from "@/components/volume/helpers";
+import {
+  getVolumeDisplayName,
+  getVolumeUsageLevel,
+  percentageFormatter,
+} from "@/components/volume/helpers";
 import VolumePanel from "@/components/volume/panel/volume-panel";
 import { TVolumeUsageLevel } from "@/components/volume/types";
 import { TVolumeShallow } from "@/lib/queries/services";
@@ -9,21 +13,10 @@ import { useMemo } from "react";
 
 type TProps = {
   volume: TVolumeShallow;
-  teamId: string;
-  projectId: string;
-  environmentId: string;
-  index: number;
   className?: string;
 };
 
-export default function VolumeLine({
-  volume,
-  teamId,
-  projectId,
-  environmentId,
-  index,
-  className,
-}: TProps) {
+export default function VolumeLine({ volume, className }: TProps) {
   const usagePercentage = useMemo(() => {
     if (volume.used_gb === undefined || !volume.capacity_gb) return undefined;
     return Math.min(Math.max(0, (volume.used_gb / volume.capacity_gb) * 100), 100);
@@ -34,12 +27,7 @@ export default function VolumeLine({
   }, [usagePercentage]);
 
   return (
-    <VolumePanel
-      volume={volume}
-      teamId={teamId}
-      projectId={projectId}
-      environmentId={environmentId}
-    >
+    <VolumePanel volume={volume}>
       <Button
         variant={"ghost"}
         data-usage={usageLevel}
@@ -60,7 +48,7 @@ export default function VolumeLine({
           </div>
         )}
         <div className="text-muted-foreground group-data-[usage=high]/line:text-warning group-data-[usage=critical]/line:text-destructive flex w-full items-center justify-between gap-4 px-4">
-          <div className="relative flex w-full items-center justify-between gap-4 leading-tight font-medium">
+          <div className="relative flex w-full items-center justify-between gap-8 leading-tight font-medium">
             <div
               data-truncate={usagePercentage === undefined || undefined}
               className="group/line flex min-w-0 shrink items-center gap-1.5"
@@ -80,7 +68,9 @@ export default function VolumeLine({
                       : "Unknown usage"}
               </p>
             </div>
-            <p className="min-w-0 shrink truncate text-right">Storage {index + 1}</p>
+            <p className="max-w-[40%] min-w-0 shrink truncate text-right">
+              {getVolumeDisplayName(volume)}
+            </p>
           </div>
         </div>
       </Button>

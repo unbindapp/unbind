@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
+import { getVolumeDisplayName } from "@/components/volume/helpers";
 import VolumePanel from "@/components/volume/panel/volume-panel";
 import { formatGB } from "@/lib/helpers/format-gb";
 import { TVolumeShallow } from "@/lib/queries/services";
@@ -7,27 +8,13 @@ import { HardDriveIcon, HourglassIcon } from "lucide-react";
 
 type TProps = {
   volume: TVolumeShallow;
-  teamId: string;
-  projectId: string;
-  environmentId: string;
   className?: string;
 };
 
-export default function VolumeCard({
-  volume,
-  teamId,
-  projectId,
-  environmentId,
-  className,
-}: TProps) {
+export default function VolumeCard({ volume, className }: TProps) {
   return (
     <li className={cn("group/item flex min-h-38 w-full flex-col p-1", className)}>
-      <VolumePanel
-        volume={volume}
-        teamId={teamId}
-        projectId={projectId}
-        environmentId={environmentId}
-      >
+      <VolumePanel volume={volume}>
         <Button
           variant="ghost"
           className="bg-background-hover flex w-full flex-1 flex-col items-start gap-6 rounded-xl border px-5 py-3.5 text-left font-semibold"
@@ -39,7 +26,7 @@ export default function VolumeCard({
               <HardDriveIcon className="-ml-1 size-6 scale-90" />
             )}
             <h3 className="min-w-0 shrink overflow-hidden leading-tight text-ellipsis whitespace-nowrap">
-              {volume.name}
+              {getVolumeDisplayName(volume)}
             </h3>
           </div>
           <div className="flex w-full flex-1 flex-col justify-end">

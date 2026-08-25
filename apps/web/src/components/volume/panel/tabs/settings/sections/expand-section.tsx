@@ -17,7 +17,7 @@ import { formatGB } from "@/lib/helpers/format-gb";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { expandVolume as expandVolumeFn, TVolumeType } from "@/lib/queries/storage";
 import { TVolumeShallow } from "@/lib/queries/services";
-import { useVolumesUtils } from "@/components/volume/use-volumes-utils";
+import { useVolumesUtils } from "@/components/volume/volumes-provider";
 import { useStore } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { HourglassIcon, ScalingIcon } from "lucide-react";

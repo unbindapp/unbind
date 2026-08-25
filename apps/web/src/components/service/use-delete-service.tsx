@@ -1,6 +1,6 @@
 import { useService } from "@/components/service/service-provider";
 import { useServicesUtils } from "@/components/service/services-provider";
-import { useVolumesUtils } from "@/components/volume/use-volumes-utils";
+import { useVolumesUtils } from "@/components/volume/volumes-provider";
 import { deleteService } from "@/lib/queries/services";
 import { useMutation } from "@tanstack/react-query";
 import { useCallback } from "react";

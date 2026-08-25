@@ -9,9 +9,6 @@ import { FC, HTMLAttributes, ReactNode } from "react";
 
 type TProps = {
   volume: TVolumeShallow;
-  teamId: string;
-  projectId: string;
-  environmentId: string;
   className?: string;
 } & HTMLAttributes<HTMLDivElement>;
 
@@ -19,7 +16,8 @@ type TVolumePage = FC<{ volume: TVolumeShallow }>;
 type TVolumePageProvider = FC<TVolumePageProviderProps>;
 type TVolumePageProviderProps = {
   children: ReactNode;
-} & TVolumeProps;
+  volume: TVolumeShallow;
+};
 
 export type TVolumePanelTab = {
   title: string;
@@ -29,27 +27,13 @@ export type TVolumePanelTab = {
   noScrollArea?: boolean;
 };
 
-type TVolumeProps = {
-  teamId: string;
-  projectId: string;
-  environmentId: string;
-  volume: TVolumeShallow;
-};
-
 const EmptyProvider = ({ children }: TVolumePageProviderProps) => children;
 
 const tabs: TVolumePanelTab[] = [
   { title: "Settings", value: "settings", Page: Settings, Provider: EmptyProvider },
 ];
 
-export default function VolumePanelContent({
-  volume,
-  teamId,
-  projectId,
-  environmentId,
-  className,
-  ...rest
-}: TProps) {
+export default function VolumePanelContent({ volume, className, ...rest }: TProps) {
   const { currentTabId } = useVolumePanel();
   const currentTab = tabs.find((tab) => tab.value === currentTabId);
 
@@ -63,12 +47,7 @@ export default function VolumePanelContent({
       />
       <PanelTabWrapper noScrollArea={currentTab?.noScrollArea} key={currentTab?.value}>
         {currentTab && (
-          <currentTab.Provider
-            teamId={teamId}
-            projectId={projectId}
-            environmentId={environmentId}
-            volume={volume}
-          >
+          <currentTab.Provider volume={volume}>
             <currentTab.Page volume={volume} />
           </currentTab.Provider>
         )}

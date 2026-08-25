@@ -5,7 +5,7 @@ import DeleteCard from "@/components/settings/delete-card";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { cn } from "@/components/ui/utils";
 import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
-import { useVolumesUtils } from "@/components/volume/use-volumes-utils";
+import { useVolumesUtils } from "@/components/volume/volumes-provider";
 import { deleteVolume as deleteVolumeFn } from "@/lib/queries/storage";
 import { TVolumeShallow } from "@/lib/queries/services";
 import { useMutation } from "@tanstack/react-query";

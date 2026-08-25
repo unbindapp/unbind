@@ -2,7 +2,7 @@ import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import ServiceCard from "@/components/service/service-card";
 import { TServiceGroup } from "@/components/service/service-card-list";
 import { useServicesUtils } from "@/components/service/services-provider";
-import { useVolumesUtils } from "@/components/volume/use-volumes-utils";
+import { useVolumesUtils } from "@/components/volume/volumes-provider";
 import ServiceGroupIcon from "@/components/service/service-group-icon";
 import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
 import { Button } from "@/components/ui/button";

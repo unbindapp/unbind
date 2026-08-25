@@ -6,6 +6,7 @@ import PageWrapper from "@/components/page-wrapper";
 import NewServiceButton from "@/components/project/new-service-button";
 import ServiceCardList from "@/components/service/service-card-list";
 import ServicesProvider from "@/components/service/services-provider";
+import VolumesProvider from "@/components/volume/volumes-provider";
 import VolumesSection from "@/components/volume/volumes-section";
 
 const projectRouteId = "/$team_id/project/$project_id";
@@ -36,21 +37,25 @@ function ProjectServicesPage() {
 
   return (
     <ServicesProvider teamId={teamId} projectId={projectId} environmentId={environment ?? ""}>
-      <PageWrapper>
-        <div className="flex w-full max-w-7xl flex-col">
-          <div className="flex w-full flex-wrap items-center justify-between gap-4 px-1">
-            <div className="flex min-w-0 flex-wrap items-center justify-start gap-2">
-              <h1 className="min-w-0 pr-1.5 pl-2 text-2xl leading-tight font-semibold">Services</h1>
-              <EnvironmentSelector />
+      <VolumesProvider teamId={teamId} projectId={projectId} environmentId={environment ?? ""}>
+        <PageWrapper>
+          <div className="flex w-full max-w-7xl flex-col">
+            <div className="flex w-full flex-wrap items-center justify-between gap-4 px-1">
+              <div className="flex min-w-0 flex-wrap items-center justify-start gap-2">
+                <h1 className="min-w-0 pr-1.5 pl-2 text-2xl leading-tight font-semibold">
+                  Services
+                </h1>
+                <EnvironmentSelector />
+              </div>
+              <NewServiceButton className="-my-2" />
             </div>
-            <NewServiceButton className="-my-2" />
+            <div className="flex w-full items-center justify-center pt-3">
+              <ServiceCardList />
+            </div>
+            <VolumesSection />
           </div>
-          <div className="flex w-full items-center justify-center pt-3">
-            <ServiceCardList />
-          </div>
-          <VolumesSection />
-        </div>
-      </PageWrapper>
+        </PageWrapper>
+      </VolumesProvider>
     </ServicesProvider>
   );
 }

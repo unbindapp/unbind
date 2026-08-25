@@ -110,16 +110,12 @@ export default function ServiceCard({
           </div>
         </Button>
       </ServicePanelOrPlaceholder>
-      {volumes && volumes.length > 0 && teamId && projectId && environmentId && (
+      {volumes && volumes.length > 0 && (
         <div className={cn("bg-background-hover rounded-b-xl text-xs", classNameVolumes)}>
           {volumes.map((volume, index) => (
             <VolumeLine
               key={volume.id}
               volume={volume}
-              teamId={teamId}
-              projectId={projectId}
-              environmentId={environmentId}
-              index={index}
               className={cn(
                 classNameVolume,
                 index !== 0 && "-mt-px",

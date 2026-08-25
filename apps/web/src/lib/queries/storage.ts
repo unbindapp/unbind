@@ -9,22 +9,6 @@ export const queryKeyStorage = {
   s3List: (input: { teamId: string }) => ["storage", "s3", "list", input.teamId] as const,
   s3Detail: (input: { teamId: string; id: string }) =>
     ["storage", "s3", "detail", input.teamId, input.id] as const,
-  volume: (input: {
-    teamId: string;
-    projectId: string;
-    environmentId: string;
-    type: string;
-    id: string;
-  }) =>
-    [
-      "storage",
-      "volume",
-      input.teamId,
-      input.projectId,
-      input.environmentId,
-      input.type,
-      input.id,
-    ] as const,
   volumeList: (input: { teamId: string; projectId: string; environmentId: string }) =>
     ["storage", "volume", "list", input.teamId, input.projectId, input.environmentId] as const,
 };
@@ -146,21 +130,6 @@ export const volumesListQuery = (input: {
     },
   });
 
-export const volumeQuery = (input: TVolumeRef) =>
-  queryOptions({
-    queryKey: queryKeyStorage.volume(input),
-    queryFn: async () => {
-      const res = await getGoClient().storage.pvc.get({
-        id: input.id,
-        type: input.type,
-        team_id: input.teamId,
-        project_id: input.projectId,
-        environment_id: input.environmentId,
-      });
-      return { volume: res.data };
-    },
-  });
-
 export async function deleteVolume(input: TVolumeRef) {
   const res = await getGoClient().storage.pvc.delete({
     id: input.id,
@@ -177,6 +146,19 @@ export async function expandVolume(input: TVolumeRef & { capacityGb: number }) {
     id: input.id,
     type: input.type,
     capacity_gb: input.capacityGb,
+    team_id: input.teamId,
+    project_id: input.projectId,
+    environment_id: input.environmentId,
+  });
+  return { volume: res.data };
+}
+
+export async function renameVolume(input: TVolumeRef & { name: string; description: string }) {
+  const res = await getGoClient().storage.pvc.update({
+    id: input.id,
+    type: input.type,
+    name: input.name,
+    description: input.description,
     team_id: input.teamId,
     project_id: input.projectId,
     environment_id: input.environmentId,
@@ -205,3 +187,20 @@ export const CreateS3SourceFormSchema = z.object({
 });
 
 export type TVolumeType = z.infer<typeof PvcScopeSchema>;
+
+export const volumeNameMinLength = 2;
+export const volumeNameMaxLength = 32;
+export const volumeDescriptionMaxLength = 128;
+
+export const VolumeRenameSchema = z.object({
+  name: z
+    .string()
+    .min(volumeNameMinLength, `Name should be at least ${volumeNameMinLength} characters.`)
+    .max(volumeNameMaxLength, `Name should be at most ${volumeNameMaxLength} characters.`),
+  description: z
+    .string()
+    .max(
+      volumeDescriptionMaxLength,
+      `Description should be at most ${volumeDescriptionMaxLength} characters.`,
+    ),
+});

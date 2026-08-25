@@ -15,8 +15,8 @@ import (
 )
 
 func (self *StorageService) UpdatePVC(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *models.UpdatePVCInput) (*models.PVCInfo, error) {
-	if input.CapacityGB == nil {
-		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Size is required")
+	if input.CapacityGB == nil && input.Name == nil && input.Description == nil {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Nothing to update")
 	}
 
 	team, _, _, err := self.validatePermissionsAndParseInputs(ctx, schema.ActionEditor, requesterUserID, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID)
@@ -49,23 +49,29 @@ func (self *StorageService) UpdatePVC(ctx context.Context, requesterUserID uuid.
 		}
 	}
 
-	newCapacity := new(utils.FormatStorageGB(*input.CapacityGB))
-	newSize, err := utils.ValidateStorageQuantity(*newCapacity)
-	if err != nil {
-		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
-	}
+	var newCapacity *string
+	var isResize bool
+	if input.CapacityGB != nil {
+		newCapacity = new(utils.FormatStorageGB(*input.CapacityGB))
+		newSize, err := utils.ValidateStorageQuantity(*newCapacity)
+		if err != nil {
+			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
+		}
 
-	existingSize, err := utils.ValidateStorageQuantityGB(pvc.CapacityGB)
-	if err != nil {
-		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
-	}
+		existingSize, err := utils.ValidateStorageQuantityGB(pvc.CapacityGB)
+		if err != nil {
+			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
+		}
 
-	if newSize.Cmp(existingSize) < 0 {
-		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "New size must be greater than existing size")
+		if newSize.Cmp(existingSize) < 0 {
+			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "New size must be greater than existing size")
+		}
+
+		isResize = newSize.Cmp(existingSize) > 0
 	}
 
 	var targetService *ent.Service
-	if pvc.MountedOnServiceID != nil {
+	if isResize && pvc.MountedOnServiceID != nil {
 		targetService, err = self.repo.Service().GetByID(ctx, *pvc.MountedOnServiceID)
 		if err != nil {
 			if ent.IsNotFound(err) {
@@ -83,7 +89,7 @@ func (self *StorageService) UpdatePVC(ctx context.Context, requesterUserID uuid.
 			return err
 		}
 
-		if input.CapacityGB != nil {
+		if isResize {
 			// If database, then update database spec
 			if updatedPvc.IsDatabase && updatedPvc.MountedOnServiceID != nil {
 				_, err := self.repo.Service().UpdateDatabaseStorageSize(
@@ -176,7 +182,7 @@ func (self *StorageService) UpdatePVC(ctx context.Context, requesterUserID uuid.
 	}
 
 	// Restart pods if needed
-	if input.CapacityGB != nil && updatedPvc.MountedOnServiceID != nil {
+	if isResize && updatedPvc.MountedOnServiceID != nil {
 		err = self.k8s.RollingRestartPodsByLabel(
 			ctx,
 			team.Namespace,

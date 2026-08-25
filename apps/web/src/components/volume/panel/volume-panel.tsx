@@ -1,6 +1,8 @@
 "use client";
 
 import { useDeviceSize } from "@/components/providers/device-size-provider";
+import { useServices, useServicesUtils } from "@/components/service/services-provider";
+import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -11,27 +13,29 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { getVolumeDisplayName } from "@/components/volume/helpers";
 import VolumePanelContent from "@/components/volume/panel/volume-panel-content";
 import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
+import { useVolumesUtils } from "@/components/volume/volumes-provider";
 import { TVolumeShallow } from "@/lib/queries/services";
-import { HardDriveIcon, XIcon } from "lucide-react";
+import {
+  renameVolume as renameVolumeFn,
+  volumeDescriptionMaxLength,
+  volumeNameMaxLength,
+  VolumeRenameSchema,
+} from "@/lib/queries/storage";
+import { useMutation } from "@tanstack/react-query";
+import { HardDriveIcon, PenIcon, XIcon } from "lucide-react";
+import { ResultAsync } from "neverthrow";
 import { ReactNode } from "react";
+import { toast } from "sonner";
 
 type TProps = {
   volume: TVolumeShallow;
-  teamId: string;
-  projectId: string;
-  environmentId: string;
   children: ReactNode;
 };
 
-export default function VolumePanel({
-  volume,
-  teamId,
-  projectId,
-  environmentId,
-  children,
-}: TProps) {
+export default function VolumePanel({ volume, children }: TProps) {
   const { closePanel, currentVolumeId, setCurrentVolumeId } = useVolumePanel();
 
   const open = currentVolumeId === volume.id;
@@ -63,7 +67,7 @@ export default function VolumePanel({
       >
         <div className="flex w-full items-start justify-start px-5 pt-4 sm:px-8 sm:pt-6">
           <DrawerHeader className="flex min-w-0 flex-1 items-center justify-start p-0">
-            <DrawerTitle className="sr-only">{volume.id}</DrawerTitle>
+            <DrawerTitle className="sr-only">{getVolumeDisplayName(volume)}</DrawerTitle>
             <TitleButton volume={volume} />
           </DrawerHeader>
           <DrawerHeaderButtonsWrapper>
@@ -78,27 +82,66 @@ export default function VolumePanel({
             </DrawerClose>
           </DrawerHeaderButtonsWrapper>
         </div>
-        <VolumePanelContent
-          volume={volume}
-          teamId={teamId}
-          projectId={projectId}
-          environmentId={environmentId}
-        />
+        <VolumePanelContent volume={volume} />
       </DrawerContent>
     </Drawer>
   );
 }
 
 function TitleButton({ volume }: { volume: TVolumeShallow }) {
+  const { teamId, projectId, environmentId } = useServices();
+  const { mutateAsync: renameVolume, error, reset } = useMutation({ mutationFn: renameVolumeFn });
+  const { refetch: refetchVolumes } = useVolumesUtils({ teamId, projectId, environmentId });
+  const { refetch: refetchServices } = useServicesUtils({ teamId, projectId, environmentId });
+
   return (
-    <Button
-      variant="ghost"
-      fadeOnDisabled={false}
-      disabled
-      className="group/button -my-1 -ml-2.5 flex min-w-0 shrink items-center justify-start gap-2 px-2.5 py-1"
+    <RenameEntityTrigger
+      type="name-and-description"
+      dialogTitle="Rename Volume"
+      dialogDescription="Give a new name and description to the volume."
+      nameInputTitle="Volume Name"
+      descriptionInputTitle="Volume Description"
+      name={getVolumeDisplayName(volume)}
+      description={volume.description || ""}
+      nameMaxLength={volumeNameMaxLength}
+      descriptionMaxLength={volumeDescriptionMaxLength}
+      formSchema={VolumeRenameSchema}
+      error={error}
+      onDialogClose={() => reset()}
+      onSubmit={async (value) => {
+        await renameVolume({
+          id: volume.id,
+          type: volume.type,
+          teamId,
+          projectId,
+          environmentId,
+          name: value.name,
+          description: value.description,
+        });
+
+        const refetchRes = await ResultAsync.fromPromise(
+          Promise.all([refetchVolumes(), refetchServices()]),
+          () => new Error("Failed to refetch volumes"),
+        );
+
+        if (refetchRes.isErr()) {
+          console.error(refetchRes.error);
+          toast.error("Failed to refetch volumes", {
+            description: refetchRes.error.message,
+          });
+        }
+      }}
     >
-      <HardDriveIcon className="-ml-1 size-6 scale-85 sm:size-7" />
-      <p className="min-w-0 shrink text-left text-xl leading-tight sm:text-2xl">{volume.id}</p>
-    </Button>
+      <Button
+        variant="ghost"
+        className="group/button -my-1 -ml-2.5 flex min-w-0 shrink items-center justify-start gap-2 px-2.5 py-1"
+      >
+        <HardDriveIcon className="-ml-1 size-6 scale-85 sm:size-7" />
+        <p className="min-w-0 shrink text-left text-xl leading-tight sm:text-2xl">
+          {getVolumeDisplayName(volume)}
+        </p>
+        <PenIcon className="ml-0.5 size-4 -rotate-30 opacity-0 transition group-focus-visible/button:rotate-0 group-focus-visible/button:opacity-100 group-active/button:rotate-0 group-active/button:opacity-100 has-hover:group-hover/button:rotate-0 has-hover:group-hover/button:opacity-100 sm:size-4.5" />
+      </Button>
+    </RenameEntityTrigger>
   );
 }

@@ -11,10 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { defaultAnimationMs } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import {
-  serviceDescriptionMaxLength,
-  serviceNameMaxLength,
-} from "@/lib/queries/services";
+import { serviceDescriptionMaxLength, serviceNameMaxLength } from "@/lib/queries/services";
 import { ReactNode, useCallback, useRef, useState } from "react";
 import { z } from "zod";
 
@@ -27,6 +24,8 @@ type TPropsShared = {
   dialogDescription: string;
   formSchema: z.ZodSchema<{ name: string; description: string }>;
   onSubmit: (props: { name: string; description: string }) => Promise<void>;
+  nameMaxLength?: number;
+  descriptionMaxLength?: number;
 };
 
 type TPropsNameAndDescription = {
@@ -61,6 +60,8 @@ export default function RenameEntityTrigger({
   onDialogCloseImmediate,
   error,
   children,
+  nameMaxLength = serviceNameMaxLength,
+  descriptionMaxLength = serviceDescriptionMaxLength,
 }: TProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const timeout = useRef<NodeJS.Timeout>(undefined);
@@ -128,7 +129,7 @@ export default function RenameEntityTrigger({
                   placeholder={name}
                   layout="label-included"
                   inputTitle={nameInputTitle}
-                  maxLength={serviceNameMaxLength}
+                  maxLength={nameMaxLength}
                 />
               )}
             />
@@ -145,7 +146,7 @@ export default function RenameEntityTrigger({
                     placeholder={description}
                     layout="label-included"
                     inputTitle={descriptionInputTitle}
-                    maxLength={serviceDescriptionMaxLength}
+                    maxLength={descriptionMaxLength}
                   />
                 )}
               />

@@ -1,8 +1,6 @@
 import ErrorCard from "@/components/error-card";
-import { useServices } from "@/components/service/services-provider";
 import VolumeCard from "@/components/volume/volume-card";
-import { volumesListQuery } from "@/lib/queries/storage";
-import { useQuery } from "@tanstack/react-query";
+import { useVolumes } from "@/components/volume/volumes-provider";
 import { useMemo } from "react";
 
 // Lists volumes that aren't mounted on any service (e.g. left behind by a
@@ -10,13 +8,9 @@ import { useMemo } from "react";
 // while there are no dangling volumes — there is deliberately no way to
 // create a volume from here.
 export default function VolumesSection() {
-  const { teamId, projectId, environmentId } = useServices();
-
-  const { data, error } = useQuery({
-    ...volumesListQuery({ teamId, projectId, environmentId }),
-    refetchInterval: 5000,
-    enabled: environmentId !== "",
-  });
+  const {
+    query: { data, error },
+  } = useVolumes();
 
   const danglingVolumes = useMemo(
     () => data?.volumes.filter((volume) => !volume.mounted_on_service_id),
@@ -44,14 +38,7 @@ export default function VolumesSection() {
             </li>
           ) : (
             danglingVolumes?.map((volume) => (
-              <VolumeCard
-                key={volume.id}
-                volume={volume}
-                teamId={teamId}
-                projectId={projectId}
-                environmentId={environmentId}
-                className="w-full sm:w-1/2 lg:w-1/3"
-              />
+              <VolumeCard key={volume.id} volume={volume} className="w-full sm:w-1/2 lg:w-1/3" />
             ))
           )}
         </ol>
