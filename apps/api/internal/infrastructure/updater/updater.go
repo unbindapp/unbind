@@ -125,6 +125,11 @@ func (self *Updater) CheckForUpdates(ctx context.Context) ([]string, error) {
 	return updates, nil
 }
 
+// ReleaseURL returns the GitHub release page URL for the given version
+func (self *Updater) ReleaseURL(version string) string {
+	return self.releaseManager.ReleaseURL(version)
+}
+
 // GetLatestVersion returns the latest available version
 func (self *Updater) GetLatestVersion(ctx context.Context) (string, error) {
 	version, err := self.releaseManager.GetLatestVersion(ctx)

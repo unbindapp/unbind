@@ -10,11 +10,24 @@ import {
 import UpdateSection from "@/components/update/update-section";
 import { cn } from "@/components/ui/utils";
 
+type TUpdateSearch = { from?: string };
+
+// Only accept internal paths so the Go Back link can never point outside the app.
+function validateSearch(search: Record<string, unknown>): TUpdateSearch {
+  const from = search.from;
+  if (typeof from === "string" && from.startsWith("/") && !from.startsWith("//")) {
+    return { from };
+  }
+  return {};
+}
+
 export const Route = createFileRoute("/update/")({
+  validateSearch,
   component: UpdatePage,
 });
 
 function UpdatePage() {
+  const { from } = Route.useSearch();
   const { data, isPending, error } = useCheckForUpdates();
   const { hasUpdateAvailable, latestVersion, latestVersionUrl } = useCheckNewVersion();
   const isHardError = !data && !isPending && error;
@@ -67,6 +80,7 @@ function UpdatePage() {
         latestVersion={latestVersion}
         latestVersionUrl={latestVersionUrl}
         currentVersion={data.data.current_version}
+        backTo={from ?? "/"}
       />
     </Wrapper>
   );

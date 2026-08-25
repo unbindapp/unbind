@@ -44,6 +44,11 @@ func (m *MockReleaseManager) DownloadVersionManifests(ctx context.Context, versi
 	return args.Bool(0), args.Error(1)
 }
 
+func (m *MockReleaseManager) ReleaseURL(version string) string {
+	args := m.Called(version)
+	return args.String(0)
+}
+
 // MockRedisClient is a mock for Redis client
 type MockRedisClient struct {
 	mock.Mock

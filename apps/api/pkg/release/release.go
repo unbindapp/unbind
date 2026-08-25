@@ -41,6 +41,7 @@ type ManagerInterface interface {
 	GetUpdatePath(ctx context.Context, currentVersion, targetVersion string) ([]string, error)
 	GetNextAvailableVersion(ctx context.Context, currentVersion string) (string, error)
 	DownloadVersionManifests(ctx context.Context, version, destDir string) (bool, error)
+	ReleaseURL(version string) string
 }
 
 type Manager struct {
@@ -74,6 +75,15 @@ func normalizeVersion(version string) string {
 		return version
 	}
 	return "v" + version
+}
+
+// ReleaseURL returns the GitHub release page for version, or the releases index when version isn't a valid semver tag.
+func (self *Manager) ReleaseURL(version string) string {
+	normalized := normalizeVersion(version)
+	if !semver.IsValid(normalized) {
+		return fmt.Sprintf("https://github.com/%s/%s/releases", self.owner, self.repo)
+	}
+	return fmt.Sprintf("https://github.com/%s/%s/releases/tag/%s", self.owner, self.repo, normalized)
 }
 
 func (self *Manager) publishedReleaseTags(ctx context.Context) (map[string]bool, error) {

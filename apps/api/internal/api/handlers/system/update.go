@@ -33,11 +33,17 @@ func (self *HandlerGroup) CheckPermissions(ctx context.Context, requesterUserID 
 }
 
 // * Check for updates
+type AvailableVersion struct {
+	Version string `json:"version"`
+	URL     string `json:"url"`
+}
+
 type UpdateCheckResponse struct {
 	Body struct {
-		HasUpdateAvailable bool     `json:"has_update_available"`
-		AvailableVersions  []string `json:"available_versions" nullable:"false"`
-		CurrentVersion     string   `json:"current_version"`
+		HasUpdateAvailable bool               `json:"has_update_available"`
+		AvailableVersions  []AvailableVersion `json:"available_versions" nullable:"false"`
+		CurrentVersion     string             `json:"current_version"`
+		CurrentVersionURL  string             `json:"current_version_url"`
 	}
 }
 
@@ -57,13 +63,14 @@ func (self *HandlerGroup) CheckForUpdates(ctx context.Context, input *server.Bas
 		log.Errorf("Failed to check for updates: %v", err)
 		resp := &UpdateCheckResponse{}
 		resp.Body.HasUpdateAvailable = false
-		resp.Body.AvailableVersions = []string{}
+		resp.Body.AvailableVersions = []AvailableVersion{}
 		resp.Body.CurrentVersion = self.srv.UpdateManager.CurrentVersion
+		resp.Body.CurrentVersionURL = self.srv.UpdateManager.ReleaseURL(self.srv.UpdateManager.CurrentVersion)
 		return resp, nil
 	}
 
 	// Filter to only show versions that can be updated to in sequence
-	availableUpdates := make([]string, 0)
+	availableUpdates := make([]AvailableVersion, 0)
 	currentVersion := self.srv.UpdateManager.CurrentVersion
 
 	// Sort versions to ensure we process them in order
@@ -74,7 +81,10 @@ func (self *HandlerGroup) CheckForUpdates(ctx context.Context, input *server.Bas
 	// Filter out versions less than or equal to current version
 	for _, version := range allUpdates {
 		if semver.Compare(version, currentVersion) > 0 {
-			availableUpdates = append(availableUpdates, version)
+			availableUpdates = append(availableUpdates, AvailableVersion{
+				Version: version,
+				URL:     self.srv.UpdateManager.ReleaseURL(version),
+			})
 		}
 	}
 
@@ -82,6 +92,7 @@ func (self *HandlerGroup) CheckForUpdates(ctx context.Context, input *server.Bas
 	resp.Body.HasUpdateAvailable = len(availableUpdates) > 0
 	resp.Body.AvailableVersions = availableUpdates
 	resp.Body.CurrentVersion = currentVersion
+	resp.Body.CurrentVersionURL = self.srv.UpdateManager.ReleaseURL(currentVersion)
 
 	return resp, nil
 }

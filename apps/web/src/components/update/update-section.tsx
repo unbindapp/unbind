@@ -22,9 +22,16 @@ type TProps = {
   latestVersion: string;
   latestVersionUrl: string;
   currentVersion: string;
+  /** Internal path to return to via Go Back; validated by the /update route's `from` search param. */
+  backTo: string;
 };
 
-export default function UpdateSection({ latestVersion, latestVersionUrl, currentVersion }: TProps) {
+export default function UpdateSection({
+  latestVersion,
+  latestVersionUrl,
+  currentVersion,
+  backTo,
+}: TProps) {
   const [statusEnabled, setStatusEnabled] = useState(false);
   const setLastDismissedVersion = useMainStore((s) => s.setLastDismissedVersion);
 
@@ -38,6 +45,7 @@ export default function UpdateSection({ latestVersion, latestVersionUrl, current
         latestVersion={latestVersion}
         latestVersionUrl={latestVersionUrl}
         currentVersion={currentVersion}
+        backTo={backTo}
         setUpdateStatusEnabled={setStatusEnabled}
       />
     </UpdateStatusProvider>
@@ -54,6 +62,7 @@ function UpdateSectionInner({
   latestVersion,
   latestVersionUrl,
   currentVersion,
+  backTo,
   setUpdateStatusEnabled,
 }: TPropsInner) {
   const now = useNow();
@@ -153,7 +162,7 @@ function UpdateSectionInner({
         {updatePhase === "idle" && (
           <>
             <div className="flex w-full px-1 py-1.5 sm:w-1/2">
-              <LinkButton to="/" variant="outline" className="text-muted-foreground w-full">
+              <LinkButton to={backTo} variant="outline" className="text-muted-foreground w-full">
                 <ArrowLeftIcon className="size-4.5 shrink-0" />
                 <p className="min-w-0 shrink">Go Back</p>
               </LinkButton>

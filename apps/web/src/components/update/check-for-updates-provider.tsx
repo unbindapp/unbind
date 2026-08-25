@@ -5,6 +5,7 @@ import { useMainStore } from "@/components/stores/main/main-store-provider";
 import { LinkButton } from "@/components/ui/button";
 import { useMounted } from "@/lib/hooks/use-mounted";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
+import { useLocation } from "@tanstack/react-router";
 import { GiftIcon } from "lucide-react";
 import { createContext, ReactNode, useCallback, useContext, useEffect, useRef } from "react";
 import { toast } from "sonner";
@@ -45,37 +46,58 @@ export const useCheckForUpdatesUtils = () => {
 };
 
 type TNewVersion =
-  | { hasUpdateAvailable: true; latestVersion: string; latestVersionUrl: string }
-  | { hasUpdateAvailable: false; latestVersion: null; latestVersionUrl: null };
+  | {
+      hasUpdateAvailable: true;
+      hasUnseenUpdate: boolean;
+      latestVersion: string;
+      latestVersionUrl: string;
+    }
+  | {
+      hasUpdateAvailable: false;
+      hasUnseenUpdate: false;
+      latestVersion: null;
+      latestVersionUrl: null;
+    };
 
 // Single source of truth for "is there an update": the API sets has_update_available
 // iff available_versions is non-empty, so consumers get one check instead of re-deriving it.
+// `hasUnseenUpdate` additionally accounts for dismissal (toast dismissed or /update visited);
+// passive indicators like the avatar dot should use it, while surfaces that must always
+// reflect reality (the /update page, the menu card) use `hasUpdateAvailable`.
 export const useCheckNewVersion = (): TNewVersion => {
   const { data } = useCheckForUpdates();
+  const lastDismissedVersion = useMainStore((s) => s.lastDismissedVersion);
   const availableVersions = data?.data.available_versions;
 
-  const latestVersion =
+  const latest =
     data?.data.has_update_available && availableVersions && availableVersions.length > 0
       ? availableVersions[availableVersions.length - 1]
       : null;
 
-  const latestVersionUrl =
-    data?.data.has_update_available && availableVersions && availableVersions.length > 0
-      ? availableVersions[availableVersions.length - 1]
-      : null;
+  if (!latest) {
+    return {
+      hasUpdateAvailable: false,
+      hasUnseenUpdate: false,
+      latestVersion: null,
+      latestVersionUrl: null,
+    };
+  }
 
-  return latestVersion !== null && latestVersionUrl !== null
-    ? { hasUpdateAvailable: true, latestVersion, latestVersionUrl }
-    : { hasUpdateAvailable: true, latestVersion: "asdfb", latestVersionUrl: "asdf" };
+  return {
+    hasUpdateAvailable: true,
+    hasUnseenUpdate: latest.version !== lastDismissedVersion,
+    latestVersion: latest.version,
+    latestVersionUrl: latest.url,
+  };
 };
 
 export default CheckForUpdatesProvider;
 
 export function UpdateToastProvider({ children }: { children: ReactNode }) {
   const setLastDismissedVersion = useMainStore((state) => state.setLastDismissedVersion);
-  const lastDismissedVersion = useMainStore((state) => state.lastDismissedVersion);
 
-  const { hasUpdateAvailable, latestVersion } = useCheckNewVersion();
+  const { hasUnseenUpdate, latestVersion } = useCheckNewVersion();
+  const locationHref = useLocation({ select: (l) => l.href });
 
   const updateShownRef = useRef(false);
 
@@ -83,9 +105,8 @@ export function UpdateToastProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!mounted) return;
-    if (!hasUpdateAvailable) return;
+    if (!hasUnseenUpdate || latestVersion === null) return;
     if (updateShownRef.current) return;
-    if (lastDismissedVersion !== null && lastDismissedVersion === latestVersion) return;
 
     toast.success("Update available!", {
       id: "update_toast",
@@ -99,6 +120,7 @@ export function UpdateToastProvider({ children }: { children: ReactNode }) {
               setLastDismissedVersion(latestVersion);
             }}
             to="/update"
+            search={{ from: locationHref }}
             size="sm"
             className="w-full px-3"
           >
@@ -114,7 +136,7 @@ export function UpdateToastProvider({ children }: { children: ReactNode }) {
     updateShownRef.current = true;
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasUpdateAvailable, latestVersion, mounted, lastDismissedVersion]);
+  }, [hasUnseenUpdate, latestVersion, mounted]);
 
   return children;
 }

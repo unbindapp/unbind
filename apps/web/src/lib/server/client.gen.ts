@@ -25,6 +25,13 @@ export const AvailableVariableReferenceSchema = z
   })
   .strip();
 
+export const AvailableVersionSchema = z
+  .object({
+    url: z.string(),
+    version: z.string(),
+  })
+  .strip();
+
 export const BuildkitSettingsSchema = z
   .object({
     max_parallelism: z.number(),
@@ -2220,8 +2227,9 @@ export const UpdateApplyResponseBodySchema = z
 
 export const UpdateCheckResponseBodySchema = z
   .object({
-    available_versions: z.array(z.string()),
+    available_versions: z.array(AvailableVersionSchema),
     current_version: z.string(),
+    current_version_url: z.string(),
     has_update_available: z.boolean(),
   })
   .strip();
@@ -2540,6 +2548,7 @@ export const WebhookUpdateInputSchema = z
 export type VariableReferenceSourceType = z.infer<typeof VariableReferenceSourceTypeSchema>;
 export type VariableReferenceType = z.infer<typeof VariableReferenceTypeSchema>;
 export type AvailableVariableReference = z.infer<typeof AvailableVariableReferenceSchema>;
+export type AvailableVersion = z.infer<typeof AvailableVersionSchema>;
 export type BuildkitSettings = z.infer<typeof BuildkitSettingsSchema>;
 export type Capabilities = z.infer<typeof CapabilitiesSchema>;
 export type CertManagerCondition = z.infer<typeof CertManagerConditionSchema>;
