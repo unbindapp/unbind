@@ -83,7 +83,7 @@ releases:
   - name: flux
     namespace: {{ .Values.namespace }}
     chart: fluxcd-community/flux2
-    version: 2.18.4
+    version: 2.19.0
     values:
       -
         policies:
@@ -115,7 +115,7 @@ releases:
   - name: victoria-metrics-k8s-stack
     namespace: {{ .Values.namespace }}
     chart: vm/victoria-metrics-k8s-stack
-    version: 0.84.0
+    version: 0.91.2
     values:
       - values/victoria-metrics-k8s-stack.yaml
       - vmsingle:
@@ -133,7 +133,7 @@ releases:
   - name: alloy
     namespace: {{ .Values.namespace }}
     chart: grafana/alloy
-    version: 1.10.0
+    version: 1.12.0
     values:
       -
         alloy:
@@ -217,7 +217,7 @@ releases:
   - name: loki
     namespace: {{ .Values.namespace }}
     chart: grafana-community/loki
-    version: 17.4.6
+    version: 17.4.11
     values:
       -
         loki:
@@ -427,7 +427,7 @@ releases:
   - name: redis
     namespace: {{ .Values.namespace }}
     chart: oci://registry-1.docker.io/cloudpirates/redis
-    version: 0.30.4
+    version: 0.34.20
     values:
       - architecture: standalone
         auth:
@@ -591,7 +591,7 @@ releases:
   - name: envoy-gateway
     namespace: {{ .Values.namespace }}
     chart: oci://docker.io/envoyproxy/gateway-helm
-    version: v1.2.6
+    version: v1.9.0
     hooks:
       - events: ["postsync"]
         showlogs: true
@@ -663,7 +663,7 @@ releases:
   - name: cert-manager
     namespace: {{ .Values.namespace }}
     chart: jetstack/cert-manager
-    version: 1.20.2
+    version: 1.21.1
     {{- if eq $certProvider "gateway" }}
     needs:
       - {{ .Values.namespace }}/envoy-gateway

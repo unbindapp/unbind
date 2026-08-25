@@ -46,7 +46,7 @@ func appsmithTemplate() *schema.TemplateDefinition {
 				Name:     "Appsmith",
 				Type:     schema.ServiceTypeDockerimage,
 				Builder:  schema.ServiceBuilderDocker,
-				Image:    new("appsmith/appsmith-ee:v2.1.1"),
+				Image:    new("appsmith/appsmith-ee:v2.3.1"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
 					CPULimitsMillicores:   400,

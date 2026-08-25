@@ -52,7 +52,7 @@ func umamiTemplate() *schema.TemplateDefinition {
 				Name:      "Umami",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     new("ghcr.io/umami-software/umami:3.1.0"),
+				Image:     new("ghcr.io/umami-software/umami:3.3.1"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
 					CPULimitsMillicores:   400,

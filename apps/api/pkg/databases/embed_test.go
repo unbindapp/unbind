@@ -34,7 +34,7 @@ func TestEmbeddedPostgresDefinitionPG18(t *testing.T) {
 	require.True(t, ok, "postgres schema should expose a dockerImage property")
 	assert.Equal(t, "", dockerImageProp.Default)
 
-	assert.Contains(t, def.Content, "spilo:%s-27713048842")
+	assert.Contains(t, def.Content, "spilo:%s-32904760118")
 }
 
 func TestEmbeddedRedisDefinitionLabelsPersistentVolumeClaims(t *testing.T) {

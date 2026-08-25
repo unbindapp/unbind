@@ -52,7 +52,7 @@ func ghostTemplate() *schema.TemplateDefinition {
 				Name:      "Ghost",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     new("ghost:6.45.0"),
+				Image:     new("ghost:6.60.0"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
 					CPULimitsMillicores:   400,

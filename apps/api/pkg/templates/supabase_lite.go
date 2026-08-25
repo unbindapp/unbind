@@ -1345,7 +1345,7 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				Name:      "Studio",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     new("supabase/studio:2026.06.03-sha-0bca601"),
+				Image:     new("supabase/studio:2026.08.24-sha-8ec45b2"),
 				DependsOn: []string{"service_postgresql", "service_kong"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 50,
@@ -1450,7 +1450,7 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				Name:      "Storage",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     new("supabase/storage-api:v1.60.4"),
+				Image:     new("supabase/storage-api:v1.71.0"),
 				DependsOn: []string{"service_postgresql", "service_minio"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
@@ -1575,7 +1575,7 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				Name:      "PostgREST",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     new("postgrest/postgrest:v14.12"),
+				Image:     new("postgrest/postgrest:v14.17"),
 				DependsOn: []string{"service_postgresql"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
@@ -1625,7 +1625,7 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				Name:      "Auth",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     new("supabase/gotrue:v2.189.0"),
+				Image:     new("supabase/gotrue:v2.196.0"),
 				DependsOn: []string{"service_postgresql"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 20,
@@ -1697,7 +1697,7 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				Name:      "Postgres Meta",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     new("supabase/postgres-meta:v0.96.6"),
+				Image:     new("supabase/postgres-meta:v0.98.0"),
 				DependsOn: []string{"service_postgresql"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 20,
@@ -1746,7 +1746,7 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				Name:      "Functions",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     new("supabase/edge-runtime:v1.74.0"),
+				Image:     new("supabase/edge-runtime:v1.74.3"),
 				DependsOn: []string{"service_postgresql", "service_kong"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 20,
@@ -1931,7 +1931,7 @@ serve(async () => {
 				Name:     "Kong",
 				Type:     schema.ServiceTypeDockerimage,
 				Builder:  schema.ServiceBuilderDocker,
-				Image:    new("kong:3.9.1"),
+				Image:    new("kong:3.9.3"),
 				InputIDs: []string{"input_domain"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 50,

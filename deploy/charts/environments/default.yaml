@@ -46,11 +46,11 @@ overrides:
     # Configurable storage size
     storage: "3Gi"
   buildkitd:
-    image: moby/buildkit:v0.31.0-rootless
+    image: moby/buildkit:v0.32.2-rootless
     replicas: 1
     maxParallism: 2
   postgresOperator:
-    spiloImage: ghcr.io/unbindapp/spilo:18-27713048842
+    spiloImage: ghcr.io/unbindapp/spilo:18-32904760118
   database:
     replicaCount: 1
     storage: "2Gi"

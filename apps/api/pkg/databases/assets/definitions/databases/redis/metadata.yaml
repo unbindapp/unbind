@@ -4,7 +4,7 @@ type: "helm"
 version: "1.0.0"
 chart:
   name: "redis"
-  version: "0.30.4"
+  version: "0.34.20"
   repository: "oci://registry-1.docker.io/cloudpirates"
   repositoryName: "redis"
 port: 6379
@@ -27,8 +27,8 @@ schema:
       type: "string"
       # 8.x only — 7.x predates Redis returning to an open license (AGPLv3 at 8.0).
       description: "Redis version"
-      default: "8.8"
-      enum: ["8.4", "8.6", "8.8"]
+      default: "8.10"
+      enum: ["8.4", "8.6", "8.8", "8.10"]
     common:
       $ref: "#/imports/base"
     labels:

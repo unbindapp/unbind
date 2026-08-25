@@ -25,10 +25,9 @@ schema:
       required: true
     version:
       type: "string"
-      # Default 26.3 (LTS); 26.5 newest stable; 24.12 prior LTS.
       description: "ClickHouse version"
       default: "26.3"
-      enum: ["24.12", "25.5", "26.3", "26.5"]
+      enum: ["24.12", "25.5", "26.3", "26.5", "26.7"]
     shardsCount:
       type: "integer"
       description: "Number of shards"

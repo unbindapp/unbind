@@ -1950,7 +1950,7 @@ func TestCloudPiratesImageTagIsString(t *testing.T) {
 		wantTag string
 	}{
 		{"mongodb", "8.3"},
-		{"redis", "8.8"},
+		{"redis", "8.10"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.dbType, func(t *testing.T) {

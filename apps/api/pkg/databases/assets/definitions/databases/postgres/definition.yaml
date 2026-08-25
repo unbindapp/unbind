@@ -16,7 +16,7 @@ metadata:
 
 spec:
   teamId: {{ .TeamID }}
-  dockerImage: {{ if .Parameters.dockerImage }}{{ .Parameters.dockerImage }}{{ else }}{{ printf "ghcr.io/unbindapp/spilo:%s-27713048842" (.Parameters.version | default "18") }}{{ end }}
+  dockerImage: {{ if .Parameters.dockerImage }}{{ .Parameters.dockerImage }}{{ else }}{{ printf "ghcr.io/unbindapp/spilo:%s-32904760118" (.Parameters.version | default "18") }}{{ end }}
   enableMasterLoadBalancer: {{ .Parameters.common.exposeExternal | default false }}
   postgresql:
     version: {{ .Parameters.version | default "18" | quote }}
@@ -191,7 +191,7 @@ spec:
     spec:
       containers:
       - name: initdb
-        image: {{ if .Parameters.dockerImage }}{{ .Parameters.dockerImage }}{{ else }}{{ printf "ghcr.io/unbindapp/spilo:%s-27713048842" (.Parameters.version | default "18") }}{{ end }}
+        image: {{ if .Parameters.dockerImage }}{{ .Parameters.dockerImage }}{{ else }}{{ printf "ghcr.io/unbindapp/spilo:%s-32904760118" (.Parameters.version | default "18") }}{{ end }}
         env:
         - name: PGPASSWORD
           valueFrom:

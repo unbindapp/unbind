@@ -52,7 +52,7 @@ func wordPressTemplate() *schema.TemplateDefinition {
 				Name:      "WordPress",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     new("wordpress:7.0"),
+				Image:     new("wordpress:7.1"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
 					CPULimitsMillicores:   400,

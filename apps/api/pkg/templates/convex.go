@@ -91,7 +91,7 @@ func convexTemplate() *schema.TemplateDefinition {
 				InputIDs:    []string{"input_api_domain", "input_http_actions_domain", "input_storage_size"},
 				Type:        schema.ServiceTypeDockerimage,
 				Builder:     schema.ServiceBuilderDocker,
-				Image:       new("ghcr.io/get-convex/convex-backend@sha256:edd7959f3464ed661f6663f646db205d5d61bda606c969b074dfb3c69ed71463"),
+				Image:       new("ghcr.io/get-convex/convex-backend@sha256:1f2044e3eac463ac78973b136c0baf72d4ada602611d853d6f99f280e29e0a98"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores:   50,
 					CPULimitsMillicores:     1000,
@@ -200,7 +200,7 @@ func convexTemplate() *schema.TemplateDefinition {
 				InputIDs:    []string{"input_dashboard_domain"},
 				Type:        schema.ServiceTypeDockerimage,
 				Builder:     schema.ServiceBuilderDocker,
-				Image:       new("ghcr.io/get-convex/convex-dashboard@sha256:bbc4d2c43d19fd6f2791dd6c5153a76e127f3eea489c1639e5acf66999c216bf"),
+				Image:       new("ghcr.io/get-convex/convex-dashboard@sha256:284a2638e0c1a4ec0c2327d8219776f3a426ca5824b81686ae4d9454dc0ce8ed"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores:   20,
 					CPULimitsMillicores:     400,

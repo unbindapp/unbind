@@ -3,7 +3,7 @@ description: "Standard MongoDB database using CloudPirates MongoDB chart"
 type: "helm"
 chart:
   name: "mongodb"
-  version: "0.18.0"
+  version: "0.18.11"
   repository: "oci://registry-1.docker.io/cloudpirates"
   repositoryName: "mongodb"
 version: "1.0.0"

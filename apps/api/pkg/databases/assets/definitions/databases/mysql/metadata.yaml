@@ -25,8 +25,8 @@ schema:
     version:
       type: "string"
       description: "MySQL version"
-      default: "8.4.8"
-      enum: ["8.0.45", "8.4.8"]
+      default: "8.4.10"
+      enum: ["8.0.46", "8.4.10"]
     s3:
       $ref: "#/imports/s3Schema"
     restore:
