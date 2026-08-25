@@ -134,13 +134,13 @@ export default function UserAvatar({ email, className }: TProps) {
               target="_blank"
               rel="noopener noreferrer"
               href={updatesData.data.current_version_url}
-              className="flex w-full items-center justify-start gap-1.25 px-4.25 py-3"
+              className="group/version hover:bg-border active:bg-border flex w-full items-center justify-start gap-1.25 px-4.25 py-3"
             >
-              <div className="text-muted-foreground group-active/version:text-foreground relative -ml-px size-3.75 shrink-0">
-                <GitBranchIcon className="size-full transition-[rotate,opacity] group-active/version:rotate-90 group-active/version:opacity-0" />
-                <ExternalLink className="absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-[rotate,opacity] group-active/version:rotate-0 group-active/version:opacity-100" />
+              <div className="text-muted-foreground group-hover/version:text-foreground group-active/version:text-foreground relative -ml-px size-3.75 shrink-0">
+                <GitBranchIcon className="size-full transition-[rotate,opacity] group-hover/version:rotate-90 group-hover/version:opacity-0 group-active/version:rotate-90 group-active/version:opacity-0" />
+                <ExternalLink className="absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-[rotate,opacity] group-hover/version:rotate-0 group-hover/version:opacity-100 group-active/version:rotate-0 group-active/version:opacity-100" />
               </div>
-              <p className="text-muted-foreground group-active/version:text-foreground min-w-0 shrink text-center text-sm leading-tight">
+              <p className="text-muted-foreground group-hover/version:text-foreground group-active/version:text-foreground min-w-0 shrink text-center text-sm leading-tight">
                 Version: <span className="font-semibold">{updatesData.data.current_version}</span>
               </p>
             </a>
