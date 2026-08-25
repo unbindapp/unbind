@@ -227,7 +227,7 @@ func (r *ServiceReconciler) objectNeedsUpdate(desired, existing runtime.Object) 
 			return true, nil
 		case !reflect.DeepEqual(existingTyped.Spec.Selector, desiredTyped.Spec.Selector):
 			return true, nil
-		case existingTyped.Spec.Type != desiredTyped.Spec.Type:
+		case serviceTypeOrDefault(existingTyped.Spec.Type) != serviceTypeOrDefault(desiredTyped.Spec.Type):
 			return true, nil
 		default:
 			return false, nil
@@ -262,7 +262,7 @@ func (r *ServiceReconciler) objectNeedsUpdate(desired, existing runtime.Object) 
 	}
 }
 
-// genericObjectNeedsUpdate provides a generic comparison for objects without type-specific logic
+// genericObjectNeedsUpdate compares only the fields the reconciler manages
 func (r *ServiceReconciler) genericObjectNeedsUpdate(desired, existing runtime.Object) (bool, error) {
 	desiredUnstructured, err := runtime.DefaultUnstructuredConverter.ToUnstructured(desired)
 	if err != nil {
@@ -274,38 +274,48 @@ func (r *ServiceReconciler) genericObjectNeedsUpdate(desired, existing runtime.O
 		return false, fmt.Errorf("converting existing object to unstructured: %w", err)
 	}
 
-	desiredUnstructured = removeNonComparedFields(desiredUnstructured)
-	existingUnstructured = removeNonComparedFields(existingUnstructured)
+	for k, v := range desiredUnstructured {
+		switch k {
+		case "metadata", "status", "apiVersion", "kind":
+			continue
+		}
+		if !reflect.DeepEqual(v, existingUnstructured[k]) {
+			return true, nil
+		}
+	}
 
-	return !reflect.DeepEqual(desiredUnstructured, existingUnstructured), nil
+	desiredMeta, _ := desiredUnstructured["metadata"].(map[string]any)
+	existingMeta, _ := existingUnstructured["metadata"].(map[string]any)
+	return mapEntriesMissing(desiredMeta, existingMeta, "labels") ||
+		mapEntriesMissing(desiredMeta, existingMeta, "annotations"), nil
 }
 
-// removeNonComparedFields removes fields that should not be part of the comparison
-func removeNonComparedFields(obj map[string]any) map[string]any {
-	result := make(map[string]any)
-	for k, v := range obj {
-		if k == "status" {
-			continue
+func mapEntriesMissing(desiredMeta, existingMeta map[string]any, key string) bool {
+	desired, _ := desiredMeta[key].(map[string]any)
+	existing, _ := existingMeta[key].(map[string]any)
+	for k, v := range desired {
+		if existing[k] != v {
+			return true
 		}
-
-		if k == "metadata" {
-			if metadata, ok := v.(map[string]any); ok {
-				filteredMetadata := make(map[string]any)
-				for mk, mv := range metadata {
-					if mk != "resourceVersion" && mk != "generation" &&
-						mk != "uid" && mk != "creationTimestamp" &&
-						mk != "managedFields" && mk != "selfLink" {
-						filteredMetadata[mk] = mv
-					}
-				}
-				result[k] = filteredMetadata
-			}
-			continue
-		}
-
-		result[k] = v
 	}
-	return result
+	return false
+}
+
+func mergeForeignMapEntries(desiredMeta, existingMeta map[string]any, key string) {
+	existing, ok := existingMeta[key].(map[string]any)
+	if !ok {
+		return
+	}
+	desired, ok := desiredMeta[key].(map[string]any)
+	if !ok {
+		desired = map[string]any{}
+	}
+	for k, v := range existing {
+		if _, set := desired[k]; !set {
+			desired[k] = v
+		}
+	}
+	desiredMeta[key] = desired
 }
 
 // updateObject updates the spec of an existing object with the desired values
@@ -399,6 +409,8 @@ func (r *ServiceReconciler) updateUnstructuredObject(existing *unstructured.Unst
 			"creationTimestamp",
 			"selfLink",
 			"managedFields",
+			"finalizers",
+			"ownerReferences",
 		}
 
 		for _, field := range preserveFields {
@@ -406,6 +418,9 @@ func (r *ServiceReconciler) updateUnstructuredObject(existing *unstructured.Unst
 				desiredMeta[field] = val
 			}
 		}
+
+		mergeForeignMapEntries(desiredMeta, existingMeta, "labels")
+		mergeForeignMapEntries(desiredMeta, existingMeta, "annotations")
 
 		desiredObj["metadata"] = desiredMeta
 	}

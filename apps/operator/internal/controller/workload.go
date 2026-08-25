@@ -123,6 +123,13 @@ func copyImmutableServiceFields(desired, existing *corev1.Service) {
 	}
 }
 
+func serviceTypeOrDefault(t corev1.ServiceType) corev1.ServiceType {
+	if t == "" {
+		return corev1.ServiceTypeClusterIP
+	}
+	return t
+}
+
 func kubeServiceNeedsUpdate(logger logr.Logger, desired, existing *corev1.Service) bool {
 	switch {
 	case !reflect.DeepEqual(existing.Spec.Ports, desired.Spec.Ports):
@@ -131,7 +138,7 @@ func kubeServiceNeedsUpdate(logger logr.Logger, desired, existing *corev1.Servic
 	case !reflect.DeepEqual(existing.Spec.Selector, desired.Spec.Selector):
 		logger.Info("Service selector needs update")
 		return true
-	case existing.Spec.Type != desired.Spec.Type:
+	case serviceTypeOrDefault(existing.Spec.Type) != serviceTypeOrDefault(desired.Spec.Type):
 		logger.Info("Service type needs update", "from", existing.Spec.Type, "to", desired.Spec.Type)
 		return true
 	default:
