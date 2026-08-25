@@ -164,7 +164,19 @@ function StatusIndicator({ deployment }: { deployment: NonNullable<TService["las
     return <TriangleAlertIcon className="text-destructive size-3.5 shrink-0" />;
   }
   if (deployment.status === "removed") {
-    return <GlobeOffIcon className="size-3.5 shrink-0" />;
+    return (
+      <div className="flex size-3.5 shrink-0 items-center justify-center">
+        <div className="flex size-3 items-center justify-center rounded-full shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--muted-foreground)_40%,transparent)]">
+          <div className="bg-muted-foreground size-1.5 rounded-full" />
+        </div>
+      </div>
+    );
   }
-  return <GlobeIcon className="text-success size-3.5 shrink-0" />;
+  return (
+    <div className="flex size-3.5 shrink-0 items-center justify-center">
+      <div className="flex size-3 items-center justify-center rounded-full shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--success)_40%,transparent)]">
+        <div className="bg-success size-1.5 rounded-full" />
+      </div>
+    </div>
+  );
 }
