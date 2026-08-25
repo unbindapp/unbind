@@ -80,7 +80,7 @@ func teableTemplate() *schema.TemplateDefinition {
 				DependsOn: []string{"service_postgres", "service_redis"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 40,
-					CPULimitsMillicores:   400,
+					CPULimitsMillicores:   2000,
 				},
 				Ports: []schema.PortSpec{
 					{
@@ -135,7 +135,7 @@ func teableTemplate() *schema.TemplateDefinition {
 					Port:                    new(int32(3000)),
 					StartupPeriodSeconds:    new(int32(5)),
 					StartupTimeoutSeconds:   new(int32(20)),
-					StartupFailureThreshold: new(int32(10)),
+					StartupFailureThreshold: new(int32(36)),
 					HealthPeriodSeconds:     new(int32(10)),
 					HealthTimeoutSeconds:    new(int32(5)),
 					HealthFailureThreshold:  new(int32(5)),
