@@ -26,7 +26,7 @@ export default function DeploymentStatusChip({
     if (deployment.status === "build-failed") return ["FAILED", TriangleAlertIcon];
     if (deployment.status === "build-succeeded") return ["LAUNCHING", AnimatedLoaderIcon];
     if (deployment.status === "launching") return ["LAUNCHING", AnimatedLoaderIcon];
-    if (deployment.status === "launch-error") return ["ERROR", AnimatedLoaderIcon];
+    if (deployment.status === "launch-error") return ["ERROR", TriangleAlertIcon];
     if (deployment.status === "active") return ["ACTIVE", CircleCheckIcon];
     if (deployment.status === "crashing") return ["CRASHING", TriangleAlertIcon];
     return ["REMOVED", BroomIcon];

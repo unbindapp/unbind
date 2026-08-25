@@ -38,6 +38,7 @@ function StatusTextWrapper({
   const color = useMemo(() => {
     if (lastDeployment?.status === "crashing") return "destructive";
     if (lastDeployment?.status === "build-failed") return "destructive";
+    if (lastDeployment?.status === "launch-error") return "destructive";
     return "default";
   }, [lastDeployment?.status]);
 
@@ -110,7 +111,7 @@ function StatusText({ service }: { service: TServiceShallow }) {
     return <StatusTextWrapper service={service}>Launching</StatusTextWrapper>;
   }
   if (deployment.status === "launch-error") {
-    return <StatusTextWrapper service={service}>Launch error</StatusTextWrapper>;
+    return <StatusTextWrapper service={service}>Couldn't launch</StatusTextWrapper>;
   }
   if (deployment.status === "build-failed") {
     return <StatusTextWrapper service={service}>Build failed</StatusTextWrapper>;
@@ -151,7 +152,7 @@ function StatusIndicator({ deployment }: { deployment: NonNullable<TService["las
     return <XIcon className="size-3.5 shrink-0" />;
   }
   if (deployment.status === "launch-error") {
-    return <LoaderIcon className="text-destructive size-3.5 shrink-0 animate-spin" />;
+    return <TriangleAlertIcon className="text-destructive size-3.5 shrink-0" />;
   }
   if (deployment.status === "crashing") {
     return <TriangleAlertIcon className="text-destructive size-3.5 shrink-0" />;
