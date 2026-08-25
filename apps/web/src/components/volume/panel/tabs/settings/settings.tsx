@@ -1,4 +1,5 @@
 import TabWrapper from "@/components/navigation/tab-wrapper";
+import { cn } from "@/components/ui/utils";
 import ConnectionSection from "@/components/volume/panel/tabs/settings/sections/connection-section";
 import DeleteSection from "@/components/volume/panel/tabs/settings/sections/delete-section";
 import ExpandSection from "@/components/volume/panel/tabs/settings/sections/expand-section";
@@ -11,31 +12,39 @@ type TProps = { volume: TVolumeShallow };
 export default function Settings({ volume }: TProps) {
   return (
     <TabWrapper className="gap-6">
-      {/* Kubernetes removes the volume asynchronously after a delete, so it
-      can linger in a terminating state for a while — the sections below stay
-      visible but their controls are disabled. */}
       {volume.is_deleting && (
-        <div className="bg-destructive/8 border-destructive/8 text-destructive flex w-full items-start justify-start gap-2 rounded-lg border px-3.5 py-2.5 font-medium">
+        <BannerWrapper className="bg-destructive/8 border-destructive/8 text-destructive">
           <HourglassIcon className="animate-hourglass mt-0.5 -ml-0.5 size-4 shrink-0" />
           <p className="min-w-0 shrink leading-tight">
-            Deleting the volume. It will disappear from the list once the deletion is complete.
+            Deleting the volume. It will disappear once the deletion is complete.
           </p>
-        </div>
+        </BannerWrapper>
       )}
-      {/* Attached in the service's config, but the mount only becomes real once
-      the service's new pod is up — show the in-between state. */}
       {volume.is_attaching && (
-        <div className="bg-process/8 border-process/8 text-process flex w-full items-start justify-start gap-2 rounded-lg border px-3.5 py-2.5 font-medium">
+        <BannerWrapper className="bg-process/8 border-process/8 text-process">
           <HourglassIcon className="animate-hourglass mt-0.5 -ml-0.5 size-4 shrink-0" />
           <p className="min-w-0 shrink leading-tight">
-            Attaching the volume. It will be mounted once the service finishes deploying.
+            Attaching the volume. It will be attached once the service is deployed.
           </p>
-        </div>
+        </BannerWrapper>
       )}
       <UsageSection volume={volume} />
       <ExpandSection volume={volume} />
       <ConnectionSection volume={volume} />
       <DeleteSection volume={volume} />
     </TabWrapper>
+  );
+}
+
+function BannerWrapper({ children, className }: { children: React.ReactNode; className: string }) {
+  return (
+    <div
+      className={cn(
+        "flex w-full items-start justify-start gap-2 rounded-lg border px-3.5 py-2.5 md:max-w-xl",
+        className,
+      )}
+    >
+      {children}
+    </div>
   );
 }
