@@ -1,7 +1,6 @@
-import { useServicesUtils } from "@/components/service/services-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
-import { deleteService as deleteServiceFn, type TServiceShallow } from "@/lib/queries/services";
-import { useMutation } from "@tanstack/react-query";
+import useDeleteService from "@/components/service/use-delete-service";
+import { type TServiceShallow } from "@/lib/queries/services";
 import { useState } from "react";
 import {
   DropdownMenu,
@@ -18,33 +17,21 @@ import { cn } from "@/components/ui/utils";
 
 type TProps = {
   service: TServiceShallow;
-  teamId: string;
-  projectId: string;
-  environmentId: string;
   className?: string;
 };
 
-export default function ThreeDotButton({
-  service,
-  teamId,
-  projectId,
-  environmentId,
-  className,
-}: TProps) {
+export default function ThreeDotButton({ service, className }: TProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { closePanel } = useServicePanel();
-  const { invalidate } = useServicesUtils({ teamId, projectId, environmentId });
 
   const {
     mutateAsync: deleteService,
     error,
     reset,
-  } = useMutation({
-    mutationFn: deleteServiceFn,
+  } = useDeleteService({
     onSuccess: () => {
       setIsOpen(false);
       closePanel();
-      invalidate();
     },
   });
 
@@ -77,12 +64,7 @@ export default function ThreeDotButton({
               dialogTitle="Delete Service"
               dialogDescription="Are you sure you want to delete this service? This action cannot be undone."
               onSubmit={async () => {
-                await deleteService({
-                  teamId,
-                  projectId,
-                  environmentId,
-                  serviceId: service.id,
-                });
+                await deleteService();
               }}
               error={error}
               deletingEntityName={service.name}

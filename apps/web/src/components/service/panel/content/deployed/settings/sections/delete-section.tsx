@@ -1,14 +1,11 @@
 "use client";
 
-import { useServicesUtils } from "@/components/service/services-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
-import { useService } from "@/components/service/service-provider";
+import useDeleteService from "@/components/service/use-delete-service";
 import DeleteCard from "@/components/settings/delete-card";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { cn } from "@/components/ui/utils";
-import { useVolumesUtils } from "@/components/volume/use-volumes-utils";
-import { deleteService as deleteServiceFn, type TServiceShallow } from "@/lib/queries/services";
-import { useMutation } from "@tanstack/react-query";
+import { type TServiceShallow } from "@/lib/queries/services";
 import { Trash2Icon } from "lucide-react";
 import { useMemo } from "react";
 
@@ -18,12 +15,6 @@ type Props = {
 };
 
 export default function DeleteSection({ service, className }: Props) {
-  const { teamId, projectId, environmentId } = useService();
-
-  const { invalidate } = useServicesUtils({ teamId, projectId, environmentId });
-  // Deleting a service leaves its volumes behind as dangling — refresh the
-  // volumes list so they show up in the project's Volumes section right away.
-  const { invalidate: invalidateVolumes } = useVolumesUtils({ teamId, projectId, environmentId });
   const { closePanel } = useServicePanel();
 
   const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
@@ -32,14 +23,7 @@ export default function DeleteSection({ service, className }: Props) {
     mutateAsync: deleteService,
     error,
     reset,
-  } = useMutation({
-    mutationFn: deleteServiceFn,
-    onSuccess: () => {
-      closePanel();
-      invalidate();
-      invalidateVolumes();
-    },
-  });
+  } = useDeleteService({ onSuccess: closePanel });
 
   return (
     <SettingsSection
@@ -59,7 +43,7 @@ export default function DeleteSection({ service, className }: Props) {
         deletingEntityName={service.name}
         onDialogClose={reset}
         onSubmit={async () => {
-          await deleteService({ teamId, projectId, environmentId, serviceId: service.id });
+          await deleteService();
         }}
         className={cn("border-none p-0", className)}
         classNameHeader="px-1"

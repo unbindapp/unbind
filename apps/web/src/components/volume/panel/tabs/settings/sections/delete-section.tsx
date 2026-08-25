@@ -79,10 +79,17 @@ export default function DeleteSection({ volume, className }: TProps) {
       Icon={Trash2Icon}
     >
       <div className="flex w-full items-start justify-start">
-        <p className="text-muted-foreground max-w-full px-1.5">
-          This volume is attached to a service and{" "}
-          <span className="text-foreground font-semibold">{"can't be deleted"}</span>.
-        </p>
+        {volume.is_deleting ? (
+          <p className="text-muted-foreground max-w-full px-1.5">
+            This volume is already{" "}
+            <span className="text-foreground font-semibold">being deleted</span>.
+          </p>
+        ) : (
+          <p className="text-muted-foreground max-w-full px-1.5">
+            This volume is attached to a service and{" "}
+            <span className="text-foreground font-semibold">{"can't be deleted"}</span>.
+          </p>
+        )}
       </div>
     </SettingsSection>
   );

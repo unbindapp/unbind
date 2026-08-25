@@ -88,13 +88,7 @@ export default function ServicePanel({
             </DrawerHeader>
             <DrawerHeaderButtonsWrapper>
               {!service.last_deployment && (
-                <ThreeDotButton
-                  service={service}
-                  teamId={teamId}
-                  projectId={projectId}
-                  environmentId={environmentId}
-                  className="rounded-lg"
-                />
+                <ThreeDotButton service={service} className="rounded-lg" />
               )}
               <DrawerClose asChild>
                 <Button

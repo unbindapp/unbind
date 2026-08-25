@@ -172,6 +172,7 @@ function AttachSection({ volume }: TProps) {
                       open={isOpen}
                       onBlur={field.handleBlur}
                       isPending={isPendingServices}
+                      disabled={volume.is_deleting}
                     />
                   )}
                 </field.AsyncCommandDropdown>
@@ -179,6 +180,8 @@ function AttachSection({ volume }: TProps) {
             </BlockItem>
           )}
         />
+      </Block>
+      <Block>
         <form.AppField
           name="mountPath"
           children={(field) => (
@@ -200,6 +203,7 @@ function AttachSection({ volume }: TProps) {
                   onChange={(e) => field.handleChange(e.target.value)}
                   placeholder="/data"
                   className="w-full"
+                  disabled={volume.is_deleting}
                 />
               </BlockItemContent>
             </BlockItem>

@@ -174,6 +174,7 @@ export default function ExpandSection({ volume }: TProps) {
             children={(field) => (
               <field.StorageSizeInput
                 field={field}
+                disabled={volume.is_deleting}
                 className="w-full px-1.5 py-2.25"
                 onBlur={field.handleBlur}
                 min={minStorageGb}
