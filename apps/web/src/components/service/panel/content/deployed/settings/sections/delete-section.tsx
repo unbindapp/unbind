@@ -25,6 +25,8 @@ export default function DeleteSection({ service, className }: Props) {
     reset,
   } = useDeleteService({ onSuccess: closePanel });
 
+  const hasVolumes = service.config.volumes.length > 0;
+
   return (
     <SettingsSection
       entityId={sectionHighlightId}
@@ -36,7 +38,21 @@ export default function DeleteSection({ service, className }: Props) {
     >
       <DeleteCard
         dialogTitle="Delete Service"
-        dialogDescription="Are you sure you want to delete this service? This action cannot be undone. All data inside the service will be permanently deleted."
+        dialogDescription={
+          <>
+            This action cannot be undone. All data inside the service will be permanently deleted.
+            {hasVolumes && (
+              <>
+                <br />
+                <br />
+                <span className="text-foreground font-semibold">
+                  Volumes attached won&apos;t be deleted.
+                </span>{" "}
+                They will remain in your environment and can be attached to another service.
+              </>
+            )}
+          </>
+        }
         paragraph="This action cannot be undone. All data inside the service will be permanently deleted."
         buttonText="Delete Service"
         error={error}

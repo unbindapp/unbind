@@ -16,7 +16,7 @@ import { z } from "zod";
 
 type TProps = {
   dialogTitle: string;
-  dialogDescription: string;
+  dialogDescription: ReactNode;
   deletingEntityName: string;
   onSubmit: () => Promise<void>;
   onDialogClose?: () => void;

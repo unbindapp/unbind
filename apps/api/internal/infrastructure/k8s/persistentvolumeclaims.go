@@ -269,6 +269,11 @@ func (self *KubeClient) GetPersistentVolumeClaim(ctx context.Context, namespace 
 		return nil, fmt.Errorf("PVC '%s' is bound but no valid service ID found", pvcName)
 	}
 
+	// Attached to a service in config but no running pod has mounted the volume
+	// yet — the mount only becomes real once the service's pod starts (e.g.
+	// right after attaching, while the service redeploys).
+	isAttaching := boundToServiceID != nil && !anyPodRunning(pods)
+
 	var projectID *uuid.UUID
 	if projectIDStr != "" {
 		projectIDParsed, err := uuid.Parse(projectIDStr)
@@ -338,9 +343,21 @@ func (self *KubeClient) GetPersistentVolumeClaim(ctx context.Context, namespace 
 		IsDatabase:         isDatabase,
 		IsAvailable:        canDelete,
 		IsDeleting:         isDeleting,
+		IsAttaching:        isAttaching,
 		CanDelete:          canDelete,
 		CreatedAt:          pvc.CreationTimestamp.Time,
 	}, nil
+}
+
+// anyPodRunning reports whether any of the pods referencing a PVC is actually
+// running (and has therefore mounted the volume).
+func anyPodRunning(pods []corev1.Pod) bool {
+	for _, pod := range pods {
+		if pod.Status.Phase == corev1.PodRunning {
+			return true
+		}
+	}
+	return false
 }
 
 // ListPersistentVolumeClaims lists all PersistentVolumeClaims in a given namespace, optionally filtered by a label selector,
@@ -471,6 +488,11 @@ func (self *KubeClient) ListPersistentVolumeClaims(ctx context.Context, namespac
 			continue
 		}
 
+		// Attached to a service in config but no running pod has mounted the
+		// volume yet — the mount only becomes real once the service's pod
+		// starts (e.g. right after attaching, while the service redeploys).
+		isAttaching := boundToServiceID != nil && !anyPodRunning(pods)
+
 		var projectID *uuid.UUID
 		if projectIDStr != "" {
 			projectIDParsed, err := uuid.Parse(projectIDStr)
@@ -539,6 +561,7 @@ func (self *KubeClient) ListPersistentVolumeClaims(ctx context.Context, namespac
 			IsDatabase:         isDatabase,
 			IsAvailable:        canDelete,
 			IsDeleting:         isDeleting,
+			IsAttaching:        isAttaching,
 			CanDelete:          canDelete,
 			CreatedAt:          pvc.CreationTimestamp.Time,
 		})

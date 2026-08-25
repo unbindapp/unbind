@@ -65,17 +65,19 @@ export default function VolumeLine({
               data-truncate={usagePercentage === undefined || undefined}
               className="group/line flex min-w-0 shrink items-center gap-1.5"
             >
-              {volume.is_pending_resize ? (
+              {volume.is_attaching || volume.is_pending_resize ? (
                 <HourglassIcon className="animate-hourglass size-3.5 min-w-0 shrink-0 scale-90" />
               ) : (
                 <HardDriveIcon className="size-3.5 min-w-0 shrink-0" />
               )}
               <p className="group-data-truncate/line:min-w-0 group-data-truncate/line:shrink group-data-truncate/line:truncate">
-                {volume.is_pending_resize
-                  ? "Expanding"
-                  : usagePercentage !== undefined
-                    ? `${percentageFormatter(usagePercentage)}%`
-                    : "Unknown usage"}
+                {volume.is_attaching
+                  ? "Attaching"
+                  : volume.is_pending_resize
+                    ? "Expanding"
+                    : usagePercentage !== undefined
+                      ? `${percentageFormatter(usagePercentage)}%`
+                      : "Unknown usage"}
               </p>
             </div>
             <p className="min-w-0 shrink truncate text-right">Storage {index + 1}</p>

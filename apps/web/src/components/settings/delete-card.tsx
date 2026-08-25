@@ -2,13 +2,14 @@ import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { TriangleAlertIcon } from "lucide-react";
+import { ReactNode } from "react";
 
 type Props = {
   buttonText: string;
   paragraph: string;
   deletingEntityName: string;
   dialogTitle: string;
-  dialogDescription: string;
+  dialogDescription: ReactNode;
   onSubmit: () => Promise<void>;
   onDialogClose: () => void;
   error: { message: string } | null;
@@ -68,7 +69,7 @@ function DeleteButton({
 }: {
   buttonText: string;
   dialogTitle: string;
-  dialogDescription: string;
+  dialogDescription: ReactNode;
   deletingEntityName: string;
   onSubmit: () => Promise<void>;
   onDialogClose: () => void;

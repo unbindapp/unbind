@@ -261,6 +261,7 @@ export const PVCInfoSchema = z
     description: z.string().optional(),
     environment_id: z.string().optional(),
     id: z.string(),
+    is_attaching: z.boolean(),
     is_available: z.boolean(),
     is_database: z.boolean(),
     is_deleting: z.boolean(),

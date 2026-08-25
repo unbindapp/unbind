@@ -22,6 +22,16 @@ export default function Settings({ volume }: TProps) {
           </p>
         </div>
       )}
+      {/* Attached in the service's config, but the mount only becomes real once
+      the service's new pod is up — show the in-between state. */}
+      {volume.is_attaching && (
+        <div className="bg-process/8 border-process/8 text-process flex w-full items-start justify-start gap-2 rounded-lg border px-3.5 py-2.5 font-medium">
+          <HourglassIcon className="animate-hourglass mt-0.5 -ml-0.5 size-4 shrink-0" />
+          <p className="min-w-0 shrink leading-tight">
+            Attaching the volume. It will be mounted once the service finishes deploying.
+          </p>
+        </div>
+      )}
       <UsageSection volume={volume} />
       <ExpandSection volume={volume} />
       <ConnectionSection volume={volume} />

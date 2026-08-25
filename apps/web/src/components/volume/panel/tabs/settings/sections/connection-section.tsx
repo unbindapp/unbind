@@ -247,7 +247,7 @@ function AttachedSection({ volume }: TProps) {
             </span>
           ) : attachedService ? (
             <span>
-              This volume is attached to{" "}
+              This volume is {volume.is_attaching ? "being attached to" : "attached to"}{" "}
               <span className="text-foreground bg-foreground/6 border-foreground/6 max-w-full rounded-md border px-1.25 leading-tight font-semibold">
                 {attachedService.name}
               </span>{" "}
