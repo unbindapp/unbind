@@ -66,7 +66,7 @@ export const useCheckNewVersion = (): TNewVersion => {
 
   return latestVersion !== null && latestVersionUrl !== null
     ? { hasUpdateAvailable: true, latestVersion, latestVersionUrl }
-    : { hasUpdateAvailable: false, latestVersion: null, latestVersionUrl: null };
+    : { hasUpdateAvailable: true, latestVersion: "asdfb", latestVersionUrl: "asdf" };
 };
 
 export default CheckForUpdatesProvider;

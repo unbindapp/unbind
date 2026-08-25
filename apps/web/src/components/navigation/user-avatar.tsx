@@ -79,6 +79,11 @@ export default function UserAvatar({ email, className }: TProps) {
             address={email}
             className="size-full shrink-0 rounded-full transition group-active/button:rotate-45 group-data-open/button:rotate-360 has-hover:group-hover/button:rotate-45"
           />
+          {hasUpdateAvailable && (
+            <div className="bg-background pointer-events-none absolute -top-0.5 -right-0.5 rounded-full p-0.5">
+              <div className="bg-destructive size-1.5 rounded-full" />
+            </div>
+          )}
           {isPendingSignOut && (
             <div className="bg-background absolute top-0 left-0 size-full rounded-full p-1">
               <LoaderIcon className="text-muted-foreground size-full animate-spin" />
