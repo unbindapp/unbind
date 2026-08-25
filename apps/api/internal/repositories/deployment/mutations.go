@@ -161,7 +161,7 @@ func (self *DeploymentRepository) MarkCancelledExcept(ctx context.Context, servi
 		Where(
 			deployment.ServiceIDEQ(serviceID),
 			deployment.IDNEQ(deploymentID),
-			deployment.StatusNotIn(schema.DeploymentStatusBuildFailed, schema.DeploymentStatusBuildCancelled, schema.DeploymentStatusBuildSucceeded),
+			deployment.StatusNotIn(schema.DeploymentStatusBuildFailed, schema.DeploymentStatusBuildCancelled, schema.DeploymentStatusBuildSucceeded, schema.DeploymentStatusRemoved),
 		).
 		Exec(ctx)
 }
@@ -173,7 +173,7 @@ func (self *DeploymentRepository) MarkAsCancelled(ctx context.Context, jobIDs []
 		SetCompletedAt(time.Now()).
 		Where(
 			deployment.IDIn(jobIDs...),
-			deployment.StatusNotIn(schema.DeploymentStatusBuildRunning, schema.DeploymentStatusBuildFailed, schema.DeploymentStatusBuildCancelled, schema.DeploymentStatusBuildSucceeded),
+			deployment.StatusNotIn(schema.DeploymentStatusBuildRunning, schema.DeploymentStatusBuildFailed, schema.DeploymentStatusBuildCancelled, schema.DeploymentStatusBuildSucceeded, schema.DeploymentStatusRemoved),
 		).
 		Exec(ctx)
 }
