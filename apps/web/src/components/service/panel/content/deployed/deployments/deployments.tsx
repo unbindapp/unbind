@@ -15,7 +15,7 @@ import {
   TDeploymentShallow,
 } from "@/lib/queries/deployments";
 import { TServiceShallow } from "@/lib/queries/services";
-import { HistoryIcon, RocketIcon, ServerIcon } from "lucide-react";
+import { GlobeOffIcon, HistoryIcon, RocketIcon, ServerIcon } from "lucide-react";
 import { useMemo } from "react";
 import { useInstanceHealth } from "@/components/instances/instance-health-provider";
 import { useMutation } from "@tanstack/react-query";
@@ -38,10 +38,11 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
 
   const currentOrLastDeployment = useMemo(() => {
     if (!deploymentsData) return undefined;
-    if (deploymentsData.current_deployment) return deploymentsData.current_deployment;
-    if (deploymentsData.deployments && deploymentsData.deployments.length > 0) {
-      return deploymentsData.deployments[0];
-    }
+    const current = deploymentsData.current_deployment;
+    if (current && current.status !== "removed") return current;
+    // Removed deployments belong to history, only show a newer deployment (e.g. an in-progress build) on top
+    const newest = deploymentsData.deployments?.[0];
+    if (newest && newest.id !== current?.id) return newest;
     return undefined;
   }, [deploymentsData]);
 
@@ -55,17 +56,9 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
   const hasNoDeployment =
     deploymentsData?.deployments && deploymentsData.deployments.length === 0 ? true : false;
 
-  const showNoActiveDeploymentCard = useMemo(() => {
-    if (deploymentsData?.current_deployment?.status !== "removed") return false;
-    const hasScheduledDeployment = deploymentsData.deployments?.some(
-      (d) =>
-        d.status === "build-pending" ||
-        d.status === "build-queued" ||
-        d.status === "build-running" ||
-        d.status === "build-succeeded",
-    );
-    return !hasScheduledDeployment;
-  }, [deploymentsData]);
+  const showNoActiveDeploymentCard =
+    deploymentsData?.current_deployment?.status === "removed" &&
+    currentOrLastDeployment === undefined;
 
   return (
     <TabWrapper>
@@ -170,18 +163,17 @@ function NoActiveDeploymentCard() {
   });
 
   return (
-    <div className="text-muted-foreground flex w-full flex-col items-center justify-center gap-3 rounded-xl border px-4 py-6 text-center">
+    <NoItemsCard Icon={GlobeOffIcon}>
       <p className="w-full leading-tight">There is no active deployment.</p>
       {error && <ErrorLine message={error.message} />}
       <Button
-        variant="outline"
-        className="rounded-xl bg-transparent"
+        className="mt-2"
         onClick={() => deploy({ teamId, projectId, environmentId, serviceId })}
         isPending={isPending}
       >
         Deploy
       </Button>
-    </div>
+    </NoItemsCard>
   );
 }
 
