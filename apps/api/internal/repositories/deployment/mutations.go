@@ -136,6 +136,23 @@ func (self *DeploymentRepository) MarkSucceeded(ctx context.Context, tx reposito
 		Save(ctx)
 }
 
+func (self *DeploymentRepository) MarkRemoved(ctx context.Context, tx repository.TxInterface, deploymentID uuid.UUID, resourceDefinition *v1.Service) (*ent.Deployment, error) {
+	db := self.base.DB
+	if tx != nil {
+		db = tx.Client()
+	}
+
+	// Prune any sensitive data
+	if resourceDefinition != nil {
+		resourceDefinition.Spec.EnvVars = []corev1.EnvVar{}
+	}
+
+	return db.Deployment.UpdateOneID(deploymentID).
+		SetStatus(schema.DeploymentStatusRemoved).
+		SetResourceDefinition(resourceDefinition).
+		Save(ctx)
+}
+
 // Cancels all jobs that are not in a finished state
 func (self *DeploymentRepository) MarkCancelledExcept(ctx context.Context, serviceID uuid.UUID, deploymentID uuid.UUID) error {
 	return self.base.DB.Deployment.Update().

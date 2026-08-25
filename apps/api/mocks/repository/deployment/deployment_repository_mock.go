@@ -1187,6 +1187,86 @@ func (_c *DeploymentRepositoryMock_MarkQueued_Call) RunAndReturn(run func(ctx co
 	return _c
 }
 
+// MarkRemoved provides a mock function for the type DeploymentRepositoryMock
+func (_mock *DeploymentRepositoryMock) MarkRemoved(ctx context.Context, tx repository.TxInterface, deploymentID uuid.UUID, resourceDefinition *v1.Service) (*ent.Deployment, error) {
+	ret := _mock.Called(ctx, tx, deploymentID, resourceDefinition)
+
+	if len(ret) == 0 {
+		panic("no return value specified for MarkRemoved")
+	}
+
+	var r0 *ent.Deployment
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, *v1.Service) (*ent.Deployment, error)); ok {
+		return returnFunc(ctx, tx, deploymentID, resourceDefinition)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, *v1.Service) *ent.Deployment); ok {
+		r0 = returnFunc(ctx, tx, deploymentID, resourceDefinition)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.Deployment)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, uuid.UUID, *v1.Service) error); ok {
+		r1 = returnFunc(ctx, tx, deploymentID, resourceDefinition)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// DeploymentRepositoryMock_MarkRemoved_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'MarkRemoved'
+type DeploymentRepositoryMock_MarkRemoved_Call struct {
+	*mock.Call
+}
+
+// MarkRemoved is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - deploymentID uuid.UUID
+//   - resourceDefinition *v1.Service
+func (_e *DeploymentRepositoryMock_Expecter) MarkRemoved(ctx any, tx any, deploymentID any, resourceDefinition any) *DeploymentRepositoryMock_MarkRemoved_Call {
+	return &DeploymentRepositoryMock_MarkRemoved_Call{Call: _e.mock.On("MarkRemoved", ctx, tx, deploymentID, resourceDefinition)}
+}
+
+func (_c *DeploymentRepositoryMock_MarkRemoved_Call) Run(run func(ctx context.Context, tx repository.TxInterface, deploymentID uuid.UUID, resourceDefinition *v1.Service)) *DeploymentRepositoryMock_MarkRemoved_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 *v1.Service
+		if args[3] != nil {
+			arg3 = args[3].(*v1.Service)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *DeploymentRepositoryMock_MarkRemoved_Call) Return(deployment *ent.Deployment, err error) *DeploymentRepositoryMock_MarkRemoved_Call {
+	_c.Call.Return(deployment, err)
+	return _c
+}
+
+func (_c *DeploymentRepositoryMock_MarkRemoved_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, deploymentID uuid.UUID, resourceDefinition *v1.Service) (*ent.Deployment, error)) *DeploymentRepositoryMock_MarkRemoved_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // MarkStarted provides a mock function for the type DeploymentRepositoryMock
 func (_mock *DeploymentRepositoryMock) MarkStarted(ctx context.Context, tx repository.TxInterface, deploymentID uuid.UUID, startedAt time.Time) (*ent.Deployment, error) {
 	ret := _mock.Called(ctx, tx, deploymentID, startedAt)

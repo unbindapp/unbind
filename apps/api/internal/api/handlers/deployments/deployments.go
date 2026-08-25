@@ -48,4 +48,12 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Path:        "/redeploy",
 		Method:      http.MethodPost,
 	}, handlers.CreateNewRedeployment, oapi.OpenWorld)
+
+	oapi.Register(grp, oapi.Invoke, huma.Operation{
+		OperationID: "remove-deployment",
+		Summary:     "Remove Deployment",
+		Description: "Remove the active deployment by scaling the service to zero. The service stays offline until a new deployment is created.",
+		Path:        "/remove",
+		Method:      http.MethodPost,
+	}, handlers.RemoveDeployment, oapi.OpenWorld)
 }

@@ -47,6 +47,12 @@ func TestCalculateInstanceData(t *testing.T) {
 		return &ent.Deployment{ID: currentID, CreatedAt: completedAt, CompletedAt: &completedAt}
 	}
 
+	removedDeployment := func(completedAt time.Time) *ent.Deployment {
+		d := currentDeployment(completedAt)
+		d.Status = schema.DeploymentStatusRemoved
+		return d
+	}
+
 	tests := []struct {
 		name             string
 		statuses         []k8s.PodContainerStatus
@@ -135,6 +141,14 @@ func TestCalculateInstanceData(t *testing.T) {
 			deployment:       currentDeployment(old),
 			expectedStatus:   schema.DeploymentStatusActive,
 			expectedEvents:   1,
+		},
+		{
+			name:             "removed deployment reports removed even with lingering pods",
+			statuses:         []k8s.PodContainerStatus{podStatus(currentID, k8s.ContainerStateRunning, true, false)},
+			expectedReplicas: 1,
+			deployment:       removedDeployment(old),
+			expectedStatus:   schema.DeploymentStatusRemoved,
+			expectedEvents:   0,
 		},
 	}
 

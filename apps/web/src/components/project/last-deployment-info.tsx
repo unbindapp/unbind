@@ -5,6 +5,7 @@ import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-differen
 import { TService, TServiceShallow } from "@/lib/queries/services";
 import {
   CircleCheckBigIcon,
+  GlobeOffIcon,
   HourglassIcon,
   LoaderIcon,
   TriangleAlertIcon,
@@ -128,7 +129,7 @@ function StatusText({ service }: { service: TServiceShallow }) {
     return <StatusTextWrapper service={service}>Crashing</StatusTextWrapper>;
   }
   if (deployment.status === "removed") {
-    return <StatusTextWrapper service={service}>Deployment removed</StatusTextWrapper>;
+    return <StatusTextWrapper service={service}>Offline</StatusTextWrapper>;
   }
   if (deployment.status === "active")
     return (
@@ -162,7 +163,7 @@ function StatusIndicator({ deployment }: { deployment: NonNullable<TService["las
     return <TriangleAlertIcon className="text-destructive size-3.5 shrink-0" />;
   }
   if (deployment.status === "removed") {
-    return <XIcon className="size-3.5 shrink-0" />;
+    return <GlobeOffIcon className="size-3.5 shrink-0" />;
   }
   return <CircleCheckBigIcon className="text-success size-3.5" />;
 }

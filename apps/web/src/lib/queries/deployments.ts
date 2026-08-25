@@ -109,6 +109,23 @@ export async function redeployDeployment(input: {
   return { data: res.data };
 }
 
+export async function removeDeployment(input: {
+  teamId: string;
+  projectId: string;
+  environmentId: string;
+  serviceId: string;
+  deploymentId: string;
+}) {
+  const res = await getGoClient().deployments.remove({
+    team_id: input.teamId,
+    project_id: input.projectId,
+    environment_id: input.environmentId,
+    service_id: input.serviceId,
+    deployment_id: input.deploymentId,
+  });
+  return { data: res.data };
+}
+
 // ---- Types ----
 
 export type TDeploymentsList = ListDeploymentsResponseBody["data"];

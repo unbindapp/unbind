@@ -3,17 +3,23 @@
 import DeploymentPanel from "@/components/deployment/panel/deployment-panel";
 import DeploymentPanelProvider from "@/components/deployment/panel/deployment-panel-provider";
 import ErrorCard from "@/components/error-card";
+import ErrorLine from "@/components/error-line";
 import TabWrapper from "@/components/navigation/tab-wrapper";
 import NoItemsCard from "@/components/no-items-card";
-import { useDeployments } from "@/components/deployment/deployments-provider";
+import { useDeployments, useDeploymentsUtils } from "@/components/deployment/deployments-provider";
 import DeploymentCard from "@/components/deployment/deployment-card";
-import { useService } from "@/components/service/service-provider";
-import { TDeploymentShallow } from "@/lib/queries/deployments";
+import { useService, useServiceUtils } from "@/components/service/service-provider";
+import { useServicesUtils } from "@/components/service/services-provider";
+import {
+  createDeployment as createDeploymentFn,
+  TDeploymentShallow,
+} from "@/lib/queries/deployments";
 import { TServiceShallow } from "@/lib/queries/services";
 import { HistoryIcon, RocketIcon, ServerIcon } from "lucide-react";
 import { useMemo } from "react";
 import { useInstanceHealth } from "@/components/instances/instance-health-provider";
-import { LinkButton } from "@/components/ui/button";
+import { useMutation } from "@tanstack/react-query";
+import { Button, LinkButton } from "@/components/ui/button";
 import { deploySectionInstanceSliderId } from "@/components/service/panel/content/deployed/settings/sections/deploy-section";
 import { shouldDeploySectionHaveInstances } from "@/components/service/panel/content/deployed/settings/helpers";
 
@@ -49,6 +55,18 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
   const hasNoDeployment =
     deploymentsData?.deployments && deploymentsData.deployments.length === 0 ? true : false;
 
+  const showNoActiveDeploymentCard = useMemo(() => {
+    if (deploymentsData?.current_deployment?.status !== "removed") return false;
+    const hasScheduledDeployment = deploymentsData.deployments?.some(
+      (d) =>
+        d.status === "build-pending" ||
+        d.status === "build-queued" ||
+        d.status === "build-running" ||
+        d.status === "build-succeeded",
+    );
+    return !hasScheduledDeployment;
+  }, [deploymentsData]);
+
   return (
     <TabWrapper>
       <DeploymentPanelProvider
@@ -57,6 +75,11 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
       >
         {shouldDeploySectionHaveInstances(service) && <InfoRow />}
         <DeploymentPanel service={service} />
+        {hasData && showNoActiveDeploymentCard && (
+          <div className="w-full pb-3">
+            <NoActiveDeploymentCard />
+          </div>
+        )}
         {(isPending || currentOrLastDeployment) && (
           <div className="w-full pb-3">
             {serviceData && currentOrLastDeployment ? (
@@ -118,6 +141,47 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
         {!hasData && !isPending && error && <ErrorCard message={error.message} />}
       </DeploymentPanelProvider>
     </TabWrapper>
+  );
+}
+
+function NoActiveDeploymentCard() {
+  const { teamId, projectId, environmentId, serviceId } = useService();
+
+  const props = { teamId, projectId, environmentId, serviceId };
+  const { refetch: refetchDeployments } = useDeploymentsUtils({
+    ...props,
+  });
+  const { refetch: refetchService } = useServiceUtils({
+    ...props,
+  });
+  const { refetch: refetchServices } = useServicesUtils({
+    ...props,
+  });
+
+  const {
+    mutate: deploy,
+    isPending,
+    error,
+  } = useMutation({
+    mutationFn: createDeploymentFn,
+    onSuccess: async () => {
+      await Promise.all([refetchServices(), refetchService(), refetchDeployments()]);
+    },
+  });
+
+  return (
+    <div className="text-muted-foreground flex w-full flex-col items-center justify-center gap-3 rounded-xl border px-4 py-6 text-center">
+      <p className="w-full leading-tight">There is no active deployment.</p>
+      {error && <ErrorLine message={error.message} />}
+      <Button
+        variant="outline"
+        className="rounded-xl bg-transparent"
+        onClick={() => deploy({ teamId, projectId, environmentId, serviceId })}
+        isPending={isPending}
+      >
+        Deploy
+      </Button>
+    </div>
   );
 }
 

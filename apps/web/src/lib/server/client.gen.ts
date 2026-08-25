@@ -181,6 +181,7 @@ export const DeploymentResponseSchema = z
     service_id: z.string(),
     started_at: z.string().datetime({ offset: true }).optional(),
     status: DeploymentStatusSchema,
+    status_message: z.string().optional(),
     updated_at: z.string().datetime({ offset: true }),
   })
   .strip();
@@ -1751,6 +1752,7 @@ export const PodPhaseSchema = z.enum(['pending', 'running', 'succeeded', 'failed
 export const PodContainerStatusSchema = z
   .object({
     created_at: z.string().datetime({ offset: true }).optional(),
+    deployment_id: z.string(),
     environment_id: z.string(),
     has_crashing_instances: z.boolean(),
     instance_dependencies: z.array(InstanceStatusSchema),
@@ -1978,6 +1980,22 @@ export const RegistryCacheStatsSchema = z
 export const RegistryCacheStatsResponseBodySchema = z
   .object({
     data: RegistryCacheStatsSchema,
+  })
+  .strip();
+
+export const RemoveDeploymentInputBodySchema = z
+  .object({
+    deployment_id: z.string(),
+    environment_id: z.string(),
+    project_id: z.string(),
+    service_id: z.string(),
+    team_id: z.string(),
+  })
+  .strip();
+
+export const RemoveDeploymentOutputBodySchema = z
+  .object({
+    data: DeploymentResponseSchema,
   })
   .strip();
 
@@ -2795,6 +2813,8 @@ export type RegistryCacheConfigResponseBody = z.infer<typeof RegistryCacheConfig
 export type RegistryCacheSettings = z.infer<typeof RegistryCacheSettingsSchema>;
 export type RegistryCacheStats = z.infer<typeof RegistryCacheStatsSchema>;
 export type RegistryCacheStatsResponseBody = z.infer<typeof RegistryCacheStatsResponseBodySchema>;
+export type RemoveDeploymentInputBody = z.infer<typeof RemoveDeploymentInputBodySchema>;
+export type RemoveDeploymentOutputBody = z.infer<typeof RemoveDeploymentOutputBodySchema>;
 export type ResolveAvailableVariableReferenceResponseBody = z.infer<
   typeof ResolveAvailableVariableReferenceResponseBodySchema
 >;
@@ -3657,6 +3677,48 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           const data = await response.json();
           const { data: parsedData, error } = RedeployOutputBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+      remove: async (
+        params: RemoveDeploymentInputBody,
+        fetchOptions?: RequestInit,
+      ): Promise<RemoveDeploymentOutputBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/deployments/remove`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = RemoveDeploymentInputBodySchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = RemoveDeploymentOutputBodySchema.safeParse(data);
           if (error) {
             console.error('Response validation error:', error);
             console.error('Response data:', data);

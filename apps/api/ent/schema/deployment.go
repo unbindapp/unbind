@@ -30,7 +30,7 @@ const (
 	DeploymentStatusLaunching   DeploymentStatus = "launching"    // Waiting for resources or other conditions
 	DeploymentStatusLaunchError DeploymentStatus = "launch-error" // Failed to launch due to an error
 	DeploymentStatusCrashing    DeploymentStatus = "crashing"     // Pod is crashing or failing in a loop
-	DeploymentStatusRemoved     DeploymentStatus = "removed"      // Deployment has been replaced by a newer one
+	DeploymentStatusRemoved     DeploymentStatus = "removed"      // Removed manually or replaced by a newer deployment
 )
 
 var allDeploymentStatuses = []DeploymentStatus{

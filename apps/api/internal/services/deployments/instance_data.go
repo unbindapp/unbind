@@ -81,6 +81,14 @@ func (self *DeploymentService) AttachInstanceDataToServices(ctx context.Context,
 
 // calculateInstanceData processes pod statuses to determine deployment status and events
 func (self *DeploymentService) calculateInstanceData(statuses []k8s.PodContainerStatus, expectedReplicas int32, currentDeployment *ent.Deployment) *ServiceInstanceData {
+	if currentDeployment != nil && currentDeployment.Status == schema.DeploymentStatusRemoved {
+		return &ServiceInstanceData{
+			Status:          schema.DeploymentStatusRemoved,
+			InstanceEvents:  []models.EventRecord{},
+			CrashingReasons: []string{},
+		}
+	}
+
 	events := []models.EventRecord{}
 	crashingReasons := []string{}
 	restartCount := int32(0)

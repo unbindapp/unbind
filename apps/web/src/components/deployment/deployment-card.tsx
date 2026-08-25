@@ -32,8 +32,10 @@ import { cn } from "@/components/ui/utils";
 import { defaultAnimationMs, sourceToTitle } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-difference";
+import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import {
   redeployDeployment as redeployDeploymentFn,
+  removeDeployment as removeDeploymentFn,
   type TDeploymentShallow,
 } from "@/lib/queries/deployments";
 import { restartInstances } from "@/lib/queries/instances";
@@ -46,6 +48,7 @@ import {
   RewindIcon,
   RocketIcon,
   RotateCcwIcon,
+  Trash2Icon,
 } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { HTMLAttributes, ReactNode, useRef, useState } from "react";
@@ -148,7 +151,11 @@ export default function DeploymentCard({
             <div className="bg-muted-foreground animate-skeleton size-5 rounded-md" />
           </Button>
         ) : (
-          <ThreeDotButton deployment={deployment} isCurrentDeployment={isCurrentDeployment} />
+          <ThreeDotButton
+            deployment={deployment}
+            service={service}
+            isCurrentDeployment={isCurrentDeployment}
+          />
         )}
       </div>
     </div>
@@ -157,9 +164,11 @@ export default function DeploymentCard({
 
 function ThreeDotButton({
   deployment,
+  service,
   isCurrentDeployment,
 }: {
   deployment: TDeploymentShallow;
+  service: TServiceShallow;
   isCurrentDeployment: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -186,7 +195,7 @@ function ThreeDotButton({
       >
         <ScrollArea>
           <DropdownMenuGroup>
-            {isCurrentDeployment && (
+            {isCurrentDeployment && deployment.status !== "removed" && (
               <RestartTrigger closeDropdown={() => setIsOpen(false)}>
                 <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                   <RotateCcwIcon className="-ml-0.5 size-5" />
@@ -194,7 +203,7 @@ function ThreeDotButton({
                 </DropdownMenuItem>
               </RestartTrigger>
             )}
-            {deployment.status === "removed" && (
+            {deployment.status === "removed" && !isCurrentDeployment && (
               <RedeployTrigger
                 title="Rollback"
                 description="Are you sure you want to rollback this deployment?"
@@ -219,6 +228,19 @@ function ThreeDotButton({
                 <p className="min-w-0 shrink leading-tight">Redeploy</p>
               </DropdownMenuItem>
             </RedeployTrigger>
+            {isCurrentDeployment &&
+              deployment.status !== "removed" &&
+              service.type !== "database" && (
+                <RemoveTrigger deployment={deployment} closeDropdown={() => setIsOpen(false)}>
+                  <DropdownMenuItem
+                    onSelect={(e) => e.preventDefault()}
+                    className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
+                  >
+                    <Trash2Icon className="-ml-0.5 size-5" />
+                    <p className="min-w-0 shrink leading-tight">Remove</p>
+                  </DropdownMenuItem>
+                </RemoveTrigger>
+              )}
           </DropdownMenuGroup>
         </ScrollArea>
       </DropdownMenuContent>
@@ -315,6 +337,74 @@ function RestartTrigger({
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function RemoveTrigger({
+  deployment,
+  closeDropdown,
+  children,
+}: {
+  deployment: TDeploymentShallow;
+  closeDropdown: () => void;
+  children: ReactNode;
+}) {
+  const { teamId, projectId, environmentId, serviceId } = useService();
+
+  const props = { teamId, projectId, environmentId, serviceId };
+  const { refetch: refetchDeployments } = useDeploymentsUtils({
+    ...props,
+  });
+  const { refetch: refetchService } = useServiceUtils({
+    ...props,
+  });
+  const { refetch: refetchServices } = useServicesUtils({
+    ...props,
+  });
+
+  const {
+    mutateAsync: removeDeployment,
+    error,
+    reset,
+  } = useMutation({
+    mutationFn: removeDeploymentFn,
+    onSuccess: async () => {
+      await Promise.all([refetchServices(), refetchService(), refetchDeployments()]);
+    },
+  });
+
+  return (
+    <DeleteEntityTrigger
+      dialogTitle="Remove Deployment"
+      dialogDescription={
+        <>
+          {"Are you sure you want to remove this deployment? After removal, "}
+          <span className="text-foreground font-semibold">it will go offline</span>
+          {"."}
+        </>
+      }
+      deletingEntityName=""
+      disableConfirmationInput
+      submitButtonText="Remove"
+      onSubmit={async () => {
+        await removeDeployment({
+          teamId,
+          projectId,
+          environmentId,
+          serviceId,
+          deploymentId: deployment.id,
+        });
+      }}
+      onDialogCloseImmediate={() => {
+        closeDropdown();
+      }}
+      onDialogClose={() => {
+        reset();
+      }}
+      error={error}
+    >
+      {children}
+    </DeleteEntityTrigger>
   );
 }
 

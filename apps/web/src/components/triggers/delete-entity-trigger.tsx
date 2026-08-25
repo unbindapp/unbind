@@ -23,6 +23,7 @@ type TProps = {
   onDialogCloseImmediate?: () => void;
   error: { message: string } | null;
   disableConfirmationInput?: boolean;
+  submitButtonText?: string;
   EntityNameBadge?: FC<{ className?: string }>;
   children: ReactNode;
 };
@@ -36,6 +37,7 @@ export function DeleteEntityTrigger({
   onDialogCloseImmediate,
   error,
   disableConfirmationInput,
+  submitButtonText,
   EntityNameBadge,
   children,
 }: TProps) {
@@ -157,7 +159,7 @@ export function DeleteEntityTrigger({
                     }
                     isPending={isSubmitting ? true : false}
                   >
-                    Delete
+                    {submitButtonText || "Delete"}
                   </form.SubmitButton>
                 )}
               />

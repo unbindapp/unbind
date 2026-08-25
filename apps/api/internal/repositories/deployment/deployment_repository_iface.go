@@ -20,6 +20,7 @@ type DeploymentRepositoryInterface interface {
 	MarkStarted(ctx context.Context, tx repository.TxInterface, deploymentID uuid.UUID, startedAt time.Time) (*ent.Deployment, error)
 	MarkFailed(ctx context.Context, tx repository.TxInterface, deploymentID uuid.UUID, message string, failedAt time.Time) (*ent.Deployment, error)
 	MarkSucceeded(ctx context.Context, tx repository.TxInterface, deploymentID uuid.UUID, completedAt time.Time) (*ent.Deployment, error)
+	MarkRemoved(ctx context.Context, tx repository.TxInterface, deploymentID uuid.UUID, resourceDefinition *v1.Service) (*ent.Deployment, error)
 	// Cancels all jobs that are not in a finished state
 	MarkCancelledExcept(ctx context.Context, serviceID uuid.UUID, deploymentID uuid.UUID) error
 	// Mark cancelled by IDs
