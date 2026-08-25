@@ -48,5 +48,10 @@
     "version": "v0.1.9",
     "description": "Release 0.1.9",
     "breaking": false
+  },
+  "v0.1.10": {
+    "version": "v0.1.10",
+    "description": "Release 0.1.10",
+    "breaking": false
   }
 }
