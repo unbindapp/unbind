@@ -156,4 +156,6 @@ type KubeClientInterface interface {
 	// DeployImage creates (or replaces) the service resource in the target namespace
 	// for deployment after a successful build job.
 	DeployUnbindService(ctx context.Context, service *unbindv1.Service) (*unstructured.Unstructured, *unbindv1.Service, error)
+	// GetUnbindServiceStatus returns nil without error when the CR has no status yet
+	GetUnbindServiceStatus(ctx context.Context, namespace, name string) (*unbindv1.ServiceStatus, error)
 }

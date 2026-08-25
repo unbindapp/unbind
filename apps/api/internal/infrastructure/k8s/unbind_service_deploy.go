@@ -10,7 +10,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // DeployImage creates (or replaces) the service resource in the target namespace
@@ -22,18 +21,11 @@ func (self *KubeClient) DeployUnbindService(ctx context.Context, service *unbind
 		return nil, nil, fmt.Errorf("failed to convert service to unstructured: %v", err)
 	}
 
-	// Define the GroupVersionResource for the Service custom resource
-	serviceGVR := schema.GroupVersionResource{
-		Group:    "unbind.unbind.app",
-		Version:  "v1",
-		Resource: "services", // plural name of the custom resource
-	}
-
-	createdCR, err := self.client.Resource(serviceGVR).Namespace(service.Namespace).Create(ctx, unstructuredObj, metav1.CreateOptions{})
+	createdCR, err := self.client.Resource(servicesGVR).Namespace(service.Namespace).Create(ctx, unstructuredObj, metav1.CreateOptions{})
 	if err != nil {
 		// If the resource already exists, update it
 		if apierrors.IsAlreadyExists(err) {
-			res, err := updateExistingServiceCR(ctx, self, serviceGVR, service.Namespace, unstructuredObj)
+			res, err := updateExistingServiceCR(ctx, self, service.Namespace, unstructuredObj)
 			return res, service, err
 		}
 		return nil, nil, fmt.Errorf("failed to create service custom resource: %v", err)
@@ -43,8 +35,8 @@ func (self *KubeClient) DeployUnbindService(ctx context.Context, service *unbind
 }
 
 // updateExistingServiceCR handles updating an existing Service custom resource
-func updateExistingServiceCR(ctx context.Context, client *KubeClient, gvr schema.GroupVersionResource, namespace string, newCR *unstructured.Unstructured) (*unstructured.Unstructured, error) {
-	existingCR, err := client.client.Resource(gvr).Namespace(namespace).Get(ctx, newCR.GetName(), metav1.GetOptions{})
+func updateExistingServiceCR(ctx context.Context, client *KubeClient, namespace string, newCR *unstructured.Unstructured) (*unstructured.Unstructured, error) {
+	existingCR, err := client.client.Resource(servicesGVR).Namespace(namespace).Get(ctx, newCR.GetName(), metav1.GetOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve existing service: %v", err)
 	}
@@ -52,7 +44,7 @@ func updateExistingServiceCR(ctx context.Context, client *KubeClient, gvr schema
 	// Set the resourceVersion on the object to be updated
 	newCR.SetResourceVersion(existingCR.GetResourceVersion())
 
-	updatedCR, err := client.client.Resource(gvr).Namespace(namespace).Update(ctx, newCR, metav1.UpdateOptions{})
+	updatedCR, err := client.client.Resource(servicesGVR).Namespace(namespace).Update(ctx, newCR, metav1.UpdateOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to update service custom resource: %v", err)
 	}

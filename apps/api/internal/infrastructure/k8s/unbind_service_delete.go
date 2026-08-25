@@ -7,18 +7,11 @@ import (
 	"github.com/charmbracelet/log"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // Delete a custom unbind service CRD
 func (k *KubeClient) DeleteUnbindService(ctx context.Context, namespace, name string) error {
-	resourceGVR := schema.GroupVersionResource{
-		Group:    "unbind.unbind.app",
-		Version:  "v1",
-		Resource: "services",
-	}
-
-	err := k.client.Resource(resourceGVR).Namespace(namespace).Delete(ctx, name, metav1.DeleteOptions{})
+	err := k.client.Resource(servicesGVR).Namespace(namespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Resource doesn't exist, which is fine

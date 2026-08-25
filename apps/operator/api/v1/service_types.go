@@ -148,6 +148,14 @@ type VariableMountSpec struct {
 	Path string `json:"path"` // Path to mount the variable
 }
 
+const (
+	ConditionTypeDatabaseReady = "DatabaseReady"
+
+	DatabaseReasonReady       = "Ready"
+	DatabaseReasonProgressing = "Progressing"
+	DatabaseReasonFailed      = "Failed"
+)
+
 // ServiceStatus defines the observed state of Service
 type ServiceStatus struct {
 	// Conditions represent the latest available observations of an object's state

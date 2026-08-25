@@ -54,6 +54,7 @@ func (self *KubeClient) GetPodContainerStatusByLabelsWithOptions(ctx context.Con
 		environmentID, _ := uuid.Parse(pod.Labels["unbind-environment"])
 		projectID, _ := uuid.Parse(pod.Labels["unbind-project"])
 		teamID, _ := uuid.Parse(pod.Labels["unbind-team"])
+		deploymentID, _ := uuid.Parse(pod.Labels["unbind-deployment"])
 
 		podStatus := PodContainerStatus{
 			KubernetesName:       pod.Name,
@@ -66,6 +67,7 @@ func (self *KubeClient) GetPodContainerStatusByLabelsWithOptions(ctx context.Con
 			ProjectID:            projectID,
 			EnvironmentID:        environmentID,
 			ServiceID:            serviceID,
+			DeploymentID:         deploymentID,
 			IsTerminating:        isPodTerminating(pod), // Add terminating detection
 		}
 
@@ -294,6 +296,8 @@ func filterEventsByContainer(events []models.EventRecord, containerName string) 
 	return result
 }
 
+const recentOOMKillWindow = 10 * time.Minute
+
 // extractContainerStatus infers some events from the container status, since Events API may not always have old events
 func extractContainerStatus(container corev1.ContainerStatus, isPodTerminating bool, podCreatedAt time.Time) InstanceStatus {
 	status := InstanceStatus{
@@ -454,6 +458,16 @@ func extractContainerStatus(container corev1.ContainerStatus, isPodTerminating b
 		}
 
 		status.Events = append(status.Events, lastTermEvent)
+
+		// fast OOM restart loops read as Running at every poll
+		if (status.State == ContainerStateRunning || status.State == ContainerStateNotReady) &&
+			container.RestartCount > 0 &&
+			strings.EqualFold(term.Reason, "OOMKilled") &&
+			time.Since(term.FinishedAt.Time) <= recentOOMKillWindow {
+			status.State = ContainerStateCrashing
+			status.IsCrashing = true
+			status.CrashLoopReason = fmt.Sprintf("restarted %d time(s), last OOMKilled at %s", container.RestartCount, term.FinishedAt.Format(time.RFC3339))
+		}
 	}
 
 	return status
@@ -504,6 +518,7 @@ type PodContainerStatus struct {
 	ProjectID            uuid.UUID        `json:"project_id"`
 	EnvironmentID        uuid.UUID        `json:"environment_id"`
 	ServiceID            uuid.UUID        `json:"service_id"`
+	DeploymentID         uuid.UUID        `json:"deployment_id"`
 }
 
 type SimpleHealthStatus struct {

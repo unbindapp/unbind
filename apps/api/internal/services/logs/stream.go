@@ -8,7 +8,6 @@ import (
 
 	"github.com/danielgtaylor/huma/v2/sse"
 	"github.com/google/uuid"
-	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/loki"
@@ -21,41 +20,9 @@ func (self *LogsService) StreamLogs(ctx context.Context, requesterUserID uuid.UU
 		return err
 	}
 
-	var label loki.LokiLabelName
-	var labelValue string
-	switch input.Type {
-	case models.LogTypeTeam:
-		label = loki.LokiLabelTeam
-		labelValue = team.ID.String()
-	case models.LogTypeProject:
-		label = loki.LokiLabelProject
-		labelValue = project.ID.String()
-	case models.LogTypeEnvironment:
-		label = loki.LokiLabelEnvironment
-		labelValue = environment.ID.String()
-	case models.LogTypeService:
-		label = loki.LokiLabelService
-		labelValue = service.ID.String()
-	case models.LogTypeDeployment, models.LogTypeBuild:
-		deployment, err := self.repo.Deployment().GetByID(ctx, input.DeploymentID)
-		if err != nil {
-			if ent.IsNotFound(err) {
-				return errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Deployment not found")
-			}
-			return err
-		}
-
-		// Validate that the deployment belongs to the level requested
-		if err := self.validateDeploymentInput(ctx, deployment, service, environment, project, team); err != nil {
-			return err
-		}
-
-		if input.Type == models.LogTypeBuild {
-			label = loki.LokiLabelBuild
-		} else {
-			label = loki.LokiLabelDeployment
-		}
-		labelValue = deployment.ID.String()
+	selector, err := self.resolveLokiSelector(ctx, input.Type, input.DeploymentID, team, project, environment, service)
+	if err != nil {
+		return err
 	}
 
 	// Parse 'since' duration
@@ -67,6 +34,8 @@ func (self *LogsService) StreamLogs(ctx context.Context, requesterUserID uuid.UU
 		}
 	}
 
+	start, since := clampLogStart(input.Start, since, selector.startBound)
+
 	// Create a channel for log events
 	eventChan := make(chan loki.LogEvents, 100)
 
@@ -75,12 +44,12 @@ func (self *LogsService) StreamLogs(ctx context.Context, requesterUserID uuid.UU
 	defer cancel()
 
 	lokiLogOptions := loki.LokiLogStreamOptions{
-		Label:      label,
-		LabelValue: labelValue,
+		Label:      selector.label,
+		LabelValue: selector.labelValue,
 		Limit:      int(input.Limit),
 		RawFilter:  input.Filters,
 		Since:      since,
-		Start:      input.Start,
+		Start:      start,
 	}
 
 	// Resume after the client's Last-Event-Id instead of replaying history.

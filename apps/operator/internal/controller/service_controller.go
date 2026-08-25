@@ -20,7 +20,9 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"sync"
 
+	helmv2 "github.com/fluxcd/helm-controller/api/v2"
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
 	"github.com/unbindapp/unbind-operator/internal/operator"
 	"github.com/unbindapp/unbind-operator/internal/resourcebuilder"
@@ -28,10 +30,14 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
+	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
@@ -47,6 +53,12 @@ type ServiceReconciler struct {
 	OperatorManager    *operator.OperatorManager
 	NetworkingProvider networking.Provider
 	NetworkingConfig   networking.Config
+
+	controller  controller.Controller
+	cache       cache.Cache
+	restMapper  apimeta.RESTMapper
+	watchedMu   sync.Mutex
+	watchedGVKs map[schema.GroupVersionKind]bool
 }
 
 func (r *ServiceReconciler) newResourceBuilder(service *v1.Service) resourcebuilder.ResourceBuilderInterface {
@@ -126,6 +138,13 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, err
 	}
 
+	if service.Spec.Type == "database" {
+		if err := r.remediateStalledDatabaseRelease(ctx, &service); err != nil {
+			return ctrl.Result{}, err
+		}
+		return r.ensureDatabaseWatch(&service)
+	}
+
 	return ctrl.Result{}, nil
 }
 
@@ -179,8 +198,16 @@ func (r *ServiceReconciler) updateServiceStatus(ctx context.Context, service *v1
 	}
 
 	needsStatusUpdate := false
-	if service.Status.DeploymentStatus != "Ready" {
-		service.Status.DeploymentStatus = "Ready"
+	deploymentStatus := "Ready"
+	if service.Spec.Type == "database" {
+		condition := r.computeDatabaseCondition(ctx, service)
+		if apimeta.SetStatusCondition(&service.Status.Conditions, condition) {
+			needsStatusUpdate = true
+		}
+		deploymentStatus = condition.Reason
+	}
+	if service.Status.DeploymentStatus != deploymentStatus {
+		service.Status.DeploymentStatus = deploymentStatus
 		needsStatusUpdate = true
 	}
 	if !reflect.DeepEqual(service.Status.URLs, newURLs) {
@@ -230,7 +257,8 @@ func (r *ServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&v1.Service{}).
 		Owns(&appsv1.Deployment{}).
 		Owns(&corev1.Service{}).
-		Owns(&networkingv1.Ingress{})
+		Owns(&networkingv1.Ingress{}).
+		Owns(&helmv2.HelmRelease{})
 
 	if r.NetworkingProvider == networking.ProviderGateway {
 		builder = builder.
@@ -241,5 +269,13 @@ func (r *ServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			Owns(&gwapiv1.Gateway{})
 	}
 
-	return builder.Complete(r)
+	c, err := builder.Build(r)
+	if err != nil {
+		return err
+	}
+	r.controller = c
+	r.cache = mgr.GetCache()
+	r.restMapper = mgr.GetRESTMapper()
+	r.watchedGVKs = map[schema.GroupVersionKind]bool{}
+	return nil
 }

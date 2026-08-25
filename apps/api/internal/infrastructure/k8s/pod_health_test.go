@@ -486,6 +486,128 @@ func (suite *K8sTestSuite) TestExtractContainerStatus() {
 			expectedReady:      false,
 		},
 		{
+			name: "Running container with recent OOM restart loop",
+			containerStatus: corev1.ContainerStatus{
+				Name:         "app-container",
+				Ready:        true,
+				RestartCount: 3,
+				State: corev1.ContainerState{
+					Running: &corev1.ContainerStateRunning{
+						StartedAt: metav1.Now(),
+					},
+				},
+				LastTerminationState: corev1.ContainerState{
+					Terminated: &corev1.ContainerStateTerminated{
+						ExitCode:   137,
+						Reason:     "OOMKilled",
+						Message:    "Container was killed due to memory limit",
+						FinishedAt: metav1.NewTime(time.Now().Add(-1 * time.Minute)),
+					},
+				},
+			},
+			isPodTerminating:   false,
+			expectedState:      ContainerStateCrashing,
+			expectedIsCrashing: true,
+			expectedReady:      true,
+		},
+		{
+			name: "Running container with stale OOM termination",
+			containerStatus: corev1.ContainerStatus{
+				Name:         "app-container",
+				Ready:        true,
+				RestartCount: 3,
+				State: corev1.ContainerState{
+					Running: &corev1.ContainerStateRunning{
+						StartedAt: metav1.Now(),
+					},
+				},
+				LastTerminationState: corev1.ContainerState{
+					Terminated: &corev1.ContainerStateTerminated{
+						ExitCode:   137,
+						Reason:     "OOMKilled",
+						Message:    "Container was killed due to memory limit",
+						FinishedAt: metav1.NewTime(time.Now().Add(-30 * time.Minute)),
+					},
+				},
+			},
+			isPodTerminating:   false,
+			expectedState:      ContainerStateRunning,
+			expectedIsCrashing: false,
+			expectedReady:      true,
+		},
+		{
+			name: "Running container with zero restarts and recent OOM termination",
+			containerStatus: corev1.ContainerStatus{
+				Name:         "app-container",
+				Ready:        true,
+				RestartCount: 0,
+				State: corev1.ContainerState{
+					Running: &corev1.ContainerStateRunning{
+						StartedAt: metav1.Now(),
+					},
+				},
+				LastTerminationState: corev1.ContainerState{
+					Terminated: &corev1.ContainerStateTerminated{
+						ExitCode:   137,
+						Reason:     "OOMKilled",
+						FinishedAt: metav1.NewTime(time.Now().Add(-1 * time.Minute)),
+					},
+				},
+			},
+			isPodTerminating:   false,
+			expectedState:      ContainerStateRunning,
+			expectedIsCrashing: false,
+			expectedReady:      true,
+		},
+		{
+			name: "Terminating pod with recent OOM termination",
+			containerStatus: corev1.ContainerStatus{
+				Name:         "app-container",
+				Ready:        false,
+				RestartCount: 3,
+				State: corev1.ContainerState{
+					Running: &corev1.ContainerStateRunning{
+						StartedAt: metav1.Now(),
+					},
+				},
+				LastTerminationState: corev1.ContainerState{
+					Terminated: &corev1.ContainerStateTerminated{
+						ExitCode:   137,
+						Reason:     "OOMKilled",
+						FinishedAt: metav1.NewTime(time.Now().Add(-1 * time.Minute)),
+					},
+				},
+			},
+			isPodTerminating:   true,
+			expectedState:      ContainerStateTerminating,
+			expectedIsCrashing: false,
+			expectedReady:      false,
+		},
+		{
+			name: "Running container with recent non-OOM termination",
+			containerStatus: corev1.ContainerStatus{
+				Name:         "app-container",
+				Ready:        true,
+				RestartCount: 3,
+				State: corev1.ContainerState{
+					Running: &corev1.ContainerStateRunning{
+						StartedAt: metav1.Now(),
+					},
+				},
+				LastTerminationState: corev1.ContainerState{
+					Terminated: &corev1.ContainerStateTerminated{
+						ExitCode:   1,
+						Reason:     "Error",
+						FinishedAt: metav1.NewTime(time.Now().Add(-1 * time.Minute)),
+					},
+				},
+			},
+			isPodTerminating:   false,
+			expectedState:      ContainerStateRunning,
+			expectedIsCrashing: false,
+			expectedReady:      true,
+		},
+		{
 			name: "Successfully completed container",
 			containerStatus: corev1.ContainerStatus{
 				Name:         "app-container",

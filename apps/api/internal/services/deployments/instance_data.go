@@ -2,6 +2,8 @@ package deployments_service
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
@@ -9,12 +11,18 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/k8s"
 	"github.com/unbindapp/unbind-api/internal/models"
+	unbindv1 "github.com/unbindapp/unbind-operator/api/v1"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
+	apimeta "k8s.io/apimachinery/pkg/api/meta"
 )
+
+const deploymentRolloutGracePeriod = 5 * time.Minute
 
 // ServiceInstanceData holds instance data for a service
 type ServiceInstanceData struct {
 	ServiceID       uuid.UUID
 	Status          schema.DeploymentStatus
+	StatusMessage   string
 	InstanceEvents  []models.EventRecord
 	Restarts        int32
 	CrashingReasons []string
@@ -63,7 +71,8 @@ func (self *DeploymentService) AttachInstanceDataToServices(ctx context.Context,
 		}
 
 		statuses := serviceStatuses[service.ID]
-		instanceData := self.calculateInstanceData(statuses, service.Edges.ServiceConfig.Replicas)
+		instanceData := self.calculateInstanceData(statuses, service.Edges.ServiceConfig.Replicas, service.Edges.CurrentDeployment)
+		self.applyDatabaseCRStatus(ctx, service, namespace, instanceData)
 		result[service.ID] = instanceData
 	}
 
@@ -71,16 +80,37 @@ func (self *DeploymentService) AttachInstanceDataToServices(ctx context.Context,
 }
 
 // calculateInstanceData processes pod statuses to determine deployment status and events
-func (self *DeploymentService) calculateInstanceData(statuses []k8s.PodContainerStatus, expectedReplicas int32) *ServiceInstanceData {
+func (self *DeploymentService) calculateInstanceData(statuses []k8s.PodContainerStatus, expectedReplicas int32, currentDeployment *ent.Deployment) *ServiceInstanceData {
 	events := []models.EventRecord{}
 	crashingReasons := []string{}
 	restartCount := int32(0)
+
+	// gated on the label existing: some database operators don't propagate it to pods
+	countedStatuses := statuses
+	staleEvents := []models.EventRecord{}
+	noCurrentPods := false
+	if currentDeployment != nil && anyPodHasDeploymentLabel(statuses) {
+		countedStatuses = make([]k8s.PodContainerStatus, 0, len(statuses))
+		for _, status := range statuses {
+			if status.DeploymentID == currentDeployment.ID {
+				countedStatuses = append(countedStatuses, status)
+				continue
+			}
+			for _, instance := range status.Instances {
+				staleEvents = append(staleEvents, instance.Events...)
+			}
+			for _, instance := range status.InstanceDependencies {
+				staleEvents = append(staleEvents, instance.Events...)
+			}
+		}
+		noCurrentPods = len(countedStatuses) == 0
+	}
 
 	hasCrashing := false
 	hasPending := false
 	readyCount := int32(0)
 
-	for _, status := range statuses {
+	for _, status := range countedStatuses {
 		// Check if any containers are crashing at pod level
 		if status.HasCrashingInstances {
 			hasCrashing = true
@@ -158,11 +188,77 @@ func (self *DeploymentService) calculateInstanceData(statuses []k8s.PodContainer
 		targetStatus = schema.DeploymentStatusActive
 	}
 
+	if noCurrentPods && expectedReplicas > 0 {
+		targetStatus = schema.DeploymentStatusLaunching
+		if time.Since(deploymentGraceAnchor(currentDeployment)) > deploymentRolloutGracePeriod {
+			targetStatus = schema.DeploymentStatusLaunchError
+			crashingReasons = append(crashingReasons, fmt.Sprintf("No pods from the current deployment after %s; rollout may be stuck", deploymentRolloutGracePeriod))
+		}
+	}
+
 	return &ServiceInstanceData{
 		Status:          targetStatus,
-		InstanceEvents:  events,
+		InstanceEvents:  append(events, staleEvents...),
 		CrashingReasons: crashingReasons,
 		Restarts:        restartCount,
+	}
+}
+
+// pod-derived crashing keeps precedence over the CR condition
+func (self *DeploymentService) applyDatabaseCRStatus(ctx context.Context, service *ent.Service, namespace string, data *ServiceInstanceData) {
+	if service.Type != schema.ServiceTypeDatabase {
+		return
+	}
+
+	status, err := self.k8s.GetUnbindServiceStatus(ctx, namespace, service.KubernetesName)
+	if err != nil {
+		if !kerrors.IsNotFound(err) {
+			log.Warn("Failed to read service CR status", "err", err, "service_id", service.ID)
+		}
+		return
+	}
+	if status == nil {
+		return
+	}
+
+	condition := apimeta.FindStatusCondition(status.Conditions, unbindv1.ConditionTypeDatabaseReady)
+	if condition == nil {
+		return
+	}
+
+	switch condition.Reason {
+	case unbindv1.DatabaseReasonFailed:
+		data.StatusMessage = condition.Message
+		if data.Status == schema.DeploymentStatusActive || data.Status == schema.DeploymentStatusLaunching {
+			data.Status = schema.DeploymentStatusLaunchError
+		}
+	case unbindv1.DatabaseReasonProgressing:
+		if data.Status == schema.DeploymentStatusActive {
+			data.Status = schema.DeploymentStatusLaunching
+			data.StatusMessage = condition.Message
+		}
+	}
+}
+
+func anyPodHasDeploymentLabel(statuses []k8s.PodContainerStatus) bool {
+	for _, status := range statuses {
+		if status.DeploymentID != uuid.Nil {
+			return true
+		}
+	}
+	return false
+}
+
+func deploymentGraceAnchor(d *ent.Deployment) time.Time {
+	switch {
+	case d.CompletedAt != nil:
+		return *d.CompletedAt
+	case d.StartedAt != nil:
+		return *d.StartedAt
+	case d.QueuedAt != nil:
+		return *d.QueuedAt
+	default:
+		return d.CreatedAt
 	}
 }
 
@@ -175,6 +271,7 @@ func (self *DeploymentService) AttachInstanceDataToDeploymentResponses(deploymen
 	for i := range deployments {
 		if deployments[i].ID == currentDeploymentID {
 			deployments[i].Status = instanceData.Status
+			deployments[i].StatusMessage = instanceData.StatusMessage
 			deployments[i].InstanceEvents = instanceData.InstanceEvents
 			deployments[i].CrashingReasons = instanceData.CrashingReasons
 			deployments[i].InstanceRestarts = instanceData.Restarts
@@ -197,6 +294,7 @@ func (self *DeploymentService) AttachInstanceDataToServiceResponse(service *mode
 	// Attach to current deployment
 	if service.CurrentDeployment != nil {
 		service.CurrentDeployment.Status = instanceData.Status
+		service.CurrentDeployment.StatusMessage = instanceData.StatusMessage
 		service.CurrentDeployment.InstanceEvents = instanceData.InstanceEvents
 		service.CurrentDeployment.CrashingReasons = instanceData.CrashingReasons
 		service.CurrentDeployment.InstanceRestarts = instanceData.Restarts
@@ -206,6 +304,7 @@ func (self *DeploymentService) AttachInstanceDataToServiceResponse(service *mode
 	if service.LastDeployment != nil && service.CurrentDeployment != nil &&
 		service.LastDeployment.ID == service.CurrentDeployment.ID {
 		service.LastDeployment.Status = instanceData.Status
+		service.LastDeployment.StatusMessage = instanceData.StatusMessage
 		service.LastDeployment.InstanceEvents = instanceData.InstanceEvents
 		service.LastDeployment.CrashingReasons = instanceData.CrashingReasons
 		service.LastDeployment.InstanceRestarts = instanceData.Restarts

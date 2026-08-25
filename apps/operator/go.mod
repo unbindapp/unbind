@@ -13,6 +13,7 @@ replace (
 require (
 	github.com/altinity/clickhouse-operator v0.0.0-20260604165232-866e19f7820f
 	github.com/fluxcd/helm-controller/api v1.6.2
+	github.com/fluxcd/pkg/apis/meta v1.31.0
 	github.com/fluxcd/source-controller/api v1.9.3
 	github.com/onsi/ginkgo/v2 v2.32.0
 	github.com/onsi/gomega v1.40.0
@@ -32,7 +33,6 @@ require (
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/fluxcd/pkg/apis/acl v0.10.0 // indirect
 	github.com/fluxcd/pkg/apis/kustomize v1.20.0 // indirect
-	github.com/fluxcd/pkg/apis/meta v1.31.0 // indirect
 	github.com/go-openapi/swag/cmdutils v0.27.0 // indirect
 	github.com/go-openapi/swag/conv v0.27.0 // indirect
 	github.com/go-openapi/swag/fileutils v0.27.0 // indirect

@@ -2927,6 +2927,80 @@ func (_c *KubeClientMock_GetSimpleHealthStatus_Call) RunAndReturn(run func(ctx c
 	return _c
 }
 
+// GetUnbindServiceStatus provides a mock function for the type KubeClientMock
+func (_mock *KubeClientMock) GetUnbindServiceStatus(ctx context.Context, namespace string, name string) (*v10.ServiceStatus, error) {
+	ret := _mock.Called(ctx, namespace, name)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetUnbindServiceStatus")
+	}
+
+	var r0 *v10.ServiceStatus
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) (*v10.ServiceStatus, error)); ok {
+		return returnFunc(ctx, namespace, name)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) *v10.ServiceStatus); ok {
+		r0 = returnFunc(ctx, namespace, name)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*v10.ServiceStatus)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = returnFunc(ctx, namespace, name)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// KubeClientMock_GetUnbindServiceStatus_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetUnbindServiceStatus'
+type KubeClientMock_GetUnbindServiceStatus_Call struct {
+	*mock.Call
+}
+
+// GetUnbindServiceStatus is a helper method to define mock.On call
+//   - ctx context.Context
+//   - namespace string
+//   - name string
+func (_e *KubeClientMock_Expecter) GetUnbindServiceStatus(ctx any, namespace any, name any) *KubeClientMock_GetUnbindServiceStatus_Call {
+	return &KubeClientMock_GetUnbindServiceStatus_Call{Call: _e.mock.On("GetUnbindServiceStatus", ctx, namespace, name)}
+}
+
+func (_c *KubeClientMock_GetUnbindServiceStatus_Call) Run(run func(ctx context.Context, namespace string, name string)) *KubeClientMock_GetUnbindServiceStatus_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_GetUnbindServiceStatus_Call) Return(serviceStatus *v10.ServiceStatus, err error) *KubeClientMock_GetUnbindServiceStatus_Call {
+	_c.Call.Return(serviceStatus, err)
+	return _c
+}
+
+func (_c *KubeClientMock_GetUnbindServiceStatus_Call) RunAndReturn(run func(ctx context.Context, namespace string, name string) (*v10.ServiceStatus, error)) *KubeClientMock_GetUnbindServiceStatus_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetUnusedNodePort provides a mock function for the type KubeClientMock
 func (_mock *KubeClientMock) GetUnusedNodePort(ctx context.Context) (int32, error) {
 	ret := _mock.Called(ctx)

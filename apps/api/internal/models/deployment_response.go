@@ -12,6 +12,7 @@ type DeploymentResponse struct {
 	ID                            uuid.UUID               `json:"id" format:"uuid"`
 	ServiceID                     uuid.UUID               `json:"service_id" format:"uuid"`
 	Status                        schema.DeploymentStatus `json:"status"`
+	StatusMessage                 string                  `json:"status_message,omitempty" required:"false"`
 	CrashingReasons               []string                `json:"crashing_reasons" nullable:"false"`
 	InstanceEvents                []EventRecord           `json:"instance_events" nullable:"false"`
 	InstanceRestarts              int32                   `json:"instance_restarts"`
