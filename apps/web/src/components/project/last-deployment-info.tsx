@@ -4,7 +4,7 @@ import { sourceToTitle } from "@/lib/constants";
 import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { TService, TServiceShallow } from "@/lib/queries/services";
 import {
-  CircleCheckBigIcon,
+  GlobeIcon,
   GlobeOffIcon,
   HourglassIcon,
   LoaderIcon,
@@ -134,7 +134,8 @@ function StatusText({ service }: { service: TServiceShallow }) {
   if (deployment.status === "active")
     return (
       <StatusTextWrapper service={service}>
-        {timeDiffStr} via {sourceToTitle[service.type] || "Unknown"}
+        Online <span className="text-muted-more-foreground px-[0.5ch]">|</span> {timeDiffStr} via{" "}
+        {sourceToTitle[service.type] || "Unknown"}
       </StatusTextWrapper>
     );
 }
@@ -165,5 +166,5 @@ function StatusIndicator({ deployment }: { deployment: NonNullable<TService["las
   if (deployment.status === "removed") {
     return <GlobeOffIcon className="size-3.5 shrink-0" />;
   }
-  return <CircleCheckBigIcon className="text-success size-3.5" />;
+  return <GlobeIcon className="text-success size-3.5 shrink-0" />;
 }
