@@ -3,14 +3,7 @@ import { cn } from "@/components/ui/utils";
 import { sourceToTitle } from "@/lib/constants";
 import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { TService, TServiceShallow } from "@/lib/queries/services";
-import {
-  GlobeIcon,
-  GlobeOffIcon,
-  HourglassIcon,
-  LoaderIcon,
-  TriangleAlertIcon,
-  XIcon,
-} from "lucide-react";
+import { HourglassIcon, LoaderIcon, TriangleAlertIcon, XIcon } from "lucide-react";
 import { ReactNode, useMemo } from "react";
 
 type TProps = {
