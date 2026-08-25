@@ -4,7 +4,6 @@ import (
 	"context"
 	stderrors "errors"
 	"fmt"
-	"reflect"
 
 	"github.com/go-logr/logr"
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
@@ -13,6 +12,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
+	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -34,8 +34,8 @@ func (r *ServiceReconciler) reconcileDeployment(ctx context.Context, rb resource
 
 	return reconcileResource(ctx, r, desired, nil, maxReconcileRetries,
 		func(existing, desired *appsv1.Deployment) bool {
-			return !reflect.DeepEqual(existing.Spec, desired.Spec) ||
-				!reflect.DeepEqual(existing.Labels, desired.Labels)
+			return !equality.Semantic.DeepDerivative(desired.Spec, existing.Spec) ||
+				!equality.Semantic.DeepDerivative(desired.Labels, existing.Labels)
 		},
 		func(existing, desired *appsv1.Deployment) {
 			existing.Labels = desired.Labels
@@ -132,10 +132,10 @@ func serviceTypeOrDefault(t corev1.ServiceType) corev1.ServiceType {
 
 func kubeServiceNeedsUpdate(logger logr.Logger, desired, existing *corev1.Service) bool {
 	switch {
-	case !reflect.DeepEqual(existing.Spec.Ports, desired.Spec.Ports):
+	case !equality.Semantic.DeepDerivative(desired.Spec.Ports, existing.Spec.Ports):
 		logger.Info("Service ports need update", "existing", existing.Spec.Ports, "desired", desired.Spec.Ports)
 		return true
-	case !reflect.DeepEqual(existing.Spec.Selector, desired.Spec.Selector):
+	case !equality.Semantic.DeepDerivative(desired.Spec.Selector, existing.Spec.Selector):
 		logger.Info("Service selector needs update")
 		return true
 	case serviceTypeOrDefault(existing.Spec.Type) != serviceTypeOrDefault(desired.Spec.Type):
@@ -179,7 +179,7 @@ func (r *ServiceReconciler) reconcileRouteObject(ctx context.Context, desired cl
 	case *networkingv1.Ingress:
 		return reconcileResource(ctx, r, obj, owner, maxReconcileRetries,
 			func(existing, desired *networkingv1.Ingress) bool {
-				return !reflect.DeepEqual(existing.Spec, desired.Spec)
+				return !equality.Semantic.DeepDerivative(desired.Spec, existing.Spec)
 			},
 			func(existing, desired *networkingv1.Ingress) {
 				existing.Spec = desired.Spec
@@ -189,8 +189,8 @@ func (r *ServiceReconciler) reconcileRouteObject(ctx context.Context, desired cl
 	case *gwapiv1.HTTPRoute:
 		return reconcileResource(ctx, r, obj, owner, maxReconcileRetries,
 			func(existing, desired *gwapiv1.HTTPRoute) bool {
-				return !reflect.DeepEqual(existing.Spec, desired.Spec) ||
-					!reflect.DeepEqual(existing.Labels, desired.Labels)
+				return !equality.Semantic.DeepDerivative(desired.Spec, existing.Spec) ||
+					!equality.Semantic.DeepDerivative(desired.Labels, existing.Labels)
 			},
 			func(existing, desired *gwapiv1.HTTPRoute) {
 				existing.Spec = desired.Spec
@@ -201,9 +201,9 @@ func (r *ServiceReconciler) reconcileRouteObject(ctx context.Context, desired cl
 	case *gwapiv1.Gateway:
 		return reconcileResource(ctx, r, obj, owner, maxReconcileRetries,
 			func(existing, desired *gwapiv1.Gateway) bool {
-				return !reflect.DeepEqual(existing.Spec, desired.Spec) ||
-					!reflect.DeepEqual(existing.Labels, desired.Labels) ||
-					!reflect.DeepEqual(existing.Annotations, desired.Annotations)
+				return !equality.Semantic.DeepDerivative(desired.Spec, existing.Spec) ||
+					!equality.Semantic.DeepDerivative(desired.Labels, existing.Labels) ||
+					!equality.Semantic.DeepDerivative(desired.Annotations, existing.Annotations)
 			},
 			func(existing, desired *gwapiv1.Gateway) {
 				existing.Spec = desired.Spec
@@ -215,7 +215,7 @@ func (r *ServiceReconciler) reconcileRouteObject(ctx context.Context, desired cl
 	case *gwapiv1.GRPCRoute:
 		return reconcileResource(ctx, r, obj, owner, maxReconcileRetries,
 			func(existing, desired *gwapiv1.GRPCRoute) bool {
-				return !reflect.DeepEqual(existing.Spec, desired.Spec) || !reflect.DeepEqual(existing.Labels, desired.Labels)
+				return !equality.Semantic.DeepDerivative(desired.Spec, existing.Spec) || !equality.Semantic.DeepDerivative(desired.Labels, existing.Labels)
 			},
 			func(existing, desired *gwapiv1.GRPCRoute) {
 				existing.Spec = desired.Spec
@@ -226,7 +226,7 @@ func (r *ServiceReconciler) reconcileRouteObject(ctx context.Context, desired cl
 	case *gwapiv1a2.TCPRoute:
 		return reconcileResource(ctx, r, obj, owner, maxReconcileRetries,
 			func(existing, desired *gwapiv1a2.TCPRoute) bool {
-				return !reflect.DeepEqual(existing.Spec, desired.Spec) || !reflect.DeepEqual(existing.Labels, desired.Labels)
+				return !equality.Semantic.DeepDerivative(desired.Spec, existing.Spec) || !equality.Semantic.DeepDerivative(desired.Labels, existing.Labels)
 			},
 			func(existing, desired *gwapiv1a2.TCPRoute) {
 				existing.Spec = desired.Spec
@@ -237,7 +237,7 @@ func (r *ServiceReconciler) reconcileRouteObject(ctx context.Context, desired cl
 	case *gwapiv1a2.UDPRoute:
 		return reconcileResource(ctx, r, obj, owner, maxReconcileRetries,
 			func(existing, desired *gwapiv1a2.UDPRoute) bool {
-				return !reflect.DeepEqual(existing.Spec, desired.Spec) || !reflect.DeepEqual(existing.Labels, desired.Labels)
+				return !equality.Semantic.DeepDerivative(desired.Spec, existing.Spec) || !equality.Semantic.DeepDerivative(desired.Labels, existing.Labels)
 			},
 			func(existing, desired *gwapiv1a2.UDPRoute) {
 				existing.Spec = desired.Spec

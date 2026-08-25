@@ -17,6 +17,7 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
+	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -80,16 +81,19 @@ func (r *ServiceReconciler) reconcileGenericObject(ctx context.Context, obj runt
 		kind = fmt.Sprintf("%T", obj)
 	}
 
+	hash := renderHash(obj)
+
 	existing, err := r.getExistingObject(ctx, obj)
 	if err != nil {
 		if !errors.IsNotFound(err) {
 			logger.Error(err, "Failed to get existing object", "kind", kind, "name", metaObj.GetName(), "namespace", metaObj.GetNamespace())
 			return fmt.Errorf("getting existing object: %w", err)
 		}
+		setRenderHash(metaObj, hash)
 		return r.createGenericObject(ctx, logger, obj, metaObj, gvk, kind, service)
 	}
 
-	return r.updateGenericObject(ctx, logger, obj, existing, metaObj, gvk, kind, service)
+	return r.updateGenericObject(ctx, logger, obj, existing, metaObj, gvk, kind, service, hash)
 }
 
 func (r *ServiceReconciler) createGenericObject(ctx context.Context, logger logr.Logger, obj runtime.Object, metaObj metav1.Object, gvk schema.GroupVersionKind, kind string, service *v1.Service) error {
@@ -110,13 +114,18 @@ func (r *ServiceReconciler) createGenericObject(ctx context.Context, logger logr
 	return nil
 }
 
-func (r *ServiceReconciler) updateGenericObject(ctx context.Context, logger logr.Logger, desired, existing runtime.Object, metaObj metav1.Object, gvk schema.GroupVersionKind, kind string, service *v1.Service) error {
+func (r *ServiceReconciler) updateGenericObject(ctx context.Context, logger logr.Logger, desired, existing runtime.Object, metaObj metav1.Object, gvk schema.GroupVersionKind, kind string, service *v1.Service, hash string) error {
+	liveMeta, err := meta.Accessor(existing)
+	if err != nil {
+		return fmt.Errorf("getting metadata from existing object: %w", err)
+	}
+
 	needsUpdate, err := r.objectNeedsUpdate(desired, existing)
 	if err != nil {
 		return fmt.Errorf("checking if update needed: %w", err)
 	}
 
-	if !needsUpdate {
+	if renderHashMatches(liveMeta, hash) && !needsUpdate {
 		logger.Info("Object already up to date", "kind", kind, "name", metaObj.GetName(), "namespace", metaObj.GetNamespace())
 		return nil
 	}
@@ -131,6 +140,7 @@ func (r *ServiceReconciler) updateGenericObject(ctx context.Context, logger logr
 	if err != nil {
 		return fmt.Errorf("getting metadata from existing object: %w", err)
 	}
+	setRenderHash(existingMeta, hash)
 
 	if err := controllerutil.SetControllerReference(service, existingMeta, r.Scheme); err != nil {
 		return fmt.Errorf("setting controller reference: %w", err)
@@ -215,7 +225,7 @@ func (r *ServiceReconciler) objectNeedsUpdate(desired, existing runtime.Object) 
 		if !ok {
 			return false, fmt.Errorf("existing object is not a Deployment")
 		}
-		return !reflect.DeepEqual(existingTyped.Spec, desiredTyped.Spec), nil
+		return !equality.Semantic.DeepDerivative(desiredTyped.Spec, existingTyped.Spec), nil
 
 	case *corev1.Service:
 		existingTyped, ok := existing.(*corev1.Service)
@@ -223,9 +233,9 @@ func (r *ServiceReconciler) objectNeedsUpdate(desired, existing runtime.Object) 
 			return false, fmt.Errorf("existing object is not a Service")
 		}
 		switch {
-		case !reflect.DeepEqual(existingTyped.Spec.Ports, desiredTyped.Spec.Ports):
+		case !equality.Semantic.DeepDerivative(desiredTyped.Spec.Ports, existingTyped.Spec.Ports):
 			return true, nil
-		case !reflect.DeepEqual(existingTyped.Spec.Selector, desiredTyped.Spec.Selector):
+		case !equality.Semantic.DeepDerivative(desiredTyped.Spec.Selector, existingTyped.Spec.Selector):
 			return true, nil
 		case serviceTypeOrDefault(existingTyped.Spec.Type) != serviceTypeOrDefault(desiredTyped.Spec.Type):
 			return true, nil
@@ -238,7 +248,7 @@ func (r *ServiceReconciler) objectNeedsUpdate(desired, existing runtime.Object) 
 		if !ok {
 			return false, fmt.Errorf("existing object is not an Ingress")
 		}
-		return !reflect.DeepEqual(existingTyped.Spec, desiredTyped.Spec), nil
+		return !equality.Semantic.DeepDerivative(desiredTyped.Spec, existingTyped.Spec), nil
 
 	case *corev1.ConfigMap:
 		existingTyped, ok := existing.(*corev1.ConfigMap)
@@ -279,7 +289,7 @@ func (r *ServiceReconciler) genericObjectNeedsUpdate(desired, existing runtime.O
 		case "metadata", "status", "apiVersion", "kind":
 			continue
 		}
-		if !reflect.DeepEqual(v, existingUnstructured[k]) {
+		if !equality.Semantic.DeepDerivative(v, existingUnstructured[k]) {
 			return true, nil
 		}
 	}

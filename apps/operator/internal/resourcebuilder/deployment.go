@@ -371,6 +371,7 @@ func (rb *ResourceBuilder) buildProbe(failureThreshold, periodSeconds, timeoutSe
 		PeriodSeconds:    periodSeconds,
 		TimeoutSeconds:   timeoutSeconds,
 		FailureThreshold: failureThreshold,
+		SuccessThreshold: 1,
 	}
 
 	switch healthCheck.Type {

@@ -3,7 +3,6 @@ package controller
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"time"
 
 	altinityv1 "github.com/altinity/clickhouse-operator/pkg/apis/clickhouse.altinity.com/v1"
@@ -14,6 +13,7 @@ import (
 	postgresv1 "github.com/zalando/postgres-operator/pkg/apis/acid.zalan.do/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -40,7 +40,7 @@ func (r *ServiceReconciler) copyCredentialsAfter(owner *v1.Service, copyCredenti
 func (r *ServiceReconciler) reconcilePostgresql(ctx context.Context, postgres *postgresv1.Postgresql, owner *v1.Service) error {
 	return reconcileResource(ctx, r, postgres, owner, maxReconcileRetries,
 		func(existing, desired *postgresv1.Postgresql) bool {
-			return !reflect.DeepEqual(existing.Spec, desired.Spec)
+			return !equality.Semantic.DeepDerivative(desired.Spec, existing.Spec)
 		},
 		func(existing, desired *postgresv1.Postgresql) { existing.Spec = desired.Spec },
 		r.copyCredentialsAfter(owner, r.copyPostgresCredentials),
@@ -51,7 +51,7 @@ func (r *ServiceReconciler) reconcilePostgresql(ctx context.Context, postgres *p
 func (r *ServiceReconciler) reconcileHelmRelease(ctx context.Context, helmRelease *helmv2.HelmRelease, owner *v1.Service) error {
 	return reconcileResource(ctx, r, helmRelease, owner, singleReconcileAttempt,
 		func(existing, desired *helmv2.HelmRelease) bool {
-			return !reflect.DeepEqual(existing.Spec, desired.Spec)
+			return !equality.Semantic.DeepDerivative(desired.Spec, existing.Spec)
 		},
 		func(existing, desired *helmv2.HelmRelease) { existing.Spec = desired.Spec },
 		nil,
@@ -62,7 +62,7 @@ func (r *ServiceReconciler) reconcileHelmRelease(ctx context.Context, helmReleas
 func (r *ServiceReconciler) reconcileHelmRepository(ctx context.Context, helmRepo *sourcev1.HelmRepository, owner *v1.Service) error {
 	return reconcileResource(ctx, r, helmRepo, owner, singleReconcileAttempt,
 		func(existing, desired *sourcev1.HelmRepository) bool {
-			return !reflect.DeepEqual(existing.Spec, desired.Spec)
+			return !equality.Semantic.DeepDerivative(desired.Spec, existing.Spec)
 		},
 		func(existing, desired *sourcev1.HelmRepository) { existing.Spec = desired.Spec },
 		nil,
@@ -74,7 +74,7 @@ func (r *ServiceReconciler) reconcileMySQLCluster(ctx context.Context, mysqlclus
 	mysqlcluster.Spec.ServerIDBase = 100
 	return reconcileResource(ctx, r, mysqlcluster, owner, maxReconcileRetries,
 		func(existing, desired *mocov1beta2.MySQLCluster) bool {
-			return !reflect.DeepEqual(existing.Spec, desired.Spec)
+			return !equality.Semantic.DeepDerivative(desired.Spec, existing.Spec)
 		},
 		func(existing, desired *mocov1beta2.MySQLCluster) { existing.Spec = desired.Spec },
 		r.copyCredentialsAfter(owner, r.copyMySQLCredentials),
@@ -85,7 +85,7 @@ func (r *ServiceReconciler) reconcileMySQLCluster(ctx context.Context, mysqlclus
 func (r *ServiceReconciler) reconcileBackupPolicy(ctx context.Context, backupPolicy *mocov1beta2.BackupPolicy, owner *v1.Service) error {
 	return reconcileResource(ctx, r, backupPolicy, owner, singleReconcileAttempt,
 		func(existing, desired *mocov1beta2.BackupPolicy) bool {
-			return !reflect.DeepEqual(existing.Spec, desired.Spec)
+			return !equality.Semantic.DeepDerivative(desired.Spec, existing.Spec)
 		},
 		func(existing, desired *mocov1beta2.BackupPolicy) { existing.Spec = desired.Spec },
 		nil,
@@ -96,7 +96,7 @@ func (r *ServiceReconciler) reconcileBackupPolicy(ctx context.Context, backupPol
 func (r *ServiceReconciler) reconcileClickhouseInstallation(ctx context.Context, clickhouse *altinityv1.ClickHouseInstallation, owner *v1.Service) error {
 	return reconcileResource(ctx, r, clickhouse, owner, maxReconcileRetries,
 		func(existing, desired *altinityv1.ClickHouseInstallation) bool {
-			return !reflect.DeepEqual(existing.Spec, desired.Spec)
+			return !equality.Semantic.DeepDerivative(desired.Spec, existing.Spec)
 		},
 		func(existing, desired *altinityv1.ClickHouseInstallation) { existing.Spec = desired.Spec },
 		r.copyCredentialsAfter(owner, r.copyClickhouseCredentials),
@@ -124,7 +124,7 @@ func (r *ServiceReconciler) reconcileJob(ctx context.Context, desiredJob *batchv
 		return err
 	}
 
-	if jobFinished(&existingJob) || reflect.DeepEqual(existingJob.Spec.Template.Spec.Containers, desiredJob.Spec.Template.Spec.Containers) {
+	if jobFinished(&existingJob) || equality.Semantic.DeepDerivative(desiredJob.Spec.Template.Spec.Containers, existingJob.Spec.Template.Spec.Containers) {
 		logger.Info("Job already exists and no update needed", "name", desiredJob.Name)
 		return nil
 	}

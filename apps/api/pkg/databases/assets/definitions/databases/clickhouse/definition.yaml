@@ -223,6 +223,7 @@ spec:
 
     volumeClaimTemplates:
       - name: clickhouse-data
+        reclaimPolicy: Retain
         metadata:
           labels:
             # Standard USD labels
@@ -230,7 +231,9 @@ spec:
             unbind/usd-version: {{ .Definition.Version | quote }}
             unbind/usd-category: databases
             {{- range $key, $value := .Parameters.labels }}
+            {{- if ne $key "unbind-deployment" }}
             {{ $key }}: {{ $value | quote }}
+            {{- end }}
             {{- end }}
         spec:
           accessModes:

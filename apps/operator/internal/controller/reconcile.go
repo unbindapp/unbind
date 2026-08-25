@@ -2,6 +2,9 @@ package controller
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"time"
@@ -10,6 +13,7 @@ import (
 	"github.com/unbindapp/unbind-operator/internal/resourcebuilder/networking"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
@@ -18,6 +22,33 @@ import (
 )
 
 const routeInstanceLabel = "app.kubernetes.io/instance"
+
+const renderHashAnnotation = "unbind.unbind.app/render-hash"
+
+func renderHash(obj any) string {
+	data, err := json.Marshal(obj)
+	if err != nil {
+		return ""
+	}
+	sum := sha256.Sum256(data)
+	return hex.EncodeToString(sum[:])
+}
+
+func renderHashMatches(obj metav1.Object, hash string) bool {
+	return hash != "" && obj.GetAnnotations()[renderHashAnnotation] == hash
+}
+
+func setRenderHash(obj metav1.Object, hash string) {
+	if hash == "" {
+		return
+	}
+	annotations := obj.GetAnnotations()
+	if annotations == nil {
+		annotations = map[string]string{}
+	}
+	annotations[renderHashAnnotation] = hash
+	obj.SetAnnotations(annotations)
+}
 
 // routeKey is a stable GVK+name identifier for a routing object, matched against
 // the keys produced while listing existing objects during garbage collection.
@@ -36,6 +67,7 @@ func (r *ServiceReconciler) routeKey(obj client.Object) (string, error) {
 // applyRoute creates or updates an unstructured routing object (Traefik Middleware,
 // Envoy BackendTrafficPolicy), preserving the resourceVersion on update.
 func (r *ServiceReconciler) applyRoute(ctx context.Context, desired client.Object, owner *v1.Service) error {
+	hash := renderHash(desired)
 	if owner != nil {
 		if err := controllerutil.SetControllerReference(owner, desired, r.Scheme); err != nil {
 			return fmt.Errorf("setting controller reference: %w", err)
@@ -49,13 +81,19 @@ func (r *ServiceReconciler) applyRoute(ctx context.Context, desired client.Objec
 	err := r.Get(ctx, client.ObjectKeyFromObject(desired), existing)
 	if errors.IsNotFound(err) {
 		logger.Info("Creating route", "kind", kind, "name", desired.GetName())
+		setRenderHash(desired, hash)
 		return r.Create(ctx, desired)
 	}
 	if err != nil {
 		return fmt.Errorf("getting %s %s: %w", kind, desired.GetName(), err)
 	}
 
+	if renderHashMatches(existing, hash) {
+		return nil
+	}
+
 	desired.SetResourceVersion(existing.GetResourceVersion())
+	setRenderHash(desired, hash)
 	logger.Info("Updating route", "kind", kind, "name", desired.GetName())
 	return r.Update(ctx, desired)
 }
@@ -124,6 +162,7 @@ func reconcileResource[T client.Object](
 ) error {
 	logger := log.FromContext(ctx)
 	kind := fmt.Sprintf("%T", desired)
+	hash := renderHash(desired)
 
 	if owner != nil {
 		if err := controllerutil.SetControllerReference(owner, desired, r.Scheme); err != nil {
@@ -137,14 +176,16 @@ func reconcileResource[T client.Object](
 		err := r.Get(ctx, client.ObjectKeyFromObject(desired), existing)
 		if errors.IsNotFound(err) {
 			logger.Info("Creating resource", "kind", kind, "name", desired.GetName())
+			setRenderHash(desired, hash)
 			return r.Create(ctx, desired)
 		}
 		if err != nil {
 			return fmt.Errorf("getting %s %s: %w", kind, desired.GetName(), err)
 		}
 
-		if needsUpdate(existing, desired) {
+		if !renderHashMatches(existing, hash) || needsUpdate(existing, desired) {
 			applyUpdate(existing, desired)
+			setRenderHash(existing, hash)
 			if owner != nil {
 				if err := controllerutil.SetControllerReference(owner, existing, r.Scheme); err != nil {
 					return fmt.Errorf("setting controller reference: %w", err)

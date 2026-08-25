@@ -383,6 +383,7 @@ releases:
             cpu: 10m
             memory: 50Mi
         configKubernetes:
+          enable_persistent_volume_claim_deletion: false
           inherited_labels:
             - unbind-team
             - unbind-project
