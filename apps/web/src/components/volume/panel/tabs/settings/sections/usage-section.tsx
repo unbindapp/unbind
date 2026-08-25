@@ -13,7 +13,7 @@ export default function UsageSection({ volume }: TProps) {
   const sectionHighlightId = useMemo(() => getEntityId(volume), [volume]);
 
   const usagePercentage =
-    volume.used_gb !== undefined && volume.capacity_gb !== undefined
+    volume.used_gb !== undefined && volume.capacity_gb
       ? Math.min(Math.max(0, (volume.used_gb / volume.capacity_gb) * 100), 100)
       : undefined;
 
@@ -40,21 +40,17 @@ export default function UsageSection({ volume }: TProps) {
           <p className="max-w-1/2 truncate pl-2 text-right font-medium">
             Total:{" "}
             <span className="text-foreground group-data-error/section:text-destructive font-semibold">
-              {volume.capacity_gb !== undefined ? formatGB(volume.capacity_gb) : "Unknown"}
+              {formatGB(volume.capacity_gb)}
             </span>
           </p>
         </div>
         <div className="relative flex w-full items-center justify-start overflow-hidden rounded-lg border px-3 py-2.5">
           <div className="absolute top-0 left-0 h-full w-full">
             <div
-              data-has-usage={
-                (usagePercentage !== undefined && usagePercentage !== null) || undefined
-              }
+              data-has-usage={usagePercentage !== undefined || undefined}
               style={
-                usagePercentage !== undefined && usagePercentage !== null
-                  ? {
-                      transform: `scaleX(${Math.ceil(usagePercentage)}%)`,
-                    }
+                usagePercentage !== undefined
+                  ? { transform: `scaleX(${Math.ceil(usagePercentage)}%)` }
                   : undefined
               }
               className="data-has-usage:bg-foreground/8 data-has-usage:group-data-[usage=high]/section:bg-warning/8 data-has-usage:group-data-[usage=critical]/section:bg-destructive/8 h-full w-full origin-left"
