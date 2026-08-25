@@ -1,16 +1,18 @@
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
-import LastDeploymentInfo from "@/components/project/last-deployment-info";
-import VolumeLine from "@/components/volume/volume-line";
+import { useNow } from "@/components/providers/now-provider";
 import ServicePanel from "@/components/service/panel/service-panel";
 import ServiceIcon from "@/components/service/service-icon";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import { TServiceShallow } from "@/lib/queries/services";
-import { ReactNode } from "react";
+import VolumeLine from "@/components/volume/volume-line";
+import { sourceToTitle } from "@/lib/constants";
 import { useIntent } from "@/lib/hooks/use-intent";
-import { useQueryClient } from "@tanstack/react-query";
+import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { deploymentsListQuery } from "@/lib/queries/deployments";
-import { serviceQuery } from "@/lib/queries/services";
+import { serviceQuery, TService, TServiceShallow } from "@/lib/queries/services";
+import { useQueryClient } from "@tanstack/react-query";
+import { HourglassIcon, LoaderIcon, TriangleAlertIcon, XIcon } from "lucide-react";
+import { ReactNode, useMemo } from "react";
 
 type TProps = {
   className?: string;
@@ -97,7 +99,7 @@ export default function ServiceCard({
           <div className="flex w-full flex-1 flex-col justify-end">
             <div className="-mx-0.5 flex w-[calc(100%+0.25rem)] items-center justify-between">
               {!isPlaceholder ? (
-                <LastDeploymentInfo
+                <ServiceInfoLine
                   className="min-w-0 shrink overflow-hidden text-sm font-normal text-ellipsis whitespace-nowrap"
                   service={service}
                 />
@@ -165,5 +167,174 @@ function ServicePanelOrPlaceholder({
     >
       {children}
     </ServicePanel>
+  );
+}
+
+type TServiceInfoLineProps = {
+  service: TService;
+  className?: string;
+};
+
+function ServiceInfoLine({ service, className }: TServiceInfoLineProps) {
+  const lastDeployment = service.last_deployment;
+
+  return (
+    <div
+      className={cn(
+        "text-muted-foreground flex w-full items-center justify-start gap-1.75",
+        className,
+      )}
+    >
+      {lastDeployment && <StatusIndicator deployment={lastDeployment} />}
+      <StatusText service={service} />
+    </div>
+  );
+}
+
+function StatusTextWrapper({
+  service,
+  children,
+}: {
+  service: TServiceShallow;
+  children: ReactNode;
+}) {
+  const lastDeployment = service.last_deployment;
+  const color = useMemo(() => {
+    if (lastDeployment?.status === "crashing") return "destructive";
+    if (lastDeployment?.status === "build-failed") return "destructive";
+    if (lastDeployment?.status === "launch-error") return "destructive";
+    return "default";
+  }, [lastDeployment?.status]);
+
+  return (
+    <p
+      data-color={color}
+      suppressHydrationWarning
+      className="data-[color=destructive]:text-destructive min-w-0 shrink truncate"
+    >
+      {children}
+    </p>
+  );
+}
+
+function StatusWithDuration({
+  service,
+  duration,
+  children,
+}: {
+  service: TServiceShallow;
+  duration: string;
+  children: ReactNode;
+}) {
+  return (
+    <StatusTextWrapper service={service}>
+      {children}
+      <span className="text-muted-more-foreground px-[0.75ch]">|</span>
+      <span className="font-mono" suppressHydrationWarning>
+        {duration}
+      </span>
+    </StatusTextWrapper>
+  );
+}
+
+function StatusText({ service }: { service: TServiceShallow }) {
+  const deployment = service.last_deployment;
+  const { str: timeDiffStr } = useTimeDifference({
+    timestamp: deployment ? new Date(deployment.created_at).getTime() : 0,
+  });
+
+  const now = useNow();
+  const durationStr = getDurationStr({
+    end: now,
+    start: new Date(deployment?.created_at || now).getTime(),
+  });
+
+  if (!deployment) return "No deployments yet";
+  if (deployment.status === "build-queued") {
+    return (
+      <StatusWithDuration service={service} duration={durationStr}>
+        Build queued
+      </StatusWithDuration>
+    );
+  }
+  if (deployment.status === "build-pending") {
+    return (
+      <StatusWithDuration service={service} duration={durationStr}>
+        Pending build
+      </StatusWithDuration>
+    );
+  }
+  if (deployment.status === "build-running") {
+    return (
+      <StatusWithDuration service={service} duration={durationStr}>
+        Building
+      </StatusWithDuration>
+    );
+  }
+  if (deployment.status === "build-succeeded" || deployment.status === "launching") {
+    return <StatusTextWrapper service={service}>Launching</StatusTextWrapper>;
+  }
+  if (deployment.status === "launch-error") {
+    return <StatusTextWrapper service={service}>Couldn't launch</StatusTextWrapper>;
+  }
+  if (deployment.status === "build-failed") {
+    return <StatusTextWrapper service={service}>Build failed</StatusTextWrapper>;
+  }
+  if (deployment.status === "build-cancelled") {
+    return <StatusTextWrapper service={service}>Build cancelled</StatusTextWrapper>;
+  }
+  if (deployment.status === "crashing") {
+    return <StatusTextWrapper service={service}>Crashing</StatusTextWrapper>;
+  }
+  if (deployment.status === "removed") {
+    return <StatusTextWrapper service={service}>Offline</StatusTextWrapper>;
+  }
+  if (deployment.status === "active")
+    return (
+      <StatusTextWrapper service={service}>
+        Online <span className="text-muted-more-foreground px-[0.5ch]">|</span> {timeDiffStr} via{" "}
+        {sourceToTitle[service.type] || "Unknown"}
+      </StatusTextWrapper>
+    );
+}
+
+function StatusIndicator({ deployment }: { deployment: NonNullable<TService["last_deployment"]> }) {
+  if (deployment.status === "build-queued" || deployment.status === "build-pending") {
+    return <HourglassIcon className="animate-hourglass size-3.5 shrink-0" />;
+  }
+  if (
+    deployment.status === "build-running" ||
+    deployment.status === "build-succeeded" ||
+    deployment.status === "launching"
+  ) {
+    return <LoaderIcon className="size-3.5 shrink-0 animate-spin" />;
+  }
+  if (deployment.status === "build-failed") {
+    return <TriangleAlertIcon className="text-destructive size-3.5 shrink-0" />;
+  }
+  if (deployment.status === "build-cancelled") {
+    return <XIcon className="size-3.5 shrink-0" />;
+  }
+  if (deployment.status === "launch-error") {
+    return <TriangleAlertIcon className="text-destructive size-3.5 shrink-0" />;
+  }
+  if (deployment.status === "crashing") {
+    return <TriangleAlertIcon className="text-destructive size-3.5 shrink-0" />;
+  }
+  if (deployment.status === "removed") {
+    return (
+      <div className="-ml-px flex size-3.5 shrink-0 items-center justify-center">
+        <div className="flex size-3 items-center justify-center rounded-full shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--muted-foreground)_40%,transparent)]">
+          <div className="bg-muted-foreground size-1.5 rounded-full" />
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="-ml-px flex size-3.5 shrink-0 items-center justify-center">
+      <div className="flex size-3 items-center justify-center rounded-full shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--success)_40%,transparent)]">
+        <div className="bg-success size-1.5 rounded-full" />
+      </div>
+    </div>
   );
 }
