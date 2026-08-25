@@ -419,6 +419,19 @@ func (suite *DeploymentMutationsSuite) TestMarkCancelledExcept() {
 			}).
 			SaveX(suite.Ctx)
 
+		removedCompletedAt := time.Now().Add(-24 * time.Hour).UTC().Truncate(time.Second)
+		removedDeployment := suite.DB.Deployment.Create().
+			SetServiceID(suite.testData.service.ID).
+			SetStatus(schema.DeploymentStatusRemoved).
+			SetCompletedAt(removedCompletedAt).
+			SetSource(schema.DeploymentSourceManual).
+			SetBuilder(schema.ServiceBuilderDocker).
+			SetCommitAuthor(&schema.GitCommitter{
+				Name:      "Test User",
+				AvatarURL: "https://github.com/test.png",
+			}).
+			SaveX(suite.Ctx)
+
 		err := suite.deploymentRepo.MarkCancelledExcept(
 			suite.Ctx,
 			suite.testData.service.ID,
@@ -427,7 +440,7 @@ func (suite *DeploymentMutationsSuite) TestMarkCancelledExcept() {
 
 		suite.NoError(err)
 
-		// Check that other deployments were cancelled but not the excepted one
+		// Check that other deployments were cancelled but not the excepted or removed ones
 		deployments := suite.DB.Deployment.Query().
 			Where(deployment.ServiceIDEQ(suite.testData.service.ID)).
 			AllX(suite.Ctx)
@@ -435,6 +448,10 @@ func (suite *DeploymentMutationsSuite) TestMarkCancelledExcept() {
 		for _, d := range deployments {
 			if d.ID == suite.testData.deployment.ID {
 				suite.Equal(schema.DeploymentStatusBuildQueued, d.Status) // Original status
+			} else if d.ID == removedDeployment.ID {
+				suite.Equal(schema.DeploymentStatusRemoved, d.Status)
+				suite.NotNil(d.CompletedAt)
+				suite.Equal(removedCompletedAt, d.CompletedAt.UTC().Truncate(time.Second))
 			} else {
 				suite.Equal(schema.DeploymentStatusBuildCancelled, d.Status)
 				suite.NotNil(d.CompletedAt)
