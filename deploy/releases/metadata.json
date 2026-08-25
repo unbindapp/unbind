@@ -43,5 +43,10 @@
     "version": "v0.1.8",
     "description": "Volume renaming, active deployment removal, and operator status tracking",
     "breaking": false
+  },
+  "v0.1.9": {
+    "version": "v0.1.9",
+    "description": "Release 0.1.9",
+    "breaking": false
   }
 }
