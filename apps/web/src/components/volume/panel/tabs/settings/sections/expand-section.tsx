@@ -17,6 +17,7 @@ import { formatGB } from "@/lib/helpers/format-gb";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { expandVolume as expandVolumeFn, TVolumeType } from "@/lib/queries/storage";
 import { TVolumeShallow } from "@/lib/queries/services";
+import { useVolumesUtils } from "@/components/volume/use-volumes-utils";
 import { useStore } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { HourglassIcon, ScalingIcon } from "lucide-react";
@@ -206,11 +207,12 @@ function ExpandDialogTrigger({
 }) {
   const { teamId, projectId, environmentId } = useServices();
   const { invalidate: invalidateServices } = useServicesUtils({ teamId, projectId, environmentId });
+  const { invalidate: invalidateVolumes } = useVolumesUtils({ teamId, projectId, environmentId });
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const textToConfirm = "I want to expand this volume";
 
-  const type: TVolumeType = "environment";
+  const type: TVolumeType = volume.type;
 
   const {
     mutateAsync: expandVolume,
@@ -221,7 +223,7 @@ function ExpandDialogTrigger({
     mutationFn: expandVolumeFn,
     onSuccess: async () => {
       const result = await ResultAsync.fromPromise(
-        Promise.all([invalidateServices()]),
+        Promise.all([invalidateServices(), invalidateVolumes()]),
         () => new Error("Expand success callback failed"),
       );
 

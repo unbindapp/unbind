@@ -2,6 +2,7 @@ import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import ServiceCard from "@/components/service/service-card";
 import { TServiceGroup } from "@/components/service/service-card-list";
 import { useServicesUtils } from "@/components/service/services-provider";
+import { useVolumesUtils } from "@/components/volume/use-volumes-utils";
 import ServiceGroupIcon from "@/components/service/service-group-icon";
 import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
 import { Button } from "@/components/ui/button";
@@ -284,6 +285,9 @@ function DeleteTrigger({
   children,
 }: TDeleteTriggerProps) {
   const { refetch: refetchServices } = useServicesUtils({ teamId, projectId, environmentId });
+  // Deleted services leave their volumes behind as dangling — refresh the
+  // volumes list so they show up in the project's Volumes section right away.
+  const { invalidate: invalidateVolumes } = useVolumesUtils({ teamId, projectId, environmentId });
 
   const {
     mutateAsync: deleteGroup,
@@ -293,7 +297,7 @@ function DeleteTrigger({
     mutationFn: deleteServiceGroupFn,
     onSuccess: async () => {
       const result = await ResultAsync.fromPromise(
-        refetchServices(),
+        Promise.all([refetchServices(), invalidateVolumes()]),
         () => new Error("Failed to refetch services"),
       );
       if (result.isErr()) {

@@ -8,6 +8,7 @@ import {
   HostSpecSchema,
   PortSpecSchema,
   ServiceBuilderSchema,
+  ServiceVolumeSchema,
 } from "@/lib/server/client.gen";
 import type {
   CreateServiceInput,
@@ -175,6 +176,8 @@ export async function updateService(input: TUpdateServiceInput) {
     removeHosts,
     addPorts,
     removePorts,
+    addVolumes,
+    removeVolumes,
   } = input;
 
   const resources: UpdateServiceInput["resources"] | undefined =
@@ -232,6 +235,8 @@ export async function updateService(input: TUpdateServiceInput) {
     remove_hosts: removeHosts,
     add_ports: addPorts,
     remove_ports: removePorts,
+    add_volumes: addVolumes,
+    remove_volumes: removeVolumes,
   });
   return { service: res.data };
 }
@@ -351,6 +356,8 @@ export const UpdateServiceInputSchema = z
     removeHosts: HostSpecSchema.array().optional(),
     addPorts: PortSpecSchema.array().optional(),
     removePorts: PortSpecSchema.array().optional(),
+    addVolumes: ServiceVolumeSchema.array().optional(),
+    removeVolumes: ServiceVolumeSchema.array().optional(),
     databaseConfig: DatabaseConfigSchema.optional(),
     s3BackupSourceId: z.string().uuid().optional(),
     s3BackupBucket: z.string().optional(),

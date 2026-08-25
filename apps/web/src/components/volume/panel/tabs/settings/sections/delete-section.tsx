@@ -1,10 +1,11 @@
 "use client";
 
-import { useServices } from "@/components/service/services-provider";
+import { useServices, useServicesUtils } from "@/components/service/services-provider";
 import DeleteCard from "@/components/settings/delete-card";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { cn } from "@/components/ui/utils";
 import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
+import { useVolumesUtils } from "@/components/volume/use-volumes-utils";
 import { deleteVolume as deleteVolumeFn } from "@/lib/queries/storage";
 import { TVolumeShallow } from "@/lib/queries/services";
 import { useMutation } from "@tanstack/react-query";
@@ -18,6 +19,8 @@ type TProps = {
 
 export default function DeleteSection({ volume, className }: TProps) {
   const { teamId, projectId, environmentId } = useServices();
+  const { invalidate: invalidateServices } = useServicesUtils({ teamId, projectId, environmentId });
+  const { invalidate: invalidateVolumes } = useVolumesUtils({ teamId, projectId, environmentId });
   const { closePanel } = useVolumePanel();
 
   const sectionHighlightId = useMemo(() => getEntityId(volume), [volume]);
@@ -30,6 +33,8 @@ export default function DeleteSection({ volume, className }: TProps) {
     mutationFn: deleteVolumeFn,
     onSuccess: () => {
       closePanel();
+      invalidateServices();
+      invalidateVolumes();
     },
   });
 
@@ -54,7 +59,7 @@ export default function DeleteSection({ volume, className }: TProps) {
           onSubmit={async () => {
             await deleteVolume({
               id: volume.id,
-              type: "environment",
+              type: volume.type,
               teamId,
               projectId,
               environmentId,

@@ -25,6 +25,8 @@ export const queryKeyStorage = {
       input.type,
       input.id,
     ] as const,
+  volumeList: (input: { teamId: string; projectId: string; environmentId: string }) =>
+    ["storage", "volume", "list", input.teamId, input.projectId, input.environmentId] as const,
 };
 
 // ---- S3 sources ----
@@ -123,6 +125,26 @@ type TVolumeRef = {
   projectId: string;
   environmentId: string;
 };
+
+// Lists every PVC in the environment, including ones not mounted on any
+// service (dangling) — the services list only surfaces mounted volumes.
+export const volumesListQuery = (input: {
+  teamId: string;
+  projectId: string;
+  environmentId: string;
+}) =>
+  queryOptions({
+    queryKey: queryKeyStorage.volumeList(input),
+    queryFn: async () => {
+      const res = await getGoClient().storage.pvc.list({
+        type: "environment",
+        team_id: input.teamId,
+        project_id: input.projectId,
+        environment_id: input.environmentId,
+      });
+      return { volumes: res.data };
+    },
+  });
 
 export const volumeQuery = (input: TVolumeRef) =>
   queryOptions({

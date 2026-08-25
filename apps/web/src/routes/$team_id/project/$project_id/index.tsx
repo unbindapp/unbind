@@ -6,6 +6,7 @@ import PageWrapper from "@/components/page-wrapper";
 import NewServiceButton from "@/components/project/new-service-button";
 import ServiceCardList from "@/components/service/service-card-list";
 import ServicesProvider from "@/components/service/services-provider";
+import VolumesSection from "@/components/volume/volumes-section";
 
 const projectRouteId = "/$team_id/project/$project_id";
 
@@ -47,6 +48,7 @@ function ProjectServicesPage() {
           <div className="flex w-full items-center justify-center pt-3">
             <ServiceCardList />
           </div>
+          <VolumesSection />
         </div>
       </PageWrapper>
     </ServicesProvider>

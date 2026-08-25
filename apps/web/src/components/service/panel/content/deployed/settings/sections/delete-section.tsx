@@ -6,6 +6,7 @@ import { useService } from "@/components/service/service-provider";
 import DeleteCard from "@/components/settings/delete-card";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { cn } from "@/components/ui/utils";
+import { useVolumesUtils } from "@/components/volume/use-volumes-utils";
 import { deleteService as deleteServiceFn, type TServiceShallow } from "@/lib/queries/services";
 import { useMutation } from "@tanstack/react-query";
 import { Trash2Icon } from "lucide-react";
@@ -20,6 +21,9 @@ export default function DeleteSection({ service, className }: Props) {
   const { teamId, projectId, environmentId } = useService();
 
   const { invalidate } = useServicesUtils({ teamId, projectId, environmentId });
+  // Deleting a service leaves its volumes behind as dangling — refresh the
+  // volumes list so they show up in the project's Volumes section right away.
+  const { invalidate: invalidateVolumes } = useVolumesUtils({ teamId, projectId, environmentId });
   const { closePanel } = useServicePanel();
 
   const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
@@ -33,6 +37,7 @@ export default function DeleteSection({ service, className }: Props) {
     onSuccess: () => {
       closePanel();
       invalidate();
+      invalidateVolumes();
     },
   });
 

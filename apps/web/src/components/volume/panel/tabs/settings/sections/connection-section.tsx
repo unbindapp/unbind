@@ -1,10 +1,28 @@
+import {
+  Block,
+  BlockItem,
+  BlockItemButtonLike,
+  BlockItemContent,
+  BlockItemDescription,
+  BlockItemHeader,
+  BlockItemTitle,
+} from "@/components/block";
 import ErrorLine from "@/components/error-line";
-import { useServices } from "@/components/service/services-provider";
+import { useServices, useServicesUtils } from "@/components/service/services-provider";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { Input } from "@/components/ui/input";
-import { TVolumeShallow } from "@/lib/queries/services";
-import { FolderClosedIcon, UnplugIcon } from "lucide-react";
+import { cn } from "@/components/ui/utils";
+import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
+import { useVolumesUtils } from "@/components/volume/use-volumes-utils";
+import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
+import { updateService, TVolumeShallow } from "@/lib/queries/services";
+import { useStore } from "@tanstack/react-form";
+import { useMutation } from "@tanstack/react-query";
+import { FolderClosedIcon, ServerIcon, UnplugIcon } from "lucide-react";
+import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
+import { toast } from "sonner";
+import { z } from "zod";
 
 type TProps = {
   volume: TVolumeShallow;
@@ -12,6 +30,187 @@ type TProps = {
 };
 
 export default function ConnectionSection({ volume }: TProps) {
+  if (!volume.mounted_on_service_id) {
+    return <AttachSection volume={volume} />;
+  }
+  return <AttachedSection volume={volume} />;
+}
+
+// The volume is dangling — offer attaching it to a service in this environment.
+function AttachSection({ volume }: TProps) {
+  const {
+    query: { data: servicesData, isPending: isPendingServices, error: errorServices },
+    teamId,
+    projectId,
+    environmentId,
+  } = useServices();
+  const { invalidate: invalidateServices } = useServicesUtils({ teamId, projectId, environmentId });
+  const { invalidate: invalidateVolumes } = useVolumesUtils({ teamId, projectId, environmentId });
+  const { closePanel } = useVolumePanel();
+
+  const sectionHighlightId = useMemo(() => getEntityId(volume), [volume]);
+
+  // Volumes can't be attached to database services — the database operator
+  // manages its own storage.
+  const serviceItems: TCommandItem[] | undefined = useMemo(
+    () =>
+      servicesData?.services
+        .filter((service) => service.type !== "database")
+        .map((service) => ({ value: service.id, label: service.name })),
+    [servicesData],
+  );
+
+  const {
+    mutateAsync: attachVolume,
+    isPending: isPendingAttach,
+    error: errorAttach,
+  } = useMutation({
+    mutationFn: updateService,
+    onSuccess: async () => {
+      const result = await ResultAsync.fromPromise(
+        Promise.all([invalidateServices(), invalidateVolumes()]),
+        () => new Error("Attach success callback failed"),
+      );
+
+      if (result.isErr()) {
+        toast.error("Data refetch failed", {
+          description:
+            "Attach was successful, but couldn't fetch the new data. Refresh the page to see the changes.",
+        });
+      }
+
+      closePanel();
+    },
+  });
+
+  const form = useAppForm({
+    defaultValues: {
+      serviceId: "",
+      mountPath: volume.mount_path || "/data",
+    },
+    validators: {
+      onChange: z
+        .object({
+          serviceId: z.string().min(1, "Select a service."),
+          mountPath: z.string().startsWith("/", "Mount path must be an absolute path."),
+        })
+        .strip(),
+    },
+    onSubmit: async ({ value }) => {
+      await attachVolume({
+        teamId,
+        projectId,
+        environmentId,
+        serviceId: value.serviceId,
+        addVolumes: [{ id: volume.id, mount_path: value.mountPath }],
+      });
+    },
+  });
+
+  const changeCount = useStore(form.store, (s) => {
+    let count = 0;
+    if (s.fieldMeta.serviceId?.isDefaultValue === false) count++;
+    if (s.fieldMeta.mountPath?.isDefaultValue === false) count++;
+    return count;
+  });
+
+  return (
+    <SettingsSection
+      title="Connection"
+      id="connection"
+      entityId={sectionHighlightId}
+      Icon={UnplugIcon}
+      asElement="form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        form.handleSubmit(e);
+      }}
+      changeCount={changeCount}
+      onClickResetChanges={() => form.reset()}
+      SubmitButton={form.SubmitButton}
+      isPending={isPendingAttach}
+      error={errorAttach?.message}
+    >
+      <p className="text-muted-foreground w-full px-1.5">
+        This volume is not attached to a service. Attach it to a service in this environment to
+        start using it.
+      </p>
+      <Block>
+        <form.AppField
+          name="serviceId"
+          children={(field) => (
+            <BlockItem className="w-full md:w-full">
+              <BlockItemHeader type="column">
+                <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
+                  Service
+                </BlockItemTitle>
+                <BlockItemDescription>The service to attach this volume to.</BlockItemDescription>
+              </BlockItemHeader>
+              <BlockItemContent>
+                <field.AsyncCommandDropdown
+                  dontCheckUntilSubmit
+                  field={field}
+                  value={field.state.value}
+                  onChange={(v) => field.handleChange(v)}
+                  items={serviceItems}
+                  isPending={isPendingServices}
+                  error={errorServices?.message}
+                  commandInputPlaceholder="Search services..."
+                  CommandEmptyText="No services found"
+                  CommandEmptyIcon={ServerIcon}
+                >
+                  {({ isOpen }) => (
+                    <BlockItemButtonLike
+                      asElement="button"
+                      text={
+                        serviceItems?.find((item) => item.value === field.state.value)?.label ||
+                        "Select a service"
+                      }
+                      Icon={({ className }) => <ServerIcon className={cn("scale-90", className)} />}
+                      variant="outline"
+                      open={isOpen}
+                      onBlur={field.handleBlur}
+                      isPending={isPendingServices}
+                    />
+                  )}
+                </field.AsyncCommandDropdown>
+              </BlockItemContent>
+            </BlockItem>
+          )}
+        />
+        <form.AppField
+          name="mountPath"
+          children={(field) => (
+            <BlockItem className="w-full md:w-full">
+              <BlockItemHeader type="column">
+                <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
+                  Mount Path
+                </BlockItemTitle>
+                <BlockItemDescription>
+                  The path to mount the volume at (e.g. /data).
+                </BlockItemDescription>
+              </BlockItemHeader>
+              <BlockItemContent>
+                <field.TextField
+                  dontCheckUntilSubmit
+                  field={field}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="/data"
+                  className="w-full"
+                />
+              </BlockItemContent>
+            </BlockItem>
+          )}
+        />
+      </Block>
+    </SettingsSection>
+  );
+}
+
+function AttachedSection({ volume }: TProps) {
   const {
     query: { data: servicesData, isPending: isPendingServices, error: errorServices },
   } = useServices();
