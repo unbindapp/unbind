@@ -58,5 +58,10 @@
     "version": "v0.1.11",
     "description": "Volume detaching state, muted UI colors, and lowercase default environment name",
     "breaking": false
+  },
+  "v0.1.12": {
+    "version": "v0.1.12",
+    "description": "Preserved button children with slot composition",
+    "breaking": false
   }
 }
