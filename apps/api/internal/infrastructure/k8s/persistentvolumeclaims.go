@@ -162,6 +162,67 @@ func (self *KubeClient) resolvePVCServiceBinding(ctx context.Context, pvcName, s
 	return &service.ID, service.Type == schema.ServiceTypeDatabase, nil
 }
 
+// pvcBinding describes which service owns a PVC and the lifecycle state of its mounts.
+type pvcBinding struct {
+	ServiceID   *uuid.UUID
+	IsDatabase  bool
+	IsAttaching bool
+	IsDetaching bool
+	InUseByPods bool
+}
+
+// resolvePVCBinding determines PVC ownership and mount state. Ownership comes
+// from the PVC label or the DB; a pod's service label is only trusted if that
+// service still exists. Pods otherwise just signal whether mounts are still
+// physically live, so a volume whose service was deleted reports as detaching
+// while its old pods terminate instead of appearing mounted.
+func (self *KubeClient) resolvePVCBinding(ctx context.Context, pvcName, serviceLabel string, pvcLabels map[string]string, pods []corev1.Pod) (*pvcBinding, error) {
+	serviceID, isDatabase, err := self.resolvePVCServiceBinding(ctx, pvcName, serviceLabel, pvcLabels)
+	if err != nil {
+		return nil, err
+	}
+
+	blockingPods := mountBlockingPods(pods)
+
+	if serviceID == nil {
+		for _, pod := range blockingPods {
+			podServiceID, err := uuid.Parse(pod.GetLabels()[serviceLabel])
+			if err != nil {
+				continue
+			}
+			service, err := self.repo.Service().GetByID(ctx, podServiceID)
+			if err != nil && !ent.IsNotFound(err) {
+				return nil, fmt.Errorf("failed to get service '%s': %w", podServiceID, err)
+			}
+			if service != nil {
+				serviceID = &service.ID
+				isDatabase = service.Type == schema.ServiceTypeDatabase
+				break
+			}
+		}
+	}
+
+	return &pvcBinding{
+		ServiceID:   serviceID,
+		IsDatabase:  isDatabase,
+		IsAttaching: serviceID != nil && !anyPodRunning(pods),
+		IsDetaching: serviceID == nil && len(blockingPods) > 0,
+		InUseByPods: len(blockingPods) > 0,
+	}, nil
+}
+
+// mountBlockingPods filters out pods that have finished (Succeeded or Failed) —
+// the kubelet has already unmounted their volumes, so they no longer keep a PVC in use.
+func mountBlockingPods(pods []corev1.Pod) []corev1.Pod {
+	var blocking []corev1.Pod
+	for _, pod := range pods {
+		if pod.Status.Phase != corev1.PodSucceeded && pod.Status.Phase != corev1.PodFailed {
+			blocking = append(blocking, pod)
+		}
+	}
+	return blocking
+}
+
 func (self *KubeClient) GetPersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, client kubernetes.Interface) (*models.PVCInfo, error) {
 	if namespace == "" {
 		return nil, fmt.Errorf("namespace cannot be empty")
@@ -224,55 +285,15 @@ func (self *KubeClient) GetPersistentVolumeClaim(ctx context.Context, namespace 
 		return nil, fmt.Errorf("failed to parse sizeGBValue '%s': %w", sizeGBValueStr, err)
 	}
 
-	var boundToServiceID *uuid.UUID
-
-	// Check if bound to pods with unbind-service label
 	pods, err := self.GetPodsUsingPVC(ctx, pvc.Namespace, pvc.Name, client)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get pods using PVC '%s': %w", pvcName, err)
 	}
 
-	isBound := len(pods) > 0
-	isDatabase := false
-	for _, pod := range pods {
-		// Check if pod has database label
-		// unbind/usd-category : databases
-		if podLabel, ok := pod.GetLabels()["unbind/usd-category"]; ok && podLabel == "databases" {
-			isDatabase = true
-		}
-		podServiceLabel := pod.GetLabels()[serviceLabel]
-		if podServiceLabel != "" {
-			// Parse the service ID from the label
-			serviceID, err := uuid.Parse(podServiceLabel)
-			if err != nil {
-				continue
-			}
-			boundToServiceID = &serviceID
-			break
-		}
+	binding, err := self.resolvePVCBinding(ctx, pvcName, serviceLabel, pvcLabels, pods)
+	if err != nil {
+		return nil, err
 	}
-
-	// Fall back to checking PVC labels
-	if !isBound {
-		sid, db, err := self.resolvePVCServiceBinding(ctx, pvcName, serviceLabel, pvcLabels)
-		if err != nil {
-			return nil, err
-		}
-		if sid != nil {
-			boundToServiceID = sid
-			isBound = true
-			isDatabase = isDatabase || db
-		}
-	}
-
-	if isBound && boundToServiceID == nil {
-		return nil, fmt.Errorf("PVC '%s' is bound but no valid service ID found", pvcName)
-	}
-
-	// Attached to a service in config but no running pod has mounted the volume
-	// yet — the mount only becomes real once the service's pod starts (e.g.
-	// right after attaching, while the service redeploys).
-	isAttaching := boundToServiceID != nil && !anyPodRunning(pods)
 
 	var projectID *uuid.UUID
 	if projectIDStr != "" {
@@ -295,7 +316,7 @@ func (self *KubeClient) GetPersistentVolumeClaim(ctx context.Context, namespace 
 	isDeleting := pvc.DeletionTimestamp != nil
 
 	// Check if PVC can be deleted (no owners, not in use, not already terminating)
-	canDelete := len(pvc.OwnerReferences) == 0 && !isBound && !isDeleting
+	canDelete := len(pvc.OwnerReferences) == 0 && binding.ServiceID == nil && !binding.InUseByPods && !isDeleting
 
 	// Get type
 	pvcType := models.PvcScopeTeam
@@ -308,16 +329,16 @@ func (self *KubeClient) GetPersistentVolumeClaim(ctx context.Context, namespace 
 	isPendingResize := bytesValueRequest > bytesValueCapacity
 
 	// If a database, query the DB config
-	if isDatabase && boundToServiceID != nil {
-		dbSvcConfig, err := self.repo.Service().GetDatabaseConfig(ctx, *boundToServiceID)
+	if binding.IsDatabase && binding.ServiceID != nil {
+		dbSvcConfig, err := self.repo.Service().GetDatabaseConfig(ctx, *binding.ServiceID)
 		if err != nil && !ent.IsNotFound(err) {
-			log.Errorf("failed to get database config for service '%s': %v", boundToServiceID.String(), err)
-			return nil, fmt.Errorf("failed to get database config for service '%s': %w", boundToServiceID.String(), err)
+			log.Errorf("failed to get database config for service '%s': %v", binding.ServiceID.String(), err)
+			return nil, fmt.Errorf("failed to get database config for service '%s': %w", binding.ServiceID.String(), err)
 		} else if dbSvcConfig != nil && dbSvcConfig.StorageSize != "" {
 			// Parse storage size
 			qty, err := utils.ParseStorageQuantity(dbSvcConfig.StorageSize)
 			if err != nil {
-				return nil, fmt.Errorf("failed to parse storage size '%s' for service '%s': %w", dbSvcConfig.StorageSize, boundToServiceID.String(), err)
+				return nil, fmt.Errorf("failed to parse storage size '%s' for service '%s': %w", dbSvcConfig.StorageSize, binding.ServiceID.String(), err)
 			}
 			if qty.Value() > bytesValueCapacity {
 				isPendingResize = true
@@ -338,12 +359,13 @@ func (self *KubeClient) GetPersistentVolumeClaim(ctx context.Context, namespace 
 		TeamID:             teamID,
 		ProjectID:          projectID,
 		EnvironmentID:      environmentID,
-		MountedOnServiceID: boundToServiceID,
+		MountedOnServiceID: binding.ServiceID,
 		Status:             models.PersistentVolumeClaimPhase(pvc.Status.Phase),
-		IsDatabase:         isDatabase,
+		IsDatabase:         binding.IsDatabase,
 		IsAvailable:        canDelete,
 		IsDeleting:         isDeleting,
-		IsAttaching:        isAttaching,
+		IsAttaching:        binding.IsAttaching,
+		IsDetaching:        binding.IsDetaching,
 		CanDelete:          canDelete,
 		CreatedAt:          pvc.CreationTimestamp.Time,
 	}, nil
@@ -445,53 +467,11 @@ func (self *KubeClient) ListPersistentVolumeClaims(ctx context.Context, namespac
 			continue
 		}
 
-		var boundToServiceID *uuid.UUID
-		isDatabase := false
-
-		// Rule 2: If bound to pods, they must have unbind-service label
-		pods := pvcToPods[pvc.Name]
-		isBound := len(pods) > 0
-
-		for _, pod := range pods {
-			// Check if pod has database label
-			// unbind/usd-category : databases
-			if podLabel, ok := pod.GetLabels()["unbind/usd-category"]; ok && podLabel == "databases" {
-				isDatabase = true
-			}
-
-			podServiceLabel := pod.GetLabels()[serviceLabel]
-			if podServiceLabel != "" {
-				// Parse the service ID from the label
-				serviceID, err := uuid.Parse(podServiceLabel)
-				if err != nil {
-					continue
-				}
-				boundToServiceID = &serviceID
-				break
-			}
-		}
-
-		// Fall back to checking PVC labels
-		if !isBound {
-			sid, db, err := self.resolvePVCServiceBinding(ctx, pvc.Name, serviceLabel, pvcLabels)
-			if err != nil {
-				log.Errorf("%v", err)
-			} else if sid != nil {
-				boundToServiceID = sid
-				isBound = true
-				isDatabase = isDatabase || db
-			}
-		}
-
-		// Skip if bound but no valid service ID found
-		if isBound && boundToServiceID == nil {
+		binding, err := self.resolvePVCBinding(ctx, pvc.Name, serviceLabel, pvcLabels, pvcToPods[pvc.Name])
+		if err != nil {
+			log.Errorf("failed to resolve binding for PVC '%s': %v", pvc.Name, err)
 			continue
 		}
-
-		// Attached to a service in config but no running pod has mounted the
-		// volume yet — the mount only becomes real once the service's pod
-		// starts (e.g. right after attaching, while the service redeploys).
-		isAttaching := boundToServiceID != nil && !anyPodRunning(pods)
 
 		var projectID *uuid.UUID
 		if projectIDStr != "" {
@@ -513,7 +493,7 @@ func (self *KubeClient) ListPersistentVolumeClaims(ctx context.Context, namespac
 		isDeleting := pvc.DeletionTimestamp != nil
 
 		// Check if PVC can be deleted (no owners, not in use, not already terminating)
-		canDelete := len(pvc.OwnerReferences) == 0 && !isBound && !isDeleting
+		canDelete := len(pvc.OwnerReferences) == 0 && binding.ServiceID == nil && !binding.InUseByPods && !isDeleting
 
 		// Figure out type
 		pvcType := models.PvcScopeTeam
@@ -526,16 +506,16 @@ func (self *KubeClient) ListPersistentVolumeClaims(ctx context.Context, namespac
 		isPendingResize := bytesValueRequest > bytesValueCapacity
 
 		// If a databsae, query the DB config
-		if isDatabase && boundToServiceID != nil {
-			dbSvcConfig, err := self.repo.Service().GetDatabaseConfig(ctx, *boundToServiceID)
+		if binding.IsDatabase && binding.ServiceID != nil {
+			dbSvcConfig, err := self.repo.Service().GetDatabaseConfig(ctx, *binding.ServiceID)
 			if err != nil && !ent.IsNotFound(err) {
-				log.Errorf("failed to get database config for service '%s': %v", boundToServiceID.String(), err)
-				return nil, fmt.Errorf("failed to get database config for service '%s': %w", boundToServiceID.String(), err)
+				log.Errorf("failed to get database config for service '%s': %v", binding.ServiceID.String(), err)
+				return nil, fmt.Errorf("failed to get database config for service '%s': %w", binding.ServiceID.String(), err)
 			} else if dbSvcConfig != nil && dbSvcConfig.StorageSize != "" {
 				// Parse storage size
 				qty, err := utils.ParseStorageQuantity(dbSvcConfig.StorageSize)
 				if err != nil {
-					return nil, fmt.Errorf("failed to parse storage size '%s' for service '%s': %w", dbSvcConfig.StorageSize, boundToServiceID.String(), err)
+					return nil, fmt.Errorf("failed to parse storage size '%s' for service '%s': %w", dbSvcConfig.StorageSize, binding.ServiceID.String(), err)
 				}
 				if qty.Value() > bytesValueCapacity {
 					isPendingResize = true
@@ -556,12 +536,13 @@ func (self *KubeClient) ListPersistentVolumeClaims(ctx context.Context, namespac
 			TeamID:             teamID,
 			ProjectID:          projectID,
 			EnvironmentID:      environmentID,
-			MountedOnServiceID: boundToServiceID,
+			MountedOnServiceID: binding.ServiceID,
 			Status:             models.PersistentVolumeClaimPhase(pvc.Status.Phase),
-			IsDatabase:         isDatabase,
+			IsDatabase:         binding.IsDatabase,
 			IsAvailable:        canDelete,
 			IsDeleting:         isDeleting,
-			IsAttaching:        isAttaching,
+			IsAttaching:        binding.IsAttaching,
+			IsDetaching:        binding.IsDetaching,
 			CanDelete:          canDelete,
 			CreatedAt:          pvc.CreationTimestamp.Time,
 		})
@@ -613,8 +594,8 @@ func (self *KubeClient) DeletePersistentVolumeClaim(ctx context.Context, namespa
 	if err != nil {
 		return fmt.Errorf("failed to check if PVC is in use: %w", err)
 	}
-	if len(pods) > 0 {
-		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("Cannot delete PVC '%s' as it is currently in use by %d pod(s)", pvcName, len(pods)))
+	if blocking := mountBlockingPods(pods); len(blocking) > 0 {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("Cannot delete PVC '%s' as it is currently in use by %d pod(s)", pvcName, len(blocking)))
 	}
 
 	err = client.CoreV1().PersistentVolumeClaims(namespace).Delete(ctx, pvcName, metav1.DeleteOptions{})

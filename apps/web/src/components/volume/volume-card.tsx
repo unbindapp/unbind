@@ -20,7 +20,7 @@ export default function VolumeCard({ volume, className }: TProps) {
           className="bg-background-hover flex w-full flex-1 flex-col items-start gap-6 rounded-xl border px-5 py-3.5 text-left font-semibold"
         >
           <div className="flex w-full items-center justify-start gap-2">
-            {volume.is_deleting || volume.is_pending_resize ? (
+            {volume.is_deleting || volume.is_detaching || volume.is_pending_resize ? (
               <HourglassIcon className="animate-hourglass -ml-1 size-6 scale-90" />
             ) : (
               <HardDriveIcon className="-ml-1 size-6 scale-90" />
@@ -38,9 +38,10 @@ export default function VolumeCard({ volume, className }: TProps) {
                 className={cn(
                   "min-w-0 shrink truncate text-right",
                   volume.is_deleting && "text-destructive",
+                  volume.is_detaching && "text-process",
                 )}
               >
-                {volume.is_deleting ? "Deleting" : "Not attached"}
+                {volume.is_deleting ? "Deleting" : volume.is_detaching ? "Detaching" : "Not attached"}
               </p>
             </div>
           </div>

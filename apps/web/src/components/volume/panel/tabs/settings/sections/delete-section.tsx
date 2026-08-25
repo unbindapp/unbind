@@ -84,6 +84,12 @@ export default function DeleteSection({ volume, className }: TProps) {
             This volume is already{" "}
             <span className="text-foreground font-semibold">being deleted</span>.
           </p>
+        ) : volume.is_detaching ? (
+          <p className="text-muted-foreground max-w-full px-1.5">
+            This volume is still{" "}
+            <span className="text-foreground font-semibold">detaching</span> from its previous
+            service. It can be deleted once detaching is complete.
+          </p>
         ) : (
           <p className="text-muted-foreground max-w-full px-1.5">
             This volume is attached to a service and{" "}

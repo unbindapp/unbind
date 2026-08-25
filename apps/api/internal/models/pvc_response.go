@@ -27,6 +27,7 @@ type PVCInfo struct {
 	IsPendingResize    bool                       `json:"is_pending_resize"`
 	IsDeleting         bool                       `json:"is_deleting"`
 	IsAttaching        bool                       `json:"is_attaching"`
+	IsDetaching        bool                       `json:"is_detaching"`
 	CanDelete          bool                       `json:"can_delete"`
 	CreatedAt          time.Time                  `json:"created_at"`
 }

@@ -206,6 +206,9 @@ func (self *ServiceService) validatePVC(ctx context.Context, teamID, projectID, 
 	if err != nil {
 		return err
 	}
+	if pvc.IsDetaching {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "PVC is still detaching from its previous service, try again shortly")
+	}
 	if !pvc.IsAvailable {
 		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "PVC is not available")
 	}

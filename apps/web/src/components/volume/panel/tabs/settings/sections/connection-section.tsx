@@ -133,8 +133,9 @@ function AttachSection({ volume }: TProps) {
       error={errorAttach?.message}
     >
       <p className="text-muted-foreground w-full px-1.5">
-        This volume is not attached to a service. Attach it to a service in this environment to
-        start using it.
+        {volume.is_detaching
+          ? "This volume is detaching from its previous service. It can be attached to a service once detaching is complete."
+          : "This volume is not attached to a service. Attach it to a service in this environment to start using it."}
       </p>
       <Block>
         <form.AppField
@@ -172,7 +173,7 @@ function AttachSection({ volume }: TProps) {
                       open={isOpen}
                       onBlur={field.handleBlur}
                       isPending={isPendingServices}
-                      disabled={volume.is_deleting}
+                      disabled={volume.is_deleting || volume.is_detaching}
                     />
                   )}
                 </field.AsyncCommandDropdown>
@@ -203,7 +204,7 @@ function AttachSection({ volume }: TProps) {
                   onChange={(e) => field.handleChange(e.target.value)}
                   placeholder="/data"
                   className="w-full"
-                  disabled={volume.is_deleting}
+                  disabled={volume.is_deleting || volume.is_detaching}
                 />
               </BlockItemContent>
             </BlockItem>

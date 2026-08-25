@@ -28,6 +28,14 @@ export default function Settings({ volume }: TProps) {
           </p>
         </BannerWrapper>
       )}
+      {volume.is_detaching && (
+        <BannerWrapper className="bg-process/8 border-process/8 text-process">
+          <HourglassIcon className="animate-hourglass mt-0.5 -ml-0.5 size-4 shrink-0" />
+          <p className="min-w-0 shrink leading-tight">
+            Detaching the volume. It can be attached to a service once detaching is complete.
+          </p>
+        </BannerWrapper>
+      )}
       <UsageSection volume={volume} />
       <ExpandSection volume={volume} />
       <ConnectionSection volume={volume} />
