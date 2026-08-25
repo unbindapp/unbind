@@ -284,7 +284,7 @@ func (self *Bootstrapper) bootstrapTeam(ctx context.Context) error {
 		}
 
 		// * Create first environment
-		name = "Production"
+		name = "production"
 		kubernetesName, err = utils.GenerateSlug(name)
 		if err != nil {
 			return fmt.Errorf("failed to generate slug for environment name: %w", err)
