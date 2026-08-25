@@ -12,7 +12,7 @@ export const minButtonSizeEnforcerClassName =
   "before:w-full before:h-full before:min-w-[44px] before:min-h-[44px] before:z-[-1] before:bg-transparent before:absolute before:-translate-y-1/2 before:top-1/2 before:-translate-x-1/2 before:left-1/2";
 
 const buttonVariants = cva(
-  "relative group/button focus-visible:z-[1] text-center leading-tight max-w-full select-none z-0 touch-manipulation gap-1.5 rounded-lg font-bold focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-primary/50 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0",
+  "relative group/button focus-visible:z-[1] text-center leading-tight max-w-full select-none z-0 touch-manipulation gap-1.5 rounded-lg font-bold focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-primary/50 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 data-pending:[&>*:not([data-slot=button-spinner])]:opacity-0",
   {
     variants: {
       variant: {
@@ -101,7 +101,7 @@ const buttonVariants = cva(
 );
 
 const spinnerVariants = cva(
-  "pointer-events-none opacity-0 group-data-pending/button:opacity-100 absolute top-1/2 left-1/2 -translate-1/2 animate-spin opacity-0 group-data-submitting/button:opacity-100",
+  "pointer-events-none opacity-0 group-data-pending/button:opacity-100 absolute top-1/2 left-1/2 -translate-1/2 animate-spin group-data-submitting/button:opacity-100",
   {
     variants: {
       size: {
@@ -162,14 +162,13 @@ function Button({
       disabled={loadingState === "loading" || isPending ? true : disabled}
       {...props}
     >
-      {isPending ? (
-        <>
-          <LoaderIcon className={cn(spinnerVariants(spinnerVariantProps))} />
-          <p className="min-w-0 shrink group-data-pending/button:opacity-0">{children}</p>
-        </>
-      ) : (
-        children
+      {isPending && (
+        <LoaderIcon
+          data-slot="button-spinner"
+          className={cn(spinnerVariants(spinnerVariantProps))}
+        />
       )}
+      {children}
     </Comp>
   );
 }
