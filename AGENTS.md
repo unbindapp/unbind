@@ -1,0 +1,44 @@
+## What is this?
+
+Unbind is an open-source, MIT-licensed self-hosting platform based on Kubernetes. This is the monorepo for it. It's like Railway or Heroku but self-hosted.
+
+## Repo Structure:
+
+There are 4 main apps in the repo:
+
+### 1- apps/web:
+
+The UI for an Unbind deployment. This is what users of Unbind interact with on a daily basis. It's a React app using Vite. Tanstack Router, Tanstack Query, Tanstack Forms, Tanstack Virtual, Zod, shadcn are some of the core libraries used in the UI. The design system is built using shadcn/ui and tailwindcss. The UI is served by the API server.
+
+### 2- apps/api
+
+The server built with GO. UI interacts with the this server to create and manage teams, projects, services, variables and bunch of other stuff. It also serves the static UI.
+
+### 3- apps/installer
+
+This is what installs Unbind on users' machine(s).
+
+### 4- apps/operator
+
+The Kubernetes operator. Translates Unbind CRDs into native Kubernetes resources.
+
+## General Rules:
+
+- Keep it simple. Do not overcomplicate things.
+- Follow each apps’ own conventions. For example apps/web has a design system and a certain way of doing things, follow it as much as possible.
+- Security and reliability are extremely important to Unbind. Complex systems with multiple teams and projects run on it, do not treat it like a hobby project.
+- `apps/web` and `apps/api` are tightly coupled. When you are changing one, be mindful of the consequences for the other.
+- Do not start editing code in response to a question. We'll tell you when to edit code.
+- Do not leave paragraphs of comments on top of the code. You should try to avoid them as much as possible with understandable function names and code. If they are necessary even then, make them concise. Remove such comments when you come by them in the codebase. Comments should always move with code, not be left behind.
+- If we are missing a glaring issue when we ask you to do something, do not hesitate to point it out.
+- Reinvent the wheel but do not reinvent the car. If you are solving a simple problem do not introduce a library. If you are solving a complex but a common problem, there is likely a modern library for it, if so, use it.
+- Never commit or push code unless explicitly asked to do so.
+- Never make a PR unless explicitly asked to do so.
+
+## Commit Messages
+
+Commit messages start with the part of the system they touched, followed by a short explanation of the work:
+web: Fixed button colors
+api: Added new /system endpoints
+
+The title should be concise. Description should explain the work in more detail (only if required) while still being concise. Use simple language, do not try to sound smart.
