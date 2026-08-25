@@ -14,7 +14,7 @@ export default function NoItemsCard({ children, className, Icon, asElement = "di
   return (
     <Element
       className={cn(
-        "text-muted-foreground flex min-h-36 w-full flex-col items-center justify-center gap-1.5 rounded-xl border px-4 py-2.5 text-center",
+        "text-muted-foreground flex min-h-36 w-full flex-col items-center justify-center gap-2 rounded-xl border px-4 pt-5 pb-6 text-center",
         className,
       )}
     >

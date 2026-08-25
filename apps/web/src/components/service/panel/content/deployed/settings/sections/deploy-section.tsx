@@ -159,10 +159,10 @@ function Section({ service }: { service: TServiceShallow }) {
               <BlockItem className="group/item w-full md:w-full">
                 <BlockItemHeader className="group-data-changed/item:text-process" type="column">
                   <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
-                    Instances
+                    Replicas
                   </BlockItemTitle>
                   <BlockItemDescription>
-                    The number of instances/replicas to run for this service.
+                    The number of replicas/instances to run for this service.
                   </BlockItemDescription>
                 </BlockItemHeader>
                 <BlockItemContentHighlightable
@@ -170,7 +170,7 @@ function Section({ service }: { service: TServiceShallow }) {
                   className="flex w-full flex-col rounded-lg border pb-1.5"
                 >
                   <ValueTitle
-                    title="Instances"
+                    title="Replicas"
                     value={field.state.value ? field.state.value.toString() : "1"}
                     hasChanges={!field.state.meta.isDefaultValue}
                   />

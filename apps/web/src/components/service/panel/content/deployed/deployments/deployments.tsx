@@ -164,7 +164,7 @@ function NoActiveDeploymentCard() {
 
   return (
     <NoItemsCard Icon={GlobeOffIcon}>
-      <p className="w-full leading-tight">There is no active deployment.</p>
+      <p className="w-full leading-tight">There is no active deployment</p>
       {error && <ErrorLine message={error.message} />}
       <Button
         className="mt-2"
@@ -192,12 +192,12 @@ function InstancesButton() {
   const isHardError = !data && isError;
 
   const text = useMemo(() => {
-    if (isPending) return "1 Instance";
+    if (isPending) return "1 Replica";
     if (isHardError) {
       return "Error";
     }
     const instanceCount = data.data.instances.length;
-    return `${instanceCount} Instance${instanceCount !== 1 ? "s" : ""}`;
+    return `${instanceCount} Replica${instanceCount !== 1 ? "s" : ""}`;
   }, [data, isPending, isHardError]);
 
   return (
