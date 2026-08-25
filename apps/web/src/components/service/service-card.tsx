@@ -229,7 +229,7 @@ function StatusWithDuration({
   return (
     <StatusTextWrapper service={service}>
       {children}
-      <span className="text-muted-more-foreground px-[0.75ch]">|</span>
+      <span className="text-muted-most-foreground px-[0.75ch]">|</span>
       <span className="font-mono" suppressHydrationWarning>
         {duration}
       </span>
@@ -292,7 +292,7 @@ function StatusText({ service }: { service: TServiceShallow }) {
   if (deployment.status === "active")
     return (
       <StatusTextWrapper service={service}>
-        Online <span className="text-muted-more-foreground px-[0.5ch]">|</span> {timeDiffStr} via{" "}
+        Online <span className="text-muted-most-foreground px-[0.75ch]">|</span> {timeDiffStr} via{" "}
         {sourceToTitle[service.type] || "Unknown"}
       </StatusTextWrapper>
     );
