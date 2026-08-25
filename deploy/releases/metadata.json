@@ -38,5 +38,10 @@
     "version": "v0.1.7",
     "description": "Dangling volume reattachment, storage size normalization, and safer volume expansion",
     "breaking": false
+  },
+  "v0.1.8": {
+    "version": "v0.1.8",
+    "description": "Volume renaming, active deployment removal, and operator status tracking",
+    "breaking": false
   }
 }
