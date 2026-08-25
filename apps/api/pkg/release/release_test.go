@@ -116,13 +116,13 @@ func (s *ReleaseTestSuite) TestNewManager() {
 
 func (s *ReleaseTestSuite) TestReleaseURL() {
 	m := NewManager(&mockGitHubClient{}, "")
-	s.Equal("https://github.com/unbindapp/unbind/releases/tag/v0.1.7", m.ReleaseURL("v0.1.7"))
-	s.Equal("https://github.com/unbindapp/unbind/releases/tag/v0.1.7", m.ReleaseURL("0.1.7"))
+	s.Equal("https://github.com/unbindapp/unbind/releases#release-v0.1.7", m.ReleaseURL("v0.1.7"))
+	s.Equal("https://github.com/unbindapp/unbind/releases#release-v0.1.7", m.ReleaseURL("0.1.7"))
 	s.Equal("https://github.com/unbindapp/unbind/releases", m.ReleaseURL("development"))
 	s.Equal("https://github.com/unbindapp/unbind/releases", m.ReleaseURL(""))
 
 	m = NewManager(&mockGitHubClient{}, "someone/fork")
-	s.Equal("https://github.com/someone/fork/releases/tag/v1.2.3", m.ReleaseURL("v1.2.3"))
+	s.Equal("https://github.com/someone/fork/releases#release-v1.2.3", m.ReleaseURL("v1.2.3"))
 }
 
 func (s *ReleaseTestSuite) TearDownTest() {
