@@ -1,12 +1,12 @@
 "use client";
 
-import { checkForUpdatesQuery, type TCheckForUpdates } from "@/lib/queries/system";
+import { checkForUpdatesQuery, queryKeySystem, type TCheckForUpdates } from "@/lib/queries/system";
 import { useMainStore } from "@/components/stores/main/main-store-provider";
 import { LinkButton } from "@/components/ui/button";
 import { useMounted } from "@/lib/hooks/use-mounted";
-import { useQuery, type UseQueryResult } from "@tanstack/react-query";
+import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { GiftIcon } from "lucide-react";
-import { createContext, ReactNode, useContext, useEffect, useRef } from "react";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 type TCheckForUpdatesContext = UseQueryResult<TCheckForUpdates, Error>;
@@ -29,6 +29,19 @@ export const useCheckForUpdates = () => {
     throw new Error("useCheckForUpdates must be used within an CheckForUpdatesProvider");
   }
   return context;
+};
+
+export const useCheckForUpdatesUtils = () => {
+  const queryClient = useQueryClient();
+  const invalidate = useCallback(
+    () => queryClient.invalidateQueries({ queryKey: queryKeySystem.updateCheck() }),
+    [queryClient],
+  );
+  const refetch = useCallback(
+    () => queryClient.refetchQueries({ queryKey: queryKeySystem.updateCheck() }),
+    [queryClient],
+  );
+  return { invalidate, refetch };
 };
 
 type TNewVersion =

@@ -263,6 +263,7 @@ export const PVCInfoSchema = z
     id: z.string(),
     is_available: z.boolean(),
     is_database: z.boolean(),
+    is_deleting: z.boolean(),
     is_pending_resize: z.boolean(),
     mount_path: z.string().optional(),
     mounted_on_service_id: z.string().optional(),

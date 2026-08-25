@@ -4,11 +4,12 @@ import ErrorLine from "@/components/error-line";
 import { useNow } from "@/components/providers/now-provider";
 import { useMainStore } from "@/components/stores/main/main-store-provider";
 import { Button, LinkButton } from "@/components/ui/button";
+import { useCheckForUpdatesUtils } from "@/components/update/check-for-updates-provider";
 import UpdateStatusProvider, { useUpdateStatus } from "@/components/update/update-status-provider";
 import { applyUpdate as applyUpdateFn } from "@/lib/queries/system";
 import { useMutation } from "@tanstack/react-query";
 import { CircleArrowUpIcon, CircleCheckBigIcon, HourglassIcon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type TProps = {
   latestVersion: string;
@@ -50,6 +51,7 @@ function UpdateSectionInner({
   const [updateStartTimestamp, setUpdateStartTimestamp] = useState<number | null>(null);
 
   const { data: updateStatus } = useUpdateStatus();
+  const { invalidate: invalidateCheckForUpdates } = useCheckForUpdatesUtils();
 
   const {
     mutate: applyUpdate,
@@ -74,6 +76,16 @@ function UpdateSectionInner({
     setUpdatePhase("succeeded");
     setUpdateStatusEnabled(false);
   }, [updatePhase, updateStatus, setUpdateStatusEnabled]);
+
+  // Invalidating while the succeeded screen is up would flip has_update_available
+  // to false and swap this screen for "No updates available", so wait for unmount.
+  const updatePhaseRef = useRef(updatePhase);
+  updatePhaseRef.current = updatePhase;
+  useEffect(() => {
+    return () => {
+      if (updatePhaseRef.current === "succeeded") invalidateCheckForUpdates();
+    };
+  }, [invalidateCheckForUpdates]);
 
   const updateDurationStr = useMemo(() => {
     if (!updateStartTimestamp) return "00:00";
@@ -150,9 +162,11 @@ function UpdateSectionInner({
         )}
         {updatePhase === "succeeded" && (
           <div className="flex w-full px-1 py-1.5 sm:w-1/2">
-            <LinkButton to="/" className="w-full">
-              Go Home
-            </LinkButton>
+            {/* Plain anchor on purpose: after an update the browser is still running
+                the old bundle, so going home must be a full page load, not a router nav. */}
+            <Button asChild className="w-full">
+              <a href="/">Go Home</a>
+            </Button>
           </div>
         )}
         {errorApplyUpdate && (

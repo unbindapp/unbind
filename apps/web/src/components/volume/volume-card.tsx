@@ -33,7 +33,7 @@ export default function VolumeCard({
           className="bg-background-hover flex w-full flex-1 flex-col items-start gap-6 rounded-xl border px-5 py-3.5 text-left font-semibold"
         >
           <div className="flex w-full items-center justify-start gap-2">
-            {volume.is_pending_resize ? (
+            {volume.is_deleting || volume.is_pending_resize ? (
               <HourglassIcon className="animate-hourglass -ml-1 size-6 scale-90" />
             ) : (
               <HardDriveIcon className="-ml-1 size-6" />
@@ -47,7 +47,14 @@ export default function VolumeCard({
               <p className="min-w-0 shrink truncate">
                 {volume.is_pending_resize ? "Expanding" : formatGB(volume.capacity_gb)}
               </p>
-              <p className="min-w-0 shrink truncate text-right">Not attached</p>
+              <p
+                className={cn(
+                  "min-w-0 shrink truncate text-right",
+                  volume.is_deleting && "text-destructive",
+                )}
+              >
+                {volume.is_deleting ? "Deleting" : "Not attached"}
+              </p>
             </div>
           </div>
         </Button>

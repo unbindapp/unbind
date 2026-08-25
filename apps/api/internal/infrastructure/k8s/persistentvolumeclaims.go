@@ -285,8 +285,12 @@ func (self *KubeClient) GetPersistentVolumeClaim(ctx context.Context, namespace 
 		}
 	}
 
-	// Check if PVC can be deleted (no owners and not in use)
-	canDelete := len(pvc.OwnerReferences) == 0 && !isBound
+	// A PVC with a deletion timestamp is terminating — kubernetes removes the
+	// object asynchronously once its finalizers are cleared.
+	isDeleting := pvc.DeletionTimestamp != nil
+
+	// Check if PVC can be deleted (no owners, not in use, not already terminating)
+	canDelete := len(pvc.OwnerReferences) == 0 && !isBound && !isDeleting
 
 	// Get type
 	pvcType := models.PvcScopeTeam
@@ -333,6 +337,7 @@ func (self *KubeClient) GetPersistentVolumeClaim(ctx context.Context, namespace 
 		Status:             models.PersistentVolumeClaimPhase(pvc.Status.Phase),
 		IsDatabase:         isDatabase,
 		IsAvailable:        canDelete,
+		IsDeleting:         isDeleting,
 		CanDelete:          canDelete,
 		CreatedAt:          pvc.CreationTimestamp.Time,
 	}, nil
@@ -481,8 +486,12 @@ func (self *KubeClient) ListPersistentVolumeClaims(ctx context.Context, namespac
 				environmentID = &environmentIDParsed
 			}
 		}
-		// Check if PVC can be deleted (no owners and not in use)
-		canDelete := len(pvc.OwnerReferences) == 0 && !isBound
+		// A PVC with a deletion timestamp is terminating — kubernetes removes the
+		// object asynchronously once its finalizers are cleared.
+		isDeleting := pvc.DeletionTimestamp != nil
+
+		// Check if PVC can be deleted (no owners, not in use, not already terminating)
+		canDelete := len(pvc.OwnerReferences) == 0 && !isBound && !isDeleting
 
 		// Figure out type
 		pvcType := models.PvcScopeTeam
@@ -529,6 +538,7 @@ func (self *KubeClient) ListPersistentVolumeClaims(ctx context.Context, namespac
 			Status:             models.PersistentVolumeClaimPhase(pvc.Status.Phase),
 			IsDatabase:         isDatabase,
 			IsAvailable:        canDelete,
+			IsDeleting:         isDeleting,
 			CanDelete:          canDelete,
 			CreatedAt:          pvc.CreationTimestamp.Time,
 		})
