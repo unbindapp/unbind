@@ -21,9 +21,9 @@ export default function VolumeCard({ volume, className }: TProps) {
         >
           <div className="flex w-full items-center justify-start gap-2">
             {volume.is_deleting || volume.is_detaching || volume.is_pending_resize ? (
-              <HourglassIcon className="animate-hourglass -ml-1 size-6 scale-90" />
+              <HourglassIcon className="animate-hourglass -ml-1 size-6 scale-85" />
             ) : (
-              <HardDriveIcon className="-ml-1 size-6 scale-90" />
+              <HardDriveIcon className="-ml-1 size-6 scale-85" />
             )}
             <h3 className="min-w-0 shrink overflow-hidden leading-tight text-ellipsis whitespace-nowrap">
               {getVolumeDisplayName(volume)}
@@ -41,7 +41,11 @@ export default function VolumeCard({ volume, className }: TProps) {
                   volume.is_detaching && "text-process",
                 )}
               >
-                {volume.is_deleting ? "Deleting" : volume.is_detaching ? "Detaching" : "Not attached"}
+                {volume.is_deleting
+                  ? "Deleting"
+                  : volume.is_detaching
+                    ? "Detaching"
+                    : "Not attached"}
               </p>
             </div>
           </div>

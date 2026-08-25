@@ -1,6 +1,6 @@
 "use client";
 
-import { Slot, Slottable } from "@radix-ui/react-slot";
+import { Slot } from "@radix-ui/react-slot";
 import { createLink, type LinkComponent } from "@tanstack/react-router";
 import { cva, type VariantProps } from "class-variance-authority";
 import * as React from "react";
@@ -162,13 +162,19 @@ function Button({
       disabled={loadingState === "loading" || isPending ? true : disabled}
       {...props}
     >
-      {isPending && (
-        <LoaderIcon
-          data-slot="button-spinner"
-          className={cn(spinnerVariants(spinnerVariantProps))}
-        />
+      {isPending ? (
+        <>
+          <LoaderIcon
+            data-slot="button-spinner"
+            className={cn(spinnerVariants(spinnerVariantProps))}
+          />
+          {typeof children === "string" ? <p className="min-w-0 shrink">{children}</p> : children}
+        </>
+      ) : typeof children === "string" ? (
+        <p className="min-w-0 shrink">{children}</p>
+      ) : (
+        children
       )}
-      <Slottable>{children}</Slottable>
     </Comp>
   );
 }
