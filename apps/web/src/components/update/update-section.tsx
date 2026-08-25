@@ -8,15 +8,23 @@ import { useCheckForUpdatesUtils } from "@/components/update/check-for-updates-p
 import UpdateStatusProvider, { useUpdateStatus } from "@/components/update/update-status-provider";
 import { applyUpdate as applyUpdateFn } from "@/lib/queries/system";
 import { useMutation } from "@tanstack/react-query";
-import { CircleArrowUpIcon, CircleCheckBigIcon, HourglassIcon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  CircleArrowUpIcon,
+  CircleCheckBigIcon,
+  ExternalLinkIcon,
+  FileTextIcon,
+  HourglassIcon,
+} from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 type TProps = {
   latestVersion: string;
+  latestVersionUrl: string;
   currentVersion: string;
 };
 
-export default function UpdateSection({ latestVersion, currentVersion }: TProps) {
+export default function UpdateSection({ latestVersion, latestVersionUrl, currentVersion }: TProps) {
   const [statusEnabled, setStatusEnabled] = useState(false);
   const setLastDismissedVersion = useMainStore((s) => s.setLastDismissedVersion);
 
@@ -28,6 +36,7 @@ export default function UpdateSection({ latestVersion, currentVersion }: TProps)
     <UpdateStatusProvider enabled={statusEnabled} refetchInterval={5000}>
       <UpdateSectionInner
         latestVersion={latestVersion}
+        latestVersionUrl={latestVersionUrl}
         currentVersion={currentVersion}
         setUpdateStatusEnabled={setStatusEnabled}
       />
@@ -43,6 +52,7 @@ type TUpdatePhases = "idle" | "updating" | "succeeded" | "failed";
 
 function UpdateSectionInner({
   latestVersion,
+  latestVersionUrl,
   currentVersion,
   setUpdateStatusEnabled,
 }: TPropsInner) {
@@ -123,7 +133,14 @@ function UpdateSectionInner({
             <span className="text-success">Updated to {latestVersion}</span>
           )}
         </h1>
-        <p className="text-muted-foreground w-full group-data-[phase=succeeded]/section:text-center">
+        {updatePhase === "idle" && (
+          <div className="mt-0.5 flex w-full items-center justify-center px-1">
+            <p className="text-muted-foreground bg-background-hover max-w-full rounded-full border px-2.5 py-0.5 text-center text-sm font-medium">
+              Current version: <span className="font-bold">{currentVersion}</span>
+            </p>
+          </div>
+        )}
+        <p className="text-muted-foreground mt-2 w-full group-data-[phase=succeeded]/section:text-center">
           {updatePhase === "idle" &&
             "The process will take a few minutes. During the update your services will continue to run but Unbind's UI and API will be down."}
           {updatePhase === "updating" &&
@@ -131,12 +148,14 @@ function UpdateSectionInner({
           {updatePhase === "succeeded" && "Unbind has been updated successfully."}
         </p>
       </div>
+
       <div className="flex w-full flex-wrap items-center justify-center">
         {updatePhase === "idle" && (
           <>
             <div className="flex w-full px-1 py-1.5 sm:w-1/2">
               <LinkButton to="/" variant="outline" className="text-muted-foreground w-full">
-                Do it later
+                <ArrowLeftIcon className="size-4.5 shrink-0" />
+                <p className="min-w-0 shrink">Go Back</p>
               </LinkButton>
             </div>
             <div className="flex w-full px-1 py-1.5 sm:w-1/2">
@@ -145,7 +164,23 @@ function UpdateSectionInner({
                 onClick={() => applyUpdate(latestVersion)}
                 className="w-full"
               >
-                Update Now
+                <CircleArrowUpIcon className="size-4.5 shrink-0" />
+                <p className="min-w-0 shrink">Update Now</p>
+              </Button>
+            </div>
+            <div className="flex w-full px-1 py-1.5 sm:w-1/2">
+              <Button
+                variant="ghost"
+                className="text-muted-foreground group w-full cursor-pointer"
+                asChild
+              >
+                <a href={latestVersionUrl} target="_blank" rel="noopener noreferrer">
+                  <div className="relative size-4.5 shrink-0">
+                    <FileTextIcon className="size-full transition-[rotate,opacity] group-hover:rotate-90 group-hover:opacity-0 group-active:rotate-90 group-active:opacity-0" />
+                    <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-[rotate,opacity] group-hover:rotate-0 group-hover:opacity-100 group-active:rotate-0 group-active:opacity-100" />
+                  </div>
+                  <p className="min-w-0 shrink">Changelog</p>
+                </a>
               </Button>
             </div>
           </>
@@ -162,8 +197,6 @@ function UpdateSectionInner({
         )}
         {updatePhase === "succeeded" && (
           <div className="flex w-full px-1 py-1.5 sm:w-1/2">
-            {/* Plain anchor on purpose: after an update the browser is still running
-                the old bundle, so going home must be a full page load, not a router nav. */}
             <Button asChild className="w-full">
               <a href="/">Go Home</a>
             </Button>
@@ -175,13 +208,6 @@ function UpdateSectionInner({
           </div>
         )}
       </div>
-      {updatePhase === "idle" && (
-        <div className="flex w-full items-center justify-center px-1">
-          <p className="text-muted-foreground bg-background-hover max-w-full rounded-full border px-2.5 py-0.5 text-center text-sm font-medium">
-            Current version: <span className="font-bold">{currentVersion}</span>
-          </p>
-        </div>
-      )}
     </>
   );
 }

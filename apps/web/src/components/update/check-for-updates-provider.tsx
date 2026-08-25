@@ -45,8 +45,8 @@ export const useCheckForUpdatesUtils = () => {
 };
 
 type TNewVersion =
-  | { hasUpdateAvailable: true; latestVersion: string }
-  | { hasUpdateAvailable: false; latestVersion: null };
+  | { hasUpdateAvailable: true; latestVersion: string; latestVersionUrl: string }
+  | { hasUpdateAvailable: false; latestVersion: null; latestVersionUrl: null };
 
 // Single source of truth for "is there an update": the API sets has_update_available
 // iff available_versions is non-empty, so consumers get one check instead of re-deriving it.
@@ -59,9 +59,14 @@ export const useCheckNewVersion = (): TNewVersion => {
       ? availableVersions[availableVersions.length - 1]
       : null;
 
-  return latestVersion !== null
-    ? { hasUpdateAvailable: true, latestVersion }
-    : { hasUpdateAvailable: false, latestVersion: null };
+  const latestVersionUrl =
+    data?.data.has_update_available && availableVersions && availableVersions.length > 0
+      ? availableVersions[availableVersions.length - 1]
+      : null;
+
+  return latestVersion !== null && latestVersionUrl !== null
+    ? { hasUpdateAvailable: true, latestVersion, latestVersionUrl }
+    : { hasUpdateAvailable: false, latestVersion: null, latestVersionUrl: null };
 };
 
 export default CheckForUpdatesProvider;

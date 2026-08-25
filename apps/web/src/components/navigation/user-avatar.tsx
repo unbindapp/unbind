@@ -23,7 +23,7 @@ import { meQuery } from "@/lib/queries/me";
 import { getGoClient } from "@/lib/server/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { GiftIcon, GitBranchIcon, LoaderIcon, LogOutIcon } from "lucide-react";
+import { ExternalLink, GiftIcon, GitBranchIcon, LoaderIcon, LogOutIcon } from "lucide-react";
 import { useState } from "react";
 
 type TProps = { email: string; className?: string };
@@ -174,33 +174,52 @@ export default function UserAvatar({ email, className }: TProps) {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <div
-          data-pending={isPendingUpdatesResult || undefined}
-          data-error={
-            (!updatesData && !isPendingUpdatesResult && isErrorUpdatesResult) || undefined
-          }
-          className="group/version flex w-full items-center justify-start gap-1.25 px-4 py-2.5"
-        >
-          {!isPendingUpdatesResult && (
-            <GitBranchIcon className="text-muted-foreground -ml-px size-3.75 shrink-0" />
-          )}
-          <p className="group-data-pending/version:bg-muted-foreground group-data-pending/version:animate-skeleton text-muted-foreground min-w-0 shrink text-center text-sm leading-tight group-data-pending/version:rounded-sm group-data-pending/version:text-transparent">
-            Version:{" "}
-            <span className="group-data-error/version:text-destructive font-semibold">
-              {updatesData
-                ? updatesData.data.current_version
-                : isPendingUpdatesResult
-                  ? "1234567"
-                  : "Error"}
-            </span>
-          </p>
-        </div>
+        <DropdownMenuGroup>
+          <DropdownMenuItem
+            asChild
+            className="group/version flex w-full cursor-pointer items-center gap-1.5 px-3 py-2 text-left leading-tight"
+          >
+            <a
+              data-pending={isPendingUpdatesResult || undefined}
+              data-error={
+                (!updatesData && !isPendingUpdatesResult && isErrorUpdatesResult) || undefined
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              href={
+                updatesData
+                  ? updatesData.data.current_version_url
+                  : isPendingUpdatesResult
+                    ? "/"
+                    : "Error"
+              }
+            >
+              {!isPendingUpdatesResult && (
+                <div className="text-muted-foreground group-hover/version:text-foreground group-active/version:text-foreground relative -ml-px size-3.75 shrink-0">
+                  <GitBranchIcon className="size-full transition-[rotate,opacity] group-hover/version:rotate-90 group-hover/version:opacity-0" />
+                  <ExternalLink className="absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-[rotate,opacity] group-hover/version:rotate-0 group-hover/version:opacity-100 group-active/version:rotate-0 group-active/version:opacity-100" />
+                </div>
+              )}
+              <p className="group-hover/version:text-foreground group-active/version:text-foreground group-data-pending/version:bg-muted-foreground group-data-pending/version:animate-skeleton text-muted-foreground min-w-0 shrink text-center text-sm leading-tight group-data-pending/version:rounded-sm group-data-pending/version:text-transparent">
+                Version:{" "}
+                <span className="group-data-error/version:text-destructive font-semibold">
+                  {updatesData
+                    ? updatesData.data.current_version
+                    : isPendingUpdatesResult
+                      ? "1234567"
+                      : "Error"}
+                </span>
+              </p>
+            </a>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
       </DropdownOrDrawerContentForDropdown>
     </DropdownOrDrawer>
   );
 }
 
 function NewVersionCard({
+  version,
   onUpdateClicked,
   className,
   classNameInner,
@@ -218,11 +237,19 @@ function NewVersionCard({
           classNameInner,
         )}
       >
-        <div className="flex w-full items-start gap-2 pr-2 pl-0.5">
-          <GiftIcon className="text-success mt-px size-4.5 shrink-0" />
-          <p className="text-success min-w-0 shrink leading-tight font-semibold">
-            Update available!
-          </p>
+        <div className="flex w-full flex-col gap-1">
+          <div className="flex w-full items-start gap-1.5 px-1">
+            <GiftIcon className="text-success -ml-0.5 size-4.5 shrink-0" />
+            <p className="text-success min-w-0 shrink leading-tight font-semibold">
+              Update available!
+            </p>
+          </div>
+          <div className="flex w-full items-center justify-start gap-1.5 px-1 text-sm">
+            <GitBranchIcon className="text-muted-foreground -ml-0.5 size-4.5 shrink-0" />
+            <p className="text-muted-foreground">
+              Version: <span className="text-foreground font-semibold">{version}</span>
+            </p>
+          </div>
         </div>
         <LinkButton
           onClick={onUpdateClicked}
