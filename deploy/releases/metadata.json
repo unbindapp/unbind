@@ -63,5 +63,10 @@
     "version": "v0.1.12",
     "description": "Preserved button children with slot composition",
     "breaking": false
+  },
+  "v0.1.13": {
+    "version": "v0.1.13",
+    "description": "Button pending state fix and shorter volume panel explanations",
+    "breaking": false
   }
 }
