@@ -23,16 +23,14 @@ export default function Settings({ volume }: TProps) {
       {volume.is_attaching && (
         <BannerWrapper className="bg-process/8 border-process/8 text-process">
           <HourglassIcon className="animate-hourglass mt-0.5 -ml-0.5 size-4 shrink-0" />
-          <p className="min-w-0 shrink leading-tight">
-            Attaching the volume. It will be attached once the service is deployed.
-          </p>
+          <p className="min-w-0 shrink leading-tight">Attaching the volume to the service.</p>
         </BannerWrapper>
       )}
       {volume.is_detaching && (
-        <BannerWrapper className="bg-process/8 border-process/8 text-process">
+        <BannerWrapper className="bg-warning/8 border-warning/8 text-warning">
           <HourglassIcon className="animate-hourglass mt-0.5 -ml-0.5 size-4 shrink-0" />
           <p className="min-w-0 shrink leading-tight">
-            Detaching the volume. It can be attached to a service once detaching is complete.
+            Detaching the volume. It can be reattached once this is complete.
           </p>
         </BannerWrapper>
       )}
