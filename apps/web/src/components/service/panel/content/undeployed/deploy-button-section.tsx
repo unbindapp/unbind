@@ -9,8 +9,8 @@ export default function DeployButtonSection({ isPending }: TProps) {
   return (
     <div className="flex w-full flex-col gap-2 border-t px-3 pt-3 pb-[calc(var(--safe-area-inset-bottom)+0.75rem)] sm:px-6 sm:pt-6 sm:pb-[calc(var(--safe-area-inset-bottom)+1.5rem)]">
       <Button
-        data-pending={isPending || undefined}
-        className="group/button data-pending:bg-foreground/60 w-full"
+        data-pending-custom={isPending || undefined}
+        className="group/button data-pending-custom:bg-foreground/60 w-full"
         disabled={isPending}
         fadeOnDisabled={false}
       >

@@ -197,16 +197,6 @@ function ThreeDotButton({
       >
         <ScrollArea>
           <DropdownMenuGroup>
-            {(deployment.status === "build-pending" ||
-              deployment.status === "build-queued" ||
-              deployment.status === "build-running") && (
-              <AbortTrigger deployment={deployment} closeDropdown={() => setIsOpen(false)}>
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                  <OctagonXIcon className="-ml-0.5 size-5" />
-                  <p className="min-w-0 shrink leading-tight">Abort</p>
-                </DropdownMenuItem>
-              </AbortTrigger>
-            )}
             {isCurrentDeployment && deployment.status !== "removed" && (
               <RestartTrigger closeDropdown={() => setIsOpen(false)}>
                 <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -240,6 +230,16 @@ function ThreeDotButton({
                 <p className="min-w-0 shrink leading-tight">Redeploy</p>
               </DropdownMenuItem>
             </RedeployTrigger>
+            {(deployment.status === "build-pending" ||
+              deployment.status === "build-queued" ||
+              deployment.status === "build-running") && (
+              <AbortTrigger deployment={deployment} closeDropdown={() => setIsOpen(false)}>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                  <OctagonXIcon className="-ml-0.5 size-5" />
+                  <p className="min-w-0 shrink leading-tight">Abort</p>
+                </DropdownMenuItem>
+              </AbortTrigger>
+            )}
             {isCurrentDeployment &&
               deployment.status !== "removed" &&
               service.type !== "database" && (
