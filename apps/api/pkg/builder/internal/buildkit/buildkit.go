@@ -219,6 +219,9 @@ func BuildWithBuildkitClient(cfg *config.Config, appDir string, opts BuildWithBu
 		solveOpts.FrontendAttrs = map[string]string{
 			"filename": dockerfileBasename,
 		}
+		if cfg.DisableBuildCache {
+			solveOpts.FrontendAttrs["no-cache"] = ""
+		}
 		maps.Copy(solveOpts.FrontendAttrs, buildArgs)
 	} else if opts.RailpackBuildPlan != nil {
 		buildPlatform := opts.Platform
@@ -247,6 +250,14 @@ func BuildWithBuildkitClient(cfg *config.Config, appDir string, opts BuildWithBu
 			return fmt.Errorf("error marshaling LLB state: %w", err)
 		}
 
+		// There is no frontend to pass "no-cache" to, mark every op instead
+		if cfg.DisableBuildCache {
+			for dgst, md := range def.Metadata {
+				md.IgnoreCache = true
+				def.Metadata[dgst] = md
+			}
+		}
+
 		// Export attributes for BuildPlan
 		exportAttrs["containerimage.config"] = string(imageBytes)
 	} else {
@@ -261,14 +272,17 @@ func BuildWithBuildkitClient(cfg *config.Config, appDir string, opts BuildWithBu
 		},
 	}
 
-	if opts.CacheKey != "" && !cfg.DisableBuildCache {
-		solveOpts.CacheImports = []client.CacheOptionsEntry{
-			{
-				Type: "registry",
-				Attrs: map[string]string{
-					"ref": opts.CacheKey,
+	if opts.CacheKey != "" {
+		// Keep exporting even on no-cache builds so they refresh the cache for the next build
+		if !cfg.DisableBuildCache {
+			solveOpts.CacheImports = []client.CacheOptionsEntry{
+				{
+					Type: "registry",
+					Attrs: map[string]string{
+						"ref": opts.CacheKey,
+					},
 				},
-			},
+			}
 		}
 		solveOpts.CacheExports = []client.CacheOptionsEntry{
 			{

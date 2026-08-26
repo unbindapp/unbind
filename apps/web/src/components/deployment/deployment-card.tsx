@@ -222,6 +222,7 @@ function ThreeDotButton({
             )}
             <RedeployTrigger
               showSkipBuildIfPossibleToggle={isCurrentDeployment}
+              showSkipBuildCacheToggle={service.type === "github"}
               closeDropdown={() => setIsOpen(false)}
               deployment={deployment}
             >
@@ -494,12 +495,14 @@ function RedeployTrigger({
   buttonText,
   skipBuildIfPossible,
   showSkipBuildIfPossibleToggle,
+  showSkipBuildCacheToggle,
   children,
 }: {
   deployment: TDeploymentShallow;
   closeDropdown: () => void;
   skipBuildIfPossible?: boolean;
   showSkipBuildIfPossibleToggle?: boolean;
+  showSkipBuildCacheToggle?: boolean;
   title?: string;
   description?: string;
   buttonText?: string;
@@ -536,6 +539,7 @@ function RedeployTrigger({
   const form = useAppForm({
     defaultValues: {
       skipBuildIfPossible: skipBuildIfPossible || false,
+      skipBuildCache: false,
     },
     onSubmit: async ({ value }) => {
       await redeployDeployment({
@@ -545,6 +549,7 @@ function RedeployTrigger({
         serviceId,
         deploymentId: deployment.id,
         skipBuildIfPossible: value.skipBuildIfPossible,
+        skipBuildCache: value.skipBuildCache,
       });
     },
   });
@@ -586,20 +591,33 @@ function RedeployTrigger({
               <form.AppField
                 name="skipBuildIfPossible"
                 children={(field) => (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => {
-                      field.handleChange(!field.state.value);
+                  <RedeployToggle
+                    label="Skip build if possible"
+                    checked={field.state.value}
+                    onToggle={() => {
+                      const checked = !field.state.value;
+                      field.handleChange(checked);
+                      if (checked) form.setFieldValue("skipBuildCache", false);
                     }}
-                    data-checked={field.state.value || undefined}
-                    className="group/button has-hover:hover:bg-border -my-2 flex cursor-pointer items-center justify-between gap-4 py-2 pr-2 pl-2.5 text-left font-semibold"
-                  >
-                    <p className="min-w-0 shrink">Skip build if possible</p>
-                    <div className="bg-muted-more-foreground group-data-checked/button:bg-foreground relative h-5 w-9 shrink-0 rounded-full transition">
-                      <div className="bg-background absolute top-0.5 left-0.5 size-4 rounded-full transition group-data-checked/button:translate-x-4" />
-                    </div>
-                  </Button>
+                  />
+                )}
+              />
+            </div>
+          )}
+          {showSkipBuildCacheToggle && (
+            <div className="-mx-2.5 flex w-full max-w-[calc(100%+1.25rem)] justify-start">
+              <form.AppField
+                name="skipBuildCache"
+                children={(field) => (
+                  <RedeployToggle
+                    label="Skip build cache"
+                    checked={field.state.value}
+                    onToggle={() => {
+                      const checked = !field.state.value;
+                      field.handleChange(checked);
+                      if (checked) form.setFieldValue("skipBuildIfPossible", false);
+                    }}
+                  />
                 )}
               />
             </div>
@@ -623,6 +641,31 @@ function RedeployTrigger({
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function RedeployToggle({
+  label,
+  checked,
+  onToggle,
+}: {
+  label: string;
+  checked: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      onClick={onToggle}
+      data-checked={checked || undefined}
+      className="group/button has-hover:hover:bg-border -my-2 flex cursor-pointer items-center justify-between gap-4 py-2 pr-2 pl-2.5 text-left font-semibold"
+    >
+      <p className="min-w-0 shrink">{label}</p>
+      <div className="bg-muted-more-foreground group-data-checked/button:bg-foreground relative h-5 w-9 shrink-0 rounded-full transition">
+        <div className="bg-background absolute top-0.5 left-0.5 size-4 rounded-full transition group-data-checked/button:translate-x-4" />
+      </div>
+    </Button>
   );
 }
 

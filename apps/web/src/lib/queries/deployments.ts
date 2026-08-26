@@ -97,6 +97,7 @@ export async function redeployDeployment(input: {
   serviceId: string;
   deploymentId: string;
   skipBuildIfPossible?: boolean;
+  skipBuildCache?: boolean;
 }) {
   const res = await getGoClient().deployments.redeploy({
     team_id: input.teamId,
@@ -105,6 +106,7 @@ export async function redeployDeployment(input: {
     service_id: input.serviceId,
     deployment_id: input.deploymentId,
     smart_redeploy: input.skipBuildIfPossible,
+    disable_build_cache: input.skipBuildCache,
   });
   return { data: res.data };
 }

@@ -131,8 +131,8 @@ func (self *DeploymentService) CreateRedeployment(ctx context.Context, requester
 		return nil, err
 	}
 
-	// Check if we can redeploy without rebuilding
-	if input.SmartRedeploy && deployment.ResourceDefinition != nil {
+	// Check if we can redeploy without rebuilding, disabling the build cache implies a rebuild
+	if input.SmartRedeploy && !input.DisableBuildCache && deployment.ResourceDefinition != nil {
 		canRedeploy := false
 
 		// For non-database services, check if we can pull the existing image
