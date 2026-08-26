@@ -47,7 +47,9 @@ export default function UsageSection({ volume }: TProps) {
                 {formatGB(volume.used_gb)}
               </span>
             ) : (
-              <span className="font-semibold">{isUnattached ? "Unknown" : "Measuring"}</span>
+              <span className="text-foreground font-semibold">
+                {isUnattached ? "Unknown" : "Calculating"}
+              </span>
             )}
           </p>
           <p className="max-w-1/2 truncate pl-2 text-right font-medium">
@@ -69,13 +71,13 @@ export default function UsageSection({ volume }: TProps) {
               className="data-has-usage:bg-foreground/8 data-has-usage:group-data-[usage=high]/section:bg-warning/8 data-has-usage:group-data-[usage=critical]/section:bg-destructive/8 h-full w-full origin-left"
             />
           </div>
-          <div className="text-muted-foreground relative flex max-w-full min-w-0 items-center gap-1.5">
+          <div className="data-has-usage:text-foreground group-data-[usage=high]/section:text-warning group-data-[usage=critical]/section:text-destructive group-data-error/section:text-destructive relative flex max-w-full min-w-0 items-center gap-1.5">
             {usagePercentage === undefined && !isUnattached && (
-              <HourglassIcon className="animate-hourglass size-3.5 shrink-0 scale-90" />
+              <HourglassIcon className="animate-hourglass size-3.5 shrink-0" />
             )}
             <p
               data-has-usage={usagePercentage !== undefined || undefined}
-              className="data-has-usage:text-foreground group-data-[usage=high]/section:text-warning group-data-[usage=critical]/section:text-destructive group-data-error/section:text-destructive min-w-0 truncate leading-tight font-semibold"
+              className="min-w-0 truncate leading-tight font-semibold"
             >
               {usageInfo}
             </p>
