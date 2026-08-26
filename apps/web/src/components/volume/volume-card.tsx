@@ -36,11 +36,6 @@ export default function VolumeCard({ volume, className }: TProps) {
     };
   }, [volume.is_deleting, volume.is_detaching, volume.is_pending_resize]);
 
-  const bottomRightText = useMemo(() => {
-    if (volume.is_pending_resize) return "Unknown";
-    return formatGB(volume.capacity_gb);
-  }, [volume.is_pending_resize, volume.capacity_gb]);
-
   return (
     <li
       data-detaching={volume.is_detaching || undefined}
@@ -60,14 +55,14 @@ export default function VolumeCard({ volume, className }: TProps) {
             </h3>
           </div>
           <div className="-mx-0.5 flex w-[calc(100%+0.25rem)] flex-1 flex-col items-center justify-end">
-            <div className="text-muted-foreground flex w-full items-center justify-between gap-4 text-sm font-normal">
+            <div className="text-muted-foreground flex w-full min-w-0 shrink items-center justify-between gap-4 overflow-hidden text-sm font-normal text-ellipsis whitespace-nowrap">
               <div className="flex min-w-0 shrink items-center gap-1.75">
                 {bottomLeftTextAndIcon.icon}
-                <p className="group-data-detaching/item:text-warning group-data-deleting/item:text-destructive group-data-pending-resize/item:text-warning min-w-0 shrink truncate text-right">
+                <p className="group-data-detaching/item:text-warning group-data-deleting/item:text-destructive group-data-pending-resize/item:text-warning min-w-0 shrink truncate">
                   {bottomLeftTextAndIcon.text}
                 </p>
               </div>
-              <p className="min-w-0 shrink truncate">{bottomRightText}</p>
+              <p className="min-w-0 shrink truncate text-right">{formatGB(volume.capacity_gb)}</p>
             </div>
           </div>
         </Button>
