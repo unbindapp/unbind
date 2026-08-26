@@ -2,11 +2,13 @@ package system_handler
 
 import (
 	"context"
+	"errors"
 	"slices"
 	"sort"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/api/server"
 	"github.com/unbindapp/unbind-api/internal/common/log"
@@ -133,11 +135,11 @@ func (self *HandlerGroup) ApplyUpdate(ctx context.Context, input *UpdateApplyInp
 		return nil, huma.Error400BadRequest("Target version is not available for update")
 	}
 
-	// Apply the update
-	// Cache update status
-	err = self.srv.StringCache.Set(ctx, updateKey, input.Body.TargetVersion)
-	if err != nil {
-		log.Errorf("Failed to cache update status: %v", err)
+	// Refuse to start an update we can't track; the status endpoint would have no
+	// target to check against.
+	if err := self.srv.StringCache.Set(ctx, updateKey, input.Body.TargetVersion); err != nil {
+		log.Errorf("Failed to record update target: %v", err)
+		return nil, huma.Error500InternalServerError("Failed to record update target: " + err.Error())
 	}
 
 	if err := self.srv.UpdateManager.UpdateToVersion(ctx, input.Body.TargetVersion); err != nil {
@@ -159,7 +161,9 @@ func (self *HandlerGroup) ApplyUpdate(ctx context.Context, input *UpdateApplyInp
 // * Get update status
 type UpdateStatusResponse struct {
 	Body struct {
-		Ready bool `json:"ready"`
+		InProgress    bool   `json:"in_progress"`
+		TargetVersion string `json:"target_version,omitempty"`
+		Ready         bool   `json:"ready"`
 	}
 }
 
@@ -173,29 +177,33 @@ func (self *HandlerGroup) GetUpdateStatus(ctx context.Context, input *server.Bas
 		return nil, err
 	}
 
-	cachedVersion, err := self.srv.StringCache.Get(ctx, updateKey)
-	clearCache := true
+	targetVersion, err := self.srv.StringCache.Get(ctx, updateKey)
+	updateInProgress := err == nil
 	if err != nil {
-		clearCache = false // Don't clear cache if we can't get it
-		log.Errorf("Failed to get cached update status: %v", err)
-		cachedVersion = self.srv.UpdateManager.CurrentVersion
+		if !errors.Is(err, redis.Nil) {
+			log.Errorf("Failed to get update target: %v", err)
+		}
+		// No update in progress; report whether the cluster matches this binary.
+		targetVersion = self.srv.UpdateManager.CurrentVersion
 	}
-	ready, err := self.srv.UpdateManager.CheckDeploymentsReady(ctx, cachedVersion)
+
+	ready, err := self.srv.UpdateManager.CheckUpdateComplete(ctx, targetVersion)
 	if err != nil {
 		return nil, huma.Error500InternalServerError("Failed to get update status: " + err.Error())
 	}
 
-	// Check if the expected version is the same as the cached version
-	if ready && clearCache {
-		// Clear the cache if the update is ready
-		err = self.srv.StringCache.Delete(ctx, updateKey)
-		if err != nil {
-			log.Errorf("Failed to clear cached update status: %v", err)
+	if ready && updateInProgress {
+		if err := self.srv.StringCache.Delete(ctx, updateKey); err != nil {
+			log.Errorf("Failed to clear update target: %v", err)
 		}
 	}
 
 	resp := &UpdateStatusResponse{}
 	resp.Body.Ready = ready
+	resp.Body.InProgress = updateInProgress && !ready
+	if updateInProgress {
+		resp.Body.TargetVersion = targetVersion
+	}
 
 	return resp, nil
 }

@@ -180,28 +180,40 @@ func (suite *UpdaterTestSuite) TestGetLatestVersion_Success() {
 	suite.mockReleaseManager.AssertExpectations(suite.T())
 }
 
-// Test CheckDeploymentsReady method (this doesn't depend on release manager)
-func (suite *UpdaterTestSuite) TestCheckDeploymentsReady_Success() {
-	updater := New(suite.cfg, "v1.0.0", suite.mockK8sClient, suite.redisClient)
+// Test CheckUpdateComplete method (this doesn't depend on release manager)
+func (suite *UpdaterTestSuite) TestCheckUpdateComplete_Success() {
+	updater := New(suite.cfg, "v1.2.0", suite.mockK8sClient, suite.redisClient)
 	version := "v1.2.0"
 
 	suite.mockK8sClient.On("CheckDeploymentsReady", suite.ctx, version).Return(true, nil)
 
-	ready, err := updater.CheckDeploymentsReady(suite.ctx, version)
+	ready, err := updater.CheckUpdateComplete(suite.ctx, version)
 
 	suite.NoError(err)
 	suite.True(ready)
 	suite.mockK8sClient.AssertExpectations(suite.T())
 }
 
-func (suite *UpdaterTestSuite) TestCheckDeploymentsReady_Error() {
+// A binary still on the old version must never report an update as complete,
+// even if the cluster looks fully rolled out.
+func (suite *UpdaterTestSuite) TestCheckUpdateComplete_OldBinaryNeverComplete() {
 	updater := New(suite.cfg, "v1.0.0", suite.mockK8sClient, suite.redisClient)
+
+	ready, err := updater.CheckUpdateComplete(suite.ctx, "v1.2.0")
+
+	suite.NoError(err)
+	suite.False(ready)
+	suite.mockK8sClient.AssertNotCalled(suite.T(), "CheckDeploymentsReady", mock.Anything, mock.Anything)
+}
+
+func (suite *UpdaterTestSuite) TestCheckUpdateComplete_Error() {
+	updater := New(suite.cfg, "v1.2.0", suite.mockK8sClient, suite.redisClient)
 	version := "v1.2.0"
 	expectedError := errors.New("Kubernetes API error")
 
 	suite.mockK8sClient.On("CheckDeploymentsReady", suite.ctx, version).Return(false, expectedError)
 
-	ready, err := updater.CheckDeploymentsReady(suite.ctx, version)
+	ready, err := updater.CheckUpdateComplete(suite.ctx, version)
 
 	suite.Error(err)
 	suite.False(ready)

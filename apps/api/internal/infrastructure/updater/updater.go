@@ -249,9 +249,14 @@ func (self *Updater) rollbackToVersion(ctx context.Context, version string) erro
 	return nil
 }
 
-// CheckDeploymentsReady checks if all deployments are running with the specified version
-func (self *Updater) CheckDeploymentsReady(ctx context.Context, version string) (bool, error) {
-	return self.k8sClient.CheckDeploymentsReady(ctx, version)
+// CheckUpdateComplete reports whether the update to targetVersion has fully rolled out.
+// A process running any other version never reports complete regardless of cluster
+// state — "updated" may only come from the binary that is the target version.
+func (self *Updater) CheckUpdateComplete(ctx context.Context, targetVersion string) (bool, error) {
+	if targetVersion != self.CurrentVersion {
+		return false, nil
+	}
+	return self.k8sClient.CheckDeploymentsReady(ctx, targetVersion)
 }
 
 // GetNextAvailableVersion returns the next version that can be updated to from the current version

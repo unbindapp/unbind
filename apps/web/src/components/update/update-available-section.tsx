@@ -40,7 +40,9 @@ export default function UpdateAvailableSection({
   }, [latestVersion, setLastDismissedVersion]);
 
   return (
-    <UpdateStatusProvider enabled={statusEnabled} refetchInterval={5000}>
+    // Always enabled so a page load during an update can detect and resume it;
+    // the interval only runs while an update is being watched.
+    <UpdateStatusProvider enabled={true} refetchInterval={statusEnabled ? 5000 : undefined}>
       <UpdateSectionInner
         latestVersion={latestVersion}
         latestVersionUrl={latestVersionUrl}
@@ -88,6 +90,16 @@ function UpdateSectionInner({
     },
   });
 
+  // Resume an update already in progress on the server (e.g. after a page reload).
+  useEffect(() => {
+    if (updatePhase !== "idle") return;
+    if (!updateStatus?.data.in_progress) return;
+
+    setUpdatePhase("updating");
+    setUpdateStatusEnabled(true);
+    setUpdateStartTimestamp((t) => t ?? Date.now());
+  }, [updatePhase, updateStatus, setUpdateStatusEnabled]);
+
   useEffect(() => {
     if (updatePhase !== "updating") return;
     if (!updateStatus?.data.ready) return;
@@ -105,6 +117,9 @@ function UpdateSectionInner({
       if (updatePhaseRef.current === "succeeded") invalidateCheckForUpdates();
     };
   }, [invalidateCheckForUpdates]);
+
+  // On a resumed update the server's target is the truth, not the latest release.
+  const targetVersion = updateStatus?.data.target_version || latestVersion;
 
   const updateDurationStr = useMemo(() => {
     if (!updateStartTimestamp) return "00:00";
@@ -135,11 +150,11 @@ function UpdateSectionInner({
           )}
           {updatePhase === "updating" && (
             <span>
-              Updating to <span className="text-process font-bold">{latestVersion}</span>
+              Updating to <span className="text-process font-bold">{targetVersion}</span>
             </span>
           )}
           {updatePhase === "succeeded" && (
-            <span className="text-success">Updated to {latestVersion}</span>
+            <span className="text-success">Updated to {targetVersion}</span>
           )}
         </h1>
         {updatePhase === "idle" && (
